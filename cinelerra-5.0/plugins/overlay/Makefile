@@ -1,0 +1,10 @@
+include ../../global_config
+
+OBJS = $(OBJDIR)/overlay.o
+
+PLUGIN = overlay
+
+include ../../plugin_config
+
+
+$(OBJDIR)/overlay.o: overlay.C

@@ -1,0 +1,12 @@
+diff -urN a/Makefile.in b/Makefile.in
+--- a/Makefile.in	2015-05-18 14:35:42.000000000 -0600
++++ b/Makefile.in	2015-05-18 19:07:54.179214192 -0600
+@@ -830,7 +830,7 @@
+ sc4_1882_la_LIBADD = -Lutil -ldb -lrms
+ sc4m_1916_la_LIBADD = -Lutil -ldb -lrms
+ se4_1883_la_LIBADD = -Lutil -ldb -lrms
+-gsm_1215_la_LIBADD = gsm/libgsm.a
++gsm_1215_la_LIBADD = -Wl,gsm/libgsm.a
+ gverb_1216_la_LIBADD = -Lgverb -lgverb
+ lcr_delay_1436_la_DEPENDENCIES = util/biquad.h
+ highpass_iir_1890_la_LIBADD = -Lutil -liir

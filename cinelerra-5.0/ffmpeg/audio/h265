@@ -1,0 +1,3 @@
+mp4 libfdk_aac | aac_adtstoasc
+b 192000
+strict -2

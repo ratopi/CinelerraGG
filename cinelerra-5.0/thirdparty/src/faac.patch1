@@ -1,0 +1,18 @@
+--- faac-1.28/common/mp4v2/mpeg4ip.h.orig	2015-04-16 07:51:47.134014449 -0600
++++ faac-1.28/common/mp4v2/mpeg4ip.h	2015-04-16 07:52:37.955396415 -0600
+@@ -120,6 +120,7 @@
+ #endif
+ #include <sys/param.h>
+ 
++#if 0
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -127,6 +128,7 @@
+ #ifdef __cplusplus
+ }
+ #endif
++#endif
+ 
+ #define OPEN_RDWR O_RDWR
+ #define OPEN_CREAT O_CREAT 

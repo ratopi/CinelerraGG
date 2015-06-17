@@ -1,0 +1,37 @@
+include ../../global_config
+
+OPENCV_DIR := $(shell cd ../../thirdparty/OpenCV*; pwd)
+
+OBJS := \
+	$(OBJDIR)/findobject.o \
+	$(OBJDIR)/findobjectwindow.o \
+	$(OBJDIR)/surfscan.o \
+
+ifeq ($(STATIC_LIBRARIES), y)
+LFLAGS += $(OPENCV_DIR)/libopencv.a
+else
+LFLAGS += -lopencv_video
+LFLAGS += -lopencv_legacy
+endif
+
+CFLAGS += -I$(OPENCV_DIR)/modules/core/include/ \
+	-I$(OPENCV_DIR)/modules/features2d/include/ \
+	-I$(OPENCV_DIR)/modules/calib3d/include/ \
+	-I$(OPENCV_DIR)/modules/flann/include/ \
+	-I$(OPENCV_DIR)/modules/imgproc/include/ \
+	-I$(OPENCV_DIR)/modules/legacy/include/ \
+	-I$(OPENCV_DIR)/modules/highgui/include/ \
+	-I$(OPENCV_DIR)/modules/objdetect/include/ \
+	-I$(OPENCV_DIR)/modules/video/include/
+
+PLUGIN = findobject
+
+include ../../plugin_config
+
+$(OBJDIR)/findobject.o: findobject.C findobject.h findobjectwindow.h
+$(OBJDIR)/findobjectwindow.o: findobjectwindow.C findobject.h findobjectwindow.h
+$(OBJDIR)/surfscan.o: surfscan.C
+
+
+
+

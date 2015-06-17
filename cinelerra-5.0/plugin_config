@@ -1,0 +1,61 @@
+include $(TOPDIR)/plugin_defs
+
+CFLAGS += -I../ -I$(TOPDIR)/cinelerra \
+	-I$(TOPDIR)/guicast \
+	-I$(TOPDIR)/quicktime \
+	-I../colors \
+	-fPIC \
+
+include $(TOPDIR)/thirdparty/config.mak
+CFLAGS += $(static_includes)
+LFLAGS += $(static_libraries)
+
+OUTPUT_DIR = $(PLUGIN_DIR)/$($(PLUGIN))
+OUTPUT_IMG = $(PLUGIN_DIR)/picons
+OUTPUT = $(OUTPUT_DIR)/$(PLUGIN).plugin
+OUTPUT_G = $(OBJDIR)/$(PLUGIN).debuginfo
+OUTPUT_PNG = $(OUTPUT_IMG)/$(PLUGIN).png
+
+$(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
+$(shell echo $(LFLAGS) > $(OBJDIR)/l_flags)
+
+ifeq ($(OUTPUT_THEME),)
+
+$(OUTPUT): $(OBJS) $(OUTPUT_DIR) $(OUTPUT_IMG)
+	$(LDLINKER) -o $(OUTPUT) $(OBJS) `cat $(OBJDIR)/l_flags`
+	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT) $(OUTPUT_G))
+	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
+	$(if $(wildcard picon.png), cp picon.png $(OUTPUT_PNG))
+
+else
+
+THEME_DATA = $(OBJDIR)/$(PLUGIN)_data.o
+
+$(OUTPUT_THEME): $(OBJS) $(OUTPUT_DIR) $(THEME_DATA)
+	$(LDLINKER) -o $(OUTPUT_THEME) $(OBJS) $(THEME_DATA)
+	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT_THEME) $(OUTPUT_G))
+	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT_THEME))
+
+$(THEME_DATA):
+	cd $(OBJDIR) && \
+	../../../guicast/$(OBJDIR)/bootstrap $(notdir $(THEME_DATA)) ../data/*.png
+
+endif
+
+$(OUTPUT_DIR) $(OUTPUT_IMG):
+	mkdir -p $@
+
+clean:
+	find \( -name core -o -name '*.o' -o -name '*.a' \) -exec rm -f {} \;
+	rm -f $(OUTPUT)
+	rm -rf $(OBJDIR)
+
+wc:
+	cat *.C *.h | wc
+
+$(OBJS):
+	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
+
+val-%:
+	@echo $($(subst val-,,$@))
+

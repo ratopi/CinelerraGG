@@ -1,0 +1,13 @@
+--- a/configure	2015-04-27 13:07:19.545166083 -0600
++++ b/configure	2015-04-27 13:10:23.468532800 -0600
+@@ -4979,7 +4979,9 @@
+                                  warn "using libx264 without pkg-config"; } } &&
+                              { check_cpp_condition x264.h "X264_BUILD >= 118" ||
+                                die "ERROR: libx264 must be installed and version must be >= 0.118."; }
+-enabled libx265           && require_pkg_config x265 x265.h x265_encoder_encode &&
++enabled libx265           && { use_pkg_config x265 "stdint.h x265.h" x265_encoder_encode ||
++                               { require libx265 x265.h x265_encoder_encode -lx265 -lstdc++ &&
++                                 warn "using libx265 without pkg-config"; } } &&
+                              { check_cpp_condition x265.h "X265_BUILD >= 17" ||
+                                die "ERROR: libx265 version must be >= 17."; }
+ enabled libxavs           && require libxavs xavs.h xavs_encoder_encode -lxavs
