@@ -395,7 +395,15 @@ int FileXML::append_tag()
 
 int FileXML::append_text(const char *text)
 {
-	append_text(text, strlen(text));
+	if( text != 0 )
+		append_text(text, strlen(text));
+	return 0;
+}
+
+int FileXML::append_data(const char *text)
+{
+	if( text != 0 )
+		append_data(text, strlen(text));
 	return 0;
 }
 

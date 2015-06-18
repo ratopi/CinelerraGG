@@ -355,6 +355,7 @@ public:
 	static size_t encode(const char *from_enc, const char *to_enc,
 		char *input, int input_length, char *output, int output_length);
 	static int find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface);
+	static void dump_fonts(FILE *fp = stdout);
 
 // Make VFrame use shm
 	int vframe_shm;

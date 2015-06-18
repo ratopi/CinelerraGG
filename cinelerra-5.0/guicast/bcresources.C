@@ -954,12 +954,51 @@ int BC_Resources::init_fontconfig(const char *search_path)
 		sprintf(line, "%s (%s)", entry->family, entry->foundry);
 		entry->displayname = cstrdup(line);
 
-		if(!strcasecmp(entry->weight, "demibold") ||
-		    !strcasecmp(entry->weight, "bold"))
+		if(!strcasecmp(entry->weight, "demibold")) {
 			entry->fixed_style |= BC_FONT_BOLD;
-		if(!strcasecmp(entry->slant, "i") ||
-		    !strcasecmp(entry->slant, "o"))
+			entry->style |= FL_WEIGHT_DEMIBOLD;
+		}
+		else if(!strcasecmp(entry->weight, "bold")) {
+			entry->fixed_style |= BC_FONT_BOLD;
+			entry->style |= FL_WEIGHT_BOLD;
+		}
+		else {
+			entry->style |= FL_WEIGHT_NORMAL;
+		}
+
+		if(!strcasecmp(entry->slant, "r")) {
+			entry->style |= FL_SLANT_ROMAN;
+		}
+		else if(!strcasecmp(entry->slant, "i")) {
+			entry->style |= FL_SLANT_ITALIC;
 			entry->fixed_style |= BC_FONT_ITALIC;
+		}
+		else if(!strcasecmp(entry->slant, "o")) {
+			entry->style |= FL_SLANT_OBLIQUE;
+			entry->fixed_style |= BC_FONT_ITALIC;
+		}
+
+		if(!strcasecmp(entry->swidth, "normal"))
+			entry->style = FL_WIDTH_NORMAL;
+		else if(!strcasecmp(entry->swidth, "ultracondensed"))
+			entry->style = FL_WIDTH_ULTRACONDENSED;
+		else if(!strcasecmp(entry->swidth, "extracondensed"))
+			entry->style = FL_WIDTH_EXTRACONDENSED;
+		else if(!strcasecmp(entry->swidth, "condensed"))
+			entry->style = FL_WIDTH_CONDENSED;
+		else if(!strcasecmp(entry->swidth, "semicondensed"))
+			entry->style = FL_WIDTH_SEMICONDENSED;
+		else if(!strcasecmp(entry->swidth, "semiexpanded"))
+			entry->style = FL_WIDTH_SEMIEXPANDED;
+		else if(!strcasecmp(entry->swidth, "expanded"))
+			entry->style = FL_WIDTH_EXPANDED;
+		else if(!strcasecmp(entry->swidth, "extraexpanded"))
+			entry->style = FL_WIDTH_EXTRAEXPANDED;
+		else if(!strcasecmp(entry->swidth, "ultraexpanded"))
+			entry->style = FL_WIDTH_ULTRAEXPANDED;
+		else
+			entry->style = FL_WIDTH_NORMAL;
+
 		fontlist->append(entry);
 //		printf("TitleMain::build_fonts %s: success\n",	entry->path);
 //printf("TitleMain::build_fonts 2\n");
@@ -1065,13 +1104,16 @@ int BC_Resources::init_fontconfig(const char *search_path)
 			case FC_SLANT_ROMAN:
 			default:
 				entry->slant = cstrdup("r");
+				entry->style |= FL_SLANT_ROMAN;
 				break;
 			case FC_SLANT_ITALIC:
 				entry->slant = cstrdup("i");
+				entry->style |= FL_SLANT_ITALIC;
 				entry->fixed_style |= BC_FONT_ITALIC;
 				break;
 			case FC_SLANT_OBLIQUE:
 				entry->slant = cstrdup("o");
+				entry->style |= FL_SLANT_OBLIQUE;
 				entry->fixed_style |= BC_FONT_ITALIC;
 				break;
 			}
@@ -1250,25 +1292,6 @@ int BC_Resources::init_fontconfig(const char *search_path)
 			}
 		}
 
-		if(FcPatternGetInteger(font, FC_SLANT, 0, &intvalue) == FcResultMatch)
-		{
-			switch(intvalue)
-			{
-			case FC_SLANT_ROMAN:
-			default:
-				entry->style |= FL_SLANT_ROMAN;
-				break;
-
-			case FC_SLANT_ITALIC:
-				entry->style |= FL_SLANT_ITALIC;
-				break;
-
-			case FC_SLANT_OBLIQUE:
-				entry->style |= FL_SLANT_OBLIQUE;
-				break;
-			}
-		}
-
 		if(FcPatternGetInteger(font, FC_WEIGHT, 0, &intvalue) == FcResultMatch)
 		{
 			switch(intvalue)
@@ -1404,7 +1427,7 @@ int BC_Resources::init_fontconfig(const char *search_path)
 
 BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, int mask)
 {
-	BC_FontEntry *entry, *style_match;
+	BC_FontEntry *entry, *style_match, *displayname_match;
 
 	if(!fontlist)
 		return 0;
@@ -1423,22 +1446,27 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, i
 // No exact match - assume normal width font
 	style |= FL_WIDTH_NORMAL;
 	mask |= FL_WIDTH_MASK;
-	style_match = 0;
+	style_match = 0;  displayname_match = 0;
 	for(int i = 0; i < fontlist->total; i++)
 	{
 		entry = fontlist->values[i];
+
+		if(!strncasecmp(displayname, entry->family,
+				strlen(entry->family)))
+		{
+			if((entry->style & mask) == style)
+				return entry;
+			if(!displayname_match)
+				displayname_match = entry;
+		}
 
 		if((entry->style & mask) == style)
 		{
 			if(!style_match)
 				style_match = entry;
-
-			if(!strncasecmp(displayname, entry->family,
-					strlen(entry->family)))
-			return entry;
 		}
 	}
-	return style_match;
+	return displayname_match ? displayname_match : style_match;
 }
 
 size_t BC_Resources::encode(const char *from_enc, const char *to_enc,
@@ -1567,5 +1595,17 @@ FcPattern* BC_Resources::find_similar_font(FT_ULong char_code, FcPattern *oldfon
 	fontconfig_lock.unlock();
 
 	return pat;
+}
+
+void BC_Resources::dump_fonts(FILE *fp)
+{
+	for( int i=0; i<fontlist->total; ++i ) {
+		BC_FontEntry *ep = fontlist->values[i];
+		fprintf(fp,"%s = %s\n",ep->displayname,ep->path);
+		fprintf(fp,"  %s:%s:%s:%s:%s:%s:%d:%d:%d:%d:%d:%s:%d:%s:%s:%d\n",
+			ep->foundry, ep->family, ep->weight, ep->slant, ep->swidth, ep->adstyle,
+			ep->pixelsize, ep->pointsize, ep->xres, ep->yres, ep->style, ep->spacing,
+			ep->avg_width, ep->registry, ep->encoding, ep->fixed_style);
+	}
 }
 

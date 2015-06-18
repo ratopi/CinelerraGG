@@ -231,31 +231,12 @@ void KeyFrame::update_parameter(BC_Hash *params,
 				}
 			}
 
-
-
 // Append parameters to output
 			output.append_tag();
-
 // Write anonymous text & duplicate the rest
-			if(text)
-			{
-				output.append_text(text);
-			}
-			else
-			{
-				output.append_text(this_text);
-			}
-
+			output.append_text(text ? text : this_text);
 // Append remaining previous data
-			if(extra)
-			{
-				output.append_text(extra);
-			}
-			else
-			{
-				output.append_text(this_extra);
-			}
-
+			output.append_data(extra ? extra : this_extra);
 // Move output to input
 			output.terminate_string();
 			strcpy(this->data, output.string());
