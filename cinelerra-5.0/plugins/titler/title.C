@@ -568,8 +568,8 @@ void TitleUnit::draw_glyph(VFrame *output, VFrame *data, TitleGlyph *glyph, int 
 
 	int r, g, b, a;
 	plugin->get_color_components(&r, &g, &b, &a, 0);
-	int outline = plugin->config.outline_size;
-	if(outline) a = 0xff;
+	//int outline = plugin->config.outline_size;
+	//if(outline) a = 0xff;
 
 	while( y_in < glyph_h && y_out < output_h ) {
 		unsigned char *in_row = in_rows[y_in];
@@ -725,8 +725,6 @@ void TitleOutlineUnit::process_package(LoadPackage *package)
 	TitleOutlinePackage *pkg = (TitleOutlinePackage*)package;
 	int r, g, b, outline_a;
 	plugin->get_color_components(&r, &g, &b, &outline_a, 1);
-	int title_r, title_g, title_b, title_a;
-	plugin->get_color_components(&title_r, &title_g, &title_b, &title_a, 0);
 	unsigned char **outline_rows = plugin->outline_mask->get_rows();
 	unsigned char **text_rows = plugin->text_mask->get_rows();
 	int mask_w1 = plugin->text_mask->get_w()-1;
@@ -761,6 +759,7 @@ void TitleOutlineUnit::process_package(LoadPackage *package)
 	}
 	else {
 // Overlay text mask on top of outline mask
+		int ofs = BC_CModels::is_yuv(plugin->output->get_color_model()) ? 0x80 : 0;
 		for(int y = pkg->y1; y < pkg->y2; y++) {
 			unsigned char *outline_row = outline_rows[y];
 			unsigned char *text_row = text_rows[y];
@@ -770,9 +769,9 @@ void TitleOutlineUnit::process_package(LoadPackage *package)
 				int out_a = out[3], in_a = inp[3];
 				int transparency = in_a * (0xff - out_a) / 0xff;
 				out[0] = (out[0] * out_a + inp[0] * transparency) / 0xff;
-				out[1] = (out[1] * out_a + inp[1] * transparency) / 0xff;
-				out[2] = (out[2] * out_a + inp[2] * transparency) / 0xff;
-				out[3] = out_a + transparency;
+				out[1] = ((out[1]-ofs) * out_a + (inp[1]-ofs) * transparency) / 0xff + ofs;
+				out[2] = ((out[2]-ofs) * out_a + (inp[2]-ofs) * transparency) / 0xff + ofs;
+				out[3] = in_a + out_a - in_a*out_a / 0xff;
 			}
 		}
 	}
@@ -848,7 +847,7 @@ void TitleTranslate::run_packages()
 
 
 
-#define TRANSLATE(type, max, components) \
+#define TRANSLATE(type, max, components, ofs) \
 { \
 	unsigned char **in_rows = plugin->text_mask->get_rows(); \
 	type **out_rows = (type**)plugin->output->get_rows(); \
@@ -885,10 +884,10 @@ void TitleTranslate::run_packages()
 					x_fraction2 =  \
 						server->x_table[j - server->out_x1_int].in_fraction2; \
  \
-					float fraction1 = x_fraction1 * y_fraction1; \
-					float fraction2 = x_fraction2 * y_fraction1; \
-					float fraction3 = x_fraction1 * y_fraction2; \
-					float fraction4 = x_fraction2 * y_fraction2; \
+					float fraction1 = x_fraction1 * y_fraction1 / (256.f-max); \
+					float fraction2 = x_fraction2 * y_fraction1 / (256.f-max); \
+					float fraction3 = x_fraction1 * y_fraction2 / (256.f-max); \
+					float fraction4 = x_fraction2 * y_fraction2 / (256.f-max); \
 					type input_r = (type)(in_row1[in_x1 * 4 + 0] * fraction1 +  \
 								in_row1[in_x2 * 4 + 0] * fraction2 +  \
 								in_row2[in_x1 * 4 + 0] * fraction3 +  \
@@ -916,9 +915,9 @@ void TitleTranslate::run_packages()
 						out_row[j * components + 0] =  \
 							(input_r * input_a + out_row[j * components + 0] * transparency) / max; \
 						out_row[j * components + 1] =  \
-							(input_g * input_a + out_row[j * components + 1] * transparency) / max; \
+							((input_g-ofs) * input_a + (out_row[j * components + 1]-ofs) * transparency) / max + ofs; \
 						out_row[j * components + 2] =  \
-							(input_b * input_a + out_row[j * components + 2] * transparency) / max; \
+							((input_b-ofs) * input_a + (out_row[j * components + 2]-ofs) * transparency) / max + ofs; \
 						out_row[j * components + 3] =  \
 							MAX(input_a, out_row[j * components + 3]); \
 					} \
@@ -928,9 +927,9 @@ void TitleTranslate::run_packages()
 						out_row[j * components + 0] =  \
 							(input_r * input_a + out_row[j * components + 0] * transparency) / max; \
 						out_row[j * components + 1] =  \
-							(input_g * input_a + out_row[j * components + 1] * transparency) / max; \
+							((input_g-ofs) * input_a + (out_row[j * components + 1]-ofs) * transparency) / max + ofs; \
 						out_row[j * components + 2] =  \
-							(input_b * input_a + out_row[j * components + 2] * transparency) / max; \
+							((input_b-ofs) * input_a + (out_row[j * components + 2]-ofs) * transparency) / max + ofs; \
 					} \
 				} \
 			} \
@@ -999,12 +998,12 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 	TitleTranslate *server = (TitleTranslate*)this->server;
 
 	switch(plugin->output->get_color_model()) {
-	case BC_RGB888:     TRANSLATE(unsigned char, 0xff, 3); break;
-	case BC_RGB_FLOAT:  TRANSLATE(float, 1.0, 3);          break;
-	case BC_YUV888:     TRANSLATE(unsigned char, 0xff, 3); break;
-	case BC_RGBA_FLOAT: TRANSLATE(float, 1.0, 4);          break;
-	case BC_RGBA8888:   TRANSLATE(unsigned char, 0xff, 4); break;
-	case BC_YUVA8888:   TRANSLATE(unsigned char, 0xff, 4); break;
+	case BC_RGB888:     TRANSLATE(unsigned char, 0xff, 3, 0);    break;
+	case BC_RGB_FLOAT:  TRANSLATE(float, 1.0, 3, 0);             break;
+	case BC_YUV888:     TRANSLATE(unsigned char, 0xff, 3, 0x80); break;
+	case BC_RGBA_FLOAT: TRANSLATE(float, 1.0, 4, 0);             break;
+	case BC_RGBA8888:   TRANSLATE(unsigned char, 0xff, 4, 0);    break;
+	case BC_YUVA8888:   TRANSLATE(unsigned char, 0xff, 4, 0x80); break;
 	}
 //printf("TitleTranslateUnit::process_package 5\n");
 }
@@ -1887,34 +1886,21 @@ void TitleMain::overlay_mask()
 
 void TitleMain::get_color_components(int *r, int *g, int *b, int *a, int is_outline)
 {
-	int r_in, g_in, b_in, a_in;
+	int color = is_outline ? config.outline_color : config.color;
+	unsigned char r_in = color >> 16;
+	unsigned char g_in = color >> 8;
+	unsigned char b_in = color;
+	*a = is_outline ? config.outline_alpha : config.alpha;
 
-	if(is_outline)
-	{
-		r_in = (config.outline_color & 0xff0000) >> 16;
-		g_in = (config.outline_color & 0xff00) >> 8;
-		b_in = config.outline_color & 0xff;
-		a_in = config.outline_alpha;
-	}
-	else
-	{
-		r_in = (config.color & 0xff0000) >> 16;
-		g_in = (config.color & 0xff00) >> 8;
-		b_in = config.color & 0xff;
-		a_in = config.alpha;
-	}
-	*r = r_in;
-	*g = g_in;
-	*b = b_in;
-	*a = a_in;
-
-	switch(output->get_color_model())
-	{
+	switch(output->get_color_model()) {
 		case BC_YUV888:
 			yuv.rgb_to_yuv_8(r_in, g_in, b_in, *r, *g, *b);
 			break;
 		case BC_YUVA8888:
 			yuv.rgb_to_yuv_8(r_in, g_in, b_in, *r, *g, *b);
+			break;
+		default:
+			*r = r_in;  *g = g_in;  *b = b_in;
 			break;
 	}
 }

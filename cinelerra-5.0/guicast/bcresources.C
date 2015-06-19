@@ -1013,7 +1013,8 @@ int BC_Resources::init_fontconfig(const char *search_path)
 	FcChar8 *family, *file, *foundry, *style, *format;
 	int slant, spacing, width, weight;
 	int force_style = 0;
-	int limit_to_trutype = 0; // if you want limit search to TrueType put 1
+// if you want limit search to TrueType put 1
+	int limit_to_trutype = 1;
 	FcConfig *config;
 	int i;
 	char tmpstring[BCTEXTLEN];
@@ -1051,7 +1052,7 @@ int BC_Resources::init_fontconfig(const char *search_path)
 		force_style = 0;
 		FcPatternGetString(font, FC_FONTFORMAT, 0, &format);
 		//on this point you can limit font search
-		if(!limit_to_trutype || !strcmp((char *)format, "TrueType"))
+		if(limit_to_trutype && strcmp((char *)format, "TrueType"))
 			continue;
 
 		sprintf(tmpstring, "%s", format);

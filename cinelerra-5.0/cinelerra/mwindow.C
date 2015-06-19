@@ -671,26 +671,43 @@ void MWindow::init_theme()
 	if(!strcasecmp(preferences->theme, "Blond"))
 		strcpy(preferences->theme, DEFAULT_THEME);
 
-	for(int i = 0; i < plugindb->total; i++)
-	{
-		if(plugindb->values[i]->theme &&
-			!strcasecmp(preferences->theme, plugindb->values[i]->title))
-		{
-			PluginServer plugin = *plugindb->values[i];
-			plugin.open_plugin(0, preferences, 0, 0);
-			theme = plugin.new_theme();
-			theme->mwindow = this;
-			strcpy(theme->path, plugin.path);
-			plugin.close_plugin();
-			break;
+	PluginServer *theme_plugin = 0;
+	for(int i = 0; i < plugindb->total && !theme_plugin; i++) {
+		if( plugindb->values[i]->theme &&
+		    !strcasecmp(preferences->theme, plugindb->values[i]->title) )
+			theme_plugin = plugindb->values[i];
+	}
+
+	if( !theme_plugin )
+		fprintf(stderr, _("MWindow::init_theme: prefered theme %s not found.\n"),
+			 preferences->theme);
+
+	if( !theme_plugin && strcasecmp(preferences->theme, DEFAULT_THEME) ) {
+		fprintf(stderr, _("MWindow::init_theme: trying default theme %s\n"),
+			DEFAULT_THEME);
+		for(int i = 0; i < plugindb->total && !theme_plugin; i++) {
+			if( plugindb->values[i]->theme &&
+			    !strcasecmp(DEFAULT_THEME, plugindb->values[i]->title) )
+				theme_plugin = plugindb->values[i];
 		}
 	}
 
-	if(!theme)
-	{
-		fprintf(stderr, _("MWindow::init_theme: theme %s not found.\n"), preferences->theme);
+	if(!theme_plugin) {
+		fprintf(stderr, _("MWindow::init_theme: theme_plugin not found.\n"));
 		exit(1);
 	}
+
+	PluginServer plugin = *theme_plugin;
+	if( plugin.open_plugin(0, preferences, 0, 0) ) {
+		fprintf(stderr, _("MWindow::init_theme: unable to load theme %s\n"),
+			theme_plugin->title);
+		exit(1);
+	}
+
+	theme = plugin.new_theme();
+	theme->mwindow = this;
+	strcpy(theme->path, plugin.path);
+	plugin.close_plugin();
 
 // Load default images & settings
 	theme->Theme::initialize();
@@ -1593,7 +1610,6 @@ void MWindow::create_objects(int want_gui,
 	if(debug) PRINT_TRACE
 //	show_splash();
 
-	init_error();
 	if(debug) PRINT_TRACE
 	init_defaults(defaults, config_path);
 	init_preferences();
@@ -1603,6 +1619,7 @@ void MWindow::create_objects(int want_gui,
 	if(debug) PRINT_TRACE
 	init_theme();
 	if(debug) PRINT_TRACE
+	init_error();
 
 	char string[BCTEXTLEN];
 	strcpy(string, preferences->plugin_dir);
