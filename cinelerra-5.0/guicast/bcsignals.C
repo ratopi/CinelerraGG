@@ -863,6 +863,7 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 		fprintf(fp,"\nMAIN HOOK:\n");
 		BC_Signals::trap_hook(fp, BC_Signals::trap_data);
 	}
+	fprintf(fp,"\nVERSION:\n");  bc_copy_textfile(fp,"/proc/version");
 	fprintf(fp,"\nMEMINFO:\n");  bc_copy_textfile(fp,"/proc/meminfo");
 	fprintf(fp,"\nMAPS:\n");     bc_copy_textfile(fp,"/proc/%d/maps",pid);
 	fprintf(fp,"\n\n");

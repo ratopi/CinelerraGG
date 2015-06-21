@@ -795,28 +795,31 @@ int File::open_file(Preferences *preferences,
 // Reopen file with correct parser and get header.
 	if(file->open_file(rd, wr)) {
 		delete file;
-		file = 0;
+		return FILE_NOT_FOUND;
 	}
 
 
 
 // Set extra writing parameters to mandatory settings.
-	if(file && wr) {
+	if( wr ) {
 		if(this->asset->dither) file->set_dither();
 	}
 
-
+	if( rd ) {
+// one frame image file, no specific length
+		if( !this->asset->audio_data && this->asset->video_data &&
+		    this->asset->video_length == 1 )
+			this->asset->video_length = -1;
+	}
 
 // Synchronize header parameters
-	if(file) {
-		asset->copy_from(this->asset, 1);
+	asset->copy_from(this->asset, 1);
 //asset->dump();
-	}
 
 	if(debug) printf("File::open_file %d file=%p\n", __LINE__, file);
 // sleep(1);
 
-	return file ? FILE_OK : FILE_NOT_FOUND;
+	return FILE_OK;
 }
 
 void File::delete_temp_samples_buffer()

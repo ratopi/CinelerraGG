@@ -235,7 +235,6 @@ MWindow::~MWindow()
 	hide_keyframe_guis();
 	clean_indexes();
 	save_defaults();
-
 // Give up and go to a movie
 //  cant run valgrind if this is used
 //	if( !reload_status ) exit(0);
@@ -330,8 +329,7 @@ void MWindow::quit(int unlock)
 	interrupt_indexes();
 	clean_indexes();
 	save_defaults();
-// This is the last thread to exit
-	playback_3d->quit();
+	gui->set_done(0);
 	if(unlock) gui->lock_window("MWindow::quit");
 }
 
@@ -1807,7 +1805,7 @@ ENABLE_BUFFER
 //PRINT_TRACE
 	gwindow->start();
 //PRINT_TRACE
-	Thread::start();
+//	Thread::start();
 //PRINT_TRACE
 	playback_3d->start();
 //PRINT_TRACE

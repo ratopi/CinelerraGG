@@ -404,6 +404,7 @@ COPYRIGHT_DATE);
 // run the program
 //PRINT_TRACE
 				mwindow.start();
+				mwindow.run();
 //PRINT_TRACE
 				if( mwindow.reload() )
 					start_remote_control =

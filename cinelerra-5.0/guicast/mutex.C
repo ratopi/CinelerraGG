@@ -19,10 +19,14 @@
  *
  */
 
+#include <stdio.h>
+#include <errno.h>
+
 #ifndef NO_GUICAST
 #include "bcsignals.h"
 #endif
 #include "mutex.h"
+
 
 Mutex::Mutex(const char *title, int recursive)
 {
@@ -122,6 +126,7 @@ int Mutex::unlock()
 
 int Mutex::trylock(const char *location)
 {
+	if( count ) return EBUSY;
 	int ret = pthread_mutex_trylock(&mutex);
 	if( ret ) return ret;
 

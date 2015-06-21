@@ -146,31 +146,8 @@ public:
 #endif
 };
 
-class BC_Synchronous;
-
-class BC_SynchGarbage : public Thread
-{
-public:
-	BC_SynchGarbage(BC_Synchronous*sync);
-	~BC_SynchGarbage();
-
-	void send_garbage(BC_SynchronousCommand *command);
-	void handle_garbage();
-	void start();
-	void run();
-	void quit();
-	void stop();
-
-	BC_Synchronous *synchronous;
-	Condition *more_garbage;
-	Mutex *garbage_lock;
-	ArrayList<BC_SynchronousCommand*> garbage;
-	int done;
-};
-
 class BC_Synchronous : public Thread
 {
-	BC_SynchGarbage *sync_garbage;
 public:
 	BC_Synchronous();
 	virtual ~BC_Synchronous();
@@ -180,7 +157,6 @@ public:
 	friend class BC_PBuffer;
 	friend class BC_Pixmap;
 	friend class BC_Texture;
-	friend class BC_SynchGarbage;
 
 	void quit();
 // Must be called after constructor to create inherited objects.
@@ -266,7 +242,6 @@ private:
 
 	Mutex *lock_sync;
 	void sync_lock(const char *cp=0);
-	void sync_lock(Display *display, const char *cp);
 	void sync_unlock();
 
 	void get_display_sync(Display *display, const char *cp);
@@ -282,7 +257,7 @@ private:
 	int done;
 // Command stack
 	ArrayList<BC_SynchronousCommand*> commands;
-	int is_running;
+	int is_started;
 // The window the opengl context is currently bound to.
 // Set by BC_WindowBase::enable_opengl.
 	BC_WindowBase *current_window;

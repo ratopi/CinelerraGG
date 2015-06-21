@@ -52,10 +52,34 @@ FormatTools::FormatTools(MWindow *mwindow,
 	aparams_thread = 0;
 	vparams_thread = 0;
 	channels_tumbler = 0;
+	audio_switch = 0;
+	video_switch = 0;
 	path_textbox = 0;
 	path_button = 0;
-	w = window->get_w();
+	format_title = 0;
+	format_button = 0;
+	format_text = 0;
+	audio_title = 0;
+	audio_switch = 0;
+	video_title = 0;
+	video_switch = 0;
+	channels_title = 0;
+	channels_button = 0;
+	multiple_files = 0;
 	file_entries = 0;
+	w = window->get_w();
+
+	recording = 0;
+	use_brender = 0;
+	do_audio = 0;
+	do_video = 0;
+	prompt_audio = 0;
+	prompt_audio_channels = 0;
+	prompt_video = 0;
+	prompt_video_compression = 0;
+	strategy = 0;
+	locked_compressor = 0;
+	video_driver = 0;
 }
 
 FormatTools::~FormatTools()
@@ -334,7 +358,7 @@ void FormatTools::update_driver(int driver)
 
 void FormatTools::update_format()
 {
-	if( do_audio && audio_switch ) {
+	if( do_audio && prompt_audio && audio_switch ) {
 		asset->audio_data = File::supports_audio(asset->format);
 		audio_switch->update(asset->audio_data);
 		if( !asset->audio_data )
@@ -342,7 +366,7 @@ void FormatTools::update_format()
 		else
 			audio_switch->enable();
 	}
-	if( do_video && video_switch ) {
+	if( do_video && prompt_video && video_switch ) {
 		asset->video_data = File::supports_video(asset->format);
 		video_switch->update(asset->video_data);
 		if( !asset->video_data )
@@ -445,8 +469,10 @@ void FormatTools::update(Asset *asset, int *strategy)
 	if(path_textbox) 
 		path_textbox->update(asset->path);
 	format_text->update(File::formattostr(plugindb, asset->format));
-	if(do_audio && audio_switch) audio_switch->update(asset->audio_data);
-	if(do_video && video_switch) video_switch->update(asset->video_data);
+	if(do_audio && prompt_audio && audio_switch)
+		audio_switch->update(asset->audio_data);
+	if(do_video && prompt_video && video_switch)
+		video_switch->update(asset->video_data);
 	if(strategy)
 	{
 		multiple_files->update(strategy);

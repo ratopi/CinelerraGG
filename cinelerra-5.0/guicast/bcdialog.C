@@ -46,6 +46,7 @@ BC_DialogThread::~BC_DialogThread()
 		gui->unlock_window();
 	}
 	startup_lock->unlock();
+	cancel();
 	join();
 
 	delete startup_lock;

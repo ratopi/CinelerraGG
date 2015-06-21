@@ -79,6 +79,7 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 
 VWindowGUI::~VWindowGUI()
 {
+	vwindow->playback_engine->interrupt_playback(1);
 	sources.remove_all_objects();
 	labels.remove_all_objects();
 	delete canvas;
@@ -405,13 +406,8 @@ void VWindowGUI::drag_motion()
 		cursor_y < canvas->y + canvas->h);
 
 
-printf("VWindowGUI::drag_motion 1 %d %d %d %d %d\n", 
-__LINE__, 
-mwindow->session->vcanvas_highlighted,
-get_cursor_over_window(),
-cursor_x,
-cursor_y);
-
+//printf("VWindowGUI::drag_motion 1 %d %d %d %d %d\n", __LINE__, 
+// mwindow->session->vcanvas_highlighted, get_cursor_over_window(), cursor_x, cursor_y);
 
 	if(old_status != mwindow->session->vcanvas_highlighted)
 		canvas->draw_refresh();
