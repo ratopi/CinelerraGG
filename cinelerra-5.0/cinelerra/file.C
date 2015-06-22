@@ -79,8 +79,11 @@
 #include "stringfile.h"
 #include "vframe.h"
 
-
-
+//suppress noref warning
+void *vorbis0_ov_callbacks[] = {
+ &OV_CALLBACKS_DEFAULT, &OV_CALLBACKS_NOCLOSE,
+ &OV_CALLBACKS_STREAMONLY, &OV_CALLBACKS_STREAMONLY_NOCLOSE,
+};
 
 File::File()
 {
@@ -808,7 +811,7 @@ int File::open_file(Preferences *preferences,
 	if( rd ) {
 // one frame image file, no specific length
 		if( !this->asset->audio_data && this->asset->video_data &&
-		    this->asset->video_length == 1 )
+		    this->asset->video_length <= 1 )
 			this->asset->video_length = -1;
 	}
 

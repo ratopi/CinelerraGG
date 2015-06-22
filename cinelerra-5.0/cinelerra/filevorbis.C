@@ -35,6 +35,12 @@
 #include <string.h>
 #include <unistd.h>
 
+//suppress noref warning
+void *vorbis1_ov_callbacks[] = {
+ &OV_CALLBACKS_DEFAULT, &OV_CALLBACKS_NOCLOSE,
+ &OV_CALLBACKS_STREAMONLY, &OV_CALLBACKS_STREAMONLY_NOCLOSE,
+};
+
 FileVorbis::FileVorbis(Asset *asset, File *file)
  : FileBase(asset, file)
 {

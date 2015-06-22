@@ -105,14 +105,15 @@ void FFAudioHistory::reserve(long sz, int nch)
 
 void FFAudioHistory::realloc(long sz, int nch)
 {
-	if( this->sz >= sz && this->nch == nch ) return;
-	long isz = used() * nch;
+	if( this->nch != nch )
+		reset();
+	else if( this->sz >= sz )
+		return;
 	this->nch = nch;
 	this->sz = sz;
 	bsz = sz * nch;
 	float *np = new float[bsz];
-	if( isz > 0 ) copy(np, isz);
-	inp = np + isz;
+	inp = np + copy(np, used());
 	outp = np;
 	lmt = np + bsz;
 	delete [] bfr;  bfr = np;
@@ -157,42 +158,49 @@ int64_t FFAudioHistory::get_inp(int ofs)
 int FFAudioHistory::write(const float *fp, long len)
 {
 	long n = len * nch;
+	float *ip = inp;
 	while( n > 0 ) {
-		int k = lmt - inp;
+		int k = lmt - ip;
 		if( k > n ) k = n;
 		n -= k;
-		while( --k >= 0 ) *inp++ = *fp++;
-		if( inp >= lmt ) inp -= bsz;
+		while( --k >= 0 ) *ip++ = *fp++;
+		if( ip >= lmt ) ip = bfr;
 	}
+	inp = ip;
 	return len;
 }
 
 int FFAudioHistory::copy(float *fp, long len)
 {
-	long n = len;
+	long n = len * nch;
+	float *op = outp;
 	while( n > 0 ) {
-		int k = lmt - outp;
+		int k = lmt - op;
 		if( k > n ) k = n;
 		n -= k;
-		while( --k >= 0 ) *fp++ = *outp++;
-		if( outp >= lmt ) outp -= bsz;
+		while( --k >= 0 ) *fp++ = *op++;
+		if( op >= lmt ) op = bfr;
 	}
+	outp = op;
 	return len;
 }
 
 int FFAudioHistory::zero(long len)
 {
 	long n = len * nch;
+	float *ip = inp;
 	while( n > 0 ) {
-		int k = lmt - inp;
+		int k = lmt - ip;
 		if( k > n ) k = n;
 		n -= k;
-		while( --k >= 0 ) *inp++ = 0;
-		if( inp >= lmt ) inp -= bsz;
+		while( --k >= 0 ) *ip++ = 0;
+		if( ip >= lmt ) ip = bfr;
 	}
+	inp = ip;
 	return len;
 }
 
+// does not advance outp
 int FFAudioHistory::read(double *dp, long len, int ch)
 {
 	long sz = used();
@@ -200,8 +208,9 @@ int FFAudioHistory::read(double *dp, long len, int ch)
 	if( len > sz ) len = sz;
 	long n = len;
 	float *op = outp + ch;
+	float *lmt1 = lmt + nch-1;
 	while( n > 0 ) {
-		int k = (lmt - outp) / nch;
+		int k = (lmt1 - op) / nch;
 		if( k > n ) k = n;
 		n -= k;
 		while( --k >= 0 ) { *dp++ = *op;  op += nch; }
@@ -345,9 +354,9 @@ int FFStream::decode(AVFrame *frame)
 			if( !ret ) ipkt->stream_index = st->index;
 		}
 		if( ipkt->stream_index == st->index ) {
-			while( ipkt->size > 0 && !got_frame ) {
+			while( (ipkt->size > 0 || !ipkt->data) && !got_frame ) {
 				ret = decode_frame(frame, got_frame);
-				if( ret < 0 ) break;
+				if( ret < 0 || !ipkt->data ) break;
 				ipkt->data += ret;
 				ipkt->size -= ret;
 			}
