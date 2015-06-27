@@ -36,7 +36,7 @@ public:
 	~RecordPrefs();
 
 	void create_objects();
-	void show_window(int flush);
+	int show_window(int flush);
 
 	FormatTools *recording_format;
 	RecordRealtimeTOC *realtime_toc;

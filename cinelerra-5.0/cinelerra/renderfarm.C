@@ -512,8 +512,7 @@ void RenderFarmServerThread::send_preferences()
 	server->preferences->save_defaults(&defaults);
 	defaults.save_string(string);
 	write_string(string);
-
-	delete [] string;
+	free(string);
 }
 
 void RenderFarmServerThread::send_asset()
@@ -532,14 +531,13 @@ void RenderFarmServerThread::send_asset()
 		1,
 		1);
 	defaults.save_string(string1);
-
 	FileXML file;
 	server->default_asset->write(&file, 0, 0);
 	file.terminate_string();
 
 	write_string(string1);
 	write_string(file.string());
-	delete [] string1;
+	free(string1);
 }
 
 

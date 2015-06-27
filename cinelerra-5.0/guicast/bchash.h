@@ -29,7 +29,6 @@
 
 #include "bcwindowbase.inc"
 #include "bctextbox.inc"
-#include "stringfile.inc"
 #include "units.h"
 
 
@@ -40,12 +39,12 @@ public:
 	BC_Hash(const char *filename);
 	virtual ~BC_Hash();
 
+	int load_file(FILE *fp);
 	int load();        // load from disk file
+	int save_file(FILE *fp);
 	int save();        // save to disk file
 	int load_string(const char *string);        // load from string
 	int save_string(char* &string);       // save to new string
-	void save_stringfile(StringFile *file);
-	void load_stringfile(StringFile *file);
 	int update(const char *name, double value); // update a value if it exists
 	int update(const char *name, float value); // update a value if it exists
 	int update(const char *name, int32_t value); // update a value if it exists

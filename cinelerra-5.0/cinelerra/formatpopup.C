@@ -21,6 +21,8 @@
 
 #include "bcsignals.h"
 #include "file.inc"
+#include "filesystem.h"
+#include "ffmpeg.h"
 #include "formatpopup.h"
 #include "language.h"
 #include "pluginserver.h"
@@ -84,10 +86,54 @@ void FormatPopup::create_objects()
 
 FormatPopup::~FormatPopup()
 {
-	for(int i = 0; i < format_items.total; i++) delete format_items.values[i];
+	format_items.remove_all_objects();
 }
 
 int FormatPopup::handle_event()
 {
 	return 0;
 }
+
+
+FFMPEGPopup::FFMPEGPopup(ArrayList<PluginServer*> *plugindb, int x, int y)
+ : BC_ListBox(x, y, 50, 200, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
+{
+	this->plugindb = plugindb;
+	set_tooltip(_("Set ffmpeg file type"));
+}
+
+void FFMPEGPopup::create_objects()
+{
+	static const char *dirs[] = { "/audio", "/video", };
+	for( int i=0; i<(int)(sizeof(dirs)/sizeof(dirs[0])); ++i ) {
+		FileSystem fs;
+		char option_path[BCTEXTLEN];
+		FFMPEG::set_option_path(option_path, dirs[i]);
+		fs.update(option_path);
+		int total_files = fs.total_files();
+		for( int j=0; j<total_files; ++j ) {
+			const char *name = fs.get_entry(j)->get_name();
+			const char *ext = strrchr(name,'.');
+			if( !ext ) ext = name;
+			else if( !strcmp("opts", ++ext) ) continue;
+			int k = ffmpeg_types.size();
+			while( --k >= 0 && strcmp(ffmpeg_types[k]->get_text(), ext) );
+			if( k >= 0 ) continue;
+			ffmpeg_types.append(new BC_ListBoxItem(ext));
+        	}
+        }
+
+	update(&ffmpeg_types, 0, 0, 1);
+}
+
+FFMPEGPopup::~FFMPEGPopup()
+{
+	ffmpeg_types.remove_all_objects();
+}
+
+int FFMPEGPopup::handle_event()
+{
+	return 0;
+}
+
+

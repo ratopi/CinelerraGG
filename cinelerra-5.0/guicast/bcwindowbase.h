@@ -218,8 +218,8 @@ public:
 	int get_color(int64_t color);
 // return the currently selected color
 	int64_t get_color();
-	int show_window(int flush = 1);
-	int hide_window(int flush = 1);
+	virtual int show_window(int flush = 1);
+	virtual int hide_window(int flush = 1);
 	int get_hidden();
 	int get_video_on();
 // Shouldn't deference a pointer to delete a window if a parent is
@@ -278,7 +278,6 @@ public:
 	virtual int get_h();
 	virtual int get_x();
 	virtual int get_y();
-	virtual int reposition_widgets(){ printf("foo1"); return 0; }
 	int get_root_w(int lock_display);
 	int get_root_h(int lock_display);
 	XineramaScreenInfo *get_xinerama_info(int screen);

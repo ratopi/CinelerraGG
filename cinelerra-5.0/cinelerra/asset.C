@@ -72,6 +72,7 @@ int Asset::init_values()
 //	format = FILE_MOV;
 // Has to be unknown for file probing to succeed
 	format = FILE_UNKNOWN;
+	fformat[0] = 0;
 	bits = 0;
 	byte_order = 0;
 	signed_ = 0;
@@ -82,6 +83,13 @@ int Asset::init_values()
 
 	strcpy(vcodec, QUICKTIME_YUV2);
 	strcpy(acodec, QUICKTIME_TWOS);
+
+	ff_audio_options[0] = 0;
+	ff_video_options[0] = 0;
+	ff_audio_bitrate = 0;
+	ff_video_bitrate = 0;
+	ff_video_quality = 0;
+
 	jpeg_quality = 100;
 	aspect_ratio = -1;
 
@@ -159,11 +167,6 @@ int Asset::init_values()
 
 	id = EDL::next_id();
 
-	pipe[0] = 0;
-	use_pipe = 0;
-
-	reset_timecode();
-
 	return 0;
 }
 
@@ -206,17 +209,6 @@ void Asset::reset_index()
 	index_state->reset();
 }
 
-int Asset::reset_timecode()
-{
-	strcpy(reel_name, "cin0000");
-	reel_number = 0;
-	tcstart = 0;
-	tcend = 0;
-	tcformat = 0;
-	
-	return 0;
-}
-
 void Asset::copy_from(Asset *asset, int do_index)
 {
 	copy_location(asset);
@@ -235,6 +227,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 	audio_data = asset->audio_data;
 	format = asset->format;
+	strcpy(fformat, asset->fformat);
 	channels = asset->channels;
 	sample_rate = asset->sample_rate;
 	bits = asset->bits;
@@ -258,6 +251,12 @@ void Asset::copy_format(Asset *asset, int do_index)
 	actual_height = asset->actual_height;
 	strcpy(vcodec, asset->vcodec);
 	strcpy(acodec, asset->acodec);
+
+	strcpy(ff_audio_options, asset->ff_audio_options);
+	strcpy(ff_video_options, asset->ff_video_options);
+	ff_audio_bitrate = asset->ff_audio_bitrate;
+	ff_video_bitrate = asset->ff_video_bitrate;
+	ff_video_quality = asset->ff_video_quality;
 
 	this->audio_length = asset->audio_length;
 	this->video_length = asset->video_length;
@@ -392,6 +391,9 @@ int Asset::equivalent(Asset &asset,
 	int result = (!strcmp(asset.path, path) &&
 		format == asset.format);
 
+	if(result && format == FILE_FFMPEG)
+		result = !strcmp(fformat, asset.fformat);
+
 	if(test_audio && result)
 	{
 		result = (channels == asset.channels && 
@@ -402,6 +404,10 @@ int Asset::equivalent(Asset &asset,
 			header == asset.header && 
 			dither == asset.dither &&
 			!strcmp(acodec, asset.acodec));
+		if(result && format == FILE_FFMPEG)
+			result = !strcmp(ff_audio_options, asset.ff_audio_options) &&
+				ff_audio_bitrate == asset.ff_audio_bitrate;
+				
 	}
 
 
@@ -413,6 +419,10 @@ int Asset::equivalent(Asset &asset,
 			width == asset.width &&
 			height == asset.height &&
 			!strcmp(vcodec, asset.vcodec));
+		if(result && format == FILE_FFMPEG)
+			result = !strcmp(ff_video_options, asset.ff_video_options) &&
+				ff_video_bitrate == asset.ff_video_bitrate &&
+				ff_video_quality == asset.ff_video_quality;
 	}
 
 	return result;
@@ -503,6 +513,7 @@ int Asset::read(FileXML *file,
 				format = File::strtoformat(string);
 				use_header = 
 					file->tag.get_property("USE_HEADER", use_header);
+				file->tag.get_property("FFORMAT", fformat);
 			}
 			else
 			if(file->tag.title_is("FOLDER"))
@@ -548,9 +559,6 @@ int Asset::read_audio(FileXML *file)
 	audio_length = file->tag.get_property("AUDIO_LENGTH", (int64_t)0);
 	acodec[0] = 0;
 	file->tag.get_property("ACODEC", acodec);
-	
-
-
 
 	return 0;
 }
@@ -633,6 +641,7 @@ int Asset::write(FileXML *file,
 	file->tag.set_property("TYPE", 
 		File::formattostr(format));
 	file->tag.set_property("USE_HEADER", use_header);
+	file->tag.set_property("FFORMAT", fformat);
 
 	file->append_tag();
 	file->append_newline();
@@ -772,6 +781,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 	{
 		format = GET_DEFAULT("FORMAT", format);
 		use_header = GET_DEFAULT("USE_HEADER", use_header);
+		GET_DEFAULT("FFORMAT", fformat);
 	}
 
 	if(do_data_types)
@@ -820,9 +830,13 @@ void Asset::load_defaults(BC_Hash *defaults,
 	theora_quality = GET_DEFAULT("THEORA_QUALITY", theora_quality);
 	theora_sharpness = GET_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
 	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
+	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FREQUENCY", theora_keyframe_force_frequency);
 
-
+	GET_DEFAULT("FF_AUDIO_OPTIONS", ff_audio_options);
+	ff_audio_bitrate = GET_DEFAULT("FF_AUDIO_BITRATE", ff_audio_bitrate);
+	GET_DEFAULT("FF_VIDEO_OPTIONS", ff_video_options);
+	ff_video_bitrate = GET_DEFAULT("FF_VIDEO_BITRATE", ff_video_bitrate);
+	ff_video_quality = GET_DEFAULT("FF_VIDEO_QUALITY", ff_video_quality);
 
 	mp3_bitrate = GET_DEFAULT("MP3_BITRATE", mp3_bitrate);
 	mp4a_bitrate = GET_DEFAULT("MP4A_BITRATE", mp4a_bitrate);
@@ -899,6 +913,7 @@ void Asset::save_defaults(BC_Hash *defaults,
 	{
 		UPDATE_DEFAULT("FORMAT", format);
 		UPDATE_DEFAULT("USE_HEADER", use_header);
+		UPDATE_DEFAULT("FFORMAT", fformat);
 	}
 
 	if(do_data_types)
@@ -920,13 +935,18 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
 		UPDATE_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
 
+		UPDATE_DEFAULT("FF_AUDIO_OPTIONS", ff_audio_options);
+		UPDATE_DEFAULT("FF_AUDIO_BITRATE", ff_audio_bitrate);
+		UPDATE_DEFAULT("FF_VIDEO_OPTIONS", ff_video_options);
+		UPDATE_DEFAULT("FF_VIDEO_BITRATE", ff_video_bitrate);
+		UPDATE_DEFAULT("FF_VIDEO_QUALITY", ff_video_quality);
 
 		UPDATE_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
 		UPDATE_DEFAULT("THEORA_BITRATE", theora_bitrate);
 		UPDATE_DEFAULT("THEORA_QUALITY", theora_quality);
 		UPDATE_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
 		UPDATE_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-		UPDATE_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
+		UPDATE_DEFAULT("THEORA_FORCE_KEYFRAME_FREQUENCY", theora_keyframe_force_frequency);
 
 
 
@@ -1047,6 +1067,12 @@ int Asset::dump(FILE *fp)
 	fprintf(fp,"   this=%p path=%s\n", this, path);
 	fprintf(fp,"   index_status %d\n", index_state->index_status);
 	fprintf(fp,"   format %d\n", format);
+	fprintf(fp,"   fformat=\"%s\"\n", fformat);
+	fprintf(fp,"   ff_audio_options=\"%s\"\n", ff_audio_options);
+	fprintf(fp,"   ff_audio_bitrate=%d\n", ff_audio_bitrate);
+	fprintf(fp,"   ff_video_options=\"%s\"\n", ff_video_options);
+	fprintf(fp,"   ff_video_bitrate=%d\n", ff_video_bitrate);
+	fprintf(fp,"   ff_video_quality=%d\n", ff_video_quality);
 	fprintf(fp,"   audio_data %d channels %d samplerate %d bits %d"
 		" byte_order %d signed %d header %d dither %d acodec %c%c%c%c\n",
 		audio_data, channels, sample_rate, bits, byte_order, signed_,

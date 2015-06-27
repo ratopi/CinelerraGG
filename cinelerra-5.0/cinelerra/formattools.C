@@ -201,12 +201,17 @@ void FormatTools::create_objects(int &init_x,
 
 	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
 	x += 90;
-	window->add_subwindow(format_text = new BC_TextBox(x, y, 200, 1, 
+	window->add_subwindow(format_text = new BC_TextBox(x, y, 180, 1, 
 		File::formattostr(asset->format)));
 	x += format_text->get_w();
 //printf("FormatTools::create_objects %d %p\n", __LINE__, window);
 	window->add_subwindow(format_button = new FormatFormat(x, y, this));
 	format_button->create_objects();
+	x += format_button->get_w() + 5;
+	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y, 50, 1, asset->fformat));
+	x += ffmpeg_type->get_w();
+	window->add_subwindow(format_ffmpeg = new FormatFFMPEG(x, y, this));
+	format_ffmpeg->create_objects();
 
 	x = init_x;
 	y += format_button->get_h() + 10;
@@ -374,6 +379,14 @@ void FormatTools::update_format()
 		else
 			video_switch->enable();
 	}
+	if( asset->format == FILE_FFMPEG ) {
+		ffmpeg_type->show();
+		format_ffmpeg->show();
+	}
+	else {
+		ffmpeg_type->hide();
+		format_ffmpeg->hide();
+	}
 }
 
 int FormatTools::handle_event()
@@ -444,7 +457,8 @@ void FormatTools::update_extension()
 		if(need_extension) 
 		{
 			char *ptr1 = ptr;
-			extension_ptr = extensions.get(0);
+			extension_ptr = asset->format != FILE_FFMPEG ?
+				extensions.get(0) : asset->fformat;
 			while(*extension_ptr != 0 && *extension_ptr != '/')
 				*ptr1++ = *extension_ptr++;
 			*ptr1 = 0;
@@ -809,13 +823,13 @@ FormatFormat::~FormatFormat()
 
 int FormatFormat::handle_event()
 {
-	if(get_selection(0, 0) >= 0)
-	{
+	BC_ListBoxItem *selection = get_selection(0, 0);
+	if( selection ) {
 		int new_format = File::strtoformat(format->plugindb, get_selection(0, 0)->get_text());
 //		if(new_format != format->asset->format)
 		{
 			format->asset->format = new_format;
-			format->format_text->update(get_selection(0, 0)->get_text());
+			format->format_text->update(selection->get_text());
 			format->update_extension();
 			format->close_format_windows();
 			format->update_format();
@@ -823,6 +837,34 @@ int FormatFormat::handle_event()
 	}
 	return 1;
 }
+
+
+FormatFFMPEG::FormatFFMPEG(int x, int y, FormatTools *format)
+ : FFMPEGPopup(format->plugindb, x, y)
+{ 
+	this->format = format; 
+}
+
+FormatFFMPEG::~FormatFFMPEG() 
+{
+}
+
+int FormatFFMPEG::handle_event()
+{
+	BC_ListBoxItem *selection = get_selection(0, 0);
+	if( selection ) {
+		char *text = get_selection(0, 0)->get_text();
+		format->ffmpeg_type->update(text);
+		strcpy(format->asset->fformat, text);
+		strcpy(format->asset->ff_audio_options, "");
+		strcpy(format->asset->ff_video_options, "");
+		format->update_extension();
+		format->close_format_windows();
+		format->update_format();
+	}
+	return 1;
+}
+
 
 
 

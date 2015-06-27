@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdarg.h>
+#include <fcntl.h>
 #include <limits.h>
 // work arounds (centos)
 #include <lzma.h>
@@ -17,6 +18,7 @@
 #include "fileffmpeg.h"
 #include "file.h"
 #include "ffmpeg.h"
+#include "mainerror.h"
 #include "mwindow.h"
 #include "vframe.h"
 
@@ -73,89 +75,94 @@ void FFrame::dequeue()
 	fst->dequeue(this);
 }
 
-FFAudioHistory::FFAudioHistory()
+int FFAudioStream::read(float *fp, long len)
 {
-	this->nch = 1;
-	this->sz = 0x1000;
-	bsz = sz * nch;
-	bfr = new float[bsz];
-	inp = outp = bfr;
-	lmt = bfr + bsz;
-}
-
-FFAudioHistory::~FFAudioHistory()
-{
-	delete [] bfr;
-}
-
-
-void FFAudioHistory::reserve(long sz, int nch)
-{
-	long isz = inp - outp;
-	sz += isz / nch;
-	if( this->sz < sz || this->nch != nch ) {
-		realloc(sz, nch);
-		return;
+	long n = len * nch;
+	float *op = outp;
+	while( n > 0 ) {
+		int k = lmt - op;
+		if( k > n ) k = n;
+		n -= k;
+		while( --k >= 0 ) *fp++ = *op++;
+		if( op >= lmt ) op = bfr;
 	}
-	if( isz > 0 )
-		memmove(bfr, outp, isz*sizeof(*bfr));
-	outp = bfr;
-	inp = bfr + isz;
+	return len;
 }
 
-void FFAudioHistory::realloc(long sz, int nch)
+void FFAudioStream::realloc(long sz, int nch, long len)
 {
-	if( this->nch != nch )
-		reset();
-	else if( this->sz >= sz )
-		return;
-	this->nch = nch;
-	this->sz = sz;
-	bsz = sz * nch;
+	long bsz = sz * nch;
 	float *np = new float[bsz];
-	inp = np + copy(np, used());
+	inp = np + read(np, len) * nch;
 	outp = np;
 	lmt = np + bsz;
+	this->nch = nch;
+	this->sz = sz;
 	delete [] bfr;  bfr = np;
 }
 
-long FFAudioHistory::used()
+void FFAudioStream::realloc(long sz, int nch)
+{
+	if( sz > this->sz || this->nch != nch ) {
+		long len = this->nch != nch ? 0 : curr_pos - seek_pos;
+		if( len > this->sz ) len = this->sz;
+		iseek(len);
+		realloc(sz, nch, len);
+	}
+}
+
+void FFAudioStream::reserve(long sz, int nch)
+{
+	long len = (inp - outp) / nch;
+	sz += len;
+	if( sz > this->sz || this->nch != nch ) {
+		if( this->nch != nch ) len = 0;
+		realloc(sz, nch, len);
+		return;
+	}
+	if( (len*=nch) > 0 && bfr != outp )
+		memmove(bfr, outp, len*sizeof(*bfr));
+	outp = bfr;
+	inp = bfr + len;
+}
+
+long FFAudioStream::used()
 {
 	long len = inp>=outp ? inp-outp : inp-bfr + lmt-outp;
 	return len / nch;
 }
-long FFAudioHistory::avail()
+long FFAudioStream::avail()
 {
 	float *in1 = inp+1;
 	if( in1 >= lmt ) in1 = bfr;
 	long len = outp >= in1 ? outp-in1 : outp-bfr + lmt-in1;
 	return len / nch;
 }
-void FFAudioHistory::reset() // clear bfr
+void FFAudioStream::reset() // clear bfr
 {
 	inp = outp = bfr;
 }
 
-void FFAudioHistory::iseek(int64_t ofs)
+void FFAudioStream::iseek(int64_t ofs)
 {
 	outp = inp - ofs*nch;
-	if( outp < bfr ) outp += bsz;
+	if( outp < bfr ) outp += sz*nch;
 }
 
-float *FFAudioHistory::get_outp(int ofs)
+float *FFAudioStream::get_outp(int ofs)
 {
 	float *ret = outp;
 	outp += ofs*nch;
 	return ret;
 }
 
-int64_t FFAudioHistory::get_inp(int ofs)
+int64_t FFAudioStream::put_inp(int ofs)
 {
 	inp += ofs*nch;
-	return (inp-bfr) / nch;
+	return (inp-outp) / nch;
 }
 
-int FFAudioHistory::write(const float *fp, long len)
+int FFAudioStream::write(const float *fp, long len)
 {
 	long n = len * nch;
 	float *ip = inp;
@@ -170,22 +177,7 @@ int FFAudioHistory::write(const float *fp, long len)
 	return len;
 }
 
-int FFAudioHistory::copy(float *fp, long len)
-{
-	long n = len * nch;
-	float *op = outp;
-	while( n > 0 ) {
-		int k = lmt - op;
-		if( k > n ) k = n;
-		n -= k;
-		while( --k >= 0 ) *fp++ = *op++;
-		if( op >= lmt ) op = bfr;
-	}
-	outp = op;
-	return len;
-}
-
-int FFAudioHistory::zero(long len)
+int FFAudioStream::zero(long len)
 {
 	long n = len * nch;
 	float *ip = inp;
@@ -201,11 +193,8 @@ int FFAudioHistory::zero(long len)
 }
 
 // does not advance outp
-int FFAudioHistory::read(double *dp, long len, int ch)
+int FFAudioStream::read(double *dp, long len, int ch)
 {
-	long sz = used();
-	if( !sz ) return 0;
-	if( len > sz ) len = sz;
 	long n = len;
 	float *op = outp + ch;
 	float *lmt1 = lmt + nch-1;
@@ -214,17 +203,14 @@ int FFAudioHistory::read(double *dp, long len, int ch)
 		if( k > n ) k = n;
 		n -= k;
 		while( --k >= 0 ) { *dp++ = *op;  op += nch; }
-		if( op >= lmt ) op -= bsz;
+		if( op >= lmt ) op -= sz*nch;
 	}
 	return len;
 }
 
 // load linear buffer, no wrapping allowed, does not advance inp
-int FFAudioHistory::write(const double *dp, long len, int ch)
+int FFAudioStream::write(const double *dp, long len, int ch)
 {
-	long osz = avail();
-	if( !osz || !len ) return 0;
-	if( len > osz ) len = osz;
 	long n = len;
 	float *ip = inp + ch;
 	while( --n >= 0 ) { *ip = *dp++;  ip += nch; }
@@ -318,10 +304,10 @@ int FFStream::decode_activate()
 			if( ret >= 0 )
 				reading = 1;
 			else
-				fprintf(stderr, "FFStream::decode_activate: open decoder failed\n");
+				eprintf("FFStream::decode_activate: open decoder failed\n");
 		}
 		else
-			fprintf(stderr, "FFStream::decode_activate: can't clone input file\n");
+			eprintf("FFStream::decode_activate: can't clone input file\n");
 		av_dict_free(&copts);
 		ff_unlock();
 	}
@@ -384,7 +370,7 @@ int FFStream::load_filter(AVFrame *frame)
 			frame, AV_BUFFERSRC_FLAG_KEEP_REF);
 	if( ret < 0 ) {
 		av_frame_unref(frame);
-		fprintf(stderr, "FFStream::load_filter: av_buffersrc_add_frame_flags failed\n");
+		eprintf("FFStream::load_filter: av_buffersrc_add_frame_flags failed\n");
 	}
 	return ret;
 }
@@ -429,16 +415,26 @@ FFAudioStream::FFAudioStream(FFMPEG *ffmpeg, AVStream *strm, int idx)
 
 	aud_bfr_sz = 0;
 	aud_bfr = 0;
+
+// history buffer
+	nch = 2;
+	sz = 0x10000;
+	long bsz = sz * nch;
+	bfr = new float[bsz];
+	inp = outp = bfr;
+	lmt = bfr + bsz;
 }
 
 FFAudioStream::~FFAudioStream()
 {
 	if( resample_context ) swr_free(&resample_context);
 	delete [] aud_bfr;
+	delete [] bfr;
 }
 
-int FFAudioStream::load_history(float *&bfr, int len)
+int FFAudioStream::load_history(uint8_t **data, int len)
 {
+	float *samples = *(float **)data;
 	if( resample_context ) {
 		if( len > aud_bfr_sz ) {	
 			delete [] aud_bfr;
@@ -449,16 +445,17 @@ int FFAudioStream::load_history(float *&bfr, int len)
 			aud_bfr = new float[aud_bfr_sz*channels];
 		}
 		int ret = swr_convert(resample_context,
-			(uint8_t**)&aud_bfr, aud_bfr_sz,
-			(const uint8_t**)&bfr, len);
+			(uint8_t**)&aud_bfr, aud_bfr_sz, (const uint8_t**)data, len);
 		if( ret < 0 ) {
 			fprintf(stderr, "FFAudioStream::load_history: swr_convert failed\n");
 			return -1;
 		}
-		bfr = aud_bfr;
+		samples = aud_bfr;
 		len = ret;
 	}
-	append_history(bfr, len);
+	// biggest user bfr since seek + frame
+	realloc(mbsz + len + 1, channels);
+	write(samples, len);
 	return len;
 }
 
@@ -488,48 +485,19 @@ int FFAudioStream::nb_samples()
                 10000 : ctx->frame_size;
 }
 
-void FFAudioStream::alloc_history(int len)
-{
-	history.realloc(len+1, channels);
-}
-
-void FFAudioStream::reserve_history(int len)
-{
-	history.reserve(len+1, st->codec->channels);
-}
-
-void FFAudioStream::append_history(const float *fp, int len)
-{
-	// biggest user bfr since seek + length this frame
-	int hsz = mbsz + len;
-	alloc_history(hsz);
-	history.write(fp, len);
-}
-
 int64_t FFAudioStream::load_buffer(double ** const sp, int len)
 {
-	reserve_history(len);
-	int nch = st->codec->channels;
+	reserve(len+1, st->codec->channels);
 	for( int ch=0; ch<nch; ++ch )
-		history.write(sp[ch], len, ch);
-	return history.get_inp(len);
-}
-
-void FFAudioStream::zero_history(int len)
-{
-	history.zero(len);
-}
-
-float* FFAudioStream::get_history(int len)
-{
-	return history.get_outp(len);
+		write(sp[ch], len, ch);
+	return put_inp(len);
 }
 
 int FFAudioStream::in_history(int64_t pos)
 {
 	if( pos > curr_pos ) return 0;
 	int64_t len = curr_pos - seek_pos;
-	if( len > history.sz ) len = history.sz;
+	if( len > sz ) len = sz;
 	if( pos < curr_pos - len ) return 0;
 	return 1;
 }
@@ -561,12 +529,12 @@ int FFAudioStream::load(int64_t pos, int len)
 	for( int i=0; ret>=0 && !flushed && curr_pos<end_pos && i<1000; ++i ) {
 		ret = read_frame(frame);
 		if( ret > 0 ) {
-			load_history((float *&)frame->extended_data[0], frame->nb_samples);
+			load_history(&frame->extended_data[0], frame->nb_samples);
 			curr_pos += frame->nb_samples;
 		}
 	}
 	if( flushed && end_pos > curr_pos ) {
-		zero_history(end_pos - curr_pos);
+		zero(end_pos - curr_pos);
 		curr_pos = end_pos;
 	}
 	return curr_pos - pos;
@@ -576,7 +544,7 @@ int FFAudioStream::audio_seek(int64_t pos)
 {
 	if( decode_activate() < 0 ) return -1;
 	if( in_history(pos) ) {
-		history.iseek(curr_pos - pos);
+		iseek(curr_pos - pos);
 		return 0;
 	}
 	if( pos == curr_pos ) return 0;
@@ -586,7 +554,7 @@ int FFAudioStream::audio_seek(int64_t pos)
 	avformat_seek_file(fmt_ctx, st->index, -INT64_MAX, tstmp, INT64_MAX, 0);
 	seek_pos = curr_pos = pos;
 	mbsz = 0;
-	history.reset();
+	reset();
 	st_eof(0);
 	return 1;
 }
@@ -603,7 +571,7 @@ int FFAudioStream::encode(double **samples, int len)
 		frm = new FFrame(this);
 		if( (ret=frm->initted()) < 0 ) break;
 		AVFrame *frame = *frm;
-		float *bfrp = get_history(frame_sz);
+		float *bfrp = get_outp(frame_sz);
 		ret =  swr_convert(resample_context,
 			(uint8_t **)frame->extended_data, frame_sz,
 			(const uint8_t **)&bfrp, frame_sz);
@@ -993,10 +961,9 @@ void FFMPEG::get_option_path(char *path, const char *type, const char *spec)
 		set_option_path(path, "%s/%s", type, spec);
 }
 
-int FFMPEG::check_option(const char *path, char *spec)
+int FFMPEG::get_format(char *format, const char *path, char *spec)
 {
-	char option_path[BCTEXTLEN], line[BCTEXTLEN];
-	char format[BCSTRLEN], codec[BCSTRLEN];
+	char option_path[BCTEXTLEN], line[BCTEXTLEN], codec[BCSTRLEN];
 	get_option_path(option_path, path, spec);
 	FILE *fp = fopen(option_path,"r");
 	if( !fp ) return 1;
@@ -1006,25 +973,27 @@ int FFMPEG::check_option(const char *path, char *spec)
 		line[sizeof(line)-1] = 0;
 		ret = scan_option_line(line, format, codec);
 	}
-	if( !ret ) {
-		if( !file_format[0] ) strcpy(file_format, format);
-		else if( strcmp(file_format, format) ) ret = 1;
-	}
 	fclose(fp);
 	return ret;
 }
 
-const char *FFMPEG::get_file_format()
+int FFMPEG::get_file_format()
 {
-	file_format[0] = 0;
 	int ret = 0;
+	char audio_format[BCSTRLEN], video_format[BCSTRLEN];
+	file_format[0] = audio_format[0] = video_format[0] = 0;
 	Asset *asset = file_base->asset;
 	if( !ret && asset->audio_data )
-		ret = check_option("audio", asset->acodec);
+		ret = get_format(audio_format, "audio", asset->acodec);
 	if( !ret && asset->video_data )
-		ret = check_option("video", asset->vcodec);
-	if( !ret && !file_format[0] ) ret = 1;
-	return !ret ? file_format : 0;
+		ret = get_format(video_format, "video", asset->vcodec);
+	if( !ret && !audio_format[0] && !video_format[0] )
+		ret = 1;
+	if( !ret && audio_format[0] && video_format[0] &&
+	    strcmp(audio_format, video_format) ) ret = -1;
+	if( !ret )
+		strcpy(file_format, audio_format[0] ? audio_format : video_format);
+	return ret;
 }
 
 int FFMPEG::scan_option_line(char *cp, char *tag, char *val)
@@ -1048,42 +1017,35 @@ int FFMPEG::scan_option_line(char *cp, char *tag, char *val)
 	return 0;
 }
 
-int FFMPEG::read_options(const char *options, char *format, char *codec,
-		char *bsfilter, char *bsargs, AVDictionary *&opts)
+int FFMPEG::get_encoder(const char *options,
+		char *format, char *codec, char *bsfilter, char *bsargs)
 {
 	FILE *fp = fopen(options,"r");
 	if( !fp ) {
-		fprintf(stderr, "FFMPEG::read_options: options open failed %s\n",options);
+		eprintf("FFMPEG::get_encoder: options open failed %s\n",options);
 		return 1;
 	}
-	int ret = read_options(fp, options, format, codec, opts);
-	char *cp = codec;
-	while( *cp && *cp != '|' ) ++cp;
-	if( *cp == '|' && !scan_option_line(cp+1, bsfilter, bsargs) ) {
-		do { *cp-- = 0; } while( cp>=codec && (*cp==' ' || *cp == '\t' ) );
-	}
-	else
-		bsfilter[0] = bsargs[0] = 0;
+	if( get_encoder(fp, format, codec, bsfilter, bsargs) )
+		eprintf("FFMPEG::get_encoder:"
+			" err: format/codec not found %s\n", options);
 	fclose(fp);
-	return ret;
+	return 0;
 }
 
-int FFMPEG::read_options(FILE *fp, const char *options,
-		 char *format, char *codec, AVDictionary *&opts)
+int FFMPEG::get_encoder(FILE *fp,
+		char *format, char *codec, char *bsfilter, char *bsargs)
 {
+	format[0] = codec[0] = bsfilter[0] = bsargs[0] = 0;
 	char line[BCTEXTLEN];
-	if( !fgets(line, sizeof(line), fp) ) {
-		fprintf(stderr, "FFMPEG::read_options:"
-			" options file empty %s\n",options);
-		return 1;
-	}
+	if( !fgets(line, sizeof(line), fp) ) return 1;
 	line[sizeof(line)-1] = 0;
-	if( scan_option_line(line, format, codec) ) {
-		fprintf(stderr, "FFMPEG::read_options:"
-			" err: format/codec not found %s\n", options);
-		return 1;
-	}
-	return read_options(fp, options, opts, 1);
+	if( scan_option_line(line, format, codec) ) return 1;
+	char *cp = codec;
+	while( *cp && *cp != '|' ) ++cp;
+	if( !*cp ) return 0;
+	if( scan_option_line(cp+1, bsfilter, bsargs) ) return 1;
+	do { *cp-- = 0; } while( cp>=codec && (*cp==' ' || *cp == '\t' ) );
+	return 0;
 }
 
 int FFMPEG::read_options(const char *options, AVDictionary *&opts)
@@ -1095,17 +1057,27 @@ int FFMPEG::read_options(const char *options, AVDictionary *&opts)
 	return ret;
 }
 
-int FFMPEG::read_options(FILE *fp, const char *options, AVDictionary *&opts, int no)
+int FFMPEG::scan_options(const char *options, AVDictionary *&opts)
 {
-	int ret = 0;
+	FILE *fp = fmemopen((void *)options,strlen(options),"r");
+	if( !fp ) return 0;
+	int ret = read_options(fp, options, opts);
+	fclose(fp);
+	return ret;
+}
+
+int FFMPEG::read_options(FILE *fp, const char *options, AVDictionary *&opts)
+{
+	int ret = 0, no = 0;
 	char line[BCTEXTLEN];
 	while( !ret && fgets(line, sizeof(line), fp) ) {
 		line[sizeof(line)-1] = 0;
 		++no;
 		if( line[0] == '#' ) continue;
+		if( line[0] == '\n' ) continue;
 		char key[BCSTRLEN], val[BCTEXTLEN];
 		if( scan_option_line(line, key, val) ) {
-			fprintf(stderr, "FFMPEG::read_options:"
+			eprintf("FFMPEG::read_options:"
 				" err reading %s: line %d\n", options, no);
 			ret = 1;
 		}
@@ -1239,7 +1211,7 @@ int FFMPEG::init_decoder(const char *filename)
 		fp = fopen(file_opts, "r");
 	}
 	if( fp ) {
-		read_options(fp, file_opts, opts, 0);
+		read_options(fp, file_opts, opts);
 		fclose(fp);
 	}
 	else
@@ -1261,7 +1233,7 @@ int FFMPEG::open_decoder()
 {
 	struct stat st;
 	if( stat(fmt_ctx->filename, &st) < 0 ) {
-		fprintf(stderr,"FFMPEG::open_decoder: can't stat file: %s\n",
+		eprintf("FFMPEG::open_decoder: can't stat file: %s\n",
 			fmt_ctx->filename);
 		return 1;
 	}
@@ -1344,17 +1316,27 @@ int FFMPEG::open_decoder()
 
 int FFMPEG::init_encoder(const char *filename)
 {
-	const char *format = get_file_format();
-	if( !format ) {
-		fprintf(stderr, "FFMPEG::init_encoder: invalid file format for %s\n", filename);
+	int fd = ::open(filename,O_WRONLY);
+	if( fd < 0 ) fd = open(filename,O_WRONLY+O_CREAT,0666);
+	if( fd < 0 ) {
+		eprintf("FFMPEG::init_encoder: bad file path: %s\n", filename);
 		return 1;
 	}
-	int ret = 0;
+	::close(fd);
+	int ret = get_file_format();
+	if( ret > 0 ) {
+		eprintf("FFMPEG::init_encoder: bad file format: %s\n", filename);
+		return 1;
+	}
+	if( ret < 0 ) {
+		eprintf("FFMPEG::init_encoder: mismatch audio/video file format: %s\n", filename);
+		return 1;
+	}
 	ff_lock("FFMPEG::init_encoder");
 	av_register_all();
-	avformat_alloc_output_context2(&fmt_ctx, 0, format, filename);
+	avformat_alloc_output_context2(&fmt_ctx, 0, file_format, filename);
 	if( !fmt_ctx ) {
-		fprintf(stderr, "FFMPEG::init_encoder: failed: %s\n", filename);
+		eprintf("FFMPEG::init_encoder: failed: %s\n", filename);
 		ret = 1;
 	}
 	if( !ret ) {
@@ -1366,7 +1348,7 @@ int FFMPEG::init_encoder(const char *filename)
 	return ret;
 }
 
-int FFMPEG::open_encoder(const char *path, const char *spec)
+int FFMPEG::open_encoder(const char *type, const char *spec)
 {
 
 	Asset *asset = file_base->asset;
@@ -1374,13 +1356,13 @@ int FFMPEG::open_encoder(const char *path, const char *spec)
 	AVDictionary *sopts = 0;
 	av_dict_copy(&sopts, opts, 0);
 	char option_path[BCTEXTLEN];
-	set_option_path(option_path, "%s/%s.opts", path, path);
+	set_option_path(option_path, "%s/%s.opts", type, type);
 	read_options(option_path, sopts);
-	get_option_path(option_path, path, spec);
+	get_option_path(option_path, type, spec);
 	char format_name[BCSTRLEN], codec_name[BCTEXTLEN];
 	char bsfilter[BCSTRLEN], bsargs[BCTEXTLEN];
-	if( read_options(option_path, format_name, codec_name, bsfilter, bsargs, sopts) ) {
-		fprintf(stderr, "FFMPEG::open_encoder: read options failed %s:%s\n",
+	if( get_encoder(option_path, format_name, codec_name, bsfilter, bsargs) ) {
+		eprintf("FFMPEG::open_encoder: get_encoder failed %s:%s\n",
 			option_path, filename);
 		return 1;
 	}
@@ -1393,14 +1375,14 @@ int FFMPEG::open_encoder(const char *path, const char *spec)
 	const AVCodecDescriptor *codec_desc = 0;
 	AVCodec *codec = avcodec_find_encoder_by_name(codec_name);
 	if( !codec ) {
-		fprintf(stderr, "FFMPEG::open_encoder: cant find codec %s:%s\n",
+		eprintf("FFMPEG::open_encoder: cant find codec %s:%s\n",
 			codec_name, filename);
 		ret = 1;
 	}
 	if( !ret ) {
 		codec_desc = avcodec_descriptor_get(codec->id);
 		if( !codec_desc ) {
-			fprintf(stderr, "FFMPEG::open_encoder: unknown codec %s:%s\n",
+			eprintf("FFMPEG::open_encoder: unknown codec %s:%s\n",
 				codec_name, filename);
 			ret = 1;
 		}
@@ -1408,7 +1390,7 @@ int FFMPEG::open_encoder(const char *path, const char *spec)
 	if( !ret ) {
 		st = avformat_new_stream(fmt_ctx, 0);
 		if( !st ) {
-			fprintf(stderr, "FFMPEG::open_encoder: cant create stream %s:%s\n",
+			eprintf("FFMPEG::open_encoder: cant create stream %s:%s\n",
 				codec_name, filename);
 			ret = 1;
 		}
@@ -1418,12 +1400,23 @@ int FFMPEG::open_encoder(const char *path, const char *spec)
 		switch( codec_desc->type ) {
 		case AVMEDIA_TYPE_AUDIO: {
 			if( has_audio ) {
-				fprintf(stderr, "FFMPEG::open_encoder: duplicate audio %s:%s\n",
+				eprintf("FFMPEG::open_encoder: duplicate audio %s:%s\n",
 					codec_name, filename);
 				ret = 1;
 				break;
 			}
 			has_audio = 1;
+			if( scan_options(asset->ff_audio_options, sopts) ) {
+				eprintf("FFMPEG::open_encoder: bad audio options %s:%s\n",
+					codec_name, filename);
+				ret = 1;
+				break;
+			}
+			if( asset->ff_audio_bitrate > 0 ) {
+				char arg[BCSTRLEN];
+				sprintf(arg, "%d", asset->ff_audio_bitrate);
+				av_dict_set(&sopts, "b", arg, 0);
+			}
 			int aidx = ffaudio.size();
 			int idx = aidx + ffvideo.size();
 			FFAudioStream *aud = new FFAudioStream(this, st, idx);
@@ -1435,7 +1428,7 @@ int FFMPEG::open_encoder(const char *path, const char *spec)
 			ctx->channel_layout =  av_get_default_channel_layout(ctx->channels);
 			ctx->sample_rate = check_sample_rate(codec, asset->sample_rate);
 			if( !ctx->sample_rate ) {
-				fprintf(stderr, "FFMPEG::open_audio_encode:"
+				eprintf("FFMPEG::open_audio_encode:"
 					" check_sample_rate failed %s\n", filename);
 				ret = 1;
 				break;
@@ -1452,12 +1445,36 @@ int FFMPEG::open_encoder(const char *path, const char *spec)
 			break; }
 		case AVMEDIA_TYPE_VIDEO: {
 			if( has_video ) {
-				fprintf(stderr, "FFMPEG::open_encoder: duplicate video %s:%s\n",
+				eprintf("FFMPEG::open_encoder: duplicate video %s:%s\n",
 					codec_name, filename);
 				ret = 1;
 				break;
 			}
 			has_video = 1;
+			if( scan_options(asset->ff_video_options, sopts) ) {
+				eprintf("FFMPEG::open_encoder: bad video options %s:%s\n",
+					codec_name, filename);
+				ret = 1;
+				break;
+			}
+			if( asset->ff_video_bitrate > 0 ) {
+				char arg[BCSTRLEN];
+				sprintf(arg, "%d", asset->ff_video_bitrate);
+				av_dict_set(&sopts, "b", arg, 0);
+			}
+			else if( asset->ff_video_quality > 0 ) {
+				ctx->global_quality = asset->ff_video_quality * FF_QP2LAMBDA;
+				ctx->qmin    = ctx->qmax =  asset->ff_video_quality;
+				ctx->mb_lmin = ctx->qmin * FF_QP2LAMBDA;
+				ctx->mb_lmax = ctx->qmax * FF_QP2LAMBDA;
+				ctx->flags |= CODEC_FLAG_QSCALE;
+				char arg[BCSTRLEN];
+				av_dict_set(&sopts, "flags", "+qscale", 0);
+				sprintf(arg, "%d", asset->ff_video_quality);
+				av_dict_set(&sopts, "qscale", arg, 0);
+				sprintf(arg, "%d", ctx->global_quality);
+				av_dict_set(&sopts, "global_quality", arg, 0);
+			}
 			int vidx = ffvideo.size();
 			int idx = vidx + ffaudio.size();
 			FFVideoStream *vid = new FFVideoStream(this, st, idx);
@@ -1472,7 +1489,7 @@ int FFMPEG::open_encoder(const char *path, const char *spec)
 			ctx->pix_fmt = codec->pix_fmts ? codec->pix_fmts[0] : AV_PIX_FMT_YUV420P;
 			AVRational frame_rate = check_frame_rate(codec, vid->frame_rate);
 			if( !frame_rate.num || !frame_rate.den ) {
-				fprintf(stderr, "FFMPEG::open_audio_encode:"
+				eprintf("FFMPEG::open_audio_encode:"
 					" check_frame_rate failed %s\n", filename);
 				ret = 1;
 				break;
@@ -1482,7 +1499,7 @@ int FFMPEG::open_encoder(const char *path, const char *spec)
 			vid->writing = -1;
 			break; }
 		default:
-			fprintf(stderr, "FFMPEG::open_encoder: not audio/video, %s:%s\n",
+			eprintf("FFMPEG::open_encoder: not audio/video, %s:%s\n",
 				codec_name, filename);
 			ret = 1;
 		}
@@ -1491,7 +1508,7 @@ int FFMPEG::open_encoder(const char *path, const char *spec)
 		ret = avcodec_open2(st->codec, codec, &sopts);
 		if( ret < 0 ) {
 			ff_err(ret,"FFMPEG::open_encoder");
-			fprintf(stderr, "FFMPEG::open_encoder: open failed %s:%s\n",
+			eprintf("FFMPEG::open_encoder: open failed %s:%s\n",
 				codec_name, filename);
 			ret = 1;
 		}
@@ -1659,7 +1676,7 @@ int FFMPEG::decode(int chn, int64_t pos, double *samples, int len)
 	FFAudioStream *aud = ffaudio[aidx];
 	if( aud->load(pos, len) < len ) return -1;
 	int ch = astrm_index[chn].st_ch;
-	return aud->history.read(samples,len,ch);
+	return aud->read(samples,len,ch);
 }
 
 int FFMPEG::decode(int layer, int64_t pos, VFrame *vframe)

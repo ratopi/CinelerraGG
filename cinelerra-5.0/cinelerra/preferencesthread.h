@@ -98,7 +98,7 @@ public:
 	virtual int draw_framerate(int flush) { return 0; }
 // update rendering rates
 	virtual void update_rates() {} 
-	virtual void show_window(int flush) { BC_SubWindow::show_window(flush); }
+	virtual int show_window(int flush) { return BC_SubWindow::show_window(flush); }
 
 	PreferencesWindow *pwindow;
 	MWindow *mwindow;

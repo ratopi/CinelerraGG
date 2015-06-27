@@ -23,7 +23,6 @@
 #include "bctimer.h"
 #include "clip.h"
 #include "format.inc"
-#include "stringfile.h"
 #include "undostack.h"
 #include <string.h>
 

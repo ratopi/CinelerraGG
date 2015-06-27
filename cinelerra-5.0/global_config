@@ -6,7 +6,7 @@ HAVE_ESOUND := y
 HAVE_AVIFILE := n
 HAVE_FIREWIRE := y
 HAVE_OSS := y
-STATIC_LIBRARIES := y
+STATIC_LIBRARIES := n
 
 OBJDIR := $(shell uname --machine)
 

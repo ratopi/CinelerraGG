@@ -235,15 +235,14 @@ void RecordPrefs::create_objects()
 }
 
 
-void RecordPrefs::show_window(int flush)
+int RecordPrefs::show_window(int flush)
 {
 	PreferencesDialog::show_window(flush);
 	if( pwindow->thread->edl->session->recording_format->format == FILE_MPEG &&
 	    pwindow->thread->edl->session->vconfig_in->driver == CAPTURE_DVB &&
 	    pwindow->thread->edl->session->aconfig_in->driver == AUDIO_DVB )
-		realtime_toc->show_window(flush);
-	else
-		realtime_toc->hide_window(flush);
+		return realtime_toc->show_window(flush);
+	return realtime_toc->hide_window(flush);
 }
 
 

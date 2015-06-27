@@ -32,6 +32,73 @@ FileFFMPEG::~FileFFMPEG()
 }
 
 
+FFMpegConfigNum::FFMpegConfigNum(BC_Window *window,
+		int x, int y, char *title_text, int *output)
+ : BC_TumbleTextBox(window, (int64_t)*output,
+	(int64_t)-1, (int64_t)25000000, 100, y, 100)
+{
+	this->window = window;
+	this->x = x;  this->y = y;
+	this->title_text = title_text;
+	this->output = output;
+}
+
+FFMpegConfigNum::~FFMpegConfigNum()
+{
+}
+
+void FFMpegConfigNum::create_objects()
+{
+	window->add_subwindow(title = new BC_Title(x, y, title_text));
+	BC_TumbleTextBox::create_objects();
+}
+
+int FFMpegConfigNum::handle_event()
+{
+	*output = atol(get_text());
+	return 1;
+}
+
+FFMpegAudioNum::FFMpegAudioNum(BC_Window *window,
+		int x, int y, char *title_text, int *output)
+ : FFMpegConfigNum(window, x, y, title_text, output)
+{
+}
+
+int FFMpegAudioBitrate::handle_event()
+{
+	int ret = FFMpegAudioNum::handle_event();
+	return ret;
+}
+
+FFMpegVideoNum::FFMpegVideoNum(BC_Window *window,
+		int x, int y, char *title_text, int *output)
+ : FFMpegConfigNum(window, x, y, title_text, output)
+{
+}
+
+int FFMpegVideoBitrate::handle_event()
+{
+	int ret = FFMpegVideoNum::handle_event();
+	Asset *asset = window()->asset;
+	if( asset->ff_video_bitrate )
+		window()->quality->disable();
+	else
+		window()->quality->enable();
+	return ret;
+}
+
+int FFMpegVideoQuality::handle_event()
+{
+	int ret = FFMpegVideoNum::handle_event();
+	Asset *asset = window()->asset;
+	if( asset->ff_video_quality )
+		window()->bitrate->disable();
+	else
+		window()->bitrate->enable();
+	return ret;
+}
+
 void FileFFMPEG::get_parameters(BC_WindowBase *parent_window,
 		Asset *asset, BC_WindowBase *&format_window,
 		int audio_options, int video_options)
@@ -251,6 +318,17 @@ int FileFFMPEG::get_best_colormodel(Asset *asset, int driver)
 	return BC_YUV420P;
 }
 
+static void load_options(const char *path, char *bfr, int len)
+{
+	*bfr = 0;
+	FILE *fp = fopen(path, "r");
+	if( !fp ) return;
+	fgets(bfr, len, fp); // skip hdr
+	len = fread(bfr, 1, len-1, fp);
+	if( len < 0 ) len = 0;
+	bfr[len] = 0;
+	fclose(fp);
+}
 
 //======
 extern void get_exe_path(char *result); // from main.C
@@ -264,6 +342,9 @@ FFMPEGConfigAudio::FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 	this->parent_window = parent_window;
 	this->asset = asset;
 	preset_popup = 0;
+
+	bitrate = 0;
+	audio_options = 0;
 }
 
 FFMPEGConfigAudio::~FFMPEGConfigAudio()
@@ -286,22 +367,67 @@ void FFMPEGConfigAudio::create_objects()
         int total_files = fs.total_files();
         for(int i = 0; i < total_files; i++) {
                 const char *name = fs.get_entry(i)->get_name();
+		if( asset->fformat[0] != 0 ) {
+			const char *ext = strrchr(name,'.');
+			if( !ext ) ext = name;
+			else if( !strcmp("opts", ++ext) ) continue;
+			if( strcmp(asset->fformat, ext) ) continue;
+		}
                 presets.append(new BC_ListBoxItem(name));
         }
+
+	if( asset->acodec[0] ) {
+		int k = presets.size();
+		while( --k >= 0 && strcmp(asset->acodec, presets[k]->get_text()) );
+		if( k < 0 ) asset->acodec[0] = 0;
+	}
+
+	if( !asset->acodec[0] && presets.size() > 0 )
+		strcpy(asset->acodec, presets[0]->get_text());
 
 	add_tool(new BC_Title(x, y, _("Preset:")));
 	y += 25;
 	preset_popup = new FFMPEGConfigAudioPopup(this, x, y);
 	preset_popup->create_objects();
 
+	y += 50;
+	bitrate = new FFMpegAudioBitrate(this, x, y, _("Bitrate:"), &asset->ff_audio_bitrate);
+	bitrate->create_objects();
+	bitrate->set_increment(1000);
+
+	y += bitrate->get_h() + 10;
+	add_subwindow(new BC_Title(x, y, _("Audio Options:")));
+	y += 25;
+	if( !asset->ff_audio_options[0] && asset->acodec[0] ) {
+		FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
+		load_options(option_path, asset->ff_audio_options,
+			 sizeof(asset->ff_audio_options));
+	}
+	add_subwindow(audio_options = new FFAudioOptions(this, x, y, get_w()-x-20, 10,
+		 sizeof(asset->ff_audio_options)-1, asset->ff_audio_options));
 	add_subwindow(new BC_OKButton(this));
 	show_window(1);
+	bitrate->handle_event();
 	unlock_window();
 }
 
 int FFMPEGConfigAudio::close_event()
 {
 	set_done(0);
+	return 1;
+}
+
+
+FFAudioOptions::FFAudioOptions(FFMPEGConfigAudio *audio_popup,
+	int x, int y, int w, int rows, int size, char *text)
+ : BC_TextBox(x, y, w, rows, size, text)
+{
+	this->audio_popup = audio_popup;
+}
+
+int FFAudioOptions::handle_event()
+{
+	strcpy(audio_popup->asset->ff_audio_options, get_text());
 	return 1;
 }
 
@@ -315,6 +441,12 @@ FFMPEGConfigAudioPopup::FFMPEGConfigAudioPopup(FFMPEGConfigAudio *popup, int x, 
 int FFMPEGConfigAudioPopup::handle_event()
 {
 	strcpy(popup->asset->acodec, get_text());
+	Asset *asset = popup->asset;
+	char option_path[BCTEXTLEN];
+	FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
+	load_options(option_path, asset->ff_audio_options,
+			 sizeof(asset->ff_audio_options));
+	popup->audio_options->update(asset->ff_audio_options);
 	return 1;
 }
 
@@ -344,6 +476,9 @@ FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	this->parent_window = parent_window;
 	this->asset = asset;
 	preset_popup = 0;
+
+	bitrate = 0;
+	video_options = 0;
 }
 
 FFMPEGConfigVideo::~FFMPEGConfigVideo()
@@ -369,20 +504,79 @@ void FFMPEGConfigVideo::create_objects()
         int total_files = fs.total_files();
         for(int i = 0; i < total_files; i++) {
                 const char *name = fs.get_entry(i)->get_name();
+		if( asset->fformat[0] != 0 ) {
+			const char *ext = strrchr(name,'.');
+			if( !ext ) ext = name;
+			else if( !strcmp("opts", ++ext) ) continue;
+			if( strcmp(asset->fformat, ext) ) continue;
+		}
                 presets.append(new BC_ListBoxItem(name));
         }
+
+	if( asset->vcodec[0] ) {
+		int k = presets.size();
+		while( --k >= 0 && strcmp(asset->vcodec, presets[k]->get_text()) );
+		if( k < 0 ) asset->vcodec[0] = 0;
+	}
+
+	if( !asset->vcodec[0] && presets.size() > 0 )
+		strcpy(asset->vcodec, presets[0]->get_text());
 
 	preset_popup = new FFMPEGConfigVideoPopup(this, x, y);
 	preset_popup->create_objects();
 
+	if( asset->ff_video_bitrate && asset->ff_video_quality ) {
+		asset->ff_video_bitrate = 0;
+		asset->ff_video_quality = 0;
+	}
+
+	y += 50;
+	bitrate = new FFMpegVideoBitrate(this, x, y, _("Bitrate:"), &asset->ff_video_bitrate);
+	bitrate->create_objects();
+	bitrate->set_increment(100000);
+	y += bitrate->get_h() + 5;
+	quality = new FFMpegVideoQuality(this, x, y, _("Quality:"), &asset->ff_video_quality);
+	quality->create_objects();
+	quality->set_increment(1);
+	quality->set_boundaries((int64_t)0, (int64_t)31);
+
+	y += quality->get_h() + 10;
+	add_subwindow(new BC_Title(x, y, _("Video Options:")));
+	y += 25;
+	if( !asset->ff_video_options[0] && asset->vcodec[0] ) {
+		FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
+		load_options(option_path, asset->ff_video_options,
+			 sizeof(asset->ff_video_options));
+	}
+	add_subwindow(video_options = new FFVideoOptions(this, x, y, get_w()-x-20, 10,
+		 sizeof(asset->ff_video_options)-1, asset->ff_video_options));
+
 	add_subwindow(new BC_OKButton(this));
 	show_window(1);
+	if( asset->ff_video_bitrate )
+		quality->disable();
+	if( asset->ff_video_quality )
+		bitrate->disable();
 	unlock_window();
 }
 
 int FFMPEGConfigVideo::close_event()
 {
 	set_done(0);
+	return 1;
+}
+
+
+FFVideoOptions::FFVideoOptions(FFMPEGConfigVideo *video_popup,
+	int x, int y, int w, int rows, int size, char *text)
+ : BC_TextBox(x, y, w, rows, size, text)
+{
+	this->video_popup = video_popup;
+}
+
+int FFVideoOptions::handle_event()
+{
+	strcpy(video_popup->asset->ff_video_options, get_text());
 	return 1;
 }
 
@@ -396,6 +590,12 @@ FFMPEGConfigVideoPopup::FFMPEGConfigVideoPopup(FFMPEGConfigVideo *popup, int x, 
 int FFMPEGConfigVideoPopup::handle_event()
 {
 	strcpy(popup->asset->vcodec, get_text());
+	Asset *asset = popup->asset;
+	char option_path[BCTEXTLEN];
+	FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
+	load_options(option_path, asset->ff_video_options,
+			 sizeof(asset->ff_video_options));
+	popup->video_options->update(asset->ff_video_options);
 	return 1;
 }
 

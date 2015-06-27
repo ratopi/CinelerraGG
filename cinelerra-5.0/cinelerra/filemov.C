@@ -245,7 +245,7 @@ int FileMOV::open_file(int rd, int wr)
 // Set decoding parameter
 	quicktime_set_parameter(fd, "divx_use_deblocking", &asset->divx_use_deblocking);
 // Set timecode offset
-	quicktime_set_frame_start(fd, asset->tcstart);
+	quicktime_set_frame_start(fd, 0);
 
 	return 0;
 }
@@ -448,16 +448,6 @@ void FileMOV::format_to_asset()
 				dv_parse_packs(tmp_decoder, frame->get_data());
 				dv_get_timestamp(tmp_decoder, tc);
 //				printf("Timestamp %s\n", tc);
-
-				float seconds = Units::text_to_seconds(tc,
-					1, // Use 1 as sample rate, doesn't matter
-					TIME_HMSF, asset->frame_rate, 0);
-				// Set tcstart if it hasn't been set yet, this is a bit problematic
-				// FIXME: The problem arises if file has nonzero tcstart and user
-				// manualy sets it to zero - every time project will load it will
-				// be set to nonzero
-				if (asset->tcstart == 0)
-					asset->tcstart = int64_t(seconds * asset->frame_rate);
 			}
 			delete frame;
 			dv_decoder_free(tmp_decoder);

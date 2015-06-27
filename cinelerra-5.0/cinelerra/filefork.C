@@ -135,7 +135,7 @@ int FileFork::handle_command()
 			table.save_string(string);
 			int buffer_size = strlen(string) + 1;
 			send_result(result, (unsigned char*)string, buffer_size);
-			delete [] string;
+			free(string);
 			break;
 		}
 

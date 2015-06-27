@@ -374,12 +374,12 @@ void Render::handle_close_event(int result)
 		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
 	}
 
-PRINT_TRACE
+//PRINT_TRACE
 
 	save_defaults(asset);
-PRINT_TRACE
+//PRINT_TRACE
 	mwindow->save_defaults();
-PRINT_TRACE
+//PRINT_TRACE
 
 	if(!format_error && !result)
 	{
@@ -387,7 +387,7 @@ PRINT_TRACE
 		if(!result) start_render();
 		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
 	}
-PRINT_TRACE
+//PRINT_TRACE
 }
 
 

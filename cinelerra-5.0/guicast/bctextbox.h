@@ -386,6 +386,9 @@ public:
 	int get_y();
 	int get_w();
 	int get_h();
+	void disable();
+	void enable();
+	int get_enabled();
 	void reposition_window(int x, int y);
 	void set_boundaries(int64_t min, int64_t max);
 	void set_boundaries(float min, float max);

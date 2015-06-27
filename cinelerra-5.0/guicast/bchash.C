@@ -27,7 +27,6 @@
 #include "bcsignals.h"
 #include "filesystem.h"
 #include "format.inc"
-#include "stringfile.h"
 
 BC_Hash::BC_Hash()
 {
@@ -86,60 +85,103 @@ void BC_Hash::reallocate_table(int new_total)
 	}
 }
 
-int BC_Hash::load()
+int BC_Hash::load_file(FILE *fp)
 {
-	StringFile stringfile(filename);
-	load_stringfile(&stringfile);
+	char line[4096];
+	int done = 0, ch = -1;
+	total = 0;
+
+	while( !done ) {
+		char *bp = line, *ep = bp + sizeof(line);
+		if( !fgets(bp, ep-bp, fp) ) break;
+		// skip ws (indent)
+		while( bp < ep && *bp == ' ' ) ++bp;
+		if( bp >= ep || !*bp || *bp == '\n' ) continue;
+		char *title = bp;
+		// span to ws
+		while( bp < ep && *bp && *bp != ' ' && *bp != '\n' ) ++bp;
+		if( bp >= ep || title == bp ) continue;
+ 		int title_len = bp - title;
+		// skip blank seperator
+		if( *bp++ != ' ' ) continue;
+		reallocate_table(total + 1);
+		char *tp = new char[title_len + 1];
+		names[total] = tp;
+		while( --title_len >= 0 ) *tp++ = *title++;
+		*tp = 0;
+		// accumulate value (+ continued lines)
+		char *value = bp;
+		while( bp < ep && !done ) {
+			while( bp < ep && *bp && *bp != '\n' ) ++bp;
+			if( bp >= ep || !*bp ) break;
+			if( (ch=fgetc(fp)) < 0 ) break;
+			if( ch != '+' ) { ungetc(ch, fp); break; }
+			*bp++ = '\n';
+			done = !fgets(bp, ep-bp, fp);
+		}
+		int value_len = bp - value;
+		char *vp = new char[value_len + 1];
+		values[total] = vp;
+		while( --value_len >= 0 ) *vp++ = *value++;
+		*vp = 0;
+		total++;
+	}
 	return 0;
 }
 
-void BC_Hash::load_stringfile(StringFile *file)
+int BC_Hash::load()
 {
-	char arg1[1024], arg2[1024];
-	total = 0;
-	while(file->get_pointer() < file->get_length())
-	{
-		file->readline(arg1, arg2);
-		reallocate_table(total + 1);
-		names[total] = new char[strlen(arg1) + 1];
-		values[total] = new char[strlen(arg2) + 1];
-		strcpy(names[total], arg1);
-		strcpy(values[total], arg2);
-		total++;
-	}
+	FILE *fp = fopen(filename, "r");
+	if( !fp ) return 1;
+	int ret = load_file(fp);
+	fclose(fp);
+	return ret;
 }
 
-void BC_Hash::save_stringfile(StringFile *file)
+int BC_Hash::save_file(FILE *fp)
 {
-	for(int i = 0; i < total; i++)
-	{
-		file->writeline(names[i], values[i], 0);
-	}
+	for(int i = 0; i < total; i++) {
+		fputs(names[i], fp);
+		char *vp = values[i];
+		char *bp = vp;
+		fputc(' ',fp);
+		while( (vp=strchr(vp, '\n')) ) {
+			while( bp < vp ) fputc(*bp++,fp);
+			fputc('\n',fp);  fputc('+',fp);
+			++bp;  ++vp;
+		}
+		while( *bp ) fputc(*bp++,fp);
+		fputc('\n', fp);
+        }
+	return 0;
 }
 
 int BC_Hash::save()
 {
-	StringFile stringfile;
-	save_stringfile(&stringfile);
-	stringfile.write_to_file(filename);
-	return 0;
+	FILE *fp = fopen(filename,"w");
+	if( !fp ) return 1;
+	int ret = save_file(fp);
+	fclose(fp);
+	return ret;
 }
 
-int BC_Hash::load_string(const char *string)
+int BC_Hash::load_string(const char *bfr)
 {
-	StringFile stringfile;
-	stringfile.read_from_string(string);
-	load_stringfile(&stringfile);
-	return 0;
+	FILE *fp = fmemopen((void*)bfr, strlen(bfr), "r");
+	if( !fp ) return 1;
+	int ret = load_file(fp);
+	fclose(fp);
+	return ret;
 }
 
-int BC_Hash::save_string(char* &string)
+int BC_Hash::save_string(char *&bfr)
 {
-	StringFile stringfile;
-	save_stringfile(&stringfile);
-	string = new char[stringfile.get_length() + 1];
-	memcpy(string, stringfile.string, stringfile.get_length() + 1);
-	return 0;
+	size_t bsz = 0;
+	FILE *fp = open_memstream(&bfr, &bsz);
+	if( !fp ) return 1;
+	int ret = save_file(fp);
+	fclose(fp);
+	return ret;
 }
 
 

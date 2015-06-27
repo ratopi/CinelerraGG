@@ -80,7 +80,6 @@ OBJS = \
 	$(OBJDIR)/mutex.o \
 	$(OBJDIR)/rotateframe.o \
 	$(OBJDIR)/sema.o \
-	$(OBJDIR)/stringfile.o \
 	$(OBJDIR)/thread.o \
 	$(OBJDIR)/testobject.o \
 	$(OBJDIR)/bctimer.o \

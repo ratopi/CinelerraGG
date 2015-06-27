@@ -182,7 +182,7 @@ void BatchRenderJob::save(FileXML *file)
 	char *string;
 	defaults.save_string(string);
 	file->append_text(string);
-	delete [] string;
+	free(string);
 	file->tag.set_title("/JOB");
 	file->append_tag();
 	file->append_newline();
@@ -789,7 +789,7 @@ void BatchRenderGUI::create_objects()
 
 	x = x1;
 
-	y += 30;
+	y += 64;
 	add_subwindow(update_selected_edl = new BatchRenderUpdateEDL(thread,
 		x,
 		y));

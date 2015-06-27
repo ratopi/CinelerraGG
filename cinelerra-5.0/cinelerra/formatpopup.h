@@ -43,6 +43,19 @@ public:
 };
 
 
+class FFMPEGPopup : public BC_ListBox
+{
+public:
+	FFMPEGPopup(ArrayList<PluginServer*> *plugindb, int x, int y);
+	~FFMPEGPopup();
+
+	void create_objects();
+	virtual int handle_event();
+	ArrayList<PluginServer*> *plugindb;
+	ArrayList<BC_ListBoxItem*> ffmpeg_types;
+};
+
+
 
 
 

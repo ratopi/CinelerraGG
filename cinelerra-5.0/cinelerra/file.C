@@ -76,7 +76,6 @@
 #include "pluginserver.h"
 #include "preferences.h"
 #include "samples.h"
-#include "stringfile.h"
 #include "vframe.h"
 
 //suppress noref warning
@@ -516,7 +515,7 @@ int File::open_file(Preferences *preferences,
 			buffer, 
 			buffer_size);
 		delete [] buffer;
-		delete [] string;
+		free(string);
 //printf("File::open_file %d\n", __LINE__);
 
 // Get the updated asset from the fork
@@ -797,7 +796,7 @@ int File::open_file(Preferences *preferences,
 
 // Reopen file with correct parser and get header.
 	if(file->open_file(rd, wr)) {
-		delete file;
+		delete file;  file = 0;
 		return FILE_NOT_FOUND;
 	}
 
@@ -2489,7 +2488,7 @@ const char* File::get_tag(int format)
 		case FILE_VMPEG:        return "m2v";
 		case FILE_VORBIS:       return "ogg";
 		case FILE_WAV:          return "wav";
-		case FILE_FFMPEG:       return "media";
+		case FILE_FFMPEG:       return "ffmpg";
 	}
 	return 0;
 }

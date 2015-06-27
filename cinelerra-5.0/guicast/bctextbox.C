@@ -2918,6 +2918,25 @@ int BC_TumbleTextBox::get_h()
 	return textbox->get_h();
 }
 
+void BC_TumbleTextBox::disable()
+{
+	if( !get_enabled() ) return;
+	tumbler->hide_window(0);
+	return textbox->disable();
+}
+
+void BC_TumbleTextBox::enable()
+{
+	if( get_enabled() ) return;
+	tumbler->show_window(0);
+	return textbox->enable();
+}
+
+int BC_TumbleTextBox::get_enabled()
+{
+	return textbox->get_enabled();
+}
+
 int BC_TumbleTextBox::handle_event()
 {
 	return 1;

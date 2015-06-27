@@ -147,13 +147,6 @@ public:
 
 	int64_t audio_length;
 
-// Timecode information. User setable, in case of errors in source
-	char reel_name[BCTEXTLEN];
-	int reel_number;
-	int64_t tcstart;
-	int64_t tcend;
-	int tcformat;
-
 // contains video data
 	int video_data;       
 	int layers, program;
@@ -220,12 +213,13 @@ public:
 	int vmpeg_field_order;
 	int vmpeg_pframe_distance;
 
-
-
-
-
-
-
+// ffmpeg muxer file extension
+	char fformat[BCSTRLEN];
+	char ff_audio_options[BCTEXTLEN];
+	char ff_video_options[BCTEXTLEN];
+	int ff_audio_bitrate;
+	int ff_video_bitrate;
+	int ff_video_quality;
 
 // Divx video compression
 	int divx_bitrate;
@@ -268,9 +262,6 @@ public:
 
 
 	int ac3_bitrate;
-
-	char pipe[BCTEXTLEN];
-	int use_pipe;
 
 // Image file sequences.  Background rendering doesn't want to write a 
 // sequence header but instead wants to start the sequence numbering at a certain

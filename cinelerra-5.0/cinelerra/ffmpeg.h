@@ -8,13 +8,17 @@
 #include <string.h>
 
 #include "arraylist.h"
-#include "linklist.h"
 #include "asset.inc"
 #include "bccmodels.h"
+#include "bcwindowbase.inc"
+#include "condition.h"
 #include "cstrdup.h"
+#include "linklist.h"
 #include "ffmpeg.inc"
 #include "filebase.inc"
 #include "fileffmpeg.inc"
+#include "mutex.h"
+#include "thread.h"
 #include "vframe.inc"
 
 extern "C" {
@@ -59,29 +63,6 @@ public:
 	int initted() { return init; }
 	void queue(int64_t pos);
 	void dequeue();
-};
-
-class FFAudioHistory {
-public:
-	float *inp, *outp, *bfr, *lmt;
-	long sz, bsz;
-	int nch;
-
-	FFAudioHistory();
-	~FFAudioHistory();
-	void reserve(long sz, int nch);
-	void realloc(long sz, int nch);
-	long used();
-	long avail();
-	void reset();
-	void iseek(int64_t ofs);
-	float *get_outp(int len);
-	int64_t get_inp(int len);
-	int write(const float *fp, long len);
-	int copy(float *fp, long len);
-	int zero(long len);
-	int read(double *dp, long len, int ch);
-	int write(const double *dp, long len, int ch);
 };
 
 class FFStream {
@@ -155,23 +136,36 @@ public:
 };
 
 class FFAudioStream : public FFStream {
+	float *inp, *outp, *bfr, *lmt;
+	long sz;
+	int nch;
+
+	int read(float *fp, long len);
+	void realloc(long sz, int nch, long len);
+	void realloc(long sz, int nch);
+	void reserve(long sz, int nch);
+	long used();
+	long avail();
+	void reset();
+	void iseek(int64_t ofs);
+	float *get_outp(int len);
+	int64_t put_inp(int len);
+	int write(const float *fp, long len);
+	int zero(long len);
+	int write(const double *dp, long len, int ch);
 public:
 	FFAudioStream(FFMPEG *ffmpeg, AVStream *strm, int idx);
 	virtual ~FFAudioStream();
-	int load_history(float *&bfr, int len);
+	int load_history(uint8_t **data, int len);
 	int decode_frame(AVFrame *frame, int &got_frame);
 	int create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx);
 
 	int encode_activate();
 	int nb_samples();
-	void alloc_history(int len);
-	void reserve_history(int len);
-	void append_history(const float *fp, int len);
-	void zero_history(int len);
 	int64_t load_buffer(double ** const sp, int len);
-	float *get_history(int len);
 	int in_history(int64_t pos);
+	int read(double *dp, long len, int ch);
 
 	int init_frame(AVFrame *frame);
 	int load(int64_t pos, int len);
@@ -184,7 +178,6 @@ public:
 	int64_t seek_pos, curr_pos;
 	int64_t length;
 
-	FFAudioHistory history;
 	SwrContext *resample_context;
 	int aud_bfr_sz;
 	float *aud_bfr;
@@ -239,15 +232,16 @@ public:
 
 	static void set_option_path(char *path, const char *fmt, ...);
 	static void get_option_path(char *path, const char *type, const char *spec);
-	int check_option(const char *path, char *spec);
-	const char *get_file_format();
+	int get_format(char *format, const char *path, char *spec);
+	int get_file_format();
 	int scan_option_line(char *cp,char *tag,char *val);
-	int read_options(const char *options, char *format, char *codec,
-		char *bsfilter, char *bsargs, AVDictionary *&opts);
-	int read_options(FILE *fp, const char *options,
-		char *format, char *codec, AVDictionary *&opts);
+	int get_encoder(const char *options,
+		char *format, char *codec, char *bsfilter, char *bsargs);
+	int get_encoder(FILE *fp,
+		char *format, char *codec, char *bsfilter, char *bsargs);
 	int read_options(const char *options, AVDictionary *&opts);
-	int read_options(FILE *fp, const char *options, AVDictionary *&opts, int no=0);
+	int scan_options(const char *options, AVDictionary *&opts);
+	int read_options(FILE *fp, const char *options, AVDictionary *&opts);
 	int load_options(const char *options, AVDictionary *&opts);
 	void set_loglevel(const char *ap);
 	static double to_secs(int64_t time, AVRational time_base);
@@ -256,7 +250,7 @@ public:
 	int init_decoder(const char *filename);
 	int open_decoder();
 	int init_encoder(const char *filename);
-	int open_encoder(const char *path, const char *spec);
+	int open_encoder(const char *type, const char *spec);
 	int close_encoder();
 
 	int total_audio_channels();
