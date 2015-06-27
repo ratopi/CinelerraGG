@@ -963,7 +963,7 @@ void FFMPEG::get_option_path(char *path, const char *type, const char *spec)
 
 int FFMPEG::get_format(char *format, const char *path, char *spec)
 {
-	char option_path[BCTEXTLEN], line[BCTEXTLEN], codec[BCSTRLEN];
+	char option_path[BCTEXTLEN], line[BCTEXTLEN], codec[BCTEXTLEN];
 	get_option_path(option_path, path, spec);
 	FILE *fp = fopen(option_path,"r");
 	if( !fp ) return 1;
@@ -1102,6 +1102,19 @@ int FFMPEG::load_options(const char *options, AVDictionary *&opts)
 	char option_path[BCTEXTLEN];
 	set_option_path(option_path, "%s", options);
 	return read_options(option_path, opts);
+}
+
+int FFMPEG::load_options(const char *path, char *bfr, int len)
+{
+	*bfr = 0;
+	FILE *fp = fopen(path, "r");
+	if( !fp ) return 1;
+	fgets(bfr, len, fp); // skip hdr
+	len = fread(bfr, 1, len-1, fp);
+	if( len < 0 ) len = 0;
+	bfr[len] = 0;
+	fclose(fp);
+	return 0;
 }
 
 void FFMPEG::set_loglevel(const char *ap)

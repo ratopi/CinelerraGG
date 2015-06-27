@@ -243,6 +243,7 @@ public:
 	int scan_options(const char *options, AVDictionary *&opts);
 	int read_options(FILE *fp, const char *options, AVDictionary *&opts);
 	int load_options(const char *options, AVDictionary *&opts);
+	static int load_options(const char *path, char *bfr, int len);
 	void set_loglevel(const char *ap);
 	static double to_secs(int64_t time, AVRational time_base);
 	int info(char *text, int len);

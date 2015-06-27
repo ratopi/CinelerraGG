@@ -318,18 +318,6 @@ int FileFFMPEG::get_best_colormodel(Asset *asset, int driver)
 	return BC_YUV420P;
 }
 
-static void load_options(const char *path, char *bfr, int len)
-{
-	*bfr = 0;
-	FILE *fp = fopen(path, "r");
-	if( !fp ) return;
-	fgets(bfr, len, fp); // skip hdr
-	len = fread(bfr, 1, len-1, fp);
-	if( len < 0 ) len = 0;
-	bfr[len] = 0;
-	fclose(fp);
-}
-
 //======
 extern void get_exe_path(char *result); // from main.C
 
@@ -400,7 +388,7 @@ void FFMPEGConfigAudio::create_objects()
 	y += 25;
 	if( !asset->ff_audio_options[0] && asset->acodec[0] ) {
 		FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
-		load_options(option_path, asset->ff_audio_options,
+		FFMPEG::load_options(option_path, asset->ff_audio_options,
 			 sizeof(asset->ff_audio_options));
 	}
 	add_subwindow(audio_options = new FFAudioOptions(this, x, y, get_w()-x-20, 10,
@@ -444,7 +432,7 @@ int FFMPEGConfigAudioPopup::handle_event()
 	Asset *asset = popup->asset;
 	char option_path[BCTEXTLEN];
 	FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
-	load_options(option_path, asset->ff_audio_options,
+	FFMPEG::load_options(option_path, asset->ff_audio_options,
 			 sizeof(asset->ff_audio_options));
 	popup->audio_options->update(asset->ff_audio_options);
 	return 1;
@@ -545,7 +533,7 @@ void FFMPEGConfigVideo::create_objects()
 	y += 25;
 	if( !asset->ff_video_options[0] && asset->vcodec[0] ) {
 		FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
-		load_options(option_path, asset->ff_video_options,
+		FFMPEG::load_options(option_path, asset->ff_video_options,
 			 sizeof(asset->ff_video_options));
 	}
 	add_subwindow(video_options = new FFVideoOptions(this, x, y, get_w()-x-20, 10,
@@ -593,7 +581,7 @@ int FFMPEGConfigVideoPopup::handle_event()
 	Asset *asset = popup->asset;
 	char option_path[BCTEXTLEN];
 	FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
-	load_options(option_path, asset->ff_video_options,
+	FFMPEG::load_options(option_path, asset->ff_video_options,
 			 sizeof(asset->ff_video_options));
 	popup->video_options->update(asset->ff_video_options);
 	return 1;

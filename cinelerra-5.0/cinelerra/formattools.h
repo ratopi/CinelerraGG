@@ -28,6 +28,7 @@
 #include "browsebutton.h"
 #include "compresspopup.h"
 #include "file.inc"
+#include "ffmpeg.h"
 #include "formatpopup.h"
 #include "mwindow.inc"
 
@@ -164,6 +165,9 @@ public:
 	
 	int handle_event();
 	FormatTools *format;
+	static int load_defaults(const char *path, const char *type,
+		char *codec, char *codec_options, int len);
+
 // squash show/hide window
 	int show_window(int flush=1) { return 0; }
 	int hide_window(int flush=1) { return 0; }

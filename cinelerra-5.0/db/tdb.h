@@ -14,9 +14,13 @@
 #define entityNmIndex indecies[entityNmIdx]
 
 #define noThrow std::nothrow
+#ifndef likely
 #define likely(x)   (__builtin_constant_p(x) ? !!(x) : __builtin_expect(!!(x), 1))
 #define unlikely(x) (__builtin_constant_p(x) ? !!(x) : __builtin_expect(!!(x), 0))
+#endif
+#ifndef lengthof
 #define lengthof(x) ((int)(sizeof(x)/sizeof(x[0])))
+#endif
 
 #if 0
 inline void *operator new(size_t n) { void *vp = malloc(n); bzero(vp,n); return vp; }
