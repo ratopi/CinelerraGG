@@ -851,17 +851,16 @@ FormatFFMPEG::~FormatFFMPEG()
 }
 
 int FormatFFMPEG::load_defaults(const char *path, const char *type,
-		char *codec, char *codec_options, int len)
+		 char *codec, char *codec_options, int len)
 {
 	char default_file[BCTEXTLEN];
-	FFMPEG::set_option_path(default_file, "%s/%s", path, type);
+	FFMPEG::set_option_path(default_file, "%s/%s.dfl", path, type);
 	FILE *fp = fopen(default_file,"r");
 	if( !fp ) return 1;
-	char default_codec[BCSTRLEN];
-	fgets(default_codec, sizeof(default_codec), fp);
+	fgets(codec, BCSTRLEN, fp);
 	fclose(fp);
-	char *cp=codec, *dp=default_codec;
-	while( *dp && *dp!='\n' ) *cp++ = *dp++;
+	char *cp = codec;
+	while( *cp && *cp!='\n' ) ++cp;
 	*cp = 0;
 	FFMPEG::set_option_path(default_file, "%s/%s", path, codec);
 	return FFMPEG::load_options(default_file, codec_options, len);

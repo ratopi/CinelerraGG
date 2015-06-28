@@ -350,16 +350,15 @@ void FFMPEGConfigAudio::create_objects()
 
         FileSystem fs;
 	char option_path[BCTEXTLEN];
-	FFMPEG::set_option_path(option_path, "/audio");
+	FFMPEG::set_option_path(option_path, "audio");
         fs.update(option_path);
         int total_files = fs.total_files();
         for(int i = 0; i < total_files; i++) {
                 const char *name = fs.get_entry(i)->get_name();
 		if( asset->fformat[0] != 0 ) {
 			const char *ext = strrchr(name,'.');
-			if( !ext ) ext = name;
-			else if( !strcmp("opts", ++ext) ) continue;
-			if( strcmp(asset->fformat, ext) ) continue;
+			if( !ext ) continue;
+			if( strcmp(asset->fformat, ++ext) ) continue;
 		}
                 presets.append(new BC_ListBoxItem(name));
         }
@@ -494,9 +493,8 @@ void FFMPEGConfigVideo::create_objects()
                 const char *name = fs.get_entry(i)->get_name();
 		if( asset->fformat[0] != 0 ) {
 			const char *ext = strrchr(name,'.');
-			if( !ext ) ext = name;
-			else if( !strcmp("opts", ++ext) ) continue;
-			if( strcmp(asset->fformat, ext) ) continue;
+			if( !ext ) continue;
+			if( strcmp(asset->fformat, ++ext) ) continue;
 		}
                 presets.append(new BC_ListBoxItem(name));
         }

@@ -232,9 +232,9 @@ public:
 
 	static void set_option_path(char *path, const char *fmt, ...);
 	static void get_option_path(char *path, const char *type, const char *spec);
-	int get_format(char *format, const char *path, char *spec);
+	static int get_format(char *format, const char *path, char *spec);
+	static int scan_option_line(char *cp,char *tag,char *val);
 	int get_file_format();
-	int scan_option_line(char *cp,char *tag,char *val);
 	int get_encoder(const char *options,
 		char *format, char *codec, char *bsfilter, char *bsargs);
 	int get_encoder(FILE *fp,

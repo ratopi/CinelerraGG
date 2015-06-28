@@ -104,7 +104,7 @@ FFMPEGPopup::FFMPEGPopup(ArrayList<PluginServer*> *plugindb, int x, int y)
 
 void FFMPEGPopup::create_objects()
 {
-	static const char *dirs[] = { "/audio", "/video", };
+	static const char *dirs[] = { "audio", "video", };
 	for( int i=0; i<(int)(sizeof(dirs)/sizeof(dirs[0])); ++i ) {
 		FileSystem fs;
 		char option_path[BCTEXTLEN];
@@ -114,8 +114,9 @@ void FFMPEGPopup::create_objects()
 		for( int j=0; j<total_files; ++j ) {
 			const char *name = fs.get_entry(j)->get_name();
 			const char *ext = strrchr(name,'.');
-			if( !ext ) ext = name;
-			else if( !strcmp("opts", ++ext) ) continue;
+			if( !ext ) continue;
+			if( !strcmp("dfl", ++ext) ) continue;
+			if( !strcmp("opts", ext) ) continue;
 			int k = ffmpeg_types.size();
 			while( --k >= 0 && strcmp(ffmpeg_types[k]->get_text(), ext) );
 			if( k >= 0 ) continue;
