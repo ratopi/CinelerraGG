@@ -1,0 +1,7 @@
+matroska libx264
+preset slow
+crf 18
+g 25
+qmin 10
+qmax 51
+qdiff 4

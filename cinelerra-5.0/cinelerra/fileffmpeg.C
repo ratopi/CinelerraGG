@@ -465,6 +465,7 @@ FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	preset_popup = 0;
 
 	bitrate = 0;
+	quality = 0;
 	video_options = 0;
 }
 
