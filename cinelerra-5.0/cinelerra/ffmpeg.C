@@ -548,14 +548,14 @@ int FFAudioStream::audio_seek(int64_t pos)
 		return 0;
 	}
 	if( pos == curr_pos ) return 0;
+	avcodec_flush_buffers(st->codec);
 	double secs = (double)pos / sample_rate;
 	int64_t tstmp = secs * st->time_base.den / st->time_base.num;
 	if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
 	avformat_seek_file(fmt_ctx, st->index, -INT64_MAX, tstmp, INT64_MAX, 0);
 	seek_pos = curr_pos = pos;
-	mbsz = 0;
-	reset();
-	st_eof(0);
+	reset();  st_eof(0);
+	mbsz = 0; flushed = 0;  need_packet = 1;
 	return 1;
 }
 
@@ -646,6 +646,7 @@ int FFVideoStream::video_seek(int64_t pos)
 	if( gop < 4 ) gop = 4;
 	if( gop > 64 ) gop = 64;
 	if( pos >= curr_pos && pos <= curr_pos + gop ) return 0;
+	avcodec_flush_buffers(st->codec);
 // back up a few frames to read up to current to help repair damages
 	if( (pos-=gop) < 0 ) pos = 0;
 	double secs = (double)pos / frame_rate;
@@ -654,6 +655,7 @@ int FFVideoStream::video_seek(int64_t pos)
 	avformat_seek_file(fmt_ctx, st->index, -INT64_MAX, tstmp, INT64_MAX, 0);
 	seek_pos = curr_pos = pos;
 	st_eof(0);
+	flushed = 0;  need_packet = 1;
 	return 1;
 }
 

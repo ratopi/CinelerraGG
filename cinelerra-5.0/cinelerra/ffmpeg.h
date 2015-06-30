@@ -126,13 +126,8 @@ public:
 	int reading, writing;
 	int eof;
 
-	int st_eof() {
-		return eof;
-	}
-	void st_eof(int v) {
-		if( !v ) { flushed = 0;  need_packet = 1; }
-		eof = v;
-	}
+	int st_eof() { return eof; }
+	void st_eof(int v) { eof = v; }
 };
 
 class FFAudioStream : public FFStream {

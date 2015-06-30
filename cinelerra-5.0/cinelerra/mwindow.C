@@ -1422,6 +1422,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 		select_asset(0, 0);
 		edl->local_session->preview_start = 0;
 		edl->local_session->preview_end = edl->tracks->total_playable_length();
+		edl->local_session->loop_playback = 0;
 		edl->local_session->set_selectionstart(0);
 		edl->local_session->set_selectionend(0);
 		fit_selection();
