@@ -132,16 +132,20 @@ DIRS = \
 #	findobject \
 
 DATA = $(PLUGIN_DIR)/fonts $(PLUGIN_DIR)/shapes
-MPEG2ENC = $(BINDIR)/mpeg2enc.plugin
+MPEG2ENC = $(PLUGIN_DIR)/mpeg2enc.plugin
+HVEG2ENC = $(PLUGIN_DIR)/hveg2enc.plugin
 LADSPA = $(PLUGIN_DIR)/ladspa
 
-all:	$(DIRS) $(DATA) $(MPEG2ENC) $(LADSPA)
+all:	$(DIRS) $(DATA) $(MPEG2ENC) $(HVEG2ENC) $(LADSPA)
 
 $(DATA):
 	cp -a $(notdir $@) $(PLUGIN_DIR)/.
 
 $(MPEG2ENC):
-	cp ../thirdparty/mjpegtools*/mpeg2enc/mpeg2enc $@
+	cp -a ../thirdparty/mjpegtools*/mpeg2enc/mpeg2enc $@
+
+$(HVEG2ENC):
+	cp -a ../mpeg2enc/$(OBJDIR)/hveg2enc $@
 
 $(LADSPA):
 	mkdir -p $@
@@ -157,7 +161,6 @@ $(DIRS):
 clean:
 	rm -rf $(foreach d,$(DIRS),$(d)/$(OBJDIR))
 	rm -rf $(PLUGIN_DIR)
-	rm -f $(MPEG2ENC)
 
 install:
 

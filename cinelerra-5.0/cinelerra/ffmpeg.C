@@ -931,10 +931,15 @@ AVRational FFMPEG::check_frame_rate(AVCodec *codec, double frame_rate)
 
 AVRational FFMPEG::to_sample_aspect_ratio(double aspect_ratio)
 {
+#if 1
 	int height = 1000000, width = height * aspect_ratio;
 	float w, h;
 	MWindow::create_aspect_ratio(w, h, width, height);
 	return (AVRational){(int)w, (int)h};
+#else
+// square pixels
+	return (AVRational){1, 1};
+#endif
 }
 
 AVRational FFMPEG::to_time_base(int sample_rate)
@@ -1428,6 +1433,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				break;
 			}
 			if( asset->ff_audio_bitrate > 0 ) {
+				ctx->bit_rate = asset->ff_audio_bitrate;
 				char arg[BCSTRLEN];
 				sprintf(arg, "%d", asset->ff_audio_bitrate);
 				av_dict_set(&sopts, "b", arg, 0);
@@ -1473,6 +1479,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				break;
 			}
 			if( asset->ff_video_bitrate > 0 ) {
+				ctx->bit_rate = asset->ff_video_bitrate;
 				char arg[BCSTRLEN];
 				sprintf(arg, "%d", asset->ff_video_bitrate);
 				av_dict_set(&sopts, "b", arg, 0);

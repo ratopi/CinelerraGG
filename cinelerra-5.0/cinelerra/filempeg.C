@@ -518,7 +518,6 @@ int FileMPEG::open_file(int rd, int wr)
 					append_vcommand_line("-q");
 					append_vcommand_line(quant_string);
 				}
-				append_vcommand_line(!asset->vmpeg_fix_bitrate ? quant_string : "");
 				append_vcommand_line("-n");
 				append_vcommand_line(iframe_string);
 				append_vcommand_line(asset->vmpeg_progressive ? "-p" : "");

@@ -68,7 +68,7 @@ LIBS = \
 	$(EXTRA_LIBS)
 
 HVEG2LIB = $(OBJDIR)/hveg2enc.a
-HVEG2ENC = $(PLUGIN_DIR)/hveg2enc.plugin
+HVEG2ENC = $(OBJDIR)/hveg2enc
 HVEG2ENC_G = $(OBJDIR)/hveg2enc_g
 
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
@@ -87,7 +87,6 @@ OUTPUT = $(HVEG2LIB) $(HVEG2ENC)
 all: $(OUTPUT)
 
 clean:
-	rm -f $(HVEG2ENC)
 	rm -rf $(OBJDIR)
 
 install:	$(OUTPUT)

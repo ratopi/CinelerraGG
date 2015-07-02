@@ -2662,8 +2662,16 @@ static inline int gcd(int m, int n)
 
 int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 {
+	w = 1;  h = 1;
 	if(!width || !height) return 1;
 	double ar = (double)width / height;
+// square-ish pixels
+	if( EQUIV(ar, 1.0000) ) return 0;
+	if( EQUIV(ar, 1.3333) ) { w = 4;  h = 3;  return 0; }
+	if( EQUIV(ar, 1.7777) ) { w = 16; h = 9;  return 0; }
+	if( EQUIV(ar, 2.1111) ) { w = 19; h = 9;  return 0; }
+	if( EQUIV(ar, 2.2222) ) { w = 20; h = 9;  return 0; }
+	if( EQUIV(ar, 2.3333) ) { w = 21; h = 9;  return 0; }
 	int ww = width, hh = height;
 	// numerator, denominator must be under mx
 	int mx = 255, n = gcd(ww, hh);

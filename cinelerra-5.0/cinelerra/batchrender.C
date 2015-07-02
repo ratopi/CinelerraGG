@@ -1354,6 +1354,7 @@ CreateDVD_Thread::CreateDVD_Thread(MWindow *mwindow)
 	this->use_wide_audio = 0;
 	this->use_wide_aspect = 0;
 	this->use_label_chapters = 0;
+	this->use_ffmpeg = 0;
 }
 
 CreateDVD_Thread::~CreateDVD_Thread()
@@ -1419,8 +1420,10 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	fprintf(fp,"#!/bin/bash\n");
 	fprintf(fp,"echo \"running %s\" $# $*\n", script_filename);
 	fprintf(fp,"\n");
-	fprintf(fp,"mplex -f 8 -o $1/dvd.mpg $1/dvd.m2v $1/dvd.ac3\n");
-	fprintf(fp,"\n");
+	if( !use_ffmpeg ) {
+		fprintf(fp,"mplex -f 8 -o $1/dvd.mpg $1/dvd.m2v $1/dvd.ac3\n");
+		fprintf(fp,"\n");
+	}
 	fprintf(fp,"rm -rf $1/iso\n");
 	fprintf(fp,"mkdir -p $1/iso\n");
 	fprintf(fp,"\n");
@@ -1515,43 +1518,71 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	strcpy(&job->edl_path[0], xml_filename);
 	Asset *asset = job->asset;
 
-	sprintf(&asset->path[0],"%s/dvd.m2v", asset_dir);
-        asset->video_data = 1;
-	asset->format = FILE_VMPEG;
 	asset->layers = DVD_STREAMS;
 	asset->frame_rate = session->frame_rate;
 	asset->width = session->output_w;
 	asset->height = session->output_h;
 	asset->aspect_ratio = session->aspect_w / session->aspect_h;
-	asset->vmpeg_cmodel = BC_YUV420P;
-	asset->vmpeg_fix_bitrate = 1;
-	asset->vmpeg_bitrate = vid_bitrate;
-	asset->vmpeg_quantization = 15;
-        asset->vmpeg_iframe_distance = 15;
-	asset->vmpeg_progressive = 0;
-	asset->vmpeg_denoise = 0;
-	asset->vmpeg_seq_codes = 0;
-	asset->vmpeg_derivative = 2;
-	asset->vmpeg_preset = 8;
-	asset->vmpeg_field_order = 0;
-	asset->vmpeg_pframe_distance = 0;
 
-	job = new BatchRenderJob(mwindow->preferences);
-	jobs->append(job);
-	strcpy(&job->edl_path[0], xml_filename);
-	asset = job->asset;
+	if( use_ffmpeg ) {
+		char option_path[BCTEXTLEN];
+		sprintf(&asset->path[0],"%s/dvd.mpg", asset_dir);
+		asset->format = FILE_FFMPEG;
+		strcpy(asset->fformat, "dvd");
 
-	sprintf(&asset->path[0],"%s/dvd.ac3", asset_dir);
-        asset->audio_data = 1;
-	asset->format = FILE_AC3;
-	asset->channels = session->audio_channels;
-	asset->sample_rate = session->sample_rate;
-	asset->bits = 16;
-	asset->byte_order = 0;
-	asset->signed_ = 1;
-	asset->header = 0;
-	asset->dither = 0;
-	asset->ac3_bitrate = DVD_KAUDIO_RATE;
+      		asset->audio_data = 1;
+		strcpy(asset->acodec, "dvd.dvd");
+		FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
+		FFMPEG::load_options(option_path, asset->ff_audio_options,
+			 sizeof(asset->ff_audio_options));
+		asset->ff_audio_bitrate = DVD_KAUDIO_RATE * 1000;
+
+      		asset->video_data = 1;
+		strcpy(asset->vcodec, "dvd.dvd");
+		FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
+		FFMPEG::load_options(option_path, asset->ff_video_options,
+			 sizeof(asset->ff_video_options));
+		asset->ff_video_bitrate = vid_bitrate;
+		asset->ff_video_quality = 0;
+
+		int len = strlen(asset->ff_video_options);
+		char *cp = asset->ff_video_options + len;
+		snprintf(cp, sizeof(asset->ff_video_options)-len-1,
+			"aspect %.5f\n", asset->aspect_ratio);
+	}
+	else {
+		sprintf(&asset->path[0],"%s/dvd.m2v", asset_dir);
+      		asset->video_data = 1;
+		asset->format = FILE_VMPEG;
+		asset->vmpeg_cmodel = BC_YUV420P;
+		asset->vmpeg_fix_bitrate = 1;
+		asset->vmpeg_bitrate = vid_bitrate;
+		asset->vmpeg_quantization = 15;
+		asset->vmpeg_iframe_distance = 15;
+		asset->vmpeg_progressive = 0;
+		asset->vmpeg_denoise = 0;
+		asset->vmpeg_seq_codes = 0;
+		asset->vmpeg_derivative = 2;
+		asset->vmpeg_preset = 8;
+		asset->vmpeg_field_order = 0;
+		asset->vmpeg_pframe_distance = 0;
+		job = new BatchRenderJob(mwindow->preferences);
+		jobs->append(job);
+		strcpy(&job->edl_path[0], xml_filename);
+		asset = job->asset;
+		
+		sprintf(&asset->path[0],"%s/dvd.ac3", asset_dir);
+      		asset->audio_data = 1;
+		asset->format = FILE_AC3;
+		asset->channels = session->audio_channels;
+		asset->sample_rate = session->sample_rate;
+		asset->bits = 16;
+		asset->byte_order = 0;
+		asset->signed_ = 1;
+		asset->header = 0;
+		asset->dither = 0;
+		asset->ac3_bitrate = DVD_KAUDIO_RATE;
+	}
 
 	job = new BatchRenderJob(mwindow->preferences);
 	jobs->append(job);
@@ -1635,6 +1666,7 @@ BC_Window* CreateDVD_Thread::new_gui()
 	use_wide_audio = 0;
 	use_wide_aspect = 0;
 	use_label_chapters = 0;
+	use_ffmpeg = 0;
 	option_presets();
         int scr_x = mwindow->gui->get_screen_x(0, -1);
         int scr_w = mwindow->gui->get_screen_w(0, -1);
@@ -1858,6 +1890,16 @@ CreateDVD_WideAspect::~CreateDVD_WideAspect()
 {
 }
 
+CreateDVD_UseFFMpeg::CreateDVD_UseFFMpeg(CreateDVD_GUI *gui, int x, int y)
+ : BC_CheckBox(x, y, &gui->thread->use_ffmpeg, "Use FFMPEG")
+{
+	this->gui = gui;
+}
+
+CreateDVD_UseFFMpeg::~CreateDVD_UseFFMpeg()
+{
+}
+
 
 
 
@@ -1915,6 +1957,8 @@ void CreateDVD_GUI::create_objects()
 	int x1 = x + 150, x2 = x1 + 150;
 	need_inverse_telecine = new CreateDVD_InverseTelecine(this, x1, y);
 	add_subwindow(need_inverse_telecine);
+	need_use_ffmpeg = new CreateDVD_UseFFMpeg(this, x2, y);
+	add_subwindow(need_use_ffmpeg);
 	y += need_deinterlace->get_h() + pady/2;
 	need_scale = new CreateDVD_Scale(this, x, y);
 	add_subwindow(need_scale);

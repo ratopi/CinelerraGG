@@ -343,6 +343,7 @@ public:
 	int use_scale, use_resize_tracks;
 	int use_wide_audio, use_wide_aspect;
 	int use_histogram, use_label_chapters;
+	int use_ffmpeg;
 };
 
 class CreateDVD_OK : public BC_OKButton
@@ -472,6 +473,15 @@ public:
 	CreateDVD_GUI *gui;
 };
 
+class CreateDVD_UseFFMpeg : public BC_CheckBox
+{
+public:
+	CreateDVD_UseFFMpeg(CreateDVD_GUI *gui, int x, int y);
+	~CreateDVD_UseFFMpeg();
+
+	CreateDVD_GUI *gui;
+};
+
 class CreateDVD_GUI : public BC_Window
 {
 public:
@@ -494,6 +504,7 @@ public:
 	CreateDVD_Deinterlace *need_deinterlace;
 	CreateDVD_InverseTelecine *need_inverse_telecine;
 	CreateDVD_Scale *need_scale;
+	CreateDVD_UseFFMpeg *need_use_ffmpeg;
 	CreateDVD_ResizeTracks *need_resize_tracks;
 	CreateDVD_Histogram *need_histogram;
 	CreateDVD_WideAudio *need_wide_audio;

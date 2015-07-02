@@ -2475,8 +2475,7 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 	
 	cwindow->update(1, 1, 1, 1, 1);
 
-	if (calling_window_gui != cwindow->gui) 
-		cwindow->gui->unlock_window();
+	cwindow->gui->unlock_window();
 
 	for(int i = 0; i < vwindows.size(); i++)
 	{
