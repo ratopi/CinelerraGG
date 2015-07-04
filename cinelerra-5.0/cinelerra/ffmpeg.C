@@ -548,6 +548,7 @@ int FFAudioStream::audio_seek(int64_t pos)
 		return 0;
 	}
 	if( pos == curr_pos ) return 0;
+	if( !st->codec || !st->codec->codec ) return -1;
 	avcodec_flush_buffers(st->codec);
 	double secs = (double)pos / sample_rate;
 	int64_t tstmp = secs * st->time_base.den / st->time_base.num;
@@ -646,6 +647,7 @@ int FFVideoStream::video_seek(int64_t pos)
 	if( gop < 4 ) gop = 4;
 	if( gop > 64 ) gop = 64;
 	if( pos >= curr_pos && pos <= curr_pos + gop ) return 0;
+	if( !st->codec || !st->codec->codec ) return -1;
 	avcodec_flush_buffers(st->codec);
 // back up a few frames to read up to current to help repair damages
 	if( (pos-=gop) < 0 ) pos = 0;

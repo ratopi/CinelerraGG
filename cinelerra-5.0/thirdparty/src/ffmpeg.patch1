@@ -8,6 +8,6 @@
 +enabled libx265           && { use_pkg_config x265 "stdint.h x265.h" x265_encoder_encode ||
 +                               { require libx265 x265.h x265_encoder_encode -lx265 -lstdc++ &&
 +                                 warn "using libx265 without pkg-config"; } } &&
-                              { check_cpp_condition x265.h "X265_BUILD >= 17" ||
-                                die "ERROR: libx265 version must be >= 17."; }
+                              { check_cpp_condition x265.h "X265_BUILD >= 57" ||
+                                die "ERROR: libx265 version must be >= 57."; }
  enabled libxavs           && require libxavs xavs.h xavs_encoder_encode -lxavs

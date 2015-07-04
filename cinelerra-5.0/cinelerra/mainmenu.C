@@ -240,7 +240,7 @@ void MainMenu::create_objects()
 	windowmenu->add_item(show_lwindow = new ShowLWindow(mwindow));
 	windowmenu->add_item(split_x = new SplitX(mwindow));
 	windowmenu->add_item(split_y = new SplitY(mwindow));
-	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1));
+	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1,"Ctrl+d",'d'));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile left"),0));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile right"),1));
 }
@@ -1403,11 +1403,13 @@ int ShowLWindow::handle_event()
 	return 1;
 }
 
-TileWindows::TileWindows(MWindow *mwindow, const char *item_title, int config)
- : BC_MenuItem(item_title)
+TileWindows::TileWindows(MWindow *mwindow, const char *item_title, int config,
+		const char *hot_keytext, int hot_key)
+ : BC_MenuItem(item_title, hot_keytext, hot_key)
 {
 	this->mwindow = mwindow;
 	this->config = config;
+	if( hot_key ) set_ctrl(1);
 }
 int TileWindows::handle_event()
 {

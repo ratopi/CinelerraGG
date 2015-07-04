@@ -61,7 +61,6 @@
 #include "bcpopupmenu.inc"
 #include "bcpot.inc"
 #include "bcprogress.inc"
-#include "bcrelocatablewidget.h"
 #include "bcrepeater.inc"
 #include "bcresources.inc"
 #include "bcscrollbar.inc"
@@ -73,7 +72,6 @@
 #include "bctitle.inc"
 #include "bctoggle.inc"
 #include "bctumble.inc"
-#include "bcwidgetgrid.inc"
 #include "bcwindow.inc"
 #include "bcwindowbase.inc"
 #include "bcwindowevents.inc"
@@ -132,7 +130,7 @@ public:
 
 
 // Windows, subwindows, popupwindows inherit from this
-class BC_WindowBase : public BC_RelocatableWidget
+class BC_WindowBase
 {
 public:
 	BC_WindowBase(int opts=0);
@@ -258,7 +256,6 @@ public:
 	BC_MenuBar* add_menubar(BC_MenuBar *menu_bar);
 	BC_WindowBase* add_subwindow(BC_WindowBase *subwindow);
 	BC_WindowBase* add_tool(BC_WindowBase *subwindow);
-	BC_WidgetGrid* add_widgetgrid(BC_WidgetGrid *widgetgrid);
 
 // Use this to get events for the popup window.
 // Events are not propagated to the popup window.
@@ -495,7 +492,6 @@ public:
 	int reposition_window(int x, int y, int w, int h);
 	int reposition_window_relative(int dx, int dy);
 	int reposition_window_relative(int dx, int dy, int w, int h);
-	int reposition_widget(int x, int y, int w, int h);
 // Cause a repeat event to be dispatched every duration.
 // duration is milliseconds
 	int set_repeat(int64_t duration);
@@ -623,7 +619,6 @@ private:
 // list of window bases in this window
 	BC_SubWindowList* subwindows;
 // list of window bases in this window
-	BC_WidgetGridList* widgetgrids;
 	ArrayList<BC_WindowBase*> popups;
 // Position of window
 	int x, y, w, h;

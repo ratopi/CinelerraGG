@@ -33,7 +33,6 @@
 #include "bcsubwindow.h"
 #include "bcsynchronous.h"
 #include "bctimer.h"
-#include "bcwidgetgrid.h"
 #include "bcwindowbase.h"
 #include "bcwindowevents.h"
 #include "bccmodels.h"
@@ -133,15 +132,6 @@ BC_WindowBase::~BC_WindowBase()
 		}
 		delete subwindows;
 	}
-
-	if(widgetgrids) {
-		while (widgetgrids->total) {
-			delete widgetgrids->last();
-			widgetgrids->remove();
-		}
-		delete widgetgrids;
-	}
-
 
 	delete pixmap;
 
@@ -264,7 +254,6 @@ int BC_WindowBase::initialize()
 	top_level = 0;
 	parent_window = 0;
 	subwindows = 0;
-	widgetgrids = 0;
 	xinerama_info = 0;
 	xinerama_screens = 0;
 	xvideo_port_id = -1;
@@ -421,7 +410,6 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	if(bg_pixmap) shared_bg_pixmap = 1;
 
 	subwindows = new BC_SubWindowList;
-	widgetgrids = new BC_WidgetGridList;
 
 	if(window_type == MAIN_WINDOW)
 	{
@@ -3154,13 +3142,6 @@ BC_WindowBase* BC_WindowBase::add_tool(BC_WindowBase *subwindow)
 	return add_subwindow(subwindow);
 }
 
-BC_WidgetGrid* BC_WindowBase::add_widgetgrid(BC_WidgetGrid *widgetgrid)
-{
-	widgetgrids->append(widgetgrid);
-	return widgetgrid;
-}
-
-
 int BC_WindowBase::flash(int x, int y, int w, int h, int flush)
 {
 //printf("BC_WindowBase::flash %d %d %d %d %d\n", __LINE__, w, h, this->w, this->h);
@@ -3892,11 +3873,6 @@ int BC_WindowBase::resize_event(int w, int h)
 		this->h = h;
 	}
 	return 0;
-}
-
-int BC_WindowBase::reposition_widget(int x, int y, int w, int h)
-{
-	return reposition_window(x, y, w, h);
 }
 
 int BC_WindowBase::reposition_window(int x, int y)

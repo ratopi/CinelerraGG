@@ -34,7 +34,6 @@ OBJS = \
 	$(OBJDIR)/bcdragwindow.o \
 	$(OBJDIR)/bcfilebox.o \
 	$(OBJDIR)/bcfontentry.o \
-	$(OBJDIR)/bcwidgetgrid.o \
 	$(OBJDIR)/bclistbox.o \
 	$(OBJDIR)/bclistboxitem.o \
 	$(OBJDIR)/bchash.o \
@@ -53,7 +52,6 @@ OBJS = \
 	$(OBJDIR)/bcprogress.o \
 	$(OBJDIR)/bcprogressbox.o \
 	$(OBJDIR)/bcrecentlist.o \
-	$(OBJDIR)/bcrelocatablewidget.o \
 	$(OBJDIR)/bcrename.o \
 	$(OBJDIR)/bcrepeater.o \
 	$(OBJDIR)/bcresources.o \

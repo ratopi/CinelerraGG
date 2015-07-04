@@ -636,7 +636,8 @@ public:
 class TileWindows : public BC_MenuItem
 {
 public:
-	TileWindows(MWindow *mwindow, const char *item_title, int config);
+	TileWindows(MWindow *mwindow, const char *item_title, int config,
+		const char *hot_keytext="", int hot_key=0);
 	int handle_event();
 	MWindow *mwindow;
 	int config;

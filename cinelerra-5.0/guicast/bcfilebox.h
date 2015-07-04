@@ -248,7 +248,7 @@ public:
 
 	void create_history();
 	void update_history();
-	int refresh();
+	int refresh(int zscroll=0);
 
 // The OK and Use This button submits a path.
 // The cancel button has a current path highlighted but possibly different from the

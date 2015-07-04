@@ -56,8 +56,10 @@ BC_FileBoxRecent::BC_FileBoxRecent(BC_FileBox *filebox, int x, int y)
 
 int BC_FileBoxRecent::handle_event()
 {
-	if(get_selection(0, 0) >= 0) {
-		filebox->submit_dir(get_selection(0, 0)->get_text());
+	BC_ListBoxItem *selection = get_selection(0, 0);
+	if( selection != 0 ) {
+		char *path = selection->get_text();
+		filebox->submit_dir(path);
 	}
 	return 1;
 }
@@ -213,9 +215,16 @@ int BC_FileBoxDirectoryText::handle_event()
 	// is a directory, change directories
 	if(filebox->fs->is_dir(path))
 	{
-		filebox->fs->change_dir(path);
-		filebox->refresh();
-		update(strcat(filebox->fs->get_current_dir(),"/"));
+		const char *cp = path;
+		char dir_path[BCTEXTLEN], *dp = dir_path;
+		while( *cp ) *dp++ = *cp++;
+		while( dp >= dir_path && *--dp == '/' );
+		*++dp = '/';  *++dp = 0;
+		if( strcmp(filebox->fs->get_current_dir(), dir_path) ) {
+			filebox->fs->change_dir(dir_path);
+			filebox->refresh(1);
+		}
+		update(dir_path);
 		return 1;
 	}
 	return 0;
@@ -951,19 +960,14 @@ int BC_FileBox::column_of_type(int type)
 
 
 
-int BC_FileBox::refresh()
+int BC_FileBox::refresh(int zscroll)
 {
 	create_tables();
 	listbox->set_master_column(column_of_type(FILEBOX_NAME), 0);
-	listbox->update(list_column,
-		column_titles,
-		column_width,
-		columns,
-		listbox->get_xposition(),
-		listbox->get_yposition(),
-		-1,
-		1);
-
+	listbox->update(list_column, column_titles, column_width, columns,
+		!zscroll ? listbox->get_xposition() : 0,
+		!zscroll ? listbox->get_yposition() : 0,
+		-1, 1);
 	return 0;
 }
 
@@ -1050,7 +1054,7 @@ int BC_FileBox::submit_dir(char *dir)
 // filename);
 	strcpy(submitted_path, current_path);
 	fs->change_dir(dir, 0);
-	refresh();
+	refresh(1);
 	directory_title->update(fs->get_current_dir());
 	if(want_directory)
 		textbox->update(fs->get_current_dir());
@@ -1084,7 +1088,7 @@ int BC_FileBox::submit_file(const char *path, int use_this)
 	if(fs->is_dir(path) && !use_this)
 	{
 		fs->change_dir(path, 0);
-		refresh();
+		refresh(1);
 		directory_title->update(fs->get_current_dir());
 		strcpy(this->current_path, fs->get_current_dir());
 		strcpy(this->submitted_path, fs->get_current_dir());
