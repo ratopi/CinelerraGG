@@ -323,6 +323,7 @@ OBJS = \
 	$(OBJDIR)/signalstatus.o \
 	$(OBJDIR)/strack.o \
 	$(OBJDIR)/swindow.o \
+	$(OBJDIR)/wwindow.o \
 
 #	$(OBJDIR)/renderfarmfsclient.o \
 #	$(OBJDIR)/renderfarmfsserver.o \

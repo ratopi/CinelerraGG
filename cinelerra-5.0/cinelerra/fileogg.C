@@ -46,7 +46,7 @@
 #include <string.h>
 #include <errno.h>
 
-#define READ_SIZE 66000
+#define READ_SIZE 3*66000
 
 /* This code was aspired by ffmpeg2theora */
 /* Special thanks for help on this code goes out to j@v2v.cc */
@@ -349,7 +349,7 @@ int FileOGG::open_file(int rd, int wr)
 			}
 
 			vorbis_comment_init (&tf->vc); // comment is cleared lateron 
-			vorbis_comment_add_tag (&tf->vc, (char*)"ENCODER", (char*)PACKAGE_STRING);
+			vorbis_comment_add_tag (&tf->vc, (char*)"ENCODER", (char*)PROGRAM_NAME " " CINELERRA_VERSION);
 			/* set up the analysis state and auxiliary encoding storage */
 			vorbis_analysis_init (&tf->vd, &tf->vi);
 			vorbis_block_init (&tf->vd, &tf->vb);
@@ -374,7 +374,7 @@ int FileOGG::open_file(int rd, int wr)
 
 			/* create the remaining theora headers */
 			theora_comment_init (&tf->tc);
-			theora_comment_add_tag (&tf->tc, (char*)"ENCODER", (char*)PACKAGE_STRING);
+			theora_comment_add_tag (&tf->tc, (char*)"ENCODER", (char*)PROGRAM_NAME " " CINELERRA_VERSION);
 			theora_encode_comment (&tf->tc, &tf->op);
 			ogg_stream_packetin (&tf->to, &tf->op);
 			theora_comment_clear(&tf->tc);
@@ -1147,7 +1147,10 @@ int FileOGG::ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *o
 //	printf("My educated guess: %lli\n", educated_guess); 
 // now see if we won
 	read_buffer_at(stream, sw, READ_SIZE, educated_guess);
-	ogg_sync_and_get_next_page(sw, serialno, og);
+	if( !ogg_sync_and_get_next_page(sw, serialno, og) ) {
+		printf("FileOGG: ogg_sync_and_get_next_page failed\n");
+		return 0;
+	}
 	int64_t pageend_frame;
 	//int read_back = 0;
 	// find the page with "real" ending

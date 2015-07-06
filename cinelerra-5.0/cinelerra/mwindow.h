@@ -88,6 +88,7 @@
 #include "transportque.inc"
 #include "videowindow.inc"
 #include "vwindow.inc"
+#include "wwindow.inc"
 #include "wavecache.inc"
 
 // All entry points for commands except for window locking should be here.
@@ -554,6 +555,9 @@ public:
 	GWindow *gwindow;
 // Tip of the day
 	TipWindow *twindow;
+// Warning window
+	WWindow *wwindow;
+	void show_warning(int *do_warning, const char *text);
 // Levels
 	LevelWindow *lwindow;
 // Lock during creation and destruction of GUI

@@ -93,6 +93,7 @@ SetFormatThread::SetFormatThread(MWindow *mwindow)
 SetFormatThread::~SetFormatThread()
 {
 	if( running() ) {
+		window->set_done(1);
 		cancel();
 		join();
 	}

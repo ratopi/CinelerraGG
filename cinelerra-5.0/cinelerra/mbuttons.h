@@ -36,6 +36,7 @@ class LabelButton;
 class Cut;
 class Copy;
 class Paste;
+class MainFFMpegToggle;
 
 #include "editpanel.h"
 #include "guicast.h"
@@ -64,8 +65,7 @@ public:
 	MWindow *mwindow;
 	PlayTransport *transport;
 	MainEditing *edit_panel;
-
-
+	MainFFMpegToggle *ffmpeg_toggle;
 };
 
 class MainTransport : public PlayTransport
@@ -82,6 +82,17 @@ public:
 	MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y);
 	virtual ~MainEditing() {}
 	
+	MWindow *mwindow;
+	MButtons *mbuttons;
+};
+
+class MainFFMpegToggle : public BC_Toggle
+{
+public:
+	MainFFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y);
+	~MainFFMpegToggle();
+	int handle_event();
+
 	MWindow *mwindow;
 	MButtons *mbuttons;
 };

@@ -100,6 +100,7 @@ public:
 	int file_forking;
 // ffmpeg probes early/late during File::open_file read
 	int ffmpeg_early_probe;
+	int warn_indecies;
 
 // Default positions for channels
 	int channel_positions[MAXCHANNELS * MAXCHANNELS];

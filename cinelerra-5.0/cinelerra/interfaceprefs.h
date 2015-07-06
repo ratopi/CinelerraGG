@@ -276,6 +276,14 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class UseWarnIndecies : public BC_CheckBox
+{
+public:
+	UseWarnIndecies(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 class ScanCommercials : public BC_CheckBox
 {
 public:

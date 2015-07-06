@@ -2253,6 +2253,9 @@ int BC_WindowBase::init_fonts()
 void BC_WindowBase::init_xft()
 {
 #ifdef HAVE_XFT
+// does not seem to be thread safe (07/06/2015)
+	static Mutex xft_lock;
+	xft_lock.lock("BC_WindowBase::init_xft");
 	if(!(smallfont_xft =
 		(resources.small_font_xft[0] == '-' ?
 			XftFontOpenXlfd(display, screen, resources.small_font_xft) :
@@ -2292,6 +2295,7 @@ void BC_WindowBase::init_xft()
 		get_resources()->use_xft = 0;
 		exit(1);
 	}
+	xft_lock.unlock();
 #endif // HAVE_XFT
 }
 

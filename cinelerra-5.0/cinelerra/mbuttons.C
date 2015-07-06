@@ -71,6 +71,8 @@ void MButtons::create_objects()
 	edit_panel->create_objects();
 	
 	x += edit_panel->get_w();
+	ffmpeg_toggle = new MainFFMpegToggle(mwindow, this, get_w()-30, 0);
+	add_subwindow(ffmpeg_toggle);
 	flash(0);
 }
 
@@ -167,8 +169,38 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 }
 
 
+#include "data/ff_checked_png.h"
+#include "data/ff_down_png.h"
+#include "data/ff_checkedhi_png.h"
+#include "data/ff_up_png.h"
+#include "data/ff_hi_png.h"
 
+static VFrame *ff_images[] = {
+	new VFrame(ff_up_png),
+	new VFrame(ff_hi_png),
+	new VFrame(ff_checked_png),
+	new VFrame(ff_down_png),
+	new VFrame(ff_checkedhi_png)
+};
 
+MainFFMpegToggle::MainFFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y)
+ : BC_Toggle(x - ff_images[0]->get_w(), y, &ff_images[0],
+		mwindow->preferences->ffmpeg_early_probe)
+{
+	this->mwindow = mwindow;
+	this->mbuttons = mbuttons;
+	set_tooltip("FFMpeg early probe");
+}
 
+MainFFMpegToggle::~MainFFMpegToggle()
+{
+}
 
+int MainFFMpegToggle::handle_event()
+{
+	mwindow->preferences->ffmpeg_early_probe = get_value();
+	mwindow->show_warning(&mwindow->preferences->warn_indecies,
+		"Changing the base codecs may require rebuilding indecies.");
+	return 1;
+}
 

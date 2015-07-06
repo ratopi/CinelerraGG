@@ -109,6 +109,7 @@
 #include "vwindowgui.h"
 #include "vwindow.h"
 #include "wavecache.h"
+#include "wwindow.h"
 #include "zoombar.h"
 
 #include <string.h>
@@ -200,6 +201,7 @@ MWindow::MWindow()
 	awindow = 0;
 	gwindow = 0;
 	twindow = 0;
+	wwindow = 0;
 	lwindow = 0;
 	sighandler = 0;
 	reload_status = 0;
@@ -249,12 +251,14 @@ MWindow::~MWindow()
 	if( lwindow && lwindow->gui ) lwindow->gui->close(0);
 	if( gwindow && gwindow->gui ) gwindow->gui->close(0);
 	if( twindow && twindow->is_running() ) twindow->close_window();
+	if( wwindow && wwindow->is_running() ) wwindow->close_window();
 	vwindows.remove_all_objects();
 	gui->close(0);
 	if( awindow ) awindow->join();
 	if( cwindow ) cwindow->join();
 	if( lwindow ) lwindow->join();
 	if( twindow ) twindow->join();
+	if( wwindow ) wwindow->join();
 	if( gwindow ) gwindow->join();
 	join();
 #else
@@ -267,6 +271,7 @@ MWindow::~MWindow()
 	close_gui(lwindow);
 	close_gui(gwindow);
 	close_gui(twindow);
+	close_gui(wwindow);
 	vwindows.remove_all_objects();
 	gui->close(0);
 	join();
@@ -283,6 +288,7 @@ MWindow::~MWindow()
 	delete awindow;         awindow = 0;
 	delete lwindow;         lwindow = 0;
 	delete twindow;         twindow = 0;
+	delete wwindow;         wwindow = 0;
 	delete gwindow;         gwindow = 0;
 	// must be last or nouveau chokes
 	delete cwindow;         cwindow = 0;
@@ -656,8 +662,17 @@ void MWindow::init_gwindow()
 
 void MWindow::init_tipwindow()
 {
-	twindow = new TipWindow(this);
+	if( !twindow )
+		twindow = new TipWindow(this);
 	twindow->start();
+}
+
+void MWindow::show_warning(int *do_warning, const char *text)
+{
+	if( do_warning && !*do_warning ) return;
+	if( !wwindow )
+		wwindow = new WWindow(this);
+	wwindow->show_warning(do_warning, text);
 }
 
 void MWindow::init_theme()
@@ -2787,6 +2802,13 @@ void MWindow::remove_assets_from_project(int push_undo)
 		}
 	}
 	
+	for(int i = 0; i < session->drag_assets->size(); i++)
+	{
+		Indexable *indexable = session->drag_assets->values[i];
+		remove_indexfile(indexable);
+	}
+
+//printf("MWindow::rebuild_indices 1 %s\n", indexable->path);
 	if(push_undo) undo->update_undo_before();
 	edl->remove_from_project(session->drag_assets);
 	edl->remove_from_project(session->drag_clips);

@@ -102,6 +102,7 @@ void InterfacePrefs::create_objects()
 
 	y += 35;
 	add_subwindow(new UseTipWindow(pwindow, x, y));
+	add_subwindow(new UseWarnIndecies(pwindow, x+200, y));
 
 	y += 35;
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
@@ -638,6 +639,23 @@ int UseTipWindow::handle_event()
 	pwindow->thread->preferences->use_tipwindow = get_value();
 	return 1;
 }
+
+
+UseWarnIndecies::UseWarnIndecies(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, 
+ 	y, 
+	pwindow->thread->preferences->warn_indecies, 
+	_("ffmpeg probe warns rebuild indecies"))
+{
+	this->pwindow = pwindow;
+}
+
+int UseWarnIndecies::handle_event()
+{
+	pwindow->thread->preferences->warn_indecies = get_value();
+	return 1;
+}
+
 
 
 

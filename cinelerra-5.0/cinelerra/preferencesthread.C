@@ -38,6 +38,7 @@
 #include "levelwindow.h"
 #include "levelwindowgui.h"
 #include "mainerror.h"
+#include "mbuttons.h"
 #include "meterpanel.h"
 #include "mutex.h"
 #include "mwindow.h"
@@ -208,6 +209,7 @@ int PreferencesThread::apply_settings()
 	BC_Signals::set_catch_intr(mwindow->preferences->trap_sigintr);
 
 	mwindow->reset_android_remote();
+	mwindow->gui->mbuttons->ffmpeg_toggle->update(mwindow->preferences->ffmpeg_early_probe);
 
 //edl->session->recording_format->dump();
 //mwindow->edl->session->recording_format->dump();

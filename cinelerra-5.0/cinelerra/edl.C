@@ -882,8 +882,9 @@ void EDL::remove_from_project(ArrayList<EDL*> *clips)
 		{
 			if(this->clips.get(j) == clips->values[i])
 			{
-				this->clips.get(j)->Garbage::remove_user();
-				this->clips.remove(this->clips.get(j));
+				EDL *clip = this->clips.get(j);
+				this->clips.remove(clip);
+				clip->Garbage::remove_user();
 			}
 		}
 	}
