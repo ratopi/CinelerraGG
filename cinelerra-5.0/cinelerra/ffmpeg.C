@@ -30,10 +30,16 @@
 
 Mutex FFMPEG::fflock("FFMPEG::fflock");
 
-static void ff_err(int ret, const char *msg)
+static void ff_err(int ret, const char *fmt, ...)
 {
-	char errmsg[BCSTRLEN];  av_strerror(ret, errmsg, sizeof(errmsg));
-	fprintf(stderr,"%s: %s\n",msg, errmsg);
+	char msg[BCTEXTLEN];
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(msg, sizeof(msg), fmt, ap);
+	va_end(ap);
+	char errmsg[BCSTRLEN];
+	av_strerror(ret, errmsg, sizeof(errmsg));
+	fprintf(stderr,"%s  err: %s\n",msg, errmsg);
 }
 
 FFPacket::FFPacket()
@@ -321,7 +327,7 @@ int FFStream::read_packet()
 	if( ret >= 0 ) return 1;
 	st_eof(1);
 	if( ret == AVERROR_EOF ) return 0;
-	fprintf(stderr, "FFStream::read_packet: av_read_frame failed\n");
+	ff_err(ret, "FFStream::read_packet: av_read_frame failed\n");
 	flushed = 1;
 	return -1;
 }
@@ -381,7 +387,7 @@ int FFStream::read_filter(AVFrame *frame)
 	if( ret < 0 ) {
 		if( ret == AVERROR(EAGAIN) ) return 0;
 		if( ret == AVERROR_EOF ) { st_eof(1); return -1; }
-		fprintf(stderr, "FFStream::read_filter: av_buffersink_get_frame failed\n");
+		ff_err(ret, "FFStream::read_filter: av_buffersink_get_frame failed\n");
 		return ret;
 	}
 	return 1;
@@ -447,7 +453,7 @@ int FFAudioStream::load_history(uint8_t **data, int len)
 		int ret = swr_convert(resample_context,
 			(uint8_t**)&aud_bfr, aud_bfr_sz, (const uint8_t**)data, len);
 		if( ret < 0 ) {
-			fprintf(stderr, "FFAudioStream::load_history: swr_convert failed\n");
+			ff_err(ret, "FFAudioStream::load_history: swr_convert failed\n");
 			return -1;
 		}
 		samples = aud_bfr;
@@ -463,7 +469,7 @@ int FFAudioStream::decode_frame(AVFrame *frame, int &got_frame)
 {
 	int ret = avcodec_decode_audio4(st->codec, frame, &got_frame, ipkt);
 	if( ret < 0 ) {
-		fprintf(stderr, "FFAudioStream::decode_frame: Could not read audio frame\n");
+		ff_err(ret, "FFAudioStream::decode_frame: Could not read audio frame\n");
 		return -1;
 	}
 	return ret;
@@ -512,7 +518,7 @@ int FFAudioStream::init_frame(AVFrame *frame)
 	frame->sample_rate = ctx->sample_rate;
 	int ret = av_frame_get_buffer(frame, 0);
 	if (ret < 0)
-		fprintf(stderr, "FFAudioStream::init_frame: av_frame_get_buffer failed\n");
+		ff_err(ret, "FFAudioStream::init_frame: av_frame_get_buffer failed\n");
 	return ret;
 }
 
@@ -533,7 +539,7 @@ int FFAudioStream::load(int64_t pos, int len)
 			curr_pos += frame->nb_samples;
 		}
 	}
-	if( flushed && end_pos > curr_pos ) {
+	if( end_pos > curr_pos ) {
 		zero(end_pos - curr_pos);
 		curr_pos = end_pos;
 	}
@@ -577,7 +583,7 @@ int FFAudioStream::encode(double **samples, int len)
 			(uint8_t **)frame->extended_data, frame_sz,
 			(const uint8_t **)&bfrp, frame_sz);
 		if( ret < 0 ) {
-			fprintf(stderr, "FFAudioStream::encode: swr_convert failed\n");
+			ff_err(ret, "FFAudioStream::encode: swr_convert failed\n");
 			break;
 		}
 		frm->queue(curr_pos);
@@ -610,7 +616,7 @@ int FFVideoStream::decode_frame(AVFrame *frame, int &got_frame)
 {
 	int ret = avcodec_decode_video2(st->codec, frame, &got_frame, ipkt);
 	if( ret < 0 ) {
-		fprintf(stderr, "FFVideoStream::decode_frame: Could not read video frame\n");
+		ff_err(ret, "FFVideoStream::decode_frame: Could not read video frame\n");
 		return -1;
 	}
 	if( got_frame )
@@ -769,9 +775,10 @@ int FFVideoStream::convert_picture_vframe(VFrame *frame,
 				" sws_getCachedContext() failed\n");
 		return 1;
 	}
-	if( sws_scale(convert_ctx, ip->data, ip->linesize, 0, ih,
-	    opic.data, opic.linesize) < 0 ) {
-		fprintf(stderr, "FFVideoStream::convert_picture_frame: sws_scale() failed\n");
+	int ret = sws_scale(convert_ctx, ip->data, ip->linesize, 0, ih,
+	    opic.data, opic.linesize);
+	if( ret < 0 ) {
+		ff_err(ret, "FFVideoStream::convert_picture_frame: sws_scale() failed\n");
 		return 1;
 	}
 	return 0;
@@ -832,9 +839,10 @@ int FFVideoStream::convert_vframe_picture(VFrame *frame,
 				" sws_getCachedContext() failed\n");
 		return 1;
 	}
-	if( sws_scale(convert_ctx, opic.data, opic.linesize, 0, frame->get_h(),
-			op->data, op->linesize) < 0 ) {
-		fprintf(stderr, "FFVideoStream::convert_frame_picture: sws_scale() failed\n");
+	int ret = sws_scale(convert_ctx, opic.data, opic.linesize, 0, frame->get_h(),
+			op->data, op->linesize);
+	if( ret < 0 ) {
+		ff_err(ret, "FFVideoStream::convert_frame_picture: sws_scale() failed\n");
 		return 1;
 	}
 	return 0;
@@ -1649,11 +1657,12 @@ int FFMPEG::decode_activate()
 
 int FFMPEG::encode_activate()
 {
+	int ret = 0;
 	if( encoding < 0 ) {
 		encoding = 0;
 		if( !(fmt_ctx->flags & AVFMT_NOFILE) &&
-		    avio_open(&fmt_ctx->pb, fmt_ctx->filename, AVIO_FLAG_WRITE) < 0 ) {
-			fprintf(stderr, "FFMPEG::encode_activate: err opening : %s\n",
+		    (ret=avio_open(&fmt_ctx->pb, fmt_ctx->filename, AVIO_FLAG_WRITE)) < 0 ) {
+			ff_err(ret, "FFMPEG::encode_activate: err opening : %s\n",
 				fmt_ctx->filename);
 			return 1;
 		}
@@ -1662,10 +1671,10 @@ int FFMPEG::encode_activate()
 		char option_path[BCTEXTLEN];
 		set_option_path(option_path, "format/%s", file_format);
 		read_options(option_path, fopts);
-		int ret = avformat_write_header(fmt_ctx, &fopts);
+		ret = avformat_write_header(fmt_ctx, &fopts);
 		av_dict_free(&fopts);
 		if( ret < 0 ) {
-			fprintf(stderr, "FFMPEG::encode_activate: write header failed %s\n",
+			ff_err(ret, "FFMPEG::encode_activate: write header failed %s\n",
 				fmt_ctx->filename);
 			return 1;
 		}
