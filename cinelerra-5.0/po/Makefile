@@ -11,13 +11,13 @@ OBJS := \
 	sl.mo \
 	hi.mo \
 	ko.mo \
-	ru.mo \
 	vi.mo \
 	zh.mo \
 	el.mo \
 	ja.mo \
 	uk.mo \
 
+#	ru.mo \
 
 all: $(OBJS)
 
