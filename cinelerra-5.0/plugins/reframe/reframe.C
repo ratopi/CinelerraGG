@@ -50,7 +50,7 @@ ReFrame::~ReFrame()
 {
 }
 
-const char* ReFrame::plugin_title() { return N_("Reframe"); }
+const char* ReFrame::plugin_title() { return _("Reframe"); }
 
 
 

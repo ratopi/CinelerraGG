@@ -30,7 +30,7 @@
 
 
 ConfirmQuitWindow::ConfirmQuitWindow(MWindow *mwindow)
- : BC_Window(PROGRAM_NAME ": Confirm Quit", 
+ : BC_Window(_(PROGRAM_NAME ": Confirm Quit"), 
  	mwindow->gui->get_abs_cursor_x(1), 
 	mwindow->gui->get_abs_cursor_y(1), 
 	375, 
@@ -51,7 +51,7 @@ void ConfirmQuitWindow::create_objects(char *string)
 	lock_window("ConfirmQuitWindow::create_objects");
 	add_subwindow(title = new BC_Title(x, y, string));
 	y += title->get_h();
-	add_subwindow(title = new BC_Title(x, y, _("( Answering ""No"" will destroy changes )")));
+	add_subwindow(title = new BC_Title(x, y, _("( Answering \"No\" will destroy changes )")));
 
 	add_subwindow(new ConfirmQuitYesButton(mwindow, this));
 	add_subwindow(new ConfirmQuitNoButton(mwindow, this));

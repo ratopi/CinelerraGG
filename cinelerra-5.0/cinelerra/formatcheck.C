@@ -48,7 +48,7 @@ int FormatCheck::check_format()
 // Only 1 format can store video.
 		if(!File::supports_video(asset->format))
 		{
-			ErrorBox errorbox(PROGRAM_NAME ": Error");
+			ErrorBox errorbox(_(PROGRAM_NAME ": Error"));
 			errorbox.create_objects(_("The format you selected doesn't support video."));
 			errorbox.run_window();
 			result = 1;
@@ -59,7 +59,7 @@ int FormatCheck::check_format()
 	{
 		if(!File::supports_audio(asset->format))
 		{
-			ErrorBox errorbox(PROGRAM_NAME ": Error");
+			ErrorBox errorbox(_(PROGRAM_NAME ": Error"));
 			errorbox.create_objects(_("The format you selected doesn't support audio."));
 			errorbox.run_window();
 			result = 1;
@@ -67,7 +67,7 @@ int FormatCheck::check_format()
 
 		if(!result && asset->bits == BITSIMA4 && asset->format != FILE_MOV)
 		{
-			ErrorBox errorbox(PROGRAM_NAME ": Error");
+			ErrorBox errorbox(_(PROGRAM_NAME ": Error"));
 			errorbox.create_objects(_("IMA4 compression is only available in Quicktime movies."));
 			errorbox.run_window();
 			result = 1;
@@ -77,7 +77,7 @@ int FormatCheck::check_format()
 			asset->format != FILE_MOV &&
 			asset->format != FILE_PCM)
 		{
-			ErrorBox errorbox(PROGRAM_NAME ": Error");
+			ErrorBox errorbox(_(PROGRAM_NAME ": Error"));
 			errorbox.create_objects(_("ULAW compression is only available in\n" 
 				"Quicktime Movies and PCM files."));
 			errorbox.run_window();

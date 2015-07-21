@@ -266,7 +266,7 @@ int FileSndFile::set_audio_position(int64_t sample)
 // Commented out /* && psf->dataoffset */ in sndfile.c: 761
 	if(sf_seek(fd, sample, SEEK_SET) < 0)
 	{
-		eprintf("sf_seek() to sample %jd failed, reason: %s\n", sample, sf_strerror(fd));
+		eprintf(_("sf_seek() to sample %jd failed, reason: %s\n"), sample, sf_strerror(fd));
 		sf_perror(fd);
 		return 1;
 	}
@@ -283,7 +283,7 @@ int FileSndFile::read_samples(double *buffer, int64_t len)
 		eprintf("FileSndFile::read_samples len=" _LD "\n", len);
 
 	if(!buffer)
-		eprintf("buffer=%p\n", buffer);
+		eprintf(_("buffer=%p\n"), buffer);
 
 	if(temp_allocated && temp_allocated < len)
 	{
@@ -301,8 +301,8 @@ int FileSndFile::read_samples(double *buffer, int64_t len)
 	result = !sf_read_double(fd, temp_double, len * asset->channels);
 
 	if(result)
-		eprintf("FileSndFile::read_samples fd=%p temp_double=%p"
-			" len=" _LD " asset=%p asset->channels=%d\n",
+		eprintf(_("FileSndFile::read_samples fd=%p temp_double=%p"
+			" len=" _LD " asset=%p asset->channels=%d\n"),
 			fd, temp_double, len, asset, asset->channels);
 
 // Extract single channel
@@ -372,7 +372,7 @@ void FileSndFile::get_parameters(BC_WindowBase *parent_window,
 }
 
 SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Audio Compression",
+ : BC_Window(_(PROGRAM_NAME ": Audio Compression"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	250,

@@ -158,10 +158,10 @@ int EchoCancelMode::handle_event()
 const char* EchoCancelMode::to_text(int mode)
 {
 	switch(mode) {
-	case CANCEL_ON: return "ON";
-	case CANCEL_MAN: return "MAN";
+	case CANCEL_ON: return _("ON");
+	case CANCEL_MAN: return _("MAN");
 	}
-	return "OFF";
+	return _("OFF");
 }
 
 int EchoCancelMode::to_mode(const char *text)
@@ -209,7 +209,7 @@ int EchoCancelWindowSize::handle_event()
 
 const char *EchoCancelWindowSize::to_text(int size)
 {
-	if( !size ) return "default";
+	if( !size ) return _("default");
 	static char string[BCSTRLEN];
 	sprintf(string, "%d", size);
 	return string;
@@ -720,7 +720,7 @@ remove(int len)
 		sample_data -= len;
 }
 
-const char* EchoCancel::plugin_title() { return N_("EchoCancel"); }
+const char* EchoCancel::plugin_title() { return _("EchoCancel"); }
 int EchoCancel::is_realtime() { return 1; }
 
 static inline double sqr(double v) { return v*v; }

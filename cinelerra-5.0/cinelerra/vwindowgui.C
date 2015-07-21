@@ -57,7 +57,7 @@
 
 
 VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
- : BC_Window(PROGRAM_NAME ": Viewer",
+ : BC_Window(_(PROGRAM_NAME ": Viewer"),
  	mwindow->session->vwindow_x,
 	mwindow->session->vwindow_y,
 	mwindow->session->vwindow_w,
@@ -97,9 +97,9 @@ void VWindowGUI::change_source(EDL *edl, const char *title)
 	char string[BCTEXTLEN];
 
 	if(title[0]) 
-		sprintf(string, PROGRAM_NAME ": %s", title);
+		sprintf(string, _(PROGRAM_NAME ": %s"), title);
 	else
-		sprintf(string, PROGRAM_NAME ": Viewer");
+		sprintf(string, _(PROGRAM_NAME ": Viewer"));
 
 	lock_window("VWindowGUI::change_source");
 	timebar->update(0);

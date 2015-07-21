@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
 			strcpy(BC_Resources::language, locbuf);
 	}
 	else
-		printf(PROGRAM_NAME ": Could not set locale.\n");
+		printf(_(PROGRAM_NAME ": Could not set locale.\n"));
 #else
         setlocale(LC_CTYPE, "");
 #endif
@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-				fprintf(stderr, "%s: -c needs a filename.\n", argv[0]);
+				fprintf(stderr, _("%s: -c needs a filename.\n"), argv[0]);
 			}
 		}
 		else
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 			operation = DO_BRENDER;
 			if(i > argc - 2)
 			{
-				fprintf(stderr, "-b may not be used by the user.\n");
+				fprintf(stderr, _("-b may not be used by the user.\n"));
 				exit(1);
 			}
 			else
@@ -298,14 +298,11 @@ int main(int argc, char *argv[])
 		operation == DO_USAGE ||
 		operation == DO_BATCHRENDER)
 	fprintf(stderr,
-		PROGRAM_NAME " "
-		CINELERRA_VERSION " "
-		"(C)%d Adam Williams\n\n"
-
-PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
-"and you are welcome to change it and/or distribute copies of it under\n"
-"certain conditions. There is absolutely no warranty for " PROGRAM_NAME ".\n",
-COPYRIGHT_DATE);
+		_(PROGRAM_NAME " " CINELERRA_VERSION " " "(C)%d Adam Williams\n\n"
+		PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
+		"and you are welcome to change it and/or distribute copies of it under\n"
+		"certain conditions. There is absolutely no warranty for " PROGRAM_NAME ".\n"),
+		COPYRIGHT_DATE);
 
 
 

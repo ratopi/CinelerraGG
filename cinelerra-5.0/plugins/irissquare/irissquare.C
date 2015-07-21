@@ -141,7 +141,7 @@ IrisSquareMain::~IrisSquareMain()
 	
 }
 
-const char* IrisSquareMain::plugin_title() { return N_("IrisSquare"); }
+const char* IrisSquareMain::plugin_title() { return _("IrisSquare"); }
 int IrisSquareMain::is_video() { return 1; }
 int IrisSquareMain::is_transition() { return 1; }
 int IrisSquareMain::uses_gui() { return 1; }

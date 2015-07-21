@@ -93,7 +93,7 @@ GreyCStorationMain::~GreyCStorationMain()
 	delete [] alpha;
 }
 
-const char* GreyCStorationMain::plugin_title() { return N_("GreyCStoration"); }
+const char* GreyCStorationMain::plugin_title() { return _("GreyCStoration"); }
 int GreyCStorationMain::is_realtime() { return 1; }
 
 

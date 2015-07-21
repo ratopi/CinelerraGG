@@ -341,7 +341,7 @@ ShapeWipeMain::~ShapeWipeMain()
 	shape_titles.remove_all_objects();
 }
 
-const char* ShapeWipeMain::plugin_title() { return N_("Shape Wipe"); }
+const char* ShapeWipeMain::plugin_title() { return _("Shape Wipe"); }
 int ShapeWipeMain::is_transition() { return 1; }
 int ShapeWipeMain::uses_gui() { return 1; }
 
@@ -778,7 +778,7 @@ int ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			last_preserve_aspect = preserve_aspect;
 		}
 		else {
-			fprintf(stderr, "Shape Wipe: cannot load shape %s\n", filename);
+			fprintf(stderr, _("Shape Wipe: cannot load shape %s\n"), filename);
 			last_read_filename[0] = 0;
 			return 0;
 		}

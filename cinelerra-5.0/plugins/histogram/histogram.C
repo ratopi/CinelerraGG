@@ -96,7 +96,7 @@ HistogramMain::~HistogramMain()
 	delete engine;
 }
 
-const char* HistogramMain::plugin_title() { return N_("Histogram"); }
+const char* HistogramMain::plugin_title() { return _("Histogram"); }
 int HistogramMain::is_realtime() { return 1; }
 
 
@@ -636,43 +636,43 @@ int HistogramMain::handle_opengl()
 	int aggregate_colorbalance = 0;
 // All aggregation possibilities must be accounted for because unsupported
 // effects can get in between the aggregation members.
-	if(!strcmp(get_output()->get_prev_effect(2), "Interpolate Pixels") &&
-		!strcmp(get_output()->get_prev_effect(1), "Gamma") &&
-		!strcmp(get_output()->get_prev_effect(0), "Color Balance"))
+	if(!strcmp(get_output()->get_prev_effect(2), _("Interpolate Pixels")) &&
+		!strcmp(get_output()->get_prev_effect(1), _("Gamma")) &&
+		!strcmp(get_output()->get_prev_effect(0), _("Color Balance")))
 	{
 		aggregate_interpolation = 1;
 		aggregate_gamma = 1;
 		aggregate_colorbalance = 1;
 	}
 	else
-	if(!strcmp(get_output()->get_prev_effect(1), "Gamma") &&
-		!strcmp(get_output()->get_prev_effect(0), "Color Balance"))
+	if(!strcmp(get_output()->get_prev_effect(1), _("Gamma")) &&
+		!strcmp(get_output()->get_prev_effect(0), _("Color Balance")))
 	{
 		aggregate_gamma = 1;
 		aggregate_colorbalance = 1;
 	}
 	else
-	if(!strcmp(get_output()->get_prev_effect(1), "Interpolate Pixels") &&
-		!strcmp(get_output()->get_prev_effect(0), "Gamma"))
+	if(!strcmp(get_output()->get_prev_effect(1), _("Interpolate Pixels")) &&
+		!strcmp(get_output()->get_prev_effect(0), _("Gamma")))
 	{
 		aggregate_interpolation = 1;
 		aggregate_gamma = 1;
 	}
 	else
-	if(!strcmp(get_output()->get_prev_effect(1), "Interpolate Pixels") &&
-		!strcmp(get_output()->get_prev_effect(0), "Color Balance"))
+	if(!strcmp(get_output()->get_prev_effect(1), _("Interpolate Pixels")) &&
+		!strcmp(get_output()->get_prev_effect(0), _("Color Balance")))
 	{
 		aggregate_interpolation = 1;
 		aggregate_colorbalance = 1;
 	}
 	else
-	if(!strcmp(get_output()->get_prev_effect(0), "Interpolate Pixels"))
+	if(!strcmp(get_output()->get_prev_effect(0), _("Interpolate Pixels")))
 		aggregate_interpolation = 1;
 	else
-	if(!strcmp(get_output()->get_prev_effect(0), "Gamma"))
+	if(!strcmp(get_output()->get_prev_effect(0), _("Gamma")))
 		aggregate_gamma = 1;
 	else
-	if(!strcmp(get_output()->get_prev_effect(0), "Color Balance"))
+	if(!strcmp(get_output()->get_prev_effect(0), _("Color Balance")))
 		aggregate_colorbalance = 1;
 
 

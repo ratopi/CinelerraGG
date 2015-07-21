@@ -603,7 +603,7 @@ int RecordEngine::start_over()
 		(record->do_video && file->get_video_length(record->get_framerate()) > 0))
 	{
 		RecConfirmDelete dialog(mwindow);
-		dialog.create_objects("start over");
+		dialog.create_objects(_("start over"));
 		int result = dialog.run_window();
 		if(!result)
 		{

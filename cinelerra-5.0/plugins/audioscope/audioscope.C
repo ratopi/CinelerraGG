@@ -309,14 +309,14 @@ const char* AudioScopeMode::mode_to_text(int mode)
 	switch(mode)
 	{
 		case XY_MODE:
-			return "XY Mode";
+			return _("XY Mode");
 		case WAVEFORM_NO_TRIGGER:
-			return "Waveform";
+			return _("Waveform");
 		case WAVEFORM_RISING_TRIGGER:
-			return "Rising Trigger";
+			return _("Rising Trigger");
 		case WAVEFORM_FALLING_TRIGGER:
 		default:
-			return "Falling Trigger";
+			return _("Falling Trigger");
 	}
 }
 
@@ -574,13 +574,13 @@ void AudioScopeWindow::calculate_probe(int x, int y, int do_overlay)
 
 
 	char string[BCTEXTLEN];
-	sprintf(string, "Sample: %d", sample);
+	sprintf(string, _("Sample: %d"), sample);
 	probe_sample->update(string);
 
-	sprintf(string, "Level 0: %.2f", channel0);
+	sprintf(string, _("Level 0: %.2f"), channel0);
 	probe_level0->update(string);
 
-	sprintf(string, "Level 1: %.2f", channel1);
+	sprintf(string, _("Level 1: %.2f"), channel1);
 	probe_level1->update(string);
 
 	
@@ -661,7 +661,7 @@ void AudioScope::reset()
 }
 
 
-const char* AudioScope::plugin_title() { return N_("AudioScope"); }
+const char* AudioScope::plugin_title() { return _("AudioScope"); }
 int AudioScope::is_realtime() { return 1; }
 int AudioScope::is_multichannel() { return 1; }
 

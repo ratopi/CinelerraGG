@@ -51,7 +51,7 @@ RGB601Main::~RGB601Main()
 	
 }
 
-const char* RGB601Main::plugin_title() { return N_("RGB - 601"); }
+const char* RGB601Main::plugin_title() { return _("RGB - 601"); }
 int RGB601Main::is_realtime() { return 1; }
 
 
@@ -294,8 +294,8 @@ int RGB601Main::process_buffer(VFrame *frame,
 
 // Deinterlace effects may aggregate this one,
 	if(get_use_opengl() &&
-		(prev_effect_is("Frames to fields") ||
-		next_effect_is("Frames to fields")))
+		(prev_effect_is(_("Frames to fields")) ||
+		next_effect_is(_("Frames to fields"))))
 	{
 		return 0;
 	}

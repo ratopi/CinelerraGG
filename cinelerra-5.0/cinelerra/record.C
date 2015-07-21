@@ -721,7 +721,7 @@ double Record::current_display_position()
 const char* Record::current_source()
 {
 	Batch *batch = get_current_batch();
-	return batch ? batch->get_source_text() : "Unknown";
+	return batch ? batch->get_source_text() : _("Unknown");
 }
 
 Asset* Record::current_asset()
@@ -1187,7 +1187,7 @@ void Record::start_cron_thread()
 		record_thread = new RecordThread(mwindow,this);
 		record_thread->start();
 		record_gui->disable_batch_buttons();
-		record_gui->update_cron_status("Running");
+		record_gui->update_cron_status(_("Running"));
 	}
 }
 

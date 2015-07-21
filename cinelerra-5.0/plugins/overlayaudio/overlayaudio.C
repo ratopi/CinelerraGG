@@ -199,14 +199,14 @@ void OverlayAudioWindow::create_objects()
 	int x = 10, y = 10;
 	int x1 = x;
 	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y, "Output track:"));
+	add_subwindow(title = new BC_Title(x, y, _("Output track:")));
 	x += title->get_w() + plugin->get_theme()->widget_border;
 	add_subwindow(output = new OutputTrack(plugin, x, y));
 	output->create_objects();
 
 	y += output->get_h() + plugin->get_theme()->widget_border;
 	x = x1;
-	add_subwindow(title = new BC_Title(x, y, "Mode:"));
+	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
 	x += title->get_w() + plugin->get_theme()->widget_border;
 	add_subwindow(mode = new OverlayMode(plugin, x, y));
 	mode->create_objects();
@@ -328,7 +328,7 @@ OverlayAudio::~OverlayAudio()
 	
 }
 
-const char* OverlayAudio::plugin_title() { return N_("Overlay"); }
+const char* OverlayAudio::plugin_title() { return _("Overlay"); }
 int OverlayAudio::is_realtime() { return 1; }
 int OverlayAudio::is_multichannel() { return 1; }
 

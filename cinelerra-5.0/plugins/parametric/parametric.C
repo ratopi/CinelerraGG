@@ -816,7 +816,7 @@ NEW_WINDOW_MACRO(ParametricEQ, ParametricWindow)
 LOAD_CONFIGURATION_MACRO(ParametricEQ, ParametricConfig)
 
 
-const char* ParametricEQ::plugin_title() { return N_("EQ Parametric"); }
+const char* ParametricEQ::plugin_title() { return _("EQ Parametric"); }
 int ParametricEQ::is_realtime() { return 1; }
 
 void ParametricEQ::read_data(KeyFrame *keyframe)

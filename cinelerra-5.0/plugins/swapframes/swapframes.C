@@ -213,7 +213,7 @@ SwapFrames::~SwapFrames()
 	delete buffer;
 }
 
-const char* SwapFrames::plugin_title() { return N_("Swap Frames"); }
+const char* SwapFrames::plugin_title() { return _("Swap Frames"); }
 int SwapFrames::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(SwapFrames, SwapFramesWindow)

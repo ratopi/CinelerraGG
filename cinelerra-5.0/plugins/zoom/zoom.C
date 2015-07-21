@@ -144,7 +144,7 @@ ZoomMain::~ZoomMain()
 	delete temp;
 }
 
-const char* ZoomMain::plugin_title() { return N_("Zoom"); }
+const char* ZoomMain::plugin_title() { return _("Zoom"); }
 int ZoomMain::is_video() { return 1; }
 int ZoomMain::is_transition() { return 1; }
 int ZoomMain::uses_gui() { return 1; }

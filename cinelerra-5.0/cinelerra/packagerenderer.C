@@ -175,7 +175,7 @@ void PackageRenderer::create_output()
 // open failed
 		char string[BCTEXTLEN];
 		sprintf(string, _("Couldn't open %s"), asset->path);
-		ErrorBox error(PROGRAM_NAME ": Error",
+		ErrorBox error(_(PROGRAM_NAME ": Error"),
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 		error.create_objects(string);

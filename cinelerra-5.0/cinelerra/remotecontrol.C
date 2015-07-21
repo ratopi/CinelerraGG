@@ -8,7 +8,7 @@
 
 
 RemoteWindow::RemoteWindow(RemoteControl *remote_control)
- : BC_Window(PROGRAM_NAME ": RemoteWindow",
+ : BC_Window(_(PROGRAM_NAME ": RemoteWindow"),
 		0, 0, 16, 16, -1, -1, 1, 0, 1)
 {
 	this->remote_control = remote_control;

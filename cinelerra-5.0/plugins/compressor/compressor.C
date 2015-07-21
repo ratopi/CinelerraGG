@@ -114,7 +114,7 @@ void CompressorEffect::reset()
 	current_value = 1.0;
 }
 
-const char* CompressorEffect::plugin_title() { return N_("Compressor"); }
+const char* CompressorEffect::plugin_title() { return _("Compressor"); }
 int CompressorEffect::is_realtime() { return 1; }
 int CompressorEffect::is_multichannel() { return 1; }
 
@@ -1363,12 +1363,12 @@ const char* CompressorInput::value_to_text(int value)
 {
 	switch(value)
 	{
-		case CompressorConfig::TRIGGER: return "Trigger";
-		case CompressorConfig::MAX: return "Maximum";
-		case CompressorConfig::SUM: return "Total";
+		case CompressorConfig::TRIGGER: return _("Trigger");
+		case CompressorConfig::MAX: return _("Maximum");
+		case CompressorConfig::SUM: return _("Total");
 	}
 
-	return "Trigger";
+	return _("Trigger");
 }
 
 int CompressorInput::text_to_value(char *text)

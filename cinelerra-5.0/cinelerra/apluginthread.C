@@ -46,15 +46,15 @@ APluginThread::attach()
 
 APluginThread::detach()
 {
-printf("APluginThread::detach\n");
+//printf("APluginThread::detach\n");
 	if(plugin_server)
 	{
-printf("plugin_server->stop_gui\n");
+//printf("plugin_server->stop_gui\n");
 		plugin_server->stop_gui();     // sends a completed command to the thread
 
-printf("plugin_server->close_plugin\n");
+//printf("plugin_server->close_plugin\n");
 		plugin_server->close_plugin();        // tell client thread to finish
-printf("done plugin_server->close_plugin\n");
+//printf("done plugin_server->close_plugin\n");
 	}
 }
 

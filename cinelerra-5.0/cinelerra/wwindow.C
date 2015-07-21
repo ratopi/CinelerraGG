@@ -57,7 +57,7 @@ BC_Window* WWindow::new_gui()
 }
 
 WWindowGUI::WWindowGUI(WWindow *thread, int x, int y)
- : BC_Window(PROGRAM_NAME ": Warning", x, y, 640, 100, 640, 100, 0, 0, 1)
+ : BC_Window(_(PROGRAM_NAME ": Warning"), x, y, 640, 100, 640, 100, 0, 0, 1)
 {
 	this->thread = thread;
 }

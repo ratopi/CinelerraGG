@@ -73,12 +73,12 @@ int ConfirmSave::test_files(MWindow *mwindow,
 		}
 		else
 		{
-			printf("The following files exist:\n");
+			printf(_("The following files exist:\n"));
 			for(int i = 0; i < list.total; i++)
 			{
 				printf("    %s\n", list.values[i]->get_text());
 			}
-			printf("Won't overwrite existing files.\n");
+			printf(_("Won't overwrite existing files.\n"));
 			result = 1;
 		}
 		list.remove_all_objects();
@@ -103,7 +103,7 @@ int ConfirmSave::test_files(MWindow *mwindow,
 
 ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow, 
 	ArrayList<BC_ListBoxItem*> *list)
- : BC_Window(PROGRAM_NAME ": File Exists", 
+ : BC_Window(_(PROGRAM_NAME ": File Exists"), 
  		mwindow->gui->get_abs_cursor_x(1) - 160, 
 		mwindow->gui->get_abs_cursor_y(1) - 120, 
 		320, 

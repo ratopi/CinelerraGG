@@ -21,6 +21,7 @@
 
 #include "condition.h"
 #include "iec61883input.h"
+#include "language.h"
 #include "mutex.h"
 #include "vframe.h"
 
@@ -196,7 +197,7 @@ void IEC61883Input::run()
 
 int IEC61883Input::write_frame(unsigned char *data, int len, int complete)
 {
-	if(!complete) printf("write_frame: incomplete frame received.\n");
+	if(!complete) printf(_("write_frame: incomplete frame received.\n"));
 
 	buffer_lock->lock("IEC61883Input write_frame 1");
 

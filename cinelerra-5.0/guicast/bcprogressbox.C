@@ -26,6 +26,7 @@
 #include "bcresources.h"
 #include "bctitle.h"
 #include "bcwindow.h"
+#include "language.h"
 #include "vframe.h"
 
 BC_ProgressBox::BC_ProgressBox(int x, int y, const char *text, int64_t length)
@@ -111,7 +112,7 @@ void BC_ProgressBox::unlock_window()
 
 
 BC_ProgressWindow::BC_ProgressWindow(int x, int y)
- : BC_Window("Progress",
+ : BC_Window(_("Progress"),
  	x,
 	y,
 	340,

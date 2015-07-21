@@ -48,9 +48,9 @@ void HoloWindow::create_objects()
 {
 	int x = 10, y = 10;
 	add_subwindow(new BC_Title(x, y, 
-		_("HolographicTV from EffectTV\n"
+		"HolographicTV from EffectTV\n"
 		"Copyright (C) 2001 FUKUCHI Kentarou")
-	));
+	);
 
 	show_window();
 	flush();

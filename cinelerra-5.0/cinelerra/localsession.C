@@ -24,6 +24,7 @@
 #include "edl.h"
 #include "filexml.h"
 #include "floatauto.h"
+#include "language.h"
 #include "localsession.h"
 
 
@@ -37,8 +38,8 @@ LocalSession::LocalSession(EDL *edl)
 	selectionstart = selectionend = 0;
 	in_point = out_point = -1;
 	strcpy(folder, CLIP_FOLDER);
-	sprintf(clip_title, "Program");
-	strcpy(clip_notes, "Hello world");
+	sprintf(clip_title, _("Program"));
+	strcpy(clip_notes, _("Hello world"));
 	clipboard_length = 0;
 	preview_start = preview_end = 0;
 	loop_playback = 0;

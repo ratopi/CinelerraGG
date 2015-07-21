@@ -235,7 +235,7 @@ VideoScopeEffect::~VideoScopeEffect()
 
 
 
-const char* VideoScopeEffect::plugin_title() { return N_("VideoScope"); }
+const char* VideoScopeEffect::plugin_title() { return _("VideoScope"); }
 int VideoScopeEffect::is_realtime() { return 1; }
 
 int VideoScopeEffect::load_configuration()

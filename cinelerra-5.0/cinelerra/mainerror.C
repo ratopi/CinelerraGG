@@ -40,7 +40,7 @@ MainError* MainError::main_error = 0;
 
 
 MainErrorGUI::MainErrorGUI(MWindow *mwindow, MainError *thread, int x, int y)
- : BC_Window(PROGRAM_NAME ": Errors",
+ : BC_Window(_(PROGRAM_NAME ": Errors"),
         x,
         y,
         mwindow->session->ewindow_w,

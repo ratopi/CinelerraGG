@@ -259,7 +259,7 @@ ShiftInterlaceMain::~ShiftInterlaceMain()
 }
 
 
-const char* ShiftInterlaceMain::plugin_title()  { return N_("ShiftInterlace"); }
+const char* ShiftInterlaceMain::plugin_title()  { return _("ShiftInterlace"); }
 int ShiftInterlaceMain::is_realtime() { return 1; }
 
 

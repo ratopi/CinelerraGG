@@ -831,7 +831,7 @@ add_timelines(Clips *clips, int fid, double err)
 {
 	// found frame, find timelines
 	if( get_timelines(fid) ) {
-		printf(" find timeline frame_id(%d) failed\n", fid);
+		printf(_(" find timeline frame_id(%d) failed\n"), fid);
 		return 1;
 	}
 

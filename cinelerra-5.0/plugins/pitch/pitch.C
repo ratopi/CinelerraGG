@@ -60,7 +60,7 @@ PitchEffect::~PitchEffect()
 	if(fft) delete fft;
 }
 
-const char* PitchEffect::plugin_title() { return N_("Pitch shift"); }
+const char* PitchEffect::plugin_title() { return _("Pitch shift"); }
 int PitchEffect::is_realtime() { return 1; }
 
 

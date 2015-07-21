@@ -85,7 +85,7 @@ void PresetsThread::start_window(Plugin *plugin)
 	{
 		this->plugin = plugin;
 		plugin->calculate_title(plugin_title, 0);
-		sprintf(window_title, PROGRAM_NAME ": %s Presets", plugin_title);
+		sprintf(window_title, _(PROGRAM_NAME ": %s Presets"), plugin_title);
 
 
 // Calculate database

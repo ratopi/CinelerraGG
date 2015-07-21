@@ -64,10 +64,10 @@
 
 static const char *list_titles[] = 
 {
-	"Enabled", 
-	"Output",
-	"EDL",
-	"Elapsed"
+	_("Enabled"), 
+	_("Output"),
+	_("EDL"),
+	_("Elapsed")
 };
 
 static int list_widths[] =
@@ -79,7 +79,7 @@ static int list_widths[] =
 };
 
 BatchRenderMenuItem::BatchRenderMenuItem(MWindow *mwindow)
- : BC_MenuItem(_("Batch Render..."), "Shift-B", 'B')
+ : BC_MenuItem(_("Batch Render..."), _("Shift-B"), 'B')
 {
 	set_shift(1); 
 	this->mwindow = mwindow;
@@ -419,7 +419,7 @@ void BatchRenderThread::update_selected_edl()
         xml_file.terminate_string();
         if( xml_file.write_to_file(path) ) {
 		char msg[BCTEXTLEN];
-		sprintf(msg, "Unable to save: %s", path);
+		sprintf(msg, _("Unable to save: %s"), path);
 		MainError::show_error(msg);
 	}
 }
@@ -466,7 +466,7 @@ int BatchRenderThread::test_edl_files()
 				sprintf(string, _("EDL %s not found.\n"), jobs.values[i]->edl_path);
 				if(mwindow)
 				{
-					ErrorBox error_box(PROGRAM_NAME ": Error",
+					ErrorBox error_box(_(PROGRAM_NAME ": Error"),
 						mwindow->gui->get_abs_cursor_x(1),
 						mwindow->gui->get_abs_cursor_y(1));
 					error_box.create_objects(string);
@@ -700,7 +700,7 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 	int y,
 	int w,
 	int h)
- : BC_Window(PROGRAM_NAME ": Batch Render", 
+ : BC_Window(_(PROGRAM_NAME ": Batch Render"), 
 	x,
 	y,
 	w, 
@@ -1328,7 +1328,7 @@ const double CreateDVD_Thread::DVD_KAUDIO_RATE = 224;
 
 
 CreateDVD_MenuItem::CreateDVD_MenuItem(MWindow *mwindow)
- : BC_MenuItem(_("DVD Render..."), "Shift-D", 'D')
+ : BC_MenuItem(_("DVD Render..."), _("Shift-D"), 'D')
 {
 	set_shift(1); 
 	this->mwindow = mwindow;
@@ -1367,7 +1367,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	EDL *edl = mwindow->edl;
 	if( !edl || !edl->session ) {
 		char msg[BCTEXTLEN];
-                sprintf(msg, "No EDL/Session");
+                sprintf(msg, _("No EDL/Session"));
                 MainError::show_error(msg);
                 return 1;
         }
@@ -1376,7 +1376,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	double total_length = edl->tracks->total_length();
         if( total_length <= 0 ) {
 		char msg[BCTEXTLEN];
-                sprintf(msg, "No content: %s", asset_title);
+                sprintf(msg, _("No content: %s"), asset_title);
                 MainError::show_error(msg);
                 return 1;
         }
@@ -1387,7 +1387,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	if( mkdir(asset_dir, 0777) ) {
 		char err[BCTEXTLEN], msg[BCTEXTLEN];
 		strerror_r(errno, err, sizeof(err));
-		sprintf(msg, "Unable to create directory: %s\n-- %s", asset_dir, err);
+		sprintf(msg, _("Unable to create directory: %s\n-- %s"), asset_dir, err);
 		MainError::show_error(msg);
 		return 1;
 	}
@@ -1413,7 +1413,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	if( !fp ) {
 		char err[BCTEXTLEN], msg[BCTEXTLEN];
 		strerror_r(errno, err, sizeof(err));
-		sprintf(msg, "Unable to save: %s\n-- %s", script_filename, err);
+		sprintf(msg, _("Unable to save: %s\n-- %s"), script_filename, err);
 		MainError::show_error(msg);
 		return 1;
 	}
@@ -1508,7 +1508,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
         xml_file.terminate_string();
         if( xml_file.write_to_file(xml_filename) ) {
 		char msg[BCTEXTLEN];
-		sprintf(msg, "Unable to save: %s", xml_filename);
+		sprintf(msg, _("Unable to save: %s"), xml_filename);
 		MainError::show_error(msg);
 		return 1;
 	}
@@ -1684,7 +1684,7 @@ CreateDVD_OK::CreateDVD_OK(CreateDVD_GUI *gui, int x, int y)
  : BC_OKButton(x, y)
 {
         this->gui = gui;
-        set_tooltip("end setup, start batch render");
+        set_tooltip(_("end setup, start batch render"));
 }
 
 CreateDVD_OK::~CreateDVD_OK()
@@ -1754,7 +1754,7 @@ void CreateDVD_DiskSpace::update()
 	int i = 0;
 	for( int64_t space=disk_space; i<5 && (space/=1000)>0; disk_space=space, ++i );
 	char text[BCTEXTLEN];
-	sprintf(text, "disk space: " _LDv(3) "%s", disk_space, suffix[i]);
+	sprintf(text, "%s" _LDv(3) "%s", _("disk space: "), disk_space, suffix[i]);
 	gui->disk_space->BC_Title::update(text);
 	gui->disk_space->set_color(color);
 }
@@ -1789,7 +1789,7 @@ CreateDVD_AssetTitle::~CreateDVD_AssetTitle()
 
 
 CreateDVD_Deinterlace::CreateDVD_Deinterlace(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_deinterlace, "Deinterlace")
+ : BC_CheckBox(x, y, &gui->thread->use_deinterlace, _("Deinterlace"))
 {
 	this->gui = gui;
 }
@@ -1809,7 +1809,7 @@ int CreateDVD_Deinterlace::handle_event()
 
 
 CreateDVD_InverseTelecine::CreateDVD_InverseTelecine(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_inverse_telecine, "Inverse Telecine")
+ : BC_CheckBox(x, y, &gui->thread->use_inverse_telecine, _("Inverse Telecine"))
 {
 	this->gui = gui;
 }
@@ -1829,7 +1829,7 @@ int CreateDVD_InverseTelecine::handle_event()
 
 
 CreateDVD_Scale::CreateDVD_Scale(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_scale, "Scale")
+ : BC_CheckBox(x, y, &gui->thread->use_scale, _("Scale"))
 {
 	this->gui = gui;
 }
@@ -1840,7 +1840,7 @@ CreateDVD_Scale::~CreateDVD_Scale()
 
 
 CreateDVD_ResizeTracks::CreateDVD_ResizeTracks(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_resize_tracks, "Resize Tracks")
+ : BC_CheckBox(x, y, &gui->thread->use_resize_tracks, _("Resize Tracks"))
 {
 	this->gui = gui;
 }
@@ -1851,7 +1851,7 @@ CreateDVD_ResizeTracks::~CreateDVD_ResizeTracks()
 
 
 CreateDVD_Histogram::CreateDVD_Histogram(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_histogram, "Histogram")
+ : BC_CheckBox(x, y, &gui->thread->use_histogram, _("Histogram"))
 {
 	this->gui = gui;
 }
@@ -1861,7 +1861,7 @@ CreateDVD_Histogram::~CreateDVD_Histogram()
 }
 
 CreateDVD_LabelChapters::CreateDVD_LabelChapters(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_label_chapters, "Chapters at Labels")
+ : BC_CheckBox(x, y, &gui->thread->use_label_chapters, _("Chapters at Labels"))
 {
 	this->gui = gui;
 }
@@ -1871,7 +1871,7 @@ CreateDVD_LabelChapters::~CreateDVD_LabelChapters()
 }
 
 CreateDVD_WideAudio::CreateDVD_WideAudio(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_wide_audio, "Audio 5.1")
+ : BC_CheckBox(x, y, &gui->thread->use_wide_audio, _("Audio 5.1"))
 {
 	this->gui = gui;
 }
@@ -1881,7 +1881,7 @@ CreateDVD_WideAudio::~CreateDVD_WideAudio()
 }
 
 CreateDVD_WideAspect::CreateDVD_WideAspect(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_wide_aspect, "Aspect 16x9")
+ : BC_CheckBox(x, y, &gui->thread->use_wide_aspect, _("Aspect 16x9"))
 {
 	this->gui = gui;
 }
@@ -1891,7 +1891,7 @@ CreateDVD_WideAspect::~CreateDVD_WideAspect()
 }
 
 CreateDVD_UseFFMpeg::CreateDVD_UseFFMpeg(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_ffmpeg, "Use FFMPEG")
+ : BC_CheckBox(x, y, &gui->thread->use_ffmpeg, _("Use FFMPEG"))
 {
 	this->gui = gui;
 }
@@ -1904,7 +1904,7 @@ CreateDVD_UseFFMpeg::~CreateDVD_UseFFMpeg()
 
 
 CreateDVD_GUI::CreateDVD_GUI(CreateDVD_Thread *thread, int x, int y, int w, int h)
- : BC_Window(PROGRAM_NAME ": Create DVD", x, y, w, h, 50, 50, 1, 0, 1)
+ : BC_Window(_(PROGRAM_NAME ": Create DVD"), x, y, w, h, 50, 50, 1, 0, 1)
 {
 	this->thread = thread;
 	at_x = at_y = tmp_x = tmp_y = 0;
@@ -1936,13 +1936,13 @@ void CreateDVD_GUI::create_objects()
 	int pady = BC_TextBox::calculate_h(this, MEDIUMFONT, 0, 1) + 5;
 	int padx = BC_Title::calculate_w(this, (char*)"X", MEDIUMFONT);
 	int x = padx/2, y = pady/2;
-	BC_Title *title = new BC_Title(x, y, "Title:", MEDIUMFONT, YELLOW);
+	BC_Title *title = new BC_Title(x, y, _("Title:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
 	at_x = x + title->get_w();  at_y = y;
 	asset_title = new CreateDVD_AssetTitle(this, at_x, at_y, get_w()-at_x-10);
 	add_subwindow(asset_title);
 	y += title->get_h() + pady/2;
-	title = new BC_Title(x, y, "tmp path:", MEDIUMFONT, YELLOW);
+	title = new BC_Title(x, y, _("tmp path:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
 	tmp_x = x + title->get_w();  tmp_y = y;
 	tmp_path = new CreateDVD_TmpPath(this, tmp_x, tmp_y,  get_w()-tmp_x-10);

@@ -110,7 +110,8 @@ void MainMenu::create_objects()
 	saveas->set_mainmenu(this);
 	filemenu->add_item(record_menu_item = new RecordMenuItem(mwindow));
 	filemenu->add_item(new ChannelScan(mwindow));
-	filemenu->add_item(new DbWindowScan(mwindow));
+	if( mwindow->has_commercials() )
+		filemenu->add_item(new DbWindowScan(mwindow));
 	filemenu->add_item(new SubttlSWin(mwindow));
 
 	filemenu->add_item(render = new RenderItem(mwindow));
@@ -240,7 +241,7 @@ void MainMenu::create_objects()
 	windowmenu->add_item(show_lwindow = new ShowLWindow(mwindow));
 	windowmenu->add_item(split_x = new SplitX(mwindow));
 	windowmenu->add_item(split_y = new SplitY(mwindow));
-	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1,"Ctrl+d",'d'));
+	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1,_("Ctrl+d"),'d'));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile left"),0));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile right"),1));
 }
@@ -627,7 +628,7 @@ int Undo::update_caption(const char *new_caption)
 }
 
 
-Redo::Redo(MWindow *mwindow) : BC_MenuItem(_("Redo"), "Shift+Z", 'Z') 
+Redo::Redo(MWindow *mwindow) : BC_MenuItem(_("Redo"), _("Shift+Z"), 'Z') 
 { 
 	set_shift(1); 
 	this->mwindow = mwindow; 
@@ -648,7 +649,7 @@ int Redo::update_caption(const char *new_caption)
 }
 
 CutKeyframes::CutKeyframes(MWindow *mwindow)
- : BC_MenuItem(_("Cut keyframes"), "Shift-X", 'X')
+ : BC_MenuItem(_("Cut keyframes"), _("Shift-X"), 'X')
 { 
 	set_shift(); 
 	this->mwindow = mwindow; 
@@ -661,7 +662,7 @@ int CutKeyframes::handle_event()
 }
 
 CopyKeyframes::CopyKeyframes(MWindow *mwindow)
- : BC_MenuItem(_("Copy keyframes"), "Shift-C", 'C')
+ : BC_MenuItem(_("Copy keyframes"), _("Shift-C"), 'C')
 { 
 	set_shift(); 
 	this->mwindow = mwindow; 
@@ -674,7 +675,7 @@ int CopyKeyframes::handle_event()
 }
 
 PasteKeyframes::PasteKeyframes(MWindow *mwindow)
- : BC_MenuItem(_("Paste keyframes"), "Shift-V", 'V')
+ : BC_MenuItem(_("Paste keyframes"), _("Shift-V"), 'V')
 {
 	set_shift(); 
 	this->mwindow = mwindow; 
@@ -687,7 +688,7 @@ int PasteKeyframes::handle_event()
 }
 
 ClearKeyframes::ClearKeyframes(MWindow *mwindow)
- : BC_MenuItem(_("Clear keyframes"), "Shift-Del", DELETE)
+ : BC_MenuItem(_("Clear keyframes"), _("Shift-Del"), DELETE)
 {
 	set_shift(); 
 	this->mwindow = mwindow; 
@@ -731,7 +732,7 @@ int BendKeyframes::handle_event()
 
 
 KeyframeType::KeyframeType(MWindow *mwindow, int type)
- : BC_MenuItem("Create bezier")
+ : BC_MenuItem(_("Create bezier"))
 {
 	this->mwindow = mwindow;
 	set_checked(type == Auto::BEZIER);
@@ -753,7 +754,7 @@ int KeyframeType::handle_event()
 
 
 CutDefaultKeyframe::CutDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem(_("Cut default keyframe"), "Alt-X", 'X')
+ : BC_MenuItem(_("Cut default keyframe"), _("Alt-X"), 'X')
 { 
 	set_alt(); 
 	this->mwindow = mwindow; 
@@ -766,7 +767,7 @@ int CutDefaultKeyframe::handle_event()
 }
 
 CopyDefaultKeyframe::CopyDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem(_("Copy default keyframe"), "Alt-c", 'c')
+ : BC_MenuItem(_("Copy default keyframe"), _("Alt-c"), 'c')
 { 
 	set_alt(); 
 	this->mwindow = mwindow; 
@@ -779,7 +780,7 @@ int CopyDefaultKeyframe::handle_event()
 }
 
 PasteDefaultKeyframe::PasteDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem(_("Paste default keyframe"), "Alt-v", 'v')
+ : BC_MenuItem(_("Paste default keyframe"), _("Alt-v"), 'v')
 {
 	set_alt(); 
 	this->mwindow = mwindow; 
@@ -792,7 +793,7 @@ int PasteDefaultKeyframe::handle_event()
 }
 
 ClearDefaultKeyframe::ClearDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem(_("Clear default keyframe"), "Alt-Del", BACKSPACE)
+ : BC_MenuItem(_("Clear default keyframe"), _("Alt-Del"), BACKSPACE)
 {
 	set_alt(); 
 	this->mwindow = mwindow; 
@@ -841,7 +842,7 @@ int Paste::handle_event()
 }
 
 Clear::Clear(MWindow *mwindow)
- : BC_MenuItem(_("Clear"), "Del", BACKSPACE) 
+ : BC_MenuItem(_("Clear"), _("Del"), BACKSPACE) 
 {
 	this->mwindow = mwindow; 
 }
@@ -855,7 +856,7 @@ int Clear::handle_event()
 }
 
 PasteSilence::PasteSilence(MWindow *mwindow)
- : BC_MenuItem(_("Paste silence"), "Shift+Space", ' ')
+ : BC_MenuItem(_("Paste silence"), _("Shift+Space"), ' ')
 { 
 	this->mwindow = mwindow; 
 	set_shift(); 
@@ -1018,7 +1019,7 @@ int MapAudio2::handle_event()
 
 
 AddVideoTrack::AddVideoTrack(MWindow *mwindow)
- : BC_MenuItem(_("Add track"), "Shift-T", 'T')
+ : BC_MenuItem(_("Add track"), _("Shift-T"), 'T')
 {
 	set_shift();
 	this->mwindow = mwindow;
@@ -1058,7 +1059,7 @@ int ResetTranslation::handle_event()
 
 
 DefaultVTransition::DefaultVTransition(MWindow *mwindow)
- : BC_MenuItem(_("Default Transition"), "Shift-U", 'U')
+ : BC_MenuItem(_("Default Transition"), _("Shift-U"), 'U')
 {
 	set_shift();
 	this->mwindow = mwindow;
@@ -1154,7 +1155,7 @@ int ConcatenateTracks::handle_event()
 
 
 LoopPlayback::LoopPlayback(MWindow *mwindow)
- : BC_MenuItem(_("Loop Playback"), "Shift+L", 'L')
+ : BC_MenuItem(_("Loop Playback"), _("Shift+L"), 'L')
 {
 	this->mwindow = mwindow;
 	set_checked(mwindow->edl->local_session->loop_playback);
@@ -1174,7 +1175,7 @@ int LoopPlayback::handle_event()
 
 
 AddSubttlTrack::AddSubttlTrack(MWindow *mwindow)
- : BC_MenuItem(_("Add subttl"), "Shift-Y", 'Y')
+ : BC_MenuItem(_("Add subttl"), _("Shift-Y"), 'Y')
 {
 	set_shift();
 	this->mwindow = mwindow;
@@ -1423,7 +1424,7 @@ int TileWindows::handle_event()
 }
 
 SplitX::SplitX(MWindow *mwindow)
- : BC_MenuItem(_("Split X pane"), "Ctrl+1", '1')
+ : BC_MenuItem(_("Split X pane"), _("Ctrl+1"), '1')
 {
 	this->mwindow = mwindow;
 	set_ctrl(1);
@@ -1436,7 +1437,7 @@ int SplitX::handle_event()
 }
 
 SplitY::SplitY(MWindow *mwindow)
- : BC_MenuItem(_("Split Y pane"), "Ctrl+2", '2')
+ : BC_MenuItem(_("Split Y pane"), _("Ctrl+2"), '2')
 {
 	this->mwindow = mwindow;
 	set_ctrl(1);

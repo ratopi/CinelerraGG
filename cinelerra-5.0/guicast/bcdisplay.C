@@ -56,7 +56,7 @@ BC_Display::BC_Display(const char *display_name)
 			display_name);
   		if(getenv("DISPLAY") == NULL)
     	{
-			printf("'DISPLAY' environment variable not set.\n");
+			printf(_("'DISPLAY' environment variable not set.\n"));
   			exit(1);
 		}
 		else

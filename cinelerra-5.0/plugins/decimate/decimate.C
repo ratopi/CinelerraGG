@@ -743,7 +743,7 @@ int Decimate::process_buffer(VFrame *frame,
 
 
 
-const char* Decimate::plugin_title() { return N_("Decimate"); }
+const char* Decimate::plugin_title() { return _("Decimate"); }
 int Decimate::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(Decimate, DecimateWindow)

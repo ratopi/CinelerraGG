@@ -158,10 +158,10 @@ const char* SpectrogramMode::mode_to_text(int mode)
 	switch(mode)
 	{
 		case VERTICAL:
-			return "Vertical";
+			return _("Vertical");
 		case HORIZONTAL:
 		default:
-			return "Horizontal";
+			return _("Horizontal");
 	}
 }
 
@@ -481,7 +481,7 @@ void SpectrogramWindow::create_objects()
 //	add_subwindow(freq = new SpectrogramFreq(plugin, x, y));
 //	y += freq->get_h() + plugin->get_theme()->widget_border;
 	x = x1;
-	add_subwindow(amplitude_title = new BC_Title(x, y, "Amplitude: 0 dB"));
+	add_subwindow(amplitude_title = new BC_Title(x, y, _("Amplitude: 0 dB")));
 
 
 
@@ -605,10 +605,10 @@ void SpectrogramWindow::calculate_frequency(int x, int y, int do_overlay)
 		double level = ptr->data[freq_pixel];
 		
 		char string[BCTEXTLEN];
-		sprintf(string, "Freq: %d Hz", freq);
+		sprintf(string, _("Freq: %d Hz"), freq);
 		freq_title->update(string);
 		
-		sprintf(string, "Amplitude: %.2f dB", level);
+		sprintf(string, _("Amplitude: %.2f dB"), level);
 		amplitude_title->update(string);
 	}
 	
@@ -699,7 +699,7 @@ void Spectrogram::reset()
 }
 
 
-const char* Spectrogram::plugin_title() { return N_("Spectrogram"); }
+const char* Spectrogram::plugin_title() { return _("Spectrogram"); }
 int Spectrogram::is_realtime() { return 1; }
 
 int Spectrogram::process_buffer(int64_t size, 

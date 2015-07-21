@@ -243,7 +243,7 @@ MotionMain2::~MotionMain2()
 	delete global_target_dst;
 }
 
-const char* MotionMain2::plugin_title() { return N_("Motion 2 Point"); }
+const char* MotionMain2::plugin_title() { return _("Motion 2 Point"); }
 int MotionMain2::is_realtime() { return 1; }
 int MotionMain2::is_multichannel() { return 1; }
 

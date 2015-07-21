@@ -102,7 +102,7 @@ int SWindowLoadPath::handle_event()
 
 
 SWindowLoadFile::SWindowLoadFile(SWindowGUI *gui, int x, int y)
- : BC_GenericButton(x, y, "Load")
+ : BC_GenericButton(x, y, _("Load"))
 {
 	this->sw_gui = gui;
 }
@@ -120,7 +120,7 @@ int SWindowLoadFile::handle_event()
 }
 
 SWindowSaveFile::SWindowSaveFile(SWindowGUI *gui, int x, int y)
- : BC_GenericButton(x, y, "Save")
+ : BC_GenericButton(x, y, _("Save"))
 {
 	this->sw_gui = gui;
 }
@@ -141,7 +141,7 @@ int SWindowSaveFile::handle_event()
 void SWindowGUI::create_objects()
 {
 	int x = 10, y = 10;
-	BC_Title *title = new BC_Title(x, y, "Path:");
+	BC_Title *title = new BC_Title(x, y, _("Path:"));
 	add_subwindow(title);
 	int x1 = x + title->get_w() + pad, y1 = y;
 	load_path = new SWindowLoadPath(this, x1, y1, script_path);
@@ -153,16 +153,16 @@ void SWindowGUI::create_objects()
 	y += max(load_path->get_h(), load_file->get_h()) + pad;
 	x1 = x + pad, y1 = y;
 	BC_Title *title1, *title2;
-	add_subwindow(title1 = new BC_Title(x1, y1, "File Size:"));
+	add_subwindow(title1 = new BC_Title(x1, y1, _("File Size:")));
 	y += title1->get_h() + pad;
 	int y2 = y;
-	add_subwindow(title2 = new BC_Title(x1, y2, "Entries:"));
+	add_subwindow(title2 = new BC_Title(x1, y2, _("Entries:")));
 	int x2 = x1 + max(title1->get_w(), title2->get_w()) + pad;
 	add_subwindow(script_filesz = new BC_Title(x2, y1, "0", MEDIUMFONT, YELLOW));
 	add_subwindow(script_entries = new BC_Title(x2, y2, "0", MEDIUMFONT, YELLOW));
 	int x3 = x2 + max(script_entries->get_w()*8, script_filesz->get_w()*8) + pad;
-	add_subwindow(title1 = new BC_Title(x3, y1, "Lines:"));
-	add_subwindow(title2 = new BC_Title(x3, y2, "Texts:"));
+	add_subwindow(title1 = new BC_Title(x3, y1, _("Lines:")));
+	add_subwindow(title2 = new BC_Title(x3, y2, _("Texts:")));
 	int x4 = x3 + max(title1->get_w(), title2->get_w()) + pad;
 	add_subwindow(script_lines = new BC_Title(x4, y1, "0", MEDIUMFONT, YELLOW));
 	add_subwindow(script_texts = new BC_Title(x4, y2, "0", MEDIUMFONT, YELLOW));
@@ -213,7 +213,7 @@ void SWindowGUI::load()
 }
 
 SWindowGUI::SWindowGUI(SWindow *swindow, int x, int y, int w, int h)
- : BC_Window(PROGRAM_NAME ": Subtitle", x, y, w, h, 600, 500,
+ : BC_Window(_(PROGRAM_NAME ": Subtitle"), x, y, w, h, 600, 500,
 	1, 0, 0 , -1, swindow->mwindow->get_cwindow_display())
 {
 	this->swindow = swindow;
@@ -482,7 +482,7 @@ int SWindowGUI::clear_selection()
 
 
 ScriptPrev::ScriptPrev(SWindowGUI *gui, int x, int y)
- : BC_GenericButton(x, y, "Prev")
+ : BC_GenericButton(x, y, _("Prev"))
 {
 	sw_gui = gui;
 }
@@ -498,7 +498,7 @@ int ScriptPrev::handle_event()
 }
 
 ScriptNext::ScriptNext(SWindowGUI *gui, int x, int y)
- : BC_GenericButton(x, y, "Next")
+ : BC_GenericButton(x, y, _("Next"))
 {
 	sw_gui = gui;
 }
@@ -514,7 +514,7 @@ int ScriptNext::handle_event()
 }
 
 ScriptPaste::ScriptPaste(SWindowGUI *gui, int x, int y)
- : BC_GenericButton(x, y, "Paste")
+ : BC_GenericButton(x, y, _("Paste"))
 {
 	sw_gui = gui;
 }
@@ -530,7 +530,7 @@ int ScriptPaste::handle_event()
 }
 
 ScriptClear::ScriptClear(SWindowGUI *gui, int x, int y)
- : BC_GenericButton(x, y, "Clear")
+ : BC_GenericButton(x, y, _("Clear"))
 {
 	sw_gui = gui;
 }
@@ -748,7 +748,7 @@ void SWindowGUI::load_script()
 	FILE *fp = fopen(script_path,"r");
 	if( !fp ) {
 		char string[BCTEXTLEN];
-		sprintf(string,"cannot open: \"%s\"\n%s",script_path,strerror(errno));
+		sprintf(string,_("cannot open: \"%s\"\n%s"),script_path,strerror(errno));
 		MainError::show_error(string);
 		return;
 	}
@@ -951,7 +951,7 @@ int SWindow::update_selection()
 
 
 SubttlSWin::SubttlSWin(MWindow *mwindow)
- : BC_MenuItem(_("SubTitle"), "Alt-y", 'y')
+ : BC_MenuItem(_("SubTitle"), _("Alt-y"), 'y')
 {
 	set_alt();
 	this->mwindow = mwindow;

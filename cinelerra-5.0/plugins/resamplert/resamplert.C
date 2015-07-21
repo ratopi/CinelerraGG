@@ -92,7 +92,7 @@ void ResampleRTWindow::create_objects()
 	int x = 10, y = 10;
 
 	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y, "Scale by amount:"));
+	add_subwindow(title = new BC_Title(x, y, _("Scale by amount:")));
 	y += title->get_h() + plugin->get_theme()->widget_border;
 
 	scale = new ResampleRTScale(this,
@@ -183,7 +183,7 @@ ResampleRT::~ResampleRT()
 	delete resample;
 }
 
-const char* ResampleRT::plugin_title() { return N_("ResampleRT"); }
+const char* ResampleRT::plugin_title() { return _("ResampleRT"); }
 int ResampleRT::is_realtime() { return 1; }
 int ResampleRT::is_synthesis() { return 1; }
 

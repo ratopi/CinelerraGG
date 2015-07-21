@@ -87,7 +87,7 @@ void ChanSearch::run()
 
 
 ChanSearchTitleText::ChanSearchTitleText(ChanSearchGUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->title_text_enable, "titles")
+ : BC_CheckBox(x, y, &gui->title_text_enable, _("titles"))
 {
 	this->gui = gui;
 }
@@ -105,7 +105,7 @@ int ChanSearchTitleText::handle_event()
 
 
 ChanSearchInfoText::ChanSearchInfoText(ChanSearchGUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->info_text_enable, "info")
+ : BC_CheckBox(x, y, &gui->info_text_enable, _("info"))
 {
 	this->gui = gui;
 }
@@ -123,7 +123,7 @@ int ChanSearchInfoText::handle_event()
 
 
 ChanSearchMatchCase::ChanSearchMatchCase(ChanSearchGUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->match_case_enable, "match case")
+ : BC_CheckBox(x, y, &gui->match_case_enable, _("match case"))
 {
 	this->gui = gui;
 }
@@ -169,7 +169,7 @@ int ChanSearchText::keypress_event()
 
 
 ChanSearchStart::ChanSearchStart(ChanSearchGUI *gui, int x, int y)
- : BC_GenericButton(x, y, "Search")
+ : BC_GenericButton(x, y, _("Search"))
 {
 	this->gui = gui;
 }
@@ -261,7 +261,7 @@ void ChanSearchGUI::create_objects()
 	int padx = BC_Title::calculate_w(this, (char*)"X", MEDIUMFONT);
 	int x = padx/2, y = pady/4;
 	text_x = x;  text_y = y;
-	BC_Title *title = new BC_Title(text_x, text_y, "Text:", MEDIUMFONT, YELLOW);
+	BC_Title *title = new BC_Title(text_x, text_y, _("Text:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);  x += title->get_w();
 	search_text = new ChanSearchText(this, x, y, get_w()-x-10);
 	add_subwindow(search_text);
@@ -294,7 +294,7 @@ void ChanSearchGUI::create_objects()
 	search_list->show_window();
 	int clktip_x = list_x;
 	int clktip_y = list_y + list_h + 5;
-	click_tip = new BC_Title(clktip_x, clktip_y, "dbl clk row to find title");
+	click_tip = new BC_Title(clktip_x, clktip_y, _("dbl clk row to find title"));
 	add_subwindow(click_tip);
 
 	set_icon(iwindow->mwindow->theme->get_image("record_icon"));
@@ -302,7 +302,7 @@ void ChanSearchGUI::create_objects()
 }
 
 ChanSearchGUI::ChanSearchGUI(ChanSearch *cswindow)
- : BC_Window(PROGRAM_NAME ": ChanSearch",
+ : BC_Window(_(PROGRAM_NAME ": ChanSearch"),
 	cswindow->iwindow->gui->get_abs_cursor_x(1) - 500 / 2,
 	cswindow->iwindow->gui->get_abs_cursor_y(1) - 300 / 2,
 	500, 300, 400, 300)
@@ -334,9 +334,9 @@ ChanSearchGUI::ChanSearchGUI(ChanSearch *cswindow)
 	search_columns[0] = 0;
 	search_columns[1] = 1;
 	search_columns[2] = 2;
-	search_column_titles[0] = "Source";
-	search_column_titles[1] = "Title";
-	search_column_titles[2] = "Start time";
+	search_column_titles[0] = _("Source");
+	search_column_titles[1] = _("Title");
+	search_column_titles[2] = _("Start time");
 	search_column_widths[0] = 120;
 	search_column_widths[2] = 120;
 	search_column_widths[1] = get_w()-search_column_widths[0]-search_column_widths[2]-32;
@@ -435,7 +435,7 @@ void ChanSearchGUI::update()
 
 	search_list->update(search_items, &search_column_titles[0],
 			&search_column_widths[0], lengthof(search_items));
-	sprintf(text, "%d found", n);
+	sprintf(text, _("%d found"), n);
 	results->update(text);
 }
 
@@ -957,7 +957,7 @@ void ChannelPanel::get_xtime(int x, char *cp)
 	struct tm xtm;  localtime_r(&xt,&xtm);
 	cp += sprintf(cp,"%02d:%02d",xtm.tm_hour, xtm.tm_min);
 	if( !xtm.tm_hour && !xtm.tm_min ) {
-		sprintf(cp,"(%3.3s) ",&"sunmontuewedthufrisat"[xtm.tm_wday*3]);
+		sprintf(cp,_("(%3.3s) "),&_("sunmontuewedthufrisat")[xtm.tm_wday*3]);
 	}
 }
 
@@ -983,7 +983,7 @@ ChannelInfoCron(ChannelInfoGUI *gui, int x, int y, int *value)
  : BC_CheckBox(x, y, value, gui->cron_caption)
 {
 	this->gui = gui;
-	set_tooltip("activate batch record when ok pressed");
+	set_tooltip(_("activate batch record when ok pressed"));
 }
 
 ChannelInfoCron::
@@ -1003,7 +1003,7 @@ ChannelInfoPowerOff::ChannelInfoPowerOff(ChannelInfoGUI *gui, int x, int y, int 
  : BC_CheckBox(x, y , value, gui->power_caption)
 {
 	this->gui = gui;
-	set_tooltip("poweroff system when batch record done");
+	set_tooltip(_("poweroff system when batch record done"));
 }
 
 ChannelInfoPowerOff::~ChannelInfoPowerOff()
@@ -1018,10 +1018,10 @@ int ChannelInfoPowerOff::handle_event()
 
 
 ChannelInfoFind::ChannelInfoFind(ChannelInfoGUI *gui, int x, int y)
- : BC_GenericButton(x, y, "Find")
+ : BC_GenericButton(x, y, _("Find"))
 {
 	this->gui = gui;
-	set_tooltip("search event titles/info");
+	set_tooltip(_("search event titles/info"));
 }
 
 ChannelInfoFind::~ChannelInfoFind()
@@ -1102,21 +1102,21 @@ int ChannelThread::load_info(Channel *channel, ChannelEventLine *channel_line)
 			&etm.tm_hour, &etm.tm_min, &etm.tm_sec,
 			&k);
 		if( l != 6 ) {
-			printf("bad scan time: %s\n",info);
+			printf(_("bad scan time: %s\n"),info);
 			continue;
 		}
 		char *title = (bp += k);
 		while( bp<cp && *bp!='\n' ) ++bp;
 		char *dp = bp;  *bp++ = 0;
 		if( !*title ) {
-			printf("bad title: %s\n",info);
+			printf(_("bad title: %s\n"),info);
 			continue;
 		}
 		char stm_wday[4];  memset(&stm_wday,0,sizeof(stm_wday));
 		l = sscanf(bp, "(%3s) %d/%d/%d", &stm_wday[0],
 			&stm.tm_year, &stm.tm_mon, &stm.tm_mday);
 		if( l != 4 ) {
-			printf("bad scan date: %s\n",info);
+			printf(_("bad scan date: %s\n"),info);
 			continue;
 		}
 		while( bp<cp && *bp!='\n' ) ++bp;
@@ -1129,22 +1129,22 @@ int ChannelThread::load_info(Channel *channel, ChannelEventLine *channel_line)
 		time_t et = mktime(&etm);
 		if( et < st ) et += 24*3600;
 		if( et < st ) {
-			printf("end before start: %s\n",info);
+			printf(_("end before start: %s\n"),info);
 			continue;
 		}
 		if( panel->st_org - et > 24*3600*2) {
-			printf("end time early: %s\n",info);
+			printf(_("end time early: %s\n"),info);
 			continue;
 		}
 		if( st - panel->st_org > 24*3600*12 ) {
-			printf("start time late: %s\n",info);
+			printf(_("start time late: %s\n"),info);
 			continue;
 		}
 		time_t st_min = (st - panel->st_org)/60;
 		time_t et_min = (et - panel->st_org)/60;
 		int dt = et_min - st_min;
 		if( dt <= 0 ) {
-			printf("zero duration: %s\n",info);
+			printf(_("zero duration: %s\n"),info);
 			continue;
 		}
 
@@ -1229,7 +1229,7 @@ ChannelInfoOK::ChannelInfoOK(ChannelInfoGUI *gui, int x, int y)
  : BC_OKButton(x, y)
 {
 	this->gui = gui;
-	set_tooltip("end channel info, start record");
+	set_tooltip(_("end channel info, start record"));
 }
 
 ChannelInfoOK::~ChannelInfoOK()
@@ -1391,7 +1391,7 @@ void ChannelInfoGUI::create_objects()
 
 ChannelInfoGUI::ChannelInfoGUI(ChannelInfo *iwindow,
 	int x, int y, int w, int h)
- : BC_Window(PROGRAM_NAME ": Channel Info", x, y, w, h, 600, 400,
+ : BC_Window(_(PROGRAM_NAME ": Channel Info"), x, y, w, h, 600, 400,
 	1, 0, 0 , -1, iwindow->mwindow->get_cwindow_display())
 {
 	this->iwindow = iwindow;
@@ -1670,7 +1670,7 @@ void ChannelInfo::run()
 		if( done ) break;
 		if( record->Thread::running() ) {
 			char string[BCTEXTLEN];
-			sprintf(string,"Recording in progress\n");
+			sprintf(string,_("Recording in progress\n"));
 			MainError::show_error(string);
 			continue;
 		}
@@ -1678,7 +1678,7 @@ void ChannelInfo::run()
 		VideoInConfig *vconfig_in = session->vconfig_in;
 		if( vconfig_in->driver != CAPTURE_DVB ) {
 			char string[BCTEXTLEN];
-			sprintf(string,"capture driver not dvb\n");
+			sprintf(string,_("capture driver not dvb\n"));
 			MainError::show_error(string);
 			continue;
 		}
@@ -1748,7 +1748,7 @@ void ChannelInfo::run()
 		else {
 			close_vdevice();
 			char string[BCTEXTLEN];
-			sprintf(string,"cannot open dvb video device\n");
+			sprintf(string,_("cannot open dvb video device\n"));
 			MainError::show_error(string);
 		}
 	}
@@ -1787,7 +1787,7 @@ void ChannelInfo::delete_batch()
 }
 
 ChannelScan::ChannelScan(MWindow *mwindow)
- : BC_MenuItem("Scan", "Shift-S", 'S')
+ : BC_MenuItem(_("Scan"), _("Shift-S"), 'S')
 {
 	set_shift();
 	this->mwindow = mwindow;

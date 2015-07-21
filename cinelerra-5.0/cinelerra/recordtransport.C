@@ -144,7 +144,7 @@ start_writing_file(int single_frame)
 void RecordTransport::
 stop_writing()
 {
-        record->stop_cron_thread("Interrupted");
+        record->stop_cron_thread(_("Interrupted"));
 	record->stop_writing();
 }
 

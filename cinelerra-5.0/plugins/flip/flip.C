@@ -85,7 +85,7 @@ FlipMain::~FlipMain()
 	
 }
 
-const char* FlipMain::plugin_title() { return N_("Flip"); }
+const char* FlipMain::plugin_title() { return _("Flip"); }
 int FlipMain::is_realtime() { return 1; }
 	
 

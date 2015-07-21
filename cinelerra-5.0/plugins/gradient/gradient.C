@@ -628,7 +628,7 @@ GradientMain::~GradientMain()
 	if(overlayer) delete overlayer;
 }
 
-const char* GradientMain::plugin_title() { return N_("Gradient"); }
+const char* GradientMain::plugin_title() { return _("Gradient"); }
 int GradientMain::is_realtime() { return 1; }
 
 

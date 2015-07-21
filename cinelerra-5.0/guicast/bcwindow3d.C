@@ -25,6 +25,7 @@
 #include "bcsignals.h"
 #include "bcsynchronous.h"
 #include "bcwindowbase.h"
+#include "language.h"
 
 // OpenGL functions in BC_WindowBase
 
@@ -47,21 +48,21 @@ int BC_WindowBase::glx_test_fb_configs(int *attrs, GLXFBConfig *&cfgs,
 {
 	int ncfgs = glx_fb_configs(attrs+2, cfgs);
 	if( ncfgs ) return ncfgs;
-	if( msgs < 1 ) { ++msgs;  printf("%s: trying fallback 1\n", msg); }
+	if( msgs < 1 ) { ++msgs;  printf(_("%s: trying fallback 1\n"), msg); }
 	ncfgs = glx_fb_configs(attrs+0, cfgs);
 	if( ncfgs ) return ncfgs;
-	if( msgs < 2 ) { ++msgs;  printf("%s: trying single buffering\n", msg); }
+	if( msgs < 2 ) { ++msgs;  printf(_("%s: trying single buffering\n"), msg); }
 	attrs[5] = False;
 	ncfgs = glx_fb_configs(attrs+0, cfgs);
 	if( ncfgs ) return ncfgs;
-	if( msgs < 3 ) { ++msgs;  printf("%s: trying fallback 2\n", msg); }
+	if( msgs < 3 ) { ++msgs;  printf(_("%s: trying fallback 2\n"), msg); }
 	ncfgs = glx_fb_configs(attrs+2, cfgs);
 	if( ncfgs ) return ncfgs;
-	if( msgs < 4 ) { ++msgs;  printf("%s: trying attributes None\n", msg); }
+	if( msgs < 4 ) { ++msgs;  printf(_("%s: trying attributes None\n"), msg); }
 	ncfgs = glx_fb_configs(None, cfgs);
 	if( ncfgs ) return ncfgs;
 	disable_opengl();
-	printf("%s: opengl initialization failed failed\n", msg);
+	printf(_("%s: opengl initialization failed failed\n"), msg);
 	return 0;
 }
 

@@ -145,7 +145,7 @@ void LiveAudioWindow::create_objects()
 	int x = 10, y = 10;
 
 	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y, "Live audio"));
+	add_subwindow(title = new BC_Title(x, y, _("Live audio")));
 	show_window();
 	flush();
 }
@@ -374,7 +374,7 @@ void LiveAudio::render_stop()
 }
 
 
-const char* LiveAudio::plugin_title() { return N_("Live Audio"); }
+const char* LiveAudio::plugin_title() { return _("Live Audio"); }
 int LiveAudio::is_realtime() { return 1; }
 int LiveAudio::is_multichannel() { return 1; }
 int LiveAudio::is_synthesis() { return 1; }

@@ -24,6 +24,7 @@
 #include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "clip.h"
+#include "language.h"
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -238,12 +239,12 @@ void BC_DisplayInfo::init_window(const char *display_name, int show_error)
 	if((display = XOpenDisplay(display_name)) == NULL)
 	{
 		if(!show_error) return;
-		fprintf(stderr, "BC_DisplayInfo::init_window: cannot open display \"%s\".\n",
+		fprintf(stderr,_("BC_DisplayInfo::init_window: cannot open display \"%s\".\n"),
 			display_name ? display_name : "");
 		if(getenv("DISPLAY") == NULL)
-    			fprintf(stderr, "'DISPLAY' environment variable not set.\n");
+    			fprintf(stderr, _("'DISPLAY' environment variable not set.\n"));
 		if((display = XOpenDisplay(0)) == NULL) {
-			fprintf(stderr, "BC_DisplayInfo::init_window: cannot connect to X server.\n");
+			fprintf(stderr,_("BC_DisplayInfo::init_window: cannot connect to X server.\n"));
 			exit(1);
 		}
  	}

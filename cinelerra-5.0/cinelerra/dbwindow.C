@@ -98,7 +98,7 @@ run()
 
 DbWindowTitleText::
 DbWindowTitleText(DbWindowGUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->title_text_enable, "titles")
+ : BC_CheckBox(x, y, &gui->title_text_enable, _("titles"))
 {
 	this->gui = gui;
 }
@@ -118,7 +118,7 @@ handle_event()
 
 DbWindowInfoText::
 DbWindowInfoText(DbWindowGUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->info_text_enable, "info")
+ : BC_CheckBox(x, y, &gui->info_text_enable, _("info"))
 {
 	this->gui = gui;
 }
@@ -138,7 +138,7 @@ handle_event()
 
 DbWindowMatchCase::
 DbWindowMatchCase(DbWindowGUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->match_case_enable, "match case")
+ : BC_CheckBox(x, y, &gui->match_case_enable, _("match case"))
 {
 	this->gui = gui;
 }
@@ -189,7 +189,7 @@ keypress_event()
 
 DbWindowScan::
 DbWindowScan(MWindow *mwindow)
- : BC_MenuItem("Media DB", "Shift-M", 'M')
+ : BC_MenuItem(_("Media DB"), _("Shift-M"), 'M')
 {
 	set_shift();
 	this->mwindow = mwindow;
@@ -209,7 +209,7 @@ handle_event()
 
 DbWindowStart::
 DbWindowStart(DbWindowGUI *gui, int x, int y)
- : BC_GenericButton(x, y, "Search")
+ : BC_GenericButton(x, y, _("Search"))
 {
 	this->gui = gui;
 }
@@ -227,7 +227,7 @@ handle_event()
 
 DbWindowDeleteItems::
 DbWindowDeleteItems(DbWindowGUI *gui, int x, int y)
- : BC_GenericButton(x, y, "Delete")
+ : BC_GenericButton(x, y, _("Delete"))
 {
 	this->gui = gui;
 }
@@ -386,7 +386,7 @@ create_objects()
 	int padx = BC_Title::calculate_w(this, (char*)"X", MEDIUMFONT);
 	int x = padx/2, y = pady/4;
 	text_x = x;  text_y = y;
-	BC_Title *title = new BC_Title(text_x, text_y, "Text:", MEDIUMFONT, YELLOW);
+	BC_Title *title = new BC_Title(text_x, text_y, _("Text:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);  x += title->get_w();
 	search_text = new DbWindowText(this, x, y, get_w()-x-10);
 	add_subwindow(search_text);
@@ -432,7 +432,7 @@ create_objects()
 
 DbWindowGUI::
 DbWindowGUI(DbWindow *dwindow)
- : BC_Window(PROGRAM_NAME ": DbWindow",
+ : BC_Window(_(PROGRAM_NAME ": DbWindow"),
 	dwindow->mwindow->gui->get_abs_cursor_x(1) - 900 / 2,
 	dwindow->mwindow->gui->get_abs_cursor_y(1) - 600 / 2,
 	900, 600, 400, 400)
@@ -461,14 +461,14 @@ DbWindowGUI(DbWindow *dwindow)
 	search_columns[col_start_time] = col_start_time;
 	search_columns[col_access_time] = col_access_time;
 	search_columns[col_access_count] = col_access_count;
-	search_column_titles[col_ticon] = "ticon";
-	search_column_titles[col_id] = "Id";
-	search_column_titles[col_length] = "length";
-	search_column_titles[col_source] = "Source";
-	search_column_titles[col_title] = "Title";
-	search_column_titles[col_start_time] = "Start time";
-	search_column_titles[col_access_time] = "Access time";
-	search_column_titles[col_access_count] = "count";
+	search_column_titles[col_ticon] = _("ticon");
+	search_column_titles[col_id] = _("Id");
+	search_column_titles[col_length] = _("length");
+	search_column_titles[col_source] = _("Source");
+	search_column_titles[col_title] = _("Title");
+	search_column_titles[col_start_time] = _("Start time");
+	search_column_titles[col_access_time] = _("Access time");
+	search_column_titles[col_access_count] = _("count");
 	search_column_widths[col_ticon] = 90;
 	search_column_widths[col_id] = 60;
 	search_column_widths[col_length] = 80;
@@ -597,7 +597,7 @@ int DbWindowGUI::delete_selection(MediaDb *mdb)
 		if( !search_items[0][k]->get_selected() ) continue;
 		int id = search_results[k]->id;
 		if( mdb->del_clip_set(id) ) {
-			printf("failed delete clip id %d\n",id);
+			printf(_("failed delete clip id %d\n"),id);
 			continue;
 		}
 		search_results.remove_object_number(k);

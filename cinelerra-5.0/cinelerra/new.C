@@ -226,7 +226,7 @@ N_("Cinelerra: New Project");
 #endif
 
 NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": New Project"), 
+ : BC_Window(_(_(PROGRAM_NAME ": New Project")), 
  		x,
 		y,
 		WIDTH, 
@@ -841,7 +841,7 @@ const char* ColormodelPulldown::colormodel_to_text()
 	for(int i = 0; i < mwindow->colormodels.total; i++)
 		if(mwindow->colormodels.values[i]->value == *output_value) 
 			return mwindow->colormodels.values[i]->get_text();
-	return "Unknown";
+	return _("Unknown");
 }
 
 
@@ -880,7 +880,7 @@ NewSwapExtents::NewSwapExtents(MWindow *mwindow, NewWindow *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Swap dimensions");
+	set_tooltip(_("Swap dimensions"));
 }
 
 int NewSwapExtents::handle_event()

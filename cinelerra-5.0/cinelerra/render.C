@@ -82,7 +82,7 @@
 
 
 RenderItem::RenderItem(MWindow *mwindow)
- : BC_MenuItem(_("Render..."), "Shift+R", 'R')
+ : BC_MenuItem(_("Render..."), _("Shift+R"), 'R')
 {
 	this->mwindow = mwindow;
 	set_shift(1);
@@ -216,7 +216,7 @@ void MainPackageRenderer::set_progress(int64_t value)
 				eta,
 				TIME_HMS2);
 
-			printf("\r%d%% ETA: %s      ", (int)(100 * 
+			printf(_("\r%d%% ETA: %s      "), (int)(100 * 
 				(float)render->total_rendered / 
 					render->progress_max),
 				string);
@@ -287,10 +287,10 @@ void Render::start_interactive()
 	}
 	else
 	{
-		ErrorBox error_box(PROGRAM_NAME ": Error",
+		ErrorBox error_box(_(PROGRAM_NAME ": Error"),
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
-		error_box.create_objects("Already rendering");
+		error_box.create_objects(_("Already rendering"));
 		error_box.raise_window();
 		error_box.run_window();
 	}
@@ -898,7 +898,7 @@ if(debug) printf("Render::render %d\n", __LINE__);
 			if(mwindow)
 			{
 if(debug) printf("Render::render %d\n", __LINE__);
-				ErrorBox error_box(PROGRAM_NAME ": Error",
+				ErrorBox error_box(_(PROGRAM_NAME ": Error"),
 					mwindow->gui->get_abs_cursor_x(1),
 					mwindow->gui->get_abs_cursor_y(1));
 				error_box.create_objects(_("Error rendering data."));
@@ -1114,7 +1114,7 @@ RenderWindow::RenderWindow(MWindow *mwindow,
 	Asset *asset,
 	int x, 
 	int y)
- : BC_Window(PROGRAM_NAME ": Render", 
+ : BC_Window(_(PROGRAM_NAME ": Render"), 
  	x - WIDTH / 2,
 	y - HEIGHT / 2,
  	WIDTH, 

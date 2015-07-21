@@ -195,7 +195,7 @@ PhotoScaleSwapExtents::PhotoScaleSwapExtents(PhotoScaleMain *plugin,
 {
 	this->plugin = plugin;
 	this->gui = gui;
-	set_tooltip("Swap dimensions");
+	set_tooltip(_("Swap dimensions"));
 }
 
 int PhotoScaleSwapExtents::handle_event()
@@ -288,7 +288,7 @@ PhotoScaleMain::~PhotoScaleMain()
 	if(engine) delete engine;
 }
 
-const char* PhotoScaleMain::plugin_title() { return N_("Auto Scale"); }
+const char* PhotoScaleMain::plugin_title() { return _("Auto Scale"); }
 int PhotoScaleMain::is_realtime() { return 1; }
 
 

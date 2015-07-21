@@ -39,7 +39,7 @@ static void ff_err(int ret, const char *fmt, ...)
 	va_end(ap);
 	char errmsg[BCSTRLEN];
 	av_strerror(ret, errmsg, sizeof(errmsg));
-	fprintf(stderr,"%s  err: %s\n",msg, errmsg);
+	fprintf(stderr,_("%s  err: %s\n"),msg, errmsg);
 }
 
 FFPacket::FFPacket()
@@ -1043,8 +1043,8 @@ int FFMPEG::get_encoder(const char *options,
 		return 1;
 	}
 	if( get_encoder(fp, format, codec, bsfilter, bsargs) )
-		eprintf("FFMPEG::get_encoder:"
-			" err: format/codec not found %s\n", options);
+		eprintf(_("FFMPEG::get_encoder:"
+			  " err: format/codec not found %s\n"), options);
 	fclose(fp);
 	return 0;
 }
@@ -1094,8 +1094,8 @@ int FFMPEG::read_options(FILE *fp, const char *options, AVDictionary *&opts)
 		if( line[0] == '\n' ) continue;
 		char key[BCSTRLEN], val[BCTEXTLEN];
 		if( scan_option_line(line, key, val) ) {
-			eprintf("FFMPEG::read_options:"
-				" err reading %s: line %d\n", options, no);
+			eprintf(_("FFMPEG::read_options:"
+				  " err reading %s: line %d\n"), options, no);
 			ret = 1;
 		}
 		if( !ret ) {
@@ -1174,7 +1174,7 @@ int FFMPEG::info(char *text, int len)
 	for( int i=0; i<(int)fmt_ctx->nb_streams; ++i ) {
 		AVStream *st = fmt_ctx->streams[i];
 		AVCodecContext *avctx = st->codec;
-		report("stream %d,  id 0x%06x:\n", i, avctx->codec_id);
+		report(_("stream %d,  id 0x%06x:\n"), i, avctx->codec_id);
 		const AVCodecDescriptor *desc = avcodec_descriptor_get(avctx->codec_id);
 		if( avctx->codec_type == AVMEDIA_TYPE_VIDEO ) {
 			AVRational framerate = av_guess_frame_rate(fmt_ctx, st, 0);
@@ -1206,7 +1206,7 @@ int FFMPEG::info(char *text, int len)
 			report("  %d:%02d:%05.2f\n", hrs, mins, secs);
 		}
 		else
-			report("  codec_type unknown\n");
+			report(_("  codec_type unknown\n"));
 	}
 	report("\n");
 	for( int i=0; i<(int)fmt_ctx->nb_programs; ++i ) {

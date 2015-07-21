@@ -21,6 +21,7 @@
 
 #include "clip.h"
 #include "filexml.h"
+#include "language.h"
 #include "svg.h"
 #include "svgwin.h"
 #include <sys/types.h>
@@ -31,11 +32,6 @@
 #include <errno.h>
 #include <sys/mman.h>
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 //#include "empty_svg.h"
 
@@ -121,7 +117,7 @@ SvgMain::~SvgMain()
 	delete overlayer;
 }
 
-const char* SvgMain::plugin_title() { return N_("SVG via Inkscape"); }
+const char* SvgMain::plugin_title() { return _("SVG via Inkscape"); }
 int SvgMain::is_realtime() { return 1; }
 int SvgMain::is_synthesis() { return 1; }
 

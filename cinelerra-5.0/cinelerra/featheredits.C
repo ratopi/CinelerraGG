@@ -32,7 +32,7 @@
 
 
 FeatherEdits::FeatherEdits(MWindow *mwindow, int audio, int video)
- : BC_MenuItem("Feather Edits..."), Thread()
+ : BC_MenuItem(_("Feather Edits...")), Thread()
 { 
 	this->mwindow = mwindow; 
 	this->audio = audio; 
@@ -75,7 +75,7 @@ void FeatherEdits::run()
 
 
 FeatherEditsWindow::FeatherEditsWindow(MWindow *mwindow, long feather_samples)
- : BC_Window(PROGRAM_NAME ": Feather Edits", 
+ : BC_Window(_(PROGRAM_NAME ": Feather Edits"), 
  	mwindow->gui->get_abs_cursor_x(), 
 	mwindow->gui->get_abs_cursor_y(), 
 	340, 

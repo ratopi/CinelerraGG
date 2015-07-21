@@ -594,13 +594,13 @@ int DeviceMPEGInput::get_channeldb(ArrayList<Channel*> *channeldb)
 		if( subchannel_definition(subchan,&name[0],
 			major, minor, total_astreams, total_vstreams)) continue;
 		if( total_astreams > 1 && total_vstreams > 1 )
-			printf("DeviceMPEGInput::get_channeldb::element %d"
-				" (id %d.%d) has %d/%d video/audio streams\n",
+			printf(_("DeviceMPEGInput::get_channeldb::element %d"
+				" (id %d.%d) has %d/%d video/audio streams\n"),
 				subchan, major, minor, total_vstreams, total_astreams);
 		if( total_vstreams > 1 && total_astreams > 0 && (audio_stream =
 			subchannel_audio_stream(subchan, astream=0, enc)) >= 0 ) {
 			if( total_astreams > 1 )
-				printf("  only first audio stream will be used\n");
+				printf(_("  only first audio stream will be used\n"));
 			for( int vstream=0; vstream<total_vstreams; ++vstream ) {
 				int video_stream = subchannel_video_stream(subchan, vstream);
 				if( video_stream < 0 ) continue;
@@ -614,7 +614,7 @@ int DeviceMPEGInput::get_channeldb(ArrayList<Channel*> *channeldb)
 		if( total_astreams > 1 && total_vstreams > 0 && (video_stream =
 			subchannel_video_stream(subchan, vstream=0)) >= 0 ) {
 			if( total_vstreams > 1 )
-				printf("  only first video stream will be used\n");
+				printf(_("  only first video stream will be used\n"));
 			for( int astream=0; astream<total_astreams; ++astream ) {
 				int audio_stream = subchannel_audio_stream(subchan, astream, enc);
 				if( audio_stream < 0 ) continue;

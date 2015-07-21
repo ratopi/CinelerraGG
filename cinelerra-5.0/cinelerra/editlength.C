@@ -128,7 +128,7 @@ EditLengthDialog::EditLengthDialog(MWindow *mwindow,
 	EditLengthThread *thread,
 	int x,
 	int y)
- : BC_Window(PROGRAM_NAME ": Edit length", 
+ : BC_Window(_(PROGRAM_NAME ": Edit length"), 
 	x,
 	y,
 	300, 

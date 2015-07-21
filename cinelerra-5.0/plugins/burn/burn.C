@@ -76,7 +76,7 @@ BurnMain::~BurnMain()
 	if(yuv) delete yuv;
 }
 
-const char* BurnMain::plugin_title() { return N_("BurningTV"); }
+const char* BurnMain::plugin_title() { return _("BurningTV"); }
 int BurnMain::is_realtime() { return 1; }
 
 

@@ -51,7 +51,7 @@ MicroThemeMain::~MicroThemeMain()
 
 char* MicroThemeMain::plugin_title() 
 {
-	return "Microscopic"; 
+	return _("Microscopic"); 
 }
 
 Theme* MicroThemeMain::new_theme()

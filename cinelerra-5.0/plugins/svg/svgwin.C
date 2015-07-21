@@ -22,8 +22,9 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "svgwin.h"
-#include "string.h"
 #include "filexml.h"
+#include "language.h"
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -35,18 +36,7 @@ struct fifo_struct {
         int action;  // 1 = update from client, 2 = client closes
       };
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
 #include "empty_svg.h"
-
-
-
-
-
 
 SvgWin::SvgWin(SvgMain *client)
  : PluginClientWindow(client, 300, 280, 300, 280, 1)
@@ -302,7 +292,7 @@ void EditSvgButton::run()
 	strcpy(filename_fifo, filename_png);
 	strcat(filename_fifo, ".fifo");	
 	if (mkfifo(filename_fifo, S_IRWXU) != 0) {
-		perror("Error while creating fifo file");
+		perror(_("Error while creating fifo file"));
 	} 
 	fh_fifo = open(filename_fifo, O_RDWR);
 	fifo_buf.action = 0;

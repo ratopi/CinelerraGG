@@ -588,9 +588,9 @@ HistogramParade::HistogramParade(HistogramMain *plugin,
 	this->gui = gui;
 	this->value = value;
 	if(value)
-		set_tooltip("RGB Parade on");
+		set_tooltip(_("RGB Parade on"));
 	else
-		set_tooltip("RGB Parade off");
+		set_tooltip(_("RGB Parade off"));
 }
 
 int HistogramParade::handle_event()

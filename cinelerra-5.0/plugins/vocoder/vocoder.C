@@ -360,7 +360,7 @@ NEW_WINDOW_MACRO(Vocoder, VocoderWindow)
 LOAD_CONFIGURATION_MACRO(Vocoder, VocoderConfig)
 
 
-const char* Vocoder::plugin_title() { return N_("Vocoder"); }
+const char* Vocoder::plugin_title() { return _("Vocoder"); }
 int Vocoder::is_realtime() { return 1; }
 int Vocoder::is_multichannel() { return 1; }
 

@@ -87,7 +87,7 @@ void ScaleThread::run()
 // fix tracks
 		//mwindow->stop_playback(1);
 // save the before undo
-		mwindow->undo->update_undo_edits("Resize", 0);
+		mwindow->undo->update_undo_edits(_("Resize"), 0);
 		mwindow->tracks->scale_video(dimension, scale_data ? dummy_offsets : offsets, scale_data);
 		mwindow->session->track_w = dimension[0];
 		mwindow->session->track_h = dimension[1];
@@ -194,7 +194,7 @@ int ScaleThread::update_aspect(ScaleWindow *window)
 
 
 ScaleWindow::ScaleWindow(ScaleThread *thread)
- : BC_Window(PROGRAM_NAME ": Scale", 370, 260, 0, 0)
+ : BC_Window(_(PROGRAM_NAME ": Scale"), 370, 260, 0, 0)
 { this->thread = thread; }
 
 ScaleWindow::~ScaleWindow()

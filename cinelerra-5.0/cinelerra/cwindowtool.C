@@ -366,7 +366,7 @@ int CWindowCropOK::keypress_event()
 CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, 
  	thread,
-	PROGRAM_NAME ": Crop",
+	_(PROGRAM_NAME ": Crop"),
 	330,
 	100)
 {
@@ -478,7 +478,7 @@ void CWindowCropGUI::update()
 CWindowEyedropGUI::CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, 
  	thread,
-	PROGRAM_NAME ": Color",
+	_(PROGRAM_NAME ": Color"),
 	200,
 	200)
 {
@@ -496,14 +496,14 @@ void CWindowEyedropGUI::create_objects()
 	int x2 = 70;
 	lock_window("CWindowEyedropGUI::create_objects");
 	BC_Title *title1, *title2, *title3, *title4;
-	add_subwindow(title4 = new BC_Title(x, y, "Radius:"));
+	add_subwindow(title4 = new BC_Title(x, y, _("Radius:")));
 	y += BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1) + margin;
 	
-	add_subwindow(title1 = new BC_Title(x, y, "Red:"));
+	add_subwindow(title1 = new BC_Title(x, y, _("Red:")));
 	y += title1->get_h() + margin;
-	add_subwindow(title2 = new BC_Title(x, y, "Green:"));
+	add_subwindow(title2 = new BC_Title(x, y, _("Green:")));
 	y += title2->get_h() + margin;
-	add_subwindow(title3 = new BC_Title(x, y, "Blue:"));
+	add_subwindow(title3 = new BC_Title(x, y, _("Blue:")));
 
 
 	radius = new CWindowCoord(this,
@@ -579,7 +579,7 @@ void CWindowEyedropGUI::handle_event()
 CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, 
  	thread,
-	PROGRAM_NAME ": Camera",
+	_(PROGRAM_NAME ": Camera"),
 	170,
 	170)
 {
@@ -1036,7 +1036,7 @@ int CWindowCameraBottom::handle_event()
 CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, 
  	thread,
-	PROGRAM_NAME ": Projector",
+	_(PROGRAM_NAME ": Projector"),
 	170,
 	170)
 {
@@ -1906,7 +1906,7 @@ int CWindowMaskValue::handle_event()
 CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, 
  	thread,
-	PROGRAM_NAME ": Mask",
+	_(PROGRAM_NAME ": Mask"),
 	330,
 	280)
 {
@@ -2142,7 +2142,7 @@ void CWindowMaskGUI::update_preview()
 CWindowRulerGUI::CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, 
  	thread,
-	PROGRAM_NAME ": Ruler",
+	_(PROGRAM_NAME ": Ruler"),
 	320,
 	240)
 {
@@ -2158,22 +2158,22 @@ void CWindowRulerGUI::create_objects()
 	BC_Title *title;
 
 	lock_window("CWindowRulerGUI::create_objects");
-	add_subwindow(title = new BC_Title(x, y, "Current:"));
+	add_subwindow(title = new BC_Title(x, y, _("Current:")));
 	add_subwindow(current = new BC_Title(x + title->get_w() + 10, y, ""));
 	y += title->get_h() + 5;
 	
-	add_subwindow(title = new BC_Title(x, y, "Point 1:"));
+	add_subwindow(title = new BC_Title(x, y, _("Point 1:")));
 	add_subwindow(point1 = new BC_Title(x + title->get_w() + 10, y, ""));
 	y += title->get_h() + 5;
 
-	add_subwindow(title = new BC_Title(x, y, "Point 2:"));
+	add_subwindow(title = new BC_Title(x, y, _("Point 2:")));
 	add_subwindow(point2 = new BC_Title(x + title->get_w() + 10, y, ""));
 	y += title->get_h() + 5;
 
-	add_subwindow(title = new BC_Title(x, y, "Distance:"));
+	add_subwindow(title = new BC_Title(x, y, _("Distance:")));
 	add_subwindow(distance = new BC_Title(x + title->get_w() + 10, y, ""));
 	y += title->get_h() + 5;
-	add_subwindow(title = new BC_Title(x, y, "Angle:"));
+	add_subwindow(title = new BC_Title(x, y, _("Angle:")));
 	add_subwindow(angle = new BC_Title(x + title->get_w() + 10, y, ""));
 	y += title->get_h() + 10;
 	char string[BCTEXTLEN];
@@ -2225,7 +2225,7 @@ void CWindowRulerGUI::update()
 		mwindow->edl->session->ruler_y2);
 	point2->update(string);
 
-	sprintf(string, "%0.01f pixels", distance_value);
+	sprintf(string, _("%0.01f pixels"), distance_value);
 	distance->update(string);
 	sprintf(string, "%0.02f %c", angle_value, 0xb0);
 	angle->update(string);

@@ -467,7 +467,7 @@ int Reroute::process_buffer(VFrame **frame,
 
 
 
-const char* Reroute::plugin_title() { return N_("Reroute"); }
+const char* Reroute::plugin_title() { return _("Reroute"); }
 int Reroute::is_realtime() 		{ return 1; }
 int Reroute::is_multichannel() 	{ return 1; }
 

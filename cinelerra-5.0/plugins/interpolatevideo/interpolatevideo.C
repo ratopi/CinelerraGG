@@ -851,7 +851,7 @@ int InterpolateVideo::is_realtime()
 }
 
 NEW_WINDOW_MACRO(InterpolateVideo, InterpolateVideoWindow)
-const char* InterpolateVideo::plugin_title() { return N_("Interpolate Video"); }
+const char* InterpolateVideo::plugin_title() { return _("Interpolate Video"); }
 
 int InterpolateVideo::load_configuration()
 {

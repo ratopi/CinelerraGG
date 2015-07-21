@@ -50,8 +50,8 @@ KeyFrameThread::KeyFrameThread(MWindow *mwindow)
 	keyframe_data = new ArrayList<BC_ListBoxItem*>[KEYFRAME_COLUMNS];
 	plugin_title[0] = 0;
 	window_title[0] = 0;
-	column_titles[0] = (char*)"Parameter";
-	column_titles[1] = (char*)"Value";
+	column_titles[0] = (char*)_("Parameter");
+	column_titles[1] = (char*)_("Value");
 	column_width[0] = 0;
 	column_width[1] = 0;
 	presets_data = new ArrayList<BC_ListBoxItem*>;
@@ -121,7 +121,7 @@ void KeyFrameThread::update_values()
 			keyframe_data[0].append(new BC_ListBoxItem(hash.get_key(i)));
 			keyframe_data[1].append(new BC_ListBoxItem(hash.get_value(i)));
 		}
-		keyframe_data[0].append(new BC_ListBoxItem((char*)"TEXT"));
+		keyframe_data[0].append(new BC_ListBoxItem((char*)_("TEXT")));
 		keyframe_data[1].append(new BC_ListBoxItem(text));
 		
 		delete [] text;
@@ -149,7 +149,7 @@ void KeyFrameThread::start_window(Plugin *plugin, KeyFrame *keyframe)
 		this->keyframe = keyframe;
 		this->plugin = plugin;
 		plugin->calculate_title(plugin_title, 0);
-		sprintf(window_title, PROGRAM_NAME ": %s Keyframe", plugin_title);
+		sprintf(window_title, _(PROGRAM_NAME ": %s Keyframe"), plugin_title);
 		presets_db->load();
 		calculate_preset_list();
 

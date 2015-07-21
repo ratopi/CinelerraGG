@@ -56,7 +56,7 @@ DCOffset::~DCOffset()
 	delete reference;
 }
 
-const char* DCOffset::plugin_title() { return N_("DC Offset"); }
+const char* DCOffset::plugin_title() { return _("DC Offset"); }
 int DCOffset::is_realtime() { return 1; }
 
 

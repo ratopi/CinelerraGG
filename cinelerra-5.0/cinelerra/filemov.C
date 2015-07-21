@@ -181,8 +181,8 @@ int FileMOV::check_codec_params(Asset *asset)
 		if (!(asset->height == 576 && asset->width == 720) &&
 		    !(asset->height == 480 && asset->width == 720))
 		{
-			eprintf("DV in Quicktime container does not support following resolution: %ix%i\n"
-				"Allowed resolutions are 720x576 (PAL) and 720x480 (NTSC)\n",
+			eprintf(_("DV in Quicktime container does not support following resolution: %ix%i\n"
+				"Allowed resolutions are 720x576 (PAL) and 720x480 (NTSC)\n"),
 				 asset->width, asset->height);
 			return 1;
 		}
@@ -223,7 +223,7 @@ int FileMOV::open_file(int rd, int wr)
 
 	if(!(fd = quicktime_open(asset->path, rd, wr)))
 	{
-		eprintf("Error while opening file \"%s\". \n%m\n", asset->path);
+		eprintf(_("Error while opening file \"%s\". \n%m\n"), asset->path);
 		return 1;
 	}
 
@@ -1173,7 +1173,7 @@ int FileMOV::read_samples(double *buffer, int64_t len)
 //printf("FileMOV::read_samples 3 " _LD " " _LD "\n", file->current_sample, quicktime_audio_position(fd, 0));
 		if(quicktime_decode_audio(fd, 0, temp_float[0], len, file->current_channel))
 		{
-			printf("quicktime_decode_audio failed\n");
+			printf(_("quicktime_decode_audio failed\n"));
 			return 1;
 		}
 		else
@@ -1427,7 +1427,7 @@ void FileMOVThread::run()
 
 
 MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Audio Compression",
+ : BC_Window(_(PROGRAM_NAME ": Audio Compression"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	350,
@@ -1719,7 +1719,7 @@ int MOVConfigAudioPopup::handle_event()
 MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 	Asset *asset,
 	const char *locked_compressor)
- : BC_Window(PROGRAM_NAME ": Video Compression",
+ : BC_Window(_(PROGRAM_NAME ": Video Compression"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	420,

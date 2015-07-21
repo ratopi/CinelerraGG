@@ -571,7 +571,7 @@ SET_TRACE
 	return 1;
 }
 
-const char* ChromaKey::plugin_title() { return N_("Chroma key"); }
+const char* ChromaKey::plugin_title() { return _("Chroma key"); }
 int ChromaKey::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(ChromaKey, ChromaKeyWindow)

@@ -24,6 +24,7 @@
 
 #include "bluebanana.h"
 #include "bluebananaconfig.h"
+#include "language.h"
 
 static float halfsin2(float x){
   if(x<-M_PI/2)return 0;
@@ -60,7 +61,7 @@ static int select_setup(char *pattern, int change){
       while( x*x+y*y < gsq){
         x--;
         if(n==FSrange*4){
-          fprintf(stderr,"Internal error; pattern array overflow\n");
+          fprintf(stderr,_("Internal error; pattern array overflow\n"));
           return n;
         }
         pattern[n++]=(change>0 ? 'H' : 'h');
@@ -68,7 +69,7 @@ static int select_setup(char *pattern, int change){
       if(!y)break;
       y--;
       if(n==FSrange*4){
-        fprintf(stderr,"Internal error; pattern array overflow\n");
+        fprintf(stderr,_("Internal error; pattern array overflow\n"));
         return n;
       }
       pattern[n++]=(change>0 ? 'V' : 'v');

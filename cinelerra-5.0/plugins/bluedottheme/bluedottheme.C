@@ -71,7 +71,7 @@ BlueDotThemeMain::~BlueDotThemeMain()
 
 const char* BlueDotThemeMain::plugin_title()
 {
-	return "Blue Dot";
+	return _("Blue Dot");
 }
 
 Theme* BlueDotThemeMain::new_theme()
@@ -736,7 +736,7 @@ void BlueDotTheme::initialize()
 	title_color = BLACK;
 	recordgui_fixed_color = BLACK;
 	recordgui_variable_color = RED;
-	resources->medium_font = N_("-*-helvetica-medium-r-normal-*-14-*");
+	resources->medium_font = "-*-helvetica-medium-r-normal-*-14-*";
 
 	channel_position_color = MEYELLOW;
 	resources->meter_title_w = 25;

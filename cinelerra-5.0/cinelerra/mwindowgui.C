@@ -74,7 +74,7 @@
 
 // the main window uses its own private colormap for video
 MWindowGUI::MWindowGUI(MWindow *mwindow)
- : BC_Window(PROGRAM_NAME ": Program", 
+ : BC_Window(_(PROGRAM_NAME ": Program"), 
  		mwindow->session->mwindow_x, 
 		mwindow->session->mwindow_y, 
 		mwindow->session->mwindow_w, 
@@ -539,7 +539,7 @@ void MWindowGUI::update_title(char *path)
 	FileSystem fs;
 	char filename[BCTEXTLEN], string[BCTEXTLEN];
 	fs.extract_name(filename, path);
-	sprintf(string, PROGRAM_NAME ": %s", filename);
+	sprintf(string, _(PROGRAM_NAME ": %s"), filename);
 	set_title(string);
 //printf("MWindowGUI::update_title %s\n", string);
 	flush();

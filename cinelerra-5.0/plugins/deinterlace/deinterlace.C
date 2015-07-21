@@ -92,7 +92,7 @@ DeInterlaceMain::~DeInterlaceMain()
 //	if(temp) delete temp;
 }
 
-const char* DeInterlaceMain::plugin_title() { return N_("Deinterlace"); }
+const char* DeInterlaceMain::plugin_title() { return _("Deinterlace"); }
 int DeInterlaceMain::is_realtime() { return 1; }
 
 

@@ -189,7 +189,7 @@ MainFFMpegToggle::MainFFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, 
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;
-	set_tooltip("FFMpeg early probe");
+	set_tooltip(_("FFMpeg early probe"));
 }
 
 MainFFMpegToggle::~MainFFMpegToggle()
@@ -200,7 +200,7 @@ int MainFFMpegToggle::handle_event()
 {
 	mwindow->preferences->ffmpeg_early_probe = get_value();
 	mwindow->show_warning(&mwindow->preferences->warn_indecies,
-		"Changing the base codecs may require rebuilding indecies.");
+		_("Changing the base codecs may require rebuilding indecies."));
 	return 1;
 }
 

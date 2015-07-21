@@ -95,7 +95,7 @@ InterpolateAudioEffect::~InterpolateAudioEffect()
 
 const char* InterpolateAudioEffect::plugin_title()
 {
-	return N_("Interpolate");
+	return _("Interpolate");
 }
 
 

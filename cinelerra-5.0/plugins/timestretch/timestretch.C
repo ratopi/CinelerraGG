@@ -116,7 +116,7 @@ int TimeStretchTime::handle_event()
 
 
 TimeStretchWindow::TimeStretchWindow(TimeStretch *plugin, int x, int y)
- : BC_Window(PROGRAM_NAME ": Time stretch", 
+ : BC_Window(_(PROGRAM_NAME ": Time stretch"), 
  				x - 160,
 				y - 75,
  				320, 
@@ -350,7 +350,7 @@ TimeStretch::~TimeStretch()
 
 	
 	
-const char* TimeStretch::plugin_title() { return N_("Time stretch"); }
+const char* TimeStretch::plugin_title() { return _("Time stretch"); }
 
 int TimeStretch::get_parameters()
 {

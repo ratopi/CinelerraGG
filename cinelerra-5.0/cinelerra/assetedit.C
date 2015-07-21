@@ -212,7 +212,7 @@ BC_Window* AssetEdit::new_gui()
 
 
 AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
- : BC_Window(PROGRAM_NAME ": Asset Info", 
+ : BC_Window(_(PROGRAM_NAME ": Asset Info"), 
  	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
 	mwindow->gui->get_abs_cursor_y(1) - 500 / 2, 
 	400, 
@@ -281,7 +281,7 @@ void AssetEditWindow::create_objects()
 		path_text, 
 		y, 
 		asset_edit->indexable->path, 
-		PROGRAM_NAME ": Asset path", _("Select a file for this asset:")));
+		_(PROGRAM_NAME ": Asset path"), _("Select a file for this asset:")));
 	y += 30;
 
 	if(asset)
@@ -769,7 +769,7 @@ int DetailAssetButton::handle_event()
 }
 
 DetailAssetWindow::DetailAssetWindow(MWindow *mwindow, Asset *asset)
- : BC_Window("Asset Detail",
+ : BC_Window(_("Asset Detail"),
         mwindow->gui->get_abs_cursor_x(1) - 600/2,
         mwindow->gui->get_abs_cursor_y(1) - 500/2,
         600, 500)
@@ -809,7 +809,7 @@ void DetailAssetWindow::create_objects()
 	int y = 10, x = 10;
 	char file_name[BCTEXTLEN];
 	int len = sizeof(info);
-	strncpy(info,"no info available",len);
+	strncpy(info,_("no info available"),len);
 	if( !mwindow->preferences->get_asset_file_path(asset, file_name) ) {
 		switch( asset->format ) {
 		case FILE_MPEG:

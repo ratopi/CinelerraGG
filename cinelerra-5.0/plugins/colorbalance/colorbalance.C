@@ -335,7 +335,7 @@ ColorBalanceMain::~ColorBalanceMain()
 	}
 }
 
-const char* ColorBalanceMain::plugin_title() { return N_("Color Balance"); }
+const char* ColorBalanceMain::plugin_title() { return _("Color Balance"); }
 int ColorBalanceMain::is_realtime() { return 1; }
 
 
@@ -490,7 +490,7 @@ int ColorBalanceMain::process_buffer(VFrame *frame,
 		{
 //get_output()->dump_stacks();
 // Aggregate
-			if(next_effect_is("Histogram")) return 0;
+			if(next_effect_is(_("Histogram"))) return 0;
 			return run_opengl();
 		}
 	
@@ -576,19 +576,19 @@ void ColorBalanceMain::read_data(KeyFrame *keyframe)
 void ColorBalanceMain::get_aggregation(int *aggregate_interpolate,
 	int *aggregate_gamma)
 {
-	if(!strcmp(get_output()->get_prev_effect(1), "Interpolate Pixels") &&
-		!strcmp(get_output()->get_prev_effect(0), "Gamma"))
+	if(!strcmp(get_output()->get_prev_effect(1), _("Interpolate Pixels")) &&
+		!strcmp(get_output()->get_prev_effect(0), _("Gamma")))
 	{
 		*aggregate_interpolate = 1;
 		*aggregate_gamma = 1;
 	}
 	else
-	if(!strcmp(get_output()->get_prev_effect(0), "Interpolate Pixels"))
+	if(!strcmp(get_output()->get_prev_effect(0), _("Interpolate Pixels")))
 	{
 		*aggregate_interpolate = 1;
 	}
 	else
-	if(!strcmp(get_output()->get_prev_effect(0), "Gamma"))
+	if(!strcmp(get_output()->get_prev_effect(0), _("Gamma")))
 	{
 		*aggregate_gamma = 1;
 	}

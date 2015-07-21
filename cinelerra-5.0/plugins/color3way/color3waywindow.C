@@ -133,9 +133,9 @@ void Color3WaySection::create_objects()
 	int y = this->y;
 	const char *titles[] = 
 	{
-		"Shadows",
-		"Midtones",
-		"Highlights"
+		_("Shadows"),
+		_("Midtones"),
+		_("Highlights")
 	};
 	
 	

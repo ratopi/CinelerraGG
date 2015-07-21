@@ -19,15 +19,8 @@
  * 
  */
 
+#include "language.h"
 #include "yuvwindow.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-
-
 
 
 YUVWindow::YUVWindow(YUVMain *client)

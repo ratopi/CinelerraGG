@@ -21,6 +21,7 @@
 
 #include "bcdisplayinfo.h"
 #include "bchash.h"
+#include "language.h"
 #include "mainprogress.h"
 #include "normalize.h"
 #include "normalizewindow.h"
@@ -31,10 +32,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 REGISTER_PLUGIN(NormalizeMain)
 
@@ -52,7 +49,7 @@ NormalizeMain::~NormalizeMain()
 {
 }
 
-const char* NormalizeMain::plugin_title() { return N_("Normalize"); }
+const char* NormalizeMain::plugin_title() { return _("Normalize"); }
 int NormalizeMain::is_realtime() { return 0; }
 int NormalizeMain::is_multichannel() { return 1; }
 

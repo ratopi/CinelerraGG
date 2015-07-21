@@ -26,7 +26,7 @@
 #include <string.h>
 
 CDRipWindow::CDRipWindow(CDRipMain *cdripper, int x, int y)
- : BC_Window(PROGRAM_NAME ": CD Ripper", 
+ : BC_Window(_(PROGRAM_NAME ": CD Ripper"), 
  	x,
 	y,
  	450, 

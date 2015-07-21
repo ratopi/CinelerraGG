@@ -216,7 +216,7 @@ int FileTGA::read_frame_header(char *path)
 
 	if(!(stream = fopen(path, "rb")))
 	{
-		eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+		eprintf(_("Error while opening \"%s\" for reading. \n%m\n"), asset->path);
 		return 1;
 	}
 
@@ -899,7 +899,7 @@ TGAUnit::~TGAUnit()
 
 
 TGAConfigVideo::TGAConfigVideo(BC_WindowBase *gui, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Video Compression",
+ : BC_Window(_(PROGRAM_NAME ": Video Compression"),
  	gui->get_abs_cursor_x(1),
  	gui->get_abs_cursor_y(1),
 	400,

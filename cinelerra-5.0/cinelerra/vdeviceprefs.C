@@ -736,13 +736,13 @@ VScalingEquation::~VScalingEquation()
 const char *VScalingEquation::interpolation_to_string(int type)
 {
 	switch( type ) {
-	case NEAREST_NEIGHBOR:  return "Nearest Neighbor";
-	case CUBIC_CUBIC:	return "BiCubic / BiCubic";
-	case CUBIC_LINEAR:	return "BiCubic / BiLinear";
-	case LINEAR_LINEAR:	return "BiLinear / BiLinear";
-	case LANCZOS_LANCZOS:	return "Lanczos / Lanczos";
+	case NEAREST_NEIGHBOR:  return _("Nearest Neighbor");
+	case CUBIC_CUBIC:	return _("BiCubic / BiCubic");
+	case CUBIC_LINEAR:	return _("BiCubic / BiLinear");
+	case LINEAR_LINEAR:	return _("BiLinear / BiLinear");
+	case LANCZOS_LANCZOS:	return _("Lanczos / Lanczos");
 	}
-	return "Unknown";
+	return _("Unknown");
 }
 
 void VScalingEquation::create_objects()

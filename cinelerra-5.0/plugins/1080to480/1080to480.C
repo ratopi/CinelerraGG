@@ -155,7 +155,7 @@ _1080to480Main::~_1080to480Main()
 	if(temp) delete temp;
 }
 
-const char* _1080to480Main::plugin_title() { return N_("1080 to 480"); }
+const char* _1080to480Main::plugin_title() { return _("1080 to 480"); }
 int _1080to480Main::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(_1080to480Main, _1080to480Window)

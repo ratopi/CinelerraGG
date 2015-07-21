@@ -395,7 +395,7 @@ GammaMain::~GammaMain()
 	delete engine;
 }
 
-const char* GammaMain::plugin_title() { return N_("Gamma"); }
+const char* GammaMain::plugin_title() { return _("Gamma"); }
 int GammaMain::is_realtime() { return 1; }
 
 
@@ -432,9 +432,9 @@ int GammaMain::process_buffer(VFrame *frame,
 	if(use_opengl)
 	{
 // Aggregate
-		if(next_effect_is("Histogram"))
+		if(next_effect_is(_("Histogram")))
 			return 0;
-		if(next_effect_is("Color Balance"))
+		if(next_effect_is(_("Color Balance")))
 			return 0;
 
 	
@@ -574,7 +574,7 @@ int GammaMain::handle_opengl()
 
 // Aggregate with interpolate
 	int aggregate = 0;
-	if(prev_effect_is("Interpolate Pixels"))
+	if(prev_effect_is(_("Interpolate Pixels")))
 	{
 		aggregate = 1;
 		INTERPOLATE_COMPILE(shader_stack, current_shader)

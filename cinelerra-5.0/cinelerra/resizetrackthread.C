@@ -102,7 +102,7 @@ ResizeVTrackWindow::ResizeVTrackWindow(MWindow *mwindow,
 	ResizeVTrackThread *thread,
 	int x,
 	int y)
- : BC_Window(PROGRAM_NAME ": Resize Track", 
+ : BC_Window(_(PROGRAM_NAME ": Resize Track"), 
 				x - 320 / 2,
 				y - get_resources()->ok_images[0]->get_h() + 100 / 2,
 				340, 
@@ -209,7 +209,7 @@ ResizeVTrackSwap::ResizeVTrackSwap(ResizeVTrackWindow *gui,
 {
 	this->thread = thread;
 	this->gui = gui;
-	set_tooltip("Swap dimensions");
+	set_tooltip(_("Swap dimensions"));
 }
 
 int ResizeVTrackSwap::handle_event()

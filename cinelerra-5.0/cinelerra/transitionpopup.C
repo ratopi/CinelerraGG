@@ -92,7 +92,7 @@ TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow,
 	TransitionLengthThread *thread,
 	int x,
 	int y)
- : BC_Window(PROGRAM_NAME ": Transition length", 
+ : BC_Window(_(PROGRAM_NAME ": Transition length"), 
 	x,
 	y,
 	300, 

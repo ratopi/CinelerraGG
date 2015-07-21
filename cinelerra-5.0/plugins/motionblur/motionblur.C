@@ -312,7 +312,7 @@ MotionBlurMain::~MotionBlurMain()
 	if(temp) delete temp;
 }
 
-const char* MotionBlurMain::plugin_title() { return N_("Motion Blur"); }
+const char* MotionBlurMain::plugin_title() { return _("Motion Blur"); }
 int MotionBlurMain::is_realtime() { return 1; }
 
 

@@ -376,7 +376,7 @@ C41Effect::~C41Effect()
 {
 }
 
-const char* C41Effect::plugin_title() { return N_("C41"); }
+const char* C41Effect::plugin_title() { return _("C41"); }
 
 int C41Effect::is_realtime() { return 1; }
 

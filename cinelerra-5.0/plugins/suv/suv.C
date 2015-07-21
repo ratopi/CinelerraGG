@@ -68,7 +68,7 @@ SUVMain::~SUVMain()
 
 const char* SUVMain::plugin_title()
 {
-	return "S.U.V.";
+	return _("S.U.V.");
 }
 
 Theme* SUVMain::new_theme()

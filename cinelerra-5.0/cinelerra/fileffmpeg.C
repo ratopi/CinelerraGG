@@ -136,24 +136,24 @@ void FileFFMPEG::get_info(char *path, char *text)
 {
 	char *cp = text;
 	FFMPEG ffmpeg(0);
-	cp += sprintf(cp, "file path: %s\n", path);
+	cp += sprintf(cp, _("file path: %s\n"), path);
 	struct stat st;
 	int ret = 0;
 	if( stat(path, &st) < 0 ) {
-		cp += sprintf(cp, " err: %s\n", strerror(errno));
+		cp += sprintf(cp, _(" err: %s\n"), strerror(errno));
 		ret = 1;
 	}
 	else {
-		cp += sprintf(cp, "  %jd bytes\n", st.st_size);
+		cp += sprintf(cp, _("  %jd bytes\n"), st.st_size);
 	}
 	if( !ret ) ret = ffmpeg.init_decoder(path);
 	if( !ret ) ret = ffmpeg.open_decoder();
 	if( !ret ) {
-		cp += sprintf(cp, "info:\n");
+		cp += sprintf(cp, _("info:\n"));
 		ffmpeg.info(cp, BCTEXTLEN-(cp-text));
 	}
 	else
-		sprintf(cp, "== open failed\n");
+		sprintf(cp, _("== open failed\n"));
 }
 
 int FileFFMPEG::get_video_info(int track, int &pid, double &framerate,
@@ -322,7 +322,7 @@ int FileFFMPEG::get_best_colormodel(Asset *asset, int driver)
 extern void get_exe_path(char *result); // from main.C
 
 FFMPEGConfigAudio::FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Audio Preset",
+ : BC_Window(_(PROGRAM_NAME ": Audio Preset"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	420, 420)
@@ -455,7 +455,7 @@ int FFMPEGConfigAudioToggle::handle_event()
 //======
 
 FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Video Preset",
+ : BC_Window(_(PROGRAM_NAME ": Video Preset"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	420, 420)

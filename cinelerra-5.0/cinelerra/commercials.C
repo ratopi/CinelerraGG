@@ -165,7 +165,7 @@ put_clip(File *file, int track, double position, double length)
 	clip_id = mdb->clip_id();
 	cancelled = 0;
 	scan_status = new ScanStatus(this, 30, 30, 1, 1,
-		cancelled, "Cutting Ads");
+		cancelled, _("Cutting Ads"));
 	scan_status->update_length(0, frames);
 	scan_status->update_position(0, 0);
 	update_cut_info(track+1, position);
@@ -323,7 +323,7 @@ mute_audio(Clip *clip)
 	if( !muted ) {
 		muted = 1;
 		record->set_mute_gain(0);
-		printf("***MUTE***\n");
+		printf(_("***MUTE***\n"));
 	}
 	return 0;
 }
@@ -335,7 +335,7 @@ unmute_audio()
 	if( muted ) {
 		muted = 0;
 		record->set_mute_gain(1);
-		printf("***UNMUTE***\n");
+		printf(_("***UNMUTE***\n"));
 	}
 	record->undisplay_vframe();
 	return 0;
@@ -575,7 +575,7 @@ scan_media()
 {
 	cancelled = 0;
 	scan_status = new ScanStatus(this, 30, 30, 2, 2,
-		cancelled, "Cutting Ads");
+		cancelled, _("Cutting Ads"));
 	if( !openDb() ) {
 		scan_video();
 		commitDb();
@@ -647,7 +647,7 @@ scan_clips(Track *vtrk, Edit *edit)
 			start = 0;
 		}
 		double end = start + length;
-printf("cut clip %d in edit @%f %f-%f, clip @%f-%f\n", clip->clip_id,
+printf(_("cut clip %d in edit @%f %f-%f, clip @%f-%f\n"), clip->clip_id,
   vtrk->from_units(edit->startsource), vtrk->from_units(edit->startproject),
   vtrk->from_units(edit->startproject+edit->length),start,end);
 		if( last_end+CLIP_MARGIN > start ) start = last_end;
@@ -669,7 +669,7 @@ update_cut_info(int trk, double position)
 	char string[BCTEXTLEN];  EDLSession *session = mwindow->edl->session;
 	Units::totext(string, position, session->time_format, session->sample_rate,
 		session->frame_rate, session->frames_per_foot);
-	char text[BCTEXTLEN];  sprintf(text,"ad: trk %d@%s  ",trk,string);
+	char text[BCTEXTLEN];  sprintf(text,_("ad: trk %d@%s  "),trk,string);
 	scan_status->update_text(0, text);
 	return 0;
 }
@@ -679,7 +679,7 @@ update_caption(int trk, int edt, const char *path)
 {
 	if( cancelled ) return 1;
 	char text[BCTEXTLEN];
-	snprintf(text,sizeof(text),"trk%d edt%d asset %s", trk, edt, path);
+	snprintf(text,sizeof(text),_("trk%d edt%d asset %s"), trk, edt, path);
 	scan_status->update_text(0, text);
 	return 0;
 }
@@ -689,7 +689,7 @@ update_status(int clip, double start, double end)
 {
 	if( cancelled ) return 1;
 	char text[BCTEXTLEN];
-	snprintf(text,sizeof(text),"scan: clip%d %f-%f", clip, start, end);
+	snprintf(text,sizeof(text),_("scan: clip%d %f-%f"), clip, start, end);
 	scan_status->update_text(1, text);
 	return 0;
 }
@@ -697,10 +697,10 @@ update_status(int clip, double start, double end)
 
 ScanStatusGUI::
 ScanStatusGUI(ScanStatus *sswindow, int x, int y, int nlines, int nbars)
- : BC_Window("Scanning", x, y, 340,
+ : BC_Window(_("Scanning"), x, y, 340,
 	40 + BC_CancelButton::calculate_h() +
 		(BC_Title::calculate_h((BC_WindowBase*) sswindow->
-			commercials->mwindow->gui, "My") + 5) * nlines +
+			commercials->mwindow->gui, _("My")) + 5) * nlines +
 		(BC_ProgressBar::calculate_h() + 5) * nbars, 0, 0, 0) 
 {
 	this->sswindow = sswindow;
@@ -795,7 +795,7 @@ stop()
 void ScanStatus::
 run()
 {
-	gui->create_objects("Cutting Ads");
+	gui->create_objects(_("Cutting Ads"));
 	int result = gui->run_window();
 	if( result ) status = 1;
 }
@@ -932,7 +932,7 @@ void run_that_puppy(const char *fn)
 	int result = 0;
 	while( !result && fscanf(fp,"%lf %lf\n",&position, &length) == 2 ) {
 		int result = MWindow::commercials->put_clip(file, 0, position, length);
-		printf("cut %f/%f = %d\n",position,length, result);
+		printf(_("cut %f/%f = %d\n"),position,length, result);
 	}
 	MWindow::commercials->commitDb();
 	MWindow::commercials->closeDb();

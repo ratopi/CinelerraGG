@@ -282,7 +282,7 @@ PolarEffect::~PolarEffect()
 
 
 
-const char* PolarEffect::plugin_title() { return N_("Polar"); }
+const char* PolarEffect::plugin_title() { return _("Polar"); }
 int PolarEffect::is_realtime() { return 1; }
 
 

@@ -51,7 +51,7 @@ CDRipMain::~CDRipMain()
 {
 }
 
-const char* CDRipMain::plugin_title() { return N_("CD Ripper"); }
+const char* CDRipMain::plugin_title() { return _("CD Ripper"); }
 int CDRipMain::is_realtime() { return 0; }
 int CDRipMain::is_multichannel() { return 1; }
 
@@ -125,7 +125,7 @@ int CDRipMain::open_drive()
 	if((cdrom = open(device, O_RDONLY)) < 0)
 	{
 		BC_DisplayInfo info;
-		ErrorBox window(PROGRAM_NAME ": CD Ripper",
+		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
 		window.create_objects(_("Can't open cdrom drive."));
@@ -157,7 +157,7 @@ int CDRipMain::get_toc()
 	if(ioctl(cdrom, CDROMREADTOCHDR, &hdr) < 0)
 	{
 		close(cdrom);
- 		ErrorBox window(PROGRAM_NAME ": CD Ripper",
+ 		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
 		window.create_objects(_("Can't get total from table of contents."));
@@ -173,7 +173,7 @@ int CDRipMain::get_toc()
 		{
 			ioctl(cdrom, CDROMSTOP);
 			close(cdrom);
- 			ErrorBox window(PROGRAM_NAME ": CD Ripper",
+ 			ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
 				info.get_abs_cursor_x(), 
 				info.get_abs_cursor_y());
 			window.create_objects(_("Can't get table of contents entry."));
@@ -189,7 +189,7 @@ int CDRipMain::get_toc()
 	{
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
- 		ErrorBox window(PROGRAM_NAME ": CD Ripper",
+ 		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
 		window.create_objects(_("Can't get table of contents leadout."));
@@ -204,7 +204,7 @@ int CDRipMain::get_toc()
 	{
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
- 		ErrorBox window(PROGRAM_NAME ": CD Ripper",
+ 		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
 		window.create_objects(_("Start track is out of range."));
@@ -222,7 +222,7 @@ int CDRipMain::get_toc()
 	{
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
- 		ErrorBox window(PROGRAM_NAME ": CD Ripper",
+ 		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
 		window.create_objects(_("End track is out of range."));
@@ -234,7 +234,7 @@ int CDRipMain::get_toc()
 	{
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
- 		ErrorBox window(PROGRAM_NAME ": CD Ripper",
+ 		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
 		window.create_objects(_("End position is out of range."));

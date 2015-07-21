@@ -39,14 +39,14 @@ static const char *mode_images[] =
 };
 static const char *tooltips[] = 
 {
-	"Insert nothing",
-	"Replace current project",
-	"Replace current project and concatenate tracks",
-	"Append in new tracks",
-	"Concatenate to existing tracks",
-	"Paste at insertion point",
-	"Create new resources only",
-	"Nest sequence"
+	_("Insert nothing"),
+	_("Replace current project"),
+	_("Replace current project and concatenate tracks"),
+	_("Append in new tracks"),
+	_("Concatenate to existing tracks"),
+	_("Paste at insertion point"),
+	_("Create new resources only"),
+	_("Nest sequence")
 };
 
 

@@ -153,7 +153,7 @@ int FileJPEGList::write_frame(VFrame *frame, VFrame *data)
 
 
 JPEGConfigVideo::JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Video Compression",
+ : BC_Window(_(PROGRAM_NAME ": Video Compression"),
  	parent_window->get_abs_cursor_x(),
  	parent_window->get_abs_cursor_y(),
 	400,

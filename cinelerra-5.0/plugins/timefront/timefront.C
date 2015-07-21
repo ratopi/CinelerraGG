@@ -645,7 +645,7 @@ TimeFrontMain::~TimeFrontMain()
 	if(overlayer) delete overlayer;
 }
 
-const char* TimeFrontMain::plugin_title() { return N_("TimeFront"); }
+const char* TimeFrontMain::plugin_title() { return _("TimeFront"); }
 int TimeFrontMain::is_realtime() { return 1; }
 int TimeFrontMain::is_multichannel() { return 1; }
 
@@ -780,12 +780,12 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 		if (get_total_buffers() != 2) 
 		{
 			// FIXME, maybe this should go to some other notification area?
-			printf("ERROR: TimeFront plugin - If you are using another track for timefront, you have to have it under shared effects\n");
+			printf(_("ERROR: TimeFront plugin - If you are using another track for timefront, you have to have it under shared effects\n"));
 			return 0;
 		}
 		if (outframes[0]->get_w() != outframes[1]->get_w() || outframes[0]->get_h() != outframes[1]->get_h())
 		{
-			printf("Sizes of master track and timefront track do not match\n");
+			printf(_("Sizes of master track and timefront track do not match\n"));
 			return 0;
 		}
 	}
@@ -832,7 +832,7 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 			
 			default:
 				{
-					printf("TimeFront plugin error: ALPHA used, but project color model does not have alpha\n");
+					printf(_("TimeFront plugin error: ALPHA used, but project color model does not have alpha\n"));
 					return 1;
 					break;
 				}
@@ -892,14 +892,14 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 				
 				default:
 					{
-						printf("TimeFront plugin error: ALPHA track used, but project color model does not have alpha\n");
+						printf(_("TimeFront plugin error: ALPHA track used, but project color model does not have alpha\n"));
 						return 1;
 						break;
 					}
 			}
 		} else
 		{
-			printf("TimeFront plugin error: unsupported track_usage parameter\n");
+			printf(_("TimeFront plugin error: unsupported track_usage parameter\n"));
 			return 1;
 		}
 	}	

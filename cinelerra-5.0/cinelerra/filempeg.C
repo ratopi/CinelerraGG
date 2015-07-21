@@ -147,8 +147,8 @@ void FileMPEG::get_info(char *title_path, char *path, char *text)
 
 	char *cp = text;
 	if( mpeg3_has_toc(fd) ) {
-		cp += sprintf(cp, "toc path:%s\n", path);
-		cp += sprintf(cp, "title path:\n");
+		cp += sprintf(cp, _("toc path:%s\n"), path);
+		cp += sprintf(cp, _("title path:\n"));
 		for( int i=0; i<100; ++i ) {
 			char *title_path = mpeg3_title_path(fd,i);
 			if( !title_path ) break;
@@ -156,21 +156,21 @@ void FileMPEG::get_info(char *title_path, char *path, char *text)
 		}
 	}
 	else
-		cp += sprintf(cp, "file path:%s\n", path);
+		cp += sprintf(cp, _("file path:%s\n"), path);
 	int64_t bytes = mpeg3_get_bytes(fd);
 	char string[BCTEXTLEN];
 	sprintf(string,"%ld",bytes);
 	Units::punctuate(string);
-	cp += sprintf(cp, "size: %s", string);
+	cp += sprintf(cp, _("size: %s"), string);
 
 	if( mpeg3_is_program_stream(fd) )
-	  cp += sprintf(cp, "  program stream\n");
+	  cp += sprintf(cp, _("  program stream\n"));
 	else if( mpeg3_is_transport_stream(fd) )
-	  cp += sprintf(cp, "  transport stream\n");
+	  cp += sprintf(cp, _("  transport stream\n"));
 	else if( mpeg3_is_video_stream(fd) )
-	  cp += sprintf(cp, "  video stream\n");
+	  cp += sprintf(cp, _("  video stream\n"));
 	else if( mpeg3_is_audio_stream(fd) )
-	  cp += sprintf(cp, "  audio stream\n");
+	  cp += sprintf(cp, _("  audio stream\n"));
 
 	int64_t sdate = mpeg3_get_source_date(fd);
 	if( !sdate ) {
@@ -179,60 +179,60 @@ void FileMPEG::get_info(char *title_path, char *path, char *text)
 		sdate = stat64(path, &ostat) < 0 ? 0 : ostat.st_mtime;
 	}
 	time_t tm = (time_t)sdate;
-	cp += sprintf(cp, "date: %s\n", ctime(&tm));
+	cp += sprintf(cp, _("date: %s\n"), ctime(&tm));
 
 	int vtrks = mpeg3_total_vstreams(fd);
-	cp += sprintf(cp, "%d video tracks\n", vtrks);
+	cp += sprintf(cp, _("%d video tracks\n"), vtrks);
 	for( int vtrk=0; vtrk<vtrks; ++vtrk ) {
 		int cmdl = mpeg3_colormodel(fd, vtrk);
 		int color_model = bc_colormodel(cmdl);
 		char *cmodel = MPEGColorModel::cmodel_to_string(color_model);
 		int width = mpeg3_video_width(fd, vtrk);
 		int height = mpeg3_video_height(fd, vtrk);
-		cp += sprintf(cp, "  v%d %s %dx%d", vtrk, cmodel, width, height);
+		cp += sprintf(cp, _("  v%d %s %dx%d"), vtrk, cmodel, width, height);
 		double frame_rate = mpeg3_frame_rate(fd, vtrk);
 		int64_t frames = mpeg3_video_frames(fd, vtrk);
-		cp += sprintf(cp, " (%5.2f), %ld frames", frame_rate, frames);
+		cp += sprintf(cp, _(" (%5.2f), %ld frames"), frame_rate, frames);
 		if( frame_rate > 0 ) {
 			double secs = (double)frames / frame_rate;
-			cp += sprintf(cp, " (%0.3f secs)",secs);
+			cp += sprintf(cp, _(" (%0.3f secs)"),secs);
 		}
 		*cp++ = '\n';
 	}
 	int atrks = mpeg3_total_astreams(fd);
-	cp += sprintf(cp, "%d audio tracks\n", atrks);
+	cp += sprintf(cp, _("%d audio tracks\n"), atrks);
 	for( int atrk=0; atrk<atrks; ++atrk) {
 		const char *format = mpeg3_audio_format(fd, atrk);
-		cp += sprintf(cp, " a%d %s", atrk, format);
+		cp += sprintf(cp, _(" a%d %s"), atrk, format);
 		int channels = mpeg3_audio_channels(fd, atrk);
 		int sample_rate = mpeg3_sample_rate(fd, atrk);
-		cp += sprintf(cp, " ch%d (%d)", channels, sample_rate);
+		cp += sprintf(cp, _(" ch%d (%d)"), channels, sample_rate);
 		int64_t samples = mpeg3_audio_samples(fd, atrk);
 		cp += sprintf(cp, " %ld",samples);
 		int64_t nudge = mpeg3_get_audio_nudge(fd, atrk);
 		*cp++ = nudge >= 0 ? '+' : (nudge=-nudge, '-');
-		cp += sprintf(cp, "%ld samples",nudge);
+		cp += sprintf(cp, _("%ld samples"),nudge);
 		if( sample_rate > 0 ) {
 			double secs = (double)(samples+nudge) / sample_rate;
-			cp += sprintf(cp, " (%0.3f secs)",secs);
+			cp += sprintf(cp, _(" (%0.3f secs)"),secs);
 		}
 		*cp++ = '\n';
 	}
 	int stracks = mpeg3_subtitle_tracks(fd);
 	if( stracks > 0 ) {
-		cp += sprintf(cp, "%d subtitles\n", stracks);
+		cp += sprintf(cp, _("%d subtitles\n"), stracks);
 	}
 	int vts_titles = mpeg3_get_total_vts_titles(fd);
 	if( vts_titles > 0 )
-		cp += sprintf(cp, "%d title sets, ", vts_titles);
+		cp += sprintf(cp, _("%d title sets, "), vts_titles);
 	int interleaves = mpeg3_get_total_interleaves(fd);
 	if( interleaves > 0 )
-		cp += sprintf(cp, "%d interleaves\n", interleaves);
+		cp += sprintf(cp, _("%d interleaves\n"), interleaves);
 	int vts_title = mpeg3_set_vts_title(fd, -1);
 	int angle = mpeg3_set_angle(fd, -1);
 	int interleave = mpeg3_set_interleave(fd, -1);
 	int program = mpeg3_set_program(fd, -1);
-	cp += sprintf(cp, "current program %d = title %d, angle %d, interleave %d\n\n",
+	cp += sprintf(cp, _("current program %d = title %d, angle %d, interleave %d\n\n"),
 		program, vts_title, angle, interleave);
 
 	ArrayList<double> cell_times;
@@ -241,10 +241,10 @@ void FileMPEG::get_info(char *title_path, char *path, char *text)
 		cell_times.append(cell_time);
 	}
 	if( cell_times.size() > 1 ) {
-		cp += sprintf(cp, "cell times:");
+		cp += sprintf(cp, _("cell times:"));
 		for( int i=0; i<cell_times.size(); ++i ) {
 			if( (i%4) == 0 ) *cp++ = '\n';
-			cp += sprintf(cp,"  %3d.  %8.3f",i,cell_times.get(i));
+			cp += sprintf(cp,_("  %3d.  %8.3f"),i,cell_times.get(i));
 		}
 		cp += sprintf(cp, "\n");
 	}
@@ -253,9 +253,9 @@ void FileMPEG::get_info(char *title_path, char *path, char *text)
 	if( elements <= 0 ) return;
 	if( !mpeg3_dvb_get_system_time(fd, &sdate) ) {
 		tm = (time_t)sdate;
-		cp += sprintf(cp, "\nsystem time: %s", ctime_r(&tm,string));
+		cp += sprintf(cp, _("\nsystem time: %s"), ctime_r(&tm,string));
 	}
-	cp += sprintf(cp, "elements %d\n", elements);
+	cp += sprintf(cp, _("elements %d\n"), elements);
 
 	for( int n=0; n<elements; ++n ) {
 		char name[16], enc[8];  int vstream, astream;
@@ -289,7 +289,7 @@ void FileMPEG::get_info(char *title_path, char *path, char *text)
 		if( mpeg3_dvb_get_channel(fd,n, &major, &minor) ) continue;
 		cp += sprintf(cp, "\n**chan %3d.%-3d\n", major, minor);
 		int len = mpeg3_dvb_get_chan_info(fd, n, -1, 0, cp, 1023);
-                if( len < 0 ) len = sprintf(cp,"no info");
+                if( len < 0 ) len = sprintf(cp,_("no info"));
                 cp += len;  *cp++ = '*';  *cp++ = '*';  *cp++ = '\n';
 		for( int ord=0; ord<0x80; ++ord ) {
 			for( int i=0; (len=mpeg3_dvb_get_chan_info(fd,n,ord,i,cp,1023)) >= 0; ++i ) {
@@ -391,16 +391,16 @@ int FileMPEG::open_file(int rd, int wr)
 		if( !fd ) {
 			result = 1;
 			if(error == zmpeg3_t::ERR_INVALID_TOC_VERSION) {
-				eprintf("Couldn't open %s: invalid table of contents version.\n"
-					"Rebuilding the table of contents.", asset->path);
+				eprintf(_("Couldn't open %s: invalid table of contents version.\n"
+					"Rebuilding the table of contents."), asset->path);
 			}
 			else if(error == zmpeg3_t::ERR_TOC_DATE_MISMATCH) {
-				eprintf("Couldn't open %s: table of contents out of date.\n"
-					"Rebuilding the table of contents.", asset->path);
+				eprintf(_("Couldn't open %s: table of contents out of date.\n"
+					"Rebuilding the table of contents."), asset->path);
 			}
 			else {
-				eprintf("Couldn't open %s: table of contents corrupt.\n"
-					"Rebuilding the table of contents.", asset->path);
+				eprintf(_("Couldn't open %s: table of contents corrupt.\n"
+					"Rebuilding the table of contents."), asset->path);
 			}
 			char filename[BCTEXTLEN];
 			strcpy(filename, toc_name);
@@ -414,7 +414,7 @@ int FileMPEG::open_file(int rd, int wr)
 				if( fd ) result = 0;
 			}
 			if( result )
-				eprintf("Couldn't open %s: rebuild failed.\n", asset->path);
+				eprintf(_("Couldn't open %s: rebuild failed.\n"), asset->path);
 		}
 		if(!result) {
 // Determine if the file needs a table of contents and create one if needed.
@@ -587,7 +587,7 @@ int FileMPEG::open_file(int rd, int wr)
 			
 			if(aspect_ratio_code < 0)
 			{
-				eprintf("Unsupported aspect ratio %f\n", asset->aspect_ratio);
+				eprintf(_("Unsupported aspect ratio %f\n"), asset->aspect_ratio);
 				aspect_ratio_code = 2;
 			}
 			sprintf(string, " -a %d", aspect_ratio_code);
@@ -612,7 +612,7 @@ int FileMPEG::open_file(int rd, int wr)
 			if(frame_rate_code < 0)
 			{
 				frame_rate_code = 4;
-				eprintf("Unsupported frame rate %f\n", asset->frame_rate);
+				eprintf(_("Unsupported frame rate %f\n"), asset->frame_rate);
 			}
 			sprintf(string, " -F %d", frame_rate_code);
 			strcat(mjpeg_command, string);
@@ -659,7 +659,7 @@ int FileMPEG::open_file(int rd, int wr)
 			if(!(mjpeg_out = popen(mjpeg_command, "w")))
 			{
 				perror("FileMPEG::open_file");
-				eprintf("Error while opening \"%s\" for writing\n%m\n", mjpeg_command);
+				eprintf(_("Error while opening \"%s\" for writing\n%m\n"), mjpeg_command);
 				return 1;
 			}
 
@@ -707,7 +707,7 @@ int FileMPEG::open_file(int rd, int wr)
 			if(!(lame_fd = fopen(asset->path, "w")))
 			{
 				perror("FileMPEG::open_file");
-				eprintf("Error while opening \"%s\" for writing\n%m\n", asset->path);
+				eprintf(_("Error while opening \"%s\" for writing\n%m\n"), asset->path);
 				lame_close(lame_global);
 				lame_global = 0;
 				result = 1;
@@ -715,7 +715,7 @@ int FileMPEG::open_file(int rd, int wr)
 		}
 		else
 		{
-			eprintf("ampeg_derivative=%d\n", asset->ampeg_derivative);
+			eprintf(_("ampeg_derivative=%d\n"), asset->ampeg_derivative);
 			result = 1;
 		}
 	}
@@ -727,7 +727,7 @@ int FileMPEG::open_file(int rd, int wr)
 			S_IRUSR+S_IWUSR + S_IRGRP+S_IWGRP)) < 0 )
 		{
 			perror("FileMPEG::open_file");
-			eprintf("Error while opening \"%s\" for writing\n%m\n", asset->path);
+			eprintf(_("Error while opening \"%s\" for writing\n%m\n"), asset->path);
 			result = 1;
 		}
 	}
@@ -821,7 +821,7 @@ int FileMPEG::create_index()
 		fd = mpeg3_start_toc( asset->path, index_filename,
 				file->current_program, &total_bytes);
 		if( !fd ) {
-			eprintf("cant init toc index\n");
+			eprintf(_("cant init toc index\n"));
 			result = 1;
 		}
 
@@ -831,13 +831,13 @@ int FileMPEG::create_index()
 		if( !result && file->preferences->scan_commercials ) {
 			set_skimming(-1, 1, toc_nail, file);
 			if( (result=MWindow::commercials->resetDb() ) != 0 )
-				eprintf("cant access commercials database");
+				eprintf(_("cant access commercials database"));
 		}
 
 		char progress_title[BCTEXTLEN];  progress_title[0] = 0;
 		BC_ProgressBox *progress = 0;
 		if( !result ) {
-			sprintf(progress_title, "Creating %s\n", index_filename);
+			sprintf(progress_title, _("Creating %s\n"), index_filename);
 			progress = new BC_ProgressBox(-1, -1,
 					progress_title, total_bytes);
 			progress->start();
@@ -869,7 +869,7 @@ int FileMPEG::create_index()
 			if(bytes_processed >= total_bytes) break;
 			if(progress->is_cancelled()) result = 1;
 			if( bytes_processed == last_bytes ) {
-				eprintf("toc scan stopped before eof");
+				eprintf(_("toc scan stopped before eof"));
 				break;
 			}
 			last_bytes = bytes_processed;
@@ -943,7 +943,7 @@ int FileMPEG::close_file()
 		if( ret > 0 )
 			fwrite(opkt, 1, ret, twofp);
 		else if( ret < 0 )
-			fprintf(stderr, "twolame error encoding audio: %d\n", ret);
+			fprintf(stderr, _("twolame error encoding audio: %d\n"), ret);
 		fclose(twofp);  twofp = 0;
 	}
 	if( twopts ) { twolame_close(&twopts); twopts = 0; }
@@ -1011,7 +1011,7 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 		case CAPTURE_IEC61883:
 			return BC_YUV422P;
 	}
-	eprintf("unknown driver %d\n",driver);
+	eprintf(_("unknown driver %d\n"),driver);
 	return BC_RGB888;
 }
 
@@ -1235,7 +1235,7 @@ int FileMPEG::write_samples(double **buffer, int64_t len)
 		if( ret > 0 )
 			fwrite(twolame_out, 1, ret, twofp);
 		else if( ret < 0 )
-			fprintf(stderr, "twolame error encoding audio: %d\n", ret);
+			fprintf(stderr, _("twolame error encoding audio: %d\n"), ret);
 	}
 	else
 	if(asset->ampeg_derivative == 3)
@@ -1296,7 +1296,7 @@ int FileMPEG::write_samples(double **buffer, int64_t len)
 				result = !fwrite(real_output, 1, bytes, lame_fd);
 				if(result) {
 					perror("FileMPEG::write_samples");
-					eprintf("write failed: %m");
+					eprintf(_("write failed: %m"));
 				}
 			}
 			else
@@ -1807,7 +1807,7 @@ void FileMPEGVideo::run()
 
 
 MPEGConfigAudio::MPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Audio Compression",
+ : BC_Window(_(PROGRAM_NAME ": Audio Compression"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	310,
@@ -2002,7 +2002,7 @@ char* MPEGABitrate::bitrate_to_string(char *string, int bitrate)
 
 MPEGConfigVideo::MPEGConfigVideo(BC_WindowBase *parent_window, 
 	Asset *asset)
- : BC_Window(PROGRAM_NAME ": Video Compression",
+ : BC_Window(_(PROGRAM_NAME ": Video Compression"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	500,

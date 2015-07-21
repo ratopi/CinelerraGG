@@ -175,39 +175,39 @@ const char* OverlayConfig::mode_to_text(int mode)
 	switch(mode)
 	{
 		case TRANSFER_NORMAL:
-			return "Normal";
+			return _("Normal");
 			break;
 
 		case TRANSFER_REPLACE:
-			return "Replace";
+			return _("Replace");
 			break;
 
 		case TRANSFER_ADDITION:
-			return "Addition";
+			return _("Addition");
 			break;
 
 		case TRANSFER_SUBTRACT:
-			return "Subtract";
+			return _("Subtract");
 			break;
 
 		case TRANSFER_MULTIPLY:
-			return "Multiply";
+			return _("Multiply");
 			break;
 
 		case TRANSFER_DIVIDE:
-			return "Divide";
+			return _("Divide");
 			break;
 
 		case TRANSFER_MAX:
-			return "Max";
+			return _("Max");
 			break;
 
 		case TRANSFER_MIN:
-			return "Min";
+			return _("Min");
 			break;
 
 		default:
-			return "Normal";
+			return _("Normal");
 			break;
 	}
 	return "";
@@ -722,7 +722,7 @@ int Overlay::handle_opengl()
 }
 
 
-const char* Overlay::plugin_title() { return N_("Overlay"); }
+const char* Overlay::plugin_title() { return _("Overlay"); }
 int Overlay::is_realtime() { return 1; }
 int Overlay::is_multichannel() { return 1; }
 int Overlay::is_synthesis() { return 1; }

@@ -305,7 +305,7 @@ update_batches(int selection_item)
 		Units::totext(string, batch->duration, TIME_HMS3);
 		batches.data[4].append(
 			new BC_ListBoxItem(string, color));
-		sprintf(string, "%s", batch->channel ? batch->channel->title : "None");
+		sprintf(string, "%s", batch->channel ? batch->channel->title : _("None"));
 		batches.data[5].append(
 			new BC_ListBoxItem(string, color));
 		sprintf(string, "%s", Batch::mode_to_text(batch->record_mode));

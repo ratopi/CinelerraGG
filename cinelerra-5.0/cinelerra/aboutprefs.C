@@ -92,7 +92,7 @@ void AboutPrefs::create_objects()
 
 //	y += get_text_height(MEDIUMFONT) * 3;
 	set_font(LARGEFONT);
-	draw_text(x, y, "Contributors:");
+	draw_text(x, y, _("Contributors:"));
 	y += get_text_height(LARGEFONT);
 
 	credits.append(new BC_ListBoxItem("Richard Baverstock"));
@@ -140,7 +140,7 @@ void AboutPrefs::create_objects()
 
 	set_font(LARGEFONT);
 	set_color(resources->text_default);
-	draw_text(x, y, "License:");
+	draw_text(x, y, _("License:"));
 	y += get_text_height(LARGEFONT);
 
 	set_font(MEDIUMFONT);

@@ -20,6 +20,7 @@
  */
 
 #include "bcpopup.h"
+#include "language.h"
 
 
 BC_FullScreen::BC_FullScreen(BC_WindowBase *parent_window, int w, int h, 
@@ -32,7 +33,7 @@ BC_FullScreen::BC_FullScreen(BC_WindowBase *parent_window, int w, int h,
 #ifdef HAVE_LIBXXF86VM
    if (vm_scale) 
 	   create_window(parent_window,
-			   "Fullscreen", 
+			   _("Fullscreen"), 
 			   parent_window->get_screen_x(0, -1),
 			   parent_window->get_screen_y(0, -1),
 			   w, 
@@ -50,7 +51,7 @@ BC_FullScreen::BC_FullScreen(BC_WindowBase *parent_window, int w, int h,
    else
 #endif
    create_window(parent_window,
-			   "Fullscreen", 
+			   _("Fullscreen"), 
 			   parent_window->get_screen_x(0, -1),
 			   parent_window->get_screen_y(0, -1),
 			   w, 
@@ -84,7 +85,7 @@ BC_Popup::BC_Popup(BC_WindowBase *parent_window,
  : BC_WindowBase()
 {
 	create_window(parent_window,
-				"Popup", 
+				_("Popup"), 
 				x,
 				y,
 				w, 

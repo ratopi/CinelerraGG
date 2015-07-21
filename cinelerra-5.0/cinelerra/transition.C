@@ -41,7 +41,7 @@
 
 
 TransitionMenuItem::TransitionMenuItem(MWindow *mwindow, int audio, int video)
- : BC_MenuItem("Paste Transition")
+ : BC_MenuItem(_("Paste Transition"))
 {
 	this->audio = audio;
 	this->video = video;
@@ -226,7 +226,7 @@ int Transition::update_display()
 
 const char* Transition::default_title()
 {
-	return "Transition";
+	return _("Transition");
 }
 
 void Transition::dump(FILE *fp)

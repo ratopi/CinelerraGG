@@ -245,7 +245,7 @@ SET_TRACE
 SET_TRACE
 //TRACE("RecordVideo::run 2");
 	if( write_result ) {
-		ErrorBox error_box(PROGRAM_NAME ": Error",
+		ErrorBox error_box(_(PROGRAM_NAME ": Error"),
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 			error_box.create_objects(_("No space left on disk."));

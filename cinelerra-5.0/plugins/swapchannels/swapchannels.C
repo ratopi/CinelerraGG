@@ -208,7 +208,7 @@ void SwapMain::reset()
 }
 
 
-const char* SwapMain::plugin_title()  { return N_("Swap channels"); }
+const char* SwapMain::plugin_title()  { return _("Swap channels"); }
 int SwapMain::is_synthesis() { return 1; }
 int SwapMain::is_realtime()  { return 1; }
 
@@ -432,10 +432,10 @@ const char* SwapMain::output_to_text(int value)
 			return _("Alpha");
 			break;
 		case NO_SRC:
-			return _("0%");
+			return "0%";
 			break;
 		case MAX_SRC:
-			return _("100%");
+			return "100%";
 			break;
 		default:
 			return "";
@@ -449,8 +449,8 @@ int SwapMain::text_to_output(const char *text)
 	if(!strcmp(text, _("Green"))) return GREEN_SRC;
 	if(!strcmp(text, _("Blue"))) return BLUE_SRC;
 	if(!strcmp(text, _("Alpha"))) return ALPHA_SRC;
-	if(!strcmp(text, _("0%"))) return NO_SRC;
-	if(!strcmp(text, _("100%"))) return MAX_SRC;
+	if(!strcmp(text, "0%")) return NO_SRC;
+	if(!strcmp(text, "100%")) return MAX_SRC;
 	return 0;
 }
 

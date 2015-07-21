@@ -388,7 +388,7 @@ LinearBlurMain::~LinearBlurMain()
 	if(temp) delete temp;
 }
 
-const char* LinearBlurMain::plugin_title() { return N_("Linear Blur"); }
+const char* LinearBlurMain::plugin_title() { return _("Linear Blur"); }
 int LinearBlurMain::is_realtime() { return 1; }
 
 

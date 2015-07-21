@@ -19,6 +19,7 @@
  */
 
 #include "bluebananaslider.h"
+#include "language.h"
 
 #undef CLAMP
 #define CLAMP(x, y, z) ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x)))
@@ -475,7 +476,7 @@ void BluebananaSlider::update(){
   }
 
   if(!trough){
-    fprintf(stderr,"Bluebanana: Unable to create Frame for slider\n");
+    fprintf(stderr,_("Bluebanana: Unable to create Frame for slider\n"));
   }else{
     unsigned char *data = trough->get_data();
     long bpr = trough->get_bytes_per_line();
@@ -1510,7 +1511,7 @@ void BluebananaSliderChannel::update(){
   }
 
   if(!trough){
-    fprintf(stderr,"Bluebanana: Unable to create Frame for slider\n");
+    fprintf(stderr,_("Bluebanana: Unable to create Frame for slider\n"));
   }else{
     unsigned char *data = trough->get_data();
     float ha = 1.;
@@ -1966,7 +1967,7 @@ void BluebananaSliderFill::update(){
 
   /* Unlike the hist slider, we just drop the three pixel columns in the center */
   if(!trough){
-    fprintf(stderr,"Bluebanana: Unable to create Frame for slider\n");
+    fprintf(stderr,_("Bluebanana: Unable to create Frame for slider\n"));
   }else{
     unsigned char *data = trough->get_data();
     long bpr = trough->get_bytes_per_line();

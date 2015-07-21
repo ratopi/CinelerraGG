@@ -200,7 +200,7 @@ ScaleUseScale::ScaleUseScale(ScaleWin *win, ScaleMain *client, int x, int y)
 {
         this->win = win;
         this->client = client;
-	set_tooltip("Use fixed scale");
+	set_tooltip(_("Use fixed scale"));
 }
 ScaleUseScale::~ScaleUseScale()
 {
@@ -216,7 +216,7 @@ ScaleUseSize::ScaleUseSize(ScaleWin *win, ScaleMain *client, int x, int y)
 {
         this->win = win;
         this->client = client;
-	set_tooltip("Use fixed size");
+	set_tooltip(_("Use fixed size"));
 }
 ScaleUseSize::~ScaleUseSize()
 {

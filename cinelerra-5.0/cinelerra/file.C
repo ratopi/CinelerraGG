@@ -313,7 +313,7 @@ int File::get_options(FormatTools *format,
 
 	if(!format_window)
 	{
-		ErrorBox *errorbox = new ErrorBox(PROGRAM_NAME ": Error",
+		ErrorBox *errorbox = new ErrorBox(_(PROGRAM_NAME ": Error"),
 			parent_window->get_abs_cursor_x(1),
 			parent_window->get_abs_cursor_y(1));
 		format_window = errorbox;
@@ -2236,7 +2236,7 @@ const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 		case FILE_FFMPEG:	return _(FFMPEG_NAME);
 		case FILE_DB:		return _(DBASE_NAME);
 	}
-	return "Unknown";
+	return _("Unknown");
 }
 
 int File::strtobits(const char *bits)
@@ -2266,7 +2266,7 @@ const char* File::bitstostr(int bits)
 		case BITSFLOAT:		return (NAME_FLOAT);
 		case BITSIMA4:		return (NAME_IMA4);
 	}
-	return "Unknown";
+	return _("Unknown");
 }
 
 
@@ -2533,7 +2533,7 @@ const char* File::get_prefix(int format)
 	case FILE_GIF_LIST:	return "GIF_LIST";
 	case FILE_DB:		return "DB";
 	}
-	return "UNKNOWN";
+	return _("UNKNOWN");
 }
 
 

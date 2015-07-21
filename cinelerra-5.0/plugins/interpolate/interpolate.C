@@ -167,7 +167,7 @@ InterpolatePixelsMain::~InterpolatePixelsMain()
 	delete engine;
 }
 
-const char* InterpolatePixelsMain::plugin_title() { return N_("Interpolate Pixels"); }
+const char* InterpolatePixelsMain::plugin_title() { return _("Interpolate Pixels"); }
 int InterpolatePixelsMain::is_realtime() { return 1; }
 
 
@@ -251,9 +251,9 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 	if(get_use_opengl())
 	{
 // Aggregate with gamma
-		if(next_effect_is("Gamma") ||
-			next_effect_is("Histogram") ||
-			next_effect_is("Color Balance"))
+		if(next_effect_is(_("Gamma")) ||
+			next_effect_is(_("Histogram")) ||
+			next_effect_is(_("Color Balance")))
 			return 0;
 
 

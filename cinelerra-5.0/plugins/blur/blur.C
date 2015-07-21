@@ -128,7 +128,7 @@ BlurMain::~BlurMain()
 	if(overlayer) delete overlayer;
 }
 
-const char* BlurMain::plugin_title() { return N_("Blur"); }
+const char* BlurMain::plugin_title() { return _("Blur"); }
 int BlurMain::is_realtime() { return 1; }
 
 

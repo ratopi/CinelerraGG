@@ -29,7 +29,7 @@
 
 
 AssetRemoveWindow::AssetRemoveWindow(MWindow *mwindow)
- : BC_Window(PROGRAM_NAME ": Remove assets", 
+ : BC_Window(_(PROGRAM_NAME ": Remove assets"), 
 	mwindow->gui->get_abs_cursor_x(1),
 	mwindow->gui->get_abs_cursor_y(1),
 	320, 

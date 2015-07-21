@@ -100,7 +100,7 @@ public:
 		BC_TextBox *textbox, 
 		int y, 
 		const char *text, 
-		const char *window_title = _(PROGRAM_NAME " Path"), 
+		const char *window_title = _(PROGRAM_NAME ": Path"), 
 		const char *window_caption = _("Select a file"));
 	~AssetEditPath();
 	

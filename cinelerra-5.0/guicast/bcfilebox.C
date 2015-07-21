@@ -427,7 +427,7 @@ BC_FileBoxUpdir::BC_FileBoxUpdir(int x, int y, BC_FileBox *filebox)
 int BC_FileBoxUpdir::handle_event()
 {
 // Need a temp so submit_file can expand it
-	sprintf(string, _(".."));
+	sprintf(string, "..");
 	filebox->submit_file(string);
 	return 1;
 }

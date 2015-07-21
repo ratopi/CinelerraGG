@@ -51,7 +51,7 @@ Piano::~Piano()
 }
 
 
-char* Piano::plugin_title() { return N_("Pianoesizer"); }
+char* Piano::plugin_title() { return _("Pianoesizer"); }
 int Piano::is_realtime() { return 1; }
 int Piano::is_synthesis() { return 1; }
 

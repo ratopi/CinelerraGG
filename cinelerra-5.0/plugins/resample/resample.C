@@ -60,7 +60,7 @@ int ResampleFraction::handle_event()
 
 
 ResampleWindow::ResampleWindow(ResampleEffect *plugin, int x, int y)
- : BC_Window(PROGRAM_NAME ": Resample", 
+ : BC_Window(_(PROGRAM_NAME ": Resample"), 
  				x - 160,
 				y - 75,
  				320, 
@@ -125,7 +125,7 @@ ResampleEffect::~ResampleEffect()
 {
 }
 
-const char* ResampleEffect::plugin_title() { return N_("Resample"); }
+const char* ResampleEffect::plugin_title() { return _("Resample"); }
 
 void ResampleEffect::reset()
 {

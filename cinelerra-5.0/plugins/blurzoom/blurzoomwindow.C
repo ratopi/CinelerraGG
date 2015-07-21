@@ -49,9 +49,9 @@ void BlurZoomWindow::create_objects()
 {
 	int x = 10, y = 10;
 	add_subwindow(new BC_Title(x, y, 
-		_("RadioacTV from EffectTV\n"
+		"RadioacTV from EffectTV\n"
 		"Copyright (C) 2001 FUKUCHI Kentarou")
-	));
+	);
 
 	show_window();
 	flush();

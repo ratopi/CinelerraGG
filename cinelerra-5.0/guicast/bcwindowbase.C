@@ -202,8 +202,8 @@ BC_WindowBase::~BC_WindowBase()
 #ifndef SINGLE_THREAD
 #ifdef HAVE_GL
 		if( (options & GLX_DISPLAY) != 0 && get_resources()->get_synchronous() ) {
-			printf("BC_WindowBase::~BC_WindowBase window deleted but opengl deletion is not\n"
-				"implemented for BC_Pixmap.\n");
+			printf(_("BC_WindowBase::~BC_WindowBase window deleted but opengl deletion is not\n"
+				"implemented for BC_Pixmap.\n"));
 			get_resources()->get_synchronous()->delete_display(this);
 		}
 		else
@@ -657,7 +657,7 @@ Display* BC_WindowBase::init_display(const char *display_name)
   		printf("BC_WindowBase::init_display: cannot connect to X server %s\n",
 			display_name);
   		if(getenv("DISPLAY") == NULL) {
-			printf("'DISPLAY' environment variable not set.\n");
+			printf(_("'DISPLAY' environment variable not set.\n"));
   			exit(1);
 		}
 		else {

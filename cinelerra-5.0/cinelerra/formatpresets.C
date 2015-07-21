@@ -281,7 +281,7 @@ const char* FormatPresets::get_preset_text(EDL *edl)
 	if(item) 
 		return item->get_text();
 	else
-		return "Custom";
+		return _("Custom");
 }
 
 

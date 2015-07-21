@@ -467,8 +467,8 @@ int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
 	if( !load_plugin_index(mwindow, index_path) ) return 1;
 	FILE *fp = fopen(index_path,"w");
 	if( !fp ) {
-		fprintf(stderr," MWindow::init_plugins: "
-		 	"can't create plugin index: %s\n", index_path);
+		fprintf(stderr,_("MWindow::init_plugins: "
+		 	"can't create plugin index: %s\n"), index_path);
 		return 1;
 	}
 	fprintf(fp, "%d\n", PLUGIN_FILE_VERSION);
@@ -960,7 +960,7 @@ int MWindow::put_commercial()
 	for(Track *track=tracks->first; track && !errmsg; track=track->next) {
 		if( track->data_type != TRACK_VIDEO ) continue;
 		if( !track->record ) continue;
-		if( count > 0 ) { errmsg = "multiple video tracks"; break; }
+		if( count > 0 ) { errmsg = _("multiple video tracks"); break; }
 		++count;
 		int64_t units_start = track->to_units(start,0);
 		int64_t units_end = track->to_units(end,0);
@@ -972,9 +972,9 @@ int MWindow::put_commercial()
 			edit2 = edits->last;
 			units_end = edits->length();
 		}
-		if(edit1 != edit2) { errmsg = "crosses edits"; break; }
+		if(edit1 != edit2) { errmsg = _("crosses edits"); break; }
 		Indexable *indexable = edit1->get_source();
-		if( !indexable->is_asset ) { errmsg = "not asset"; break; }
+		if( !indexable->is_asset ) { errmsg = _("not asset"); break; }
 	}
 	//run it
 	for(Track *track=tracks->first; track && !errmsg; track=track->next) {
@@ -993,17 +993,17 @@ int MWindow::put_commercial()
 		Indexable *indexable = edit1->get_source();
 		Asset *asset = (Asset *)indexable;
 		File *file = video_cache->check_out(asset, edl);
-		if( !file ) { errmsg = "no file"; break; }
+		if( !file ) { errmsg = _("no file"); break; }
 		int64_t edit_length = units_end - units_start;
 		int64_t edit_start = units_start - edit1->startproject + edit1->startsource;
 		result = commercials->put_clip(file, edit1->channel,
 			track->from_units(edit_start), track->from_units(edit_length));
 		video_cache->check_in(asset);
-		if( result ) { errmsg = "db failed"; break; }
+		if( result ) { errmsg = _("db failed"); break; }
 	}
 	if( errmsg ) {
 		char string[BCTEXTLEN];
-		sprintf(string, "put_commercial: %s", errmsg);
+		sprintf(string, _("put_commercial: %s"), errmsg);
 		MainError::show_error(string);
 		undo_commercial();
 		result = 1;
@@ -1073,7 +1073,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 		new_edl->copy_session(edl);
 		new_file->set_program(edl->session->program_no);
 
-		sprintf(string, "Loading %s", new_asset->path);
+		sprintf(string, _("Loading %s"), new_asset->path);
 		gui->show_message(string);
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
@@ -1091,7 +1091,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 					(new_asset->height % 2)))
 				{
 					char string[BCTEXTLEN];
-					sprintf(string, "%s's resolution is %dx%d.\nImages with odd dimensions may not decode properly.",
+					sprintf(string, _("%s's resolution is %dx%d.\nImages with odd dimensions may not decode properly."),
 						new_asset->path,
 						new_asset->width,
 						new_asset->height);
@@ -1102,8 +1102,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 					edl->session->program_no != new_asset->program)
 				{
 					char string[BCTEXTLEN];
-					sprintf(string, "%s's index was built for program number %d\n"
-						"Playback preference is %d.\n  Using program %d.",
+					sprintf(string, _("%s's index was built for program number %d\n"
+						"Playback preference is %d.\n  Using program %d."),
 						new_asset->path, new_asset->program,
 						edl->session->program_no, new_asset->program);
 					MainError::show_error(string);
@@ -1520,9 +1520,9 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 					if (!plugin_found) 
 					{
 						sprintf(string, 
-							"The effect '%s' in file '%s' is not part of your installation of Cinelerra.\n"
-							"The project won't be rendered as it was meant and Cinelerra might crash.\n",
-							plugin->title, 
+	_("The %s '%s' in file '%s' is not part of your installation of Cinelerra.\n"
+	  "The project won't be rendered as it was meant and Cinelerra might crash.\n"),
+							"effect", plugin->title, 
 							path); 
 						MainError::show_error(string);
 					}
@@ -1553,9 +1553,9 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 				if (!transition_found) 
 				{
 					sprintf(string, 
-						"The transition '%s' in file '%s' is not part of your installation of Cinelerra.\n"
-						"The project won't be rendered as it was meant and Cinelerra might crash.\n",
-						edit->transition->title, 
+	_("The %s '%s' in file '%s' is not part of your installation of Cinelerra.\n"
+	  "The project won't be rendered as it was meant and Cinelerra might crash.\n"),
+						"transition", edit->transition->title, 
 						path); 
 					MainError::show_error(string);
 				}
@@ -1587,11 +1587,11 @@ void MWindow::init_shm()
 	fd = 0;
 	if(result < 0x7fffffff) {
 		char string[BCTEXTLEN];
-		sprintf(string, "MWindow::init_shm: /proc/sys/kernel/shmmax is 0x" _LX ".\n"
+		sprintf(string, _("MWindow::init_shm: /proc/sys/kernel/shmmax is 0x" _LX ".\n"
 			"you probably need to be root, or:\n"
 			"as root, run: echo 0x7fffffff > /proc/sys/kernel/shmmax\n"
 			"before trying to start cinelerra.\n"
-			"It should be at least 0x7fffffff for Cinelerra.\n", result);
+			"It should be at least 0x7fffffff for Cinelerra.\n"), result);
 		MainError::show_error(string);
 	}
 }

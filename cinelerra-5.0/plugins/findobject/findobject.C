@@ -192,7 +192,7 @@ FindObjectMain::~FindObjectMain()
 	
 }
 
-const char* FindObjectMain::plugin_title() { return N_("Find Object"); }
+const char* FindObjectMain::plugin_title() { return _("Find Object"); }
 int FindObjectMain::is_realtime() { return 1; }
 int FindObjectMain::is_multichannel() { return 1; }
 

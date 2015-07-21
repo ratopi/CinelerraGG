@@ -25,6 +25,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "gwindowgui.h"
+#include "language.h"
 #include "mainmenu.h"
 #include "mainsession.h"
 #include "mwindow.h"
@@ -38,7 +39,7 @@
 GWindowGUI::GWindowGUI(MWindow *mwindow,
 	int w,
 	int h)
- : BC_Window(PROGRAM_NAME ": Overlays",
+ : BC_Window(_(PROGRAM_NAME ": Overlays"),
  	mwindow->session->gwindow_x, 
     mwindow->session->gwindow_y, 
     w, 
@@ -56,26 +57,26 @@ GWindowGUI::GWindowGUI(MWindow *mwindow,
 
 static const char *other_text[OTHER_TOGGLES] =
 {
-	"Assets",
-	"Titles",
-	"Transitions",
-	"Plugin Autos"
+	_("Assets"),
+	_("Titles"),
+	_("Transitions"),
+	_("Plugin Autos")
 };
 
 static const char *auto_text[AUTOMATION_TOTAL] = 
 {
-	"Mute",
-	"Camera X",
-	"Camera Y",
-	"Camera Z",
-	"Projector X",
-	"Projector Y",
-	"Projector Z",
-	"Fade",
-	"Pan",
-	"Mode",
-	"Mask",
-	"Speed"
+	_("Mute"),
+	_("Camera X"),
+	_("Camera Y"),
+	_("Camera Z"),
+	_("Projector X"),
+	_("Projector Y"),
+	_("Projector Z"),
+	_("Fade"),
+	_("Pan"),
+	_("Mode"),
+	_("Mask"),
+	_("Speed")
 };
 
 void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)

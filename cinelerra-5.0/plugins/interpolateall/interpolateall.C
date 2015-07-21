@@ -94,7 +94,7 @@ InterpolateAllEffect::~InterpolateAllEffect()
 
 
 
-char* InterpolateAllEffect::plugin_title() { return N_("Interpolate"); }
+char* InterpolateAllEffect::plugin_title() { return _("Interpolate"); }
 int InterpolateAllEffect::is_realtime() { return 0; }
 int InterpolateAllEffect::is_multichannel() { return 0; }
 

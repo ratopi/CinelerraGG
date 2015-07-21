@@ -73,7 +73,7 @@ void Quit::run()
 // Test execution conditions
 	Record *record = mwindow->gui->record;
 	if( record->capturing || record->recording || record->writing_file ) {
-		ErrorBox error(PROGRAM_NAME ": Error", 
+		ErrorBox error(_(PROGRAM_NAME ": Error"), 
 			mwindow->gui->get_abs_cursor_x(1), 
 			mwindow->gui->get_abs_cursor_y(1));
 		error.create_objects(_("Can't quit while a recording is in progress."));
@@ -83,7 +83,7 @@ void Quit::run()
 	else
 	if(mwindow->render->thread->running())
 	{
-		ErrorBox error(PROGRAM_NAME ": Error", 
+		ErrorBox error(_(PROGRAM_NAME ": Error"), 
 			mwindow->gui->get_abs_cursor_x(1), 
 			mwindow->gui->get_abs_cursor_y(1));
 		error.create_objects(_("Can't quit while a render is in progress."));

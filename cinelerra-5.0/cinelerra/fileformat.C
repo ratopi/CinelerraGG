@@ -31,7 +31,7 @@
 
 
 FileFormat::FileFormat(MWindow *mwindow)
- : BC_Window(PROGRAM_NAME ": File Format",
+ : BC_Window(_(PROGRAM_NAME ": File Format"),
 		mwindow->gui->get_abs_cursor_x(0),
 		mwindow->gui->get_abs_cursor_y(0),
  		375,

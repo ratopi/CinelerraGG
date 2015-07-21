@@ -201,7 +201,7 @@ InvertVideoEffect::~InvertVideoEffect()
 	
 }
 
-const char* InvertVideoEffect::plugin_title() { return N_("Invert Video"); }
+const char* InvertVideoEffect::plugin_title() { return _("Invert Video"); }
 int InvertVideoEffect::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(InvertVideoEffect, InvertVideoWindow)

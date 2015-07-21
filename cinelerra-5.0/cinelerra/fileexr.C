@@ -194,7 +194,7 @@ const char* FileEXR::compression_to_str(int compression)
 		case FileEXR::RLE: return "RLE"; break;
 		case FileEXR::PXR24: return "PXR24"; break;
 	}
-	return "None";
+	return _("None");
 }
 
 int FileEXR::compression_to_exr(int compression)
@@ -572,7 +572,7 @@ EXRUnit::~EXRUnit()
 
 
 EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Video Compression",
+ : BC_Window(_(PROGRAM_NAME ": Video Compression"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	300,
@@ -593,7 +593,7 @@ void EXRConfigVideo::create_objects()
 	add_subwindow(new EXRUseAlpha(this, x, y));
 	y += 30;
 	EXRCompression *menu;
-	add_subwindow(new BC_Title(x, y, "Compression:"));
+	add_subwindow(new BC_Title(x, y, _("Compression:")));
 	x += 110;
 	add_subwindow(menu = new EXRCompression(this, x, y, 100));
 	menu->create_objects();

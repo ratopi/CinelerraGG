@@ -47,7 +47,7 @@ DissolveMain::~DissolveMain()
 	delete overlayer;
 }
 
-const char* DissolveMain::plugin_title() { return N_("Dissolve"); }
+const char* DissolveMain::plugin_title() { return _("Dissolve"); }
 int DissolveMain::is_video() { return 1; }
 int DissolveMain::is_transition() { return 1; }
 int DissolveMain::uses_gui() { return 0; }

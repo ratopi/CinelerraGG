@@ -19,16 +19,12 @@
  *
  */
 
+#include "language.h"
 #include "mwindow.inc"
 #include "normalizewindow.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
 NormalizeWindow::NormalizeWindow(int x, int y)
- : BC_Window(PROGRAM_NAME ": Normalize",
+ : BC_Window(_(PROGRAM_NAME ": Normalize"),
  				x - 160,
 				y - 75,
  				320,

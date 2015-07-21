@@ -20,12 +20,8 @@
  */
 
 #include "bcdisplayinfo.h"
+#include "language.h"
 #include "sharpenwindow.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 SharpenThread::SharpenThread(SharpenMain *client)

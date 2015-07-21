@@ -32,7 +32,7 @@
 #define CROPHANDLE_H 10
 
 VideoWindowGUI::VideoWindowGUI(VideoWindow *thread, int w, int h)
- : BC_Window(PROGRAM_NAME ": Video out", 
+ : BC_Window(_(PROGRAM_NAME ": Video out"), 
  	(int)BC_INFINITY,
 	(int)BC_INFINITY,
 	w, 

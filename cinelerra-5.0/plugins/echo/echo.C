@@ -207,7 +207,7 @@ void Echo::reset()
 	bfr_pos = 0;
 }
 
-const char* Echo::plugin_title() { return N_("Echo"); }
+const char* Echo::plugin_title() { return _("Echo"); }
 int Echo::is_realtime() { return 1; }
 int Echo::is_multichannel() { return 1; }
 

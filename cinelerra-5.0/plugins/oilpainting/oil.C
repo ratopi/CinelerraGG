@@ -306,7 +306,7 @@ OilEffect::~OilEffect()
 }
 
 
-const char* OilEffect::plugin_title() { return N_("Oil painting"); }
+const char* OilEffect::plugin_title() { return _("Oil painting"); }
 int OilEffect::is_realtime() { return 1; }
 
 

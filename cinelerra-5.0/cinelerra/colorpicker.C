@@ -80,7 +80,7 @@ void ColorThread::run()
 //printf("ColorThread::run 1\n");
 	char window_title[BCTEXTLEN];
 
-	strcpy(window_title, PROGRAM_NAME ": ");
+	strcpy(window_title, _(PROGRAM_NAME ": "));
 	if(title)
 		strcat(window_title, title);
 	else

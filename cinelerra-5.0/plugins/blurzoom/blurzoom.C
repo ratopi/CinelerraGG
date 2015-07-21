@@ -60,7 +60,7 @@ BlurZoomMain::~BlurZoomMain()
 {
 }
 
-char* BlurZoomMain::plugin_title() { return N_("RadioacTV"); }
+char* BlurZoomMain::plugin_title() { return _("RadioacTV"); }
 int BlurZoomMain::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(BlurZoomMain, BlurZoomWindow)

@@ -25,15 +25,8 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
+#include "language.h"
 #include "vframe.h"
-
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-
 
 
 #include <stdint.h>
@@ -451,7 +444,7 @@ int DenoiseMJPEG::process_realtime(VFrame *input, VFrame *output)
 	return 0;
 }
 
-const char* DenoiseMJPEG::plugin_title() { return N_("Denoise video2"); }
+const char* DenoiseMJPEG::plugin_title() { return _("Denoise video2"); }
 int DenoiseMJPEG::is_realtime() { return 1; }
 
 void DenoiseMJPEG::update_gui()

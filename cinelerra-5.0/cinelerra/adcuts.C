@@ -27,7 +27,7 @@ AdCuts::
 		strcpy(cut_filename, filename);
 		strcpy(strrchr(cut_filename, '.'),".cut");
 		write_cuts(cut_filename);
-		printf("cuts to %s complete\n",cut_filename);
+		printf(_("cuts to %s complete\n"),cut_filename);
 	}
 	else
 		::remove(filename);

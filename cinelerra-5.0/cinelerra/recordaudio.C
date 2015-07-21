@@ -246,7 +246,7 @@ void RecordAudio::run()
 	}
 
 	if( write_result && !record->default_asset->video_data ) {
-		ErrorBox error_box(PROGRAM_NAME ": Error",
+		ErrorBox error_box(_(PROGRAM_NAME ": Error"),
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 		error_box.create_objects(_("No space left on disk."));

@@ -360,7 +360,7 @@ int FileFLAC::read_samples(double *buffer, int64_t len)
 
 FLACConfigAudio::FLACConfigAudio(BC_WindowBase *parent_window, 
 	Asset *asset)
- : BC_Window(PROGRAM_NAME ": Audio Compression",
+ : BC_Window(_(PROGRAM_NAME ": Audio Compression"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	350,

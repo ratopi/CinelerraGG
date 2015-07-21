@@ -382,24 +382,24 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 			best_format = cmodel_to_device(color_model);
 			break;
 		}
-		printf("DeviceV4L2Base::v4l2_open "
-			" attempting format %4.4s\n", (char *)&best_format);
+		printf(_("DeviceV4L2Base::v4l2_open "
+			" attempting format %4.4s\n"), (char *)&best_format);
 	}
 	if(driver == VIDEO4LINUX2JPEG && best_format != V4L2_PIX_FMT_MJPEG)
 	{
-		printf("DeviceV4L2Base::v4l2_open jpeg driver"
-			" and best_format not mjpeg (%4.4s)\n", (char *)&best_format);
+		printf(_("DeviceV4L2Base::v4l2_open jpeg driver"
+			" and best_format not mjpeg (%4.4s)\n"), (char *)&best_format);
 		return 1;
 	}
 	if(driver == VIDEO4LINUX2MPEG && best_format != V4L2_PIX_FMT_MPEG)
 	{
-		printf("DeviceV4L2Base::v4l2_open mpeg driver"
-			" and best_format not mpeg (%4.4s)\n",(char *)&best_format);
+		printf(_("DeviceV4L2Base::v4l2_open mpeg driver"
+			" and best_format not mpeg (%4.4s)\n"),(char *)&best_format);
 		return 1;
 	}
 	if(config_width != best_width || config_height != best_height)
 	{
-		printf("DeviceV4L2Base::v4l2_open  config geom %dx%d != %dx%d best_geom\n",
+		printf(_("DeviceV4L2Base::v4l2_open  config geom %dx%d != %dx%d best_geom\n"),
 			config_width, config_height, best_width, best_height);
 	}
 

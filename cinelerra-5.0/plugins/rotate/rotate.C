@@ -607,7 +607,7 @@ RotateEffect::~RotateEffect()
 
 
 
-const char* RotateEffect::plugin_title() { return N_("Rotate"); }
+const char* RotateEffect::plugin_title() { return _("Rotate"); }
 int RotateEffect::is_realtime() { return 1; }
 
 

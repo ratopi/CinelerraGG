@@ -382,7 +382,7 @@ Color3WayMain::~Color3WayMain()
 	delete engine;
 }
 
-const char* Color3WayMain::plugin_title() { return N_("Color 3 Way"); }
+const char* Color3WayMain::plugin_title() { return _("Color 3 Way"); }
 int Color3WayMain::is_realtime() { return 1; }
 
 
@@ -601,19 +601,19 @@ void Color3WayMain::read_data(KeyFrame *keyframe)
 void Color3WayMain::get_aggregation(int *aggregate_interpolate,
 	int *aggregate_gamma)
 {
-	if(!strcmp(get_output()->get_prev_effect(1), "Interpolate Pixels") &&
-		!strcmp(get_output()->get_prev_effect(0), "Gamma"))
+	if(!strcmp(get_output()->get_prev_effect(1), _("Interpolate Pixels")) &&
+		!strcmp(get_output()->get_prev_effect(0), _("Gamma")))
 	{
 		*aggregate_interpolate = 1;
 		*aggregate_gamma = 1;
 	}
 	else
-	if(!strcmp(get_output()->get_prev_effect(0), "Interpolate Pixels"))
+	if(!strcmp(get_output()->get_prev_effect(0), _("Interpolate Pixels")))
 	{
 		*aggregate_interpolate = 1;
 	}
 	else
-	if(!strcmp(get_output()->get_prev_effect(0), "Gamma"))
+	if(!strcmp(get_output()->get_prev_effect(0), _("Gamma")))
 	{
 		*aggregate_gamma = 1;
 	}

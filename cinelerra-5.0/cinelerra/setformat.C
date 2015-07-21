@@ -47,7 +47,7 @@
 
 
 SetFormat::SetFormat(MWindow *mwindow)
- : BC_MenuItem(_("Format..."), "Shift-F", 'F')
+ : BC_MenuItem(_("Format..."), _("Shift-F"), 'F')
 {
 	set_shift(1); 
 	this->mwindow = mwindow;
@@ -280,7 +280,7 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	SetFormatThread *thread,
 	int x,
 	int y)
- : BC_Window(PROGRAM_NAME ": Set Format",
+ : BC_Window(_(PROGRAM_NAME ": Set Format"),
  	x,
 	y,
 	mwindow->theme->setformat_w,
@@ -913,7 +913,7 @@ FormatSwapExtents::FormatSwapExtents(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	this->gui = gui;
-	set_tooltip("Swap dimensions");
+	set_tooltip(_("Swap dimensions"));
 }
 
 int FormatSwapExtents::handle_event()

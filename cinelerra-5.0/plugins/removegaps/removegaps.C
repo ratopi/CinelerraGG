@@ -102,14 +102,14 @@ void RemoveGapsWindow::create_objects()
 	int x = 10, y = 10;
 	BC_Title *title;
 	
-	add_subwindow(title = new BC_Title(x, y, "Threshold of gap (DB):"));
+	add_subwindow(title = new BC_Title(x, y, _("Threshold of gap (DB):")));
 	
 	add_subwindow(threshold = new RemoveGapsThreshold(this,
 		plugin, 
 		x + title->get_w() + plugin->get_theme()->widget_border, 
 		y));
 	y += threshold->get_h() + plugin->get_theme()->widget_border;
-	add_subwindow(title = new BC_Title(x, y, "Max duration of gap (Seconds):"));
+	add_subwindow(title = new BC_Title(x, y, _("Max duration of gap (Seconds):")));
 	add_subwindow(duration = new RemoveGapsDuration(this,
 		plugin, 
 		x + title->get_w() + plugin->get_theme()->widget_border, 
@@ -194,7 +194,7 @@ RemoveGaps::~RemoveGaps()
 	delete temp;
 }
 
-const char* RemoveGaps::plugin_title() { return N_("Remove Gaps"); }
+const char* RemoveGaps::plugin_title() { return _("Remove Gaps"); }
 int RemoveGaps::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(RemoveGaps, RemoveGapsWindow)

@@ -35,44 +35,44 @@
 // Table of tips of the day
 static const char *tips[] = 
 {
-	N_("Shift-click on a curve keyframe to snap it to the neighboring values."),
+	_("Shift-click on a curve keyframe to snap it to the neighboring values."),
 
-	N_("When configuring slow effects, disable playback for the track.  After configuring it,\n"
+	_("When configuring slow effects, disable playback for the track.  After configuring it,\n"
 	"re-enable playback to process a single frame."),
 
-	N_("Ctrl + any transport command causes playback to only cover\n"
+	_("Ctrl + any transport command causes playback to only cover\n"
 	"the region defined by the in/out points."),
 
-	N_("Shift + clicking a patch causes all other patches except the\n"
+	_("Shift + clicking a patch causes all other patches except the\n"
 	"selected one to toggle."),
 
-	N_("Clicking on a patch and dragging across other tracks causes\n"
+	_("Clicking on a patch and dragging across other tracks causes\n"
 	"the other patches to match the first one."),
 
-	N_("Shift + clicking on an effect boundary causes dragging to affect\n"
+	_("Shift + clicking on an effect boundary causes dragging to affect\n"
 	"just the one effect."),
 
-	N_("Load multiple files by clicking on one file and shift + clicking on\n"
+	_("Load multiple files by clicking on one file and shift + clicking on\n"
 	"another file.  Ctrl + clicking toggles individual files."),
 
-	N_("Ctrl + left clicking on the time bar cycles forward a time format.\n"
+	_("Ctrl + left clicking on the time bar cycles forward a time format.\n"
 	"Ctrl + middle clicking on the time bar cycles backward a time format."),
 
-	N_("Use the +/- keys in the Compositor window to zoom in and out.\n"),
+	_("Use the +/- keys in the Compositor window to zoom in and out.\n"),
 
-	N_("Pressing Alt while clicking in the cropping window causes translation of\n"
+	_("Pressing Alt while clicking in the cropping window causes translation of\n"
 	"all 4 points.\n"),
 
-	N_("Pressing Tab over a track toggles the Record status.\n"
+	_("Pressing Tab over a track toggles the Record status.\n"
 	"Pressing Shift-Tab over a track toggles the Record status of all the other tracks.\n"),
 
-	N_("Audio->Map 1:1 maps each recordable audio track to a different channel.\n"
+	_("Audio->Map 1:1 maps each recordable audio track to a different channel.\n"
 	"Map 5.1:1 maps 6 recordable AC3 tracks to 2 channels.\n"),
 
-	N_("Alt + left moves to the previous edit handle.\n"
+	_("Alt + left moves to the previous edit handle.\n"
 	"Alt + right moves to the next edit handle.\n"),
 
-	N_("Settings->typeless keyframes allows keyframes from any track to be pasted on either\n"
+	_("Settings->typeless keyframes allows keyframes from any track to be pasted on either\n"
 	"audio or video tracks.\n")
 };
 
@@ -142,7 +142,7 @@ TipWindowGUI::TipWindowGUI(MWindow *mwindow,
 	TipWindow *thread,
 	int x,
 	int y)
- : BC_Window(PROGRAM_NAME ": Tip of the day",
+ : BC_Window(_(PROGRAM_NAME ": Tip of the day"),
  	x,
 	y,
  	640,

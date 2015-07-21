@@ -69,7 +69,7 @@ DefaultThemeMain::~DefaultThemeMain()
 
 char* DefaultThemeMain::plugin_title()
 {
-	return "Blond";
+	return _("Blond");
 }
 
 Theme* DefaultThemeMain::new_theme()

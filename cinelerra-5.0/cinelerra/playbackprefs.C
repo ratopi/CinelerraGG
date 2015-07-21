@@ -156,7 +156,7 @@ SET_TRACE
 	add_subwindow(window = new VideoEveryFrame(pwindow, this, x, y));
 
 	add_subwindow(new BC_Title(x + 200, y + 5, _("Framerate achieved:")));
-	add_subwindow(framerate_title = new BC_Title(x + 350, y + 5, _("--"), MEDIUMFONT, RED));
+	add_subwindow(framerate_title = new BC_Title(x + 350, y + 5, "--", MEDIUMFONT, RED));
 	draw_framerate(0);
 	y += window->get_h() + 5;
 

@@ -578,7 +578,7 @@ void LiveVideo::render_stop()
 }
 
 
-const char* LiveVideo::plugin_title() { return N_("Live Video"); }
+const char* LiveVideo::plugin_title() { return _("Live Video"); }
 int LiveVideo::is_realtime() { return 1; }
 int LiveVideo::is_multichannel() { return 0; }
 int LiveVideo::is_synthesis() { return 1; }

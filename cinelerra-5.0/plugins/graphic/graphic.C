@@ -800,12 +800,12 @@ void GraphicGUI::create_objects()
 
 //	int x1 = x;
 //	int y1 = y;
-	add_subwindow(freq_title = new BC_Title(x, y, "Frequency:"));
+	add_subwindow(freq_title = new BC_Title(x, y, _("Frequency:")));
 	x += freq_title->get_w() + margin;
 	add_subwindow(freq_text = new FreqTextBox(plugin, this, x, y, 100));
 	x += freq_text->get_w() + margin;
 
-	add_subwindow(level_title = new BC_Title(x, y, "Level:"));
+	add_subwindow(level_title = new BC_Title(x, y, _("Level:")));
 	x += level_title->get_w() + margin;
 	add_subwindow(value_text = new ValueTextBox(plugin, this, x, y, 100));
 	x += value_text->get_w() + margin;
@@ -817,7 +817,7 @@ void GraphicGUI::create_objects()
 //	x = x1;
 //	y += value_text->get_h() + margin;
 
-	add_subwindow(size_title = new BC_Title(x, y, "Window size:"));
+	add_subwindow(size_title = new BC_Title(x, y, _("Window size:")));
 	x += size_title->get_w() + margin;
 	add_subwindow(size = new GraphicSize(this, plugin, x, y));
 	size->create_objects();
@@ -1045,7 +1045,7 @@ GraphicEQ::~GraphicEQ()
 
 int GraphicEQ::is_realtime() { return 1; }
 
-const char* GraphicEQ::plugin_title() { return N_("EQ Graphic"); }
+const char* GraphicEQ::plugin_title() { return _("EQ Graphic"); }
 
 NEW_WINDOW_MACRO(GraphicEQ, GraphicGUI)
 

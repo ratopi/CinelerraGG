@@ -64,7 +64,7 @@
 
 
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
- : BC_MenuItem(_("Preferences..."), "Shift+P", 'P')
+ : BC_MenuItem(_("Preferences..."), _("Shift+P"), 'P')
 {
 	this->mwindow = mwindow; 
 
@@ -349,7 +349,7 @@ PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	PreferencesThread *thread,
 	int x,
 	int y)
- : BC_Window(PROGRAM_NAME ": Preferences", 
+ : BC_Window(_(PROGRAM_NAME ": Preferences"), 
  	x,
 	y,
  	WIDTH, 

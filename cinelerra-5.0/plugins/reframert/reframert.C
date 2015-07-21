@@ -338,7 +338,7 @@ ReframeRT::~ReframeRT()
 
 }
 
-const char* ReframeRT::plugin_title() { return N_("ReframeRT"); }
+const char* ReframeRT::plugin_title() { return _("ReframeRT"); }
 int ReframeRT::is_realtime() { return 1; }
 int ReframeRT::is_synthesis() { return 1; }
 

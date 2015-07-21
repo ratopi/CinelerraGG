@@ -181,7 +181,7 @@ BandSlideMain::~BandSlideMain()
 	
 }
 
-const char* BandSlideMain::plugin_title() { return N_("BandSlide"); }
+const char* BandSlideMain::plugin_title() { return _("BandSlide"); }
 int BandSlideMain::is_transition() { return 1; }
 int BandSlideMain::uses_gui() { return 1; }
 

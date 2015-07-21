@@ -33,7 +33,7 @@
 
 
 RecordWindow::RecordWindow(MWindow *mwindow, Record *record, int x, int y)
- : BC_Window(PROGRAM_NAME ": Record", 
+ : BC_Window(_(PROGRAM_NAME ": Record"), 
 	x,
 	y,
  	RECORD_WINDOW_WIDTH, 

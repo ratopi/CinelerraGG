@@ -82,7 +82,7 @@ void RecordThread::run()
 	done = batch_no >= 0 ? 0 : 1;
 	if( done ) {
 		QuestionWindow *qwindow = new QuestionWindow(mwindow);
-		qwindow->create_objects("Re-enable batches and restart?",1);
+		qwindow->create_objects(_("Re-enable batches and restart?"),1);
 		int result = qwindow->run_window();
 		delete qwindow;
 		if( result == 2 ) {
@@ -133,7 +133,7 @@ printf("RecordThread::Done\n");
 		}
 	}
 
-	record->record_gui->update_cron_status("Done");
+	record->record_gui->update_cron_status(_("Done"));
 	record->record_gui->enable_batch_buttons();
 	if( record->power_off && done < 0 )
 	{
@@ -144,13 +144,13 @@ printf("RecordThread::Done\n");
 			const char poweroff[] = "poweroff";
 			char *const argv[] = { (char*)poweroff, 0 };
 			execvp(poweroff ,&argv[0]);
-			perror("execvp poweroff failed");
+			perror(_("execvp poweroff failed"));
 			exit(1);
 		}
 		if( pid > 0 )
-			fprintf(stderr,"poweroff imminent!!!\n");
+			fprintf(stderr,_("poweroff imminent!!!\n"));
 		else
-			perror("cant vfork poweroff process");
+			perror(_("cant vfork poweroff process"));
 	}
 	cron_active = -1;
 }

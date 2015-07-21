@@ -60,7 +60,7 @@
 
 
 RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
- : BC_Window(PROGRAM_NAME ": Recording", 
+ : BC_Window(_(PROGRAM_NAME ": Recording"), 
  	mwindow->session->rwindow_x, mwindow->session->rwindow_y, 
 	mwindow->session->rwindow_w, mwindow->session->rwindow_h,
 	10, 10, 1, 0, 1)
@@ -187,7 +187,7 @@ void RecordGUI::create_objects()
 		batch_path->get_x() + batch_path->get_w(), 
 		y,
 		asset->path,
-		PROGRAM_NAME ": Record path",
+		_(PROGRAM_NAME ": Record path"),
 		_("Select a file to record to:"),
 		0));
 	x2 = max(x2, batch_path->get_w() + batch_browse->get_w());
@@ -294,7 +294,7 @@ void RecordGUI::create_objects()
 		add_subwindow(new BC_Title(x, y, 
 			asset->format != FILE_MPEG ?
 				FileMOV::compressiontostr(asset->vcodec) :
-				"File Capture",
+				_("File Capture"),
 			MEDIUMFONT, 
 			mwindow->theme->recordgui_fixed_color));
 	
@@ -968,7 +968,7 @@ int RecordGUIStopBatches::handle_event()
 {
 	Record *record = gui->record;
 	unlock_window();
-	record->stop_cron_thread("Stopped");
+	record->stop_cron_thread(_("Stopped"));
 	lock_window();
 	return RecordBatchesGUI::StopBatches::handle_event();
 }
@@ -983,7 +983,7 @@ RecordGUIActivateBatch::RecordGUIActivateBatch(RecordGUI *gui, int x, int y)
 int RecordGUIActivateBatch::handle_event()
 {
 	gui->record->activate_batch(gui->record->editing_batch());
-	gui->update_cron_status("Idle");
+	gui->update_cron_status(_("Idle"));
 	return RecordBatchesGUI::ActivateBatch::handle_event();
 }
 

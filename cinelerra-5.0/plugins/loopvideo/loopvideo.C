@@ -176,7 +176,7 @@ LoopVideo::~LoopVideo()
 	
 }
 
-const char* LoopVideo::plugin_title() { return N_("Loop video"); }
+const char* LoopVideo::plugin_title() { return _("Loop video"); }
 int LoopVideo::is_realtime() { return 1; }
 int LoopVideo::is_synthesis() { return 1; }
 

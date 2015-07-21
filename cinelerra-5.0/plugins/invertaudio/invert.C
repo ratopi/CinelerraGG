@@ -38,7 +38,7 @@ public:
 
 	const char* plugin_title()
 	{
-		return  N_("Invert Audio");
+		return  _("Invert Audio");
 	};
 	int is_realtime()
 	{

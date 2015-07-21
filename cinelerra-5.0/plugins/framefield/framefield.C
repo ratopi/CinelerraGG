@@ -563,7 +563,7 @@ void FrameField::average_rows(int offset, VFrame *frame)
 
 
 
-const char* FrameField::plugin_title() { return N_("Frames to fields"); }
+const char* FrameField::plugin_title() { return _("Frames to fields"); }
 int FrameField::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(FrameField, FrameFieldWindow)
@@ -705,8 +705,8 @@ int FrameField::handle_opengl()
 // Store aggregation state only when reading a frame
 //printf("FrameField::handle_opengl %p\n", get_output());
 //get_output()->dump_stacks();
-		if(prev_effect_is("RGB - 601") ||
-			next_effect_is("RGB - 601"))
+		if(prev_effect_is(_("RGB - 601")) ||
+			next_effect_is(_("RGB - 601")))
 		{
 			aggregate_rgb601 = 1;
 			rgb601_direction = get_output()->get_params()->get("RGB601_DIRECTION", 0);
