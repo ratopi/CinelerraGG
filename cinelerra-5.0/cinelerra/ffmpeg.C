@@ -653,6 +653,7 @@ int FFVideoStream::video_seek(int64_t pos)
 	if( gop < 4 ) gop = 4;
 	if( gop > 64 ) gop = 64;
 	if( pos >= curr_pos && pos <= curr_pos + gop ) return 0;
+	if( pos == curr_pos-1 && curr_pos > seek_pos ) return 0;
 	if( !st->codec || !st->codec->codec ) return -1;
 	avcodec_flush_buffers(st->codec);
 // back up a few frames to read up to current to help repair damages
