@@ -626,12 +626,12 @@ int FFVideoStream::decode_frame(AVFrame *frame, int &got_frame)
 
 int FFVideoStream::load(VFrame *vframe, int64_t pos)
 {
-	if( video_seek(pos) < 0 ) return -1;
+	int ret = video_seek(pos);
+	if( ret < 0 ) return -1;
 	if( !frame && !(frame=av_frame_alloc()) ) {
 		fprintf(stderr, "FFVideoStream::load: av_frame_alloc failed\n");
 		return -1;
 	}
-	int ret = 0;
 	for( int i=0; ret>=0 && !flushed && curr_pos<=pos && i<1000; ++i ) {
 		ret = read_frame(frame);
 	}
@@ -653,7 +653,7 @@ int FFVideoStream::video_seek(int64_t pos)
 	if( gop < 4 ) gop = 4;
 	if( gop > 64 ) gop = 64;
 	if( pos >= curr_pos && pos <= curr_pos + gop ) return 0;
-	if( pos == curr_pos-1 && curr_pos > seek_pos ) return 0;
+	if( pos == curr_pos-1 && curr_pos > seek_pos ) return 1;
 	if( !st->codec || !st->codec->codec ) return -1;
 	avcodec_flush_buffers(st->codec);
 // back up a few frames to read up to current to help repair damages
