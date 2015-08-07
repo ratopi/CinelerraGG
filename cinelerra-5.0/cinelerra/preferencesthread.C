@@ -49,6 +49,7 @@
 #include "playbackprefs.h"
 #include "preferences.h"
 #include "recordprefs.h"
+#include "shbtnprefs.h"
 #include "theme.h"
 #include "trackcanvas.h"
 #include "transportque.h"
@@ -210,6 +211,7 @@ int PreferencesThread::apply_settings()
 
 	mwindow->reset_android_remote();
 	mwindow->gui->mbuttons->ffmpeg_toggle->update(mwindow->preferences->ffmpeg_early_probe);
+	mwindow->gui->mainshbtns->load(mwindow->preferences);
 
 //edl->session->recording_format->dump();
 //mwindow->edl->session->recording_format->dump();

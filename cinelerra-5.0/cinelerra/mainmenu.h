@@ -66,7 +66,7 @@ class SplitY;
 class MainMenu : public BC_MenuBar
 {
 public:
-	MainMenu(MWindow *mwindow, MWindowGUI *gui);
+	MainMenu(MWindow *mwindow, MWindowGUI *gui, int w);
 	~MainMenu();
 	void create_objects();
 	int load_defaults(BC_Hash *defaults);

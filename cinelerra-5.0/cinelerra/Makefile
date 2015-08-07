@@ -324,6 +324,7 @@ OBJS = \
 	$(OBJDIR)/strack.o \
 	$(OBJDIR)/swindow.o \
 	$(OBJDIR)/wwindow.o \
+	$(OBJDIR)/shbtnprefs.o \
 
 #	$(OBJDIR)/renderfarmfsclient.o \
 #	$(OBJDIR)/renderfarmfsserver.o \

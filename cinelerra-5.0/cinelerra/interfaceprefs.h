@@ -43,6 +43,7 @@ class ViewThumbnails;
 #include "deleteallindexes.inc"
 #include "mwindow.inc"
 #include "preferencesthread.h"
+#include "shbtnprefs.inc"
 
 
 class InterfacePrefs : public PreferencesDialog
@@ -55,6 +56,7 @@ public:
 // must delete each derived class
 	int update(int new_value);
 	const char* behavior_to_text(int mode);
+	int start_shbtn_dialog();
 
 	BrowseButton *ipath;
 	IndexSize *isize;
@@ -76,6 +78,7 @@ public:
 //	MeterVUInt *vu_int;
 	ViewBehaviourText *button1, *button2, *button3;
 	ViewThumbnails *thumbnails;
+	ShBtnEditDialog *shbtn_dialog;
 };
 
 
@@ -314,6 +317,16 @@ public:
 	PreferencesWindow *pwindow;
 	int handle_event();
 	AndroidPort(PreferencesWindow *pwindow, int x, int y);
+};
+
+class ShBtnPrefs : public BC_GenericButton
+{
+public:
+	PreferencesWindow *pwindow;
+	InterfacePrefs *iface_prefs;
+
+	int handle_event();
+	ShBtnPrefs(PreferencesWindow *pwindow, InterfacePrefs *iface_prefs, int x, int y);
 };
 
 #endif

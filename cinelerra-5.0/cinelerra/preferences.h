@@ -29,6 +29,7 @@
 #include "maxchannels.h"
 #include "mutex.inc"
 #include "preferences.inc"
+#include "shbtnprefs.inc"
 #include "videoconfig.inc"
 
 
@@ -139,6 +140,8 @@ public:
 	int android_remote;
 	int android_port;
 	char android_pin[BCSTRLEN];
+// shell cmd line menu ops
+	ArrayList<ShBtnPref *> shbtn_prefs;
 
 // ====================================== Plugin Set ==============================
 	char plugin_dir[BCTEXTLEN];

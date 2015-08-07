@@ -28,6 +28,7 @@
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "interfaceprefs.h"
+#include "shbtnprefs.h"
 #include "theme.h"
 
 #if 0
@@ -45,7 +46,36 @@ N_("No effect")
 InterfacePrefs::InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
+	hms = 0;
+	hmsf = 0;
+	samples = 0;
+	frames = 0;
+	hex = 0;
+	feet = 0;
+	min_db = 0;
+	max_db = 0;
+//	vu_db = 0;
+//	vu_int = 0;
+	thumbnails = 0;
+	shbtn_dialog = 0;
 }
+
+InterfacePrefs::~InterfacePrefs()
+{
+	delete hms;
+	delete hmsf;
+	delete samples;
+	delete frames;
+	delete hex;
+	delete feet;
+	delete min_db;
+	delete max_db;
+//	delete vu_db;
+//	delete vu_int;
+	delete thumbnails;
+	delete shbtn_dialog;
+}
+
 
 void InterfacePrefs::create_objects()
 {
@@ -154,7 +184,7 @@ void InterfacePrefs::create_objects()
 
 	add_subwindow(thumbnails = new ViewThumbnails(x, y, pwindow));
 
-	int x2 = x + 320, y2 = y;
+	int x2 = x + 400, y2 = y;
 	AndroidRemote *android_remote = new AndroidRemote(pwindow, x2, y2);
 	add_subwindow(android_remote);
 	y2 += android_remote->get_h() + 10;
@@ -166,6 +196,9 @@ void InterfacePrefs::create_objects()
 	add_subwindow(title = new BC_Title(x2, y2, _("PIN:")));
 	AndroidPIN *android_pin = new AndroidPIN(pwindow, x3, y2);
 	add_subwindow(android_pin);
+
+	y2 += title->get_h() + 30;
+	add_subwindow(new ShBtnPrefs(pwindow, this, x2, y2));
 
 	y += 35;
 	add_subwindow(new BC_Title(x, y, _("Clicking on edit boundaries does what:")));
@@ -253,22 +286,6 @@ int InterfacePrefs::update(int new_value)
 	seconds->update(new_value == TIME_SECONDS);
 	return 0;
 }
-
-InterfacePrefs::~InterfacePrefs()
-{
-	delete hms;
-	delete hmsf;
-	delete samples;
-	delete frames;
-	delete hex;
-	delete feet;
-	delete min_db;
-	delete max_db;
-//	delete vu_db;
-//	delete vu_int;
-	delete thumbnails;
-}
-
 
 
 
@@ -687,7 +704,6 @@ int AndroidRemote::handle_event()
 	return 1;
 }
 
-
 AndroidPIN::AndroidPIN(PreferencesWindow *pwindow, int x, int y)
  : BC_TextBox(x, y, 240, 1, pwindow->thread->preferences->android_pin)
 {
@@ -718,5 +734,26 @@ int AndroidPort::handle_event()
 	sprintf(str,"%u",port);
 	update(str);
 	return 1;
+}
+
+int InterfacePrefs::start_shbtn_dialog()
+{
+	if( !shbtn_dialog )
+		shbtn_dialog = new ShBtnEditDialog(pwindow);
+	shbtn_dialog->start();
+	return 1;
+}
+
+ShBtnPrefs::ShBtnPrefs(PreferencesWindow *pwindow, InterfacePrefs *iface_prefs, int x, int y)
+ : BC_GenericButton(x, y, _("Shell Commands"))
+{
+	this->pwindow = pwindow;
+	this->iface_prefs = iface_prefs;
+	set_tooltip(_("Main Menu Shell Commands"));
+}
+
+int ShBtnPrefs::handle_event()
+{
+	return iface_prefs->start_shbtn_dialog();
 }
 

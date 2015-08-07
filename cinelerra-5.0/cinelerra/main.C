@@ -125,6 +125,7 @@ int main(int argc, char *argv[])
 	char batch_path[BCTEXTLEN];
 	char locale_path[BCTEXTLEN];
 	char exe_path[BCTEXTLEN];
+	char env_path[BCTEXTLEN];
 	int nice_value = 20;
 	int start_remote_control = 0;
 	config_path[0] = 0;
@@ -134,6 +135,8 @@ int main(int argc, char *argv[])
 
 
 	get_exe_path(exe_path);
+	snprintf(env_path, sizeof(env_path), "CINELERRA_PATH=%s", exe_path);
+	putenv(env_path);
 	sprintf(locale_path, "%s%s", exe_path, LOCALEDIR);
 
 

@@ -76,8 +76,8 @@
 #include <string.h>
 
 
-MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
- : BC_MenuBar(0, 0, gui->get_w())
+MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui, int w)
+ : BC_MenuBar(0, 0, w)
 {
 	this->gui = gui;
 	this->mwindow = mwindow; 

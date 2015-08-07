@@ -74,7 +74,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 		const char *text,
 		int use_title,
 		VFrame **data)
- : BC_SubWindow(x, y, w, -1, -1)
+ : BC_SubWindow(x, y, 0, -1, -1)
 {
 	highlighted = popup_down = 0;
 	menu_popup = 0;

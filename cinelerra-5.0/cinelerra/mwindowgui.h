@@ -47,9 +47,10 @@
 #include "resourcepixmap.h"
 #include "resourcethread.inc"
 #include "samplescroll.inc"
+#include "shbtnprefs.inc"
 #include "statusbar.inc"
-#include "timelinepane.inc"
 #include "swindow.inc"
+#include "timelinepane.inc"
 #include "trackcanvas.inc"
 #include "trackscroll.inc"
 #include "transitionpopup.inc"
@@ -190,6 +191,7 @@ public:
 
 
 	MainMenu *mainmenu;
+	MainShBtns *mainshbtns;
 	ZoomBar *zoombar;
 	StatusBar *statusbar;
 	PaneButton *pane_button;

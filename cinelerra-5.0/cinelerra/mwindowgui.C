@@ -58,8 +58,9 @@
 #include "renderengine.h"
 #include "resourcethread.h"
 #include "samplescroll.h"
-#include "swindow.h"
+#include "shbtnprefs.h"
 #include "statusbar.h"
+#include "swindow.h"
 #include "theme.h"
 #include "trackcanvas.h"
 #include "trackscroll.h"
@@ -258,7 +259,10 @@ void MWindowGUI::create_objects()
 	
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 
-	add_subwindow(mainmenu = new MainMenu(mwindow, this));
+	int x = get_w() - MainShBtns::calculate_w(1);
+	add_subwindow(mainmenu = new MainMenu(mwindow, this, x));
+	add_subwindow(mainshbtns = new MainShBtns(mwindow, x, 0));
+	mainshbtns->load(mwindow->preferences);
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
 	mwindow->theme->draw_mwindow_bg(this);
 	mainmenu->create_objects();

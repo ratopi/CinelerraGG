@@ -71,6 +71,7 @@ endif
 	cd bin && find -name '.svn' -exec rm -r {} \; -prune
 	rm -f bin/cutads
 	cp -a cinelerra/$(OBJDIR)/cutads bin/.
+	cp -a doc/manual.pdf bin/.
 	rm -f bin/new_db
 	$(MAKE) -C db/utils new_db
 	cp -a db/utils/new_db bin/.

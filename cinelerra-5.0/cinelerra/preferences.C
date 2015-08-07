@@ -33,6 +33,7 @@
 #include "indexfile.h"
 #include "mutex.h"
 #include "preferences.h"
+#include "shbtnprefs.h"
 #include "theme.h"
 #include "videoconfig.h"
 #include "videodevice.inc"
@@ -180,6 +181,9 @@ void Preferences::copy_from(Preferences *that)
 	android_remote = that->android_remote;
 	android_port = that->android_port;
 	strcpy(android_pin, that->android_pin);
+	this->shbtn_prefs.remove_all_objects();
+	for( int i=0; i<that->shbtn_prefs.size(); ++i )
+		this->shbtn_prefs.append(new ShBtnPref(*that->shbtn_prefs[i]));
 	cache_size = that->cache_size;
 	force_uniprocessor = that->force_uniprocessor;
 	trap_sigsegv = that->trap_sigsegv;
@@ -381,6 +385,24 @@ int Preferences::load_defaults(BC_Hash *defaults)
 		}
 	}
 
+	shbtn_prefs.remove_all_objects();
+	int shbtns_total = defaults->get("SHBTNS_TOTAL", -1);
+	if( shbtns_total < 0 ) {
+		shbtn_prefs.append(new ShBtnPref("manual", "firefox file:///$CINELERRA_PATH/manual.pdf", 0));
+		shbtn_prefs.append(new ShBtnPref("online help", "firefox http://cinelerra.org/help.php/", 0));
+		shbtns_total = 0;
+	}
+	for( int i=0; i<shbtns_total; ++i ) {
+		char name[BCTEXTLEN], commands[BCTEXTLEN];
+		sprintf(string, "SHBTN%d_NAME", i);
+		defaults->get(string, name);
+		sprintf(string, "SHBTN%d_COMMANDS", i);
+		defaults->get(string, commands);
+		sprintf(string, "SHBTN%d_WARN", i);
+		int warn = defaults->get(string, 0);
+		shbtn_prefs.append(new ShBtnPref(name, commands, warn));
+	}
+
 // Redo with the proper value of force_uniprocessor
 	processors = calculate_processors(0);
 	boundaries();
@@ -450,6 +472,16 @@ int Preferences::save_defaults(BC_Hash *defaults)
 		defaults->update(string, renderfarm_enabled.values[i]);
 		sprintf(string, "RENDERFARM_RATE%d", i);
 		defaults->update(string, renderfarm_rate.values[i]);
+	}
+	defaults->update("SHBTNS_TOTAL", shbtn_prefs.size());
+	for( int i=0; i<shbtn_prefs.size(); ++i ) {
+		ShBtnPref *pref = shbtn_prefs[i];
+		sprintf(string, "SHBTN%d_NAME", i);
+		defaults->update(string, pref->name);
+		sprintf(string, "SHBTN%d_COMMANDS", i);
+		defaults->update(string, pref->commands);
+		sprintf(string, "SHBTN%d_WARN", i);
+		defaults->update(string, pref->warn);
 	}
 	return 0;
 }
