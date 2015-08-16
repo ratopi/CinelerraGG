@@ -42,6 +42,7 @@ TransitionLengthThread::TransitionLengthThread(MWindow *mwindow)
 
 TransitionLengthThread::~TransitionLengthThread()
 {
+	close_window();
 }
 
 void TransitionLengthThread::start(Transition *transition, 

@@ -1898,8 +1898,6 @@ int Record::stop_commercial_capture(int run_job)
 	return result;
 }
 
-extern void get_exe_path(char *result); // from main.C
-
 int Record::
 spawn(const char *fmt, ...)
 {

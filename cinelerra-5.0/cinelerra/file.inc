@@ -187,4 +187,6 @@ class File;
 //result<0: continue skimming, result>=0: exit return code
 typedef int (*skim_fn)(void *vp, int track);
 
+void get_exe_path(char *result);
+
 #endif

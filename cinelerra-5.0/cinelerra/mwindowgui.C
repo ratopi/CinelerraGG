@@ -259,7 +259,7 @@ void MWindowGUI::create_objects()
 	
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 
-	int x = get_w() - MainShBtns::calculate_w(1);
+	int x = get_w() - MainShBtns::calculate_w(0);
 	add_subwindow(mainmenu = new MainMenu(mwindow, this, x));
 	add_subwindow(mainshbtns = new MainShBtns(mwindow, x, 0));
 	mainshbtns->load(mwindow->preferences);

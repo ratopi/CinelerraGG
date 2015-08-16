@@ -49,6 +49,7 @@ PluginDialogThread::PluginDialogThread(MWindow *mwindow)
 
 PluginDialogThread::~PluginDialogThread()
 {
+	close_window();
 }
 
 void PluginDialogThread::start_window(Track *track,

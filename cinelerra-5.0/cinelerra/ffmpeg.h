@@ -235,7 +235,7 @@ public:
 	int get_encoder(FILE *fp,
 		char *format, char *codec, char *bsfilter, char *bsargs);
 	int read_options(const char *options, AVDictionary *&opts);
-	int scan_options(const char *options, AVDictionary *&opts);
+	int scan_options(const char *options, AVDictionary *&opts, AVStream *st);
 	int read_options(FILE *fp, const char *options, AVDictionary *&opts);
 	int load_options(const char *options, AVDictionary *&opts);
 	static int load_options(const char *path, char *bfr, int len);

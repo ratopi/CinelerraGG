@@ -80,6 +80,7 @@ LoadFileThread::LoadFileThread(MWindow *mwindow, Load *load)
 
 LoadFileThread::~LoadFileThread()
 {
+	close_window();
 }
 
 BC_Window* LoadFileThread::new_gui()

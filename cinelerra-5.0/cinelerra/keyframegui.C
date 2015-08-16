@@ -60,6 +60,7 @@ KeyFrameThread::KeyFrameThread(MWindow *mwindow)
 
 KeyFrameThread::~KeyFrameThread()
 {
+	close_window();
 	for(int i = 0; i < KEYFRAME_COLUMNS; i++)
 		keyframe_data[i].remove_all_objects();
 	delete [] keyframe_data;
@@ -204,18 +205,6 @@ void KeyFrameThread::handle_close_event(int result)
 {
 	plugin = 0;
 	keyframe = 0;
-}
-
-void KeyFrameThread::close_window()
-{
-	lock_window("KeyFrameThread::close_window");
-	if(get_gui())
-	{
-		get_gui()->lock_window("KeyFrameThread::close_window");
-		get_gui()->set_done(1);
-		get_gui()->unlock_window();
-	}
-	unlock_window();
 }
 
 

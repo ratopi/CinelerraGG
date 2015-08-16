@@ -51,8 +51,6 @@
 
 
 
-extern void get_exe_path(char *result);
-
 
 
 

@@ -39,6 +39,7 @@ RecordScopeThread::RecordScopeThread(MWindow *mwindow, RecordMonitor *record_mon
 
 RecordScopeThread::~RecordScopeThread()
 {
+	close_window();
 	delete gui_lock;
 }
 

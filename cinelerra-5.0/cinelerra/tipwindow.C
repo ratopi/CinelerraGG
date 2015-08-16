@@ -87,6 +87,11 @@ TipWindow::TipWindow(MWindow *mwindow)
 	this->mwindow = mwindow;
 }
 
+TipWindow::~TipWindow()
+{
+	close_window();
+}
+
 void TipWindow::handle_close_event(int result)
 {
 	gui = 0;

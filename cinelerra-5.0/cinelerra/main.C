@@ -22,6 +22,7 @@
 #include "batchrender.h"
 #include "bcsignals.h"
 #include "edl.h"
+#include "file.inc"
 #include "filexml.h"
 #include "fileserver.h"
 #include "filesystem.h"
@@ -89,25 +90,6 @@ public:
 	MWindow *mwindow;
 	ArrayList<char*> *filenames;
 };
-
-
-void get_exe_path(char *result)
-{
-// Get executable path
-	pid_t pid = getpid();
-	char proc_path[BCTEXTLEN];
-	int len = 0;
-	result[0] = 0;
-	sprintf(proc_path, "/proc/%d/exe", pid);
-	if((len = readlink(proc_path, result, BCTEXTLEN)) >= 0)
-	{
-		result[len] = 0;
-//printf("Preferences::Preferences %d %s\n", __LINE__, result);
-		char *ptr = strrchr(result, '/');
-		if(ptr) *ptr = 0;
-	}
-
-}
 
 
 int main(int argc, char *argv[])

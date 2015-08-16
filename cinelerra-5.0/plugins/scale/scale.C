@@ -247,7 +247,7 @@ void ScaleMain::calculate_transfer(VFrame *frame,
 	}
 
 	if(out_y1 < 0) {
-		in_y1 = y_factor>0 ? in_y1 - out_y1/config.y_factor : 0;
+		in_y1 = y_factor>0 ? in_y1 - out_y1/y_factor : 0;
 		out_y1 = 0;
 	}
 

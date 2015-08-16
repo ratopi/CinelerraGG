@@ -33,6 +33,11 @@ WWindow::WWindow(MWindow *mwindow)
 	this->mwindow = mwindow;
 }
 
+WWindow::~WWindow()
+{
+	close_window();
+}
+
 void WWindow::show_warning(int *do_warning, const char *warn_text)
 {
 	if( running() ) return;

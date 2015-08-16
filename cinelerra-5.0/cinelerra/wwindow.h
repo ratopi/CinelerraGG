@@ -37,6 +37,7 @@ class WWindow : public BC_DialogThread
 {
 public:
 	WWindow(MWindow *mwindow);
+	~WWindow();
 	void handle_close_event(int result);
 	void show_warning(int *do_warning, const char *warn_text);
 	BC_Window* new_gui();

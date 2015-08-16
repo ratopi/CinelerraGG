@@ -68,6 +68,7 @@ AssetEdit::AssetEdit(MWindow *mwindow)
 
 AssetEdit::~AssetEdit()
 {
+	close_window();
 	changed_params->remove_user();
 }
 
@@ -76,7 +77,7 @@ void AssetEdit::edit_asset(Indexable *indexable)
 {
 	if(this->indexable)
 	{
-		BC_DialogThread::close_window();
+		close_window();
 	}
 
 	this->indexable = indexable;

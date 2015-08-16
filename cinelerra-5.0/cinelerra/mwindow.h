@@ -31,6 +31,7 @@
 #include "awindow.inc"
 #include "batchrender.inc"
 #include "bcwindowbase.inc"
+#include "bdcreate.inc"
 #include "brender.inc"
 #include "cache.inc"
 #include "channel.inc"
@@ -40,6 +41,7 @@
 #include "bchash.inc"
 #include "devicedvbinput.inc"
 #include "devicempeginput.inc"
+#include "dvdcreate.inc"
 #include "edit.inc"
 #include "edl.inc"
 #include "fileserver.inc"
@@ -537,6 +539,7 @@ public:
 		int64_t samples_in);
 
 
+	CreateBD_Thread *create_bd;
 	CreateDVD_Thread *create_dvd;
 	BatchRenderThread *batch_render;
 	Render *render;

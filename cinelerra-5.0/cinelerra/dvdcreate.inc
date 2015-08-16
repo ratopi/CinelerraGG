@@ -19,15 +19,11 @@
  * 
  */
 
-#ifndef BATCHRENDER_INC
-#define BATCHRENDER_INC
+#ifndef __DVDCREATE_INC__
+#define __DVDCREATE_INC__
 
-
-class BatchRenderJob;
-class BatchRenderThread;
-class BatchRenderGUI;
-
-#define BATCH_PATH "batchrender.rc"
-
+class CreateDVD_MenuItem;
+class CreateDVD_Thread;
+class CreateDVD_GUI;
 
 #endif

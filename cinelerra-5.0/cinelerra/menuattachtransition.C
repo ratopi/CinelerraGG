@@ -63,6 +63,11 @@ TransitionDialogThread::TransitionDialogThread(MWindow *mwindow, int data_type)
 	this->data_type = data_type;
 }
 
+TransitionDialogThread::~TransitionDialogThread()
+{
+	close_window();
+}
+
 void TransitionDialogThread::start()
 {
 	if(!transition_names.total)

@@ -210,6 +210,7 @@ class ConfirmScanThread : public BC_DialogThread
 {
 public:
 	ConfirmScanThread(ChannelEditWindow *gui);
+	~ConfirmScanThread();
 	void handle_done_event(int result);
 	BC_Window* new_gui();
 	ChannelEditWindow *gui;

@@ -100,6 +100,7 @@ PreferencesThread::PreferencesThread(MWindow *mwindow)
 
 PreferencesThread::~PreferencesThread()
 {
+	close_window();
 }
 
 BC_Window* PreferencesThread::new_gui()

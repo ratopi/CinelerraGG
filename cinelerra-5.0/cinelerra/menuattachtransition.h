@@ -52,6 +52,7 @@ class TransitionDialogThread : public BC_DialogThread
 {
 public:
 	TransitionDialogThread(MWindow *mwindow, int data_type);
+	~TransitionDialogThread();
 	BC_Window* new_gui();
 	void handle_close_event(int result);
 	void start();

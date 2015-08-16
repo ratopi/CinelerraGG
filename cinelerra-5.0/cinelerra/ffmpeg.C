@@ -958,8 +958,6 @@ AVRational FFMPEG::to_time_base(int sample_rate)
 	return (AVRational){1, sample_rate};
 }
 
-extern void get_exe_path(char *result); // from main.C
-
 void FFMPEG::set_option_path(char *path, const char *fmt, ...)
 {
 	get_exe_path(path);
@@ -1075,12 +1073,14 @@ int FFMPEG::read_options(const char *options, AVDictionary *&opts)
 	return ret;
 }
 
-int FFMPEG::scan_options(const char *options, AVDictionary *&opts)
+int FFMPEG::scan_options(const char *options, AVDictionary *&opts, AVStream *st)
 {
 	FILE *fp = fmemopen((void *)options,strlen(options),"r");
 	if( !fp ) return 0;
 	int ret = read_options(fp, options, opts);
 	fclose(fp);
+	AVDictionaryEntry *tag = av_dict_get(opts, "id", NULL, 0);
+	if( tag ) st->id = strtol(tag->value,0,0);
 	return ret;
 }
 
@@ -1437,7 +1437,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				break;
 			}
 			has_audio = 1;
-			if( scan_options(asset->ff_audio_options, sopts) ) {
+			if( scan_options(asset->ff_audio_options, sopts, st) ) {
 				eprintf("FFMPEG::open_encoder: bad audio options %s:%s\n",
 					codec_name, filename);
 				ret = 1;
@@ -1483,7 +1483,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				break;
 			}
 			has_video = 1;
-			if( scan_options(asset->ff_video_options, sopts) ) {
+			if( scan_options(asset->ff_video_options, sopts, st) ) {
 				eprintf("FFMPEG::open_encoder: bad video options %s:%s\n",
 					codec_name, filename);
 				ret = 1;

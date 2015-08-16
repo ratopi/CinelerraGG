@@ -319,7 +319,6 @@ int FileFFMPEG::get_best_colormodel(Asset *asset, int driver)
 }
 
 //======
-extern void get_exe_path(char *result); // from main.C
 
 FFMPEGConfigAudio::FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Audio Preset"),

@@ -42,6 +42,7 @@ EditLengthThread::EditLengthThread(MWindow *mwindow)
 
 EditLengthThread::~EditLengthThread()
 {
+	close_window();
 }
 
 void EditLengthThread::start(Edit *edit)

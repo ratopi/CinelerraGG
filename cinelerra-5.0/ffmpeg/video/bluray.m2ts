@@ -1,24 +1,7 @@
 mpegts libx264
-partitions=i8x8,i4x4,p8x8,b8x8
-me_method=hex
-subq=7
-me_range=16
-g=250
-keyint_min=25
-sc_threshold=40
-i_qfactor=0.71
-b_strategy=1
-qcomp=0.6
-qmin=10
-qmax=51
-qdiff=4
-bf=3
-refs=3
-directpred=1
-trellis=1
-mixed-refs=1
-weightp=2
-8x8dct=1
-fast-pskip=1
-mbtree=1
+id=0x1011
+profile=baseline
+level=3.0
+preset=medium
 bluray-compat=1
+x264opts keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8

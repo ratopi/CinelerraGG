@@ -27,6 +27,7 @@
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "bctimer.h"
+#include "bdcreate.h"
 #include "brender.h"
 #include "cache.h"
 #include "channel.h"
@@ -41,6 +42,7 @@
 #include "cwindow.h"
 #include "bchash.h"
 #include "devicedvbinput.inc"
+#include "dvdcreate.h"
 #include "editpanel.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -192,6 +194,7 @@ MWindow::MWindow()
 	plugin_guis = 0;
 	dead_plugins = 0;
 	keyframe_threads = 0;
+	create_bd = 0;
 	create_dvd = 0;
 	batch_render = 0;
 	render = 0;
@@ -222,6 +225,7 @@ MWindow::~MWindow()
 	brender_lock->lock("MWindow::quit");
 	delete brender;         brender = 0;
 	brender_lock->unlock();
+	delete create_bd;       create_bd = 0;
 	delete create_dvd;      create_dvd = 0;
 	delete batch_render;    batch_render = 0;
 	commit_commercial();
@@ -847,6 +851,7 @@ ENABLE_BUFFER
 void MWindow::init_render()
 {
 	render = new Render(this);
+	create_bd = new CreateBD_Thread(this);
 	create_dvd = new CreateDVD_Thread(this);
 	batch_render = new BatchRenderThread(this);
 }
@@ -1990,6 +1995,7 @@ int MWindow::set_editing_mode(int new_editing_mode, int lock_mwindow, int lock_c
 
 void MWindow::sync_parameters(int change_type)
 {
+	if( in_destructor ) return;
 
 // Sync engines which are playing back
 	if(cwindow->playback_engine->is_playing_back)

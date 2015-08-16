@@ -739,6 +739,11 @@ void ConfirmScanThread::handle_done_event(int result)
 	}
 }
 
+ConfirmScanThread::~ConfirmScanThread()
+{
+	close_window();
+}
+
 BC_Window* ConfirmScanThread::new_gui()
 {
 	int x = gui->get_abs_cursor_x(1);

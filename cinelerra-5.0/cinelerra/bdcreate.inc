@@ -19,15 +19,11 @@
  * 
  */
 
-#ifndef BATCHRENDER_INC
-#define BATCHRENDER_INC
+#ifndef __BDCREATE_INC__
+#define __BDCREATE_INC__
 
-
-class BatchRenderJob;
-class BatchRenderThread;
-class BatchRenderGUI;
-
-#define BATCH_PATH "batchrender.rc"
-
+class CreateBD_MenuItem;
+class CreateBD_Thread;
+class CreateBD_GUI;
 
 #endif

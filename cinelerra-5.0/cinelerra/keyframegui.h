@@ -55,7 +55,6 @@ public:
 	void apply_value();
 	void calculate_preset_list();
 	void update_gui(int update_value_text = 1);
-	void close_window();
 
 	ArrayList<BC_ListBoxItem*> *keyframe_data;
 	Plugin *plugin;

@@ -679,6 +679,7 @@ AWindowRemovePlugin(AWindow *awindow, PluginServer *plugin)
 AWindowRemovePlugin::
 ~AWindowRemovePlugin()
 {
+	close_window();
 }
 
 BC_Window* AWindowRemovePlugin::new_gui()

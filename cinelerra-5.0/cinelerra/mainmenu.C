@@ -25,6 +25,7 @@
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "bcsignals.h"
+#include "bdcreate.h"
 #include "cache.h"
 #include "channelinfo.h"
 #include "cplayback.h"
@@ -32,6 +33,7 @@
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "dbwindow.h"
+#include "dvdcreate.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "featheredits.h"
@@ -116,6 +118,7 @@ void MainMenu::create_objects()
 
 	filemenu->add_item(render = new RenderItem(mwindow));
 	filemenu->add_item(new BatchRenderMenuItem(mwindow));
+	filemenu->add_item(new CreateBD_MenuItem(mwindow));
 	filemenu->add_item(new CreateDVD_MenuItem(mwindow));
 	filemenu->add_item(new BC_MenuItem("-"));
 	filemenu->add_item(quit_program = new Quit(mwindow));
@@ -241,7 +244,7 @@ void MainMenu::create_objects()
 	windowmenu->add_item(show_lwindow = new ShowLWindow(mwindow));
 	windowmenu->add_item(split_x = new SplitX(mwindow));
 	windowmenu->add_item(split_y = new SplitY(mwindow));
-	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1,_("Ctrl+d"),'d'));
+	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1,_("Ctrl+P"),'p'));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile left"),0));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile right"),1));
 }

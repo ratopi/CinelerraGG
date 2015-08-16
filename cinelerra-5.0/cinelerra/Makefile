@@ -306,25 +306,27 @@ OBJS = \
 	$(OBJDIR)/zoombar.o \
 	$(OBJDIR)/zoompanel.o \
 \
+	$(OBJDIR)/audiompeg.o \
+	$(OBJDIR)/audiov4l2mpeg.o \
+	$(OBJDIR)/bdcreate.o \
+	$(OBJDIR)/channelinfo.o \
+	$(OBJDIR)/commercials.o \
+	$(OBJDIR)/dbwindow.o \
 	$(OBJDIR)/devicempeginput.o \
 	$(OBJDIR)/devicev4l2base.o \
 	$(OBJDIR)/devicev4l2input.o \
-	$(OBJDIR)/audiov4l2mpeg.o \
-	$(OBJDIR)/vdevicev4l2mpeg.o \
-	$(OBJDIR)/vdevicempeg.o \
-	$(OBJDIR)/audiompeg.o \
-	$(OBJDIR)/channelinfo.o \
+	$(OBJDIR)/dvdcreate.o \
+	$(OBJDIR)/filedb.o \
+	$(OBJDIR)/mediadb.o \
 	$(OBJDIR)/recordbatches.o \
 	$(OBJDIR)/remotecontrol.o \
-	$(OBJDIR)/mediadb.o \
-	$(OBJDIR)/commercials.o \
-	$(OBJDIR)/dbwindow.o \
-	$(OBJDIR)/filedb.o \
+	$(OBJDIR)/shbtnprefs.o \
 	$(OBJDIR)/signalstatus.o \
 	$(OBJDIR)/strack.o \
 	$(OBJDIR)/swindow.o \
+	$(OBJDIR)/vdevicempeg.o \
+	$(OBJDIR)/vdevicev4l2mpeg.o \
 	$(OBJDIR)/wwindow.o \
-	$(OBJDIR)/shbtnprefs.o \
 
 #	$(OBJDIR)/renderfarmfsclient.o \
 #	$(OBJDIR)/renderfarmfsserver.o \
@@ -334,15 +336,6 @@ THEME_DATA := $(OBJDIR)/theme_data.o
 
 OUTPUT_G = $(OBJDIR)/cinelerra.debuginfo
 OUTPUT = ../bin/cinelerra
-
-CUTADS = $(OBJDIR)/cutads
-CUTOBJ = $(OBJDIR)/cutads.o
-CUTOBJS = $(CUTOBJ) \
-	$(OBJDIR)/mediadb.o \
-	$(OBJDIR)/filexml.o
-CUTLIBS = \
-	../libzmpeg3/$(OBJDIR)/libzmpeg3.a -lX11 \
-	../db/$(OBJDIR)/db.a
 
 ifeq ($(HAVE_AVIFILE), y)
 AVIFILE_DIR := $(shell cd ../avifile* ; pwd)
@@ -358,8 +351,9 @@ LIBRARIES := \
 	../db/$(OBJDIR)/db.a \
 	$(THEME_DATA) \
 
-LIBS := $(LIBRARIES)
-
+LIBS = $(LIBRARIES)
+LIBS += $(thirdparty_libraries)
+LIBS += $(thirdparty_libraries)
 LIBS += \
 	-lX11 \
 	-lXext \
@@ -376,6 +370,18 @@ LIBS += \
 	-lfreetype \
 	$(EXTRA_LIBS)
 
+CUTADS = $(OBJDIR)/cutads
+CUTOBJ = $(OBJDIR)/cutads.o
+CUTOBJS = $(CUTOBJ) \
+	$(OBJDIR)/mediadb.o \
+	$(OBJDIR)/filexml.o
+CUTLIBS = \
+	../libzmpeg3/$(OBJDIR)/libzmpeg3.a -lX11 \
+	../db/$(OBJDIR)/db.a
+
+BDWRITE = $(OBJDIR)/bdwrite
+BDWOBJS = $(OBJDIR)/bdwrite.o
+
 ifeq ($(HAVE_GL), y)
 LIBS += -lGL -lGLU
 endif
@@ -391,7 +397,6 @@ endif
 
 
 CFLAGS += \
-	-c \
 	-I../guicast \
 	-I../quicktime \
 	-I../libzmpeg3 \
@@ -447,12 +452,12 @@ endif
 FFMPEG_CFLAGS := \
 	-include /usr/include/time.h \
 
-$(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
-$(shell echo $(CFLAGS) $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_cflags)
-$(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(FFMPEG_OBJS) $(AVIOBJS) \
- $(thirdparty_libraries) $(thirdparty_libraries) $(LIBS) $(LDFLAGS2) > $(OBJDIR)/objs)
+$(shell echo $(CFLAGS) -c > $(OBJDIR)/c_flags)
+$(shell echo $(CFLAGS) -c $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_cflags)
+$(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(AVIOBJS) \
+ $(FFMPEG_OBJS) $(LIBS) $(LDFLAGS2) > $(OBJDIR)/objs)
 
-all:	$(OUTPUT) $(CUTADS)
+all:	$(OUTPUT) $(CUTADS) $(BDWRITE)
 
 # Static linking is not possible because the plugins depend on symbols
 # in the main executable.
@@ -463,7 +468,12 @@ $(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FFMPEG_OBJS) $(FILEFLAC) $(LIBRARIES)
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
 
 $(CUTADS):	$(CUTOBJS) $(CUTLIBS)
-	g++ -pthread -o $(OBJDIR)/cutads $(CUTOBJS) $(CUTLIBS)
+	@echo g++ -o $@ $(CUTOBJS)
+	@g++ $(CFLAGS) -pthread -o $@ $(CUTOBJS) $(CUTLIBS)
+
+$(BDWRITE):	$(BDWOBJS)
+	@echo g++ -o $@ $(BDWOBJS)
+	@g++ $(CFLAGS) -pthread -o $@ $(BDWOBJS) $(LIBS)
 
 $(OBJDIR)/test:
 	$(CC) -shared -o $(OBJDIR)/test.so \

@@ -147,6 +147,7 @@ NewThread::NewThread(MWindow *mwindow, New *new_project)
 
 NewThread::~NewThread()
 {
+	close_window();
 }
 
 

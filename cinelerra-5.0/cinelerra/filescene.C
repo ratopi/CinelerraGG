@@ -43,8 +43,6 @@ extern "C"
 }
 
 
-extern void get_exe_path(char *result);
-
 // Paths relative to the exe path
 #define FESTIVAL_PATH "/festival"
 #define FESTIVAL_LIB_PATH "/lib/"

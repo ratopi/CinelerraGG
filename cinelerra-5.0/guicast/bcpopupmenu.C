@@ -86,7 +86,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 		images[i] = 0;
 	}
 	this->data = data;
-	this->w_argument = 0;
+	this->w_argument = -1;
 	status = BUTTON_UP;
 }
 
@@ -166,7 +166,7 @@ int BC_PopupMenu::set_images(VFrame **data)
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
 	}
 
-	if(w_argument > 0)
+	if(w_argument >= 0)
 		w = w_argument +
 			margin +
 			resources->popupmenu_triangle_margin;
@@ -257,9 +257,9 @@ int BC_PopupMenu::draw_title(int flush)
 			get_h() / 2 - icon->get_h() / 2 + offset);
 	}
 
-	draw_triangle_down_flat(get_w() - margin - resources->popupmenu_triangle_margin,
-		get_h() / 2 - TRIANGLE_H / 2,
-		TRIANGLE_W, TRIANGLE_H);
+	if( use_title >= 0 )
+		draw_triangle_down_flat(get_w() - margin - resources->popupmenu_triangle_margin,
+			get_h() / 2 - TRIANGLE_H / 2, TRIANGLE_W, TRIANGLE_H);
 
 	flash(flush);
 	return 0;

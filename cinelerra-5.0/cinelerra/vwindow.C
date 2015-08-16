@@ -46,7 +46,8 @@
 #include "vwindowgui.h"
 
 
-VWindow::VWindow(MWindow *mwindow) : BC_DialogThread()
+VWindow::VWindow(MWindow *mwindow)
+ : BC_DialogThread()
 {
 	this->mwindow = mwindow;
 	gui = 0;
@@ -60,10 +61,7 @@ VWindow::VWindow(MWindow *mwindow) : BC_DialogThread()
 
 VWindow::~VWindow()
 {
-	if(is_running()) {
-		close_window();
-		join();
-	}
+	close_window();
 //printf("VWindow::~VWindow 1\n");
 	delete playback_engine;
 //printf("VWindow::~VWindow 1\n");

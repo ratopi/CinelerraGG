@@ -338,7 +338,7 @@ static VFrame *shbtn_images[] = {
 };
 
 MainShBtns::MainShBtns(MWindow *mwindow, int x, int y)
- : BC_PopupMenu(x, y, 32, "", 1, shbtn_images)
+ : BC_PopupMenu(x, y, 0, "", -1, shbtn_images)
 {
 	this->mwindow = mwindow;
 	set_tooltip(_("shell cmds"));

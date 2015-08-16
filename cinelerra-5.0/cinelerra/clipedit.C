@@ -48,6 +48,7 @@ ClipEdit::ClipEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow)
 
 ClipEdit::~ClipEdit()
 {
+	close_window();
 }
 
 // After the window is closed and deleted, this is called.

@@ -69,8 +69,8 @@ ifeq ($(STATIC_LIBRARIES), y)
 endif
 	cp -a models bin
 	cd bin && find -name '.svn' -exec rm -r {} \; -prune
-	rm -f bin/cutads
-	cp -a cinelerra/$(OBJDIR)/cutads bin/.
+	rm -f bin/cutads bin/bdwrite bin/manual.pdf
+	cp -a cinelerra/$(OBJDIR)/cutads cinelerra/$(OBJDIR)/bdwrite bin/.
 	cp -a doc/manual.pdf bin/.
 	rm -f bin/new_db
 	$(MAKE) -C db/utils new_db

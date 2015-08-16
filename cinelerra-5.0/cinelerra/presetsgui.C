@@ -63,6 +63,7 @@ PresetsThread::PresetsThread(MWindow *mwindow)
 
 PresetsThread::~PresetsThread()
 {
+	close_window();
 	delete data;
 }
 
