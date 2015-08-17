@@ -41,6 +41,13 @@
 #include <endian.h>
 #include <limits.h>
 #include <sys/stat.h>
+// work arounds (centos)
+#ifndef INT64_MAX
+#define INT64_MAX 9223372036854775807LL
+#endif
+#ifndef INT64_MIN
+#define INT64_MIN (-INT64_MAX-1)
+#endif
 
 #include "arraylist.h"
 #include "cstrdup.h"
