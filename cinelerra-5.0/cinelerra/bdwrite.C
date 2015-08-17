@@ -719,7 +719,9 @@ public:
   int write();
 
   mpls_pi() {}
-  ~mpls_pi() {}
+  ~mpls_pi() {
+    clip.remove_all_objects();
+  }
 };
 
 class _mpls_plm {
@@ -1168,7 +1170,10 @@ public:
     strcpy(filename, fn);
     brk = 0;  pidx = 0;  pgm_pid = -1;  still = 0;
   }
-  ~media_info() { streams.remove_all_objects(); }
+  ~media_info() {
+    streams.remove_all_objects();
+    programs.remove_all_objects();
+  }
 
   int scan();
   int scan(AVFormatContext *fmt_ctx);
@@ -2458,13 +2463,10 @@ int media_info::scan()
   av_dict_set(&fopts, "threads", "auto", 0);
   int ret = avformat_open_input(&fmt_ctx, filename, NULL, &fopts);
   av_dict_free(&fopts);
+  if( ret < 0 ) return ret;
+  ret = avformat_find_stream_info(fmt_ctx, NULL);
 
-  if( ret >= 0 )
-    ret = avformat_find_stream_info(fmt_ctx, NULL);
-
-  if( ret >= 0 ) {
-    bit_rate = fmt_ctx->bit_rate;
-  }
+  bit_rate = fmt_ctx->bit_rate;
 
   int ep_pid = -1;
   for( int i=0; ret>=0 && i<(int)fmt_ctx->nb_streams; ++i ) {
@@ -2519,8 +2521,22 @@ int media_info::scan()
     pgm->ep_pid = ep_pid;
     pgm->pmt_pid = 0x1000;
     pgm->pcr_pid = 0x100;
-    for( int jj=0; jj<streams.size(); ++jj )
+    pgm->duration = 0;
+    for( int jj=0; jj<streams.size(); ++jj ) {
+      AVStream *st = fmt_ctx->streams[jj];
+      AVMediaType type = st->codec->codec_type;
+      switch( type ) {
+      case AVMEDIA_TYPE_VIDEO:
+      case AVMEDIA_TYPE_AUDIO:
+        break;
+      default:
+        continue;
+      }
       pgm->strm_idx.append(jj);
+      if( pgm->duration < st->duration )
+        pgm->duration = av_rescale_q(st->duration, st->time_base, clk45k);
+    }
+    programs.append(pgm);
   }
 
   for( int ii=0; ii<npgm; ++ii ) {
@@ -2565,8 +2581,9 @@ int media_info::scan()
   if( ret >= 0 )
     ret = scan(fmt_ctx);
 
-  if( fmt_ctx )
-    avformat_close_input(&fmt_ctx);
+  for( int i=0; i<(int)fmt_ctx->nb_streams; ++i )
+    avcodec_close(fmt_ctx->streams[i]->codec);
+  avformat_close_input(&fmt_ctx);
 
   return ret;
 }

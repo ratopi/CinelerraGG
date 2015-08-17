@@ -77,9 +77,12 @@ public:
 	virtual int encode_activate();
 	virtual int decode_activate();
 	int read_packet();
+	int write_packet(FFPacket &pkt);
+	int flush();
 	int decode(AVFrame *frame);
 
 	virtual int decode_frame(AVFrame *frame, int &got_frame) = 0;
+	virtual int encode_frame(FFPacket &pkt, AVFrame *frame, int &got_frame) = 0;
 	virtual int init_frame(AVFrame *frame) = 0;
 	virtual int create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx) = 0;
@@ -153,6 +156,7 @@ public:
 	virtual ~FFAudioStream();
 	int load_history(uint8_t **data, int len);
 	int decode_frame(AVFrame *frame, int &got_frame);
+	int encode_frame(FFPacket &pkt, AVFrame *frame, int &got_frame);
 	int create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx);
 
@@ -183,6 +187,7 @@ public:
 	FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx);
 	virtual ~FFVideoStream();
 	int decode_frame(AVFrame *frame, int &got_frame);
+	int encode_frame(FFPacket &pkt, AVFrame *frame, int &got_frame);
 	int create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx);
 

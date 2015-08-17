@@ -409,6 +409,29 @@ int FFStream::read_frame(AVFrame *frame)
 	return ret;
 }
 
+int FFStream::write_packet(FFPacket &pkt)
+{
+	bs_filter(pkt);
+	av_packet_rescale_ts(pkt, st->codec->time_base, st->time_base);
+	pkt->stream_index = st->index;
+	return av_interleaved_write_frame(ffmpeg->fmt_ctx, pkt);
+}
+
+int FFStream::flush()
+{
+	int ret = 0;
+	while( ret >= 0 ) {
+		FFPacket pkt;
+		int got_packet = 0;
+		ret = encode_frame(pkt, 0, got_packet);
+		if( ret < 0 || !got_packet ) break;
+		ret = write_packet(pkt);
+	}
+	if( ret < 0 )
+		ff_err(ret, "FFStream::flush");
+	return ret >= 0 ? 0 : 1;
+}
+
 FFAudioStream::FFAudioStream(FFMPEG *ffmpeg, AVStream *strm, int idx)
  : FFStream(ffmpeg, strm, idx)
 {
@@ -596,6 +619,16 @@ int FFAudioStream::encode(double **samples, int len)
 	return ret >= 0 ? 0 : 1;
 }
 
+int FFAudioStream::encode_frame(FFPacket &pkt, AVFrame *frame, int &got_packet)
+{
+	int ret = avcodec_encode_audio2(st->codec, pkt, frame, &got_packet);
+	if( ret < 0 ) {
+		ff_err(ret, "FFAudioStream::encode_frame: encode audio failed\n");
+		return -1;
+	}
+	return ret;
+}
+
 FFVideoStream::FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx)
  : FFStream(ffmpeg, strm, idx)
 {
@@ -702,6 +735,15 @@ int FFVideoStream::encode(VFrame *vframe)
 	return ret >= 0 ? 0 : 1;
 }
 
+int FFVideoStream::encode_frame(FFPacket &pkt, AVFrame *frame, int &got_packet)
+{
+	int ret = avcodec_encode_video2(st->codec, pkt, frame, &got_packet);
+	if( ret < 0 ) {
+		ff_err(ret, "FFVideoStream::encode_frame: encode video failed\n");
+		return -1;
+	}
+	return ret;
+}
 
 PixelFormat FFVideoStream::color_model_to_pix_fmt(int color_model)
 {
@@ -1776,19 +1818,15 @@ void FFMPEG::flow_ctl()
 int FFMPEG::mux_audio(FFrame *frm)
 {
 	FFPacket pkt;
-	AVStream *st = frm->fst->st;
-	AVCodecContext *ctx = st->codec;
+	FFStream *fst = frm->fst;
+	AVCodecContext *ctx = fst->st->codec;
 	AVFrame *frame = *frm;
 	AVRational tick_rate = {1, ctx->sample_rate};
 	frame->pts = av_rescale_q(frm->position, tick_rate, ctx->time_base);
 	int got_packet = 0;
-	int ret = avcodec_encode_audio2(ctx, pkt, frame, &got_packet);
-	if( ret >= 0 && got_packet ) {
-		frm->fst->bs_filter(pkt);
-		av_packet_rescale_ts(pkt, ctx->time_base, st->time_base);
-		pkt->stream_index = st->index;
-		ret = av_interleaved_write_frame(fmt_ctx, pkt);
-	}
+	int ret = fst->encode_frame(pkt, frame, got_packet);
+	if( ret >= 0 && got_packet )
+		ret = fst->write_packet(pkt);
 	if( ret < 0 )
 		ff_err(ret, "FFMPEG::mux_audio");
 	return ret >= 0 ? 0 : 1;
@@ -1797,14 +1835,14 @@ int FFMPEG::mux_audio(FFrame *frm)
 int FFMPEG::mux_video(FFrame *frm)
 {
 	FFPacket pkt;
-	AVStream *st = frm->fst->st;
+	FFStream *fst = frm->fst;
 	AVFrame *frame = *frm;
 	frame->pts = frm->position;
 	int ret = 1, got_packet = 0;
 	if( fmt_ctx->oformat->flags & AVFMT_RAWPICTURE ) {
 		/* a hack to avoid data copy with some raw video muxers */
 		pkt->flags |= AV_PKT_FLAG_KEY;
-		pkt->stream_index  = st->index;
+		pkt->stream_index  = fst->st->index;
 		AVPicture *picture = (AVPicture *)frame;
 		pkt->data = (uint8_t *)picture;
 		pkt->size = sizeof(AVPicture);
@@ -1812,13 +1850,9 @@ int FFMPEG::mux_video(FFrame *frm)
 		got_packet = 1;
 	}
 	else
-		ret = avcodec_encode_video2(st->codec, pkt, frame, &got_packet);
-	if( ret >= 0 && got_packet ) {
-		frm->fst->bs_filter(pkt);
-		av_packet_rescale_ts(pkt, st->codec->time_base, st->time_base);
-		pkt->stream_index = st->index;
-		ret = av_interleaved_write_frame(fmt_ctx, pkt);
-	}
+		ret = fst->encode_frame(pkt, frame, got_packet);
+	if( ret >= 0 && got_packet )
+		ret = fst->write_packet(pkt);
 	if( ret < 0 )
 		ff_err(ret, "FFMPEG::mux_video");
 	return ret >= 0 ? 0 : 1;
@@ -1866,6 +1900,10 @@ void FFMPEG::run()
 		if( !done ) mux();
 	}
 	mux();
+	for( int i=0; i<ffaudio.size(); ++i )
+		ffaudio[i]->flush();
+	for( int i=0; i<ffvideo.size(); ++i )
+		ffvideo[i]->flush();
 }
 
 
