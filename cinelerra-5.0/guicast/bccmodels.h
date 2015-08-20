@@ -42,6 +42,7 @@
 #define BC_YUVA8888     14
 #define BC_YUV161616    15
 #define BC_YUVA16161616 16
+#define BC_UVY422       18
 #define BC_YUV422       19
 #define BC_A8           22
 #define BC_A16          23
@@ -53,9 +54,9 @@
 #define BC_RGBA_FLOAT   30
 // Planar
 #define BC_YUV420P      7
-#define BC_YUV422P      17
+#define BC_YUV422P      8
 #define BC_YUV444P      27
-#define BC_YUV411P      18
+#define BC_YUV411P      17
 #define BC_YUV410P      28
 #define BC_RGB_FLOATP   32
 #define BC_RGBA_FLOATP  33
@@ -65,6 +66,7 @@
 // For communication with the X Server
 #define FOURCC_YV12 0x32315659  /* YV12   YUV420P */
 #define FOURCC_YUV2 0x32595559  /* YUV2   YUV422 */
+#define FOURCC_UYVY 0x59565955  /* UYVY   UVY422 */
 #define FOURCC_I420 0x30323449  /* I420   Intel Indeo 4 */
 
 

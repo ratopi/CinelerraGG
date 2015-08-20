@@ -360,7 +360,6 @@ int VideoDevice::is_compressed(int driver, int use_file, int use_fixed)
 // FileMOV needs to have write_frames called so the start codes get scanned.
 	return ((driver == CAPTURE_BUZ && use_fixed) ||
 		(driver == VIDEO4LINUX2JPEG && use_fixed) || 
-		(driver == VIDEO4LINUX2MPEG && use_fixed) || 
 		(driver == CAPTURE_JPEG_WEBCAM && use_fixed) || 
 		driver == CAPTURE_LML || 
 		driver == CAPTURE_FIREWIRE ||

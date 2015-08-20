@@ -304,7 +304,7 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 	int best_height = config_height;
 	unsigned int best_format = 0;
 	int best_merit = 0;
-	//int best_color_model = -1;
+	int best_color_model = -1;
 	int best_area = 1;
 	int driver = video_device->in_config->driver;
 
@@ -322,6 +322,7 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 		int cmodel = -1;
 	        switch(fmt.pixelformat)
 		{
+		case V4L2_PIX_FMT_UYVY:    cmodel = BC_UVY422;  merit = 4;  break;
 		case V4L2_PIX_FMT_YUYV:    cmodel = BC_YUV422;  merit = 4;  break;
 		case V4L2_PIX_FMT_Y41P:    cmodel = BC_YUV411P; merit = 1;  break;
 		case V4L2_PIX_FMT_YVU420:  cmodel = BC_YUV420P; merit = 3;  break;
@@ -340,7 +341,7 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 		{
 			best_merit = merit;
 			best_format = fmt.pixelformat;
-			//best_color_model = cmodel;
+			best_color_model = cmodel;
 		}
 
 		for( int n=0; n<20; ++n ) {
@@ -379,6 +380,7 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 			best_format = V4L2_PIX_FMT_MPEG;
 			break;
 		default:
+			best_color_model = color_model;
 			best_format = cmodel_to_device(color_model);
 			break;
 		}
@@ -588,7 +590,7 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 			perror("DeviceV4L2Base::v4l2_open VIDIOC_S_JPEGCOMP");
 	}
 
-	this->color_model = color_model;
+	this->color_model = best_color_model;
 	return 0;
 }
 
@@ -739,6 +741,7 @@ unsigned int DeviceV4L2Base::cmodel_to_device(int color_model)
 	{
 	case BC_COMPRESSED:	return V4L2_PIX_FMT_MJPEG;
 	case BC_YUV422:		return V4L2_PIX_FMT_YUYV;
+	case BC_UVY422:		return V4L2_PIX_FMT_UYVY;
 	case BC_YUV411P:	return V4L2_PIX_FMT_Y41P;
 	case BC_YUV420P:	return V4L2_PIX_FMT_YVU420;
 	case BC_YUV422P:	return V4L2_PIX_FMT_YUV422P;

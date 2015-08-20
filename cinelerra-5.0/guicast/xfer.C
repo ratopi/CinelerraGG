@@ -104,6 +104,7 @@ void BC_Xfer::init(
 {
 	// prevent bounds errors on poorly dimensioned macro pixel formats
 	switch( in_colormodel ) {
+	case BC_UVY422:
 	case BC_YUV422:   in_w &= ~1;               break;  // 2x1
 	case BC_YUV420P:  in_w &= ~1;  in_h &= ~1;  break;  // 2x2
 	case BC_YUV422P:  in_w &= ~1;               break;  // 2x1
@@ -111,6 +112,7 @@ void BC_Xfer::init(
 	case BC_YUV411P:  in_w &= ~3;               break;  // 4x1
 	}
 	switch( out_colormodel ) {
+	case BC_UVY422:
 	case BC_YUV422:  out_w &= ~1;               break;
 	case BC_YUV420P: out_w &= ~1; out_h &= ~1;  break;
 	case BC_YUV422P: out_w &= ~1;               break;
@@ -165,7 +167,8 @@ void BC_Xfer::init(
         double hscale = (double)in_w/out_w;
 	for( int i=0; i<out_w; ++i ) {
 			column_table[i] = ((int)(hscale * i) + in_x) * in_pixelsize;
-			if( in_colormodel == BC_YUV422 ) column_table[i] &= ~3;
+			if( in_colormodel == BC_YUV422 || in_colormodel == BC_UVY422 )
+				column_table[i] &= ~3;
 	}
         double vscale = (double)in_h/out_h;
 	row_table = new int[out_h];

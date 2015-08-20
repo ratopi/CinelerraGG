@@ -52,8 +52,15 @@ int VDeviceV4L2::open_input()
 	int result = get_sources();
 	if( !result )
 	{
-		device->channel->use_frequency = 1;
-		device->channel->use_fine = 1;
+		ArrayList<Channel*> *inputs = device->get_inputs();
+		for( int i=0; i<inputs->size(); ++i ) {
+			if( inputs->get(i)->tuner ) {
+				device->channel->use_frequency = 1;
+				device->channel->use_fine = 1;
+			}
+			else
+				device->channel->use_input = 1;
+		}
 	}
 	return result;
 }
@@ -99,7 +106,7 @@ int VDeviceV4L2::read_buffer(VFrame *frame)
 			VFrame *buffer = device_buffer(bfr);
 //printf("VDeviceV4L2::read_buffer %d %p %p\n", 
 //  __LINE__, frame->get_data(), buffer->get_data());
-			frame->copy_from(buffer);
+			frame->transfer_from(buffer);
 			put_buffer(bfr);
 		}
 		else

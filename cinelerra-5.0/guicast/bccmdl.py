@@ -192,6 +192,19 @@ base = {
     },
   },
 
+  "uyvy8888": {
+    "i8": {
+      "r": " int32_t u = inp[0], iy = inp[((i&1)<<1)+1], y = iy*0x010101u, v = inp[2];",
+      "w": " if( !(j&1) ) { *out++ = u; *out++ = y; *out++ = v; *out = y; }\n" +
+           " else { *out++= y; }",
+    },
+    "i16": {
+      "r": " int32_t u = inp[0]<<8, iy = inp[((i&1)<<1)+1], y = iy*0x010101u, v = inp[2]<<8;",
+      "w": " if( !(j&1) ) { *out++ = u>>8; *out++ = y>>8; *out++ = v>>8; *out = y>>8; }\n" +
+           " else { *out++= y>>8; }",
+    },
+  },
+
   "yuv10101010": {
     "i8": {
       "r": " uint32_t it = *(uint32_t*)inp;\n" +
@@ -414,6 +427,7 @@ add_cmodel("bc_yuv161616", "i16", "yuv161616")
 add_cmodel("bc_yuva16161616", "i16", "yuv161616", "a16")
 
 add_cmodel("bc_yuv422", "i8", "yuyv8888")
+add_cmodel("bc_uvy422", "i8", "uyvy8888")
 add_cmodel("bc_a8")
 add_cmodel("bc_a16")
 add_cmodel("bc_a_float")
@@ -468,9 +482,9 @@ def is_rgb(nm):
 
 def is_yuv(nm):
   return nm in [ "bc_yuv888", "bc_yuva8888", "bc_yuv161616", \
-    "bc_yuva16161616", "bc_yuv422", "bc_yuv101010", "bc_vyu888", \
-    "bc_uyva8888", "bc_yuv420p", "bc_yuv422p", "bc_yuv444p", \
-    "bc_yuv411p", "bc_yuv410p", ]
+    "bc_yuva16161616", "bc_yuv422", "bc_uvy422", "bc_yuv101010", \
+    "bc_vyu888", "bc_uyva8888", "bc_yuv420p", "bc_yuv422p", \
+    "bc_yuv444p", "bc_yuv411p", "bc_yuv410p", ]
 
 def is_planar(nm):
   return nm in [ "bc_yuv420p", "bc_yuv422p", "bc_yuv444p", \

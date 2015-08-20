@@ -1042,6 +1042,7 @@ int VFrame::transfer_from(VFrame *that, int bg_color)
 		return this->copy_from(that);
 
 	timestamp = that->timestamp;
+#if 0
 	BC_CModels::transfer(
 		this->get_rows(), that->get_rows(),	     // Packed data out/in
 		this->get_y(), this->get_u(), this->get_v(), // Planar data out/in
@@ -1051,6 +1052,33 @@ int VFrame::transfer_from(VFrame *that, int bg_color)
 		that->get_color_model(), this->get_color_model(), // Color models in/out
 		bg_color,				     // alpha blend bg_color
 		that->get_w(), this->get_w()); 		     // rowspans (of luma for YUV)
+#else
+	unsigned char *in_ptrs[4], *out_ptrs[4];
+	unsigned char **inp, **outp;
+	if( BC_CModels::is_planar(that->get_color_model()) ) {
+		in_ptrs[0] = that->get_y();
+		in_ptrs[1] = that->get_u();
+		in_ptrs[2] = that->get_v();
+		in_ptrs[3] = that->get_a();
+		inp = in_ptrs;
+	}
+	else
+		inp = that->get_rows();	
+	if( BC_CModels::is_planar(this->get_color_model()) ) {
+		out_ptrs[0] = this->get_y();
+		out_ptrs[1] = this->get_u();
+		out_ptrs[2] = this->get_v();
+		out_ptrs[3] = this->get_a();
+		outp = out_ptrs;
+	}
+	else
+		outp = this->get_rows();	
+	BC_CModels::transfer(outp, this->get_color_model(),
+			0, 0, this->get_w(), this->get_h(), this->get_w(),
+		inp, that->get_color_model(),
+			0, 0, that->get_w(), that->get_h(), that->get_w(),
+		bg_color);
+#endif
 	return 0;
 }
 

@@ -340,16 +340,16 @@ double Edit::frame_w()
 
 double Edit::picon_w()
 {
-	if(asset)
-		return (double)edl->local_session->zoom_track * 
-			asset->width / 
-			asset->height;
-	if(nested_edl)
-		return (double)edl->local_session->zoom_track * 
-			nested_edl->session->output_w / 
-			nested_edl->session->output_h;
-
-	return 0;
+	int w = 0, h = 0;
+	if(asset) {
+		w = asset->width;
+		h = asset->height;
+	}
+	else if(nested_edl) {
+		w = nested_edl->session->output_w;
+		h = nested_edl->session->output_h;
+	}
+	return w>0 && h>0 ? ((double)edl->local_session->zoom_track*w)/h : 0;
 }
 
 int Edit::picon_h()

@@ -78,10 +78,10 @@ void TestWindow::show_text(int tx, int ty, const char *fmt, ...)
 
 const char *cmdl[] = {
  "transparency", "compressed", "rgb8", "rgb565", "bgr565", "bgr888", "bgr8888", "yuv420p",
- "none", "rgb888", "rgba8888", "rgb161616", "rgba16161616", "yuv888", "yuva8888", "yuv161616",
- "yuva16161616", "yuv422p", "yuv411p", "yuv422", "argb8888", "abgr8888", "a8", "a16",
+ "yuv422p", "rgb888", "rgba8888", "rgb161616", "rgba16161616", "yuv888", "yuva8888", "yuv161616",
+ "yuva16161616", "yuv411p", "uvy422", "yuv422", "argb8888", "abgr8888", "a8", "a16",
  "yuv101010", "vyu888", "uyva8888", "yuv444p", "yuv410p", "rgb_float", "rgba_float", "a_float",
- "rgb_floatp",
+ "rgb_floatp", "rgba_floatp",
 };
 
 void write_pbm(uint8_t *tp, int w, int h, const char *fmt, ...)

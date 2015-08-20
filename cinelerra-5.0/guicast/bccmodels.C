@@ -94,6 +94,7 @@ int BC_CModels::calculate_pixelsize(int colormodel)
 	case BC_YUV422P:      return 1;
 	case BC_YUV444P:      return 1;
 	case BC_YUV422:       return 2;
+	case BC_UVY422:       return 2;
 	case BC_YUV411P:      return 1;
 	case BC_YUV410P:      return 1;
 	case BC_RGB_FLOATP:   return 4;
@@ -146,6 +147,7 @@ int BC_CModels::bc_to_x(int color_model)
 	switch(color_model) {
 	case BC_YUV420P: return FOURCC_YV12;
 	case BC_YUV422:  return FOURCC_YUV2;
+	case BC_UVY422:  return FOURCC_UYVY;
 	}
 	return -1;
 }
@@ -225,6 +227,7 @@ int BC_CModels::is_yuv(int colormodel)
 	case BC_YUV161616:
 	case BC_YUVA16161616:
 	case BC_YUV422:
+	case BC_UVY422:
 	case BC_YUV101010:
 	case BC_VYU888:
 	case BC_UYVA8888:

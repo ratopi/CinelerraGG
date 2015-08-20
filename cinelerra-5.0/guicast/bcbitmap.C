@@ -150,7 +150,7 @@ BC_XvShmImage::BC_XvShmImage(BC_Bitmap *bitmap, int index,
 	h = xv_image->height;
 	if(!XShmAttach(top_level->display, &shm_info))
 		perror("BC_XvShmImage::BC_XvShmImage XShmAttach");
-	if( color_model == BC_YUV422 ) {
+	if( color_model == BC_YUV422 || color_model == BC_UVY422 ) {
 	 	bytesPerLine = w*2;
 		bitsPerPixel = 12;
 		row_data = new unsigned char*[h];
@@ -223,7 +223,7 @@ BC_XvImage::BC_XvImage(BC_Bitmap *bitmap, int index,
 	xv_image->data = (char *) data;
 	w = xv_image->width;
 	h = xv_image->height;
-	if( color_model == BC_YUV422 ) {
+	if( color_model == BC_YUV422 || color_model == BC_UVY422 ) {
 	 	int bytesPerLine = w*2;
 		row_data = new unsigned char*[h];
 		for( int i=0; i<h; ++i )
@@ -652,6 +652,7 @@ int BC_Bitmap::read_frame(VFrame *frame,
 			break;
 		default:
 		case BC_YUV422:
+		case BC_UVY422:
 			memcpy(get_data(), frame->get_data(), w * h + w * h);
 			break;
 		}

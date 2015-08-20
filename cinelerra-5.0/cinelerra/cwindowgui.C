@@ -902,7 +902,7 @@ void CWindowCanvas::draw_refresh(int flush)
 	if(get_canvas() && !get_canvas()->get_video_on())
 	{
 
-		if(refresh_frame)
+		if(refresh_frame && refresh_frame->get_w()>0 && refresh_frame->get_h()>0)
 		{
 			float in_x1, in_y1, in_x2, in_y2;
 			float out_x1, out_y1, out_x2, out_y2;
@@ -2118,7 +2118,7 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press, int draw)
 
 
 
-	if(refresh_frame)
+	if(refresh_frame && refresh_frame->get_w()>0 && refresh_frame->get_h()>0)
 	{
 
 		if(draw)
@@ -2174,7 +2174,7 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press, int draw)
 
 // Get color out of frame.
 // Doesn't work during playback because that bypasses the refresh frame.
-		if(refresh_frame)
+		if(refresh_frame && refresh_frame->get_w()>0 && refresh_frame->get_h()>0)
 		{
 			float cursor_x = get_cursor_x();
 			float cursor_y = get_cursor_y();
