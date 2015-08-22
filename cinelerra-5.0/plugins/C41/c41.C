@@ -504,14 +504,9 @@ int C41Effect::process_buffer(VFrame *vframe,
 	int components = active_model == BC_RGBA_FLOAT ? 4 : 3;
 
 	if( color_model != active_model ) {
-		frame = new VFrame(frame_w, frame_h, active_model);
-		BC_CModels::transfer(frame->get_rows(), vframe->get_rows(),
-			0, 0, 0, 0, 0, 0,
-			0, 0, vframe->get_w(), vframe->get_h(),
-			0, 0, frame->get_w(), frame->get_h(),
-			vframe->get_color_model(), frame->get_color_model(),
-			0, vframe->get_bytes_per_line(),
-			frame->get_bytes_per_line());
+		new_temp(frame_w, frame_h, active_model);
+		frame = get_temp();
+		frame->transfer_from(vframe);
 	}
 
 	if(config.compute_magic) {
@@ -612,17 +607,8 @@ for(int i = 0; i < frame_h; i++)
 		}
 	}
 
-	if( vframe != frame ) {
-		BC_CModels::transfer(vframe->get_rows(), frame->get_rows(),
-			vframe->get_y(), vframe->get_u(), vframe->get_v(),
-			0, 0, 0,
-			0, 0, frame->get_w(), frame->get_h(),
-			0, 0, vframe->get_w(), vframe->get_h(),
-			frame->get_color_model(), vframe->get_color_model(),
-			0, frame->get_bytes_per_line(),
-			vframe->get_bytes_per_line());
-		delete frame;
-	}
+	if( vframe != frame )
+		vframe->transfer_from(frame);
 
 	return 0;
 }

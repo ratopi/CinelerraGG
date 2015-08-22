@@ -157,13 +157,13 @@ void InterpolatePixelsConfig::interpolate(InterpolatePixelsConfig &prev,
 InterpolatePixelsMain::InterpolatePixelsMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+	out_temp = out_frame = 0;
 	engine = 0;
 }
 
 InterpolatePixelsMain::~InterpolatePixelsMain()
 {
-	
+	delete out_temp;
 	delete engine;
 }
 
@@ -229,8 +229,6 @@ void InterpolatePixelsMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-
-
 int InterpolatePixelsMain::process_buffer(VFrame *frame,
 	int64_t start_position,
 	double frame_rate)
@@ -260,19 +258,52 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 		return run_opengl();
 	}
 
+	int color_model = frame->get_color_model();
+	int active_model = BC_CModels::has_alpha(color_model) ?
+		BC_RGBA_FLOAT : BC_RGB_FLOAT;
+	new_temp(frame->get_w(), frame->get_h(), active_model);
+	get_temp()->transfer_from(frame);
 
-	if(get_output()->get_color_model() != BC_RGB_FLOAT &&
-		get_output()->get_color_model() != BC_RGBA_FLOAT)
-	{
-		printf("InterpolatePixelsMain::process_buffer: only supports float colormodels\n");
-		return 1;
+	out_frame = get_output();
+	color_model = out_frame->get_color_model();
+	active_model = BC_CModels::has_alpha(color_model) ?
+		BC_RGBA_FLOAT : BC_RGB_FLOAT;
+	if( active_model != color_model ) {
+		int w = out_frame->get_w(), h = out_frame->get_h();
+		if( out_temp && ( out_temp->get_color_model() != active_model ||
+			     out_temp->get_w() != w || out_temp->get_w() != h ) ) {
+			delete out_temp;  out_temp = 0;
+		}
+		if( !out_temp )
+			out_temp = new VFrame(0, -1, w, h, active_model, -1);
+		out_frame = out_temp;
 	}
 
-	new_temp(frame->get_w(), frame->get_h(), frame->get_color_model());
-	get_temp()->copy_from(frame);
 	if(!engine)
 		engine = new InterpolatePixelsEngine(this);
 	engine->process_packages();
+
+	if( out_frame != get_output() ) {
+		if( BC_CModels::has_alpha(out_frame->get_color_model()) ) {
+			unsigned char **out_rows = out_frame->get_rows();
+			int w = out_frame->get_w(), h = out_frame->get_h();
+			if( BC_CModels::has_alpha(get_temp()->get_color_model()) ) {
+				unsigned char **in_rows = get_temp()->get_rows();
+				for( int y=0; y<h; ++y ) {
+					float *inp = (float *)in_rows[y];
+					float *outp = (float *)out_rows[y];
+					for( int x=0; x<w; ++x,inp+=4,outp+=4 ) outp[3] = inp[3];
+				}
+			}
+			else {
+				for( int y=0; y<h; ++y ) {
+					float *outp = (float *)out_rows[y];
+					for( int x=0; x<w; ++x,outp+=4 ) outp[3] = 1;
+				}
+			}
+		}
+		get_output()->transfer_from(out_frame);
+	}
 
 	return 0;
 }
@@ -362,7 +393,7 @@ void InterpolatePixelsUnit::process_package(LoadPackage *package)
 	int pattern_offset_y = plugin->config.y;
 	int y1 = pkg->y1;
 	int y2 = pkg->y2;
-	int components = cmodel_components(plugin->get_output()->get_color_model());
+	int components = cmodel_components(plugin->out_frame->get_color_model());
 	float color_matrix[9];
 	memcpy(color_matrix, server->color_matrix, sizeof(color_matrix));
 
@@ -376,7 +407,7 @@ void InterpolatePixelsUnit::process_package(LoadPackage *package)
 		float *prev_row = (float*)plugin->get_temp()->get_rows()[i - 1];
 		float *current_row = (float*)plugin->get_temp()->get_rows()[i];
 		float *next_row = (float*)plugin->get_temp()->get_rows()[i + 1];
-		float *out_row = (float*)plugin->get_output()->get_rows()[i];
+		float *out_row = (float*)plugin->out_frame->get_rows()[i];
 
 		prev_row += components;
 		current_row += components;
@@ -475,6 +506,8 @@ InterpolatePixelsEngine::InterpolatePixelsEngine(InterpolatePixelsMain *plugin)
 
 void InterpolatePixelsEngine::init_packages()
 {
+	for( int i=0; i<9; ++i ) color_matrix[i] = 0;
+	for( int i=0; i<3; ++i ) color_matrix[i*3 + i] = 1;
 	char string[BCTEXTLEN];
 	string[0] = 0;
 	plugin->get_output()->get_params()->get("DCRAW_MATRIX", string);

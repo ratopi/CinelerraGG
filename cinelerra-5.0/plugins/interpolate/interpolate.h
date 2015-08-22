@@ -97,6 +97,7 @@ public:
 	int handle_opengl();
 	
 	InterpolatePixelsEngine *engine;
+	VFrame *out_temp, *out_frame;
 };
 
 

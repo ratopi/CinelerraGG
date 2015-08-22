@@ -146,6 +146,8 @@ static const char *interpolate_shader =
 	int x_offset = get_output()->get_params()->get("INTERPOLATEPIXELS_X", (int)0); \
 	int y_offset = get_output()->get_params()->get("INTERPOLATEPIXELS_Y", (int)0); \
 	float color_matrix[9]; \
+	for( int i=0; i<9; ++i ) color_matrix[i] = 0; \
+	for( int i=0; i<3; ++i ) color_matrix[i*3 + i] = 1; \
 	char string[BCTEXTLEN]; \
 	string[0] = 0; \
 	get_output()->get_params()->get("DCRAW_MATRIX", string); \
