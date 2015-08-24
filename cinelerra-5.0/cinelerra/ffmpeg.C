@@ -941,8 +941,8 @@ FFMPEG::~FFMPEG()
 	delete flow_lock;
 	delete mux_lock;
 	av_dict_free(&opts);
-	delete opt_video_filter;
-	delete opt_audio_filter;
+	delete [] opt_video_filter;
+	delete [] opt_audio_filter;
 }
 
 int FFMPEG::check_sample_rate(AVCodec *codec, int sample_rate)
@@ -2070,6 +2070,11 @@ int FFVideoStream::create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx)
 {
 	avfilter_register_all();
+	AVFilter *filter = avfilter_get_by_name(filter_spec);
+	if( !filter || filter->inputs->type != AVMEDIA_TYPE_VIDEO ) {
+		ff_err(AVERROR(EINVAL), "FFVideoStream::create_filter: %s\n", filter_spec);
+		return -1;
+	}
 	filter_graph = avfilter_graph_alloc();
 	AVFilter *buffersrc = avfilter_get_by_name("buffer");
 	AVFilter *buffersink = avfilter_get_by_name("buffersink");
@@ -2101,6 +2106,11 @@ int FFAudioStream::create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx)
 {
 	avfilter_register_all();
+	AVFilter *filter = avfilter_get_by_name(filter_spec);
+	if( !filter || filter->inputs->type != AVMEDIA_TYPE_AUDIO ) {
+		ff_err(AVERROR(EINVAL), "FFAudioStream::create_filter: %s\n", filter_spec);
+		return -1;
+	}
 	filter_graph = avfilter_graph_alloc();
 	AVFilter *buffersrc = avfilter_get_by_name("abuffer");
 	AVFilter *buffersink = avfilter_get_by_name("abuffersink");

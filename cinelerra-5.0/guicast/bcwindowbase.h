@@ -443,6 +443,7 @@ public:
 	void set_inverse();
 	void set_background(VFrame *bitmap);
 // Change the window title.
+	void put_title(const char *text);
 	void set_title(const char *text);
 	const char *get_title();
 	void set_utf8title(const char *text);

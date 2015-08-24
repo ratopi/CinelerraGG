@@ -408,7 +408,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	else
 		this->display_name[0] = 0;
 
-	strcpy(this->title, _(title));
+	put_title(_(title));
 	if(bg_pixmap) shared_bg_pixmap = 1;
 
 	subwindows = new BC_SubWindowList;
@@ -3994,15 +3994,30 @@ void BC_WindowBase::set_background(VFrame *bitmap)
 	draw_background(0, 0, w, h);
 }
 
+void BC_WindowBase::put_title(const char *text)
+{
+	if( BC_Resources::locale_utf8 ) {
+		char *bp=this->title, *ep = bp+sizeof(this->title)-1;
+		for( const char *cp=text; *cp!=0 && bp<ep; ) {
+			if( *cp < 0 ) { do { *bp++ = *cp++; } while( *cp < 0 );  continue; }
+			if( *cp < ' ' ) { *bp++ = ' ';  ++cp;  continue; }
+			*bp++ = *cp++;
+		}
+		*bp = 0;
+	}
+	else
+		strcpy(this->title, text);
+}
+
 void BC_WindowBase::set_title(const char *text)
 {
-	XTextProperty titleprop;
-	char *txlist[2];
+	put_title(_(text));
 
-	strcpy(this->title, _(text));
+	char *txlist[2];
 	txlist[0] = this->title;
 	txlist[1] = 0;
 
+	XTextProperty titleprop;
 	XmbTextListToTextProperty(top_level->display, txlist, 1,
 		XStdICCTextStyle, &titleprop);
 	XSetWMName(top_level->display, top_level->win, &titleprop);

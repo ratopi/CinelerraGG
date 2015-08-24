@@ -852,7 +852,7 @@ int TitleText::handle_event()
 TitleDropShadow::TitleDropShadow(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
  	(int64_t)client->config.dropshadow,
-	(int64_t)0,
+	(int64_t)-1000,
 	(int64_t)1000,
 	x,
 	y,

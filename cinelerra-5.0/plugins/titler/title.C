@@ -86,7 +86,7 @@ TitleConfig::TitleConfig()
 	fade_out = 0.0;
 	x = 0.0;
 	y = 0.0;
-	dropshadow = 10;
+	dropshadow = 2;
 	sprintf(font, "fixed");
 	sprintf(encoding, DEFAULT_ENCODING);
 	timecode_format = DEFAULT_TIMECODEFORMAT;
@@ -204,8 +204,8 @@ void TitleConfig::interpolate(TitleConfig &prev,
 //	this->y = prev.y;
 	timecode = prev.timecode;
 	timecode_format = prev.timecode_format;
-//	this->dropshadow = (int)(prev.dropshadow * prev_scale + next.dropshadow * next_scale);
-	this->dropshadow = prev.dropshadow;
+	this->dropshadow = prev.dropshadow * prev_scale + next.dropshadow * next_scale;
+//	this->dropshadow = prev.dropshadow;
 }
 
 void TitleConfig::limits()
@@ -539,9 +539,13 @@ void TitleUnit::draw_glyph(VFrame *output, VFrame *data, TitleGlyph *glyph, int 
 	unsigned char **out_rows = output->get_rows();
 
 	int baseline = plugin->get_char_height();
-	if(engine->do_dropshadow) {
+	if( engine->do_dropshadow ) {
 		x += plugin->config.dropshadow;
 		y += plugin->config.dropshadow;
+	}
+	else if( plugin->config.dropshadow < 0 ) {
+		x -= plugin->config.dropshadow;
+		y -= plugin->config.dropshadow;
 	}
 
 	int x_in = 0, y_in = 0;
@@ -1734,8 +1738,8 @@ int TitleMain::draw_mask()
 
 	extent.x1 -= config.outline_size*2;
 	extent.y1 -= config.outline_size*2;
-	extent.x2 += config.dropshadow + config.outline_size*2;
-	extent.y2 += config.dropshadow + config.outline_size*2;
+	extent.x2 += abs(config.dropshadow) + config.outline_size*2;
+	extent.y2 += abs(config.dropshadow) + config.outline_size*2;
 
 	// Determine mask geometry
 	mask_w = extent.x2 - extent.x1;
@@ -1759,7 +1763,7 @@ int TitleMain::draw_mask()
 		text_mask = new VFrame;
 		text_mask->set_use_shm(0);
 		text_mask->reallocate(0, -1, 0, 0, 0, mask_w, mask_h, color_model, -1);
-		int drop = !config.dropshadow ? 0 : config.dropshadow;
+		float drop = abs(config.dropshadow);
 		int drop_w = mask_w + drop;
 		int drop_h = mask_h + drop;
                 text_mask_stroke = new VFrame;
