@@ -63,7 +63,6 @@
 #include "playabletracks.h"
 #include "preferences.h"
 #include "preferencesthread.h"
-#include "quicktime.h"
 #include "renderfarm.h"
 #include "render.h"
 #include "statusbar.h"
@@ -430,7 +429,6 @@ int Render::check_asset(EDL *edl, Asset &asset)
 	{
 		asset.audio_data = 1;
 		asset.channels = edl->session->audio_channels;
-		if(asset.format == FILE_MOV) asset.byte_order = 0;
 	}
 	else
 	{

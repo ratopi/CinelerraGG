@@ -28,7 +28,6 @@
 #include "iec61883input.inc"
 #include "iec61883output.inc"
 #include "libdv.h"
-#include "quicktime.h"
 #include "sema.h"
 #include "vdevicebase.h"
 

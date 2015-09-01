@@ -30,7 +30,6 @@
 #include "filexml.h"
 #include "format.inc"
 #include "indexstate.h"
-#include "quicktime.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -69,7 +68,6 @@ Asset::~Asset()
 int Asset::init_values()
 {
 	path[0] = 0;
-//	format = FILE_MOV;
 // Has to be unknown for file probing to succeed
 	format = FILE_UNKNOWN;
 	fformat[0] = 0;
@@ -81,8 +79,8 @@ int Asset::init_values()
 	reset_audio();
 	reset_video();
 
-	strcpy(vcodec, QUICKTIME_YUV2);
-	strcpy(acodec, QUICKTIME_TWOS);
+	strcpy(vcodec, "");
+	strcpy(acodec, "");
 
 	ff_audio_options[0] = 0;
 	ff_video_options[0] = 0;
@@ -345,31 +343,18 @@ int64_t Asset::get_index_size(int channel)
 
 char* Asset::get_compression_text(int audio, int video)
 {
-	if(audio)
-	{
-		switch(format)
-		{
-			case FILE_MOV:
-			case FILE_AVI:
-				if(acodec[0])
-					return quicktime_acodec_title(acodec);
-				else
-					return 0;
-				break;
+	if(audio) {
+		switch(format) {
+		case FILE_FFMPEG:
+			if( acodec[0] ) return acodec;
+			break;
 		}
 	}
-	else
-	if(video)
-	{
-		switch(format)
-		{
-			case FILE_MOV:
-			case FILE_AVI:
-				if(vcodec[0])
-					return quicktime_vcodec_title(vcodec);
-				else
-					return 0;
-				break;
+	if(video) {
+		switch(format) {
+		case FILE_FFMPEG:
+			if( vcodec[0] ) return vcodec;
+			break;
 		}
 	}
 	return 0;

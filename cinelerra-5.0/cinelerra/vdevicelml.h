@@ -25,9 +25,7 @@
 #include "guicast.h"
 #include "vdevicebase.h"
 
-// ./quicktime
 #include "jpeg.h"
-#include "quicktime.h"
 
 #define INPUT_BUFFER_SIZE 65536
 

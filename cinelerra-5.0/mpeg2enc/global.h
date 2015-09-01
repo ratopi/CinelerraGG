@@ -29,7 +29,6 @@
 
 #include "libzmpeg3.h"
 #include "mpeg2enc.h"
-#include "quicktime.h"
 
 #include <pthread.h>
 #include <stdint.h>
@@ -464,7 +463,6 @@ EXTERN_ uint8_t ***frame_buffers;
 
 
 /* These determine what input format to use */
-EXTERN_ quicktime_t *qt_file;
 EXTERN_ mpeg3_t *mpeg_file;
 EXTERN_ int do_stdin;
 EXTERN_ FILE *stdin_fd;
@@ -481,7 +479,6 @@ EXTERN_ int input_buffer_end;
 
 
 EXTERN_ int verbose;
-EXTERN_ quicktime_t *qt_output;
 EXTERN_ unsigned char *frame_buffer;
 EXTERN_ unsigned char **row_pointers;
 EXTERN_ int fixed_mquant;

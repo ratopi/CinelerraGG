@@ -30,11 +30,11 @@
 #include "file.h"
 #include "filethread.h"
 #include "language.h"
+#include "libmjpeg.h"
 #include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "preferences.h"
-#include "quicktime.h"
 #include "record.h"
 #include "recordaudio.h"
 #include "recordgui.h"
@@ -261,7 +261,7 @@ int RecordVideo::read_buffer(VFrame *frame)
 
 void RecordVideo::decompress_buffer(VFrame *frame)
 {
-	if( !strncmp(record->default_asset->vcodec, QUICKTIME_MJPA, 4) &&
+	if( !strcmp(record->default_asset->vcodec, CODEC_TAG_MJPEG) &&
 		record->vdevice->is_compressed(0, 1)) {
 		unsigned char *data = frame->get_data();
 		int64_t size = frame->get_compressed_size();

@@ -237,6 +237,9 @@ public:
 // Used by read_frame.
 	int colormodel_supported(int colormodel);
 
+// stubs for now
+	static const char *compressiontostr(const char *codec) { return codec; }
+	static const char *strtocompression(const char *string) { return string; }
 // subclass memory usage
 	int64_t file_memory_usage();
 // Used by CICache to calculate the total size of the cache.

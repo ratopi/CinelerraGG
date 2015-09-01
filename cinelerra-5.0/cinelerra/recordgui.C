@@ -31,7 +31,6 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
-#include "filemov.h"
 #include "filesystem.h"
 #include "keys.h"
 #include "language.h"
@@ -292,9 +291,8 @@ void RecordGUI::create_objects()
 
 	if(asset->video_data) {
 		add_subwindow(new BC_Title(x, y, 
-			asset->format != FILE_MPEG ?
-				FileMOV::compressiontostr(asset->vcodec) :
-				_("File Capture"),
+			asset->format == FILE_MPEG ? _("File Capture") :
+				File::compressiontostr(asset->vcodec),
 			MEDIUMFONT, 
 			mwindow->theme->recordgui_fixed_color));
 	

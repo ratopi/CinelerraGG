@@ -3,7 +3,6 @@ SHELL := /bin/bash
 HAVE_ALSA := y
 HAVE_XFT := y
 HAVE_ESOUND := y
-HAVE_AVIFILE := n
 HAVE_FIREWIRE := y
 HAVE_OSS := y
 STATIC_LIBRARIES := y
@@ -68,7 +67,6 @@ endif
 
 #CFLAGS += -g
 CFLAGS += -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
-#CFLAGS += -I.      # Caused fileavi.C to fail
 
 # the directory for plugin includes
 #FREETYPE_DIR := $(shell expr $(THIRDPARTY)/freetype-* )

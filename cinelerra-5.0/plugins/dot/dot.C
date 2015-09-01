@@ -20,7 +20,7 @@
  */
 
 #include "clip.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "filexml.h"
 #include "dot.h"
 #include "dotwindow.h"

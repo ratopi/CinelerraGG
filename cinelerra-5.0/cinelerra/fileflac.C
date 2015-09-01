@@ -383,16 +383,7 @@ void FLACConfigAudio::create_objects()
 {
 	int x = 10, y = 10;
 	lock_window("FLACConfigAudio::create_objects");
-	bits_popup = new BitsPopup(this, 
-		x, 
-		y, 
-		&asset->bits, 
-		0, 
-		0, 
-		0, 
-		0, 
-		0,
-		0);
+	bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 0, 0, 0);
 	bits_popup->create_objects();
 
 	add_subwindow(new BC_OKButton(this));

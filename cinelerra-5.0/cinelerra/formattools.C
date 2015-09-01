@@ -27,10 +27,11 @@
 #include "filesystem.h"
 #include "formattools.h"
 #include "language.h"
+#include "libdv.h"
+#include "libmjpeg.h"
 #include "maxchannels.h"
 #include "mwindow.h"
 #include "preferences.h"
-#include "quicktime.h"
 #include "theme.h"
 #include "videodevice.inc"
 #include <string.h>
@@ -292,6 +293,7 @@ void FormatTools::update_driver(int driver)
 {
 	this->video_driver = driver;
 
+	locked_compressor = 0;
 	switch(driver)
 	{
 		case CAPTURE_DVB:
@@ -304,56 +306,44 @@ void FormatTools::update_driver(int driver)
 				format_text->update(_("MPEG stream"));
 				asset->format = FILE_MPEG;
 			}
-			locked_compressor = 0;
 			audio_switch->update(1);
 			video_switch->update(1);
 			break;
 
 		case CAPTURE_IEC61883:
 		case CAPTURE_FIREWIRE:
+		case CAPTURE_LML:
 		case CAPTURE_BUZ:
 		case VIDEO4LINUX2JPEG:
 		case CAPTURE_JPEG_WEBCAM:
-			if(asset->format != FILE_AVI &&
-				asset->format != FILE_MOV)
-			{
-				format_text->update(MOV_NAME);
-				asset->format = FILE_MOV;
+			asset->format = FILE_FFMPEG;
+			format_text->update(File::formattostr(asset->format));
+
+			switch(driver) {
+			case CAPTURE_IEC61883:
+			case CAPTURE_FIREWIRE:
+				locked_compressor = (char*)CODEC_TAG_DVSD;
+				break;
+
+			case CAPTURE_BUZ:
+			case CAPTURE_LML:
+			case VIDEO4LINUX2JPEG:
+				locked_compressor = (char*)CODEC_TAG_MJPEG;
+				break;
+
+			case CAPTURE_JPEG_WEBCAM:
+				locked_compressor = (char*)CODEC_TAG_JPEG;
+				break;
 			}
-			else
-				format_text->update(File::formattostr(asset->format));
-
-			switch(driver)
-			{
-				case CAPTURE_IEC61883:
-				case CAPTURE_FIREWIRE:
-					locked_compressor = (char*)QUICKTIME_DVSD;
-					strcpy(asset->vcodec, QUICKTIME_DVSD);
-					break;
-
-				case CAPTURE_BUZ:
-				case VIDEO4LINUX2JPEG:
-					locked_compressor = (char*)QUICKTIME_MJPA;
-					strcpy(asset->vcodec, QUICKTIME_MJPA);
-					break;
-
-				case CAPTURE_JPEG_WEBCAM:
-					locked_compressor = (char*)QUICKTIME_JPEG;
-					strcpy(asset->vcodec, QUICKTIME_JPEG);
-					break;
-			}
+			if( locked_compressor )
+				strcpy(asset->vcodec, locked_compressor);
 
 			audio_switch->update(asset->audio_data);
 			video_switch->update(asset->video_data);
 			break;
 
-
-
-
-
 		default:
 			format_text->update(File::formattostr(asset->format));
-			locked_compressor = 0;
 			audio_switch->update(asset->audio_data);
 			video_switch->update(asset->video_data);
 			break;

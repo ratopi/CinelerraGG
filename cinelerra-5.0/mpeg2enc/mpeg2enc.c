@@ -138,8 +138,6 @@ int mpeg2enc(int argc, char *argv[])
 	fclose(outfile);
 	fclose(statfile);
 
-	if(qt_file) quicktime_close(qt_file);
-	if(qt_output) quicktime_close(qt_output);
 	if(mpeg_file) mpeg3_close(mpeg_file);
 
 	if(do_stdin)
@@ -433,7 +431,6 @@ static void readcmdline(int argc, char *argv[])
 	frame_rate = -1;
 	chroma_format =            1;  /* chroma_format: 1=4:2:0, 2=4:2:2, 3=4:4:4   LibMPEG3 only does 1 */
 	mpeg_file = 0;
-	qt_file = 0;
 	do_stdin = 0;
 	do_buffers = 1;
 	seq_header_every_gop = 0;
@@ -681,35 +678,14 @@ INTTOYES(prog_seq));
 		mpeg_file = mpeg3_open(tplorg, &error_return);
 		inputtype = T_MPEG;
 	}
-	else
-	if(quicktime_check_sig(tplorg))
-	{
-		qt_file = quicktime_open(tplorg, 1, 0);
-		inputtype = T_QUICKTIME;
-	}
 //printf("readcmdline 6\n");
 
-	if(!qt_file && !mpeg_file && !do_stdin && !do_buffers)
+	if(!mpeg_file && !do_stdin && !do_buffers)
 	{
 		fprintf(stderr, "File format not recognized.\n");
 		exit(1);
 	}
 
-//printf("readcmdline 7\n");
-	if(qt_file)
-	{
-		if(!quicktime_video_tracks(qt_file))
-		{
-			fprintf(stderr, "No video tracks in file.\n");
-			exit(1);
-		}
-
-		if(!quicktime_supported_video(qt_file, 0))
-		{
-			fprintf(stderr, "Unsupported video codec.\n");
-			exit(1);
-		}
-	}
 //printf("readcmdline 8\n");
 
 /************************************************************************
@@ -722,13 +698,6 @@ INTTOYES(prog_seq));
 	strcpy(niqname,            "-");  /* name of non intra quant matrix file ("-": default matrix) */
 	strcpy(statname,           "/dev/null");  /* name of statistics file ("-": stdout ) */
 
-	if(qt_file)
-	{
-		nframes =                  quicktime_video_length(qt_file, 0);  /* number of frames */
-		horizontal_size =          quicktime_video_width(qt_file, 0);
-		vertical_size =            quicktime_video_height(qt_file, 0);
-	}
-	else
 	if(mpeg_file)
 	{
 		nframes =                  0x7fffffff;  /* Use percentage instead */
@@ -809,11 +778,6 @@ INTTOYES(prog_seq));
 		prog_seq = 1;
 	}
 
-	if(qt_file)
-	{
-		input_frame_rate = quicktime_frame_rate(qt_file, 0);
-	}
-	else
 	if(mpeg_file)
 	{
 		input_frame_rate = mpeg3_frame_rate(mpeg_file, 0);
@@ -975,17 +939,6 @@ INTTOYES(prog_seq));
   tc0 = 60*tc0 + m;
   tc0 = 60*tc0 + s;
   tc0 = (int)(frame_rate+0.5)*tc0 + f;
-
-  qt_output = 0;
-
-
-
-
-
-
-
-
-
 
   if (!mpeg1)
   {

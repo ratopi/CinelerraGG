@@ -30,7 +30,6 @@
 #include "devicempeginput.h"
 #include "picture.h"
 #include "preferences.h"
-#include "quicktime.h"
 #include "recordconfig.h"
 
 #include <stdio.h>

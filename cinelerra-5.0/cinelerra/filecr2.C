@@ -22,7 +22,7 @@
 #include "asset.h"
 #include "bchash.h"
 #include "clip.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "format.inc"
 #include "file.h"
 #include "filecr2.h"

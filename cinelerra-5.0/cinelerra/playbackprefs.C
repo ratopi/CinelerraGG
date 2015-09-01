@@ -172,12 +172,7 @@ SET_TRACE
 	vscaling_equation->create_objects();
 SET_TRACE
 	y += 35;
-	add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT));
-	sprintf(string, "" _LD "", pwindow->thread->edl->session->playback_preload);
-	PlaybackPreload *preload;
-	add_subwindow(preload = new PlaybackPreload(x + 210, y, pwindow, this, string));
 
-	y += preload->get_h() + 5;
 	add_subwindow(title1 = new BC_Title(x, y, _("DVD Subtitle to display:")));
 	PlaybackSubtitleNumber *subtitle_number;
 	subtitle_number = new PlaybackSubtitleNumber(x + title1->get_w() + 10, 
@@ -321,21 +316,6 @@ PlaybackMap51_2::PlaybackMap51_2(PreferencesWindow *pwindow,
 int PlaybackMap51_2::handle_event() 
 {
 	playback_prefs->playback_config->aconfig->map51_2 = get_value();
-	return 1;
-}
-
-
-PlaybackPreload::PlaybackPreload(int x, int y, 
-	PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text)
- : BC_TextBox(x, y, 100, 1, text)
-{ 
-	this->pwindow = pwindow; 
-	this->playback = playback; 
-}
-
-int PlaybackPreload::handle_event() 
-{ 
-	pwindow->thread->edl->session->playback_preload = atol(get_text()); 
 	return 1;
 }
 

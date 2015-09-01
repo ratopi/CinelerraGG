@@ -22,7 +22,6 @@
 #include "compresspopup.h"
 #include "file.h"
 #include "language.h"
-#include "quicktime.h"
 #include <string.h>
 
 

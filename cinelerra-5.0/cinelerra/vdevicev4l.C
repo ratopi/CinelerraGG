@@ -37,7 +37,6 @@
 #include "file.h"
 #include "picture.h"
 #include "preferences.h"
-#include "quicktime.h"
 #include "recordconfig.h"
 #include "vdevicev4l.h"
 #include "vframe.h"

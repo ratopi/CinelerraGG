@@ -109,9 +109,6 @@ public:
         static const char *zmpeg3_cmdl_name(int cmdl);
 // This file can copy frames directly from the asset
 	int can_copy_from(Asset *asset, int64_t position); 
-	static const char *strtocompression(char *string);
-	static const char *compressiontostr(char *string);
-
 
 private:
 	void to_streamchannel(int channel, int &stream_out, int &channel_out);

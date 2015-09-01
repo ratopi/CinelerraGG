@@ -22,7 +22,7 @@
 #include "asset.h"
 #include "assets.h"
 #include "byteorder.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "format.inc"
 #include "file.h"
 #include "filebase.h"
@@ -37,7 +37,6 @@ FileBase::FileBase(Asset *asset, File *file)
 	this->file = file;
 	this->asset = asset;
 	internal_byte_order = get_byte_order();
-	init_ima4();
 	reset_parameters();
 	overlayer = new OverlayFrame;
 }
@@ -49,7 +48,6 @@ FileBase::~FileBase()
 	if(row_pointers_out) delete [] row_pointers_out;
 	if(float_buffer) delete [] float_buffer;
 	delete overlayer;
-	delete_ima4();
 }
 
 int FileBase::close_file()
@@ -69,7 +67,6 @@ int FileBase::close_file()
 
 	close_file_derived();
 	reset_parameters();
-	delete_ima4();
 	return 0;
 }
 

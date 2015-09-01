@@ -160,14 +160,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# fix libraries
-echo CONFIGURING QUICKTIME
-cd quicktime* && ./configure && cd ..
-if [ $? -ne 0 ]; then
-  echo "Error in quicktime configuration."
-  exit 1
-fi
-
 echo CONFIGURING LIBZMPEG3
 cd libzmpeg3* && ./configure && cd ..
 if [ $? -ne 0 ]; then

@@ -19,7 +19,7 @@
  * 
  */
 
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "filexml.h"
 #include "language.h"
 #include "sharpen.h"

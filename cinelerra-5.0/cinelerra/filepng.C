@@ -25,7 +25,6 @@
 #include "filepng.h"
 #include "language.h"
 #include "mwindow.inc"
-#include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "mainerror.h"
@@ -96,11 +95,6 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 
 int FilePNG::can_copy_from(Asset *asset, int64_t position)
 {
-	if(asset->format == FILE_MOV)
-	{
-		if(match4(asset->vcodec, QUICKTIME_PNG)) return 1;
-	}
-	else
 	if(asset->format == FILE_PNG ||
 		asset->format == FILE_PNG_LIST)
 		return 1;

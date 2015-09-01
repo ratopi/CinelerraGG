@@ -28,7 +28,6 @@ BitsPopup::BitsPopup(BC_WindowBase *parent_window,
 	int x, 
 	int y, 
 	int *output, 
-	int use_ima4, 
 	int use_ulaw,
 	int use_adpcm, 
 	int use_float,
@@ -39,7 +38,6 @@ BitsPopup::BitsPopup(BC_WindowBase *parent_window,
 	this->output = output;
 	this->x = x;
 	this->y = y;
-	this->use_ima4 = use_ima4;
 	this->use_ulaw = use_ulaw;
 	this->use_adpcm = use_adpcm;
 	this->use_float = use_float;
@@ -61,7 +59,6 @@ void BitsPopup::create_objects()
 	bits_items.append(new BC_ListBoxItem(File::bitstostr(BITSLINEAR16)));
 	bits_items.append(new BC_ListBoxItem(File::bitstostr(BITSLINEAR24)));
 	if(use_32linear) bits_items.append(new BC_ListBoxItem(File::bitstostr(BITSLINEAR32)));
-	if(use_ima4) bits_items.append(new BC_ListBoxItem(File::bitstostr(BITSIMA4)));
 	if(use_ulaw) bits_items.append(new BC_ListBoxItem(File::bitstostr(BITSULAW)));
 	if(use_adpcm) bits_items.append(new BC_ListBoxItem(File::bitstostr(BITS_ADPCM)));
 	if(use_float) bits_items.append(new BC_ListBoxItem(File::bitstostr(BITSFLOAT)));

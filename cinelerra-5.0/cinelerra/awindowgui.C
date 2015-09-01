@@ -29,7 +29,7 @@
 #include "awindowmenu.h"
 #include "bcsignals.h"
 #include "cache.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "cursors.h"
 #include "cwindowgui.h"
 #include "cwindow.h"

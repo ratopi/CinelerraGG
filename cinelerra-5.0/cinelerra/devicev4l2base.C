@@ -31,7 +31,6 @@
 #include "mutex.h"
 #include "picture.h"
 #include "preferences.h"
-#include "quicktime.h"
 #include "recordconfig.h"
 #include "videodevice.h"
 

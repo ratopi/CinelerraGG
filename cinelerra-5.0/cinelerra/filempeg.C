@@ -1681,17 +1681,6 @@ int FileMPEG::read_samples(double *buffer, int64_t len)
 	return 0;
 }
 
-const char* FileMPEG::strtocompression(char *string)
-{
-	return "";
-}
-
-const char* FileMPEG::compressiontostr(char *string)
-{
-	return "";
-}
-
-
 
 
 

@@ -39,7 +39,6 @@
 #include "errorbox.h"
 #include "file.h"
 #include "filexml.h"
-#include "filemov.h"
 #include "filesystem.h"
 #include "filethread.h"
 #include "format.inc"
@@ -48,6 +47,8 @@
 #include "keys.h"
 #include "language.h"
 #include "localsession.h"
+#include "libdv.h"
+#include "libmjpeg.h"
 #include "mainmenu.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -56,7 +57,6 @@
 #include "picture.h"
 #include "playbackengine.h"
 #include "preferences.h"
-#include "quicktime.h"
 #include "record.h"
 #include "recordaudio.h"
 #include "recordconfig.h"
@@ -200,23 +200,25 @@ int Record::load_defaults()
 	default_asset->layers = 1;
 // Fix encoding parameters depending on driver.
 // These are locked by a specific driver.
+	const char *vcodec = 0;
 	switch( session->vconfig_in->driver ) {
 	case CAPTURE_LML:
 	case CAPTURE_BUZ:
-		strncpy(default_asset->vcodec, QUICKTIME_MJPA, 4);
+		vcodec = CODEC_TAG_MJPEG;
 		break;
 	case CAPTURE_DVB:
 	case VIDEO4LINUX2MPEG:
 		break;
 	case VIDEO4LINUX2JPEG:
-		if( strncmp(default_asset->vcodec,QUICKTIME_MJPG,4) != 0 )
-			strncpy(default_asset->vcodec,QUICKTIME_MJPA,4);
+		vcodec = CODEC_TAG_MJPEG;
 		break;
 	case CAPTURE_FIREWIRE:
 	case CAPTURE_IEC61883:
-		strncpy(default_asset->vcodec, QUICKTIME_DVSD, 4);
+		vcodec = CODEC_TAG_DVSD;
 		break;
 	}
+	if( vcodec )
+		strcpy(default_asset->vcodec, vcodec);
 
 	record_batches.load_defaults(channeldb, this);
 

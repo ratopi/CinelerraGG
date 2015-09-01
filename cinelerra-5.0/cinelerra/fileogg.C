@@ -23,7 +23,6 @@
 #include "bcsignals.h"
 #include "byteorder.h"
 #include "clip.h"
-#include "cmodel_permutation.h"
 #include "edit.h"
 #include "file.h"
 #include "fileogg.h"
@@ -35,7 +34,6 @@
 #include "mwindow.inc"
 #include "preferences.h"
 #include "render.h"
-#include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
 

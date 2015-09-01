@@ -21,7 +21,7 @@
 
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "filexml.h"
 #include "aggregated.h"
 #include "language.h"
@@ -393,7 +393,7 @@ void InterpolatePixelsUnit::process_package(LoadPackage *package)
 	int pattern_offset_y = plugin->config.y;
 	int y1 = pkg->y1;
 	int y2 = pkg->y2;
-	int components = cmodel_components(plugin->out_frame->get_color_model());
+	int components = BC_CModels::components(plugin->out_frame->get_color_model());
 	float color_matrix[9];
 	memcpy(color_matrix, server->color_matrix, sizeof(color_matrix));
 

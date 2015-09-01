@@ -28,7 +28,7 @@
 #include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "datatype.h"
 #include "edit.h"
 #include "edits.h"

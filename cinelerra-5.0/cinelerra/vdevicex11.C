@@ -23,7 +23,7 @@
 #include "bccapture.h"
 #include "bcsignals.h"
 #include "canvas.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "mwindow.h"

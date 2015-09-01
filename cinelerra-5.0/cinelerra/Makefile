@@ -88,10 +88,8 @@ OBJS = \
 	$(OBJDIR)/ffmpeg.o \
 	$(OBJDIR)/file.o \
 	$(OBJDIR)/fileac3.o \
-	$(OBJDIR)/fileavi.o \
 	$(OBJDIR)/filebase.o \
 	$(OBJDIR)/filebaseaudio.o \
-	$(OBJDIR)/filebaseima4.o \
 	$(OBJDIR)/filebaseulaw.o \
 	$(OBJDIR)/filecr2.o \
 	$(OBJDIR)/fileffmpeg.o \
@@ -103,7 +101,6 @@ OBJS = \
 	$(OBJDIR)/filegif.o \
 	$(OBJDIR)/filelist.o \
 	$(OBJDIR)/filejpeg.o \
-	$(OBJDIR)/filemov.o \
 	$(OBJDIR)/filempeg.o \
 	$(OBJDIR)/fileogg.o \
 	$(OBJDIR)/filepng.o \
@@ -145,6 +142,8 @@ OBJS = \
 	$(OBJDIR)/labels.o \
 	$(OBJDIR)/levelwindow.o \
 	$(OBJDIR)/levelwindowgui.o \
+	$(OBJDIR)/libdv.o \
+	$(OBJDIR)/libmjpeg.o \
 	$(OBJDIR)/loadbalance.o \
 	$(OBJDIR)/loadfile.o \
 	$(OBJDIR)/loadmode.o \
@@ -337,14 +336,7 @@ THEME_DATA := $(OBJDIR)/theme_data.o
 OUTPUT_G = $(OBJDIR)/cinelerra.debuginfo
 OUTPUT = ../bin/cinelerra
 
-ifeq ($(HAVE_AVIFILE), y)
-AVIFILE_DIR := $(shell cd ../avifile* ; pwd)
-endif
-
-
-
 LIBRARIES := \
-	../quicktime/$(OBJDIR)/libquicktime.a \
 	../guicast/$(OBJDIR)/libguicast.a \
 	../libzmpeg3/$(OBJDIR)/libzmpeg3.a \
 	../mpeg2enc/$(OBJDIR)/hveg2enc.a \
@@ -352,6 +344,7 @@ LIBRARIES := \
 	$(THEME_DATA) \
 
 LIBS = $(LIBRARIES)
+LIBS += $(thirdparty_libraries)
 LIBS += $(thirdparty_libraries)
 LIBS += $(thirdparty_libraries)
 LIBS += \
@@ -398,7 +391,6 @@ endif
 
 CFLAGS += \
 	-I../guicast \
-	-I../quicktime \
 	-I../libzmpeg3 \
 	$(static_includes) \
 
@@ -434,17 +426,6 @@ else
 LDFLAGS1 = -export-dynamic
 LDFLAGS2 =
 LINKER = g++ -o $(OUTPUT)
-
-endif
-
-
-# Enable AVIFile support
-ifeq ($(HAVE_AVIFILE), y)
-
-CFLAGS += -DUSE_AVIFILE -I$(AVIFILE_DIR)/include
-LIBS += \
-	$(AVIFILE_DIR)/libmmxnow/src/.libs/libmmxnow.a \
-	$(AVIFILE_DIR)/lib/.libs/libaviplay.a
 
 endif
 
@@ -492,7 +473,7 @@ clean:
 		-o -name '*.so' \) -exec rm -f {} \; -prune
 
 tags:
-	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../quicktime ../plugins
+	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins
 
 
 $(OBJDIR)/%.o:		%.C

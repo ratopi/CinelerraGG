@@ -28,7 +28,6 @@
 #include "language.h"
 #include "libmjpeg.h"
 #include "mwindow.inc"
-#include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "mainerror.h"
@@ -101,11 +100,6 @@ void FileJPEG::get_parameters(BC_WindowBase *parent_window,
 int FileJPEG::can_copy_from(Asset *asset, int64_t position)
 {
 //printf("FileJPEG::can_copy_from %d %s\n", asset->format, asset->vcodec);
-	if(asset->format == FILE_MOV)
-	{
-		if(match4(asset->vcodec, QUICKTIME_JPEG)) return 1;
-	}
-	else
 	if(asset->format == FILE_JPEG || 
 		asset->format == FILE_JPEG_LIST)
 		return 1;

@@ -22,7 +22,7 @@
 #include "asset.h"
 #include "assets.h"
 #include "autoconf.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -95,8 +95,7 @@ EDLSession::~EDLSession()
 
 int EDLSession::need_rerender(EDLSession *ptr)
 {
-	return (playback_preload != ptr->playback_preload) ||
-		(interpolation_type != ptr->interpolation_type) ||
+	return (interpolation_type != ptr->interpolation_type) ||
 		(video_every_frame != ptr->video_every_frame) ||
 		(video_asynchronous != ptr->video_asynchronous) ||
 		(real_time_playback != ptr->real_time_playback) ||
@@ -165,8 +164,8 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	auto_conf->load_defaults(defaults);
 	autos_follow_edits = defaults->get("AUTOS_FOLLOW_EDITS", 1);
 	brender_start = defaults->get("BRENDER_START", brender_start);
-	cmodel_to_text(string, BC_RGBA8888);
-	color_model = cmodel_from_text(defaults->get("COLOR_MODEL", string));
+	BC_CModels::to_text(string, BC_RGBA8888);
+	color_model = BC_CModels::from_text(defaults->get("COLOR_MODEL", string));
 	eyedrop_radius = defaults->get("EYEDROP_RADIUS", 0);
 	crop_x1 = defaults->get("CROP_X1", 0);
 	crop_x2 = defaults->get("CROP_X2", 320);
@@ -215,7 +214,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	output_w = defaults->get("OUTPUTW", 720);
 	output_h = defaults->get("OUTPUTH", 480);
 	playback_buffer = defaults->get("PLAYBACK_BUFFER", 4096);
-	playback_preload = defaults->get("PLAYBACK_PRELOAD", 0);
 	playback_software_position = defaults->get("PLAYBACK_SOFTWARE_POSITION", 0);
 	delete playback_config;
 	playback_config = new PlaybackConfig;
@@ -298,7 +296,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("ATRACKS", audio_tracks);
 	defaults->update("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 	defaults->update("BRENDER_START", brender_start);
-	cmodel_to_text(string, color_model);
+	BC_CModels::to_text(string, color_model);
 	defaults->update("COLOR_MODEL", string);
 	defaults->update("EYEDROP_RADIUS", eyedrop_radius);
 	defaults->update("CROP_X1", crop_x1);
@@ -346,7 +344,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("OUTPUTW", output_w);
 	defaults->update("OUTPUTH", output_h);
 	defaults->update("PLAYBACK_BUFFER", playback_buffer);
-	defaults->update("PLAYBACK_PRELOAD", playback_preload);
 	defaults->update("PLAYBACK_SOFTWARE_POSITION", playback_software_position);
 	playback_config->save_defaults(defaults);
 	defaults->update("PLAYBACK_REALTIME", real_time_playback);
@@ -451,8 +448,8 @@ int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_
 	interpolation_type = file->tag.get_property("INTERPOLATION_TYPE", interpolation_type);
 	interpolate_raw = file->tag.get_property("INTERPOLATE_RAW", interpolate_raw);
 	white_balance_raw = file->tag.get_property("WHITE_BALANCE_RAW", white_balance_raw);
-	cmodel_to_text(string, color_model);
-	color_model = cmodel_from_text(file->tag.get_property("COLORMODEL", string));
+	BC_CModels::to_text(string, color_model);
+	color_model = BC_CModels::from_text(file->tag.get_property("COLORMODEL", string));
 	video_channels = file->tag.get_property("CHANNELS", video_channels);
 	for(int i = 0; i < video_channels; i++)
 	{
@@ -539,7 +536,6 @@ int EDLSession::load_xml(FileXML *file,
 		mpeg4_deblock = file->tag.get_property("MPEG4_DEBLOCK", mpeg4_deblock);
 		plugins_follow_edits = file->tag.get_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 		single_standalone = file->tag.get_property("SINGLE_STANDALONE", single_standalone);
-		playback_preload = file->tag.get_property("PLAYBACK_PRELOAD", playback_preload);
 		safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
 		show_assets = file->tag.get_property("SHOW_ASSETS", 1);
 		show_titles = file->tag.get_property("SHOW_TITLES", 1);
@@ -602,7 +598,6 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("MPEG4_DEBLOCK", mpeg4_deblock);
 	file->tag.set_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	file->tag.set_property("SINGLE_STANDALONE", single_standalone);
-	file->tag.set_property("PLAYBACK_PRELOAD", playback_preload);
 	file->tag.set_property("SAFE_REGIONS", safe_regions);
 	file->tag.set_property("SHOW_ASSETS", show_assets);
 	file->tag.set_property("SHOW_TITLES", show_titles);
@@ -633,7 +628,7 @@ int EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("INTERPOLATION_TYPE", interpolation_type);
 	file->tag.set_property("INTERPOLATE_RAW", interpolate_raw);
 	file->tag.set_property("WHITE_BALANCE_RAW", white_balance_raw);
-	cmodel_to_text(string, color_model);
+	BC_CModels::to_text(string, color_model);
 	file->tag.set_property("COLORMODEL", string);
     file->tag.set_property("CHANNELS", video_channels);
 	for(int i = 0; i < video_channels; i++)
@@ -747,7 +742,6 @@ int EDLSession::copy(EDLSession *session)
 	playback_config = new PlaybackConfig;
 	playback_config->copy_from(session->playback_config);
 	playback_cursor_visible = session->playback_cursor_visible;
-	playback_preload = session->playback_preload;
 	playback_software_position = session->playback_software_position;
 	real_time_playback = session->real_time_playback;
 	real_time_record = session->real_time_record;

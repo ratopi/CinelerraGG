@@ -18,6 +18,8 @@
 #include "fileffmpeg.h"
 #include "file.h"
 #include "ffmpeg.h"
+#include "libdv.h"
+#include "libmjpeg.h"
 #include "mainerror.h"
 #include "mwindow.h"
 #include "vframe.h"
@@ -1439,6 +1441,10 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			option_path, filename);
 		return 1;
 	}
+
+	if( !strcmp(codec_name, CODEC_TAG_DVSD) ) strcpy(codec_name, "dv");
+	else if( !strcmp(codec_name, CODEC_TAG_MJPEG) ) strcpy(codec_name, "mjpeg");
+	else if( !strcmp(codec_name, CODEC_TAG_JPEG) ) strcpy(codec_name, "jpeg");
 
 	int ret = 0;
 	ff_lock("FFMPEG::open_encoder");

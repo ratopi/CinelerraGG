@@ -65,16 +65,7 @@ int FormatCheck::check_format()
 			result = 1;
 		}
 
-		if(!result && asset->bits == BITSIMA4 && asset->format != FILE_MOV)
-		{
-			ErrorBox errorbox(_(PROGRAM_NAME ": Error"));
-			errorbox.create_objects(_("IMA4 compression is only available in Quicktime movies."));
-			errorbox.run_window();
-			result = 1;
-		}
-
 		if(!result && asset->bits == BITSULAW && 
-			asset->format != FILE_MOV &&
 			asset->format != FILE_PCM)
 		{
 			ErrorBox errorbox(_(PROGRAM_NAME ": Error"));

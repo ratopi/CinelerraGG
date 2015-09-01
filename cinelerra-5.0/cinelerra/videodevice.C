@@ -30,6 +30,8 @@
 #include "edlsession.h"
 #include "file.inc"
 #include "../hvirtual_config.h"
+#include "libdv.h"
+#include "libmjpeg.h"
 #include "mainmenu.h"
 #include "mutex.h"
 #include "mwindow.h"
@@ -375,32 +377,27 @@ int VideoDevice::is_compressed(int use_file, int use_fixed)
 void VideoDevice::fix_asset(Asset *asset, int driver)
 {
 // Fix asset using legacy routine
-	switch(driver)
-	{
-		case CAPTURE_JPEG_WEBCAM:
-			if(asset->format != FILE_AVI &&
-				asset->format != FILE_MOV)
-				asset->format = FILE_MOV;
-			strcpy(asset->vcodec, QUICKTIME_JPEG);
-			break;
-	
-		case CAPTURE_BUZ:
-		case CAPTURE_LML:
-		case VIDEO4LINUX2JPEG:
-			if(asset->format != FILE_AVI &&
-				asset->format != FILE_MOV)
-				asset->format = FILE_MOV;
-			if( strncmp(asset->vcodec,QUICKTIME_MJPG,4) != 0 )
-				strncpy(asset->vcodec,QUICKTIME_MJPA,4);
-			return;
-		
-		case CAPTURE_FIREWIRE:
-		case CAPTURE_IEC61883:
-			if(asset->format != FILE_AVI &&
-				asset->format != FILE_MOV)
-				asset->format = FILE_MOV;
-			strcpy(asset->vcodec, QUICKTIME_DVSD);
-			return;
+	const char *vcodec = 0;
+	switch(driver) {
+	case CAPTURE_IEC61883:
+	case CAPTURE_FIREWIRE:
+		vcodec = CODEC_TAG_DVSD;
+		break;
+
+	case CAPTURE_BUZ:
+	case CAPTURE_LML:
+	case VIDEO4LINUX2JPEG:
+		vcodec = CODEC_TAG_MJPEG;
+		break;
+
+	case CAPTURE_JPEG_WEBCAM:
+		vcodec = CODEC_TAG_JPEG;
+		break;
+	}
+	if( vcodec ) {
+		asset->format = FILE_FFMPEG;
+		strcpy(asset->vcodec, vcodec);
+		return;
 	}
 
 // Fix asset using inherited routine

@@ -30,115 +30,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "colormodels.h"
 #include "config.h"
 #include "global.h"
 
-
-static void read_quicktime(frame, number)
-unsigned char *frame[];
-long number;
-{
-	int i, j;
-	int r, g, b;
-	int y, u, v;
-	double cr, cg, cb, cu, cv;
-	char name[128];
-	unsigned char *yp, *up, *vp;
-	static unsigned char *u444, *v444, *u422, *v422;
-	static double coef[7][3] = {
-		{0.2125,0.7154,0.0721}, /* ITU-R Rec. 709 (1990) */
-		{0.299, 0.587, 0.114},  /* unspecified */
-		{0.299, 0.587, 0.114},  /* reserved */
-		{0.30,  0.59,  0.11},   /* FCC */
-		{0.299, 0.587, 0.114},  /* ITU-R Rec. 624-4 System B, G */
-		{0.299, 0.587, 0.114},  /* SMPTE 170M */
-		{0.212, 0.701, 0.087}}; /* SMPTE 240M (1987) */
-	static long rtoy_tab[256], gtoy_tab[256], btoy_tab[256];
-	static long rtou_tab[256], gtou_tab[256], btou_tab[256];
-	static long rtov_tab[256], gtov_tab[256], btov_tab[256];
-	static int need_tables = 1;   // Initialize tables on first read
-	int colormodel;
-	long real_number;
-
-	i = matrix_coefficients;
-	if(i > 8) i = 3;
-
-	cr = coef[i - 1][0];
-	cg = coef[i - 1][1];
-	cb = coef[i - 1][2];
-	cu = 0.5 / (1.0 - cb);
-	cv = 0.5 / (1.0 - cr);
-
-// Allocate output buffers
-	if(chroma_format == CHROMA444)
-	{
-// Not supported by libMPEG3
-    	u444 = frame[1];
-    	v444 = frame[2];
-	}
-	else
-	{
-    	if (!u444)
-    	{
-    		if (!(u444 = (unsigned char *)malloc(width*height)))
-        		error("malloc failed");
-    		if (!(v444 = (unsigned char *)malloc(width*height)))
-        		error("malloc failed");
-    		if (chroma_format==CHROMA420)
-    		{
-        		if (!(u422 = (unsigned char *)malloc((width>>1)*height)))
-        			error("malloc failed");
-        		if (!(v422 = (unsigned char *)malloc((width>>1)*height)))
-        			error("malloc failed");
-    		}
-    	}
-	}
-
-// Initialize YUV tables
-	if(need_tables)
-	{
-		for(i = 0; i < 256; i++)
-		{
-			rtoy_tab[i] = (long)( 0.2990 * 65536 * i);
-			rtou_tab[i] = (long)(-0.1687 * 65536 * i);
-			rtov_tab[i] = (long)( 0.5000 * 65536 * i);
-
-			gtoy_tab[i] = (long)( 0.5870 * 65536 * i);
-			gtou_tab[i] = (long)(-0.3320 * 65536 * i);
-			gtov_tab[i] = (long)(-0.4187 * 65536 * i);
-
-			btoy_tab[i] = (long)( 0.1140 * 65536 * i);
-			btou_tab[i] = (long)( 0.5000 * 65536 * i);
-			btov_tab[i] = (long)(-0.0813 * 65536 * i);
-		}
-		need_tables = 0;
-	}
-
-	real_number = (long)((double)quicktime_frame_rate(qt_file, 0) / 
-			frame_rate * 
-			number + 
-			0.5);
-	quicktime_set_video_position(qt_file, 
-		real_number, 
-		0);
-
-//printf("readframe 1 %d %d\n", width, height);
-	quicktime_set_row_span(qt_file, width);
-	quicktime_set_window(qt_file,
-		0, 
-		0,
-		horizontal_size,
-		vertical_size,
-		horizontal_size,
-		vertical_size);
-	quicktime_set_cmodel(qt_file, (chroma_format == 1) ? BC_YUV420P : BC_YUV422P);
-	
-	quicktime_decode_video(qt_file, 
-		frame, 
-		0);
-//printf("readframe 2\n");
-}
 
 static void read_mpeg(long number, unsigned char *frame[])
 {
@@ -224,9 +118,6 @@ void readframe(int frame_num, uint8_t *frame[])
 
 	switch (inputtype)
 	{
-		case T_QUICKTIME:
-			read_quicktime(frame, frame_num);
-			break;
 		case T_MPEG:
 			read_mpeg(frame_num, frame);
 			break;

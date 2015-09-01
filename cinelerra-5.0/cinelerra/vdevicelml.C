@@ -238,9 +238,6 @@ retry:
 // Insert the required information
 	if(!input_error)
 	{
-//		quicktime_fixmarker_jpeg(&jpeg_header, (char*)frame_buffer, frame1_size, !device->odd_field_first);
-//		quicktime_fixmarker_jpeg(&jpeg_header, (char*)frame_buffer + frame1_size, frame2_size, device->odd_field_first);
-
 // Store in the VFrame
 		frame->allocate_compressed_data(frame_size);
 

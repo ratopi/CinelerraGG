@@ -39,7 +39,6 @@
 // Libzmpeg3 decoding and transport stream capture only
 #define FILE_PCM  	    	1
 #define FILE_WAV  	    	2
-#define FILE_MOV  	    	3
 #define FILE_PNG  	    	4
 #define FILE_JPEG 	    	5
 #define FILE_TIFF 	    	6
@@ -48,19 +47,14 @@
 #define FILE_AU         	9
 #define FILE_AIFF       	10
 #define FILE_SND        	11
-#define FILE_AVI_LAVTOOLS       12    // MJPEG type 1
 #define FILE_TGA_LIST     	13
 #define FILE_TGA          	14
 #define FILE_MPEG         	15    
 #define FILE_AMPEG        	16    // For encoding only
 #define FILE_VMPEG        	17    // For encoding only
 #define FILE_RAWDV		18
-#define FILE_AVI_ARNE2          19    // DV type 2
-#define FILE_AVI_ARNE1          20    // DV type 1
-#define FILE_AVI_AVIFILE        21
 #define FILE_TIFF_LIST  	22
 #define FILE_PNG_LIST   	23
-#define FILE_AVI                24    // Heroine Virtual
 #define FILE_AC3                25    // AC3 encoding
 #define FILE_EXR                26
 #define FILE_EXR_LIST           27
@@ -90,7 +84,6 @@ N_("FFMPEG")
 N_("FLAC")
 N_("JPEG")
 N_("JPEG Sequence")
-N_("Microsoft AVI")
 N_("Microsoft WAV")
 N_("MPEG Audio")    // For encoding only
 N_("MPEG")          // For decoding only
@@ -99,7 +92,6 @@ N_("OGG Theora/Vorbis")
 N_("OGG Vorbis")    // For decoding only
 N_("PNG")
 N_("PNG Sequence")
-N_("Quicktime for Linux")
 N_("Raw DV")
 N_("Raw PCM")
 N_("Sun/NeXT AU")
@@ -118,7 +110,6 @@ N_("Unknown sound")
 #define AVI_ARNE2_NAME		"AVI DV Type 2"
 #define AVI_AVIFILE_NAME	"AVI Avifile"
 #define AVI_LAVTOOLS_NAME	"AVI Lavtools"
-#define AVI_NAME		"Microsoft AVI"
 #define CR2_LIST_NAME		"CR2 Sequence"
 #define CR2_NAME		"Raw Camera"
 #define DBASE_NAME		"DB"
@@ -128,7 +119,6 @@ N_("Unknown sound")
 #define FLAC_NAME		"FLAC"
 #define JPEG_LIST_NAME		"JPEG Sequence"
 #define JPEG_NAME		"JPEG"
-#define MOV_NAME		"Quicktime for Linux"
 #define MPEG_NAME		"MPEG"           // For decoding only
 #define OGG_NAME		"OGG Theora/Vorbis"
 #define PCM_NAME		"Raw PCM"
@@ -152,7 +142,6 @@ N_("Unknown sound")
 #define BITS_ADPCM     252
 #define BITSFLOAT      253
 #define BITSULAW       254
-#define BITSIMA4       255
 
 #if 0
 N_("8 Bit Linear")
@@ -164,7 +153,6 @@ N_("IMA 4")
 N_("ADPCM")
 N_("Float")
 
-// Video formats not part of Quicktime
 N_("RGB ALPHA")
 N_("PNG ALPHA")
 #endif
@@ -174,13 +162,8 @@ N_("PNG ALPHA")
 #define NAME_24BIT "24 Bit Linear"
 #define NAME_32BIT "32 Bit Linear"
 #define NAME_ULAW "u Law"
-#define NAME_IMA4 "IMA 4"
 #define NAME_ADPCM "ADPCM"
 #define NAME_FLOAT "Float"
-
-// Video formats not part of Quicktime
-#define MOV_RGBA "RGB ALPHA"
-#define MOV_PNGA "PNG ALPHA"
 
 
 class File;

@@ -2,7 +2,7 @@ include ../global_config
 include $(THIRDPARTY)/config.mak
 
 CC = gcc
-CFLAGS += -I../libzmpeg3 -I../quicktime
+CFLAGS += -I../libzmpeg3
 
 ifeq ($(OBJDIR), i686)
 CFLAGS += -DX86_CPU
@@ -52,7 +52,6 @@ OBJ = \
 	$(OBJDIR)/writepic.o
 
 LIBS = \
-	../quicktime/$(OBJDIR)/libquicktime.a \
 	../libzmpeg3/$(OBJDIR)/libzmpeg3.a \
 	$(thirdparty_libraries) $(static_libraries) \
 	-lasound \

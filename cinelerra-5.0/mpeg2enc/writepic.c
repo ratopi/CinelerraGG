@@ -29,26 +29,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "colormodels.h"
 #include "config.h"
 #include "global.h"
 
 void writeframe(int number, unsigned char *frame[])
 {
-  int chrom_hsize, chrom_vsize;
-  char name[128];
-  FILE *fd;
-
-	if(!qt_output) return;
-//printf("writeframe 1\n");
-  chrom_hsize = (chroma_format==CHROMA444) ? horizontal_size
-                                           : horizontal_size>>1;
-
-  chrom_vsize = (chroma_format!=CHROMA420) ? vertical_size
-                                           : vertical_size>>1;
-
-	quicktime_set_cmodel(qt_output, BC_YUV420P);
-	quicktime_encode_video(qt_output, 
-		frame, 
-		0);
 }

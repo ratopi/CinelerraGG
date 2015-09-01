@@ -20,7 +20,7 @@
  */
 
 #include "clip.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "filexml.h"
 #include "language.h"
 #include "blurzoom.h"

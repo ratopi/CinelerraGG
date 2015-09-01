@@ -276,7 +276,7 @@ probe x264 "stdint.h x264.h" x264_encoder_encode -lx264
 probe x265 "x265.h" x265_encoder_encode -lx265
 
 echo ""
-# for ffmpeg deps/quicktime link/broken disto libs
+# for ffmpeg link/broken disto libs
 forced_libs="encore ffmpeg giflib libuuid"
 for name in $LIBS; do
   if is_in $name $forced_libs; then

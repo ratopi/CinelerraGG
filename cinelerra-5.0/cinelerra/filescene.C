@@ -22,6 +22,7 @@
 
 #include "asset.h"
 #include "bcsignals.h"
+#include "clip.h"
 #include "file.h"
 #include "filescene.h"
 #include "filesystem.h"
@@ -1856,7 +1857,7 @@ VFrame* SceneTokens::load_image(char *path)
 	delete [] data;
 
 
-	if(!cmodel_has_alpha(result->get_color_model()) )
+	if(!BC_CModels::has_alpha(result->get_color_model()) )
 		printf("SceneTokens::load_image %d: image %s has no alpha channel\n", 
 			__LINE__,
 			path);

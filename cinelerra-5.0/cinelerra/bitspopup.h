@@ -34,7 +34,6 @@ public:
 		int x, 
 		int y, 
 		int *output, 
-		int use_ima4, 
 		int use_ulaw, 
 		int use_adpcm,
 		int use_float,
@@ -48,7 +47,7 @@ public:
 	BitsPopupMenu *menu;
 	ArrayList<BC_ListBoxItem*> bits_items;
 	BitsPopupText *textbox;
-	int x, y, use_ima4, use_ulaw, use_float, use_adpcm, *output;
+	int x, y, use_ulaw, use_float, use_adpcm, *output;
 	int use_32linear;
 	int use_8linear;
 	BC_WindowBase *parent_window;

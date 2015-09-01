@@ -61,16 +61,6 @@ public:
 };
 
 
-class FormatCompress : public CompressPopup
-{
-public:
-	FormatCompress(int x, int y, int recording, Asset *asset, char *default_);
-	~FormatCompress();
-
-	int handle_event();
-	Asset *asset;
-};
-
 class FormatQuality : public BC_ISlider
 {
 public:

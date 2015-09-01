@@ -40,7 +40,6 @@
 #include "condition.h"
 #include "errorbox.h"
 #include "fileac3.h"
-#include "fileavi.h"
 #include "filebase.h"
 #include "filecr2.h"
 #include "filedb.h"
@@ -52,7 +51,6 @@
 #include "filegif.h"
 #include "file.h"
 #include "filejpeg.h"
-#include "filemov.h"
 #include "filempeg.h"
 #undef HAVE_STDLIB_H // automake conflict
 #include "fileogg.h"
@@ -180,7 +178,6 @@ int File::get_options(FormatTools *format,
 	BC_WindowBase *parent_window = format->window;
 	//ArrayList<PluginServer*> *plugindb = format->plugindb;
 	Asset *asset = format->asset;
-	const char *locked_compressor = format->locked_compressor;
 
 	getting_options = 1;
 	format_completion->lock("File::get_options");
@@ -211,14 +208,6 @@ int File::get_options(FormatTools *format,
 				audio_options, 
 				video_options);
 			break;
-		case FILE_MOV:
-			FileMOV::get_parameters(parent_window, 
-				asset, 
-				format_window, 
-				audio_options, 
-				video_options,
-				locked_compressor);
-			break;
 		case FILE_FFMPEG:
 			FileFFMPEG::get_parameters(parent_window, 
 				asset, 
@@ -233,25 +222,6 @@ int File::get_options(FormatTools *format,
 				format_window, 
 				audio_options, 
 				video_options);
-			break;
-		case FILE_AVI:
-			FileMOV::get_parameters(parent_window, 
-				asset, 
-				format_window, 
-				audio_options, 
-				video_options,
-				locked_compressor);
-			break;
-		case FILE_AVI_LAVTOOLS:
-		case FILE_AVI_ARNE2:
-		case FILE_AVI_ARNE1:
-		case FILE_AVI_AVIFILE:
-			FileAVI::get_parameters(parent_window, 
-				asset, 
-				format_window, 
-				audio_options, 
-				video_options,
-				locked_compressor);
 			break;
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
@@ -671,13 +641,6 @@ int File::open_file(Preferences *preferences,
 				fclose(stream);
 				return FILE_IS_XML;
 			}    // can't load project file
-			if(FileMOV::check_sig(this->asset)) {
-// MOV file
-// should be last because quicktime lacks a magic number
-				fclose(stream);
-				file = new FileMOV(this->asset, this);
-				break;
-			}
 			if( !preferences->ffmpeg_early_probe &&
 			    FileFFMPEG::check_sig(this->asset) ) {
 				fclose(stream);
@@ -754,10 +717,6 @@ int File::open_file(Preferences *preferences,
 			file = new FileDB(this->asset, this);
 			break;
 
-		case FILE_MOV:
-			file = new FileMOV(this->asset, this);
-			break;
-
 		case FILE_MPEG:
 		case FILE_AMPEG:
 		case FILE_VMPEG:
@@ -770,17 +729,6 @@ int File::open_file(Preferences *preferences,
 
 		case FILE_VORBIS:
 			file = new FileVorbis(this->asset, this);
-			break;
-
-		case FILE_AVI:
-			file = new FileMOV(this->asset, this);
-			break;
-
-		case FILE_AVI_LAVTOOLS:
-		case FILE_AVI_ARNE2:
-		case FILE_AVI_ARNE1:
-		case FILE_AVI_AVIFILE:
-			file = new FileAVI(this->asset, this);
 			break;
 
 		case FILE_RAWDV:
@@ -2176,12 +2124,6 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, const char *format)
 	if(!strcasecmp(format, _(VMPEG_NAME))) return FILE_VMPEG;
 	if(!strcasecmp(format, _(TGA_NAME))) return FILE_TGA;
 	if(!strcasecmp(format, _(TGA_LIST_NAME))) return FILE_TGA_LIST;
-	if(!strcasecmp(format, _(MOV_NAME))) return FILE_MOV;
-	if(!strcasecmp(format, _(AVI_NAME))) return FILE_AVI;
-	if(!strcasecmp(format, _(AVI_LAVTOOLS_NAME))) return FILE_AVI_LAVTOOLS;
-	if(!strcasecmp(format, _(AVI_ARNE2_NAME))) return FILE_AVI_ARNE2;
-	if(!strcasecmp(format, _(AVI_ARNE1_NAME))) return FILE_AVI_ARNE1;
-	if(!strcasecmp(format, _(AVI_AVIFILE_NAME))) return FILE_AVI_AVIFILE;
 	if(!strcasecmp(format, _(OGG_NAME))) return FILE_OGG;
 	if(!strcasecmp(format, _(VORBIS_NAME))) return FILE_VORBIS;
 	if(!strcasecmp(format, _(RAWDV_NAME))) return FILE_RAWDV;
@@ -2224,12 +2166,6 @@ const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 		case FILE_TGA_LIST:	return _(TGA_LIST_NAME);
 		case FILE_TIFF:		return _(TIFF_NAME);
 		case FILE_TIFF_LIST:	return _(TIFF_LIST_NAME);
-		case FILE_MOV:		return _(MOV_NAME);
-		case FILE_AVI_LAVTOOLS:	return _(AVI_LAVTOOLS_NAME);
-		case FILE_AVI:		return _(AVI_NAME);
-		case FILE_AVI_ARNE2:	return _(AVI_ARNE2_NAME);
-		case FILE_AVI_ARNE1:	return _(AVI_ARNE1_NAME);
-		case FILE_AVI_AVIFILE:	return _(AVI_AVIFILE_NAME);
 		case FILE_OGG:		return _(OGG_NAME);
 		case FILE_VORBIS:	return _(VORBIS_NAME);
 		case FILE_RAWDV:	return _(RAWDV_NAME);
@@ -2248,7 +2184,6 @@ int File::strtobits(const char *bits)
 	if(!strcasecmp(bits, _(NAME_ULAW))) return BITSULAW;
 	if(!strcasecmp(bits, _(NAME_ADPCM))) return BITS_ADPCM;
 	if(!strcasecmp(bits, _(NAME_FLOAT))) return BITSFLOAT;
-	if(!strcasecmp(bits, _(NAME_IMA4))) return BITSIMA4;
 	return BITSLINEAR16;
 }
 
@@ -2264,7 +2199,6 @@ const char* File::bitstostr(int bits)
 		case BITSULAW:		return (NAME_ULAW);
 		case BITS_ADPCM:	return (NAME_ADPCM);
 		case BITSFLOAT:		return (NAME_FLOAT);
-		case BITSIMA4:		return (NAME_IMA4);
 	}
 	return _("Unknown");
 }
@@ -2292,7 +2226,6 @@ int File::bytes_per_sample(int bits)
 		case BITSLINEAR24:	return 3;
 		case BITSLINEAR32:	return 4;
 		case BITSULAW:		return 1;
-		case BITSIMA4:		return 1;
 	}
 	return 1;
 }
@@ -2311,8 +2244,6 @@ int File::get_best_colormodel(Asset *asset, int driver)
 	switch(asset->format)
 	{
 		case FILE_RAWDV:	return FileDV::get_best_colormodel(asset, driver);
-		case FILE_MOV:		return FileMOV::get_best_colormodel(asset, driver);
-		case FILE_AVI:		return FileMOV::get_best_colormodel(asset, driver);
 		case FILE_MPEG:		return FileMPEG::get_best_colormodel(asset, driver);
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:	return FileJPEG::get_best_colormodel(asset, driver);
@@ -2408,7 +2339,6 @@ int File::supports_video(int format)
 	switch(format)
 	{
 		case FILE_OGG:
-		case FILE_MOV:
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
 		case FILE_CR2:
@@ -2422,11 +2352,6 @@ int File::supports_video(int format)
 		case FILE_TIFF:
 		case FILE_TIFF_LIST:
 		case FILE_VMPEG:
-		case FILE_AVI_LAVTOOLS:
-		case FILE_AVI_ARNE2:
-		case FILE_AVI:
-		case FILE_AVI_ARNE1:
-		case FILE_AVI_AVIFILE:
 	        case FILE_FFMPEG:
 		case FILE_RAWDV:
 			return 1;
@@ -2442,18 +2367,12 @@ int File::supports_audio(int format)
 		case FILE_FLAC:
 		case FILE_PCM:
 		case FILE_WAV:
-		case FILE_MOV:
 		case FILE_OGG:
 		case FILE_VORBIS:
 		case FILE_AMPEG:
 		case FILE_AU:
 		case FILE_AIFF:
 		case FILE_SND:
-		case FILE_AVI:
-		case FILE_AVI_LAVTOOLS:
-		case FILE_AVI_ARNE2:
-		case FILE_AVI_ARNE1:
-		case FILE_AVI_AVIFILE:
 		case FILE_FFMPEG:
 			return 1;
 	}
@@ -2468,7 +2387,6 @@ const char* File::get_tag(int format)
 		case FILE_AIFF:         return "aif";
 		case FILE_AMPEG:        return "mp3";
 		case FILE_AU:           return "au";
-		case FILE_AVI:          return "avi";
 		case FILE_RAWDV:        return "dv";
 		case FILE_DB:           return "db";
 		case FILE_EXR:          return "exr";
@@ -2476,7 +2394,6 @@ const char* File::get_tag(int format)
 		case FILE_FLAC:         return "flac";
 		case FILE_JPEG:         return "jpg";
 		case FILE_JPEG_LIST:    return "jpg";
-		case FILE_MOV:          return "mov/mp4";
 		case FILE_OGG:          return "ogg";
 		case FILE_PCM:          return "pcm";
 		case FILE_PNG:          return "png";
@@ -2498,7 +2415,6 @@ const char* File::get_prefix(int format)
 	switch(format) {
 	case FILE_PCM:		return "PCM";
 	case FILE_WAV:		return "WAV";
-	case FILE_MOV:		return "MOV";
 	case FILE_PNG:		return "PNG";
 	case FILE_JPEG:		return "JPEG";
 	case FILE_TIFF:		return "TIFF";
@@ -2507,19 +2423,14 @@ const char* File::get_prefix(int format)
 	case FILE_AU:		return "AU";
 	case FILE_AIFF:		return "AIFF";
 	case FILE_SND:		return "SND";
-	case FILE_AVI_LAVTOOLS:	return "AVI_LAVTOOLS";
 	case FILE_TGA_LIST:	return "TGA_LIST";
 	case FILE_TGA:		return "TGA";
 	case FILE_MPEG:		return "MPEG";
 	case FILE_AMPEG:	return "AMPEG";
 	case FILE_VMPEG:	return "VMPEG";
 	case FILE_RAWDV:	return "RAWDV";
-	case FILE_AVI_ARNE2:	return "AVI_ARNE2";
-	case FILE_AVI_ARNE1:	return "AVI_ARNE1";
-	case FILE_AVI_AVIFILE:	return "AVI_AVIFILE";
 	case FILE_TIFF_LIST:	return "TIFF_LIST";
 	case FILE_PNG_LIST:	return "PNG_LIST";
-	case FILE_AVI:		return "AVI";
 	case FILE_AC3:		return "AC3";
 	case FILE_EXR:		return "EXR";
 	case FILE_EXR_LIST:	return "EXR_LIST";

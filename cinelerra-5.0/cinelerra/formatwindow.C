@@ -27,7 +27,7 @@
 
 FormatAWindow::FormatAWindow(Asset *asset, int *dither)
  : BC_Window(_(PROGRAM_NAME ": File format"), 410, 
- 	(asset->format == FILE_WAV || asset->format == FILE_MOV) ? 115 : 185, 
+ 	(asset->format == FILE_WAV) ? 115 : 185, 
 	0, 0)
 { this->asset = asset; this->dither = dither; }
 
@@ -51,7 +51,7 @@ int FormatAWindow::create_objects()
 	x += 100;
 	add_subwindow(new FormatDither(x, y, this->dither));
 
-	if(asset->format == FILE_PCM || asset->format == FILE_MOV)
+	if(asset->format == FILE_PCM)
 	{
 		x += 90;
 		add_subwindow(new FormatSigned(x, y, asset));
@@ -101,21 +101,6 @@ int FormatVWindow::create_objects()
 
 	init_x = x = 10;
 
-	if(asset->format == FILE_MOV)
-	{
-		add_subwindow(new BC_Title(x, y, _("Set parameters for this video format:")));
-		y += 30;
-		add_subwindow(new BC_Title(x, y, _("Compression:")));
-		x += 110;
-		add_subwindow(new FormatCompress(x, y, recording, asset, asset->compression));
-		x += 90;
-		add_subwindow(new BC_Title(x, y, _("Quality:")));
-		x += 70;
-		add_subwindow(new FormatQuality(x, y, asset, asset->quality));
-		y += 40;
-		x = init_x;
-	}
-	else
 	if(asset->format == FILE_JPEG_LIST)
 	{
 		add_subwindow(new BC_Title(x, y, _("Set parameters for this video format:")));
@@ -145,19 +130,6 @@ int FormatVWindow::close_event()
 
 
 
-
-FormatCompress::FormatCompress(int x, int y, int recording, Asset *asset, char* default_)
- : CompressPopup(x, y, recording, default_)
-{ 
-	this->asset = asset; 
-}
-FormatCompress::~FormatCompress() 
-{
-}
-int FormatCompress::handle_event()
-{
-	strcpy(asset->compression, get_compression());
-}
 
 FormatQuality::FormatQuality(int x, int y, Asset *asset, int default_)
  : BC_ISlider(x, 

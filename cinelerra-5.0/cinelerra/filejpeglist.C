@@ -26,7 +26,6 @@
 #include "libmjpeg.h"
 #include "mwindow.inc"
 #include "jpegwrapper.h"
-#include "quicktime.h"
 #include "vframe.h"
 
 #include <ctype.h>
@@ -75,10 +74,7 @@ int FileJPEGList::can_copy_from(Asset *asset)
 {
 	if(asset->format == FILE_JPEG_LIST)
 		return 1;
-	else
-	if(asset->format == FILE_MOV && match4(asset->vcodec, QUICKTIME_JPEG))
-		return 1;
-	
+
 	return 0;
 }
 
