@@ -316,7 +316,7 @@ public:
 
 	int get_time_format();
 	int set_record_mode(int value);
-	int is_behind() { return drop_overrun_frames && behind > 0 ? 1 : 0; }
+	int is_behind() { return drop_overrun_frames && behind > 1 ? 1 : 0; }
 
 	int64_t dc_offset[MAXCHANNELS];
 	int frame_w;

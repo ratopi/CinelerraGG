@@ -21,10 +21,10 @@
 
 #include "aboutprefs.h"
 #include "bcsignals.h"
+#include "file.inc"
 #include "language.h"
 #include "libzmpeg3.h"
 #include "mwindow.h"
-#include "quicktime.h"
 #include "theme.h"
 #include "vframe.h"
 
@@ -37,7 +37,7 @@ AboutPrefs::AboutPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 
 AboutPrefs::~AboutPrefs()
 {
-	credits.remove_all_objects();
+	about.remove_all_objects();
 }
 
 void AboutPrefs::create_objects()
@@ -78,71 +78,37 @@ void AboutPrefs::create_objects()
 
 // 	char versions[BCTEXTLEN];
 // 	sprintf(versions, 
-// _("Quicktime version %d.%d.%d\n"
-// "Libmpeg3 version %d.%d.%d\n"),
-// quicktime_major(),
-// quicktime_minor(),
-// quicktime_release(),
+// _("Libmpeg3 version %d.%d.%d\n"),
 // mpeg3_major(),
 // mpeg3_minor(),
 // mpeg3_release());
 // 	draw_text(x, y, versions);
 
 
+	char exe_path[BCTEXTLEN], msg_path[BCTEXTLEN];
+	get_exe_path(exe_path);
+	snprintf(msg_path, sizeof(msg_path), "%s/msg.txt", exe_path);
+	FILE *fp = fopen(msg_path, "r");
+	if( fp ) {
+		set_font(LARGEFONT);
+		draw_text(x, y, _("About:"));
+		y += get_text_height(LARGEFONT);
+		char msg[BCTEXTLEN];
+		while( fgets(msg, sizeof(msg), fp) )
+			about.append(new BC_ListBoxItem(msg));
 
-//	y += get_text_height(MEDIUMFONT) * 3;
-	set_font(LARGEFONT);
-	draw_text(x, y, _("Contributors:"));
-	y += get_text_height(LARGEFONT);
-
-	credits.append(new BC_ListBoxItem("Richard Baverstock"));
-	credits.append(new BC_ListBoxItem("Karl Bielefeldt"));
-	credits.append(new BC_ListBoxItem("Kevin Brosius"));
-	credits.append(new BC_ListBoxItem("Jean-Luc Coulon"));
-	credits.append(new BC_ListBoxItem("Jean-Michel Poure"));
-	credits.append(new BC_ListBoxItem("Jerome Cornet"));
-	credits.append(new BC_ListBoxItem("Pierre Marc Dumuid"));
-	credits.append(new BC_ListBoxItem("Alex Ferrer"));
-	credits.append(new BC_ListBoxItem("Gustavo Iñiguez"));
-	credits.append(new BC_ListBoxItem("Tefan de Konink"));
-	credits.append(new BC_ListBoxItem("Nathan Kurz"));
-	credits.append(new BC_ListBoxItem("Greg Mekkes"));
-	credits.append(new BC_ListBoxItem("Eric Seigne"));
-	credits.append(new BC_ListBoxItem("Johannes Sixt"));
-	credits.append(new BC_ListBoxItem("Joe Stewart"));
-	credits.append(new BC_ListBoxItem("Dan Streetman"));
-	credits.append(new BC_ListBoxItem("Johannes Sixt"));
-	credits.append(new BC_ListBoxItem("Mark Taraba"));
-	credits.append(new BC_ListBoxItem("Andraz Tori"));
-	credits.append(new BC_ListBoxItem("Jonas Wulff"));
-#ifdef X_HAVE_UTF8_STRING
-	credits.append(new BC_ListBoxItem("Einar Rünkaru"));
-#else
-	credits.append(new BC_ListBoxItem("Einar R\374nkaru"));
-#endif
-	credits.append(new BC_ListBoxItem("Monty Montgomery"));
-	credits.append(new BC_ListBoxItem("Paolo Rampino"));
-	credits.append(new BC_ListBoxItem("Petter Reinholdtsen"));
-	credits.append(new BC_ListBoxItem("Nicola Ferralis"));
-	credits.append(new BC_ListBoxItem("Michael Collins"));
-
-	BC_ListBox *listbox;
-	add_subwindow(listbox = new BC_ListBox(x, 
-		y,
-		200,
-		300,
-		LISTBOX_TEXT,
-		&credits,
-		0,
-		0,
-		1));
-	y += listbox->get_h() + get_text_height(LARGEFONT) + 10;
+		BC_ListBox *listbox;
+		add_subwindow(listbox = new BC_ListBox(x, y, 300, 300,
+			LISTBOX_TEXT, &about, 0, 0, 1));
+		y += listbox->get_h() + get_text_height(LARGEFONT) + 10;
+	}
+	else
+		y += 300 + get_text_height(LARGEFONT) + 10;
 
 	set_font(LARGEFONT);
 	set_color(resources->text_default);
 	draw_text(x, y, _("License:"));
 	y += get_text_height(LARGEFONT);
-
 	set_font(MEDIUMFONT);
 
 	char license3[BCTEXTLEN];

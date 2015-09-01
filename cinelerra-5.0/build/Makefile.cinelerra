@@ -10,7 +10,6 @@ endif
 
 DIRS := \
 	thirdparty \
-	quicktime \
 	libzmpeg3 \
 	mpeg2enc \
 	mplexlo \
@@ -75,7 +74,7 @@ endif
 	rm -f bin/new_db
 	$(MAKE) -C db/utils new_db
 	cp -a db/utils/new_db bin/.
-	cp -a ffmpeg bin/.
+	cp -a ffmpeg msg.txt bin/.
 	@if [ ! -f "/cinelerra/media.db" ]; then \
 		echo "need to run:"; \
 		echo "	mkdir /cinelerra"; \

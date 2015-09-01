@@ -319,6 +319,8 @@ int BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	this->parent_window = parent_window;
 	this->top_level = parent_window->top_level;
 	this->xv_portid = resources->use_xvideo ? top_level->xvideo_port_id : -1;
+	if( w < 1 ) w = 1;
+	if( h < 1 ) h = 1;
 	this->w = w;
 	this->h = h;
 	this->color_model = color_model;

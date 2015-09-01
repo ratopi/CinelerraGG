@@ -94,7 +94,7 @@ esound.cfg_vars+= AUDIOFILE_LIBS="$(call ld_path,audiofile,libaudiofile/.libs)"
 esound.cfg_params= --enable-shared=no --with-pic
 esound.ldflags="-lm -lstdc++"
 faac.cfg_params= --enable-shared=no
-faad2.cfg_params= --with-drm --enable-shared=no
+faad2.cfg_params= --enable-shared=no
 fdk.cfg_vars= ./autogen.sh ;
 fdk.cfg_params= --enable-shared=no
 fdk.mak_params= ; for f in $(call bld_path,fdk,/lib*/include); do ln -s include `dirname $$$$f`/fdk-aac ; done

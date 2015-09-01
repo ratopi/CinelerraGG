@@ -34,7 +34,7 @@ public:
 
 
 	void create_objects();
-	ArrayList<BC_ListBoxItem*> credits;
+	ArrayList<BC_ListBoxItem*> about;
 };
 
 

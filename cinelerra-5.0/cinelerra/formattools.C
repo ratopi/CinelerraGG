@@ -858,10 +858,14 @@ int FormatFFMPEG::load_defaults(const char *path, const char *type,
 	FILE *fp = fopen(default_file,"r");
 	if( !fp ) return 1;
 	fgets(codec, BCSTRLEN, fp);
-	fclose(fp);
 	char *cp = codec;
 	while( *cp && *cp!='\n' ) ++cp;
 	*cp = 0;
+	while( len > 0 && fgets(codec_options, len, fp) ) {
+		int n = strlen(codec_options);
+		codec_options += n;  len -= n;
+	}
+	fclose(fp);
 	FFMPEG::set_option_path(default_file, "%s/%s", path, codec);
 	return FFMPEG::load_options(default_file, codec_options, len);
 }

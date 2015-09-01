@@ -136,6 +136,9 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	fprintf(fp,"#!/bin/bash\n");
 	fprintf(fp,"echo \"running %s\" $# $*\n", script_filename);
 	fprintf(fp,"\n");
+	char exe_path[BCTEXTLEN];
+	get_exe_path(exe_path);
+	fprintf(fp,"PATH=$PATH:%s\n",exe_path);
 	if( !use_ffmpeg ) {
 		fprintf(fp,"mplex -f 8 -o $1/dvd.mpg $1/dvd.m2v $1/dvd.ac3\n");
 		fprintf(fp,"\n");
@@ -475,7 +478,7 @@ void CreateDVD_DiskSpace::update()
 }
 
 CreateDVD_TmpPath::CreateDVD_TmpPath(CreateDVD_GUI *gui, int x, int y, int w)
- : BC_TextBox(x, y, w, 1, -sizeof(gui->thread->tmp_path),
+ : BC_TextBox(x, y, w, 1, -(int)sizeof(gui->thread->tmp_path),
 		gui->thread->tmp_path, 1, MEDIUMFONT)
 {
         this->gui = gui;

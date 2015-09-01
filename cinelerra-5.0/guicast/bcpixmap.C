@@ -169,6 +169,8 @@ void BC_Pixmap::reset()
 
 int BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 {
+	if( w < 1 ) w = 1;
+	if( h < 1 ) h = 1;
 	this->w = w;
 	this->h = h;
 	this->parent_window = parent_window;

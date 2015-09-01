@@ -1,0 +1,189 @@
+sync to last commit on google_code
+fixups for plugins interpolate, c41
+so long, Michael Niedermayer... and thanks for all the fish!!!
+fixed for v4l2 captures, add colormodel uyuv
+centos build workarounds
+add missing ffmpeg encoder flush, bdwrite leaks + fixes
+rename to current version
+add bluray support, add dialog close fixes, scale fix
+add shell menu btns, add manual
+repair flickering video encode, bug created last checkin
+allow ffmpeg video to resample curr_pos, add bluray format
+update internationalization data
+disable XftFontClose calls to avoid bug in X
+remove russian for now, xlat is incorrect
+improve ffmpeg err reporting, fix repeated audio on ffmpeg decode data err, replace ff icon data
+clipedit remove vs delete
+increase vorbis READ_SIZE, check get_next_page failure
+change CINELERRA_VERSION to 5.0
+add main menu ffpeg early probe toggle
+setformat set_done in destructor
+add single threading lock to init_xft
+add warn window
+add ffmpeg probe update index rebuild warning
+upgrade ffmpeg/x265, guard avcodec_flush_buffers, filebox fixups, remove unused grid widget
+add ffmpeg dvd render option, fix undo deadlock, fix a few plugin interface gaffs
+add buffer flush to ffmpeg seek, clear loop_session on load replace mode
+merge with http://cinelerra.org/git-repo/cinelerra
+fixup qt raw formats
+add u2b format type, tweak j2k, mjpg. rm raw_gray
+mods to ffmpeg default codec param strategy
+ffmpeg load_defaults, create default codec file def
+merge with http://cinelerra.org/git-repo/cinelerra
+improve ffmpeg format selection popup menu, more ffmpeg audio fixes
+ffmpeg load_defaults, create default codec file def
+mods to ffmpeg default codec param strategy
+vorbis bld msgs, ffmpeg one frame/frame flush bug, ffmpeg audio history fixes
+several bug fixes and minor feature changes:
+vwindow close while playback active
+format tools segv in preferences
+1 frame video files are stretchable
+opengl deadlocks reworked
+added kernel version to dmp file
+better dialog thread cleanup
+nix startup on theme fail, fixes for font init and titler color model
+title keyframe fix and font lookup fixes
+add more clipping to bccmdl/bcxfer
+a few fixes and improvements
+Revert "upgrade ffmpeg->2.7, x265->1.7" doesn't work
+upgrade ffmpeg->2.7, x265->1.7
+a few vcodec fixes, more to follow
+big haircut, minor fixes to ulaw, audio, removed ilace, fileyuv
+still more quicktime fixes and upgrades, lame -O3 to -O (that is lame)
+more quicktime fixes and upgrades
+bunch of quicktime fixes and improvements, a few icons
+repair forking bug, closed forker reused
+french xlat update from Henri Bauer
+new build sys lib ref in esound build
+fix quicktime rawaudio
+cleanup of quicktime + a few qt fixes, reduce build strength for thirdparty statics
+fix blunder in overlayframe
+repair break in init_plugins, plugins dir relative, record_video deadlock
+repair break in fileac3 create by ffmpeg upgrade
+missed the mpeg encoder plugins in the great plugin migration
+add ffmpeg opts for for filters, duration. add h264 preset
+fix audio frame drop during ffmpeg encode, rework ffmpeg flow control
+fixup delete plugin edge cases
+ubuntu build cleanup for last mod
+revitalize ladspa
+add greycstoration plugin, add rgb planar color models, add plugin visibility filters
+more suse build mods
+centos build tweaks
+stop building/installing festival, cleanup
+stop building/installing festival
+create debuginfo/ strip objs, add proc/maps to dmp file
+prevent stop_playback from deadlocking load_filenames
+fix problem with openjpeg, add static_libraries to cinelerra/pluggin make
+more ffmpeg fileffmpeg work, add some presets, add openjpeg
+bug fix for aud/vid asset flag test in ffmpeg encode, add mp3 audio fmt
+fixes for file forking
+build tweak for ubuntu
+rewrite for BC_CModels::transfer (for 16-bit), more gl_wdw delete fixes
+push Einar Rünkaru utf-8 clipboard mod from CV
+missed build dep for fdk in mpeg2enc
+upgrade libvpx, add aac fdk codec, encoder flow ctrl
+rework select_asset, get_audio_for_video
+rework select_asset for better asset reconfiguration
+rework decoder, add more frame sizes
+add muxer to ffmpeg encoder logic
+dial in centos build, change bc_sync wdw del lock strategy
+upgrade thirdparty src, update configure/make files, fixes
+delete old libtheora, libvorbis, libogg
+upgrade ogg, vorbis, theora. sync subwindow creation
+build tweaks for centos
+fix static build dep jpeg
+rework ffmpeg: added encoder upgraded decoder. numerous minor fixes
+repair x_error_handler err msg reporting
+added a few buttons to the android remote
+missed a file in last mod, add a few cv patches
+add dropped piece of locale setup in wtext mod from CV
+fix segv in record close, add i386 patches as ifdef
+32 bit build fixes, C41 nans, unmask x_errs
+more cleanups for mwindow close, nouveau hangs
+rework nvidia xdisplay lock hang on closing glx_win 2nd screen
+fix nvidia xdisplay lock hang on closing glx_win 2nd screen
+fixes for glx sequencing when using Mesa
+add android remote control app source
+disable fileforking if debug traps enabled
+repair to mpeg2enc for mulit-processor use, a few memory init fixups
+Nicola Ferralis: remove audiocine driver type
+try to repair timezone (again)
+add locking for glXCreateWindow, repair mulitple vwindow closing
+fix botched tooltip mod, screws up get_screen_w
+add android remote control interface
+add missing parallel build dep for burn plugin
+add sha1sum to identify exe in cinelerra_*.dmp
+fix leaked mmap buffers, cuases record webcam problems
+cleanup debug prints, fixup videodevice open
+upgrade intl lang support using google xlat
+fix for yuv422 format decode problems
+bug fix for cmodel convert added to c41 in port
+change filemov popup err dlg to print, for now
+screen/audio capture segv fix
+remove load/save defaults from ported realtime plugins
+cleanup and speedup for svg overlayer, valgrind cleanup
+upgrades and fixes to svg
+allow caveat_slow config in glx fb probes
+fix for fullscreen, mods to prop up svg
+the new normal
+upgrade glx interface, fixes major problems with blending
+Porter Duff operators for patchbay rendering options
+move fader into overlay engine/opengl
+fix opengl alpha channel setup problems
+fixup filebox to use most recent dir for default
+prevent focus_out event from deactivating if cursor in menu
+fix textbox problem with formating with seperators
+tooltip popups on wrong side if tile windows right
+make mediadb access depend on env var BC_USE_COMMECIALS
+rework overlayframe, fixes to condition timed_lock, dvd path textbox, cleanup hisogram
+fix buffer limit setup for XMLBuffer
+restrict xml buffer when shared string, valgrind find fixes
+gifubar control
+correct strip commands for theme data
+add trap path api
+add more elaborate trap logging
+fix titler bug
+add fileyuv.C to the FFMPEG list
+add file.C to the FFMPEG list
+2 more fixes filexml
+yet more bug fixes for filexml and titler
+some cleanup on filexml checkin
+rework filexml for intl chars, add a few plugin icons
+change header paths for libavcodec to local
+add missing mjpegtools includes
+CV file codec mods + a few fixes
+fix some textbox bugs, again fix alpla probs on titler
+fixes to tilter for alpha blundering. msg for shmmax err
+cleanup missed utf8 refs in textbox rework
+theme fixups, add fedora build prereqs
+more titler fixup, index_fd fix
+titler fixes, add auto font sizing, fix to listbox
+some fixes, mostly titler, many more bugs...
+cv port, plugins, not tested
+merge cv: quicktime,guicast,libmpeg3 add db code
+fix typo, add a few file tags
+cleanup bak/sav files
+add dropped mods in 4.5->4.6 port
+fix can't rewind bits layer3 bug
+add missed files for icons
+revise default icon data
+fixed some problems with layer3 read past eob
+pulldown menu collapes on fedora without delay on first choice
+change sync loss recovery strategy
+removed icon bitmap/vframe cache, not useful.
+fixed image_size (now big endin)
+added feature to delete unwanted plugins
+added feature to create customizable plugin icon data
+added trap_sigsegv, trap_sigintr to prefs to capture dmp files
+fixed bc_toggle int *value==0 segv
+avoid race on open with record_fd
+fix window create/move/resize offsets in startup probes
+add force rebuild to directory depends
+yet another attempt to add the previous mod
+filesystem balks on bad soft link
+fixed misdeclared locker objects in thread dbg code
+added gdb segv capture handler in bcsignals
+cutads trips up plugin init, remove for now
+update icon data, clear awindow listbox on selection
+change leading blanks to tabs for lead-in on recipe lines in errant Makefile.in
+initial commit

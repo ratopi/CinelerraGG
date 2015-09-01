@@ -884,7 +884,7 @@ get_program_pes_packet( uint32_t header)
 //dmp(&nav->dsi[0],NAV_DSI_BYTES);
           pes_packet_length -= NAV_DSI_BYTES;
           int64_t blk_pos = ((int64_t)nav->dsi_gi_pck_lbn() & 0x7fffffffU) * DVD_PACKET_SIZE;
-          if( last_packet_start != blk_pos )
+          if( blk_pos != 0 && last_packet_start != blk_pos )
             zmsgs("blk_pos "_LX" != "_LX" last_packet_start\n", blk_pos, last_packet_start);
           int64_t next_pos, next_vobu, end_byte, end_pos;
           int64_t blk_size = (int64_t)nav->dsi_gi_vobu_ea() * DVD_PACKET_SIZE;

@@ -1580,6 +1580,9 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 		}
 	}
 	if( !ret ) {
+		if( fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER )
+			st->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
 		ret = avcodec_open2(st->codec, codec, &sopts);
 		if( ret < 0 ) {
 			ff_err(ret,"FFMPEG::open_encoder");
@@ -1591,8 +1594,6 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			ret = 0;
 	}
 	if( !ret ) {
-		if( fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER )
-			st->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
 		if( fst && bsfilter[0] )
 			fst->add_bsfilter(bsfilter, !bsargs[0] ? 0 : bsargs);
 	}

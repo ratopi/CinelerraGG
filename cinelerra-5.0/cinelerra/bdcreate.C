@@ -137,15 +137,16 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	char exe_path[BCTEXTLEN];
 	get_exe_path(exe_path);
 	fprintf(fp,"#!/bin/bash -ex\n");
+	fprintf(fp,"PATH=$PATH:%s\n",exe_path);
 	fprintf(fp,"mkdir -p $1/udfs\n");
 	fprintf(fp,"sz=`du -sb $1/bd.m2ts | sed -e 's/[ \t].*//'`\n");
 	fprintf(fp,"blks=$((sz/2048 + 4096))\n");
 	fprintf(fp,"mkudffs $1/bd.udfs $blks\n");
 	fprintf(fp,"mount -o loop $1/bd.udfs $1/udfs\n");
-	fprintf(fp,"%s/bdwrite $1/udfs $1/bd.m2ts\n",exe_path);
+	fprintf(fp,"bdwrite $1/udfs $1/bd.m2ts\n");
 	fprintf(fp,"umount $1/udfs\n");
-	fprintf(fp,"echo To burn bluray, load blank media and run:\n");
-	fprintf(fp,"echo dd if=$1/bd.udfs of=/dev/bd bs=2048000\n");
+	fprintf(fp,"echo To burn bluray, load writable media and run:\n");
+	fprintf(fp,"echo growisofs -dvd-compat -Z /dev/bd=$1/bd.udfs\n");
 	fprintf(fp,"\n");
 	fclose(fp);
 
@@ -402,7 +403,7 @@ void CreateBD_DiskSpace::update()
 }
 
 CreateBD_TmpPath::CreateBD_TmpPath(CreateBD_GUI *gui, int x, int y, int w)
- : BC_TextBox(x, y, w, 1, -sizeof(gui->thread->tmp_path),
+ : BC_TextBox(x, y, w, 1, -(int)sizeof(gui->thread->tmp_path),
 		gui->thread->tmp_path, 1, MEDIUMFONT)
 {
         this->gui = gui;
