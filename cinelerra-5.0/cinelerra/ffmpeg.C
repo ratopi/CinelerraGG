@@ -984,13 +984,15 @@ AVRational FFMPEG::check_frame_rate(AVCodec *codec, double frame_rate)
 	return max_err < 0.0001 ? best_rate : (AVRational) { 0, 0 };
 }
 
-AVRational FFMPEG::to_sample_aspect_ratio(double aspect_ratio)
+AVRational FFMPEG::to_sample_aspect_ratio(Asset *asset)
 {
 #if 1
-	int height = 1000000, width = height * aspect_ratio;
+	double display_aspect = asset->width / (double)asset->height;
+	double sample_aspect = asset->aspect_ratio / display_aspect;
+	int width = 1000000, height = width * sample_aspect + 0.5;
 	float w, h;
 	MWindow::create_aspect_ratio(w, h, width, height);
-	return (AVRational){(int)w, (int)h};
+	return (AVRational){(int)h, (int)w};
 #else
 // square pixels
 	return (AVRational){1, 1};
@@ -1566,7 +1568,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			vid->height = asset->height;
 			ctx->height = (vid->height+3) & ~3;
 			vid->frame_rate = asset->frame_rate;
-			ctx->sample_aspect_ratio = to_sample_aspect_ratio(asset->aspect_ratio);
+			ctx->sample_aspect_ratio = to_sample_aspect_ratio(asset);
 			ctx->pix_fmt = codec->pix_fmts ? codec->pix_fmts[0] : AV_PIX_FMT_YUV420P;
 			AVRational frame_rate = check_frame_rate(codec, vid->frame_rate);
 			if( !frame_rate.num || !frame_rate.den ) {

@@ -83,19 +83,19 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	EDL *edl = mwindow->edl;
 	if( !edl || !edl->session ) {
 		char msg[BCTEXTLEN];
-                sprintf(msg, _("No EDL/Session"));
-                MainError::show_error(msg);
-                return 1;
-        }
+		sprintf(msg, _("No EDL/Session"));
+		MainError::show_error(msg);
+		return 1;
+	}
 	EDLSession *session = edl->session;
 
 	double total_length = edl->tracks->total_length();
-        if( total_length <= 0 ) {
+	if( total_length <= 0 ) {
 		char msg[BCTEXTLEN];
-                sprintf(msg, _("No content: %s"), asset_title);
-                MainError::show_error(msg);
-                return 1;
-        }
+		sprintf(msg, _("No content: %s"), asset_title);
+		MainError::show_error(msg);
+		return 1;
+	}
 
 	char asset_dir[BCTEXTLEN];
 	sprintf(asset_dir, "%s/%s", tmp_path, asset_title);
@@ -111,15 +111,15 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	double old_samplerate = session->sample_rate;
 	double old_framerate = session->frame_rate;
 
-        session->video_channels = DVD_STREAMS;
-        session->video_tracks = DVD_STREAMS;
-        session->frame_rate = DVD_FRAMERATE;
-        session->output_w = DVD_WIDTH;
-        session->output_h = DVD_HEIGHT;
-        session->aspect_w = use_wide_aspect ? DVD_WIDE_ASPECT_WIDTH : DVD_ASPECT_WIDTH;
-        session->aspect_h = use_wide_aspect ? DVD_WIDE_ASPECT_HEIGHT : DVD_ASPECT_HEIGHT;
-        session->sample_rate = DVD_SAMPLERATE;
-        session->audio_channels = session->audio_tracks =
+	session->video_channels = DVD_STREAMS;
+	session->video_tracks = DVD_STREAMS;
+	session->frame_rate = DVD_FRAMERATE;
+	session->output_w = DVD_WIDTH;
+	session->output_h = DVD_HEIGHT;
+	session->aspect_w = use_wide_aspect ? DVD_WIDE_ASPECT_WIDTH : DVD_ASPECT_WIDTH;
+	session->aspect_h = use_wide_aspect ? DVD_WIDE_ASPECT_HEIGHT : DVD_ASPECT_HEIGHT;
+	session->sample_rate = DVD_SAMPLERATE;
+	session->audio_channels = session->audio_tracks =
 		use_wide_audio ? DVD_WIDE_CHANNELS : DVD_CHANNELS;
 
 	char script_filename[BCTEXTLEN];
@@ -190,7 +190,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	fclose(fp);
 
 	if( use_wide_audio ) {
-        	session->audio_channels = session->audio_tracks = DVD_WIDE_CHANNELS;
+		session->audio_channels = session->audio_tracks = DVD_WIDE_CHANNELS;
 		session->achannel_positions[0] = 90;
 		session->achannel_positions[1] = 150;
 		session->achannel_positions[2] = 30;
@@ -201,7 +201,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 			mwindow->remap_audio(MWindow::AUDIO_1_TO_1);
 	}
 	else {
-        	session->audio_channels = session->audio_tracks = DVD_CHANNELS;
+		session->audio_channels = session->audio_tracks = DVD_CHANNELS;
 		session->achannel_positions[0] = 180;
 		session->achannel_positions[1] = 0;
 		if( edl->tracks->recordable_audio_tracks() == DVD_WIDE_CHANNELS )
@@ -222,10 +222,10 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 
 	char xml_filename[BCTEXTLEN];
 	sprintf(xml_filename, "%s/dvd.xml", asset_dir);
-        FileXML xml_file;
-        edl->save_xml(&xml_file, xml_filename, 0, 0);
-        xml_file.terminate_string();
-        if( xml_file.write_to_file(xml_filename) ) {
+	FileXML xml_file;
+	edl->save_xml(&xml_file, xml_filename, 0, 0);
+	xml_file.terminate_string();
+	if( xml_file.write_to_file(xml_filename) ) {
 		char msg[BCTEXTLEN];
 		sprintf(msg, _("Unable to save: %s"), xml_filename);
 		MainError::show_error(msg);
@@ -249,29 +249,24 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 		asset->format = FILE_FFMPEG;
 		strcpy(asset->fformat, "dvd");
 
-      		asset->audio_data = 1;
+		asset->audio_data = 1;
 		strcpy(asset->acodec, "dvd.dvd");
 		FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
 		FFMPEG::load_options(option_path, asset->ff_audio_options,
 			 sizeof(asset->ff_audio_options));
 		asset->ff_audio_bitrate = DVD_KAUDIO_RATE * 1000;
 
-      		asset->video_data = 1;
+		asset->video_data = 1;
 		strcpy(asset->vcodec, "dvd.dvd");
 		FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
 		FFMPEG::load_options(option_path, asset->ff_video_options,
 			 sizeof(asset->ff_video_options));
 		asset->ff_video_bitrate = vid_bitrate;
 		asset->ff_video_quality = 0;
-
-		int len = strlen(asset->ff_video_options);
-		char *cp = asset->ff_video_options + len;
-		snprintf(cp, sizeof(asset->ff_video_options)-len-1,
-			"aspect %.5f\n", asset->aspect_ratio);
 	}
 	else {
 		sprintf(&asset->path[0],"%s/dvd.m2v", asset_dir);
-      		asset->video_data = 1;
+		asset->video_data = 1;
 		asset->format = FILE_VMPEG;
 		asset->vmpeg_cmodel = BC_YUV420P;
 		asset->vmpeg_fix_bitrate = 1;
@@ -291,7 +286,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 		asset = job->asset;
 		
 		sprintf(&asset->path[0],"%s/dvd.ac3", asset_dir);
-      		asset->audio_data = 1;
+		asset->audio_data = 1;
 		asset->format = FILE_AC3;
 		asset->channels = session->audio_channels;
 		asset->sample_rate = session->sample_rate;
@@ -316,7 +311,7 @@ void CreateDVD_Thread::handle_close_event(int result)
 {
 	if( result ) return;
 	mwindow->batch_render->load_defaults(mwindow->defaults);
-        mwindow->undo->update_undo_before();
+	mwindow->undo->update_undo_before();
 	KeyFrame keyframe;  char data[BCTEXTLEN];
 	if( use_deinterlace ) {
 		sprintf(data,"<DEINTERLACE MODE=1>");
@@ -371,7 +366,7 @@ BC_Window* CreateDVD_Thread::new_gui()
 	memset(tmp_path,0,sizeof(tmp_path));
 	strcpy(tmp_path,"/tmp");
 	memset(asset_title,0,sizeof(asset_title));
-	time_t dt;      time(&dt);
+	time_t dt;  time(&dt);
 	struct tm dtm;  localtime_r(&dt, &dtm);
 	sprintf(asset_title, "dvd_%02d%02d%02d-%02d%02d%02d",
 		dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
@@ -386,10 +381,10 @@ BC_Window* CreateDVD_Thread::new_gui()
 	use_label_chapters = 0;
 	use_ffmpeg = 0;
 	option_presets();
-        int scr_x = mwindow->gui->get_screen_x(0, -1);
-        int scr_w = mwindow->gui->get_screen_w(0, -1);
-        int scr_h = mwindow->gui->get_screen_h(0, -1);
-        int w = 500, h = 250;
+	int scr_x = mwindow->gui->get_screen_x(0, -1);
+	int scr_w = mwindow->gui->get_screen_w(0, -1);
+	int scr_h = mwindow->gui->get_screen_h(0, -1);
+	int w = 500, h = 250;
 	int x = scr_x + scr_w/2 - w/2, y = scr_h/2 - h/2;
 
 	gui = new CreateDVD_GUI(this, x, y, w, h);
@@ -401,8 +396,8 @@ BC_Window* CreateDVD_Thread::new_gui()
 CreateDVD_OK::CreateDVD_OK(CreateDVD_GUI *gui, int x, int y)
  : BC_OKButton(x, y)
 {
-        this->gui = gui;
-        set_tooltip(_("end setup, start batch render"));
+	this->gui = gui;
+	set_tooltip(_("end setup, start batch render"));
 }
 
 CreateDVD_OK::~CreateDVD_OK()
@@ -411,23 +406,23 @@ CreateDVD_OK::~CreateDVD_OK()
 
 int CreateDVD_OK::button_press_event()
 {
-        if(get_buttonpress() == 1 && is_event_win() && cursor_inside()) {
-                gui->set_done(0);
-                return 1;
-        }
-        return 0;
+	if(get_buttonpress() == 1 && is_event_win() && cursor_inside()) {
+		gui->set_done(0);
+		return 1;
+	}
+	return 0;
 }
 
 int CreateDVD_OK::keypress_event()
 {
-        return 0;
+	return 0;
 }
 
 
 CreateDVD_Cancel::CreateDVD_Cancel(CreateDVD_GUI *gui, int x, int y)
  : BC_CancelButton(x, y)
 {
-        this->gui = gui;
+	this->gui = gui;
 }
 
 CreateDVD_Cancel::~CreateDVD_Cancel()
@@ -436,18 +431,18 @@ CreateDVD_Cancel::~CreateDVD_Cancel()
 
 int CreateDVD_Cancel::button_press_event()
 {
-        if(get_buttonpress() == 1 && is_event_win() && cursor_inside()) {
-                gui->set_done(1);
-                return 1;
-        }
-        return 0;
+	if(get_buttonpress() == 1 && is_event_win() && cursor_inside()) {
+		gui->set_done(1);
+		return 1;
+	}
+	return 0;
 }
 
 
 CreateDVD_DiskSpace::CreateDVD_DiskSpace(CreateDVD_GUI *gui, int x, int y)
  : BC_Title(x, y, "", MEDIUMFONT, GREEN)
 {
-        this->gui = gui;
+	this->gui = gui;
 }
 
 CreateDVD_DiskSpace::~CreateDVD_DiskSpace()
@@ -481,7 +476,7 @@ CreateDVD_TmpPath::CreateDVD_TmpPath(CreateDVD_GUI *gui, int x, int y, int w)
  : BC_TextBox(x, y, w, 1, -(int)sizeof(gui->thread->tmp_path),
 		gui->thread->tmp_path, 1, MEDIUMFONT)
 {
-        this->gui = gui;
+	this->gui = gui;
 }
 
 CreateDVD_TmpPath::~CreateDVD_TmpPath()
@@ -491,14 +486,14 @@ CreateDVD_TmpPath::~CreateDVD_TmpPath()
 int CreateDVD_TmpPath::handle_event()
 {
 	gui->disk_space->update();
-        return 1;
+	return 1;
 }
 
 
 CreateDVD_AssetTitle::CreateDVD_AssetTitle(CreateDVD_GUI *gui, int x, int y, int w)
  : BC_TextBox(x, y, w, 1, 0, gui->thread->asset_title, 1, MEDIUMFONT)
 {
-        this->gui = gui;
+	this->gui = gui;
 }
 
 CreateDVD_AssetTitle::~CreateDVD_AssetTitle()
@@ -711,11 +706,11 @@ int CreateDVD_GUI::resize_event(int w, int h)
 {
 	asset_title->reposition_window(at_x, at_y, get_w()-at_x-10);
 	tmp_path->reposition_window(tmp_x, tmp_y,  get_w()-tmp_x-10);
-        ok_y = h - ok_h - 10;
-        ok->reposition_window(ok_x, ok_y);
+	ok_y = h - ok_h - 10;
+	ok->reposition_window(ok_x, ok_y);
 	cancel_x = w - cancel_w - 10,
 	cancel_y = h - cancel_h - 10;
-        cancel->reposition_window(cancel_x, cancel_y);
+	cancel->reposition_window(cancel_x, cancel_y);
 	return 0;
 }
 
@@ -726,8 +721,8 @@ int CreateDVD_GUI::translation_event()
 
 int CreateDVD_GUI::close_event()
 {
-        set_done(1);
-        return 1;
+	set_done(1);
+	return 1;
 }
 
 int CreateDVD_Thread::
@@ -748,16 +743,16 @@ insert_video_plugin(const char *title, KeyFrame *default_keyframe)
 		}
 		vtrk->optimize();
 	}
-        return 0;
+	return 0;
 }
 
 int CreateDVD_Thread::
 resize_tracks()
 {
-        Tracks *tracks = mwindow->edl->tracks;
+	Tracks *tracks = mwindow->edl->tracks;
 #if 0
 	int max_w = 0, max_h = 0;
-        for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
+	for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
 		if( vtrk->data_type != TRACK_VIDEO ) continue;
 		if( !vtrk->record ) continue;
 		Edits *edits = vtrk->edits;
@@ -768,25 +763,25 @@ resize_tracks()
 			int h = indexable->get_h();
 			if( h > max_h ) max_h = h;
 		}
-        }
+	}
 #endif
-        for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
-                if( vtrk->data_type != TRACK_VIDEO ) continue;
-                if( !vtrk->record ) continue;
+	for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
+		if( vtrk->data_type != TRACK_VIDEO ) continue;
+		if( !vtrk->record ) continue;
 		vtrk->track_w = DVD_WIDTH; // max_w;
 		vtrk->track_h = DVD_HEIGHT; // max_h;
 	}
-        return 0;
+	return 0;
 }
 
 int CreateDVD_Thread::
 option_presets()
 {
 	if( !mwindow->edl ) return 1;
-        Tracks *tracks = mwindow->edl->tracks;
+	Tracks *tracks = mwindow->edl->tracks;
 	int max_w = 0, max_h = 0;
 	int has_deinterlace = 0, has_scale = 0;
-        for( Track *trk=tracks->first; trk; trk=trk->next ) {
+	for( Track *trk=tracks->first; trk; trk=trk->next ) {
 		if( !trk->record ) continue;
 		Edits *edits = trk->edits;
 		switch( trk->data_type ) {
@@ -802,8 +797,8 @@ option_presets()
 			}
 			for( int i=0; i<trk->plugin_set.size(); ++i ) {
 				for(Plugin *plugin = (Plugin*)trk->plugin_set[i]->first;
-                                                plugin;
-                                                plugin = (Plugin*)plugin->next) {
+						plugin;
+						plugin = (Plugin*)plugin->next) {
 					if( !strcmp(plugin->title, "Deinterlace") )
 						has_deinterlace = 1;
 					if( !strcmp(plugin->title, "Auto Scale") ||
@@ -813,14 +808,14 @@ option_presets()
 			}
 			break;
 		}
-        }
+	}
 	if( has_scale )
 		use_scale = 0;
 	if( use_scale ) {
 		if( max_w != DVD_WIDTH ) use_resize_tracks = 1;
 		if( max_h != DVD_HEIGHT ) use_resize_tracks = 1;
 	}
-        for( Track *trk=tracks->first; trk && !use_resize_tracks; trk=trk->next ) {
+	for( Track *trk=tracks->first; trk && !use_resize_tracks; trk=trk->next ) {
 		if( !trk->record ) continue;
 		switch( trk->data_type ) {
 		case TRACK_VIDEO:
@@ -828,7 +823,7 @@ option_presets()
 			if( trk->track_h != max_h ) use_resize_tracks = 1;
 			break;
 		}
-        }
+	}
 	if( !has_deinterlace && max_h > 2*DVD_HEIGHT ) use_deinterlace = 1;
 	Labels *labels = mwindow->edl->labels;
 	use_label_chapters = labels && labels->first ? 1 : 0;

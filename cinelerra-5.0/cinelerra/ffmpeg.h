@@ -227,7 +227,7 @@ public:
 
 	int check_sample_rate(AVCodec *codec, int sample_rate);
 	AVRational check_frame_rate(AVCodec *codec, double frame_rate);
-	AVRational to_sample_aspect_ratio(double aspect_ratio);
+	AVRational to_sample_aspect_ratio(Asset *asset);
 	AVRational to_time_base(int sample_rate);
 
 	static void set_option_path(char *path, const char *fmt, ...);

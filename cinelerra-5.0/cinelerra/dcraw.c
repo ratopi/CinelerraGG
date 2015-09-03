@@ -24,6 +24,7 @@
  */
 
 #define DCRAW_VERSION "9.17"
+#define LOCALTIME
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
