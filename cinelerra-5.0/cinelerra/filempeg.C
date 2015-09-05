@@ -134,7 +134,7 @@ int FileMPEG::check_sig(Asset *asset)
 	return mpeg3_check_sig(asset->path);
 }
 
-void FileMPEG::get_info(char *title_path, char *path, char *text)
+void FileMPEG::get_info(char *title_path, char *path, char *text, int len)
 {
 	mpeg3_t *fd;
 	*text = 0;
@@ -145,32 +145,32 @@ void FileMPEG::get_info(char *title_path, char *path, char *text)
 	if( !result ) result = mpeg3_create_title(fd, 0);
 	if( result ) return;
 
-	char *cp = text;
+	char *cp = text, *ep = text + len-1;
 	if( mpeg3_has_toc(fd) ) {
-		cp += sprintf(cp, _("toc path:%s\n"), path);
-		cp += sprintf(cp, _("title path:\n"));
+		cp += snprintf(cp,ep-cp, _("toc path:%s\n"), path);
+		cp += snprintf(cp,ep-cp, _("title path:\n"));
 		for( int i=0; i<100; ++i ) {
 			char *title_path = mpeg3_title_path(fd,i);
 			if( !title_path ) break;
-			cp += sprintf(cp, " %2d. %s\n", i+1, title_path);
+			cp += snprintf(cp,ep-cp, " %2d. %s\n", i+1, title_path);
 		}
 	}
 	else
-		cp += sprintf(cp, _("file path:%s\n"), path);
+		cp += snprintf(cp,ep-cp, _("file path:%s\n"), path);
 	int64_t bytes = mpeg3_get_bytes(fd);
 	char string[BCTEXTLEN];
 	sprintf(string,"%ld",bytes);
 	Units::punctuate(string);
-	cp += sprintf(cp, _("size: %s"), string);
+	cp += snprintf(cp,ep-cp, _("size: %s"), string);
 
 	if( mpeg3_is_program_stream(fd) )
-	  cp += sprintf(cp, _("  program stream\n"));
+	  cp += snprintf(cp,ep-cp, _("  program stream\n"));
 	else if( mpeg3_is_transport_stream(fd) )
-	  cp += sprintf(cp, _("  transport stream\n"));
+	  cp += snprintf(cp,ep-cp, _("  transport stream\n"));
 	else if( mpeg3_is_video_stream(fd) )
-	  cp += sprintf(cp, _("  video stream\n"));
+	  cp += snprintf(cp,ep-cp, _("  video stream\n"));
 	else if( mpeg3_is_audio_stream(fd) )
-	  cp += sprintf(cp, _("  audio stream\n"));
+	  cp += snprintf(cp,ep-cp, _("  audio stream\n"));
 
 	int64_t sdate = mpeg3_get_source_date(fd);
 	if( !sdate ) {
@@ -179,60 +179,60 @@ void FileMPEG::get_info(char *title_path, char *path, char *text)
 		sdate = stat64(path, &ostat) < 0 ? 0 : ostat.st_mtime;
 	}
 	time_t tm = (time_t)sdate;
-	cp += sprintf(cp, _("date: %s\n"), ctime(&tm));
+	cp += snprintf(cp,ep-cp, _("date: %s\n"), ctime(&tm));
 
 	int vtrks = mpeg3_total_vstreams(fd);
-	cp += sprintf(cp, _("%d video tracks\n"), vtrks);
+	cp += snprintf(cp,ep-cp, _("%d video tracks\n"), vtrks);
 	for( int vtrk=0; vtrk<vtrks; ++vtrk ) {
 		int cmdl = mpeg3_colormodel(fd, vtrk);
 		int color_model = bc_colormodel(cmdl);
 		char *cmodel = MPEGColorModel::cmodel_to_string(color_model);
 		int width = mpeg3_video_width(fd, vtrk);
 		int height = mpeg3_video_height(fd, vtrk);
-		cp += sprintf(cp, _("  v%d %s %dx%d"), vtrk, cmodel, width, height);
+		cp += snprintf(cp,ep-cp, _("  v%d %s %dx%d"), vtrk, cmodel, width, height);
 		double frame_rate = mpeg3_frame_rate(fd, vtrk);
 		int64_t frames = mpeg3_video_frames(fd, vtrk);
-		cp += sprintf(cp, _(" (%5.2f), %ld frames"), frame_rate, frames);
+		cp += snprintf(cp,ep-cp, _(" (%5.2f), %ld frames"), frame_rate, frames);
 		if( frame_rate > 0 ) {
 			double secs = (double)frames / frame_rate;
-			cp += sprintf(cp, _(" (%0.3f secs)"),secs);
+			cp += snprintf(cp,ep-cp, _(" (%0.3f secs)"),secs);
 		}
 		*cp++ = '\n';
 	}
 	int atrks = mpeg3_total_astreams(fd);
-	cp += sprintf(cp, _("%d audio tracks\n"), atrks);
+	cp += snprintf(cp,ep-cp, _("%d audio tracks\n"), atrks);
 	for( int atrk=0; atrk<atrks; ++atrk) {
 		const char *format = mpeg3_audio_format(fd, atrk);
-		cp += sprintf(cp, _(" a%d %s"), atrk, format);
+		cp += snprintf(cp,ep-cp, _(" a%d %s"), atrk, format);
 		int channels = mpeg3_audio_channels(fd, atrk);
 		int sample_rate = mpeg3_sample_rate(fd, atrk);
-		cp += sprintf(cp, _(" ch%d (%d)"), channels, sample_rate);
+		cp += snprintf(cp,ep-cp, _(" ch%d (%d)"), channels, sample_rate);
 		int64_t samples = mpeg3_audio_samples(fd, atrk);
-		cp += sprintf(cp, " %ld",samples);
+		cp += snprintf(cp,ep-cp, " %ld",samples);
 		int64_t nudge = mpeg3_get_audio_nudge(fd, atrk);
 		*cp++ = nudge >= 0 ? '+' : (nudge=-nudge, '-');
-		cp += sprintf(cp, _("%ld samples"),nudge);
+		cp += snprintf(cp,ep-cp, _("%ld samples"),nudge);
 		if( sample_rate > 0 ) {
 			double secs = (double)(samples+nudge) / sample_rate;
-			cp += sprintf(cp, _(" (%0.3f secs)"),secs);
+			cp += snprintf(cp,ep-cp, _(" (%0.3f secs)"),secs);
 		}
 		*cp++ = '\n';
 	}
 	int stracks = mpeg3_subtitle_tracks(fd);
 	if( stracks > 0 ) {
-		cp += sprintf(cp, _("%d subtitles\n"), stracks);
+		cp += snprintf(cp,ep-cp, _("%d subtitles\n"), stracks);
 	}
 	int vts_titles = mpeg3_get_total_vts_titles(fd);
 	if( vts_titles > 0 )
-		cp += sprintf(cp, _("%d title sets, "), vts_titles);
+		cp += snprintf(cp,ep-cp, _("%d title sets, "), vts_titles);
 	int interleaves = mpeg3_get_total_interleaves(fd);
 	if( interleaves > 0 )
-		cp += sprintf(cp, _("%d interleaves\n"), interleaves);
+		cp += snprintf(cp,ep-cp, _("%d interleaves\n"), interleaves);
 	int vts_title = mpeg3_set_vts_title(fd, -1);
 	int angle = mpeg3_set_angle(fd, -1);
 	int interleave = mpeg3_set_interleave(fd, -1);
 	int program = mpeg3_set_program(fd, -1);
-	cp += sprintf(cp, _("current program %d = title %d, angle %d, interleave %d\n\n"),
+	cp += snprintf(cp,ep-cp, _("current program %d = title %d, angle %d, interleave %d\n\n"),
 		program, vts_title, angle, interleave);
 
 	ArrayList<double> cell_times;
@@ -241,21 +241,21 @@ void FileMPEG::get_info(char *title_path, char *path, char *text)
 		cell_times.append(cell_time);
 	}
 	if( cell_times.size() > 1 ) {
-		cp += sprintf(cp, _("cell times:"));
+		cp += snprintf(cp,ep-cp, _("cell times:"));
 		for( int i=0; i<cell_times.size(); ++i ) {
 			if( (i%4) == 0 ) *cp++ = '\n';
-			cp += sprintf(cp,_("  %3d.  %8.3f"),i,cell_times.get(i));
+			cp += snprintf(cp,ep-cp,_("  %3d.  %8.3f"),i,cell_times.get(i));
 		}
-		cp += sprintf(cp, "\n");
+		cp += snprintf(cp,ep-cp, "\n");
 	}
 
 	int elements = mpeg3_dvb_channel_count(fd);
 	if( elements <= 0 ) return;
 	if( !mpeg3_dvb_get_system_time(fd, &sdate) ) {
 		tm = (time_t)sdate;
-		cp += sprintf(cp, _("\nsystem time: %s"), ctime_r(&tm,string));
+		cp += snprintf(cp,ep-cp, _("\nsystem time: %s"), ctime_r(&tm,string));
 	}
-	cp += sprintf(cp, _("elements %d\n"), elements);
+	cp += snprintf(cp,ep-cp, _("elements %d\n"), elements);
 
 	for( int n=0; n<elements; ++n ) {
 		char name[16], enc[8];  int vstream, astream;
@@ -264,32 +264,32 @@ void FileMPEG::get_info(char *title_path, char *path, char *text)
 		    mpeg3_dvb_get_station_id(fd,n,&name[0]) ||
 		    mpeg3_dvb_total_vstreams(fd,n,&total_vstreams) ||
 		    mpeg3_dvb_total_astreams(fd,n,&total_astreams) )	continue;
-		cp += sprintf(cp, " %3d.%-3d %s", major, minor, &name[0]);
+		cp += snprintf(cp,ep-cp, " %3d.%-3d %s", major, minor, &name[0]);
 		for( int vidx=0; vidx<total_vstreams; ++vidx ) {
 			if( mpeg3_dvb_vstream_number(fd,n,vidx,&vstream) ) continue;
 			if( vstream < 0 ) continue;
-			cp += sprintf(cp, " v%d", vstream);
+			cp += snprintf(cp,ep-cp, " v%d", vstream);
 		}
 		for( int aidx=0; aidx<total_astreams; ++aidx ) {
 			if( mpeg3_dvb_astream_number(fd,n,aidx,&astream,&enc[0]) ) continue;
 			if( astream < 0 ) continue;
-			cp += sprintf(cp, "    a%d %s", astream, &enc[0]);
+			cp += snprintf(cp,ep-cp, "    a%d %s", astream, &enc[0]);
 			int atrack = 0;
 			for(int i=0; i<astream; ++i )
 				atrack += mpeg3_audio_channels(fd, i);
 			int channels = mpeg3_audio_channels(fd, astream);
-			cp += sprintf(cp, " trk %d-%d", atrack+1, atrack+channels);
-			if( enc[0] ) cp += sprintf(cp," (%s)",enc);
+			cp += snprintf(cp,ep-cp, " trk %d-%d", atrack+1, atrack+channels);
+			if( enc[0] ) cp += snprintf(cp,ep-cp," (%s)",enc);
 		}
-		cp += sprintf(cp, "\n");
+		cp += snprintf(cp,ep-cp, "\n");
 	}
 
 	for( int n=0; n<elements; ++n ) {
 		int major, minor;
 		if( mpeg3_dvb_get_channel(fd,n, &major, &minor) ) continue;
-		cp += sprintf(cp, "\n**chan %3d.%-3d\n", major, minor);
+		cp += snprintf(cp,ep-cp, "\n**chan %3d.%-3d\n", major, minor);
 		int len = mpeg3_dvb_get_chan_info(fd, n, -1, 0, cp, 1023);
-                if( len < 0 ) len = sprintf(cp,_("no info"));
+                if( len < 0 ) len = snprintf(cp,ep-cp,_("no info"));
                 cp += len;  *cp++ = '*';  *cp++ = '*';  *cp++ = '\n';
 		for( int ord=0; ord<0x80; ++ord ) {
 			for( int i=0; (len=mpeg3_dvb_get_chan_info(fd,n,ord,i,cp,1023)) >= 0; ++i ) {
@@ -306,6 +306,7 @@ void FileMPEG::get_info(char *title_path, char *path, char *text)
 		}
 	}
 
+	*cp = 0;
 	mpeg3_close(fd);
 	return;
 }
@@ -1189,7 +1190,6 @@ int FileMPEG::select_video_stream(Asset *asset, int vstream)
 int FileMPEG::select_audio_stream(Asset *asset, int astream)
 {
 	if( !fd ) return -1;
-	asset->channels = mpeg3_audio_channels(fd, astream);
 	asset->sample_rate = mpeg3_sample_rate(fd, astream);
 	asset->audio_length = mpeg3_audio_samples(fd, astream);
 	return 0;

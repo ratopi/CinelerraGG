@@ -69,7 +69,7 @@ public:
 	static int check_sig(Asset *asset);
 
 // Get extra info for info dialog.
-	static void get_info(char *title_path, char *path, char *text);
+	static void get_info(char *title_path, char *path, char *text, int len);
 	int open_file(int rd, int wr);
 	int close_file();
 	int create_index();

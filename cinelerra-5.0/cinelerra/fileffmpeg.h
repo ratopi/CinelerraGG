@@ -47,7 +47,7 @@ public:
 	int get_video_info(int track, int &pid, double &framerate,
 		int &width, int &height, char *title=0);
 	int get_audio_for_video(int vstream, int astream, int64_t &channel_mask);
-	static void get_info(char *path,char *text);
+	static void get_info(char *path,char *text,int len);
 	int open_file(int rd,int wr);
 	int close_file(void);
 	int set_video_position(int64_t pos);

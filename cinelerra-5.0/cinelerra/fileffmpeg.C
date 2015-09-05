@@ -132,7 +132,7 @@ int FileFFMPEG::check_sig(Asset *asset)
 	return ret;
 }
 
-void FileFFMPEG::get_info(char *path, char *text)
+void FileFFMPEG::get_info(char *path, char *text, int len)
 {
 	char *cp = text;
 	FFMPEG ffmpeg(0);
@@ -150,7 +150,7 @@ void FileFFMPEG::get_info(char *path, char *text)
 	if( !ret ) ret = ffmpeg.open_decoder();
 	if( !ret ) {
 		cp += sprintf(cp, _("info:\n"));
-		ffmpeg.info(cp, BCTEXTLEN-(cp-text));
+		ffmpeg.info(cp, len-(cp-text));
 	}
 	else
 		sprintf(cp, _("== open failed\n"));
@@ -187,7 +187,6 @@ int FileFFMPEG::select_video_stream(Asset *asset, int vstream)
 int FileFFMPEG::select_audio_stream(Asset *asset, int astream)
 {
 	if( !ff || !asset->audio_data ) return 1;
-	asset->channels = ff->ff_audio_channels(astream);
 	asset->sample_rate = ff->ff_sample_rate(astream);
        	asset->audio_length = ff->ff_audio_samples(astream);
 	return 0;

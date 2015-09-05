@@ -2448,12 +2448,13 @@ static int bd_video_rate(double rate)
   exit(1);
 }
 
-static int bd_aspect_ratio(int w, double ratio)
+static int bd_aspect_ratio(int w, int h, double ratio)
 {
-  if( fabs(ratio-1.333) < 0.01 ) return BLURAY_ASPECT_RATIO_4_3;
-  if( fabs(ratio-1.777) < 0.01 ) return BLURAY_ASPECT_RATIO_16_9;
+  double aspect = (w * ratio) / h;
+  if( fabs(aspect-1.333) < 0.01 ) return BLURAY_ASPECT_RATIO_4_3;
+  if( fabs(aspect-1.777) < 0.01 ) return BLURAY_ASPECT_RATIO_16_9;
   return w == 720 ? BLURAY_ASPECT_RATIO_4_3 : BLURAY_ASPECT_RATIO_16_9; 
-  fprintf(stderr, "unknown bluray aspect ratio %5.3f\n",ratio);
+  fprintf(stderr, "unknown bluray aspect ratio %5.3f\n",aspect);
   exit(1);
 }
 
@@ -2495,8 +2496,9 @@ int media_info::scan()
 		st->codec->flags & CODEC_FLAG_INTERLACED_ME);
       s->rate = bd_video_rate(!st->codec->framerate.den ? 0 :
 		(double)st->codec->framerate.num / st->codec->framerate.den);
-      s->aspect = bd_aspect_ratio(st->codec->width,!st->sample_aspect_ratio.den ? 0 :
-		(double)st->sample_aspect_ratio.num / st->sample_aspect_ratio.den);
+      s->aspect = bd_aspect_ratio(st->codec->width, st->codec->height,
+		!st->sample_aspect_ratio.num || !st->sample_aspect_ratio.den ? 1. :
+		 (double)st->sample_aspect_ratio.num / st->sample_aspect_ratio.den);
       break; }
     case AVMEDIA_TYPE_AUDIO: {
       s->coding_type = bd_stream_type(codec_id);

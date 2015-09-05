@@ -814,10 +814,10 @@ void DetailAssetWindow::create_objects()
 	if( !mwindow->preferences->get_asset_file_path(asset, file_name) ) {
 		switch( asset->format ) {
 		case FILE_MPEG:
-			FileMPEG::get_info(asset->path, file_name, &info[0]);
+			FileMPEG::get_info(asset->path, file_name, &info[0],len);
 			break;
 		case FILE_FFMPEG:
-			FileFFMPEG::get_info(asset->path, &info[0]);
+			FileFFMPEG::get_info(asset->path, &info[0],len);
 			break;
 		}
 	}

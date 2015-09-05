@@ -1339,7 +1339,13 @@ int FFMPEG::open_decoder()
 		AVStream *st = fmt_ctx->streams[i];
 		if( st->duration == AV_NOPTS_VALUE ) bad_time = 1;
 		AVCodecContext *avctx = st->codec;
+		const AVCodecDescriptor *codec_desc = avcodec_descriptor_get(avctx->codec_id);
+		if( !codec_desc ) continue;
 		if( avctx->codec_type == AVMEDIA_TYPE_VIDEO ) {
+			if( avctx->width < 1 ) continue;
+			if( avctx->height < 1 ) continue;
+			AVRational framerate = av_guess_frame_rate(fmt_ctx, st, 0);
+			if( framerate.num < 1 ) continue;
 			has_video = 1;
 			FFVideoStream *vid = new FFVideoStream(this, st, i);
 			int vidx = ffvideo.size();
@@ -1347,7 +1353,6 @@ int FFMPEG::open_decoder()
 			ffvideo.append(vid);
 			vid->width = avctx->width;
 			vid->height = avctx->height;
-			AVRational framerate = av_guess_frame_rate(fmt_ctx, st, 0);
 			vid->frame_rate = !framerate.den ? 0 : (double)framerate.num / framerate.den;
 			double secs = to_secs(st->duration, st->time_base);
 			vid->length = secs * vid->frame_rate;
@@ -1358,6 +1363,8 @@ int FFMPEG::open_decoder()
 				vid->create_filter(opt_video_filter, avctx,avctx);
 		}
 		else if( avctx->codec_type == AVMEDIA_TYPE_AUDIO ) {
+			if( avctx->channels < 1 ) continue;
+			if( avctx->sample_rate < 1 ) continue;
 			has_audio = 1;
 			FFAudioStream *aud = new FFAudioStream(this, st, i);
 			int aidx = ffaudio.size();
