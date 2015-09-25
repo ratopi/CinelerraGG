@@ -28,7 +28,6 @@
 Indexable::Indexable(int is_asset) : Garbage(is_asset ? "Asset" : "EDL")
 {
 	index_state = new IndexState;
-	index_state->reset();
 	this->is_asset = is_asset;
 	strcpy(folder, MEDIA_FOLDER);
 }
@@ -36,7 +35,7 @@ Indexable::Indexable(int is_asset) : Garbage(is_asset ? "Asset" : "EDL")
 
 Indexable::~Indexable()
 {
-	delete index_state;
+	index_state->remove_user();
 }
 
 int Indexable::get_audio_channels()
@@ -54,13 +53,26 @@ int64_t Indexable::get_audio_samples()
 	return 0;
 }
 
+void Indexable::update_path(char *new_path)
+{
+	strcpy(path, new_path);
+}
+
+void Indexable::update_index(Indexable *src)
+{
+	index_state->remove_user();
+	index_state = src->index_state;
+	index_state->add_user();
+}
+
 
 
 
 void Indexable::copy_indexable(Indexable *src)
 {
-	strcpy(path, src->path);
-	index_state->copy_from(src->index_state);
+	if( this == src ) return;
+	update_path(src->path);
+	update_index(src);
 }
 
 int Indexable::have_audio()

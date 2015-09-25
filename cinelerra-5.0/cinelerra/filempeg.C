@@ -1027,56 +1027,23 @@ int FileMPEG::get_index(char *index_path)
 
 
 // Convert the index tables from tracks to channels.
-	if(mpeg3_index_tracks(fd))
-	{
-// Calculate size of buffer needed for all channels
-		int buffer_size = 0;
-		for(int i = 0; i < mpeg3_index_tracks(fd); i++)
-		{
-			buffer_size += mpeg3_index_size(fd, i) *
-				mpeg3_index_channels(fd, i) *
-				2;
-		}
-
+	if(mpeg3_index_tracks(fd)) {
 		IndexState *index_state = asset->index_state;
-		index_state->index_buffer = new float[buffer_size];
-
-		int index_channels = 0;
-		for(int i = 0; i < mpeg3_index_tracks(fd); i++)
-			index_channels += mpeg3_index_channels(fd, i);
-// Size of index buffer in floats
-		int current_offset = 0;
-// Current asset channel
-		int current_channel = 0;
-		index_state->channels = index_channels;
-		index_state->index_zoom = mpeg3_index_zoom(fd);
-		index_state->index_offsets = new int64_t[index_channels];
-		index_state->index_sizes = new int64_t[index_channels];
-		for(int i = 0; i < mpeg3_index_tracks(fd); i++)
-		{
-			for(int j = 0; j < mpeg3_index_channels(fd, i); j++)
-			{
-				index_state->index_offsets[current_channel] = current_offset;
-				index_state->index_sizes[current_channel] = mpeg3_index_size(fd, i) * 2;
-				memcpy(index_state->index_buffer + current_offset,
-					mpeg3_index_data(fd, i, j),
-					mpeg3_index_size(fd, i) * sizeof(float) * 2);
-
-				current_offset += mpeg3_index_size(fd, i) * 2;
-				current_channel++;
+		int index_zoom = mpeg3_index_zoom(fd);
+		int ntracks = mpeg3_index_tracks(fd);
+		int64_t offset = 0;
+		for(int i = 0; i < ntracks; i++) {
+			int nch = mpeg3_index_channels(fd, i);
+			for(int j = 0; j < nch; j++) {
+				float *bfr = (float *)mpeg3_index_data(fd, i, j);
+				int64_t size = 2*mpeg3_index_size(fd, i);
+				index_state->add_index_entry(bfr, offset, size);
+				offset += size;
 			}
 		}
-
 		FileSystem fs;
-		index_state->index_bytes = fs.get_size(asset->path);
-
-		index_state->write_index(index_path, 
-			buffer_size * sizeof(float),
-			asset,
-			asset->audio_length);
-		delete [] index_state->index_buffer;
-
-		return 0;
+		int64_t file_bytes = fs.get_size(asset->path);
+		return index_state->write_index(index_path, asset, index_zoom, file_bytes);
 	}
 
 	return 1;

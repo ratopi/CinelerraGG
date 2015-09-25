@@ -101,6 +101,8 @@ public:
 	int file_forking;
 // ffmpeg probes early/late during File::open_file read
 	int ffmpeg_early_probe;
+// ffmpeg builds marker indecies as it builds idx files
+	int ffmpeg_marker_indecies;
 	int warn_indecies;
 
 // Default positions for channels

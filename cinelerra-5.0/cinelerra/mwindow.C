@@ -645,6 +645,8 @@ void MWindow::clean_indexes()
 //printf("MWindow::clean_indexes 2 %s\n", string2);
 				sprintf(ptr, ".toc");
 				remove(string2);
+				sprintf(ptr, ".mkr");
+				remove(string2);
 			}
 		}
 
@@ -2605,6 +2607,7 @@ void MWindow::remove_indexfile(Indexable *indexable)
 // Erase file
 	IndexFile::delete_index(preferences, asset, ".toc");
 	IndexFile::delete_index(preferences, asset, ".idx");
+	IndexFile::delete_index(preferences, asset, ".mkr");
 }
 
 void MWindow::rebuild_indices()

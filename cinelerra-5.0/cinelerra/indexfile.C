@@ -254,11 +254,9 @@ int IndexFile::open_file()
 // Get its last size without changing the real asset status.
 		Indexable *test_indexable = new Indexable(0);
 		if(indexable)
-		{
 			test_indexable->copy_indexable(indexable);
-		}
-
 		read_info(test_indexable);
+		IndexState *index_state = test_indexable->index_state;
 
 		FileSystem fs;
 		if(fs.get_date(index_filename) < fs.get_date(test_indexable->path))
@@ -274,12 +272,12 @@ int IndexFile::open_file()
 			fd = 0;
 		}
 		else
-		if(fs.get_size(test_indexable->path) != test_indexable->index_state->index_bytes)
+		if(fs.get_size(test_indexable->path) != index_state->index_bytes)
 		{
 // source file is a different size than index source file
 			if(debug) printf("IndexFile::open_file %d index_size=" _LD " source_size=" _LD "\n",
 				__LINE__,
-				test_indexable->index_state->index_bytes,
+				index_state->index_bytes,
 				fs.get_size(test_indexable->path));
 			result = 2;
 			fclose(fd);	
@@ -430,10 +428,7 @@ int IndexFile::interrupt_index()
 int IndexFile::create_index(MainProgressBar *progress)
 {
 	int result = 0;
-
 SET_TRACE
-
-	IndexState *index_state = get_state();
 
 	interrupt_flag = 0;
 
@@ -453,16 +448,13 @@ SET_TRACE
 // Test for index in stream table of contents
 	if(source && !source->get_index(index_filename))
 	{
+		IndexState *index_state = get_state();
+		index_state->index_status = INDEX_READY;
 		redraw_edits(1);
 	}
 	else
 // Build index from scratch
 	{
-
-
-
-
-		index_state->index_zoom = get_required_scale();
 SET_TRACE
 
 // Indexes are now built for everything since it takes too long to draw
@@ -610,14 +602,10 @@ int IndexFile::redraw_edits(int force)
 
 	if(difference > 250 || force)
 	{
-		IndexState *index_state = get_state();
 		redraw_timer->update();
-// Can't lock window here since the window is only redrawn when the pixel
-// count changes.
 		mwindow->gui->lock_window("IndexFile::redraw_edits");
 		mwindow->edl->set_index_file(indexable);
 		mwindow->gui->draw_indexes(indexable);
-		index_state->old_index_end = index_state->index_end;
 		mwindow->gui->unlock_window();
 	}
 	return 0;
@@ -640,7 +628,6 @@ int IndexFile::draw_index(
 
 SET_TRACE
 	if(debug) printf("IndexFile::draw_index %d\n", __LINE__);
-// check against index_end when being built
 	if(index_state->index_zoom == 0)
 	{
 		printf(_("IndexFile::draw_index: index has 0 zoom\n"));
@@ -675,30 +662,17 @@ SET_TRACE
 	int64_t length = (int64_t)(w * 
 		mwindow->edl->local_session->zoom_sample * 
 		asset_over_session);
-
-	if(index_state->index_status == INDEX_BUILDING)
-	{
-		if(startsource + length > index_state->index_end)
-			length = index_state->index_end - startsource;
-	}
-
-// length of index to read in samples * 2
 	int64_t lengthindex = length / index_state->index_zoom * 2;
-// start of data in samples
 	int64_t startindex = startsource / index_state->index_zoom * 2;  
+// length of index to read in floats
+// length of index available in floats
+	int64_t endindex = index_state->index_status == INDEX_BUILDING ?
+		index_state->get_channel_used(edit->channel) * 2 :
+		index_state->get_index_size(edit->channel);
 // Clamp length of index to read by available data
-	if(startindex + lengthindex > index_state->get_index_size(edit->channel))
-		lengthindex = index_state->get_index_size(edit->channel) - startindex;
-
-
-	if(debug) printf("IndexFile::draw_index %d length=" _LD ""
-			" index_size=" _LD " lengthindex=" _LD "\n", 
-		__LINE__, length, index_state->get_index_size(edit->channel),
-		lengthindex);
-	if(lengthindex <= 0) return 0;
-
-
-
+	if(startindex + lengthindex >= endindex )
+		lengthindex = endindex - startindex;
+	if( lengthindex <= 0 ) return 0;
 
 // Actual length read from file in bytes
 	int64_t length_read;   
@@ -707,7 +681,8 @@ SET_TRACE
 	float *buffer = 0;
 	int buffer_shared = 0;
 	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
-	if(mwindow->edl->session->show_titles) center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
+	if( mwindow->edl->session->show_titles )
+		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 	//int miny = center_pixel - mwindow->edl->local_session->zoom_track / 2;
 	//int maxy = center_pixel + mwindow->edl->local_session->zoom_track / 2;
 	int x1 = 0, y1, y2;
@@ -716,18 +691,20 @@ SET_TRACE
 		index_state->index_zoom * 
 		asset_over_session;
 
-// get channel offset
-	startindex += index_state->get_index_offset(edit->channel);
 
 
 	if(index_state->index_status == INDEX_BUILDING)
 	{
 // index is in RAM, being built
-		buffer = &(index_state->index_buffer[startindex]);
+		buffer = index_state->get_channel_buffer(edit->channel);
+		if( !buffer ) return 0;
+		buffer += startindex;
 		buffer_shared = 1;
 	}
 	else
 	{
+// add channel offset
+		startindex += index_state->get_index_offset(edit->channel);
 // index is stored in a file
 		buffer = new float[lengthindex + 1];
 		buffer_shared = 0;
@@ -753,10 +730,7 @@ SET_TRACE
 		}
 	}
 
-
-
 	canvas->set_color(mwindow->theme->audio_color);
-
 
 	double current_frame = 0;
 	float highsample = buffer[0];
@@ -764,6 +738,10 @@ SET_TRACE
 	int prev_y1 = center_pixel;
 	int prev_y2 = center_pixel;
 	int first_frame = 1;
+	int zoom_y = mwindow->edl->local_session->zoom_y, zoom_y2 = zoom_y / 2;
+	int max_y = canvas->get_h();
+	int zmax_y = center_pixel + zoom_y2 - 1;
+	if( zmax_y < max_y ) max_y = zmax_y;
 SET_TRACE
 
 	for(int bufferposition = 0; 
@@ -772,22 +750,12 @@ SET_TRACE
 	{
 		if(current_frame >= index_frames_per_pixel)
 		{
-			int next_y1 = (int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2);
-			int next_y2 = (int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2);
-			if(next_y1 < 0) next_y1 = 0;
-			if(next_y1 > canvas->get_h()) next_y1 = canvas->get_h();
-			if(next_y2 < 0) next_y2 = 0;
-			if(next_y2 > canvas->get_h()) next_y2 = canvas->get_h();
-			if(next_y2 > center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1) 
-				next_y2 = center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1;
-			if(next_y1 > center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1) 
-				next_y1 = center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1;
-
-			int y1 = next_y1;
-			int y2 = next_y2;
-
-
-
+ 
+			int y1 = (int)(center_pixel - highsample * zoom_y2);
+			int y2 = (int)(center_pixel - lowsample * zoom_y2);
+			CLAMP(y1, 0, max_y);  int next_y1 = y1;
+			CLAMP(y2, 0, max_y);  int next_y2 = y2;
+//printf("draw_line (%f,%f) = %d,%d,  %d,%d\n", lowsample, highsample, x1 + x, y1, x1 + x, y2);
 
 //SET_TRACE
 // A different algorithm has to be used if it's 1 sample per pixel and the
@@ -830,8 +798,8 @@ SET_TRACE
 // Get last column
 	if(current_frame)
 	{
-		y1 = (int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2);
-		y2 = (int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2);
+		y1 = (int)(center_pixel - highsample * zoom_y2);
+		y2 = (int)(center_pixel - lowsample * zoom_y2);
 		canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
 	}
 
@@ -874,15 +842,9 @@ int IndexFile::read_info(Indexable *test_indexable)
 // Store format in actual asset.
 // If it's a nested EDL, we never want the format, just the index info.
 	if(!test_indexable) test_indexable = indexable;
-
-
-	IndexState *index_state = 0;
-	if(test_indexable) 
-		index_state = test_indexable->index_state;
-	else
-		return 1;
+	if(!test_indexable) return 1;
 	
-
+	IndexState * index_state = test_indexable->index_state;
 	if(index_state->index_status == INDEX_NOTTESTED)
 	{
 // read start of index data

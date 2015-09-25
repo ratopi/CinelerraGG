@@ -524,6 +524,9 @@ int AudioALSA::write_buffer(char *buffer, int size)
 		int ret = snd_pcm_avail_update(get_output());
 		if( ret >= period_size ) {
 			if( ret > count ) ret = count;
+//FILE *alsa_fp = 0;
+//if( !alsa_fp ) alsa_fp = fopen("/tmp/alsa.raw","w");
+//if( alsa_fp ) fwrite(buffer, sample_size, ret, alsa_fp);
 //printf("AudioALSA::snd_pcm_writei start %d\n",count);
 			ret = snd_pcm_writei(get_output(),buffer,ret);
 //printf("AudioALSA::snd_pcm_writei done %d\n", ret);

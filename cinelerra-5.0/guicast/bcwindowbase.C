@@ -139,10 +139,12 @@ BC_WindowBase::~BC_WindowBase()
 	if( get_resources()->get_synchronous() && top_level->options & GLX_WINDOW ) {
 		if( !glx_win ) {
 // NVIDIA library threading problem, XCloseDisplay SEGVs without this
+ 			lock_window("BC_WindowBase::~BC_WindowBase:XDestroyWindow");
 			sync_lock("BC_WindowBase::~BC_WindowBase:XDestroyWindow");
 			glXMakeContextCurrent(top_level->display, 0, 0, 0);
 			XDestroyWindow(top_level->display, win);
 			sync_unlock();
+			unlock_window();
 		}
 		else
 			get_resources()->get_synchronous()->delete_window(this);

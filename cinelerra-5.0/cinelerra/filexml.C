@@ -36,6 +36,8 @@
 #define eprintf printf
 
 static const char left_delm = '<', right_delm = '>';
+const char *FileXML::xml_header = "<?xml version=\"1.0\"?>\n";
+const int FileXML::xml_header_size = strlen(xml_header);
 
 XMLBuffer::XMLBuffer(long buf_size, long max_size, int del)
 {
@@ -433,7 +435,12 @@ char* FileXML::get_data()
 }
 char* FileXML::string()
 {
-	return (char *)buffer->pos();
+	return (char *)buffer->str();
+}
+
+long FileXML::length()
+{
+	return buffer->otell();
 }
 
 char* FileXML::read_text()
@@ -510,33 +517,24 @@ int FileXML::read_text_until(const char *tag_end, char *out, int len)
 
 int FileXML::write_to_file(const char *filename)
 {
-	strcpy(this->filename, filename);
 	FILE *out = fopen(filename, "wb");
 	if( !out ) {
 		eprintf("write_to_file %d \"%s\": %m\n", __LINE__, filename);
 		return 1;
 	}
-// Position may have been rewound after storing
-	const char *str = string();
-	long len = strlen(str);
-	fprintf(out, "<?xml version=\"1.0\"?>\n");
-	if( len && !fwrite(str, len, 1, out) ) {
-		eprintf("write_to_file %d \"%s\": %m\n", __LINE__, filename);
-		fclose(out);
-		return 1;
-	}
+	int ret = write_to_file(out, filename);
 	fclose(out);
-	return 0;
+	return ret;
 }
 
-int FileXML::write_to_file(FILE *file)
+int FileXML::write_to_file(FILE *file, const char *filename)
 {
-	strcpy(filename, "");
-	fprintf(file, "<?xml version=\"1.0\"?>\n");
+	strcpy(this->filename, filename);
 	const char *str = string();
 	long len = strlen(str);
 // Position may have been rewound after storing
-	if( len && !fwrite(str, len, 1, file) ) {
+	if( !fwrite(xml_header, xml_header_size, 1, file) ||
+	    ( len > 0 && !fwrite(str, len, 1, file) ) ) {
 		eprintf("\"%s\": %m\n", filename);
 		return 1;
 	}

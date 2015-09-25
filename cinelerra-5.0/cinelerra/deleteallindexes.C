@@ -68,6 +68,7 @@ void DeleteAllIndexes::run()
 // prepare filter
 	const char *filter1 = ".idx";
 	const char *filter2 = ".toc";
+	const char *filter3 = ".mkr";
 
 //	pwindow->disable_window();
 	sprintf(string, _("Delete all indexes in %s?"), string1);
@@ -85,7 +86,8 @@ void DeleteAllIndexes::run()
 			sprintf(string2, "%s%s", string1, dir.dir_list.values[i]->name);
 // test filter
 			if(test_filter(string2, filter1) ||
-				test_filter(string2, filter2))
+				test_filter(string2, filter2) ||
+				test_filter(string2, filter3))
 			{
 				remove(string2);
 printf("DeleteAllIndexes::run %s\n", string2);

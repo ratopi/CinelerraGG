@@ -48,8 +48,9 @@ public:
 	virtual int get_video_layers();
 	virtual int64_t get_video_frames();
 
-
-	void copy_indexable(Indexable *src);
+        void copy_indexable(Indexable *src);
+	void update_path(char *new_path);
+	void update_index(Indexable *src);
 
 	IndexState *index_state;
 

@@ -30,6 +30,7 @@
 #include "filexml.inc"
 #include "indexable.h"
 #include "indexfile.inc"
+#include "indexstate.inc"
 #include "linklist.h"
 #include "pluginserver.inc"
 
@@ -79,7 +80,6 @@ public:
 
 
 // Executed during index building only
-	void update_index(Asset *asset);
 	int equivalent(Asset &asset, 
 		int test_audio, 
 		int test_video);
@@ -96,17 +96,11 @@ public:
 	int read_index(FileXML *xml);
 	void reset_audio();
 	void reset_video();
-	void reset_index();  // When the index file is wrong, reset the asset values
 	int reset_timecode();
 
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if; complete names should be used.
-	int write(FileXML *file, 
-		int include_index, 
-		const char *output_path);
-// Write the index data and asset info.  Used by IndexThread.
-	int write_index(const char *path, int data_bytes);
-
+	int write(FileXML *file, int include_index, const char *output_path);
 
 // For Indexable
 	int get_audio_channels();
@@ -126,7 +120,6 @@ public:
 	int write_audio(FileXML *xml);
 	int write_video(FileXML *xml);
 	int write_index(FileXML *xml);
-	int update_path(char *new_path);
 
 
 

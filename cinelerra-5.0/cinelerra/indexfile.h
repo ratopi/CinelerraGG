@@ -27,6 +27,7 @@
 #include "file.inc"
 #include "guicast.h"
 #include "indexable.inc"
+#include "indexfile.inc"
 #include "indexstate.inc"
 #include "indexthread.inc"
 #include "mainprogress.inc"

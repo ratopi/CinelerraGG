@@ -113,6 +113,7 @@ AssetPicon::~AssetPicon()
 	if(edl) edl->remove_user();
 	if( icon && !gui->protected_pixmap(icon) ) {
 		delete icon;
+		if( !plugin ) delete icon_vframe;
 	}
 }
 

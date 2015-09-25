@@ -44,7 +44,6 @@ extern "C"
 #include "file.h"
 #include "filempeg.h"
 #include "language.h"
-#include "mwindow.inc"
 #include "mainerror.h"
 
 
@@ -298,10 +297,7 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 			int got_packet = 0;
 			ret = avcodec_encode_audio2(avctx, &avpkt, frame, &got_packet);
 			if( !ret ) {
-				if(got_packet && avctx->coded_frame) {
-					avctx->coded_frame->pts = avpkt.pts;
-					avctx->coded_frame->key_frame = !!(avpkt.flags & AV_PKT_FLAG_KEY);
-				}
+				fprintf(stderr, "avcodec_encode_audio2 failed. \n%m\n");
 			}
 		}
 		av_packet_free_side_data(&avpkt);

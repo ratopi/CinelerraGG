@@ -71,7 +71,7 @@ void MButtons::create_objects()
 	edit_panel->create_objects();
 	
 	x += edit_panel->get_w();
-	ffmpeg_toggle = new MainFFMpegToggle(mwindow, this, get_w()-30, 0);
+	ffmpeg_toggle = new MainFFMpegToggle(mwindow, this, get_w(), 0);
 	add_subwindow(ffmpeg_toggle);
 	flash(0);
 }
@@ -83,6 +83,7 @@ int MButtons::resize_event()
 		mwindow->theme->mbuttons_w, 
 		mwindow->theme->mbuttons_h);
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
+	ffmpeg_toggle->reposition_window(get_w()-30, 0);
 	flash(0);
 	return 0;
 }

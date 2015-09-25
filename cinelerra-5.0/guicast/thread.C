@@ -266,16 +266,6 @@ int Thread::continue_thread()
 	return 0;
 }
 
-bool Thread::exists()
-{
-	return tid != ((pthread_t)-1);
-}
-
-bool Thread::running()
-{
-	return exists() & ~finished;
-}
-
 int Thread::set_synchronous(int value)
 {
 	this->synchronous = value != 0;

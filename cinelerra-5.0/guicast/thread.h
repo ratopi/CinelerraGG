@@ -37,9 +37,9 @@ static inline int gettid() { return syscall(SYS_gettid, 0, 0, 0); }
 
 class Thread
 {
-private:
 	static void* entrypoint(void *parameters);
-	bool exists();           // tid exists
+	bool exists() { return tid != ((pthread_t)-1); }
+
 protected:
 	virtual void run() = 0;
 public:
@@ -54,7 +54,8 @@ public:
 	int enable_cancel();
 	int disable_cancel();
 	int get_cancel_enabled();
-	bool running();          // exists and not finished
+	bool running() { return exists() && !finished; }
+
 	int get_synchronous();
 	int set_synchronous(int value);
 	int get_realtime();                 

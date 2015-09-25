@@ -18,6 +18,7 @@
 #include "fileffmpeg.h"
 #include "file.h"
 #include "ffmpeg.h"
+#include "indexfile.h"
 #include "libdv.h"
 #include "libmjpeg.h"
 #include "mainerror.h"
@@ -97,35 +98,35 @@ int FFAudioStream::read(float *fp, long len)
 	return len;
 }
 
-void FFAudioStream::realloc(long sz, int nch, long len)
+void FFAudioStream::realloc(long nsz, int nch, long len)
 {
-	long bsz = sz * nch;
+	long bsz = nsz * nch;
 	float *np = new float[bsz];
 	inp = np + read(np, len) * nch;
 	outp = np;
 	lmt = np + bsz;
 	this->nch = nch;
-	this->sz = sz;
+	sz = nsz;
 	delete [] bfr;  bfr = np;
 }
 
-void FFAudioStream::realloc(long sz, int nch)
+void FFAudioStream::realloc(long nsz, int nch)
 {
-	if( sz > this->sz || this->nch != nch ) {
-		long len = this->nch != nch ? 0 : curr_pos - seek_pos;
-		if( len > this->sz ) len = this->sz;
+	if( nsz > sz || this->nch != nch ) {
+		long len = this->nch != nch ? 0 : hpos;
+		if( len > sz ) len = sz;
 		iseek(len);
-		realloc(sz, nch, len);
+		realloc(nsz, nch, len);
 	}
 }
 
-void FFAudioStream::reserve(long sz, int nch)
+void FFAudioStream::reserve(long nsz, int nch)
 {
 	long len = (inp - outp) / nch;
-	sz += len;
-	if( sz > this->sz || this->nch != nch ) {
+	nsz += len;
+	if( nsz > sz || this->nch != nch ) {
 		if( this->nch != nch ) len = 0;
-		realloc(sz, nch, len);
+		realloc(nsz, nch, len);
 		return;
 	}
 	if( (len*=nch) > 0 && bfr != outp )
@@ -146,9 +147,10 @@ long FFAudioStream::avail()
 	long len = outp >= in1 ? outp-in1 : outp-bfr + lmt-in1;
 	return len / nch;
 }
-void FFAudioStream::reset() // clear bfr
+void FFAudioStream::reset_history()
 {
 	inp = outp = bfr;
+	hpos = 0;
 }
 
 void FFAudioStream::iseek(int64_t ofs)
@@ -182,6 +184,7 @@ int FFAudioStream::write(const float *fp, long len)
 		if( ip >= lmt ) ip = bfr;
 	}
 	inp = ip;
+	hpos += len;
 	return len;
 }
 
@@ -197,6 +200,7 @@ int FFAudioStream::zero(long len)
 		if( ip >= lmt ) ip = bfr;
 	}
 	inp = ip;
+	hpos += len;
 	return len;
 }
 
@@ -226,11 +230,11 @@ int FFAudioStream::write(const double *dp, long len, int ch)
 }
 
 
-FFStream::FFStream(FFMPEG *ffmpeg, AVStream *st, int idx)
+FFStream::FFStream(FFMPEG *ffmpeg, AVStream *st, int fidx)
 {
 	this->ffmpeg = ffmpeg;
 	this->st = st;
-	this->idx = idx;
+	this->fidx = fidx;
 	frm_lock = new Mutex("FFStream::frm_lock");
 	fmt_ctx = 0;
 	filter_graph = 0;
@@ -238,10 +242,12 @@ FFStream::FFStream(FFMPEG *ffmpeg, AVStream *st, int idx)
 	buffersink_ctx = 0;
 	frm_count = 0;
 	nudge = AV_NOPTS_VALUE;
-	eof = 0;
+	seek_pos = curr_pos = 0;
+	seeked = 1;  eof = 0;
+	index_markers = 0;
 	reading = writing = 0;
-	need_packet = 1;
 	flushed = 0;
+	need_packet = 1;
 	frame = fframe = 0;
 }
 
@@ -303,7 +309,8 @@ int FFStream::decode_activate()
 		ret = avformat_open_input(&fmt_ctx, ffmpeg->fmt_ctx->filename, NULL, &copts);
 		if( ret >= 0 ) {
 			ret = avformat_find_stream_info(fmt_ctx, 0);
-			st = fmt_ctx->streams[idx];
+			st = fmt_ctx->streams[fidx];
+			load_markers();
 		}
 		if( ret >= 0 ) {
 			AVCodecID codec_id = st->codec->codec_id;
@@ -326,35 +333,38 @@ int FFStream::read_packet()
 {
 	av_packet_unref(ipkt);
 	int ret = av_read_frame(fmt_ctx, ipkt);
-	if( ret >= 0 ) return 1;
-	st_eof(1);
-	if( ret == AVERROR_EOF ) return 0;
-	ff_err(ret, "FFStream::read_packet: av_read_frame failed\n");
-	flushed = 1;
-	return -1;
+	if( ret < 0 ) {
+		st_eof(1);
+		if( ret == AVERROR_EOF ) {
+			ipkt->stream_index = st->index;
+			return 0;
+		}
+		ff_err(ret, "FFStream::read_packet: av_read_frame failed\n");
+		flushed = 1;
+		return -1;
+	}
+	return 1;
 }
 
 int FFStream::decode(AVFrame *frame)
 {
 	int ret = 0;
-	int retries = 100;
+	int retries = 1000;
 	int got_frame = 0;
 
 	while( ret >= 0 && !flushed && --retries >= 0 && !got_frame ) {
 		if( need_packet ) {
 			need_packet = 0;
-			ret = read_packet();
-			if( ret < 0 ) break;
-			if( !ret ) ipkt->stream_index = st->index;
+			if( (ret=read_packet()) < 0 ) break;
 		}
 		if( ipkt->stream_index == st->index ) {
 			while( (ipkt->size > 0 || !ipkt->data) && !got_frame ) {
-				ret = decode_frame(frame, got_frame);
-				if( ret < 0 || !ipkt->data ) break;
+				ret = decode_frame(ipkt, frame, got_frame);
+				if( ret <= 0 || !ipkt->data ) break;
 				ipkt->data += ret;
 				ipkt->size -= ret;
 			}
-			retries = 100;
+			retries = 1000;
 		}
 		if( !got_frame ) {
 			need_packet = 1;
@@ -434,13 +444,57 @@ int FFStream::flush()
 	return ret >= 0 ? 0 : 1;
 }
 
-FFAudioStream::FFAudioStream(FFMPEG *ffmpeg, AVStream *strm, int idx)
- : FFStream(ffmpeg, strm, idx)
+int FFStream::seek(int64_t no, double rate)
 {
+	if( no < 0 ) no = 0;
+// default ffmpeg native seek
+	int npkts = 1;
+	int64_t pos = no, plmt = -1;
+	if( index_markers && index_markers->size() > 1 ) {
+		IndexMarks &marks = *index_markers;
+		int i = marks.find(pos);
+		int64_t n = i < 0 ? (i=0) : marks[i].no;
+// if indexed seek point not too far away (<30 secs), use index
+		if( no-n < 30*rate ) {
+			if( n < 0 ) n = 0;
+			pos = n;
+			plmt = marks[i].pos;
+			npkts = 1000;
+		}
+	}
+	double secs = pos / rate;
+	int64_t tstmp = secs * st->time_base.den / st->time_base.num;
+	if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
+	if( avformat_seek_file(fmt_ctx, st->index,
+		-INT64_MAX, tstmp, INT64_MAX, AVSEEK_FLAG_ANY) < 0 ) return -1;
+	avcodec_flush_buffers(st->codec);
+	need_packet = 0;  flushed = 0;
+	seeked = 1;  st_eof(0);
+	int64_t pkt_ts = AV_NOPTS_VALUE;
+	int ret = 1, retry = 1000;
+
+// read up to retry packets, limited to npkts in stream, and not past pkt.pos plmt
+	while( ret > 0 && npkts > 0 && --retry >= 0 ) {
+		if( (ret=read_packet()) <= 0 ) break;
+		if( ipkt->stream_index != st->index ) continue;
+		if( (pkt_ts=ipkt->dts) == AV_NOPTS_VALUE ) pkt_ts = ipkt->pts;
+		if( pkt_ts != AV_NOPTS_VALUE && pkt_ts >= tstmp ) break;
+		if( plmt >= 0 && ipkt->pos >= plmt ) break;
+		--npkts;
+	}
+
+	if( ret <= 0 || retry < 0 ) return -1;
+	seek_pos = curr_pos = pos;
+	return npkts > 0 ? 1 : 0;
+}
+
+FFAudioStream::FFAudioStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx)
+ : FFStream(ffmpeg, strm, fidx)
+{
+	this->idx = idx;
 	channel0 = channels = 0;
 	sample_rate = 0;
 	mbsz = 0;
-	seek_pos = curr_pos = 0;
 	length = 0;
 	resample_context = 0;
 
@@ -452,8 +506,8 @@ FFAudioStream::FFAudioStream(FFMPEG *ffmpeg, AVStream *strm, int idx)
 	sz = 0x10000;
 	long bsz = sz * nch;
 	bfr = new float[bsz];
-	inp = outp = bfr;
 	lmt = bfr + bsz;
+	reset_history();
 }
 
 FFAudioStream::~FFAudioStream()
@@ -463,9 +517,9 @@ FFAudioStream::~FFAudioStream()
 	delete [] bfr;
 }
 
-int FFAudioStream::load_history(uint8_t **data, int len)
+int FFAudioStream::get_samples(float *&samples, uint8_t **data, int len)
 {
-	float *samples = *(float **)data;
+	samples = *(float **)data;
 	if( resample_context ) {
 		if( len > aud_bfr_sz ) {	
 			delete [] aud_bfr;
@@ -478,24 +532,40 @@ int FFAudioStream::load_history(uint8_t **data, int len)
 		int ret = swr_convert(resample_context,
 			(uint8_t**)&aud_bfr, aud_bfr_sz, (const uint8_t**)data, len);
 		if( ret < 0 ) {
-			ff_err(ret, "FFAudioStream::load_history: swr_convert failed\n");
+			ff_err(ret, "FFAudioStream::get_samples: swr_convert failed\n");
 			return -1;
 		}
 		samples = aud_bfr;
 		len = ret;
 	}
-	// biggest user bfr since seek + frame
-	realloc(mbsz + len + 1, channels);
-	write(samples, len);
 	return len;
 }
 
-int FFAudioStream::decode_frame(AVFrame *frame, int &got_frame)
+int FFAudioStream::load_history(uint8_t **data, int len)
 {
-	int ret = avcodec_decode_audio4(st->codec, frame, &got_frame, ipkt);
+	float *samples;
+	len = get_samples(samples, data, len);
+	if( len > 0 ) {
+		// biggest user bfr since seek + frame
+		realloc(mbsz + len + 1, channels);
+		write(samples, len);
+	}
+	return len;
+}
+
+int FFAudioStream::decode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame)
+{
+	int first_frame = seeked;  seeked = 0;
+	int ret = avcodec_decode_audio4(st->codec, frame, &got_frame, pkt);
 	if( ret < 0 ) {
+		if( first_frame ) return 0;
 		ff_err(ret, "FFAudioStream::decode_frame: Could not read audio frame\n");
 		return -1;
+	}
+	if( got_frame ) {
+		int64_t pkt_ts = av_frame_get_best_effort_timestamp(frame);
+		if( pkt_ts != AV_NOPTS_VALUE )
+			curr_pos = ffmpeg->to_secs(pkt_ts - nudge, st->time_base) * sample_rate + 0.5;
 	}
 	return ret;
 }
@@ -513,7 +583,7 @@ int FFAudioStream::nb_samples()
 {
 	AVCodecContext *ctx = st->codec;
 	return ctx->codec->capabilities & CODEC_CAP_VARIABLE_FRAME_SIZE ?
-                10000 : ctx->frame_size;
+		10000 : ctx->frame_size;
 }
 
 int64_t FFAudioStream::load_buffer(double ** const sp, int len)
@@ -527,7 +597,7 @@ int64_t FFAudioStream::load_buffer(double ** const sp, int len)
 int FFAudioStream::in_history(int64_t pos)
 {
 	if( pos > curr_pos ) return 0;
-	int64_t len = curr_pos - seek_pos;
+	int64_t len = hpos;
 	if( len > sz ) len = sz;
 	if( pos < curr_pos - len ) return 0;
 	return 1;
@@ -550,13 +620,13 @@ int FFAudioStream::init_frame(AVFrame *frame)
 int FFAudioStream::load(int64_t pos, int len)
 {
 	if( audio_seek(pos) < 0 ) return -1;
-	if( mbsz < len ) mbsz = len;
-	int ret = 0;
-	int64_t end_pos = pos + len;
 	if( !frame && !(frame=av_frame_alloc()) ) {
 		fprintf(stderr, "FFAudioStream::load: av_frame_alloc failed\n");
 		return -1;
 	}
+	if( mbsz < len ) mbsz = len;
+	int64_t end_pos = pos + len;
+	int ret = 0;
 	for( int i=0; ret>=0 && !flushed && curr_pos<end_pos && i<1000; ++i ) {
 		ret = read_frame(frame);
 		if( ret > 0 ) {
@@ -568,26 +638,20 @@ int FFAudioStream::load(int64_t pos, int len)
 		zero(end_pos - curr_pos);
 		curr_pos = end_pos;
 	}
-	return curr_pos - pos;
+	len = curr_pos - pos;
+	iseek(len);
+	return len;
 }
 
 int FFAudioStream::audio_seek(int64_t pos)
 {
 	if( decode_activate() < 0 ) return -1;
-	if( in_history(pos) ) {
-		iseek(curr_pos - pos);
-		return 0;
-	}
-	if( pos == curr_pos ) return 0;
 	if( !st->codec || !st->codec->codec ) return -1;
-	avcodec_flush_buffers(st->codec);
-	double secs = (double)pos / sample_rate;
-	int64_t tstmp = secs * st->time_base.den / st->time_base.num;
-	if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
-	avformat_seek_file(fmt_ctx, st->index, -INT64_MAX, tstmp, INT64_MAX, 0);
-	seek_pos = curr_pos = pos;
-	reset();  st_eof(0);
-	mbsz = 0; flushed = 0;  need_packet = 1;
+	if( in_history(pos) ) return 0;
+	if( pos == curr_pos ) return 0;
+	reset_history();  mbsz = 0;
+// guarentee preload > 1sec samples
+	if( seek(pos-sample_rate, sample_rate) < 0 ) return -1;
 	return 1;
 }
 
@@ -621,7 +685,7 @@ int FFAudioStream::encode(double **samples, int len)
 	return ret >= 0 ? 0 : 1;
 }
 
-int FFAudioStream::encode_frame(FFPacket &pkt, AVFrame *frame, int &got_packet)
+int FFAudioStream::encode_frame(AVPacket *pkt, AVFrame *frame, int &got_packet)
 {
 	int ret = avcodec_encode_audio2(st->codec, pkt, frame, &got_packet);
 	if( ret < 0 ) {
@@ -631,13 +695,20 @@ int FFAudioStream::encode_frame(FFPacket &pkt, AVFrame *frame, int &got_packet)
 	return ret;
 }
 
-FFVideoStream::FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx)
- : FFStream(ffmpeg, strm, idx)
+void FFAudioStream::load_markers()
 {
+	IndexState *index_state = ffmpeg->file_base->asset->index_state;
+	if( !index_state || idx >= index_state->audio_markers.size() ) return;
+	FFStream::load_markers(*index_state->audio_markers[idx], sample_rate);
+}
+
+FFVideoStream::FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx)
+ : FFStream(ffmpeg, strm, fidx)
+{
+	this->idx = idx;
 	width = height = 0;
 	frame_rate = 0;
 	aspect_ratio = 0;
-	seek_pos = curr_pos = 0;
 	length = 0;
 	convert_ctx = 0;
 }
@@ -647,15 +718,20 @@ FFVideoStream::~FFVideoStream()
 	if( convert_ctx ) sws_freeContext(convert_ctx);
 }
 
-int FFVideoStream::decode_frame(AVFrame *frame, int &got_frame)
+int FFVideoStream::decode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame)
 {
-	int ret = avcodec_decode_video2(st->codec, frame, &got_frame, ipkt);
+	int first_frame = seeked;  seeked = 0;
+	int ret = avcodec_decode_video2(st->codec, frame, &got_frame, pkt);
 	if( ret < 0 ) {
+		if( first_frame ) return 0;
 		ff_err(ret, "FFVideoStream::decode_frame: Could not read video frame\n");
 		return -1;
 	}
-	if( got_frame )
-		++curr_pos;
+	if( got_frame ) {
+		int64_t pkt_ts = av_frame_get_best_effort_timestamp(frame);
+		if( pkt_ts != AV_NOPTS_VALUE )
+			curr_pos = ffmpeg->to_secs(pkt_ts - nudge, st->time_base) * frame_rate + 0.5;
+	}
 	return ret;
 }
 
@@ -669,6 +745,7 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 	}
 	for( int i=0; ret>=0 && !flushed && curr_pos<=pos && i<1000; ++i ) {
 		ret = read_frame(frame);
+		if( ret > 0 ) ++curr_pos;
 	}
 	if( ret > 0 ) {
 		AVCodecContext *ctx = st->codec;
@@ -682,24 +759,16 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 int FFVideoStream::video_seek(int64_t pos)
 {
 	if( decode_activate() < 0 ) return -1;
+	if( !st->codec || !st->codec->codec ) return -1;
+	if( pos == curr_pos-1 && !seeked ) return 0;
 // if close enough, just read up to current
-//   3*gop_size seems excessive, but less causes tears
-	int gop = 3*st->codec->gop_size;
+	int gop = st->codec->gop_size;
 	if( gop < 4 ) gop = 4;
 	if( gop > 64 ) gop = 64;
-	if( pos >= curr_pos && pos <= curr_pos + gop ) return 0;
-	if( pos == curr_pos-1 && curr_pos > seek_pos ) return 1;
-	if( !st->codec || !st->codec->codec ) return -1;
-	avcodec_flush_buffers(st->codec);
-// back up a few frames to read up to current to help repair damages
-	if( (pos-=gop) < 0 ) pos = 0;
-	double secs = (double)pos / frame_rate;
-	int64_t tstmp = secs * st->time_base.den / st->time_base.num;
-	if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
-	avformat_seek_file(fmt_ctx, st->index, -INT64_MAX, tstmp, INT64_MAX, 0);
-	seek_pos = curr_pos = pos;
-	st_eof(0);
-	flushed = 0;  need_packet = 1;
+	int read_limit = curr_pos + 3*gop;
+	if( pos >= curr_pos && pos <= read_limit ) return 0;
+// guarentee preload more than 2*gop frames
+	if( seek(pos - 3*gop, frame_rate) < 0 ) return -1;
 	return 1;
 }
 
@@ -737,7 +806,7 @@ int FFVideoStream::encode(VFrame *vframe)
 	return ret >= 0 ? 0 : 1;
 }
 
-int FFVideoStream::encode_frame(FFPacket &pkt, AVFrame *frame, int &got_packet)
+int FFVideoStream::encode_frame(AVPacket *pkt, AVFrame *frame, int &got_packet)
 {
 	int ret = avcodec_encode_video2(st->codec, pkt, frame, &got_packet);
 	if( ret < 0 ) {
@@ -911,6 +980,13 @@ int FFVideoStream::convert_pixfmt(VFrame *frame,
 	return 0;
 }
 
+void FFVideoStream::load_markers()
+{
+	IndexState *index_state = ffmpeg->file_base->asset->index_state;
+	if( idx >= index_state->video_markers.size() ) return;
+	FFStream::load_markers(*index_state->video_markers[idx], frame_rate);
+}
+
 
 FFMPEG::FFMPEG(FileBase *file_base)
 {
@@ -938,7 +1014,7 @@ FFMPEG::~FFMPEG()
 	close_encoder();
 	ffaudio.remove_all_objects();
 	ffvideo.remove_all_objects();
-	if( encoding ) avformat_free_context(fmt_ctx);
+	if( fmt_ctx ) avformat_close_input(&fmt_ctx);
 	ff_unlock();
 	delete flow_lock;
 	delete mux_lock;
@@ -1216,51 +1292,76 @@ double FFMPEG::to_secs(int64_t time, AVRational time_base)
 int FFMPEG::info(char *text, int len)
 {
 	if( len <= 0 ) return 0;
+	decode_activate();
 #define report(s...) do { int n = snprintf(cp,len,s); cp += n;  len -= n; } while(0)
 	char *cp = text;
-	for( int i=0; i<(int)fmt_ctx->nb_streams; ++i ) {
-		AVStream *st = fmt_ctx->streams[i];
+	if( ffvideo.size() > 0 )
+		report("\n%d video stream%s\n",ffvideo.size(), ffvideo.size()!=1 ? "s" : "");
+	for( int vidx=0; vidx<ffvideo.size(); ++vidx ) {
+		FFVideoStream *vid = ffvideo[vidx];
+		AVStream *st = vid->st;
 		AVCodecContext *avctx = st->codec;
-		report(_("stream %d,  id 0x%06x:\n"), i, avctx->codec_id);
+		report(_("vid%d (%d),  id 0x%06x:\n"), vid->idx, vid->fidx, avctx->codec_id);
 		const AVCodecDescriptor *desc = avcodec_descriptor_get(avctx->codec_id);
-		if( avctx->codec_type == AVMEDIA_TYPE_VIDEO ) {
-			AVRational framerate = av_guess_frame_rate(fmt_ctx, st, 0);
-			double frame_rate = !framerate.den ? 0 : (double)framerate.num / framerate.den;
-			report("  video %s",desc ? desc->name : " (unkn)");
-			report(" %dx%d %5.2f", avctx->width, avctx->height, frame_rate);
-			const char *pfn = av_get_pix_fmt_name(avctx->pix_fmt);
-			report(" pix %s\n", pfn ? pfn : "(unkn)");
-			double secs = to_secs(st->duration, st->time_base);
-			int64_t length = secs * frame_rate + 0.5;
-			report("    %jd frms %0.2f secs", length, secs);
-			int hrs = secs/3600;  secs -= hrs*3600;
-			int mins = secs/60;  secs -= mins*60;
-			report("  %d:%02d:%05.2f\n", hrs, mins, secs);
-
-		}
-		else if( avctx->codec_type == AVMEDIA_TYPE_AUDIO ) {
-			int sample_rate = avctx->sample_rate;
-			const char *fmt = av_get_sample_fmt_name(avctx->sample_fmt);
-			report("  audio %s",desc ? desc->name : " (unkn)");
-			report(" %dch %s %d",avctx->channels, fmt, sample_rate);
-			int sample_bits = av_get_bits_per_sample(avctx->codec_id);
-			report(" %dbits\n", sample_bits);
-			double secs = to_secs(st->duration, st->time_base);
-			int64_t length = secs * sample_rate + 0.5;
-			report("    %jd smpl %0.2f secs", length, secs);
-			int hrs = secs/3600;  secs -= hrs*3600;
-			int mins = secs/60;  secs -= mins*60;
-			report("  %d:%02d:%05.2f\n", hrs, mins, secs);
-		}
-		else
-			report(_("  codec_type unknown\n"));
+		report("  video%d %s", vidx+1, desc ? desc->name : " (unkn)");
+		report(" %dx%d %5.2f", vid->width, vid->height, vid->frame_rate);
+		const char *pfn = av_get_pix_fmt_name(avctx->pix_fmt);
+		report(" pix %s\n", pfn ? pfn : "(unkn)");
+		double secs = to_secs(st->duration, st->time_base);
+		int64_t length = secs * vid->frame_rate + 0.5;
+		double ofs = to_secs((vid->nudge - st->start_time), st->time_base);
+		int64_t nudge = ofs * vid->frame_rate;
+		int ch = nudge >= 0 ? '+' : (nudge=-nudge, '-');
+		report("    %jd%c%jd frms %0.2f secs", length,ch,nudge, secs);
+		int hrs = secs/3600;  secs -= hrs*3600;
+		int mins = secs/60;  secs -= mins*60;
+		report("  %d:%02d:%05.2f\n", hrs, mins, secs);
 	}
-	report("\n");
+	if( ffaudio.size() > 0 )
+		report("\n%d audio stream%s\n",ffaudio.size(), ffaudio.size()!=1 ? "s" : "");
+	for( int aidx=0; aidx<ffaudio.size(); ++aidx ) {
+		FFAudioStream *aud = ffaudio[aidx];
+		AVStream *st = aud->st;
+		AVCodecContext *avctx = st->codec;
+		report(_("aud%d (%d),  id 0x%06x:\n"), aud->idx, aud->fidx, avctx->codec_id);
+		const AVCodecDescriptor *desc = avcodec_descriptor_get(avctx->codec_id);
+		int nch = aud->channels, ch0 = aud->channel0+1;
+		report("  audio%d-%d %s", ch0, ch0+nch-1, desc ? desc->name : " (unkn)");
+		const char *fmt = av_get_sample_fmt_name(avctx->sample_fmt);
+		report(" %s %d", fmt, aud->sample_rate);
+		int sample_bits = av_get_bits_per_sample(avctx->codec_id);
+		report(" %dbits\n", sample_bits);
+		double secs = to_secs(st->duration, st->time_base);
+		int64_t length = secs * aud->sample_rate + 0.5;
+		double ofs = to_secs((aud->nudge - st->start_time), st->time_base);
+		int64_t nudge = ofs * aud->sample_rate;
+		int ch = nudge >= 0 ? '+' : (nudge=-nudge, '-');
+		report("    %jd%c%jd smpl %0.2f secs", length,ch,nudge, secs);
+		int hrs = secs/3600;  secs -= hrs*3600;
+		int mins = secs/60;  secs -= mins*60;
+		report("  %d:%02d:%05.2f\n", hrs, mins, secs);
+	}
+	if( fmt_ctx->nb_programs > 0 )
+		report("\n%d program%s\n",fmt_ctx->nb_programs, fmt_ctx->nb_programs!=1 ? "s" : "");
 	for( int i=0; i<(int)fmt_ctx->nb_programs; ++i ) {
 		report("program %d", i+1);
 		AVProgram *pgrm = fmt_ctx->programs[i];
-		for( int j=0; j<(int)pgrm->nb_stream_indexes; ++j )
-			report(", %d", pgrm->stream_index[j]);
+		for( int j=0; j<(int)pgrm->nb_stream_indexes; ++j ) {
+			int idx = pgrm->stream_index[j];
+			int vidx = ffvideo.size();
+			while( --vidx>=0 && ffvideo[vidx]->fidx != idx );
+			if( vidx >= 0 ) {
+				report(", vid%d", vidx);
+				continue;
+			}
+			int aidx = ffaudio.size();
+			while( --aidx>=0 && ffaudio[aidx]->fidx != idx );
+			if( aidx >= 0 ) {
+				report(", aud%d", aidx);
+				continue;
+			}
+			report(", (%d)", pgrm->stream_index[j]);
+		}
 		report("\n");
 	}
 	report("\n");
@@ -1347,8 +1448,8 @@ int FFMPEG::open_decoder()
 			AVRational framerate = av_guess_frame_rate(fmt_ctx, st, 0);
 			if( framerate.num < 1 ) continue;
 			has_video = 1;
-			FFVideoStream *vid = new FFVideoStream(this, st, i);
 			int vidx = ffvideo.size();
+			FFVideoStream *vid = new FFVideoStream(this, st, vidx, i);
 			vstrm_index.append(ffidx(vidx, 0));
 			ffvideo.append(vid);
 			vid->width = avctx->width;
@@ -1366,8 +1467,8 @@ int FFMPEG::open_decoder()
 			if( avctx->channels < 1 ) continue;
 			if( avctx->sample_rate < 1 ) continue;
 			has_audio = 1;
-			FFAudioStream *aud = new FFAudioStream(this, st, i);
 			int aidx = ffaudio.size();
+			FFAudioStream *aud = new FFAudioStream(this, st, aidx, i);
 			ffaudio.append(aud);
 			aud->channel0 = astrm_index.size();
 			aud->channels = avctx->channels;
@@ -1507,8 +1608,8 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				av_dict_set(&sopts, "b", arg, 0);
 			}
 			int aidx = ffaudio.size();
-			int idx = aidx + ffvideo.size();
-			FFAudioStream *aud = new FFAudioStream(this, st, idx);
+			int fidx = aidx + ffvideo.size();
+			FFAudioStream *aud = new FFAudioStream(this, st, aidx, fidx);
 			ffaudio.append(aud);  fst = aud;
 			aud->sample_rate = asset->sample_rate;
 			ctx->channels = aud->channels = asset->channels;
@@ -1566,8 +1667,8 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				av_dict_set(&sopts, "global_quality", arg, 0);
 			}
 			int vidx = ffvideo.size();
-			int idx = vidx + ffaudio.size();
-			FFVideoStream *vid = new FFVideoStream(this, st, idx);
+			int fidx = vidx + ffaudio.size();
+			FFVideoStream *vid = new FFVideoStream(this, st, vidx, fidx);
 			vstrm_index.append(ffidx(vidx, 0));
 			ffvideo.append(vid);  fst = vid;
 			vid->width = asset->width;
@@ -1634,80 +1735,89 @@ int FFMPEG::decode_activate()
 {
 	if( decoding < 0 ) {
 		decoding = 0;
+		for( int vidx=0; vidx<ffvideo.size(); ++vidx )
+			ffvideo[vidx]->nudge = AV_NOPTS_VALUE;
+		for( int aidx=0; aidx<ffaudio.size(); ++aidx )
+			ffaudio[aidx]->nudge = AV_NOPTS_VALUE;
+		// set nudges for each program stream set
 		int npgrms = fmt_ctx->nb_programs;
 		for( int i=0; i<npgrms; ++i ) {
 			AVProgram *pgrm = fmt_ctx->programs[i];
 			// first start time video stream
-			int64_t vstart_time = -1;
+			int64_t vstart_time = -1, astart_time = -1;
 			for( int j=0; j<(int)pgrm->nb_stream_indexes; ++j ) {
-				int st_idx = pgrm->stream_index[j];
-				AVStream *st = fmt_ctx->streams[st_idx];
+				int fidx = pgrm->stream_index[j];
+				AVStream *st = fmt_ctx->streams[fidx];
 				AVCodecContext *avctx = st->codec;
 				if( avctx->codec_type == AVMEDIA_TYPE_VIDEO ) {
 					if( st->start_time == AV_NOPTS_VALUE ) continue;
+					if( vstart_time > st->start_time ) continue;
 					vstart_time = st->start_time;
-					break;
+					continue;
 				}
-			}
-			// max start time audio stream
-			int64_t astart_time = -1;
-			for( int j=0; j<(int)pgrm->nb_stream_indexes; ++j ) {
-				int st_idx = pgrm->stream_index[j];
-				AVStream *st = fmt_ctx->streams[st_idx];
-				AVCodecContext *avctx = st->codec;
 				if( avctx->codec_type == AVMEDIA_TYPE_VIDEO ) {
 					if( st->start_time == AV_NOPTS_VALUE ) continue;
 					if( astart_time > st->start_time ) continue;
 					astart_time = st->start_time;
+					continue;
 				}
 			}
-			if( astart_time < 0 || vstart_time < 0 ) continue;
 			// match program streams to max start_time
 			int64_t nudge = vstart_time > astart_time ? vstart_time : astart_time;
 			for( int j=0; j<(int)pgrm->nb_stream_indexes; ++j ) {
-				int st_idx = pgrm->stream_index[j];
-				AVStream *st = fmt_ctx->streams[st_idx];
+				int fidx = pgrm->stream_index[j];
+				AVStream *st = fmt_ctx->streams[fidx];
 				AVCodecContext *avctx = st->codec;
+				if( avctx->codec_type == AVMEDIA_TYPE_VIDEO ) {
+					for( int k=0; k<ffvideo.size(); ++k ) {
+						if( ffvideo[k]->fidx != fidx ) continue;
+						ffvideo[k]->nudge = nudge;
+					}
+					continue;
+				}
 				if( avctx->codec_type == AVMEDIA_TYPE_AUDIO ) {
 					for( int k=0; k<ffaudio.size(); ++k ) {
-						if( ffaudio[k]->idx == st_idx )
-							ffaudio[k]->nudge = nudge;
+						if( ffaudio[k]->fidx != fidx ) continue;
+						ffaudio[k]->nudge = nudge;
 					}
-				}
-				else if( avctx->codec_type == AVMEDIA_TYPE_VIDEO ) {
-					for( int k=0; k<ffvideo.size(); ++k ) {
-						if( ffvideo[k]->idx == st_idx )
-							ffvideo[k]->nudge = nudge;
-					}
+					continue;
 				}
 			}
 		}
+		// set nudges for any streams not yet set
 		int64_t vstart_time = 0, astart_time = 0;
 		int nstreams = fmt_ctx->nb_streams;
 		for( int i=0; i<nstreams; ++i ) {
 			AVStream *st = fmt_ctx->streams[i];
 			AVCodecContext *avctx = st->codec;
 			switch( avctx->codec_type ) {
-			case AVMEDIA_TYPE_VIDEO:
+			case AVMEDIA_TYPE_VIDEO: {
 				if( st->start_time == AV_NOPTS_VALUE ) continue;
+				int vidx = ffvideo.size();
+				while( --vidx >= 0 && ffvideo[vidx]->fidx != i );
+				if( vidx >= 0 && ffvideo[vidx]->nudge != AV_NOPTS_VALUE ) continue;
 				if( vstart_time >= st->start_time ) continue;
 				vstart_time = st->start_time;
-				break;
-			case AVMEDIA_TYPE_AUDIO:
+				break; }
+			case AVMEDIA_TYPE_AUDIO: {
 				if( st->start_time == AV_NOPTS_VALUE ) continue;
+				int aidx = ffaudio.size();
+				while( --aidx >= 0 && ffaudio[aidx]->fidx != i );
+				if( aidx >= 0 && ffaudio[aidx]->nudge != AV_NOPTS_VALUE ) continue;
 				if( astart_time >= st->start_time ) continue;
 				astart_time = st->start_time;
+				break; }
 			default: break;
 			}
 		}
 		int64_t nudge = vstart_time > astart_time ? vstart_time : astart_time;
-		for( int k=0; k<ffvideo.size(); ++k ) {
-			if( ffvideo[k]->nudge != AV_NOPTS_VALUE ) continue;
-			ffvideo[k]->nudge = nudge;
+		for( int vidx=0; vidx<ffvideo.size(); ++vidx ) {
+			if( ffvideo[vidx]->nudge != AV_NOPTS_VALUE ) continue;
+			ffvideo[vidx]->nudge = nudge;
 		}
-		for( int k=0; k<ffaudio.size(); ++k ) {
-			if( ffaudio[k]->nudge != AV_NOPTS_VALUE ) continue;
-			ffaudio[k]->nudge = nudge;
+		for( int aidx=0; aidx<ffaudio.size(); ++aidx ) {
+			if( ffaudio[aidx]->nudge != AV_NOPTS_VALUE ) continue;
+			ffaudio[aidx]->nudge = nudge;
 		}
 		decoding = 1;
 	}
@@ -1742,12 +1852,13 @@ int FFMPEG::encode_activate()
 	return encoding;
 }
 
+
 int FFMPEG::audio_seek(int stream, int64_t pos)
 {
 	int aidx = astrm_index[stream].st_idx;
 	FFAudioStream *aud = ffaudio[aidx];
+	pos = pos * aud->sample_rate / file_base->asset->sample_rate + 0.5;
 	aud->audio_seek(pos);
-	aud->seek_pos = aud->curr_pos = pos;
 	return 0;
 }
 
@@ -1755,8 +1866,8 @@ int FFMPEG::video_seek(int stream, int64_t pos)
 {
 	int vidx = vstrm_index[stream].st_idx;
 	FFVideoStream *vid = ffvideo[vidx];
+	pos = pos * vid->frame_rate / file_base->asset->frame_rate + 0.5;
 	vid->video_seek(pos);
-	vid->seek_pos = vid->curr_pos = pos;
 	return 0;
 }
 
@@ -1766,9 +1877,11 @@ int FFMPEG::decode(int chn, int64_t pos, double *samples, int len)
 	if( !has_audio || chn >= astrm_index.size() ) return -1;
 	int aidx = astrm_index[chn].st_idx;
 	FFAudioStream *aud = ffaudio[aidx];
+	pos = pos * aud->sample_rate / file_base->asset->sample_rate + 0.5;
 	if( aud->load(pos, len) < len ) return -1;
 	int ch = astrm_index[chn].st_ch;
-	return aud->read(samples,len,ch);
+	int ret = aud->read(samples,len,ch);
+	return ret;
 }
 
 int FFMPEG::decode(int layer, int64_t pos, VFrame *vframe)
@@ -1776,8 +1889,10 @@ int FFMPEG::decode(int layer, int64_t pos, VFrame *vframe)
 	if( !has_video || layer >= vstrm_index.size() ) return -1;
 	int vidx = vstrm_index[layer].st_idx;
 	FFVideoStream *vid = ffvideo[vidx];
+	pos = pos * vid->frame_rate / file_base->asset->frame_rate + 0.5;
 	return vid->load(vframe, pos);
 }
+
 
 int FFMPEG::encode(int stream, double **samples, int len)
 {
@@ -1967,7 +2082,7 @@ int FFMPEG::ff_audio_for_video(int vstream, int astream, int64_t &channel_mask)
 {
 	channel_mask = 0;
 	int pidx = -1;
-	int vidx = ffvideo[vstream]->idx;
+	int vidx = ffvideo[vstream]->fidx;
 	// find first program with this video stream
 	for( int i=0; pidx<0 && i<(int)fmt_ctx->nb_programs; ++i ) {
 		AVProgram *pgrm = fmt_ctx->programs[i];
@@ -1989,7 +2104,7 @@ int FFMPEG::ff_audio_for_video(int vstream, int astream, int64_t &channel_mask)
 		if( astream > 0 ) { --astream;  continue; }
 		int astrm = -1;
 		for( int i=0; astrm<0 && i<ffaudio.size(); ++i )
-			if( ffaudio[i]->idx == aidx ) astrm = i;
+			if( ffaudio[i]->fidx == aidx ) astrm = i;
 		if( astrm >= 0 ) {
 			if( ret < 0 ) ret = astrm;
 			int64_t mask = (1 << ffaudio[astrm]->channels) - 1;
@@ -2227,5 +2342,150 @@ int FFStream::bs_filter(AVPacket *pkt)
 	if( ret < 0 )
 		ff_err(ret,"FFStream::bs_filter");
 	return ret;
+}
+
+int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
+{
+	AVPacket pkt;
+	av_init_packet(&pkt);
+	AVFrame *frame = av_frame_alloc();
+	if( !frame ) {
+		fprintf(stderr, "FFMPEG::scan: av_frame_alloc failed\n");
+		return -1;
+	}
+
+	index_state->add_video_markers(ffvideo.size());
+	index_state->add_audio_markers(ffaudio.size());
+
+	for( int i=0; i<(int)fmt_ctx->nb_streams; ++i ) {
+		AVDictionary *copts = 0;
+		av_dict_copy(&copts, opts, 0);
+		AVStream *st = fmt_ctx->streams[i];
+		AVCodecID codec_id = st->codec->codec_id;
+		AVCodec *decoder = avcodec_find_decoder(codec_id);
+		if( avcodec_open2(st->codec, decoder, &copts) < 0 )
+			fprintf(stderr, "FFMPEG::scan: codec open failed\n");
+		av_dict_free(&copts);
+	}
+	int errs = 0;
+	for( int64_t count=0; !*canceled; ++count ) {
+		av_packet_unref(&pkt);
+		pkt.data = 0; pkt.size = 0;
+
+		int ret = av_read_frame(fmt_ctx, &pkt);
+		if( ret < 0 ) {
+			if( ret == AVERROR_EOF ) break;
+			if( ++errs > 100 ) {
+				ff_err(ret, "over 100 read_frame errs\n");
+				break;
+			}
+			continue;
+		}
+		if( !pkt.data ) continue;
+		int i = pkt.stream_index;
+		if( i < 0 || i >= (int)fmt_ctx->nb_streams ) continue;
+		AVStream *st = fmt_ctx->streams[i];
+		AVCodecContext *avctx = st->codec;
+		if( pkt.pos > *scan_position ) *scan_position = pkt.pos;
+
+		switch( avctx->codec_type ) {
+		case AVMEDIA_TYPE_VIDEO: {
+			int vidx = ffvideo.size();
+			while( --vidx>=0 && ffvideo[vidx]->fidx != i );
+			if( vidx < 0 ) break;
+			FFVideoStream *vid = ffvideo[vidx];
+			int64_t tstmp = pkt.dts;
+			if( tstmp == AV_NOPTS_VALUE ) tstmp = pkt.pts;
+			if( tstmp != AV_NOPTS_VALUE && (pkt.flags & AV_PKT_FLAG_KEY) && pkt.pos > 0 ) {
+				if( vid->nudge != AV_NOPTS_VALUE ) tstmp -= vid->nudge;
+				double secs = to_secs(tstmp, st->time_base);
+				int64_t frm = secs * vid->frame_rate + 0.5;
+				if( frm < 0 ) frm = 0;
+				index_state->put_video_mark(vidx, frm, pkt.pos);
+			}
+#if 0
+			while( pkt.size > 0 ) {
+				av_frame_unref(frame);
+				int got_frame = 0;
+				int ret = vid->decode_frame(&pkt, frame, got_frame);
+				if( ret <= 0 ) break;
+//				if( got_frame ) {}
+				pkt.data += ret;
+				pkt.size -= ret;
+			}
+#endif
+			break; }
+		case AVMEDIA_TYPE_AUDIO: {
+			int aidx = ffaudio.size();
+			while( --aidx>=0 && ffaudio[aidx]->fidx != i );
+			if( aidx < 0 ) break;
+			FFAudioStream *aud = ffaudio[aidx];
+			int64_t tstmp = pkt.pts;
+			if( tstmp == AV_NOPTS_VALUE ) tstmp = pkt.dts;
+			if( tstmp != AV_NOPTS_VALUE && (pkt.flags & AV_PKT_FLAG_KEY) && pkt.pos > 0 ) {
+				if( aud->nudge != AV_NOPTS_VALUE ) tstmp -= aud->nudge;
+				double secs = to_secs(tstmp, st->time_base);
+				int64_t sample = secs * aud->sample_rate + 0.5;
+				if( sample < 0 ) sample = 0;
+				index_state->put_audio_mark(aidx, sample, pkt.pos);
+			}
+			while( pkt.size > 0 ) {
+				int ch = aud->channel0,  nch = aud->channels;
+				int64_t pos = index_state->pos(ch);
+				if( pos != aud->curr_pos ) {
+if( abs(pos-aud->curr_pos) > 1 )
+printf("audio%d pad %ld %ld (%ld)\n", aud->idx, pos, aud->curr_pos, pos-aud->curr_pos);
+					index_state->pad_data(ch, nch, aud->curr_pos);
+				}
+				av_frame_unref(frame);
+				int got_frame = 0;
+				int ret = aud->decode_frame(&pkt, frame, got_frame);
+				if( ret <= 0 ) break;
+				if( got_frame ) {
+					float *samples;
+					int len = aud->get_samples(samples,
+						 &frame->extended_data[0], frame->nb_samples);
+					for( int i=0; i<nch; ++i )
+						index_state->put_data(ch+i,nch,samples+i,len);
+					aud->curr_pos += len;
+				}
+				pkt.data += ret;
+				pkt.size -= ret;
+			}
+			break; }
+		default: break;
+		}
+	}
+	av_frame_free(&frame);
+	return 0;
+}
+
+void FFStream::load_markers(IndexMarks &marks, double rate)
+{
+	index_markers = &marks;
+	int in = 0;
+	int64_t sz = marks.size();
+	int max_entries = fmt_ctx->max_index_size / sizeof(AVIndexEntry) - 1;
+	int nb_ent = st->nb_index_entries;
+// some formats already have an index
+	if( nb_ent > 0 ) {
+		AVIndexEntry *ep = &st->index_entries[nb_ent-1];
+		int64_t tstmp = ep->timestamp;
+		if( nudge != AV_NOPTS_VALUE ) tstmp -= nudge;
+		double secs = ffmpeg->to_secs(tstmp, st->time_base);
+		int64_t no = secs * rate;
+		while( in < sz && marks[in].no <= no ) ++in;
+	}
+	int64_t len = sz - in;
+	int64_t count = max_entries - nb_ent;
+	if( count > len ) count = len;
+	for( int i=0; i<count; ++i ) {
+		int k = in + i * len / count;
+		int64_t no = marks[k].no, pos = marks[k].pos;
+		double secs = (double)no / rate;
+		int64_t tstmp = secs * st->time_base.den / st->time_base.num;
+		if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
+		av_add_index_entry(st, pos, tstmp, 0, 0, AVINDEX_KEYFRAME);
+	}
 }
 

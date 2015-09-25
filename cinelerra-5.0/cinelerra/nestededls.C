@@ -84,7 +84,7 @@ void NestedEDLs::update_index(EDL *nested_edl)
 // __LINE__, 
 // current->index_state,
 // nested_edl->index_state->index_status);
-			current->index_state->copy_from(nested_edl->index_state);
+			current->update_index(nested_edl);
 		}
 	}
 }

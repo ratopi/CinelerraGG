@@ -394,8 +394,7 @@ int EDL::save_xml(FileXML *file,
 int EDL::copy_all(EDL *edl)
 {
 	if(this == edl) return 0;
-
-	index_state->copy_from(edl->index_state);
+	update_index(edl);
 	nested_edls->clear();
 	copy_session(edl);
 	copy_assets(edl);
@@ -1201,7 +1200,7 @@ void EDL::insert_asset(Asset *asset,
 
 void EDL::set_index_file(Indexable *indexable)
 {
-	if(indexable->is_asset) 
+	if(indexable->is_asset)
 		assets->update_index((Asset*)indexable);
 	else
 		nested_edls->update_index((EDL*)indexable);

@@ -46,7 +46,7 @@ RemoveFile::RemoveFile(const char *path,int autodelete)
 void RemoveFile::run()
 {
 	run_lock.lock("RemoveFile::run_lock");
-printf("RemoveFile::run: deleting %s\n", file_path);
+//printf("RemoveFile::run: deleting %s\n", file_path);
 	remove(file_path);
 	run_lock.unlock();
 }
@@ -66,7 +66,7 @@ RemoveAll::RemoveAll(const char *path)
 		else
 			RemoveFile::removeFileWait(fp);
 	}
-printf("RemoveAll::deleting directory %s\n", path);
+//printf("RemoveAll::deleting directory %s\n", path);
 	rmdir(path);
 }
 

@@ -389,7 +389,6 @@ int MWindowGUI::resize_event(int w, int h)
 	mwindow->session->mwindow_h = h;
 	mwindow->theme->get_mwindow_sizes(this, w, h);
 	mwindow->theme->draw_mwindow_bg(this);
-//	mainmenu->reposition_window(0, 0, w, mainmenu->get_h());
 	mbuttons->resize_event();
 	statusbar->resize_event();
 	
@@ -469,6 +468,9 @@ int MWindowGUI::resize_event(int w, int h)
 	zoombar->resize_event();
 	pane_button->reposition_window(w - mwindow->theme->get_image_set("pane")[0]->get_w(), 
 		mwindow->theme->mzoom_y + 1 - mwindow->theme->get_image_set("pane")[0]->get_h());
+	int x = get_w() - MainShBtns::calculate_w(0);
+	mainmenu->resize_event(x, mainmenu->get_h());
+	mainshbtns->reposition_window(x, 0);
 //	get_scrollbars(0);
 //	canvas->resize_event();
 //printf("MWindowGUI::resize_event %d\n", __LINE__);

@@ -122,6 +122,7 @@ CWindowGUI::~CWindowGUI()
  	delete zoom_panel;
 	delete active;
 	delete inactive;
+	delete orig_mask_keyframe;
 }
 
 void CWindowGUI::create_objects()

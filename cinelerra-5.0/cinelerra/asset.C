@@ -201,12 +201,6 @@ void Asset::boundaries()
 //printf("Asset::boundaries %d %d %f\n", __LINE__, sample_rate, frame_rate);
 }
 
-
-void Asset::reset_index()
-{
-	index_state->reset();
-}
-
 void Asset::copy_from(Asset *asset, int do_index)
 {
 	copy_location(asset);
@@ -574,11 +568,6 @@ int Asset::read_index(FileXML *file)
 	return 0;
 }
 
-int Asset::write_index(const char *path, int data_bytes)
-{
-	return index_state->write_index(path, data_bytes, this, audio_length);
-}
-
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if complete names should be used.
 
@@ -720,7 +709,6 @@ int Asset::write_index(FileXML *file)
 	index_state->write_xml(file);
 	return 0;
 }
-
 
 
 
@@ -1032,18 +1020,6 @@ void Asset::save_defaults(BC_Hash *defaults,
 
 
 
-
-
-int Asset::update_path(char *new_path)
-{
-	strcpy(path, new_path);
-	return 0;
-}
-
-void Asset::update_index(Asset *asset)
-{
-	index_state->copy_from(asset->index_state);
-}
 
 
 int Asset::dump(FILE *fp)

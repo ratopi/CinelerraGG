@@ -17,6 +17,7 @@
 #include "ffmpeg.inc"
 #include "filebase.inc"
 #include "fileffmpeg.inc"
+#include "indexstate.inc"
 #include "mutex.h"
 #include "thread.h"
 #include "vframe.inc"
@@ -67,7 +68,7 @@ public:
 
 class FFStream {
 public:
-	FFStream(FFMPEG *ffmpeg, AVStream *st, int idx);
+	FFStream(FFMPEG *ffmpeg, AVStream *st, int fidx);
 	~FFStream();
 	static void ff_lock(const char *cp=0);
 	static void ff_unlock();
@@ -77,15 +78,20 @@ public:
 	virtual int encode_activate();
 	virtual int decode_activate();
 	int read_packet();
+	int seek(int64_t no, double rate);
 	int write_packet(FFPacket &pkt);
 	int flush();
 	int decode(AVFrame *frame);
+	void load_markers(IndexMarks &marks, double rate);
 
-	virtual int decode_frame(AVFrame *frame, int &got_frame) = 0;
-	virtual int encode_frame(FFPacket &pkt, AVFrame *frame, int &got_frame) = 0;
+	virtual int is_audio() = 0;
+	virtual int is_video() = 0;
+	virtual int decode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame) = 0;
+	virtual int encode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame) = 0;
 	virtual int init_frame(AVFrame *frame) = 0;
 	virtual int create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx) = 0;
+	virtual void load_markers() = 0;
 	int create_filter(const char *filter_spec);
 	int load_filter(AVFrame *frame);
 	int read_filter(AVFrame *frame);
@@ -123,11 +129,13 @@ public:
 	int frm_count;
 	List<FFrame> frms;
 	Mutex *frm_lock;
+	IndexMarks *index_markers;
 
 	int64_t nudge;
-	int idx;
+	int64_t seek_pos, curr_pos;
+	int fidx;
 	int reading, writing;
-	int eof;
+	int seeked, eof;
 
 	int st_eof() { return eof; }
 	void st_eof(int v) { eof = v; }
@@ -135,16 +143,15 @@ public:
 
 class FFAudioStream : public FFStream {
 	float *inp, *outp, *bfr, *lmt;
-	long sz;
+	int64_t hpos, sz;
 	int nch;
 
 	int read(float *fp, long len);
-	void realloc(long sz, int nch, long len);
-	void realloc(long sz, int nch);
-	void reserve(long sz, int nch);
+	void realloc(long nsz, int nch, long len);
+	void realloc(long nsz, int nch);
+	void reserve(long nsz, int nch);
 	long used();
 	long avail();
-	void reset();
 	void iseek(int64_t ofs);
 	float *get_outp(int len);
 	int64_t put_inp(int len);
@@ -152,18 +159,23 @@ class FFAudioStream : public FFStream {
 	int zero(long len);
 	int write(const double *dp, long len, int ch);
 public:
-	FFAudioStream(FFMPEG *ffmpeg, AVStream *strm, int idx);
+	FFAudioStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx);
 	virtual ~FFAudioStream();
+	int is_audio() { return 1; }
+	int is_video() { return 0; }
+	int get_samples(float *&samples, uint8_t **data, int len);
 	int load_history(uint8_t **data, int len);
-	int decode_frame(AVFrame *frame, int &got_frame);
-	int encode_frame(FFPacket &pkt, AVFrame *frame, int &got_frame);
+	int decode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame);
+	int encode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame);
 	int create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx);
+	void load_markers();
 
 	int encode_activate();
 	int nb_samples();
 	int64_t load_buffer(double ** const sp, int len);
 	int in_history(int64_t pos);
+	void reset_history();
 	int read(double *dp, long len, int ch);
 
 	int init_frame(AVFrame *frame);
@@ -171,10 +183,10 @@ public:
 	int audio_seek(int64_t pos);
 	int encode(double **samples, int len);
 
+	int idx;
 	int channel0, channels;
 	int sample_rate;
 	int mbsz, frame_sz;
-	int64_t seek_pos, curr_pos;
 	int64_t length;
 
 	SwrContext *resample_context;
@@ -184,27 +196,31 @@ public:
 
 class FFVideoStream : public FFStream {
 public:
-	FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx);
+	FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx);
 	virtual ~FFVideoStream();
-	int decode_frame(AVFrame *frame, int &got_frame);
-	int encode_frame(FFPacket &pkt, AVFrame *frame, int &got_frame);
+	int is_audio() { return 0; }
+	int is_video() { return 1; }
+	int decode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame);
+	int encode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame);
 	int create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx);
+	void load_markers();
 
 	int init_frame(AVFrame *picture);
 	int load(VFrame *vframe, int64_t pos);
 	int video_seek(int64_t pos);
 	int encode(VFrame *vframe);
 
+	int idx;
 	double frame_rate;
 	int width, height;
-	int64_t seek_pos, curr_pos;
 	int64_t length;
 	float aspect_ratio;
 
 	struct SwsContext *convert_ctx;
 	uint8_t *pkt_bfr;
 	int pkt_bfr_sz;
+	int64_t start_pts;
 
 	static PixelFormat color_model_to_pix_fmt(int color_model);
 	static int pix_fmt_to_color_model(PixelFormat pix_fmt);
@@ -282,7 +298,7 @@ public:
 		uint16_t st_idx, st_ch;
 		ffidx() { st_idx = st_ch = 0; }
 		ffidx(const ffidx &t) { st_idx = t.st_idx;  st_ch = t.st_ch; }
-		ffidx(uint16_t idx, uint16_t ch) { st_idx = idx; st_ch = ch; }
+		ffidx(uint16_t fidx, uint16_t ch) { st_idx = fidx; st_ch = ch; }
 	};
 
 	ArrayList<ffidx> astrm_index;
@@ -306,6 +322,7 @@ public:
 
 	FFMPEG(FileBase *file_base=0);
 	~FFMPEG();
+	int scan(IndexState *index_state, int64_t *scan_position, int *canceled);
 
 	int ff_audio_stream(int channel) { return astrm_index[channel].st_idx; }
 	int ff_video_stream(int layer) { return vstrm_index[layer].st_idx; }

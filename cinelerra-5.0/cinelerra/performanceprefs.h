@@ -62,6 +62,7 @@ public:
 	BC_Title *master_rate;
 	PrefsFileForking *file_forking;
 	PrefsFFMPEGEarlyProbe *ffmpeg_early_probe;
+	PrefsFFMPEGMarkerIndecies *ffmpeg_marker_indecies;
 };
 
 
@@ -161,6 +162,17 @@ class PrefsFFMPEGEarlyProbe : public BC_CheckBox
 public:
 	PrefsFFMPEGEarlyProbe(PerformancePrefs *perf_prefs, int x, int y);
 	~PrefsFFMPEGEarlyProbe();
+	
+	int handle_event();
+
+	PerformancePrefs *perf_prefs;
+};
+
+class PrefsFFMPEGMarkerIndecies : public BC_CheckBox
+{
+public:
+	PrefsFFMPEGMarkerIndecies(PerformancePrefs *perf_prefs, int x, int y);
+	~PrefsFFMPEGMarkerIndecies();
 	
 	int handle_event();
 

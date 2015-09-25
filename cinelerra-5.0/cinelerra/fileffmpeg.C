@@ -9,13 +9,17 @@
 
 #include "asset.h"
 #include "bcwindowbase.h"
+#include "bcprogressbox.h"
 #include "bitspopup.h"
 #include "ffmpeg.h"
 #include "filebase.h"
 #include "file.h"
 #include "fileffmpeg.h"
 #include "filesystem.h"
+#include "format.inc"
+#include "indexfile.h"
 #include "mutex.h"
+#include "preferences.h"
 #include "videodevice.inc"
 
 FileFFMPEG::FileFFMPEG(Asset *asset, File *file)
@@ -220,6 +224,8 @@ int FileFFMPEG::open_file(int rd, int wr)
 				if( !asset->video_length ) asset->video_length = ff->ff_video_frames(0);
 				if( !asset->frame_rate ) asset->frame_rate = ff->ff_frame_rate(0);
 			}
+			IndexState *index_state = asset->index_state;
+			index_state->read_markers(file->preferences->index_directory, asset->path);
 		}
 	}
 	else if( wr ) {
@@ -598,4 +604,87 @@ int FFMPEGConfigVideoToggle::handle_event()
 	return 1;
 }
 
+FFMPEGScanProgress::FFMPEGScanProgress(const char *title, int64_t length, int64_t *position, int *canceled)
+ : Thread(1, 0, 0)
+{
+	strcpy(this->progress_title, title);
+	this->length = length;
+	this->position = position;
+	this->canceled = canceled;
+	done = 0;
+	progress = 0;
+	start();
+}
+
+FFMPEGScanProgress::~FFMPEGScanProgress()
+{
+	done = 1;
+	cancel();
+	join();
+}
+
+void FFMPEGScanProgress::run()
+{
+	BC_ProgressBox *progress = new BC_ProgressBox(-1, -1, progress_title, length);
+	progress->start();
+
+	struct timeval start_time, now, then;
+	gettimeofday(&start_time, 0);
+	then = start_time;
+
+	while( !done ) {
+		if( progress->update(*position, 1) ) {
+			*canceled = done = 1;
+			break;
+		}
+		gettimeofday(&now, 0);
+		if(now.tv_sec - then.tv_sec >= 1) {
+			int64_t elapsed = now.tv_sec - start_time.tv_sec;
+			int64_t byte_rate = *position / elapsed;
+			int64_t eta = !byte_rate ? 0 : (length - *position) / byte_rate;
+			char string[BCTEXTLEN];
+			sprintf(string, "%s\nETA: " _LD "m" _LD "s",
+				progress_title, eta / 60, eta % 60);
+			progress->update_title(string, 1);
+			then = now;
+		}
+		usleep(500000);
+	}
+
+	progress->stop_progress();
+	delete progress;
+}
+
+int FileFFMPEG::get_index(char *index_path)
+{
+	if( !ff ) return -1;
+	if( !file->preferences->ffmpeg_marker_indecies ) return 1;
+
+	IndexState *index_state = asset->index_state;
+	if( index_state->index_status != INDEX_NOTTESTED ) return 0;
+	index_state->index_status = INDEX_BUILDING;
+
+	for( int aidx=0; aidx<ff->ffaudio.size(); ++aidx ) {
+		FFAudioStream *aud = ff->ffaudio[aidx];
+		index_state->add_audio_stream(aud->channels, aud->length);
+	}
+
+	char progress_title[BCTEXTLEN];
+	sprintf(progress_title, _("Creating %s\n"), index_path);
+        FileSystem fs;
+	int64_t file_bytes = fs.get_size(ff->fmt_ctx->filename);
+	int64_t scan_position = 0;
+	int canceled = 0;
+	FFMPEGScanProgress scan_progress(progress_title, file_bytes, &scan_position, &canceled);
+
+	index_state->index_bytes = file_bytes;
+	index_state->init_scan(file->preferences->index_size);
+	if( ff->scan(index_state, &scan_position, &canceled) || canceled ) {
+		index_state->reset_index();
+		index_state->reset_markers();
+		return 1;
+	}
+	index_state->marker_status = MARKERS_READY;
+	return index_state->create_index(index_path, asset);
+}
 

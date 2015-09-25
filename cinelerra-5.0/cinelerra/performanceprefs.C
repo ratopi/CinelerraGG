@@ -112,6 +112,9 @@ void PerformancePrefs::create_objects()
 
 	ffmpeg_early_probe = new PrefsFFMPEGEarlyProbe(this, x, y);
 	add_subwindow(ffmpeg_early_probe);
+	x1 = x + ffmpeg_early_probe->get_w() + 24;
+	ffmpeg_marker_indecies = new PrefsFFMPEGMarkerIndecies(this, x1, y);
+	add_subwindow(ffmpeg_marker_indecies);
 	y += 30;
 
 
@@ -581,9 +584,28 @@ PrefsFFMPEGEarlyProbe::PrefsFFMPEGEarlyProbe(PerformancePrefs *perf_prefs, int x
 PrefsFFMPEGEarlyProbe::~PrefsFFMPEGEarlyProbe()
 {
 }
+
 int PrefsFFMPEGEarlyProbe::handle_event()
 {
 	perf_prefs->pwindow->thread->preferences->ffmpeg_early_probe = get_value();
+	return 1;
+}
+
+
+PrefsFFMPEGMarkerIndecies::PrefsFFMPEGMarkerIndecies(PerformancePrefs *perf_prefs, int x, int y)
+ : BC_CheckBox(x, y, 
+	perf_prefs->pwindow->thread->preferences->ffmpeg_marker_indecies,
+	_("build ffmpeg marker indecies"))
+{
+	this->perf_prefs = perf_prefs;
+}
+PrefsFFMPEGMarkerIndecies::~PrefsFFMPEGMarkerIndecies()
+{
+}
+
+int PrefsFFMPEGMarkerIndecies::handle_event()
+{
+	perf_prefs->pwindow->thread->preferences->ffmpeg_marker_indecies = get_value();
 	return 1;
 }
 

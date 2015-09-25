@@ -69,6 +69,7 @@ public:
 		total = 0;
 	}
 	TYPE &last() { return values[total - 1]; }
+
 	void set_array_delete() { dtype = d_array; }
 	void set_free() { dtype = d_free; }
 	int size() { return total; }

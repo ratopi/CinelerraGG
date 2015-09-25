@@ -15,7 +15,7 @@
 
 
 
-void write_pbm(uint8_t *tp, int w, int h, const char *fmt, ...)
+void write_pgm(uint8_t *tp, int w, int h, const char *fmt, ...)
 {
   va_list ap;    va_start(ap, fmt);
   char fn[256];  vsnprintf(fn, sizeof(fn), fmt, ap);
@@ -28,7 +28,7 @@ void write_pbm(uint8_t *tp, int w, int h, const char *fmt, ...)
   }
 }
 
-void write_pgm(uint8_t *tp, int w, int h, const char *fmt, ...)
+void write_ppm(uint8_t *tp, int w, int h, const char *fmt, ...)
 {
   va_list ap;    va_start(ap, fmt);
   char fn[256];  vsnprintf(fn, sizeof(fn), fmt, ap);

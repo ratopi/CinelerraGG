@@ -50,6 +50,7 @@ public:
 	void oseek(long pos) { inp = bfr + pos; }
 	void iseek(long pos) { outp = bfr + pos; }
   	unsigned char *pos(long ofs=0) { return bfr+ofs; }
+	unsigned char *str() { if( inp < lmt ) *inp = 0; return bfr; }
 	int read(char *bp, int n);
 	int write(const char *bp, int n);
 
@@ -136,7 +137,7 @@ public:
 	int read_text_until(const char *tag_end, char *out, int len);
 	int read_tag();
 	int write_to_file(const char *filename);
-	int write_to_file(FILE *file);
+	int write_to_file(FILE *file, const char *filename="");
 	int read_from_file(const char *filename, int ignore_error = 0);
 	int read_from_string(char *string);
 	char *(*decode)(char *bp, const char *sp, int n);
@@ -150,6 +151,7 @@ public:
 	int rewind();
 	char *get_data();
 	char *string();
+	long length();
 
 	XMLBuffer *buffer;
 	int coded;
@@ -159,6 +161,8 @@ public:
 	char *output;
 	char left_delimiter, right_delimiter;
 	char filename[MAX_TITLE];
+	static const char *xml_header;
+	static const int xml_header_size;
 };
 
 #endif

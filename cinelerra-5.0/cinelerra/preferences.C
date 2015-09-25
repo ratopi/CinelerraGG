@@ -70,12 +70,12 @@ Preferences::Preferences()
 	sprintf(index_directory, BCASTDIR);
 	if(strlen(index_directory))
 		fs.complete_path(index_directory);
-	cache_size = 0xa00000;
-	index_size = 0x300000;
+	cache_size = 0x1000000;
+	index_size = 0x400000;
 	index_count = 100;
 	use_thumbnails = 1;
-	trap_sigsegv = 0;
-	trap_sigintr = 0;
+	trap_sigsegv = 1;
+	trap_sigintr = 1;
 	theme[0] = 0;
 	use_renderfarm = 0;
 	force_uniprocessor = 0;
@@ -87,8 +87,9 @@ Preferences::Preferences()
 	renderfarm_job_count = 20;
 	processors = calculate_processors(0);
 	real_processors = calculate_processors(1);
-	file_forking = 1;
+	file_forking = 0;
 	ffmpeg_early_probe = 0;
+	ffmpeg_marker_indecies = 1;
 	warn_indecies = 1;
 
 // Default brender asset
@@ -124,6 +125,8 @@ Preferences::Preferences()
 Preferences::~Preferences()
 {
 	brender_asset->Garbage::remove_user();
+	shbtn_prefs.remove_all_objects();
+	renderfarm_nodes.remove_all_objects();
 	delete preferences_lock;
 }
 
@@ -190,6 +193,7 @@ void Preferences::copy_from(Preferences *that)
 	real_processors = that->real_processors;
 	file_forking = that->file_forking;
 	ffmpeg_early_probe = that->ffmpeg_early_probe;
+	ffmpeg_marker_indecies = that->ffmpeg_marker_indecies;
 	warn_indecies = that->warn_indecies;
 	renderfarm_nodes.remove_all_objects();
 	renderfarm_ports.remove_all();
@@ -339,10 +343,11 @@ int Preferences::load_defaults(BC_Hash *defaults)
 
 
 
-	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", 0);
-	file_forking = defaults->get("FILE_FORKING", 1);
-	ffmpeg_early_probe = defaults->get("FFMPEG_EARLY_PROBE", 0);
-	warn_indecies = defaults->get("WARN_INDECIES", 1);
+	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", force_uniprocessor);
+	file_forking = defaults->get("FILE_FORKING", file_forking);
+	ffmpeg_early_probe = defaults->get("FFMPEG_EARLY_PROBE", ffmpeg_early_probe);
+	ffmpeg_marker_indecies = defaults->get("FFMPEG_MARKER_INDECIES", ffmpeg_marker_indecies);
+	warn_indecies = defaults->get("WARN_INDECIES", warn_indecies);
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
 	cache_size = defaults->get("CACHE_SIZE", cache_size);
@@ -440,6 +445,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("FORCE_UNIPROCESSOR", force_uniprocessor);
 	defaults->update("FILE_FORKING", file_forking);
 	defaults->update("FFMPEG_EARLY_PROBE", ffmpeg_early_probe);
+	defaults->update("FFMPEG_MARKER_INDECIES", ffmpeg_marker_indecies);
 	defaults->update("WARN_INDECIES", warn_indecies);
 	brender_asset->save_defaults(defaults, 
 		"BRENDER_",
