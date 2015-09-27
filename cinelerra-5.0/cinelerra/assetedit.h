@@ -222,6 +222,7 @@ public:
 	~DetailAssetThread();
 
 	void start(Asset *asset);
+	void stop();
 	void run();
 };
 

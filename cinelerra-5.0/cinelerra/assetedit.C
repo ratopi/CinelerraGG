@@ -797,8 +797,13 @@ DetailAssetThread::DetailAssetThread(MWindow *mwindow)
 
 DetailAssetThread::~DetailAssetThread()
 {
+	stop();
+}
+
+void DetailAssetThread::stop()
+{
 	if( Thread::running() ) {
-		dwindow->lock_window("DetailAssetThread::~DetailAssetThread");
+		dwindow->lock_window("DetailAssetThread::stop");
 		dwindow->set_done(1);
 		dwindow->unlock_window();
 		Thread::join();
@@ -831,11 +836,10 @@ void DetailAssetWindow::create_objects()
 
 void DetailAssetThread::start(Asset *asset)
 {
-	if( !Thread::running() ) {
-		delete dwindow;
-		dwindow = new DetailAssetWindow(mwindow, asset);
-		Thread::start();
-	}
+	stop();
+	delete dwindow;
+	dwindow = new DetailAssetWindow(mwindow, asset);
+	Thread::start();
 }
 
 void DetailAssetThread::run()

@@ -349,6 +349,7 @@ void FormatTools::update_driver(int driver)
 			break;
 	}
 	close_format_windows();
+	update_format();
 }
 
 void FormatTools::update_format()
@@ -392,7 +393,7 @@ void FormatTools::update_extension()
 	const char *extension = File::get_tag(asset->format);
 // split multiple extensions
 	ArrayList<const char*> extensions;
-	int len = strlen(extension);
+	int len = !extension ? -1 : strlen(extension);
 	const char *extension_ptr = extension;
 	for(int i = 0; i <= len; i++)
 	{
