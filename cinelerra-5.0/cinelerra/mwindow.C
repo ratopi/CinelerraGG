@@ -1029,17 +1029,11 @@ void MWindow::stop_playback(int wait)
 		0);
 	cwindow->playback_engine->interrupt_playback(wait);
 
-	for(int i = 0; i < vwindows.size(); i++)
-	{
+	for(int i = 0; i < vwindows.size(); i++) {
 		VWindow *vwindow = vwindows.get(i);
-		if(vwindow->running())
-		{
-			vwindow->playback_engine->que->send_command(STOP,
-				CHANGE_NONE, 
-				0,
-				0);
-			vwindow->playback_engine->interrupt_playback(wait);
-		}
+		if( !vwindow->is_running() ) continue;
+		vwindow->playback_engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
+		vwindow->playback_engine->interrupt_playback(wait);
 	}
         if( locked ) gui->lock_window("MWindow::stop_playback");
 }
@@ -1709,11 +1703,10 @@ void MWindow::create_objects(int want_gui,
 		session->show_vwindow);
 
 // Show all vwindows
-// 	if(session->show_vwindow)
-// 	{
-// 		for(int j = 0; j < vwindows.size(); j++)
-// 		{
+// 	if(session->show_vwindow) {
+// 		for(int j = 0; j < vwindows.size(); j++) {
 // 			VWindow *vwindow = vwindows.get(j);
+// 			if( !vwindow->is_running() ) continue;
 // 			if(debug) printf("MWindow::create_objects %d vwindow=%p\n", 
 // 				__LINE__, 
 // 				vwindow);
@@ -1844,20 +1837,16 @@ void MWindow::show_vwindow()
 	int total_running = 0;
 	session->show_vwindow = 1;
 
-
 // Raise all windows which are visible
-	for(int j = 0; j < vwindows.size(); j++)
-	{
+	for(int j = 0; j < vwindows.size(); j++) {
 		VWindow *vwindow = vwindows.get(j);
-		if(vwindow->is_running())
-		{
-			vwindow->gui->lock_window("MWindow::show_vwindow");
-			vwindow->gui->show_window(0);
-			vwindow->gui->raise_window();
-			vwindow->gui->flush();
-			vwindow->gui->unlock_window();
-			total_running++;
-		}
+		if( !vwindow->is_running() ) continue;
+		vwindow->gui->lock_window("MWindow::show_vwindow");
+		vwindow->gui->show_window(0);
+		vwindow->gui->raise_window();
+		vwindow->gui->flush();
+		vwindow->gui->unlock_window();
+		total_running++;
 	}
 
 //printf("MWindow::show_vwindow %d %d\n", __LINE__, vwindows.size());
@@ -2545,30 +2534,28 @@ void MWindow::update_project(int load_mode)
 
 // Close all the vwindows
 	if(load_mode == LOADMODE_REPLACE ||
-		load_mode == LOADMODE_REPLACE_CONCATENATE)
-	{
+		load_mode == LOADMODE_REPLACE_CONCATENATE) {
 		if(debug) PRINT_TRACE
 		int first_vwindow = 0;
 		if(session->show_vwindow) first_vwindow = 1;
 // Change visible windows to no source
-		for(int i = 0; i < first_vwindow && i < vwindows.size(); i++)
-		{
-			vwindows.get(i)->change_source(-1);
+		for(int i = 0; i < first_vwindow && i < vwindows.size(); i++) {
+			VWindow *vwindow = vwindows.get(i);
+			if( !vwindow->is_running() ) continue;
+			vwindow->change_source(-1);
 		}
 
 // Close remaining windows
-		for(int i = first_vwindow; i < vwindows.size(); i++)
-		{
-			vwindows.get(i)->close_window();
+		for(int i = first_vwindow; i < vwindows.size(); i++) {
+			VWindow *vwindow = vwindows.get(i);
+			if( !vwindow->is_running() ) continue;
+			vwindow->close_window();
 		}
 		if(debug) PRINT_TRACE
 	}
-	else
-	if(vwindows.size())
-	{
+	else if(vwindows.size()) {
 		VWindow *vwindow = vwindows.get(DEFAULT_VWINDOW);
-		if(vwindow->is_running())
-		{
+		if( vwindow->is_running() ) {
 			vwindow->gui->lock_window("MWindow::update_project");
 			vwindow->update(1);
 			vwindow->gui->unlock_window();
@@ -2730,16 +2717,13 @@ void MWindow::reset_caches()
 	if( cwindow->playback_engine && cwindow->playback_engine->video_cache )
 		cwindow->playback_engine->video_cache->remove_all();
 	
-	for(int i = 0; i < vwindows.size(); i++)
-	{
+	for(int i = 0; i < vwindows.size(); i++) {
 		VWindow *vwindow = vwindows.get(i);
-		if(vwindow->is_running())
-		{
-			if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
-				vwindow->playback_engine->audio_cache->remove_all();
-			if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
-				vwindow->playback_engine->video_cache->remove_all();
-		}
+		if( !vwindow->is_running() ) continue;
+		if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
+			vwindow->playback_engine->audio_cache->remove_all();
+		if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
+			vwindow->playback_engine->video_cache->remove_all();
 	}
 }
 
@@ -2753,16 +2737,13 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 		cwindow->playback_engine->audio_cache->delete_entry(asset);
 	if( cwindow->playback_engine && cwindow->playback_engine->video_cache )
 		cwindow->playback_engine->video_cache->delete_entry(asset);
-	for(int i = 0; i < vwindows.size(); i++)
-	{
+	for(int i = 0; i < vwindows.size(); i++) {
 		VWindow *vwindow = vwindows.get(i);
-		if(vwindow->is_running())
-		{
-			if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
-				vwindow->playback_engine->audio_cache->delete_entry(asset);
-			if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
-				vwindow->playback_engine->video_cache->delete_entry(asset);
-		}
+		if( !vwindow->is_running() ) continue;
+		if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
+			vwindow->playback_engine->audio_cache->delete_entry(asset);
+		if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
+			vwindow->playback_engine->video_cache->delete_entry(asset);
 	}
 }
 
@@ -2770,49 +2751,37 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 
 void MWindow::remove_assets_from_project(int push_undo)
 {
-	for(int i = 0; i < session->drag_assets->total; i++)
-	{
+	for(int i = 0; i < session->drag_assets->total; i++) {
 		Indexable *indexable = session->drag_assets->values[i];
 		if(indexable->is_asset) remove_asset_from_caches((Asset*)indexable);
 	}
 
 // Remove from VWindow.
-	for(int i = 0; i < session->drag_clips->total; i++)
-	{
-		for(int j = 0; j < vwindows.size(); j++)
-		{
+	for(int i = 0; i < session->drag_clips->total; i++) {
+		for(int j = 0; j < vwindows.size(); j++) {
 			VWindow *vwindow = vwindows.get(j);
-			if(vwindow->is_running())
-			{
-				if(session->drag_clips->values[i] == vwindow->get_edl())
-				{
-					vwindow->gui->lock_window("MWindow::remove_assets_from_project 1");
-					vwindow->delete_source(1, 1);
-					vwindow->gui->unlock_window();
-				}
+			if( !vwindow->is_running() ) continue;
+			if(session->drag_clips->values[i] == vwindow->get_edl()) {
+				vwindow->gui->lock_window("MWindow::remove_assets_from_project 1");
+				vwindow->delete_source(1, 1);
+				vwindow->gui->unlock_window();
 			}
 		}
 	}
 	
-	for(int i = 0; i < session->drag_assets->size(); i++)
-	{
-		for(int j = 0; j < vwindows.size(); j++)
-		{
+	for(int i = 0; i < session->drag_assets->size(); i++) {
+		for(int j = 0; j < vwindows.size(); j++) {
 			VWindow *vwindow = vwindows.get(j);
-			if(vwindow->is_running())
-			{
-				if(session->drag_assets->get(i) == vwindow->get_source())
-				{
-					vwindow->gui->lock_window("MWindow::remove_assets_from_project 2");
-					vwindow->delete_source(1, 1);
-					vwindow->gui->unlock_window();
-				}
+			if( !vwindow->is_running() ) continue;
+			if(session->drag_assets->get(i) == vwindow->get_source()) {
+				vwindow->gui->lock_window("MWindow::remove_assets_from_project 2");
+				vwindow->delete_source(1, 1);
+				vwindow->gui->unlock_window();
 			}
 		}
 	}
 	
-	for(int i = 0; i < session->drag_assets->size(); i++)
-	{
+	for(int i = 0; i < session->drag_assets->size(); i++) {
 		Indexable *indexable = session->drag_assets->values[i];
 		remove_indexfile(indexable);
 	}
@@ -3105,15 +3074,12 @@ int MWindow::reset_meters()
 	cwindow->gui->meters->reset_meters();
 	cwindow->gui->unlock_window();
 
-	for(int j = 0; j < vwindows.size(); j++)
-	{
+	for(int j = 0; j < vwindows.size(); j++) {
 		VWindow *vwindow = vwindows.get(j);
-		if(vwindow->is_running())
-		{
-			vwindow->gui->lock_window("MWindow::reset_meters 2");
-			vwindow->gui->meters->reset_meters();
-			vwindow->gui->unlock_window();
-		}
+		if( !vwindow->is_running() ) continue;
+		vwindow->gui->lock_window("MWindow::reset_meters 2");
+		vwindow->gui->meters->reset_meters();
+		vwindow->gui->unlock_window();
 	}
 
 	lwindow->gui->lock_window("MWindow::reset_meters 3");
@@ -3143,9 +3109,9 @@ void MWindow::resync_guis()
 	cwindow->gui->flush();
 	cwindow->gui->unlock_window();
 
-	for(int i = 0; i < vwindows.size(); i++)
-	{
+	for(int i = 0; i < vwindows.size(); i++) {
 		VWindow *vwindow = vwindows.get(i);
+		if( !vwindow->is_running() ) continue;
 		vwindow->gui->lock_window("MWindow::resync_guis");
 		vwindow->gui->resize_event(vwindow->gui->get_w(), 
 			vwindow->gui->get_h());
