@@ -25,6 +25,7 @@
 #include "autoconf.h"
 #include "bcsignals.h"
 #include "cplayback.h"
+#include "cstrdup.h"
 #include "cwindow.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -40,6 +41,7 @@
 #include "plugin.h"
 #include "pluginaclient.h"
 #include "pluginaclientlad.h"
+#include "pluginfclient.h"
 #include "pluginclient.h"
 #include "plugincommands.h"
 #include "pluginserver.h"
@@ -68,38 +70,40 @@
 #include <sys/mman.h>
 
 
-PluginServer::PluginServer()
+void PluginServer::init()
 {
 	reset_parameters();
+	this->plugin_type = PLUGIN_TYPE_UNKNOWN;
 	modules = new ArrayList<Module*>;
 	nodes = new ArrayList<VirtualNode*>;
 }
 
-PluginServer::PluginServer(char *path, MWindow *mwindow)
+PluginServer::PluginServer()
 {
-	reset_parameters();
-	set_path(path);
-	modules = new ArrayList<Module*>;
-	nodes = new ArrayList<VirtualNode*>;
-	this->mwindow = mwindow;
+	init();
+}
+
+PluginServer::PluginServer(MWindow *mwindow, char *path, int type)
+{
+	char fpath[BCTEXTLEN];
+	init();
+        this->plugin_type = type;
+        this->mwindow = mwindow;
+	if( type == PLUGIN_TYPE_FFMPEG ) {
+		ff_name = cstrdup(path);
+		sprintf(fpath, "ff_%s", path);
+		path = fpath;
+	}
+        set_path(path);
 }
 
 PluginServer::PluginServer(PluginServer &that)
 {
 	reset_parameters();
-
-	if(that.title)
-	{
-		title = new char[strlen(that.title) + 1];
-		strcpy(title, that.title);
-	}
-
-	if(that.path)
-	{
-		path = new char[strlen(that.path) + 1];
-		strcpy(path, that.path);
-	}
-
+	plugin_type = that.plugin_type;
+	title = !that.title ? 0 : cstrdup(that.title);
+	path = !that.path ? 0 : cstrdup(that.path);
+	ff_name = !that.ff_name ? 0 : cstrdup(that.ff_name);
 	modules = new ArrayList<Module*>;
 	nodes = new ArrayList<VirtualNode*>;
 
@@ -117,7 +121,6 @@ PluginServer::PluginServer(PluginServer &that)
 	keyframe = that.keyframe;
 	new_plugin = that.new_plugin;
 
-	is_lad = that.is_lad;
 	lad_descriptor = that.lad_descriptor;
 	lad_descriptor_function = that.lad_descriptor_function;
 	lad_index = that.lad_index;
@@ -126,11 +129,12 @@ PluginServer::PluginServer(PluginServer &that)
 PluginServer::~PluginServer()
 {
 	close_plugin();
-	if(path) delete [] path;
-	if(title) delete [] title;
-	if(modules) delete modules;
-	if(nodes) delete nodes;
-	if(picon) delete picon;
+	delete [] path;
+	delete [] ff_name;
+	delete [] title;
+	delete modules;
+	delete nodes;
+	delete picon;
 }
 
 // Done only once at creation
@@ -141,11 +145,12 @@ int PluginServer::reset_parameters()
 	prompt = 0;
 	cleanup_plugin();
 	autos = 0;
-	plugin = 0;
 	edl = 0;
+	dlobj = 0;
 	preferences = 0;
 	title = 0;
 	path = 0;
+	ff_name = 0;
 	audio = video = theme = 0;
 	fileio = 0;
 	uses_gui = 0;
@@ -161,13 +166,11 @@ int PluginServer::reset_parameters()
 	nodes = 0;
 	picon = 0;
 
-	is_lad = 0;
 	lad_index = -1;
 	lad_descriptor_function = 0;
 	lad_descriptor = 0;
 	return 0;
 }
-
 
 // Done every time the plugin is opened or closed
 int PluginServer::cleanup_plugin()
@@ -217,15 +220,18 @@ int PluginServer::get_lad_index()
 
 int PluginServer::is_ladspa()
 {
-	return is_lad;
+	return plugin_type == PLUGIN_TYPE_LADSPA ? 1 : 0;
 }
 
-int PluginServer::set_path(char *path)
+int PluginServer::is_ffmpeg()
 {
-	if(this->path) delete [] this->path;
-	this->path = new char[strlen(path) + 1];
-	strcpy(this->path, path);
-	return 0;
+	return plugin_type == PLUGIN_TYPE_FFMPEG ? 1 : 0;
+}
+
+void PluginServer::set_path(const char *path)
+{
+	delete [] this->path;
+	this->path = cstrdup(path);
 }
 
 char* PluginServer::get_path()
@@ -242,8 +248,7 @@ int PluginServer::get_synthesis()
 void PluginServer::set_title(const char *string)
 {
 	if(title) delete [] title;
-	title = new char[strlen(string) + 1];
-	strcpy(title, string);
+	title = cstrdup(string);
 }
 
 void PluginServer::generate_display_title(char *string)
@@ -260,11 +265,34 @@ void PluginServer::generate_display_title(char *string)
 		strcpy(string, ltitle);
 }
 
+void *PluginServer::load_obj()
+{
+	if( !dlobj ) {
+		char dlpath[BCTEXTLEN], *dp = dlpath;
+		char *cp = path;
+		if( *cp != '/' ) {
+			char *bp = preferences->plugin_dir;
+			while( *bp ) *dp++ = *bp++;
+			*dp++ = '/';
+		}
+		while( *cp ) *dp++ = *cp++;
+		*dp = 0;
+		dlobj = load(dlpath);
+	}
+	return dlobj;
+}
+
+void PluginServer::unload_obj()
+{
+	if( !dlobj ) return;
+	unload(dlobj);  dlobj = 0;
+}
+
 void PluginServer::delete_this()
 {
-	void *dlp = load_obj();
+	void *obj = dlobj;
 	delete this;
-	unload_obj(dlp);
+	if( obj ) unload(obj);
 }
 
 // Open plugin for signal processing
@@ -278,57 +306,61 @@ int PluginServer::open_plugin(int master,
 	this->preferences = preferences;
 	this->plugin = plugin;
 	this->edl = edl;
-	if( !load_obj() ) {
-		// add base path if not absolute path
-		char dl_path[BCTEXTLEN], *dp = dl_path;
-		char *cp = path;
-		if( *cp != '/' ) {
-			char *bp = preferences->plugin_dir;
-			while( *bp ) *dp++ = *bp++;
-			*dp++ = '/';
-		}
-		while( *cp ) *dp++ = *cp++;
-		*dp = 0;
-		if( !load_obj(dl_path) ) {
+	if( plugin_type != PLUGIN_TYPE_FFMPEG && plugin_type != PLUGIN_TYPE_EXECUTABLE && !load_obj() ) {
 // If the load failed it may still be an executable tool for a specific
 // file format, in which case we just store the path.
-			set_title(path);
-			char string[BCTEXTLEN];
-			strcpy(string, load_error());
-			if(!strstr(string, "executable"))
-				eprintf("PluginServer::open_plugin: load_obj failure = %s\n", string);
+		set_title(path);
+		char string[BCTEXTLEN];
+		strcpy(string, load_error());
+		if( !strstr(string, "executable") ) {
+			eprintf("PluginServer::open_plugin: load_obj failure = %s\n", string);
 			return PLUGINSERVER_NOT_RECOGNIZED;
 		}
+		plugin_type = PLUGIN_TYPE_EXECUTABLE;
 	}
-	if( !new_plugin && !lad_descriptor ) {
+	if( plugin_type == PLUGIN_TYPE_UNKNOWN || plugin_type == PLUGIN_TYPE_BUILTIN ) {
 		new_plugin =
 			(PluginClient* (*)(PluginServer*)) load_sym("new_plugin");
-		if( !new_plugin ) {
-			lad_descriptor_function =
-				(LADSPA_Descriptor_Function) load_sym("ladspa_descriptor");
-			if(!lad_descriptor_function) {
-				fprintf(stderr, "PluginServer::open_plugin "
-					" %d: new_plugin undefined in %s\n", __LINE__, path);
-				unload_obj();
-				return PLUGINSERVER_NOT_RECOGNIZED;
-			}
+		if( new_plugin )
+			plugin_type = PLUGIN_TYPE_BUILTIN;
+	}
+	if( plugin_type == PLUGIN_TYPE_UNKNOWN || plugin_type == PLUGIN_TYPE_LADSPA ) {
+		lad_descriptor_function =
+			(LADSPA_Descriptor_Function) load_sym("ladspa_descriptor");
+		if( lad_descriptor_function ) {
 			if( lad_index < 0 ) {
 				unload_obj();
 				return PLUGINSERVER_IS_LAD;
 			}
 			lad_descriptor = lad_descriptor_function(lad_index);
-			if(!lad_descriptor) {
-				unload_obj();
+			if( !lad_descriptor )
 				return PLUGINSERVER_NOT_RECOGNIZED;
-			}
-			is_lad = 1;
+			plugin_type = PLUGIN_TYPE_LADSPA;
 		}
 	}
-
-	client = is_lad ?
-		(PluginClient *) new PluginAClientLAD(this) :
-		new_plugin(this);
-
+	if( plugin_type == PLUGIN_TYPE_UNKNOWN ) {
+		fprintf(stderr, "PluginServer::open_plugin "
+			" %d: plugin undefined in %s\n", __LINE__, path);
+		unload_obj();
+		return PLUGINSERVER_NOT_RECOGNIZED;
+	}
+	switch( plugin_type ) {
+	case PLUGIN_TYPE_BUILTIN:
+		client = new_plugin(this);
+		break;
+	case PLUGIN_TYPE_LADSPA:
+		client = new PluginAClientLAD(this);
+		break;
+	case PLUGIN_TYPE_FFMPEG:
+		client = new_ffmpeg_plugin();
+		break;
+	default:
+		client = 0;
+		break;
+	}
+	if( !client )
+		return PLUGINSERVER_NOT_RECOGNIZED;
+	
 // Run initialization functions
 	realtime = client->is_realtime();
 // Don't load defaults when probing the directory.
@@ -393,30 +425,27 @@ void PluginServer::render_stop()
 void PluginServer::write_table(FILE *fp, int idx)
 {
 	if(!fp) return;
-	fprintf(fp, "\"%s\" \"%s\" %d %d %d %d %d %d %d %d %d %d %d %d\n",
-		path, title, idx, audio, video, theme, realtime, fileio,
-		uses_gui, multichannel, synthesis, transition, is_lad, lad_index);
+	fprintf(fp, "%d \"%s\" \"%s\" %d %d %d %d %d %d %d %d %d %d %d\n",
+		plugin_type, path, title, idx, audio, video, theme, realtime,
+		fileio, uses_gui, multichannel, synthesis, transition, lad_index);
 }
 
-char *PluginServer::table_quoted_field(char *&sp)
+int PluginServer::scan_table(char *text, int &type, char *path, char *title)
 {
-	char *cp = sp;
-	while( *cp && (*cp == ' ' || *cp == '\t') ) ++cp;
-	if( *cp++ != '"' ) return 0;
-	char *bp = cp;
-	while( *cp && *cp != '"' ) ++cp;
-	if( *cp != '"' ) return 0;
-	*cp++ = 0;  sp = cp;
-	return bp;
+	int n = sscanf(text, "%d \"%[^\"]\" \"%[^\"]\"", &type, path, title);
+	return n < 3 ? 1 : 0;
 }
 
 int PluginServer::read_table(char *text)
 {
-	int n = sscanf(text, "%d %d %d %d %d %d %d %d %d %d %d %d",
-		&dir_idx, &audio, &video, &theme, &realtime, &fileio, &uses_gui,
-		&multichannel, &synthesis, &transition, &is_lad, &lad_index);
-
-	return n == 12 ? 0 : 1;
+	char path[BCTEXTLEN], title[BCTEXTLEN];
+	int n = sscanf(text, "%d \"%[^\"]\" \"%[^\"]\" %d %d %d %d %d %d %d %d %d %d %d",
+		&plugin_type, path, title, &dir_idx, &audio, &video, &theme, &realtime,
+		&fileio, &uses_gui, &multichannel, &synthesis, &transition, &lad_index);
+	if( n != 14 ) return 1;
+	this->path = cstrdup(path);
+	this->title = cstrdup(title);
+	return 0;
 }
 
 int PluginServer::init_realtime(int realtime_sched,

@@ -22,7 +22,18 @@
 #ifndef PLUGINSERVER_INC
 #define PLUGINSERVER_INC
 
+class PluginObj;
 class PluginServer;
-class PluginGUIServer;
+
+#define PLUGIN_LADSPA_ID 0
+#define PLUGIN_FFMPEG_ID 1
+#define PLUGIN_IDS 2
+
+#define PLUGIN_TYPE_UNKNOWN -1
+#define PLUGIN_TYPE_EXECUTABLE 0
+#define PLUGIN_TYPE_BUILTIN 1
+#define PLUGIN_TYPE_LADSPA 2
+#define PLUGIN_TYPE_FFMPEG 3
+#define PLUGIN_TYPES 4
 
 #endif

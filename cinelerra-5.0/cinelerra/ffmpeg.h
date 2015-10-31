@@ -194,7 +194,32 @@ public:
 	float *aud_bfr;
 };
 
-class FFVideoStream : public FFStream {
+
+class FFVideoConvert {
+public:
+	struct SwsContext *convert_ctx;
+
+	FFVideoConvert() { convert_ctx = 0; }
+	~FFVideoConvert() { if( convert_ctx ) sws_freeContext(convert_ctx); }
+
+	static PixelFormat color_model_to_pix_fmt(int color_model);
+	static int pix_fmt_to_color_model(PixelFormat pix_fmt);
+
+	int convert_picture_vframe(VFrame *frame,
+		AVPicture *ip, PixelFormat ifmt, int iw, int ih);
+	int convert_cmodel(VFrame *frame_out,
+		AVPicture *ip, PixelFormat ifmt, int iw, int ih);
+	int transfer_cmodel(VFrame *frame_in,  //defaults->metadata
+		AVFrame *ifp, PixelFormat ifmt, int iw, int ih);
+	int convert_vframe_picture(VFrame *frame,
+		AVPicture *op, PixelFormat ofmt, int ow, int oh);
+	int convert_pixfmt(VFrame *frame_in,
+		 AVPicture *op, PixelFormat ofmt, int ow, int oh);
+	int transfer_pixfmt(VFrame *frame_in,  //metadata->defaults
+		 AVFrame *ofp, PixelFormat ofmt, int ow, int oh);
+};
+
+class FFVideoStream : public FFStream, public FFVideoConvert {
 public:
 	FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx);
 	virtual ~FFVideoStream();
@@ -217,22 +242,9 @@ public:
 	int64_t length;
 	float aspect_ratio;
 
-	struct SwsContext *convert_ctx;
 	uint8_t *pkt_bfr;
 	int pkt_bfr_sz;
 	int64_t start_pts;
-
-	static PixelFormat color_model_to_pix_fmt(int color_model);
-	static int pix_fmt_to_color_model(PixelFormat pix_fmt);
-
-	int convert_picture_vframe(VFrame *frame,
-		AVPicture *ip, PixelFormat ifmt, int iw, int ih);
-	int convert_cmodel(VFrame *frame_out,
-		AVPicture *ip, PixelFormat ifmt, int iw, int ih);
-	int convert_vframe_picture(VFrame *frame,
-		AVPicture *op, PixelFormat ofmt, int ow, int oh);
-	int convert_pixfmt(VFrame *frame_in,
-		 AVPicture *op, PixelFormat ofmt, int ow, int oh);
 };
 
 class FFMPEG : public Thread {

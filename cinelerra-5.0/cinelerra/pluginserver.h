@@ -44,6 +44,7 @@
 #include "mwindow.inc"
 #include "plugin.inc"
 #include "pluginaclientlad.inc"
+#include "pluginfclient.inc"
 #include "pluginclient.inc"
 #include "pluginserver.inc"
 #include "preferences.inc"
@@ -57,28 +58,19 @@
 
 #include <dlfcn.h>
 
-
-
-class PluginObj
-{
-	void *dlobj;
-public:
-	PluginObj() { dlobj = 0; }
-	~PluginObj() {}
-	PluginObj(PluginObj &that) { dlobj = 0; }
-// dl interface
-	void *load_obj() { return dlobj; }
-	void *load_obj(const char *path) { return dlobj = dlopen(path, RTLD_NOW); }
-	static void unload_obj(void *dlp) { if( dlp ) dlclose(dlp); }
-	void unload_obj() { unload_obj(dlobj); }
-	void *load_sym(const char *sym) { return dlsym(dlobj, sym); }
-	const char *load_error() { return dlerror(); }
-};
-
-class PluginServer : public PluginObj
+class PluginServer
 {
 	int reset_parameters();
+	void init();
 	int cleanup_plugin();
+
+	void *dlobj;
+	void *load(const char *dlp) { return dlobj = dlopen(dlp, RTLD_NOW); }
+	void unload(void *obj) { dlclose(obj); }
+	void *load_sym(const char *sym) { return dlsym(dlobj, sym); }
+	const char *load_error() { return dlerror(); }
+	void *load_obj();
+	void unload_obj();
 
 // Base class created by client
 	PluginClient *client;
@@ -87,23 +79,29 @@ class PluginServer : public PluginObj
 	PluginClient* (*new_plugin)(PluginServer*);
 
 // LAD support
-	int is_lad;
 	int lad_index;
 	LADSPA_Descriptor_Function lad_descriptor_function;
 	const LADSPA_Descriptor *lad_descriptor;
 	int use_opengl;
+// FFMPEG support
+	const char *ff_name;
 // Driver for opengl calls.
 	VideoDevice *vdevice;
 public:
 	PluginServer();
-	PluginServer(char *path, MWindow *mwindow=0);
+	PluginServer(MWindow *mwindow, char *path, int type);
 	PluginServer(PluginServer &);
 	virtual ~PluginServer();
-
 
 	friend class PluginAClientLAD;
 	friend class PluginAClientConfig;
 	friend class PluginAClientWindow;
+
+	friend class PluginFClient;
+	friend class PluginFAClient;
+	friend class PluginFVClient;
+	friend class PluginFClientConfig;
+	friend class PluginFClientWindow;
 
 // open a plugin and wait for commands
 // Get information for plugindb if master.
@@ -121,7 +119,7 @@ public:
 	void render_stop();
 // Write entry into plugin table
 	void write_table(FILE *fp, int idx);
-	static char *table_quoted_field(char *&sp);
+	static int scan_table(char *text, int &type, char *path, char *title);
 	int read_table(char *text);
 // queries
 	void set_title(const char *string);
@@ -151,10 +149,14 @@ public:
 // Get picon png vframe image
 	VFrame *get_picon();
 	VFrame *get_plugin_images();
+
 // ladspa
 	void set_lad_index(int i);
 	int get_lad_index();
 	int is_ladspa();
+// ffmpeg
+	int is_ffmpeg();
+	PluginClient *new_ffmpeg_plugin();
 // =============================== for realtime plugins
 // save configuration of plugin
 	void save_data(KeyFrame *keyframe);          
@@ -292,8 +294,8 @@ public:
 	double get_framerate();     // get framerate produced by plugin
 	int get_project_samplerate();            // get samplerate of project data before processing
 	double get_project_framerate();         // get framerate of project data before processing
-	int set_path(char *path);    // required first
-	char* get_path();
+	void set_path(const char *path);	// required first
+	char *get_path();
 	int get_synthesis();
 	void get_defaults_path(char *path);
 	void save_defaults();
@@ -321,6 +323,8 @@ public:
 	int64_t get_written_samples();   // after samples are written, get the number written
 	int64_t get_written_frames();   // after frames are written, get the number written
 
+// client origin
+	int plugin_type;
 
 // buffers
 	int64_t out_buffer_size;   // size of a send buffer to the plugin

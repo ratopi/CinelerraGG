@@ -62,6 +62,15 @@ void AWindow::create_objects()
 	clip_edit = new ClipEdit(mwindow, this, 0);
 }
 
+int AWindow::save_defaults(BC_Hash *defaults)
+{
+	return gui->save_defaults(defaults);
+}
+int AWindow::load_defaults(BC_Hash *defaults)
+{
+	return gui->load_defaults(defaults);
+}
+
 
 void AWindow::run()
 {

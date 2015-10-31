@@ -106,64 +106,40 @@ void VAttachmentPoint::render(VFrame *output,
 	if(plugin_server->multichannel)
 	{
 // Test against previous parameters for reuse of previous data
-		if(is_processed &&
-			this->start_position == start_position &&
-			EQUIV(this->frame_rate, frame_rate))
-		{
+		if( !is_processed || this->start_position != start_position ||
+		    !EQUIV(this->frame_rate, frame_rate)) {
+			is_processed = 1;
+			this->start_position = start_position;
+			this->frame_rate = frame_rate;
+
+// Allocate buffer vector for subsequent render calls
+			new_buffer_vector(output->get_w(), output->get_h(), 
+				output->get_color_model());
+// Process plugin
+//printf("VAttachmentPoint::render 1 %d\n", buffer_number);
+			if(renderengine)
+				plugin_servers.values[0]->set_use_opengl(use_opengl,
+					renderengine->video);
+			plugin_servers.values[0]->process_buffer(buffer_vector,
+				start_position, frame_rate,
+				(int64_t)Units::round(plugin->length * frame_rate / 
+					renderengine->get_edl()->session->frame_rate),
+				renderengine->command->get_direction());
+		}
+//printf("VAttachmentPoint::render 3\n");
 // Need to copy PBuffer if OpenGL, regardless of use_opengl
-			if(buffer_vector[buffer_number]->get_opengl_state() == VFrame::RAM)
-			{
-				output->copy_from(buffer_vector[buffer_number]);
-				output->set_opengl_state(VFrame::RAM);
-			}
-			else
-			if(renderengine && renderengine->video)
-			{
+		if( buffer_vector[buffer_number]->get_opengl_state() == VFrame::RAM ) {
+			output->copy_from(buffer_vector[buffer_number]);
+			output->set_opengl_state(VFrame::RAM);
+		}
+		else if(renderengine && renderengine->video) {
 // Need to copy PBuffer to texture
 // printf("VAttachmentPoint::render temp=%p output=%p\n", 
 // buffer_vector[buffer_number],
 // output);
-				VDeviceX11 *x11_device = (VDeviceX11*)renderengine->video->get_output_base();
-				x11_device->copy_frame(output, buffer_vector[buffer_number]);
-			}
-			return;
+			VDeviceX11 *x11_device = (VDeviceX11*)renderengine->video->get_output_base();
+			x11_device->copy_frame(output, buffer_vector[buffer_number]);
 		}
-
-		is_processed = 1;
-		this->start_position = start_position;
-		this->frame_rate = frame_rate;
-
-// Allocate buffer vector for subsequent render calls
-		new_buffer_vector(output->get_w(), 
-			output->get_h(), 
-			output->get_color_model());
-
-// Create temporary vector with output argument substituted in
-		VFrame **output_temp = new VFrame*[virtual_plugins.total];
-		for(int i = 0; i < virtual_plugins.total; i++)
-		{
-			if(i == buffer_number)
-				output_temp[i] = output;
-			else
-				output_temp[i] = buffer_vector[i];
-		}
-
-// Process plugin
-//printf("VAttachmentPoint::render 1 %d\n", buffer_number);
-		if(renderengine)
-			plugin_servers.values[0]->set_use_opengl(use_opengl,
-				renderengine->video);
-		plugin_servers.values[0]->process_buffer(output_temp,
-			start_position,
-			frame_rate,
-			(int64_t)Units::round(plugin->length * 
-				frame_rate / 
-				renderengine->get_edl()->session->frame_rate),
-			renderengine->command->get_direction());
-//printf("VAttachmentPoint::render 2\n");
-
-		delete [] output_temp;
-//printf("VAttachmentPoint::render 3\n");
 	}
 	else
 // process single track

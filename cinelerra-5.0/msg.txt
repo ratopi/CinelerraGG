@@ -1,3 +1,12 @@
+add ffmpeg filters as plugins
+fix nvidia gl lock problem, update active vwindow tests
+fix segv in formattools for record format ffmpeg
+add ffmpeg indexing
+upgrade to ffmpeg-2.8
+move aspect ratio fixex, better get_info, fixes for ffmpeg asset detection
+aspect ratio fixes for dvd/bd create, TZ fix
+remove old quicktime, replaced with current ffmpeg
+bunch of small fixes, add msg.txt to about prefs
 sync to last commit on google_code
 fixups for plugins interpolate, c41
 so long, Michael Niedermayer... and thanks for all the fish!!!

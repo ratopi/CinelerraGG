@@ -25,6 +25,7 @@
 #include "assetedit.inc"
 #include "assetremove.inc"
 #include "awindowgui.inc"
+#include "bchash.inc"
 #include "bcwindowbase.inc"
 #include "clipedit.inc"
 #include "mwindow.inc"
@@ -38,6 +39,8 @@ public:
 
 	void run();
 	void create_objects();
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 
 	char current_folder[BCTEXTLEN];
 

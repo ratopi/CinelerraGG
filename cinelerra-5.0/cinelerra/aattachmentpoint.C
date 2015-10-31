@@ -96,48 +96,27 @@ void AAttachmentPoint::render(Samples *output,
 	if(plugin_server->multichannel)
 	{
 // Test against previous parameters for reuse of previous data
-		if(is_processed &&
-			this->start_position == start_position && 
-			this->len == len && 
-			this->sample_rate == sample_rate)
-		{
-			memcpy(output->get_data(), 
-				buffer_vector[buffer_number]->get_data(), 
-				sizeof(double) * len);
-			return;
-		}
-
+		if( !is_processed || this->start_position != start_position || 
+			this->len != len || this->sample_rate != sample_rate ) {
 // Update status
-		this->start_position = start_position;
-		this->len = len;
-		this->sample_rate = sample_rate;
-		is_processed = 1;
+			this->start_position = start_position;
+			this->len = len;
+			this->sample_rate = sample_rate;
+			is_processed = 1;
 
 // Allocate buffer vector
-		new_buffer_vector(virtual_plugins.total, len);
-
-// Create temporary buffer vector with output argument substituted in
-		Samples **output_temp = new Samples*[virtual_plugins.total];
-		for(int i = 0; i < virtual_plugins.total; i++)
-		{
-			if(i == buffer_number)
-				output_temp[i] = output;
-			else
-				output_temp[i] = buffer_vector[i];
-		}
+			new_buffer_vector(virtual_plugins.total, len);
 
 // Process plugin
-		plugin_servers.values[0]->process_buffer(output_temp,
-			start_position,
-			len,
-			sample_rate,
-			plugin->length *
-				sample_rate /
-				renderengine->get_edl()->session->sample_rate,
-			renderengine->command->get_direction());
-
-// Delete temporary buffer vector
-		delete [] output_temp;
+			plugin_servers.values[0]->process_buffer(
+				buffer_vector, start_position, len, sample_rate,
+				plugin->length * sample_rate /
+					renderengine->get_edl()->session->sample_rate,
+				renderengine->command->get_direction());
+		}
+		memcpy(output->get_data(), 
+			buffer_vector[buffer_number]->get_data(), 
+			sizeof(double) * len);
 	}
 	else
 	{

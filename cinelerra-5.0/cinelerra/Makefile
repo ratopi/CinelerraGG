@@ -326,6 +326,7 @@ OBJS = \
 	$(OBJDIR)/vdevicempeg.o \
 	$(OBJDIR)/vdevicev4l2mpeg.o \
 	$(OBJDIR)/wwindow.o \
+	$(OBJDIR)/pluginfclient.o \
 
 #	$(OBJDIR)/renderfarmfsclient.o \
 #	$(OBJDIR)/renderfarmfsserver.o \
@@ -344,9 +345,6 @@ LIBRARIES := \
 	$(THEME_DATA) \
 
 LIBS = $(LIBRARIES)
-LIBS += $(thirdparty_libraries)
-LIBS += $(thirdparty_libraries)
-LIBS += $(thirdparty_libraries)
 LIBS += \
 	-lX11 \
 	-lXext \
@@ -361,7 +359,9 @@ LIBS += \
 	-llzma \
 	-lfontconfig \
 	-lfreetype \
-	$(EXTRA_LIBS)
+
+LIBS += -Wl,--start-group $(thirdparty_libraries) -Wl,--end-group 
+LIBS += $(EXTRA_LIBS)
 
 CUTADS = $(OBJDIR)/cutads
 CUTOBJ = $(OBJDIR)/cutads.o

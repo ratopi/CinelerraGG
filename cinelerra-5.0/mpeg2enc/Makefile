@@ -53,7 +53,6 @@ OBJ = \
 
 LIBS = \
 	../libzmpeg3/$(OBJDIR)/libzmpeg3.a \
-	$(thirdparty_libraries) $(static_libraries) \
 	-lasound \
 	-lpthread \
 	-lpng \
@@ -64,7 +63,9 @@ LIBS = \
 	-lbz2 \
 	-lm \
 	-ldl \
-	$(EXTRA_LIBS)
+
+LIBS += -Wl,--start-group $(thirdparty_libraries) -Wl,--end-group 
+LIBS += $(EXTRA_LIBS)
 
 HVEG2LIB = $(OBJDIR)/hveg2enc.a
 HVEG2ENC = $(OBJDIR)/hveg2enc

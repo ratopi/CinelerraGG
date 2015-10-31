@@ -392,23 +392,30 @@ int MWindow::load_plugin_index(MWindow *mwindow, char *path)
 	    index_version != PLUGIN_FILE_VERSION ) ret = 1;
 
 	while( !ret && !feof(fp)) {
-		char *sp = index_line, *plugin_path = 0, *plugin_title = 0;
-		if( fgets(sp, BCTEXTLEN, fp) ) {
-			plugin_path = PluginServer::table_quoted_field(sp);
-			if( plugin_exists(plugin_path) ) continue;
-			plugin_title = PluginServer::table_quoted_field(sp);
+		if( !fgets(index_line, BCTEXTLEN, fp) ) break;
+		if( index_line[0] == ';' ) continue;
+		if( index_line[0] == '#' ) continue;
+		int type = PLUGIN_TYPE_UNKNOWN;
+		char path[BCTEXTLEN], title[BCTEXTLEN];
+		if( PluginServer::scan_table(index_line, type, path, title) ) continue;
+		PluginServer *server = 0;
+		switch( type ) {
+		case PLUGIN_TYPE_BUILTIN:
+		case PLUGIN_TYPE_LADSPA:
+			server = new PluginServer(mwindow, path, type);
+			break;
+		case PLUGIN_TYPE_FFMPEG: // skip "ff_..."
+			server = new_ffmpeg_server(mwindow, path+3);
+			break;
 		}
-		if( plugin_path && plugin_title ) {
+		if( !server ) continue;
 // Create plugin server from index entry
-			PluginServer *new_plugin = new PluginServer(path, mwindow);
-			new_plugin->set_path(plugin_path);
-			new_plugin->set_title(plugin_title);
-			if( new_plugin->read_table(sp) ) {
-				delete new_plugin;
-				ret = 1;  break;
-			}
-			plugindb->append(new_plugin);
+		server->set_title(title);
+		if( server->read_table(index_line) ) {
+			delete server;
+			ret = 1;  break;
 		}
+		plugindb->append(server);
 	}
 
 	fclose(fp);
@@ -427,7 +434,7 @@ void MWindow::init_plugin_index(MWindow *mwindow, Preferences *preferences, FILE
 	fs.set_filter( "[*.plugin][*.so]" );
 	int result = fs.update(plugin_path);
 	if( result || !fs.dir_list.total ) return;
-	int vis_id = ++idx;
+	int vis_id = idx++;
 
 	for( int i=0; i<fs.dir_list.total; ++i ) {
 		char *fs_path = fs.dir_list.values[i]->path;
@@ -441,30 +448,31 @@ void MWindow::init_plugin_index(MWindow *mwindow, Preferences *preferences, FILE
 			continue;
 		}
 		if( plugin_exists(plugin_path) ) continue;
-		PluginServer *new_plugin = new PluginServer(plugin_path, mwindow);
-		result = new_plugin->open_plugin(1, preferences, 0, 0);
+		PluginServer *server = new PluginServer(mwindow, plugin_path, PLUGIN_TYPE_UNKNOWN);
+		result = server->open_plugin(1, preferences, 0, 0);
 		if( !result ) {
-			new_plugin->write_table(fp,vis_id);
-			new_plugin->close_plugin();
-			new_plugin->delete_this();
+			server->write_table(fp,vis_id);
+			server->close_plugin();
+			server->delete_this();
 			continue;
 		}
 		if( result != PLUGINSERVER_IS_LAD ) continue;
 		int lad_index = 0;
 		for(;;) {
-			PluginServer *new_plugin = new PluginServer(plugin_path, mwindow);
-			new_plugin->set_lad_index(lad_index++);
-			result = new_plugin->open_plugin(1, preferences, 0, 0);
+			PluginServer *server = new PluginServer(mwindow, plugin_path, PLUGIN_TYPE_LADSPA);
+			server->set_lad_index(lad_index++);
+			result = server->open_plugin(1, preferences, 0, 0);
 			if( result ) break;
-			new_plugin->write_table(fp,vis_id);
-			new_plugin->close_plugin();
-			new_plugin->delete_this();
+			server->write_table(fp, PLUGIN_LADSPA_ID);
+			server->close_plugin();
+			server->delete_this();
 		}
 	}
 }
 
 int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
 {
+	init_ffmpeg();
 	if( !plugindb ) plugindb = new ArrayList<PluginServer*>;
 	char index_path[BCTEXTLEN];
 	sprintf(index_path, "%s/%s", preferences->plugin_dir, PLUGIN_FILE);
@@ -477,8 +485,9 @@ int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
 	}
 	fprintf(fp, "%d\n", PLUGIN_FILE_VERSION);
 	char *plug_path = FileSystem::basepath(preferences->plugin_dir);
-	int dir_id = 0;
+	int dir_id = PLUGIN_IDS;
 	init_plugin_index(mwindow, preferences, fp, plug_path, ".", dir_id);
+	init_ffmpeg_index(mwindow, preferences, fp);
 	fclose(fp);
 	delete [] plug_path;
 	return load_plugin_index(mwindow, index_path);
@@ -2829,8 +2838,9 @@ void MWindow::dump_plugins(FILE *fp)
 	if( !plugindb ) return;
 	for(int i = 0; i < plugindb->total; i++)
 	{
-		fprintf(fp, "audio=%d video=%d rt=%d multi=%d"
+		fprintf(fp, "type=%d audio=%d video=%d rt=%d multi=%d"
 			" synth=%d transition=%d theme=%d %s\n",
+			plugindb->values[i]->plugin_type,
 			plugindb->values[i]->audio,
 			plugindb->values[i]->video,
 			plugindb->values[i]->realtime,
@@ -2908,6 +2918,7 @@ int MWindow::save_defaults()
 // Pointer comparison
 		plugin_guis->values[i]->save_defaults();
 	}
+	awindow->save_defaults(defaults);
 
 	defaults->save();
 	return 0;

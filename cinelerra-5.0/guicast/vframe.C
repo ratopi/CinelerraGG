@@ -1215,8 +1215,7 @@ void VFrame::clear_stacks()
 {
 	next_effects.remove_all_objects();
 	prev_effects.remove_all_objects();
-	delete params;
-	params = new BC_Hash;
+	params->clear();
 }
 
 void VFrame::copy_params(VFrame *src)
@@ -1241,7 +1240,7 @@ void VFrame::copy_stacks(VFrame *src)
 		strcpy(ptr, src->prev_effects.values[i]);
 	}
 
-	params->copy_from(src->params);
+	copy_params(src);
 }
 
 int VFrame::equal_stacks(VFrame *src)

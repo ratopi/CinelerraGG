@@ -48,16 +48,21 @@ BC_Hash::BC_Hash(const char *filename)
 	FileSystem directory;
 
 	directory.parse_tildas(this->filename);
-	total = 0;
 }
 
-BC_Hash::~BC_Hash()
+void BC_Hash::clear()
 {
 	for(int i = 0; i < total; i++)
 	{
 		delete [] names[i];
 		delete [] values[i];
 	}
+	total = 0;
+}
+
+BC_Hash::~BC_Hash()
+{
+	clear();
 	delete [] names;
 	delete [] values;
 }
@@ -317,19 +322,8 @@ varFn(int,update,const char *)	varFn(char *,get,char *)
 void BC_Hash::copy_from(BC_Hash *src)
 {
 // Can't delete because this is used by file decoders after plugins
-// request data.
-// 	for(int i = 0; i < total; i++)
-// 	{
-// 		delete [] names[i];
-// 		delete [] values[i];
-// 	}
-// 	delete [] names;
-// 	delete [] values;
-//
-// 	allocated = 0;
-// 	names = 0;
-// 	values = 0;
-// 	total = 0;
+// request data.  use explicit destructor to clear/clean
+// 	this->~BC_Hash();
 
 SET_TRACE
 	reallocate_table(src->total);

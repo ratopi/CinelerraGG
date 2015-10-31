@@ -67,6 +67,7 @@
 #include "playback3d.inc"
 #include "playbackengine.inc"
 #include "plugin.inc"
+#include "pluginfclient.inc"
 #include "pluginserver.inc"
 #include "pluginset.inc"
 #include "preferences.inc"
@@ -526,12 +527,12 @@ public:
 // Contains file descriptors for all the dlopens
 	static ArrayList<PluginServer*> *plugindb;
 // Currently visible plugins
+	int64_t plugin_visibility;
 	ArrayList<PluginServer*> *plugin_guis;
 // GUI Plugins to delete
 	ArrayList<PluginServer*> *dead_plugins;
 // Keyframe editors
 	ArrayList<KeyFrameThread*> *keyframe_threads;
-
 
 // Adjust sample position to line up with frames.
 	int fix_timing(int64_t &samples_out, 
@@ -606,7 +607,10 @@ public:
 	static int init_plugins(MWindow *mwindow, Preferences *preferences);
 	static void init_plugin_index(MWindow *mwindow, Preferences *preferences,
 		FILE *fp, const char *plug_dir, const char *plug_path, int &dir_id);
+	static void init_ffmpeg();
+	static void init_ffmpeg_index(MWindow *mwindow, Preferences *preferences, FILE *fp);
 	static int load_plugin_index(MWindow *mwindow, char *path);
+	static PluginServer* new_ffmpeg_server(MWindow *mwindow, const char *name);
 	void init_preferences();
 	void init_signals();
 	void init_theme();

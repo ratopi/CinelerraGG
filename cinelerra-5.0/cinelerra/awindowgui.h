@@ -154,6 +154,8 @@ public:
 	PluginServer* selected_plugin();
 	AssetPicon* selected_folder();
 	bool protected_pixmap(BC_Pixmap *pixmap);
+	int save_defaults(BC_Hash *defaults);
+	int load_defaults(BC_Hash *defaults);
 
 	MWindow *mwindow;
 	AWindow *awindow;
@@ -161,7 +163,6 @@ public:
 	AWindowAssets *asset_list;
 	AWindowFolders *folder_list;
 	AWindowDivider *divider;
-	uint32_t plugin_visibility;
 
 // Store data to speed up responses
 // Persistant data for listboxes
@@ -179,6 +180,7 @@ public:
 
 	const char *asset_titles[ASSET_COLUMNS];
 
+	BC_Hash *defaults;
 // Persistent icons
 	BC_Pixmap *folder_icon;
 	BC_Pixmap *file_icon;
@@ -189,6 +191,8 @@ public:
 	BC_Pixmap *vtransition_icon;  VFrame *vtransition_vframe;
 	BC_Pixmap *aeffect_icon;      VFrame *aeffect_vframe;
 	BC_Pixmap *ladspa_icon;       VFrame *ladspa_vframe;
+	BC_Pixmap *ff_aud_icon;       VFrame *ff_aud_vframe;
+	BC_Pixmap *ff_vid_icon;       VFrame *ff_vid_vframe;
 	BC_Pixmap *veffect_icon;      VFrame *veffect_vframe;
 	NewFolderThread *newfolder_thread;
 
@@ -200,6 +204,7 @@ public:
 // Temporary for reading picons from files
 	VFrame *temp_picon;
 
+	int64_t plugin_visibility;
 	AWindowRemovePlugin *remove_plugin;
 private:
 	void update_folder_list();

@@ -28,6 +28,7 @@
 #include "awindow.h"
 #include "awindowmenu.h"
 #include "bcsignals.h"
+#include "bchash.h"
 #include "cache.h"
 #include "bccmodels.h"
 #include "cursors.h"
@@ -54,6 +55,8 @@
 #include "vwindow.h"
 
 #include "data/lad_picon_png.h"
+#include "data/ff_audio_png.h"
+#include "data/ff_video_png.h"
 
 #include<stdio.h>
 #include<unistd.h>
@@ -257,19 +260,27 @@ void AssetPicon::create_objects()
 				icon = gui->atransition_icon;
 				icon_vframe = gui->atransition_vframe;
 			}
-			else if( !plugin->is_ladspa() ) {
-				icon = gui->aeffect_icon;
-				icon_vframe = gui->aeffect_vframe;
+			else if( plugin->is_ffmpeg() ) {
+				icon = gui->ff_aud_icon;
+				icon_vframe = gui->ff_aud_vframe;
 			}
-			else {
+			else if( plugin->is_ladspa() ) {
 				icon = gui->ladspa_icon;
 				icon_vframe = gui->ladspa_vframe;
+			}
+			else {
+				icon = gui->aeffect_icon;
+				icon_vframe = gui->aeffect_vframe;
 			}
 		}
 		else if( plugin->video ) {
 			if( plugin->transition ) {
 				icon = gui->vtransition_icon;
 				icon_vframe = gui->vtransition_vframe;
+			}
+			else if( plugin->is_ffmpeg() ) {
+				icon = gui->ff_vid_icon;
+				icon_vframe = gui->ff_vid_vframe;
 			}
 			else {
 				icon = gui->veffect_icon;
@@ -321,13 +332,15 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	aeffect_icon = 0;      aeffect_vframe = 0;
 	ladspa_icon = 0;       ladspa_vframe = 0;
 	veffect_icon = 0;      veffect_vframe = 0;
+	ff_aud_icon = 0;       ff_aud_vframe = 0;
+	ff_vid_icon = 0;       ff_vid_vframe = 0;
+	plugin_visibility = ((uint64_t)1<<(8*sizeof(uint64_t)-1))-1;
 	newfolder_thread = 0;
 	asset_menu = 0;
 	assetlist_menu = 0;
 	folderlist_menu = 0;
 	temp_picon = 0;
 	remove_plugin = 0;
-	plugin_visibility = ~0;
 }
 
 AWindowGUI::~AWindowGUI()
@@ -339,6 +352,7 @@ AWindowGUI::~AWindowGUI()
 	atransitions.remove_all_objects();
 	vtransitions.remove_all_objects();
 	displayed_assets[1].remove_all_objects();
+
 	delete file_icon;
 	delete audio_icon;
 	delete video_icon;
@@ -349,6 +363,10 @@ AWindowGUI::~AWindowGUI()
 	delete aeffect_icon;
 	delete ladspa_icon;
 	delete ladspa_vframe;
+	delete ff_aud_icon;
+	delete ff_aud_vframe;
+	delete ff_vid_icon;
+	delete ff_vid_vframe;
 	delete veffect_icon;
 	delete newfolder_thread;
 	delete asset_menu;
@@ -361,15 +379,17 @@ AWindowGUI::~AWindowGUI()
 bool AWindowGUI::protected_pixmap(BC_Pixmap *icon)
 {
 	return  icon == file_icon ||
-		icon == audio_icon ||
 		icon == folder_icon ||
-		icon == clip_icon ||
+		icon == audio_icon ||
 		icon == video_icon ||
-		icon == veffect_icon ||
+		icon == clip_icon ||
 		icon == vtransition_icon ||
+		icon == atransition_icon ||
+		icon == veffect_icon ||
 		icon == aeffect_icon ||
 		icon == ladspa_icon ||
-		icon == atransition_icon; 
+		icon == ff_aud_icon ||
+		icon == ff_vid_icon;
 }
 
 void AWindowGUI::create_objects()
@@ -413,6 +433,10 @@ SET_TRACE
 	aeffect_icon = new BC_Pixmap(this, aeffect_vframe, PIXMAP_ALPHA);
 	ladspa_vframe = new VFrame(lad_picon_png);
 	ladspa_icon = new BC_Pixmap(this, ladspa_vframe, PIXMAP_ALPHA);
+	ff_aud_vframe = new VFrame(ff_audio_png);
+	ff_aud_icon = new BC_Pixmap(this, ff_aud_vframe, PIXMAP_ALPHA);
+	ff_vid_vframe = new VFrame(ff_video_png);
+	ff_vid_icon = new BC_Pixmap(this, ff_vid_vframe, PIXMAP_ALPHA);
 	veffect_vframe = mwindow->theme->get_image("veffect_icon");
 	veffect_icon = new BC_Pixmap(this, veffect_vframe, PIXMAP_ALPHA);
 
@@ -438,6 +462,7 @@ SET_TRACE
 SET_TRACE
 
 	mwindow->theme->get_awindow_sizes(this);
+	load_defaults(mwindow->defaults);
 
 SET_TRACE
 	add_subwindow(asset_list = new AWindowAssets(mwindow,
@@ -574,6 +599,19 @@ void AWindowGUI::reposition_objects()
 	flush();
 }
 
+int AWindowGUI::save_defaults(BC_Hash *defaults)
+{
+	defaults->update("PLUGIN_VISIBILTY", plugin_visibility);
+	return 0;
+}
+
+int AWindowGUI::load_defaults(BC_Hash *defaults)
+{
+	plugin_visibility = defaults->get("PLUGIN_VISIBILTY", plugin_visibility);
+	return 0;
+}
+
+
 int AWindowGUI::close_event()
 {
 	hide_window();
@@ -585,6 +623,7 @@ int AWindowGUI::close_event()
 	mwindow->gui->unlock_window();
 
 	lock_window("AWindowGUI::close_event");
+	save_defaults(mwindow->defaults);
 	mwindow->save_defaults();
 	return 1;
 }
@@ -1733,7 +1772,11 @@ AddPluginsMenu::AddPluginsMenu(MWindow *mwindow, AWindowGUI *gui)
 
 void AddPluginsMenu::create_objects()
 {
-	uint32_t vis = 0;
+	uint64_t vis = 0;
+	add_item(new AddPluginItem(this, "ladspa", PLUGIN_LADSPA_ID));
+	vis |= 1 << PLUGIN_LADSPA_ID;
+	add_item(new AddPluginItem(this, "ffmpeg", PLUGIN_FFMPEG_ID));
+	vis |= 1 << PLUGIN_FFMPEG_ID;
 	for( int i=0; i<MWindow::plugindb->size(); ++i ) {
 		PluginServer *plugin = MWindow::plugindb->get(i);
 		if( !plugin->audio && !plugin->video ) continue;
@@ -1743,16 +1786,11 @@ void AddPluginsMenu::create_objects()
 		vis |= msk;
 		char parent[BCTEXTLEN];
 		strcpy(parent, plugin->path);
-		char *cp = strrchr(parent, '/');
-		if( !cp ) continue;
-		*cp = 0;
 		char *bp = strrchr(parent, '/');
+		if( bp ) { *bp = 0;  bp = strrchr(parent, '/'); }
 		if( !bp ) bp = parent; else ++bp;
-		if( !strcmp(bp, "ladspa") )
-			gui->plugin_visibility &= ~(1 << idx);
 		add_item(new AddPluginItem(this, bp, idx));
 	}
-		
 }
 
 AddPluginItem::AddPluginItem(AddPluginsMenu *menu, char const *text, int idx)
@@ -1760,7 +1798,7 @@ AddPluginItem::AddPluginItem(AddPluginsMenu *menu, char const *text, int idx)
 {
 	this->menu = menu;
 	this->idx = idx;
-	uint32_t msk = 1 << idx, vis = menu->gui->plugin_visibility;
+	uint64_t msk = (uint64_t)1 << idx, vis = menu->gui->plugin_visibility;
 	int chk = (msk & vis) ? 1 : 0;
         set_checked(chk);
 }
@@ -1769,10 +1807,11 @@ int AddPluginItem::handle_event()
 {
         int chk = get_checked() ^ 1;
         set_checked(chk);
-	uint32_t msk = 1 << idx, vis = menu->gui->plugin_visibility;
+	uint64_t msk = (uint64_t)1 << idx, vis = menu->gui->plugin_visibility;
 	menu->gui->plugin_visibility = chk ? vis | msk : vis & ~msk;
 	menu->gui->update_effects();
 	menu->gui->update_assets();
+	menu->gui->save_defaults(menu->mwindow->defaults);
 	return 1;
 }
 

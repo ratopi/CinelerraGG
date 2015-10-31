@@ -81,6 +81,7 @@ public:
 	int size();
 	char* get_key(int number);
 	char* get_value(int number);
+	void clear();
 
 private:
 // Reallocate table so at least total entries exist

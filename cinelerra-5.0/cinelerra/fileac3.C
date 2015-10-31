@@ -296,8 +296,10 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 				file->get_audio_position() : AV_NOPTS_VALUE ;
 			int got_packet = 0;
 			ret = avcodec_encode_audio2(avctx, &avpkt, frame, &got_packet);
-			if( !ret ) {
-				fprintf(stderr, "avcodec_encode_audio2 failed. \n%m\n");
+			if( ret < 0 ) {
+				char errmsg[BCSTRLEN];
+				av_strerror(ret, errmsg, sizeof(errmsg));
+				fprintf(stderr, "avcodec_encode_audio2 failed. \n%s\n", errmsg);
 			}
 		}
 		av_packet_free_side_data(&avpkt);

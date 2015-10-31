@@ -15,6 +15,7 @@
 
 #include "asset.h"
 #include "bccmodels.h"
+#include "bchash.h"
 #include "fileffmpeg.h"
 #include "file.h"
 #include "ffmpeg.h"
@@ -710,12 +711,10 @@ FFVideoStream::FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx)
 	frame_rate = 0;
 	aspect_ratio = 0;
 	length = 0;
-	convert_ctx = 0;
 }
 
 FFVideoStream::~FFVideoStream()
 {
-	if( convert_ctx ) sws_freeContext(convert_ctx);
 }
 
 int FFVideoStream::decode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame)
@@ -816,7 +815,7 @@ int FFVideoStream::encode_frame(AVPacket *pkt, AVFrame *frame, int &got_packet)
 	return ret;
 }
 
-PixelFormat FFVideoStream::color_model_to_pix_fmt(int color_model)
+PixelFormat FFVideoConvert::color_model_to_pix_fmt(int color_model)
 {
 	switch( color_model ) { 
 	case BC_YUV422:		return AV_PIX_FMT_YUYV422;
@@ -837,7 +836,7 @@ PixelFormat FFVideoStream::color_model_to_pix_fmt(int color_model)
 	return AV_PIX_FMT_NB;
 }
 
-int FFVideoStream::pix_fmt_to_color_model(PixelFormat pix_fmt)
+int FFVideoConvert::pix_fmt_to_color_model(PixelFormat pix_fmt)
 {
 	switch (pix_fmt) { 
 	case AV_PIX_FMT_YUYV422:	return BC_YUV422;
@@ -858,7 +857,7 @@ int FFVideoStream::pix_fmt_to_color_model(PixelFormat pix_fmt)
 	return BC_TRANSPARENCY;
 }
 
-int FFVideoStream::convert_picture_vframe(VFrame *frame,
+int FFVideoConvert::convert_picture_vframe(VFrame *frame,
 		AVPicture *ip, PixelFormat ifmt, int iw, int ih)
 {
 	AVPicture opic;
@@ -885,20 +884,20 @@ int FFVideoStream::convert_picture_vframe(VFrame *frame,
 	convert_ctx = sws_getCachedContext(convert_ctx, iw, ih, ifmt,
 		frame->get_w(), frame->get_h(), ofmt, SWS_BICUBIC, NULL, NULL, NULL);
 	if( !convert_ctx ) {
-		fprintf(stderr, "FFVideoStream::convert_picture_frame:"
+		fprintf(stderr, "FFVideoConvert::convert_picture_frame:"
 				" sws_getCachedContext() failed\n");
-		return 1;
+		return -1;
 	}
 	int ret = sws_scale(convert_ctx, ip->data, ip->linesize, 0, ih,
 	    opic.data, opic.linesize);
 	if( ret < 0 ) {
-		ff_err(ret, "FFVideoStream::convert_picture_frame: sws_scale() failed\n");
-		return 1;
+		ff_err(ret, "FFVideoConvert::convert_picture_frame: sws_scale() failed\n");
+		return -1;
 	}
 	return 0;
 }
 
-int FFVideoStream::convert_cmodel(VFrame *frame,
+int FFVideoConvert::convert_cmodel(VFrame *frame,
 		 AVPicture *ip, PixelFormat ifmt, int iw, int ih)
 {
 	// try direct transfer
@@ -922,7 +921,22 @@ int FFVideoStream::convert_cmodel(VFrame *frame,
 	return 1;
 }
 
-int FFVideoStream::convert_vframe_picture(VFrame *frame,
+int FFVideoConvert::transfer_cmodel(VFrame *frame,
+		 AVFrame *ifp, PixelFormat ifmt, int iw, int ih)
+{
+	int ret = convert_cmodel(frame, (AVPicture *)ifp, ifmt, iw, ih);
+	if( ret > 0 ) {
+		const AVDictionary *src = av_frame_get_metadata(ifp);
+		AVDictionaryEntry *t = NULL;
+		BC_Hash *hp = frame->get_params();
+		//hp->clear();
+		while( (t=av_dict_get(src, "", t, AV_DICT_IGNORE_SUFFIX)) )
+			hp->update(t->key, t->value);
+	}
+	return ret;
+}
+
+int FFVideoConvert::convert_vframe_picture(VFrame *frame,
 		AVPicture *op, PixelFormat ofmt, int ow, int oh)
 {
 	AVPicture opic;
@@ -949,24 +963,24 @@ int FFVideoStream::convert_vframe_picture(VFrame *frame,
 	convert_ctx = sws_getCachedContext(convert_ctx, frame->get_w(), frame->get_h(), ifmt,
 		ow, oh, ofmt, SWS_BICUBIC, NULL, NULL, NULL);
 	if( !convert_ctx ) {
-		fprintf(stderr, "FFVideoStream::convert_frame_picture:"
+		fprintf(stderr, "FFVideoConvert::convert_frame_picture:"
 				" sws_getCachedContext() failed\n");
-		return 1;
+		return -1;
 	}
 	int ret = sws_scale(convert_ctx, opic.data, opic.linesize, 0, frame->get_h(),
 			op->data, op->linesize);
 	if( ret < 0 ) {
-		ff_err(ret, "FFVideoStream::convert_frame_picture: sws_scale() failed\n");
-		return 1;
+		ff_err(ret, "FFVideoConvert::convert_frame_picture: sws_scale() failed\n");
+		return -1;
 	}
 	return 0;
 }
 
-int FFVideoStream::convert_pixfmt(VFrame *frame,
+int FFVideoConvert::convert_pixfmt(VFrame *frame,
 		 AVPicture *op, PixelFormat ofmt, int ow, int oh)
 {
 	// try direct transfer
-	if( !convert_vframe_picture(frame, op, ofmt, ow, oh) ) return 0;
+	if( !convert_vframe_picture(frame, op, ofmt, ow, oh) ) return 1;
 	// use indirect transfer
 	int colormodel = frame->get_color_model();
 	int bits = BC_CModels::calculate_pixelsize(colormodel) * 8;
@@ -976,8 +990,24 @@ int FFVideoStream::convert_pixfmt(VFrame *frame,
 		(bits > 8 ? BC_RGB161616: BC_RGB888) ;
 	VFrame vframe(frame->get_w(), frame->get_h(), icolor_model);
 	vframe.transfer_from(frame);
-	if( convert_vframe_picture(&vframe, op, ofmt, ow, oh) ) return 1;
-	return 0;
+	if( !convert_vframe_picture(&vframe, op, ofmt, ow, oh) ) return 1;
+	return -1;
+}
+
+int FFVideoConvert::transfer_pixfmt(VFrame *frame,
+		 AVFrame *ofp, PixelFormat ofmt, int ow, int oh)
+{
+	int ret = convert_pixfmt(frame, (AVPicture *)ofp, ofmt, ow, oh);
+	if( ret > 0 ) {
+		BC_Hash *hp = frame->get_params();
+		AVDictionary **dict = avpriv_frame_get_metadatap(ofp);
+		//av_dict_free(dict);
+		for( int i=0; i<hp->size(); ++i ) {
+			char *key = hp->get_key(i), *val = hp->get_value(i);
+			av_dict_set(dict, key, val, 0);
+		}
+	}
+	return ret;
 }
 
 void FFVideoStream::load_markers()
@@ -2214,7 +2244,7 @@ int FFVideoStream::create_filter(const char *filter_spec,
 	snprintf(args, sizeof(args),
 		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
 		src_ctx->width, src_ctx->height, src_ctx->pix_fmt,
-		st->time_base.num, st->time_base.den,
+		src_ctx->time_base.num, src_ctx->time_base.den,
 		src_ctx->sample_aspect_ratio.num, src_ctx->sample_aspect_ratio.den);
 	if( ret >= 0 )
 		ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, "in",
@@ -2248,7 +2278,7 @@ int FFAudioStream::create_filter(const char *filter_spec,
 	int ret = 0;  char args[BCTEXTLEN];
 	snprintf(args, sizeof(args),
 		"time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%jx",
-		st->time_base.num, st->time_base.den, src_ctx->sample_rate,
+		src_ctx->time_base.num, src_ctx->time_base.den, src_ctx->sample_rate,
 		av_get_sample_fmt_name(src_ctx->sample_fmt), src_ctx->channel_layout);
 	if( ret >= 0 )
 		ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, "in",
