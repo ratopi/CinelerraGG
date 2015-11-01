@@ -803,11 +803,10 @@ int PluginFAClient::process_buffer(int64_t size, Samples **buffer, int64_t start
 	int in_channels = 0, out_channels = 0;
 
 	if( load_configuration() )
-		plugin_position = -1;
-	if( plugin_position != start_position ) {
-		filter_position = plugin_position = start_position;
 		reactivate();
-	}
+
+	if( plugin_position != start_position )
+		filter_position = plugin_position = start_position;
 
 	AVFrame *frame = 0;
 	int ret = activate();
@@ -897,11 +896,10 @@ int PluginFVClient::process_buffer(VFrame **frames, int64_t position, double fra
 	int height = vframe->get_h();
 
 	if( load_configuration() )
-		plugin_position = -1;
-	if( plugin_position != position ) {
-		filter_position = plugin_position = position;
 		reactivate();
-	}
+
+	if( plugin_position != position )
+		filter_position = plugin_position = position;
 
 	int colormodel = vframe->get_color_model();
 	int ret = activate(width, height, colormodel);
