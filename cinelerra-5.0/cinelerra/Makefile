@@ -345,6 +345,7 @@ LIBRARIES := \
 	$(THEME_DATA) \
 
 LIBS = $(LIBRARIES)
+LIBS += $(thirdparty_libraries) $(static_libraries)
 LIBS += \
 	-lX11 \
 	-lXext \

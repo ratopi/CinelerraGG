@@ -53,6 +53,7 @@ OBJ = \
 
 LIBS = \
 	../libzmpeg3/$(OBJDIR)/libzmpeg3.a \
+	$(thirdparty_libraries) $(static_libraries) \
 	-lasound \
 	-lpthread \
 	-lpng \
