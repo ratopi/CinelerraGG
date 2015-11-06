@@ -335,6 +335,10 @@ public:
 // Relevant configuration parameters must be passed on.
 	BC_Hash* get_params();
 
+// get/set read status  -1/err, 0/noxfer, 1/ok
+	int get_status() { return status; }
+	void set_status(int v) { status = v; }
+
 // Compare stacks and params from 2 images and return 1 if equal.
 	int equal_stacks(VFrame *src);
 
@@ -438,7 +442,8 @@ private:
 // For writing discontinuous frames in background rendering
 	long sequence_number;
 	double timestamp;
-
+// read status of input frame -1/err, 0/noxfr, 1/ok
+	int status;
 // OpenGL support
 	int is_keyframe;
 // State of the current texture

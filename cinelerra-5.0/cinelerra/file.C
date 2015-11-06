@@ -1986,7 +1986,9 @@ int File::read_frame(VFrame *frame, int is_thread)
 
 //			printf("File::read_frame %d\n", __LINE__);
 			temp_frame->copy_stacks(frame);
-			file->read_frame(temp_frame);
+			int result = file->read_frame(temp_frame);
+			if( result && frame->get_status() > 0 )
+				frame->set_status(-1);
 //for(int i = 0; i < 1000 * 1000; i++) ((float*)temp_frame->get_rows()[0])[i] = 1.0;
 // printf("File::read_frame %d %d %d %d %d %d\n", 
 // temp_frame->get_color_model(), 
@@ -2022,7 +2024,9 @@ int File::read_frame(VFrame *frame, int is_thread)
 		{
 // Can't advance position here because it needs to be added to cache
 //printf("File::read_frame %d\n", __LINE__);
-			file->read_frame(frame);
+			int result = file->read_frame(frame);
+			if( result && frame->get_status() > 0 )
+				frame->set_status(-1);
 //for(int i = 0; i < 100 * 1000; i++) ((float*)frame->get_rows()[0])[i] = 1.0;
 		}
 

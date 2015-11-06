@@ -220,6 +220,7 @@ int VFrame::params_match(int w, int h, int color_model)
 
 int VFrame::reset_parameters(int do_opengl)
 {
+	status = 1;
 	scene = 0;
 	field2_offset = -1;
 	memory_type = VFrame::PRIVATE;
@@ -1216,10 +1217,12 @@ void VFrame::clear_stacks()
 	next_effects.remove_all_objects();
 	prev_effects.remove_all_objects();
 	params->clear();
+	status = 1;
 }
 
 void VFrame::copy_params(VFrame *src)
 {
+	status = src->status;
 	params->copy_from(src->params);
 }
 
@@ -1284,7 +1287,7 @@ void VFrame::dump()
 
 int VFrame::filefork_size()
 {
-	return sizeof(int) * 12 + sizeof(long);
+	return sizeof(int) * 13 + sizeof(long);
 }
 
 
@@ -1301,7 +1304,8 @@ void VFrame::to_filefork(unsigned char *buffer)
 	*(int*)(buffer + 32) = compressed_allocated;
 	*(int*)(buffer + 36) = compressed_size;
 	*(int*)(buffer + 40) = is_keyframe;
-	*(long*)(buffer + 44) = sequence_number;
+	*(int*)(buffer + 44) = status;
+	*(long*)(buffer + 48) = sequence_number;
 
 
 //printf("VFrame::to_filefork %d %lld\n", __LINE__, sequence_number);
@@ -1350,7 +1354,8 @@ void VFrame::from_filefork(unsigned char *buffer)
 	}
 
 	is_keyframe = *(int*)(buffer + 40);
-	sequence_number = *(long*)(buffer + 44);
+	status = *(int*)(buffer + 44);
+	sequence_number = *(long*)(buffer + 48);
 //printf("VFrame::from_filefork %d %lld\n", __LINE__, sequence_number);
 }
 

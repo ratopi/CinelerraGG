@@ -290,8 +290,10 @@ int FileFFMPEG::read_samples(double *buffer, int64_t len)
         if( !ff || len < 0 ) return -1;
 	int ch = file->current_channel;
 	int64_t pos = file->current_sample;
-	ff->decode(ch, pos, buffer, len);
-        return 0;
+	int ret = ff->decode(ch, pos, buffer, len);
+	if( ret > 0 ) return 0;
+	memset(buffer,0,len*sizeof(*buffer));
+        return -1;
 }
 
 int FileFFMPEG::read_frame(VFrame *frame)
@@ -299,8 +301,11 @@ int FileFFMPEG::read_frame(VFrame *frame)
         if( !ff ) return -1;
 	int layer = file->current_layer;
 	int64_t pos = file->current_frame;
-	ff->decode(layer, pos, frame);
-	return 0;
+	int ret = ff->decode(layer, pos, frame);
+	frame->set_status(ret);
+	if( ret > 0 ) return 0;
+	frame->clear_frame();
+	return -1;
 }
 
 

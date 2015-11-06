@@ -73,6 +73,7 @@ DIRS = \
 	linearblur \
 	liveaudio \
 	livevideo \
+	lof \
 	loopaudio \
 	loopvideo \
 	motion \

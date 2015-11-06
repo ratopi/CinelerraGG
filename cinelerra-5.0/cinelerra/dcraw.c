@@ -2376,7 +2376,7 @@ void CLASS kodak_thumb_load_raw()
 
 void CLASS sony_decrypt (unsigned *data, int len, int start, int key)
 {
-  static unsigned pad[128], p;
+  static unsigned pad[128], p = 0;
 
   if (start) {
     for (p=0; p < 4; p++)
@@ -2387,8 +2387,10 @@ void CLASS sony_decrypt (unsigned *data, int len, int start, int key)
     for (p=0; p < 127; p++)
       pad[p] = htonl(pad[p]);
   }
-  while (len--)
-    *data++ ^= pad[p++ & 127] = pad[(p+1) & 127] ^ pad[(p+65) & 127];
+  while (len--) {
+    *data++ ^= pad[p & 127] = pad[(p+1) & 127] ^ pad[(p+65) & 127];
+    p++;
+  }
 }
 
 void CLASS sony_load_raw()

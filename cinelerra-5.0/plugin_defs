@@ -103,6 +103,7 @@ interpolatevideo := video_tools
 invertvideo	:= video_tools
 linearblur	:= video_tools
 loopvideo	:= video_tools
+lof		:= video_tools
 motion2		:= video_tools
 motionblur	:= video_tools
 motion		:= video_tools

@@ -550,7 +550,7 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 		struct v4l2_tuner tuner;
 		memset(&tuner, 0, sizeof(tuner));
 		tuner.index = dev_tuner;
-		if(!vioctl(VIDIOC_G_TUNER, &tuner) < 0)
+		if(!vioctl(VIDIOC_G_TUNER, &tuner))
 		{
 // printf("DeviceV4L2Base::v4l2_open audmode=%d rxsubchans=%d\n",
 //   tuner.audmode, tuner.rxsubchans);
