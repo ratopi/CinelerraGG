@@ -96,7 +96,6 @@ OBJS = \
 	$(OBJDIR)/filedv.o \
 	$(OBJDIR)/fileexr.o \
 	$(OBJDIR)/fileflac.o \
-	$(OBJDIR)/filefork.o \
 	$(OBJDIR)/fileformat.o \
 	$(OBJDIR)/filegif.o \
 	$(OBJDIR)/filelist.o \
@@ -105,7 +104,6 @@ OBJS = \
 	$(OBJDIR)/fileogg.o \
 	$(OBJDIR)/filepng.o \
 	$(OBJDIR)/filescene.o \
-	$(OBJDIR)/fileserver.o \
 	$(OBJDIR)/filesndfile.o \
 	$(OBJDIR)/filetga.o \
 	$(OBJDIR)/filethread.o \
@@ -114,7 +112,6 @@ OBJS = \
 	$(OBJDIR)/filexml.o \
 	$(OBJDIR)/floatauto.o \
 	$(OBJDIR)/floatautos.o \
-	$(OBJDIR)/forkwrapper.o \
 	$(OBJDIR)/formatcheck.o \
 	$(OBJDIR)/formatpresets.o \
 	$(OBJDIR)/formatpopup.o \
@@ -251,7 +248,6 @@ OBJS = \
 	$(OBJDIR)/theme.o \
 	$(OBJDIR)/threadexec.o \
 	$(OBJDIR)/threadloader.o \
-	$(OBJDIR)/threadfork.o \
 	$(OBJDIR)/timelinepane.o \
 	$(OBJDIR)/timebar.o \
 	$(OBJDIR)/timeentry.o \
@@ -456,16 +452,6 @@ $(CUTADS):	$(CUTOBJS) $(CUTLIBS)
 $(BDWRITE):	$(BDWOBJS)
 	@echo g++ -o $@ $(BDWOBJS)
 	@g++ $(CFLAGS) -pthread -o $@ $(BDWOBJS) $(LIBS)
-
-$(OBJDIR)/test:
-	$(CC) -shared -o $(OBJDIR)/test.so \
-		$(OBJDIR)/threadfork.o \
-		../guicast/$(OBJDIR)/thread.o \
-		../guicast/$(OBJDIR)/mutex.o
-	$(CC) -o $(OBJDIR)/test test.C \
-		`cat $(OBJDIR)/c_flags` \
-		$(OBJDIR)/test.so \
-		$(LIBS)
 
 clean:
 	rm -rf $(OBJDIR)

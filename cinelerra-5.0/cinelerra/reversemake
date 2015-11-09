@@ -57,7 +57,6 @@ make $OBJDIR/timebomb.o
 make $OBJDIR/timebar.o
 make $OBJDIR/threadloader.o
 make $OBJDIR/threadindexer.o
-make $OBJDIR/threadfork.o
 make $OBJDIR/threadexec.o
 make $OBJDIR/theme.o
 make $OBJDIR/statusbar.o

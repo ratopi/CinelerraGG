@@ -97,8 +97,6 @@ public:
 	int processors;
 // Number of processors for interactive operations.
 	int real_processors;
-// enable/disable filefork
-	int file_forking;
 // ffmpeg probes early/late during File::open_file read
 	int ffmpeg_early_probe;
 // ffmpeg builds marker indecies as it builds idx files

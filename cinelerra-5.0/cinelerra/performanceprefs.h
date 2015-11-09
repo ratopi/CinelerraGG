@@ -60,7 +60,6 @@ public:
 	PrefsRenderFarmNodes *node_list;
 	FormatTools *brender_tools;
 	BC_Title *master_rate;
-	PrefsFileForking *file_forking;
 	PrefsFFMPEGEarlyProbe *ffmpeg_early_probe;
 	PrefsFFMPEGMarkerIndecies *ffmpeg_marker_indecies;
 };
@@ -142,18 +141,6 @@ public:
 	~PrefsTrapSigINTR();
 	int handle_event();
 	
-	PerformancePrefs *perf_prefs;
-};
-
-class PrefsFileForking : public BC_CheckBox
-{
-public:
-	PrefsFileForking(PerformancePrefs *perf_prefs, int x, int y);
-	~PrefsFileForking();
-	
-	int handle_event();
-	void check_enable();
-
 	PerformancePrefs *perf_prefs;
 };
 

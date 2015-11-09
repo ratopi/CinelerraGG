@@ -32,7 +32,6 @@ class PrefsTrapSigSEGV;
 class PrefsTrapSigINTR;
 class PrefsFFMPEGEarlyProbe;
 class PrefsFFMPEGMarkerIndecies;
-class PrefsFileForking;
 class PrefsRenderFarm;
 class PrefsRenderFarmConsolidate;
 class PrefsRenderFarmPort;

@@ -199,10 +199,6 @@ int PreferencesThread::apply_settings()
 		(*this_aconfig != *aconfig) || (*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1);
 
-	if( preferences->file_forking != mwindow->preferences->file_forking ) {
-		MainError::show_error(
-			_("Reseting file forking requires restarting cinelerra"));
-	}
 	mwindow->edl->copy_session(edl, 1);
 	mwindow->preferences->copy_from(preferences);
 	mwindow->init_brender();

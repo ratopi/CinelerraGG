@@ -24,7 +24,6 @@
 #include "edl.h"
 #include "file.inc"
 #include "filexml.h"
-#include "fileserver.h"
 #include "filesystem.h"
 #include "language.h"
 #include "langinfo.h"
@@ -349,7 +348,6 @@ int main(int argc, char *argv[])
 			BatchRenderThread *thread = new BatchRenderThread;
 			thread->start_rendering(config_path,
 				batch_path);
-			delete MWindow::file_server;
 			break;
 		}
 

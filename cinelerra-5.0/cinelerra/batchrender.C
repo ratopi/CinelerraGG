@@ -560,7 +560,6 @@ void BatchRenderThread::start_rendering(char *config_path,
 	strcat(font_path, "/fonts");
 	BC_Resources::init_fontconfig(font_path);
 	BC_WindowBase::get_resources()->vframe_shm = 1;
-	MWindow::init_fileserver(preferences);
 
 //PRINT_TRACE
 	load_jobs(batch_path, preferences);

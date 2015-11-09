@@ -105,11 +105,6 @@ void PerformancePrefs::create_objects()
 	add_subwindow(new BC_Title(x2, y1, _("(must be root)"), MEDIUMFONT, RED));
 	y += 30;
 
-	file_forking = new PrefsFileForking(this, x, y);
-	add_subwindow(file_forking);
-	file_forking->check_enable();
-	y += 30;
-
 	ffmpeg_early_probe = new PrefsFFMPEGEarlyProbe(this, x, y);
 	add_subwindow(ffmpeg_early_probe);
 	x1 = x + ffmpeg_early_probe->get_w() + 24;
@@ -522,7 +517,6 @@ PrefsTrapSigSEGV::~PrefsTrapSigSEGV()
 int PrefsTrapSigSEGV::handle_event()
 {
 	perf_prefs->pwindow->thread->preferences->trap_sigsegv = get_value();
-	perf_prefs->file_forking->check_enable();
 	return 1;
 }
 
@@ -539,38 +533,7 @@ PrefsTrapSigINTR::~PrefsTrapSigINTR()
 int PrefsTrapSigINTR::handle_event()
 {
 	perf_prefs->pwindow->thread->preferences->trap_sigintr = get_value();
-	perf_prefs->file_forking->check_enable();
 	return 1;
-}
-
-
-PrefsFileForking::PrefsFileForking(PerformancePrefs *perf_prefs, int x, int y)
- : BC_CheckBox(x, y, 
-	perf_prefs->pwindow->thread->preferences->file_forking,
-	_("enable/disable file fork"))
-{
-	this->perf_prefs = perf_prefs;
-}
-PrefsFileForking::~PrefsFileForking()
-{
-}
-int PrefsFileForking::handle_event()
-{
-	perf_prefs->pwindow->thread->preferences->file_forking = get_value();
-	return 1;
-}
-
-void PrefsFileForking::check_enable()
-{
-	Preferences *preferences = perf_prefs->pwindow->thread->preferences;
-	if( preferences->trap_sigsegv || preferences->trap_sigintr ) {
-		preferences->file_forking = 0;
-		update(0, 0);
-		disable();
-	}
-	else if( !preferences->trap_sigsegv && !preferences->trap_sigintr ) {
-		enable();
-	}
 }
 
 

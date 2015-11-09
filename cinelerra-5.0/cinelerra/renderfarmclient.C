@@ -73,7 +73,6 @@ RenderFarmClient::RenderFarmClient(int port,
 	boot_preferences = new Preferences;
 	boot_preferences->load_defaults(boot_defaults);
 	MWindow::init_plugins(0, boot_preferences);
-	MWindow::init_fileserver(boot_preferences);
 }
 
 

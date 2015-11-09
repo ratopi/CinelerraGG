@@ -24,8 +24,6 @@
 
 #include "language.h"
 
-#define USE_FILEFORK
-
 // Return values for open_file
 #define FILE_OK 0
 #define FILE_NOT_FOUND 1

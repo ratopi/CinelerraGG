@@ -87,7 +87,6 @@ Preferences::Preferences()
 	renderfarm_job_count = 20;
 	processors = calculate_processors(0);
 	real_processors = calculate_processors(1);
-	file_forking = 0;
 	ffmpeg_early_probe = 0;
 	ffmpeg_marker_indecies = 1;
 	warn_indecies = 1;
@@ -191,7 +190,6 @@ void Preferences::copy_from(Preferences *that)
 	trap_sigintr = that->trap_sigintr;
 	processors = that->processors;
 	real_processors = that->real_processors;
-	file_forking = that->file_forking;
 	ffmpeg_early_probe = that->ffmpeg_early_probe;
 	ffmpeg_marker_indecies = that->ffmpeg_marker_indecies;
 	warn_indecies = that->warn_indecies;
@@ -344,7 +342,6 @@ int Preferences::load_defaults(BC_Hash *defaults)
 
 
 	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", force_uniprocessor);
-	file_forking = defaults->get("FILE_FORKING", file_forking);
 	ffmpeg_early_probe = defaults->get("FFMPEG_EARLY_PROBE", ffmpeg_early_probe);
 	ffmpeg_marker_indecies = defaults->get("FFMPEG_MARKER_INDECIES", ffmpeg_marker_indecies);
 	warn_indecies = defaults->get("WARN_INDECIES", warn_indecies);
@@ -443,7 +440,6 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	}
 
 	defaults->update("FORCE_UNIPROCESSOR", force_uniprocessor);
-	defaults->update("FILE_FORKING", file_forking);
 	defaults->update("FFMPEG_EARLY_PROBE", ffmpeg_early_probe);
 	defaults->update("FFMPEG_MARKER_INDECIES", ffmpeg_marker_indecies);
 	defaults->update("WARN_INDECIES", warn_indecies);

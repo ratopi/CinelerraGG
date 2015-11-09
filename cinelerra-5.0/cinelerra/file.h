@@ -30,10 +30,6 @@
 #include "filebase.inc"
 #include "file.inc"
 
-#ifdef USE_FILEFORK
-#include "filefork.inc"
-#endif
-
 #include "filethread.inc"
 #include "filexml.inc"
 #include "formattools.inc"
@@ -57,8 +53,6 @@ class File
 public:
 	File();
 	~File();
-
-	friend class FileFork;
 
 // Get attributes for various file formats.
 // The dither parameter is carried over from recording, where dither is done at the device.
@@ -327,22 +321,6 @@ private:
 	FrameCache *frame_cache;
 // Copy read frames to the cache
 	int use_cache;
-
-#ifdef USE_FILEFORK
-// Pointer to the fork object.  0 if this instance of File is the fork.
-	FileFork *file_fork;
-// If this instance is the fork.
-	int is_fork;
-// result_data must be locked during sync transaction
-	Mutex *forked;
-
-	class FileForker {
-		Mutex &m;
-	public:
-		FileForker(Mutex &lk) : m(lk) { m.lock("FileForker::FileForker"); }
-		~FileForker() { m.unlock(); }
-	};
-#endif
 
 };
 

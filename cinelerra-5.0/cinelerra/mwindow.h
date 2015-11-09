@@ -44,7 +44,6 @@
 #include "dvdcreate.inc"
 #include "edit.inc"
 #include "edl.inc"
-#include "fileserver.inc"
 #include "filesystem.inc"
 #include "filexml.inc"
 #include "framecache.inc"
@@ -520,8 +519,6 @@ public:
 	ChannelDB *channeldb_buz;
 	ChannelDB *channeldb_v4l2jpeg;
 
-	static FileServer *file_server;
-
 // ====================================== plugins ==============================
 
 // Contains file descriptors for all the dlopens
@@ -573,7 +570,6 @@ public:
 
 // Initialize shared memory
 	void init_shm();
-	static void init_fileserver(Preferences *preferences);
 
 // Initialize channel DB's for playback
 	void init_channeldb();

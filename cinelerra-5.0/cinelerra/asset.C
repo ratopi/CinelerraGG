@@ -772,7 +772,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 
 
 
-// Used by filefork
 		channels = GET_DEFAULT("CHANNELS", 2);
 		if(!sample_rate) sample_rate = GET_DEFAULT("RATE", 44100);
 		header = GET_DEFAULT("HEADER", 0);
@@ -994,7 +993,6 @@ void Asset::save_defaults(BC_Hash *defaults,
 
 
 
-// Used by filefork
 		UPDATE_DEFAULT("CHANNELS", channels);
 		UPDATE_DEFAULT("RATE", sample_rate);
 		UPDATE_DEFAULT("HEADER", header);

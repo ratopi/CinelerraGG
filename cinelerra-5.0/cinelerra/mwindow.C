@@ -49,7 +49,6 @@
 #include "errorbox.h"
 #include "fileformat.h"
 #include "file.h"
-#include "fileserver.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "format.inc"
@@ -158,7 +157,6 @@ int atexit(void (*function)(void))
 
 
 ArrayList<PluginServer*>* MWindow::plugindb = 0;
-FileServer* MWindow::file_server = 0;
 Commercials* MWindow::commercials = 0;
 
 
@@ -1607,16 +1605,6 @@ void MWindow::init_shm()
 }
 
 
-void MWindow::init_fileserver(Preferences *preferences)
-{
-#ifdef USE_FILEFORK
-	if( !file_server && preferences->file_forking ) {
-		file_server = new FileServer(preferences);
-		file_server->start();
-	}
-#endif
-}
-
 void MWindow::create_objects(int want_gui, 
 	int want_new,
 	char *config_path)
@@ -1653,7 +1641,6 @@ void MWindow::create_objects(int want_gui,
 
 // Initialize before too much else is running
 // Preferences & theme are required for building MPEG table of contents
-	init_fileserver(preferences);
 
 // Default project created here
 	init_edl();
