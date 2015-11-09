@@ -93,23 +93,22 @@ void PerformancePrefs::create_objects()
 	add_subwindow(force_1cpu);
 
 	int x1 = force_1cpu->get_x() + force_1cpu->get_w() + 50;
-	int y1 = force_1cpu->get_y();
 
-	PrefsTrapSigSEGV *trap_segv = new PrefsTrapSigSEGV(this, x1, y1);
+	PrefsTrapSigSEGV *trap_segv = new PrefsTrapSigSEGV(this, x1, y);
 	add_subwindow(trap_segv);
 	int x2 = x1 + trap_segv->get_w() + 10;
-	add_subwindow(new BC_Title(x2, y1, _("(must be root)"), MEDIUMFONT, RED));
-	y1 += 30;
-	PrefsTrapSigINTR *trap_intr = new PrefsTrapSigINTR(this, x1, y1);
+	add_subwindow(new BC_Title(x2, y, _("(must be root)"), MEDIUMFONT, RED));
+	y += 30;
+
+	PrefsTrapSigINTR *trap_intr = new PrefsTrapSigINTR(this, x1, y);
 	add_subwindow(trap_intr);
-	add_subwindow(new BC_Title(x2, y1, _("(must be root)"), MEDIUMFONT, RED));
+	add_subwindow(new BC_Title(x2, y, _("(must be root)"), MEDIUMFONT, RED));
+	ffmpeg_marker_indecies = new PrefsFFMPEGMarkerIndecies(this, x, y);
+	add_subwindow(ffmpeg_marker_indecies);
 	y += 30;
 
 	ffmpeg_early_probe = new PrefsFFMPEGEarlyProbe(this, x, y);
 	add_subwindow(ffmpeg_early_probe);
-	x1 = x + ffmpeg_early_probe->get_w() + 24;
-	ffmpeg_marker_indecies = new PrefsFFMPEGMarkerIndecies(this, x1, y);
-	add_subwindow(ffmpeg_marker_indecies);
 	y += 30;
 
 
