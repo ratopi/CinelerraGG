@@ -1,6 +1,7 @@
 #ifndef _DBWINDOW_INC_
 #define _DBWINDOW_INC_
 
+class DbSearchItem;
 class DbWindow;
 class DbWindowGUI;
 class DbWindowInfoText;
@@ -12,8 +13,8 @@ class DbWindowDeleteItems;
 class DbWindowCancel;
 class DbWindowList;
 class DbWindowCanvas;
-class DbWindowTIcon;
-class DbWindowTIconThread;
+class DbWindowVIcon;
+class DbWindowVIconThread;
 class DbWindowItem;
 class DbWindowScan;
 

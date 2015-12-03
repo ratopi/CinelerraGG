@@ -4199,6 +4199,15 @@ void BC_WindowBase::translate_coordinates(Window src_w,
 	}
 }
 
+void BC_WindowBase::get_root_coordinates(int x, int y, int *abs_x, int *abs_y)
+{
+	translate_coordinates(win, top_level->rootwin, x, y, abs_x, abs_y);
+}
+
+void BC_WindowBase::get_win_coordinates(int abs_x, int abs_y, int *x, int *y)
+{
+	translate_coordinates(top_level->rootwin, win, abs_x, abs_y, x, y);
+}
 
 
 

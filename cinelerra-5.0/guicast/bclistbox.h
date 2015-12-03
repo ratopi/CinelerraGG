@@ -318,21 +318,13 @@ public:
 		int indent /* = 0 */,
 		int master_column);
 
-
-
-
+	int get_item_x(BC_ListBoxItem *item);
+	int get_item_y(BC_ListBoxItem *item);
+	int get_item_w(BC_ListBoxItem *item);
+	int get_item_h(BC_ListBoxItem *item);
 
 // Draw the list items
 	int draw_items(int flash, int bg_draw=0);
-
-
-
-
-
-
-
-
-
 
 private:
 	void delete_columns();
@@ -418,10 +410,6 @@ private:
 	int get_text_w(BC_ListBoxItem *item);
 	int get_text_h(BC_ListBoxItem *item);
 	int get_baseline(BC_ListBoxItem *item);
-	int get_item_x(BC_ListBoxItem *item);
-	int get_item_y(BC_ListBoxItem *item);
-	int get_item_w(BC_ListBoxItem *item);
-	int get_item_h(BC_ListBoxItem *item);
 	int get_item_highlight(ArrayList<BC_ListBoxItem*> *data, int column, int item);
 	int get_item_color(ArrayList<BC_ListBoxItem*> *data, int column, int item);
 	int get_icon_mask(BC_ListBoxItem *item, int &x, int &y, int &w, int &h);

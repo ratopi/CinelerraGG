@@ -1,0 +1,319 @@
+#include "vicon.h"
+
+#include "bctimer.h"
+#include "bcwindow.h"
+#include "colors.h"
+#include "keys.h"
+#include "mutex.h"
+#include "condition.h"
+
+VIcon::
+VIcon(int vw, int vh, double rate)
+{
+	this->vw = vw;
+	this->vh = vh;
+	this->period = 1000./rate;
+	this->age = 0;
+        this->seq_no = 0;
+	this->in_use = 1;
+}
+
+VIcon::
+~VIcon()
+{
+	clear_images();
+}
+
+void VIcon::
+add_image(VFrame *frm, int ww, int hh, int vcmdl)
+{
+	VFrame *img = new VFrame(ww, hh, vcmdl);
+	img->transfer_from(frm);
+	images.append(img);
+}
+
+void VIcon::
+draw_vframe(BC_WindowBase *wdw, int x, int y)
+{
+	wdw->draw_vframe(frame(), x,y, vw,vh);
+}
+
+VIcon *VIconThread::low_vicon()
+{
+	if( !t_heap.size() ) return 0;
+	VIcon *vip = t_heap[0];
+	remove_vicon(0);
+	return vip;
+}
+
+void VIconThread::remove_vicon(int i)
+{
+	int sz = t_heap.size();
+	for( int k; (k=2*(i+1)) < sz; i=k ) {
+		if( t_heap[k]->age > t_heap[k-1]->age ) --k;
+		t_heap[i] = t_heap[k];
+	}
+	VIcon *last = t_heap[--sz];
+	t_heap.remove_number(sz);
+	double age = last->age;
+	for( int k; i>0 && age<t_heap[k=(i-1)/2]->age; i=k )
+		t_heap[i] = t_heap[k];
+	t_heap[i] = last;
+}
+
+
+VIconThread::
+VIconThread(BC_WindowBase *wdw, int vw, int vh)
+ : Thread(1, 0, 0)
+{
+	this->wdw = wdw;
+	this->view_win = 0;  this->vicon = 0;
+	this->cur_view = 0;  this->new_view = 0;
+	this->view_w = vw;   this->view_h = vh;
+	this->viewing = 0;   this->draw_flash = 0;
+	draw_lock = new Condition(0, "VIconThread::draw_lock", 1);
+	timer = new Timer();
+	done = 0;
+	interrupted = 1;
+}
+
+VIconThread::
+~VIconThread()
+{
+	stop_drawing();
+	done = 1;
+	draw_lock->unlock();
+	if( Thread::running() ) {
+		Thread::cancel();
+		Thread::join();
+	}
+	t_heap.remove_all_objects();
+	delete timer;
+	delete draw_lock;
+}
+
+void VIconThread::
+start_drawing()
+{
+	wdw->lock_window("VIconThread::stop_drawing");
+        if( interrupted )
+		draw_lock->unlock();
+	wdw->unlock_window();
+}
+
+void VIconThread::
+stop_drawing()
+{
+	wdw->lock_window("VIconThread::stop_drawing");
+	interrupted = 1;
+	wdw->unlock_window();
+}
+
+int VIconThread::keypress_event(int key)
+{
+	if( !cur_view ) return 0;
+	if( key != ESC ) return 0;
+	set_view_popup(0);
+	return 1;
+}
+
+bool VIconThread::
+visible(VIcon *vicon, int x, int y)
+{
+	int y0 = 0;
+	int my = y + vicon->vh;
+	if( my <= y0 ) return false;
+	int y1 = y0 + wdw->get_h();
+	if( y >= y1 ) return false;
+	int x0 = 0;
+	int mx = x + vicon->vw;
+	if( mx <= x0 ) return false;
+	int x1 = x0 + wdw->get_w();
+	if( x >= x1 ) return false;
+	return true;
+}
+
+int ViewPopup::keypress_event()
+{
+	int key = get_keypress();
+	return vt->keypress_event(key);
+}
+int ViewPopup::button_press_event()
+{
+	return vt->keypress_event(ESC);
+}
+
+ViewPopup::ViewPopup(VIconThread *vt, VFrame *frame, int x, int y, int w, int h)
+ : BC_Popup(vt->wdw, x, y, w, h, BLACK)
+{
+	this->vt = vt;
+}
+
+ViewPopup::~ViewPopup()
+{
+	vt->wdw->set_active_subwindow(0);
+}
+
+void ViewPopup::draw_vframe(VFrame *frame)
+{
+	BC_WindowBase::draw_vframe(frame, 0,0, get_w(),get_h());
+}
+
+ViewPopup *VIconThread::new_view_window(VFrame *frame)
+{
+	int wx = viewing->get_vx() - view_w, rx = 0;
+	int wy = viewing->get_vy() - view_h, ry = 0;
+	wdw->get_root_coordinates(wx, wy, &rx, &ry);
+	ViewPopup *vwin = new ViewPopup(this, frame, rx, ry, view_w, view_h);
+	wdw->set_active_subwindow(vwin);
+	return vwin;
+}
+
+void VIconThread::
+reset_images()
+{
+	for( int i=t_heap.size(); --i>=0; ) t_heap[i]->age = 0;
+	timer->update();
+	img_dirty = win_dirty = 0;
+	draw_flash = 0;
+}
+
+void VIconThread::add_vicon(VIcon *vip, double age)
+{
+	vip->age = age;
+	int i = t_heap.size();  t_heap.append(vip);
+	for( int k; i>0 && age<t_heap[(k=(i-1)/2)]->age; i=k )
+		t_heap[i] = t_heap[k];
+	t_heap[i] = vip;
+}
+
+int VIconThread::del_vicon(VIcon *&vicon)
+{
+	int i = t_heap.size();
+	while( --i >= 0 && t_heap[i] != vicon );
+	if( i < 0 ) return 0;
+	remove_vicon(i);
+	delete vicon;  vicon = 0;
+	return 1;
+}
+
+void VIconThread::set_view_popup(VIcon *vicon)
+{
+	this->vicon = vicon;
+}
+
+int VIconThread::
+update_view()
+{
+	if( viewing == vicon && cur_view == new_view ) return 0;
+	wdw->lock_window("VIconThread::update_view");;
+	if( viewing && !vicon ) new_view = 0;
+	if( !viewing && vicon ) new_view = 1;
+	if( cur_view != new_view && !new_view ) vicon = 0;
+	viewing = vicon;  cur_view = new_view;
+	delete view_win;  view_win = 0;
+	if( cur_view ) {
+		VFrame *frame = viewing->frame();
+		view_win = new_view_window(frame);
+		view_win->show_window();
+        }
+	wdw->unlock_window();
+	return 1;
+}
+
+
+void VIconThread::
+draw_images()
+{
+	for( int i=0; i<t_heap.size(); ++i )
+		draw(t_heap[i]);
+}
+
+void VIconThread::
+flash()
+{
+	if( !img_dirty && !win_dirty ) return;
+	if( img_dirty ) wdw->flash();
+	if( win_dirty ) view_win->flash();
+	win_dirty = img_dirty = 0;
+}
+
+int VIconThread::
+draw(VIcon *vicon)
+{
+	int x = vicon->get_vx(), y = vicon->get_vy();
+	int draw_img = visible(vicon, x, y);
+	int draw_win = view_win && viewing == vicon ? 1 : 0;
+	if( !draw_img && !draw_win ) return 0;
+	if( draw_img ) {
+		vicon->draw_vframe(wdw, x, y);
+		img_dirty = 1;
+	}
+	if( draw_win ) {
+		view_win->draw_vframe(vicon->frame());
+		win_dirty = 1;
+	}
+	return 1;
+}
+
+void VIconThread::
+run()
+{
+	while(!done) {
+		draw_lock->lock("VIconThread::run 0");
+		if( done ) break;;
+		wdw->lock_window("BC_WindowBase::run 1");
+		reset_images();
+		interrupted = 0;
+		drawing_started();
+		while( !interrupted ) {
+			if( viewing != vicon || cur_view != new_view )
+				update_view();
+			VIcon *next = low_vicon();
+			if( !next ) break;
+			if( !next->frame() ) {
+				delete next;  next = 0;
+				continue;
+			}
+			int64_t next_time = next->age;
+			int64_t this_time = timer->get_difference();
+			int64_t msec = this_time - next_time;
+			int count = msec / next->period;
+			int nfrms = count > 0 ? count : 1;
+			if( !next->next_frame(nfrms) )
+				next->age = this_time + 1000;
+			add_vicon(next, next->age);
+			if( msec < 1000 && draw(next) && !draw_flash )
+				draw_flash = next_time;
+			wdw->unlock_window();
+			msec = next_time - timer->get_difference();
+			if( msec < 1 ) msec = 1;
+			while( msec > 0 && !interrupted ) {
+				int ms = msec > 100 ? 100 : msec;
+				Timer::delay(ms);  msec -= ms;
+			}
+			wdw->lock_window("BC_WindowBase::run 2");
+			if( interrupted ) break;
+			if( draw_flash ) {
+				int64_t msec = timer->get_difference() - draw_flash;
+				if( msec < 1000 ) flash();
+				draw_flash = 0;
+			}
+		}
+		drawing_stopped();
+		interrupted = -1;
+		wdw->unlock_window();
+	}
+}
+
+void VIcon::dump(const char *dir)
+{
+	mkdir(dir,0777);
+	for( int i=0; i<images.size(); ++i ) {
+		char fn[1024];  sprintf(fn,"%s/img%05d.png",dir,i);
+		printf("\r%s",fn);
+		images[i]->write_png(fn);
+	}
+	printf("\n");
+}
+

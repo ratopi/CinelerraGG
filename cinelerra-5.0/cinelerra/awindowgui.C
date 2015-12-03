@@ -51,6 +51,7 @@
 #include "preferences.h"
 #include "theme.h"
 #include "vframe.h"
+#include "vicon.h"
 #include "vwindowgui.h"
 #include "vwindow.h"
 
@@ -61,6 +62,59 @@
 #include<stdio.h>
 #include<unistd.h>
 #include<fcntl.h>
+
+
+
+AssetVIcon::AssetVIcon(AssetPicon *picon, int w, int h, double framerate, int64_t length)
+ : VIcon(w, h, framerate)
+{
+	this->picon = picon;
+	this->length = length;
+}
+
+AssetVIcon::~AssetVIcon()
+{
+}
+
+VFrame *AssetVIcon::frame()
+{
+	if( seq_no >= images.size() ) {
+		MWindow *mwindow = picon->mwindow;
+		Asset *asset = (Asset *)picon->indexable;
+		File *file = mwindow->video_cache->check_out(asset, mwindow->edl, 1);
+		if( !file ) return 0;		
+		VFrame frame(asset->width, asset->height, BC_RGB888);
+		file->set_layer(0);
+		file->set_video_position(images.size(),0);
+		VFrame *vfrm0 = images[0];
+		int ww = vfrm0->get_w(), hh = vfrm0->get_h();
+		int cmdl = vfrm0->get_color_model();
+		while( seq_no >= images.size() ) {
+			file->read_frame(&frame);
+			add_image(&frame, ww, hh, cmdl);
+		}
+		mwindow->video_cache->check_in(asset);
+	}
+	return images[seq_no];
+}
+
+int64_t AssetVIcon::next_frame(int n)
+{
+	age += n * period;
+	if( (seq_no+=n) >= length ) seq_no = 0;
+	return seq_no;
+}
+
+int AssetVIcon::get_vx()
+{
+	BC_ListBox *lbox = picon->gui->asset_list;
+	return lbox->get_item_x(picon);
+}
+int AssetVIcon::get_vy()
+{
+	BC_ListBox *lbox = picon->gui->asset_list;
+	return lbox->get_item_y(picon) + lbox->get_title_h();
+}
 
 AssetPicon::AssetPicon(MWindow *mwindow, 
 	AWindowGUI *gui, 
@@ -112,6 +166,8 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 
 AssetPicon::~AssetPicon()
 {
+	if( vicon )
+		gui->vicon_thread->del_vicon(vicon);
 	if(indexable) indexable->remove_user();
 	if(edl) edl->remove_user();
 	if( icon && !gui->protected_pixmap(icon) ) {
@@ -127,6 +183,7 @@ void AssetPicon::reset()
 	edl = 0;
 	icon = 0;
 	icon_vframe = 0;
+	vicon = 0;
 	in_use = 1;
 	id = 0;
 	persistent = 0;
@@ -197,16 +254,17 @@ void AssetPicon::create_objects()
 //printf("%d %d\n", gui->temp_picon->get_w(), gui->temp_picon->get_h());
 					icon_vframe = new VFrame(0,
 						-1, pixmap_w, pixmap_h, BC_RGB888, -1);
-					BC_CModels::transfer(
-						icon_vframe->get_rows(),
-						gui->temp_picon->get_rows(),
-						0, 0, 0, 0, 0, 0, 0, 0, 
-						gui->temp_picon->get_w(), 
-						gui->temp_picon->get_h(),
-						0, 0, pixmap_w, pixmap_h,
-						BC_RGB888, BC_RGB888,
-						0, 0, 0);
-
+					icon_vframe->transfer_from(gui->temp_picon);
+// vicon images
+					double framerate = asset->get_frame_rate();
+					if( !framerate ) framerate = 24;
+					int64_t length = framerate * 5;
+					int64_t vframes = asset->get_video_frames();
+					if( length > vframes ) length = vframes;
+					vicon = new AssetVIcon(this, pixmap_w, pixmap_h, framerate, length);
+					int ww = gui->vicon_thread->view_w, hh = gui->vicon_thread->view_h;
+					vicon->add_image(gui->temp_picon, ww, hh, BC_RGB8);
+					gui->vicon_thread->add_vicon(vicon);
 					if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 
 				}
@@ -341,6 +399,8 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	folderlist_menu = 0;
 	temp_picon = 0;
 	remove_plugin = 0;
+	vicon_thread = 0;
+	vicon_drawing = 1;
 }
 
 AWindowGUI::~AWindowGUI()
@@ -353,6 +413,7 @@ AWindowGUI::~AWindowGUI()
 	vtransitions.remove_all_objects();
 	displayed_assets[1].remove_all_objects();
 
+	delete vicon_thread;
 	delete file_icon;
 	delete audio_icon;
 	delete video_icon;
@@ -472,6 +533,9 @@ SET_TRACE
     		mwindow->theme->alist_w, 
     		mwindow->theme->alist_h));
 
+	vicon_thread = new VIconThread(asset_list);
+	vicon_thread->start();
+
 SET_TRACE
 	add_subwindow(divider = new AWindowDivider(mwindow,
 		this,
@@ -484,9 +548,12 @@ SET_TRACE
 	divider->set_cursor(HSEPARATE_CURSOR, 0, 0);
 
 SET_TRACE
-	int fx = mwindow->theme->afolders_x, fy = mwindow->theme->afolders_y; 
-	int fw = mwindow->theme->afolders_w, fh = mwindow->theme->afolders_h; 
-	add_subwindow(add_tools = new AddTools(mwindow, this, fx, fy, fw));
+	int fx = mwindow->theme->afolders_x, fy = mwindow->theme->afolders_y;
+	int fw = mwindow->theme->afolders_w, fh = mwindow->theme->afolders_h;
+	VFrame **images = mwindow->theme->get_image_set("playpatch_data");
+	AVIconDrawing::calculate_geometry(this, images, &avicon_w, &avicon_h);
+	add_subwindow(avicon_drawing = new AVIconDrawing(this, fw-avicon_w, fy, images));
+	add_subwindow(add_tools = new AddTools(mwindow, this, fx, fy, fw-avicon_w));
 	add_tools->create_objects();
 	fy += add_tools->get_h();  fh -= add_tools->get_h();
 SET_TRACE
@@ -532,21 +599,7 @@ int AWindowGUI::resize_event(int w, int h)
 
 	mwindow->theme->get_awindow_sizes(this);
 	mwindow->theme->draw_awindow_bg(this);
-
-	asset_list->reposition_window(mwindow->theme->alist_x, 
-    	mwindow->theme->alist_y, 
-    	mwindow->theme->alist_w, 
-    	mwindow->theme->alist_h);
-	divider->reposition_window(mwindow->theme->adivider_x,
-		mwindow->theme->adivider_y,
-		mwindow->theme->adivider_w,
-		mwindow->theme->adivider_h);
-
-	int fx = mwindow->theme->afolders_x, fy = mwindow->theme->afolders_y; 
-	int fw = mwindow->theme->afolders_w, fh = mwindow->theme->afolders_h; 
-	add_tools->reposition_window(fx, fy, fw, add_tools->get_h());
-	fy += add_tools->get_h();  fh -= add_tools->get_h();
-	folder_list->reposition_window(fx, fy, fw, fh);
+	reposition_objects();
 	
 //	int x = mwindow->theme->abuttons_x;
 //	int y = mwindow->theme->abuttons_y;
@@ -584,30 +637,31 @@ int AWindowGUI::translation_event()
 void AWindowGUI::reposition_objects()
 {
 	mwindow->theme->get_awindow_sizes(this);
-	asset_list->reposition_window(mwindow->theme->alist_x, 
-    	mwindow->theme->alist_y, 
-    	mwindow->theme->alist_w, 
-    	mwindow->theme->alist_h);
-	divider->reposition_window(mwindow->theme->adivider_x,
-		mwindow->theme->adivider_y,
-		mwindow->theme->adivider_w,
-		mwindow->theme->adivider_h);
-	folder_list->reposition_window(mwindow->theme->afolders_x, 
-    	mwindow->theme->afolders_y, 
-    	mwindow->theme->afolders_w, 
-    	mwindow->theme->afolders_h);
-	flush();
+	asset_list->reposition_window(
+		mwindow->theme->alist_x, mwindow->theme->alist_y, 
+	    	mwindow->theme->alist_w, mwindow->theme->alist_h);
+	divider->reposition_window(
+		mwindow->theme->adivider_x, mwindow->theme->adivider_y,
+		mwindow->theme->adivider_w, mwindow->theme->adivider_h);
+	int fx = mwindow->theme->afolders_x, fy = mwindow->theme->afolders_y;
+	int fw = mwindow->theme->afolders_w, fh = mwindow->theme->afolders_h;
+	add_tools->resize_event(fw-avicon_w, add_tools->get_h());
+	avicon_drawing->reposition_window(fw-avicon_w, fy);
+	fy += add_tools->get_h();  fh -= add_tools->get_h();
+	folder_list->reposition_window(fx, fy, fw, fh);
 }
 
 int AWindowGUI::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("PLUGIN_VISIBILTY", plugin_visibility);
+	defaults->update("VICON_DRAWING", vicon_drawing);
 	return 0;
 }
 
 int AWindowGUI::load_defaults(BC_Hash *defaults)
 {
 	plugin_visibility = defaults->get("PLUGIN_VISIBILTY", plugin_visibility);
+	vicon_drawing = defaults->get("VICON_DRAWING", vicon_drawing);
 	return 0;
 }
 
@@ -626,6 +680,19 @@ int AWindowGUI::close_event()
 	save_defaults(mwindow->defaults);
 	mwindow->save_defaults();
 	return 1;
+}
+
+void AWindowGUI::start_vicon_drawing()
+{
+	if( !vicon_drawing ) return;
+	if( strcmp(mwindow->edl->session->current_folder, MEDIA_FOLDER) ) return;
+	if( mwindow->edl->session->assetlist_format != ASSETS_ICONS ) return;
+	vicon_thread->start_drawing();
+}
+
+void AWindowGUI::stop_vicon_drawing()
+{
+	vicon_thread->stop_drawing();
 }
 
 AWindowRemovePluginGUI::
@@ -755,6 +822,7 @@ int AWindowGUI::keypress_event()
 
 void AWindowGUI::update_folder_list()
 {
+	stop_vicon_drawing();
 //printf("AWindowGUI::update_folder_list 1\n");
 	for(int i = 0; i < folders.total; i++)
 	{
@@ -806,6 +874,7 @@ void AWindowGUI::update_folder_list()
 //for(int i = 0; i < folders.total; i++)
 //	printf("AWindowGUI::update_folder_list %s\n", folders.values[i]->get_text());
 //printf("AWindowGUI::update_folder_list 2\n");
+	start_vicon_drawing();
 }
 
 void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output, 
@@ -1220,8 +1289,6 @@ AssetPicon* AWindowGUI::selected_folder()
 
 
 
-
-
 AWindowDivider::AWindowDivider(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h)
  : BC_SubWindow(x, y, w, h)
 {
@@ -1248,6 +1315,7 @@ int AWindowDivider::cursor_motion_event()
 	{
 		mwindow->session->afolders_w = gui->get_relative_cursor_x();
 		gui->reposition_objects();
+		gui->flush();
 	}
 	return 0;
 }
@@ -1298,6 +1366,8 @@ int AWindowFolders::selection_changed()
 	AssetPicon *picon = (AssetPicon*)get_selection(0, 0);
 	if(picon)
 	{
+		gui->stop_vicon_drawing();
+
 		if(get_button_down() && get_buttonpress() == 3)
 		{
 			gui->folderlist_menu->update_titles();
@@ -1308,6 +1378,8 @@ int AWindowFolders::selection_changed()
 //printf("AWindowFolders::selection_changed 1\n");
 		gui->asset_list->draw_background();
 		gui->update_assets();
+
+		gui->start_vicon_drawing();
 	}
 	return 1;
 }
@@ -1451,6 +1523,10 @@ int AWindowAssets::selection_changed()
 
 		BC_ListBox::deactivate_selection();
 		return 1;
+	}
+	else if(get_button_down() && get_buttonpress() == 1 && get_selection(0, 0)) {
+		AssetPicon *picon = (AssetPicon*)get_selection(0, 0);
+		gui->vicon_thread->set_view_popup(picon->vicon);
 	}
 	return 0;
 }
@@ -1600,6 +1676,19 @@ int AWindowAssets::column_resize_event()
 	mwindow->edl->session->asset_columns[0] = get_column_width(0);
 	mwindow->edl->session->asset_columns[1] = get_column_width(1);
 	return 1;
+}
+
+int AWindowAssets::cursor_enter_event()
+{
+	int ret = BC_ListBox::cursor_enter_event();
+	gui->start_vicon_drawing();
+	return ret;
+}
+
+int AWindowAssets::cursor_leave_event()
+{
+	gui->stop_vicon_drawing();
+	return BC_ListBox::cursor_leave_event();
 }
 
 
@@ -1812,6 +1901,36 @@ int AddPluginItem::handle_event()
 	menu->gui->update_effects();
 	menu->gui->update_assets();
 	menu->gui->save_defaults(menu->mwindow->defaults);
+	return 1;
+}
+
+AVIconDrawing::AVIconDrawing(AWindowGUI *agui, int x, int y, VFrame **images)
+ : BC_Toggle(x, y, images, agui->vicon_drawing)
+{
+	this->agui = agui;
+	set_tooltip(_("draw vicons"));
+}
+
+void AVIconDrawing::calculate_geometry(AWindowGUI *agui, VFrame **images, int *ww, int *hh)
+{
+	int text_line = -1, toggle_x = -1, toggle_y = -1;
+	int text_x = -1, text_y = -1, text_w = -1, text_h = -1;
+	BC_Toggle::calculate_extents(agui, images, 1, 
+		&text_line, ww, hh, &toggle_x, &toggle_y,
+		&text_x, &text_y, &text_w, &text_h, "", MEDIUMFONT);
+}
+
+AVIconDrawing::~AVIconDrawing()
+{
+}
+
+int AVIconDrawing::handle_event()
+{
+	agui->vicon_drawing = get_value();
+	if( agui->vicon_drawing )
+		agui->start_vicon_drawing();
+	else
+		agui->stop_vicon_drawing();
 	return 1;
 }
 

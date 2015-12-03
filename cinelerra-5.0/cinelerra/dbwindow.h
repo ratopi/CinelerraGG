@@ -11,12 +11,20 @@
 #include "guicast.h"
 #include "mediadb.h"
 #include "mwindow.inc"
-
+#include "vicon.h"
 
 enum {
-	col_ticon, col_id, col_length, col_source,
+	col_vicon, col_id, col_length, col_source,
 	col_title, col_start_time, col_access_time,
 	col_access_count, sizeof_col
+};
+
+class DbSearchItem : public BC_ListBoxItem {
+public:
+	DbWindowVIcon *vicon;
+
+	DbSearchItem(const char *text, int color=-1);
+	~DbSearchItem();
 };
 
 class DbWindow : public Thread
@@ -59,7 +67,7 @@ public:
 	DbWindowCancel *cancel;
 	DbWindowList *search_list;
 	DbWindowCanvas *canvas;
-	DbWindowTIconThread *ticon_thread;
+	DbWindowVIconThread *vicon_thread;
 
 	int title_text_enable;
 	int info_text_enable;
@@ -75,7 +83,7 @@ public:
 	const char *search_column_titles[sizeof_col];
 	int search_column_widths[sizeof_col];
 	int search_columns[sizeof_col];
-	ArrayList<BC_ListBoxItem*> search_items[sizeof_col];
+	ArrayList<DbSearchItem*> search_items[sizeof_col];
 	ArrayList<DbWindowItem*> search_results;
 
 	void create_objects();
@@ -83,8 +91,8 @@ public:
 	void delete_items();
 	int close_event();
 	int resize_event(int x, int y);
-	int stop_drawing(int locked=0);
-	int start_drawing(int update=0);
+	int stop_drawing();
+	int start_drawing(int update=1);
 	void update();
 	static int cmpr_id_dn(const void *a, const void *b);
 	static int cmpr_id_up(const void *a, const void *b);
@@ -199,20 +207,15 @@ class DbWindowList : public BC_ListBox
 {
 public:
 	DbWindowGUI *gui;
-	DbWindowTIconThread *thread;
-	BC_Popup *view_popup;
-	DbWindowTIcon *view_ticon;
-	int view_idx;
 
 	int handle_event();
 	int sort_order_event();
 	int keypress_event();
 	int move_column_event();
 	int selection_changed();
-	int stop_view_popup();
+	void set_view_popup(DbWindowVIcon *vicon);
 
 	int update_images();
-	int draw_images();
 	int update();
 
 	DbWindowList(DbWindowGUI *gui, int x, int y, int w, int h);
@@ -235,55 +238,41 @@ public:
 	void set_fullscreen(int value) { is_fullscreen = value; }
 };
 
-class DbWindowTIcon
+class DbWindowVIcon : public VIcon
 {
 public:
-	DbWindowGUI *gui;
-	VFrame *frame;
-	double age;
-        int x, y, swidth, sheight;
+	DbWindowList *lbox;
+	DbSearchItem *item;
+
 	int clip_id, clip_size;
-        int frame_id, frames, seq_no;
+        int frame_id, frames;
         int prefix_size, suffix_offset;
-        double framerate, frame_period;
 
-	void update_image(int clip_id, int x, int y);
-	int get_seq_frame();
-	int draw_frame();
-	int draw_popup();
-	int (DbWindowTIcon::*draw)();
-	int draw_image() { return (this->*draw)(); }
+	VFrame *frame();
+	int64_t next_frame(int n);
+	void load_frames(DbWindow::MDb *mdb);
+	void read_frames(DbWindow::MDb *mdb);
 
+	int get_vx();
+	int get_vy();
 
-	DbWindowTIcon(DbWindowGUI *gui, int (DbWindowTIcon::*draw)());
-	~DbWindowTIcon();
+	void update_image(DbWindowGUI *gui, int clip_id);
+	DbWindowVIcon();
+	~DbWindowVIcon();
 };
 
-class DbWindowTIconThread : public Thread
-{
+class DbWindowVIconThread : public VIconThread {
 public:
-	int done, interrupted;
-	int list_update, image_update;
 	DbWindowGUI *gui;
-	DbWindow::MDb *mdb;
-	Mutex *ticon_lock;
-	Timer *timer;
-	Condition *draw_lock;
-	Condition *stop_lock;
+	int list_update;
 
-	ArrayList<DbWindowTIcon *>ticons;
-	ArrayList<DbWindowTIcon *>t_heap;
-	DbWindowTIcon *get_ticon(int i);
-	DbWindowTIcon *low_ticon();
-	void add_ticon(DbWindowTIcon *ticon, double age);
-	void run();
-	void start_drawing();
-	void stop_drawing();
+	ArrayList <DbWindowVIcon *> vicons;
+	DbWindowVIcon *get_vicon(int i, DbSearchItem *item);
+	void drawing_started();
 
-	DbWindowTIconThread(DbWindowGUI *gui);
-	~DbWindowTIconThread();
+	DbWindowVIconThread(DbWindowGUI *gui);
+	~DbWindowVIconThread();
 };
-
 
 class DbWindowItem
 {

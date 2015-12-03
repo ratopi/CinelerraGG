@@ -84,6 +84,7 @@ OBJS = \
 	$(OBJDIR)/units.o \
 	$(OBJDIR)/vframe.o \
 	$(OBJDIR)/vframe3d.o \
+	$(OBJDIR)/vicon.o \
 	$(OBJDIR)/workarounds.o
 
 OUTPUT = $(OBJDIR)/libguicast.a

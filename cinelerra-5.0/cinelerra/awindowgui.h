@@ -35,6 +35,7 @@
 #include "mwindow.inc"
 #include "newfolder.inc"
 #include "pluginserver.inc"
+#include "vicon.h"
 
 class AWindowAssets;
 class AWindowFolders;
@@ -52,7 +53,10 @@ class AWindowView;
 class AddTools;
 class AddPluginsMenu;
 class AddPluginItem;
+class AVIconDrawing;
 
+class AssetPicon;
+class AssetVIcon;
 class AWindowGUI;
 
 class AssetPicon : public BC_ListBoxItem
@@ -85,6 +89,21 @@ public:
 
 	int persistent;
 	PluginServer *plugin;
+	VIcon *vicon;
+};
+
+class AssetVIcon : public VIcon {
+public:
+	AssetPicon *picon;
+	int64_t length;
+
+	VFrame *frame();
+	int64_t next_frame(int n);
+	int get_vx();
+	int get_vy();
+
+	AssetVIcon(AssetPicon *picon, int w, int h, double framerate, int64_t length);
+	~AssetVIcon();
 };
 
 class AWindowRemovePlugin;
@@ -156,6 +175,8 @@ public:
 	bool protected_pixmap(BC_Pixmap *pixmap);
 	int save_defaults(BC_Hash *defaults);
 	int load_defaults(BC_Hash *defaults);
+	void start_vicon_drawing();
+	void stop_vicon_drawing();
 
 	MWindow *mwindow;
 	AWindow *awindow;
@@ -203,9 +224,13 @@ public:
 	AddTools *add_tools;
 // Temporary for reading picons from files
 	VFrame *temp_picon;
+	VIconThread *vicon_thread;
 
 	int64_t plugin_visibility;
 	AWindowRemovePlugin *remove_plugin;
+
+	AVIconDrawing *avicon_drawing;
+	int avicon_w, avicon_h, vicon_drawing;
 private:
 	void update_folder_list();
 	void update_asset_list();
@@ -226,6 +251,8 @@ public:
 	int drag_stop_event();
 	int button_press_event();
 	int column_resize_event();
+	int cursor_enter_event();
+	int cursor_leave_event();
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
@@ -387,6 +414,18 @@ public:
 
 	AddPluginsMenu *menu;
 	int idx;
+};
+
+class AVIconDrawing : public BC_Toggle
+{
+public:
+	AWindowGUI *agui;
+
+	int handle_event();
+	static void calculate_geometry(AWindowGUI *agui, VFrame **images, int *ww, int *hh);
+
+	AVIconDrawing(AWindowGUI *agui, int x, int y, VFrame **images);
+	~AVIconDrawing();
 };
 
 #endif

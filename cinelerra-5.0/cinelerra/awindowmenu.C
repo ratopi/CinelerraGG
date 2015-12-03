@@ -79,25 +79,24 @@ void AssetListFormat::update()
 
 int AssetListFormat::handle_event()
 {
-	switch(mwindow->edl->session->assetlist_format)
-	{
-		case ASSETS_TEXT:
-			mwindow->edl->session->assetlist_format = ASSETS_ICONS;
-			mwindow->edl->session->folderlist_format = ASSETS_ICONS;
-			break;
-		case ASSETS_ICONS:
-			mwindow->edl->session->assetlist_format = ASSETS_TEXT;
-			mwindow->edl->session->folderlist_format = ASSETS_TEXT;
-			break;
+	AWindowGUI *agui = mwindow->awindow->gui;
+	agui->stop_vicon_drawing();
+
+	EDLSession *session = mwindow->edl->session;
+	switch(session->assetlist_format) {
+	case ASSETS_TEXT:
+		session->assetlist_format = ASSETS_ICONS;
+		session->folderlist_format = ASSETS_ICONS;
+		break;
+	case ASSETS_ICONS:
+		session->assetlist_format = ASSETS_TEXT;
+		session->folderlist_format = ASSETS_TEXT;
+		break;
 	}
 
-	mwindow->awindow->gui->asset_list->update_format(
-		mwindow->edl->session->assetlist_format, 
-		1);
-	mwindow->awindow->gui->folder_list->update_format(
-		mwindow->edl->session->assetlist_format, 
-		1);
-
+	agui->asset_list->update_format(session->assetlist_format, 1);
+	agui->folder_list->update_format(session->folderlist_format, 1);
+	agui->start_vicon_drawing();
 	return 1;
 }
 

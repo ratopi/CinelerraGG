@@ -287,6 +287,8 @@ public:
 	int get_abs_cursor_y(int lock_window);
 	int get_relative_cursor_x();
 	int get_relative_cursor_y();
+	void get_root_coordinates(int x, int y, int *abs_x, int *abs_y);
+	void get_win_coordinates(int abs_x, int abs_y, int *x, int *y);
 // Return 1 if cursor is over an unobscured part of this window.
 // An argument is provided for excluding a drag popup
 	int get_cursor_over_window();
@@ -606,12 +608,8 @@ private:
 	int find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result);
 
 
-	void translate_coordinates(Window src_w,
-		Window dest_w,
-		int src_x,
-		int src_y,
-		int *dest_x_return,
-		int *dest_y_return);
+	void translate_coordinates(Window src_w, Window dest_w,
+		int src_x, int src_y, int *dest_x_return, int *dest_y_return);
 
 // Top level window above this window
 	BC_WindowBase* top_level;

@@ -219,7 +219,9 @@ BC_XvImage::BC_XvImage(BC_Bitmap *bitmap, int index,
 	int id = BC_CModels::bc_to_x(color_model);
 	xv_image = XvCreateImage(display, bitmap->xv_portid, id, 0, w, h);
 	dataSize = xv_image->data_size;
-	data = new unsigned char[dataSize + 8];
+	long data_sz = dataSize + 8;
+	data = new unsigned char[data_sz];
+	memset(data, 0, data_sz);
 	xv_image->data = (char *) data;
 	w = xv_image->width;
 	h = xv_image->height;
@@ -250,7 +252,9 @@ BC_XImage::BC_XImage(BC_Bitmap *bitmap, int index,
  	bytesPerLine = ximage->bytes_per_line;
 	bitsPerPixel = ximage->bits_per_pixel;
 	dataSize = h * bytesPerLine;
-	data = new unsigned char[dataSize + 8];
+	long data_sz = dataSize + 8;
+	data = new unsigned char[data_sz];
+	memset(data, 0, data_sz);
 	ximage->data = (char*) data;
 	row_data = new unsigned char*[h];
 	for( int i=0; i<h; ++i )
@@ -419,7 +423,6 @@ update_buffers(int count, int lock_avail)
 			BC_BitmapImage *buffer = buffers[i];
 			if( buffer == active_bfr ) active_bfr = 0;
 			if( buffer->is_avail() ) {
-				avail.remove_pointer(buffer);
 				delete buffer;
 			}
 			else {
@@ -429,10 +432,10 @@ update_buffers(int count, int lock_avail)
 			++i;
 		}
 	}
-	if( lock_avail ) avail_lock->unlock();
 	delete [] buffers;
 	buffers = new_buffers;
 	buffer_count = count;
+	if( lock_avail ) avail_lock->unlock();
 	//top_level->unlock_window();
 }
 
