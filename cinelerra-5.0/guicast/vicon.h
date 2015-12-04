@@ -59,7 +59,6 @@ public:
 	ViewPopup *view_win;
 	VIcon *viewing, *vicon;
 	int view_w, view_h;
-	int cur_view, new_view;
 	int img_dirty, win_dirty;
 	int64_t draw_flash;
 

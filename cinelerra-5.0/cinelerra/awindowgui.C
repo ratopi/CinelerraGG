@@ -86,12 +86,11 @@ VFrame *AssetVIcon::frame()
 		VFrame frame(asset->width, asset->height, BC_RGB888);
 		file->set_layer(0);
 		file->set_video_position(images.size(),0);
-		VFrame *vfrm0 = images[0];
-		int ww = vfrm0->get_w(), hh = vfrm0->get_h();
-		int cmdl = vfrm0->get_color_model();
+		int ww = picon->gui->vicon_thread->view_w;
+		int hh = picon->gui->vicon_thread->view_h;
 		while( seq_no >= images.size() ) {
 			file->read_frame(&frame);
-			add_image(&frame, ww, hh, cmdl);
+			add_image(&frame, ww, hh, BC_RGB8);
 		}
 		mwindow->video_cache->check_in(asset);
 	}
@@ -262,8 +261,6 @@ void AssetPicon::create_objects()
 					int64_t vframes = asset->get_video_frames();
 					if( length > vframes ) length = vframes;
 					vicon = new AssetVIcon(this, pixmap_w, pixmap_h, framerate, length);
-					int ww = gui->vicon_thread->view_w, hh = gui->vicon_thread->view_h;
-					vicon->add_image(gui->temp_picon, ww, hh, BC_RGB8);
 					gui->vicon_thread->add_vicon(vicon);
 					if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 
@@ -1524,9 +1521,14 @@ int AWindowAssets::selection_changed()
 		BC_ListBox::deactivate_selection();
 		return 1;
 	}
-	else if(get_button_down() && get_buttonpress() == 1 && get_selection(0, 0)) {
-		AssetPicon *picon = (AssetPicon*)get_selection(0, 0);
-		gui->vicon_thread->set_view_popup(picon->vicon);
+	else if( get_button_down() && get_buttonpress() == 1 && get_selection(0, 0) ) {
+		VIcon *vicon = 0;
+		if( !gui->vicon_thread->viewing ) {
+			AssetPicon *picon = (AssetPicon*)get_selection(0, 0);
+			vicon = picon->vicon;
+		}
+		gui->vicon_thread->set_view_popup(vicon);
+
 	}
 	return 0;
 }

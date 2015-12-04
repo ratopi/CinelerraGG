@@ -68,7 +68,6 @@ VIconThread(BC_WindowBase *wdw, int vw, int vh)
 {
 	this->wdw = wdw;
 	this->view_win = 0;  this->vicon = 0;
-	this->cur_view = 0;  this->new_view = 0;
 	this->view_w = vw;   this->view_h = vh;
 	this->viewing = 0;   this->draw_flash = 0;
 	draw_lock = new Condition(0, "VIconThread::draw_lock", 1);
@@ -95,7 +94,7 @@ VIconThread::
 void VIconThread::
 start_drawing()
 {
-	wdw->lock_window("VIconThread::stop_drawing");
+	wdw->lock_window("VIconThread::start_drawing");
         if( interrupted )
 		draw_lock->unlock();
 	wdw->unlock_window();
@@ -111,9 +110,14 @@ stop_drawing()
 
 int VIconThread::keypress_event(int key)
 {
-	if( !cur_view ) return 0;
 	if( key != ESC ) return 0;
 	set_view_popup(0);
+	return 1;
+}
+
+int ViewPopup::button_press_event()
+{
+	vt->set_view_popup(0);
 	return 1;
 }
 
@@ -138,11 +142,6 @@ int ViewPopup::keypress_event()
 	int key = get_keypress();
 	return vt->keypress_event(key);
 }
-int ViewPopup::button_press_event()
-{
-	return vt->keypress_event(ESC);
-}
-
 ViewPopup::ViewPopup(VIconThread *vt, VFrame *frame, int x, int y, int w, int h)
  : BC_Popup(vt->wdw, x, y, w, h, BLACK)
 {
@@ -205,19 +204,12 @@ void VIconThread::set_view_popup(VIcon *vicon)
 int VIconThread::
 update_view()
 {
-	if( viewing == vicon && cur_view == new_view ) return 0;
-	wdw->lock_window("VIconThread::update_view");;
-	if( viewing && !vicon ) new_view = 0;
-	if( !viewing && vicon ) new_view = 1;
-	if( cur_view != new_view && !new_view ) vicon = 0;
-	viewing = vicon;  cur_view = new_view;
 	delete view_win;  view_win = 0;
-	if( cur_view ) {
+	if( (viewing=vicon) != 0 ) {
 		VFrame *frame = viewing->frame();
 		view_win = new_view_window(frame);
 		view_win->show_window();
-        }
-	wdw->unlock_window();
+	}
 	return 1;
 }
 
@@ -267,7 +259,7 @@ run()
 		interrupted = 0;
 		drawing_started();
 		while( !interrupted ) {
-			if( viewing != vicon || cur_view != new_view )
+			if( viewing != vicon )
 				update_view();
 			VIcon *next = low_vicon();
 			if( !next ) break;
