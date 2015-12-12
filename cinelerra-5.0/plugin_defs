@@ -55,6 +55,7 @@ burn		:= exotic
 dot		:= exotic
 holo		:= exotic
 oil		:= exotic
+edge		:= exotic
 
 audioscope	:= audio_tools
 cdripper	:= audio_tools

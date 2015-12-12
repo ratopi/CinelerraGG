@@ -971,17 +971,20 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 			read_frame(prev_global_ref,
 				reference_layer,
 				previous_frame_number,
-				frame_rate);
+				frame_rate,
+				0);
 		}
 
 		read_frame(current_global_ref,
 			reference_layer,
 			start_position,
-			frame_rate);
+			frame_rate,
+			0);
 		read_frame(global_target_src,
 			target_layer,
 			start_position,
-			frame_rate);
+			frame_rate,
+			0);
 
 
 
@@ -1035,16 +1038,19 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 			read_frame(prev_rotate_ref,
 				reference_layer,
 				previous_frame_number,
-				frame_rate);
+				frame_rate,
+				0);
 		}
 		read_frame(current_rotate_ref,
 			reference_layer,
 			start_position,
-			frame_rate);
+			frame_rate,
+			0);
 		read_frame(rotate_target_src,
 			target_layer,
 			start_position,
-			frame_rate);
+			frame_rate,
+			0);
 	}
 
 
@@ -1089,7 +1095,8 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 		read_frame(frame[target_layer],
 			target_layer,
 			start_position,
-			frame_rate);
+			frame_rate,
+			0);
 	}
 
 	if(config.draw_vectors)

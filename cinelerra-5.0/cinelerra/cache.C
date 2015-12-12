@@ -321,9 +321,6 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 	file->set_interpolate_raw(edl->session->interpolate_raw);
 	file->set_white_balance_raw(edl->session->white_balance_raw);
 
-
-// Copy decoding parameters from session to asset so file can see them.
-	this->asset->divx_use_deblocking = edl->session->mpeg4_deblock;
 SET_TRACE
 }
 

@@ -512,6 +512,15 @@ int AudioALSA::write_buffer(char *buffer, int size)
 	int count = samples;
  	snd_pcm_sframes_t delay = 0;
 
+// static FILE *debug_fd = 0;
+// if(!debug_fd)
+// {
+// 	debug_fd = fopen("/tmp/debug.pcm", "w");
+// }
+// fwrite(buffer, size, 1, debug_fd);
+// fflush(debug_fd);
+
+
 	if(!get_output()) return 0;
 	if( buffer_position == 0 )
 		timer->update();

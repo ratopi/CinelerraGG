@@ -449,7 +449,7 @@ $(CUTADS):	$(CUTOBJS) $(CUTLIBS)
 	@echo g++ -o $@ $(CUTOBJS)
 	@g++ $(CFLAGS) -pthread -o $@ $(CUTOBJS) $(CUTLIBS)
 
-$(BDWRITE):	$(BDWOBJS)
+$(BDWRITE):	$(BDWOBJS) $(LIBRARIES)
 	@echo g++ -o $@ $(BDWOBJS)
 	@g++ $(CFLAGS) -pthread -o $@ $(BDWOBJS) $(LIBS)
 

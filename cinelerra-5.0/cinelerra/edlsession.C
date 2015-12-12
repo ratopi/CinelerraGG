@@ -6,7 +6,7 @@
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * (at  your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -43,7 +43,7 @@ EDLSession::EDLSession(EDL *edl)
 	aconfig_in = new AudioInConfig;
 	vconfig_in = new VideoInConfig;
 	recording_format = new Asset;
-	interpolation_type = CUBIC_LINEAR;
+	interpolation_type = CUBIC_CUBIC;
 	interpolate_raw = 1;
 	white_balance_raw = 1;
 	test_playback_edits = 1;
@@ -56,7 +56,7 @@ EDLSession::EDLSession(EDL *edl)
 	strcpy(default_atransition, "");
 	strcpy(default_vtransition, "");
 	default_transition_length = 1.0;
-	folderlist_format = ASSETS_ICONS;
+	folderlist_format = FOLDERS_ICONS;
 	frame_rate = 25; // just has to be something by default
 	autos_follow_edits = 1; // this is needed for predictability
 	labels_follow_edits = 1;
@@ -181,9 +181,9 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	typeless_keyframes = defaults->get("TYPELESS_KEYFRAMES", 0);
 	cwindow_dest = defaults->get("CWINDOW_DEST", 0);
 	cwindow_mask = defaults->get("CWINDOW_MASK", 0);
-	cwindow_meter = defaults->get("CWINDOW_METER", 1);
+	cwindow_meter = defaults->get("CWINDOW_METER", 0);
 	cwindow_operation = defaults->get("CWINDOW_OPERATION", 0);
-	cwindow_scrollbars = defaults->get("CWINDOW_SCROLLBARS", 1);
+	cwindow_scrollbars = defaults->get("CWINDOW_SCROLLBARS", 0);
 	cwindow_xscroll = defaults->get("CWINDOW_XSCROLL", 0);
 	cwindow_yscroll = defaults->get("CWINDOW_YSCROLL", 0);
 	cwindow_zoom = defaults->get("CWINDOW_ZOOM", (float)1);
@@ -226,15 +226,22 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 //	record_speed = defaults->get("RECORD_SPEED", 24);
 	record_fragment_size = defaults->get("RECORD_FRAGMENT_SIZE", 2048);
 	record_write_length = defaults->get("RECORD_WRITE_LENGTH", 131072);
+	
+// set some defaults that work
+	recording_format->video_data = 1;
+	recording_format->audio_data = 1;
+	recording_format->format = FILE_FFMPEG;
+	strcpy(recording_format->acodec, "mp4.qt");
+	strcpy(recording_format->vcodec, "mp4.qt");
+	recording_format->channels = 2;
+	recording_format->sample_rate = 48000;
+	recording_format->bits = 16;
+	recording_format->dither = 0;
+
 	record_realtime_toc = defaults->get("RECORD_REALTIME_TOC", 1);
-	recording_format->load_defaults(defaults,
-		"RECORD_", 
-		1,
-		1,
-		1,
-		1,
-		1);
-	safe_regions = defaults->get("SAFE_REGIONS", 1);
+	recording_format->load_defaults(defaults, "RECORD_", 1, 1, 1, 1, 1);
+
+	safe_regions = defaults->get("SAFE_REGIONS", 0);
 	sample_rate = defaults->get("SAMPLERATE", 48000);
 	scrub_speed = defaults->get("SCRUB_SPEED", (float)2);
 	show_assets = defaults->get("SHOW_ASSETS", 1);
@@ -258,7 +265,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	video_tracks = defaults->get("VTRACKS", 1);
 	video_write_length = defaults->get("VIDEO_WRITE_LENGTH", 30);
 	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", 1);
-	vwindow_meter = defaults->get("VWINDOW_METER", 1);
+	vwindow_meter = defaults->get("VWINDOW_METER", 0);
 
 
 	decode_subtitles = defaults->get("DECODE_SUBTITLES", decode_subtitles);
@@ -443,7 +450,7 @@ void EDLSession::boundaries()
 
 int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_flags)
 {
-	char string[1024];
+	char string[BCTEXTLEN];
 	if(append_mode) return 0;
 	interpolation_type = file->tag.get_property("INTERPOLATION_TYPE", interpolation_type);
 	interpolate_raw = file->tag.get_property("INTERPOLATE_RAW", interpolate_raw);
@@ -623,7 +630,7 @@ int EDLSession::save_xml(FileXML *file)
 
 int EDLSession::save_video_config(FileXML *file)
 {
-	char string[1024];
+	char string[BCTEXTLEN];
 	file->tag.set_title("VIDEO");
 	file->tag.set_property("INTERPOLATION_TYPE", interpolation_type);
 	file->tag.set_property("INTERPOLATE_RAW", interpolate_raw);

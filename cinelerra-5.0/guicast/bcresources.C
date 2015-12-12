@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009-2015 Adam Williams <broadcast at earthling dot net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -328,6 +328,10 @@ BC_Resources::BC_Resources()
 		new VFrame(radial_checkedhi_png)
 	};
 #endif
+
+#include "images/check_png.h"
+	static VFrame* default_check_image = new VFrame(check_png);
+	check = default_check_image;
 
 #include "images/file_text_up_png.h"
 #include "images/file_text_hi_png.h"

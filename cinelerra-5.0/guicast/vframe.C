@@ -1365,6 +1365,161 @@ int VFrame::get_memory_usage()
 	return get_h() * get_bytes_per_line();
 }
 
+void VFrame::draw_pixel(int x, int y)
+{
+	if(!(x >= 0 && y >= 0 && x < get_w() && y < get_h())) return;
+
+#define DRAW_PIXEL(x, y, components, do_yuv, max, type) \
+{ \
+	type **rows = (type**)get_rows(); \
+	rows[y][x * components] = max - rows[y][x * components]; \
+	if(!do_yuv) \
+	{ \
+		rows[y][x * components + 1] = max - rows[y][x * components + 1]; \
+		rows[y][x * components + 2] = max - rows[y][x * components + 2]; \
+	} \
+	else \
+	{ \
+		rows[y][x * components + 1] = (max / 2 + 1) - rows[y][x * components + 1]; \
+		rows[y][x * components + 2] = (max / 2 + 1) - rows[y][x * components + 2]; \
+	} \
+	if(components == 4) \
+		rows[y][x * components + 3] = max; \
+}
+
+
+	switch(get_color_model())
+	{
+		case BC_RGB888:
+			DRAW_PIXEL(x, y, 3, 0, 0xff, unsigned char);
+			break;
+		case BC_RGBA8888:
+			DRAW_PIXEL(x, y, 4, 0, 0xff, unsigned char);
+			break;
+		case BC_RGB_FLOAT:
+			DRAW_PIXEL(x, y, 3, 0, 1.0, float);
+			break;
+		case BC_RGBA_FLOAT:
+			DRAW_PIXEL(x, y, 4, 0, 1.0, float);
+			break;
+		case BC_YUV888:
+			DRAW_PIXEL(x, y, 3, 1, 0xff, unsigned char);
+			break;
+		case BC_YUVA8888:
+			DRAW_PIXEL(x, y, 4, 1, 0xff, unsigned char);
+			break;
+		case BC_RGB161616:
+			DRAW_PIXEL(x, y, 3, 0, 0xffff, uint16_t);
+			break;
+		case BC_YUV161616:
+			DRAW_PIXEL(x, y, 3, 1, 0xffff, uint16_t);
+			break;
+		case BC_RGBA16161616:
+			DRAW_PIXEL(x, y, 4, 0, 0xffff, uint16_t);
+			break;
+		case BC_YUVA16161616:
+			DRAW_PIXEL(x, y, 4, 1, 0xffff, uint16_t);
+			break;
+	}
+}
+
+
+void VFrame::draw_line(int x1, int y1, int x2, int y2)
+{
+	int w = labs(x2 - x1);
+	int h = labs(y2 - y1);
+//printf("FindObjectMain::draw_line 1 %d %d %d %d\n", x1, y1, x2, y2);
+
+	if(!w && !h)
+	{
+		draw_pixel(x1, y1);
+	}
+	else
+	if(w > h)
+	{
+// Flip coordinates so x1 < x2
+		if(x2 < x1)
+		{
+			y2 ^= y1;
+			y1 ^= y2;
+			y2 ^= y1;
+			x1 ^= x2;
+			x2 ^= x1;
+			x1 ^= x2;
+		}
+		int numerator = y2 - y1;
+		int denominator = x2 - x1;
+		for(int i = x1; i <= x2; i++)
+		{
+			int y = y1 + (int64_t)(i - x1) * (int64_t)numerator / (int64_t)denominator;
+			draw_pixel(i, y);
+		}
+	}
+	else
+	{
+// Flip coordinates so y1 < y2
+		if(y2 < y1)
+		{
+			y2 ^= y1;
+			y1 ^= y2;
+			y2 ^= y1;
+			x1 ^= x2;
+			x2 ^= x1;
+			x1 ^= x2;
+		}
+		int numerator = x2 - x1;
+		int denominator = y2 - y1;
+		for(int i = y1; i <= y2; i++)
+		{
+			int x = x1 + (int64_t)(i - y1) * (int64_t)numerator / (int64_t)denominator;
+			draw_pixel(x, i);
+		}
+	}
+//printf("FindObjectMain::draw_line 2\n");
+}
+
+void VFrame::draw_rect(int x1, int y1, int x2, int y2)
+{
+	draw_line(x1, y1, x2, y1);
+	draw_line(x2, y1 + 1, x2, y2);
+	draw_line(x2 - 1, y2, x1, y2);
+	draw_line(x1, y2 - 1, x1, y1 + 1);
+}
+
+#define ARROW_SIZE 10
+void VFrame::draw_arrow(int x1, int y1, int x2, int y2)
+{
+	double angle = atan((float)(y2 - y1) / (float)(x2 - x1));
+	double angle1 = angle + (float)145 / 360 * 2 * 3.14159265;
+	double angle2 = angle - (float)145 / 360 * 2 * 3.14159265;
+	int x3;
+	int y3;
+	int x4;
+	int y4;
+	if(x2 < x1)
+	{
+		x3 = x2 - (int)(ARROW_SIZE * cos(angle1));
+		y3 = y2 - (int)(ARROW_SIZE * sin(angle1));
+		x4 = x2 - (int)(ARROW_SIZE * cos(angle2));
+		y4 = y2 - (int)(ARROW_SIZE * sin(angle2));
+	}
+	else
+	{
+		x3 = x2 + (int)(ARROW_SIZE * cos(angle1));
+		y3 = y2 + (int)(ARROW_SIZE * sin(angle1));
+		x4 = x2 + (int)(ARROW_SIZE * cos(angle2));
+		y4 = y2 + (int)(ARROW_SIZE * sin(angle2));
+	}
+
+// Main vector
+	draw_line(x1, y1, x2, y2);
+//	draw_line(x1, y1 + 1, x2, y2 + 1);
+
+// Arrow line
+	if(abs(y2 - y1) || abs(x2 - x1)) draw_line(x2, y2, x3, y3);
+// Arrow line
+	if(abs(y2 - y1) || abs(x2 - x1)) draw_line(x2, y2, x4, y4);
+}
 
 
 

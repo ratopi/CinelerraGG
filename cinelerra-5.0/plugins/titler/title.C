@@ -818,7 +818,6 @@ LoadPackage* TitleOutlineEngine::new_package()
 
 
 
-
 TitleTranslatePackage::TitleTranslatePackage()
  : LoadPackage()
 {
@@ -847,7 +846,6 @@ void TitleTranslate::run_packages()
 
 	process_packages();
 }
-
 
 
 
@@ -1216,11 +1214,11 @@ void TitleMain::build_previews(TitleWindow *gui)
 					if(!FT_Load_Char(freetype_face, c, FT_LOAD_RENDER)) {
 						if(pass == 0) {
 							current_w = current_x + freetype_face->glyph->bitmap.width;
-							if(freetype_face->glyph->bitmap_top > current_ascent)
+							if((int)freetype_face->glyph->bitmap_top > current_ascent)
 								current_ascent = freetype_face->glyph->bitmap_top;
-							if(freetype_face->glyph->bitmap.rows > total_h)
+							if((int)freetype_face->glyph->bitmap.rows > total_h)
 								total_h = freetype_face->glyph->bitmap.rows;
-							if(freetype_face->glyph->bitmap.rows > current_h)
+							if((int)freetype_face->glyph->bitmap.rows > current_h)
 								current_h = freetype_face->glyph->bitmap.rows;
 						}
 						else {
@@ -1229,7 +1227,7 @@ void TitleMain::build_previews(TitleWindow *gui)
 							int out_y = (total_h - height[font_number]) / 2 +
 								ascent[font_number] - freetype_face->glyph->bitmap_top;
 							for(int in_y = 0;
-								in_y < freetype_face->glyph->bitmap.rows &&
+								in_y < (int)freetype_face->glyph->bitmap.rows &&
 									out_y < total_h;
 								in_y++, out_y++) {
 								unsigned char *out_row = font_entry->image->get_rows()[out_y] +
@@ -1237,7 +1235,7 @@ void TitleMain::build_previews(TitleWindow *gui)
 								unsigned char *in_row = freetype_face->glyph->bitmap.buffer +
 									freetype_face->glyph->bitmap.pitch * in_y;
 
-								for(int out_x = 0; out_x < freetype_face->glyph->bitmap.width &&
+								for(int out_x = 0; out_x < (int)freetype_face->glyph->bitmap.width &&
 									out_x < total_w;
 									out_x++) {
 									*out_row = (*in_row * r +
@@ -1303,7 +1301,7 @@ int TitleMain::check_char_code_path(FT_Library &freetype_library,
 	{
 		FT_Set_Pixel_Sizes(temp_freetype_face, 128, 0);
 		int gindex = FT_Get_Char_Index(temp_freetype_face, char_code);
-		if((!gindex == 0) && (!char_code != 10))
+		if( gindex != 0 && char_code == 10 )
 		{
 			strcpy(path_new, path_old);
 			notfindit = 0;
@@ -1329,7 +1327,7 @@ int TitleMain::check_char_code_path(FT_Library &freetype_library,
 					{
 						FT_Set_Pixel_Sizes(temp_freetype_face, 128, 0);
 						int gindex = FT_Get_Char_Index(temp_freetype_face, char_code);
-						if((!gindex == 0) && (!char_code != 10))
+						if( gindex != 0 && char_code == 10 )
 						{
 							sprintf(path_new, "%s", tmpstring);
 							notfindit = 0;

@@ -5,7 +5,7 @@ HAVE_XFT := y
 HAVE_ESOUND := y
 HAVE_FIREWIRE := y
 HAVE_OSS := y
-STATIC_LIBRARIES := y
+STATIC_LIBRARIES := n
 
 OBJDIR := $(shell uname --machine)
 
@@ -105,3 +105,4 @@ LOOP_BEGIN = @ for i in $(DIRS) ; \
 
 LOOP_END = done
 
+EXTRA_LIBS += -lnuma

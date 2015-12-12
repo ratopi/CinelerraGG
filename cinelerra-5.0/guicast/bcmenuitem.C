@@ -26,6 +26,7 @@
 #include "bcpopup.h"
 #include "bcpopupmenu.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "colors.h"
 
@@ -343,10 +344,14 @@ int BC_MenuItem::draw()
 			{
 				if(menu_popup->item_bg[MENUITEM_DN])
 				{
-					menu_popup->get_popup()->draw_9segment(MENUITEM_MARGIN,
+// 					menu_popup->get_popup()->draw_9segment(MENUITEM_MARGIN,
+// 						y,
+// 						menu_popup->get_w() - MENUITEM_MARGIN * 2,
+// 						h,
+// 						menu_popup->item_bg[MENUITEM_DN]);
+					menu_popup->get_popup()->draw_3segmenth(MENUITEM_MARGIN,
 						y,
 						menu_popup->get_w() - MENUITEM_MARGIN * 2,
-						h,
 						menu_popup->item_bg[MENUITEM_DN]);
 				}
 				else
@@ -368,10 +373,14 @@ int BC_MenuItem::draw()
 			{
 				if(menu_popup->item_bg[MENUITEM_HI])
 				{
-					menu_popup->get_popup()->draw_9segment(MENUITEM_MARGIN,
+// 					menu_popup->get_popup()->draw_9segment(MENUITEM_MARGIN,
+// 						y,
+// 						menu_popup->get_w() - MENUITEM_MARGIN * 2,
+// 						h,
+// 						menu_popup->item_bg[MENUITEM_HI]);
+					menu_popup->get_popup()->draw_3segmenth(MENUITEM_MARGIN,
 						y,
 						menu_popup->get_w() - MENUITEM_MARGIN * 2,
-						h,
 						menu_popup->item_bg[MENUITEM_HI]);
 				}
 				else
@@ -391,10 +400,17 @@ int BC_MenuItem::draw()
 		  }
 		if(checked)
 		{
-			menu_popup->get_popup()->draw_check(10 + offset, y + 2 + offset);
+//			menu_popup->get_popup()->draw_check(10 + offset, y + 2 + offset);
+			menu_popup->get_popup()->draw_pixmap(menu_popup->check,
+				offset, 
+				y + (this->h - menu_popup->check->get_h()) / 2 + offset);
 			menu_popup->get_popup()->set_font(MEDIUMFONT);
-			menu_popup->get_popup()->draw_text(30 + offset, y + h - text_line - 2 + offset, text);
-			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset, y + h - text_line - 2 + offset, hotkey_text);
+			menu_popup->get_popup()->draw_text(menu_popup->check->get_w() + offset, 
+				y + h - text_line - 2 + offset, 
+				text);
+			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset, 
+				y + h - text_line - 2 + offset, 
+				hotkey_text);
 		}
 		else
 		{

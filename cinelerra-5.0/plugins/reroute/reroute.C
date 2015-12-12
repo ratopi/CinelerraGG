@@ -381,12 +381,12 @@ int Reroute::process_buffer(VFrame **frame,
 {
 	load_configuration();
 
-	bool do_components, do_alpha;
+	bool do_components = true, do_alpha = true;
 	switch(config.operation)
 	{
-		case RerouteConfig::REPLACE: 			do_components      = do_alpha=true; break;
-		case RerouteConfig::REPLACE_ALPHA:      do_components=false; do_alpha=true; break;
-		case RerouteConfig::REPLACE_COMPONENTS: do_components=true; do_alpha=false; break;
+		case RerouteConfig::REPLACE: 		break;
+		case RerouteConfig::REPLACE_ALPHA:      do_components = false; break;
+		case RerouteConfig::REPLACE_COMPONENTS: do_alpha = false; break;
 	}
 
 	if(config.output_track == RerouteConfig::TOP)
@@ -429,7 +429,8 @@ int Reroute::process_buffer(VFrame **frame,
 	read_frame(target, 
 		output_track, 
 		start_position,
-		frame_rate);
+		frame_rate,
+		0);
 	
 	switch(source->get_color_model())
 	{

@@ -413,6 +413,7 @@ public:
 	void paste_audio_transition();
 	void paste_video_transition();
 	void shuffle_edits();
+	void reverse_edits();
 	void align_edits();
 	void set_edit_length(double length);
 // Set length of single transition
@@ -425,7 +426,10 @@ public:
 // Asset removal from caches
 	void reset_caches();
 	void remove_asset_from_caches(Asset *asset);
-	void remove_assets_from_project(int push_undo = 0);
+	void remove_assets_from_project(int push_undo /* = 0 */, 
+		int redraw /* 1 */,
+		ArrayList<Indexable*> *drag_assets /* mwindow->session->drag_assets */,
+		ArrayList<EDL*> *drag_clips /* mwindow->session->drag_clips */);
 	void remove_assets_from_disk();
 	void resize_track(Track *track, int w, int h);
 	
@@ -471,8 +475,6 @@ public:
 	static void trap_hook(FILE *fp, void *vp);
 	
 	void reset_android_remote();
-	
-	
 
 // Send new EDL to caches
 	void age_caches();

@@ -135,14 +135,14 @@ void InterpolateVideo::fill_border(double frame_rate, int64_t start_position)
 	if( frame_start != frame_number[0] )
 	{
 //printf("InterpolateVideo::fill_border 1 %lld\n", range_start);
-		read_frame(frames[0], 0, frame_start, active_input_rate);
+		read_frame(frames[0], 0, frame_start, active_input_rate, 0);
 		frame_number[0] = frame_start;
 	}
 
 	if( frame_end != frame_number[1] )
 	{
 //printf("InterpolateVideo::fill_border 2 %lld\n", range_start);
-		read_frame(frames[1], 0, frame_end, active_input_rate);
+		read_frame(frames[1], 0, frame_end, active_input_rate, 0);
 		frame_number[1] = frame_end;
 	}
 
@@ -788,10 +788,7 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 		frame_rate / active_input_rate);
 	if(requested_range_start == requested_range_end)
 	{
-		read_frame(frame,
-			0,
-			range_start,
-			active_input_rate);
+		read_frame(frame, 0, range_start, active_input_rate, 0);
         }
         else
         {

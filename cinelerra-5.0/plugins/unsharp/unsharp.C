@@ -181,7 +181,7 @@ int UnsharpMain::process_buffer(VFrame *frame,
 
 	if(!engine) engine = new UnsharpEngine(this, 
 		get_project_smp() + 1, get_project_smp() + 1);
-	read_frame(frame, 0, get_source_position(), get_framerate());
+	read_frame(frame, 0, get_source_position(), get_framerate(), 0);
 	engine->do_unsharp(frame);
 	return 0;
 }

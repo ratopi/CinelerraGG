@@ -608,15 +608,15 @@ int Render::load_defaults(Asset *asset)
 	strategy = mwindow->defaults->get("RENDER_STRATEGY", SINGLE_PASS);
 	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
 
+// some defaults which work
+	asset->video_data = 1;
+	asset->audio_data = 1;
+	asset->format = FILE_FFMPEG;
+	strcpy(asset->acodec, "mp4.qt");
+	strcpy(asset->vcodec, "mp4.qt");
 
 	asset->load_defaults(mwindow->defaults, 
-		"RENDER_", 
-		1,
-		1,
-		1,
-		1,
-		1);
-
+		"RENDER_", 1, 1, 1, 1, 1);
 
 	return 0;
 }

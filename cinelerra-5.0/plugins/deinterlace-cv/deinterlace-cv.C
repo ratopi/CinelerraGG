@@ -530,10 +530,7 @@ int DeInterlaceMain::process_buffer(VFrame *frame,
 	load_configuration();
 
 
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate);
+	read_frame(frame, 0, start_position, frame_rate, 0);
 
 // Temp was used for adaptive deinterlacing where it took deinterlacing
 // an entire frame to decide if the deinterlaced output should be used.
@@ -569,16 +566,16 @@ int DeInterlaceMain::process_buffer(VFrame *frame,
 			break;
 		case DEINTERLACE_BOBWEAVE:
 			if (get_source_position()==0)
-				read_frame(temp_prevframe,0, get_source_position(), get_framerate());
+				read_frame(temp_prevframe,0, get_source_position(), get_framerate(), 0);
 			else 
-				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
+				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate(), 0);
 			deinterlace_bobweave(frame, temp_prevframe, frame, config.dominance);
 			break;
 		case DEINTERLACE_TEMPORALSWAP:
 			if (get_source_position()==0)
-				read_frame(temp_prevframe,0, get_source_position(), get_framerate());
+				read_frame(temp_prevframe,0, get_source_position(), get_framerate(), 0);
 			else 
-				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
+				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate(), 0);
 			deinterlace_temporalswap(frame, temp_prevframe, frame, config.dominance);
 			break; 
 	}

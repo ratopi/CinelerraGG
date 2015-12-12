@@ -394,12 +394,12 @@ int OverlayFrame::overlay(VFrame *output, VFrame *input,
 // MAX		[max(Sa, Da), MAX(Sc, Dc)]
 #define ALPHA_MAX(mx, Sa, Da) (Sa > Da ? Sa : Da)
 #define COLOR_MAX(mx, Sc, Sa, Dc, Da) (Sc > Dc ? Sc : Dc)
-#define CHROMA_MAX(mx, Sc, Sa, Dc, Da) (Sc > Dc ? Sc : Dc)
+#define CHROMA_MAX(mx, Sc, Sa, Dc, Da) (mabs(Sc) > mabs(Dc) ? Sc : Dc)
 
 // MIN		[min(Sa, Da), MIN(Sc, Dc)]
 #define ALPHA_MIN(mx, Sa, Da) (Sa < Da ? Sa : Da)
 #define COLOR_MIN(mx, Sc, Sa, Dc, Da) (Sc < Dc ? Sc : Dc)
-#define CHROMA_MIN(mx, Sc, Sa, Dc, Da) (Sc < Dc ? Sc : Dc)
+#define CHROMA_MIN(mx, Sc, Sa, Dc, Da) (mabs(Sc) < mabs(Dc) ? Sc : Dc)
 
 // AVERAGE	[(Sa + Da) * 0.5, (Sc + Dc) * 0.5]
 #define ALPHA_AVERAGE(mx, Sa, Da) ((Sa + Da) / 2)
@@ -409,12 +409,12 @@ int OverlayFrame::overlay(VFrame *output, VFrame *input,
 // DARKEN  	[Sa + Da - Sa*Da, Sc*(1 - Da) + Dc*(1 - Sa) + min(Sc, Dc)]  
 #define ALPHA_DARKEN(mx, Sa, Da) (Sa + Da - (Sa * Da) / mx)
 #define COLOR_DARKEN(mx, Sc, Sa, Dc, Da) ((Sc * (mx - Da) + Dc * (mx - Sa)) / mx + (Sc < Dc ? Sc : Dc))
-#define CHROMA_DARKEN COLOR_DARKEN
+#define CHROMA_DARKEN(mx, Sc, Sa, Dc, Da) ((Sc * (mx - Da) + Dc * (mx - Sa)) / mx + (mabs(Sc) < mabs(Dc) ? Sc : Dc))
 
 // LIGHTEN  	[Sa + Da - Sa*Da, Sc*(1 - Da) + Dc*(1 - Sa) + max(Sc, Dc)]  
 #define ALPHA_LIGHTEN(mx, Sa, Da) (Sa + Da - Sa * Da / mx)
 #define COLOR_LIGHTEN(mx, Sc, Sa, Dc, Da) ((Sc * (mx - Da) + Dc * (mx - Sa)) / mx + (Sc > Dc ? Sc : Dc))
-#define CHROMA_LIGHTEN COLOR_LIGHTEN
+#define CHROMA_LIGHTEN(mx, Sc, Sa, Dc, Da) ((Sc * (mx - Da) + Dc * (mx - Sa)) / mx + (mabs(Sc) > mabs(Dc) ? Sc : Dc))
 
 // DST  	[Da, Dc]  
 #define ALPHA_DST(mx, Sa, Da) Da

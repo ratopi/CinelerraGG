@@ -846,17 +846,20 @@ printf("MotionMain2::process_buffer 1 start_position=" _LD "\n", start_position)
 			read_frame(prev_global_ref, 
 				reference_layer, 
 				previous_frame_number, 
-				frame_rate);
+				frame_rate,
+				0);
 		}
 
 		read_frame(current_global_ref, 
 			reference_layer, 
 			start_position, 
-			frame_rate);
+			frame_rate,
+			0);
 		read_frame(global_target_src,
 			target_layer,
 			start_position,
-			frame_rate);
+			frame_rate,
+			0);
 	}
 
 
@@ -894,7 +897,8 @@ printf("MotionMain2::process_buffer 1 start_position=" _LD "\n", start_position)
 		read_frame(frame[target_layer],
 			target_layer,
 			start_position,
-			frame_rate);
+			frame_rate,
+			0);
 	}
 
 	if(config.draw_vectors)

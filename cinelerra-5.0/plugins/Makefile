@@ -8,6 +8,8 @@ include ../global_config
 DIRS = \
 	1080to480 \
 	1080to540 \
+	4k \
+	5k \
 	720to480 \
 	aging \
 	audioscope \
@@ -44,6 +46,7 @@ DIRS = \
 	dissolve \
 	dot \
 	downsample \
+	edge \
 	echo \
 	echocancel \
 	fieldframe \

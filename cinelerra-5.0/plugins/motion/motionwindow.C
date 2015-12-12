@@ -263,8 +263,7 @@ void MotionWindow::create_objects()
 
 
 
-	show_window();
-	flush();
+	show_window(1);
 }
 
 void MotionWindow::update_mode()

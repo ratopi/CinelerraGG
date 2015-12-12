@@ -439,10 +439,15 @@ dequantize_sample(float xr[SBLIMIT][SSLIMIT], int *scf,
 
   while( xrpnt < &xr[SBLIMIT][0] ) *xrpnt++ = 0.0;
 
+  if( -part2remain > num )
+    num = -part2remain;
   part2remain += num;
-  stream->start_reverse();
-  stream->get_bits_reverse(num);
-  stream->start_forward();
+
+  if( num > 0 ) {
+    stream->start_reverse();
+    stream->get_bits_reverse(num);
+    stream->start_forward();
+  }
 
 //zmsgs("3 %d %04x\n", stream->bit_number, stream->show_bits(16));
   while( part2remain > 16 ) {

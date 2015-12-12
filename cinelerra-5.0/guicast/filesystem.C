@@ -31,6 +31,8 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <utime.h>
+
 
 #include "filesystem.h"
 
@@ -792,12 +794,20 @@ int FileSystem::join_names(char *out, const char *dir_in, const char *name_in)
 	return 0;
 }
 
-int64_t FileSystem::get_date(char *filename)
+int64_t FileSystem::get_date(const char *filename)
 {
 	struct stat file_status;
 	bzero(&file_status, sizeof(struct stat));
 	int result = stat(filename, &file_status);
 	return !result ? file_status.st_mtime : -1;
+}
+
+void FileSystem::set_date(const char *path, int64_t value)
+{
+	struct utimbuf new_time;
+	new_time.actime = value;
+	new_time.modtime = value;
+	utime(path, &new_time);
 }
 
 int64_t FileSystem::get_size(char *filename)
@@ -856,6 +866,7 @@ FileItem* FileSystem::get_entry(int entry)
 {
 	return dir_list.values[entry];
 }
+
 
 // collapse ".",  "..", "//"  eg. x/./..//y = y
 char *FileSystem::basepath(const char *path)

@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 int BC_CModels::is_planar(int colormodel)
 {
 	switch(colormodel) {

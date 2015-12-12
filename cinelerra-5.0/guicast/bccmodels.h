@@ -73,7 +73,6 @@
 #endif // !BC_TRANSPARENCY
 
 
-
 // Access with BC_WindowBase::cmodels
 class BC_CModels
 {

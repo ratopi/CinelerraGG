@@ -43,11 +43,11 @@ static const char *xml_titles[AUTOMATION_TOTAL] =
 static int auto_defaults[AUTOMATION_TOTAL] = 
 {
 	0, // MUTE,
-	1, // CAMERA_X
-	1, // CAMERA_Y
+	0, // CAMERA_X
+	0, // CAMERA_Y
 	0, // CAMERA_Z
-	1, // PROJECTOR_X
-	1, // PROJECTOR_Y
+	0, // PROJECTOR_X
+	0, // PROJECTOR_Y
 	0, // PROJECTOR_Z
 	0, // FADE
 	0, // PAN
@@ -55,7 +55,6 @@ static int auto_defaults[AUTOMATION_TOTAL] =
 	0, // MASK
 	0, // SPEED
 };
-
 
 int AutoConf::load_defaults(BC_Hash* defaults)
 {

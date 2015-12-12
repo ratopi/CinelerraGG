@@ -328,7 +328,8 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 						read_frame(history[j],
 							0,
 							history_frame[j],
-							frame_rate);
+							frame_rate,
+							0);
 						if(config.mode == TimeAvgConfig::AVERAGE ||
 							config.mode == TimeAvgConfig::ACCUMULATE)
 						{
@@ -378,7 +379,8 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			read_frame(frame,
 				0,
 				i,
-				frame_rate);
+				frame_rate,
+				0);
 			add_accum(frame);
 printf("TimeAvgMain::process_buffer %d prev_frame=" _LD " start_position=" _LD " i=" _LD "\n", 
   __LINE__, prev_frame, start_position, i);

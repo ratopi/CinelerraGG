@@ -25,6 +25,7 @@
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "bcsignals.h"
+#include "clip.h"
 #include "cwindowgui.h"
 #include "cwindow.h"
 #include "channelinfo.h"
@@ -70,7 +71,7 @@
 #include "vwindow.h"
 #include "zoombar.h"
 
-#define PANE_DRAG_MARGIN 50
+#define PANE_DRAG_MARGIN MAX(mwindow->theme->pane_w, mwindow->theme->pane_h)
 
 
 // the main window uses its own private colormap for video
@@ -394,6 +395,54 @@ int MWindowGUI::resize_event(int w, int h)
 	
 	resource_thread->stop_draw(1);
 	
+	if(total_panes() > 1)
+	{
+		if(horizontal_panes())
+		{
+// 			printf("MWindowGUI::resize_event %d %d %d\n", 
+// 				__LINE__,
+// 				pane[TOP_RIGHT_PANE]->x,
+// 				mwindow->theme->mcanvas_w - 
+// 					BC_ScrollBar::get_span(SCROLL_VERT) - 
+// 					PANE_DRAG_MARGIN);
+			if(pane[TOP_RIGHT_PANE]->x >= mwindow->theme->mcanvas_w - 
+				BC_ScrollBar::get_span(SCROLL_VERT) - 
+				PANE_DRAG_MARGIN)
+			{
+				delete_x_pane(pane[TOP_RIGHT_PANE]->x);
+				mwindow->edl->local_session->x_pane = -1;
+			}
+		}
+		else
+		if(vertical_panes())
+		{
+			if(pane[BOTTOM_LEFT_PANE]->y >= mwindow->theme->mzoom_y - 
+				BC_ScrollBar::get_span(SCROLL_HORIZ) - 
+				PANE_DRAG_MARGIN)
+			{
+				delete_y_pane(pane[BOTTOM_LEFT_PANE]->y);
+				mwindow->edl->local_session->y_pane = -1;
+			}
+		}
+		else
+		{
+			if(pane[TOP_RIGHT_PANE]->x >= mwindow->theme->mcanvas_w - 
+					BC_ScrollBar::get_span(SCROLL_VERT) - 
+					PANE_DRAG_MARGIN)
+			{
+				delete_x_pane(pane[TOP_RIGHT_PANE]->x);
+				mwindow->edl->local_session->x_pane = -1;
+			}
+			
+			if(pane[BOTTOM_LEFT_PANE]->y >= mwindow->theme->mzoom_y - 
+				BC_ScrollBar::get_span(SCROLL_HORIZ) - 
+				PANE_DRAG_MARGIN)
+			{
+				delete_y_pane(pane[BOTTOM_LEFT_PANE]->y);
+				mwindow->edl->local_session->y_pane = -1;
+			}
+		}
+	}
 	
 	if(total_panes() == 1)
 	{
@@ -474,7 +523,8 @@ int MWindowGUI::resize_event(int w, int h)
 //	get_scrollbars(0);
 //	canvas->resize_event();
 //printf("MWindowGUI::resize_event %d\n", __LINE__);
-	flash(0);
+// required to get new widgets to appear after a pane deletion
+	show_window();
 	return 0;
 }
 

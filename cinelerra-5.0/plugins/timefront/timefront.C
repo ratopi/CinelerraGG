@@ -770,7 +770,8 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 	read_frame(framelist[0],
 		0,
 		start_position,
-		frame_rate);
+		frame_rate,
+		0);
 	this->input = framelist[0];
 	this->output = outframes[0];
 	need_reconfigure |= load_configuration();
@@ -849,7 +850,8 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 		read_frame(tfframe,
 			1,
 			start_position,
-			frame_rate);
+			frame_rate,
+			0);
 		if (config.track_usage == TimeFrontConfig::OTHERTRACK_INTENSITY)
 		{
 			switch (tfframe->get_color_model())
@@ -916,7 +918,8 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 			read_frame(framelist[i],
 				0,
 				start_position - i,
-				frame_rate);
+				frame_rate,
+				0);
 		}
 	}
 	

@@ -143,6 +143,7 @@ void MainMenu::create_objects()
 	editmenu->add_item(new SelectAll(mwindow));
 	editmenu->add_item(new BC_MenuItem("-"));
 	editmenu->add_item(new MenuEditShuffle(mwindow));
+	editmenu->add_item(new MenuEditReverse(mwindow));
 	editmenu->add_item(new MenuEditLength(mwindow));
 	editmenu->add_item(new MenuEditAlign(mwindow));
 	editmenu->add_item(new MenuTransitionLength(mwindow));
@@ -203,6 +204,7 @@ void MainMenu::create_objects()
 	settingsmenu->add_item(keyframes_follow_edits = new KeyframesFollowEdits(mwindow));
 	settingsmenu->add_item(cursor_on_frames = new CursorOnFrames(mwindow));
 	settingsmenu->add_item(typeless_keyframes = new TypelessKeyframes(mwindow));
+	settingsmenu->add_item(new BC_MenuItem("-"));
 	settingsmenu->add_item(new SaveSettingsNow(mwindow));
 	settingsmenu->add_item(loop_playback = new LoopPlayback(mwindow));
 	settingsmenu->add_item(new SetBRenderStart(mwindow));
@@ -242,6 +244,7 @@ void MainMenu::create_objects()
 	windowmenu->add_item(show_cwindow = new ShowCWindow(mwindow));
 	windowmenu->add_item(show_gwindow = new ShowGWindow(mwindow));
 	windowmenu->add_item(show_lwindow = new ShowLWindow(mwindow));
+	windowmenu->add_item(new BC_MenuItem("-"));
 	windowmenu->add_item(split_x = new SplitX(mwindow));
 	windowmenu->add_item(split_y = new SplitY(mwindow));
 	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1,_("Ctrl+P"),'p'));
