@@ -95,6 +95,7 @@ public:
 class AssetVIcon : public VIcon {
 public:
 	AssetPicon *picon;
+	VFrame *temp;
 	int64_t length;
 
 	VFrame *frame();

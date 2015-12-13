@@ -2,6 +2,7 @@
 #define __VICON_H__
 
 #include "arraylist.h"
+#include "bccmodels.h"
 #include "bcpopup.h"
 #include "bcwindowbase.h"
 #include "thread.h"
@@ -19,11 +20,25 @@ public:
 	~ViewPopup();
 };
 
+class VIFrame {
+	unsigned char *img_data;
+	VFrame *vfrm;
+public:
+	VIFrame(int ww, int hh, int vcmdl) {
+		int size = BC_CModels::calculate_datasize(ww, hh, -1, vcmdl);
+		img_data = new unsigned char[size];
+		vfrm = new VFrame(img_data, -1, ww, hh, vcmdl, -1);
+	}
+	~VIFrame() { delete vfrm;  delete [] img_data; }
+
+	operator VFrame *() { return vfrm; }
+};
+
 class VIcon
 {
 public:
 	int vw, vh, vcmdl, in_use;
-	ArrayList<VFrame *> images;
+	ArrayList<VIFrame *> images;
         int64_t seq_no;
         double age, period;
 
@@ -32,7 +47,7 @@ public:
 	int64_t vframes() { return images.size(); }
 	void clear_images() { images.remove_all_objects(); }
 
-	virtual VFrame *frame() { return images[seq_no]; }
+	virtual VFrame *frame() { return *images[seq_no]; }
 	virtual int64_t next_frame(int n) {
 		age += n * period;
 		if( (seq_no+=n) >= images.size() ) seq_no = 0;
@@ -60,7 +75,6 @@ public:
 	VIcon *viewing, *vicon;
 	int view_w, view_h;
 	int img_dirty, win_dirty;
-	int64_t draw_flash;
 
 	ArrayList<VIcon *>t_heap;
 	VIcon *low_vicon();

@@ -70,10 +70,12 @@ AssetVIcon::AssetVIcon(AssetPicon *picon, int w, int h, double framerate, int64_
 {
 	this->picon = picon;
 	this->length = length;
+	temp = 0;
 }
 
 AssetVIcon::~AssetVIcon()
 {
+	delete temp;
 }
 
 VFrame *AssetVIcon::frame()
@@ -82,19 +84,23 @@ VFrame *AssetVIcon::frame()
 		MWindow *mwindow = picon->mwindow;
 		Asset *asset = (Asset *)picon->indexable;
 		File *file = mwindow->video_cache->check_out(asset, mwindow->edl, 1);
-		if( !file ) return 0;		
-		VFrame frame(asset->width, asset->height, BC_RGB888);
+		if( !file ) return 0;
+		if( temp && (temp->get_w() != asset->width || temp->get_h() != asset->height) ) {
+			delete temp;  temp = 0;
+		}
+		if( !temp )
+			temp = new VFrame(asset->width, asset->height, BC_RGB888);
 		file->set_layer(0);
 		file->set_video_position(images.size(),0);
 		int ww = picon->gui->vicon_thread->view_w;
 		int hh = picon->gui->vicon_thread->view_h;
 		while( seq_no >= images.size() ) {
-			file->read_frame(&frame);
-			add_image(&frame, ww, hh, BC_RGB8);
+			file->read_frame(temp);
+			add_image(temp, ww, hh, BC_RGB8);
 		}
 		mwindow->video_cache->check_in(asset);
 	}
-	return images[seq_no];
+	return *images[seq_no];
 }
 
 int64_t AssetVIcon::next_frame(int n)

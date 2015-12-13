@@ -27,9 +27,10 @@ VIcon::
 void VIcon::
 add_image(VFrame *frm, int ww, int hh, int vcmdl)
 {
-	VFrame *img = new VFrame(ww, hh, vcmdl);
+	VIFrame *vifrm = new VIFrame(ww, hh, vcmdl);
+	VFrame *img = *vifrm;
 	img->transfer_from(frm);
-	images.append(img);
+	images.append(vifrm);
 }
 
 void VIcon::
@@ -69,7 +70,7 @@ VIconThread(BC_WindowBase *wdw, int vw, int vh)
 	this->wdw = wdw;
 	this->view_win = 0;  this->vicon = 0;
 	this->view_w = vw;   this->view_h = vh;
-	this->viewing = 0;   this->draw_flash = 0;
+	this->viewing = 0;
 	draw_lock = new Condition(0, "VIconThread::draw_lock", 1);
 	timer = new Timer();
 	done = 0;
@@ -95,6 +96,8 @@ void VIconThread::
 start_drawing()
 {
 	wdw->lock_window("VIconThread::start_drawing");
+	if( view_win )
+		wdw->set_active_subwindow(view_win);
         if( interrupted )
 		draw_lock->unlock();
 	wdw->unlock_window();
@@ -104,6 +107,7 @@ void VIconThread::
 stop_drawing()
 {
 	wdw->lock_window("VIconThread::stop_drawing");
+	set_view_popup(0);
 	interrupted = 1;
 	wdw->unlock_window();
 }
@@ -174,7 +178,6 @@ reset_images()
 	for( int i=t_heap.size(); --i>=0; ) t_heap[i]->age = 0;
 	timer->update();
 	img_dirty = win_dirty = 0;
-	draw_flash = 0;
 }
 
 void VIconThread::add_vicon(VIcon *vip, double age)
@@ -210,6 +213,7 @@ update_view()
 		view_win = new_view_window(frame);
 		view_win->show_window();
 	}
+	wdw->set_active_subwindow(view_win);
 	return 1;
 }
 
@@ -226,7 +230,7 @@ flash()
 {
 	if( !img_dirty && !win_dirty ) return;
 	if( img_dirty ) wdw->flash();
-	if( win_dirty ) view_win->flash();
+	if( win_dirty && view_win ) view_win->flash();
 	win_dirty = img_dirty = 0;
 }
 
@@ -237,6 +241,7 @@ draw(VIcon *vicon)
 	int draw_img = visible(vicon, x, y);
 	int draw_win = view_win && viewing == vicon ? 1 : 0;
 	if( !draw_img && !draw_win ) return 0;
+	if( !vicon->frame() ) return 0;
 	if( draw_img ) {
 		vicon->draw_vframe(wdw, x, y);
 		img_dirty = 1;
@@ -258,40 +263,47 @@ run()
 		reset_images();
 		interrupted = 0;
 		drawing_started();
+		int64_t draw_flash = 0;
+		VIcon *first = 0;
 		while( !interrupted ) {
 			if( viewing != vicon )
 				update_view();
 			VIcon *next = low_vicon();
 			if( !next ) break;
-			if( !next->frame() ) {
-				delete next;  next = 0;
+			int64_t now = timer->get_difference();
+			if( next == first || (draw_flash && now >= draw_flash) ) {
+				add_vicon(next, next->age);
+				if( !draw_flash ) draw_flash = now + 100;
+				else if( now >= draw_flash ) draw_flash = now + 1; 
+				wdw->unlock_window();
+				while( !interrupted ) {
+					now = timer->get_difference();
+					int64_t ms = draw_flash - now;
+					if( ms <= 0 ) break;
+					if( ms > 100 ) ms = 100;
+					Timer::delay(ms);
+				}
+				wdw->lock_window("BC_WindowBase::run 2");
+				now = timer->get_difference();
+				int64_t late = now - draw_flash;
+				if( late < 1000 ) flash();
+				draw_flash = 0;
+				first = 0;
 				continue;
 			}
-			int64_t next_time = next->age;
-			int64_t this_time = timer->get_difference();
-			int64_t msec = this_time - next_time;
-			int count = msec / next->period;
+			if( !first ) first = next;
+			if( draw(next) && !draw_flash )
+				draw_flash = next->age;
+			now = timer->get_difference();
+			int64_t late = now - next->age;
+			int count = late / next->period;
 			int nfrms = count > 0 ? count : 1;
 			if( !next->next_frame(nfrms) )
-				next->age = this_time + 1000;
+				next->age = now + 1000;
 			add_vicon(next, next->age);
-			if( msec < 1000 && draw(next) && !draw_flash )
-				draw_flash = next_time;
-			wdw->unlock_window();
-			msec = next_time - timer->get_difference();
-			if( msec < 1 ) msec = 1;
-			while( msec > 0 && !interrupted ) {
-				int ms = msec > 100 ? 100 : msec;
-				Timer::delay(ms);  msec -= ms;
-			}
-			wdw->lock_window("BC_WindowBase::run 2");
-			if( interrupted ) break;
-			if( draw_flash ) {
-				int64_t msec = timer->get_difference() - draw_flash;
-				if( msec < 1000 ) flash();
-				draw_flash = 0;
-			}
 		}
+		if( viewing != vicon )
+			update_view();
 		drawing_stopped();
 		interrupted = -1;
 		wdw->unlock_window();
@@ -304,7 +316,8 @@ void VIcon::dump(const char *dir)
 	for( int i=0; i<images.size(); ++i ) {
 		char fn[1024];  sprintf(fn,"%s/img%05d.png",dir,i);
 		printf("\r%s",fn);
-		images[i]->write_png(fn);
+		VFrame *img = *images[i];
+		img->write_png(fn);
 	}
 	printf("\n");
 }

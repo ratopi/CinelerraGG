@@ -127,8 +127,6 @@ int BC_CModels::calculate_max(int colormodel)
 
 int BC_CModels::calculate_datasize(int w, int h, int bytes_per_line, int color_model)
 {
-	if( bytes_per_line < 0 )
-		bytes_per_line = w * calculate_pixelsize(color_model);
 	switch(color_model) {
 	case BC_YUV410P: return w * h + w * h / 8 + 4;
 	case BC_YUV420P:
@@ -138,6 +136,8 @@ int BC_CModels::calculate_datasize(int w, int h, int bytes_per_line, int color_m
 	case BC_RGB_FLOATP: return w * h * 3 * sizeof(float) + 4;
 	case BC_RGBA_FLOATP: return w * h * 4 * sizeof(float) + 4;
 	}
+	if( bytes_per_line < 0 )
+		bytes_per_line = w * calculate_pixelsize(color_model);
 	return h * bytes_per_line + 4;
 }
 

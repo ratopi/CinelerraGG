@@ -389,7 +389,7 @@ VFrame *DbWindowVIcon::frame()
 {
 	if( seq_no >= images.size() )
 		load_frames(lbox->gui->dwindow->mdb);
-	return images[seq_no];
+	return *images[seq_no];
 }
 
 int64_t DbWindowVIcon::next_frame(int n)
@@ -418,13 +418,14 @@ void DbWindowVIcon::read_frames(DbWindow::MDb *mdb)
 		int frame_id = mdb->timeline_frame_id();
 		if( frame_id < 0 ) continue;
 		int swidth = (SWIDTH+1) & ~1, sheight = (SHEIGHT+1) & ~1;
-		VFrame *frame = new VFrame(swidth, sheight, BC_YUV420P);
-		memset(frame->get_y(),0x00,swidth * sheight);
-		memset(frame->get_u(),0x80,swidth/2 * sheight/2);
-		memset(frame->get_v(),0x80,swidth/2 * sheight/2);
-		uint8_t *yp = frame->get_y();  int sw = -1, sh = -1;
+		VIFrame *vifrm = new VIFrame(swidth, sheight, BC_YUV420P);
+		VFrame *img = *vifrm;
+		memset(img->get_y(),0x00,swidth * sheight);
+		memset(img->get_u(),0x80,swidth/2 * sheight/2);
+		memset(img->get_v(),0x80,swidth/2 * sheight/2);
+		uint8_t *yp = img->get_y();  int sw = -1, sh = -1;
 		mdb->get_image(frame_id, yp, sw, sh);
-		images.append(frame);
+		images.append(vifrm);
 	}
 }
 
