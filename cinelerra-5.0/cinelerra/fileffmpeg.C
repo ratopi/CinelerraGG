@@ -303,7 +303,7 @@ int FileFFMPEG::read_frame(VFrame *frame)
 	int64_t pos = file->current_frame;
 	int ret = ff->decode(layer, pos, frame);
 	frame->set_status(ret);
-	if( ret > 0 ) return 0;
+	if( ret >= 0 ) return 0;
 	frame->clear_frame();
 	return -1;
 }

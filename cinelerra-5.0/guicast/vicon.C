@@ -12,9 +12,10 @@ VIcon(int vw, int vh, double rate)
 {
 	this->vw = vw;
 	this->vh = vh;
-	this->period = 1000./rate;
+	this->frame_rate = rate;
+	this->cycle_start = 0;
 	this->age = 0;
-        this->seq_no = 0;
+	this->seq_no = 0;
 	this->in_use = 1;
 }
 
@@ -73,6 +74,7 @@ VIconThread(BC_WindowBase *wdw, int vw, int vh)
 	this->viewing = 0;
 	draw_lock = new Condition(0, "VIconThread::draw_lock", 1);
 	timer = new Timer();
+	this->refresh_rate = VICON_RATE;
 	done = 0;
 	interrupted = 1;
 }
@@ -175,14 +177,14 @@ ViewPopup *VIconThread::new_view_window(VFrame *frame)
 void VIconThread::
 reset_images()
 {
-	for( int i=t_heap.size(); --i>=0; ) t_heap[i]->age = 0;
+	for( int i=t_heap.size(); --i>=0; ) t_heap[i]->reset();
 	timer->update();
 	img_dirty = win_dirty = 0;
 }
 
-void VIconThread::add_vicon(VIcon *vip, double age)
+void VIconThread::add_vicon(VIcon *vip)
 {
-	vip->age = age;
+	double age = vip->age;
 	int i = t_heap.size();  t_heap.append(vip);
 	for( int k; i>0 && age<t_heap[(k=(i-1)/2)]->age; i=k )
 		t_heap[i] = t_heap[k];
@@ -272,7 +274,7 @@ run()
 			if( !next ) break;
 			int64_t now = timer->get_difference();
 			if( next == first || (draw_flash && now >= draw_flash) ) {
-				add_vicon(next, next->age);
+				add_vicon(next);
 				if( !draw_flash ) draw_flash = now + 100;
 				else if( now >= draw_flash ) draw_flash = now + 1; 
 				wdw->unlock_window();
@@ -295,12 +297,14 @@ run()
 			if( draw(next) && !draw_flash )
 				draw_flash = next->age;
 			now = timer->get_difference();
-			int64_t late = now - next->age;
-			int count = late / next->period;
-			int nfrms = count > 0 ? count : 1;
-			if( !next->next_frame(nfrms) )
+			if( !next->seq_no ) next->cycle_start = now;
+			int64_t ref_no = (now - next->cycle_start) / 1000 * refresh_rate;
+			int count = ref_no - next->seq_no;
+			if( count < 1 ) count = 1;
+			next->age += count * 1000 / refresh_rate;
+			if( !next->set_seq_no(next->seq_no + count) )
 				next->age = now + 1000;
-			add_vicon(next, next->age);
+			add_vicon(next);
 		}
 		if( viewing != vicon )
 			update_view();

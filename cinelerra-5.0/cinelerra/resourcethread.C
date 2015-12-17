@@ -195,6 +195,8 @@ ResourceThread::~ResourceThread()
 		delete temp_buffer[i];
 	delete timer;
 	delete render_engine;
+	if( audio_asset ) audio_asset->remove_user();
+	if( video_asset ) video_asset->remove_user();
 }
 
 void ResourceThread::create_objects()
@@ -377,12 +379,14 @@ File *ResourceThread::get_audio_source(Asset *asset)
 	{
 		mwindow->audio_cache->check_in(audio_asset);
 		audio_source = 0;
+		audio_asset->remove_user();
 		audio_asset = 0;
 
 	}
 	if( !audio_asset && asset )
 	{
 		audio_asset = asset;
+		audio_asset->add_user();
 		audio_source = mwindow->audio_cache->check_out(asset, mwindow->edl);
 	}
 	return audio_source;
@@ -395,12 +399,14 @@ File *ResourceThread::get_video_source(Asset *asset)
 	{
 		mwindow->video_cache->check_in(video_asset);
 		video_source = 0;
+		video_asset->remove_user();
 		video_asset = 0;
 
 	}
 	if( !video_asset && asset )
 	{
 		video_asset = asset;
+		video_asset->add_user();
 		video_source = mwindow->video_cache->check_out(asset, mwindow->edl);
 	}
 	return video_source;

@@ -37,22 +37,17 @@ public:
 class VIcon
 {
 public:
-	int vw, vh, vcmdl, in_use;
+	int vw, vh, in_use;
 	ArrayList<VIFrame *> images;
         int64_t seq_no;
-        double age, period;
+        double cycle_start, age, frame_rate;
 
-	double frame_rate() { return 1000/period; }
-	void frame_rate(double r) { period = 1000/r; }
 	int64_t vframes() { return images.size(); }
+	void reset() { seq_no = 0; cycle_start = 0; age = 0; }
 	void clear_images() { images.remove_all_objects(); }
 
+	virtual int64_t set_seq_no(int64_t no) { return seq_no = no; }
 	virtual VFrame *frame() { return *images[seq_no]; }
-	virtual int64_t next_frame(int n) {
-		age += n * period;
-		if( (seq_no+=n) >= images.size() ) seq_no = 0;
-		return seq_no;
-	}
 	virtual int get_vx() { return 0; }
 	virtual int get_vy() { return 0; }
 
@@ -60,7 +55,7 @@ public:
 	void draw_vframe(BC_WindowBase *wdw, int x, int y);
 	void dump(const char *dir);
 
-	VIcon(int vw=VICON_WIDTH, int vh=VICON_HEIGHT, double rate=24);
+	VIcon(int vw=VICON_WIDTH, int vh=VICON_HEIGHT, double rate=VICON_RATE);
 	virtual ~VIcon();
 };
 
@@ -75,10 +70,11 @@ public:
 	VIcon *viewing, *vicon;
 	int view_w, view_h;
 	int img_dirty, win_dirty;
+	double refresh_rate;
 
 	ArrayList<VIcon *>t_heap;
 	VIcon *low_vicon();
-	void add_vicon(VIcon *vicon, double age=0);
+	void add_vicon(VIcon *vicon);
 	int del_vicon(VIcon *&vicon);
 	void run();
 	void flash();

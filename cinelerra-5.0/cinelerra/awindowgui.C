@@ -91,7 +91,8 @@ VFrame *AssetVIcon::frame()
 		if( !temp )
 			temp = new VFrame(asset->width, asset->height, BC_RGB888);
 		file->set_layer(0);
-		file->set_video_position(images.size(),0);
+		int64_t pos = seq_no / picon->gui->vicon_thread->refresh_rate * frame_rate;
+		file->set_video_position(pos,0);
 		int ww = picon->gui->vicon_thread->view_w;
 		int hh = picon->gui->vicon_thread->view_h;
 		while( seq_no >= images.size() ) {
@@ -103,11 +104,10 @@ VFrame *AssetVIcon::frame()
 	return *images[seq_no];
 }
 
-int64_t AssetVIcon::next_frame(int n)
+int64_t AssetVIcon::set_seq_no(int64_t no)
 {
-	age += n * period;
-	if( (seq_no+=n) >= length ) seq_no = 0;
-	return seq_no;
+	if( no >= length ) no = 0;
+	return seq_no = no;
 }
 
 int AssetVIcon::get_vx()

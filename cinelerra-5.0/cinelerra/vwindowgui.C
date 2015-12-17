@@ -806,6 +806,9 @@ void VWindowCanvas::zoom_resize_window(float percentage)
 
 void VWindowCanvas::close_source()
 {
+	gui->unlock_window();
+	gui->vwindow->playback_engine->interrupt_playback(1);
+	gui->lock_window("VWindowCanvas::close_source");
 	gui->vwindow->delete_source(1, 1);
 }
 

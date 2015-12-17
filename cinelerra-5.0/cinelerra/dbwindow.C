@@ -338,7 +338,7 @@ move_column_event()
 }
 
 DbWindowVIcon::DbWindowVIcon()
- : VIcon(SWIDTH, SHEIGHT, 24)
+ : VIcon(SWIDTH, SHEIGHT, VICON_RATE)
 {
 	lbox = 0;
 	item = 0;
@@ -392,11 +392,10 @@ VFrame *DbWindowVIcon::frame()
 	return *images[seq_no];
 }
 
-int64_t DbWindowVIcon::next_frame(int n)
+int64_t DbWindowVIcon::set_seq_no(int64_t no)
 {
-	age += n * period;
-	if( (seq_no+=n) >= clip_size ) seq_no = 0;
-	return seq_no;
+	if( no >= clip_size ) no = 0;
+	return seq_no = no;
 }
 
 
@@ -449,7 +448,7 @@ update_image(DbWindowGUI *gui, int clip_id)
 			this->prefix_size = mdb->clip_prefix_size();
 			this->suffix_offset = mdb->clip_frames() - clip_size;
 			double framerate = mdb->clip_framerate();
-			this->period = 1000. / (framerate > 0 ? framerate : 24);
+			this->frame_rate = framerate > 0 ? framerate : VICON_RATE;
 			gui->vicon_thread->add_vicon(this);
 		}
 		mdb->detach();

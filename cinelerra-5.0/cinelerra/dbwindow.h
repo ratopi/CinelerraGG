@@ -249,7 +249,7 @@ public:
         int prefix_size, suffix_offset;
 
 	VFrame *frame();
-	int64_t next_frame(int n);
+	int64_t set_seq_no(int64_t no);
 	void load_frames(DbWindow::MDb *mdb);
 	void read_frames(DbWindow::MDb *mdb);
 

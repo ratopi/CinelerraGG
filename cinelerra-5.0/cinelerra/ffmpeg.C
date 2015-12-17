@@ -1887,7 +1887,6 @@ int FFMPEG::audio_seek(int stream, int64_t pos)
 {
 	int aidx = astrm_index[stream].st_idx;
 	FFAudioStream *aud = ffaudio[aidx];
-	pos = pos * aud->sample_rate / file_base->asset->sample_rate + 0.5;
 	aud->audio_seek(pos);
 	return 0;
 }
@@ -1896,7 +1895,6 @@ int FFMPEG::video_seek(int stream, int64_t pos)
 {
 	int vidx = vstrm_index[stream].st_idx;
 	FFVideoStream *vid = ffvideo[vidx];
-	pos = pos * vid->frame_rate / file_base->asset->frame_rate + 0.5;
 	vid->video_seek(pos);
 	return 0;
 }
@@ -1907,7 +1905,6 @@ int FFMPEG::decode(int chn, int64_t pos, double *samples, int len)
 	if( !has_audio || chn >= astrm_index.size() ) return -1;
 	int aidx = astrm_index[chn].st_idx;
 	FFAudioStream *aud = ffaudio[aidx];
-	pos = pos * aud->sample_rate / file_base->asset->sample_rate + 0.5;
 	if( aud->load(pos, len) < len ) return -1;
 	int ch = astrm_index[chn].st_ch;
 	int ret = aud->read(samples,len,ch);
@@ -1919,7 +1916,6 @@ int FFMPEG::decode(int layer, int64_t pos, VFrame *vframe)
 	if( !has_video || layer >= vstrm_index.size() ) return -1;
 	int vidx = vstrm_index[layer].st_idx;
 	FFVideoStream *vid = ffvideo[vidx];
-	pos = pos * vid->frame_rate / file_base->asset->frame_rate + 0.5;
 	return vid->load(vframe, pos);
 }
 

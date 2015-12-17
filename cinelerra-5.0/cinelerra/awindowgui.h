@@ -99,7 +99,7 @@ public:
 	int64_t length;
 
 	VFrame *frame();
-	int64_t next_frame(int n);
+	int64_t set_seq_no(int64_t no);
 	int get_vx();
 	int get_vy();
 
