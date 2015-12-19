@@ -262,49 +262,51 @@ run()
 		draw_lock->lock("VIconThread::run 0");
 		if( done ) break;;
 		wdw->lock_window("BC_WindowBase::run 1");
-		reset_images();
 		interrupted = 0;
 		drawing_started();
-		int64_t draw_flash = 0;
-		VIcon *first = 0;
+		reset_images();
+		int64_t seq_no = 0, now = 0;
+		int64_t draw_flash = 1000 / refresh_rate;
 		while( !interrupted ) {
 			if( viewing != vicon )
 				update_view();
 			VIcon *next = low_vicon();
-			if( !next ) break;
-			int64_t now = timer->get_difference();
-			if( next == first || (draw_flash && now >= draw_flash) ) {
-				add_vicon(next);
-				if( !draw_flash ) draw_flash = now + 100;
-				else if( now >= draw_flash ) draw_flash = now + 1; 
-				wdw->unlock_window();
-				while( !interrupted ) {
-					now = timer->get_difference();
-					int64_t ms = draw_flash - now;
-					if( ms <= 0 ) break;
-					if( ms > 100 ) ms = 100;
-					Timer::delay(ms);
-				}
-				wdw->lock_window("BC_WindowBase::run 2");
+			while( next && next->age < draw_flash ) {
 				now = timer->get_difference();
-				int64_t late = now - draw_flash;
-				if( late < 1000 ) flash();
-				draw_flash = 0;
-				first = 0;
-				continue;
+				if( now >= draw_flash ) break;
+				draw(next);
+				if( !next->seq_no ) next->cycle_start = now;
+				int64_t ref_no = (now - next->cycle_start) / 1000. * refresh_rate;
+				int count = ref_no - next->seq_no;
+				if( count < 1 ) count = 1;
+				ref_no = next->seq_no + count;
+				next->age =  next->cycle_start + 1000. * ref_no / refresh_rate;
+				if( !next->set_seq_no(ref_no) )
+					next->age = now + 1000.;
+				add_vicon(next);
+				next = low_vicon();
 			}
-			if( !first ) first = next;
-			if( draw(next) && !draw_flash )
-				draw_flash = next->age;
-			now = timer->get_difference();
-			if( !next->seq_no ) next->cycle_start = now;
-			int64_t ref_no = (now - next->cycle_start) / 1000 * refresh_rate;
-			int count = ref_no - next->seq_no;
-			if( count < 1 ) count = 1;
-			next->age += count * 1000 / refresh_rate;
-			if( !next->set_seq_no(next->seq_no + count) )
-				next->age = now + 1000;
+			if( !next ) break;
 			add_vicon(next);
+			if( draw_flash < now+1 )
+				draw_flash = now+1;
+			wdw->unlock_window();
+			while( !interrupted ) {
+				now = timer->get_difference();
+				int64_t ms = draw_flash - now;
+				if( ms <= 0 ) break;
+				if( ms > 100 ) ms = 100;
+				Timer::delay(ms);
+			}
+			wdw->lock_window("BC_WindowBase::run 2");
+			now = timer->get_difference();
+			int64_t late = now - draw_flash;
+			if( late < 1000 ) flash();
+			int64_t ref_no = now / 1000. * refresh_rate;
+			int64_t count = ref_no - seq_no;
+			if( count < 1 ) count = 1;
+			seq_no += count;
+			draw_flash = seq_no * 1000. / refresh_rate;
 		}
 		if( viewing != vicon )
 			update_view();

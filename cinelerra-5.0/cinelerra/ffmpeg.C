@@ -746,7 +746,7 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 		ret = read_frame(frame);
 		if( ret > 0 ) ++curr_pos;
 	}
-	if( ret > 0 ) {
+	if( ret >= 0 ) {
 		AVCodecContext *ctx = st->codec;
 		ret = convert_cmodel(vframe, (AVPicture *)frame,
 			ctx->pix_fmt, ctx->width, ctx->height);

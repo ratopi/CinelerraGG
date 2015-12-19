@@ -90,12 +90,12 @@ VFrame *AssetVIcon::frame()
 		}
 		if( !temp )
 			temp = new VFrame(asset->width, asset->height, BC_RGB888);
-		file->set_layer(0);
-		int64_t pos = seq_no / picon->gui->vicon_thread->refresh_rate * frame_rate;
-		file->set_video_position(pos,0);
 		int ww = picon->gui->vicon_thread->view_w;
 		int hh = picon->gui->vicon_thread->view_h;
 		while( seq_no >= images.size() ) {
+			file->set_layer(0);
+			int64_t pos = images.size() / picon->gui->vicon_thread->refresh_rate * frame_rate;
+			file->set_video_position(pos,0);
 			file->read_frame(temp);
 			add_image(temp, ww, hh, BC_RGB8);
 		}
@@ -262,10 +262,11 @@ void AssetPicon::create_objects()
 					icon_vframe->transfer_from(gui->temp_picon);
 // vicon images
 					double framerate = asset->get_frame_rate();
-					if( !framerate ) framerate = 24;
-					int64_t length = framerate * 5;
-					int64_t vframes = asset->get_video_frames();
-					if( length > vframes ) length = vframes;
+					if( !framerate ) framerate = VICON_RATE;
+					int64_t frames = asset->get_video_frames();
+					double secs = frames / framerate;
+					if( secs > 5 ) secs = 5;
+					int64_t length = secs * gui->vicon_thread->refresh_rate;
 					vicon = new AssetVIcon(this, pixmap_w, pixmap_h, framerate, length);
 					gui->vicon_thread->add_vicon(vicon);
 					if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
