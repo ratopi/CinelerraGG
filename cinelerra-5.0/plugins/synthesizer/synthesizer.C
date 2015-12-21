@@ -660,16 +660,16 @@ void SynthWindow::create_objects()
 #include "black_dn_png.h"
 #include "black_checked_png.h"
 #include "black_checkedhi_png.h"
-	white_key[0] = new VFrame(white_up_png);
-	white_key[1] = new VFrame(white_hi_png);
-	white_key[2] = new VFrame(white_checked_png);
-	white_key[3] = new VFrame(white_dn_png);
-	white_key[4] = new VFrame(white_checkedhi_png);
-	black_key[0] = new VFrame(black_up_png);
-	black_key[1] = new VFrame(black_hi_png);
-	black_key[2] = new VFrame(black_checked_png);
-	black_key[3] = new VFrame(black_dn_png);
-	black_key[4] = new VFrame(black_checkedhi_png);
+	white_key[0] = new VFramePng(white_up_png);
+	white_key[1] = new VFramePng(white_hi_png);
+	white_key[2] = new VFramePng(white_checked_png);
+	white_key[3] = new VFramePng(white_dn_png);
+	white_key[4] = new VFramePng(white_checkedhi_png);
+	black_key[0] = new VFramePng(black_up_png);
+	black_key[1] = new VFramePng(black_hi_png);
+	black_key[2] = new VFramePng(black_checked_png);
+	black_key[3] = new VFramePng(black_dn_png);
+	black_key[4] = new VFramePng(black_checkedhi_png);
 
 
 	add_subwindow(note_subwindow = new BC_SubWindow(x1, 

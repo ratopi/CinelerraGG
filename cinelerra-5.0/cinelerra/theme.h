@@ -328,6 +328,7 @@ public:
 	VFrame **edithandlein_data;
 	VFrame **edithandleout_data;
 	VFrame **extract_data;
+	VFrame **ffmpeg_toggle;
 	VFrame **infoasset_data;
 	VFrame **in_point;
 	VFrame **insert_data;
@@ -358,6 +359,7 @@ public:
 	VFrame **reverse_data;
 	VFrame **rewind_data;
 	VFrame **select_data;
+	VFrame **shbtn_data;
 	VFrame **splice_data;
 	VFrame **start_over_data;
 	VFrame **statusbar_cancel_data;

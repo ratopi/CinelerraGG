@@ -201,7 +201,7 @@ void AssetPicon::create_objects()
 	int pixmap_w, pixmap_h;
 	const int debug = 0;
 
-	pixmap_h = 50;
+	pixmap_h = 50 * BC_WindowBase::get_resources()->icon_scale;
 
 	if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 	if(indexable)
@@ -496,11 +496,11 @@ SET_TRACE
 	vtransition_icon = new BC_Pixmap(this, vtransition_vframe, PIXMAP_ALPHA);
 	aeffect_vframe = mwindow->theme->get_image("aeffect_icon");
 	aeffect_icon = new BC_Pixmap(this, aeffect_vframe, PIXMAP_ALPHA);
-	ladspa_vframe = new VFrame(lad_picon_png);
+	ladspa_vframe = new VFramePng(lad_picon_png);
 	ladspa_icon = new BC_Pixmap(this, ladspa_vframe, PIXMAP_ALPHA);
-	ff_aud_vframe = new VFrame(ff_audio_png);
+	ff_aud_vframe = new VFramePng(ff_audio_png);
 	ff_aud_icon = new BC_Pixmap(this, ff_aud_vframe, PIXMAP_ALPHA);
-	ff_vid_vframe = new VFrame(ff_video_png);
+	ff_vid_vframe = new VFramePng(ff_video_png);
 	ff_vid_icon = new BC_Pixmap(this, ff_vid_vframe, PIXMAP_ALPHA);
 	veffect_vframe = mwindow->theme->get_image("veffect_icon");
 	veffect_icon = new BC_Pixmap(this, veffect_vframe, PIXMAP_ALPHA);

@@ -595,6 +595,18 @@ void BrightTheme::initialize()
 		"labeltoggle_dn.png",
 		"label_checkedhi.png");
 
+	ffmpeg_toggle = new_image_set(5,
+		"ff_up.png", 
+		"ff_hi.png", 
+		"ff_checked.png", 
+		"ff_down.png", 
+		"ff_checkedhi.png");
+
+	shbtn_data = new_image_set(3,
+		"shbtn_up.png",
+		"shbtn_hi.png",
+		"shbtn_dn.png");
+
 	new_image_set("histogram_carrot",
 		5,
 		"histogram_carrot_up.png",
@@ -787,7 +799,7 @@ void BrightTheme::initialize()
 void BrightTheme::build_bg_data()
 {
 // Audio settings
-	channel_position_data = new VFrame(get_image_data("channel_position.png"));
+	channel_position_data = new VFramePng(get_image_data("channel_position.png"));
 
 // Track bitmaps
 	new_image("resource1024", "resource1024.png");
@@ -805,12 +817,12 @@ void BrightTheme::build_bg_data()
 
 void BrightTheme::build_overlays()
 {
-	keyframe_data = new VFrame(get_image_data("keyframe3.png"));
-	camerakeyframe_data = new VFrame(get_image_data("camerakeyframe.png"));
-	maskkeyframe_data = new VFrame(get_image_data("maskkeyframe.png"));
-	modekeyframe_data = new VFrame(get_image_data("modekeyframe.png"));
-	pankeyframe_data = new VFrame(get_image_data("pankeyframe.png"));
-	projectorkeyframe_data = new VFrame(get_image_data("projectorkeyframe.png"));
+	keyframe_data = new VFramePng(get_image_data("keyframe3.png"));
+	camerakeyframe_data = new VFramePng(get_image_data("camerakeyframe.png"));
+	maskkeyframe_data = new VFramePng(get_image_data("maskkeyframe.png"));
+	modekeyframe_data = new VFramePng(get_image_data("modekeyframe.png"));
+	pankeyframe_data = new VFramePng(get_image_data("pankeyframe.png"));
+	projectorkeyframe_data = new VFramePng(get_image_data("projectorkeyframe.png"));
 }
 
 

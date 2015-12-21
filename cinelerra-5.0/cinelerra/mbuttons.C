@@ -170,23 +170,9 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 }
 
 
-#include "data/ff_checked_png.h"
-#include "data/ff_down_png.h"
-#include "data/ff_checkedhi_png.h"
-#include "data/ff_up_png.h"
-#include "data/ff_hi_png.h"
-
-static VFrame *ff_images[] = {
-	new VFrame(ff_up_png),
-	new VFrame(ff_hi_png),
-	new VFrame(ff_checked_png),
-	new VFrame(ff_down_png),
-	new VFrame(ff_checkedhi_png)
-};
-
 MainFFMpegToggle::MainFFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y)
- : BC_Toggle(x - ff_images[0]->get_w(), y, &ff_images[0],
-		mwindow->preferences->ffmpeg_early_probe)
+ : BC_Toggle(x - mwindow->theme->ffmpeg_toggle[0]->get_w(), y,
+	mwindow->theme->ffmpeg_toggle, mwindow->preferences->ffmpeg_early_probe)
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;

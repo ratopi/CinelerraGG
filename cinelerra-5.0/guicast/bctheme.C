@@ -19,6 +19,7 @@
  *
  */
 
+#include "bcresources.h"
 #include "bctheme.h"
 #include "bcwindowbase.h"
 #include "clip.h"
@@ -35,8 +36,6 @@ BC_Theme::BC_Theme()
 	contents_ptr = 0;
 	last_image = 0;
 	last_pointer = 0;
-
-
 }
 
 BC_Theme::~BC_Theme()
@@ -58,7 +57,6 @@ BC_Resources* BC_Theme::get_resources()
 	return BC_WindowBase::get_resources();
 }
 
-
 // These create single images for storage in the image_sets table.
 VFrame* BC_Theme::new_image(const char *title, const char *path)
 {
@@ -66,7 +64,7 @@ VFrame* BC_Theme::new_image(const char *title, const char *path)
 	if(existing_image) return existing_image;
 
 	BC_ThemeSet *result = new BC_ThemeSet(1, 0, title);
-	result->data[0] = new VFrame(get_image_data(path));
+	result->data[0] = new VFramePng(get_image_data(path));
 	image_sets.append(result);
 	return result->data[0];
 }
@@ -222,7 +220,7 @@ VFrame** BC_Theme::new_button(const char *overlay_path,
 	const char *dn_path,
 	const char *title)
 {
-	VFrame default_data(get_image_data(overlay_path));
+	VFramePng default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(3, 1, title ? title : "");
 	if(title) image_sets.append(result);
 
@@ -244,7 +242,7 @@ VFrame** BC_Theme::new_button4(const char *overlay_path,
 	const char *disabled_path,
 	const char *title)
 {
-	VFrame default_data(get_image_data(overlay_path));
+	VFramePng default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(4, 1, title ? title : "");
 	if(title) image_sets.append(result);
 
@@ -266,7 +264,7 @@ VFrame** BC_Theme::new_button(const char *overlay_path,
 	VFrame *dn,
 	const char *title)
 {
-	VFrame default_data(get_image_data(overlay_path));
+	VFramePng default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(3, 0, title ? title : "");
 	if(title) image_sets.append(result);
 
@@ -287,7 +285,7 @@ VFrame** BC_Theme::new_toggle(const char *overlay_path,
 	const char *checkedhi_path,
 	const char *title)
 {
-	VFrame default_data(get_image_data(overlay_path));
+	VFramePng default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(5, 1, title ? title : "");
 	if(title) image_sets.append(result);
 
@@ -309,7 +307,7 @@ VFrame** BC_Theme::new_toggle(const char *overlay_path,
 	VFrame *checkedhi,
 	const char *title)
 {
-	VFrame default_data(get_image_data(overlay_path));
+	VFramePng default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(5, 0, title ? title : "");
 	if(title) image_sets.append(result);
 

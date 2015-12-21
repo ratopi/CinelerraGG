@@ -96,7 +96,7 @@ Theme::Theme()
 	loadmode_w = 350;
 
 #include "data/about_png.h"
-	about_bg = new VFrame(about_png);
+	about_bg = new VFramePng(about_png);
 
 	pane_color = BLACK;
 	drag_pane_color = WHITE;
@@ -342,7 +342,7 @@ void Theme::build_transport(char *title,
 	int third)
 {
 	if(!png_overlay) return;
-	VFrame default_data(png_overlay);
+	VFramePng default_data(png_overlay);
 	VFrame *data[3];
 	data[0] = NEW_VFRAME;
 	data[1] = NEW_VFRAME;
@@ -396,7 +396,7 @@ void Theme::build_patches(VFrame** &data,
 	int region)
 {
 	if(!png_overlay || !bg_data) return;
-	VFrame default_data(png_overlay);
+	VFramePng default_data(png_overlay);
 	data = new VFrame*[5];
 	data[0] = NEW_VFRAME;
 	data[1] = NEW_VFRAME;
@@ -449,7 +449,7 @@ void Theme::build_button(VFrame** &data,
 	VFrame *dn_vframe)
 {
 	if(!png_overlay) return;
-	VFrame default_data(png_overlay);
+	VFramePng default_data(png_overlay);
 
 	if(!up_vframe || !hi_vframe || !dn_vframe) return;
 	data = new VFrame*[3];
@@ -472,7 +472,7 @@ void Theme::build_button(VFrame** &data,
 	VFrame *at_vframe)
 {
 	if(!png_overlay) return;
-	VFrame default_data(png_overlay);
+	VFramePng default_data(png_overlay);
 
 	if(!up_vframe || !hi_vframe || !dn_vframe) return;
 	data = new VFrame*[4];
@@ -503,7 +503,7 @@ void Theme::build_toggle(VFrame** &data,
 		!checked_vframe || 
 		!dn_vframe || 
 		!checkedhi_vframe) return;
-	VFrame default_data(png_overlay);
+	VFramePng default_data(png_overlay);
 	data = new VFrame*[5];
 	data[0] = NEW_VFRAME;
 	data[1] = NEW_VFRAME;

@@ -226,7 +226,7 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 			if( png_buffer != MAP_FAILED ) {
 				if( png_buffer[0] == 0x89 && png_buffer[1] == 0x50 &&
 				    png_buffer[2] == 0x4e && png_buffer[3] == 0x47 ) {
-					ofrm = new VFrame(png_buffer, st_png.st_size);
+					ofrm = new VFramePng(png_buffer, st_png.st_size, 1., 1.);
 					if( ofrm->get_color_model() != output->get_color_model() ) {
 						VFrame *vfrm = new VFrame(ofrm->get_w(), ofrm->get_h(),
 							output->get_color_model());

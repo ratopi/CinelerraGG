@@ -79,19 +79,26 @@ VFrameScene::~VFrameScene()
 //static BCCounter counter;
 
 
-VFrame::VFrame(unsigned char *png_data)
+VFramePng::VFramePng(unsigned char *png_data, double scale)
 {
-	reset_parameters(1);
-	params = new BC_Hash;
-	read_png(png_data);
+	long image_size =
+		((long)png_data[0] << 24) | ((long)png_data[1] << 16) |
+		((long)png_data[2] << 8)  |  (long)png_data[3];
+	if( !scale ) scale = BC_WindowBase::get_resources()->icon_scale;
+	read_png(png_data+4, image_size, scale, scale);
 }
 
-VFrame::VFrame(unsigned char *png_data, long image_size)
+VFramePng::VFramePng(unsigned char *png_data, long image_size, double xscale, double yscale)
 {
-	reset_parameters(1);
-	params = new BC_Hash;
-	read_png(png_data, image_size);
+	if( !xscale ) xscale = BC_WindowBase::get_resources()->icon_scale;
+	if( !yscale ) yscale = BC_WindowBase::get_resources()->icon_scale;
+	read_png(png_data, image_size, xscale, yscale);
 }
+
+VFramePng::~VFramePng()
+{
+}
+
 
 VFrame::VFrame(VFrame &frame)
 {
@@ -662,7 +669,7 @@ UNBUFFER(data);
 	return 0;
 }
 
-int VFrame::read_png(const unsigned char *data, long img_sz)
+int VFramePng::read_png(const unsigned char *data, long sz, double xscale, double yscale)
 {
 // Test for RAW format
 	if(data[0] == 'R' && data[1] == 'A' && data[2] == 'W' && data[3] == ' ') {
@@ -687,7 +694,7 @@ int VFrame::read_png(const unsigned char *data, long img_sz)
 		int new_color_model;
 
 		image_offset = 0;
-		image = data;  image_size = img_sz;
+		image = data;  image_size = sz;
 		png_set_read_fn(png_ptr, this, PngReadFunction::png_read_function);
 		png_read_info(png_ptr, info_ptr);
 
@@ -753,16 +760,15 @@ int VFrame::read_png(const unsigned char *data, long img_sz)
 		printf("VFrame::read_png %d: unknown file format"
 			" 0x%02x 0x%02x 0x%02x 0x%02x\n",
 			__LINE__, data[4], data[5], data[6], data[7]);
+		return 1;
+	}
+	int ww = w * xscale, hh = h * yscale;
+	if( ww != w || hh != h ) {
+		VFrame vframe(*this);
+                reallocate(NULL, -1, 0, 0, 0, ww, hh, color_model, -1);
+		transfer_from(&vframe);
 	}
 	return 0;
-}
-
-int VFrame::read_png(const unsigned char *data)
-{
-	long img_sz =
-		((long)data[0] << 24) | ((long)data[1] << 16) |
-		((long)data[2] << 8)  |  (long)data[3];
-	return read_png(data+4, img_sz);
 }
 
 int VFrame::write_png(const char *path)
@@ -1285,79 +1291,6 @@ void VFrame::dump()
 		w, h, color_model, rows, use_shm, shmid);
 }
 
-int VFrame::filefork_size()
-{
-	return sizeof(int) * 13 + sizeof(long);
-}
-
-
-void VFrame::to_filefork(unsigned char *buffer)
-{
-	*(int*)(buffer + 0) = shmid;
-	*(int*)(buffer + 4) = y_offset;
-	*(int*)(buffer + 8) = u_offset;
-	*(int*)(buffer + 12) = v_offset;
-	*(int*)(buffer + 16) = w;
-	*(int*)(buffer + 20) = h;
-	*(int*)(buffer + 24) = color_model;
-	*(int*)(buffer + 28) = bytes_per_line;
-	*(int*)(buffer + 32) = compressed_allocated;
-	*(int*)(buffer + 36) = compressed_size;
-	*(int*)(buffer + 40) = is_keyframe;
-	*(int*)(buffer + 44) = status;
-	*(long*)(buffer + 48) = sequence_number;
-
-
-//printf("VFrame::to_filefork %d %lld\n", __LINE__, sequence_number);
-// printf("VFrame::to_filefork %d", __LINE__);
-// for(int i = 0; i < 40; i++)
-// {
-// printf(" %02x", buffer[i]);
-// }
-// printf("\n");
-// dump();
-}
-
-
-void VFrame::from_filefork(unsigned char *buffer)
-{
-// This frame will always be preallocated shared memory
-//printf("VFrame::from_filefork %d %d\n", __LINE__, *(int*)(buffer + 24));
-	if(*(int*)(buffer + 24) == BC_COMPRESSED)
-	{
-		set_compressed_memory(0,
-			*(int*)(buffer + 0), // shmid
-			*(int*)(buffer + 36), // compressed_size
-			*(int*)(buffer + 32)); // compressed_allocated
-		color_model = BC_COMPRESSED;
-//printf("VFrame::from_filefork %d %d\n", __LINE__, get_compressed_size());
-
-	}
-	else
-	{
-// printf("VFrame::from_filefork %d", __LINE__);
-// for(int i = 0; i < 40; i++)
-// {
-// printf(" %02x", buffer[i]);
-// }
-// printf("\n");
-		reallocate(0,
-			*(int*)(buffer + 0), // shmid
-			*(int*)(buffer + 4), // y_offset
-			*(int*)(buffer + 8), // u_offset
-			*(int*)(buffer + 12), // v_offset
-			*(int*)(buffer + 16), // w
-			*(int*)(buffer + 20), // h
-			*(int*)(buffer + 24), // colormodel
-			*(int*)(buffer + 28)); // bytes per line
-//dump();
-	}
-
-	is_keyframe = *(int*)(buffer + 40);
-	status = *(int*)(buffer + 44);
-	sequence_number = *(long*)(buffer + 48);
-//printf("VFrame::from_filefork %d %lld\n", __LINE__, sequence_number);
-}
 
 int VFrame::get_memory_usage()
 {

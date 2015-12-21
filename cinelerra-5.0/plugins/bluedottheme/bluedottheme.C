@@ -573,6 +573,17 @@ void BlueDotTheme::initialize()
 		"labeltoggle_dn.png", 
 		"label_checkedhi.png");
 
+	ffmpeg_toggle = new_image_set(5,
+		"ff_up.png", 
+		"ff_hi.png", 
+		"ff_checked.png", 
+		"ff_down.png", 
+		"ff_checkedhi.png");
+
+	shbtn_data = new_image_set(3,
+		"shbtn_up.png",
+		"shbtn_hi.png",
+		"shbtn_dn.png");
 
 	statusbar_cancel_data = new_image_set(3,
 		"statusbar_cancel_up.png",
@@ -1041,8 +1052,8 @@ void BlueDotTheme::build_icons()
 void BlueDotTheme::build_bg_data()
 {
 // Audio settings
-	channel_bg_data = new VFrame(get_image_data("channel_bg.png"));
-	channel_position_data = new VFrame(get_image_data("channel_position.png"));
+	channel_bg_data = new VFramePng(get_image_data("channel_bg.png"));
+	channel_position_data = new VFramePng(get_image_data("channel_position.png"));
 
 // Track bitmaps
 	new_image("resource1024", "resource1024.png");
@@ -1061,12 +1072,12 @@ void BlueDotTheme::build_bg_data()
 //Graphic Copied from default. Improve!!  -- use your imagination
 void BlueDotTheme::build_overlays()
 {
-	keyframe_data = new VFrame(get_image_data("keyframe3.png"));
-	camerakeyframe_data = new VFrame(get_image_data("camerakeyframe.png"));
-	maskkeyframe_data = new VFrame(get_image_data("maskkeyframe.png"));
-	modekeyframe_data = new VFrame(get_image_data("modekeyframe.png"));
-	pankeyframe_data = new VFrame(get_image_data("pankeyframe.png"));
-	projectorkeyframe_data = new VFrame(get_image_data("projectorkeyframe.png"));
+	keyframe_data = new VFramePng(get_image_data("keyframe3.png"));
+	camerakeyframe_data = new VFramePng(get_image_data("camerakeyframe.png"));
+	maskkeyframe_data = new VFramePng(get_image_data("maskkeyframe.png"));
+	modekeyframe_data = new VFramePng(get_image_data("modekeyframe.png"));
+	pankeyframe_data = new VFramePng(get_image_data("pankeyframe.png"));
+	projectorkeyframe_data = new VFramePng(get_image_data("projectorkeyframe.png"));
 }
 
 

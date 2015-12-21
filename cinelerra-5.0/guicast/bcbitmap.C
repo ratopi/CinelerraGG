@@ -270,12 +270,10 @@ BC_XImage::~BC_XImage()
 }
 
 
-BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, unsigned char *png_data)
+BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, unsigned char *png_data, double scale)
 {
 // Decompress data into a temporary vframe
-	VFrame frame;
-
-	frame.read_png(png_data);
+	VFramePng frame(png_data, scale);
 
 	avail_lock = 0;
 // Initialize the bitmap

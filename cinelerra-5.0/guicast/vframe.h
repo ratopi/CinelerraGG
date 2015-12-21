@@ -32,9 +32,6 @@
 #include "bccmodels.h"
 #include "vframe.inc"
 
-class PngReadFunction;
-
-
 // Maximum number of prev or next effects to be pushed onto the stacks.
 #define MAX_STACK_ELEMENTS 255
 
@@ -52,6 +49,8 @@ public:
 
 class VFrame
 {
+	friend class VFramePng;
+	friend class PngReadFunction;
 public:
 // Create new frame with shared data if *data is nonzero.
 // Pass 0 to *data & -1 to shmid if private data is desired.
@@ -80,15 +79,10 @@ public:
 		int color_model,
 		long bytes_per_line);
 
-// Create a frame with the png image
-	VFrame(unsigned char *png_data);
-	VFrame(unsigned char *png_data, long image_size);
 	VFrame(VFrame &vframe);
 // Create new frame for compressed data.
 	VFrame();
 	~VFrame();
-
-	friend class PngReadFunction;
 
 // Return 1 if the colormodel and dimensions are the same
 // Used by FrameCache
@@ -118,9 +112,6 @@ public:
 		int data_size,
 		int data_allocated);
 
-// Read a PNG into the frame with alpha
-	int read_png(const unsigned char *data);
-	int read_png(const unsigned char *data, long image_size);
 // Write a PNG for debugging
 	int write_png(const char *path);
 
@@ -366,13 +357,6 @@ public:
 
 	void dump_params();
 
-// Shared memory utils
-	static int filefork_size();
-
-	void to_filefork(unsigned char *buffer);
-
-	void from_filefork(unsigned char *buffer);
-
 private:
 
 // 3D scene graphs
@@ -464,5 +448,14 @@ private:
 	BC_Hash *params;
 };
 
+// Create a frame with the png image
+class VFramePng : public VFrame {
+// Read a PNG into the frame with alpha
+	int read_png(const unsigned char *data, long image_size, double xscale, double yscale);
+public:
+	VFramePng(unsigned char *png_data, double scale=0);
+	VFramePng(unsigned char *png_data, long image_size, double xs=0, double ys=0);
+	~VFramePng();
+};
 
 #endif

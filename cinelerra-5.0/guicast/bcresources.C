@@ -209,20 +209,20 @@ BC_Resources::BC_Resources()
 {
 	synchronous = 0;
 	vframe_shm = 0;
+
 	display_info = new BC_DisplayInfo("", 0);
-	double scale = 1;
-	char *font_scale = getenv("BC_FONT_SCALE");
-	if( !font_scale ) {
-		int display_w = display_info->get_root_w();
-		int display_h = display_info->get_root_h();
-		int display_size = display_h < display_w ? display_h : display_w;
-		scale = display_size / 1000.;
-	}
-	else {
-		double env_scale = atof(font_scale);
-		if( env_scale > 0 ) scale = env_scale;
-	}
-	init_font_defs(scale);
+	int display_w = display_info->get_root_w();
+	int display_h = display_info->get_root_h();
+	int display_size = display_h < display_w ? display_h : display_w;
+	double default_scale = display_size/1000.;
+	char *env = getenv("BC_FONT_SCALE");
+	font_scale = env ? atof(env) : default_scale;
+	if( font_scale <= 0 ) font_scale = 1;
+	init_font_defs(font_scale);
+	env = getenv("BC_ICON_SCALE");
+	icon_scale = env ? atof(env) : default_scale;
+	if( icon_scale <= 0 ) icon_scale = 1;
+
 	id_lock = new Mutex("BC_Resources::id_lock");
 	create_window_lock = new Mutex("BC_Resources::create_window_lock", 1);
 	id = 0;
@@ -246,17 +246,17 @@ BC_Resources::BC_Resources()
 #include "images/file_column_png.h"
 	static VFrame* default_type_to_icon[] =
 	{
-		new VFrame(file_folder_png),
-		new VFrame(file_unknown_png),
-		new VFrame(file_film_png),
-		new VFrame(file_sound_png),
-		new VFrame(file_column_png)
+		new VFramePng(file_folder_png),
+		new VFramePng(file_unknown_png),
+		new VFramePng(file_film_png),
+		new VFramePng(file_sound_png),
+		new VFramePng(file_column_png)
 	};
 	type_to_icon = default_type_to_icon;
 
 
 #include "images/bar_png.h"
-	static VFrame* default_bar = new VFrame(bar_png);
+	static VFrame* default_bar = new VFramePng(bar_png);
 	bar_data = default_bar;
 
 
@@ -265,9 +265,9 @@ BC_Resources::BC_Resources()
 #include "images/cancel_dn_png.h"
 	static VFrame* default_cancel_images[] =
 	{
-		new VFrame(cancel_up_png),
-		new VFrame(cancel_hi_png),
-		new VFrame(cancel_dn_png)
+		new VFramePng(cancel_up_png),
+		new VFramePng(cancel_hi_png),
+		new VFramePng(cancel_dn_png)
 	};
 
 #include "images/ok_up_png.h"
@@ -275,9 +275,9 @@ BC_Resources::BC_Resources()
 #include "images/ok_dn_png.h"
 	static VFrame* default_ok_images[] =
 	{
-		new VFrame(ok_up_png),
-		new VFrame(ok_hi_png),
-		new VFrame(ok_dn_png)
+		new VFramePng(ok_up_png),
+		new VFramePng(ok_hi_png),
+		new VFramePng(ok_dn_png)
 	};
 
 #include "images/usethis_up_png.h"
@@ -285,9 +285,9 @@ BC_Resources::BC_Resources()
 #include "images/usethis_dn_png.h"
 	static VFrame* default_usethis_images[] =
 	{
-		new VFrame(usethis_up_png),
-		new VFrame(usethis_uphi_png),
-		new VFrame(usethis_dn_png)
+		new VFramePng(usethis_up_png),
+		new VFramePng(usethis_uphi_png),
+		new VFramePng(usethis_dn_png)
 	};
 
 #if 0
@@ -298,11 +298,11 @@ BC_Resources::BC_Resources()
 #include "images/checkbox_hi_png.h"
 	static VFrame* default_checkbox_images[] =
 	{
-		new VFrame(checkbox_up_png),
-		new VFrame(checkbox_hi_png),
-		new VFrame(checkbox_checked_png),
-		new VFrame(checkbox_dn_png),
-		new VFrame(checkbox_checkedhi_png)
+		new VFramePng(checkbox_up_png),
+		new VFramePng(checkbox_hi_png),
+		new VFramePng(checkbox_checked_png),
+		new VFramePng(checkbox_dn_png),
+		new VFramePng(checkbox_checkedhi_png)
 	};
 
 #include "images/radial_checked_png.h"
@@ -312,25 +312,25 @@ BC_Resources::BC_Resources()
 #include "images/radial_hi_png.h"
 	static VFrame* default_radial_images[] =
 	{
-		new VFrame(radial_up_png),
-		new VFrame(radial_hi_png),
-		new VFrame(radial_checked_png),
-		new VFrame(radial_dn_png),
-		new VFrame(radial_checkedhi_png)
+		new VFramePng(radial_up_png),
+		new VFramePng(radial_hi_png),
+		new VFramePng(radial_checked_png),
+		new VFramePng(radial_dn_png),
+		new VFramePng(radial_checkedhi_png)
 	};
 
 	static VFrame* default_label_images[] =
 	{
-		new VFrame(radial_up_png),
-		new VFrame(radial_hi_png),
-		new VFrame(radial_checked_png),
-		new VFrame(radial_dn_png),
-		new VFrame(radial_checkedhi_png)
+		new VFramePng(radial_up_png),
+		new VFramePng(radial_hi_png),
+		new VFramePng(radial_checked_png),
+		new VFramePng(radial_dn_png),
+		new VFramePng(radial_checkedhi_png)
 	};
 #endif
 
 #include "images/check_png.h"
-	static VFrame* default_check_image = new VFrame(check_png);
+	static VFrame* default_check_image = new VFramePng(check_png);
 	check = default_check_image;
 
 #include "images/file_text_up_png.h"
@@ -356,52 +356,52 @@ BC_Resources::BC_Resources()
 #include "images/file_reload_dn_png.h"
 	static VFrame* default_filebox_text_images[] =
 	{
-		new VFrame(file_text_up_png),
-		new VFrame(file_text_hi_png),
-		new VFrame(file_text_dn_png)
+		new VFramePng(file_text_up_png),
+		new VFramePng(file_text_hi_png),
+		new VFramePng(file_text_dn_png)
 	};
 
 	static VFrame* default_filebox_icons_images[] =
 	{
-		new VFrame(file_icons_up_png),
-		new VFrame(file_icons_hi_png),
-		new VFrame(file_icons_dn_png)
+		new VFramePng(file_icons_up_png),
+		new VFramePng(file_icons_hi_png),
+		new VFramePng(file_icons_dn_png)
 	};
 
 	static VFrame* default_filebox_updir_images[] =
 	{
-		new VFrame(file_updir_up_png),
-		new VFrame(file_updir_hi_png),
-		new VFrame(file_updir_dn_png)
+		new VFramePng(file_updir_up_png),
+		new VFramePng(file_updir_hi_png),
+		new VFramePng(file_updir_dn_png)
 	};
 
 	static VFrame* default_filebox_newfolder_images[] =
 	{
-		new VFrame(file_newfolder_up_png),
-		new VFrame(file_newfolder_hi_png),
-		new VFrame(file_newfolder_dn_png)
+		new VFramePng(file_newfolder_up_png),
+		new VFramePng(file_newfolder_hi_png),
+		new VFramePng(file_newfolder_dn_png)
 	};
 
 
 	static VFrame* default_filebox_rename_images[] =
 	{
-		new VFrame(file_rename_up_png),
-		new VFrame(file_rename_hi_png),
-		new VFrame(file_rename_dn_png)
+		new VFramePng(file_rename_up_png),
+		new VFramePng(file_rename_hi_png),
+		new VFramePng(file_rename_dn_png)
 	};
 
 	static VFrame* default_filebox_delete_images[] =
 	{
-		new VFrame(file_delete_up_png),
-		new VFrame(file_delete_hi_png),
-		new VFrame(file_delete_dn_png)
+		new VFramePng(file_delete_up_png),
+		new VFramePng(file_delete_hi_png),
+		new VFramePng(file_delete_dn_png)
 	};
 
 	static VFrame* default_filebox_reload_images[] =
 	{
-		new VFrame(file_reload_up_png),
-		new VFrame(file_reload_hi_png),
-		new VFrame(file_reload_dn_png)
+		new VFramePng(file_reload_up_png),
+		new VFramePng(file_reload_hi_png),
+		new VFramePng(file_reload_dn_png)
 	};
 
 #include "images/listbox_button_dn_png.h"
@@ -410,10 +410,10 @@ BC_Resources::BC_Resources()
 #include "images/listbox_button_disabled_png.h"
 	static VFrame* default_listbox_button[] =
 	{
-		new VFrame(listbox_button_up_png),
-		new VFrame(listbox_button_hi_png),
-		new VFrame(listbox_button_dn_png),
-		new VFrame(listbox_button_disabled_png)
+		new VFramePng(listbox_button_up_png),
+		new VFramePng(listbox_button_hi_png),
+		new VFramePng(listbox_button_dn_png),
+		new VFramePng(listbox_button_disabled_png)
 	};
 	listbox_button = default_listbox_button;
 
@@ -428,11 +428,11 @@ BC_Resources::BC_Resources()
 #include "images/listbox_expanduphi_png.h"
 	static VFrame* default_listbox_expand[] =
 	{
-		new VFrame(listbox_expandup_png),
-		new VFrame(listbox_expanduphi_png),
-		new VFrame(listbox_expandchecked_png),
-		new VFrame(listbox_expanddn_png),
-		new VFrame(listbox_expandcheckedhi_png),
+		new VFramePng(listbox_expandup_png),
+		new VFramePng(listbox_expanduphi_png),
+		new VFramePng(listbox_expandchecked_png),
+		new VFramePng(listbox_expanddn_png),
+		new VFramePng(listbox_expandcheckedhi_png),
 	};
 	listbox_expand = default_listbox_expand;
 
@@ -441,17 +441,17 @@ BC_Resources::BC_Resources()
 #include "images/listbox_columndn_png.h"
 	static VFrame* default_listbox_column[] =
 	{
-		new VFrame(listbox_columnup_png),
-		new VFrame(listbox_columnhi_png),
-		new VFrame(listbox_columndn_png)
+		new VFramePng(listbox_columnup_png),
+		new VFramePng(listbox_columnhi_png),
+		new VFramePng(listbox_columndn_png)
 	};
 	listbox_column = default_listbox_column;
 
 
 #include "images/listbox_up_png.h"
 #include "images/listbox_dn_png.h"
-	listbox_up = new VFrame(listbox_up_png);
-	listbox_dn = new VFrame(listbox_dn_png);
+	listbox_up = new VFramePng(listbox_up_png);
+	listbox_dn = new VFramePng(listbox_dn_png);
 	listbox_title_overlap = 0;
 	listbox_title_margin = 0;
 	listbox_title_color = BLACK;
@@ -473,17 +473,17 @@ BC_Resources::BC_Resources()
 #include "images/pot_dn_png.h"
 	static VFrame *default_pot_images[] =
 	{
-		new VFrame(pot_up_png),
-		new VFrame(pot_hi_png),
-		new VFrame(pot_dn_png)
+		new VFramePng(pot_up_png),
+		new VFramePng(pot_hi_png),
+		new VFramePng(pot_dn_png)
 	};
 
 #include "images/progress_up_png.h"
 #include "images/progress_hi_png.h"
 	static VFrame* default_progress_images[] =
 	{
-		new VFrame(progress_up_png),
-		new VFrame(progress_hi_png)
+		new VFramePng(progress_up_png),
+		new VFramePng(progress_hi_png)
 	};
 
 	pan_data = 0;
@@ -511,26 +511,26 @@ BC_Resources::BC_Resources()
 #include "images/7seg_small/dash_png.h"
 	static VFrame* default_medium_7segment[] =
 	{
-		new VFrame(_0_png),
-		new VFrame(_1_png),
-		new VFrame(_2_png),
-		new VFrame(_3_png),
-		new VFrame(_4_png),
-		new VFrame(_5_png),
-		new VFrame(_6_png),
-		new VFrame(_7_png),
-		new VFrame(_8_png),
-		new VFrame(_9_png),
-		new VFrame(colon_png),
-		new VFrame(period_png),
-		new VFrame(a_png),
-		new VFrame(b_png),
-		new VFrame(c_png),
-		new VFrame(d_png),
-		new VFrame(e_png),
-		new VFrame(f_png),
-		new VFrame(space_png),
-		new VFrame(dash_png)
+		new VFramePng(_0_png),
+		new VFramePng(_1_png),
+		new VFramePng(_2_png),
+		new VFramePng(_3_png),
+		new VFramePng(_4_png),
+		new VFramePng(_5_png),
+		new VFramePng(_6_png),
+		new VFramePng(_7_png),
+		new VFramePng(_8_png),
+		new VFramePng(_9_png),
+		new VFramePng(colon_png),
+		new VFramePng(period_png),
+		new VFramePng(a_png),
+		new VFramePng(b_png),
+		new VFramePng(c_png),
+		new VFramePng(d_png),
+		new VFramePng(e_png),
+		new VFramePng(f_png),
+		new VFramePng(space_png),
+		new VFramePng(dash_png)
 	};
 
 	generic_button_margin = 15;
@@ -589,24 +589,24 @@ BC_Resources::BC_Resources()
 
 	static VFrame *default_menuitem_data[] =
 	{
-		new VFrame(menuitem_up_png),
-		new VFrame(menuitem_hi_png),
-		new VFrame(menuitem_dn_png),
+		new VFramePng(menuitem_up_png),
+		new VFramePng(menuitem_hi_png),
+		new VFramePng(menuitem_dn_png),
 	};
 	menu_item_bg = default_menuitem_data;
 
 
 	static VFrame *default_menubar_data[] =
 	{
-		new VFrame(menubar_up_png),
-		new VFrame(menubar_hi_png),
-		new VFrame(menubar_dn_png),
+		new VFramePng(menubar_up_png),
+		new VFramePng(menubar_hi_png),
+		new VFramePng(menubar_dn_png),
 	};
 	menu_title_bg = default_menubar_data;
 
-	menu_popup_bg = new VFrame(menu_popup_bg_png);
+	menu_popup_bg = new VFramePng(menu_popup_bg_png);
 
-	menu_bar_bg = new VFrame(menubar_bg_png);
+	menu_bar_bg = new VFramePng(menubar_bg_png);
 
 	popupmenu_images = 0;
 

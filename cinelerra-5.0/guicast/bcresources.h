@@ -303,7 +303,7 @@ public:
 	int dirbox_margin;
 	int directory_color;
 	int file_color;
-
+	double font_scale, icon_scale;
 
 // fonts
 	static const char *small_font;

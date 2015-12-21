@@ -1853,7 +1853,7 @@ VFrame* SceneTokens::load_image(char *path)
 	data[1] = (size >> 16) & 0xff;
 	data[2] = (size >> 8) & 0xff;
 	data[3] = size & 0xff;
-	result = new VFrame(data);
+	result = new VFramePng(data, 1.);
 	delete [] data;
 
 

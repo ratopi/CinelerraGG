@@ -74,15 +74,15 @@ MicroTheme::~MicroTheme()
 void MicroTheme::initialize()
 {
 //printf("MicroTheme::initialize 1\n");
-	mwindow_icon = new VFrame(get_image("mwindow_icon.png"));
-	vwindow_icon = new VFrame(get_image("mwindow_icon.png"));
-	cwindow_icon = new VFrame(get_image("mwindow_icon.png"));
-	awindow_icon = new VFrame(get_image("mwindow_icon.png"));
-	record_icon = new VFrame(get_image("mwindow_icon.png"));
-	clip_icon = new VFrame(get_image("clip_icon.png"));
+	mwindow_icon = new VFramePng(get_image("mwindow_icon.png"));
+	vwindow_icon = new VFramePng(get_image("mwindow_icon.png"));
+	cwindow_icon = new VFramePng(get_image("mwindow_icon.png"));
+	awindow_icon = new VFramePng(get_image("mwindow_icon.png"));
+	record_icon = new VFramePng(get_image("mwindow_icon.png"));
+	clip_icon = new VFramePng(get_image("clip_icon.png"));
 
 
-	static VFrame *default_patchbay_bg = new VFrame(get_image("patchbay_bg.png"));
+	static VFrame *default_patchbay_bg = new VFramePng(get_image("patchbay_bg.png"));
 
 	BC_WindowBase::get_resources()->bg_color = WHITE;
 	BC_WindowBase::get_resources()->menu_light = WHITE;
@@ -92,7 +92,7 @@ void MicroTheme::initialize()
 	BC_WindowBase::get_resources()->menu_shadow = MEGREY;
 	BC_WindowBase::get_resources()->medium_font = "-*-helvetica-medium-r-normal-*-10-*";
 	
-	static VFrame* default_listbox_bg = new VFrame(get_image("patchbay_bg.png"));
+	static VFrame* default_listbox_bg = new VFramePng(get_image("patchbay_bg.png"));
 	BC_WindowBase::get_resources()->listbox_bg = default_listbox_bg;
 	BC_WindowBase::get_resources()->button_light = WHITE;
 	BC_WindowBase::get_resources()->button_up = WHITE;
@@ -100,58 +100,58 @@ void MicroTheme::initialize()
 	
 	static VFrame *default_cancel_images[] = 
 	{
-		new VFrame(get_image("cancel_up.png")), new VFrame(get_image("cancel_hi.png")), new VFrame(get_image("cancel_dn.png"))
+		new VFramePng(get_image("cancel_up.png")), new VFramePng(get_image("cancel_hi.png")), new VFramePng(get_image("cancel_dn.png"))
 	};
 	BC_WindowBase::get_resources()->cancel_images = default_cancel_images;
 
 	static VFrame *default_ok_images[] = 
 	{
-		new VFrame(get_image("ok_up.png")), new VFrame(get_image("ok_hi.png")), new VFrame(get_image("ok_dn.png"))
+		new VFramePng(get_image("ok_up.png")), new VFramePng(get_image("ok_hi.png")), new VFramePng(get_image("ok_dn.png"))
 	};
 	BC_WindowBase::get_resources()->ok_images = default_ok_images;
 
 	static VFrame *default_button_images[] = 
 	{
-		new VFrame(get_image("generic_up.png")), new VFrame(get_image("generic_hi.png")), new VFrame(get_image("generic_dn.png"))
+		new VFramePng(get_image("generic_up.png")), new VFramePng(get_image("generic_hi.png")), new VFramePng(get_image("generic_dn.png"))
 	};
 	BC_WindowBase::get_resources()->generic_button_images = default_button_images;
 
 	static VFrame *default_tumble_images[] = 
 	{
-		new VFrame(get_image("tumble_up.png")), new VFrame(get_image("tumble_hi.png")), new VFrame(get_image("tumble_bottomdn.png")), new VFrame(get_image("tumble_topdn.png"))
+		new VFramePng(get_image("tumble_up.png")), new VFramePng(get_image("tumble_hi.png")), new VFramePng(get_image("tumble_bottomdn.png")), new VFramePng(get_image("tumble_topdn.png"))
 	};
 	BC_WindowBase::get_resources()->tumble_data = default_tumble_images;
 
 	static VFrame *default_checkbox_images[] = 
 	{
-		new VFrame(get_image("checkbox_up.png")), new VFrame(get_image("checkbox_hi.png")), new VFrame(get_image("checkbox_checked.png")), new VFrame(get_image("checkbox_dn.png")), new VFrame(get_image("checkbox_checkedhi.png"))
+		new VFramePng(get_image("checkbox_up.png")), new VFramePng(get_image("checkbox_hi.png")), new VFramePng(get_image("checkbox_checked.png")), new VFramePng(get_image("checkbox_dn.png")), new VFramePng(get_image("checkbox_checkedhi.png"))
 	};
 	BC_WindowBase::get_resources()->checkbox_images = default_checkbox_images;
 	
 	static VFrame *default_radial_images[] = 
 	{
-		new VFrame(get_image("radial_up.png")), new VFrame(get_image("radial_hi.png")), new VFrame(get_image("radial_checked.png")), new VFrame(get_image("radial_dn.png")), new VFrame(get_image("radial_checkedhi.png"))
+		new VFramePng(get_image("radial_up.png")), new VFramePng(get_image("radial_hi.png")), new VFramePng(get_image("radial_checked.png")), new VFramePng(get_image("radial_dn.png")), new VFramePng(get_image("radial_checkedhi.png"))
 	};
 	BC_WindowBase::get_resources()->radial_images = default_radial_images;
 
 	static VFrame* default_xmeter_data[] =
 	{
-		new VFrame(get_image("xmeter_normal.png")),
-		new VFrame(get_image("xmeter_green.png")),
-		new VFrame(get_image("xmeter_red.png")),
-		new VFrame(get_image("xmeter_yellow.png")),
-		new VFrame(get_image("over_horiz.png"))
-		new VFrame(get_image("downmix51_2.png"))
+		new VFramePng(get_image("xmeter_normal.png")),
+		new VFramePng(get_image("xmeter_green.png")),
+		new VFramePng(get_image("xmeter_red.png")),
+		new VFramePng(get_image("xmeter_yellow.png")),
+		new VFramePng(get_image("over_horiz.png"))
+		new VFramePng(get_image("downmix51_2.png"))
 	};
 
 	static VFrame* default_ymeter_data[] =
 	{
-		new VFrame(get_image("ymeter_normal.png")),
-		new VFrame(get_image("ymeter_green.png")),
-		new VFrame(get_image("ymeter_red.png")),
-		new VFrame(get_image("ymeter_yellow.png")),
-		new VFrame(get_image("over_vert.png"))
-		new VFrame(get_image("downmix51_2.png"))
+		new VFramePng(get_image("ymeter_normal.png")),
+		new VFramePng(get_image("ymeter_green.png")),
+		new VFramePng(get_image("ymeter_red.png")),
+		new VFramePng(get_image("ymeter_yellow.png")),
+		new VFramePng(get_image("over_vert.png"))
+		new VFramePng(get_image("downmix51_2.png"))
 	};
 	BC_WindowBase::get_resources()->xmeter_images = default_xmeter_data;
 	BC_WindowBase::get_resources()->ymeter_images = default_ymeter_data;
@@ -162,71 +162,71 @@ void MicroTheme::initialize()
 
 	static VFrame* default_pan_data[] = 
 	{
-		new VFrame(get_image("pan_up.png")), 
-		new VFrame(get_image("pan_hi.png")), 
-		new VFrame(get_image("pan_popup.png")), 
-		new VFrame(get_image("pan_channel.png")), 
-		new VFrame(get_image("pan_stick.png")), 
-		new VFrame(get_image("pan_channel_small.png")), 
-		new VFrame(get_image("pan_stick_small.png"))
+		new VFramePng(get_image("pan_up.png")), 
+		new VFramePng(get_image("pan_hi.png")), 
+		new VFramePng(get_image("pan_popup.png")), 
+		new VFramePng(get_image("pan_channel.png")), 
+		new VFramePng(get_image("pan_stick.png")), 
+		new VFramePng(get_image("pan_channel_small.png")), 
+		new VFramePng(get_image("pan_stick_small.png"))
 	};
 	BC_WindowBase::get_resources()->pan_data = default_pan_data;
 	BC_WindowBase::get_resources()->pan_text_color = BLACK;
 
 	static VFrame *default_hscroll_data[] = 
 	{
-		new VFrame(get_image("hscroll_handle_up.png")), 
-		new VFrame(get_image("hscroll_handle_hi.png")), 
-		new VFrame(get_image("hscroll_handle_dn.png")), 
-		new VFrame(get_image("hscroll_handle_bg.png")), 
-		new VFrame(get_image("hscroll_left_up.png")), 
-		new VFrame(get_image("hscroll_left_hi.png")), 
-		new VFrame(get_image("hscroll_left_dn.png")), 
-		new VFrame(get_image("hscroll_right_up.png")), 
-		new VFrame(get_image("hscroll_right_hi.png")), 
-		new VFrame(get_image("hscroll_right_dn.png"))
+		new VFramePng(get_image("hscroll_handle_up.png")), 
+		new VFramePng(get_image("hscroll_handle_hi.png")), 
+		new VFramePng(get_image("hscroll_handle_dn.png")), 
+		new VFramePng(get_image("hscroll_handle_bg.png")), 
+		new VFramePng(get_image("hscroll_left_up.png")), 
+		new VFramePng(get_image("hscroll_left_hi.png")), 
+		new VFramePng(get_image("hscroll_left_dn.png")), 
+		new VFramePng(get_image("hscroll_right_up.png")), 
+		new VFramePng(get_image("hscroll_right_hi.png")), 
+		new VFramePng(get_image("hscroll_right_dn.png"))
 	};
 	static VFrame *default_vscroll_data[] = 
 	{
-		new VFrame(get_image("vscroll_handle_up.png")), 
-		new VFrame(get_image("vscroll_handle_hi.png")), 
-		new VFrame(get_image("vscroll_handle_dn.png")), 
-		new VFrame(get_image("vscroll_handle_bg.png")), 
-		new VFrame(get_image("vscroll_left_up.png")), 
-		new VFrame(get_image("vscroll_left_hi.png")), 
-		new VFrame(get_image("vscroll_left_dn.png")), 
-		new VFrame(get_image("vscroll_right_up.png")), 
-		new VFrame(get_image("vscroll_right_hi.png")), 
-		new VFrame(get_image("vscroll_right_dn.png"))
+		new VFramePng(get_image("vscroll_handle_up.png")), 
+		new VFramePng(get_image("vscroll_handle_hi.png")), 
+		new VFramePng(get_image("vscroll_handle_dn.png")), 
+		new VFramePng(get_image("vscroll_handle_bg.png")), 
+		new VFramePng(get_image("vscroll_left_up.png")), 
+		new VFramePng(get_image("vscroll_left_hi.png")), 
+		new VFramePng(get_image("vscroll_left_dn.png")), 
+		new VFramePng(get_image("vscroll_right_up.png")), 
+		new VFramePng(get_image("vscroll_right_hi.png")), 
+		new VFramePng(get_image("vscroll_right_dn.png"))
 	};
 	BC_WindowBase::get_resources()->hscroll_data = default_hscroll_data;
 	BC_WindowBase::get_resources()->vscroll_data = default_vscroll_data;
 
-	channel_bg_data = new VFrame(get_image("channel_bg.png"));
-	channel_position_data = new VFrame(get_image("channel_position.png"));
+	channel_bg_data = new VFramePng(get_image("channel_bg.png"));
+	channel_position_data = new VFramePng(get_image("channel_position.png"));
 	channel_position_color = BLACK;
 	recordgui_fixed_color = BLACK;
 	recordgui_variable_color = RED;
 
 	patchbay_bg = default_patchbay_bg;
-	resource1024_bg_data = new VFrame(get_image("resource1024.png"));
-	resource512_bg_data = new VFrame(get_image("resource512.png"));
-	resource256_bg_data = new VFrame(get_image("resource256.png"));
-	resource128_bg_data = new VFrame(get_image("resource128.png"));
-	resource64_bg_data = new VFrame(get_image("resource64.png"));
-	resource32_bg_data = new VFrame(get_image("resource32.png"));
-	plugin_bg_data = new VFrame(get_image("plugin_bg.png"));
-	title_bg_data = new VFrame(get_image("title_bg.png"));
-	timebar_bg_data = new VFrame(get_image("timebar_bg.png"));
-	vtimebar_bg_data = new VFrame(get_image("vwindow_timebar.png"));
+	resource1024_bg_data = new VFramePng(get_image("resource1024.png"));
+	resource512_bg_data = new VFramePng(get_image("resource512.png"));
+	resource256_bg_data = new VFramePng(get_image("resource256.png"));
+	resource128_bg_data = new VFramePng(get_image("resource128.png"));
+	resource64_bg_data = new VFramePng(get_image("resource64.png"));
+	resource32_bg_data = new VFramePng(get_image("resource32.png"));
+	plugin_bg_data = new VFramePng(get_image("plugin_bg.png"));
+	title_bg_data = new VFramePng(get_image("title_bg.png"));
+	timebar_bg_data = new VFramePng(get_image("timebar_bg.png"));
+	vtimebar_bg_data = new VFramePng(get_image("vwindow_timebar.png"));
 	new_button("pane.png", "pane_up.png", "pane_hi.png", "pane_dn.png", "pane");
 
-	keyframe_data = new VFrame(get_image("keyframe3.png"));
-	camerakeyframe_data = new VFrame(get_image("camerakeyframe.png"));
-	maskkeyframe_data = new VFrame(get_image("maskkeyframe.png"));
-	modekeyframe_data = new VFrame(get_image("modekeyframe.png"));
-	pankeyframe_data = new VFrame(get_image("pankeyframe.png"));
-	projectorkeyframe_data = new VFrame(get_image("projectorkeyframe.png"));
+	keyframe_data = new VFramePng(get_image("keyframe3.png"));
+	camerakeyframe_data = new VFramePng(get_image("camerakeyframe.png"));
+	maskkeyframe_data = new VFramePng(get_image("maskkeyframe.png"));
+	modekeyframe_data = new VFramePng(get_image("modekeyframe.png"));
+	pankeyframe_data = new VFramePng(get_image("pankeyframe.png"));
+	projectorkeyframe_data = new VFramePng(get_image("projectorkeyframe.png"));
 
 	VFrame editpanel_up(get_image("editpanel_up.png"));
 	VFrame editpanel_hi(get_image("editpanel_hi.png"));
@@ -234,11 +234,13 @@ void MicroTheme::initialize()
 	VFrame editpanel_checked(get_image("editpanel_checked.png"));
 	VFrame editpanel_checkedhi(get_image("editpanel_checkedhi.png"));
 
-	static VFrame *default_inpoint[] = { new VFrame(get_image("out_up.png")), new VFrame(get_image("out_hi.png")), new VFrame(get_image("out_checked.png")), new VFrame(get_image("out_dn.png")), new VFrame(get_image("out_checkedhi.png")) };
-	static VFrame *default_labeltoggle[] = { new VFrame(get_image("labeltoggle_up.png")), new VFrame(get_image("labeltoggle_uphi.png")), new VFrame(get_image("label_checked.png")), new VFrame(get_image("labeltoggle_dn.png")), new VFrame(get_image("label_checkedhi.png")) };
-	static VFrame *default_outpoint[] = { new VFrame(get_image("in_up.png")), new VFrame(get_image("in_hi.png")), new VFrame(get_image("in_checked.png")), new VFrame(get_image("in_dn.png")), new VFrame(get_image("in_checkedhi.png")) };
-	static VFrame *transport_bg[] = { new VFrame(get_image("transportup.png")), new VFrame(get_image("transporthi.png")), new VFrame(get_image("transportdn.png")) };
-	static VFrame *patches_bg[] = { new VFrame(get_image("patches_up.png")), new VFrame(get_image("patches_hi.png")), new VFrame(get_image("patches_checked.png")), new VFrame(get_image("patches_dn.png")), new VFrame(get_image("patches_checkedhi.png")) };
+	static VFrame *default_inpoint[] = { new VFramePng(get_image("out_up.png")), new VFramePng(get_image("out_hi.png")), new VFramePng(get_image("out_checked.png")), new VFramePng(get_image("out_dn.png")), new VFramePng(get_image("out_checkedhi.png")) };
+	static VFrame *default_labeltoggle[] = { new VFramePng(get_image("labeltoggle_up.png")), new VFramePng(get_image("labeltoggle_uphi.png")), new VFramePng(get_image("label_checked.png")), new VFramePng(get_image("labeltoggle_dn.png")), new VFramePng(get_image("label_checkedhi.png")) };
+	static VFrame *default_ffmpegtoggle[] = { new VFramePng(get_image("ff_up.png")), new VFramePng(get_image("ff_hi.png")), new VFramePng(get_image("ff_checked.png")), new VFramePng(get_image("ff_down.png")), new VFramePng(get_image("ff_checkedhi.png")) };
+	static VFrame *default_shbtndata[] = { new VFramePng(get_image("shbtn_up.png")), new VFramePng(get_image("shbtn_hi.png")), new VFramePng(get_image("shbtn_dn.png")), };
+	static VFrame *default_outpoint[] = { new VFramePng(get_image("in_up.png")), new VFramePng(get_image("in_hi.png")), new VFramePng(get_image("in_checked.png")), new VFramePng(get_image("in_dn.png")), new VFramePng(get_image("in_checkedhi.png")) };
+	static VFrame *transport_bg[] = { new VFramePng(get_image("transportup.png")), new VFramePng(get_image("transporthi.png")), new VFramePng(get_image("transportdn.png")) };
+	static VFrame *patches_bg[] = { new VFramePng(get_image("patches_up.png")), new VFramePng(get_image("patches_hi.png")), new VFramePng(get_image("patches_checked.png")), new VFramePng(get_image("patches_dn.png")), new VFramePng(get_image("patches_checkedhi.png")) };
 
 	build_button(BC_WindowBase::get_resources()->filebox_updir_images, get_image("filebox_updir.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
 	build_button(BC_WindowBase::get_resources()->filebox_newfolder_images, get_image("filebox_newfolder.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
@@ -306,11 +308,11 @@ void MicroTheme::initialize()
 
 	static VFrame *default_expandpatch_data[] = 
 	{
-		new VFrame(get_image("expandpatch_up.png")), 
-		new VFrame(get_image("expandpatch_hi.png")), 
-		new VFrame(get_image("expandpatch_checked.png")), 
-		new VFrame(get_image("expandpatch_dn.png")), 
-		new VFrame(get_image("expandpatch_checkedhi.png"))
+		new VFramePng(get_image("expandpatch_up.png")), 
+		new VFramePng(get_image("expandpatch_hi.png")), 
+		new VFramePng(get_image("expandpatch_checked.png")), 
+		new VFramePng(get_image("expandpatch_dn.png")), 
+		new VFramePng(get_image("expandpatch_checkedhi.png"))
 	};
 	expandpatch_data = default_expandpatch_data;
 
@@ -318,6 +320,8 @@ void MicroTheme::initialize()
 	build_button(wrench_data, get_image("wrench.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
 	in_point = default_inpoint;
 	label_toggle = default_labeltoggle;
+	ffmpeg_toggle = default_ffmpegtoggle;
+	shbtn_data = default_shbtndata;
 	out_point = default_outpoint;
 
 	fade_h = BC_WindowBase::get_resources()->horizontal_slider_data[0]->get_h();

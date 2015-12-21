@@ -1793,7 +1793,7 @@ void MWindow::create_objects(int want_gui,
 void MWindow::show_splash()
 {
 #include "data/heroine_logo11_png.h"
-	VFrame *frame = new VFrame(heroine_logo11_png);
+	VFrame *frame = new VFramePng(heroine_logo11_png);
 	BC_DisplayInfo display_info;
 	splash_window = new SplashGUI(frame, 
 		display_info.get_root_w() / 2 - frame->get_w() / 2,

@@ -51,11 +51,6 @@ public:
 	void set_offset(int offset);
 	int get_offset();
 
-
-	static int filefork_size();
-	void to_filefork(unsigned char *buffer);
-	void from_filefork(unsigned char *buffer);
-
 private:
 	int shmid;
 	double *data;

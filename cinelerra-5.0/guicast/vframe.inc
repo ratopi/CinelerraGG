@@ -23,7 +23,8 @@
 #define VFRAME_INC
 
 class VFrame;
+class VFramePng;
 class VFrameScene;
-
+class PngReadFunction;
 
 #endif

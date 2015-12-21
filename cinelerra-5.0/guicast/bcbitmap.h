@@ -196,7 +196,7 @@ class BC_Bitmap
 public:
 	enum { bmXNone, bmXImage, bmXShmImage, bmXvImage, bmXvShmImage };
 
-	BC_Bitmap(BC_WindowBase *parent_window, unsigned char *png_data);
+	BC_Bitmap(BC_WindowBase *parent_window, unsigned char *png_data, double scale=1);
 	BC_Bitmap(BC_WindowBase *parent_window, VFrame *frame);
 
 // Shared memory is a problem in X because it's asynchronous and there's

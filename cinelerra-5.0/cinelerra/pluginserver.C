@@ -1229,16 +1229,17 @@ VFrame *PluginServer::get_plugin_images()
 	if( st.st_size == 0 ) return 0;
 	unsigned len = st.st_size;
 	int ret = 0, w = 0, h = 0;
-	uint8_t *bfr = 0;
+	unsigned char *bfr = 0;
 	int fd = ::open(png_path, O_RDONLY);
 	if( fd < 0 ) ret = 1;
 	if( !ret ) {
-		bfr = (uint8_t*) ::mmap (NULL, len, PROT_READ, MAP_SHARED, fd, 0); 
+		bfr = (unsigned char *) ::mmap (NULL, len, PROT_READ, MAP_SHARED, fd, 0); 
 		if( bfr == MAP_FAILED ) ret = 1;
 	}
 	VFrame *vframe = 0;
 	if( !ret ) {
-		vframe = new VFrame(bfr, st.st_size);
+		double scale = BC_WindowBase::get_resources()->icon_scale;
+		vframe = new VFramePng(bfr, st.st_size, scale, scale);
 		if( (w=vframe->get_w()) <= 0 || (h=vframe->get_h()) <= 0 ||
 		    vframe->get_data() == 0 ) ret = 1;
 	}

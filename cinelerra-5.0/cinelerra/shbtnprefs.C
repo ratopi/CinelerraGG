@@ -3,9 +3,11 @@
 #include "bcdialog.h"
 #include "language.h"
 #include "mainerror.h"
+#include "mwindow.h"
 #include "shbtnprefs.h"
 #include "preferences.h"
 #include "preferencesthread.h"
+#include "theme.h"
 
 #include <sys/wait.h>
 
@@ -327,18 +329,8 @@ int MainShBtnItem::handle_event()
 	return 1;
 }
 
-#include "data/shbtn_up_png.h"
-#include "data/shbtn_hi_png.h"
-#include "data/shbtn_dn_png.h"
-
-static VFrame *shbtn_images[] = {
-        new VFrame(shbtn_up_png),
-        new VFrame(shbtn_hi_png),
-        new VFrame(shbtn_dn_png),
-};
-
 MainShBtns::MainShBtns(MWindow *mwindow, int x, int y)
- : BC_PopupMenu(x, y, 0, "", -1, shbtn_images)
+ : BC_PopupMenu(x, y, 0, "", -1, mwindow->theme->shbtn_data)
 {
 	this->mwindow = mwindow;
 	set_tooltip(_("shell cmds"));
