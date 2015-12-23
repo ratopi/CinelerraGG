@@ -313,6 +313,63 @@ void BlondTheme::initialize()
 		"generic_dn.png",
 		"new_cancel_images");
 
+	new_toggle("loadmode_new.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_new");
+	new_toggle("loadmode_none.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_none");
+	new_toggle("loadmode_newcat.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_newcat");
+	new_toggle("loadmode_cat.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_cat");
+	new_toggle("loadmode_newtracks.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_newtracks");
+	new_toggle("loadmode_paste.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_paste");
+	new_toggle("loadmode_resource.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_resource");
+	new_toggle("loadmode_nested.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_nested");
+
 	resources->bar_data = new_image("bar", "bar.png");
 
 

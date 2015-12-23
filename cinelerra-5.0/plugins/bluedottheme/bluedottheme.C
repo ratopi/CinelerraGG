@@ -35,7 +35,7 @@
 #include "patchbay.h"
 #include "preferencesthread.h"
 #include "recordgui.h"
-//#include "recordmonitor.h"
+#include "recordmonitor.h"
 #include "setformat.h"
 #include "statusbar.h"
 #include "timebar.h"
@@ -96,6 +96,13 @@ BlueDotTheme::BlueDotTheme()
 
 BlueDotTheme::~BlueDotTheme()
 {
+	delete channel_position_data;
+	delete keyframe_data;
+	delete camerakeyframe_data;
+	delete maskkeyframe_data;
+	delete modekeyframe_data;
+	delete pankeyframe_data;
+	delete projectorkeyframe_data;
 }
 
 void BlueDotTheme::initialize()
@@ -170,6 +177,62 @@ void BlueDotTheme::initialize()
 	// COPIED FROM DEFAULT THEME <<4
 	resources->menu_highlighted_fontcolor = DDBLUE;    //Specific to BD
 
+	new_toggle("loadmode_new.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_new");
+	new_toggle("loadmode_none.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_none");
+	new_toggle("loadmode_newcat.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_newcat");
+	new_toggle("loadmode_cat.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_cat");
+	new_toggle("loadmode_newtracks.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_newtracks");
+	new_toggle("loadmode_paste.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_paste");
+	new_toggle("loadmode_resource.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_resource");
+	new_toggle("loadmode_nested.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_nested");
 
 //There are differences here, but we won't change until the end.	
 //Specific to BD
@@ -235,6 +298,31 @@ void BlueDotTheme::initialize()
 
 	resources->bar_data = new_image("bar", "bar.png");
 
+	//clock font
+	resources->medium_7segment =  new_image_set(20,
+  		"black_0.png",
+		"black_1.png",
+		"black_2.png",
+		"black_3.png",
+		"black_4.png",
+		"black_5.png",
+		"black_6.png",
+		"black_7.png",
+		"black_8.png",
+		"black_9.png",
+		"black_colon.png",
+		"black_period.png",
+		"black_a.png",
+		"black_b.png",
+		"black_c.png",
+		"black_d.png",
+		"black_e.png",
+		"black_f.png",
+		"black_space.png",
+		"black_dash.png");      
+
+	resources->bar_data = new_image("bar", "bar.png");
+	resources->check = new_image("check", "check.png");
 
 	resources->min_menu_w = 0;
 	resources->menu_popup_bg = 0;  // if (0) use menu_light, menu_up, menu_shadow
@@ -789,11 +877,6 @@ void BlueDotTheme::initialize()
 
 //Specific to BD
 	resources->audiovideo_color = DKGREY;
-
-//Specific to BD - Copied from Blonde, replace letters
-	//clock font
-	resources->medium_7segment =  new_image_set(20,
-  		"black_0.png", "black_1.png",  "black_2.png",  "black_3.png",  "black_4.png",  "black_5.png",  "black_6.png",  "black_7.png",  "black_8.png",  "black_9.png",  "black_colon.png",    "black_period.png",    "black_a.png",  "black_b.png",  "black_c.png",  "black_d.png",  "black_e.png",  "black_f.png",  "black_space.png",  "black_dash.png");      
 
 //Specific to BD
 	//tooltip
