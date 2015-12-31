@@ -96,7 +96,6 @@ inc_flac="include"
 add_library flac \
 	src/libFLAC/.libs/libFLAC.a \
 	src/libFLAC++/.libs/libFLAC++.a \
-	src/share/getopt/libgetopt.a \
 	src/share/utf8/.libs/libutf8.a \
 	src/share/replaygain_analysis/.libs/libreplaygain_analysis.a \
 	src/share/replaygain_synthesis/.libs/libreplaygain_synthesis.a \
