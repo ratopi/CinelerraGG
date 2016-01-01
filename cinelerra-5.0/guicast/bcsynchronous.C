@@ -165,6 +165,7 @@ void BC_Synchronous::quit()
 	command_lock->unlock();
 	next_command->unlock();
 	command->command_done->lock("BC_Synchronous::quit");
+	delete command;
 }
 
 long BC_Synchronous::send_command(BC_SynchronousCommand *command)
@@ -212,7 +213,8 @@ void BC_Synchronous::handle_command_base(BC_SynchronousCommand *command)
 	switch(command->command) {
 	case BC_SynchronousCommand::QUIT:
 		done = 1;
-		break;
+		command->command_done->unlock();
+		return;
 
 	case BC_SynchronousCommand::DELETE_WINDOW:
 		delete_window_sync(command);
@@ -228,10 +230,10 @@ void BC_Synchronous::handle_command_base(BC_SynchronousCommand *command)
 
 	default:
 		handle_command(command);
-		break;
+		command->command_done->unlock();
+		return;
 	}
-
-	command->command_done->unlock();
+	delete command;
 }
 
 void BC_Synchronous::handle_command(BC_SynchronousCommand *command)
@@ -374,7 +376,6 @@ void BC_Synchronous::delete_window(BC_WindowBase *window)
 	command->glx_context = window->glx_win_context;
 
 	send_garbage(command);
-	command->command_done->lock("BC_Synchronous::delete_window");
 #endif
 }
 

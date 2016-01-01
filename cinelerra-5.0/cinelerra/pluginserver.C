@@ -74,6 +74,7 @@ void PluginServer::init()
 {
 	reset_parameters();
 	this->plugin_type = PLUGIN_TYPE_UNKNOWN;
+	plugin_obj = new PluginObj();
 	modules = new ArrayList<Module*>;
 	nodes = new ArrayList<VirtualNode*>;
 }
@@ -101,6 +102,8 @@ PluginServer::PluginServer(PluginServer &that)
 {
 	reset_parameters();
 	plugin_type = that.plugin_type;
+	plugin_obj = that.plugin_obj;
+	plugin_obj->add_user();
 	title = !that.title ? 0 : cstrdup(that.title);
 	path = !that.path ? 0 : cstrdup(that.path);
 	ff_name = !that.ff_name ? 0 : cstrdup(that.ff_name);
@@ -135,6 +138,7 @@ PluginServer::~PluginServer()
 	delete modules;
 	delete nodes;
 	delete picon;
+	plugin_obj->remove_user();
 }
 
 // Done only once at creation
@@ -146,7 +150,6 @@ int PluginServer::reset_parameters()
 	cleanup_plugin();
 	autos = 0;
 	edl = 0;
-	dlobj = 0;
 	preferences = 0;
 	title = 0;
 	path = 0;
@@ -265,34 +268,36 @@ void PluginServer::generate_display_title(char *string)
 		strcpy(string, ltitle);
 }
 
-void *PluginServer::load_obj()
+void *PluginObj::load(const char *plugin_dir, const char *path)
 {
-	if( !dlobj ) {
-		char dlpath[BCTEXTLEN], *dp = dlpath;
-		char *cp = path;
-		if( *cp != '/' ) {
-			char *bp = preferences->plugin_dir;
-			while( *bp ) *dp++ = *bp++;
-			*dp++ = '/';
-		}
-		while( *cp ) *dp++ = *cp++;
-		*dp = 0;
-		dlobj = load(dlpath);
+	char dlpath[BCTEXTLEN], *dp = dlpath;
+	const char *cp = path;
+	if( *cp != '/' ) {
+		const char *bp = plugin_dir;
+		while( *bp ) *dp++ = *bp++;
+		*dp++ = '/';
 	}
-	return dlobj;
+	while( *cp ) *dp++ = *cp++;
+	*dp = 0;
+	return dlobj = load(dlpath);
 }
 
-void PluginServer::unload_obj()
+int PluginServer::load_obj()
 {
-	if( !dlobj ) return;
-	unload(dlobj);  dlobj = 0;
+	void *obj = plugin_obj->obj();
+	if( !obj ) obj =plugin_obj->load(preferences->plugin_dir, path);
+	return obj ? 1 : 0;
 }
 
-void PluginServer::delete_this()
+const char *PluginServer::load_error()
 {
-	void *obj = dlobj;
-	delete this;
-	if( obj ) unload(obj);
+	return plugin_obj->load_error();
+}
+
+void *PluginServer::get_sym(const char *sym)
+{
+	if( !plugin_obj->obj() ) return 0;
+	return plugin_obj->load_sym(sym);
 }
 
 // Open plugin for signal processing
@@ -313,25 +318,22 @@ int PluginServer::open_plugin(int master,
 		char string[BCTEXTLEN];
 		strcpy(string, load_error());
 		if( !strstr(string, "executable") ) {
-			eprintf("PluginServer::open_plugin: load_obj failure = %s\n", string);
+			eprintf("PluginServer::open_plugin: load_obj %s = %s\n", path, string);
 			return PLUGINSERVER_NOT_RECOGNIZED;
 		}
 		plugin_type = PLUGIN_TYPE_EXECUTABLE;
 	}
 	if( plugin_type == PLUGIN_TYPE_UNKNOWN || plugin_type == PLUGIN_TYPE_BUILTIN ) {
 		new_plugin =
-			(PluginClient* (*)(PluginServer*)) load_sym("new_plugin");
+			(PluginClient* (*)(PluginServer*)) get_sym("new_plugin");
 		if( new_plugin )
 			plugin_type = PLUGIN_TYPE_BUILTIN;
 	}
 	if( plugin_type == PLUGIN_TYPE_UNKNOWN || plugin_type == PLUGIN_TYPE_LADSPA ) {
 		lad_descriptor_function =
-			(LADSPA_Descriptor_Function) load_sym("ladspa_descriptor");
+			(LADSPA_Descriptor_Function) get_sym("ladspa_descriptor");
 		if( lad_descriptor_function ) {
-			if( lad_index < 0 ) {
-				unload_obj();
-				return PLUGINSERVER_IS_LAD;
-			}
+			if( lad_index < 0 ) return PLUGINSERVER_IS_LAD;
 			lad_descriptor = lad_descriptor_function(lad_index);
 			if( !lad_descriptor )
 				return PLUGINSERVER_NOT_RECOGNIZED;
@@ -341,7 +343,6 @@ int PluginServer::open_plugin(int master,
 	if( plugin_type == PLUGIN_TYPE_UNKNOWN ) {
 		fprintf(stderr, "PluginServer::open_plugin "
 			" %d: plugin undefined in %s\n", __LINE__, path);
-		unload_obj();
 		return PLUGINSERVER_NOT_RECOGNIZED;
 	}
 	switch( plugin_type ) {
@@ -443,8 +444,8 @@ int PluginServer::read_table(char *text)
 		&plugin_type, path, title, &dir_idx, &audio, &video, &theme, &realtime,
 		&fileio, &uses_gui, &multichannel, &synthesis, &transition, &lad_index);
 	if( n != 14 ) return 1;
-	this->path = cstrdup(path);
-	this->title = cstrdup(title);
+	set_path(path);
+	set_title(title);
 	return 0;
 }
 

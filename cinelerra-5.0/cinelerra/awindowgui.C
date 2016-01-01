@@ -772,7 +772,7 @@ void AWindowRemovePlugin::handle_close_event(int result)
 		MWindow *mwindow = awindow->mwindow;
         	sprintf(index_path, "%s/%s", mwindow->preferences->plugin_dir, PLUGIN_FILE);
 		mwindow->plugindb->remove(plugin);
-		plugin->delete_this();
+		delete plugin;  plugin = 0;
 		remove(plugin_path);
 		if( png_path[0] ) remove(png_path);
 		remove(index_path);

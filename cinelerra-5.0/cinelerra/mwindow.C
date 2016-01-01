@@ -279,7 +279,6 @@ MWindow::~MWindow()
 	join();
 #endif
 	reset_caches();
-	delete_plugins();
 	dead_plugins->remove_all();
 	finit_error();
 	keyframe_threads->remove_all_objects();
@@ -311,6 +310,7 @@ MWindow::~MWindow()
 	delete assets;          assets = 0;
 	delete splash_window;   splash_window = 0;
 	delete theme;           theme = 0;
+	delete_plugins();
 	delete channeldb_buz;
 	delete channeldb_v4l2jpeg;
 // This must be last thread to exit
@@ -446,24 +446,22 @@ void MWindow::init_plugin_index(MWindow *mwindow, Preferences *preferences, FILE
 			continue;
 		}
 		if( plugin_exists(plugin_path) ) continue;
-		PluginServer *server = new PluginServer(mwindow, plugin_path, PLUGIN_TYPE_UNKNOWN);
-		result = server->open_plugin(1, preferences, 0, 0);
+		PluginServer server(mwindow, plugin_path, PLUGIN_TYPE_UNKNOWN);
+		result = server.open_plugin(1, preferences, 0, 0);
 		if( !result ) {
-			server->write_table(fp,vis_id);
-			server->close_plugin();
-			server->delete_this();
-			continue;
+			server.write_table(fp,vis_id);
+			server.close_plugin();
 		}
-		if( result != PLUGINSERVER_IS_LAD ) continue;
-		int lad_index = 0;
-		for(;;) {
-			PluginServer *server = new PluginServer(mwindow, plugin_path, PLUGIN_TYPE_LADSPA);
-			server->set_lad_index(lad_index++);
-			result = server->open_plugin(1, preferences, 0, 0);
-			if( result ) break;
-			server->write_table(fp, PLUGIN_LADSPA_ID);
-			server->close_plugin();
-			server->delete_this();
+		else if( result == PLUGINSERVER_IS_LAD ) {
+			int lad_index = 0;
+			for(;;) {
+				PluginServer ladspa(mwindow, plugin_path, PLUGIN_TYPE_LADSPA);
+				ladspa.set_lad_index(lad_index++);
+				result = ladspa.open_plugin(1, preferences, 0, 0);
+				if( result ) break;
+				ladspa.write_table(fp, PLUGIN_LADSPA_ID);
+				ladspa.close_plugin();
+			}
 		}
 	}
 }
@@ -723,17 +721,17 @@ void MWindow::init_theme()
 		exit(1);
 	}
 
-	PluginServer plugin = *theme_plugin;
-	if( plugin.open_plugin(0, preferences, 0, 0) ) {
+	PluginServer *plugin = new PluginServer(*theme_plugin);
+	if( plugin->open_plugin(0, preferences, 0, 0) ) {
 		fprintf(stderr, _("MWindow::init_theme: unable to load theme %s\n"),
 			theme_plugin->title);
 		exit(1);
 	}
 
-	theme = plugin.new_theme();
+	theme = plugin->new_theme();
 	theme->mwindow = this;
-	strcpy(theme->path, plugin.path);
-	plugin.close_plugin();
+	strcpy(theme->path, plugin->path);
+	delete plugin;
 
 // Load default images & settings
 	theme->Theme::initialize();

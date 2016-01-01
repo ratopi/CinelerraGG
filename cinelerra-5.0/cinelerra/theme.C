@@ -102,9 +102,72 @@ Theme::Theme()
 	pane_color = BLACK;
 	drag_pane_color = WHITE;
 
-	
+	appendasset_data = 0;
+	append_data = 0;
+	asset_append_data = 0;
+	asset_disk_data = 0;
+	asset_index_data = 0;
+	asset_info_data = 0;
+	asset_project_data = 0;
+	browse_data = 0;
+	calibrate_data = 0;
+	camerakeyframe_data = 0;
+	cancel_data = 0;
+	chain_data = 0;
+	channel_bg_data = 0;
+	channel_position_data = 0;
+	delete_all_indexes_data = 0;
+	deletebin_data = 0;
+	delete_data = 0;
+	deletedisk_data = 0;
+	deleteproject_data = 0;
+	detach_data = 0;
+	dntriangle_data = 0;
 
-
+	edit_data = 0;
+	edithandlein_data = 0;
+	edithandleout_data = 0;
+	extract_data = 0;
+	ffmpeg_toggle = 0;
+	infoasset_data = 0;
+	in_point = 0;
+	insert_data = 0;
+	keyframe_data = 0;
+	label_toggle = 0;
+	lift_data = 0;
+	maskkeyframe_data = 0;
+	modekeyframe_data = 0;
+	movedn_data = 0;
+	moveup_data = 0;
+	newbin_data = 0;
+	no_data = 0;
+	options_data = 0;
+	out_point = 0;
+	over_button = 0;
+	overwrite_data = 0;
+	pankeyframe_data = 0;
+	pasteasset_data = 0;
+	paused_data = 0;
+	picture_data = 0;
+	presentation_data = 0;
+	presentation_loop = 0;
+	presentation_stop = 0;
+	projectorkeyframe_data = 0;
+	redrawindex_data = 0;
+	renamebin_data = 0;
+	reset_data = 0;
+	reverse_data = 0;
+	rewind_data = 0;
+	select_data = 0;
+	shbtn_data = 0;
+	splice_data = 0;
+	start_over_data = 0;
+	statusbar_cancel_data = 0;
+	timebar_view_data = 0;
+	transition_data = 0;
+	uptriangle_data = 0;
+	viewasset_data = 0;
+	vtimebar_bg_data = 0;
 }
 
 
@@ -118,6 +181,7 @@ Theme::~Theme()
 	frame_sizes.remove_all_objects();
 	sample_rates.remove_all_objects();
 	zoom_values.remove_all_objects();
+
 	delete about_bg;
 }
 

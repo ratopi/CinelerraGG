@@ -1203,10 +1203,12 @@ void TitleMain::build_previews(TitleWindow *gui)
 			for(int j = 0; j < len; j++)
 			{
 				FT_ULong c = test_string[j];
-				check_char_code_path(freetype_library,
-					font_entry->path,
-					c,
-					(char *)new_path);
+// memory leaks here are fatal
+//				check_char_code_path(freetype_library,
+//					font_entry->path,
+//					c,
+//					(char *)new_path);
+				strcpy(new_path, font_entry->path);
 				if( !load_freetype_face(freetype_library,
 					freetype_face, new_path)) {
 					FT_Set_Pixel_Sizes(freetype_face, text_height, 0);

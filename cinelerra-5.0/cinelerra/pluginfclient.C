@@ -1136,7 +1136,7 @@ void MWindow::init_ffmpeg_index(MWindow *mwindow, Preferences *preferences, FILE
 				server->write_table(fp, PLUGIN_FFMPEG_ID);
 				server->close_plugin();
 			}
-			server->delete_this();
+			delete server;
 			if( result ) fprintf(fp, "#%s\n", filter->name);
 		}
 	}

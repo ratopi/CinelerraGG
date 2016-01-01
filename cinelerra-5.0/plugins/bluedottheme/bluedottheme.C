@@ -96,9 +96,10 @@ BlueDotTheme::BlueDotTheme()
 
 BlueDotTheme::~BlueDotTheme()
 {
+	delete camerakeyframe_data;
+	delete channel_bg_data;
 	delete channel_position_data;
 	delete keyframe_data;
-	delete camerakeyframe_data;
 	delete maskkeyframe_data;
 	delete modekeyframe_data;
 	delete pankeyframe_data;
@@ -559,9 +560,6 @@ void BlueDotTheme::initialize()
 
 	new_image("new_bg", "new_bg.png");
 	new_image("setformat_bg", "setformat_bg2.png");
-
-
-	timebar_view_data = new_image("timebar_view.png");
 
 // x, y of Format dialog box
 	setformat_w = 600;

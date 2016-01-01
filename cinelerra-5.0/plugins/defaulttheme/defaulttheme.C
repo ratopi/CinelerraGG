@@ -65,6 +65,14 @@ DefaultThemeMain::DefaultThemeMain(PluginServer *server)
 
 DefaultThemeMain::~DefaultThemeMain()
 {
+	delete camerakeyframe_data;
+	delete channel_bg_data;
+	delete channel_position_data;
+	delete keyframe_data;
+	delete maskkeyframe_data;
+	delete modekeyframe_data;
+	delete pankeyframe_data;
+	delete projectorkeyframe_data;
 }
 
 char* DefaultThemeMain::plugin_title()

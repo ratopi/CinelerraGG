@@ -35,6 +35,7 @@
 #include "edl.inc"
 #include "floatauto.inc"
 #include "floatautos.inc"
+#include "garbage.h"
 #include "keyframe.inc"
 #include "ladspa.h"
 #include "mainprogress.inc"
@@ -58,19 +59,31 @@
 
 #include <dlfcn.h>
 
-class PluginServer
-{
-	int reset_parameters();
-	void init();
-	int cleanup_plugin();
-
+class PluginObj : public Garbage {
 	void *dlobj;
+public:
+
 	void *load(const char *dlp) { return dlobj = dlopen(dlp, RTLD_NOW); }
+	void *load(const char *plugin_dir, const char *path);
 	void unload(void *obj) { dlclose(obj); }
 	void *load_sym(const char *sym) { return dlsym(dlobj, sym); }
 	const char *load_error() { return dlerror(); }
-	void *load_obj();
-	void unload_obj();
+	void *obj() { return dlobj; }
+
+	PluginObj() : Garbage("PluginObj:Garbage") { dlobj = 0; }
+	~PluginObj() { if( dlobj ) unload(dlobj); }
+};
+
+class PluginServer
+{
+	PluginObj *plugin_obj;
+	int load_obj();
+	const char *load_error();
+	void *get_sym(const char *sym);
+
+	int reset_parameters();
+	void init();
+	int cleanup_plugin();
 
 // Base class created by client
 	PluginClient *client;
@@ -112,7 +125,6 @@ public:
 			EDL *edl, Plugin *plugin);
 // close the plugin
 	int close_plugin();    
-	void delete_this();
 	char *get_plugin_png_path(char *png_path);
 	void dump(FILE *fp=stdout);
 // Release any objects which are required after playback stops.

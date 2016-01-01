@@ -136,19 +136,9 @@ BC_WindowBase::~BC_WindowBase()
 	delete pixmap;
 
 #ifdef HAVE_GL
-	if( get_resources()->get_synchronous() && top_level->options & GLX_WINDOW ) {
-		if( !glx_win ) {
-// NVIDIA library threading problem, XCloseDisplay SEGVs without this
-			sync_lock("BC_WindowBase::~BC_WindowBase:XDestroyWindow");
- 			lock_window("BC_WindowBase::~BC_WindowBase:XDestroyWindow");
-			glXMakeContextCurrent(top_level->display, 0, 0, 0);
-			XDestroyWindow(top_level->display, win);
-			unlock_window();
-			sync_unlock();
-		}
-		else
-			get_resources()->get_synchronous()->delete_window(this);
-	}
+	if( get_resources()->get_synchronous() &&
+		(top_level->options & GLX_WINDOW) && glx_win != 0 )
+		get_resources()->get_synchronous()->delete_window(this);
 	else
 #endif
 		XDestroyWindow(top_level->display, win);
@@ -2274,7 +2264,7 @@ void BC_WindowBase::init_xft()
 	if(!(largefont_xft =
 		(resources.large_font_xft[0] == '-' ?
 			XftFontOpenXlfd(display, screen, resources.large_font_xft) :
-			XftFontOpenXlfd(display, screen, resources.large_font_xft))) )
+			XftFontOpenName(display, screen, resources.large_font_xft))) )
 		if(!(largefont_xft =
 			XftFontOpenXlfd(display, screen, resources.large_font_xft2)))
 			largefont_xft = XftFontOpenXlfd(display, screen, "fixed");
