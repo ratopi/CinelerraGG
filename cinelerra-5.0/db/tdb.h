@@ -599,6 +599,7 @@ private:
     IndexBaseStorage *st;
     friend class Db;
     Db *db;                        /* owner db */
+    zlock_t idxLk;
     pgRef lastAccess, lastFind;    /* last operational access/find location */
     pgRef lastInsert, lastDelete;  /* last operational insert/delete location */
     pgRef lastNext;                /* last operational next location */
@@ -620,10 +621,9 @@ private:
     int blockFree(pageId pid);
     int blockRelease(pageId pid);
     int deleteFreeBlocks();
-    int chkLast(pgRef &last, int &count);
     void chkLastInsert();
     void chkLastDelete();
-    void chkLastFind();
+    void chkLastFind(pgRef &last);
   public:
 #ifdef DEBUG
     int _err_(int v,const char *fn,int ln) { return db->_err_(v,fn,ln); }
@@ -633,9 +633,6 @@ private:
     int _fail_(int v) { return db->_fail_(v); }
 #endif
     virtual int Locate(int op,void *key,CmprFn cmpr,void *rtnKey,void *rtnData) = 0;
-    int Locate(int op,void *key,void *rtnKey,void *rtnData) {
-      return Locate(op,key,0,rtnKey,rtnData);
-    }
     virtual int Find(void *key,void *rtnData) = 0;
     virtual int Insert(void *key,void *data) = 0;
     virtual int Delete(void *key) = 0;
@@ -682,8 +679,7 @@ private:
     IndexBinaryStorage *bst;
     friend class Db;
     CmprFn compare;                /* the key compare function type */
-    int relationship;              /* key relation in keyLT..keyGT */
-    char *key;                     /* pointer to key argument */
+    char *akey;                    /* pointer to key argument */
     int keyInterior;               /* last insert interior/exterior */
     int idf;                       /* interior delete flag */
     char *iky, *tky;               /* search/promoted temp key storage */
@@ -694,18 +690,21 @@ private:
     int keyBlockUnderflow(int &t,keyBlock *lbb,pageId p,keyBlock *pbb,int pi);
     void makeKey(char *cp,char *key,int l,char *recd,int n);
     void setLastKey(pageId s,pageId u,int k);
-    int keyLocate(pageId s, CmprFn cmpr);
+    int keyLocate(pgRef &last,pageId s, int op,void *ky, CmprFn cmpr);
     int chkNext(pgRef &loc, char *&kp);
     int keyNext(pgRef &loc, char *kp);
-    int chkFind(char *key, pgRef *last);
-    int keyFind(pageId s);
+    int chkFind(pgRef &loc, char *key);
+    int keyFind(pgRef &loc,void *ky, pageId s);
     int chkInsert(void *key,void *data);
     int keyInsert(pageId s, pageId &t);
+    int chkDelete(pgRef &loc, void *kp);
     int keyDelete(int &t,void *kp,pageId s,pageId p,keyBlock *pbb,int pi);
-    int keyFirst(pageId s);
-    int keyLast(pageId s);
+    int keyFirst(pgRef &loc, pageId s);
+    int keyLast(pgRef &loc, pageId s);
 
+    int refLocate(pgRef &loc, int op,void *key, CmprFn cmpr);
     int Locate(int op,void *key,CmprFn cmpr,void *rtnKey,void *rtnData);
+    int refFind(pgRef &loc, void *key);
     int Find(void *key,void *rtnData);
     int Insert(void *key,void *data);
     int Delete(void *key);
@@ -761,11 +760,11 @@ private:
     int keyInsert(pageId &t, pageId s);
     int keyFirst(pageId s);
     int keyLast(pageId s);
-    int keyLocate(pageId s,int &t, CmprFn cmpr);
-    int chkFind(char *key, pgRef *last, unsigned char *lkey, unsigned char *lky=0);
-    int keyFind();
-    int chkNext(pgRef &loc);
-    int keyNext(pgRef &loc);
+    int keyLocate(pgRef &last,pageId s,int &t, int op,
+        unsigned char *ky,CmprFn cmpr, unsigned char *rky);
+    int chkFind(pgRef &loc, char *key, unsigned char *lkey, unsigned char *lky=0);
+    int keyFind(pgRef &loc, unsigned char *ky);
+    int keyNext(pgRef &loc, unsigned char *rky);
     int keyUnderflow(pageId s, pageId &t, int k);
     int keyOverflow(pageId s, pageId &t, int k, int o);
     int keyRemap(pageId s, pageId &t, int k, int o);
@@ -776,11 +775,12 @@ private:
     unsigned char lastNxtKey[keysz];
     unsigned char *tky, *dky;   // dataSz+keysz+1
     unsigned char *tbfr;        // 3*allocated
-    unsigned char key[keysz];   // key in use
+    unsigned char akey[keysz];  // key in use
     int idf;                    /* interior delete flag */
-    int relationship;           /* key relation in keyLT..keyGT */
 
+    int refLocate(pgRef &loc, int op, void *key, CmprFn cmpr, unsigned char *rkey);
     int Locate(int op,void *key,CmprFn cmpr,void *rtnKey,void *rtnData);
+    int refFind(pgRef &loc, void *key);
     int Find(void *key,void *rtnData);
     int Insert(void *key,void *data);
     int Delete(void *key);
@@ -854,6 +854,9 @@ private:
     void init(pageId id, int ofs, int sz) {
       loc.id = id; loc.offset = ofs; avail = sz;
     }
+    void dmp() {
+      printf("loc: %d/%d  avl: %d\n", loc.id,loc.offset,avail);
+    }
   } alloc_cache;
   int cacheFlush() {
     return alloc_cache.cacheFlush(this);
@@ -874,7 +877,8 @@ private:
     ioAddr io_addr;
     ioAddr wr_io_addr;
 
-    PageStorage();
+    void init();
+    PageStorage() { init(); }
     ~PageStorage() {}
     int chk_flags(int fl) { return flags & fl; }
     int set_flags(int fl) { return flags |= fl; }
@@ -882,6 +886,7 @@ private:
   } *page_info;
 
   class Page {
+    zlock_t pgLk;
     PageStorage *st;
     pagePrefix *addr;
     int shm_id;
@@ -894,6 +899,7 @@ private:
     void iallocated(int v) { st->allocated = v+sizeof(keyBlock); }
     PageStorage *operator ->() { return st; }
     int release();
+    void reset_to(Page *pp);
     Page(PageStorage &d) { st = &d; init(); }
     ~Page() {}
     friend class Db;
@@ -1080,7 +1086,7 @@ public:
     int len;  pgRef loc;
     int size() { return len; }
     void init() { len = -1;  loc.id = NIL;  loc.offset = 0; }
-    void del(Db *db) { len = -1;  db->deallocate(loc); }
+    void del(Entity *entity) { len = -1;  entity->deallocate(loc); }
   };
   typedef varObj Obj::*vRef;
 
@@ -1126,7 +1132,7 @@ public:
     void v_del();
 
     int FindId(int id) { return index(idxId)->Find(&id,&obj); }
-    int LocateId(int op, int id) { return index(idxId)->Locate(op,&id,0,&obj); }
+    int LocateId(int op, int id) { return index(idxId)->Locate(op,&id,0,0,&obj); }
     int FirstId() { return index(idxId)->First(0,&obj); }
     int LastId() { return index(idxId)->Last(0,&obj); }
     int NextId() { return index(idxId)->Next(0,&obj); }
@@ -1234,6 +1240,7 @@ private:
     varObjRef(varObjs &lp, vRef rp) : next(lp), ref(rp) {}
   };
    
+  static int ioCmpr(const void *a, const void *b, void *c);
 public:
 
   class Entity {
@@ -1259,7 +1266,8 @@ public:
     int construct(ObjectLoc &loc) { return construct_(loc,ent->maxId); }
     int destruct_(ObjectLoc &loc, int id);
     int destruct(ObjectLoc &loc) { return destruct_(loc, loc->id); }
-    int deallocate(ObjectLoc &loc);
+    int deallocate(pgRef &obj) { return db->deallocate(obj,ent->alloc_cache); }
+    int deallocate(ObjectLoc &loc) { return deallocate(loc.obj); }
     int get_index(const char *nm, CmprFn cmpr=0);
     int key_index(const char *nm) { return get_index(nm,Db::cmprKey); }
     Index index(int i) { return db->indecies[ent->indexs[i]]; }
@@ -1283,6 +1291,7 @@ public:
     }
     int del_index_(int idx);
     int del_index(int idx);
+    int del_index(const char *nm);
     int new_entity(const char *nm, int sz) { return db->new_entity(*this,nm,sz); }
     int get_entity(const char *nm) { return db->get_entity(*this,nm); }
     int del_entity() { return db->del_entity(*this); }
@@ -1304,11 +1313,12 @@ private:
   int new_entity_(Entity &entity, const char *nm, int sz);
 
   int findCmprFn(CmprFn fn);
-  int pageLoad(pageId id);
+  int pageLoad(pageId id, Page &pg);
   int addrRead_(pgRef &loc, char *&vp, int mpsz=0) {
     Page &pg = *get_page(loc.id);  vp = 0;
-    if( unlikely( !pg.addr || pg->chk_flags(fl_rd) ) )
-      if_err( pageLoad(loc.id) );
+    if( unlikely( !pg.addr || pg->chk_flags(fl_rd) ) ) {
+      if_err( pageLoad(loc.id, pg) );
+    }
     vp = (char *)pg.addr+loc.offset+mpsz;
     return 0;
   }
@@ -1323,8 +1333,9 @@ private:
   }
   int addrWrite_(pgRef &loc, char *&vp, int mpsz=0) {
     Page &pg = *get_page(loc.id);  vp = 0;
-    if( unlikely( !pg.addr || pg->chk_flags(fl_rd) ) )
-      if_err( pageLoad(loc.id) );
+    if( unlikely( !pg.addr || pg->chk_flags(fl_rd) ) ) {
+      if_err( pageLoad(loc.id, pg) );
+    }
     pg->set_flags(fl_wr);
     vp = (char *)pg.addr+loc.offset+mpsz;
     return 0;
@@ -1372,7 +1383,9 @@ protected:
   pageId new_page();
   void del_page(int id);
   int alloc_pageTable(int sz);
-  void free_page(int pid);
+  void free_page_(int pid);
+  void free_page(int pid) { locked by(db_info->pgAlLk); free_page_(pid); }
+  pageId lower_page(int mid);
   int alloc_indecies(int n);
   int new_index();
   void del_index(int idx);
@@ -1388,7 +1401,7 @@ protected:
     return 0;
   }
   void pageDealloc(Page &pg, int mode=1);
-  int pageRead(Page &pg);
+  int pageRead(ioAddr io_adr, uint8_t *bp, int len);
   int pageWrite(Page &pg);
   int seek_data(ioAddr io_addr);
   int size_data(char *dp, int sz);
@@ -1444,11 +1457,8 @@ public:
   int next  (int r, void *key, void *rtnData=0);
   int nextloc(int r, pgRef &loc);
   int allocate(int typ, int size, pgRef &loc, AllocCache &cache);
-  int allocate(int typ, int size, pgRef &loc) {
-    return allocate(typ, size, loc, alloc_cache);
-  }
   int reallocate(int size, pgRef &loc, AllocCache &cache);
-  int deallocate(pgRef &loc);
+  int deallocate(pgRef &loc, AllocCache &cache);
   int commit(int force=0);
   int flush ();
   int undo  ();
@@ -1460,12 +1470,15 @@ public:
   int error() { return err_no; }
   void error(int v);
   void Error(int v,const char *msg);
+  int load();
 
   Db();
   ~Db();
 
 #ifdef DEBUG
   void dmp();
+  void tdmp();
+  void pdmp();
   void fdmp();
   void admp(); void achk(); void fchk();
   void edmp();

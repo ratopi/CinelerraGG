@@ -216,6 +216,17 @@ Error(int v,const char *msg)
 void
 Db::dmp()
 {
+  tdmp();  pdmp();
+  printf("freeStoreIndex\n"); fdmp();
+  printf("addrStoreIndex\n"); admp();
+  printf("freeSpaceIndex\n"); edmp();
+  printf("addrSpaceIndex\n"); bdmp();
+  printf("\n");
+}
+
+void
+Db::tdmp()
+{
   printf("dmp  root_info->file_size %016lx\n",
     root_info->file_size);
   printf(" rootInfo root_info->transaction_id %d\n",
@@ -226,6 +237,7 @@ Db::dmp()
     root_info->last_info_addr,root_info->last_info_size);
   printf("   root_info->indeciesUsed %d\n",
     root_info->indeciesUsed);
+  printf("   alloc_cache: "); alloc_cache.dmp();
   for( int idx=0; idx<root_info->indeciesUsed; ++idx ) {
     IndexBase *ib = indecies[idx];
     if( !ib ) continue;
@@ -252,6 +264,7 @@ Db::dmp()
     int nidxs = ent->nidxs;
     printf("     id %d. %s  maxId %d, recdSz %d, count %d, nidxs %d:",
       eid, &ent->name[0], ent->maxId, ent->recdSz, ent->count, nidxs);
+    printf("   alloc_cache: "); ent->alloc_cache.dmp();
     for( int i=0; i<nidxs; ++i ) {
       int idx = ent->indexs[i];
       printf(" %d(%s),", idx, idx < 0 ? "" :
@@ -259,7 +272,11 @@ Db::dmp()
     }
     printf("\n");
   } while( !entityIdIndex->Next(&eid,&ent.obj) );
+}
 
+void
+Db::pdmp()
+{
   printf("   root_info->pageTableUsed %d\n",root_info->pageTableUsed);
   for( int pid=0; pid<root_info->pageTableUsed; ++pid ) {
     Page &pg = *get_page(pid);
@@ -275,13 +292,8 @@ Db::dmp()
   printf("   root_info->freePages %d",root_info->freePages);
   int n = 0;
   for( pageId id=root_info->freePages; id>=0; ++n ) id = (*get_page(id))->link;
-    // printf(", %d",(id=get_page(id)->link));
+    // printf(" %d\n",(id=(*get_page(id))->link));
   printf(",  pages = %d\n",n);
-  printf("freeStoreIndex\n"); fdmp();
-  printf("addrStoreIndex\n"); admp();
-  printf("freeSpaceIndex\n"); edmp();
-  printf("addrSpaceIndex\n"); bdmp();
-  printf("\n");
 }
 
 void
@@ -525,8 +537,8 @@ void Db::detach_rw()
 }
 
 // persistent pageTable element initial constructor
-Db::PageStorage::
-PageStorage()
+void Db::PageStorage::
+init()
 {
   used = 0;
   allocated = 0;
@@ -547,6 +559,16 @@ init()
 {
   addr = 0;
   shm_id = -1;
+}
+
+void Db::Page::
+reset_to(Page *pp)
+{
+  addr = pp->addr;
+  shm_id = pp->shm_id;
+  pp->init();
+  *st = *pp->st;
+  pp->st->init();
 }
 
 // deletes storage next start_transaction
@@ -582,12 +604,13 @@ alloc_pageTable(int sz)
   int info_id, info_sz = n*sizeof(PageStorage);
   PageStorage *new_page_info = (PageStorage *)new_uint8_t(info_sz, info_id);
   if( !new_page_info ) { delete pt;  Err(errNoMemory); }
-  if( page_info && root_info->pageTableUsed > 0 )
-    memcpy(new_page_info, page_info, root_info->pageTableUsed*sizeof(*page_info));
   int i = 0;
-  for( ; i<root_info->pageTableUsed; ++i ) {
-    pt[i] = get_Page(i);
-    pt[i]->st = &new_page_info[i];
+  if( page_info ) {
+    for( ; i<root_info->pageTableUsed; ++i ) {
+      pt[i] = get_Page(i);
+      new_page_info[i] = *pt[i]->st;
+      pt[i]->st = &new_page_info[i];
+    }
   }
   for( ; i<n; ++i ) pt[i] = 0;
   db_info->page_info_id = page_info_id = info_id;            
@@ -645,10 +668,9 @@ del_page(pageId id)
  */
 
 void Db::
-free_page(int pid)
+free_page_(int pid)
 {
-  locked by(db_info->pgAlLk);
-  Page &pg = *get_page(pid);
+  Page &pg = *get_Page(pid);
   pageDealloc(pg);
   pg->allocated = 0;
   pg->used = 0;
@@ -667,6 +689,31 @@ free_page(int pid)
 #endif
     root_info->freePages = pid;
   pg->link = id;
+}
+
+Db::pageId Db::
+lower_page(pageId mid)
+{
+  locked by(db_info->pgAlLk);
+  pageId id = root_info->freePages;
+  pageId lid = mid;
+  Page *pp = 0, *lpp = 0;
+  while( id >= 0 ) {
+    if( id < lid ) { lid = id;  lpp = pp; }
+    pp = get_Page(id);
+    id = (*pp)->link;
+  }
+  if( lid < mid ) {
+    Page &pg = *get_Page(lid);
+    if( lpp )
+      (*lpp)->link = pg->link;
+    else
+      root_info->freePages = pg->link;
+    lpp = get_Page(mid);
+    pg.reset_to(lpp);
+    free_page_(mid);
+  }
+  return lid;
 }
 
 int Db::
@@ -754,7 +801,7 @@ del_index(int idx)
 {
   delete indecies[idx];
   indecies[idx] = 0;
-  for( idx=root_info->indeciesUsed; idx>0 && indecies[idx-1]!=0; --idx );
+  for( idx=root_info->indeciesUsed; idx>0 && indecies[idx-1]==0; --idx );
   indecies_sz = root_info->indeciesUsed = idx;
 }
 
@@ -883,7 +930,7 @@ setLastKey(pageId s, pageId u, int k)
  */
 
 int Db::IndexBinary::
-keyLocate(pageId s, CmprFn cmpr)
+keyLocate(pgRef &last, pageId s, int op,void *ky,CmprFn cmpr)
 {
   int ret = errNotFound;
   keyBlock *sbb;  Page *spp;  char *sn;
@@ -902,32 +949,32 @@ keyLocate(pageId s, CmprFn cmpr)
     if( sbb->right_link() >= 0 )
        k += sizeof(pageId);
     char *kn = sn + k;
-    int n = cmpr(key,kn);
+    int n = cmpr((char*)ky,kn);
     if( n == 0 ) {
-      if( relationship >= keyLE && relationship <= keyGE ) {
-        lastAccess.id = s;
-        lastAccess.offset = sizeof(keyBlock) + k;
+      if( op >= keyLE && op <= keyGE ) {
+        last.id = s;
+        last.offset = sizeof(keyBlock) + k;
         ret = 0;
       }
-      if( relationship == keyLE || relationship == keyGT ) n = 1;
+      if( op == keyLE || op == keyGT ) n = 1;
     }
     if( n > 0 ) l = i; else r = i;
   }
 
   r *= lkdSz;
-  int k = relationship < keyEQ ? l*lkdSz : (r < len ? r : -1);
-  if( relationship != keyEQ && k >= 0 ) {
+  int k = op < keyEQ ? l*lkdSz : (r < len ? r : -1);
+  if( op != keyEQ && k >= 0 ) {
     if( sbb->right_link() >= 0 )
       k += sizeof(pageId);
-    lastAccess.id = s;
-    lastAccess.offset = sizeof(keyBlock) + k;
+    last.id = s;
+    last.offset = sizeof(keyBlock) + k;
     ret = 0;
   }
 
   if( (s = sbb->right_link()) >= 0 ) {
     if( r < len ) s = readPageId(sn+r);
     k = ret;
-    ret = keyLocate(s,cmpr);
+    ret = keyLocate(last,s,op,ky,cmpr);
     if( k == 0 ) ret = 0;
   }
 
@@ -950,20 +997,29 @@ keyLocate(pageId s, CmprFn cmpr)
  */
 
 int Db::IndexBinary::
+refLocate(pgRef &loc, int op, void *key, CmprFn cmpr)
+{
+  if( st->rootPageId == NIL )
+    Fail(errNotFound);
+  if( op == keyEQ ) op = keyLE;
+  if( !cmpr ) cmpr = compare;
+  if_fail( keyLocate(loc,st->rootPageId,op, key,cmpr) );
+{ locked by(idxLk);
+  chkLastFind(loc); }
+  return 0;
+}
+
+int Db::IndexBinary::
 Locate(int op, void *key, CmprFn cmpr, void *rtnKey, void *rtnData)
 {
-  if( st->rootPageId == NIL ) Fail(errNotFound);
-  this->key = (char *)key;
-  if( op == keyEQ ) op = keyLE;
-  relationship = op;
-  if_fail( keyLocate(st->rootPageId,!cmpr ? compare : cmpr) );
+  pgRef last;
+  if_fail( refLocate(last, op, key, cmpr) );
   char *kp = 0;
-  if_err( db->addrRead_(lastAccess,kp) );
+  if_err( db->addrRead_(last,kp) );
   if( rtnKey )
     memmove(rtnKey,kp,st->keySz);
   if( rtnData )
     memmove(rtnData,kp+st->keySz,st->dataSz);
-  lastNext = lastAccess;
   return 0;
 }
 
@@ -979,17 +1035,16 @@ Locate(int op, void *key, CmprFn cmpr, void *rtnKey, void *rtnData)
  */
 
 int Db::IndexBinary::
-chkFind(char *key, pgRef *last)
+chkFind(pgRef &loc, char *key)
 {
-  pageId s = last->id;
+  pageId s = loc.id;
   if( s < 0 ) return 0;                         // must be valid block
   keyBlock *sbb;  Page *spp;  char *sn;
   if_err( db->indexRead(s,0,sbb,spp,sn) );
   if( sbb->right_link() >= 0 ) return 0;        // must be leaf
   int slen = spp->iused();
-  int k = last->offset - sizeof(keyBlock);
+  int k = loc.offset - sizeof(keyBlock);
   if( k < 0 || k > slen ) return 0;             // must be inside/end of block
-  lastAccess.id = last->id;
   int cmpr0 = k>=slen ? -1 : compare(key,sn+k); // compare last access
   if( cmpr0 ) {                                 // not found here
     int l = k;
@@ -1011,10 +1066,10 @@ chkFind(char *key, pgRef *last)
       if( !cmpr1 ) goto xit;                      // found here
       if( cmpr1 < 0 ) return 0;                   // key before first in block
     }
-    lastAccess.id = NIL;                          // in block, but not located
+    return errNotFound;                           // key in block range, but not found
   }
 xit:
-  lastAccess.offset = sizeof(keyBlock) + k;
+  loc.offset = sizeof(keyBlock) + k;
   return 1;
 }
 
@@ -1030,7 +1085,7 @@ xit:
  */
 
 int Db::IndexBinary::
-keyFind(pageId s)
+keyFind(pgRef &loc, void *ky, pageId s)
 {
   for(;;) {
     keyBlock *sbb;  Page *spp;  char *sn;
@@ -1049,10 +1104,10 @@ keyFind(pageId s)
       if( sbb->right_link() >= 0 )
         k += sizeof(pageId);
       char *kn = sn + k;
-      int n = compare(key,kn);
+      int n = compare((char*)ky,kn);
       if( n == 0 ) {
-        lastAccess.id = s;
-        lastAccess.offset = sizeof(keyBlock) + k;
+        loc.id = s;
+        loc.offset = sizeof(keyBlock) + k;
         return 0;
       }
       if( n > 0 ) l = i; else r = i;
@@ -1078,37 +1133,47 @@ keyFind(pageId s)
  */
 
 int Db::IndexBinary::
-Find(void *key, void *rtnData)
+refFind(pgRef &loc, void *ky)
 {
-  if( st->rootPageId == NIL ) Fail(errNotFound);
+  if( st->rootPageId == NIL )
+    Fail(errNotFound);
   pageId r = st->rootPageId;
   int ret = 0;
-  if( CHK cFindCount > 2 ) {                    // try the easy way
-    ret = chkFind((char *)key,&lastFind);
-    if_ret( ret );
-  }
-  if( ret ) {
-    if( lastAccess.id < 0 ) {                   // not found here, but in block
-      r = lastFind.id;  ret = 0;                // search just this block
+{ locked by(idxLk);
+  loc = lastFind;
+  if( CHK cFindCount > 2 ) ret = 1; }
+  if( ret ) {                                   // try the easy way
+    ret = chkFind(loc, (char *)ky);
+    if( ret == errNotFound ) {
+      r = loc.id;  ret = 0;
     }
   }
+  if_err( ret );
   if( !ret ) {                                  // try the hard way
-    this->key = (char *)key;
-    if_fail( keyFind(r) );
+    if_fail( keyFind(loc,ky,r) );
   }
-  if( rtnData ) {
-    char *kp = 0;
-    if_err( db->addrRead_(lastAccess,kp) );
-    memmove(rtnData,kp+st->keySz,st->dataSz);
-  }
-  chkLastFind();
+{ locked by(idxLk);
+  chkLastFind(loc); }
   return 0;
 }
 
 int Db::IndexBinary::
+Find(void *ky, void *rtnData)
+{
+  pgRef last;
+  if_fail( refFind(last, ky) );
+  char *kp = 0;
+  if_err( db->addrRead_(last,kp) );
+  if( rtnData )
+    memmove(rtnData,kp+st->keySz,st->dataSz);
+  return 0;
+}
+
+
+int Db::IndexBinary::
 chkInsert(void *key, void *data)
 {
-  int last = 0;
+  int rhs = 0;
   char *ky = (char *)key;
   pageId s = lastInsert.id;
   if( s < 0 || cInsCount < 2 ) return 0;        /* >= 2 in a row */
@@ -1125,16 +1190,16 @@ chkInsert(void *key, void *data)
   if( n > 0 ) {                                 /* after last one */
     if( kn >= rp ) {                            /* no next one */
       if( st->rightHandSide == s )
-        last = 1;                               /* rhs */
+        rhs = 1;                                /* rhs */
     }
     else {
       n = compare(ky,kn);
       if( n == 0 ) Fail(errDuplicate);
       if( n < 0 )
-        last = 1;                               /* before next one */
+        rhs = 1;                                /* before next one */
     }
   }
-  if( !last ) return 0;                         /* not a hit */
+  if( !rhs ) return 0;                          /* not a hit */
   if( spp->iallocated()-slen < kdSz ) return 0; /* doesnt fit */
   if( rp > kn ) memmove(kn+kdSz,kn,rp-kn);      /* move data up */
   memmove(kn,key,st->keySz);
@@ -1185,7 +1250,7 @@ keyInsert(pageId s, pageId &t)
     if( sbb->right_link() >= 0 )
       k += sizeof(pageId);
     kn = sn + k;
-    int n = compare(key,kn);
+    int n = compare(this->akey,kn);
     if( n == 0 ) {
       lastAccess.id = s;
       lastAccess.offset = sizeof(keyBlock) + k;
@@ -1311,7 +1376,7 @@ Insert(void *key, void *data)
     if_ret( ret );
   }
   if( !ret ) {                                  // try the hard way
-    makeKey(&iky[0],this->key=(char *)key,st->keySz,(char *)data,st->dataSz);
+    makeKey(&iky[0],this->akey=(char *)key,st->keySz,(char *)data,st->dataSz);
     pageId t = NIL;  lastAccess.id = NIL;
     if_ret( keyInsert(st->rootPageId, t) );
   }
@@ -1487,7 +1552,7 @@ keyDelete(int &t,void *kp,pageId s,pageId p,keyBlock *pbb,int pi)
       if( sbb->right_link() >= 0 )
         k += sizeof(pageId);
       char *kn = sn + k;
-      int n = compare(key,kn);
+      int n = compare(this->akey,kn);
       if( n == 0 ) {
         if( sbb->right_link() < 0 ) {           /* terminal key */
           slen -= lkdSz;
@@ -1536,6 +1601,34 @@ xit:
   return 0;
 }
 
+int Db::IndexBinary::
+chkDelete(pgRef &loc, void *kp)
+{
+  int ret = 0;
+  loc = lastDelete;
+  ret = chkFind(loc, (char*)kp);                // try last delete
+  if( !ret && lastFind.id != loc.id ) {
+    loc = lastFind;
+    ret = chkFind(loc, (char*)kp);              // try last find
+  }
+  if( !ret ) return 0;
+  if( ret == errNotFound ) ret = 0;
+  if_err( ret );
+  pageId s = loc.id;
+  keyBlock *sbb;  Page *spp;  char *sn;
+  if_err( db->indexRead(s,1,sbb,spp,sn) );
+  int dlen = spp->iused() - kdSz;
+  if( dlen < kdSz ) return 0;                   // at least 1 key must remain
+  if( !ret ) return errNotFound;
+  spp->iused(dlen);                             // delete
+  int k = loc.offset - sizeof(keyBlock);
+  if( dlen > k ) {
+    char *kp = sn + k;
+    memmove(kp,kp+kdSz,dlen-k);
+  }
+  return 1;
+}
+
 /***
  *  Db::IndexBinary::Delete - interface to remove unique key
  *
@@ -1551,41 +1644,19 @@ int Db::IndexBinary::
 Delete(void *key)
 {
   if( st->rootPageId == NIL ) Fail(errNotFound);
-  this->key = (char *)key;
+  this->akey = (char *)key;
   this->idf = 0;
   pageId r = st->rootPageId;
-  pgRef *last = &lastDelete;
   int ret = 0;
   if( CHK cDelCount > 2 ) {                     // try the easy way
-    if( lastOp == opFind && lastFind.id >= 0 ) {// chk find/delete
-      char *kp = 0;
-      if_ret( db->addrRead_(lastFind,kp) );
-      if( !compare(this->key,kp) ) last = &lastFind;
-    }
-    ret = chkFind(this->key,last);
-    if_ret( ret );
-    if( ret ) {
-      ret = 0;  pageId s = last->id;
-      keyBlock *sbb;  Page *spp;  char *sn;
-      if_err( db->indexRead(s,1,sbb,spp,sn) );
-      int slen = spp->iused() - kdSz;
-      if( slen >= kdSz ) {                      // at least 1 key will remain
-        if( lastAccess.id >= 0 ) {              // found here
-          spp->iused(slen);                     // delete
-          int k = lastAccess.offset - sizeof(keyBlock);
-          if( slen > k ) {
-            char *kp = sn + k;
-            memmove(kp,kp+kdSz,slen-k);
-          }
-          ret = 1;
-        }
-        else
-          r = s;                                // search just this block
-      }
+    pgRef loc;
+    ret = chkDelete(loc, key);
+    if( ret == errNotFound ) {                  // in exterior block
+      r = loc.id;  ret = 0;
     }
   }
   if( !ret ) {                                  // try the hard way
-    makeKey(&iky[0],this->key=(char *)key,st->keySz,0,0);
+    makeKey(&iky[0],this->akey=(char *)key,st->keySz,0,0);
     lastAccess.id = NIL;  int t = 1;
     (void)r; // use full search, r works but is not traditional
     if_fail( keyDelete(t,(void *)&iky[0],/*r*/st->rootPageId,0,0,0) );
@@ -1608,7 +1679,7 @@ Delete(void *key)
  */
 
 int Db::IndexBinary::
-keyFirst(pageId s)
+keyFirst(pgRef &loc, pageId s)
 {
   for(;;) {
     keyBlock *sbb;
@@ -1618,8 +1689,8 @@ keyFirst(pageId s)
     s = readPageId(sn);
   }
 
-  lastAccess.id = s;
-  lastAccess.offset = sizeof(keyBlock);
+  loc.id = s;
+  loc.offset = sizeof(keyBlock);
   return 0;
 }
 
@@ -1639,14 +1710,16 @@ int Db::IndexBinary::
 First(void *rtnKey,void *rtnData)
 {
   if( st->rootPageId == NIL ) Fail(errNotFound);
-  if_fail( keyFirst(st->rootPageId) );
+  pgRef first;
+  if_fail( keyFirst(first, st->rootPageId) );
   char *kp = 0;
-  if_err( db->addrRead_(lastAccess,kp) );
+  if_err( db->addrRead_(first,kp) );
   if( rtnKey )
     memmove(rtnKey,kp,st->keySz);
   if( rtnData )
     memmove(rtnData,kp+st->keySz,st->dataSz);
-  lastNext = lastAccess;
+{ locked by(idxLk);
+  lastNext = lastAccess = first; }
   return 0;
 }
 
@@ -1662,7 +1735,7 @@ First(void *rtnKey,void *rtnData)
  */
 
 int Db::IndexBinary::
-keyLast(pageId s)
+keyLast(pgRef &loc, pageId s)
 {
   for(;;) {
     keyBlock *sbb;
@@ -1673,9 +1746,9 @@ keyLast(pageId s)
   }
 
   Page *spp = db->get_page(s);
-  lastAccess.id = s;
+  loc.id = s;
   int k = spp->iused() - kdSz;
-  lastAccess.offset = sizeof(keyBlock) + k;
+  loc.offset = sizeof(keyBlock) + k;
   return 0;
 }
 
@@ -1695,14 +1768,16 @@ int Db::IndexBinary::
 Last(void *rtnKey,void *rtnData)
 {
   if( st->rootPageId == NIL ) Fail(errNotFound);
-  if_fail( keyLast(st->rootPageId) );
+  pgRef last;
+  if_fail( keyLast(last, st->rootPageId) );
   char *kp = 0;
-  if_err( db->addrRead_(lastAccess,kp) );
+  if_err( db->addrRead_(last,kp) );
   if( rtnKey )
     memmove(rtnKey,kp,st->keySz);
   if( rtnData )
     memmove(rtnData,kp+st->keySz,st->dataSz);
-  lastNext = lastAccess;
+{ locked by(idxLk);
+  lastNext = lastAccess = last; }
   return 0;
 }
 
@@ -1741,16 +1816,14 @@ chkNext(pgRef &loc, char *&kp)
   if( k < 0 || k >= spp->iused() ) return 0;    // curr must be in block
   if( (k+=kdSz) >= spp->iused() ) return 0;     // next must be in block
   kp = sn + k;
-  lastAccess.id = s;
-  lastAccess.offset = sizeof(keyBlock) + k;
+  loc.offset = sizeof(keyBlock) + k;
   return 1;
 }
 
 int Db::IndexBinary::
 keyNext(pgRef &loc, char *kp)
 {
-  this->key = kp;  relationship = keyGT;
-  if_fail( keyLocate(st->rootPageId,compare) );
+  if_fail( keyLocate(loc,st->rootPageId, keyGT,kp,compare) );
   return 0;
 }
 
@@ -1781,21 +1854,21 @@ Next(pgRef &loc,void *rtnKey,void *rtnData)
       if_err( db->addrRead_(loc,ky) );
     if_ret( keyNext(loc, ky) );                 // try the hard way
   }
-  if_err( db->addrRead_(lastAccess,kp) );
+  if_err( db->addrRead_(loc,kp) );
   if( rtnKey )
     memmove(rtnKey,kp,st->keySz);
   if( rtnData )
     memmove(rtnData,kp+st->keySz,st->dataSz);
-  loc = lastAccess;
+{ locked by(idxLk);
+  lastAccess = loc; }
   return 0;
 }
 
 void Db::IndexBinary::
 init()
 {
-  relationship = keyEQ;
   keyInterior = 0;
-  idf = 0;  key = 0;
+  idf = 0;  akey = 0;
 }
 
 Db::IndexBinary::
@@ -2252,71 +2325,58 @@ Last(void *rtnKey,void *rtnData)
 }
 
 int Db::IndexString::
-chkFind(char *key, pgRef *last, unsigned char *lkey, unsigned char *lkp)
+chkFind(pgRef &loc, char *key, unsigned char *lkey, unsigned char *lkp)
 {
-  pageId s = last->id;
+  pageId s = loc.id;
   if( s < 0 ) return 0;                         // must be valid block
   keyBlock *sbb;  Page *spp;  char *sn;
   if_err( db->indexRead(s,0,sbb,spp,sn) );
   if( sbb->right_link() >= 0 ) return 0;        // must be leaf
   int slen = spp->iused();
-  int k = last->offset - sizeof(keyBlock);
-  if( k < 0 || k > slen ) return 0;             // must be inside/end of block
+  int k = loc.offset - sizeof(keyBlock);
+  if( k < 0 || k >= slen ) return 0;            // must be inside/end of block
   unsigned char *ky = (unsigned char *)key;
   unsigned char *bp = (unsigned char *)sn;
-  unsigned char *lp = bp;
-  unsigned char *rp = bp + k;                   // current or end
-  unsigned char *tp, *kp = 0;
-  int n = -1;
-  if( k < slen ) {
-    unsigned char rb;  tp = rp;  rp += st->dataSz;  // move past curr data
-    for( int i=*rp++; (rb=*rp++) == lkey[i] && rb != 0; ++i );
-    if( rb ) return 0;                          // must match curr
-    n = ustrcmp(ky,&lkey[0]);
-    if( !n && !lkp ) { kp = tp;  goto xit; }    // found here, and no last key
-  }
+  unsigned char *kp = bp + k;
+  unsigned char *rp = bp + slen;
+  unsigned char *lp = kp;  kp += st->dataSz;
+  unsigned char *ip = &lkey[*kp++];
+  while( kp<rp && *kp!=0 && *ip==*kp ) { ++ip; ++kp; }
+  if( *ip || *kp++ ) return 0;                  // must match curr
+  int n = ustrcmp(&lkey[0], ky);
+  if( !n && !lkp ) goto xit;                    // found here, and no last key
   unsigned char lky[keysz];
-  if( !lkp ) lkp = &lky[0];                     // need lky buffer
-  if( n > 0 ) {                                 // past here, use next to end
-    lp = rp;  rp = bp + slen;
-    ustrcpy(&lkp[0],&lkey[0]);
+  ip = lkey;
+  if( n > 0 ) {                                 // before here
+    rp = lp;  lp = kp = bp;
+    ip = lp + st->dataSz;
+    if( *ip++ ) Err(errCorrupt);
+    if( (n=ustrcmp(ip, ky)) > 0 ) return 0;     // before first
+    if( !n ) { lky[0] = 0;  goto xit; }         // found here, first
   }
-  else {
-    lkp[0] = 0;
-    tp = lp+st->dataSz+1;
-    n = ustrcmp(tp,ky);                         // try first
-    if( n > 0 ) return 0;                       // before first
-    if( n )
-      ustrcpy(&lkp[0],tp);
-    else
-      kp = lp;                                  // found here
-  }
-  unsigned char nky[keysz];
-  ustrcpy(&nky[0],&lkp[0]);
-  while( !kp && lp < rp ) {
-    tp = lp;  lp += st->dataSz;
+  ustrcpy(&lky[0], ip);
+  while( kp < rp ) {
+    lp = kp;  kp += st->dataSz;
+    unsigned char nky[keysz];
+    ustrcpy(&nky[0], &lky[0]);
     for( int i=*lp++; (nky[i]=*lp++) != 0; ++i );
-    n = ustrcmp(ky,&nky[0]);
+    n = ustrcmp(ky, &nky[0]);
+    if( !n ) goto xit;                          // found here
     if( n < 0 ) Fail(errNotFound);              // btwn prev,next
-    if( n )
-      ustrcpy(lkp,&nky[0]);
-    else
-      kp = tp;                                  // found here
+    ustrcpy(&lky[0], &nky[0]);
   }
-  if( !kp ) return 0;                           // not in block
+  return 0;                                     // not in block
 xit:
-  lastAccess.id = s;
-  k = kp - bp;
-  lastAccess.offset = sizeof(keyBlock) + k;
-  ustrcpy(&lastAccKey[0],ky);
+  if( lkp ) ustrcpy(lkp, &lky[0]);
+  k = lp - bp;
+  loc.offset = sizeof(keyBlock) + k;
   return 1;
 }
 
 int Db::IndexString::
-keyFind()
+keyFind(pgRef &loc,unsigned char *ky)
 {
   unsigned char nky[keysz];
-  unsigned char *ky = &key[0];
 
   for( pageId s=st->rootPageId; s>=0; ) {
     keyBlock *sbb;  Page *spp;  char *sn;
@@ -2332,10 +2392,9 @@ keyFind()
       for( int i=*lp++; (nky[i]=*lp++) != 0; ++i );
       int n = ustrcmp(ky, &nky[0]);
       if( n == 0 ) {
-        lastAccess.id = s;
+        loc.id = s;
         int k = kp - (unsigned char *)sn;
-        lastAccess.offset = sizeof(keyBlock) + k;
-        ustrcpy(&lastAccKey[0],ky);
+        loc.offset = sizeof(keyBlock) + k;
         return 0;
       }
       if( n < 0 ) { r = l; break; }
@@ -2345,28 +2404,40 @@ keyFind()
   Fail(errNotFound);
 }
 
+
 int Db::IndexString::
-Find(void *key,void *rtnData)
+refFind(pgRef &loc, void *key)
 {
   if( st->rootPageId == NIL ) Fail(errNotFound);
   int ret = 0;
-  if( CHK cFindCount > 2 ) {                    // try the easy way
-    ret = chkFind((char *)key,&lastFind,&lastFndKey[0]);
+{ locked by(idxLk);
+  loc = lastFind;
+  if( CHK cFindCount > 2 ) ret = 1; }
+  if( ret ) {                   // try the easy way
+    ret = chkFind(loc,(char *)key,&lastFndKey[0]);
     if_ret( ret );
   }
-  if( !ret ) {                                  // try the hard way
-    lastAccess.id = NIL;
-    ustrcpy(this->key,(unsigned char *)key);
-    if_fail( keyFind() );
+  if( !ret ) {                  // try the hard way
+    if_fail( keyFind(loc, (unsigned char *)key) );
   }
-  if( rtnData ) {
-    char *kp = 0;
-    if_err( db->addrRead_(lastAccess,kp) );
-    memmove(rtnData,kp,st->dataSz);
-  }
+{ locked by(idxLk);
+  chkLastFind(loc);
+  ustrcpy(&lastAccKey[0],(unsigned char *)key);
   ustrcpy(&lastFndKey[0],&lastAccKey[0]);
-  ustrcpy(&lastNxtKey[0],&lastAccKey[0]);
-  chkLastFind();
+  ustrcpy(&lastNxtKey[0],&lastAccKey[0]); }
+  return 0;
+}
+
+int Db::IndexString::
+Find(void *key, void *rtnData)
+{
+  pgRef last;
+  if_fail( refFind(last, key) );
+  char *kp = 0;
+  if( !db->addrRead_(last,kp) ) {
+    if( rtnData )
+      memmove(rtnData,kp,st->dataSz);
+  }
   return 0;
 }
 
@@ -2564,7 +2635,7 @@ int Db::IndexString::
 keyDelete(pageId s, pageId &t)
 {
   unsigned char lky[keysz], nky[keysz];
-  unsigned char *ky = &key[0];
+  unsigned char *ky = &akey[0];
 
   keyBlock *sbb;  Page *spp;  char *sn;
   if_err( db->indexRead(s,1,sbb,spp,sn) );
@@ -2706,9 +2777,9 @@ Delete(void *key)
         last = &lastFind;  lkey = &lastFndKey[0];
       }
     }
-    ret = chkFind((char *)key,last,lkey,&lky[0]);
+    ret = chkFind(*last,(char *)key,lkey,&lky[0]);
     if_ret( ret );
-    if( ret ) {
+    if( ret > 0 ) {
       ret = 0;
       pageId s = lastAccess.id;
       keyBlock *sbb;  Page *spp;  char *sn;
@@ -2751,7 +2822,7 @@ Delete(void *key)
     }
   }
   if( !ret ) {                                  // try the hard way
-    ustrcpy(&this->key[0],(unsigned char*)key);
+    ustrcpy(&this->akey[0],(unsigned char*)key);
     lastAccess.id = NIL;
     pageId t = NIL;  idf = 0;
     if_ret( keyDelete(st->rootPageId,t) );
@@ -2768,10 +2839,10 @@ Delete(void *key)
 }
 
 int Db::IndexString::
-keyLocate(pageId s, int &t, CmprFn cmpr)
+keyLocate(pgRef &last,pageId s, int &t, int op,
+    unsigned char *ky, CmprFn cmpr, unsigned char *rky)
 {
   unsigned char lky[keysz], nky[keysz];
-  unsigned char *ky = &key[0];
   keyBlock *sbb;  Page *spp;  char *sn;
   if_err( db->indexRead(s,0,sbb,spp,sn) );
   pageId l = NIL;
@@ -2787,52 +2858,63 @@ keyLocate(pageId s, int &t, CmprFn cmpr)
     kp = lp;  lp += st->dataSz;
     for( int i=*lp++; (nky[i]=*lp++) != 0; ++i );
     int n = cmpr((char *)ky,(char *)&nky[0]);
-    if( relationship <= keyEQ ? n <= 0 : n < 0 ) break;
+    if( op <= keyEQ ? n <= 0 : n < 0 ) break;
     ustrcpy(&lky[0],&nky[0]);
     mp = kp;
   }
 
   if( r >= 0 ) {
-    int status = keyLocate(kp<rp ? l : r,t,cmpr);
+    int status = keyLocate(last, (kp<rp ? l : r), t, op, ky, cmpr, rky);
     if( !t && status == errNotFound ) status = 0;
     if_ret( status );
   }
 
   if( !t ) {
-    if( relationship == keyLT || relationship == keyGE ) {
+    if( op == keyLT || op == keyGE ) {
       if( !mp ) Fail(errNotFound);
       kp = mp;
-      ustrcpy(&lastAccKey[0],&lky[0]);
+      ustrcpy(rky,&lky[0]);
     }
     else {
       if( kp >= rp ) Fail(errNotFound);
-      ustrcpy(&lastAccKey[0],&nky[0]);
+      ustrcpy(rky,&nky[0]);
     }
-    lastAccess.id = s;
+    last.id = s;
     int k = kp - (unsigned char *)sn;
-    lastAccess.offset = sizeof(keyBlock) + k;
+    last.offset = sizeof(keyBlock) + k;
     t = 1;
   }
+  return 0;
+}
+
+
+int Db::IndexString::
+refLocate(pgRef &loc, int op,void *key,CmprFn cmpr, unsigned char *rkey)
+{
+  if( st->rootPageId == NIL ) Fail(errNotFound);
+  if( op == keyEQ ) op = keyLE;
+  if( !cmpr ) cmpr = cmprStr;
+  int t = 0;
+  if_fail( keyLocate(loc,st->rootPageId,t,op,(unsigned char*)key,cmpr, rkey) );
+{ locked by(idxLk);
+  chkLastFind(loc);
+  ustrcpy(&lastAccKey[0], rkey);
+  ustrcpy(&lastNxtKey[0],&lastAccKey[0]); }
   return 0;
 }
 
 int Db::IndexString::
 Locate(int op,void *key,CmprFn cmpr,void *rtnKey,void *rtnData)
 {
-  if( st->rootPageId == NIL ) Fail(errNotFound);
-  ustrcpy(this->key,(unsigned char *)key);
-  if( op == keyEQ ) op = keyLE;
-  relationship = op;  int t = 0;
-  if_fail( keyLocate(st->rootPageId,t,!cmpr ? cmprStr : cmpr) );
+  pgRef last;  uint8_t rkey[keysz];
+  if_fail( refLocate(last, op, key, cmpr, rkey) );
   if( rtnKey )
-    ustrcpy((unsigned char *)rtnKey,&lastAccKey[0]);
+    ustrcpy((unsigned char *)rtnKey, rkey);
   if( rtnData ) {
     char *kp = 0;
-    if_err( db->addrRead_(lastAccess,kp) );
+    if_err( db->addrRead_(last,kp) );
     memmove(rtnData,kp,st->dataSz);
   }
-  ustrcpy(&lastNxtKey[0],&lastAccKey[0]);
-  lastNext = lastAccess;
   return 0;
 }
 
@@ -2848,61 +2930,43 @@ Modify(void *key,void *recd)
 }
 
 int Db::IndexString::
-chkNext(pgRef &loc)
+keyNext(pgRef &loc, unsigned char *rky)
 {
-  if( &loc != &lastNext ) return 0;             // must be default loc
+  unsigned char lky[keysz];  lky[0] = 0;
   pageId s = loc.id;
-  if( s < 0 ) return 0;                         // must be valid
   keyBlock *sbb;  Page *spp;  char *sn;
   if_err( db->indexRead(s,0,sbb,spp,sn) );
-  if( sbb->right_link() >= 0 ) return 0;        // must be leaf
-  int slen = spp->iused();
-  int k = loc.offset - sizeof(keyBlock);
-  if( k < 0 || k >= slen ) return 0;            // must be inside block
   unsigned char *bp = (unsigned char *)sn;
-  unsigned char *lp = bp + k;
-  unsigned char *rp = bp + slen;
-  unsigned char lb;  lp += st->dataSz;              // move past curr data
-  for( int i=*lp++; (lb=*lp++) == lastNxtKey[i] && lb != 0; ++i );
-  if( lb ) return 0;                            // must match curr
-  if( lp >= rp ) return 0;                      // next must exist
-  unsigned char *kp = lp;
-  lp += st->dataSz;                             // scan next
-  ustrcpy(&lastAccKey[0],&lastNxtKey[0]);
-  for( int i=*lp++; (lastAccKey[i]=*lp++) != 0; ++i );
-  lastAccess.id = s;
-  k = kp - (unsigned char *)sn;
-  lastAccess.offset = sizeof(keyBlock) + k;
-  return 1;
-}
-
-int Db::IndexString::
-keyNext(pgRef &loc)
-{
-  unsigned char lky[keysz];
+  int k = loc.offset - sizeof(keyBlock);
+  unsigned char *lp = bp;
+  unsigned char *kp = bp + k;
+  unsigned char *rp = bp + spp->iused();
+  if( kp >= rp ) Err(errInvalid);
+  pageId r = sbb->right_link();
   if( &loc != &lastNext ) {                     // find last key
-    pageId s = loc.id;
-    keyBlock *sbb;  Page *spp;  char *sn;
-    if_err( db->indexRead(s,0,sbb,spp,sn) );
-    unsigned char *bp = (unsigned char *)sn;
-    int k = loc.offset - sizeof(keyBlock);
-    unsigned char *lp = bp;
-    unsigned char *kp = bp + k;
-    unsigned char *rp = bp + spp->iused();
-    if( kp >= rp ) Err(errInvalid);
-    pageId r = sbb->right_link();
-    lky[0] = 0;
     while( lp <= kp ) {                         // until past last
       if( r >= 0 ) lp += sizeof(pageId);
       bp = lp;  lp += st->dataSz;
       for( int i=*lp++; (lky[i]=*lp++) != 0; ++i );
     }
-    ustrcpy(&key[0],&lky[0]);
   }
-  else
-    ustrcpy(&key[0],&lastNxtKey[0]);
-  relationship = keyGT;  int t = 0;
-  if_fail( keyLocate(st->rootPageId,t,cmprStr) );
+  else {
+    ustrcpy(&lky[0],&lastNxtKey[0]);
+    lp = kp;  lp += st->dataSz;                 // verify lastNext
+    unsigned char *ip = &lky[*lp++];
+    while( lp<rp && *lp!=0 && *ip==*lp ) { ++ip; ++lp; }
+    if( *ip || *lp++ ) Fail(errInvalid);        // bad lastNxtKey
+  }
+  if( r < 0 && lp < rp ) {                      // exterior and more data
+    ustrcpy(rky, lky);
+    bp = lp;  lp += st->dataSz;
+    for( int i=*lp++; lp<rp && (rky[i]=*lp) != 0; ++i,++lp );
+    if( *lp ) Err(errCorrupt);
+    loc.offset = (bp-(unsigned char *)sn) + sizeof(keyBlock);
+    return 0;
+  }
+  int t = 0;
+  if_fail( keyLocate(loc,st->rootPageId,t,keyGT,lky,cmprStr, rky) );
   return 0;
 }
 
@@ -2910,27 +2974,26 @@ int Db::IndexString::
 Next(pgRef &loc,void *rtnKey,void *rtnData)
 {
   if( st->rootPageId == NIL ) Fail(errNotFound);
-  int ret = CHK chkNext(loc);                   // try the easy way
-  if_ret( ret );
-  if( !ret )
-    if_ret( keyNext(loc) );                     // try the hard way
+  unsigned char rky[keysz];
+  if_ret( keyNext(loc, rky) );
+{ locked by(idxLk);
+  ustrcpy(&lastAccKey[0], rky);
   if( rtnKey )
     ustrcpy((unsigned char *)rtnKey,&lastAccKey[0]);
   if( rtnData ) {
     char *kp = 0;
-    if_err( db->addrRead_(lastAccess,kp) );
+    if_err( db->addrRead_(loc,kp) );
     memmove(rtnData,kp,st->dataSz);
   }
   if( &loc == &lastNext )
     ustrcpy(&lastNxtKey[0],&lastAccKey[0]);
-  loc = lastAccess;
+  lastAccess = lastNext = loc; }
   return 0;
 }
 
 void Db::IndexString::
 init()
 {
-  relationship = keyEQ;
 }
 
 Db::IndexString::
@@ -3053,14 +3116,15 @@ chkLastDelete()
 }
 
 void Db::IndexBase::
-chkLastFind()
+chkLastFind(pgRef &last)
 {
-  if( lastAccess.id >= 0 && lastAccess.id == lastFind.id )
+  if( last.id >= 0 && last.id == lastFind.id )
     ++cFindCount;
   else
     cFindCount = 0;
-  lastFind = lastAccess;
-  lastNext = lastAccess;
+  lastAccess = last;
+  lastFind = last;
+  lastNext = last;
   lastOp = opFind;
 }
 
@@ -3197,7 +3261,7 @@ pgRefGet(int &size, pgRef &loc, AllocCache &cache)
 {
   freeSpaceRecord look, find;
   look.size = size; look.id = 0; look.offset = 0;
-  int status = freeSpaceIndex->Locate(keyGE, &look, &find, 0);
+  int status = freeSpaceIndex->Locate(keyGE, &look, 0, &find, 0);
   if( status == errNotFound ) return 1;
   if_err( status );
   // if record is at offset 0, need extra space for prefix
@@ -3341,10 +3405,10 @@ int Db::objectFree(pgRef &loc)
   addr.size = mp->size;
   addr.id = loc.id;
   addr.offset = loc.offset;
-  int status = addrSpaceIndex->Locate(keyLT,&addr,&prev,0);
+  int status = addrSpaceIndex->Locate(keyLT,&addr,0,&prev,0);
   if( status == errNotFound ) {
     prev.id = NIL;
-    status = addrSpaceIndex->Locate(keyGT,&addr,&next,0);
+    status = addrSpaceIndex->Locate(keyGT,&addr,0,&next,0);
   }
   else if( !status )
     status = addrSpaceIndex->Next(&next,0);
@@ -3566,7 +3630,7 @@ storeGet(int &size, ioAddr &io_addr)
 {
   freeStoreRecord look, find;
   look.size = size;  look.io_addr = 0;
-  int status = freeStoreIndex->Locate(keyGE, &look, &find, 0);
+  int status = freeStoreIndex->Locate(keyGE, &look,0, &find,0);
   if( status == errNotFound ) return 1;
   if_err( status );
   if_err( storeDelete(find.size,find.io_addr) );
@@ -3643,10 +3707,10 @@ storeFree(int size, ioAddr io_addr)
   /* get prev, next addrStore heap items near this io_addr */
   addrStoreRecord addr, prev, next;
   addr.io_addr = io_addr;  addr.size = size;
-  int status = addrStoreIndex->Locate(keyLT,&addr,&prev,0);
+  int status = addrStoreIndex->Locate(keyLT,&addr,0, &prev,0);
   if( status == errNotFound ) {
     prev.io_addr = -1L;
-    status = addrStoreIndex->Locate(keyGT,&addr,&next,0);
+    status = addrStoreIndex->Locate(keyGT,&addr,0, &next,0);
   }
   else if( !status )
     status = addrStoreIndex->Next(&next,0);
@@ -3680,34 +3744,33 @@ storeFree(int size, ioAddr io_addr)
  */
 
 int Db::
-pageLoad(pageId id)
+pageLoad(pageId id, Page &pg)
 {
-  if( unlikely(id < 0 || id >= root_info->pageTableUsed) ) Err(errNoPage);
-  locked by(db_info->pgLdLk);
-  Page &pg = *get_page(id);
-  if( !pg.addr ) {
-    uint8_t *bp = 0;
-    if( no_shm || pg->shmid < 0 ) {
-      bp = new_uint8_t(pg->allocated, pg->shmid, id);
-      if( pg->used ) pg->set_flags(fl_rd);
+  locked by(pg.pgLk);
+  uint8_t *bp = (uint8_t*)pg.addr;
+  int rd = pg->chk_flags(fl_rd);
+  int shmid = pg->shmid, used = pg->used;
+  if( !bp ) {
+    if( no_shm || shmid < 0 ) {
+      bp = new_uint8_t(pg->allocated, shmid, id);
+      if( used ) rd = fl_rd;
     }
     else {
-      bp = get_uint8_t(pg->shmid, id);
-      pg->clr_flags(fl_rd);
+      bp = get_uint8_t(shmid, id);
+      rd = 0;
     }
     if( !bp ) Err(errNoMemory);
-    pg.addr = (pagePrefix *)bp;
-    pg.shm_id = pg->shmid;
   }
-  if( pg->chk_flags(fl_rd) ) {
-    pg->clr_flags(fl_rd);
-    if( likely( pg->used > 0 ) )
-      if_err( pageRead(pg) );
+  if( likely(rd && used > 0) ) {
+    if_err( pageRead(pg->io_addr, bp, used) );
   }
+  pg.addr = (pagePrefix*)bp;
+  pg.shm_id = shmid;
+  pg->clr_flags(fl_rd);
   return 0;
 }
 
-/*** int Db::pageRead(Page *pp)
+/*** int Db::pageRead(ioAddr io_adr, uint8_t *bp, int len)
  *
  * read data from the database file
  *
@@ -3717,11 +3780,15 @@ pageLoad(pageId id)
  */
 
 int Db::
-pageRead(Page &pg)
+pageRead(ioAddr io_adr, uint8_t *bp, int len)
 {
-  if_err( seek_data(pg->io_addr) );
-  if_err( read_data((char *)pg.addr, pg->used) );
-  pagePrefix *bpp = pg.addr;
+  //locked by(db_info->pgLdLk);
+  //if_err( seek_data(io_adr) );
+  //if_err( read_data((char*)bp, len) );
+  long sz = pread(fd, bp, len, io_adr);
+  if( len != sz ) Err(errIoRead);
+  file_position = io_adr+len;
+  pagePrefix *bpp = (pagePrefix *)bp;
   if( bpp->magic != page_magic ) Err(errBadMagic);
   return 0;
 }
@@ -3844,9 +3911,10 @@ allocate(int typ, int size, pgRef &loc, AllocCache &cache)
 }
 
 int Db::
-deallocate(pgRef &loc)
+deallocate(pgRef &loc, AllocCache &cache)
 {
   locked by(db_info->objAlLk);
+  cache.cacheFlush(this);
   if( loc.id < 0 ) return 0;
   if_fail( objectFree(loc) );
   loc.id = NIL;  loc.offset = 0;
@@ -3878,7 +3946,7 @@ reallocate(int size, pgRef &loc, AllocCache &cache)
         memmove(cp,bp,msz);
       }
     }
-    if_err( deallocate(loc) );
+    if_err( deallocate(loc, cache) );
     loc = ref;
   }
   return 0;
@@ -4307,6 +4375,16 @@ start_transaction(int undo_save)
 
   for( int idx=0; idx<root_info->indeciesUsed; ++idx )
     if( indecies[idx] ) indecies[idx]->deleteFreeBlocks();
+
+  // move root pages lower if possible
+  for( int idx=0; idx<root_info->indeciesUsed; ++idx ) {
+    IndexBase *bip = indecies[idx];
+    if( !bip ) continue;
+    pageId r = bip->st->rootPageId;
+    if( r < 0 ) continue;
+    if( r != bip->st->rightHandSide ) continue;
+    bip->st->rootPageId = bip->st->rightHandSide = lower_page(r);
+  }
 
   // truncate pageTable
   for( id=root_info->pageTableUsed; id>0; --id ) {
@@ -5380,7 +5458,7 @@ copy(Db *db, Objects objs)
       int nidx1 = dent->nidxs-1;
       int sz = sizeof(EntityObj) + sizeof(dent->indexs[0])*nidx1;
       // allocate entity
-      if_err( allocate(dent->id, sz, nent.obj) );
+      if_err( allocate(dent->id, sz, nent.obj, alloc_cache) );
       if( !nent.addr_wr() ) Err(errNoMemory);
       // construct entity
       new((EntityObj *)nent.addr())
@@ -5734,13 +5812,6 @@ destruct_(ObjectLoc &loc, int id)
 }
 
 
-int Db::Entity::
-deallocate(ObjectLoc &loc)
-{
-  if_err( db->deallocate(loc.obj) );
-  return 0;
-}
-
 int Db::
 new_entity_(Entity &entity, const char *nm, int sz)
 {
@@ -5748,7 +5819,8 @@ new_entity_(Entity &entity, const char *nm, int sz)
   EntityLoc &ent = entity.ent;
   // construct EntityObj
   if( root_info->entity_max_id >= max_entity_type ) Err(errLimit);
-  if_err( allocate(root_info->entity_max_id+1, sizeof(EntityObj), ent.obj) );
+  if_err( allocate(root_info->entity_max_id+1,
+      sizeof(EntityObj), ent.obj, alloc_cache) );
   int id = root_info->entity_max_id;
   ent._wr();  ent->id = id;
   char name[nmSz];  memset(&name[0],0,sizeof(name));
@@ -5782,7 +5854,7 @@ del_entity(Entity &entity)
     int status = loc.FirstId();
     if( !status ) do {
       loc.v_del();
-      deallocate(loc.obj);
+      entity.deallocate(loc.obj);
     } while( !(status=loc.NextId()) );
     if( status != errNotFound )
       if_err( status );
@@ -5790,7 +5862,7 @@ del_entity(Entity &entity)
     int id = ent->id;
     entityIdIndex->Delete(&id);
     entityNmIndex->Delete(&ent->name[0]);
-    if_err( deallocate(ent.obj) );
+    if_err( deallocate(ent.obj, alloc_cache) );
     ent.obj.id = NIL;
     --root_info->entity_count;
     if( id+1 == root_info->entity_max_id ) {
@@ -5854,7 +5926,7 @@ add_index(int idx)
   // construct EntityObj
   int nidx = ent->nidxs;
   int sz = sizeof(EntityObj) + sizeof(ent->indexs[0])*nidx;
-  if_err( db->allocate(ent->id, sz, nent.obj) );
+  if_err( db->allocate(ent->id, sz, nent.obj, db->alloc_cache) );
   nent._wr();  nent->id = ent->id;
   memmove(&nent->name[0],&ent->name[0],nmSz);
   nent->alloc_cache = ent->alloc_cache;
@@ -5868,9 +5940,16 @@ add_index(int idx)
   // add new index
   nent->indexs[nidx] = idx;
   nent->nidxs = nidx+1;
-  if_err( db->deallocate(ent.obj) );
+  if_err( db->deallocate(ent.obj, db->alloc_cache) );
   ent.obj = nent.obj;
   return 0;
+}
+
+int Db::Entity::
+del_index(const char *nm)
+{
+  int idx;  if_ret( idx = get_index(nm) );
+  return del_index(idx);
 }
 
 int Db::Entity::
@@ -5921,7 +6000,7 @@ v_del()
 {
   for( varObjs vp = entity->vobjs; vp!=0; vp=vp->next ) {
     Obj *op = addr();
-    (op->*(vp->ref)).del(entity->db);
+    (op->*(vp->ref)).del(entity);
   }
 }
 
@@ -6018,7 +6097,7 @@ int Db::iKey::
 Locate(int op)
 {
   if( !idx ) Err(errInvalid);
-  int id;  if_fail( idx->Locate(op, *this, 0, &id) );
+  int id;  if_fail( idx->Locate(op, *this,0, 0,&id) );
   if_err( loc.entity->index(idxId)->Find(&id, &loc.obj) );
   return 0;
 }
@@ -6072,8 +6151,29 @@ int Db::rKey::
 Locate(int op)
 {
   if( !idx ) Err(errInvalid);
-  int id;  if_fail( idx->Locate(op, *this, 0, &id) );
+  int id;  if_fail( idx->Locate(op, *this,0, 0,&id) );
   if_err( loc.entity->index(idxId)->Find(&id, &loc.obj) );
+  return 0;
+}
+
+int Db::ioCmpr(const void *a, const void *b, void *c)
+{
+  Db *db = (Db *)c;
+  Page &pa = *db->get_page(*(pageId*)a);
+  Page &pb = *db->get_page(*(pageId*)b);
+  int64_t v = pa->io_addr - pb->io_addr;
+  return v < 0 ? -1 : v > 0 ? 1 : 0;
+}
+
+int Db::load()
+{
+  int npages = root_info->pageTableUsed;
+  pageId *pages = new pageId[npages];
+  for( int i=0 ; i<npages; ++i ) pages[i] = i;
+  qsort_r(pages, npages, sizeof(*pages), ioCmpr, this);
+  for( int i=0 ; i<npages; ++i )
+    pageLoad(pages[i], *get_page(pages[i]));
+  delete [] pages;
   return 0;
 }
 
