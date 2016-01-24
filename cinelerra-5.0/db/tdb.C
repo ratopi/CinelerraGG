@@ -62,13 +62,21 @@ int Db::del_mem8_t(const void *vp, int id)
   return 0;
 }
 
+volatile int gdb_wait;
+
+void wait_gdb()
+{
+  gdb_wait = 1;
+  while( gdb_wait )
+    sleep(1);
+}
 
 // shared memory allocator
 void *Db::
 get_shm8_t(int id)
 {
   void *vp = shmat(id, NULL, 0);
-  if( vp == (void*)-1 ) { perror("shmat"); sleep(1000000); vp = 0; }
+  if( vp == (void*)-1 ) { perror("shmat"); wait_gdb(); vp = 0; }
   return (uint8_t *)vp;
 }
 
@@ -89,7 +97,7 @@ del_shm8_t(const void *vp, int id)
   if( id >= 0 ) {
     struct shmid_ds ds;
     if( !shmctl(id, IPC_STAT, &ds) ) ret = ds.shm_nattch;
-    else { perror("shmctl"); sleep(1000000); ret = errIoStat; }
+    else { perror("shmctl"); wait_gdb(); ret = errIoStat; }
   }
   if( vp ) shmdt(vp);
   return ret;
@@ -195,7 +203,7 @@ _err_(int v,const char *fn,int ln)
 {
   error(v);
   dmsg(DBBUG_ERR,"%s:%d errored %d (%s)\n",fn,ln,v,errMsgs[-v]);
-  sleep(1000000);
+  wait_gdb();
   return v;
 }
 
@@ -324,7 +332,7 @@ Db::achk()
          (last.io_addr == addr.io_addr && last.size >= addr.size ) ) {
         printf("last=%012lx/%04lx, addr=%012lx/%04lx\n",
            addr.io_addr, addr.size, last.io_addr, last.size);
-        sleep(1000000);
+        wait_gdb();
       }
       last = addr;
   } while( !addrStoreIndex->Next(&addr,0) );
@@ -340,7 +348,7 @@ Db::fchk()
          (last.size == free.size && last.io_addr >= free.io_addr ) ) {
         printf("last=%04lx/%012lx, free=%04lx/%012lx\n",
            free.size, free.io_addr, last.size, last.io_addr);
-        sleep(1000000);
+        wait_gdb();
       }
       last = free;
   } while( !freeStoreIndex->Next(&free,0) );
@@ -4556,9 +4564,14 @@ icommit(int force)
   root_info->root_info_addr = ri_addr;
   root_info->root_info_size = ri_size;
 
+  int npages = root_info->pageTableUsed;
+  pageId *pages = new pageId[npages];
+  for( int i=0 ; i<npages; ++i ) pages[i] = i;
+  qsort_r(pages, npages, sizeof(*pages), ioCmpr, this);
+
   // write page storage
-  for( id=0; id<root_info->pageTableUsed; ++id ) {
-    Page &pg = *get_Page(id);
+  for( id=0; id<npages; ++id ) {
+    Page &pg = *get_Page(pages[id]);
     if( pg->chk_flags(fl_wr) ) {
       pg->clr_flags(fl_wr);
       if( pg->used )
@@ -4569,6 +4582,8 @@ icommit(int force)
       pg->set_flags(fl_rd);
     }
   }
+
+  delete [] pages;
 
   // write rootInfo storage
   if_err( seek_data(ri_addr) );
