@@ -209,12 +209,12 @@ BC_Resources::BC_Resources()
 {
 	synchronous = 0;
 	vframe_shm = 0;
-
-	display_info = new BC_DisplayInfo("", 0);
-	int display_w = display_info->get_root_w();
-	int display_h = display_info->get_root_h();
-	int display_size = display_h < display_w ? display_h : display_w;
-	double default_scale = display_size/1000.;
+	/* causes more problems than it fixes */
+	//display_info = new BC_DisplayInfo("", 0);
+	//int display_w = display_info->get_root_w();
+	//int display_h = display_info->get_root_h();
+	//int display_size = display_h < display_w ? display_h : display_w;
+	double default_scale = 1.0; // display_size/1000.;
 	char *env = getenv("BC_FONT_SCALE");
 	font_scale = env ? atof(env) : default_scale;
 	if( font_scale <= 0 ) font_scale = 1;
