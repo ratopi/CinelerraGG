@@ -4,19 +4,19 @@ dir="$1"
 shift
 path="/home"
 bld="git-repo"
-proj="cinelerra"
+proj="cinelerra5"
 base="cinelerra-5.0"
 
 if [ ! -d "$path/$dir/$bld" ]; then
-  echo "$bld missing in /$path/$dir"
+  echo "$bld missing in $path/$dir"
   exit 1
 fi
 
 cd "$path/$dir/$bld"
 rm -rf "$proj"
-git clone "http://cinelerra.org/git-repo/$proj"
+git clone "git://git.cinelerra-cv.org/goodguy/cinelerra.git" "$proj"
 if [ $? -ne 0 ]; then
-  echo "git clone $bld/$proj/ failed"
+  echo "git clone $proj failed"
   exit 1
 fi
 

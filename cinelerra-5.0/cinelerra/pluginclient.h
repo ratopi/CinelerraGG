@@ -24,7 +24,7 @@
 
 // Base class inherited by all the different types of plugins.
 
-#define BCASTDIR "~/.bcast/"
+#define BCASTDIR "~/.bcast5/"
 #define MAX_FRAME_BUFFER 1024
 
 class PluginClient;
