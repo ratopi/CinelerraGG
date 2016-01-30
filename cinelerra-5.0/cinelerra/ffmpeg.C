@@ -460,7 +460,7 @@ int FFStream::seek(int64_t no, double rate)
 		if( no-n < 30*rate ) {
 			if( n < 0 ) n = 0;
 			pos = n;
-			plmt = marks[i].pos;
+			if( ++i < marks.size() ) plmt = marks[i].pos;
 			npkts = MAX_RETRY;
 		}
 	}
@@ -475,9 +475,8 @@ int FFStream::seek(int64_t no, double rate)
 		seeked = 1;  st_eof(0);
 // read up to retry packets, limited to npkts in stream, and not past pkt.pos plmt
 		for( int retry=MAX_RETRY; ret>=0 && --retry>=0; ) {
-			if( read_packet() <= 0 || ( plmt >= 0 && ipkt->pos > plmt ) ) {
-				ret = -1;  break;
-			}
+			if( read_packet() <= 0 ) { ret = -1;  break; }
+			if( plmt >= 0 && ipkt->pos >= plmt ) break;
 			if( ipkt->stream_index != st->index ) continue;
 			if( --npkts <= 0 ) break;
 			if( (pkt_ts=ipkt->dts) == AV_NOPTS_VALUE &&
