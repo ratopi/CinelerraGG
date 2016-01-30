@@ -12,6 +12,7 @@
 #ifndef INT64_MAX
 #define INT64_MAX 9223372036854775807LL
 #endif
+#define MAX_RETRY 1000
 
 #include "asset.h"
 #include "bccmodels.h"
@@ -350,7 +351,7 @@ int FFStream::read_packet()
 int FFStream::decode(AVFrame *frame)
 {
 	int ret = 0;
-	int retries = 1000;
+	int retries = MAX_RETRY;
 	int got_frame = 0;
 
 	while( ret >= 0 && !flushed && --retries >= 0 && !got_frame ) {
@@ -365,7 +366,7 @@ int FFStream::decode(AVFrame *frame)
 				ipkt->data += ret;
 				ipkt->size -= ret;
 			}
-			retries = 1000;
+			retries = MAX_RETRY;
 		}
 		if( !got_frame ) {
 			need_packet = 1;
@@ -460,33 +461,39 @@ int FFStream::seek(int64_t no, double rate)
 			if( n < 0 ) n = 0;
 			pos = n;
 			plmt = marks[i].pos;
-			npkts = 1000;
+			npkts = MAX_RETRY;
 		}
 	}
 	double secs = pos / rate;
-	int64_t tstmp = secs * st->time_base.den / st->time_base.num;
+	int64_t pkt_ts, tstmp = secs * st->time_base.den / st->time_base.num;
 	if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
-	if( avformat_seek_file(fmt_ctx, st->index,
-		-INT64_MAX, tstmp, INT64_MAX, AVSEEK_FLAG_ANY) < 0 ) return -1;
-	avcodec_flush_buffers(st->codec);
-	need_packet = 0;  flushed = 0;
-	seeked = 1;  st_eof(0);
-	int64_t pkt_ts = AV_NOPTS_VALUE;
-	int ret = 1, retry = 1000;
-
+	int ret = avformat_seek_file(fmt_ctx, st->index,
+		-INT64_MAX, tstmp, INT64_MAX, AVSEEK_FLAG_ANY);
+	if( ret >= 0 ) {
+		avcodec_flush_buffers(st->codec);
+		need_packet = 0;  flushed = 0;
+		seeked = 1;  st_eof(0);
 // read up to retry packets, limited to npkts in stream, and not past pkt.pos plmt
-	while( ret > 0 && npkts > 0 && --retry >= 0 ) {
-		if( (ret=read_packet()) <= 0 ) break;
-		if( ipkt->stream_index != st->index ) continue;
-		if( (pkt_ts=ipkt->dts) == AV_NOPTS_VALUE ) pkt_ts = ipkt->pts;
-		if( pkt_ts != AV_NOPTS_VALUE && pkt_ts >= tstmp ) break;
-		if( plmt >= 0 && ipkt->pos >= plmt ) break;
-		--npkts;
+		for( int retry=MAX_RETRY; ret>=0 && --retry>=0; ) {
+			if( read_packet() <= 0 || ( plmt >= 0 && ipkt->pos > plmt ) ) {
+				ret = -1;  break;
+			}
+			if( ipkt->stream_index != st->index ) continue;
+			if( --npkts <= 0 ) break;
+			if( (pkt_ts=ipkt->dts) == AV_NOPTS_VALUE &&
+			    (pkt_ts=ipkt->pts) == AV_NOPTS_VALUE ) continue;
+			if( pkt_ts >= tstmp ) break;
+		}
 	}
-
-	if( ret <= 0 || retry < 0 ) return -1;
+	if( ret < 0 ) {
+//printf("** seek fail %ld, %ld\n", pos, tstmp);
+		seeked = need_packet = 0;
+	        st_eof(flushed=1);
+		return -1;
+	}
+//printf("seeked pos = %ld, %ld\n", pos, tstmp);
 	seek_pos = curr_pos = pos;
-	return npkts > 0 ? 1 : 0;
+	return 0;
 }
 
 FFAudioStream::FFAudioStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx)
@@ -628,7 +635,7 @@ int FFAudioStream::load(int64_t pos, int len)
 	if( mbsz < len ) mbsz = len;
 	int64_t end_pos = pos + len;
 	int ret = 0;
-	for( int i=0; ret>=0 && !flushed && curr_pos<end_pos && i<1000; ++i ) {
+	for( int i=0; ret>=0 && !flushed && curr_pos<end_pos && i<MAX_RETRY; ++i ) {
 		ret = read_frame(frame);
 		if( ret > 0 ) {
 			load_history(&frame->extended_data[0], frame->nb_samples);
@@ -742,7 +749,7 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 		fprintf(stderr, "FFVideoStream::load: av_frame_alloc failed\n");
 		return -1;
 	}
-	for( int i=0; ret>=0 && !flushed && curr_pos<=pos && i<1000; ++i ) {
+	for( int i=0; ret>=0 && !flushed && curr_pos<=pos && i<MAX_RETRY; ++i ) {
 		ret = read_frame(frame);
 		if( ret > 0 ) ++curr_pos;
 	}
@@ -1254,9 +1261,9 @@ int FFMPEG::read_options(FILE *fp, const char *options, AVDictionary *&opts)
 		if( !ret ) {
 			if( !strcmp(key, "duration") )
 				opt_duration = strtod(val, 0);
-			if( !strcmp(key, "video_filter") )
+			else if( !strcmp(key, "video_filter") )
 				opt_video_filter = cstrdup(val);
-			if( !strcmp(key, "audio_filter") )
+			else if( !strcmp(key, "audio_filter") )
 				opt_audio_filter = cstrdup(val);
 			else if( !strcmp(key, "loglevel") )
 				set_loglevel(val);

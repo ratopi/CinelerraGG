@@ -52,8 +52,6 @@ public:
 	int open_file(int rd,int wr);
 	int get_index(char *index_filename);
 	int close_file(void);
-	int set_video_position(int64_t pos);
-	int set_audio_position(int64_t pos);
 	int write_samples(double **buffer,int64_t len);
 	int write_frames(VFrame ***frames,int len);
 	int read_samples(double *buffer,int64_t len);

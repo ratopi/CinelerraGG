@@ -3,7 +3,7 @@
 dir="$1"
 path="/home"
 bld="git-repo"
-proj="cinelerra"
+proj="cinelerra5"
 base="cinelerra-5.0"
 
 if [ ! -d "$path/$dir/$bld/$proj" ]; then

@@ -23,7 +23,7 @@ case "$dir" in
     libpng-devel bzip2-devel zlib-devel kernel-headers \
     libavc1394 festival-devel libiec61883-devel flac-devel \
     libsndfile-devel libtheora-devel linux-firmware ivtv-firmware \
-    libvorbis-devel texinfo xz-devel lzma-devel cmake udftools
+    libvorbis-devel texinfo xz-devel lzma-devel cmake udftools git
     yasm=yasm-1.2.0-7.fc21.x86_64.rpm
     release=http://archives.fedoraproject.org/pub/fedora/linux/releases/21
     url=$release/Everything/x86_64/os/Packages/y/$yasm
@@ -39,7 +39,7 @@ case "$dir" in
     openexr-devel libavc1394-devel festival-devel libjpeg8-devel libdv-devel \
     libdvdnav-devel libdvdread-devel libiec61883-devel libuuid-devel \
     ilmbase-devel fftw3-devel libsndfile-devel libtheora-devel flac-devel \
-    cmake patch libnuma-devel lzma-devel udftools
+    cmake patch libnuma-devel lzma-devel udftools git
     if [ ! -f /usr/lib64/libtermcap.so ]; then
       ln -s libtermcap.so.2 /usr/lib64/libtermcap.so
     fi

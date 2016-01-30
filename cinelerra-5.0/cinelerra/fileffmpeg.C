@@ -247,22 +247,6 @@ int FileFFMPEG::close_file()
 }
 
 
-int FileFFMPEG::set_video_position(int64_t pos)
-{
-        if( !ff || pos < 0 || pos >= asset->video_length )
-		return 1;
-	return 0;
-}
-
-
-int FileFFMPEG::set_audio_position(int64_t pos)
-{
-        if( !ff || pos < 0 || pos >= asset->audio_length )
-		return 1;
-	return 0;
-}
-
-
 int FileFFMPEG::write_samples(double **buffer, int64_t len)
 {
         if( !ff || len < 0 ) return -1;
