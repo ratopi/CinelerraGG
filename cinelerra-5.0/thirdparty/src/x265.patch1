@@ -1,0 +1,14 @@
+--- a/source/encoder/encoder.cpp	2016-02-01 08:55:44.815838396 -0700
++++ b/source/encoder/encoder.cpp	2016-02-01 08:56:25.355766065 -0700
+@@ -318,7 +318,10 @@
+     }
+ 
+     if (m_threadPool)
+-        m_threadPool->stopWorkers();
++    {
++        for (int i = 0; i < m_numPools; i++)
++            m_threadPool[i].stopWorkers();
++    }
+ }
+ 
+ void Encoder::destroy()

@@ -27,4 +27,6 @@ http://tcpdiag.dl.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
 http://dl.maptools.org/dl/libtiff/tiff-3.8.2.tar.gz
 http://hivelocity.dl.sourceforge.net/project/libuuid/libuuid-1.0.3.tar.gz
 ftp://ftp.videolan.org/pub/x264/snapshots/last_stable_x264.tar.bz2
+https://get.videolan.org/x265/x265_1.7.tar.gz
+http://ffmpeg.org/releases/ffmpeg-2.8.4.tar.bz2
 https://chromium.googlesource.com/webm/libvpx/+archive/cbecf57f3e0d85a7b7f97f3ab7c507f6fe640a93.tar.gz
