@@ -316,7 +316,7 @@ void Theme::build_menus()
 	frame_rates.append(new BC_ListBoxItem("10"));
 	frame_rates.append(new BC_ListBoxItem("12"));
 	frame_rates.append(new BC_ListBoxItem("15"));
-	frame_rates.append(new BC_ListBoxItem("23.97"));
+	frame_rates.append(new BC_ListBoxItem("23.976"));
 	frame_rates.append(new BC_ListBoxItem("24"));
 	frame_rates.append(new BC_ListBoxItem("25"));
 	frame_rates.append(new BC_ListBoxItem("29.97"));

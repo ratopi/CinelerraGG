@@ -1565,7 +1565,6 @@ int FFMPEG::init_encoder(const char *filename)
 		load_options("encode.opts", opts);
 	}
 	ff_unlock();
-	start_muxer();
 	return ret;
 }
 
@@ -1654,7 +1653,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			ctx->channel_layout =  av_get_default_channel_layout(ctx->channels);
 			ctx->sample_rate = check_sample_rate(codec, asset->sample_rate);
 			if( !ctx->sample_rate ) {
-				eprintf("FFMPEG::open_audio_encode:"
+				eprintf("FFMPEG::open_encoder:"
 					" check_sample_rate failed %s\n", filename);
 				ret = 1;
 				break;
@@ -1716,7 +1715,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			ctx->pix_fmt = codec->pix_fmts ? codec->pix_fmts[0] : AV_PIX_FMT_YUV420P;
 			AVRational frame_rate = check_frame_rate(codec, vid->frame_rate);
 			if( !frame_rate.num || !frame_rate.den ) {
-				eprintf("FFMPEG::open_audio_encode:"
+				eprintf("FFMPEG::open_encoder:"
 					" check_frame_rate failed %s\n", filename);
 				ret = 1;
 				break;
@@ -1751,6 +1750,8 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 	}
 
 	ff_unlock();
+	if( !ret )
+		start_muxer();
 	av_dict_free(&sopts);
 	return ret;
 }
