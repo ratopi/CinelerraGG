@@ -20,8 +20,8 @@ case "$dir" in
     libsndfile-devel libXft-devel libXinerama-devel libXv-devel \
     xorg-x11-fonts-misc xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 \
     xorg-x11-fonts-ISO8859-1-100dpi xorg-x11-fonts-ISO8859-1-75dpi \
-    libpng-devel bzip2-devel zlib-devel kernel-headers \
-    libavc1394 festival-devel libiec61883-devel flac-devel \
+    libpng-devel bzip2-devel zlib-devel kernel-headers libtiff-devel \
+    libavc1394 festival-devel libiec61883-devel flac-devel inkscape \
     libsndfile-devel libtheora-devel linux-firmware ivtv-firmware \
     libvorbis-devel texinfo xz-devel lzma-devel cmake udftools git
     yasm=yasm-1.2.0-7.fc21.x86_64.rpm
@@ -34,12 +34,12 @@ case "$dir" in
 "suse")
   zypper -n install nasm gcc gcc-c++ zlib-devel texinfo libpng16-devel \
     freeglut-devel libXv-devel alsa-devel libbz2-devel ncurses-devel \
-    libXinerama-devel freetype-devel libXft-devel giblib-devel ctags \
+    libXinerama-devel freetype-devel libXft-devel giflib-devel ctags \
     bitstream-vera-fonts xorg-x11-fonts-core xorg-x11-fonts dejavu-fonts \
     openexr-devel libavc1394-devel festival-devel libjpeg8-devel libdv-devel \
     libdvdnav-devel libdvdread-devel libiec61883-devel libuuid-devel \
     ilmbase-devel fftw3-devel libsndfile-devel libtheora-devel flac-devel \
-    cmake patch libnuma-devel lzma-devel udftools git
+    libtiff-devel inkscape cmake patch libnuma-devel lzma-devel udftools git
     if [ ! -f /usr/lib64/libtermcap.so ]; then
       ln -s libtermcap.so.2 /usr/lib64/libtermcap.so
     fi
@@ -47,11 +47,11 @@ case "$dir" in
 "ubuntu")
   apt-get -y install apt-file sox nasm yasm g++ build-essential libz-dev texinfo \
     libpng-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
-    libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev giblib-dev \
-    exuberant-ctags ttf-bitstream-vera xfonts-75dpi xfonts-100dpi \
+    libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \
+    libtiff5-dev exuberant-ctags ttf-bitstream-vera xfonts-75dpi xfonts-100dpi \
     fonts-dejavu libopenexr-dev libavc1394-dev festival-dev fftw3-dev \
-    libdc1394-22-dev libiec61883-dev libesd0-dev libflac-dev \
-    libsndfile1-dev libtheora-dev git cmake udftools libxml2-utils
+    libdc1394-22-dev libiec61883-dev libesd0-dev libflac-dev inkscape \
+    libsndfile1-dev libtheora-dev cmake udftools libxml2-utils git
   ;;
  *)
   echo "unknown os: $dir"
@@ -59,7 +59,6 @@ case "$dir" in
   ;;
 esac
 
-rm -rf "/home/$dir"
-mkdir -p "/home/$dir"
-chmod a+rwx -R "/home/$dir"
+mkdir -p "/home/$dir/git-repo"
+chmod a+rwx -R "/home/$dir/git-repo"
 
