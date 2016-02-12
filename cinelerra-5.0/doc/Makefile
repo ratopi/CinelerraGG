@@ -43,7 +43,7 @@ $(OUTPUT):
 all:
 	for i in $(IMAGES) ; \
 		do if ! test -e $$i ; \
-			then cp -a ../plugins/suv/data/$$i . ; \
+			then cp -a ../plugins/theme_suv/data/$$i . ; \
 		fi ; \
 	done
 	makeinfo --html --no-split cinelerra.texi

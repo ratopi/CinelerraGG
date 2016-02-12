@@ -13,12 +13,9 @@ DIRS = \
 	audioscope \
 	bandslide \
 	bandwipe \
-	blondtheme \
 	bluebanana \
-	bluedottheme \
 	blur \
 	brightness \
-	brighttheme \
 	burn \
 	C41 \
 	cdripper \
@@ -107,7 +104,6 @@ DIRS = \
 	shiftinterlace \
 	slide \
 	spectrogram \
-	suv \
 	svg \
 	swapchannels \
 	swapframes \
@@ -129,6 +125,15 @@ DIRS = \
 	yuvshift \
 	zoom \
 	zoomblur \
+	theme_blond \
+	theme_blond_cv \
+	theme_blue \
+	theme_blue_dot \
+	theme_bright \
+	theme_hulk \
+	theme_pinklady \
+	theme_suv \
+	theme_unflat \
 
 #	findobject \
 

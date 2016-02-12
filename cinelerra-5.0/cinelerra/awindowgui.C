@@ -766,16 +766,20 @@ void AWindowRemovePlugin::handle_close_event(int result)
 			0;
 		if( folder ) remove_plugin(plugin, *folder);
 		awindow->gui->update_assets();
-		char png_path[BCTEXTLEN], plugin_path[BCTEXTLEN], index_path[BCTEXTLEN];
+		char plugin_path[BCTEXTLEN];
 		strcpy(plugin_path, plugin->path);
-		if( !plugin->get_plugin_png_path(png_path) ) png_path[0] = 0;
 		MWindow *mwindow = awindow->mwindow;
-        	sprintf(index_path, "%s/%s", mwindow->preferences->plugin_dir, PLUGIN_FILE);
 		mwindow->plugindb->remove(plugin);
 		delete plugin;  plugin = 0;
 		remove(plugin_path);
-		if( png_path[0] ) remove(png_path);
+		char index_path[BCTEXTLEN];
+        	sprintf(index_path, "%s/%s", mwindow->preferences->plugin_dir, PLUGIN_FILE);
 		remove(index_path);
+		char png_path[BCTEXTLEN];
+		if( plugin->get_theme_png_path(png_path, mwindow->preferences->theme) )
+			remove(png_path);
+		if( plugin->get_theme_png_path(png_path, "picon") )
+			remove(png_path);
 	}
 }
 

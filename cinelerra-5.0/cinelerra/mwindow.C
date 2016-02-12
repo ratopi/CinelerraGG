@@ -691,10 +691,6 @@ void MWindow::init_theme()
 	Timer timer;
 	theme = 0;
 
-// Replace blond theme with SUV since it doesn't work
-	if(!strcasecmp(preferences->theme, "Blond"))
-		strcpy(preferences->theme, DEFAULT_THEME);
-
 	PluginServer *theme_plugin = 0;
 	for(int i = 0; i < plugindb->total && !theme_plugin; i++) {
 		if( plugindb->get(i)->theme &&

@@ -11,21 +11,20 @@ CFLAGS += $(static_includes)
 LFLAGS += $(static_libraries)
 
 OUTPUT_DIR = $(PLUGIN_DIR)/$($(PLUGIN))
-OUTPUT_IMG = $(PLUGIN_DIR)/picons
+PLUGIN_PNGS = $(wildcard $(foreach t,$(themes),$(t).png)) picon.png
+OUTPUT_PNGS = $(foreach png,$(PLUGIN_PNGS), $(PLUGIN_DIR)/$(basename $(png))/$(PLUGIN).png)
 OUTPUT = $(OUTPUT_DIR)/$(PLUGIN).plugin
 OUTPUT_G = $(OBJDIR)/$(PLUGIN).debuginfo
-OUTPUT_PNG = $(OUTPUT_IMG)/$(PLUGIN).png
 
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo $(LFLAGS) > $(OBJDIR)/l_flags)
 
 ifeq ($(OUTPUT_THEME),)
 
-$(OUTPUT): $(OBJS) $(OUTPUT_DIR) $(OUTPUT_IMG)
+$(OUTPUT): $(OBJS) $(OUTPUT_DIR) $(OUTPUT_PNGS)
 	$(LDLINKER) -o $(OUTPUT) $(OBJS) `cat $(OBJDIR)/l_flags`
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT) $(OUTPUT_G))
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
-	$(if $(wildcard picon.png), cp picon.png $(OUTPUT_PNG))
 
 else
 
@@ -42,8 +41,12 @@ $(THEME_DATA):
 
 endif
 
-$(OUTPUT_DIR) $(OUTPUT_IMG):
+$(OUTPUT_DIR):
 	mkdir -p $@
+
+$(PLUGIN_DIR)/%/$(PLUGIN).png:	%.png
+	$(if $(wildcard $(dir $@)),,mkdir -p $(dir $@))
+	cp -a $< $@
 
 clean:
 	find \( -name core -o -name '*.o' -o -name '*.a' \) -exec rm -f {} \;

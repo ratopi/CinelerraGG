@@ -50,6 +50,7 @@
 #include "samples.h"
 #include "sema.h"
 #include "mainsession.h"
+#include "theme.h"
 #include "trackcanvas.h"
 #include "transportque.h"
 #include "vdevicex11.h"
@@ -1208,27 +1209,48 @@ Theme* PluginServer::get_theme()
 }
 
 
-char *PluginServer::get_plugin_png_path(char *png_path)
+int PluginServer::get_theme_png_path(char *png_path, const char *theme_dir)
 {
-	char *bp = strrchr(path, '/'), *cp = png_path;
+	char *bp = strrchr(path, '/');
 	if( !bp ) bp = path; else ++bp;
 	char *sp = strrchr(bp,'.');
 	if( !sp || ( strcmp(sp, ".plugin") && strcmp(sp,".so") ) ) return 0;
-	cp += sprintf(cp,"%s/picons/", mwindow->preferences->plugin_dir);
-	while( bp < sp ) *cp++ = *bp++;
+	char *cp = png_path, *dp = bp;
+	cp += sprintf(cp,"%s/%s/", mwindow->preferences->plugin_dir, theme_dir);
+	while( dp < sp ) *cp++ = *dp++;
 	strcpy(cp, ".png");
-	return png_path;
+	struct stat st;
+	if( stat(png_path, &st) ) return 0;
+	if( !S_ISREG(st.st_mode) ) return 0;
+	if( st.st_size == 0 ) return 0;
+	return st.st_size;
+}
+
+int PluginServer::get_theme_png_path(char *png_path, Theme *theme)
+{
+	char *bp = strrchr(theme->path, '/');
+	if( !bp ) bp = theme->path; else ++bp;
+	char *sp = strrchr(bp,'.');
+	if( !sp || ( strcmp(sp, ".plugin") && strcmp(sp,".so") ) ) return 0;
+	char theme_dir[BCTEXTLEN], *cp = theme_dir;
+	while( bp < sp ) *cp++ = *bp++;
+	*cp = 0;
+	return get_theme_png_path(png_path, theme_dir);
+}
+
+int PluginServer::get_plugin_png_path(char *png_path)
+{
+	int len = get_theme_png_path(png_path, mwindow->theme);
+	if( !len )
+		len = get_theme_png_path(png_path, "picon");
+	return len;
 }
 
 VFrame *PluginServer::get_plugin_images()
 {
 	char png_path[BCTEXTLEN];
-	if( !get_plugin_png_path(png_path) ) return 0;
-	struct stat st;
-	if( stat(png_path, &st) ) return 0;
-	if( !S_ISREG(st.st_mode) ) return 0;
-	if( st.st_size == 0 ) return 0;
-	unsigned len = st.st_size;
+	int len = get_plugin_png_path(png_path);
+	if( !len ) return 0;
 	int ret = 0, w = 0, h = 0;
 	unsigned char *bfr = 0;
 	int fd = ::open(png_path, O_RDONLY);
@@ -1240,7 +1262,7 @@ VFrame *PluginServer::get_plugin_images()
 	VFrame *vframe = 0;
 	if( !ret ) {
 		double scale = BC_WindowBase::get_resources()->icon_scale;
-		vframe = new VFramePng(bfr, st.st_size, scale, scale);
+		vframe = new VFramePng(bfr, len, scale, scale);
 		if( (w=vframe->get_w()) <= 0 || (h=vframe->get_h()) <= 0 ||
 		    vframe->get_data() == 0 ) ret = 1;
 	}
