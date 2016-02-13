@@ -345,20 +345,21 @@ int CWindowRemoteHandler::remote_process_key(RemoteControl *remote_control, int 
 	case '0': case '9':
 		position = length * (key-'0')/10.0;
 		break;
-	case UP:      position += 60.0;       break;
-	case DOWN:    position -= 60.0;       break;
-	case LEFT:    position -= 10.0;       break;
-	case RIGHT:   position += 10.0;       break;
-	case KPPLAY:  next_command = NORMAL_FWD;  break;
-	case KPSTOP:  next_command = STOP;        break;
-	case KPBACK:  next_command = FAST_REWIND; break;
-	case KPFWRD:  next_command = FAST_FWD;    break;
-	case KPRECD:  next_command = SLOW_REWIND; break;
-	case KPAUSE:  next_command = SLOW_FWD;    break;
-	case ' ':  next_command = NORMAL_FWD; break;
-	case 'a':  gui->tile_windows(0);  return 1;
-	case 'b':  gui->tile_windows(1);  return 1;
-	case 'c':  gui->tile_windows(2);  return 1;
+	case UP:      position += 60.0;			break;
+	case DOWN:    position -= 60.0;			break;
+	case LEFT:    position -= 10.0;			break;
+	case RIGHT:   position += 10.0;			break;
+	case KPSTOP:  next_command = STOP;		break;
+	case KPREV:   next_command = NORMAL_REWIND;	break;
+	case KPPLAY:  next_command = NORMAL_FWD;	break;
+	case KPBACK:  next_command = FAST_REWIND;	break;
+	case KPFWRD:  next_command = FAST_FWD;		break;
+	case KPRECD:  next_command = SLOW_REWIND;	break;
+	case KPAUSE:  next_command = SLOW_FWD;		break;
+	case ' ':  next_command = NORMAL_FWD;		break;
+	case 'a':  gui->tile_windows(0);		return 1;
+	case 'b':  gui->tile_windows(1);		return 1;
+	case 'c':  gui->tile_windows(2);		return 1;
 	case 'd':
 		mwindow_gui->channel_info->toggle_scan();
 		return 1;

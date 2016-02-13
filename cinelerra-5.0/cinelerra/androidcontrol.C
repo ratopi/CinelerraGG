@@ -98,6 +98,7 @@ void AndroidControl::run()
 		if( msg_len <= 0 ) continue;
 		if( is_msg("stop") ) press(KPSTOP);
 		else if( is_msg("play") ) press(KPPLAY);
+		else if( is_msg("rplay") ) press(KPREV);
 		else if( is_msg("pause") ) press(' ');
        		else if( is_msg("fast_lt") ) press(KPBACK);
 		else if( is_msg("media_up") ) press(UP);
@@ -126,6 +127,9 @@ void AndroidControl::run()
 		else if( is_msg("key F") ) press('f');
 		else if( is_msg("suspend") ) {
 			system("sync; sleep 1; pm-suspend");
+		}
+		else if( is_msg("power") ) {
+			system("sync; sleep 1; poweroff");
 		}
 		else {
 			printf("AndroidControl::run: unkn msg: %s\n", msg);

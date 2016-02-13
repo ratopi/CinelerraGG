@@ -99,6 +99,7 @@
         { 0x28, KEY_STOP },             /* ([]) */
         { 0x29, KEY_PAUSE },            /* ('') */
 #endif
+#define KPREV               284
 #define KPMENU              285
 #define KPTV                286
 #define KPDVD               287

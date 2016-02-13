@@ -13,7 +13,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -188,6 +187,8 @@ public class MainActivity extends AppCompatActivity
 		img.setOnClickListener(this);
 		img = (ImageButton)findViewById(R.id.play);
 		img.setOnClickListener(this);
+		img = (ImageButton)findViewById(R.id.rplay);
+		img.setOnClickListener(this);
 
 		img = (ImageButton)findViewById(R.id.suspend);
 		img.setOnClickListener(this);
@@ -210,7 +211,10 @@ public class MainActivity extends AppCompatActivity
 	public void onClick(View v) {
         if (v instanceof ImageButton) {
             int id = ((ImageButton)v).getId();
-			if (id == R.id.button0) { send("key 0"); }
+			if (id == R.id.stop) { send("stop"); }
+			else if (id == R.id.play) { send("play"); }
+			else if (id == R.id.rplay) { send("rplay"); }
+			else if (id == R.id.button0) { send("key 0"); }
 			else if (id == R.id.button1) { send("key 1"); }
 			else if (id == R.id.button2) { send("key 2"); }
 			else if (id == R.id.button3) { send("key 3"); }
@@ -237,8 +241,6 @@ public class MainActivity extends AppCompatActivity
 			else if (id == R.id.media_dn) { send("media_dn"); }
 			else if (id == R.id.slow_rt) { send("slow_rt"); }
 			else if (id == R.id.full_scr) { send("key F"); }
-			else if (id == R.id.stop) { send("stop"); }
-			else if (id == R.id.play) { send("play"); }
 			else {
 				save_defaults();
 				if (id == R.id.config) {
