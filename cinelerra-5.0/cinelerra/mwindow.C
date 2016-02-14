@@ -1619,7 +1619,7 @@ void MWindow::create_objects(int want_gui,
 	init_3d();
 
 	if(debug) PRINT_TRACE
-//	show_splash();
+	show_splash();
 
 	if(debug) PRINT_TRACE
 	init_defaults(defaults, config_path);
@@ -1786,12 +1786,12 @@ void MWindow::create_objects(int want_gui,
 
 void MWindow::show_splash()
 {
-#include "data/heroine_logo11_png.h"
-	VFrame *frame = new VFramePng(heroine_logo11_png);
-	BC_DisplayInfo display_info;
-	splash_window = new SplashGUI(frame, 
-		display_info.get_root_w() / 2 - frame->get_w() / 2,
-		display_info.get_root_h() / 2 - frame->get_h() / 2);
+#include "data/heroine_logo9_png.h"
+	VFrame *frame = new VFramePng(heroine_logo9_png);
+	BC_DisplayInfo dpyi;
+	int rw = dpyi.get_root_w(), rh = dpyi.get_root_h();
+	int rr = (rw < rh ? rw : rh) / 4;
+	splash_window = new SplashGUI(frame, rr, rr);
 	splash_window->create_objects();
 }
 

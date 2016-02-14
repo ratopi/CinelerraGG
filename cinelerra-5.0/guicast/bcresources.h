@@ -71,11 +71,6 @@ public:
 	int get_bg_shadow2();
 	int get_bg_light1();
 	int get_bg_light2();
-// Get window border size created by window manager
-	int get_top_border();
-	int get_left_border();
-	int get_right_border();
-	int get_bottom_border();
 // Get synchronous thread for OpenGL
 	BC_Synchronous* get_synchronous();
 // Called by user after synchronous thread is created.
@@ -381,7 +376,6 @@ private:
 	void init_shm(BC_WindowBase *window);
 	void init_sizes(BC_WindowBase *window);
 	static int x_error_handler(Display *display, XErrorEvent *event);
-	BC_DisplayInfo *display_info;
  	VFrame **list_pointers[100];
  	int list_lengths[100];
  	int list_total;

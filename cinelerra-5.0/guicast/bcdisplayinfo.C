@@ -186,12 +186,9 @@ void BC_DisplayInfo::init_borders()
 {
 	if(top_border < 0)
 	{
-
-		test_window(left_border, 
-			top_border, 
-			auto_reposition_x, 
-			auto_reposition_y, 
-			100, 100);
+		BC_DisplayInfo display_info;
+		display_info.test_window(left_border, top_border, 
+			auto_reposition_x, auto_reposition_y, 100, 100);
 		right_border = left_border;
 		bottom_border = left_border;
 //printf("BC_DisplayInfo::init_borders border=%d %d auto=%d %d\n", 

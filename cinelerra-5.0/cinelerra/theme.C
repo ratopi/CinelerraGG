@@ -589,8 +589,8 @@ void Theme::build_toggle(VFrame** &data,
 void Theme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 {
 	mbuttons_x = 0;
-	mbuttons_y = gui->mainmenu->get_h() + 1;
-	mbuttons_w = w;
+	mbuttons_y = gui->menu_h() + 1;
+	mbuttons_w = gui->menu_w();
 	mbuttons_h = get_image("mbutton_bg")->get_h();
 	mclock_x = 10;
 	mclock_y = mbuttons_y - 1 + mbuttons_h + widget_border;

@@ -41,10 +41,10 @@ public:
 	int get_abs_cursor_y();
 	static void parse_geometry(char *geom, int *x, int *y, int *width, int *height);
 // Get window border size created by window manager
-	int get_top_border();
-	int get_left_border();
-	int get_right_border();
-	int get_bottom_border();
+	static int get_top_border();
+	static int get_left_border();
+	static int get_right_border();
+	static int get_bottom_border();
 	int get_screen_count();
 	void test_window(int &x_out, int &y_out, int &x_out2, int &y_out2, int x_in, int y_in);
 	static const char *host_display_name(const char *name);
@@ -52,7 +52,7 @@ public:
 	int get_screen() { return screen; }
 
 private:
-	void init_borders();
+	static void init_borders();
 	Display* display;
 	Window rootwin;
 	Visual *vis;

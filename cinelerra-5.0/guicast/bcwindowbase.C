@@ -451,8 +451,8 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		init_colors();
 // get the resources
 		if(resources.use_shm < 0) resources.initialize_display(this);
-		x_correction = get_resources()->get_left_border();
-		y_correction = get_resources()->get_top_border();
+		x_correction = BC_DisplayInfo::get_left_border();
+		y_correction = BC_DisplayInfo::get_top_border();
 
 // clamp window placement
 		if(this->x + this->w + x_correction > root_w)

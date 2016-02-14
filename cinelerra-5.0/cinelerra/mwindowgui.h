@@ -66,6 +66,17 @@ public:
 	MWindow *mwindow;
 };
 
+class FFMpegToggle : public BC_Toggle
+{
+public:
+	FFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y);
+	~FFMpegToggle();
+	int handle_event();
+
+	MWindow *mwindow;
+	MButtons *mbuttons;
+};
+
 
 class MWindowGUI : public BC_Window
 {
@@ -127,6 +138,7 @@ public:
 	int quit();
 	void stop_drawing();
 	int save_defaults(BC_Hash *defaults);
+	int menu_w();
 	int menu_h();
 // Draw on the status bar only.
 	int show_message(char *message, int color = -1);
@@ -183,6 +195,7 @@ public:
 
 	MainClock *mainclock;
 	MButtons *mbuttons;
+	FFMpegToggle *ffmpeg_toggle;
 	PaneDivider *x_divider;
 	PaneDivider *y_divider;
 	TimelinePane *pane[TOTAL_PANES];

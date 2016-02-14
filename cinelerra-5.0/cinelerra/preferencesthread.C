@@ -207,7 +207,7 @@ int PreferencesThread::apply_settings()
 	BC_Signals::set_catch_intr(mwindow->preferences->trap_sigintr);
 
 	mwindow->reset_android_remote();
-	mwindow->gui->mbuttons->ffmpeg_toggle->update(mwindow->preferences->ffmpeg_early_probe);
+	mwindow->gui->ffmpeg_toggle->update(mwindow->preferences->ffmpeg_early_probe);
 	mwindow->gui->mainshbtns->load(mwindow->preferences);
 
 //edl->session->recording_format->dump();

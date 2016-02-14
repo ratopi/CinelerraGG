@@ -209,11 +209,6 @@ BC_Resources::BC_Resources()
 {
 	synchronous = 0;
 	vframe_shm = 0;
-	/* causes more problems than it fixes */
-	//display_info = new BC_DisplayInfo("", 0);
-	//int display_w = display_info->get_root_w();
-	//int display_h = display_info->get_root_h();
-	//int display_size = display_h < display_w ? display_h : display_w;
 	double default_scale = 1.0; // display_size/1000.;
 	char *env = getenv("BC_FONT_SCALE");
 	font_scale = env ? atof(env) : default_scale;
@@ -784,30 +779,6 @@ void BC_Resources::set_synchronous(BC_Synchronous *synchronous)
 }
 
 
-
-
-
-
-
-int BC_Resources::get_top_border()
-{
-	return display_info->get_top_border();
-}
-
-int BC_Resources::get_left_border()
-{
-	return display_info->get_left_border();
-}
-
-int BC_Resources::get_right_border()
-{
-	return display_info->get_right_border();
-}
-
-int BC_Resources::get_bottom_border()
-{
-	return display_info->get_bottom_border();
-}
 
 
 int BC_Resources::get_bg_color() { return bg_color; }

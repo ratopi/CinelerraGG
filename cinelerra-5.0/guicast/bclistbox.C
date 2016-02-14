@@ -18,6 +18,7 @@
  *
  */
 
+#include "bcdisplayinfo.h"
 #include "bcdragwindow.h"
 #include "bclistbox.h"
 #include "bclistboxitem.h"
@@ -3914,13 +3915,11 @@ int BC_ListBox::translation_event()
 	if(is_popup && gui)
 	{
 		int new_x = gui->get_x() +
-			(top_level->last_translate_x -
-				top_level->prev_x -
-				top_level->get_resources()->get_left_border());
+			(top_level->last_translate_x - top_level->prev_x -
+				BC_DisplayInfo::get_left_border());
 		int new_y = gui->get_y() +
-			(top_level->last_translate_y -
-				top_level->prev_y -
-				top_level->get_resources()->get_top_border());
+			(top_level->last_translate_y - top_level->prev_y -
+				BC_DisplayInfo::get_top_border());
 
 		gui->reposition_window(new_x, new_y);
 

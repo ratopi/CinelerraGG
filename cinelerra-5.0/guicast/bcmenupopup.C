@@ -19,6 +19,7 @@
  *
  */
 
+#include "bcdisplayinfo.h"
 #include "bcmenubar.h"
 #include "bcmenuitem.h"
 #include "bcmenupopup.h"
@@ -193,13 +194,11 @@ int BC_MenuPopup::dispatch_translation_event()
 	if(popup)
 	{
 		int new_x = x +
-			(top_level->last_translate_x -
-			top_level->prev_x -
-			top_level->get_resources()->get_left_border());
+			(top_level->last_translate_x - top_level->prev_x -
+			BC_DisplayInfo::get_left_border());
 		int new_y = y +
-			(top_level->last_translate_y -
-			top_level->prev_y -
-			top_level->get_resources()->get_top_border());
+			(top_level->last_translate_y - top_level->prev_y -
+			BC_DisplayInfo::get_top_border());
 
 // printf("BC_MenuPopup::dispatch_translation_event %d %d %d %d\n",
 // top_level->prev_x,

@@ -86,15 +86,4 @@ public:
 	MButtons *mbuttons;
 };
 
-class MainFFMpegToggle : public BC_Toggle
-{
-public:
-	MainFFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y);
-	~MainFFMpegToggle();
-	int handle_event();
-
-	MWindow *mwindow;
-	MButtons *mbuttons;
-};
-
 #endif

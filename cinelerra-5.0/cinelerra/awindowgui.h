@@ -386,10 +386,10 @@ public:
 	int x, y;
 };
 
-class AddTools : public BC_MenuBar
+class AddTools : public BC_PopupMenu
 {
 public:
-	AddTools(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w);
+	AddTools(MWindow *mwindow, AWindowGUI *gui, int x, int y, const char *title);
 	void create_objects();
 
 	MWindow *mwindow;
@@ -397,23 +397,13 @@ public:
 	AddPluginsMenu *add_plugins;
 };
 
-class AddPluginsMenu : public BC_Menu
-{
-public:
-	AddPluginsMenu(MWindow *mwindow, AWindowGUI *gui);
-	void create_objects();
-
-	MWindow *mwindow;
-	AWindowGUI *gui;
-};
-
 class AddPluginItem : public BC_MenuItem
 {
 public:
-	AddPluginItem(AddPluginsMenu *menu, const char *text, int idx);
+	AddPluginItem(AddTools *menu, const char *text, int idx);
 	int handle_event();
 
-	AddPluginsMenu *menu;
+	AddTools *menu;
 	int idx;
 };
 

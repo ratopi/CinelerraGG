@@ -54,6 +54,7 @@
 #include "plugin.h"
 #include "pluginpopup.h"
 #include "pluginset.h"
+#include "preferences.h"
 #include "record.h"
 #include "recordgui.h"
 #include "renderengine.h"
@@ -262,15 +263,16 @@ void MWindowGUI::create_objects()
 
 	int x = get_w() - MainShBtns::calculate_w(0);
 	add_subwindow(mainmenu = new MainMenu(mwindow, this, x));
-	add_subwindow(mainshbtns = new MainShBtns(mwindow, x, 0));
+	mainmenu->create_objects();
+	add_subwindow(mainshbtns = new MainShBtns(mwindow, x, -1));
 	mainshbtns->load(mwindow->preferences);
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
 	mwindow->theme->draw_mwindow_bg(this);
-	mainmenu->create_objects();
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 
 	add_subwindow(mbuttons = new MButtons(mwindow, this));
 	mbuttons->create_objects();
+	add_subwindow(ffmpeg_toggle = new FFMpegToggle(mwindow, mbuttons, menu_w(), menu_h()+2));
 
 	pane[TOP_LEFT_PANE] = new TimelinePane(mwindow, 
 		TOP_LEFT_PANE,
@@ -388,9 +390,13 @@ int MWindowGUI::resize_event(int w, int h)
 //printf("MWindowGUI::resize_event %d\n", __LINE__);
 	mwindow->session->mwindow_w = w;
 	mwindow->session->mwindow_h = h;
+	int x = w - MainShBtns::calculate_w(0);
+	mainmenu->resize_event(x, mainmenu->get_h());
+	mainshbtns->reposition_window(x, -1);
 	mwindow->theme->get_mwindow_sizes(this, w, h);
 	mwindow->theme->draw_mwindow_bg(this);
 	mbuttons->resize_event();
+	ffmpeg_toggle->reposition_window(menu_w(), menu_h()+2);
 	statusbar->resize_event();
 	
 	resource_thread->stop_draw(1);
@@ -517,9 +523,6 @@ int MWindowGUI::resize_event(int w, int h)
 	zoombar->resize_event();
 	pane_button->reposition_window(w - mwindow->theme->get_image_set("pane")[0]->get_w(), 
 		mwindow->theme->mzoom_y + 1 - mwindow->theme->get_image_set("pane")[0]->get_h());
-	int x = get_w() - MainShBtns::calculate_w(0);
-	mainmenu->resize_event(x, mainmenu->get_h());
-	mainshbtns->reposition_window(x, 0);
 //	get_scrollbars(0);
 //	canvas->resize_event();
 //printf("MWindowGUI::resize_event %d\n", __LINE__);
@@ -1430,6 +1433,11 @@ void MWindowGUI::stop_drawing()
 	resource_thread->stop_draw(1);
 }
 
+int MWindowGUI::menu_w()
+{
+	return mainmenu->get_w();
+}
+
 int MWindowGUI::menu_h()
 {
 	return mainmenu->get_h();
@@ -1441,7 +1449,7 @@ void MWindowGUI::start_x_pane_drag()
 	{
 		x_pane_drag = new BC_Popup(this, 
 			get_abs_cursor_x(0) - mwindow->theme->pane_w,
-			get_resources()->get_top_border() + 
+			BC_DisplayInfo::get_top_border() + 
 				get_y() + 
 				mwindow->theme->mcanvas_y,
 			mwindow->theme->pane_w,
@@ -1462,7 +1470,7 @@ void MWindowGUI::start_y_pane_drag()
 	{
 //printf("MWindowGUI::start_y_pane_drag %d %d %d\n", __LINE__, get_x(), get_y());
 		y_pane_drag = new BC_Popup(this, 
-			get_resources()->get_left_border() + 
+			BC_DisplayInfo::get_left_border() + 
 				get_x() + 
 				mwindow->theme->mcanvas_x,
 			get_abs_cursor_y(0) - mwindow->theme->pane_h,
@@ -1882,7 +1890,7 @@ void MWindowGUI::stop_pane_drag()
 // cursor position relative to canvas
 		int cursor_x = x_pane_drag->get_x() - 
 			get_x() - 
-			get_resources()->get_left_border() -
+			BC_DisplayInfo::get_left_border() -
 			mwindow->theme->mcanvas_x +
 			mwindow->theme->pane_w;
 		delete x_pane_drag;
@@ -1912,7 +1920,7 @@ void MWindowGUI::stop_pane_drag()
 // cursor position relative to canvas
 		int cursor_y = y_pane_drag->get_y() - 
 			get_y() - 
-			get_resources()->get_top_border() -
+			BC_DisplayInfo::get_top_border() -
 			mwindow->theme->mcanvas_y +
 			mwindow->theme->pane_h;
 		delete y_pane_drag;
@@ -2365,4 +2373,23 @@ int PaneButton::button_release_event()
 }
 
 
+FFMpegToggle::FFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->ffmpeg_toggle, mwindow->preferences->ffmpeg_early_probe)
+{
+	this->mwindow = mwindow;
+	this->mbuttons = mbuttons;
+	set_tooltip(_("FFMpeg early probe"));
+}
+
+FFMpegToggle::~FFMpegToggle()
+{
+}
+
+int FFMpegToggle::handle_event()
+{
+	mwindow->preferences->ffmpeg_early_probe = get_value();
+	mwindow->show_warning(&mwindow->preferences->warn_indecies,
+		_("Changing the base codecs may require rebuilding indecies."));
+	return 1;
+}
 

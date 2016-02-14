@@ -880,10 +880,8 @@ void HULKTHEME::draw_rmonitor_bg(RecordMonitorGUI *gui)
 void HULKTHEME::draw_mwindow_bg(MWindowGUI *gui)
 {
 // Button bar
-	gui->draw_3segmenth(mbuttons_x,
-		mbuttons_y - 1,
-		mwindow->session->mwindow_w,
-		get_image("mbutton_bg"));
+	gui->draw_3segmenth(mbuttons_x, mbuttons_y - 1,
+		gui->menu_w(), get_image("mbutton_bg"));
 
 	int pdw = get_image("panel_divider")->get_w();
 	int x = mbuttons_x;

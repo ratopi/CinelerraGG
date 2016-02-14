@@ -557,7 +557,7 @@ SET_TRACE
 	VFrame **images = mwindow->theme->get_image_set("playpatch_data");
 	AVIconDrawing::calculate_geometry(this, images, &avicon_w, &avicon_h);
 	add_subwindow(avicon_drawing = new AVIconDrawing(this, fw-avicon_w, fy, images));
-	add_subwindow(add_tools = new AddTools(mwindow, this, fx, fy, fw-avicon_w));
+	add_subwindow(add_tools = new AddTools(mwindow, this, fx, fy, "Visibility"));
 	add_tools->create_objects();
 	fy += add_tools->get_h();  fh -= add_tools->get_h();
 SET_TRACE
@@ -1852,27 +1852,14 @@ int AWindowView::handle_event()
 	return 1;
 }
 
-AddTools::AddTools(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w)
- : BC_MenuBar(x, y, w)
+AddTools::AddTools(MWindow *mwindow, AWindowGUI *gui, int x, int y, const char *title)
+ : BC_PopupMenu(x, y, BC_Title::calculate_w(gui, title, MEDIUMFONT)+8, title, -1, 0, 4)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
 }
 
 void AddTools::create_objects()
-{
-	add_menu(add_plugins = new AddPluginsMenu(mwindow, gui));
-	add_plugins->create_objects();
-}
-
-AddPluginsMenu::AddPluginsMenu(MWindow *mwindow, AWindowGUI *gui)
- : BC_Menu("Add Tools")
-{
-	this->mwindow = mwindow;
-	this->gui = gui;
-}
-
-void AddPluginsMenu::create_objects()
 {
 	uint64_t vis = 0;
 	add_item(new AddPluginItem(this, "ladspa", PLUGIN_LADSPA_ID));
@@ -1895,7 +1882,7 @@ void AddPluginsMenu::create_objects()
 	}
 }
 
-AddPluginItem::AddPluginItem(AddPluginsMenu *menu, char const *text, int idx)
+AddPluginItem::AddPluginItem(AddTools *menu, char const *text, int idx)
  : BC_MenuItem(text)
 {
 	this->menu = menu;

@@ -71,8 +71,6 @@ void MButtons::create_objects()
 	edit_panel->create_objects();
 	
 	x += edit_panel->get_w();
-	ffmpeg_toggle = new MainFFMpegToggle(mwindow, this, get_w(), 0);
-	add_subwindow(ffmpeg_toggle);
 	flash(0);
 }
 
@@ -83,7 +81,6 @@ int MButtons::resize_event()
 		mwindow->theme->mbuttons_w, 
 		mwindow->theme->mbuttons_h);
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-	ffmpeg_toggle->reposition_window(get_w()-30, 0);
 	flash(0);
 	return 0;
 }
@@ -169,25 +166,4 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 	this->mbuttons = mbuttons;
 }
 
-
-MainFFMpegToggle::MainFFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y)
- : BC_Toggle(x - mwindow->theme->ffmpeg_toggle[0]->get_w(), y,
-	mwindow->theme->ffmpeg_toggle, mwindow->preferences->ffmpeg_early_probe)
-{
-	this->mwindow = mwindow;
-	this->mbuttons = mbuttons;
-	set_tooltip(_("FFMpeg early probe"));
-}
-
-MainFFMpegToggle::~MainFFMpegToggle()
-{
-}
-
-int MainFFMpegToggle::handle_event()
-{
-	mwindow->preferences->ffmpeg_early_probe = get_value();
-	mwindow->show_warning(&mwindow->preferences->warn_indecies,
-		_("Changing the base codecs may require rebuilding indecies."));
-	return 1;
-}
 
