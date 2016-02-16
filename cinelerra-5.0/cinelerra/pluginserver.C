@@ -30,6 +30,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "floatautos.h"
+#include "format.inc"
 #include "keyframes.h"
 #include "localsession.h"
 #include "mainerror.h"
@@ -347,6 +348,8 @@ int PluginServer::open_plugin(int master,
 		return PLUGINSERVER_NOT_RECOGNIZED;
 	}
 	switch( plugin_type ) {
+	case PLUGIN_TYPE_EXECUTABLE:
+		return PLUGINSERVER_OK;
 	case PLUGIN_TYPE_BUILTIN:
 		client = new_plugin(this);
 		break;
@@ -424,28 +427,28 @@ void PluginServer::render_stop()
 		client->render_stop();
 }
 
-void PluginServer::write_table(FILE *fp, int idx)
+void PluginServer::write_table(FILE *fp, const char *path, int idx, int64_t mtime)
 {
 	if(!fp) return;
-	fprintf(fp, "%d \"%s\" \"%s\" %d %d %d %d %d %d %d %d %d %d %d\n",
-		plugin_type, path, title, idx, audio, video, theme, realtime,
+	fprintf(fp, "%d \"%s\" \"%s\" " _LD " %d %d %d %d %d %d %d %d %d %d %d\n",
+		plugin_type, path, title, mtime, idx, audio, video, theme, realtime,
 		fileio, uses_gui, multichannel, synthesis, transition, lad_index);
 }
 
-int PluginServer::scan_table(char *text, int &type, char *path, char *title)
+int PluginServer::scan_table(char *text, int &type, char *path, char *title, int64_t &mtime)
 {
-	int n = sscanf(text, "%d \"%[^\"]\" \"%[^\"]\"", &type, path, title);
-	return n < 3 ? 1 : 0;
+	int n = sscanf(text, "%d \"%[^\"]\" \"%[^\"]\" " _LD "", &type, path, title, &mtime);
+	return n < 4 ? 1 : 0;
 }
 
 int PluginServer::read_table(char *text)
 {
 	char path[BCTEXTLEN], title[BCTEXTLEN];
-	int n = sscanf(text, "%d \"%[^\"]\" \"%[^\"]\" %d %d %d %d %d %d %d %d %d %d %d",
-		&plugin_type, path, title, &dir_idx, &audio, &video, &theme, &realtime,
+	int64_t mtime;
+	int n = sscanf(text, "%d \"%[^\"]\" \"%[^\"]\" " _LD " %d %d %d %d %d %d %d %d %d %d %d",
+		&plugin_type, path, title, &mtime, &dir_idx, &audio, &video, &theme, &realtime,
 		&fileio, &uses_gui, &multichannel, &synthesis, &transition, &lad_index);
-	if( n != 14 ) return 1;
-	set_path(path);
+	if( n != 15 ) return 1;
 	set_title(title);
 	return 0;
 }

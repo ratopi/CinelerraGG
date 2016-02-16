@@ -1133,7 +1133,7 @@ void MWindow::init_ffmpeg_index(MWindow *mwindow, Preferences *preferences, FILE
 		if( server ) {
 			int result = server->open_plugin(1, preferences, 0, 0);
 			if( !result ) {
-				server->write_table(fp, PLUGIN_FFMPEG_ID);
+				server->write_table(fp, filter->name, PLUGIN_FFMPEG_ID, 0);
 				server->close_plugin();
 			}
 			delete server;

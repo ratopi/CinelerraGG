@@ -378,56 +378,197 @@ void MWindow::init_defaults(BC_Hash* &defaults, char *config_path)
 	defaults->load();
 }
 
-int MWindow::load_plugin_index(MWindow *mwindow, char *path)
+void MWindow::get_plugin_path(char *path, const char *plug_dir, const char *fs_path)
+{
+	char *base_path = FileSystem::basepath(fs_path), *bp = base_path;
+	if( plug_dir ) {
+		const char *dp = plug_dir;
+		while( *bp && *dp && *bp == *dp ) { ++bp; ++dp; }
+		bp = !*dp && *bp == '/' ? bp+1 : base_path;
+	}
+	strcpy(path, bp);
+	delete [] base_path;
+}
+
+int MWindow::load_plugin_index(MWindow *mwindow, const char *index_path, const char *plugin_dir)
 {
 // load index
-	FILE *fp = fopen(path, "r");
-	if( !fp ) return 1;
+	FILE *fp = fopen(index_path, "r");
+	if( !fp ) return -1;
+
+	int ret = 0;
 	char index_line[BCTEXTLEN];
-	int index_version = -1, ret = 0;
+	int index_version = -1, len = strlen(plugin_dir);
 	if( !fgets(index_line, BCTEXTLEN, fp) ||
 	    sscanf(index_line, "%d", &index_version) != 1 ||
-	    index_version != PLUGIN_FILE_VERSION ) ret = 1;
+	    index_version != PLUGIN_FILE_VERSION ||
+	    !fgets(index_line, BCTEXTLEN, fp) ||
+	    (int)strlen(index_line)-1 != len || index_line[len] != '\n' ||
+	    strncmp(index_line, plugin_dir, len) != 0 ) ret = 1;
 
-	while( !ret && !feof(fp)) {
-		if( !fgets(index_line, BCTEXTLEN, fp) ) break;
+	ArrayList<PluginServer*> plugins;
+	while( !ret && !feof(fp) && fgets(index_line, BCTEXTLEN, fp) ) {
 		if( index_line[0] == ';' ) continue;
 		if( index_line[0] == '#' ) continue;
 		int type = PLUGIN_TYPE_UNKNOWN;
 		char path[BCTEXTLEN], title[BCTEXTLEN];
-		if( PluginServer::scan_table(index_line, type, path, title) ) continue;
+		int64_t mtime = 0;
+		if( PluginServer::scan_table(index_line, type, path, title, mtime) ) {
+			ret = 1; continue;
+		}
 		PluginServer *server = 0;
 		switch( type ) {
 		case PLUGIN_TYPE_BUILTIN:
-		case PLUGIN_TYPE_LADSPA:
-			server = new PluginServer(mwindow, path, type);
-			break;
-		case PLUGIN_TYPE_FFMPEG: // skip "ff_..."
-			server = new_ffmpeg_server(mwindow, path+3);
-			break;
+		case PLUGIN_TYPE_EXECUTABLE:
+		case PLUGIN_TYPE_LADSPA: {
+			char plugin_path[BCTEXTLEN];  struct stat st;
+			sprintf(plugin_path, "%s/%s", plugin_dir, path);
+			if( stat(plugin_path, &st) || st.st_mtime != mtime ) {
+				ret = 1; continue;
+			}
+			server = new PluginServer(mwindow, plugin_path, type);
+			break; }
+		case PLUGIN_TYPE_FFMPEG: {
+			server = new_ffmpeg_server(mwindow, path);
+			break; }
 		}
 		if( !server ) continue;
+		plugins.append(server);
 // Create plugin server from index entry
 		server->set_title(title);
 		if( server->read_table(index_line) ) {
-			delete server;
-			ret = 1;  break;
+			ret = 1;  continue;
 		}
-		plugindb->append(server);
 	}
-
 	fclose(fp);
+
+	if( !ret )
+		ret = check_plugin_index(plugins, plugin_dir, ".");
+
+	if( !ret )
+		add_plugins(plugins);
+	else
+		plugins.remove_all_objects();
+
 	return ret;
 }
 
-void MWindow::init_plugin_index(MWindow *mwindow, Preferences *preferences, FILE *fp,
+int MWindow::check_plugin_index(ArrayList<PluginServer*> &plugins,
+	const char *plug_dir, const char *plug_path)
+{
+	char plugin_path[BCTEXTLEN];
+	sprintf(plugin_path, "%s/%s", plug_dir, plug_path);
+	FileSystem fs;
+	fs.set_filter( "[*.plugin][*.so]" );
+	if( fs.update(plugin_path) )
+		return 1;
+
+	for( int i=0; i<fs.dir_list.total; ++i ) {
+		char fs_path[BCTEXTLEN];
+		get_plugin_path(fs_path, 0, fs.dir_list[i]->path);
+		if( fs.is_dir(fs_path) ) {
+			get_plugin_path(plugin_path, plug_dir, fs_path);
+			if( check_plugin_index(plugins, plug_dir, plugin_path) )
+				return 1;
+		}
+		else if( !plugin_exists(fs_path, plugins) )
+			return 1;
+	}
+	return 0;
+}
+
+
+int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
+{
+	if( !plugindb )
+		plugindb = new ArrayList<PluginServer*>;
+	init_ffmpeg();
+	char index_path[BCTEXTLEN], plugin_path[BCTEXTLEN];
+	create_defaults_path(index_path, PLUGIN_FILE);
+	char *plugin_dir = FileSystem::basepath(preferences->plugin_dir);
+	strcpy(plugin_path, plugin_dir);  delete [] plugin_dir;
+	if( !load_plugin_index(mwindow, index_path, plugin_path) ) return 1;
+	printf("init plugin index: %s\n", plugin_path);
+	FILE *fp = fopen(index_path,"w");
+	if( !fp ) {
+		fprintf(stderr,_("MWindow::init_plugins: "
+			"can't create plugin index: %s\n"), index_path);
+		return 1;
+	}
+	fprintf(fp, "%d\n", PLUGIN_FILE_VERSION);
+	fprintf(fp, "%s\n", plugin_path);
+	init_plugin_index(mwindow, preferences, fp, plugin_path);
+	init_ffmpeg_index(mwindow, preferences, fp);
+	fclose(fp);
+	return load_plugin_index(mwindow, index_path, plugin_path);
+}
+
+int MWindow::init_ladspa_plugins(MWindow *mwindow, Preferences *preferences)
+{
+	char *path = getenv("LADSPA_PATH");
+	char ladspa_path[BCTEXTLEN];
+	if( !path ) {
+		get_exe_path(ladspa_path);
+		strcat(ladspa_path, "/ladspa");
+		path = ladspa_path;
+	}
+	for( int len=0; *path; path+=len ) {
+		char *cp = strchr(path,':');
+		len = !cp ? strlen(path) : cp-path;
+		char index_path[BCTEXTLEN], plugin_path[BCTEXTLEN];
+		memcpy(plugin_path, path, len);  plugin_path[len] = 0;
+		char *plugin_dir = FileSystem::basepath(plugin_path);
+		strcpy(plugin_path, plugin_dir);  delete [] plugin_dir;
+		create_defaults_path(index_path, LADSPA_FILE);
+		cp = index_path + strlen(index_path);
+		for( char *bp=plugin_path; *bp!=0; ++bp )
+			*cp++ = *bp=='/' ? '_' : *bp;
+		*cp = 0;
+		if( !load_plugin_index(mwindow, index_path, plugin_path) ) continue;
+		if( init_ladspa_index(mwindow, preferences, index_path, plugin_path) ) continue;
+		load_plugin_index(mwindow, index_path, plugin_path);
+	}
+	return 1;
+}
+
+void MWindow::init_plugin_index(MWindow *mwindow, Preferences *preferences,
+	FILE *fp, const char *plugin_dir)
+{
+	int idx = PLUGIN_IDS;
+	if( plugindb ) {
+		for( int i=0; i<plugindb->size(); ++i ) {
+			PluginServer *server = plugindb->get(i);
+			if( server->dir_idx >= idx )
+				idx = server->dir_idx+1;
+		}
+	}
+	scan_plugin_index(mwindow, preferences, fp, plugin_dir, ".", idx);
+}
+
+int MWindow::init_ladspa_index(MWindow *mwindow, Preferences *preferences,
+	const char *index_path, const char *plugin_dir)
+{
+	char plugin_path[BCTEXTLEN], *path = FileSystem::basepath(plugin_dir);
+	strcpy(plugin_path, path);  delete [] path;
+	printf("init ladspa index: %s\n", plugin_dir);
+	FILE *fp = fopen(index_path,"w");
+        if( !fp ) {
+		fprintf(stderr,_("MWindow::init_ladspa_index: "
+			"can't create plugin index: %s\n"), index_path);
+		return 1;
+	}
+	fprintf(fp, "%d\n", PLUGIN_FILE_VERSION);
+	fprintf(fp, "%s\n", plugin_dir);
+        init_plugin_index(mwindow, preferences, fp, plugin_path);
+	fclose(fp);
+	return 0;
+}
+
+void MWindow::scan_plugin_index(MWindow *mwindow, Preferences *preferences, FILE *fp,
 	const char *plug_dir, const char *plug_path, int &idx)
 {
 	char plugin_path[BCTEXTLEN];
-	if( *plug_path != '/' )
-		sprintf(plugin_path, "%s/%s", plug_dir, plug_path);
-	else
-		strcpy(plugin_path, plug_path);
+	sprintf(plugin_path, "%s/%s", plug_dir, plug_path);
 	FileSystem fs;
 	fs.set_filter( "[*.plugin][*.so]" );
 	int result = fs.update(plugin_path);
@@ -435,58 +576,42 @@ void MWindow::init_plugin_index(MWindow *mwindow, Preferences *preferences, FILE
 	int vis_id = idx++;
 
 	for( int i=0; i<fs.dir_list.total; ++i ) {
-		char *fs_path = fs.dir_list[i]->path;
-		char *base_path = FileSystem::basepath(fs_path), *bp = base_path;
-		const char *dp = plug_dir;
-		while( *bp && *dp && *bp == *dp ) { ++bp; ++dp; }
-		strcpy(plugin_path, !*dp && *bp == '/' ? bp+1 : base_path);
-		delete [] base_path;
+		char fs_path[BCTEXTLEN], path[BCTEXTLEN];
+		get_plugin_path(fs_path, 0, fs.dir_list[i]->path);
+		get_plugin_path(path, plug_dir, fs_path);
 		if( fs.is_dir(fs_path) ) {
-			init_plugin_index(mwindow, preferences, fp, plug_dir, plugin_path, idx);
+			scan_plugin_index(mwindow, preferences, fp, plug_dir, path, idx);
 			continue;
 		}
-		if( plugin_exists(plugin_path) ) continue;
-		PluginServer server(mwindow, plugin_path, PLUGIN_TYPE_UNKNOWN);
+		if( plugin_exists(path) ) continue;
+		struct stat st;
+		if( stat(fs_path, &st) ) continue;
+		int64_t mtime = st.st_mtime;
+		PluginServer server(mwindow, fs_path, PLUGIN_TYPE_UNKNOWN);
 		result = server.open_plugin(1, preferences, 0, 0);
 		if( !result ) {
-			server.write_table(fp,vis_id);
+			server.write_table(fp, path, vis_id, mtime);
 			server.close_plugin();
 		}
 		else if( result == PLUGINSERVER_IS_LAD ) {
 			int lad_index = 0;
 			for(;;) {
-				PluginServer ladspa(mwindow, plugin_path, PLUGIN_TYPE_LADSPA);
+				PluginServer ladspa(mwindow, fs_path, PLUGIN_TYPE_LADSPA);
 				ladspa.set_lad_index(lad_index++);
 				result = ladspa.open_plugin(1, preferences, 0, 0);
 				if( result ) break;
-				ladspa.write_table(fp, PLUGIN_LADSPA_ID);
+				ladspa.write_table(fp, path, PLUGIN_LADSPA_ID, mtime);
 				ladspa.close_plugin();
 			}
 		}
 	}
 }
 
-int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
+void MWindow::add_plugins(ArrayList<PluginServer*> &plugins)
 {
-	init_ffmpeg();
-	if( !plugindb ) plugindb = new ArrayList<PluginServer*>;
-	char index_path[BCTEXTLEN];
-	sprintf(index_path, "%s/%s", preferences->plugin_dir, PLUGIN_FILE);
-	if( !load_plugin_index(mwindow, index_path) ) return 1;
-	FILE *fp = fopen(index_path,"w");
-	if( !fp ) {
-		fprintf(stderr,_("MWindow::init_plugins: "
-		 	"can't create plugin index: %s\n"), index_path);
-		return 1;
-	}
-	fprintf(fp, "%d\n", PLUGIN_FILE_VERSION);
-	char *plug_path = FileSystem::basepath(preferences->plugin_dir);
-	int dir_id = PLUGIN_IDS;
-	init_plugin_index(mwindow, preferences, fp, plug_path, ".", dir_id);
-	init_ffmpeg_index(mwindow, preferences, fp);
-	fclose(fp);
-	delete [] plug_path;
-	return load_plugin_index(mwindow, index_path);
+	for( int i=0; i<plugins.size(); ++i )
+		plugindb->append(plugins[i]);
+	plugins.remove_all();
 }
 
 void MWindow::delete_plugins()
@@ -558,13 +683,16 @@ PluginServer* MWindow::scan_plugindb(char *title,
 	return 0;
 }
 
+int MWindow::plugin_exists(const char *plugin_path, ArrayList<PluginServer*> &plugins)
+{
+	for( int i=0; i<plugins.size(); ++i )
+		if( !strcmp(plugin_path, plugins[i]->get_path()) ) return 1;
+	return 0;
+}
+
 int MWindow::plugin_exists(char *plugin_path)
 {
-	for( int i=0; i<plugindb->total; ++i ) {
-		PluginServer *server = plugindb->get(i);
-		if( !strcmp(plugin_path, server->get_path()) ) return 1;
-	}
-	return 0;
+	return !plugindb ? 0 : plugin_exists(plugin_path, *plugindb);
 }
 
 void MWindow::init_preferences()
@@ -1624,14 +1752,21 @@ void MWindow::create_objects(int want_gui,
 	if(debug) PRINT_TRACE
 	init_defaults(defaults, config_path);
 	init_preferences();
+	if(splash_window)
+		splash_window->operation->update(_("Initializing Plugins"));
 	init_plugins(this, preferences);
 	if(debug) PRINT_TRACE
-	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
+	init_ladspa_plugins(this, preferences);
+	if(debug) PRINT_TRACE
+	if(splash_window)
+		splash_window->operation->update(_("Initializing GUI"));
 	if(debug) PRINT_TRACE
 	init_theme();
 	if(debug) PRINT_TRACE
 	init_error();
 
+	if(splash_window)
+		splash_window->operation->update(_("Initializing Fonts"));
 	char string[BCTEXTLEN];
 	strcpy(string, preferences->plugin_dir);
 	strcat(string, "/fonts");

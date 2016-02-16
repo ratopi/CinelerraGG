@@ -188,6 +188,7 @@ public:
 // Find the plugin whose title matches title and return it
 	static PluginServer* scan_plugindb(char *title,
 		int data_type);
+	static int plugin_exists(const char *plugin_path, ArrayList<PluginServer*> &plugins);
 	static int plugin_exists(char *plugin_path);
 	void dump_plugindb(FILE *fp);
 	void stop_playback(int wait=0);
@@ -602,12 +603,21 @@ public:
 	void init_gwindow();
 	void init_tipwindow();
 // Used by MWindow and RenderFarmClient
+	static void get_plugin_path(char *path, const char *plug_dir, const char *fs_path);
 	static int init_plugins(MWindow *mwindow, Preferences *preferences);
+	static int init_ladspa_plugins(MWindow *mwindow, Preferences *preferences);
+	static int check_plugin_index(ArrayList<PluginServer*> &plugins,
+		const char *plug_dir, const char *plug_path);
 	static void init_plugin_index(MWindow *mwindow, Preferences *preferences,
-		FILE *fp, const char *plug_dir, const char *plug_path, int &dir_id);
+		FILE *fp, const char *plugin_dir);
+	static int init_ladspa_index(MWindow *mwindow, Preferences *preferences,
+		const char *index_path, const char *plugin_dir);
+	static void scan_plugin_index(MWindow *mwindow, Preferences *preferences,
+		FILE *fp, const char *plug_dir, const char *plug_path, int &idx);
 	static void init_ffmpeg();
 	static void init_ffmpeg_index(MWindow *mwindow, Preferences *preferences, FILE *fp);
-	static int load_plugin_index(MWindow *mwindow, char *path);
+	static int load_plugin_index(MWindow *mwindow, const char *index_path,
+		const char *plugin_dir);
 	static PluginServer* new_ffmpeg_server(MWindow *mwindow, const char *name);
 	void init_preferences();
 	void init_signals();
@@ -623,7 +633,8 @@ public:
 	void init_3d();
 	void init_playbackcursor();
 	void init_commercials();
-	void delete_plugins();
+	static void add_plugins(ArrayList<PluginServer*> &plugins);
+	static void delete_plugins();
 // 
 	void clean_indexes();
 //	TimeBomb timebomb;

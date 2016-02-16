@@ -132,8 +132,8 @@ public:
 // Release any objects which are required after playback stops.
 	void render_stop();
 // Write entry into plugin table
-	void write_table(FILE *fp, int idx);
-	static int scan_table(char *text, int &type, char *path, char *title);
+	void write_table(FILE *fp, const char *path, int idx, int64_t mtime);
+	static int scan_table(char *text, int &type, char *path, char *title, int64_t &mtime);
 	int read_table(char *text);
 // queries
 	void set_title(const char *string);

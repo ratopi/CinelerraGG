@@ -140,7 +140,7 @@ DIRS = \
 DATA = $(PLUGIN_DIR)/fonts $(PLUGIN_DIR)/shapes
 MPEG2ENC = $(PLUGIN_DIR)/mpeg2enc.plugin
 HVEG2ENC = $(PLUGIN_DIR)/hveg2enc.plugin
-LADSPA = $(PLUGIN_DIR)/ladspa
+LADSPA = $(BINDIR)/ladspa
 
 all:	$(DIRS) $(DATA) $(MPEG2ENC) $(HVEG2ENC) $(LADSPA)
 
