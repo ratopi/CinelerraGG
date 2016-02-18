@@ -281,6 +281,18 @@ int BC_WindowBase::wcharpos(const wchar_t *text, XftFont *font, int length,
 void BC_WindowBase::draw_wtext(int x, int y,
 	const wchar_t *text, int length, BC_Pixmap *pixmap, int *charpos)
 {
+	if( !get_resources()->use_xft ) {
+		if( !get_font_struct(current_font) ) return;
+		XChar2b xtext[length], *xp = xtext;
+		for( int i=0; i<length; ++i,++xp ) {
+			xp->byte1 = (unsigned char) (text[i] >> 8);
+			xp->byte2 = (unsigned char) (text[i] & 0xff);
+		}
+		XDrawString16(top_level->display,
+			pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
+			top_level->gc, x, y, xtext, length);
+		return;
+	}
 	XRenderColor color;
 	XftColor xft_color;
 	const wchar_t *up, *ubp;

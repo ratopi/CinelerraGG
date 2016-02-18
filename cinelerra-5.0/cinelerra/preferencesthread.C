@@ -153,6 +153,8 @@ void PreferencesThread::handle_close_event(int result)
 	edl = 0;
 
 	mwindow->defaults->update("DEFAULTPREF", current_dialog);
+	if( mwindow->reload_status )
+		mwindow->gui->set_done(0);
 }
 
 
@@ -198,6 +200,9 @@ int PreferencesThread::apply_settings()
 		this_playback_config->active_config != playback_config->active_config ||
 		(*this_aconfig != *aconfig) || (*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1);
+
+	if( strcmp(preferences->theme, mwindow->preferences->theme) != 0 )
+		mwindow->reload_status = 1;
 
 	mwindow->edl->copy_session(edl, 1);
 	mwindow->preferences->copy_from(preferences);

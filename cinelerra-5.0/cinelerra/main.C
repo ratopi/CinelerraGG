@@ -186,6 +186,7 @@ int main(int argc, char *argv[])
 
 
 
+	int load_backup = 0;
 
 	for(int i = 1; i < argc; i++)
 	{
@@ -261,6 +262,11 @@ int main(int argc, char *argv[])
 				nice_value = atol(argv[i + 1]);
 				i++;
 			}
+		}
+		else
+		if(!strcmp(argv[i], "-x"))
+		{
+			load_backup = 1;
 		}
 		else
 		{
@@ -354,7 +360,6 @@ int main(int argc, char *argv[])
 		case DO_GUI:
 		{
 			int done = 0;
-			int load_backup = 0;
 			while( !done ) {
 				BC_WindowBase::get_resources()->vframe_shm = 0;
 				MWindow mwindow;
@@ -399,6 +404,15 @@ int main(int argc, char *argv[])
 				mwindow.save_defaults();
 //PRINT_TRACE
 				filenames.remove_all_objects();
+#if 1
+				if( !mwindow.reload() ) break;
+// due to leaks and munges in x fonts, this loop has to be
+//   executed via a total program restart  2/18/2016
+				char exe_path[BCTEXTLEN];
+				if( readlink("/proc/self/exe", exe_path, sizeof(exe_path)) < 0 ) break;
+				char *const av[3] = { exe_path, (char*)(load_backup? "-x" : 0), 0 };
+				execv(exe_path, av);
+#endif
 			}
 //SET_TRACE
 DISABLE_BUFFER

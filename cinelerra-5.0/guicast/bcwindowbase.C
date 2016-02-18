@@ -853,20 +853,25 @@ int BC_WindowBase::keysym_lookup(XEvent *event)
 		keys_return[0] = keysym;
 		return 0;
 	}
+	wkey_string_length = 0;
 
-	wkey_string_length = XwcLookupString(input_context,
-		(XKeyEvent*)event, wkey_string, 4, &keysym, 0);
+	if( input_context ) {
+		wkey_string_length = XwcLookupString(input_context,
+			(XKeyEvent*)event, wkey_string, 4, &keysym, 0);
 //printf("keysym_lookup 1 %d %d %lx %x %x %x %x\n", wkey_string_length, keysym,
 //  wkey_string[0], wkey_string[1], wkey_string[2], wkey_string[3]);
 
-	Status stat;
-  	int ret = Xutf8LookupString(input_context, (XKeyEvent*)event,
-			keys_return, KEYPRESSLEN, &keysym, &stat);
+		Status stat;
+  		int ret = Xutf8LookupString(input_context, (XKeyEvent*)event,
+				keys_return, KEYPRESSLEN, &keysym, &stat);
 //printf("keysym_lookup 2 %d %d %lx %x %x\n", ret, stat, keysym, keys_return[0], keys_return[1]);
-	if( stat == XLookupBoth ) return ret;
-	if( stat == XLookupKeySym ) return 0;
-
-	return XLookupString((XKeyEvent*)event, keys_return, KEYPRESSLEN, &keysym, 0);
+		if( stat == XLookupBoth ) return ret;
+		if( stat == XLookupKeySym ) return 0;
+	}
+	int ret = XLookupString((XKeyEvent*)event, keys_return, KEYPRESSLEN, &keysym, 0);
+	wkey_string_length = ret;
+	for( int i=0; i<ret; ++i ) wkey_string[i] = keys_return[i];
+	return ret;
 }
 
 pthread_t locking_task = -1;
@@ -2247,6 +2252,7 @@ int BC_WindowBase::init_fonts()
 void BC_WindowBase::init_xft()
 {
 #ifdef HAVE_XFT
+	if( !get_resources()->use_xft ) return;
 	if(!(smallfont_xft =
 		(resources.small_font_xft[0] == '-' ?
 			XftFontOpenXlfd(display, screen, resources.small_font_xft) :
@@ -2781,16 +2787,22 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 
 int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int length)
 {
-//#ifdef HAVE_XFT
-	XGlyphInfo extents;
+#ifdef HAVE_XFT
+	if(get_resources()->use_xft && get_xft_struct(font)) {
+		XGlyphInfo extents;
 
-	XftTextExtents32(top_level->display,
-		get_xft_struct(font),
-		(const FcChar32*)text,
-		length,
-		&extents);
-	return extents.xOff;
-//#endif
+		XftTextExtents32(top_level->display, get_xft_struct(font),
+			(const FcChar32*)text, length, &extents);
+		return extents.xOff;
+	}
+#endif
+	if(!get_font_struct(font)) return 0;
+	XChar2b xtext[length], *xp = xtext;
+	for( int i=0; i<length; ++i,++xp ) {
+		xp->byte1 = (unsigned char) (text[i] >> 8);
+		xp->byte2 = (unsigned char) (text[i] & 0xff);
+	}
+	return XTextWidth16(get_font_struct(font), xtext, length);
 }
 
 int BC_WindowBase::get_text_width(int font, const char *text, int length)
