@@ -69,11 +69,11 @@ $(call pkg-source,$(1)):
 $(call pkg-config,$(1)): $(call pkg-source,$(1)) $(foreach dep,$(2),$(call bld_depends,$(dep)))
 	@echo "CONFIGURING $(1)"
 	cd $(1)* && \
-		$($(1).cfg_vars) ./configure $($(1).cfg_params)
+		$($(1).cfg_vars) $(CFG_VARS) ./configure $($(1).cfg_params) $(CFG_PARAMS)
 	touch $$@
 
 $(call pkg-built,$(1)): $(call pkg-config,$(1))
-	+$($(1).mak_vars) make -C $(1)* $($(1).mak_params)
+	+$($(1).mak_vars) $(MAK_VARS) make -C $(1)* $($(1).mak_params) $(MAK_PARAMS)
 	touch $$@
 
 endef
@@ -145,6 +145,7 @@ ffmpeg.cfg_params= \
 		-ldl $(EXTRA_LIBS)" \
 	--extra-ldflags="-ldl"
 
+a52dec.mak_params= ; cd $(call bld_path,a52dec,include); ln -sf . a52dec
 audiofile.cfg_params=--enable-shared=no
 audiofile.mak_params=LIBS="-lm -lstdc++"
 flac.cfg_params= --enable-shared=no
@@ -152,7 +153,7 @@ flac.cflags="$(call inc_path,libogg,include) $(call ld_path,libogg,src/.libs)"
 giflib.cfg_params=--enable-shared=no
 ilmbase.cfg_params=--prefix=$(call bld_path,ilmbase,usr)
 ilmbase.mak_params=; make -C ilmbase* install; cd $(call bld_path,ilmbase); ln -sf lib64 usr/lib
-lame.cfg_vars= CFLAGS=-O
+lame.cfg_vars= CFLAGS+=" -O"
 lame.cfg_params=--enable-shared=no
 lame.mak_params= ; cd $(call bld_path,lame,include); ln -sf . lame
 mjpegtools.cflags="$(call inc_path,libjpeg) $(call ld_path,libjpeg,.libs)"
@@ -208,6 +209,7 @@ else
 rules=$(eval $(1))
 endif
 
+$(call rules,$(call std-build,a52dec))
 $(call rules,$(call std-build,audiofile))
 $(call rules,$(call std-build,encore))
 $(call rules,$(call std-build,esound,audiofile))

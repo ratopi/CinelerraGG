@@ -4,8 +4,12 @@ if [ "$1" = "static" ]; then
   STATIC_LIBRARIES="y"
 elif [ "$1" = "shared" ]; then
   STATIC_LIBRARIES="n"
+elif [ "$1" = "cv" ]; then
+  STATIC_LIBRARIES="n"
+  libs="libogg libtheora libvorbis openexr libdv libjpeg tiff x264 mjpegtools a52dec lame libsndfile faac faad2"
+  forced_libs="mjpegtools x264"
 else
-  echo "usage: $0 <static | shared>"
+  echo "usage: $0 <static | shared | cv>"
   exit 1
 fi
 
@@ -38,6 +42,9 @@ add_library() {
   append $sta_lib $@
 }
 
+inc_a52dec="include"
+add_library a52dec \
+	liba52/.libs/liba52.a
 inc_audiofile="."
 add_library audiofile \
 	libaudiofile/.libs/libaudiofile.a \
@@ -198,6 +205,11 @@ inc_libvpx="."
 add_library libvpx \
 	libvpx.a \
 
+echo ""
+if [ -n "$libs" ]; then
+  LIBS="$libs"
+fi
+
 n=0
 for lib in $LIBS; do
   echo -n " $lib"
@@ -208,6 +220,7 @@ echo ""
 
 # dynamic library paths
 probe() {
+  if ! `echo $LIBS | grep -qw $1`; then return 0; fi
   local name="$1"
   local headers="$2"
   local func="$3"
@@ -245,6 +258,7 @@ probe() {
 }
 
 # test for shared libs/header files
+probe a52dec "a52.h" a52_init -la52
 probe audiofile "audiofile.h" afOpenFile -laudiofile
 probe faac "stdint.h faac.h" faacEncGetVersion -lfaac
 probe faad2 "faad.h" NeAACDecInit -lfaad
@@ -274,9 +288,11 @@ probe twolame "twolame.h" twolame_encode_buffer_float32_interleaved -ltwolame
 probe x264 "stdint.h x264.h" x264_encoder_encode -lx264
 probe x265 "x265.h" x265_encoder_encode -lx265
 
-echo ""
+if [ -n "$forced_libs" ]; then
+  forced_libs="encore ffmpeg giflib libuuid"
+fi
+
 # for ffmpeg link/broken disto libs
-forced_libs="encore ffmpeg giflib libuuid"
 for name in $LIBS; do
   if is_in $name $forced_libs; then
     set - ${!name}
