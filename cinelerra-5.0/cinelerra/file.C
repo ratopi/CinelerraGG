@@ -1652,7 +1652,7 @@ int File::record_fd()
 void get_exe_path(char *result)
 {
 // Get executable path
-	int len = readlink("/proc/self/exe", result, BCTEXTLEN);
+	int len = readlink("/proc/self/exe", result, BCTEXTLEN-1);
 	if( len >= 0 ) {
 		result[len] = 0;
 		char *ptr = strrchr(result, '/');

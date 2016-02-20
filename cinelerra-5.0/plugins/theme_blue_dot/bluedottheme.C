@@ -21,6 +21,7 @@
 
 #include "bcsignals.h"
 #include "clip.h"
+#include "cstrdup.h"
 #include "cwindowgui.h"
 #include "bluedottheme.h"
 #include "edl.h"
@@ -833,7 +834,12 @@ void BlueDotTheme::initialize()
 	title_color = BLACK;
 	recordgui_fixed_color = BLACK;
 	recordgui_variable_color = RED;
-	resources->medium_font = "-*-helvetica-medium-r-normal-*-14-*";
+
+	int font_size = (int)(14*resources->font_scale + 0.5);
+	char string[BCTEXTLEN];
+	sprintf(string,"-*-helvetica-medium-r-normal-*-%d-*", font_size);
+	delete [] resources->medium_font;
+	resources->medium_font = cstrdup(string);
 
 	channel_position_color = MEYELLOW;
 	resources->meter_title_w = 25;

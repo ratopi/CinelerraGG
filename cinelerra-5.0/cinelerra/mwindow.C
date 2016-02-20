@@ -205,7 +205,7 @@ MWindow::MWindow()
 	wwindow = 0;
 	lwindow = 0;
 	sighandler = 0;
-	reload_status = 0;
+	restart_status = 0;
 	screens = 1;
 	in_destructor = 0;
 }
@@ -241,7 +241,6 @@ MWindow::~MWindow()
 	save_defaults();
 // Give up and go to a movie
 //  cant run valgrind if this is used
-//	if( !reload_status ) exit(0);
 
 	gui->del_keyboard_listener(
 		(int (BC_WindowBase::*)(BC_WindowBase *))

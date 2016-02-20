@@ -115,7 +115,7 @@ public:
 	int new_project();
 	int delete_project(int flash = 1);
 	void quit(int unlock);
-	int reload() { return reload_status; }
+	int restart() { return restart_status; }
 
 	int load_defaults();
 	int save_defaults();
@@ -639,7 +639,7 @@ public:
 	void clean_indexes();
 //	TimeBomb timebomb;
 	SigHandler *sighandler;
-	int reload_status;
+	int restart_status;
 	int screens;
 	int in_destructor;
 };

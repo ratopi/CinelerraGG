@@ -1423,8 +1423,8 @@ int TileWindows::handle_event()
 	int window_config = config >= 0 ? config :
 		mwindow->session->window_config;
 	if( mwindow->tile_windows(window_config) ) {
-		mwindow->reload_status = 1;
-		mwindow->quit(1);
+		mwindow->restart_status = 1;
+		mwindow->gui->set_done(0);
 	}
 	return 1;
 }
