@@ -1,6 +1,6 @@
 --- a/configure	2015-09-10 13:36:03.763986195 -0600
 +++ b/configure	2015-09-10 13:37:25.190550438 -0600
-@@ -5315,7 +5315,9 @@
+@@ -5556,7 +5556,9 @@
                                 die "ERROR: libx264 must be installed and version must be >= 0.118."; } &&
                               { check_cpp_condition x264.h "X264_MPEG2" &&
                                 enable libx262; }
@@ -8,6 +8,6 @@
 +enabled libx265           && { use_pkg_config x265 "stdint.h x265.h" x265_api_get ||
 +                               { require libx265 x265.h x265_encoder_encode -lx265 -lstdc++ &&
 +                                 warn "using libx265 without pkg-config"; } } &&
-                              { check_cpp_condition x265.h "X265_BUILD >= 57" ||
-                                die "ERROR: libx265 version must be >= 57."; }
+                              { check_cpp_condition x265.h "X265_BUILD >= 68" ||
+                                die "ERROR: libx265 version must be >= 68."; }
  enabled libxavs           && require libxavs xavs.h xavs_encoder_encode -lxavs

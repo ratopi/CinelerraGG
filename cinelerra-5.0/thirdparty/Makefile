@@ -118,7 +118,7 @@ ffmpeg.cfg_params= \
 		$(call inc_path,faac,include) \
 		$(call inc_path,twolame,libtwolame) \
 		$(call inc_path,lame,include) \
-		$(call inc_path,openjpeg,src/lib/openmj2) \
+		$(call inc_path,openjpeg,src/lib/openjp2) \
 		$(call inc_path,libvorbis,include) \
 		$(call inc_path,libtheora,include) \
 		$(call inc_path,libvpx) \
@@ -178,8 +178,8 @@ libtheora.ldflags="$(ld_path libvorbis,lib/.libs) $(ld_path libogg,src/.libs)"
 libtheora.cfg_params= --disable-examples --enable-shared=no
 libuuid.cfg_params=--enable-shared=no
 libvorbis.cfg_params= --disable-oggtest --enable-shared=no
-openjpeg.cfg_vars=echo "exec cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DBUILD_MJ2:BOOL=ON ." > ./configure; chmod +x ./configure;
-openjpeg.mak_params= openmj2
+openjpeg.cfg_vars=echo "exec cmake -DBUILD_SHARED_LIBS:BOOL=OFF ." > ./configure; chmod +x ./configure;
+openjpeg.mak_params= ; cd $(call bld_path,openjpeg,src/lib/openjp2); ln -sf . openjpeg-2.1
 opencv.cfg_vars=echo "exec cmake -DBUILD_SHARED_LIBS:BOOL=OFF ." > ./configure; chmod +x ./configure;
 openexr.cfg_vars=LD_LIBRARY_PATH=$(call bld_path,ilmbase,usr/lib)
 openexr.cfg_params=--enable-shared=no

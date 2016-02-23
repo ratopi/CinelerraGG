@@ -141,9 +141,9 @@ add_library libjpeg \
 	.libs/libjpeg.a \
 	.libs/libturbojpeg.a \
 	simd/.libs/libsimd.a
-inc_openjpeg="src/lib/openmj2"
+inc_openjpeg="src/lib/openjp2"
 add_library openjpeg \
-	bin/libopenmj2.a
+	bin/libopenjp2.a
 inc_libogg="include"
 add_library libogg \
 	src/.libs/libogg.a
@@ -273,7 +273,7 @@ probe libdv "libdv/dv.h" dv_init -ldv
 probe libiec61883 "libiec61883/iec61883.h" iec61883_mpeg2_recv_init -liec61883
 probe libjpeg "stdio.h unistd.h jpeglib.h" jpeg_start_decompress -ljpeg
 probe libogg "ogg/ogg.h" ogg_stream_init -logg
-probe openjpeg "openjpeg.h" opj_version -lopenmj2 -DOPJ_STATIC || \
+probe openjpeg "openjpeg.h" opj_version -lopenjp2 -DOPJ_STATIC || \
 probe openjpeg "openjpeg-1.5/openjpeg.h" opj_version -lopenjpeg -DOPJ_STATIC || \
 probe openjpeg "openjpeg.h" opj_version -lopenjpeg -DOPJ_STATIC
 probe libraw1394 "libraw1394/raw1394.h" raw1394_iso_recv_init -lraw1394

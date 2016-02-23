@@ -23,13 +23,14 @@
 #include "vframe.inc"
 
 extern "C" {
-#include "libavfilter/buffersrc.h"
-#include "libavfilter/buffersink.h"
 #include "libavformat/avformat.h"
 #include "libavformat/avio.h"
 #include "libavcodec/avcodec.h"
 #include "libavfilter/avfilter.h"
 #include "libavutil/avutil.h"
+#include "libavfilter/buffersrc.h"
+#include "libavfilter/buffersink.h"
+#include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libswresample/swresample.h"
@@ -202,21 +203,21 @@ public:
 	FFVideoConvert() { convert_ctx = 0; }
 	~FFVideoConvert() { if( convert_ctx ) sws_freeContext(convert_ctx); }
 
-	static PixelFormat color_model_to_pix_fmt(int color_model);
-	static int pix_fmt_to_color_model(PixelFormat pix_fmt);
+	static AVPixelFormat color_model_to_pix_fmt(int color_model);
+	static int pix_fmt_to_color_model(AVPixelFormat pix_fmt);
 
 	int convert_picture_vframe(VFrame *frame,
-		AVPicture *ip, PixelFormat ifmt, int iw, int ih);
+		AVFrame *ip, AVPixelFormat ifmt, int iw, int ih);
 	int convert_cmodel(VFrame *frame_out,
-		AVPicture *ip, PixelFormat ifmt, int iw, int ih);
+		AVFrame *ip, AVPixelFormat ifmt, int iw, int ih);
 	int transfer_cmodel(VFrame *frame_in,  //defaults->metadata
-		AVFrame *ifp, PixelFormat ifmt, int iw, int ih);
+		AVFrame *ifp, AVPixelFormat ifmt, int iw, int ih);
 	int convert_vframe_picture(VFrame *frame,
-		AVPicture *op, PixelFormat ofmt, int ow, int oh);
+		AVFrame *op, AVPixelFormat ofmt, int ow, int oh);
 	int convert_pixfmt(VFrame *frame_in,
-		 AVPicture *op, PixelFormat ofmt, int ow, int oh);
+		 AVFrame *op, AVPixelFormat ofmt, int ow, int oh);
 	int transfer_pixfmt(VFrame *frame_in,  //metadata->defaults
-		 AVFrame *ofp, PixelFormat ofmt, int ow, int oh);
+		 AVFrame *ofp, AVPixelFormat ofmt, int ow, int oh);
 };
 
 class FFVideoStream : public FFStream, public FFVideoConvert {

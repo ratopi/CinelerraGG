@@ -54,7 +54,7 @@ FFPacket::FFPacket()
 
 FFPacket::~FFPacket()
 {
-	av_free_packet(&pkt);
+	av_packet_unref(&pkt);
 }
 
 void FFPacket::init()
@@ -754,7 +754,7 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 	}
 	if( ret >= 0 ) {
 		AVCodecContext *ctx = st->codec;
-		ret = convert_cmodel(vframe, (AVPicture *)frame,
+		ret = convert_cmodel(vframe, frame,
 			ctx->pix_fmt, ctx->width, ctx->height);
 	}
 	ret = ret > 0 ? 1 : ret < 0 ? -1 : 0;
@@ -797,7 +797,7 @@ int FFVideoStream::encode(VFrame *vframe)
 		AVFrame *frame = *picture;
 		frame->pts = curr_pos;
 		AVCodecContext *ctx = st->codec;
-		ret = convert_pixfmt(vframe, (AVPicture*)frame,
+		ret = convert_pixfmt(vframe, frame,
 			ctx->pix_fmt, ctx->width, ctx->height);
 	}
 	if( ret >= 0 ) {
@@ -821,7 +821,7 @@ int FFVideoStream::encode_frame(AVPacket *pkt, AVFrame *frame, int &got_packet)
 	return ret;
 }
 
-PixelFormat FFVideoConvert::color_model_to_pix_fmt(int color_model)
+AVPixelFormat FFVideoConvert::color_model_to_pix_fmt(int color_model)
 {
 	switch( color_model ) { 
 	case BC_YUV422:		return AV_PIX_FMT_YUYV422;
@@ -842,7 +842,7 @@ PixelFormat FFVideoConvert::color_model_to_pix_fmt(int color_model)
 	return AV_PIX_FMT_NB;
 }
 
-int FFVideoConvert::pix_fmt_to_color_model(PixelFormat pix_fmt)
+int FFVideoConvert::pix_fmt_to_color_model(AVPixelFormat pix_fmt)
 {
 	switch (pix_fmt) { 
 	case AV_PIX_FMT_YUYV422:	return BC_YUV422;
@@ -864,14 +864,14 @@ int FFVideoConvert::pix_fmt_to_color_model(PixelFormat pix_fmt)
 }
 
 int FFVideoConvert::convert_picture_vframe(VFrame *frame,
-		AVPicture *ip, PixelFormat ifmt, int iw, int ih)
+		AVFrame *ip, AVPixelFormat ifmt, int iw, int ih)
 {
-	AVPicture opic;
+	AVFrame opic;
 	int cmodel = frame->get_color_model();
-	PixelFormat ofmt = color_model_to_pix_fmt(cmodel);
+	AVPixelFormat ofmt = color_model_to_pix_fmt(cmodel);
 	if( ofmt == AV_PIX_FMT_NB ) return -1;
-	int size = avpicture_fill(&opic, frame->get_data(), ofmt, 
-				  frame->get_w(), frame->get_h());
+	int size = av_image_fill_arrays(opic.data, opic.linesize,
+		frame->get_data(), ofmt, frame->get_w(), frame->get_h(), 1);
 	if( size < 0 ) return -1;
 
 	// transfer line sizes must match also
@@ -881,7 +881,7 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame,
 	if( packed_width != opic.linesize[0] )  return -1;
 
 	if( planar ) {
-		// override avpicture_fill() for planar types
+		// override av_image_fill_arrays() for planar types
 		opic.data[0] = frame->get_y();
 		opic.data[1] = frame->get_u();
 		opic.data[2] = frame->get_v();
@@ -904,7 +904,7 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame,
 }
 
 int FFVideoConvert::convert_cmodel(VFrame *frame,
-		 AVPicture *ip, PixelFormat ifmt, int iw, int ih)
+		 AVFrame *ip, AVPixelFormat ifmt, int iw, int ih)
 {
 	// try direct transfer
 	if( !convert_picture_vframe(frame, ip, ifmt, iw, ih) ) return 1;
@@ -912,7 +912,7 @@ int FFVideoConvert::convert_cmodel(VFrame *frame,
 	const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(ifmt);
 	int max_bits = 0;
 	for( int i = 0; i <desc->nb_components; ++i ) {
-		int bits = desc->comp[i].depth_minus1 + 1;
+		int bits = desc->comp[i].depth;
 		if( bits > max_bits ) max_bits = bits;
 	}
 // from libavcodec/pixdesc.c
@@ -928,9 +928,9 @@ int FFVideoConvert::convert_cmodel(VFrame *frame,
 }
 
 int FFVideoConvert::transfer_cmodel(VFrame *frame,
-		 AVFrame *ifp, PixelFormat ifmt, int iw, int ih)
+		 AVFrame *ifp, AVPixelFormat ifmt, int iw, int ih)
 {
-	int ret = convert_cmodel(frame, (AVPicture *)ifp, ifmt, iw, ih);
+	int ret = convert_cmodel(frame, ifp, ifmt, iw, ih);
 	if( ret > 0 ) {
 		const AVDictionary *src = av_frame_get_metadata(ifp);
 		AVDictionaryEntry *t = NULL;
@@ -943,14 +943,14 @@ int FFVideoConvert::transfer_cmodel(VFrame *frame,
 }
 
 int FFVideoConvert::convert_vframe_picture(VFrame *frame,
-		AVPicture *op, PixelFormat ofmt, int ow, int oh)
+		AVFrame *op, AVPixelFormat ofmt, int ow, int oh)
 {
-	AVPicture opic;
+	AVFrame opic;
 	int cmodel = frame->get_color_model();
-	PixelFormat ifmt = color_model_to_pix_fmt(cmodel);
+	AVPixelFormat ifmt = color_model_to_pix_fmt(cmodel);
 	if( ifmt == AV_PIX_FMT_NB ) return -1;
-	int size = avpicture_fill(&opic, frame->get_data(), ifmt, 
-				  frame->get_w(), frame->get_h());
+	int size = av_image_fill_arrays(opic.data, opic.linesize,
+		 frame->get_data(), ifmt, frame->get_w(), frame->get_h(), 1);
 	if( size < 0 ) return -1;
 
 	// transfer line sizes must match also
@@ -960,7 +960,7 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame,
 	if( packed_width != opic.linesize[0] )  return -1;
 
 	if( planar ) {
-		// override avpicture_fill() for planar types
+		// override av_image_fill_arrays() for planar types
 		opic.data[0] = frame->get_y();
 		opic.data[1] = frame->get_u();
 		opic.data[2] = frame->get_v();
@@ -983,7 +983,7 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame,
 }
 
 int FFVideoConvert::convert_pixfmt(VFrame *frame,
-		 AVPicture *op, PixelFormat ofmt, int ow, int oh)
+		 AVFrame *op, AVPixelFormat ofmt, int ow, int oh)
 {
 	// try direct transfer
 	if( !convert_vframe_picture(frame, op, ofmt, ow, oh) ) return 1;
@@ -1001,9 +1001,9 @@ int FFVideoConvert::convert_pixfmt(VFrame *frame,
 }
 
 int FFVideoConvert::transfer_pixfmt(VFrame *frame,
-		 AVFrame *ofp, PixelFormat ofmt, int ow, int oh)
+		 AVFrame *ofp, AVPixelFormat ofmt, int ow, int oh)
 {
-	int ret = convert_pixfmt(frame, (AVPicture *)ofp, ofmt, ow, oh);
+	int ret = convert_pixfmt(frame, ofp, ofmt, ow, oh);
 	if( ret > 0 ) {
 		BC_Hash *hp = frame->get_params();
 		AVDictionary **dict = avpriv_frame_get_metadatap(ofp);
@@ -2002,19 +2002,8 @@ int FFMPEG::mux_video(FFrame *frm)
 	FFStream *fst = frm->fst;
 	AVFrame *frame = *frm;
 	frame->pts = frm->position;
-	int ret = 1, got_packet = 0;
-	if( fmt_ctx->oformat->flags & AVFMT_RAWPICTURE ) {
-		/* a hack to avoid data copy with some raw video muxers */
-		pkt->flags |= AV_PKT_FLAG_KEY;
-		pkt->stream_index  = fst->st->index;
-		AVPicture *picture = (AVPicture *)frame;
-		pkt->data = (uint8_t *)picture;
-		pkt->size = sizeof(AVPicture);
-		pkt->pts = pkt->dts = frame->pts;
-		got_packet = 1;
-	}
-	else
-		ret = fst->encode_frame(pkt, frame, got_packet);
+	int got_packet = 0;
+	int ret = fst->encode_frame(pkt, frame, got_packet);
 	if( ret >= 0 && got_packet )
 		ret = fst->write_packet(pkt);
 	if( ret < 0 )
@@ -2235,7 +2224,7 @@ int FFVideoStream::create_filter(const char *filter_spec,
 {
 	avfilter_register_all();
 	AVFilter *filter = avfilter_get_by_name(filter_spec);
-	if( !filter || filter->inputs->type != AVMEDIA_TYPE_VIDEO ) {
+	if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_VIDEO ) {
 		ff_err(AVERROR(EINVAL), "FFVideoStream::create_filter: %s\n", filter_spec);
 		return -1;
 	}
@@ -2271,7 +2260,7 @@ int FFAudioStream::create_filter(const char *filter_spec,
 {
 	avfilter_register_all();
 	AVFilter *filter = avfilter_get_by_name(filter_spec);
-	if( !filter || filter->inputs->type != AVMEDIA_TYPE_AUDIO ) {
+	if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_AUDIO ) {
 		ff_err(AVERROR(EINVAL), "FFAudioStream::create_filter: %s\n", filter_spec);
 		return -1;
 	}
@@ -2366,7 +2355,7 @@ int FFStream::bs_filter(AVPacket *pkt)
 		}
 		if( ret > 0 ) {
 			pkt->side_data = 0;  pkt->side_data_elems = 0;
-			av_free_packet(pkt);
+			av_packet_unref(pkt);
 			ret = av_packet_from_data(&bspkt, data, size);
 			if( ret < 0 ) break;
 		}
