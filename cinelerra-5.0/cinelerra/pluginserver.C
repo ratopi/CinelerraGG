@@ -314,16 +314,11 @@ int PluginServer::open_plugin(int master,
 	this->plugin = plugin;
 	this->edl = edl;
 	if( plugin_type != PLUGIN_TYPE_FFMPEG && plugin_type != PLUGIN_TYPE_EXECUTABLE && !load_obj() ) {
-// If the load failed it may still be an executable tool for a specific
-// file format, in which case we just store the path.
-		set_title(path);
-		char string[BCTEXTLEN];
-		strcpy(string, load_error());
-		if( !strstr(string, "executable") ) {
-			eprintf("PluginServer::open_plugin: load_obj %s = %s\n", path, string);
-			return PLUGINSERVER_NOT_RECOGNIZED;
-		}
-		plugin_type = PLUGIN_TYPE_EXECUTABLE;
+// If the load failed, can't use error to detect executable
+//  because locale and language selection change the load_error()
+//	if( !strstr(string, "executable") ) { set_title(path); plugin_type = PLUGIN_TYPE_EXECUTABLE; }
+		eprintf("PluginServer::open_plugin: load_obj %s = %s\n", path, load_error());
+		return PLUGINSERVER_NOT_RECOGNIZED;
 	}
 	if( plugin_type == PLUGIN_TYPE_UNKNOWN || plugin_type == PLUGIN_TYPE_BUILTIN ) {
 		new_plugin =

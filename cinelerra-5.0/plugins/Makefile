@@ -138,20 +138,12 @@ DIRS = \
 #	findobject \
 
 DATA = $(PLUGIN_DIR)/fonts $(PLUGIN_DIR)/shapes
-MPEG2ENC = $(PLUGIN_DIR)/mpeg2enc.plugin
-HVEG2ENC = $(PLUGIN_DIR)/hveg2enc.plugin
 LADSPA = $(BINDIR)/ladspa
 
-all:	$(DIRS) $(DATA) $(MPEG2ENC) $(HVEG2ENC) $(LADSPA)
+all:	$(DIRS) $(DATA) $(LADSPA)
 
 $(DATA):
 	cp -a $(notdir $@) $(PLUGIN_DIR)/.
-
-$(MPEG2ENC):
-	cp -a ../thirdparty/mjpegtools*/mpeg2enc/mpeg2enc $@
-
-$(HVEG2ENC):
-	cp -a ../mpeg2enc/$(OBJDIR)/hveg2enc $@
 
 $(LADSPA):
 	mkdir -p $@

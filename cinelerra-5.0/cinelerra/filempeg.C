@@ -50,8 +50,8 @@
 #include <unistd.h>
 
 
-#define HVPEG_EXE "/hveg2enc.plugin"
-#define MJPEG_EXE "/mpeg2enc.plugin"
+#define HVPEG_EXE "/hveg2enc"
+#define MJPEG_EXE "/mpeg2enc"
 
 
 // M JPEG dependancies
@@ -484,10 +484,9 @@ int FileMPEG::open_file(int rd, int wr)
 // Construct command line
 			if(!result)
 			{
-				char string[BCTEXTLEN];  string[0] = 0;
-				sprintf(mjpeg_command, "%s%s", 
-					file->preferences->plugin_dir, HVPEG_EXE);
-				append_vcommand_line(string);
+				char string[BCTEXTLEN];
+				get_exe_path(string);
+				sprintf(mjpeg_command, "%s/%s", string, HVPEG_EXE);
 
 				if(asset->aspect_ratio > 0)
 				{
@@ -535,8 +534,9 @@ int FileMPEG::open_file(int rd, int wr)
 // mjpegtools encoder
 //  this one is cinelerra-x.x.x/thirdparty/mjpegtools/mpeg2enc
 		{
-			sprintf(mjpeg_command, "%s%s -v 0 ", 
-				file->preferences->plugin_dir, MJPEG_EXE);
+			char string[BCTEXTLEN];
+			get_exe_path(string);
+			sprintf(mjpeg_command, "%s/%s -v 0 ", string, MJPEG_EXE);
 
 // Must disable interlacing if MPEG-1
 			switch (asset->vmpeg_preset)
@@ -550,7 +550,6 @@ int FileMPEG::open_file(int rd, int wr)
 
 // The current usage of mpeg2enc requires bitrate of 0 when quantization is fixed and
 // quantization of 1 when bitrate is fixed.  Perfectly intuitive.
-			char string[BCTEXTLEN];
 			if(asset->vmpeg_fix_bitrate)
 			{
 				sprintf(string, " -b %d -q 1", asset->vmpeg_bitrate / 1000);

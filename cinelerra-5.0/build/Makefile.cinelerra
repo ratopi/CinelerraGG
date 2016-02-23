@@ -46,15 +46,21 @@ dist-clean:
 #	find \( -name .deps \) -exec rm -rf {} \; -prune
 	find \( -name .libs \) -exec rm -rf {} \; -prune
 
-MJPEGDIR := $(shell expr thirdparty/mjpegtools* )
+MJPEGDIR := $(shell expr $(THIRDPARTY)/mjpegtools* )
+MPEG2ENC := bin/mpeg2enc
+MPEG2PLEX := bin/mplex
+HVEG2ENC := bin/hveg2enc
 
-$(PLUGIN_DIR)/mpeg2enc.plugin:
-	/bin/cp -a $(MJPEGDIR)/mpeg2enc/mpeg2enc $@
+$(MPEG2ENC):
+	cp -a $(MJPEGDIR)/mpeg2enc/mpeg2enc $@
 
-bin/mplex:
-	/bin/cp -a $(MJPEGDIR)/mplex/mplex $@
+$(MPEG2PLEX):
+	cp -a $(MJPEGDIR)/mplex/mplex $@
 
-install:	$(PLUGIN_DIR)/mpeg2enc.plugin bin/mplex
+$(HVEG2ENC):
+	cp -a $(TOPDIR)/mpeg2enc/$(OBJDIR)/hveg2enc $@
+
+install:	$(MPEG2PLEX) $(MPEG2ENC) $(HVEG2ENC)
 	$(MAKE) -C plugins install
 	DST=../bin $(MAKE) -C libzmpeg3 install
 	$(MAKE) -C po install
