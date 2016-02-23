@@ -16,8 +16,7 @@ OBJS := \
 	el.mo \
 	ja.mo \
 	uk.mo \
-
-#	ru.mo \
+	ru.mo \
 
 all: $(OBJS)
 

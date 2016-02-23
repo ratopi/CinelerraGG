@@ -393,6 +393,7 @@ static bool chkfmt(int no, uint8_t *ap, uint8_t *bp, uint8_t *cp)
 void load(FILE *afp, FILE *bfp)
 {
   int no = 0;
+  int ins = 0, rep = 0;
   uint8_t inp[MX_STR];
 
   while( bgets(inp, sizeof(inp), afp) ) {
@@ -416,13 +417,17 @@ void load(FILE *afp, FILE *bfp)
     bool ok = chkfmt(no, (uint8_t*)key.c_str(), (uint8_t*)txt.c_str(), str);
       val = (const char*)str;
     Trans::iterator it = trans.lower_bound(key);
-    if( it == trans.end() || it->first.compare(key) )
+    if( it == trans.end() || it->first.compare(key) ) {
       trans.insert(it, Trans::value_type(key, tstring(val, ok)));
+      ++ins;
+    }
     else {
-      (string)it->second = val;
+      it->second.assign(val);
       it->second.ok = ok;
+      ++rep;
     }
   }
+  fprintf(stderr,"***     ins %d, rep %d\n", ins, rep);
 }
 
 void scan_po(FILE *ifp, FILE *ofp)
@@ -489,6 +494,7 @@ void scan_po(FILE *ifp, FILE *ofp)
 void list_po(FILE *ifp, FILE *ofp)
 {
   int no = 0;
+  int dup = 0, nul = 0;
   uint8_t ibfr[MX_STR], tbfr[MX_STR];
 
   while( bgets(ibfr, sizeof(ibfr), ifp) ) {
@@ -515,29 +521,21 @@ void list_po(FILE *ifp, FILE *ofp)
       exit(1);
     }
 
-    xlat2(&ibfr[7], str);
+    xlat2(&tbfr[7], str);
     string txt((const char*)str);
-    if( !bgets(tbfr, sizeof(tbfr), ifp) ) {
-      fprintf(stderr, "file truncated line %d: %s", no, ibfr);
-      exit(1);
-    }
-    ++no;
    
-    while( tbfr[0] == '"' ) {
+    while( bgets(tbfr, sizeof(tbfr), ifp) && tbfr[0] == '"' ) {
       xlat2(&tbfr[0], str);  txt.append((const char*)str);
-      if( !bgets(tbfr, sizeof(tbfr), ifp) ) {
-        fprintf(stderr, "file truncated line %d: %s", no, ibfr);
-        exit(1);
-      }
       ++no;
     }
-    if( !txt.size() ) continue;
-    if( !key.compare(txt) ) continue;
+    if( !txt.size() ) { ++nul; continue; }
+    if( !key.compare(txt) ) { ++dup; continue; }
     xlat4(key.c_str(), str);
     fprintf(ofp, "%s,", (char *)str);
     xlat4(txt.c_str(), str);
     fprintf(ofp, "%s\n", (char *)str);
   }
+  fprintf(stderr, "*** dup %d, nul %d\n", dup, nul);
 }
 
 static void usage(const char *av0)
@@ -586,6 +584,7 @@ int main(int ac, char **av)
   }
 
   for( int i=3; i<ac; ++i ) {  // create trans mapping
+    fprintf(stderr,"*** load %s\n", av[i]);
     char fn[MX_STR*2];
     strncpy(fn, av[i], sizeof(fn));
     int k = 0;
