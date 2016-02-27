@@ -101,7 +101,7 @@ BC_TextBox::BC_TextBox(int x, int y, int w, int rows,
 	is_utf8 = 1;
 	skip_cursor = 0;
 	reset_parameters(rows, has_border, font, BCSTRLEN);
-	snprintf(this->text, this->tsize, _LD, text);
+	snprintf(this->text, this->tsize, "%jd", text);
 	dirty = 1;  wtext_update();
 }
 
@@ -514,7 +514,7 @@ int BC_TextBox::update(const wchar_t *wtext)
 int BC_TextBox::update(int64_t value)
 {
 	char string[BCTEXTLEN];
-	sprintf(string, _LD, value);
+	sprintf(string, "%jd", value);
 	update(string);
 	return 0;
 }

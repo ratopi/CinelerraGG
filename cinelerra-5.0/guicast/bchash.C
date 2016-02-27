@@ -210,7 +210,7 @@ int64_t BC_Hash::get(const char *name, int64_t default_)
 	{
 		if(!strcmp(names[i], name))
 		{
-			sscanf(values[i], _LD, &result);
+			sscanf(values[i], "%jd", &result);
 			return result;
 		}
 	}
@@ -278,7 +278,7 @@ int BC_Hash::update(const char *name, int32_t value) // update a value if it exi
 int BC_Hash::update(const char *name, int64_t value) // update a value if it exists
 {
 	char string[BCSTRLEN];
-	sprintf(string, _LD, value);
+	sprintf(string, "%jd", value);
 	return update(name, string);
 }
 

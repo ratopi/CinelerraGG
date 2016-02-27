@@ -213,22 +213,22 @@ char* Units::totext(char *text, double seconds, int time_format,
 		break; }
 
 	case TIME_SAMPLES: {
-		sprintf(text, _LDv(09), to_int64(seconds * sample_rate));
+		sprintf(text, "%09jd", to_int64(seconds * sample_rate));
 		break; }
 
 	case TIME_SAMPLES_HEX: {
-		sprintf(text, _LXv(08), to_int64(seconds * sample_rate));
+		sprintf(text, "%08jx", to_int64(seconds * sample_rate));
 		break; }
 
 	case TIME_FRAMES: {
 		frame = to_int64(seconds * frame_rate);
-		sprintf(text, _LDv(06), frame);
+		sprintf(text, "%06jd", frame);
 		break; }
 
 	case TIME_FEET_FRAMES: {
 		frame = to_int64(seconds * frame_rate);
 		feet = (int64_t)(frame / frames_per_foot);
-		sprintf(text, _LDv(05) "-" _LDv(02), feet,
+		sprintf(text, "%05jd-%02jd", feet,
 			(int64_t)(frame - feet * frames_per_foot));
 		break; }
 
@@ -325,7 +325,7 @@ int64_t Units::fromtext(const char *text, int samplerate, int time_format,
 		return get_int64(text); }
 
 	case TIME_SAMPLES_HEX: {
-		sscanf(text, _LX, &total_samples);
+		sscanf(text, "%jx", &total_samples);
 		return total_samples; }
 
 	case TIME_FRAMES: {
@@ -520,12 +520,12 @@ char* Units::size_totext(int64_t bytes, char *text)
 	if( i > 0 ) {
 		bytes >>= 10*(i-1);
 		int frac = bytes % 1000;
-		sprintf(string, _LD, bytes/1000);
+		sprintf(string, "%jd", bytes/1000);
 		if( bytes > 1000 ) punctuate(string);
 		sprintf(text, "%s.%03d %s", string, frac, sz[i]);
 	}
 	else {
-		sprintf(string, _LD, bytes);
+		sprintf(string, "%jd", bytes);
 		if( bytes > 1000 ) punctuate(string);
 		sprintf(text, "%s %s", string, sz[i]);
 	}

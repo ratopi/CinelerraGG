@@ -347,7 +347,9 @@ public:
 	static const char *wide_encoding;
 	static ArrayList<BC_FontEntry*> *fontlist;
 	static int init_fontconfig(const char *search_path);
-	static BC_FontEntry *find_fontentry(const char *displayname, int style, int mask);
+	static BC_FontEntry *find_fontentry(const char *displayname, int style,
+		int mask, int preferred_style = 0);
+	static void encode_to_utf8(char *buffer, int buflen);
 	static FcPattern* find_similar_font(FT_ULong char_code, FcPattern *oldfont);
 	static size_t encode(const char *from_enc, const char *to_enc,
 		char *input, int input_length, char *output, int output_length);

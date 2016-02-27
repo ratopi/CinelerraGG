@@ -160,22 +160,31 @@ BC_WindowBase::~BC_WindowBase()
 	if(window_type == MAIN_WINDOW)
 	{
 		XFreeGC(display, gc);
-		XFreeFont(display, smallfont);
-		XFreeFont(display, mediumfont);
-		XFreeFont(display, largefont);
-		XFreeFont(display, bigfont);
+		static XFontStruct *BC_WindowBase::*xfont[] = {
+			 &BC_WindowBase::smallfont,
+			 &BC_WindowBase::mediumfont,
+			 &BC_WindowBase::largefont,
+			 &BC_WindowBase::bigfont,
+		};
+		for( int i=sizeof(xfont)/sizeof(xfont[0]); --i>=0; )
+			XFreeFont(display, this->*xfont[i]);
 
 // bug in X causes XRenderExtensionInfo to be damaged if this is done here
 //  left to be done in XCloseDisplay by Xlib.
 #if defined(HAVE_XFT) && 0
-		if(bigfont_xft)
-			XftFontClose (display, (XftFont*)bigfont_xft);
- 		if(largefont_xft)
- 			XftFontClose (display, (XftFont*)largefont_xft);
- 		if(mediumfont_xft)
- 			XftFontClose (display, (XftFont*)mediumfont_xft);
- 		if(smallfont_xft)
- 			XftFontClose (display, (XftFont*)smallfont_xft);
+		static void *BC_WindowBase::*xft_font[] = {
+			 &BC_WindowBase::smallfont_xft,
+			 &BC_WindowBase::mediumfont_xft,
+			 &BC_WindowBase::largefont_xft,
+			 &BC_WindowBase::bigfont_xft,
+			 &BC_WindowBase::bold_smallfont_xft,
+			 &BC_WindowBase::bold_mediumfont_xft,
+			 &BC_WindowBase::bold_largefont_xft,
+		};
+		for( int i=sizeof(xft_font)/sizeof(xft_font[0]); --i>=0; ) {
+			XftFont *xft = (XftFont *)(this->*xft_font[i]);
+			if( xft ) XftFontClose (display, xft);
+		}
 #endif
 		finit_im();
 
@@ -2282,13 +2291,34 @@ void BC_WindowBase::init_xft()
 			XftFontOpenXlfd(display, screen, resources.big_font_xft2)))
 			bigfont_xft = XftFontOpenXlfd(display, screen, "fixed");
 
+	if(!(bold_smallfont_xft =
+		(resources.small_b_font_xft[0] == '-' ?
+			XftFontOpenXlfd(display, screen, resources.small_b_font_xft) :
+			XftFontOpenName(display, screen, resources.small_b_font_xft))) )
+		bold_smallfont_xft = XftFontOpenXlfd(display, screen, "fixed");
+	if(!(bold_mediumfont_xft =
+		(resources.medium_b_font_xft[0] == '-' ?
+			XftFontOpenXlfd(display, screen, resources.medium_b_font_xft) :
+			XftFontOpenName(display, screen, resources.medium_b_font_xft))) )
+		bold_mediumfont_xft = XftFontOpenXlfd(display, screen, "fixed");
+	if(!(bold_largefont_xft =
+		(resources.large_b_font_xft[0] == '-' ?
+			XftFontOpenXlfd(display, screen, resources.large_b_font_xft) :
+			XftFontOpenName(display, screen, resources.large_b_font_xft))) )
+		bold_largefont_xft = XftFontOpenXlfd(display, screen, "fixed");
+
 // Extension failed to locate fonts
-	if( !smallfont_xft || !mediumfont_xft || !largefont_xft || !bigfont_xft) {
-		printf("BC_WindowBase::init_fonts: no xft fonts found %s=%p %s=%p %s=%p %s=%p\n",
+	if( !smallfont_xft || !mediumfont_xft || !largefont_xft || !bigfont_xft ||
+	    !bold_largefont_xft || !bold_mediumfont_xft || !bold_largefont_xft ) {
+		printf("BC_WindowBase::init_fonts: no xft fonts found:"
+			" %s=%p\n %s=%p\n %s=%p\n %s=%p\n %s=%p\n %s=%p\n %s=%p\n",
 			resources.small_font_xft, smallfont_xft,
 			resources.medium_font_xft, mediumfont_xft,
 			resources.large_font_xft, largefont_xft,
-			resources.big_font_xft, bigfont_xft);
+			resources.big_font_xft, bigfont_xft,
+			resources.small_b_font_xft, bold_smallfont_xft,
+			resources.medium_b_font_xft, bold_mediumfont_xft,
+			resources.large_b_font_xft, bold_largefont_xft);
 		get_resources()->use_xft = 0;
 		exit(1);
 	}

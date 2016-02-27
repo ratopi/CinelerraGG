@@ -210,24 +210,23 @@ BC_FileBoxDirectoryText::BC_FileBoxDirectoryText(int x, int y, BC_FileBox *fileb
 
 int BC_FileBoxDirectoryText::handle_event()
 {
-	const char *path;
-	path = get_text();
-	// is a directory, change directories
-	if(filebox->fs->is_dir(path))
-	{
-		const char *cp = path;
-		char dir_path[BCTEXTLEN], *dp = dir_path;
-		while( *cp ) *dp++ = *cp++;
-		while( dp >= dir_path && *--dp == '/' );
-		*++dp = '/';  *++dp = 0;
-		if( strcmp(filebox->fs->get_current_dir(), dir_path) ) {
-			filebox->fs->change_dir(dir_path);
-			filebox->refresh(1);
-		}
-		update(dir_path);
-		return 1;
+	const char *path = get_text();
+	if( !filebox->fs->is_dir(path) ) return 0;
+	const char *cp = path;
+	while( *cp ) ++cp;
+	if( cp > path && *--cp != '/' ) return 0;
+	char *file_path = FileSystem::basepath(path);
+	char *dir_path = FileSystem::basepath(filebox->fs->get_current_dir());
+	int ret = !strcmp(file_path, dir_path) ? 0 : 1;
+	if( ret ) {
+		strcpy(filebox->directory, file_path);
+		filebox->update_history();
+		filebox->fs->change_dir(file_path);
+		filebox->refresh(1);
 	}
-	return 0;
+	delete [] dir_path;
+	delete [] file_path;
+	return ret;
 }
 
 
@@ -473,7 +472,7 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
  : BC_Window(title, x, y,
  	BC_WindowBase::get_resources()->filebox_w,
 	BC_WindowBase::get_resources()->filebox_h,
-	10, 10, 1, 0, 1)
+	400, 300, 1, 0, 1)
 {
 	fs = new FileSystem;
 // 	if(want_directory)
@@ -547,6 +546,8 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
 		strcpy(directory, fs->get_current_dir());
 		filename[0] = 0;
 	}
+	else
+		fs->set_current_dir(this->directory);
 
 
 	if(h_padding == -1)
@@ -801,18 +802,10 @@ int BC_FileBox::handle_event()
 
 int BC_FileBox::extract_extension(char *out, const char *in)
 {
-	int i;
-
-	for(i = strlen(in)-1; i > 0 && in[i] != '.'; i--)
-	  {
-	    ;
-	  }
-	if(in[i] == '.') {
-	  i++;
-	  strcpy(out, &in[i]);
-	}
-	else
-	  out[0] = '\0';
+	*out = 0;
+	int i = strlen(in);
+	while( --i>=0 && in[i]!='.' );
+	if( i >= 0 ) strcpy(out, &in[++i]);
 	return 0;
 }
 
@@ -845,7 +838,7 @@ int BC_FileBox::create_tables()
 // 		{
 			if(!is_dir)
 			{
-				sprintf(string, _LD, file_item->size);
+				sprintf(string, "%jd", file_item->size);
 				new_item = new BC_ListBoxItem(string, get_resources()->file_color);
 			}
 			else
@@ -880,13 +873,11 @@ int BC_FileBox::create_tables()
 // Extension entry
 //		if(!want_directory)
 //		{
-			if(!is_dir)
-			{
+			if(!is_dir) {
 				extract_extension(string, file_item->name);
 				new_item = new BC_ListBoxItem(string, get_resources()->file_color);
 			}
-			else
-			{
+			else {
 				new_item = new BC_ListBoxItem("", get_resources()->directory_color);
 			}
 			list_column[column_of_type(FILEBOX_EXTENSION)].append(new_item);

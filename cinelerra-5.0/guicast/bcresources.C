@@ -1401,12 +1401,19 @@ int BC_Resources::init_fontconfig(const char *search_path)
 	return 0;
 }
 
-BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, int mask)
+#define STYLE_MATCH(fst, stl, msk) ((fst) & (msk) & (stl)) && \
+       !((fst) & ~(style) & (msk))
+
+BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style,
+	int mask, int preferred)
 {
-	BC_FontEntry *entry, *style_match, *displayname_match;
+	BC_FontEntry *entry, *style_match, *preferred_match;
 
 	if(!fontlist)
 		return 0;
+
+	style_match = 0;
+	preferred_match = 0;
 
 	if(displayname)
 	{
@@ -1415,34 +1422,49 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, i
 			entry = fontlist->values[i];
 
 			if(strcmp(entry->displayname, displayname) == 0 &&
-					(entry->style & mask) == style)
-				return entry;
+					STYLE_MATCH(entry->style, style, mask))
+			{
+				if(!style_match)
+					style_match = entry;
+				if(!preferred_match && (entry->style & preferred))
+					preferred_match = entry;
+			}
 		}
+		if(preferred_match)
+			return preferred_match;
+
+		if(style_match)
+			return style_match;
 	}
+
 // No exact match - assume normal width font
 	style |= FL_WIDTH_NORMAL;
 	mask |= FL_WIDTH_MASK;
-	style_match = 0;  displayname_match = 0;
+	style_match = 0;
+	preferred_match = 0;
+
 	for(int i = 0; i < fontlist->total; i++)
 	{
 		entry = fontlist->values[i];
 
-		if(!strncasecmp(displayname, entry->family,
-				strlen(entry->family)))
-		{
-			if((entry->style & mask) == style)
-				return entry;
-			if(!displayname_match)
-				displayname_match = entry;
-		}
-
-		if((entry->style & mask) == style)
+		if(STYLE_MATCH(entry->style, style, mask))
 		{
 			if(!style_match)
 				style_match = entry;
+
+			if(!preferred_match && (entry->style & preferred))
+				preferred_match = entry;
+
+			if(!strncasecmp(displayname, entry->family,
+					strlen(entry->family)))
+			return entry;
 		}
 	}
-	return displayname_match ? displayname_match : style_match;
+
+	if(preferred_match)
+		return preferred_match;
+
+	return style_match;
 }
 
 size_t BC_Resources::encode(const char *from_enc, const char *to_enc,
@@ -1491,6 +1513,14 @@ size_t BC_Resources::encode(const char *from_enc, const char *to_enc,
 			break;
 	}
 	return inbytes;
+}
+
+void BC_Resources::encode_to_utf8(char *buffer, int buflen)
+{
+        if(BC_Resources::locale_utf8) return;
+	char lbuf[buflen];
+	encode(encoding, 0, buffer, buflen, lbuf, buflen);
+	strcpy(buffer, lbuf);
 }
 
 int BC_Resources::find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface)

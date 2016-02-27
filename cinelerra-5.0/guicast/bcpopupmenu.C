@@ -509,6 +509,8 @@ int BC_PopupMenu::cursor_leave_event()
 // dispatch to popup
 	if(popup_down)
 	{
+		if( !menu_popup->cursor_inside() )
+			deactivate_menu();
 		menu_popup->dispatch_cursor_leave();
 	}
 

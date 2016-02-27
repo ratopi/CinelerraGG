@@ -142,30 +142,29 @@ void BC_WindowBase::draw_text(int x, int y, const char *text, int length,
 		break;
 
 	default: {
-			if(top_level->get_xft_struct(top_level->current_font)) {
-				draw_xft_text(x, y, text, length, pixmap);
-				return;
-			}
+		if(top_level->get_xft_struct(top_level->current_font)) {
+			draw_xft_text(x, y, text, length, pixmap);
+			return;
+		}
 
-			for(int i = 0, j = 0; i <= length; i++) {
-				if(text[i] == '\n' || text[i] == 0) {
-					if(get_resources()->use_fontset && top_level->get_curr_fontset()) {
-						XmbDrawString(top_level->display,
-							pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
-							top_level->get_curr_fontset(),
-							top_level->gc, x, y, &text[j], i-j);
-					}
-					else {
-						XDrawString(top_level->display,
-							pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
-							top_level->gc, x, y, &text[j], i-j);
-					}
-					j = i;
-					y += get_text_height(font);
+		for(int i = 0, j = 0; i <= length; i++) {
+			if(text[i] == '\n' || text[i] == 0) {
+				if(get_resources()->use_fontset && top_level->get_curr_fontset()) {
+					XmbDrawString(top_level->display,
+						pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
+						top_level->get_curr_fontset(),
+						top_level->gc, x, y, &text[j], i-j);
 				}
+				else {
+					XDrawString(top_level->display,
+						pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
+						top_level->gc, x, y, &text[j], i-j);
+				}
+				j = i + 1;
+				y += get_text_height(font);
 			}
 		}
-		break;
+		break; }
 	}
 }
 

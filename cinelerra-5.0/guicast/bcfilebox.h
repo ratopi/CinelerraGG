@@ -221,6 +221,7 @@ public:
 	virtual ~BC_FileBox();
 
 	friend class BC_FileBoxCancel;
+	friend class BC_FileBoxDirectoryText;
 	friend class BC_FileBoxListBox;
 	friend class BC_FileBoxTextBox;
 	friend class BC_FileBoxText;
