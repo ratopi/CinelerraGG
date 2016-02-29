@@ -20,7 +20,7 @@
  */
 
 #include "clip.h"
-#include "histogramconfig.h"
+#include "bistogramconfig.h"
 #include "units.h"
 
 #include <math.h>
@@ -119,10 +119,7 @@ int HistogramPoints::equivalent(HistogramPoints *src)
 		current_src = current_src->next;
 	}
 
-	if(!current_this && current_src ||
-		current_this && !current_src)
-		return 0;
-	return 1;
+	return !current_this ^ !current_src ? 0 : 1;
 }
 
 void HistogramPoints::copy_from(HistogramPoints *src)

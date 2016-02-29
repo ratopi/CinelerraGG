@@ -23,8 +23,8 @@
 #define HISTOGRAMCONFIG_H
 
 
-#include "histogram.inc"
-#include "histogramconfig.inc"
+#include "bistogram.inc"
+#include "bistogramconfig.inc"
 #include "linklist.h"
 #include <stdint.h>
 

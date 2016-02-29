@@ -29,9 +29,9 @@
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
-#include "histogram.h"
-#include "histogramconfig.h"
-#include "histogramwindow.h"
+#include "bistogram.h"
+#include "bistogramconfig.h"
+#include "bistogramwindow.h"
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"
@@ -44,25 +44,7 @@ class HistogramMain;
 class HistogramEngine;
 class HistogramWindow;
 
-
-
-
-
 REGISTER_PLUGIN(HistogramMain)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 HistogramMain::HistogramMain(PluginServer *server)
  : PluginVClient(server)
@@ -96,17 +78,11 @@ HistogramMain::~HistogramMain()
 	delete engine;
 }
 
-char* HistogramMain::plugin_title() { return _("Histogram"); }
+const char* HistogramMain::plugin_title() { return _("Histogram Bezier"); }
 int HistogramMain::is_realtime() { return 1; }
 
 
-
-SHOW_GUI_MACRO(HistogramMain, HistogramThread)
-
-SET_STRING_MACRO(HistogramMain)
-
-RAISE_WINDOW_MACRO(HistogramMain)
-
+NEW_WINDOW_MACRO(HistogramMain, HistogramWindow)
 LOAD_CONFIGURATION_MACRO(HistogramMain, HistogramConfig)
 
 void HistogramMain::render_gui(void *data)
@@ -120,13 +96,14 @@ void HistogramMain::render_gui(void *data)
 			calculate_automatic((VFrame*)data);
 		}
 
-		thread->window->lock_window("HistogramMain::render_gui");
-		thread->window->update_canvas();
+		HistogramWindow *window = (HistogramWindow *)thread->window;
+		window->lock_window("HistogramMain::render_gui");
+		window->update_canvas();
 		if(config.automatic)
 		{
-			thread->window->update_input();
+			window->update_input();
 		}
-		thread->window->unlock_window();
+		window->unlock_window();
 	}
 }
 
@@ -138,119 +115,16 @@ void HistogramMain::update_gui()
 		int reconfigure = load_configuration();
 		if(reconfigure) 
 		{
-			thread->window->update(0);
+			HistogramWindow *window = (HistogramWindow *)thread->window;
+			window->update(0);
 			if(!config.automatic)
 			{
-				thread->window->update_input();
+				window->update_input();
 			}
 		}
 		thread->window->unlock_window();
 	}
 }
-
-
-int HistogramMain::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%shistogram.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	for(int j = 0; j < HISTOGRAM_MODES; j++)
-	{
-		while(config.points[j].last) delete config.points[j].last;
-
-		sprintf(string, "TOTAL_POINTS_%d", j);
-		int total_points = defaults->get(string, 0);
-
-		for(int i = 0; i < total_points; i++)
-		{
-			HistogramPoint *point = new HistogramPoint;
-			sprintf(string, "INPUT_X_%d_%d", j, i);
-			point->x = defaults->get(string, point->x);
-			sprintf(string, "INPUT_Y_%d_%d", j, i);
-			point->y = defaults->get(string, point->y);
-			sprintf(string, "GRADIENT_%d_%d", j, i);
-			point->gradient = defaults->get(string, point->gradient);
-			sprintf(string, "XOFFSET_LEFT_%d_%d", j, i);
-			point->xoffset_left = defaults->get(string, point->xoffset_left);
-			sprintf(string, "XOFFSET_RIGHT_%d_%d", j, i);
-			point->xoffset_right = defaults->get(string, point->xoffset_right);
-			config.points[j].append(point);
-		}
-	}
-
-
-	for(int i = 0; i < HISTOGRAM_MODES; i++)
-	{
-		sprintf(string, "OUTPUT_MIN_%d", i);
-		config.output_min[i] = defaults->get(string, config.output_min[i]);
-		sprintf(string, "OUTPUT_MAX_%d", i);
-		config.output_max[i] = defaults->get(string, config.output_max[i]);
-	}
-
-	config.automatic = defaults->get("AUTOMATIC", config.automatic);
-	mode = defaults->get("MODE", mode);
-	CLAMP(mode, 0, HISTOGRAM_MODES - 1);
-	config.threshold = defaults->get("THRESHOLD", config.threshold);
-	config.split = defaults->get("SPLIT", config.split);
-	config.smoothMode = defaults->get("INTERPOLATION", config.smoothMode);
-	config.boundaries();
-	return 0;
-}
-
-
-int HistogramMain::save_defaults()
-{
-	char string[BCTEXTLEN];
-
-
-
-	for(int j = 0; j < HISTOGRAM_MODES; j++)
-	{
-		int total_points = config.points[j].total();
-		sprintf(string, "TOTAL_POINTS_%d", j);
-		defaults->update(string, total_points);
-		HistogramPoint *current = config.points[j].first;
-		int number = 0;
-		while(current)
-		{
-			sprintf(string, "INPUT_X_%d_%d", j, number);
-			defaults->update(string, current->x);
-			sprintf(string, "INPUT_Y_%d_%d", j, number);
-			defaults->update(string, current->y);
-			sprintf(string, "GRADIENT_%d_%d", j, number);
-			defaults->update(string, current->gradient);
-			sprintf(string, "XOFFSET_LEFT_%d_%d", j, number);
-			defaults->update(string, current->xoffset_left);
-			sprintf(string, "XOFFSET_RIGHT_%d_%d", j, number);
-			defaults->update(string, current->xoffset_right);			
-			current = NEXT;
-			number++;
-		}
-	}
-
-
-	for(int i = 0; i < HISTOGRAM_MODES; i++)
-	{
-		sprintf(string, "OUTPUT_MIN_%d", i);
-		defaults->update(string, config.output_min[i]);
-		sprintf(string, "OUTPUT_MAX_%d", i);
-	   	defaults->update(string, config.output_max[i]);
-	}
-
-	defaults->update("AUTOMATIC", config.automatic);
-	defaults->update("MODE", mode);
-	defaults->update("THRESHOLD", config.threshold);
-	defaults->update("SPLIT", config.split);
-	defaults->update("INTERPOLATION", config.smoothMode);
-	defaults->save();
-	return 0;
-}
-
 
 
 void HistogramMain::save_data(KeyFrame *keyframe)
@@ -278,6 +152,8 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("SPLIT", config.split);
 	output.tag.set_property("INTERPOLATION", config.smoothMode);
 	output.append_tag();
+	output.tag.set_title("/HISTOGRAM");
+	output.append_tag();
 	output.append_newline();
 
 
@@ -300,6 +176,8 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 			output.tag.set_property("GRADIENT", current->gradient);
 			output.tag.set_property("XOFFSET_LEFT", current->xoffset_left);
 			output.tag.set_property("XOFFSET_RIGHT", current->xoffset_right);
+			output.append_tag();
+			output.tag.set_title("/POINT");
 			output.append_tag();
 			output.append_newline();
 			current = NEXT;
@@ -401,40 +279,31 @@ float HistogramMain::calculate_linear(float input,
 	int done = 0;
 	float output;
 
-	if(input < 0)
-	{
+	if(input < 0) {
 		output = 0;
 		done = 1;
 	}
 
-	if(input > 1)
-	{
+	if(input > 1) {
 		output = 1;
 		done = 1;
 	}
 
-	if(!done)
-	{
+	if(!done) {
 
-		float x1 = 0;
-		float y1 = 0;
+		float x1 = 0, y1 = 0;
 		float grad1 = 1.0;
 		float x1right = 0;
-		float x2 = 1;
-		float y2 = 1;
+		float x2 = 1, y2 = 1;
 		float grad2 = 1.0;
 		float x2left = 0;
-
-
 
 // Get 2 points surrounding current position
 		HistogramPoints *points = &config.points[subscript];
 		HistogramPoint *current = points->first;
 		int done = 0;
-		while(current && !done)
-		{
-			if(current->x > input)
-			{
+		while(current && !done) {
+			if(current->x > input) {
 				x2 = current->x;
 				y2 = current->y;
 				grad2 = current->gradient;
@@ -447,10 +316,8 @@ float HistogramMain::calculate_linear(float input,
 
 		current = points->last;
 		done = 0;
-		while(current && !done)
-		{
-			if(current->x <= input)
-			{
+		while(current && !done) {
+			if(current->x <= input) {
 				x1 = current->x;
 				y1 = current->y;
 				grad1 = current->gradient;
@@ -474,7 +341,8 @@ float HistogramMain::calculate_linear(float input,
 			float dx = x2 - x1;
 			float dy = y2 - y1;
 			float delx = input - x1;
-			output = 1 / (dx * dx * dx) * (grad2 * dx + grad1 * dx - 2*dy) * delx * delx * delx + 1 / (dx * dx) * (3*dy - 2* grad1*dx - grad2*dx) * delx * delx + grad1*delx + y1;
+			output = (grad2 * dx + grad1 * dx - 2*dy) / (dx * dx * dx) * delx * delx * delx +
+			 (dx * dx) * (3*dy - 2* grad1*dx - grad2*dx) / (dx * dx) * delx * delx + grad1*delx + y1;
 		  }
 		  else if (config.smoothMode == HISTOGRAM_BEZIER)
 		  {
@@ -490,40 +358,24 @@ float HistogramMain::calculate_linear(float input,
 			float pointABy = pointAy + (pointBy - pointAy) * t;
 			float pointBCy = pointBy + (pointCy - pointBy) * t;
 			output = pointABy + (pointBCy - pointABy) * t;
-			
-		  	}
+		  }
 		}
-		  	
 		else
 // Linear
 			output = input * y2;
-
-
-
-// 
-
-
 	}
 
 // Apply value curve
-	if(use_value)
-	{
+	if(use_value) {
 		output = calculate_linear(output, HISTOGRAM_VALUE, 0);
 	}
 
 
 	float output_min = config.output_min[subscript];
 	float output_max = config.output_max[subscript];
-	float output_left;
-	float output_right;
-	float output_linear;
 
 // Compress output for value followed by channel
-	output = output_min + 
-		output * 
-		(output_max - output_min);
-
-
+	output = output_min + output * (output_max - output_min);
 	return output;
 }
 
@@ -532,9 +384,9 @@ float HistogramMain::calculate_smooth(float input, int subscript)
 	float x_f = (input - HIST_MIN_INPUT) * HISTOGRAM_SLOTS / FLOAT_RANGE;
 	int x_i1 = (int)x_f;
 	int x_i2 = x_i1 + 1;
-	CLAMP(x_i1, 0, HISTOGRAM_SLOTS - 1);
-	CLAMP(x_i2, 0, HISTOGRAM_SLOTS - 1);
-	CLAMP(x_f, 0, HISTOGRAM_SLOTS - 1);
+	CLAMP(x_i1, 0, HISTOGRAM_SLOTS-1);
+	CLAMP(x_i2, 0, HISTOGRAM_SLOTS-1);
+	CLAMP(x_f, 0, HISTOGRAM_SLOTS-1);
 
 	float smooth1 = smoothed[subscript][x_i1];
 	float smooth2 = smoothed[subscript][x_i2];
@@ -558,18 +410,14 @@ void HistogramMain::calculate_histogram(VFrame *data)
 	}
 	engine->process_packages(HistogramEngine::HISTOGRAM, data);
 
-	for(int i = 0; i < engine->get_total_clients(); i++)
-	{
+	for(int i = 0; i < engine->get_total_clients(); i++) {
 		HistogramUnit *unit = (HistogramUnit*)engine->get_client(i);
-		if(i == 0)
-		{
+		if(i == 0) {
 			for(int j = 0; j < HISTOGRAM_MODES; j++)
 				memcpy(accum[j], unit->accum[j], sizeof(int) * HISTOGRAM_SLOTS);
 		}
-		else
-		{
-			for(int j = 0; j < HISTOGRAM_MODES; j++)
-			{
+		else {
+			for(int j = 0; j < HISTOGRAM_MODES; j++) {
 				int *out = accum[j];
 				int *in = unit->accum[j];
 				for(int k = 0; k < HISTOGRAM_SLOTS; k++)
@@ -580,8 +428,7 @@ void HistogramMain::calculate_histogram(VFrame *data)
 
 // Remove top and bottom from calculations.  Doesn't work in high
 // precision colormodels.
-	for(int i = 0; i < HISTOGRAM_MODES; i++)
-	{
+	for(int i = 0; i < HISTOGRAM_MODES; i++) {
 		accum[i][0] = 0;
 		accum[i][HISTOGRAM_SLOTS - 1] = 0;
 	}
@@ -594,8 +441,7 @@ void HistogramMain::calculate_automatic(VFrame *data)
 	config.reset_points();
 
 // Do each channel
-	for(int i = 0; i < 3; i++)
-	{
+	for(int i = 0; i < 3; i++) {
 		int *accum = this->accum[i];
 		int pixels = data->get_w() * data->get_h();
 		float white_fraction = 1.0 - (1.0 - config.threshold) / 2;
@@ -605,11 +451,9 @@ void HistogramMain::calculate_automatic(VFrame *data)
 		float min_level = 0.0;
 
 // Get histogram slot above threshold of pixels
-		for(int j = 0; j < HISTOGRAM_SLOTS; j++)
-		{
+		for(int j = 0; j < HISTOGRAM_SLOTS; j++) {
 			total += accum[j];
-			if(total >= threshold)
-			{
+			if(total >= threshold) {
 				max_level = (float)j / HISTOGRAM_SLOTS * FLOAT_RANGE + HIST_MIN_INPUT;
 				break;
 			}
@@ -617,33 +461,22 @@ void HistogramMain::calculate_automatic(VFrame *data)
 
 // Get slot below 99% of pixels
 		total = 0;
-		for(int j = HISTOGRAM_SLOTS - 1; j >= 0; j--)
-		{
+		for(int j = HISTOGRAM_SLOTS - 1; j >= 0; j--) {
 			total += accum[j];
-			if(total >= threshold)
-			{
+			if(total >= threshold) {
 				min_level = (float)j / HISTOGRAM_SLOTS * FLOAT_RANGE + HIST_MIN_INPUT;
 				break;
 			}
 		}
-
-
 		config.points[i].insert(max_level, 1.0);
 		config.points[i].insert(min_level, 0.0);
-
 	}
 }
-
-
-
-
-
 
 int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 SET_TRACE
 	int need_reconfigure = load_configuration();
-
 SET_TRACE
 
 	if(!engine) engine = new HistogramEngine(this,
@@ -663,16 +496,12 @@ SET_TRACE
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
-	if(need_reconfigure || 
-		!lookup[0] || 
-		!smoothed[0] || 
-		!linear[0] || 
-		config.automatic)
-	{
+	if( !lookup[0] || !smoothed[0] || !linear[0] || config.automatic)
+		need_reconfigure = 1;
+	if( need_reconfigure ) {
 SET_TRACE
 // Calculate new curves
-		if(config.automatic)
-		{
+		if(config.automatic) {
 			calculate_automatic(input);
 		}
 SET_TRACE
@@ -683,14 +512,10 @@ SET_TRACE
 SET_TRACE
 	}
 
-
-
-
 // Apply histogram
 	engine->process_packages(HistogramEngine::APPLY, input);
 
 SET_TRACE
-
 	return 0;
 }
 
@@ -708,28 +533,19 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 	float *current_linear = linear[subscript];
 
 // Make linear curve
-	for(i = 0; i < HISTOGRAM_SLOTS; i++)
-	{
+	for(i = 0; i < HISTOGRAM_SLOTS; i++) {
 		float input = (float)i / HISTOGRAM_SLOTS * FLOAT_RANGE + HIST_MIN_INPUT;
 		current_linear[i] = calculate_linear(input, subscript, use_value);
 	}
-
-
-
-
-
-
 // Make smooth curve
-	float prev = 0.0;
+	//float prev = 0.0;
 	for(i = 0; i < HISTOGRAM_SLOTS; i++)
 	{
 //		current_smooth[i] = current_linear[i] * 0.001 +
 //			prev * 0.999;
 		current_smooth[i] = current_linear[i];
-		prev = current_smooth[i];
+//		prev = current_smooth[i];
 	}
-
-
 // Generate lookup tables for integer colormodels
 	if(input)
 	{
@@ -751,24 +567,10 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
 HistogramPackage::HistogramPackage()
  : LoadPackage()
 {
 }
-
-
-
 
 HistogramUnit::HistogramUnit(HistogramEngine *server, 
 	HistogramMain *plugin)
@@ -809,10 +611,10 @@ void HistogramUnit::process_package(LoadPackage *package)
 			g += -HISTOGRAM_MIN * 0xffff / 100; \
 			b += -HISTOGRAM_MIN * 0xffff / 100; \
 			v += -HISTOGRAM_MIN * 0xffff / 100; \
-			CLAMP(r, 0, HISTOGRAM_SLOTS); \
-			CLAMP(g, 0, HISTOGRAM_SLOTS); \
-			CLAMP(b, 0, HISTOGRAM_SLOTS); \
-			CLAMP(v, 0, HISTOGRAM_SLOTS); \
+			CLAMP(r, 0, HISTOGRAM_SLOTS-1); \
+			CLAMP(g, 0, HISTOGRAM_SLOTS-1); \
+			CLAMP(b, 0, HISTOGRAM_SLOTS-1); \
+			CLAMP(v, 0, HISTOGRAM_SLOTS-1); \
 			accum_r[r]++; \
 			accum_g[g]++; \
 			accum_b[b]++; \
@@ -822,17 +624,14 @@ void HistogramUnit::process_package(LoadPackage *package)
 	} \
 }
 
-
-
-
 		VFrame *data = server->data;
 		int w = data->get_w();
-		int h = data->get_h();
+//		int h = data->get_h();
 		int *accum_r = accum[HISTOGRAM_RED];
 		int *accum_g = accum[HISTOGRAM_GREEN];
 		int *accum_b = accum[HISTOGRAM_BLUE];
 		int *accum_v = accum[HISTOGRAM_VALUE];
-		int r, g, b, a, y, u, v;
+		int r, g, b, y, u, v;
 
 		switch(data->get_color_model())
 		{
@@ -1013,13 +812,12 @@ void HistogramUnit::process_package(LoadPackage *package)
 
 
 		VFrame *input = plugin->input;
-		VFrame *output = plugin->output;
-		int w = input->get_w();
-		int h = input->get_h();
+//		VFrame *output = plugin->output;
+		int w = input->get_w(), h = input->get_h();
 		int *lookup_r = plugin->lookup[0];
 		int *lookup_g = plugin->lookup[1];
 		int *lookup_b = plugin->lookup[2];
-		int r, g, b, y, u, v, a;
+		int r, g, b, y, u, v;
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
@@ -1071,8 +869,7 @@ HistogramEngine::HistogramEngine(HistogramMain *plugin,
 
 void HistogramEngine::init_packages()
 {
-	switch(operation)
-	{
+	switch(operation) {
 		case HISTOGRAM:
 			total_size = data->get_h();
 			break;
@@ -1081,21 +878,14 @@ void HistogramEngine::init_packages()
 			break;
 	}
 
-
-	int package_size = (int)((float)total_size / 
-			get_total_packages() + 1);
-	int start = 0;
-
-	for(int i = 0; i < get_total_packages(); i++)
-	{
+	for(int i = 0; i < get_total_packages(); i++) {
 		HistogramPackage *package = (HistogramPackage*)get_package(i);
 		package->start = total_size * i / get_total_packages();
 		package->end = total_size * (i + 1) / get_total_packages();
 	}
 
 // Initialize clients here in case some don't get run.
-	for(int i = 0; i < get_total_clients(); i++)
-	{
+	for(int i = 0; i < get_total_clients(); i++) {
 		HistogramUnit *unit = (HistogramUnit*)get_client(i);
 		for(int i = 0; i < HISTOGRAM_MODES; i++)
 			bzero(unit->accum[i], sizeof(int) * HISTOGRAM_SLOTS);

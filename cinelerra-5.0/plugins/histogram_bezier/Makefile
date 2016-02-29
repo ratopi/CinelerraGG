@@ -1,14 +1,14 @@
 include ../../global_config
 
 OBJS = \
-	$(OBJDIR)/histogram.o \
-	$(OBJDIR)/histogramconfig.o \
-	$(OBJDIR)/histogramwindow.o
+	$(OBJDIR)/bistogram.o \
+	$(OBJDIR)/bistogramconfig.o \
+	$(OBJDIR)/bistogramwindow.o
 
-PLUGIN = histogram
+PLUGIN = histogram_bezier
 
 include ../../plugin_config
 
-$(OBJDIR)/histogram.o: histogram.C
-$(OBJDIR)/histogramconfig.o: histogramconfig.C
-$(OBJDIR)/histogramwindow.o: histogramwindow.C
+$(OBJDIR)/bistogram.o: bistogram.C
+$(OBJDIR)/bistogramconfig.o: bistogramconfig.C
+$(OBJDIR)/bistogramwindow.o: bistogramwindow.C

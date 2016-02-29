@@ -24,8 +24,8 @@
 
 
 
-#include "histogram.inc"
-#include "histogramwindow.inc"
+#include "bistogram.inc"
+#include "bistogramwindow.inc"
 #include "pluginvclient.h"
 
 
@@ -164,14 +164,13 @@ public:
 	HistogramWindow *gui;
 };
 
-class HistogramWindow : public BC_Window
+class HistogramWindow : public PluginClientWindow
 {
 public:
-	HistogramWindow(HistogramMain *plugin, int x, int y);
+	HistogramWindow(HistogramMain *plugin);
 	~HistogramWindow();
 
 	void create_objects();
-	int close_event();
 	void update(int do_input);
 	void update_mode();
 	void update_canvas();
@@ -200,12 +199,6 @@ public:
 	int title4_x;
 	BC_Pixmap *max_picon, *mid_picon, *min_picon;
 };
-
-
-
-PLUGIN_THREAD_HEADER(HistogramMain, HistogramThread, HistogramWindow)
-
-
 
 
 #endif

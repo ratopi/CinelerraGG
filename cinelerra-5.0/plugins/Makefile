@@ -56,6 +56,7 @@ DIRS = \
 	graphic \
 	greycstoration \
 	histogram \
+	histogram_bezier \
 	holo \
 	huesaturation \
 	interpolate \

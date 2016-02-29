@@ -21,9 +21,9 @@
 
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
-#include "histogram.h"
-#include "histogramconfig.h"
-#include "histogramwindow.h"
+#include "bistogram.h"
+#include "bistogramconfig.h"
+#include "bistogramwindow.h"
 #include "keys.h"
 #include "language.h"
 
@@ -31,41 +31,31 @@
 #include <unistd.h>
 #include <string.h>
 
-PLUGIN_THREAD_OBJECT(HistogramMain, HistogramThread, HistogramWindow)
-
-
-
-HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x,
-	y,
-	440, 
-	480, 
-	440, 
-	480, 
-	0, 
-	1,
-	1)
+HistogramWindow::HistogramWindow(HistogramMain *plugin)
+ : PluginClientWindow(plugin, 440, 480, 440, 480, 0)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
 }
 
 HistogramWindow::~HistogramWindow()
 {
 }
 
-static VFrame max_picon_image(max_picon_png);
-static VFrame mid_picon_image(mid_picon_png);
-static VFrame min_picon_image(min_picon_png);
+#include "min_picon_png.h"
+#include "mid_picon_png.h"
+#include "max_picon_png.h"
+static VFramePng max_picon_image(max_picon_png);
+static VFramePng mid_picon_image(mid_picon_png);
+static VFramePng min_picon_image(min_picon_png);
 
-int HistogramWindow::create_objects()
+void HistogramWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 10;
 	BC_Title *title = 0;
 
-	max_picon = new BC_Pixmap(this, &max_picon_image);
-	mid_picon = new BC_Pixmap(this, &mid_picon_image);
-	min_picon = new BC_Pixmap(this, &min_picon_image);
+	max_picon = create_pixmap(&max_picon_image);
+	mid_picon = create_pixmap(&mid_picon_image);
+	min_picon = create_pixmap(&min_picon_image);
 	add_subwindow(mode_v = new HistogramMode(plugin, 
 		x, 
 		y,
@@ -210,11 +200,7 @@ int HistogramWindow::create_objects()
 	smoothModeChoser->create_objects();
 
 	show_window();
-
-	return 0;
 }
-
-WINDOW_CLOSE_EVENT(HistogramWindow)
 
 int HistogramWindow::keypress_event()
 {
@@ -648,8 +634,9 @@ HistogramReset::HistogramReset(HistogramMain *plugin,
 int HistogramReset::handle_event()
 {
 	plugin->config.reset(0);
-	plugin->thread->window->update(1);
-	plugin->thread->window->update_canvas();
+	HistogramWindow *window = (HistogramWindow *)plugin->thread->window;
+	window->update(1);
+	window->update_canvas();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -686,9 +673,7 @@ int HistogramSlider::button_press_event()
 {
 	if(is_event_win() && cursor_inside())
 	{
-		int min;
-		int max;
-		int w = get_w();
+//		int w = get_w();
 		int h = get_h();
 		int half_h = get_h() / 2;
 
@@ -765,7 +750,7 @@ void HistogramSlider::update()
 	int w = get_w();
 	int h = get_h();
 	int half_h = get_h() / 2;
-	int quarter_h = get_h() / 4;
+//	int quarter_h = get_h() / 4;
 	int mode = plugin->mode;
 	int r = 0xff;
 	int g = 0xff;
@@ -870,12 +855,13 @@ int HistogramMode::handle_event()
 {
 	plugin->mode = value;
 	plugin->current_point= -1;
-	plugin->thread->window->update_canvas();
-	plugin->thread->window->update_mode();
-	plugin->thread->window->update_input();
-	plugin->thread->window->update_canvas();
-	plugin->thread->window->update_output();
-	plugin->thread->window->output->update();
+	HistogramWindow *window = (HistogramWindow *)plugin->thread->window;
+	window->update_canvas();
+	window->update_mode();
+	window->update_input();
+	window->update_canvas();
+	window->update_output();
+	window->output->update();
 //	plugin->send_configure_change();
 	return 1;
 }
@@ -915,7 +901,8 @@ int HistogramOutputText::handle_event()
 		*output = atof(get_text());
 	}
 
-	plugin->thread->window->output->update();
+	HistogramWindow *window = (HistogramWindow *)plugin->thread->window;
+	window->output->update();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -967,7 +954,8 @@ int HistogramInputText::handle_event()
 			plugin->config.boundaries();
 			gui->update_canvas();
 
-			plugin->thread->window->output->update();
+			HistogramWindow *window = (HistogramWindow *)plugin->thread->window;
+			window->output->update();
 			plugin->send_configure_change();
 		}
 	}
@@ -1031,7 +1019,9 @@ char* HistogramSmoothMode::to_text(int mode)
 		case HISTOGRAM_BEZIER:
 			return _("Bezier");
 	}
+	return _("None");
 }
+
 int HistogramSmoothMode::from_text(char *text)
 {
 	if(!strcmp(text, to_text(HISTOGRAM_LINEAR))) 
@@ -1040,6 +1030,7 @@ int HistogramSmoothMode::from_text(char *text)
 		return HISTOGRAM_POLYNOMINAL;
 	if(!strcmp(text, to_text(HISTOGRAM_BEZIER))) 
 		return HISTOGRAM_BEZIER;
+	return HISTOGRAM_LINEAR;
 }
 
 int HistogramSmoothMode::handle_event()
@@ -1047,6 +1038,7 @@ int HistogramSmoothMode::handle_event()
 	plugin->config.smoothMode = from_text(get_text());
 	gui->update_canvas();
 	plugin->send_configure_change();
+	return 1;
 }
 
 

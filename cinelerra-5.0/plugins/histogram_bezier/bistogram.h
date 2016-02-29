@@ -23,12 +23,13 @@
 #define HISTOGRAM_H
 
 
-#include "histogram.inc"
-#include "histogramconfig.h"
-#include "histogramwindow.inc"
+#include "bistogram.inc"
+#include "bistogramconfig.h"
+#include "bistogramwindow.inc"
 #include "loadbalance.h"
 #include "cicolors.h"
 #include "pluginvclient.h"
+
 
 enum
 {
@@ -46,14 +47,12 @@ public:
 
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 	void render_gui(void *data);
 
-	PLUGIN_CLASS_MEMBERS(HistogramConfig, HistogramThread)
+	PLUGIN_CLASS_MEMBERS(HistogramConfig)
 
 // Convert input to linear output
 	float calculate_linear(float input, int mode, int do_value);
