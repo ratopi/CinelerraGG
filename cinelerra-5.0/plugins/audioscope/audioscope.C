@@ -1146,6 +1146,8 @@ void AudioScope::save_data(KeyFrame *keyframe)
 	output.tag.set_property("MODE", (int)config.mode);
 	output.tag.set_property("TRIGGER_LEVEL", (float)config.trigger_level);
 	output.append_tag();
+	output.tag.set_title("/AUDIOSCOPE");
+	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 }

@@ -176,7 +176,7 @@ void _1080to540Main::reduce_field(VFrame *output, VFrame *input, int src_field, 
 	int h = input->get_h();
 
 	if(h > output->get_h()) h = output->get_h();
-	if(w > output->get_w()) h = output->get_w();
+	if(w > output->get_w()) w = output->get_w();
 
 #define REDUCE_MACRO(type, temp, components) \
 for(int i = 0; i < OUT_ROWS; i++) \
@@ -267,6 +267,9 @@ void _1080to540Main::save_data(KeyFrame *keyframe)
 	output.tag.set_title("1080TO540");
 	output.tag.set_property("FIRST_FIELD", config.first_field);
 	output.append_tag();
+	output.tag.set_title("/1080TO540");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

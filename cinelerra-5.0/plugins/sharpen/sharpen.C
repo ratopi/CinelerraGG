@@ -207,25 +207,13 @@ void SharpenMain::save_data(KeyFrame *keyframe)
 	output.set_shared_output(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("SHARPNESS");
 	output.tag.set_property("VALUE", config.sharpness);
+	output.tag.set_property("INTERLACE", config.interlace);
+	output.tag.set_property("HORIZONTAL", config.horizontal);
+	output.tag.set_property("LUMINANCE", config.luminance);
 	output.append_tag();
-
-	if(config.interlace)
-	{
-		output.tag.set_title("INTERLACE");
-		output.append_tag();
-	}
-
-	if(config.horizontal)
-	{
-		output.tag.set_title("HORIZONTAL");
-		output.append_tag();
-	}
-
-	if(config.luminance)
-	{
-		output.tag.set_title("LUMINANCE");
-		output.append_tag();
-	}
+	output.tag.set_title("/SHARPNESS");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 
@@ -236,9 +224,6 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 	input.set_shared_input(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
-	int new_interlace = 0;
-	int new_horizontal = 0;
-	int new_luminance = 0;
 
 	while(!result)
 	{
@@ -249,29 +234,13 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 			if(input.tag.title_is("SHARPNESS"))
 			{
 				config.sharpness = input.tag.get_property("VALUE", config.sharpness);
+				config.interlace = input.tag.get_property("INTERLACE", config.interlace);
+				config.horizontal = input.tag.get_property("HORIZONTAL", config.horizontal);
+				config.luminance = input.tag.get_property("LUMINANCE", config.luminance);
 //printf("SharpenMain::read_data %f\n", sharpness);
-			}
-			else
-			if(input.tag.title_is("INTERLACE"))
-			{
-				new_interlace = 1;
-			}
-			else
-			if(input.tag.title_is("HORIZONTAL"))
-			{
-				new_horizontal = 1;
-			}
-			else
-			if(input.tag.title_is("LUMINANCE"))
-			{
-				new_luminance = 1;
 			}
 		}
 	}
-
-	config.interlace = new_interlace;
-	config.horizontal = new_horizontal;
-	config.luminance = new_luminance;
 
 	if(config.sharpness > MAXSHARPNESS) 
 		config.sharpness = MAXSHARPNESS;

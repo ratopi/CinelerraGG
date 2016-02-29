@@ -287,6 +287,9 @@ void ReverseVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_title("REVERSEVIDEO");
 	output.tag.set_property("ENABLED", config.enabled);
 	output.append_tag();
+	output.tag.set_title("/REVERSEVIDEO");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

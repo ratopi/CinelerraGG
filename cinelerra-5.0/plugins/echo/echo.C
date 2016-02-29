@@ -325,6 +325,8 @@ void Echo::save_data(KeyFrame *keyframe)
 	output.tag.set_property("ATTEN", config.atten);
 	output.tag.set_property("OFFSET", config.offset);
 	output.append_tag();
+	output.tag.set_title("/ECHO");
+	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 }

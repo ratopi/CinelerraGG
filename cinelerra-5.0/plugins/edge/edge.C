@@ -77,7 +77,7 @@ Edge::~Edge()
 	if(temp) delete temp;
 }
 
-const char* Edge::plugin_title() { return N_("Edge"); }
+const char* Edge::plugin_title() { return _("Edge"); }
 int Edge::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(Edge, EdgeWindow);

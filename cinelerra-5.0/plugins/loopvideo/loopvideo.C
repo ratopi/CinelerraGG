@@ -258,6 +258,9 @@ void LoopVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_title("LOOPVIDEO");
 	output.tag.set_property("FRAMES", config.frames);
 	output.append_tag();
+	output.tag.set_title("/LOOPVIDEO");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

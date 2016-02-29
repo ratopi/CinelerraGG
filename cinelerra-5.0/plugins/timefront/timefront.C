@@ -432,7 +432,7 @@ int TimeFrontTrackUsage::handle_event()
 	plugin->config.track_usage = from_text(get_text());
 	gui->update_shape();
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 
@@ -1117,6 +1117,9 @@ void TimeFrontMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("INVERT", config.invert);
 	output.tag.set_property("SHOW_GRAYSCALE", config.show_grayscale);
 	output.append_tag();
+	output.tag.set_title("/TIMEFRONT");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

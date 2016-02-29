@@ -316,6 +316,9 @@ void PolarEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DEPTH", config.depth);
 	output.tag.set_property("ANGLE", config.angle);
 	output.append_tag();
+	output.tag.set_title("/POLAR");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

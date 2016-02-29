@@ -1108,6 +1108,8 @@ void GraphicEQ::save_data(KeyFrame *keyframe)
 	output.tag.set_property("W", w);
 	output.tag.set_property("H", h);
 	output.append_tag();
+	output.tag.set_title("/GRAPHICEQ");
+	output.append_tag();
 	output.append_newline();
 
 	for(int i = 0; i < config.points.total; i++)
@@ -1116,8 +1118,10 @@ void GraphicEQ::save_data(KeyFrame *keyframe)
 		output.tag.set_property("X", config.points.values[i]->freq);
 		output.tag.set_property("Y", config.points.values[i]->value);
 		output.append_tag();
+		output.tag.set_title("/POINT");
+		output.append_tag();
+		output.append_newline();
 	}
-	if(config.points.total) output.append_newline();
 	
 	output.terminate_string();
 }

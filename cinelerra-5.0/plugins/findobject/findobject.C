@@ -35,6 +35,10 @@
 #include "surfscan.h"
 #include "transportque.h"
 
+// Needed with OpenCV version 2.4.8
+#include "opencv2/legacy/legacy.hpp"
+#include "opencv2/legacy/compat.hpp"
+
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/video/background_segm.hpp"
 
@@ -287,6 +291,9 @@ void FindObjectMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("SMIN", config.smin);
 	output.tag.set_property("BLEND", config.blend);
 	output.append_tag();
+	output.tag.set_title("/FINDOBJECT");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 
@@ -1087,7 +1094,7 @@ void FindObjectMain::process_blob()
 	delete [] scene_rows;
 
     blob_pTracker->Process(scene_image, pMask);
-printf("FindObjectMain::process_blob %d %ld %d\n", __LINE__, get_source_position(), blob_pTracker->GetBlobNum());
+printf("FindObjectMain::process_blob %d %jd %d\n", __LINE__, get_source_position(), blob_pTracker->GetBlobNum());
 
 
 #if 0
@@ -1181,10 +1188,6 @@ int FindObjectMain::process_buffer(VFrame **frame,
 // TODO: use oblique corners & affine transform
 	object_w = (int)(config.global_block_w * w / 100);
 	object_h = (int)(config.global_block_h * h / 100);
-	object_x1;
-	object_y1;
-	object_x2;
-	object_y2;
 
 	object_x1 = (int)(config.block_x * w / 100 - object_w / 2);
 	object_y1 = (int)(config.block_y * h / 100 - object_h / 2);
@@ -1200,10 +1203,6 @@ int FindObjectMain::process_buffer(VFrame **frame,
 
 	scene_w = (int)(config.global_range_w * w / 100);
 	scene_h = (int)(config.global_range_h * h / 100);
-	scene_x1;
-	scene_y1;
-	scene_x2;
-	scene_y2;
 	scene_x1 = (int)(config.block_x * w / 100 - scene_w / 2);
 	scene_y1 = (int)(config.block_y * h / 100 - scene_h / 2);
 	scene_x2 = scene_x1 + scene_w;
@@ -1276,9 +1275,11 @@ int FindObjectMain::process_buffer(VFrame **frame,
 
 		switch(config.algorithm)
 		{
+#if HAVE_OPENCV_SURF
 			case ALGORITHM_SURF:
 				process_surf();
 				break;
+#endif
 			
 			case ALGORITHM_CAMSHIFT:
 				process_camshift();

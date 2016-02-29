@@ -1249,6 +1249,8 @@ void Spectrogram::save_data(KeyFrame *keyframe)
 	output.tag.set_property("W", (int)w);
 	output.tag.set_property("H", (int)h);
 	output.append_tag();
+	output.tag.set_title("/SPECTROGRAM");
+	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 }

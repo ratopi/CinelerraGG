@@ -358,6 +358,9 @@ void MotionMain2::save_data(KeyFrame *keyframe)
 	output.tag.set_property("HORIZONTAL_ONLY", config.horizontal_only);
 	output.tag.set_property("VERTICAL_ONLY", config.vertical_only);
 	output.append_tag();
+	output.tag.set_title("/MOTION2");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 
@@ -711,7 +714,7 @@ int MotionMain2::process_buffer(VFrame **frame,
 	
 
 #ifdef DEBUG
-printf("MotionMain2::process_buffer 1 start_position=" _LD "\n", start_position);
+printf("MotionMain2::process_buffer 1 start_position=%jd\n", start_position);
 #endif
 
 

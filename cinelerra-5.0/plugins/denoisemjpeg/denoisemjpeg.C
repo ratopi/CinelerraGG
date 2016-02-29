@@ -482,6 +482,9 @@ void DenoiseMJPEG::save_data(KeyFrame *keyframe)
 	output.tag.set_property("MODE", config.mode);
 	output.tag.set_property("DELAY", config.delay);
 	output.append_tag();
+	output.tag.set_title("/DENOISE_VIDEO2");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

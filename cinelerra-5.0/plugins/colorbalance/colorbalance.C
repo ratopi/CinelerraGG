@@ -544,6 +544,9 @@ void ColorBalanceMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("PRESERVELUMINOSITY",  config.preserve);
 	output.tag.set_property("LOCKPARAMS",  config.lock_params);
 	output.append_tag();
+	output.tag.set_title("/COLORBALANCE");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

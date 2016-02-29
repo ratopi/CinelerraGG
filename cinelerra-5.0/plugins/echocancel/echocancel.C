@@ -1227,6 +1227,8 @@ void EchoCancel::save_data(KeyFrame *keyframe)
 	output.tag.set_property("W", w);
 	output.tag.set_property("H", h);
 	output.append_tag();
+	output.tag.set_title("/ECHOCANCEL");
+	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 }

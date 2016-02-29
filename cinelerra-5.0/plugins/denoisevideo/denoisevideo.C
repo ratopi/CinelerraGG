@@ -173,7 +173,7 @@ int DenoiseVideoToggle::handle_event()
 {
 	*output = get_value();
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 
@@ -451,6 +451,9 @@ void DenoiseVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DO_A", config.do_a);
 	output.tag.set_property("COUNT_CHANGED", config.count_changed);
 	output.append_tag();
+	output.tag.set_title("/DENOISE_VIDEO");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

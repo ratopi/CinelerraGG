@@ -24,7 +24,7 @@
 
 class BandSlideMain;
 class BandSlideWindow;
-
+class BandSlideConfig;
 
 #include "overlayframe.inc"
 #include "pluginvclient.h"
@@ -84,16 +84,18 @@ public:
 };
 
 
+class BandSlideConfig
+{
+public:
+};
 
 class BandSlideMain : public PluginVClient
 {
 public:
 	BandSlideMain(PluginServer *server);
 	~BandSlideMain();
+	PLUGIN_CLASS_MEMBERS(BandSlideConfig);
 
-	int load_configuration();
-	const char* plugin_title();
-	PluginClientWindow* new_window();
 // required for all realtime plugins
 	int process_realtime(VFrame *incoming, VFrame *outgoing);
 	void save_data(KeyFrame *keyframe);

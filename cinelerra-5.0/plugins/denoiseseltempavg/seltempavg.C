@@ -43,7 +43,7 @@ SelTempAvgConfig::SelTempAvgConfig()
 	paranoid = 0;
 	nosubtract = 0;
 	offset_restartmarker_keyframe = 0;
-	offset_fixed_value = -1000;
+	offset_fixed_value = -15;
 	gain = 1.00;
 
 	avg_threshold_RY = 0; avg_threshold_GU = 0; avg_threshold_BV = 0;
@@ -817,6 +817,9 @@ void SelTempAvgMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("MASK_BV", config.mask_BV);
 
 	output.append_tag();
+	output.tag.set_title("/SELECTIVE_TEMPORAL_AVERAGE");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

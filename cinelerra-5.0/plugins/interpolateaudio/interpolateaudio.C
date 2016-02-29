@@ -93,16 +93,8 @@ InterpolateAudioEffect::~InterpolateAudioEffect()
 
 
 
-const char* InterpolateAudioEffect::plugin_title()
-{
-	return _("Interpolate");
-}
-
-
-int InterpolateAudioEffect::is_realtime()
-{
-	return 1;
-}
+const char* InterpolateAudioEffect::plugin_title() { return _("Interpolate"); }
+int InterpolateAudioEffect::is_realtime() { return 1; }
 
 
 

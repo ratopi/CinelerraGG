@@ -842,13 +842,10 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 
 
 
-int InterpolateVideo::is_realtime()
-{
-	return 1;
-}
 
 NEW_WINDOW_MACRO(InterpolateVideo, InterpolateVideoWindow)
 const char* InterpolateVideo::plugin_title() { return _("Interpolate Video"); }
+int InterpolateVideo::is_realtime() { return 1; }
 
 int InterpolateVideo::load_configuration()
 {
@@ -959,6 +956,9 @@ void InterpolateVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_property("SEARCH_RADIUS", config.search_radius);
 	output.tag.set_property("MACROBLOCK_SIZE", config.macroblock_size);
 	output.append_tag();
+	output.tag.set_title("/INTERPOLATEVIDEO");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

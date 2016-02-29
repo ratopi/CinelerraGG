@@ -166,6 +166,8 @@ void CompressorEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("SMOOTHING_ONLY", config.smoothing_only);
 	output.tag.set_property("INPUT", config.input);
 	output.append_tag();
+	output.tag.set_title("/COMPRESSOR");
+	output.append_tag();
 	output.append_newline();
 
 
@@ -175,6 +177,8 @@ void CompressorEffect::save_data(KeyFrame *keyframe)
 		output.tag.set_property("X", config.levels.values[i].x);
 		output.tag.set_property("Y", config.levels.values[i].y);
 
+		output.append_tag();
+		output.tag.set_title("/LEVEL");
 		output.append_tag();
 		output.append_newline();
 	}

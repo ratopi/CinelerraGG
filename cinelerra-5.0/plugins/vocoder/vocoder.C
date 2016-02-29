@@ -398,8 +398,9 @@ void Vocoder::save_data(KeyFrame *keyframe)
 	output.tag.set_property("OUTPUT", config.carrier_track);
 	output.tag.set_property("BANDS", config.bands);
 	output.append_tag();
+	output.tag.set_title("/VOCODER");
+	output.append_tag();
 	output.append_newline();
-
 	output.terminate_string();
 }
 

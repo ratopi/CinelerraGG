@@ -286,6 +286,9 @@ void BrightnessMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("CONTRAST",  config.contrast);
 	output.tag.set_property("LUMA",  config.luma);
 	output.append_tag();
+	output.tag.set_title("/BRIGHTNESS");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

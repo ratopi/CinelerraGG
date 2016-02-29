@@ -244,6 +244,9 @@ void RGBShiftEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("B_DX", config.b_dx);
 	output.tag.set_property("B_DY", config.b_dy);
 	output.append_tag();
+	output.tag.set_title("/RGBSHIFT");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

@@ -164,6 +164,9 @@ void Synth::save_data(KeyFrame *keyframe)
 		config.oscillator_config.values[i]->save_data(&output);
 	}
 
+	output.tag.set_title("/SYNTH");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 //printf("Synth::save_data %d %s\n", __LINE__, output.string);
 // data is now in *text

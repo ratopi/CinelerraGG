@@ -257,6 +257,9 @@ void _1080to480Main::save_data(KeyFrame *keyframe)
 	output.tag.set_title("1080TO480");
 	output.tag.set_property("FIRST_FIELD", config.first_field);
 	output.append_tag();
+	output.tag.set_title("/1080TO480");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

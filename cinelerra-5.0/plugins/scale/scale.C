@@ -128,6 +128,9 @@ void ScaleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("HEIGHT", config.height);
 	output.tag.set_property("CONSTRAIN", config.constrain);
 	output.append_tag();
+	output.tag.set_title("/SCALE");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 // data is now in *text
 }

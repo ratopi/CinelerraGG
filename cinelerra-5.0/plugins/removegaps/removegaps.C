@@ -293,6 +293,9 @@ void RemoveGaps::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DURATION", config.duration);
 	output.tag.set_property("THRESHOLD", config.threshold);
 	output.append_tag();
+	output.tag.set_title("/REMOVEGAPS");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

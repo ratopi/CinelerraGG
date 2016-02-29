@@ -128,6 +128,9 @@ void Piano::save_data(KeyFrame *keyframe)
 		config.oscillator_config.values[i]->save_data(&output);
 	}
 
+	output.tag.set_title("/SYNTH");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 // data is now in *text
 }
@@ -143,7 +146,8 @@ int Piano::show_gui()
 
 int Piano::set_string()
 {
-	if(thread) thread->window->set_title(gui_string);
+	if( thread )
+		thread->window->set_title(gui_string);
 	return 0;
 }
 

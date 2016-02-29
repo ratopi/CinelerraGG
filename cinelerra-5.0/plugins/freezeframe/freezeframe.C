@@ -202,12 +202,19 @@ void FreezeFrameMain::save_data(KeyFrame *keyframe)
 	{
 		output.tag.set_title("ENABLED");
 		output.append_tag();
+		output.tag.set_title("/ENABLED");
+		output.append_tag();
 	}
 	if(config.line_double)
 	{
 		output.tag.set_title("LINE_DOUBLE");
 		output.append_tag();
+		output.tag.set_title("/LINE_DOUBLE");
+		output.append_tag();
 	}
+	output.tag.set_title("/FREEZEFRAME");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 // data is now in *text
 }
@@ -263,7 +270,7 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 				frame->get_h(),
 				frame->get_color_model(),
 				-1);
-//printf("FreezeFrameMain::process_buffer 1 " _LD "\n", first_frame_position);
+//printf("FreezeFrameMain::process_buffer 1 %jd\n", first_frame_position);
 		read_frame(first_frame, 
 				0, 
 				get_direction() == PLAY_REVERSE ? first_frame_position + 1 : first_frame_position,

@@ -315,10 +315,6 @@ void Reverb::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/REVERB");
 	output.append_tag();
 	output.append_newline();
-//printf("Reverb::save_data 1\n");
-
-
-
 	output.terminate_string();
 //printf("Reverb::save_data 2\n");
 }
@@ -598,7 +594,7 @@ void ReverbConfig::boundaries()
 
 void ReverbConfig::dump()
 {
-	printf("ReverbConfig::dump %f " _LD " %f %f " _LD " " _LD " " _LD " " _LD "\n",
+	printf("ReverbConfig::dump %f %jd %f %f %jd %jd %jd %jd\n",
 		level_init, delay_init, ref_level1, ref_level2,
 		ref_total, ref_length, lowpass1, lowpass2);
 }

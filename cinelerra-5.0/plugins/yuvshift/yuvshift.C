@@ -244,6 +244,9 @@ void YUVShiftEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("V_DX", config.v_dx);
 	output.tag.set_property("V_DY", config.v_dy);
 	output.append_tag();
+	output.tag.set_title("/YUVSHIFT");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

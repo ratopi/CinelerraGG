@@ -926,94 +926,93 @@ int ChromaKeyHSV::is_realtime() { return 1; }
 LOAD_CONFIGURATION_MACRO(ChromaKeyHSV, ChromaKeyConfig)
 
 
-void
-ChromaKeyHSV::save_data (KeyFrame * keyframe)
+void ChromaKeyHSV::save_data(KeyFrame * keyframe)
 {
-  FileXML output;
-  output.set_shared_output(keyframe->get_data(), MESSAGESIZE);
-  output.tag.set_title ("CHROMAKEY_HSV");
-  output.tag.set_property ("RED", config.red);
-  output.tag.set_property ("GREEN", config.green);
-  output.tag.set_property ("BLUE", config.blue);
-  output.tag.set_property ("MIN_BRIGHTNESS", config.min_brightness);
-  output.tag.set_property ("MAX_BRIGHTNESS", config.max_brightness);
-  output.tag.set_property ("SATURATION", config.saturation);
-  output.tag.set_property ("MIN_SATURATION", config.min_saturation);
-  output.tag.set_property ("TOLERANCE", config.tolerance);
-  output.tag.set_property ("IN_SLOPE", config.in_slope);
-  output.tag.set_property ("OUT_SLOPE", config.out_slope);
-  output.tag.set_property ("ALPHA_OFFSET", config.alpha_offset);
-  output.tag.set_property ("SPILL_THRESHOLD", config.spill_threshold);
-  output.tag.set_property ("SPILL_AMOUNT", config.spill_amount);
-  output.tag.set_property ("SHOW_MASK", config.show_mask);
-  output.append_tag ();
-  output.terminate_string ();
+	FileXML output;
+	output.set_shared_output(keyframe->get_data(), MESSAGESIZE);
+	output.tag.set_title("CHROMAKEY_HSV");
+	output.tag.set_property("RED", config.red);
+	output.tag.set_property("GREEN", config.green);
+	output.tag.set_property("BLUE", config.blue);
+	output.tag.set_property("MIN_BRIGHTNESS", config.min_brightness);
+	output.tag.set_property("MAX_BRIGHTNESS", config.max_brightness);
+	output.tag.set_property("SATURATION", config.saturation);
+	output.tag.set_property("MIN_SATURATION", config.min_saturation);
+	output.tag.set_property("TOLERANCE", config.tolerance);
+	output.tag.set_property("IN_SLOPE", config.in_slope);
+	output.tag.set_property("OUT_SLOPE", config.out_slope);
+	output.tag.set_property("ALPHA_OFFSET", config.alpha_offset);
+	output.tag.set_property("SPILL_THRESHOLD", config.spill_threshold);
+	output.tag.set_property("SPILL_AMOUNT", config.spill_amount);
+	output.tag.set_property("SHOW_MASK", config.show_mask);
+	output.append_tag();
+	output.tag.set_title("/CHROMAKEY_HSV");
+	output.append_tag();
+	output.append_newline();
+	output.terminate_string();
 }
 
-void
-ChromaKeyHSV::read_data (KeyFrame * keyframe)
+void ChromaKeyHSV::read_data(KeyFrame * keyframe)
 {
-  FileXML input;
+	FileXML input;
 
-  input.set_shared_input (keyframe->get_data(), strlen (keyframe->get_data()));
+	input.set_shared_input(keyframe->get_data(), strlen(keyframe->get_data()));
 
-  while (!input.read_tag ())
-    {
-      if (input.tag.title_is ("CHROMAKEY_HSV"))
-	{
-	  config.red = input.tag.get_property ("RED", config.red);
-	  config.green = input.tag.get_property ("GREEN", config.green);
-	  config.blue = input.tag.get_property ("BLUE", config.blue);
-	  config.min_brightness =
-	    input.tag.get_property ("MIN_BRIGHTNESS", config.min_brightness);
-	  config.max_brightness =
-	    input.tag.get_property ("MAX_BRIGHTNESS", config.max_brightness);
-	  config.saturation =
-	    input.tag.get_property ("SATURATION", config.saturation);
-	  config.min_saturation =
-	    input.tag.get_property ("MIN_SATURATION", config.min_saturation);
-	  config.tolerance =
-	    input.tag.get_property ("TOLERANCE", config.tolerance);
-	  config.in_slope =
-	    input.tag.get_property ("IN_SLOPE", config.in_slope);
-	  config.out_slope =
-	    input.tag.get_property ("OUT_SLOPE", config.out_slope);
-	  config.alpha_offset =
-	    input.tag.get_property ("ALPHA_OFFSET", config.alpha_offset);
-	  config.spill_threshold =
-	    input.tag.get_property ("SPILL_THRESHOLD",
-				    config.spill_threshold);
-	  config.spill_amount =
-	    input.tag.get_property ("SPILL_AMOUNT", config.spill_amount);
-	  config.show_mask =
-	    input.tag.get_property ("SHOW_MASK", config.show_mask);
+	while( !input.read_tag() ) {
+		if( input.tag.title_is("CHROMAKEY_HSV") ) {
+			config.red = input.tag.get_property("RED", config.red);
+			config.green = input.tag.get_property("GREEN", config.green);
+			config.blue = input.tag.get_property("BLUE", config.blue);
+			config.min_brightness =
+				input.tag.get_property("MIN_BRIGHTNESS", config.min_brightness);
+			config.max_brightness =
+				input.tag.get_property("MAX_BRIGHTNESS", config.max_brightness);
+			config.saturation =
+				input.tag.get_property("SATURATION", config.saturation);
+			config.min_saturation =
+				input.tag.get_property("MIN_SATURATION", config.min_saturation);
+			config.tolerance =
+				input.tag.get_property("TOLERANCE", config.tolerance);
+			config.in_slope =
+				input.tag.get_property("IN_SLOPE", config.in_slope);
+			config.out_slope =
+				input.tag.get_property("OUT_SLOPE", config.out_slope);
+			config.alpha_offset =
+				input.tag.get_property("ALPHA_OFFSET", config.alpha_offset);
+			config.spill_threshold =
+				input.tag.get_property("SPILL_THRESHOLD",
+							config.spill_threshold);
+			config.spill_amount =
+				input.tag.get_property("SPILL_AMOUNT", config.spill_amount);
+			config.show_mask =
+				input.tag.get_property("SHOW_MASK", config.show_mask);
+		}
 	}
-    }
 }
 
 
 NEW_WINDOW_MACRO(ChromaKeyHSV, ChromaKeyWindow)
 
-void ChromaKeyHSV::update_gui ()
+void ChromaKeyHSV::update_gui()
 {
-  if (thread)
-    {
-      load_configuration ();
-      thread->window->lock_window ();
-      ((ChromaKeyWindow*)thread->window)->min_brightness->update (config.min_brightness);
-      ((ChromaKeyWindow*)thread->window)->max_brightness->update (config.max_brightness);
-      ((ChromaKeyWindow*)thread->window)->saturation->update (config.saturation);
-      ((ChromaKeyWindow*)thread->window)->min_saturation->update (config.min_saturation);
-      ((ChromaKeyWindow*)thread->window)->tolerance->update (config.tolerance);
-      ((ChromaKeyWindow*)thread->window)->in_slope->update (config.in_slope);
-      ((ChromaKeyWindow*)thread->window)->out_slope->update (config.out_slope);
-      ((ChromaKeyWindow*)thread->window)->alpha_offset->update (config.alpha_offset);
-      ((ChromaKeyWindow*)thread->window)->spill_threshold->update (config.spill_threshold);
-      ((ChromaKeyWindow*)thread->window)->spill_amount->update (config.spill_amount);
-      ((ChromaKeyWindow*)thread->window)->show_mask->update (config.show_mask);
-      ((ChromaKeyWindow*)thread->window)->update_sample ();
-      thread->window->unlock_window ();
-    }
+	if( thread ) {
+		load_configuration();
+		ChromaKeyWindow *window = (ChromaKeyWindow*)thread->window;
+		window->lock_window();
+		window->min_brightness->update(config.min_brightness);
+		window->max_brightness->update(config.max_brightness);
+		window->saturation->update(config.saturation);
+		window->min_saturation->update(config.min_saturation);
+		window->tolerance->update(config.tolerance);
+		window->in_slope->update(config.in_slope);
+		window->out_slope->update(config.out_slope);
+		window->alpha_offset->update(config.alpha_offset);
+		window->spill_threshold->update(config.spill_threshold);
+		window->spill_amount->update(config.spill_amount);
+		window->show_mask->update(config.show_mask);
+		window->update_sample();
+		window->unlock_window();
+	}
 }
 
 

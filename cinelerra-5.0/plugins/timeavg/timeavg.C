@@ -372,7 +372,7 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			reset_accum(w, h, color_model);
 		}
 
-// printf("TimeAvgMain::process_buffer %d prev_frame=" _LD " start_position=" _LD "\n", 
+// printf("TimeAvgMain::process_buffer %d prev_frame=%jd start_position=%jd\n", 
 //   __LINE__, prev_frame, start_position);
 		for(int64_t i = prev_frame; i <= start_position; i++)
 		{
@@ -382,7 +382,7 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 				frame_rate,
 				0);
 			add_accum(frame);
-printf("TimeAvgMain::process_buffer %d prev_frame=" _LD " start_position=" _LD " i=" _LD "\n", 
+printf("TimeAvgMain::process_buffer %d prev_frame=%jd start_position=%jd i=%jd\n", 
   __LINE__, prev_frame, start_position, i);
 		}
 
@@ -1036,6 +1036,9 @@ void TimeAvgMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("THRESHOLD", config.threshold);
 	output.tag.set_property("BORDER", config.border);
 	output.append_tag();
+	output.tag.set_title("/TIME_AVERAGE");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

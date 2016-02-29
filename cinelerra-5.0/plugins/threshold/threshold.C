@@ -127,15 +127,8 @@ ThresholdMain::~ThresholdMain()
 	delete threshold_engine;
 }
 
-int ThresholdMain::is_realtime()
-{
-	return 1;
-}
-
-const char* ThresholdMain::plugin_title() 
-{ 
-	return _("Threshold"); 
-}
+const char* ThresholdMain::plugin_title() { return _("Threshold"); }
+int ThresholdMain::is_realtime() { return 1; }
 
 
 
@@ -175,38 +168,39 @@ int ThresholdMain::process_buffer(VFrame *frame,
 
 void ThresholdMain::save_data(KeyFrame *keyframe)
 {
-	FileXML file;
-	file.set_shared_output(keyframe->get_data(), MESSAGESIZE);
-	file.tag.set_title("THRESHOLD");
-	file.tag.set_property("MIN", config.min);
-	file.tag.set_property("MAX", config.max);
-	file.tag.set_property("PLOT", config.plot);
-	config.low_color.set_property(file.tag,  "LOW_COLOR");
-	config.mid_color.set_property(file.tag,  "MID_COLOR");
-	config.high_color.set_property(file.tag, "HIGH_COLOR");
-	file.append_tag();
-	file.tag.set_title("/THRESHOLD");
-	file.append_tag();
-	file.terminate_string();
+	FileXML output;
+	output.set_shared_output(keyframe->get_data(), MESSAGESIZE);
+	output.tag.set_title("THRESHOLD");
+	output.tag.set_property("MIN", config.min);
+	output.tag.set_property("MAX", config.max);
+	output.tag.set_property("PLOT", config.plot);
+	config.low_color.set_property(output.tag,  "LOW_COLOR");
+	config.mid_color.set_property(output.tag,  "MID_COLOR");
+	config.high_color.set_property(output.tag, "HIGH_COLOR");
+	output.append_tag();
+	output.tag.set_title("/THRESHOLD");
+	output.append_tag();
+	output.append_newline();
+	output.terminate_string();
 }
 
 void ThresholdMain::read_data(KeyFrame *keyframe)
 {
-	FileXML file;
+	FileXML input;
 	const char *data = keyframe->get_data();
-	file.set_shared_input((char *)data, strlen(data));
+	input.set_shared_input((char *)data, strlen(data));
 	int result = 0;
 	while(!result)
 	{
-		result = file.read_tag();
+		result = input.read_tag();
 		if(!result)
 		{
-			config.min = file.tag.get_property("MIN", config.min);
-			config.max = file.tag.get_property("MAX", config.max);
-			config.plot = file.tag.get_property("PLOT", config.plot);
-			config.low_color = config.low_color.get_property(file.tag, "LOW_COLOR");
-			config.mid_color = config.mid_color.get_property(file.tag, "MID_COLOR");
-			config.high_color = config.high_color.get_property(file.tag, "HIGH_COLOR");
+			config.min = input.tag.get_property("MIN", config.min);
+			config.max = input.tag.get_property("MAX", config.max);
+			config.plot = input.tag.get_property("PLOT", config.plot);
+			config.low_color = config.low_color.get_property(input.tag, "LOW_COLOR");
+			config.mid_color = config.mid_color.get_property(input.tag, "MID_COLOR");
+			config.high_color = config.high_color.get_property(input.tag, "HIGH_COLOR");
 		}
 	}
 	config.boundaries();

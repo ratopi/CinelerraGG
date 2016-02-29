@@ -320,6 +320,9 @@ void BlurMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("A", config.a);
 	output.tag.set_property("A_KEY", config.a_key);
 	output.append_tag();
+	output.tag.set_title("/BLUR");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

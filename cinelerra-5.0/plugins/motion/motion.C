@@ -1649,7 +1649,7 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 		case MotionScan::LOAD:
 		{
 			char string[BCTEXTLEN];
-			sprintf(string, "%s" _LDv(06),
+			sprintf(string, "%s%06jd",
 				 ROTATION_FILE, plugin->get_source_position());
 			FILE *input = fopen(string, "r");
 			if(input)
@@ -1821,7 +1821,7 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	if(!skip && plugin->config.tracking_type == MotionScan::SAVE)
 	{
 		char string[BCTEXTLEN];
-		sprintf(string, "%s" _LDv(06),
+		sprintf(string, "%s%06jd",
 			ROTATION_FILE, plugin->get_source_position());
 		FILE *output = fopen(string, "w");
 		if(output)

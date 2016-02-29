@@ -223,6 +223,9 @@ void SlideMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("MOTION_DIRECTION", motion_direction);
 	output.tag.set_property("DIRECTION", direction);
 	output.append_tag();
+	output.tag.set_title("/SLIDE");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

@@ -492,6 +492,9 @@ void MotionBlurMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("RADIUS", config.radius);
 	output.tag.set_property("STEPS", config.steps);
 	output.append_tag();
+	output.tag.set_title("/MOTIONBLUR");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

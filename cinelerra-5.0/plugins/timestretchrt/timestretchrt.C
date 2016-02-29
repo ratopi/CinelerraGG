@@ -242,7 +242,7 @@ int TimeStretchRT::process_buffer(int64_t size,
 		engine->update(config.scale, sample_rate, config.size);
 		need_reconfigure = 0;
 //printf("TimeStretchRT::process_buffer %d start_position=" _LD
-//	 " prev_position=" _LD " scale=%f source_start=" _LD "\n", 
+//	 " prev_position=%jd scale=%f source_start=%jd\n", 
 //	__LINE__, start_position, prev_position, config.scale, source_start);
 	}
 
@@ -301,6 +301,9 @@ void TimeStretchRT::save_data(KeyFrame *keyframe)
 	output.tag.set_property("SCALE", config.scale);
 	output.tag.set_property("SIZE", config.size);
 	output.append_tag();
+	output.tag.set_title("/TIMESTRETCHRT");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

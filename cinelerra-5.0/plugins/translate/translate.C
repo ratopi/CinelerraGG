@@ -137,7 +137,9 @@ void TranslateMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("OUT_W", config.out_w);
 	output.tag.set_property("OUT_H", config.out_h);
 	output.append_tag();
-
+	output.tag.set_title("/TRANSLATE");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 // data is now in *text
 }
@@ -172,25 +174,24 @@ void TranslateMain::read_data(KeyFrame *keyframe)
 }
 
 
-
-
-
-
-
+#define EPSILON 0.001
 
 int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
-	VFrame *input, *output;
-	
-	
-	input = input_ptr;
-	output = output_ptr;
+	VFrame *input = input_ptr;
+	VFrame *output = output_ptr;
 
 	load_configuration();
 
 //printf("TranslateMain::process_realtime 1 %p\n", input);
-	if(input->get_rows()[0] == output->get_rows()[0])
-	{
+	if( input->get_rows()[0] == output->get_rows()[0] ) {
+		if( temp_frame && (
+		    temp_frame->get_w() != input_ptr->get_w() ||
+		    temp_frame->get_h() != input_ptr->get_h() ||
+		    temp_frame->get_color_model() != input_ptr->get_color_model() ) ) {
+			delete temp_frame;
+			temp_frame = 0;
+		}
 		if(!temp_frame) 
 			temp_frame = new VFrame(0, 
 				-1,
@@ -211,39 +212,87 @@ int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	output->clear_frame();
 
+	if( config.in_w < EPSILON ) return 1;
+	if( config.in_h < EPSILON ) return 1;
+	if( config.out_w < EPSILON ) return 1;
+	if( config.out_h < EPSILON ) return 1;
 
-// printf("TranslateMain::process_realtime 3 output=%p input=%p config.w=%f config.h=%f"
-//   "%f %f %f %f -> %f %f %f %f\n", output, input, config.w, config.h,
-//   in_x1, in_y1, in_x2, in_y2, out_x1, out_y1, out_x2, out_y2);
-		overlayer->overlay(output, input,
-			config.in_x, config.in_y, 
-			config.in_x + config.in_w, config.in_y + config.in_h,
-			config.out_x, config.out_y, 
-			config.out_x + config.out_w, config.out_y + config.out_h,
-			1, TRANSFER_REPLACE, get_interpolation_type());
+	float ix1 = config.in_x, ox1 = config.out_x;
+	float ix2 = ix1 + config.in_w;
+
+	if( ix1 < 0 ) {
+		ox1 -= ix1;
+		ix2 = config.in_w;
+		ix1 = 0;
+	}
+
+	if(ix2 > output->get_w())
+		ix2 = output->get_w();
+
+	float iy1 = config.in_y, oy1 = config.out_y;
+	float iy2 = iy1 + config.in_h;
+
+	if( iy1 < 0 ) {
+		oy1 -= iy1;
+		iy2 = config.in_h;
+		iy1 = 0;
+	}
+
+	if( iy2 > output->get_h() )
+		iy2 = output->get_h();
+
+	float cx = config.out_w / config.in_w;
+	float cy = config.out_h / config.in_h;
+
+	float ox2 = ox1 + (ix2 - ix1) * cx;
+	float oy2 = oy1 + (iy2 - iy1) * cy;
+
+	if( ox1 < 0 ) {
+		ix1 += -ox1 / cx;
+		ox1 = 0;
+	}
+	if( oy1 < 0 ) {
+		iy1 += -oy1 / cy;
+		oy1 = 0;
+	}
+	if( ox2 > output->get_w() ) {
+		ix2 -= (ox2 - output->get_w()) / cx;
+		ox2 = output->get_w();
+	}
+	if( oy2 > output->get_h() ) {
+		iy2 -= (oy2 - output->get_h()) / cy;
+		oy2 = output->get_h();
+	}
+
+	if( ix1 >= ix2 ) return 1;
+	if( iy1 >= iy2 ) return 1;
+	if( ox1 >= ox2 ) return 1;
+	if( oy1 >= oy2 ) return 1;
+
+	overlayer->overlay(output, input,
+		ix1, iy1, ix2, iy2,
+		ox1, oy1, ox2, oy2,
+		1, TRANSFER_REPLACE,
+		get_interpolation_type());
 	return 0;
 }
-
-
 
 NEW_WINDOW_MACRO(TranslateMain, TranslateWin)
 
 void TranslateMain::update_gui()
 {
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window();
-			((TranslateWin*)thread->window)->in_x->update(config.in_x);
-			((TranslateWin*)thread->window)->in_y->update(config.in_y);
-			((TranslateWin*)thread->window)->in_w->update(config.in_w);
-			((TranslateWin*)thread->window)->in_h->update(config.in_h);
-			((TranslateWin*)thread->window)->out_x->update(config.out_x);
-			((TranslateWin*)thread->window)->out_y->update(config.out_y);
-			((TranslateWin*)thread->window)->out_w->update(config.out_w);
-			((TranslateWin*)thread->window)->out_h->update(config.out_h);
-			thread->window->unlock_window();
-		}
-	}
+	if( !thread ) return;
+	if( !load_configuration() ) return;
+
+	TranslateWin *window = (TranslateWin*)thread->window;
+	window->lock_window();
+	window->in_x->update(config.in_x);
+	window->in_y->update(config.in_y);
+	window->in_w->update(config.in_w);
+	window->in_h->update(config.in_h);
+	window->out_x->update(config.out_x);
+	window->out_y->update(config.out_y);
+	window->out_w->update(config.out_w);
+	window->out_h->update(config.out_h);
+	window->unlock_window();
 }

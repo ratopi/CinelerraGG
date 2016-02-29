@@ -778,6 +778,9 @@ void LensMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("CENTER_Y", config.center_y);
 	output.tag.set_property("DRAW_GUIDES", config.draw_guides);
 	output.append_tag();
+	output.tag.set_title("/LENS");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 
 }

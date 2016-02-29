@@ -43,8 +43,6 @@ class OverlayConfig
 public:
 	OverlayConfig();
 
-
-
 	static const char* mode_to_text(int mode);
 	int mode;
 
@@ -64,10 +62,6 @@ public:
 		BOTTOM
 	};
 };
-
-
-
-
 
 class OverlayMode : public BC_PopupMenu
 {
@@ -118,11 +112,6 @@ public:
 	OverlayOutput *output;
 };
 
-
-
-
-
-
 class Overlay : public PluginVClient
 {
 public:
@@ -152,17 +141,6 @@ public:
 	int input_layer2;
 };
 
-
-
-
-
-
-
-
-
-
-
-
 OverlayConfig::OverlayConfig()
 {
 	mode = TRANSFER_NORMAL;
@@ -172,45 +150,33 @@ OverlayConfig::OverlayConfig()
 
 const char* OverlayConfig::mode_to_text(int mode)
 {
-	switch(mode)
-	{
-		case TRANSFER_NORMAL:
-			return _("Normal");
-			break;
-
-		case TRANSFER_REPLACE:
-			return _("Replace");
-			break;
-
-		case TRANSFER_ADDITION:
-			return _("Addition");
-			break;
-
-		case TRANSFER_SUBTRACT:
-			return _("Subtract");
-			break;
-
-		case TRANSFER_MULTIPLY:
-			return _("Multiply");
-			break;
-
-		case TRANSFER_DIVIDE:
-			return _("Divide");
-			break;
-
-		case TRANSFER_MAX:
-			return _("Max");
-			break;
-
-		case TRANSFER_MIN:
-			return _("Min");
-			break;
-
-		default:
-			return _("Normal");
-			break;
+	switch(mode) {
+	case TRANSFER_NORMAL:		return _("Normal");
+	case TRANSFER_ADDITION:		return _("Addition");
+	case TRANSFER_SUBTRACT:		return _("Subtract");
+	case TRANSFER_MULTIPLY:		return _("Multiply");
+	case TRANSFER_DIVIDE:		return _("Divide");
+	case TRANSFER_REPLACE:		return _("Replace");
+	case TRANSFER_MAX:		return _("Max");
+	case TRANSFER_MIN:		return _("Min");
+	case TRANSFER_AVERAGE:		return _("Average");
+	case TRANSFER_DARKEN:		return _("Darken");
+	case TRANSFER_LIGHTEN:		return _("Lighten");
+	case TRANSFER_DST:		return _("Dst");
+	case TRANSFER_DST_ATOP:		return _("DstAtop");
+	case TRANSFER_DST_IN:		return _("DstIn");
+	case TRANSFER_DST_OUT:		return _("DstOut");
+	case TRANSFER_DST_OVER:		return _("DstOver");
+	case TRANSFER_SRC:		return _("Src");
+	case TRANSFER_SRC_ATOP:		return _("SrcAtop");
+	case TRANSFER_SRC_IN:		return _("SrcIn");
+	case TRANSFER_SRC_OUT:		return _("SrcOut");
+	case TRANSFER_SRC_OVER:		return _("SrcOver");
+	case TRANSFER_OR:		return _("Or");
+	case TRANSFER_XOR:		return _("Xor");
+	default:			break;
 	}
-	return "";
+	return _("Normal");
 }
 
 const char* OverlayConfig::direction_to_text(int direction)
@@ -291,14 +257,9 @@ void OverlayWindow::create_objects()
 
 
 
-OverlayMode::OverlayMode(Overlay *plugin,
-	int x,
-	int y)
- : BC_PopupMenu(x,
- 	y,
-	150,
-	OverlayConfig::mode_to_text(plugin->config.mode),
-	1)
+OverlayMode::OverlayMode(Overlay *plugin, int x, int y)
+ : BC_PopupMenu(x, y, 150,
+	OverlayConfig::mode_to_text(plugin->config.mode), 1)
 {
 	this->plugin = plugin;
 }
@@ -459,7 +420,6 @@ int Overlay::process_buffer(VFrame **frame,
 	load_configuration();
 
 
-printf("Overlay::process_buffer mode=%d\n", config.mode);
 	if(!temp) temp = new VFrame(0,
 		-1,
 		frame[0]->get_w(),

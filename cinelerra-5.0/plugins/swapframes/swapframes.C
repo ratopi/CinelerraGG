@@ -243,6 +243,9 @@ void SwapFrames::save_data(KeyFrame *keyframe)
 	output.tag.set_property("ON", config.on);
 	output.tag.set_property("SWAP_EVEN", config.swap_even);
 	output.append_tag();
+	output.tag.set_title("/SWAPFRAMES");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

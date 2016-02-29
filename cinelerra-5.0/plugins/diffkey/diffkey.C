@@ -340,6 +340,9 @@ void DiffKey::save_data(KeyFrame *keyframe)
 	output.tag.set_property("SLOPE", config.slope);
 	output.tag.set_property("DO_VALUE", config.do_value);
 	output.append_tag();
+	output.tag.set_title("/DIFFKEY");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

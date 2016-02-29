@@ -242,17 +242,23 @@ void TitleWindow::create_objects()
 
 	add_tool(style_title = new BC_Title(x, y, _("Style:")));
 	add_tool(italic = new TitleItalic(client, this, x, y + 20));
+	int w1 = italic->get_w();
 	add_tool(bold = new TitleBold(client, this, x, y + 50));
+	if( bold->get_w() > w1 ) w1 = bold->get_w();  
 #ifdef USE_OUTLINE
-	add_tool(stroke = new TitleStroke(client, this, x, y + 110));
+	add_tool(stroke = new TitleStroke(client, this, x, y + 80));
+	if( stroke->get_w() > w1 ) w1 = stroke->get_w();  
 #endif
-	x += 90;
+	x += w1 + 10;
 	add_tool(justify_title = new BC_Title(x, y, _("Justify:")));
 	add_tool(left = new TitleLeft(client, this, x, y + 20));
+	w1 = left->get_w();
 	add_tool(center = new TitleCenter(client, this, x, y + 50));
+	if( center->get_w() > w1 ) w1 = center->get_w();  
 	add_tool(right = new TitleRight(client, this, x, y + 80));
+	if( right->get_w() > w1 ) w1 = right->get_w();  
 
-	x += 80;
+	x += w1 + 10;
 	add_tool(top = new TitleTop(client, this, x, y + 20));
 	add_tool(mid = new TitleMid(client, this, x, y + 50));
 	add_tool(bottom= new TitleBottom(client, this, x, y + 80));
@@ -282,28 +288,36 @@ void TitleWindow::create_objects()
 	y += 50;
 
 	add_tool(dropshadow_title = new BC_Title(x, y, _("Drop shadow:")));
+	w1 = dropshadow_title->get_w();
 	dropshadow = new TitleDropShadow(client, this, x, y + 20);
 	dropshadow->create_objects();
-	x += 100;
+	if( dropshadow->get_w() > w1 ) w1 = dropshadow->get_w();
+	x += w1 + 10;
 
 	add_tool(fadein_title = new BC_Title(x, y, _("Fade in (sec):")));
+	w1 = fadein_title->get_w();
 	add_tool(fade_in = new TitleFade(client, this, &client->config.fade_in, x, y + 20));
-	x += 100;
+	if( fade_in->get_w() > w1 ) w1 = fade_in->get_w();
+	x += w1 + 10;
 
 	add_tool(fadeout_title = new BC_Title(x, y, _("Fade out (sec):")));
+	w1 = fadeout_title->get_w();
 	add_tool(fade_out = new TitleFade(client, this, &client->config.fade_out, x, y + 20));
-	x += 110;
+	if( fade_out->get_w() > w1 ) w1 = fade_out->get_w();
+	x += w1 + 10;
 
 	add_tool(speed_title = new BC_Title(x, y, _("Speed:")));
+	w1 = speed_title->get_w();
 	speed = new TitleSpeed(client, this, x, y + 20);
 	speed->create_objects();
-	x += 110;
+	if( speed->get_w() > w1 ) w1 = speed->get_w();
+	x += w1 + 10;
 
 	color_x = x;
-	color_y = y + 20;
+	color_y = y + 16;
 	x += COLOR_W + 5;
-	add_tool(color_button = new TitleColorButton(client, this, x, y + 20, 0));
-	x += color_button->get_w();
+	add_tool(color_button = new TitleColorButton(client, this, x, y + 16, 0));
+	x += color_button->get_w() + 5;
 	color_thread = new TitleColorThread(client, this, 0);
 
 	x = color_x;

@@ -643,6 +643,9 @@ void RotateEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DRAW_PIVOT", (int)config.draw_pivot);
 //	output.tag.set_property("INTERPOLATE", (int)config.bilinear);
 	output.append_tag();
+	output.tag.set_title("/ROTATE");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 // data is now in *text
 }

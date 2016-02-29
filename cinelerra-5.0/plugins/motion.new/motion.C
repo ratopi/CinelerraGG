@@ -362,6 +362,9 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("HORIZONTAL_ONLY", config.horizontal_only);
 	output.tag.set_property("VERTICAL_ONLY", config.vertical_only);
 	output.append_tag();
+	output.tag.set_title("/MOTION");
+	output.append_tag();
+	output.append_newline();
 	output.terminate_string();
 }
 

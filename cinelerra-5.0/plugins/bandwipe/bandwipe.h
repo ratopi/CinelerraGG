@@ -24,6 +24,7 @@
 
 class BandWipeMain;
 class BandWipeWindow;
+class BandWipeConfig;
 
 
 #include "overlayframe.inc"
@@ -85,6 +86,11 @@ public:
 
 
 
+class BandWipeConfig
+{
+public:
+};
+
 
 class BandWipeMain : public PluginVClient
 {
@@ -92,10 +98,8 @@ public:
 	BandWipeMain(PluginServer *server);
 	~BandWipeMain();
 
-// required for all realtime plugins
-	int load_configuration();
-	const char* plugin_title();
-	PluginClientWindow* new_window();
+	PLUGIN_CLASS_MEMBERS(BandWipeConfig);
+
 	int process_realtime(VFrame *incoming, VFrame *outgoing);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
