@@ -342,7 +342,7 @@ float HistogramMain::calculate_linear(float input,
 			float dy = y2 - y1;
 			float delx = input - x1;
 			output = (grad2 * dx + grad1 * dx - 2*dy) / (dx * dx * dx) * delx * delx * delx +
-			 (dx * dx) * (3*dy - 2* grad1*dx - grad2*dx) / (dx * dx) * delx * delx + grad1*delx + y1;
+			 (3*dy - 2* grad1*dx - grad2*dx) / (dx * dx) * delx * delx + grad1*delx + y1;
 		  }
 		  else if (config.smoothMode == HISTOGRAM_BEZIER)
 		  {
