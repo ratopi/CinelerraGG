@@ -330,7 +330,8 @@ int BC_PopupMenu::reposition_window(int x, int y)
 
 int BC_PopupMenu::focus_out_event()
 {
-	if( popup_down && !menu_popup->cursor_inside() )
+	if( popup_down && !get_button_down() &&
+	    !cursor_inside() && !menu_popup->cursor_inside() )
 		deactivate();
 	return 0;
 }
@@ -507,9 +508,8 @@ int BC_PopupMenu::cursor_leave_event()
 	}
 
 // dispatch to popup
-	if(popup_down)
-	{
-		if( !menu_popup->cursor_inside() )
+	if( popup_down ) {
+		if( !get_button_down() && !menu_popup->cursor_inside() )
 			deactivate_menu();
 		menu_popup->dispatch_cursor_leave();
 	}
