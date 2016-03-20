@@ -1,0 +1,6 @@
+﻿email cinelerra@cinelerra-cv.org for bugs or help 
+check the manual https://cinelerra-cv.org/docs/cinelerra_cv_manual_en.html 
+testers are welcome to report and supply examples; join at cinelerra-cv.org
+if logged in as root, can capture crashes and email /tmp/cin*.dmp file 
+volunteer to help with language translations which will help you
+helpful videos: http://beccatoria.dreamwidth.org/144288.html#cutid2
