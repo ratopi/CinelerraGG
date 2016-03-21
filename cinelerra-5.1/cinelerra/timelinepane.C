@@ -319,8 +319,12 @@ Track *TimelinePane::is_over_patchbay()
 	if( cursor_x < 0 || cursor_x >= w ) return 0;
 	int cursor_y = gui->get_relative_cursor_y() - y;
 	if( cursor_y < 0 || cursor_y >= h ) return 0;
+	int no = number;
+	TrackScroll *trackscroll = gui->pane[no]->trackscroll;
+	if( !trackscroll )
+		trackscroll = gui->pane[++no]->trackscroll;
 // left panes have patchbays, right panes have trackscroll
-	int pane_y = cursor_y + gui->pane[number+1]->trackscroll->get_position();
+	int pane_y = cursor_y + trackscroll->get_position();
 	for( Track *track=mwindow->edl->tracks->first; track; track=track->next ) {
 		int track_y = track->y_pixel; 
 		if( pane_y < track_y ) continue;
