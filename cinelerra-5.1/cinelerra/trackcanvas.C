@@ -2842,7 +2842,6 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 	double view_start, unit_start;
 	double view_end, unit_end, yscale;
 	double zoom_sample, zoom_units;
-	double ax, ay, ax2, ay2, ax0, ay0;
 	double in_x2, in_y2, out_x2, out_y2;
 	double slope;
 	//int skip = 0;
@@ -2857,25 +2856,24 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 // Get first auto before start
 	Auto *current = 0, *previous = 0;
 
-	ax0 = ay0 = -1;
 	for( current = autos->last;
 		current && current->position >= unit_start;
 		current = PREVIOUS ) ;
 
-	if( !current ) {
-		current = autos->first ? autos->first : autos->default_auto;
-		ax0 = 0;
-	}
-	if( current ) {
-		calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
-			current, unit_start, zoom_units, yscale, autogrouptype);
-		if( ax0 < 0 ) current = NEXT;
-	}
-	else
-		ay0 = 0;
+	Auto *first_auto = current ? current :
+		 autos->first ? autos->first : autos->default_auto;
 
-	if( ax0 >= 0 ) ax = ax0;
-	if( ay0 >= 0 ) ay = ay0;
+	double ax = 0, ay = 0, ax2 = 0, ay2 = 0;
+	if( first_auto )
+		calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
+			first_auto, unit_start, zoom_units, yscale, autogrouptype);
+
+	if( current )
+		current = NEXT;
+	else {
+		current = autos->first;
+		ax = 0;
+	}
 
 	do {
 		//skip = 0;
@@ -2891,17 +2889,15 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 			//skip = 1;
 		}
 
-		slope = (ay2 - ay) / (ax2 - ax);
+		slope = ax2 > ax ? (ay2 - ay) / (ax2 - ax) : 0;
 
-		if(ax2 > get_w())
-		{
+		if(ax2 > get_w()) {
 			draw_auto = 0;
 			ax2 = get_w();
 			ay2 = ay + slope * (get_w() - ax);
 		}
 
-		if(ax < 0)
-		{
+		if(ax < 0) {
 			ay = ay + slope * (0 - ax);
 			ax = 0;
 		}

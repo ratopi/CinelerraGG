@@ -350,6 +350,15 @@ BC_Window* Render::new_gui()
 	return render_window;
 }
 
+void Render::handle_done_event(int result)
+{
+	if(!result) {
+		// add to recentlist only on OK
+		render_window->format_tools->path_recent->
+			add_item(File::formattostr(asset->format), asset->path);
+	}
+	render_window = 0;
+}
 
 void Render::handle_close_event(int result)
 {
@@ -357,9 +366,6 @@ void Render::handle_close_event(int result)
 	const int debug = 0;
 
 	if(!result) {
-		// add to recentlist only on OK
-		render_window->format_tools->path_recent->
-			add_item(File::formattostr(asset->format), asset->path);
 // Check the asset format for errors.
 		FormatCheck format_check(asset);
 		format_error = format_check.check_format();
@@ -379,7 +385,6 @@ void Render::handle_close_event(int result)
 		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
 	}
 //PRINT_TRACE
-	render_window = 0;
 }
 
 

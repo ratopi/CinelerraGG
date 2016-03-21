@@ -118,6 +118,7 @@ public:
 	void stop_operation();
 	BC_Window* new_gui();
 
+	void handle_done_event(int result);
 	void handle_close_event(int result);
 	void start_render();
 

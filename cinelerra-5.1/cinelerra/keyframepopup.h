@@ -68,6 +68,7 @@ private:
 	KeyframePopupCurveMode *key_linear;
 	KeyframePopupCurveMode *key_free_t;
 	KeyframePopupCurveMode *key_free;
+	bool key_edit_displayed;
 	bool key_mode_displayed;
 
 	void handle_curve_mode(Autos *autos, Auto *auto_keyframe);

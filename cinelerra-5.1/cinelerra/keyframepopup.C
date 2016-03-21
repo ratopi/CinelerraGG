@@ -54,6 +54,7 @@ KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
 	key_free = 0;
 	key_mbar = 0;
 	key_mode_displayed = false;
+	key_edit_displayed = false;
 }
 
 KeyframePopup::~KeyframePopup()
@@ -65,6 +66,9 @@ KeyframePopup::~KeyframePopup()
 		delete key_free_t;
 		delete key_free;
 	}
+	if( !key_edit_displayed ) {
+		delete key_edit;
+	}
 }
 
 void KeyframePopup::create_objects()
@@ -72,8 +76,8 @@ void KeyframePopup::create_objects()
 	add_item(key_show = new KeyframePopupShow(mwindow, this));
 	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
 	add_item(key_copy = new KeyframePopupCopy(mwindow, this));
-	add_item(key_edit = new KeyframePopupEdit(mwindow, this));
 
+	key_edit   = new KeyframePopupEdit(mwindow, this);
 	key_mbar   = new BC_MenuItem("-");
 	key_smooth = new KeyframePopupCurveMode(mwindow, this, FloatAuto::SMOOTH);
 	key_linear = new KeyframePopupCurveMode(mwindow, this, FloatAuto::LINEAR);
@@ -119,6 +123,15 @@ void KeyframePopup::handle_curve_mode(Autos *autos, Auto *auto_keyframe)
 // determines the type of automation node. if floatauto, adds
 // menu entries showing the curve mode of the node
 {
+	if( !key_edit_displayed && keyframe_plugin ) {
+		add_item(key_edit);
+		key_edit_displayed = true;
+	}
+	else if( key_edit_displayed && !keyframe_plugin ) {
+		remove_item(key_mbar);
+		key_edit_displayed = false;
+	}
+
 	if(!key_mode_displayed && autos && autos->get_type() == AUTOMATION_TYPE_FLOAT)
 	{ // append additional menu entries showing the curve_mode
 		add_item(key_mbar);
@@ -190,9 +203,8 @@ int KeyframePopupShow::handle_event()
 	{
 		mwindow->update_plugin_guis();
 		mwindow->show_plugin(popup->keyframe_plugin);
-	} else
-	if (popup->keyframe_automation)
-	{
+	}
+	else if( popup->keyframe_automation ) {
 /*
 
 		mwindow->cwindow->gui->lock_window();

@@ -76,6 +76,7 @@ int Automation::autogrouptype(int autoidx, Track *track)
 			break;
 		case AUTOMATION_CAMERA_Z:
 		case AUTOMATION_PROJECTOR_Z:
+		case AUTOMATION_SPEED:
 			autogrouptype = AUTOGROUPTYPE_ZOOM;
 			break;
 		case AUTOMATION_FADE:
