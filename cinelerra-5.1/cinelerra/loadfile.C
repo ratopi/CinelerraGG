@@ -194,8 +194,6 @@ void LoadFileWindow::create_objects()
 	lock_window("LoadFileWindow::create_objects");
 	BC_FileBox::create_objects();
 
-	BC_FileBox::create_objects();
-
 	int x = get_w() / 2 -
 		LoadMode::calculate_w(this, mwindow->theme) / 2;
 	int y = get_cancel_button()->get_y() -

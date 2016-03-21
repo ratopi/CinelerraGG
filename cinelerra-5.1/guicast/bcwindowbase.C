@@ -4029,17 +4029,10 @@ void BC_WindowBase::set_background(VFrame *bitmap)
 
 void BC_WindowBase::put_title(const char *text)
 {
-	if( BC_Resources::locale_utf8 ) {
-		char *bp=this->title, *ep = bp+sizeof(this->title)-1;
-		for( const char *cp=text; *cp!=0 && bp<ep; ) {
-			if( *cp < 0 ) { do { *bp++ = *cp++; } while( *cp < 0 );  continue; }
-			if( *cp < ' ' ) { *bp++ = ' ';  ++cp;  continue; }
-			*bp++ = *cp++;
-		}
-		*bp = 0;
-	}
-	else
-		strcpy(this->title, text);
+	char *cp = this->title, *ep = cp+sizeof(this->title)-1;
+	for( const unsigned char *bp = (const unsigned char *)text; *bp && cp<ep; ++bp )
+		*cp++ = *bp >= ' ' ? *bp : ' ';
+	*cp = 0;
 }
 
 void BC_WindowBase::set_title(const char *text)

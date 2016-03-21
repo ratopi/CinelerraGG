@@ -751,22 +751,15 @@ int BC_FileBox::resize_event(int w, int h)
 		w - (get_w() - listbox->get_w()),
 		h - (get_h() - listbox->get_h()),
 		0);
-	icon_button->reposition_window(w - (get_w() - icon_button->get_x()),
-		icon_button->get_y());
-	text_button->reposition_window(w - (get_w() - text_button->get_x()),
-		text_button->get_y());
-	folder_button->reposition_window(w - (get_w() - folder_button->get_x()),
-		folder_button->get_y());
-	rename_button->reposition_window(w - (get_w() - rename_button->get_x()),
-		rename_button->get_y());
-	reload_button->reposition_window(w - (get_w() - reload_button->get_x()),
-		reload_button->get_y());
-	delete_button->reposition_window(w - (get_w() - delete_button->get_x()),
-		delete_button->get_y());
-	updir_button->reposition_window(w - (get_w() - updir_button->get_x()),
-		updir_button->get_y());
-	set_w(w);
-	set_h(h);
+	int dx = w - get_w();
+	icon_button->reposition_window(icon_button->get_x()+dx, icon_button->get_y());
+	text_button->reposition_window(text_button->get_x()+dx, text_button->get_y());
+	folder_button->reposition_window(folder_button->get_x()+dx, folder_button->get_y());
+	rename_button->reposition_window(rename_button->get_x()+dx, rename_button->get_y());
+	reload_button->reposition_window(reload_button->get_x()+dx, reload_button->get_y());
+	delete_button->reposition_window(delete_button->get_x()+dx, delete_button->get_y());
+	updir_button->reposition_window(updir_button->get_x()+dx, updir_button->get_y());
+	set_w(w);  set_h(h);
 	get_resources()->filebox_w = get_w();
 	get_resources()->filebox_h = get_h();
 	flush();
