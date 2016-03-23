@@ -321,12 +321,8 @@ speed_fragment_len);
 			speed_fragment_len = (int64_t)(max_position - min_position);
 		}
 
-printf("AModule::import_samples %d %f %f %f %f\n", 
-__LINE__, 
-min_position, 
-max_position,
-speed_position1,
-speed_position2);
+//printf("AModule::import_samples %d %f %f %f %f\n", 
+// __LINE__, min_position, max_position, speed_position1, speed_position2);
 
 // new start of source to read from file
 		start_source = (int64_t)min_position;

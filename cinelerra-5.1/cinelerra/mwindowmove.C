@@ -190,6 +190,12 @@ void MWindow::fit_autos(int doall)
 				max = floor(max*200)/100;
 			}
 			break;
+		case AUTOGROUPTYPE_SPEED:
+			if (range < 0.001) {
+				min = floor(min*5)/100;
+				max = floor(max*300)/100;
+			}
+			break;
 		case AUTOGROUPTYPE_X:
 		case AUTOGROUPTYPE_Y:
 			if (range < 5) {
@@ -233,6 +239,7 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 			val += 1;
 			break;
 		case AUTOGROUPTYPE_ZOOM:
+		case AUTOGROUPTYPE_SPEED:
 			if (val == 0)
 				val = 0.001;
 			else
@@ -254,6 +261,7 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 			val -= 1;
 			break;
 		case AUTOGROUPTYPE_ZOOM:
+		case AUTOGROUPTYPE_SPEED:
 			if (val > 0) val = val/2;
 			break;
 		case AUTOGROUPTYPE_X:

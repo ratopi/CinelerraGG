@@ -179,6 +179,7 @@ void ZoomBar::update_autozoom()
 			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
 		break;
 	case AUTOGROUPTYPE_ZOOM:
+	case AUTOGROUPTYPE_SPEED:
 		sprintf(string, "%0.03f to %0.03f\n", 
 			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype],
 			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
@@ -460,6 +461,7 @@ void AutoTypeMenu::create_objects()
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_AUDIO_FADE)));
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_VIDEO_FADE)));
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_ZOOM)));
+	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_SPEED)));
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_X)));
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_Y)));
 }
@@ -470,6 +472,7 @@ const char* AutoTypeMenu::to_text(int mode)
 	case AUTOGROUPTYPE_AUDIO_FADE: return _("Audio Fade:");
 	case AUTOGROUPTYPE_VIDEO_FADE: return _("Video Fade:");
 	case AUTOGROUPTYPE_ZOOM: return _("Zoom:");
+	case AUTOGROUPTYPE_SPEED: return _("Speed:");
 	case AUTOGROUPTYPE_X: return "X:";
 	case AUTOGROUPTYPE_Y: return "Y:";
 	}
@@ -478,16 +481,12 @@ const char* AutoTypeMenu::to_text(int mode)
 
 int AutoTypeMenu::from_text(char *text)
 {
-	if(!strcmp(text, to_text(AUTOGROUPTYPE_AUDIO_FADE)))
-		return AUTOGROUPTYPE_AUDIO_FADE;
-	if(!strcmp(text, to_text(AUTOGROUPTYPE_VIDEO_FADE)))
-		return AUTOGROUPTYPE_VIDEO_FADE;
-	if(!strcmp(text, to_text(AUTOGROUPTYPE_ZOOM)))
-		return AUTOGROUPTYPE_ZOOM;
-	if(!strcmp(text, to_text(AUTOGROUPTYPE_X)))
-		return AUTOGROUPTYPE_X;
-	if(!strcmp(text, to_text(AUTOGROUPTYPE_Y)))
-		return AUTOGROUPTYPE_Y;
+	if(!strcmp(text, to_text(AUTOGROUPTYPE_AUDIO_FADE))) return AUTOGROUPTYPE_AUDIO_FADE;
+	if(!strcmp(text, to_text(AUTOGROUPTYPE_VIDEO_FADE))) return AUTOGROUPTYPE_VIDEO_FADE;
+	if(!strcmp(text, to_text(AUTOGROUPTYPE_ZOOM))) return AUTOGROUPTYPE_ZOOM;
+	if(!strcmp(text, to_text(AUTOGROUPTYPE_SPEED))) return AUTOGROUPTYPE_SPEED;
+	if(!strcmp(text, to_text(AUTOGROUPTYPE_X))) return AUTOGROUPTYPE_X;
+	if(!strcmp(text, to_text(AUTOGROUPTYPE_Y))) return AUTOGROUPTYPE_Y;
 	return AUTOGROUPTYPE_INT255;
 }
 

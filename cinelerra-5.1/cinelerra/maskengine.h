@@ -59,28 +59,16 @@ public:
 
 	void process_package(LoadPackage *package);
 	void draw_line_clamped(VFrame *frame, 
-		int &x1, 
-		int &y1, 
-		int x2, 
-		int y2, 
-		unsigned char value);
-	void do_feather(VFrame *output,
-		VFrame *input, 
-		double feather, 
-		int start_y, 
-		int end_y, 
-		int start_x, 
-		int end_x);
-	void blur_strip(double *val_p, 
-		double *val_m, 
-		double *dst, 
-		double *src, 
-		int size,
-		int max);
+		int x1, int y1, int x2, int y2, unsigned char value);
+	void do_feather(VFrame *output, VFrame *input, 
+		double feather, int start_y, int end_y, int start_x, int end_x);
+	void blur_strip(double *val_p, double *val_m, 
+		double *dst, double *src, int size, int max);
 
-    double n_p[5], n_m[5];
-    double d_p[5], d_m[5];
-    double bd_p[5], bd_m[5];
+	double n_p[5], n_m[5];
+	double d_p[5], d_m[5];
+	double bd_p[5], bd_m[5];
+
 	MaskEngine *engine;
 	VFrame *temp;
 };

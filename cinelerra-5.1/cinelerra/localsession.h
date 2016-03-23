@@ -22,6 +22,7 @@
 #ifndef LOCALSESSION_H
 #define LOCALSESSION_H
 
+#include "automation.inc"
 #include "bcwindowbase.inc"
 #include "bchash.inc"
 #include "edl.inc"
@@ -100,8 +101,8 @@ public:
 	int64_t zoom_track;
 // Vertical automation scale
 
-	float automation_mins[6];
-	float automation_maxs[6];
+	float automation_mins[AUTOGROUPTYPE_COUNT];
+	float automation_maxs[AUTOGROUPTYPE_COUNT];
 	int zoombar_showautotype;
 // Default type of float keyframe
 	int floatauto_type;

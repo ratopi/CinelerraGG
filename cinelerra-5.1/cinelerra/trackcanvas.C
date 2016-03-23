@@ -2014,7 +2014,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 					{
 						if (buttonpress != 3)
 						{
-							if(i == AUTOMATION_FADE)
+							if(i == AUTOMATION_FADE || i == AUTOMATION_SPEED)
 								synchronize_autos(0,
 									track,
 									(FloatAuto*)mwindow->session->drag_auto,
@@ -2311,8 +2311,7 @@ float levered_position(float position, float ref_pos)
 {
 	if( 1e-6 > fabs(ref_pos) || isnan(ref_pos)) 
 		return 0.0;
-	else 
-		return ref_pos / position;
+	return ref_pos / position;
 }
 
 
@@ -2324,10 +2323,9 @@ float TrackCanvas::value_to_percentage(float auto_value, int autogrouptype)
 	float automation_min = mwindow->edl->local_session->automation_mins[autogrouptype];
 	float automation_max = mwindow->edl->local_session->automation_maxs[autogrouptype];
 	float automation_range = automation_max - automation_min;
-	if(0 == automation_range || isnan(auto_value) || isinf(auto_value))
+	if( 0 >= automation_range || isnan(auto_value) || isinf(auto_value) )
 		return 0;
-	else
-		return (auto_value - automation_min) / automation_range;
+	return (auto_value - automation_min) / automation_range;
 }
 
 
@@ -2596,71 +2594,62 @@ int TrackCanvas::test_floatline(int center_pixel,
 
 
 void TrackCanvas::synchronize_autos(float change,
-	Track *skip,
-	FloatAuto *fauto,
-	int fill_gangs)
+		Track *skip, FloatAuto *fauto, int fill_gangs)
 {
 // Handles the special case of modifying a fadeauto
 // when there are ganged faders on several tracks
 // (skip and fauto may be NULL if fill_gangs==-1)
-	if (fill_gangs == 1 && skip->gang)
-	{
-		for(Track *current = mwindow->edl->tracks->first;
-			current;
-			current = NEXT)
-		{
-			if(current->data_type == skip->data_type &&
-				current->gang &&
-				current->record &&
-				current != skip)
-			{
-				FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
-				double position = skip->from_units(fauto->position);
+
+	if( fill_gangs > 0 && skip->gang ) {
+		double position = skip->from_units(fauto->position);
+		int autoidx = fauto->autos->autoidx;
+
+		for(Track *current = mwindow->edl->tracks->first; current; current = NEXT) {
+			if( (current->data_type == skip->data_type || get_double_click()) &&
+			    current->gang && current->record && current != skip ) {
+				int64_t current_position = current->to_units(position, 1);
+				FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[autoidx];
+				float auto_min = mwindow->edl->local_session->automation_mins[fade_autos->autogrouptype];
+				float auto_max = mwindow->edl->local_session->automation_maxs[fade_autos->autogrouptype];
 				FloatAuto *previous = 0, *next = 0;
-
-				float init_value = fade_autos->get_value(fauto->position, PLAY_FORWARD, previous, next);
-				FloatAuto *keyframe;
-				keyframe = (FloatAuto*)fade_autos->get_auto_at_position(position);
-
-				if (!keyframe)
-				{
+				FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_at_position(current_position);
+				if( !keyframe ) {
 // create keyframe on neighbouring track at the point in time given by fauto
-					keyframe = (FloatAuto*)fade_autos->insert_auto(fauto->position);
-					keyframe->set_value(init_value + change);
+					float init_value = fade_autos->get_value(current_position, PLAY_FORWARD, previous, next);
+					float new_value = init_value + change;
+					CLAMP(new_value, auto_min, auto_max);
+					keyframe = (FloatAuto*)fade_autos->insert_auto(current_position);
+					keyframe->set_value(new_value);
 				}
-				else
-				{
+				else {
 // keyframe exists, just change it
-					keyframe->adjust_to_new_coordinates(fauto->position, keyframe->get_value() + change);
+					float new_value = keyframe->get_value() + change;
+					CLAMP(new_value, auto_min, auto_max);
+					keyframe->adjust_to_new_coordinates(current_position, new_value);
 // need to (re)set the position, as the existing node could be on a "equivalent" position (within half a frame)
 				}
 
 				mwindow->session->drag_auto_gang->append((Auto *)keyframe);
 			}
 		}
-	} else
-// move the gangs
-	if (fill_gangs == 0)
-	{
-// Move the gang!
-		for (int i = 0; i < mwindow->session->drag_auto_gang->total; i++)
-		{
+	}
+	else if( !fill_gangs ) {
+		double position = skip->from_units(fauto->position);
+// Move the gangs
+		for (int i = 0; i < mwindow->session->drag_auto_gang->total; i++) {
 			FloatAuto *keyframe = (FloatAuto *)mwindow->session->drag_auto_gang->values[i];
-
+			int64_t keyframe_position = keyframe->autos->track->to_units(position, 1);
 			float new_value = keyframe->get_value() + change;
 			CLAMP(new_value,
 			      mwindow->edl->local_session->automation_mins[keyframe->autos->autogrouptype],
 			      mwindow->edl->local_session->automation_maxs[keyframe->autos->autogrouptype]);
-			keyframe->adjust_to_new_coordinates(fauto->position, new_value);
+			keyframe->adjust_to_new_coordinates(keyframe_position, new_value);
 		}
 
 	}
-	else
+	else {
 // remove the gangs
-	if (fill_gangs == -1)
-	{
-		for (int i = 0; i < mwindow->session->drag_auto_gang->total; i++)
-		{
+		for (int i = 0; i < mwindow->session->drag_auto_gang->total; i++) {
 			FloatAuto *keyframe = (FloatAuto *)mwindow->session->drag_auto_gang->values[i];
 			keyframe->autos->remove_nonsequential(
 					keyframe);
@@ -3485,36 +3474,22 @@ int TrackCanvas::get_drag_values(float *percentage,
 
 
 #define UPDATE_DRAG_HEAD(do_clamp) \
-	int result = 0; \
+	int result = 0, center_pixel; \
 	if(!current->autos->track->record) return 0; \
-	double view_start; \
-	double unit_start; \
-	double view_end; \
-	double unit_end; \
-	double yscale; \
-	int center_pixel; \
-	double zoom_sample; \
-	double zoom_units; \
+	double view_start, unit_start, view_end, unit_end; \
+	double yscale, zoom_sample, zoom_units; \
  \
 	calculate_viewport(current->autos->track,  \
-		view_start, \
-		unit_start, \
-		view_end, \
-		unit_end, \
-		yscale, \
-		center_pixel, \
-		zoom_sample, \
-		zoom_units); \
+		view_start, unit_start, view_end, unit_end, \
+		yscale, center_pixel, zoom_sample, zoom_units); \
  \
 	float percentage = (float)(mwindow->session->drag_origin_y - cursor_y) / \
-		yscale +  \
-		mwindow->session->drag_start_percentage; \
+		yscale +  mwindow->session->drag_start_percentage; \
 	if(do_clamp) CLAMP(percentage, 0, 1); \
  \
 	int64_t position = Units::to_int64(zoom_units * \
 		(cursor_x - mwindow->session->drag_origin_x) + \
 		mwindow->session->drag_start_position); \
- \
 	if((do_clamp) && position < 0) position = 0;
 
 
@@ -3523,119 +3498,99 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 	FloatAuto *current = (FloatAuto*)mwindow->session->drag_auto;
 
 	UPDATE_DRAG_HEAD(mwindow->session->drag_handle == 0);
-	int x = cursor_x - mwindow->session->drag_origin_x; \
-	int y = cursor_y - mwindow->session->drag_origin_y; \
+	int x = cursor_x - mwindow->session->drag_origin_x;
+	int y = cursor_y - mwindow->session->drag_origin_y;
+	float value, old_value;
 
-	float value;
-	float old_value;
+	if( mwindow->session->drag_handle == 0 && (ctrl_down() && !shift_down()) ) {
+// not really editing the node, rather start editing the curve
+// tangent is editable and drag movement is significant
+		if( (FloatAuto::FREE == current->curve_mode ||
+		     FloatAuto::TFREE==current->curve_mode) &&                                          
+		    (fabs(x) > HANDLE_W / 2 || fabs(y) > HANDLE_W / 2))
+			mwindow->session->drag_handle = x < 0 ? 1 : 2;
+	}
 
-	switch(mwindow->session->drag_handle)
-	{
-// Center
-		case 0:
-			if(ctrl_down())
-			// not really editing the node, rather start editing the curve
-			{
- 				// tangent is editable and drag movement is significant
-				if( (FloatAuto::FREE == current->curve_mode ||
-				     FloatAuto::TFREE==current->curve_mode) &&                                          
-				    (fabs(x) > HANDLE_W / 2 || fabs(y) > HANDLE_W / 2))
-					mwindow->session->drag_handle = x < 0 ? 1 : 2;
-				break;
-			}
+	switch(mwindow->session->drag_handle) {
+	case 0: // Center
 // Snap to nearby values
-			old_value = current->get_value();
-			if(shift_down())
-			{
-				double value1;
-				double distance1;
-				double value2;
-				double distance2;
+		old_value = current->get_value();
+		if(shift_down()) {
+			double value1, value2, distance1, distance2;
 
-				if(current->previous)
-				{
-					int autogrouptype = current->previous->autos->autogrouptype;
-					value = percentage_to_value(percentage, 0, 0, autogrouptype);
-					value1 = ((FloatAuto*)current->previous)->get_value();
-					distance1 = fabs(value - value1);
-					current->set_value(value1);
-				}
-
-				if(current->next)
-				{
-					int autogrouptype = current->next->autos->autogrouptype;
-					value = percentage_to_value(percentage, 0, 0, autogrouptype);
-					value2 = ((FloatAuto*)current->next)->get_value();
-					distance2 = fabs(value - value2);
-					if(!current->previous || distance2 < distance1)
-					{
-						current->set_value(value2);
-					}
-				}
-
-				if(!current->previous && !current->next)
-				{
-					current->set_value( ((FloatAutos*)current->autos)->default_);
-				}
-				value = current->get_value();
-			}
-			else
-			{
-				int autogrouptype = current->autos->autogrouptype;
+			if(current->previous) {
+				int autogrouptype = current->previous->autos->autogrouptype;
 				value = percentage_to_value(percentage, 0, 0, autogrouptype);
+				value1 = ((FloatAuto*)current->previous)->get_value();
+				distance1 = fabs(value - value1);
+				current->set_value(value1);
 			}
 
-			if(alt_down())
+			if(current->next) {
+				int autogrouptype = current->next->autos->autogrouptype;
+				value = percentage_to_value(percentage, 0, 0, autogrouptype);
+				value2 = ((FloatAuto*)current->next)->get_value();
+				distance2 = fabs(value - value2);
+				if(!current->previous || distance2 < distance1) {
+					current->set_value(value2);
+				}
+			}
+
+			if(!current->previous && !current->next) {
+				current->set_value( ((FloatAutos*)current->autos)->default_);
+			}
+			value = current->get_value();
+		}
+		else {
+			int autogrouptype = current->autos->autogrouptype;
+			value = percentage_to_value(percentage, 0, 0, autogrouptype);
+		}
+
+		if(alt_down() && !shift_down())
 // ALT constrains movement: fixed position, only changing the value
-				position = mwindow->session->drag_start_position;
+			position = mwindow->session->drag_start_position;
 
-			if(value != old_value || position != current->position)
-			{
-				result = 1;
-				float change = value - old_value;		
-				current->adjust_to_new_coordinates(position, value);
-				synchronize_autos(change, current->autos->track, current, 0);
-				show_message(current, 1,", %.2f", current->get_value());
-			}
-			break;
+		if(value != old_value || position != current->position) {
+			result = 1;
+			float change = value - old_value;		
+			current->adjust_to_new_coordinates(position, value);
+			synchronize_autos(change, current->autos->track, current, 0);
+			show_message(current, 1,", %.2f", current->get_value());
+		}
+		break;
 
 // In control
-		case 1:
+	case 1: {
+		int autogrouptype = current->autos->autogrouptype;
+		value = percentage_to_value(percentage, 0, current, autogrouptype);
+		if(value != current->get_control_in_value())
 		{
-			int autogrouptype = current->autos->autogrouptype;
-			value = percentage_to_value(percentage, 0, current, autogrouptype);
-			if(value != current->get_control_in_value())
-			{
-				result = 1;
-				// note: (position,value) need not be at the location of the ctrl point,
-				// but could be somewhere in between on the curve (or even outward or
-				// on the opposit side). We set the new control point such as
-				// to point the curve through (position,value)
-				current->set_control_in_value(
-					value * levered_position(position - current->position,
-					                         current->get_control_in_position()));
-				synchronize_autos(0, current->autos->track, current, 0);
-				show_message(current, 1,", %.2f", current->get_control_in_value());
-			}
+			result = 1;
+			// note: (position,value) need not be at the location of the ctrl point,
+			// but could be somewhere in between on the curve (or even outward or
+			// on the opposit side). We set the new control point such as
+			// to point the curve through (position,value)
+			current->set_control_in_value(
+				value * levered_position(position - current->position,
+				                         current->get_control_in_position()));
+			synchronize_autos(0, current->autos->track, current, 0);
+			show_message(current, 1,", %.2f", current->get_control_in_value());
 		}
-			break;
+		break; }
 
 // Out control
-		case 2:
-		{
-			int autogrouptype = current->autos->autogrouptype;
-			value = percentage_to_value(percentage, 0, current, autogrouptype);
-			if(value != current->get_control_out_value())
-			{
-				result = 1;
-				current->set_control_out_value(
-					value * levered_position(position - current->position,
-					                         current->get_control_out_position()));
-				synchronize_autos(0, current->autos->track, current, 0);
-				show_message(current, 1,", %.2f", current->get_control_out_value());
-			}
+	case 2: {
+		int autogrouptype = current->autos->autogrouptype;
+		value = percentage_to_value(percentage, 0, current, autogrouptype);
+		if(value != current->get_control_out_value()) {
+			result = 1;
+			current->set_control_out_value(
+				value * levered_position(position - current->position,
+				                         current->get_control_out_position()));
+			synchronize_autos(0, current->autos->track, current, 0);
+			show_message(current, 1,", %.2f", current->get_control_out_value());
 		}
-			break;
+		break; }
 	}
 
 	return result;

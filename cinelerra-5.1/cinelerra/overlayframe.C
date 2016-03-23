@@ -361,8 +361,8 @@ int OverlayFrame::overlay(VFrame *output, VFrame *input,
 	return 0;
 }
 
-// NORMAL	[Sa * Sa + Da * (1 - Sa), Sc * Sa + Dc * (1 - Sa)])
-#define ALPHA_NORMAL(mx, Sa, Da) ((Sa * Sa + Da * (mx - Sa)) / mx)
+// NORMAL	[Sa + Da * (1 - Sa), Sc * Sa + Dc * (1 - Sa)])
+#define ALPHA_NORMAL(mx, Sa, Da) (Sa + (Da * (mx - Sa)) / mx)
 #define COLOR_NORMAL(mx, Sc, Sa, Dc, Da) ((Sc * Sa + Dc * (mx - Sa)) / mx)
 #define CHROMA_NORMAL COLOR_NORMAL
 

@@ -34,6 +34,7 @@ static const char *xml_autogrouptypes_titlesmax[] =
 	"AUTOGROUPTYPE_AUDIO_FADE_MAX",
 	"AUTOGROUPTYPE_VIDEO_FADE_MAX",
 	"AUTOGROUPTYPE_ZOOM_MAX",
+	"AUTOGROUPTYPE_SPEED_MAX",
 	"AUTOGROUPTYPE_X_MAX",
 	"AUTOGROUPTYPE_Y_MAX",
 	"AUTOGROUPTYPE_INT255_MAX"
@@ -44,6 +45,7 @@ static const char *xml_autogrouptypes_titlesmin[] =
 	"AUTOGROUPTYPE_AUDIO_FADE_MIN",
 	"AUTOGROUPTYPE_VIDEO_FADE_MIN",
 	"AUTOGROUPTYPE_ZOOM_MIN",
+	"AUTOGROUPTYPE_SPEED_MIN",
 	"AUTOGROUPTYPE_X_MIN",
 	"AUTOGROUPTYPE_Y_MIN",
 	"AUTOGROUPTYPE_INT255_MIN"
@@ -83,6 +85,9 @@ LocalSession::LocalSession(EDL *edl)
 
 	automation_mins[AUTOGROUPTYPE_ZOOM] = 0.001;
 	automation_maxs[AUTOGROUPTYPE_ZOOM] = 4;
+
+	automation_mins[AUTOGROUPTYPE_SPEED] = 0.05;
+	automation_maxs[AUTOGROUPTYPE_SPEED] = 3;
 
 	automation_mins[AUTOGROUPTYPE_X] = -100;
 	automation_maxs[AUTOGROUPTYPE_X] = 100;

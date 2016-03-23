@@ -76,8 +76,10 @@ int Automation::autogrouptype(int autoidx, Track *track)
 			break;
 		case AUTOMATION_CAMERA_Z:
 		case AUTOMATION_PROJECTOR_Z:
-		case AUTOMATION_SPEED:
 			autogrouptype = AUTOGROUPTYPE_ZOOM;
+			break;
+		case AUTOMATION_SPEED:
+			autogrouptype = AUTOGROUPTYPE_SPEED;
 			break;
 		case AUTOMATION_FADE:
 			if (track->data_type == TRACK_AUDIO)
@@ -100,6 +102,7 @@ void Automation::create_objects()
 	autos[AUTOMATION_MUTE]->autogrouptype = AUTOGROUPTYPE_INT255;
 	autos[AUTOMATION_SPEED] = new FloatAutos(edl, track, 1.0);
 	autos[AUTOMATION_SPEED]->create_objects();
+	autos[AUTOMATION_SPEED]->autogrouptype = AUTOGROUPTYPE_SPEED;
 }
 
 Automation& Automation::operator=(Automation& automation)

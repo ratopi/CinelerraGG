@@ -44,10 +44,14 @@
 	if (autogrouptype == AUTOGROUPTYPE_VIDEO_FADE)			\
 		CLAMP(value, 0, 100);					\
 	if (autogrouptype == AUTOGROUPTYPE_ZOOM && value < 0)		\
-		value = 0;
+		value = 0;						\
+	else if (autogrouptype == AUTOGROUPTYPE_SPEED && value < 0.001)	\
+		value = 0.001;
 
 #define AUTOMATIONVIEWCLAMPS(value, autogrouptype)			\
 	if (autogrouptype == AUTOGROUPTYPE_ZOOM && value < 0)		\
+		value = 0;						\
+	else if (autogrouptype == AUTOGROUPTYPE_SPEED && value < 0)	\
 		value = 0;
 
 

@@ -52,6 +52,9 @@ void VAutomation::create_objects()
 	autos[AUTOMATION_FADE] = new FloatAutos(edl, track, 100);
 	autos[AUTOMATION_FADE]->create_objects();
 
+	autos[AUTOMATION_SPEED] = new FloatAutos(edl, track, 1.);
+	autos[AUTOMATION_SPEED]->create_objects();
+
 	autos[AUTOMATION_MODE] = new IntAutos(edl, track, TRANSFER_NORMAL);
 	autos[AUTOMATION_MODE]->create_objects();
 
@@ -76,11 +79,9 @@ void VAutomation::create_objects()
 	autos[AUTOMATION_PROJECTOR_Z] = new FloatAutos(edl, track, 1.0);
 	autos[AUTOMATION_PROJECTOR_Z]->create_objects();
 	for(int i = 0; i < AUTOMATION_TOTAL; i++) {
-		if (autos[i])
-		{
-			autos[i]->autoidx = i;
-			autos[i]->autogrouptype = autogrouptype(i, autos[i]->track);
-		}
+		if( !autos[i] ) continue;
+		autos[i]->autoidx = i;
+		autos[i]->autogrouptype = autogrouptype(i, autos[i]->track);
 	}
 }
 

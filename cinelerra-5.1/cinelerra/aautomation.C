@@ -45,11 +45,16 @@ void AAutomation::create_objects()
 
 	autos[AUTOMATION_FADE] = new FloatAutos(edl, track, 0.0);
 	autos[AUTOMATION_FADE]->create_objects();
-	autos[AUTOMATION_FADE]->autoidx = AUTOMATION_FADE;
-	autos[AUTOMATION_FADE]->autogrouptype = AUTOGROUPTYPE_AUDIO_FADE;
+
+	autos[AUTOMATION_SPEED] = new FloatAutos(edl, track, 1.0);
+	autos[AUTOMATION_SPEED]->create_objects();
 
 	autos[AUTOMATION_PAN] = new PanAutos(edl, track);
 	autos[AUTOMATION_PAN]->create_objects();
-	autos[AUTOMATION_PAN]->autoidx = AUTOMATION_PAN;
-	autos[AUTOMATION_PAN]->autogrouptype = -1;
+
+	for(int i = 0; i < AUTOMATION_TOTAL; i++) {
+		if( !autos[i] ) continue;
+		autos[i]->autoidx = i;
+		autos[i]->autogrouptype = autogrouptype(i, autos[i]->track);
+	}
 }
