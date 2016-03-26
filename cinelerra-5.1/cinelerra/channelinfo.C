@@ -1787,7 +1787,7 @@ void ChannelInfo::delete_batch()
 }
 
 ChannelScan::ChannelScan(MWindow *mwindow)
- : BC_MenuItem(_("Scan"), _("Shift-S"), 'S')
+ : BC_MenuItem(_("Scan..."), _("Shift-S"), 'S')
 {
 	set_shift();
 	this->mwindow = mwindow;

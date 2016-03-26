@@ -29,7 +29,6 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
-#include "interlacemodes.h"
 #include "localsession.h"
 #include "mainsession.h"
 #include "mwindow.h"
@@ -144,28 +143,13 @@ int VRender::process_buffer(int64_t input_position,
 	use_vconsole = get_use_vconsole(&playable_edit, input_position, use_brender);
 	if(debug) printf("VRender::process_buffer %d use_vconsole=%d\n", __LINE__, use_vconsole);
 
-	if( playable_edit ) { 
-// Asset and output device must have same resulting de-interlacing method
-		Indexable *source = playable_edit->get_source();
-		if( source->is_asset ) {
-			Asset *asset = (Asset *)source;
-			if( ilaceautofixmethod2(renderengine->edl->session->interlace_mode,
-					asset->interlace_autofixoption, asset->interlace_mode,
-					asset->interlace_fixmethod) != BC_ILACE_FIXMETHOD_NONE )
-				return 1;
-		}
-	}
-
 // Negotiate color model
 	colormodel = get_colormodel(playable_edit, use_vconsole, use_brender);
 	if(debug) printf("VRender::process_buffer %d\n", __LINE__);
 
 
-
-
 // Get output buffer from device
-	if(renderengine->command->realtime &&
-		!renderengine->is_nested)
+	if(renderengine->command->realtime && !renderengine->is_nested)
 	{
 		renderengine->video->new_output_buffer(&video_out, colormodel);
 	}
@@ -260,8 +244,7 @@ int VRender::get_use_vconsole(VEdit **playable_edit,
 
 // Descend into EDL nest
 	return renderengine->get_edl()->get_use_vconsole(playable_edit,
-		position,
-		renderengine->command->get_direction(),
+		position, renderengine->command->get_direction(),
 		vconsole->playable_tracks);
 }
 

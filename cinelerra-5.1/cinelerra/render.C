@@ -82,7 +82,7 @@
 
 
 RenderItem::RenderItem(MWindow *mwindow)
- : BC_MenuItem(_("Render..."), _("Shift+R"), 'R')
+ : BC_MenuItem(_("Render..."), _("Shift-R"), 'R')
 {
 	this->mwindow = mwindow;
 	set_shift(1);

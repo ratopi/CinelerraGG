@@ -485,7 +485,7 @@ ZTYP(float);	ZTYP(double);
 
 #define ALPHA3_BLEND(FN, typ, inp, out, mx, ofs, rnd) \
   typ inp0 = (typ)inp[0], inp1 = (typ)inp[1] - ofs; \
-  typ inp2 = (typ)inp[2] - ofs, inp3 = fade * mx + rnd; \
+  typ inp2 = (typ)inp[2] - ofs, inp3 = mx; \
   typ out0 = (typ)out[0], out1 = (typ)out[1] - ofs; \
   typ out2 = (typ)out[2] - ofs, out3 = mx; \
   r = COLOR_##FN(mx, inp0, inp3, out0, out3); \
@@ -500,7 +500,7 @@ ZTYP(float);	ZTYP(double);
 
 #define ALPHA4_BLEND(FN, typ, inp, out, mx, ofs, rnd) \
   typ inp0 = (typ)inp[0], inp1 = (typ)inp[1] - ofs; \
-  typ inp2 = (typ)inp[2] - ofs, inp3 = (typ)inp[3] * fade + rnd; \
+  typ inp2 = (typ)inp[2] - ofs, inp3 = inp[3]; \
   typ out0 = (typ)out[0], out1 = (typ)out[1] - ofs; \
   typ out2 = (typ)out[2] - ofs, out3 = out[3]; \
   r = COLOR_##FN(mx, inp0, inp3, out0, out3); \
@@ -544,7 +544,7 @@ ZTYP(float);	ZTYP(double);
   out[3] = aclip(a, mx)
 
 #define XBLEND(FN, temp_type, type, max, components, chroma_offset, round) { \
-	temp_type opcty = alpha * max + round, trnsp = max - opcty; \
+	temp_type opcty = fade * max + round, trnsp = max - opcty; \
 	type** output_rows = (type**)output->get_rows(); \
 	type** input_rows = (type**)input->get_rows(); \
 	ix *= components;  ox *= components; \
@@ -608,8 +608,7 @@ void DirectUnit::process_package(LoadPackage *package)
 	VFrame *output = engine->output;
 	VFrame *input = engine->input;
 	int mode = engine->mode;
-	float fade = engine->alpha;
-	float alpha =
+	float fade =
 		BC_CModels::has_alpha(input->get_color_model()) &&
 		mode == TRANSFER_REPLACE ? 1.f : engine->alpha;
 
@@ -690,7 +689,7 @@ LoadPackage* DirectEngine::new_package()
 /* Nearest Neighbor scale / translate / blend ********************/
 
 #define XBLEND_3NN(FN, temp_type, type, max, components, chroma_offset, round) { \
-	temp_type opcty = alpha * max + round, trnsp = max - opcty; \
+	temp_type opcty = fade * max + round, trnsp = max - opcty; \
 	type** output_rows = (type**)output->get_rows(); \
 	type** input_rows = (type**)input->get_rows(); \
 	ox *= components; \
@@ -753,8 +752,7 @@ void NNUnit::process_package(LoadPackage *package)
 	VFrame *output = engine->output;
 	VFrame *input = engine->input;
 	int mode = engine->mode;
-	float fade = engine->alpha;
-	float alpha =
+	float fade =
 		BC_CModels::has_alpha(input->get_color_model()) &&
 		mode == TRANSFER_REPLACE ? 1.f : engine->alpha;
 
@@ -909,7 +907,7 @@ LoadPackage* NNEngine::new_package()
 
 #define XSAMPLE(FN, temp_type, type, max, components, chroma_offset, round) { \
 	float temp[oh*components]; \
-	temp_type opcty = alpha * max + round, trnsp = max - opcty; \
+	temp_type opcty = fade * max + round, trnsp = max - opcty; \
 	type **output_rows = (type**)voutput->get_rows() + o1i; \
 	type **input_rows = (type**)vinput->get_rows(); \
  \
@@ -1027,8 +1025,7 @@ void SampleUnit::process_package(LoadPackage *package)
 	VFrame *voutput = engine->output;
 	VFrame *vinput = engine->input;
 	int mode = engine->mode;
-	float fade = engine->alpha;
-	float alpha =
+	float fade =
 		BC_CModels::has_alpha(vinput->get_color_model()) &&
 		mode == TRANSFER_REPLACE ? 1.f : engine->alpha;
 

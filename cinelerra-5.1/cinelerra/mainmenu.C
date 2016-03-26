@@ -251,7 +251,7 @@ void MainMenu::create_objects()
 	windowmenu->add_item(new BC_MenuItem("-"));
 	windowmenu->add_item(split_x = new SplitX(mwindow));
 	windowmenu->add_item(split_y = new SplitY(mwindow));
-	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1,_("Ctrl+P"),'p'));
+	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1,_("Ctrl-P"),'p'));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile left"),0));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile right"),1));
 }
@@ -627,7 +627,7 @@ int Undo::update_caption(const char *new_caption)
 }
 
 
-Redo::Redo(MWindow *mwindow) : BC_MenuItem(_("Redo"), _("Shift+Z"), 'Z')
+Redo::Redo(MWindow *mwindow) : BC_MenuItem(_("Redo"), _("Shift-Z"), 'Z')
 {
 	set_shift(1);
 	this->mwindow = mwindow;
@@ -891,7 +891,7 @@ int Clear::handle_event()
 }
 
 PasteSilence::PasteSilence(MWindow *mwindow)
- : BC_MenuItem(_("Paste silence"), _("Shift+Space"), ' ')
+ : BC_MenuItem(_("Paste silence"), _("Shift-Space"), ' ')
 {
 	this->mwindow = mwindow;
 	set_shift();
@@ -1146,7 +1146,7 @@ int DeleteTrack::handle_event()
 }
 
 MoveTracksUp::MoveTracksUp(MWindow *mwindow)
- : BC_MenuItem(_("Move tracks up"), _("Shift+Up"), UP)
+ : BC_MenuItem(_("Move tracks up"), _("Shift-Up"), UP)
 {
 	set_shift(); this->mwindow = mwindow;
 }
@@ -1158,7 +1158,7 @@ int MoveTracksUp::handle_event()
 }
 
 MoveTracksDown::MoveTracksDown(MWindow *mwindow)
- : BC_MenuItem(_("Move tracks down"), _("Shift+Down"), DOWN)
+ : BC_MenuItem(_("Move tracks down"), _("Shift-Down"), DOWN)
 {
 	set_shift(); this->mwindow = mwindow;
 }
@@ -1190,7 +1190,7 @@ int ConcatenateTracks::handle_event()
 
 
 LoopPlayback::LoopPlayback(MWindow *mwindow)
- : BC_MenuItem(_("Loop Playback"), _("Shift+L"), 'L')
+ : BC_MenuItem(_("Loop Playback"), _("Shift-L"), 'L')
 {
 	this->mwindow = mwindow;
 	set_checked(mwindow->edl->local_session->loop_playback);
@@ -1459,7 +1459,7 @@ int TileWindows::handle_event()
 }
 
 SplitX::SplitX(MWindow *mwindow)
- : BC_MenuItem(_("Split X pane"), _("Ctrl+1"), '1')
+ : BC_MenuItem(_("Split X pane"), _("Ctrl-1"), '1')
 {
 	this->mwindow = mwindow;
 	set_ctrl(1);
@@ -1472,7 +1472,7 @@ int SplitX::handle_event()
 }
 
 SplitY::SplitY(MWindow *mwindow)
- : BC_MenuItem(_("Split Y pane"), _("Ctrl+2"), '2')
+ : BC_MenuItem(_("Split Y pane"), _("Ctrl-2"), '2')
 {
 	this->mwindow = mwindow;
 	set_ctrl(1);

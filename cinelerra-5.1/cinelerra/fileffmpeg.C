@@ -183,6 +183,8 @@ int FileFFMPEG::select_video_stream(Asset *asset, int vstream)
 	asset->width = ff->ff_video_width(vstream);
 	asset->height = ff->ff_video_height(vstream);
 	asset->video_length = ff->ff_video_frames(vstream);
+	if( (asset->video_length = ff->ff_video_frames(vstream)) < 2 )
+		asset->video_length = asset->video_length < 0 ? 0 : -1;
 	asset->frame_rate = ff->ff_frame_rate(vstream);
 	return 0;
 }
@@ -220,7 +222,9 @@ int FileFFMPEG::open_file(int rd, int wr)
 				asset->actual_height = ff->ff_video_height(0);
 				if( !asset->width ) asset->width = asset->actual_width;
 				if( !asset->height ) asset->height = asset->actual_height;
-				if( !asset->video_length ) asset->video_length = ff->ff_video_frames(0);
+				if( !asset->video_length &&
+				    (asset->video_length = ff->ff_video_frames(0)) < 2 )
+					asset->video_length = asset->video_length < 0 ? 0 : -1;
 				if( !asset->frame_rate ) asset->frame_rate = ff->ff_frame_rate(0);
 			}
 			IndexState *index_state = asset->index_state;
@@ -283,7 +287,7 @@ int FileFFMPEG::read_frame(VFrame *frame)
 {
         if( !ff ) return -1;
 	int layer = file->current_layer;
-	int64_t pos = file->current_frame;
+	int64_t pos = asset->video_length >= 0 ? file->current_frame : 0;
 	int ret = ff->decode(layer, pos, frame);
 	frame->set_status(ret);
 	if( ret >= 0 ) return 0;

@@ -1171,13 +1171,11 @@ int File::read_frame(VFrame *frame, int is_thread)
 	if(debug) PRINT_TRACE
 	int supported_colormodel = colormodel_supported(frame->get_color_model());
 	int advance_position = 1;
-
+	int cache_active = use_cache || asset->video_length < 0 ? 1 : 0;
+	int64_t cache_position = asset->video_length >= 0 ? current_frame : -1;
 // Test cache
-	if(use_cache &&
-		frame_cache->get_frame(frame,
-			current_frame,
-			current_layer,
-			asset->frame_rate))
+	if( cache_active && frame_cache->get_frame(frame, cache_position,
+			current_layer, asset->frame_rate) )
 	{
 // Can't advance position if cache used.
 //printf("File::read_frame %d\n", __LINE__);
@@ -1245,11 +1243,9 @@ int File::read_frame(VFrame *frame, int is_thread)
 //for(int i = 0; i < 100 * 1000; i++) ((float*)frame->get_rows()[0])[i] = 1.0;
 	}
 
-//printf("File::read_frame %d use_cache=%d\n", __LINE__, use_cache);
-	if(use_cache)
-		frame_cache->put_frame(frame,
-			current_frame, current_layer,
-			asset->frame_rate, 1, 0);
+	if( cache_active && advance_position && frame->get_status() > 0 )
+		frame_cache->put_frame(frame, cache_position,
+			current_layer, asset->frame_rate, 1, 0);
 //printf("File::read_frame %d\n", __LINE__);
 
 	if(advance_position) current_frame++;

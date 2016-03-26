@@ -108,6 +108,17 @@ void AssetEdit::edit_asset(Indexable *indexable)
 	BC_DialogThread::start();
 }
 
+void AssetEdit::handle_done_event(int result)
+{
+	if( !result ) {
+		changed_params->tcstart = ceil(indexable->get_frame_rate() *
+			(atoi(window->tc_hours_textbox->get_text()) * 3600 +
+			 atoi(window->tc_minutes_textbox->get_text()) * 60 +
+			 atoi(window->tc_seconds_textbox->get_text()))) +
+			 atoi(window->tc_rest_textbox->get_text());
+	}
+}
+
 void AssetEdit::handle_close_event(int result)
 {
  	if(!result)
@@ -609,39 +620,24 @@ void AssetEditWindow::create_objects()
 		x = x2;
 
 // Calculate values to enter into textboxes
-		char tc[12];
+		char text[32], *tc = text;
+		Units::totext(tc, asset->tcstart / asset->frame_rate,
+			TIME_HMSF, asset->sample_rate, asset->frame_rate);
 
-		Units::totext(tc,
-			asset->tcstart / asset->frame_rate,
-			TIME_HMSF,
-			asset->sample_rate,
-			asset->frame_rate);
+		const char *tc_hours = tc, *tc_minutes, *tc_seconds, *tc_rest;
+		tc = strchr(tc, ':');  *tc++ = 0;  tc_minutes = tc;
+		tc = strchr(tc, ':');  *tc++ = 0;  tc_seconds = tc;
+		tc = strchr(tc, ':');  *tc++ = 0;  tc_rest = tc;
 
-		char *tc_hours = tc;
-		char *tc_minutes = strchr(tc, ':') + 1;
-		*(tc_minutes - 1) = 0;
-		char *tc_seconds = strchr(tc_minutes, ':') + 1;
-		*(tc_seconds - 1) = 0;
-		char *tc_rest = strchr(tc_seconds, ':') + 1;
-		*(tc_rest - 1) = 0;
-
-		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc_hours), x, y,
-			(int) (asset->frame_rate * 60 * 60)));
-		x += 30;
-		add_subwindow(new BC_Title(x, y, ":"));
-		x += 10;
-		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc_minutes), x, y,
-			(int) (asset->frame_rate * 60)));
-		x += 30;
-		add_subwindow(new BC_Title(x, y, ":"));
-		x += 10;
-		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc_seconds), x, y,
-			(int) (asset->frame_rate)));
-		x += 30;
-		add_subwindow(new BC_Title(x, y, ":"));
-		x += 10;
-		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc_rest), x, y, 1));
-
+		int padw = BC_Title::calculate_w(this, ":", MEDIUMFONT);
+		int fldw = BC_Title::calculate_w(this, "00", MEDIUMFONT) + 5;
+		add_subwindow(tc_hours_textbox = new BC_TextBox(x, y, fldw, 1, tc_hours));
+		add_subwindow(new BC_Title(x += tc_hours_textbox->get_w(), y, ":"));
+		add_subwindow(tc_minutes_textbox = new BC_TextBox(x += padw, y, fldw, 1, tc_minutes));
+		add_subwindow(new BC_Title(x += tc_minutes_textbox->get_w(), y, ":"));
+		add_subwindow(tc_seconds_textbox = new BC_TextBox(x += padw, y , fldw, 1, tc_seconds));
+		add_subwindow(new BC_Title(x += tc_seconds_textbox->get_w(), y, ":"));
+		add_subwindow(tc_rest_textbox = new BC_TextBox(x += 10, y, fldw, 1, tc_rest));
 
 		y += 30;
 	}
@@ -1090,7 +1086,7 @@ void DetailAssetThread::run()
 
 
 AssetEditReelName::AssetEditReelName(AssetEditWindow *fwindow, int x, int y)
- : BC_TextBox(x, y, 300, 1,
+ : BC_TextBox(x, y, 220, 1,
 	((Asset *)fwindow->asset_edit->indexable)->reel_name,
 	1, MEDIUMFONT, 1)
 {
@@ -1125,27 +1121,5 @@ int AssetEditReelNumber::handle_event()
 	return 1;
 }
 
-
-
-
-
-AssetEditTCStartTextBox::AssetEditTCStartTextBox(AssetEditWindow *fwindow, int value, int x, int y, int multiplier)
- : BC_TextBox(x, y, 30, 1, value)
-{
-	this->fwindow = fwindow;
-	this->multiplier = multiplier;
-	previous = value;
-}
-AssetEditTCStartTextBox::~AssetEditTCStartTextBox()
-{
-}
-int AssetEditTCStartTextBox::handle_event()
-{
-	Asset *asset = fwindow->asset_edit->changed_params;
-	asset->tcstart -= previous * multiplier;
-	asset->tcstart += atoi(get_text()) * multiplier;
-	previous = atoi(get_text());
-	return 1;
-}
 
 

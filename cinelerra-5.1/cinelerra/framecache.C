@@ -29,6 +29,7 @@
 #include "vframe.h"
 
 
+#include <limits.h>
 #include <math.h>
 #include <string.h>
 #include <unistd.h>
@@ -173,12 +174,8 @@ VFrame* FrameCache::get_frame_ptr(int64_t position,
 
 // Puts frame in cache if enough space exists and the frame doesn't already
 // exist.
-void FrameCache::put_frame(VFrame *frame, 
-	int64_t position,
-	int layer,
-	double frame_rate,
-	int use_copy,
-	Indexable *indexable)
+void FrameCache::put_frame(VFrame *frame, int64_t position,
+	int layer, double frame_rate, int use_copy, Indexable *indexable)
 {
 	lock->lock("FrameCache::put_frame");
 	FrameCacheItem *item = 0;
@@ -187,13 +184,7 @@ void FrameCache::put_frame(VFrame *frame,
 
 //printf("FrameCache::put_frame %d position=%jd\n", __LINE__, position);
 
-	if(frame_exists(frame,
-		position, 
-		layer,
-		frame_rate,
-		&item,
-		source_id))
-	{
+	if(frame_exists(frame, position, layer, frame_rate, &item, source_id)) {
 		item->age = get_age();
 		lock->unlock();
 		return;
@@ -202,14 +193,7 @@ void FrameCache::put_frame(VFrame *frame,
 
 	item = new FrameCacheItem;
 
-	if(use_copy)
-	{
-		item->data = new VFrame(*frame);
-	}
-	else
-	{
-		item->data = frame;
-	}
+	item->data = use_copy ? new VFrame(*frame) : frame;
 
 // Copy metadata
 	item->position = position;
@@ -219,7 +203,7 @@ void FrameCache::put_frame(VFrame *frame,
 	if(indexable) 
 		item->path = cstrdup(indexable->path);
 
-	item->age = get_age();
+	item->age = position < 0 ? INT_MAX : get_age();
 
 //printf("FrameCache::put_frame %d position=%jd\n", __LINE__, position);
 	put_item(item);
@@ -229,12 +213,8 @@ void FrameCache::put_frame(VFrame *frame,
 
 
 
-int FrameCache::frame_exists(VFrame *format,
-	int64_t position, 
-	int layer,
-	double frame_rate,
-	FrameCacheItem **item_return,
-	int source_id)
+int FrameCache::frame_exists(VFrame *format, int64_t position, 
+	int layer, double frame_rate, FrameCacheItem **item_return, int source_id)
 {
 	FrameCacheItem *item = (FrameCacheItem*)get_item(position);
 // printf("FrameCache::frame_exists %d item=%p item->position=%jd position=%jd\n",

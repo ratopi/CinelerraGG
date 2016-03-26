@@ -35,6 +35,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "indexstate.h"
+#include "interlacemodes.h"
 #include "labels.h"
 #include "localsession.h"
 #include "mutex.h"
@@ -1448,20 +1449,23 @@ if(debug) printf("EDL::get_use_vconsole %d\n", __LINE__);
 
 if(debug) printf("EDL::get_use_vconsole %d\n", __LINE__);
 // Edit is not a nested EDL
+	Asset *asset = (*playable_edit)->asset;
 // Edit is silence
-	if(!(*playable_edit)->asset) return 1;
+	if(!asset) return 1;
 if(debug) printf("EDL::get_use_vconsole %d\n", __LINE__);
 
-
 // Asset and output device must have the same dimensions
-	if((*playable_edit)->asset->width != session->output_w ||
-		(*playable_edit)->asset->height != session->output_h)
+	if( asset->width != session->output_w ||
+	    asset->height != session->output_h )
 		return 1;
 
 
 if(debug) printf("EDL::get_use_vconsole %d\n", __LINE__);
-
-
+// Asset and output device must have same resulting de-interlacing method
+	if( ilaceautofixmethod2(session->interlace_mode,
+	    asset->interlace_autofixoption, asset->interlace_mode,
+	    asset->interlace_fixmethod) != BC_ILACE_FIXMETHOD_NONE )
+		return 1;
 
 // If we get here the frame is going to be directly copied.  Whether it is
 // decompressed in hardware depends on the colormodel.

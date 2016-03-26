@@ -951,7 +951,7 @@ int SWindow::update_selection()
 
 
 SubttlSWin::SubttlSWin(MWindow *mwindow)
- : BC_MenuItem(_("SubTitle"), _("Alt-y"), 'y')
+ : BC_MenuItem(_("SubTitle..."), _("Alt-y"), 'y')
 {
 	set_alt();
 	this->mwindow = mwindow;

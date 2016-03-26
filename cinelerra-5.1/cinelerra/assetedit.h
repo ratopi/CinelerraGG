@@ -35,7 +35,6 @@
 #include "resizetrackthread.inc"
 
 
-class AssetEditTCStartTextBox;
 class AssetEditReelNumber;
 class AssetEditReelName;
 class AssetEditByteOrderHILO;
@@ -56,6 +55,7 @@ public:
 
 	void edit_asset(Indexable *indexable);
 	int set_asset(Indexable *indexable);
+	void handle_done_event(int result);
 	void handle_close_event(int result);
 	BC_Window* new_gui();
 
@@ -84,6 +84,8 @@ public:
 	AssetEditPath *path_button;
 	AssetEditByteOrderHILO *hilo;
 	AssetEditByteOrderLOHI *lohi;
+	BC_TextBox *tc_hours_textbox, *tc_minutes_textbox;
+	BC_TextBox *tc_seconds_textbox, *tc_rest_textbox;
 	BitsPopup *bitspopup;
 	int allow_edits;
 	MWindow *mwindow;
@@ -92,6 +94,7 @@ public:
 	BC_Title *win_height;
 	DetailAssetThread *detail_thread;
 	void show_info_detail();
+
 };
 
 
@@ -293,20 +296,6 @@ public:
 	int handle_event();
 
 	AssetEditWindow *fwindow;
-};
-
-class AssetEditTCStartTextBox : public BC_TextBox
-{
-public:
-	AssetEditTCStartTextBox(AssetEditWindow *fwindow, int value, int x, int y, int multiplier);
-	~AssetEditTCStartTextBox();
-	int handle_event();
-
-	AssetEditWindow *fwindow;
-// Multiplier is the # of frames for whatever unit of time this is.
-// fps dependent, and unit dependent
-	int multiplier;
-	int previous;
 };
 
 class DetailAssetWindow : public BC_Window

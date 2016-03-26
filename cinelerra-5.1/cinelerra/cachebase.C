@@ -120,7 +120,7 @@ int CacheBase::delete_oldest()
 		if( current->age < oldest->age )
 			oldest = current;
 	}
-	if( oldest ) {
+	if( oldest && oldest->position >= 0 ) {
 		del_item(oldest);
 		result = 1;
 	}

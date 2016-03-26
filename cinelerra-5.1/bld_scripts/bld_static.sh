@@ -39,5 +39,5 @@ make >> log 2>&1 $@
 make install >> log 2>&1
 
 echo "finished: scanning log for ***"
-grep -a "\*\*\*" log
+grep -ai "\*\*\*.*error" log
 

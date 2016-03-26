@@ -199,7 +199,7 @@ keypress_event()
 
 DbWindowScan::
 DbWindowScan(MWindow *mwindow)
- : BC_MenuItem(_("Media DB"), _("Shift-M"), 'M')
+ : BC_MenuItem(_("Media DB..."), _("Shift-M"), 'M')
 {
 	set_shift();
 	this->mwindow = mwindow;

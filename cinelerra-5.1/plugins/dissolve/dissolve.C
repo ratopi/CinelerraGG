@@ -69,78 +69,10 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 // Use software
 	if(!overlayer) overlayer = new OverlayFrame(get_project_smp() + 1);
 
-
-// There is a problem when dissolving from a big picture to a small picture.
-// In order to make it dissolve correctly, we have to manually decrese alpha of big picture.
-	switch (outgoing->get_color_model())
-	{
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-		{
-			uint8_t** data_rows = (uint8_t **)outgoing->get_rows();
-			int w = outgoing->get_w();
-			int h = outgoing->get_h(); 
-			for(int i = 0; i < h; i++) 
-			{
-				uint8_t* alpha_chan = data_rows[i] + 3; 
-				for(int j = 0; j < w; j++) 
-				{
-					*alpha_chan = (uint8_t) (*alpha_chan * (1-fade));
-					alpha_chan+=4;
-				}
-			}
-			break;
-		}
-		case BC_YUVA16161616:
-		{
-			uint16_t** data_rows = (uint16_t **)outgoing->get_rows();
-			int w = outgoing->get_w();
-			int h = outgoing->get_h(); 
-			for(int i = 0; i < h; i++)
-			{ 
-				uint16_t* alpha_chan = data_rows[i] + 3; // 3 since this is uint16_t
-				for(int j = 0; j < w; j++) 
-				{
-					*alpha_chan = (uint16_t)(*alpha_chan * (1-fade));
-					alpha_chan += 8;
-				} 
-			}
-			break;
-		}
-		case BC_RGBA_FLOAT:
-		{
-			float** data_rows = (float **)outgoing->get_rows();
-			int w = outgoing->get_w();
-			int h = outgoing->get_h(); 
-			for(int i = 0; i < h; i++) 
-			{ 
-				float* alpha_chan = data_rows[i] + 3; // 3 since this is floats 
-				for(int j = 0; j < w; j++) 
-				{
-					*alpha_chan = *alpha_chan * (1-fade);
-					alpha_chan += sizeof(float);
-				} 
-			}
-			break;
-		}
-		default:
-			break;
-	}
-
-
-	overlayer->overlay(outgoing, 
-		incoming, 
-		0, 
-		0, 
-		incoming->get_w(),
-		incoming->get_h(),
-		0,
-		0,
-		incoming->get_w(),
-		incoming->get_h(),
-		fade,
-		TRANSFER_NORMAL,
-		NEAREST_NEIGHBOR);
+	overlayer->overlay(outgoing, incoming, 
+		0, 0, incoming->get_w(), incoming->get_h(),
+		0, 0, incoming->get_w(), incoming->get_h(),
+		fade, TRANSFER_SRC, NEAREST_NEIGHBOR);
 
 	return 0;
 }
@@ -148,35 +80,64 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 int DissolveMain::handle_opengl()
 {
 #ifdef HAVE_GL
+	static const char *blend_dissolve =
+		"uniform float fade;\n"
+		"uniform sampler2D src_tex;\n"
+		"uniform sampler2D dst_tex;\n"
+		"uniform vec2 dst_tex_dimensions;\n"
+		"uniform vec3 chroma_offset;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 result_color;\n"
+		"	vec4 dst_color = texture2D(dst_tex, gl_FragCoord.xy / dst_tex_dimensions);\n"
+		"	vec4 src_color = texture2D(src_tex, gl_TexCoord[0].st);\n"
+		"	src_color.rgb -= chroma_offset;\n"
+		"	dst_color.rgb -= chroma_offset;\n"
+		"	result_color = mix(dst_color, src_color, fade);\n"
+		"	result_color.rgb += chroma_offset;\n"
+		"	gl_FragColor = result_color;\n"
+		"}\n";
 
 // Read images from RAM
-	get_input()->to_texture();
-	get_output()->to_texture();
+	VFrame *src = get_input();
+	src->to_texture();
+	VFrame *dst = get_output();
+	dst->to_texture();
+	dst->enable_opengl();
+	dst->init_screen();
+	src->bind_texture(0);
+	dst->bind_texture(1);
 
-// Create output pbuffer
-	get_output()->enable_opengl();
+	const char *shader_stack[] = { 0, 0, 0 };
+	int current_shader = 0;
+	shader_stack[current_shader++] = blend_dissolve;
 
-	VFrame::init_screen(get_output()->get_w(), get_output()->get_h());
+	unsigned int shader_id = VFrame::make_shader(0,
+		shader_stack[0], shader_stack[1], shader_stack[2], 0);
 
-// Enable output texture
-	get_output()->bind_texture(0);
-// Draw output texture
+	glUseProgram(shader_id);
+	glUniform1f(glGetUniformLocation(shader_id, "fade"), fade);
+	glUniform1i(glGetUniformLocation(shader_id, "src_tex"), 0);
+	glUniform1i(glGetUniformLocation(shader_id, "dst_tex"), 1);
+	if(BC_CModels::is_yuv(dst->get_color_model()))
+		glUniform3f(glGetUniformLocation(shader_id, "chroma_offset"), 0.0, 0.5, 0.5);
+	else
+		glUniform3f(glGetUniformLocation(shader_id, "chroma_offset"), 0.0, 0.0, 0.0);
+	glUniform2f(glGetUniformLocation(shader_id, "dst_tex_dimensions"),
+		(float)dst->get_texture_w(),
+		(float)dst->get_texture_h());
+
 	glDisable(GL_BLEND);
-	glColor4f(1, 1, 1, 1);
-	get_output()->draw_texture();
-
-// Draw input texture
-	get_input()->bind_texture(0);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor4f(1, 1, 1, fade);
-	get_input()->draw_texture();
-
+	src->draw_texture();
+	glUseProgram(0);
 
 	glDisable(GL_BLEND);
-	get_output()->set_opengl_state(VFrame::SCREEN);
+	glActiveTexture(GL_TEXTURE1);
+	glDisable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE0);
+	glDisable(GL_TEXTURE_2D);
 
-
+	dst->set_opengl_state(VFrame::SCREEN);
 #endif
 	return 0;
 }

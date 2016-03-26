@@ -221,8 +221,6 @@ private:
 	int delete_ulaw_tables();
 	float *ulawtofloat_table, *ulawtofloat_ptr;
 	unsigned char *floattoulaw_table, *floattoulaw_ptr;
-
-	OverlayFrame *overlayer;
 };
 
 #endif

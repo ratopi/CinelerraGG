@@ -4,3 +4,4 @@ Testers are welcome to report and supply examples; join at cinelerra-cv.org
 If logged in as root, can capture crashes and email /tmp/cin*.dmp file 
 Volunteer to help with language translations which will help you
 Helpful videos: http://beccatoria.dreamwidth.org/144288.html#cutid2
+Also see: http://g-raffa.eu/Cinelerra/HOWTO/basics.html

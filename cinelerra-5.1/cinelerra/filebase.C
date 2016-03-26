@@ -37,7 +37,6 @@ FileBase::FileBase(Asset *asset, File *file)
 	this->asset = asset;
 	internal_byte_order = get_byte_order();
 	reset_parameters();
-	overlayer = new OverlayFrame;
 }
 
 FileBase::~FileBase()
@@ -46,7 +45,6 @@ FileBase::~FileBase()
 	if(row_pointers_in) delete [] row_pointers_in;
 	if(row_pointers_out) delete [] row_pointers_out;
 	if(float_buffer) delete [] float_buffer;
-	delete overlayer;
 }
 
 int FileBase::close_file()

@@ -414,7 +414,7 @@ int VirtualVNode::render_projector(VFrame *input, VFrame *output,
 // can do dissolves, although a blend equation is still required for 3 component
 // colormodels since fractional translation requires blending.
 
-// If this is the first playable video track and the mode_keyframe is "src_over"
+// If this is the first playable video track and the mode_keyframe is "src"
 			if(mode == TRANSFER_NORMAL &&
 				vconsole->current_exit_node == vconsole->total_exit_nodes - 1)
 				mode = TRANSFER_SRC;
