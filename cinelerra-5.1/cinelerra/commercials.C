@@ -533,7 +533,7 @@ cut_edit(Track *track, Edit *edit, int64_t clip_start, int64_t clip_end)
 		}
 	}
 	// cut edit
-	Edit *next_edit = track->edits->split_edit(edit, cut_start);
+	Edit *next_edit = edit->edits->split_edit(cut_start);
 	int64_t cut_length = cut_end - cut_start;
 	next_edit->length -= cut_length;
 	next_edit->startsource += cut_length;

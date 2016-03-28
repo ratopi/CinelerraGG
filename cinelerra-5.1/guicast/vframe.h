@@ -213,8 +213,9 @@ public:
 // Must be called from a synchronous opengl thread after enable_opengl.
 	void to_texture();
 
-// Transfer from PBuffer to RAM.  Only used after Playback3D::overlay_sync
-	void to_ram();
+// Transfer from PBuffer to RAM.
+//   used in Playback3D::overlay_sync, plugin Overlay::handle_opengl
+	void screen_to_ram();
 
 // Transfer contents of current pbuffer to texture,
 // creating a new texture if necessary.

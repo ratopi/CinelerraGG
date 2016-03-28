@@ -22,6 +22,7 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
+#include "edlsession.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
@@ -136,9 +137,7 @@ public:
 	VFrame *temp;
 	int current_layer;
 	int output_layer;
-// Inclusive layer numbers
-	int input_layer1;
-	int input_layer2;
+	int input_layer;
 };
 
 OverlayConfig::OverlayConfig()
@@ -419,92 +418,43 @@ int Overlay::process_buffer(VFrame **frame,
 {
 	load_configuration();
 
+	EDLSession* session = get_edlsession();
+	int interpolation_type = session ? session->interpolation_type : NEAREST_NEIGHBOR;
 
-	if(!temp) temp = new VFrame(0,
-		-1,
-		frame[0]->get_w(),
-		frame[0]->get_h(),
-		frame[0]->get_color_model(),
-		-1);
+	int step = config.direction == OverlayConfig::BOTTOM_FIRST ?  -1 : 1;
+	int layers = get_total_buffers();
+	input_layer = config.direction == OverlayConfig::BOTTOM_FIRST ? layers-1 : 0;
+	output_layer = config.output_layer == OverlayConfig::TOP ?  0 : layers-1;
+	VFrame *output = frame[output_layer];
 
-	if(!overlayer)
-		overlayer = new OverlayFrame(get_project_smp() + 1);
+	current_layer = input_layer;
+	read_frame(output, current_layer,  // Direct copy the first layer
+			 start_position, frame_rate, get_use_opengl());
 
-	int step;
-	VFrame *output;
+	if( --layers > 0 ) {	// need 2 layers to do overlay
+		if( !temp )
+			temp = new VFrame(0, -1, frame[0]->get_w(), frame[0]->get_h(),
+					frame[0]->get_color_model(), -1);
 
-	if(config.direction == OverlayConfig::BOTTOM_FIRST)
-	{
-		input_layer1 = get_total_buffers() - 1;
-		input_layer2 = -1;
-		step = -1;
-	}
-	else
-	{
-		input_layer1 = 0;
-		input_layer2 = get_total_buffers();
-		step = 1;
-	}
+		while( --layers >= 0 ) {
+			current_layer += step;
+			read_frame(temp, current_layer,
+				 start_position, frame_rate, get_use_opengl());
 
-	if(config.output_layer == OverlayConfig::TOP)
-	{
-		output_layer = 0;
-	}
-	else
-	{
-		output_layer = get_total_buffers() - 1;
-	}
+			if(get_use_opengl()) {
+				run_opengl();
+				continue;
+			}
 
-
-
-// Direct copy the first layer
-	output = frame[output_layer];
-	read_frame(output,
-		input_layer1,
-		start_position,
-		frame_rate,
-		get_use_opengl());
-
-	if(get_total_buffers() == 1) return 0;
-
-
-
-	current_layer = input_layer1;
-	if(get_use_opengl())
-		run_opengl();
-
-	for(int i = input_layer1 + step; i != input_layer2; i += step)
-	{
-		read_frame(temp,
-			i,
-			start_position,
-			frame_rate,
-			get_use_opengl());
-
-// Call the opengl handler once for each layer
-		if(get_use_opengl())
-		{
-			current_layer = i;
-			run_opengl();
-		}
-		else
-		{
-			overlayer->overlay(output,
-				temp,
-				0,
-				0,
-				output->get_w(),
-				output->get_h(),
-				0,
-				0,
-				output->get_w(),
-				output->get_h(),
-				1,
-				config.mode,
-				NEAREST_NEIGHBOR);
+			if(!overlayer)
+				overlayer = new OverlayFrame(get_project_smp() + 1);
+			
+			overlayer->overlay(output, temp,
+				0, 0, output->get_w(), output->get_h(),
+				0, 0, output->get_w(), output->get_h(),
+				1, config.mode, interpolation_type);
 		}
 	}
-
 
 	return 0;
 }
@@ -519,132 +469,192 @@ int Overlay::handle_opengl()
 		"uniform vec3 chroma_offset;\n"
 		"void main()\n"
 		"{\n"
-		"	vec4 result_color;\n"
 		"	vec4 dst_color = texture2D(dst_tex, gl_FragCoord.xy / dst_tex_dimensions);\n"
 		"	vec4 src_color = texture2D(src_tex, gl_TexCoord[0].st);\n"
 		"	src_color.rgb -= chroma_offset;\n"
 		"	dst_color.rgb -= chroma_offset;\n";
 
 	static const char *put_pixels_frag =
-		"	result_color.rgb += chroma_offset;\n"
-		"	result_color.rgb = mix(dst_color.rgb, result_color.rgb, src_color.a);\n"
-		"	result_color.a = max(src_color.a, dst_color.a);\n"
-		"	gl_FragColor = result_color;\n"
+		"	result.rgb += chroma_offset;\n"
+		"	gl_FragColor = result;\n"
 		"}\n";
 
-	static const char *blend_add_frag =
-		"	result_color.rgb = dst_color.rgb + src_color.rgb;\n";
 
-	static const char *blend_max_frag =
-		"	result_color.r = max(abs(dst_color.r, src_color.r);\n"
-		"	result_color.g = max(abs(dst_color.g, src_color.g);\n"
-		"	result_color.b = max(abs(dst_color.b, src_color.b);\n";
+// NORMAL
+static const char *blend_normal_frag =
+	"	vec4 result = mix(src_color, src_color, src_color.a);\n";
 
-	static const char *blend_min_frag =
-		"	result_color.r = min(abs(dst_color.r, src_color.r);\n"
-		"	result_color.g = min(abs(dst_color.g, src_color.g);\n"
-		"	result_color.b = min(abs(dst_color.b, src_color.b);\n";
+// ADDITION
+static const char *blend_add_frag =
+	"	vec4 result = dst_color + src_color;\n"
+	"	result = clamp(result, 0.0, 1.0);\n";
 
-	static const char *blend_subtract_frag =
-		"	result_color.rgb = dst_color.rgb - src_color.rgb;\n";
+// SUBTRACT
+static const char *blend_subtract_frag =
+	"	vec4 result = dst_color - src_color;\n"
+	"	result = clamp(result, 0.0, 1.0);\n";
 
+// MULTIPLY
+static const char *blend_multiply_frag =
+	"	vec4 result = dst_color * src_color;\n";
 
-	static const char *blend_multiply_frag =
-		"	result_color.rgb = dst_color.rgb * src_color.rgb;\n";
+// DIVIDE
+static const char *blend_divide_frag =
+	"	vec4 result = dst_color / src_color;\n"
+	"	if(src_color.r == 0.) result.r = 1.0;\n"
+	"	if(src_color.g == 0.) result.g = 1.0;\n"
+	"	if(src_color.b == 0.) result.b = 1.0;\n"
+	"	if(src_color.a == 0.) result.a = 1.0;\n"
+	"	result = clamp(result, 0.0, 1.0);\n";
 
-	static const char *blend_divide_frag =
-		"	result_color.rgb = dst_color.rgb / src_color.rgb;\n"
-		"	if(src_color.r == 0.0) result_color.r = 1.0;\n"
-		"	if(src_color.g == 0.0) result_color.g = 1.0;\n"
-		"	if(src_color.b == 0.0) result_color.b = 1.0;\n";
+// MAX
+static const char *blend_max_frag =
+	"	vec4 result = max(src_color, dst_color);\n";
 
+// MIN
+static const char *blend_min_frag =
+	"	vec4 result = min(src_color, dst_color);\n";
 
-	VFrame *src = temp;
+// AVERAGE
+static const char *blend_average_frag =
+	"	vec4 result = (src_color + dst_color) * 0.5;\n";
+
+// DARKEN
+static const char *blend_darken_frag =
+	"	vec4 result = vec4(src_color.rgb * (1.0 - dst_color.a) +"
+			" dst_color.rgb * (1.0 - src_color.a) +"
+			" min(src_color.rgb, dst_color.rgb), "
+			" src_color.a + dst_color.a - src_color.a * dst_color.a);\n"
+	"	result = clamp(result, 0.0, 1.0);\n";
+
+// LIGHTEN
+static const char *blend_lighten_frag =
+	"	vec4 result = vec4(src_color.rgb * (1.0 - dst_color.a) +"
+			" dst_color.rgb * (1.0 - src_color.a) +"
+			" max(src_color.rgb, dst_color.rgb), "
+			" src_color.a + dst_color.a - src_color.a * dst_color.a);\n"
+	"	result = clamp(result, 0.0, 1.0);\n";
+
+// DST
+static const char *blend_dst_frag =
+	"	vec4 result = dst_color;\n";
+
+// DST_ATOP
+static const char *blend_dst_atop_frag =
+	"	vec4 result = vec4(src_color.rgb * dst_color.a + "
+			"(1.0 - src_color.a) * dst_color.rgb, dst_color.a);\n";
+
+// DST_IN
+static const char *blend_dst_in_frag =
+	"	vec4 result = src_color * dst_color.a;\n";
+
+// DST_OUT
+static const char *blend_dst_out_frag =
+	"	vec4 result = src_color * (1.0 - dst_color.a);\n";
+
+// DST_OVER
+static const char *blend_dst_over_frag =
+	"	vec4 result = vec4(src_color.rgb + (1.0 - src_color.a) * dst_color.rgb, "
+			" dst_color.a + src_color.a - dst_color.a * src_color.a);\n";
+
+// SRC
+static const char *blend_src_frag =
+	"	vec4 result = src_color;\n";
+
+// SRC_ATOP
+static const char *blend_src_atop_frag =
+	"	vec4 result = vec4(dst_color.rgb * src_color.a + "
+			"src_color.rgb * (1.0 - dst_color.a), src_color.a);\n";
+
+// SRC_IN
+static const char *blend_src_in_frag =
+	"	vec4 result = dst_color * src_color.a;\n";
+
+// SRC_OUT
+static const char *blend_src_out_frag =
+	"	vec4 result = dst_color * (1.0 - src_color.a);\n";
+
+// SRC_OVER
+static const char *blend_src_over_frag =
+	"	vec4 result = vec4(dst_color.rgb + (1.0 - dst_color.a) * src_color.rgb, "
+				"dst_color.a + src_color.a - dst_color.a * src_color.a);\n";
+
+// OR
+static const char *blend_or_frag =
+	"	vec4 result = src_color + dst_color - src_color * dst_color;\n";
+
+// XOR
+static const char *blend_xor_frag =
+	"	vec4 result = vec4(dst_color.rgb * (1.0 - src_color.a) + "
+			"(1.0 - dst_color.a) * src_color.rgb, "
+			"dst_color.a + src_color.a - 2.0 * dst_color.a * src_color.a);\n";
+
+static const char * const overlay_shaders[TRANSFER_TYPES] = {
+		blend_normal_frag,	// TRANSFER_NORMAL
+		blend_add_frag,		// TRANSFER_ADDITION
+		blend_subtract_frag,	// TRANSFER_SUBTRACT
+		blend_multiply_frag,	// TRANSFER_MULTIPLY
+		blend_divide_frag,	// TRANSFER_DIVIDE
+		blend_src_frag,		// TRANSFER_REPLACE
+		blend_max_frag,		// TRANSFER_MAX
+		blend_min_frag,		// TRANSFER_MIN
+		blend_average_frag,	// TRANSFER_AVERAGE
+		blend_darken_frag,	// TRANSFER_DARKEN
+		blend_lighten_frag,	// TRANSFER_LIGHTEN
+		blend_dst_frag,		// TRANSFER_DST
+		blend_dst_atop_frag,	// TRANSFER_DST_ATOP
+		blend_dst_in_frag,	// TRANSFER_DST_IN
+		blend_dst_out_frag,	// TRANSFER_DST_OUT
+		blend_dst_over_frag,	// TRANSFER_DST_OVER
+		blend_src_frag,		// TRANSFER_SRC
+		blend_src_atop_frag,	// TRANSFER_SRC_ATOP
+		blend_src_in_frag,	// TRANSFER_SRC_IN
+		blend_src_out_frag,	// TRANSFER_SRC_OUT
+		blend_src_over_frag,	// TRANSFER_SRC_OVER
+		blend_or_frag,		// TRANSFER_OR
+		blend_xor_frag		// TRANSFER_XOR
+	};
+
+	glDisable(GL_BLEND);
 	VFrame *dst = get_output(output_layer);
+        VFrame *src = temp;
 
-	dst->enable_opengl();
-	dst->init_screen();
-
-	const char *shader_stack[] = { 0, 0, 0 };
-	int current_shader = 0;
-
-
-
-
+	switch( config.mode ) {
+	case TRANSFER_REPLACE:
+	case TRANSFER_SRC:
 // Direct copy layer
-	if(config.mode == TRANSFER_REPLACE)
-	{
-		src->to_texture();
-		src->bind_texture(0);
-		dst->enable_opengl();
+        	src->to_texture();
+	       	dst->enable_opengl();
 		dst->init_screen();
-
-// Multiply alpha
-		glDisable(GL_BLEND);
 		src->draw_texture();
-	}
-	else
-	if(config.mode == TRANSFER_NORMAL)
-	{
-		dst->enable_opengl();
-		dst->init_screen();
-
+		break;
+	case TRANSFER_NORMAL:
 // Move destination to screen
-		if(dst->get_opengl_state() != VFrame::SCREEN)
-		{
+		if( dst->get_opengl_state() != VFrame::SCREEN ) {
 			dst->to_texture();
-			dst->bind_texture(0);
+        		dst->enable_opengl();
+		        dst->init_screen();
 			dst->draw_texture();
 		}
-
-		src->to_texture();
-		src->bind_texture(0);
-		dst->enable_opengl();
+        	src->to_texture();
+	       	dst->enable_opengl();
 		dst->init_screen();
-
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		src->draw_texture();
-	}
-	else
-	{
-// Read destination back to texture
+		break;
+	default:
+        	src->to_texture();
 		dst->to_texture();
-
-		src->enable_opengl();
-		src->init_screen();
-		src->to_texture();
-
-		dst->enable_opengl();
+	       	dst->enable_opengl();
 		dst->init_screen();
-		src->bind_texture(0);
-		dst->bind_texture(1);
-
+        	src->bind_texture(0);
+	        dst->bind_texture(1);
+		const char *shader_stack[] = { 0, 0, 0 };
+		int current_shader = 0;
 
 		shader_stack[current_shader++] = get_pixels_frag;
-
-		switch(config.mode)
-		{
-			case TRANSFER_ADDITION:
-				shader_stack[current_shader++] = blend_add_frag;
-				break;
-			case TRANSFER_SUBTRACT:
-				shader_stack[current_shader++] = blend_subtract_frag;
-				break;
-			case TRANSFER_MULTIPLY:
-				shader_stack[current_shader++] = blend_multiply_frag;
-				break;
-			case TRANSFER_DIVIDE:
-				shader_stack[current_shader++] = blend_divide_frag;
-				break;
-			case TRANSFER_MAX:
-				shader_stack[current_shader++] = blend_max_frag;
-				break;
-			case TRANSFER_MIN:
-				shader_stack[current_shader++] = blend_min_frag;
-				break;
-		}
-
+		shader_stack[current_shader++] = overlay_shaders[config.mode];
 		shader_stack[current_shader++] = put_pixels_frag;
 
 		unsigned int shader_id = 0;
@@ -657,26 +667,26 @@ int Overlay::handle_opengl()
 		glUseProgram(shader_id);
 		glUniform1i(glGetUniformLocation(shader_id, "src_tex"), 0);
 		glUniform1i(glGetUniformLocation(shader_id, "dst_tex"), 1);
-		if(BC_CModels::is_yuv(dst->get_color_model()))
-			glUniform3f(glGetUniformLocation(shader_id, "chroma_offset"), 0.0, 0.5, 0.5);
-		else
-			glUniform3f(glGetUniformLocation(shader_id, "chroma_offset"), 0.0, 0.0, 0.0);
 		glUniform2f(glGetUniformLocation(shader_id, "dst_tex_dimensions"),
-			(float)dst->get_texture_w(),
-			(float)dst->get_texture_h());
+				(float)dst->get_texture_w(), (float)dst->get_texture_h());
+		float chroma_offset = BC_CModels::is_yuv(dst->get_color_model()) ? 0.5 : 0.0;
+		glUniform3f(glGetUniformLocation(shader_id, "chroma_offset"),
+				0.0, chroma_offset, chroma_offset);
 
-		glDisable(GL_BLEND);
 		src->draw_texture();
 		glUseProgram(0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glDisable(GL_TEXTURE_2D);
+		break;
 	}
 
-	glDisable(GL_BLEND);
-	glActiveTexture(GL_TEXTURE1);
-	glDisable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
 	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_BLEND);
 
-	dst->set_opengl_state(VFrame::SCREEN);
+// get the data before something else uses the screen
+	dst->screen_to_ram();
 #endif
 	return 0;
 }

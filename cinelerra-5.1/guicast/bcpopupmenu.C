@@ -418,7 +418,10 @@ int BC_PopupMenu::button_release_event()
 		}
 	}
 
-	if(popup_down)
+	if( !use_title && status == BUTTON_DN ) {
+		result = 1;
+	}
+	else if(popup_down)
 	{
 // Menu is down so dispatch to popup.
 		result = menu_popup->dispatch_button_release();

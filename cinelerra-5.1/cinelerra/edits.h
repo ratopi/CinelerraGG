@@ -56,9 +56,8 @@ public:
 		int64_t sample,
 		int track_number);
 // Split edit containing position.
-	Edit* split_edit(int64_t position);
 // Return the second edit in the split.
-	Edit* split_edit(Edit *edit, int64_t position);
+	Edit* split_edit(int64_t position);
 // Create a blank edit in the native data format
 	int clear_handle(double start,
 		double end,

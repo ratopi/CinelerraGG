@@ -234,72 +234,33 @@ Edit* Edits::insert_new_edit(int64_t position)
 	return new_edit;
 }
 
-
 Edit* Edits::split_edit(int64_t position)
 {
 // Get edit containing position
 	Edit *edit = editof(position, PLAY_FORWARD, 0);
-// No edit found, make one - except when we are at zero position!
-	if(!edit && position != 0) {
-		if (length() == position) {
-			edit = last; // we do not need any edit to extend past the last one
-		}
-		else if (!last || length() < position) {
-
-			// Even when track is completely empty or split is beyond last edit, return correct edit
-			Edit *empty = create_edit();
-			if (last)
-				empty->startproject = length(); // end of last edit
-			else
-				empty->startproject = 0; // empty track
-			empty->length = position - empty->startproject;
-			insert_after(last, empty);
-			edit = empty;
-		}
-		else {
-			// now we are now surely in situation where we have
-			//  a) broken edit list or b) negative position... report error!
-			printf("ERROR!\n");
-			printf("Trying to insert edit at position, but failed: %ji\n", position);
-			printf("Dump is here:\n");
-			track->dump(stdout);
-			return 0;
-		}
-	}
 	if(!edit) return 0;
-	return split_edit(edit, position);
-}
-
-Edit* Edits::split_edit(Edit *edit, int64_t position)
-{
 // Split would have created a 0 length
 //	if(edit->startproject == position) return edit;
 // Create anyway so the return value comes before position
 
 	Edit *new_edit = create_edit();
 	insert_after(edit, new_edit);
-	if (edit)  // if we have actually split the edit, do the funky stuff!
-	{
-		new_edit->copy_from(edit);
-		new_edit->length = new_edit->startproject + new_edit->length - position;
-		edit->length = position - edit->startproject;
-		new_edit->startsource += edit->length;
-
+	new_edit->copy_from(edit);
+	new_edit->length = new_edit->startproject + new_edit->length - position;
+	edit->length = position - edit->startproject;
+	new_edit->startproject = position;
+	new_edit->startsource += edit->length;
 
 // Decide what to do with the transition
-		if(edit->length && edit->transition)
-		{
-			delete new_edit->transition;
-			new_edit->transition = 0;
-		}
+	if(edit->length && edit->transition) {
+		delete new_edit->transition;
+		new_edit->transition = 0;
+	}
 
-		if(edit->transition && edit->transition->length > edit->length)
-			edit->transition->length = edit->length;
-		if(new_edit->transition && new_edit->transition->length > new_edit->length)
-			new_edit->transition->length = new_edit->length;
-	} else
-		new_edit->length = 0;
-	new_edit->startproject = position;
+	if(edit->transition && edit->transition->length > edit->length)
+		edit->transition->length = edit->length;
+	if(new_edit->transition && new_edit->transition->length > new_edit->length)
+		new_edit->transition->length = new_edit->length;
 	return new_edit;
 }
 
@@ -403,11 +364,10 @@ int Edits::optimize()
 		result = 0;
 
 // delete 0 length edits
-		for(current = first; !result && current; ) {
+		for( current = first; !result && current; ) {
 			Edit* next = current->next;
-			if(current->length == 0) {
-				// Be smart with transitions!
-				if (next && current->transition && !next->transition) {
+			if( current->length == 0 ) {
+				if( next && current->transition && !next->transition) {
 					next->transition = current->transition;
 					next->transition->edit = next;
 					current->transition = 0;
@@ -431,10 +391,8 @@ int Edits::optimize()
 // current->channel, next_edit->channel, current->asset, next_edit->asset,
 // current->nested_edl, next_edit->nested_edl);
 
-
 // both edits are silence & not a plugin
-// source channels are identical
-// assets are identical
+// source channels are identical, assets are identical
 	   		if( (current->silence() && next_edit->silence() && !current->is_plugin) ||
 			    (current->startsource + current->length == next_edit->startsource &&
 		       	     current->channel == next_edit->channel &&
@@ -444,7 +402,7 @@ int Edits::optimize()
         			current->length += next_edit->length;
         			remove(next_edit);
         			result = 1;
-				continue;
+				break;
         		}
 
 	    		current = current->next;
@@ -471,8 +429,7 @@ void Edits::load(FileXML *file, int track_offset)
 
  	while( !file->read_tag() ) {
 //printf("Edits::load 1 %s\n", file->tag.get_title());
-		if(!strcmp(file->tag.get_title(), "EDIT"))
-		{
+		if(!strcmp(file->tag.get_title(), "EDIT")) {
 			load_edit(file, startproject, track_offset);
 		}
 		else if(!strcmp(file->tag.get_title(), "/EDITS"))
@@ -487,51 +444,45 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 {
 	Edit* current = append_new_edit();
 	current->load_properties(file, startproject);
+
 	startproject += current->length;
 
 	while( !file->read_tag() ) {
-		if(file->tag.title_is("NESTED_EDL"))
-		{
+		if(file->tag.title_is("NESTED_EDL")) {
 			char path[BCTEXTLEN];
 			path[0] = 0;
 			file->tag.get_property("SRC", path);
 //printf("Edits::load_edit %d path=%s\n", __LINE__, path);
-			if(path[0] != 0)
-			{
+			if(path[0] != 0) {
 				current->nested_edl = edl->nested_edls->get(path);
 			}
 // printf("Edits::load_edit %d nested_edl->path=%s\n",
 // __LINE__,
 // current->nested_edl->path);
 		}
-		else if(file->tag.title_is("FILE"))
-		{
+		else if(file->tag.title_is("FILE")) {
 			char filename[BCTEXTLEN];
 			filename[0] = 0;
 			file->tag.get_property("SRC", filename);
 // Extend path
-			if(filename[0] != 0)
-			{
+			if(filename[0] != 0) {
 				char directory[BCTEXTLEN], edl_directory[BCTEXTLEN];
 				FileSystem fs;
 				fs.set_current_dir("");
 				fs.extract_dir(directory, filename);
-				if(!strlen(directory))
-				{
+				if(!strlen(directory)) {
 					fs.extract_dir(edl_directory, file->filename);
 					fs.join_names(directory, edl_directory, filename);
 					strcpy(filename, directory);
 				}
 				current->asset = edl->assets->get_asset(filename);
 			}
-			else
-			{
+			else {
 				current->asset = 0;
 			}
 //printf("Edits::load_edit 5\n");
 		}
-		else if(file->tag.title_is("TRANSITION"))
-		{
+		else if(file->tag.title_is("TRANSITION")) {
 			current->transition = new Transition(edl, current, "",
 				track->to_units(edl->session->default_transition_length, 1));
 				current->transition->load_xml(file);
@@ -560,19 +511,15 @@ Edit* Edits::editof(int64_t position, int direction, int use_nudge)
 	Edit *current = 0;
 	if(use_nudge && track) position += track->nudge;
 
-	if(direction == PLAY_FORWARD)
-	{
-		for(current = last; current; current = PREVIOUS)
-		{
+	if(direction == PLAY_FORWARD) {
+		for(current = last; current; current = PREVIOUS) {
 			if(current->startproject <= position && current->startproject + current->length > position)
 				return current;
 		}
 	}
 	else
-	if(direction == PLAY_REVERSE)
-	{
-		for(current = first; current; current = NEXT)
-		{
+	if(direction == PLAY_REVERSE) {
+		for(current = first; current; current = NEXT) {
 			if(current->startproject < position && current->startproject + current->length >= position)
 				return current;
 		}
@@ -587,8 +534,7 @@ Edit* Edits::get_playable_edit(int64_t position, int use_nudge)
 	if(track && use_nudge) position += track->nudge;
 
 // Get the current edit
-	for(current = first; current; current = NEXT)
-	{
+	for(current = first; current; current = NEXT) {
 		if(current->startproject <= position &&
 			current->startproject + current->length > position)
 			break;
@@ -596,8 +542,7 @@ Edit* Edits::get_playable_edit(int64_t position, int use_nudge)
 
 // Get the edit's asset
 // TODO: descend into nested EDLs
-	if(current)
-	{
+	if(current) {
 		if(!current->asset)
 			current = 0;
 	}
@@ -638,11 +583,11 @@ void Edits::clear(int64_t start, int64_t end)
 	Edit* edit2 = editof(end, PLAY_FORWARD, 0);
 	Edit* current_edit;
 
+	if(end == start) return;        // nothing selected
 	if(!edit1 && !edit2) return;       // nothing selected
 
 
-	if(!edit2)
-	{                // edit2 beyond end of track
+	if(!edit2) {                // edit2 beyond end of track
 		edit2 = last;
 		end = this->length();
 	}
@@ -658,33 +603,27 @@ void Edits::clear(int64_t start, int64_t end)
 		edit2->startproject += end - edit2->startproject;
 
 // delete
-		for(current_edit = edit1->next; current_edit && current_edit != edit2;)
-		{
+		for(current_edit = edit1->next; current_edit && current_edit != edit2;) {
 			Edit* next = current_edit->next;
 			remove(current_edit);
 			current_edit = next;
 		}
 // shift
-		for(current_edit = edit2; current_edit; current_edit = current_edit->next)
-		{
+		for(current_edit = edit2; current_edit; current_edit = current_edit->next) {
 			current_edit->startproject -= end - start;
 		}
 	}
-	else
-	{
+	else {
 // in same edit. paste_edit depends on this
 // create a new edit
 		current_edit = split_edit(start);
-
-		current_edit->length -= end - start;
-		current_edit->startsource += end - start;
-
+		if( current_edit ) {
+			current_edit->length -= end - start;
+			current_edit->startsource += end - start;
 // shift
-		for(current_edit = current_edit->next;
-			current_edit;
-			current_edit = current_edit->next)
-		{
-			current_edit->startproject -= end - start;
+			while( (current_edit=current_edit->next) != 0 ) {
+				current_edit->startproject -= end - start;
+			}
 		}
 	}
 
@@ -693,55 +632,37 @@ void Edits::clear(int64_t start, int64_t end)
 
 // Used by edit handle and plugin handle movement but plugin handle movement
 // can only effect other plugins.
-void Edits::clear_recursive(int64_t start,
-	int64_t end,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
-	int edit_autos,
+void Edits::clear_recursive(int64_t start, int64_t end,
+	int edit_edits, int edit_labels, int edit_plugins, int edit_autos,
 	Edits *trim_edits)
 {
 //printf("Edits::clear_recursive 1\n");
-	track->clear(start,
-		end,
-		edit_edits,
-		edit_labels,
-		edit_plugins,
-		edit_autos,
-		0,
+	track->clear(start, end,
+		edit_edits, edit_labels, edit_plugins, edit_autos, 0,
 		trim_edits);
 }
 
 
-int Edits::clear_handle(double start,
-	double end,
-	int edit_plugins,
-	int edit_autos,
-	double &distance)
+int Edits::clear_handle(double start, double end,
+	int edit_plugins, int edit_autos, double &distance)
 {
 	Edit *current_edit;
 
 	distance = 0.0; // if nothing is found, distance is 0!
 	for(current_edit = first;
 		current_edit && current_edit->next;
-		current_edit = current_edit->next)
-	{
+		current_edit = current_edit->next) {
 
 
 
-		if(current_edit->asset &&
-			current_edit->next->asset)
-		{
+		if(current_edit->asset && current_edit->next->asset) {
 
 			if(current_edit->asset->equivalent(*current_edit->next->asset,
-				0,
-				0))
-			{
+				0, 0)) {
 
 // Got two consecutive edits in same source
 				if(edl->equivalent(track->from_units(current_edit->next->startproject),
-					start))
-				{
+					start)) {
 // handle selected
 					int length = -current_edit->length;
 					current_edit->length = current_edit->next->startsource - current_edit->startsource;
@@ -774,35 +695,25 @@ int Edits::clear_handle(double start,
 	return 0;
 }
 
-int Edits::modify_handles(double oldposition,
-	double newposition,
-	int currentend,
-	int edit_mode,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
-	int edit_autos,
+int Edits::modify_handles(double oldposition, double newposition, int currentend,
+	int edit_mode, int edit_edits, int edit_labels, int edit_plugins, int edit_autos,
 	Edits *trim_edits)
 {
 	int result = 0;
 	Edit *current_edit;
 
 //printf("Edits::modify_handles 1 %d %f %f\n", currentend, newposition, oldposition);
-	if(currentend == 0)
-	{
+	if(currentend == 0) {
 // left handle
-		for(current_edit = first; current_edit && !result;)
-		{
+		for(current_edit = first; current_edit && !result;) {
 			if(edl->equivalent(track->from_units(current_edit->startproject),
-				oldposition))
-			{
+				oldposition)) {
 // edit matches selection
 //printf("Edits::modify_handles 3 %f %f\n", newposition, oldposition);
 				oldposition = track->from_units(current_edit->startproject);
 				result = 1;
 
-				if(newposition >= oldposition)
-				{
+				if(newposition >= oldposition) {
 //printf("Edits::modify_handle 1 %s %f %f\n", track->title, oldposition, newposition);
 // shift start of edit in
 					current_edit->shift_start_in(edit_mode,
@@ -832,21 +743,17 @@ int Edits::modify_handles(double oldposition,
 			if(!result) current_edit = current_edit->next;
 		}
 	}
-	else
-	{
+	else {
 // right handle selected
-		for(current_edit = first; current_edit && !result;)
-		{
+		for(current_edit = first; current_edit && !result;) {
 			if(edl->equivalent(track->from_units(current_edit->startproject) +
-				track->from_units(current_edit->length), oldposition))
-			{
+				track->from_units(current_edit->length), oldposition)) {
             	oldposition = track->from_units(current_edit->startproject) +
 					track->from_units(current_edit->length);
 				result = 1;
 
 //printf("Edits::modify_handle 3\n");
-				if(newposition <= oldposition)
-				{
+				if(newposition <= oldposition) {
 // shift end of edit in
 //printf("Edits::modify_handle 4\n");
 					current_edit->shift_end_in(edit_mode,
@@ -887,25 +794,20 @@ int Edits::modify_handles(double oldposition,
 
 void Edits::paste_silence(int64_t start, int64_t end)
 {
-	// paste silence does not do anything if
-	// a) paste silence is on empty track
-	// b) paste silence is after last edit
-	// in both cases editof returns NULL
 	Edit *new_edit = editof(start, PLAY_FORWARD, 0);
 	if (!new_edit) return;
 
-	if (!new_edit->asset)
-	{ // in this case we extend already existing edit
-		new_edit->length += end - start;
-	} else
-	{ // we are in fact creating a new edit
+	if( !new_edit->silence() ) {
 		new_edit = insert_new_edit(start);
 		new_edit->length = end - start;
 	}
-	for(Edit *current = new_edit->next; current; current = NEXT)
-	{
+	else
+		new_edit->length += end - start;
+
+	for(Edit *current = new_edit->next; current; current = NEXT) {
 		current->startproject += end - start;
 	}
+
 	return;
 }
 
@@ -913,23 +815,18 @@ Edit *Edits::create_silence(int64_t start, int64_t end)
 {
 	Edit *new_edit = insert_new_edit(start);
 	new_edit->length = end - start;
-	for(Edit *current = new_edit->next; current; current = NEXT)
-	{
+	for(Edit *current = new_edit->next; current; current = NEXT) {
 		current->startproject += end - start;
 	}
 	return new_edit;
 }
-
+				     
 Edit* Edits::shift(int64_t position, int64_t difference)
 {
 	Edit *new_edit = split_edit(position);
 
-	for(Edit *current = first;
-		current;
-		current = NEXT)
-	{
-		if(current->startproject >= position)
-		{
+	for(Edit *current = first; current; current = NEXT) {
+		if(current->startproject >= position) {
 			current->shift(difference);
 		}
 	}

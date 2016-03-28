@@ -1679,6 +1679,7 @@ int CWindowMaskDelete::handle_event()
 	Track *track;
 	MaskPoint *point;
 	SubMask *mask;
+	int total_points = 0;
 
 // Get existing keyframe
 	((CWindowMaskGUI*)gui)->get_keyframe(track, autos, keyframe, mask, point, 0);
@@ -1705,6 +1706,8 @@ int CWindowMaskDelete::handle_event()
 			submask->points.remove_object(
 				submask->points.values[submask->points.total - 1]);
 		}
+		total_points = submask->points.total;
+
 // Commit change to span of keyframes
 		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->update_parameter(&temp_keyframe);
 #else
@@ -1712,8 +1715,6 @@ int CWindowMaskDelete::handle_event()
 			current; )
 		{
 			SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
-
-
 
 			for(int i = mwindow->cwindow->gui->affected_point;
 				i < submask->points.total - 1;
@@ -1727,7 +1728,7 @@ int CWindowMaskDelete::handle_event()
 				submask->points.remove_object(
 					submask->points.values[submask->points.total - 1]);
 			}
-
+			total_points = submask->points.total;
 
 			if(current == (MaskAuto*)autos->default_auto)
 				current = (MaskAuto*)autos->first;
@@ -1735,6 +1736,9 @@ int CWindowMaskDelete::handle_event()
 				current = (MaskAuto*)NEXT;
 		}
 #endif
+		if( mwindow->cwindow->gui->affected_point >= total_points )
+			mwindow->cwindow->gui->affected_point =
+				total_points > 0 ? total_points-1 : 0;
 
 		gui->update();
 		gui->update_preview();
@@ -1854,6 +1858,47 @@ CWindowMaskNumber::~CWindowMaskNumber()
 int CWindowMaskNumber::handle_event()
 {
 	mwindow->edl->session->cwindow_mask = atol(get_text());
+	gui->update();
+	gui->update_preview();
+	return 1;
+}
+
+
+CWindowMaskAffectedPoint::CWindowMaskAffectedPoint(MWindow *mwindow,
+	CWindowToolGUI *gui, int x, int y)
+ : BC_TumbleTextBox(gui,
+		(int64_t)mwindow->cwindow->gui->affected_point,
+		(int64_t)0, INT64_MAX, x, y, 100)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+
+CWindowMaskAffectedPoint::~CWindowMaskAffectedPoint()
+{
+}
+
+int CWindowMaskAffectedPoint::handle_event()
+{
+	int total_points = 0;
+	int affected_point = atol(get_text());
+	Track *track = mwindow->cwindow->calculate_affected_track();
+	if(track) {
+		MaskAutos *autos = (MaskAutos*)track->automation->autos[AUTOMATION_MASK];
+		MaskAuto *keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(autos, 0);
+		if( keyframe ) {
+			SubMask *mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
+			total_points = mask->points.size();
+		}
+	}
+	int active_point = affected_point;
+	if( affected_point >= total_points )
+		affected_point = total_points - 1;
+	else if( affected_point < 0 )
+		affected_point = 0;
+	if( active_point != affected_point )
+		update((int64_t)affected_point);
+	mwindow->cwindow->gui->affected_point = affected_point;
 	gui->update();
 	gui->update_preview();
 	return 1;
@@ -2016,11 +2061,15 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
+	number = 0;
+	active_point = 0;
+	feather = 0;
 }
 CWindowMaskGUI::~CWindowMaskGUI()
 {
 	lock_window("CWindowMaskGUI::~CWindowMaskGUI");
 	delete number;
+	delete active_point;
 	delete feather;
 	unlock_window();
 }
@@ -2044,6 +2093,11 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(value = new CWindowMaskValue(mwindow, this, x + title->get_w() + margin, y));
 	y += value->get_h() + margin;
 	add_subwindow(delete_point = new CWindowMaskDelete(mwindow, this, x, y));
+	int x1 = x + delete_point->get_w() + 2*margin;
+	add_subwindow(title = new BC_Title(x1, y, _("Point:")));
+	x1 += title->get_w() + margin;
+	active_point = new CWindowMaskAffectedPoint(mwindow, this, x1, y);
+	active_point->create_objects();
 	y += delete_point->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, _("Mask number:")));
 	number = new CWindowMaskNumber(mwindow,
@@ -2149,8 +2203,9 @@ void CWindowMaskGUI::update()
 			apply_before_plugins->update((int64_t)keyframe->apply_before_plugins);
 		}
 	}
-//printf("CWindowMaskGUI::update 1\n");
 
+//printf("CWindowMaskGUI::update 1\n");
+	active_point->update((int64_t)mwindow->cwindow->gui->affected_point);
 	number->update((int64_t)mwindow->edl->session->cwindow_mask);
 
 //printf("CWindowMaskGUI::update 1\n");

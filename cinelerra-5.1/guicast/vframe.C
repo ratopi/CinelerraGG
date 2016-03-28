@@ -790,6 +790,11 @@ int VFrame::write_png(const char *path)
 			png_cmodel = PNG_COLOR_TYPE_RGB;
 			break;
 
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			png_cmodel = PNG_COLOR_TYPE_RGB_ALPHA;
+			break;
+
 		case BC_A8:
 			png_cmodel = PNG_COLOR_TYPE_GRAY;
 			break;

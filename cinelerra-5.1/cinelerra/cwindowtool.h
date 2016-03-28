@@ -178,6 +178,18 @@ public:
 	CWindowToolGUI *gui;
 };
 
+
+class CWindowMaskAffectedPoint : public BC_TumbleTextBox
+{
+public:
+	CWindowMaskAffectedPoint(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	~CWindowMaskAffectedPoint();
+	int handle_event();
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
+
 class CWindowMaskFeather : public BC_TumbleTextBox
 {
 public:
@@ -225,6 +237,7 @@ public:
 	CWindowMaskMode *mode;
 	CWindowMaskFeather *feather;
 	CWindowMaskDelete *delete_point;
+	CWindowMaskAffectedPoint *active_point;
 // Not necessary if all keyframes have same points
 //	CWindowMaskCycleNext *next_point;
 //	CWindowMaskCyclePrev *prev_point;

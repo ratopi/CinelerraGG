@@ -152,33 +152,6 @@ void VFrame::to_texture()
 #endif
 }
 
-void VFrame::to_ram()
-{
-#ifdef HAVE_GL
-	switch(opengl_state)
-	{
-// Only pbuffer is supported since this is only called after the
-// overlay operation onto the pbuffer.
-		case VFrame::SCREEN:
-			if(pbuffer)
-			{
-				enable_opengl();
-//printf("VFrame::to_ram %d %d\n", get_w(), get_h());
-				glReadPixels(0,
-					0,
-					get_w(),
-					get_h(),
-					GL_RGB,
-					GL_UNSIGNED_BYTE,
-					get_rows()[0]);
-				flip_vert();
-			}
-			opengl_state = VFrame::RAM;
-			return;
-	}
-#endif
-}
-
 void VFrame::create_pbuffer()
 {
 	if(pbuffer &&
@@ -220,12 +193,9 @@ void VFrame::screen_to_texture(int x, int y, int w, int h)
 #ifdef HAVE_GL
 // Create texture
 	BC_Texture::new_texture(&texture,
-		get_w(),
-		get_h(),
-		get_color_model());
+		get_w(), get_h(), get_color_model());
 
-	if(pbuffer)
-	{
+	if(pbuffer) {
 		glEnable(GL_TEXTURE_2D);
 
 // Read canvas into texture, use back texture for DOUBLE_BUFFER
@@ -244,6 +214,18 @@ void VFrame::screen_to_texture(int x, int y, int w, int h)
 			x >= 0 ? x : 0, y >= 0 ? y : 0,
 			w >= 0 ? w : get_w(), h >= 0 ? h : get_h());
 	}
+#endif
+}
+
+void VFrame::screen_to_ram()
+{
+#ifdef HAVE_GL
+	enable_opengl();
+	glReadBuffer(GL_BACK);
+	int type = BC_CModels::is_float(color_model) ? GL_FLOAT : GL_UNSIGNED_BYTE;
+	int format = BC_CModels::has_alpha(color_model) ? GL_RGBA : GL_RGB;
+	glReadPixels(0, 0, get_w(), get_h(), format, type, get_rows()[0]);
+	opengl_state = VFrame::RAM;
 #endif
 }
 

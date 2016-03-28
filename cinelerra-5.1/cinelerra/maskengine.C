@@ -63,77 +63,6 @@ MaskUnit::~MaskUnit()
 
 #define OVERSAMPLE 8
 
-#if 1
-// Bresenham's
-void MaskUnit::draw_line_clamped(VFrame *frame,
-		int x1,int y1, int x2,int y2, unsigned char k)
-{
-	int w = frame->get_w(), h = frame->get_h();
-	unsigned char **rows = (unsigned char**)frame->get_rows();
-	int dx = x2-x1, dy = y2-y1;
-//printf("MaskUnit::draw_line_clamped(%d,%d -> %d,%d, 0x%02x\n", x1,y1, x2,y2, k);
-
-	int ax = 2*abs(dx), ay = 2*abs(dy);
- 
-	if( ax > ay ) {		/* x dominant */
-		if( dx == 0 ) return;
-		if( x1 > x2 ) {
-			int xx = x2;  x2 = x1;  x1 = xx;
-			int yy = y2;  y2 = y1;  y1 = yy;
-		}
-		if( x1 >= w || x2 < 0 ) return;
-		if( dx < 0 ) {  dx = -dx;  dy = -dy; }
-		int x = x1,  y = y1, d = dx;
-		int sy = dy < 0 ? -1 : 1;
-		if( x1 < 0 ) {
-			double py = -(double)dy/dx * x1 + y1 + 0.5;
-			x = 0;  y = py;
-			d = (py - y) * ay;
-		}
-
-		for( int y0=-1;;) {
-			if( x >= w ) return;
-			if( y != y0 && y >= 0 && y < h ) {
-				y0 = y;
-				unsigned char *bp = rows[y] + x;
-				*bp = *bp == k ? 0 : k;
-			}
-			if( x == x2 ) return;
-			if( d < 0 ) { d += ax;  y += sy; }
-			d -= ay;  ++x;
-		}
-   	}
-	else {			/* y dominant */
-		if( dy == 0 ) return;
-		if( y1 > y2 ) {
-			int xx = x2;  x2 = x1;  x1 = xx;
-			int yy = y2;  y2 = y1;  y1 = yy;
-		}
-		if( y1 >= h || y2 < 0 ) return;
-		if( dy < 0 ) {  dx = -dx;  dy = -dy; }
-		int x = x1, y = y1, d = dy;
-		int sx = dx < 0 ? -1 : 1;
-		if( y1 < 0 ) {
-			double px = -(double)dx/dy * y1 + x1 + 0.5;
-			x = px;  y = 0;
-			d = (px - x) * ax;
-		}
-
-		for(;;) {
-			if( y >= h ) return;
-			if( x >= 0 && x < w ) {
-				unsigned char *bp = rows[y] + x;
-				*bp = *bp == k ? 0 : k;
-			}
-			if( y == y2 ) return;
-			if( d < 0 ) { d += ay;  x += sx; }
-			d -= ax;  ++y;
-		}
-	}
-}
-
-#else
-
 void MaskUnit::draw_line_clamped(VFrame *frame, 
 	int x1, int y1, int x2, int y2, unsigned char k)
 {
@@ -170,8 +99,6 @@ void MaskUnit::draw_line_clamped(VFrame *frame,
 		}
 	}
 }
-
-#endif
 
 void MaskUnit::blur_strip(double *val_p, 
 	double *val_m, 

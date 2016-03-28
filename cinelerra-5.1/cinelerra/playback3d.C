@@ -197,10 +197,10 @@ static const char *blend_divide_frag =
 	"void main() {\n"
 	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
 	"	vec4 result = gl_FragColor / canvas;\n"
-	"	if(!canvas.r) result.r = 1.0;\n"
-	"	if(!canvas.g) result.g = 1.0;\n"
-	"	if(!canvas.b) result.b = 1.0;\n"
-	"	if(!canvas.a) result.a = 1.0;\n"
+	"	if(canvas.r == 0.) result.r = 1.0;\n"
+	"	if(canvas.g == 0.) result.g = 1.0;\n"
+	"	if(canvas.b == 0.) result.b = 1.0;\n"
+	"	if(canvas.a == 0.) result.a = 1.0;\n"
 	"	result = clamp(result, 0.0, 1.0);\n"
 	"	gl_FragColor = mix(canvas, result, alpha);\n"
 	"}\n";
@@ -219,7 +219,6 @@ static const char *blend_max_frag =
 	"void main() {\n"
 	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
 	"	vec4 result = max(canvas, gl_FragColor);\n"
-	"	result = clamp(result, 0.0, 1.0);\n"
 	"	gl_FragColor = mix(canvas, result, alpha);\n"
 	"}\n";
 
@@ -231,7 +230,6 @@ static const char *blend_min_frag =
 	"void main() {\n"
 	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
 	"	vec4 result = min(canvas, gl_FragColor);\n"
-	"	result = clamp(result, 0.0, 1.0);\n"
 	"	gl_FragColor = mix(canvas, result, alpha);\n"
 	"}\n";
 
@@ -243,7 +241,6 @@ static const char *blend_average_frag =
 	"void main() {\n"
 	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
 	"	vec4 result = (canvas + gl_FragColor) * 0.5;\n"
-	"	result = clamp(result, 0.0, 1.0);\n"
 	"	gl_FragColor = mix(canvas, result, alpha);\n"
 	"}\n";
 
@@ -400,7 +397,6 @@ static const char *blend_or_frag =
 	"void main() {\n"
 	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
 	"	vec4 result = canvas + gl_FragColor - canvas * gl_FragColor;\n"
-	"	result = clamp(result, 0.0, 1.0);\n"
 	"	gl_FragColor = mix(canvas, result, alpha);\n"
 	"}\n";
 
@@ -739,7 +735,7 @@ void Playback3D::copy_from_sync(Playback3DCommand *command)
 // 			command->frame->get_h(),
 // 			BC_RGB888,
 // 			-1);
-// 		command->frame->to_ram();
+// 		command->frame->screen_to_ram();
 //
 // 		window->clear_box(0,
 // 						0,

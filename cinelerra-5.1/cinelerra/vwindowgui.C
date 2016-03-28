@@ -635,7 +635,7 @@ double VWindowEditing::get_position()
 void VWindowEditing::set_position(double position)
 {
 	EDL *edl = vwindow->get_edl();
-	if( edl ) return;
+	if( !edl ) return;
 	if( get_position() != position ) {
 		position -= edl->session->get_frame_offset() / edl->session->frame_rate;
 		if( position < 0 ) position = 0;

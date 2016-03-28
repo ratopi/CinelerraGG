@@ -22,6 +22,7 @@
 #ifndef EDLSESSION_H
 #define EDLSESSION_H
 
+#include "asset.inc"
 #include "autoconf.inc"
 #include "bcwindowbase.inc"
 #include "bchash.inc"
