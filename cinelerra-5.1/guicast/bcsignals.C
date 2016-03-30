@@ -22,6 +22,7 @@
 #include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "bckeyboard.h"
+#include "bcresources.h"
 
 #include <ctype.h>
 #include <dirent.h>
@@ -126,14 +127,14 @@ static bc_buffertrace_t* new_bc_buffertrace(int size, void *ptr, const char *loc
 	return result;
 }
 
-static void bc_copy_textfile(FILE *ofp, const char *fmt,...)
+static void bc_copy_textfile(int lines, FILE *ofp, const char *fmt,...)
 {
 	va_list ap;    va_start(ap, fmt);
 	char bfr[BCTEXTLEN];  vsnprintf(bfr, sizeof(bfr), fmt, ap);
 	va_end(ap);
 	FILE *ifp = fopen(bfr,"r");
 	if( !ifp ) return;
-	while( fgets(bfr,sizeof(bfr),ifp) ) fputs(bfr,ofp);
+	while( --lines >= 0 && fgets(bfr,sizeof(bfr),ifp) ) fputs(bfr,ofp);
 	fclose(ifp);
 }
 
@@ -855,6 +856,8 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 		fprintf(fp,"        by %d:%d %s(%s)\n",
 			pw->pw_uid, pw->pw_gid, pw->pw_name, pw->pw_gecos);
 	}
+	fprintf(fp,"\nCPUS: %d\n",   BC_Resources::get_machine_cpus());
+	fprintf(fp,"\nCPUINFO:\n");  bc_copy_textfile(32, fp,"/proc/cpuinfo");
 	fprintf(fp,"\nTHREADS:\n");  Thread::dump_threads(fp);
 	fprintf(fp,"\nTRACES:\n");   BC_Signals::dump_traces(fp);
 	fprintf(fp,"\nLOCKS:\n");    BC_Signals::dump_locks(fp);
@@ -863,9 +866,9 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 		fprintf(fp,"\nMAIN HOOK:\n");
 		BC_Signals::trap_hook(fp, BC_Signals::trap_data);
 	}
-	fprintf(fp,"\nVERSION:\n");  bc_copy_textfile(fp,"/proc/version");
-	fprintf(fp,"\nMEMINFO:\n");  bc_copy_textfile(fp,"/proc/meminfo");
-	fprintf(fp,"\nMAPS:\n");     bc_copy_textfile(fp,"/proc/%d/maps",pid);
+	fprintf(fp,"\nVERSION:\n");  bc_copy_textfile(INT_MAX, fp,"/proc/version");
+	fprintf(fp,"\nMEMINFO:\n");  bc_copy_textfile(INT_MAX, fp,"/proc/meminfo");
+	fprintf(fp,"\nMAPS:\n");     bc_copy_textfile(INT_MAX, fp,"/proc/%d/maps",pid);
 	fprintf(fp,"\n\n");
 	if( fp != stdout ) fclose(fp);
 	char cmd[1024], *cp = cmd;

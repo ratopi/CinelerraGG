@@ -30,7 +30,6 @@ public:
 	Condition(int init_value = 0, const char *title = 0, int is_binary = 0);
 	~Condition();
 
-
 // Reset to init_value whether locked or not.
 	void reset();
 // Block if value <= 0, then decrease value
@@ -43,9 +42,9 @@ public:
 	int timed_lock(int microseconds, const char *location = 0);
 	int get_value();
 
-    pthread_cond_t cond;
-    pthread_mutex_t mutex;
-    int value;
+	pthread_cond_t cond;
+	pthread_mutex_t mutex;
+	int value;
 	int init_value;
 	int is_binary;
 	const char *title;

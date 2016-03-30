@@ -151,6 +151,7 @@ AudioThread(AudioDevice *device,
 
 AudioThread::~AudioThread()
 {
+	stop(0);
 	delete startup_lock;
 }
 

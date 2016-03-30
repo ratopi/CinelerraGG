@@ -452,7 +452,8 @@ int VModule::import_frame(VFrame *output,
 //			current_edit->asset->interlace_fixmethod);
 
 			// Determine the interlacing method to use.
-			int interlace_fixmethod = ilaceautofixmethod2(get_edl()->session->interlace_mode,
+			int interlace_fixmethod = !current_edit->asset ? BC_ILACE_FIXMETHOD_NONE :
+				 ilaceautofixmethod2(get_edl()->session->interlace_mode,
 					current_edit->asset->interlace_autofixoption,
 					current_edit->asset->interlace_mode,
 					current_edit->asset->interlace_fixmethod);

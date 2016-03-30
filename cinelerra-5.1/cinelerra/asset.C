@@ -1014,17 +1014,17 @@ int Asset::dump(FILE *fp)
 	fprintf(fp,"   ff_video_bitrate=%d\n", ff_video_bitrate);
 	fprintf(fp,"   ff_video_quality=%d\n", ff_video_quality);
 	fprintf(fp,"   audio_data %d channels %d samplerate %d bits %d"
-		" byte_order %d signed %d header %d dither %d acodec %c%c%c%c\n",
+		" byte_order %d signed %d header %d dither %d acodec %4.4s\n",
 		audio_data, channels, sample_rate, bits, byte_order, signed_,
-		header, dither, acodec[0], acodec[1], acodec[2], acodec[3]);
+		header, dither, acodec);
 	fprintf(fp,"   audio_length %jd\n", audio_length);
 	char string[BCTEXTLEN];
 	ilacemode_to_xmltext(string, interlace_mode);
 	fprintf(fp,"   video_data %d program %d layers %d framerate %f width %d"
-		" height %d vcodec %c%c%c%c aspect_ratio %f ilace_mode %s\n",
+		" height %d vcodec %4.4s aspect_ratio %f ilace_mode %s\n",
 		video_data, layers, program, frame_rate, width, height,
-		vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio,string);
-	printf("   reel_name %s reel_number %i tcstart %jd tcend %jd tcf %d\n",
+		vcodec, aspect_ratio,string);
+	fprintf(fp,"   reel_name %s reel_number %i tcstart %jd tcend %jd tcf %d\n",
 		reel_name, reel_number, tcstart, tcend, tcformat);
 	fprintf(fp,"   video_length %jd \n", video_length);
 

@@ -186,7 +186,6 @@ BC_WindowBase::~BC_WindowBase()
 		}
 #endif
 		finit_im();
-
 		flush();
 		sync_display();
 

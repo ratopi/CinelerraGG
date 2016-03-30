@@ -14,7 +14,12 @@ proj="cinelerra5"
 base="cinelerra-5.1"
 
 centos="centos-7.0-1406"
+fedora="fedora-23"
+leap="leap-42.1"
+mint="mint-14.04.1"
 suse="opensuse-13.2"
+ub14="ubuntu-14.04.1"
+ub15="ubuntu-15.10"
 ubuntu="ubuntu-14.04.1"
 
 eval os="\${$dir}"

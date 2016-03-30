@@ -362,6 +362,7 @@ int FFStream::decode(AVFrame *frame)
 		if( ipkt->stream_index == st->index ) {
 			while( (ipkt->size > 0 || !ipkt->data) && !got_frame ) {
 				ret = decode_frame(ipkt, frame, got_frame);
+				if( ret < 0 ) need_packet = 1;
 				if( ret <= 0 || !ipkt->data ) break;
 				ipkt->data += ret;
 				ipkt->size -= ret;
@@ -732,6 +733,9 @@ int FFVideoStream::decode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame)
 		ff_err(ret, "FFVideoStream::decode_frame: Could not read video frame\n");
 		return -1;
 	}
+	else // this is right out of ffplay, looks questionable ???
+		ret = pkt->size;
+
 	if( got_frame ) {
 		int64_t pkt_ts = av_frame_get_best_effort_timestamp(frame);
 		if( pkt_ts != AV_NOPTS_VALUE )
@@ -1189,6 +1193,38 @@ int FFMPEG::scan_option_line(char *cp, char *tag, char *val)
 	while( bp < cp ) *val++ = *bp++;
 	*val = 0;
 	return 0;
+}
+
+int FFMPEG::load_defaults(const char *path, const char *type,
+		 char *codec, char *codec_options, int len)
+{
+	char default_file[BCTEXTLEN];
+	FFMPEG::set_option_path(default_file, "%s/%s.dfl", path, type);
+	FILE *fp = fopen(default_file,"r");
+	if( !fp ) return 1;
+	fgets(codec, BCSTRLEN, fp);
+	char *cp = codec;
+	while( *cp && *cp!='\n' ) ++cp;
+	*cp = 0;
+	while( len > 0 && fgets(codec_options, len, fp) ) {
+		int n = strlen(codec_options);
+		codec_options += n;  len -= n;
+	}
+	fclose(fp);
+	FFMPEG::set_option_path(default_file, "%s/%s", path, codec);
+	return FFMPEG::load_options(default_file, codec_options, len);
+}
+
+void FFMPEG::set_asset_format(Asset *asset, const char *text)
+{
+	if( asset->format != FILE_FFMPEG ) return;
+	strcpy(asset->fformat, text);
+	strcpy(asset->ff_audio_options, "");
+	strcpy(asset->ff_video_options, "");
+	asset->audio_data = !load_defaults("audio", text, asset->acodec,
+		asset->ff_audio_options, sizeof(asset->ff_audio_options));
+	asset->video_data = !load_defaults("video", text, asset->vcodec,
+		asset->ff_video_options, sizeof(asset->ff_video_options));
 }
 
 int FFMPEG::get_encoder(const char *options,

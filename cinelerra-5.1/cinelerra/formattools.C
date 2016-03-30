@@ -213,10 +213,10 @@ void FormatTools::create_objects(int &init_x,
 	format_button->create_objects();
 	x += format_button->get_w() + 5;
 	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y, 50, 1, asset->fformat));
+	FFMPEG::set_asset_format(asset, asset->fformat);
 	x += ffmpeg_type->get_w();
 	window->add_subwindow(format_ffmpeg = new FormatFFMPEG(x, y, this));
 	format_ffmpeg->create_objects();
-
 	x = init_x;
 	y += format_button->get_h() + 10;
 	if(do_audio)
@@ -845,40 +845,13 @@ FormatFFMPEG::~FormatFFMPEG()
 {
 }
 
-int FormatFFMPEG::load_defaults(const char *path, const char *type,
-		 char *codec, char *codec_options, int len)
-{
-	char default_file[BCTEXTLEN];
-	FFMPEG::set_option_path(default_file, "%s/%s.dfl", path, type);
-	FILE *fp = fopen(default_file,"r");
-	if( !fp ) return 1;
-	fgets(codec, BCSTRLEN, fp);
-	char *cp = codec;
-	while( *cp && *cp!='\n' ) ++cp;
-	*cp = 0;
-	while( len > 0 && fgets(codec_options, len, fp) ) {
-		int n = strlen(codec_options);
-		codec_options += n;  len -= n;
-	}
-	fclose(fp);
-	FFMPEG::set_option_path(default_file, "%s/%s", path, codec);
-	return FFMPEG::load_options(default_file, codec_options, len);
-}
-
 int FormatFFMPEG::handle_event()
 {
 	BC_ListBoxItem *selection = get_selection(0, 0);
 	if( selection ) {
 		char *text = get_selection(0, 0)->get_text();
 		format->ffmpeg_type->update(text);
-		Asset *asset = format->asset;
-		strcpy(asset->fformat, text);
-		strcpy(asset->ff_audio_options, "");
-		strcpy(asset->ff_video_options, "");
-		asset->audio_data = !load_defaults("audio", text, asset->acodec,
-			asset->ff_audio_options, sizeof(asset->ff_audio_options));
-		asset->video_data = !load_defaults("video", text, asset->vcodec,
-			asset->ff_video_options, sizeof(asset->ff_video_options));
+		FFMPEG::set_asset_format(format->asset, text);
 		format->update_extension();
 		format->close_format_windows();
 		format->update_format();

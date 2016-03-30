@@ -100,9 +100,6 @@ void Automation::create_objects()
 	autos[AUTOMATION_MUTE]->create_objects();
 	autos[AUTOMATION_MUTE]->autoidx = AUTOMATION_MUTE;
 	autos[AUTOMATION_MUTE]->autogrouptype = AUTOGROUPTYPE_INT255;
-	autos[AUTOMATION_SPEED] = new FloatAutos(edl, track, 1.0);
-	autos[AUTOMATION_SPEED]->create_objects();
-	autos[AUTOMATION_SPEED]->autogrouptype = AUTOGROUPTYPE_SPEED;
 }
 
 Automation& Automation::operator=(Automation& automation)

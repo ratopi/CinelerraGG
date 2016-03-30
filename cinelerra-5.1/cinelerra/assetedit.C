@@ -517,7 +517,7 @@ void AssetEditWindow::create_objects()
 
 		add_subwindow(new BC_Title(x, y, _("Frame rate:")));
 		x = x2;
-		sprintf(string, "%.2f", asset_edit->changed_params->frame_rate);
+		sprintf(string, "%.4f", asset_edit->changed_params->frame_rate);
 
 //printf("AssetEditWindow::create_objects %d %f\n", __LINE__, asset_edit->changed_params->frame_rate);
 		if(asset)

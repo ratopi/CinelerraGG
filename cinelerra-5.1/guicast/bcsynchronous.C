@@ -460,6 +460,7 @@ void BC_Synchronous::delete_display_sync(BC_SynchronousCommand *command)
 	Display *display = command->display;
 	XLockDisplay(display);
 	XUnlockDisplay(display);
+	glXMakeContextCurrent(display, None, None, 0);
 	XCloseDisplay(display);
 #endif
 }

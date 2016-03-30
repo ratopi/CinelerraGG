@@ -46,8 +46,8 @@ Mutex MLocker::the_lock;
 
 class the_dbg {
 public:
-	pthread_t tid;  const char *name;
-	the_dbg(pthread_t t, const char *nm) { tid = t; name = nm; }
+	pthread_t tid, owner;  const char *name;
+	the_dbg(pthread_t t, pthread_t o, const char *nm) { tid = t; owner = o; name = nm; }
 	~the_dbg() {}
 };
 
@@ -62,7 +62,7 @@ public:
 	}
 } thread_list;
 
-static void dbg_add(pthread_t tid, const char *nm)
+static void dbg_add(pthread_t tid, pthread_t owner, const char *nm)
 {
 	MLocker mlkr;
 	int i = thread_list.size();
@@ -72,7 +72,7 @@ static void dbg_add(pthread_t tid, const char *nm)
 			(unsigned long)tid, nm, thread_list[i]->name);
 		return;
 	}
-	thread_list.append(new the_dbg(tid, nm));
+	thread_list.append(new the_dbg(tid, owner, nm));
 }
 
 static void dbg_del(pthread_t tid)
@@ -93,9 +93,10 @@ public:
 	~the_chkr() {
 		int i = thread_list.size();
 		if( !i ) return;
-		printf("unjoined tids %d\n", i);
-		while( --i >= 0 ) printf("  %016lx %s\n",
+		printf("unjoined tids / owner %d\n", i);
+		while( --i >= 0 ) printf("  %016lx / %016lx %s\n",
 			(unsigned long)thread_list[i]->tid,
+			(unsigned long)thread_list[i]->owner,
 			thread_list[i]->name);
 	}
 } the_chk;
@@ -182,7 +183,7 @@ void Thread::start()
 
 	pthread_create(&tid, &attr, Thread::entrypoint, this);
 
-	dbg_add(tid, typeid(*this).name());
+	dbg_add(tid, owner, typeid(*this).name());
 }
 
 int Thread::cancel()
@@ -315,8 +316,8 @@ void Thread::dump_threads(FILE *fp)
 {
 	int i = thread_list.size();
 	while( --i >= 0 ) {
-		fprintf(fp, "thread %016lx, %s\n",
-			(unsigned long)thread_list[i]->tid,
+		fprintf(fp, "thread %016lx, owner %016lx, %s\n",
+			(unsigned long)thread_list[i]->tid, (unsigned long)thread_list[i]->owner,
 			thread_list[i]->name);
 	}
 }

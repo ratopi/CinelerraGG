@@ -56,9 +56,8 @@ PluginClientThread::PluginClientThread(PluginClient *client)
 PluginClientThread::~PluginClientThread()
 {
 //printf("PluginClientThread::~PluginClientThread %p %d\n", this, __LINE__);
-	delete window;
+	join();
 //printf("PluginClientThread::~PluginClientThread %p %d\n", this, __LINE__);
-	window = 0;
 	delete init_complete;
 }
 
@@ -85,8 +84,7 @@ void PluginClientThread::run()
 //printf("PluginClientThread::run %p %d\n", this, __LINE__);
 		window->hide_window(1);
 		window->unlock_window();
-
-
+		delete window;  window = 0;
 // Can't save defaults in the destructor because it's not called immediately
 // after closing.
 		/* if(client->defaults) */ client->save_defaults_xml();
@@ -144,35 +142,14 @@ PluginClientWindow::PluginClientWindow(PluginClient *client,
  : BC_Window(client->gui_string, 
 	client->window_x /* - w / 2 */, 
 	client->window_y /* - h / 2 */, 
-	w, 
-	h, 
-	min_w, 
-	min_h,
-	allow_resize, 
-	0,
-	1)
+	w, h, min_w, min_h, allow_resize, 0, 1)
 {
 	this->client = client;
 }
 
 PluginClientWindow::PluginClientWindow(const char *title, 
-	int x,
-	int y,
-	int w,
-	int h,
-	int min_w,
-	int min_h,
-	int allow_resize)
- : BC_Window(title, 
-	x, 
-	y, 
-	w, 
-	h, 
-	min_w, 
-	min_h,
-	allow_resize, 
-	0,
-	1)
+	int x, int y, int w, int h, int min_w, int min_h, int allow_resize)
+ : BC_Window(title, x, y, w, h, min_w, min_h, allow_resize, 0, 1)
 {
 	this->client = 0;
 }
@@ -217,11 +194,7 @@ PluginClient::PluginClient(PluginServer *server)
 PluginClient::~PluginClient()
 {
 // Delete the GUI thread.  The GUI must be hidden with hide_gui first.
-	if(thread) 
-	{
-		thread->join();
-		delete thread;
-	}
+	delete thread;
 
 // Virtual functions don't work here.
 	if(defaults) delete defaults;
@@ -384,7 +357,7 @@ int PluginClient::set_string()
 	if(thread)
 	{
 		thread->window->lock_window("PluginClient::set_string");
-		thread->window->set_title(gui_string);
+		thread->window->put_title(gui_string);
 		thread->window->unlock_window();
 	}
 	return 0;

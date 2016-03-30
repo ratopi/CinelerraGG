@@ -214,6 +214,8 @@ MWindow::MWindow()
 MWindow::~MWindow()
 {
 	in_destructor = 1;
+	stop_playback(1);
+	stop_brender();
 //printf("MWindow::~MWindow %d\n", __LINE__);
 	gui->stop_drawing();
 	gui->remote_control->deactivate();
@@ -230,9 +232,9 @@ MWindow::~MWindow()
 
 // Save defaults for open plugins
 	plugin_gui_lock->lock("MWindow::~MWindow");
-	for(int i = 0; i < plugin_guis->size(); i++)
-	{
+	for(int i = 0; i < plugin_guis->size(); i++) {
 		plugin_guis->get(i)->hide_gui();
+		delete_plugin(plugin_guis->get(i));
 	}
 	plugin_gui_lock->unlock();
 	hide_keyframe_guis();
@@ -277,10 +279,10 @@ MWindow::~MWindow()
 	join();
 #endif
 	reset_caches();
-	dead_plugins->remove_all();
+	dead_plugins->remove_all_objects();
+	delete_plugins();
 	finit_error();
 	keyframe_threads->remove_all_objects();
-	if( !edl->Garbage::remove_user() ) edl = 0;
 	colormodels.remove_all_objects();
 	delete gui;		gui = 0;
 	delete render;          render = 0;
@@ -303,12 +305,13 @@ MWindow::~MWindow()
 	delete keyframe_threads;  keyframe_threads = 0;
 	delete undo;            undo = 0;
 	delete preferences;     preferences = 0;
+	delete exportedl;	exportedl = 0;
 	delete session;         session = 0;
 	delete defaults;        defaults = 0;
 	delete assets;          assets = 0;
 	delete splash_window;   splash_window = 0;
-	delete theme;           theme = 0;
-	delete_plugins();
+//	delete theme;           theme = 0;	// deleted by delete_plugins
+	if( !edl->Garbage::remove_user() ) edl = 0;
 	delete channeldb_buz;
 	delete channeldb_v4l2jpeg;
 // This must be last thread to exit
@@ -318,6 +321,10 @@ MWindow::~MWindow()
 	delete vwindows_lock;
 	delete brender_lock;
 	delete keyframe_gui_lock;
+	colormodels.remove_all_objects();
+	interlace_project_modes.remove_all_objects();
+	interlace_asset_modes.remove_all_objects();
+	interlace_asset_fixmethods.remove_all_objects();
 	sighandler->terminate();
 	delete sighandler;
 }
@@ -2361,12 +2368,8 @@ void MWindow::show_plugin(Plugin *plugin)
 
 SET_TRACE
 // Remove previously deleted plugin GUIs
-	dead_plugin_lock->lock("MWindow::delete_plugin");
-	for(int i = 0; i < dead_plugins->size(); i++)
-	{
-		delete dead_plugins->get(i);
-	}
-	dead_plugins->remove_all();
+	dead_plugin_lock->lock("MWindow::show_plugin");
+	dead_plugins->remove_all_objects();
 	dead_plugin_lock->unlock();
 
 //printf("MWindow::show_plugin %d\n", __LINE__);
@@ -2399,7 +2402,8 @@ SET_TRACE
 //printf("MWindow::show_plugin %p %d\n", server, server->uses_gui);
 		if(server && server->uses_gui)
 		{
-			PluginServer *gui = plugin_guis->append(new PluginServer(*server));
+			PluginServer *gui = new PluginServer(*server);
+			plugin_guis->append(gui);
 // Needs mwindow to do GUI
 			gui->set_mwindow(this);
 			gui->open_plugin(0, preferences, edl, plugin);

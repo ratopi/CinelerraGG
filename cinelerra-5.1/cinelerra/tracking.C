@@ -106,7 +106,6 @@ int Tracking::stop_playback()
 		update_tracker(position);
 	
 		stop_meters();
-		state = DONE;
 	}
 	return 0;
 }
