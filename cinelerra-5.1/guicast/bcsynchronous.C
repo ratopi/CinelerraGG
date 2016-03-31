@@ -473,12 +473,11 @@ void BC_Synchronous::put_pbuffer(int w, int h,
 	table_lock->lock("BC_Resources::release_textures");
 	for(int i = 0; i < pbuffer_ids.total; i++) {
 		PBufferID *ptr = pbuffer_ids.values[i];
-		if(ptr->w == w && ptr->h == h && ptr->glx_pbuffer == glx_pbuffer) {
+		if( ptr->w == w && ptr->h == h && ptr->glx_pbuffer == glx_pbuffer ) {
 			exists = 1;
 			break;
 		}
 	}
-
 
 	if(!exists) {
 		PBufferID *ptr = new PBufferID(current_window->get_id(),
@@ -488,10 +487,7 @@ void BC_Synchronous::put_pbuffer(int w, int h,
 	table_lock->unlock();
 }
 
-GLXPbuffer BC_Synchronous::get_pbuffer(int w,
-	int h,
-	int *window_id,
-	GLXContext *glx_context)
+GLXPbuffer BC_Synchronous::get_pbuffer(int w, int h, GLXContext *glx_context)
 {
 	table_lock->lock("BC_Resources::release_textures");
 	for(int i = 0; i < pbuffer_ids.total; i++) {
@@ -500,7 +496,6 @@ GLXPbuffer BC_Synchronous::get_pbuffer(int w,
 			ptr->window_id == current_window->get_id() ) {
 			GLXPbuffer result = ptr->glx_pbuffer;
 			*glx_context = ptr->glx_context;
-			*window_id = ptr->window_id;
 			ptr->in_use = 1;
 			table_lock->unlock();
 			return result;
@@ -515,7 +510,7 @@ void BC_Synchronous::release_pbuffer(int window_id, GLXPbuffer pbuffer)
 	table_lock->lock("BC_Resources::release_textures");
 	for(int i = 0; i < pbuffer_ids.total; i++) {
 		PBufferID *ptr = pbuffer_ids.values[i];
-		if(ptr->window_id == window_id) {
+		if( ptr->window_id == window_id ) {
 			ptr->in_use = 0;
 		}
 	}

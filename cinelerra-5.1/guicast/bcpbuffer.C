@@ -65,6 +65,12 @@ void BC_PBuffer::create_pbuffer(int w, int h)
 {
 #ifdef HAVE_GL
 	int ww = (w + 3) & ~3, hh = (h + 3) & ~3;
+	BC_WindowBase *current_window = BC_WindowBase::get_synchronous()->current_window;
+	window_id = current_window->get_id();
+
+	pbuffer = BC_WindowBase::get_synchronous()->get_pbuffer(ww, hh, &glx_context);
+	if( pbuffer ) return;
+
 	int pb_attrs[] = {
 		GLX_PBUFFER_WIDTH, ww,
 		GLX_PBUFFER_HEIGHT, hh,
@@ -73,7 +79,6 @@ void BC_PBuffer::create_pbuffer(int w, int h)
 		None
 	};
 
-	BC_WindowBase *current_window = BC_WindowBase::get_synchronous()->current_window;
 	Display *dpy = current_window->get_display();
 	GLXFBConfig *fb_cfgs = current_window->glx_pbuffer_fb_configs();
 	int nfb_cfgs = current_window->n_fbcfgs_pbuffer;
@@ -92,9 +97,8 @@ void BC_PBuffer::create_pbuffer(int w, int h)
 // __LINE__, current_config, visinfo, BC_Resources::error, pbuffer);
 
 	if( pbuffer ) {
-		window_id = current_window->get_id();
 		glx_context = glXCreateContext(dpy, visinfo, current_window->glx_win_context, 1);
-		BC_WindowBase::get_synchronous()->put_pbuffer(w, h, pbuffer, glx_context);
+		BC_WindowBase::get_synchronous()->put_pbuffer(ww, hh, pbuffer, glx_context);
 	}
 	else
 		printf("BC_PBuffer::create_pbuffer: failed\n");

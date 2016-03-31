@@ -204,10 +204,7 @@ public:
 		GLXContext glx_context);
 // Get the PBuffer by window_id and dimensions if it exists.
 // Must be called inside synchronous loop.
-	GLXPbuffer get_pbuffer(int w,
-		int h,
-		int *window_id,
-		GLXContext *glx_context);
+	GLXPbuffer get_pbuffer(int w, int h, GLXContext *glx_context);
 // Release a pbuffer for use by get_pbuffer.
 	void release_pbuffer(int window_id, GLXPbuffer pbuffer);
 
