@@ -353,17 +353,21 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 		return;
 	}
 
-	if(use_opengl)
-	{
-		((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->do_mask(
-			output_temp, start_position_project,
-			keyframe_set, keyframe, keyframe);
+	if(use_opengl) {
+		if( !((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->can_mask(
+				start_position_project, keyframe_set) )
+			use_opengl = 0;
+			
 	}
-	else
-	{
+	if(use_opengl) {
+		((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->do_mask(
+				output_temp, start_position_project, keyframe_set,
+				keyframe, keyframe);
+	}
+	else {
 // Revert to software
 		masker->do_mask(output_temp, start_position_project,
-			keyframe_set, keyframe, keyframe);
+				keyframe_set, keyframe, keyframe);
 	}
 }
 

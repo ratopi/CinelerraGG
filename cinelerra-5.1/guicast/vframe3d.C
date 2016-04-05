@@ -229,49 +229,26 @@ void VFrame::screen_to_ram()
 #endif
 }
 
-void VFrame::draw_texture(float in_x1,
-		float in_y1,
-		float in_x2,
-		float in_y2,
-		float out_x1,
-		float out_y1,
-		float out_x2,
-		float out_y2,
-		int flip_y)
+void VFrame::draw_texture(
+	float in_x1, float in_y1, float in_x2, float in_y2,
+	float out_x1, float out_y1, float out_x2, float out_y2,
+	int flip_y)
 {
 #ifdef HAVE_GL
-	glBegin(GL_QUADS);
-	glNormal3f(0, 0, 1.0);
-
-	glTexCoord2f(in_x1 / get_texture_w(), in_y1 / get_texture_h());
-	glVertex3f(out_x1, flip_y ? -out_y1 : -out_y2, 0);
-
-	glTexCoord2f(in_x2 / get_texture_w(), in_y1 / get_texture_h());
-	glVertex3f(out_x2, flip_y ? -out_y1 : -out_y2, 0);
-
-	glTexCoord2f(in_x2 / get_texture_w(), in_y2 / get_texture_h());
-	glVertex3f(out_x2, flip_y ? -out_y2 : -out_y1, 0);
-
-	glTexCoord2f(in_x1 / get_texture_w(), in_y2 / get_texture_h());
-	glVertex3f(out_x1, flip_y ? -out_y2 : -out_y1, 0);
-
-
-	glEnd();
-
+	in_x1 /= get_texture_w();  in_y1 /= get_texture_h();
+	in_x2 /= get_texture_w();  in_y2 /= get_texture_h();
+	float ot_y1 = flip_y ? -out_y1 : -out_y2;
+	float ot_y2 = flip_y ? -out_y2 : -out_y1;
+	texture->draw_texture(
+		in_x1,in_y1,  in_x2,in_y2,
+		out_x1,ot_y1, out_x2, ot_y2);
 #endif
 }
 
 void VFrame::draw_texture(int flip_y)
 {
-	draw_texture(0,
-		0,
-		get_w(),
-		get_h(),
-		0,
-		0,
-		get_w(),
-		get_h(),
-		flip_y);
+	draw_texture(0,0,  get_w(),get_h(),
+		0,0, get_w(),get_h(), flip_y);
 }
 
 

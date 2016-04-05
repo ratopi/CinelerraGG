@@ -218,8 +218,13 @@ public:
 	CWindowToolGUI *gui;
 };
 
-
-
+class CWindowDisableOpenGLMasking : public BC_CheckBox
+{
+public:
+	CWindowDisableOpenGLMasking(CWindowToolGUI *gui, int x, int y);
+	int handle_event();
+	CWindowToolGUI *gui;
+};
 
 class CWindowMaskGUI : public CWindowToolGUI
 {
@@ -244,6 +249,7 @@ public:
 	CWindowMaskNumber *number;
 	CWindowMaskValue *value;
 	CWindowMaskBeforePlugins *apply_before_plugins;
+	CWindowDisableOpenGLMasking *disable_opengl_masking;
 };
 
 

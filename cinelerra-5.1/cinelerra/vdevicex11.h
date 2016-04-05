@@ -82,11 +82,10 @@ public:
 	void do_fade(VFrame *output_temp, float fade);
 
 // Hardware version of MaskEngine
-	void do_mask(VFrame *output_temp, 
-		int64_t start_position_project,
-		MaskAutos *keyframe_set, 
-		MaskAuto *keyframe,
-		MaskAuto *default_auto);
+	bool can_mask(int64_t start_position_project, MaskAutos *keyframe_set);
+	void do_mask(VFrame *output, 
+		int64_t start_position_project, MaskAutos *keyframe_set, 
+		MaskAuto *keyframe, MaskAuto *default_auto);
 	void convert_cmodel(VFrame *output, int dst_cmodel);
 
 // The idea is to composite directly in the frame buffer if OpenGL.

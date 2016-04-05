@@ -186,6 +186,21 @@ int BC_Texture::get_window_id()
 }
 
 
+void BC_Texture::draw_texture(
+	float in_x1, float in_y1, float in_x2, float in_y2,
+	float out_x1, float out_y1, float out_x2, float out_y2)
+{
+#ifdef HAVE_GL
+	glBegin(GL_QUADS);
+	glNormal3f(0, 0, 1.0);
+	glTexCoord2f(in_x1, in_y1);   glVertex3f(out_x1, out_y1, 0);
+	glTexCoord2f(in_x2, in_y1);   glVertex3f(out_x2, out_y1, 0);
+	glTexCoord2f(in_x2, in_y2);   glVertex3f(out_x2, out_y2, 0);
+	glTexCoord2f(in_x1, in_y2);   glVertex3f(out_x1, out_y2, 0);
+	glEnd();
+#endif
+}
+
 void BC_Texture::bind(int texture_unit)
 {
 #ifdef HAVE_GL
@@ -211,4 +226,19 @@ void BC_Texture::bind(int texture_unit)
 	}
 #endif
 }
+
+void write_ppm(uint8_t *tp, int w, int h, const char *fmt, ...);
+
+void BC_Texture::write_tex(const char *fn)
+{
+	int prev_id = -1;
+	glGetIntegerv(GL_ACTIVE_TEXTURE, &prev_id);
+	glActiveTexture(this->texture_id);
+	int w = get_texture_w(), h = get_texture_h();
+	uint8_t img[w*h*3];
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
+	write_ppm(img, w, h, "%s", fn);
+	glActiveTexture(prev_id);
+}
+
 

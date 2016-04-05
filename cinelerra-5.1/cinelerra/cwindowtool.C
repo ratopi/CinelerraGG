@@ -457,10 +457,6 @@ void CWindowCropGUI::update()
 }
 
 
-
-
-
-
 CWindowEyedropGUI::CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow,
  	thread,
@@ -673,10 +669,6 @@ int CWindowCurveToggle::handle_event()
 
 	return 1;
 }
-
-
-
-
 
 
 CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
@@ -1120,21 +1112,6 @@ int CWindowCameraBottom::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow,
  	thread,
@@ -1329,44 +1306,6 @@ void CWindowProjectorGUI::update()
 		t_linear->check_toggle_state(x_auto, y_auto, z_auto);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 CWindowProjectorLeft::CWindowProjectorLeft(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("left_justify"))
@@ -1574,12 +1513,6 @@ int CWindowProjectorBottom::handle_event()
 
 	return 1;
 }
-
-
-
-
-
-
 
 
 CWindowMaskMode::CWindowMaskMode(MWindow *mwindow,
@@ -2046,6 +1979,30 @@ int CWindowMaskBeforePlugins::handle_event()
 }
 
 
+CWindowDisableOpenGLMasking::CWindowDisableOpenGLMasking(CWindowToolGUI *gui, int x, int y)
+ : BC_CheckBox(x, y, 1, _("Disable OpenGL masking"))
+{
+	this->gui = gui;
+}
+
+int CWindowDisableOpenGLMasking::handle_event()
+{
+	Track *track;
+	MaskAutos *autos;
+	MaskAuto *keyframe;
+	SubMask *mask;
+	MaskPoint *point;
+	((CWindowMaskGUI*)gui)->get_keyframe(track, autos, keyframe, mask, point, 1);
+
+	if (keyframe) {
+		keyframe->disable_opengl_masking = get_value();
+		gui->update_preview();
+	}
+	return 1;
+}
+
+
+
 
 
 
@@ -2057,7 +2014,7 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
  	thread,
 	_(PROGRAM_NAME ": Mask"),
 	330,
-	280)
+	310)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -2121,19 +2078,16 @@ void CWindowMaskGUI::create_objects()
 
 	x = 10;
 	y += this->y->get_h() + margin;
-	add_subwindow(title = new BC_Title(x, y, _("Press Ctrl to move a point")));
+	add_subwindow(title = new BC_Title(x, y, _("Press Shift to move an end point")));
+	y += title->get_h() + margin;
+	add_subwindow(title = new BC_Title(x, y, _("Press Ctrl to move a control point")));
 	y += title->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, _("Press Alt to translate the mask")));
-	y += title->get_h() + margin;
-	add_subwindow(title = new BC_Title(x, y, _("Press Shift to edit bezier curve")));
-
 	y += 30;
-//	add_subwindow(title = new BC_Title(x, y, _("Apply mask before plugins:")));
 
-	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this,
-		10,
-		y));
-//	this->apply_before_plugins->create_objects();
+	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 10, y));
+	y += this->apply_before_plugins->get_h() + margin;
+	add_subwindow(this->disable_opengl_masking = new CWindowDisableOpenGLMasking(this, 10, y));
 
 	update();
 	unlock_window();
@@ -2201,6 +2155,7 @@ void CWindowMaskGUI::update()
 			feather->update((int64_t)autos->get_feather(position_i, PLAY_FORWARD));
 			value->update((int64_t)autos->get_value(position_i, PLAY_FORWARD));
 			apply_before_plugins->update((int64_t)keyframe->apply_before_plugins);
+			disable_opengl_masking->update((int64_t)keyframe->disable_opengl_masking);
 		}
 	}
 

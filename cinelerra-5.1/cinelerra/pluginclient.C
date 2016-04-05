@@ -592,23 +592,21 @@ void PluginClient::save_defaults_xml()
 	using_defaults = 1;
 
 	KeyFrame temp_keyframe;
-
 	save_data(&temp_keyframe);
-	FILE *fd = fopen(path, "w");
-	if(fd)
-	{
-		fprintf(fd, "%d\n%d\n", window_x, window_y);
-		if(!fwrite(temp_keyframe.get_data(), strlen(temp_keyframe.get_data()), 1, fd))
-		{
-			fprintf(stderr, "PluginClient::save_defaults_xml %d \"%s\" %d bytes: %s\n",
-				__LINE__,
-				path,
-				(int)strlen(temp_keyframe.get_data()),
-				strerror(errno));
-		}
 
-		fclose(fd);
+	const char *data = temp_keyframe.get_data();
+	int len = strlen(data);
+	FILE *fp = fopen(path, "w");
+
+	if( fp ) {
+		fprintf(fp, "%d\n%d\n", window_x, window_y);
+		if( len > 0 && !fwrite(data, len, 1, fp) ) {
+			fprintf(stderr, "PluginClient::save_defaults_xml %d \"%s\" %d bytes: %s\n",
+				__LINE__, path, len, strerror(errno));
+		}
+		fclose(fp);
 	}
+
 	using_defaults = 0;
 }
 

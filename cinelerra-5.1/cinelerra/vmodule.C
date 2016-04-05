@@ -50,6 +50,7 @@
 #include "vedit.h"
 #include "vframe.h"
 #include "videodevice.h"
+#include "virtualvconsole.h"
 #include "vmodule.h"
 #include "vrender.h"
 #include "vplugin.h"
@@ -1083,21 +1084,34 @@ int VModule::render(VFrame *output,
 			use_opengl);
 	}
 
-	int64_t mask_position = !renderengine ? start_position :
-		renderengine->vrender->current_position;
 	Auto *current = 0;
 	MaskAutos *keyframe_set =
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK];
-        MaskAuto *keyframe =
+	int64_t mask_position = !renderengine ? start_position :
+		renderengine->vrender->current_position;
+       	MaskAuto *keyframe =
 		(MaskAuto*)keyframe_set->get_prev_auto(mask_position, direction, current);
+
 	if( keyframe->apply_before_plugins ) {
-		if( !masker ) {
-			int cpus = renderengine ?
-				renderengine->preferences->processors :
-				plugin_array->mwindow->preferences->processors;
-			masker = new MaskEngine(cpus);
+		VDeviceX11 *x11_device = 0;
+		if(use_opengl && renderengine && renderengine->video) {
+			x11_device = (VDeviceX11*)renderengine->video->get_output_base();
+			if( !x11_device->can_mask(mask_position, keyframe_set) )
+				use_opengl = 0;
 		}
-		masker->do_mask(output, mask_position, keyframe_set, keyframe, keyframe);
+		if( use_opengl && x11_device ) {
+			x11_device->do_mask(output, mask_position, keyframe_set,
+					keyframe, keyframe);
+		}
+		else {
+			if( !masker ) {
+				int cpus = renderengine ?
+					renderengine->preferences->processors :
+					plugin_array->mwindow->preferences->processors;
+				masker = new MaskEngine(cpus);
+			}
+			masker->do_mask(output, mask_position, keyframe_set, keyframe, keyframe);
+		}
 	}
 
 	return result;

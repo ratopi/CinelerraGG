@@ -102,6 +102,7 @@ public:
 // 0 - 100
 	int value;
 	int apply_before_plugins;
+	int disable_opengl_masking;
 };
 
 

@@ -1381,6 +1381,7 @@ static inline bool test_bbox(int cx, int cy, int tx, int ty)
 	return (llabs(cx-tx) < CONTROL_W/2 && llabs(cy-ty) < CONTROL_H/2);
 }
 
+
 int CWindowCanvas::do_mask(int &redraw, int &rerender,
 		int button_press, int cursor_motion, int draw)
 {
@@ -1567,7 +1568,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					float canvas_x = (x0 - half_track_w) * projector_z + projector_x;
 					float canvas_y = (y0 - half_track_h) * projector_z + projector_y;
 // Test first point
-					if(gui->shift_down()) {
+					if(gui->ctrl_down()) {
 						float control_x = (x1 - half_track_w) * projector_z + projector_x;
 						float control_y = (y1 - half_track_h) * projector_z + projector_y;
 						float distance = line_dist(control_x,control_y, mask_cursor_x,mask_cursor_y);
@@ -1579,7 +1580,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 						}
 					}
 					else {
-						if(!gui->ctrl_down()) {
+						if(!gui->shift_down()) {
 							if(test_bbox(cursor_x, cursor_y, canvas_x, canvas_y)) {
 								selected_point = i;
 							}
@@ -1592,7 +1593,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					canvas_x = (x3 - half_track_w) * projector_z + projector_x;
 					canvas_y = (y3 - half_track_h) * projector_z + projector_y;
 
-					if(gui->shift_down()) {
+					if(gui->ctrl_down()) {
 						float control_x = (x2 - half_track_w) * projector_z + projector_x;
 						float control_y = (y2 - half_track_h) * projector_z + projector_y;
 						float distance = line_dist(control_x,control_y, mask_cursor_x,mask_cursor_y);
@@ -1605,7 +1606,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 						}
 					}
 					else if(i < points.size() - 1) {
-						if(!gui->ctrl_down()) {
+						if(!gui->shift_down()) {
 							if(test_bbox(cursor_x, cursor_y, canvas_x, canvas_y)) {
 								selected_point = (i < points.size() - 1 ? i + 1 : 0);
 							}
@@ -1747,7 +1748,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				gui->current_operation = mwindow->edl->session->cwindow_operation;
 		}
 		else // No existing point or control point was selected so create a new one
-		if(!gui->shift_down() && !gui->alt_down()) {
+		if(!gui->ctrl_down() && !gui->alt_down()) {
 			mwindow->undo->update_undo_before(_("mask point"), 0);
 // Create the template
 			MaskPoint *point = new MaskPoint;
@@ -2013,7 +2014,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					over_point = 1;
 				}
 
-				if(!over_point && gui->shift_down()) {
+				if(!over_point && gui->ctrl_down()) {
 					canvas_x = (x1 - half_track_w) * projector_z + projector_x;
 					canvas_y = (y1 - half_track_h) * projector_z + projector_y;
 					output_to_canvas(mwindow->edl, 0, canvas_x, canvas_y);
@@ -2057,7 +2058,6 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 //printf("CWindowCanvas::do_mask 20\n");
 	return result;
 }
-
 
 int CWindowCanvas::do_eyedrop(int &rerender, int button_press, int draw)
 {

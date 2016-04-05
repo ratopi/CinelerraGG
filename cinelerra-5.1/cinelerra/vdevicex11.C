@@ -20,12 +20,15 @@
  */
 
 #include "assets.h"
+#include "auto.h"
 #include "bccapture.h"
 #include "bcsignals.h"
 #include "canvas.h"
 #include "bccmodels.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "maskautos.h"
+#include "maskauto.h"
 #include "mwindow.h"
 #include "playback3d.h"
 #include "playbackconfig.h"
@@ -678,9 +681,17 @@ void VDeviceX11::do_fade(VFrame *output_temp, float fade)
 	this->output->mwindow->playback_3d->do_fade(this->output, output_temp, fade);
 }
 
-void VDeviceX11::do_mask(VFrame *output_temp, int64_t start_position_project,
-		MaskAutos *keyframe_set, MaskAuto *keyframe,
-		MaskAuto *default_auto)
+bool VDeviceX11::can_mask(int64_t start_position_project, MaskAutos *keyframe_set)
+{
+	Auto *current = 0;
+	MaskAuto *keyframe = (MaskAuto*)keyframe_set->
+		get_prev_auto(start_position_project, PLAY_FORWARD, current);
+	return keyframe->disable_opengl_masking ? 0 : 1;
+}
+
+void VDeviceX11::do_mask(VFrame *output_temp,
+	int64_t start_position_project, MaskAutos *keyframe_set,
+	MaskAuto *keyframe, MaskAuto *default_auto)
 {
 	this->output->mwindow->playback_3d->do_mask(output,
 		output_temp, start_position_project,

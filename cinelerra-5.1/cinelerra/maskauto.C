@@ -224,6 +224,7 @@ MaskAuto::MaskAuto(EDL *edl, MaskAutos *autos)
 	feather = 0;
 	value = 100;
 	apply_before_plugins = 0;
+	disable_opengl_masking = 0;
 
 // We define a fixed number of submasks so that interpolation for each
 // submask matches.
@@ -256,7 +257,8 @@ int MaskAuto::identical(MaskAuto *src)
 		mode != src->mode ||
 		feather != src->feather ||
 		masks.size() != src->masks.size() ||
-		apply_before_plugins != src->apply_before_plugins) return 0;
+		apply_before_plugins != src->apply_before_plugins ||
+		disable_opengl_masking != src->disable_opengl_masking) return 0;
 
 	for(int i = 0; i < masks.size(); i++)
 		if(!(*masks.values[i] == *src->masks.values[i])) return 0;
@@ -305,6 +307,7 @@ void MaskAuto::copy_data(MaskAuto *src)
 	feather = src->feather;
 	value = src->value;
 	apply_before_plugins = src->apply_before_plugins;
+	disable_opengl_masking = src->disable_opengl_masking;
 
 	masks.remove_all_objects();
 	for(int i = 0; i < src->masks.size(); i++)
@@ -329,6 +332,7 @@ int MaskAuto::interpolate_from(Auto *a1, Auto *a2, int64_t position, Auto *templ
 	this->feather = mask_auto1->feather;
 	this->value = mask_auto1->value;
 	this->apply_before_plugins = mask_auto1->apply_before_plugins;
+	this->disable_opengl_masking = mask_auto1->disable_opengl_masking;
 	this->position = position;
 	masks.remove_all_objects();
 
@@ -400,6 +404,7 @@ void MaskAuto::load(FileXML *file)
 	feather = file->tag.get_property("FEATHER", feather);
 	value = file->tag.get_property("VALUE", value);
 	apply_before_plugins = file->tag.get_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
+	disable_opengl_masking = file->tag.get_property("DISABLE_OPENGL_MASKING", disable_opengl_masking);
 	for(int i = 0; i < masks.size(); i++)
 	{
 		delete masks.values[i];
@@ -433,6 +438,7 @@ void MaskAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 	file->tag.set_property("VALUE", value);
 	file->tag.set_property("FEATHER", feather);
 	file->tag.set_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
+	file->tag.set_property("DISABLE_OPENGL_MASKING", disable_opengl_masking);
 
 	if(default_auto)
 		file->tag.set_property("POSITION", 0);

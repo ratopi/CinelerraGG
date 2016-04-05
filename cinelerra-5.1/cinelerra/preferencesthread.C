@@ -214,6 +214,8 @@ int PreferencesThread::apply_settings()
 
 	mwindow->reset_android_remote();
 	mwindow->gui->ffmpeg_toggle->update(mwindow->preferences->ffmpeg_early_probe);
+	mwindow->gui->ffmpeg_toggle->set_tooltip( mwindow->preferences->ffmpeg_early_probe ?
+		_("Try FFMpeg first") : _("Try FFMpeg last") );
 	mwindow->gui->mainshbtns->load(mwindow->preferences);
 	double tc_position = 
 		mwindow->edl->session->get_frame_offset() / mwindow->edl->session->frame_rate;
