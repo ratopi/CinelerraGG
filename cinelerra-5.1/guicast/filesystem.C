@@ -471,7 +471,7 @@ int FileSystem::update(const char *new_dir)
 
 // file not hidden
   		if(include_this)
-    	{
+		{
 			new_file = new FileItem;
 			sprintf(full_path, "%s", current_dir);
 			if(!is_root_dir(current_dir)) strcat(full_path, "/");

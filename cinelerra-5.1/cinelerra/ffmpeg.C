@@ -706,6 +706,7 @@ int FFAudioStream::encode_frame(AVPacket *pkt, AVFrame *frame, int &got_packet)
 void FFAudioStream::load_markers()
 {
 	IndexState *index_state = ffmpeg->file_base->asset->index_state;
+	if( index_state->marker_status == MARKERS_NOTTESTED ) return;
 	if( !index_state || idx >= index_state->audio_markers.size() ) return;
 	FFStream::load_markers(*index_state->audio_markers[idx], sample_rate);
 }
@@ -1219,12 +1220,14 @@ void FFMPEG::set_asset_format(Asset *asset, const char *text)
 {
 	if( asset->format != FILE_FFMPEG ) return;
 	strcpy(asset->fformat, text);
-	strcpy(asset->ff_audio_options, "");
-	strcpy(asset->ff_video_options, "");
-	asset->audio_data = !load_defaults("audio", text, asset->acodec,
-		asset->ff_audio_options, sizeof(asset->ff_audio_options));
-	asset->video_data = !load_defaults("video", text, asset->vcodec,
-		asset->ff_video_options, sizeof(asset->ff_video_options));
+	if( !asset->ff_audio_options[0] ) {
+		asset->audio_data = !load_defaults("audio", text, asset->acodec,
+			asset->ff_audio_options, sizeof(asset->ff_audio_options));
+	}
+	if( !asset->ff_video_options[0] ) {
+		asset->video_data = !load_defaults("video", text, asset->vcodec,
+			asset->ff_video_options, sizeof(asset->ff_video_options));
+	}
 }
 
 int FFMPEG::get_encoder(const char *options,

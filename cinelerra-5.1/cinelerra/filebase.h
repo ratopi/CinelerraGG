@@ -30,6 +30,8 @@
 #include "guicast.h"
 #include "file.inc"
 #include "filelist.inc"
+#include "indexfile.inc"
+#include "mainprogress.inc"
 #include "overlayframe.inc"
 #include "strategies.inc"
 #include "vframe.inc"
@@ -69,7 +71,7 @@ public:
 
 
 
-	virtual int get_index(char *index_path) { return 1; }
+	virtual int get_index(IndexFile *index_file, MainProgressBar *progress_bar) { return -1; }
 	virtual int check_header() { return 0; }  // Test file to see if it is of this type.
 	virtual int reset_parameters_derived() { return 0; }
 	virtual int read_header() { return 1; }   // WAV files for getting header

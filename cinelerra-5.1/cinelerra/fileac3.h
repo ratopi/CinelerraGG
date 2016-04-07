@@ -32,6 +32,8 @@ extern "C" {
 
 #include "filebase.h"
 #include "filempeg.inc"
+#include "indexfile.inc"
+#include "mainprogress.inc"
 
 
 class FileAC3 : public FileBase
@@ -52,7 +54,7 @@ public:
 	int close_file();
 	int read_samples(double *buffer, int64_t len);
 	int write_samples(double **buffer, int64_t len);
-	int get_index(char *index_path);
+	int get_index(IndexFile *index_file, MainProgressBar *progress_bar);
 
 private:
 	AVCodec *codec;

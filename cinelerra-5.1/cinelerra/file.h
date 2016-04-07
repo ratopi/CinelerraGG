@@ -37,6 +37,8 @@
 #include "formattools.h"
 #include "framecache.inc"
 #include "guicast.h"
+#include "indexfile.inc"
+#include "mainprogress.inc"
 #include "mutex.inc"
 #include "packagingengine.inc"
 #include "pluginserver.inc"
@@ -97,7 +99,7 @@ public:
 		int wr);
 
 // Get index from the file if one exists.  Returns 0 on success.
-	int get_index(char *index_path);
+	int get_index(IndexFile *index_file, MainProgressBar *progress_bar);
 
 // start a thread for writing to avoid blocking during record
 	int start_audio_thread(int buffer_size, int ring_buffers);

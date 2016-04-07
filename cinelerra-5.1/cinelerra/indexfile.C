@@ -445,7 +445,7 @@ SET_TRACE
 
 // Some file formats have their own sample index.
 // Test for index in stream table of contents
-	if(source && !source->get_index(index_filename))
+	if(source && !source->get_index(this, progress))
 	{
 		IndexState *index_state = get_state();
 		index_state->index_status = INDEX_READY;

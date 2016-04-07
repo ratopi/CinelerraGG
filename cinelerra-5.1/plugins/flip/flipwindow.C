@@ -30,9 +30,7 @@
 
 
 FlipWindow::FlipWindow(FlipMain *client)
- : PluginClientWindow(client,
-	250, 100, 250, 100,
-	0)
+ : PluginClientWindow(client, 250, 100, 250, 100, 0)
 { 
 	this->client = client; 
 }

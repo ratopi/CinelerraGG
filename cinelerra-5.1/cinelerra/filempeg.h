@@ -26,9 +26,11 @@
 #include "condition.inc"
 #include "file.inc"
 #include "filebase.h"
+#include "indexfile.inc"
 #include "twolame.h"
 #include "lame/lame.h"
 #include "libzmpeg3.h"
+#include "mainprogress.inc"
 #include "thread.h"
 
 
@@ -72,10 +74,9 @@ public:
 	static void get_info(char *title_path, char *path, char *text, int len);
 	int open_file(int rd, int wr);
 	int close_file();
-	int create_index();
+	int create_toc(char *toc_path);
+	int get_index(IndexFile *index_file, MainProgressBar *progress_bar);
 
-
-	int get_index(char *index_path);
 	int set_video_position(int64_t x);
 	int set_audio_position(int64_t x);
 	int write_samples(double **buffer, 

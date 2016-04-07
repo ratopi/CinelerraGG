@@ -34,12 +34,7 @@
 
 
 RGB601Window::RGB601Window(RGB601Main *client)
- : PluginClientWindow(client,
-	210, 
-	200, 
-	210, 
-	200, 
-	0)
+ : PluginClientWindow(client, 235, 100, 235, 100, 0)
 { 
 	this->client = client; 
 }

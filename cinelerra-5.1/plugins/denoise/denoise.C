@@ -754,12 +754,7 @@ void DenoiseConfig::interpolate(DenoiseConfig &prev,
 
 
 DenoiseWindow::DenoiseWindow(DenoiseEffect *plugin)
- : PluginClientWindow(plugin, 
-	150, 
-	50, 
-	150, 
-	50,
-	0)
+ : PluginClientWindow(plugin, 280, 50, 280, 50, 0)
 {
 	this->plugin = plugin;
 }

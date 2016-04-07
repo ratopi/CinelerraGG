@@ -34,12 +34,7 @@
 
 
 UnsharpWindow::UnsharpWindow(UnsharpMain *plugin)
- : PluginClientWindow(plugin,
-	200, 
-	160, 
-	200, 
-	160, 
-	0)
+ : PluginClientWindow(plugin, 285, 160, 285, 160, 0)
 {
 	this->plugin = plugin; 
 }

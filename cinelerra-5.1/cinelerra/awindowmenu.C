@@ -86,16 +86,13 @@ int AssetListFormat::handle_event()
 	switch(session->assetlist_format) {
 	case ASSETS_TEXT:
 		session->assetlist_format = ASSETS_ICONS;
-		session->folderlist_format = FOLDERS_ICONS;
 		break;
 	case ASSETS_ICONS:
 		session->assetlist_format = ASSETS_TEXT;
-		session->folderlist_format = FOLDERS_TEXT;
 		break;
 	}
 
 	agui->asset_list->update_format(session->assetlist_format, 1);
-	agui->folder_list->update_format(session->folderlist_format, 1);
 	if (!mwindow->awindow->gui->allow_iconlisting) {
 		mwindow->edl->session->assetlist_format = ASSETS_TEXT;
 	}
@@ -168,17 +165,13 @@ int FolderListFormat::handle_event()
 	switch(mwindow->edl->session->folderlist_format)
 	{
 		case FOLDERS_TEXT:
-			mwindow->edl->session->assetlist_format = ASSETS_ICONS;
 			mwindow->edl->session->folderlist_format = FOLDERS_ICONS;
 			break;
 		case FOLDERS_ICONS:
-			mwindow->edl->session->assetlist_format = ASSETS_TEXT;
 			mwindow->edl->session->folderlist_format = FOLDERS_TEXT;
 			break;
 	}
 
-	mwindow->awindow->gui->asset_list->update_format(
-		mwindow->edl->session->folderlist_format, 1);
 	mwindow->awindow->gui->folder_list->update_format(
 		mwindow->edl->session->folderlist_format, 1);
 	menu->update_titles();

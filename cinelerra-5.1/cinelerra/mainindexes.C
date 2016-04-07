@@ -31,6 +31,7 @@
 #include "language.h"
 #include "loadfile.h"
 #include "guicast.h"
+#include "mainerror.h"
 #include "mainindexes.h"
 #include "mainprogress.h"
 #include "mutex.h"
@@ -77,68 +78,13 @@ SET_TRACE
 	index_state = indexable->index_state;
 
 SET_TRACE
-	int got_it = 0;
-
-SET_TRACE
-	if(!indexfile.open_index())
-	{
+	int ret = indexfile.open_index();
+	if( !ret ) {
 		index_state->index_status = INDEX_READY;
 		indexfile.close_index();
-		got_it = 1;
 	}
-
-//printf("MainIndexes::add_next_asset %d %f\n", __LINE__, indexable->get_frame_rate());
-
-SET_TRACE
-// No index
-	if(!got_it)
-	{
-		File *this_file = file;
-
-SET_TRACE
-		if(!file && indexable->is_asset)
-		{
-			Asset *asset = (Asset *)indexable;
-			this_file = new File;
-			this_file->open_file(mwindow->preferences, asset, 1, 0);
-		}
-
-
-SET_TRACE
-		char index_filename[BCTEXTLEN];
-		char source_filename[BCTEXTLEN];
-SET_TRACE
-		IndexFile::get_index_filename(source_filename, 
-			mwindow->preferences->index_directory, 
-			index_filename, 
-			indexable->path);
-
-SET_TRACE
-		if(this_file && !this_file->get_index(index_filename))
-		{
-SET_TRACE
-			if(!indexfile.open_index())
-			{
-SET_TRACE
-				indexfile.close_index();
-SET_TRACE
-				index_state->index_status = INDEX_READY;
-				got_it = 1;
-			}
-SET_TRACE
-		}
-
-SET_TRACE
-		if(this_file && !file) delete this_file;
-SET_TRACE
-	}
-SET_TRACE
-
-//printf("MainIndexes::add_next_asset %d %f\n", __LINE__, indexable->get_frame_rate());
-
+	else {
 // Put source in stack
-	if(!got_it)
-	{
 		index_state->index_status = INDEX_NOTTESTED;
 		next_indexables.append(indexable);
 		indexable->add_user();
@@ -210,99 +156,55 @@ void MainIndexes::load_next_sources()
 
 void MainIndexes::run()
 {
-	while(!done)
-	{
+	while(!done) {
 // Wait for new indexables to be released
 		input_lock->lock("MainIndexes::run 1");
 		if(done) return;
-
 
 		interrupt_lock->lock("MainIndexes::run 2");
 		load_next_sources();
 		interrupt_flag = 0;
 
-
-
-
-
-
 // test index of each indexable
 		MainProgressBar *progress = 0;
 		int total_sources = current_indexables.size();
-		for(int i = 0; 
-			i < total_sources && !interrupt_flag; 
-			i++)
-		{
-			Indexable *indexable = 0;
-// Take an indexable
-			indexable = current_indexables.get(i);
 
-			IndexState *index_state = 0;
-			index_state = indexable->index_state;
+		for( int i = 0; i < total_sources && !interrupt_flag; ++i ) {
+			Indexable *indexable = current_indexables[i];
+			IndexState *index_state = indexable->index_state;
+// if status is known, no probe
+			if( index_state->index_status != INDEX_NOTTESTED ) continue;
 
-//printf("MainIndexes::run 3 %s %d %d\n", indexable->path, indexable->index_status, indexable->audio_data);
-
-			if(index_state->index_status == INDEX_NOTTESTED && 
-				indexable->have_audio())
-			{
-
-
-				index_lock->lock("MainIndexes::run 1");
-				indexfile = new IndexFile(mwindow, indexable);
-				index_lock->unlock();
-
-
-// Doesn't exist if this returns 1.
-				if(indexfile->open_index())
-				{
-// Try to create index now.
-					if(!progress)
-					{
-						if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 1");
-						progress = mwindow->mainprogress->start_progress(_("Building Indexes..."), 1);
-						if(mwindow->gui) mwindow->gui->unlock_window();
-					}
-
-
-					indexfile->create_index(progress);
-					if(progress->is_cancelled()) interrupt_flag = 1;
-				}
-				else
-// Exists.  Update real thing.
-				{
-//printf("MainIndexes::run 8\n");
-					if(index_state->index_status == INDEX_NOTTESTED)
-					{
-						index_state->index_status = INDEX_READY;
-						if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 2");
-						mwindow->edl->set_index_file(indexable);
-						if(mwindow->gui) mwindow->gui->unlock_window();
-					}
-					indexfile->close_index();
-				}
-
-				index_lock->lock("MainIndexes::run 2");
-				delete indexfile;
-				indexfile = 0;
-				index_lock->unlock();
-//printf("MainIndexes::run 8\n");
+			IndexFile indexfile(mwindow, indexable);
+			int ret = indexfile.open_index();
+			if( !ret ) {
+				indexfile.close_index();
+// use existing index
+				index_state->index_status = INDEX_READY;
+				if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 2");
+				mwindow->edl->set_index_file(indexable);
+				if(mwindow->gui) mwindow->gui->unlock_window();
+				continue;
 			}
-//printf("MainIndexes::run 9\n");
+// Doesn't exist
+			if( !progress ) {
+				if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 1");
+				progress = mwindow->mainprogress->start_progress(_("Building Indexes..."), 1);
+				if(mwindow->gui) mwindow->gui->unlock_window();
+			}
+// only if audio tracks
+			indexfile.create_index(progress);
+			if( progress->is_cancelled() )
+				interrupt_flag = 1;
 		}
 
-		if(progress)     // progress box is only created when an index is built
-		{
+		if(progress) {	// progress box is only created when an index is built
 			if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 3");
 			progress->stop_progress();
 			delete progress;
 			if(mwindow->gui) mwindow->gui->unlock_window();
 			progress = 0;
 		}
-
-
-
-
-
 
 		interrupt_lock->unlock();
 	}

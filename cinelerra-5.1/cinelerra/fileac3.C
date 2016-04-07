@@ -210,9 +210,9 @@ int FileAC3::read_samples(double *buffer, int64_t len)
 	return !mpg_file ? 0 : mpg_file->read_samples(buffer, len);
 }
 
-int FileAC3::get_index(char *index_path)
+int FileAC3::get_index(IndexFile *index_file, MainProgressBar *progress_bar)
 {
-	return !mpg_file ? 1 : mpg_file->get_index(index_path);
+	return !mpg_file ? 1 : mpg_file->get_index(index_file, progress_bar);
 }
 
 // Channel conversion matrices because ffmpeg encodes a

@@ -270,15 +270,16 @@ void Render::start_interactive()
 		mode = Render::INTERACTIVE;
 		BC_DialogThread::start();
 	}
-	else if( render_window && !in_progress )
-		render_window->raise_window();
-	else {
+	else if( in_progress ) {
 		ErrorBox error_box(_(PROGRAM_NAME ": Error"),
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 		error_box.create_objects(_("Already rendering"));
 		error_box.raise_window();
 		error_box.run_window();
+	}
+	else if( render_window ) {
+		render_window->raise_window();
 	}
 }
 
@@ -289,21 +290,21 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 	{
 		mode = Render::BATCH;
 		batch_cancelled = 0;
-		// raise the window if rendering hasn't started yet
-		if( render_window && ! in_progress ) {
-			render_window->raise_window();
-		}
-		else {
-			ErrorBox error_box(PROGRAM_NAME ": Error",
-					   mwindow->gui->get_abs_cursor_x(1),
-					   mwindow->gui->get_abs_cursor_y(1));
-			error_box.create_objects("Already rendering");
-			error_box.raise_window();
-			error_box.run_window();
-		}
 		this->jobs = jobs;
 		completion->reset();
 		start_render();
+	}
+	else if( in_progress ) {
+		ErrorBox error_box(PROGRAM_NAME ": Error",
+				   mwindow->gui->get_abs_cursor_x(1),
+				   mwindow->gui->get_abs_cursor_y(1));
+		error_box.create_objects("Already rendering");
+		error_box.raise_window();
+		error_box.run_window();
+	}
+	// raise the window if rendering hasn't started yet
+	else if( render_window ) {
+		render_window->raise_window();
 	}
 }
 

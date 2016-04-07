@@ -65,6 +65,7 @@
 #include "formattools.h"
 #include "framecache.h"
 #include "language.h"
+#include "mainprogress.inc"
 #include "mutex.h"
 #include "mwindow.h"
 #include "packagingengine.h"
@@ -710,12 +711,9 @@ int File::close_file(int ignore_thread)
 
 
 
-int File::get_index(char *index_path)
+int File::get_index(IndexFile *index_file, MainProgressBar *progress_bar)
 {
-	if(file) {
-		return file->get_index(index_path);
-	}
-	return 1;
+	return !file ? -1 : file->get_index(index_file, progress_bar);
 }
 
 

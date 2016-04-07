@@ -29,8 +29,7 @@
 
 
 ScaleWin::ScaleWin(ScaleMain *client)
- : PluginClientWindow(client,
-	400, 100, 400, 100, 0)
+ : PluginClientWindow(client, 400, 100, 400, 100, 0)
 { 
 	this->client = client; 
 }

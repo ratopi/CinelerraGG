@@ -198,12 +198,7 @@ void ReframeRTConfig::boundaries()
 
 
 ReframeRTWindow::ReframeRTWindow(ReframeRT *plugin)
- : PluginClientWindow(plugin,
-	210,
-	160,
-	200,
-	160,
-	0)
+ : PluginClientWindow(plugin, 230, 160, 230, 160, 0)
 {
 	this->plugin = plugin;
 }

@@ -3,10 +3,11 @@
 
 #include "asset.inc" 
 #include "bcwindowbase.inc"
-#include "bcprogressbox.inc"
 #include "bitspopup.inc" 
 #include "filebase.h"
 #include "fileffmpeg.inc"
+#include "indexfile.inc"
+#include "mainprogress.inc"
 #include "mutex.h"
 #include "thread.h"
 #include "vframe.inc"
@@ -50,7 +51,7 @@ public:
 	int get_audio_for_video(int vstream, int astream, int64_t &channel_mask);
 	static void get_info(char *path,char *text,int len);
 	int open_file(int rd,int wr);
-	int get_index(char *index_filename);
+	int get_index(IndexFile *index_file, MainProgressBar *progress_bar);
 	int close_file(void);
 	int write_samples(double **buffer,int64_t len);
 	int write_frames(VFrame ***frames,int len);
@@ -217,12 +218,14 @@ public:
 class FFMPEGScanProgress : public Thread
 {
 public:
+	IndexFile *index_file;
+	MainProgressBar *progress_bar;
 	char progress_title[BCTEXTLEN];
-	BC_ProgressBox *progress;
 	int64_t length, *position;
 	int done, *canceled;
 
-	FFMPEGScanProgress(const char *title, int64_t length, int64_t *position, int *canceled);
+	FFMPEGScanProgress(IndexFile *index_file, MainProgressBar *progress_bar,
+		const char *title, int64_t length, int64_t *position, int *canceled);
 	~FFMPEGScanProgress();
 	void run();
 };

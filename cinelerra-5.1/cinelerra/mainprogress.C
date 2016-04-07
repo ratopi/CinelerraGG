@@ -107,8 +107,12 @@ void MainProgressBar::update_title(char *string, int default_)
 	else
 	if(progress_bar)
 	{
+		char text[BCTEXTLEN], *cp = text, *ep = cp+sizeof(text)-1;
+		for( const unsigned char *bp = (const unsigned char *)string; *bp && cp<ep; ++bp )
+			*cp++ = *bp >= ' ' ? *bp : ' ';
+		*cp = 0;
 		mwindow->gui->lock_window("MainProgressBar::update_title");
-		mwindow->gui->show_message(string);
+		mwindow->gui->show_message(text);
 		mwindow->gui->unlock_window();
 	}
 }

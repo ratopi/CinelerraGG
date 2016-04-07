@@ -1407,29 +1407,13 @@ SET_TRACE
 				}
 
 // Test existing EDLs
-				if(result)
-				{
-					for(int j = 0; j < new_edls.total + 1; j++)
-					{
-						Asset *old_asset;
-						if(j == new_edls.total)
-						{
-							old_asset = edl->assets->get_asset(new_asset->path);
-							if( old_asset )
-							{
-								*new_asset = *old_asset;
-								result = 0;
-							}
-						}
-						else
-						{
-							old_asset = new_edls[j]->assets->get_asset(new_asset->path);
-							if( old_asset )
-							{
-								*new_asset = *old_asset;
-								result = 0;
-							}
-						}
+				for(int j = 0; result && j <= new_edls.total; j++) {
+					Asset *old_asset = j < new_edls.total ?
+						new_edls[j]->assets->get_asset(new_asset->path) :
+						edl->assets->get_asset(new_asset->path);
+					if( old_asset ) {
+						*new_asset = *old_asset;
+						result = 0;
 					}
 				}
 

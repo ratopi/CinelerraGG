@@ -376,12 +376,7 @@ int WaveLength::handle_event()
 
 
 WaveWindow::WaveWindow(WaveEffect *plugin)
- : PluginClientWindow(plugin, 
-	320, 
-	150, 
-	320, 
-	150, 
-	0)
+ : PluginClientWindow(plugin, 335, 150, 335, 150, 0)
 {
 	this->plugin = plugin;
 }
@@ -392,7 +387,7 @@ WaveWindow::~WaveWindow()
 
 void WaveWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = 100;
+	int x = 10, y = 10, x1 = 115;
 
 //	add_subwindow(new BC_Title(x, y, _("Mode:")));
 //	add_subwindow(smear = new WaveSmear(plugin, this, x1, y));

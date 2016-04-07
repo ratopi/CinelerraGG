@@ -104,12 +104,7 @@ ReverseAudioConfig::ReverseAudioConfig()
 
 
 ReverseAudioWindow::ReverseAudioWindow(ReverseAudio *plugin)
- : PluginClientWindow(plugin, 
-	210, 
-	160, 
-	200, 
-	160, 
-	0)
+ : PluginClientWindow(plugin, 265, 60, 265, 60, 0)
 {
 	this->plugin = plugin;
 }

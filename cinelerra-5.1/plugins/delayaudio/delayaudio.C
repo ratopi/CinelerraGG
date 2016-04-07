@@ -205,12 +205,7 @@ void DelayAudio::update_gui()
 
 
 DelayAudioWindow::DelayAudioWindow(DelayAudio *plugin)
- : PluginClientWindow(plugin, 
-	200, 
-	80, 
-	200, 
-	80, 
-	0)
+ : PluginClientWindow(plugin, 285, 80, 285, 80, 0)
 {
 	this->plugin = plugin;
 }

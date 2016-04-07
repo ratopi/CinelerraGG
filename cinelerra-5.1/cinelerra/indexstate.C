@@ -238,7 +238,6 @@ int IndexState::write_index(const char *index_path, Asset *asset, int64_t zoom, 
 	}
 
 	fclose(fp);
-	reset_index();
 	return 0;
 }
 

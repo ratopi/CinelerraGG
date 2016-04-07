@@ -385,46 +385,52 @@ int FileMPEG::open_file(int rd, int wr)
 	int result = 0;
 
 	if(rd) {
+		fd = 0;
 		char toc_name[BCTEXTLEN];
 		result = file->preferences->get_asset_file_path(asset, toc_name);
-		int error = 0;
-		fd = mpeg3_open_title(asset->path, toc_name, &error);
-		if( !fd ) {
-			result = 1;
-			if(error == zmpeg3_t::ERR_INVALID_TOC_VERSION) {
-				eprintf(_("Couldn't open %s: invalid table of contents version.\n"
-					"Rebuilding the table of contents."), asset->path);
-			}
-			else if(error == zmpeg3_t::ERR_TOC_DATE_MISMATCH) {
-				eprintf(_("Couldn't open %s: table of contents out of date.\n"
-					"Rebuilding the table of contents."), asset->path);
+		if( result >= 0 ) {
+			int error = 0;
+// if toc exists, use it otherwise just probe file
+			char *path = !result ? toc_name : asset->path;
+			fd = mpeg3_open_title(asset->path, path, &error);
+			if( !fd ) {
+				switch( error ) {
+				case zmpeg3_t::ERR_INVALID_TOC_VERSION:
+					eprintf(_("Couldn't open %s: invalid table of contents version.\n"),asset->path);
+					result = 1;
+					break;
+				case zmpeg3_t::ERR_TOC_DATE_MISMATCH:
+					eprintf(_("Couldn't open %s: table of contents out of date.\n"),asset->path);
+					result = 1;
+					break;
+				default:
+					eprintf(_("Couldn't open %s: table of contents corrupt.\n"),asset->path);
+					result = -1;
+					break;
+				}
+				if( result > 0 ) {
+					eprintf(_("Rebuilding the table of contents\n"));
+				}
+
 			}
 			else {
-				eprintf(_("Couldn't open %s: table of contents corrupt.\n"
-					"Rebuilding the table of contents."), asset->path);
+				if( mpeg3_has_toc(fd) )
+					result = 0;
+				else if( mpeg3_total_vstreams(fd) || mpeg3_total_astreams(fd) )
+					result = 1;
+				else {
+					eprintf(_("Couldn't open %s: no audio or video.\n"),asset->path);
+					result = -1;
+				}
 			}
-			char filename[BCTEXTLEN];
-			strcpy(filename, toc_name);
-			char *sfx = strrchr(filename,'.');
-			if( sfx && !strcmp(sfx+1,"toc") ) {
-				remove(filename);
-				strcpy(sfx+1,"idx");
-				remove(filename);
-				strcpy(toc_name, asset->path);
-				fd = mpeg3_open_title(asset->path, toc_name, &error);
-				if( fd ) result = 0;
-			}
-			if( result )
-				eprintf(_("Couldn't open %s: rebuild failed.\n"), asset->path);
 		}
-		if(!result) {
-// Determine if the file needs a table of contents and create one if needed.
-// If it has video it must be scanned since video has keyframes.
-			if(mpeg3_total_vstreams(fd) || mpeg3_total_astreams(fd)) {
-				if(create_index()) return 1;
-			}
 
-// more than 4 doesnt help much
+		if( result > 0 ) {
+			if( fd ) { mpeg3_close(fd);  fd = 0; }
+			result = create_toc(toc_name);
+		}
+
+		if( !result ) {
 			mpeg3_set_cpus(fd, file->cpus < 4 ? file->cpus : 4);
 			file->current_program = mpeg3_set_program(fd, -1);
 			if( asset->program < 0 )
@@ -439,13 +445,12 @@ int FileMPEG::open_file(int rd, int wr)
 				if(!asset->sample_rate)
 					asset->sample_rate = mpeg3_sample_rate(fd, 0);
 				asset->audio_length = mpeg3_audio_samples(fd, 0);
-				if(!asset->channels || 
-					!asset->sample_rate)
+				if( !asset->channels || !asset->sample_rate )
 					result = 1;
 			}
 
 			asset->video_data = mpeg3_has_video(fd);
-			if(asset->video_data) {
+			if( !result && asset->video_data ) {
 				asset->interlace_mode = BC_ILACE_MODE_UNDETECTED;
 				if( !asset->layers ) {
 					asset->layers = mpeg3_total_vstreams(fd);
@@ -464,12 +469,12 @@ int FileMPEG::open_file(int rd, int wr)
 					asset->frame_rate = mpeg3_frame_rate(fd, 0);
 			}
 		}
+		if( result ) {
+			eprintf(_("Couldn't open %s: failed.\n"), asset->path);
+		}
 	}
-
-
 	
-	if(!result && wr && asset->format == FILE_VMPEG)
-	{
+	if( !result && wr && asset->format == FILE_VMPEG ) {
 // Heroine Virtual encoder
 //  this one is cinelerra-x.x.x/mpeg2enc
 		if(asset->vmpeg_cmodel == BC_YUV422P)
@@ -669,9 +674,7 @@ int FileMPEG::open_file(int rd, int wr)
 			video_out->start();
 		}
 	}
-	else
-	if(wr && asset->format == FILE_AMPEG)
-	{
+	else if( !result && wr && asset->format == FILE_AMPEG) {
 		//char encoder_string[BCTEXTLEN]; encoder_string[0] = 0;
 //printf("FileMPEG::open_file 1 %d\n", asset->ampeg_derivative);
 
@@ -723,11 +726,9 @@ int FileMPEG::open_file(int rd, int wr)
 	}
 
 // Transport stream for DVB capture
-	if(!result && !rd && !wr && asset->format == FILE_MPEG)
-	{
+	if( !result && !rd && !wr && asset->format == FILE_MPEG ) {
 		if( (recd_fd = open(asset->path, O_CREAT+O_TRUNC+O_WRONLY,
-			S_IRUSR+S_IWUSR + S_IRGRP+S_IWGRP)) < 0 )
-		{
+			S_IRUSR+S_IWUSR + S_IRGRP+S_IWGRP)) < 0 ) {
 			perror("FileMPEG::open_file");
 			eprintf(_("Error while opening \"%s\" for writing\n%m\n"), asset->path);
 			result = 1;
@@ -785,119 +786,131 @@ int FileMPEG::toc_nail(void *vp, int track)
 }
 
 
-int FileMPEG::create_index()
+int FileMPEG::create_toc(char *toc_path)
 {
-// Calculate TOC path
-	char index_filename[BCTEXTLEN];
-	char source_filename[BCTEXTLEN];
+// delete any existing toc files
+	char toc_file[BCTEXTLEN];
+	strcpy(toc_file, toc_path);
+	remove(toc_file);
+	char *bp = strrchr(toc_file, '/');
+	if( !bp ) bp = toc_file;
+	char *sfx = strrchr(bp,'.');
+	if( sfx ) {
+		strcpy(sfx+1,"toc");
+		remove(toc_file);
+	}
 
-	IndexFile::get_index_filename(source_filename, 
-		file->preferences->index_directory, 
-		index_filename, 
-		asset->path);
-	char *ptr = strrchr(index_filename, '.');
-	int error = 0;
+	int64_t total_bytes = 0, last_bytes = -1;
+	fd = mpeg3_start_toc(asset->path, toc_file,
+				file->current_program, &total_bytes);
+	if( !fd ) {
+		eprintf(_("cant start toc/idx for file: %s\n"), asset->path);
+		return 1;
+	}
 
-	if(!ptr) return 1;
+// File needs a table of contents.
+	struct timeval new_time, prev_time, start_time, current_time;
+	gettimeofday(&prev_time, 0);  gettimeofday(&start_time, 0);
+	if( file->preferences->scan_commercials ) {
+		set_skimming(-1, 1, toc_nail, file);
+		if( MWindow::commercials->resetDb() != 0 )
+			eprintf(_("cant access commercials database"));
+	}
+// This gets around the fact that MWindowGUI may be locked.
+	char progress_title[BCTEXTLEN];
+	sprintf(progress_title, _("Creating %s\n"), toc_file);
+	BC_ProgressBox progress(-1, -1, progress_title, total_bytes);
+	progress.start();
 
-// File is a table of contents.
-	if(fd && mpeg3_has_toc(fd)) return 0;
+	int result = 0;
+	while( !result ) {
+		int64_t bytes_processed = 0;
+		if( mpeg3_do_toc(fd, &bytes_processed) ) break;
 
-	sprintf(ptr, ".toc");
+		if( bytes_processed >= total_bytes ) break;
+		if( bytes_processed == last_bytes ) {
+			eprintf(_("toc scan stopped before eof"));
+			break;
+		}
+		last_bytes = bytes_processed;
 
-	int need_toc = 1;
+		gettimeofday(&new_time, 0);
+		if( new_time.tv_sec - prev_time.tv_sec >= 1 ) {
+			gettimeofday(&current_time, 0);
+			int64_t elapsed_seconds = current_time.tv_sec - start_time.tv_sec;
+			int64_t total_seconds = !bytes_processed ? 0 :
+                                 elapsed_seconds * total_bytes / bytes_processed;
+			int64_t eta = total_seconds - elapsed_seconds;
+			progress.update(bytes_processed, 1);
+			char string[BCTEXTLEN];
+			sprintf(string, "%sETA: %jdm%jds",
+				progress_title, eta / 60, eta % 60);
+			progress.update_title(string, 1);
+// 			fprintf(stderr, "ETA: %dm%ds        \r", 
+// 				bytes_processed * 100 / total_bytes,
+// 				eta / 60, eta % 60);
+// 			fflush(stdout);
+			prev_time = new_time;
+		}
 
-	if(fd) mpeg3_close(fd);
+		if( progress.is_cancelled() ) {
+			result = 1;
+			break;
+		}
+	}
+
+	if( file->preferences->scan_commercials ) {
+		if( !result ) MWindow::commercials->write_ads(asset->path);
+		MWindow::commercials->closeDb();
+	}
+
+	mpeg3_stop_toc(fd);
 	fd = 0;
 
-// Test existing copy of TOC
-	if((fd = mpeg3_open_title(asset->path, index_filename, &error)))
-		need_toc = 0;
+	progress.stop_progress();
 
-	if(need_toc)
-	{
-		int result = 0;
-// Create progress window.
-// This gets around the fact that MWindowGUI is locked.
-		int64_t total_bytes = 0, last_bytes = -1;
-		fd = mpeg3_start_toc( asset->path, index_filename,
-				file->current_program, &total_bytes);
-		if( !fd ) {
-			eprintf(_("cant init toc index\n"));
-			result = 1;
-		}
-
-		struct timeval new_time, prev_time, start_time, current_time;
-		gettimeofday(&prev_time, 0);  gettimeofday(&start_time, 0);
-
-		if( !result && file->preferences->scan_commercials ) {
-			set_skimming(-1, 1, toc_nail, file);
-			if( (result=MWindow::commercials->resetDb() ) != 0 )
-				eprintf(_("cant access commercials database"));
-		}
-
-		char progress_title[BCTEXTLEN];  progress_title[0] = 0;
-		BC_ProgressBox *progress = 0;
-		if( !result ) {
-			sprintf(progress_title, _("Creating %s\n"), index_filename);
-			progress = new BC_ProgressBox(-1, -1,
-					progress_title, total_bytes);
-			progress->start();
-		}
-
-		while( !result ) {
-			int64_t bytes_processed = 0;
-			if( mpeg3_do_toc(fd, &bytes_processed) ) break;
-			gettimeofday(&new_time, 0);
-
-			if(new_time.tv_sec - prev_time.tv_sec >= 1)
-			{
-				gettimeofday(&current_time, 0);
-				int64_t elapsed_seconds = current_time.tv_sec - start_time.tv_sec;
-				int64_t total_seconds = !bytes_processed ? 0 :
-                                  elapsed_seconds * total_bytes / bytes_processed;
-				int64_t eta = total_seconds - elapsed_seconds;
-				progress->update(bytes_processed, 1);
-				char string[BCTEXTLEN];
-				sprintf(string, "%sETA: %jdm%jds",
-					progress_title, eta / 60, eta % 60);
-				progress->update_title(string, 1);
-// 				fprintf(stderr, "ETA: %dm%ds        \r", 
-// 					bytes_processed * 100 / total_bytes,
-// 					eta / 60, eta % 60);
-// 				fflush(stdout);
-				prev_time = new_time;
-			}
-			if(bytes_processed >= total_bytes) break;
-			if(progress->is_cancelled()) result = 1;
-			if( bytes_processed == last_bytes ) {
-				eprintf(_("toc scan stopped before eof"));
-				break;
-			}
-			last_bytes = bytes_processed;
-		}
-
-		// record scan results
-		if( file->preferences->scan_commercials ) {
-			if( !result ) MWindow::commercials->write_ads(asset->path);
-			MWindow::commercials->closeDb();
-		}
-
-		if( fd ) { mpeg3_stop_toc(fd);  fd = 0; }
-		if( progress ) { progress->stop_progress(); delete progress; }
-		if( result ) { remove_file(index_filename); return 1; }
+	if( result ) {
+		remove_file(toc_file);
+		return 1;
 	}
 
-	if(!fd)
-	{
-// Reopen file from index path instead of asset path.
-		if(!(fd = mpeg3_open(index_filename, &error)))
-		{
-			return 1;
-		}
+// Reopen file from toc path instead of asset path.
+	int error = 0;
+	fd = mpeg3_open(toc_file, &error);
+	if( !fd ) {
+		eprintf(_("mpeg3_open failed: %s"), toc_file);
+		return 1;
 	}
-
 	return 0;
+}
+
+int FileMPEG::get_index(IndexFile *index_file, MainProgressBar *progress_bar)
+{
+	if( !fd ) return 1;
+	IndexState *index_state = index_file->get_state();
+	index_state->reset_index();
+	index_state->reset_markers();
+
+// Convert the index tables from tracks to channels.
+	int ntracks = mpeg3_index_tracks(fd);
+	if( !ntracks ) return 1;
+
+	int index_zoom = mpeg3_index_zoom(fd);
+	int64_t offset = 0;
+	for( int i = 0; i < ntracks; ++i ) {
+		int nch = mpeg3_index_channels(fd, i);
+		for( int j = 0; j < nch; ++j ) {
+			float *bfr = (float *)mpeg3_index_data(fd, i, j);
+			int64_t size = 2*mpeg3_index_size(fd, i);
+			index_state->add_index_entry(bfr, offset, size);
+			offset += size;
+		}
+	}
+
+	FileSystem fs;
+	int64_t file_bytes = fs.get_size(asset->path);
+	char *index_path = index_file->index_filename;
+	return index_state->write_index(index_path, asset, index_zoom, file_bytes);
 }
 
 
@@ -1019,36 +1032,6 @@ int FileMPEG::colormodel_supported(int colormodel)
 {
 	return colormodel;
 }
-
-int FileMPEG::get_index(char *index_path)
-{
-	if(!fd) return 1;
-	IndexState *index_state = asset->index_state;
-	index_state->reset_index();
-	index_state->reset_markers();
-	
-// Convert the index tables from tracks to channels.
-	if(mpeg3_index_tracks(fd)) {
-		int index_zoom = mpeg3_index_zoom(fd);
-		int ntracks = mpeg3_index_tracks(fd);
-		int64_t offset = 0;
-		for(int i = 0; i < ntracks; i++) {
-			int nch = mpeg3_index_channels(fd, i);
-			for(int j = 0; j < nch; j++) {
-				float *bfr = (float *)mpeg3_index_data(fd, i, j);
-				int64_t size = 2*mpeg3_index_size(fd, i);
-				index_state->add_index_entry(bfr, offset, size);
-				offset += size;
-			}
-		}
-		FileSystem fs;
-		int64_t file_bytes = fs.get_size(asset->path);
-		return index_state->write_index(index_path, asset, index_zoom, file_bytes);
-	}
-
-	return 1;
-}
-
 
 int FileMPEG::can_copy_from(Asset *asset, int64_t position)
 {
