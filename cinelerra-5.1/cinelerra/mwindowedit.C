@@ -121,13 +121,7 @@ void MWindow::add_video_track_entry(Track *dst)
 
 	restart_brender();
 
-	gui->update(1,
-		1,
-		0,
-		0,
-		1,
-		0,
-		0);
+	gui->update(1, 1, 0, 0, 1, 0, 0);
 	gui->activate_timeline();
 //	gui->get_scrollbars(0);
 //	gui->canvas->draw();
@@ -135,10 +129,8 @@ void MWindow::add_video_track_entry(Track *dst)
 //	gui->cursor->draw(1);
 //	gui->canvas->flash();
 //	gui->canvas->activate();
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-							CHANGE_EDL,
-							edl,
-							1);
+	cwindow->playback_engine->que->
+		send_command(CURRENT_FRAME, CHANGE_EDL, edl, 1);
 	save_backup();
 }
 
@@ -149,16 +141,17 @@ void MWindow::add_subttl_track_entry(Track *dst)
 	undo->update_undo_after(_("add track"), LOAD_ALL);
 
 	restart_brender();
+
+	gui->update(1, 1, 0, 0, 1, 0, 0);
+	gui->activate_timeline();
 //	gui->get_scrollbars(0);
 //	gui->canvas->draw();
 //	gui->patchbay->update();
 //	gui->cursor->draw(1);
 //	gui->canvas->flash();
 //	gui->canvas->activate();
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-							CHANGE_EDL,
-							edl,
-							1);
+	cwindow->playback_engine->que->
+		send_command(CURRENT_FRAME, CHANGE_EDL, edl, 1);
 	save_backup();
 }
 
@@ -673,6 +666,7 @@ int MWindow::cut_default_keyframe()
 	return 0;
 }
 
+
 void MWindow::delete_inpoint()
 {
 	edl->local_session->unset_inpoint();
@@ -684,6 +678,7 @@ void MWindow::delete_outpoint()
 	edl->local_session->unset_outpoint();
 	save_backup();
 }
+
 
 void MWindow::delete_track()
 {
@@ -700,11 +695,10 @@ void MWindow::delete_tracks()
 
 	restart_brender();
 	update_plugin_states();
+
 	gui->update(1, 1, 1, 0, 1, 0, 0);
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-	    		   CHANGE_EDL,
-	    		   edl,
-	    		   1);
+	cwindow->playback_engine->que->
+		send_command(CURRENT_FRAME, CHANGE_EDL, edl, 1);
 }
 
 void MWindow::delete_track(Track *track)
@@ -715,16 +709,12 @@ void MWindow::delete_track(Track *track)
 
 	restart_brender();
 	update_plugin_states();
+
 	gui->update(1, 1, 1, 0, 1, 0, 0);
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-	    		   CHANGE_EDL,
-	    		   edl,
-	    		   1);
+	cwindow->playback_engine->que->
+		send_command(CURRENT_FRAME, CHANGE_EDL, edl, 1);
 	save_backup();
 }
-
-
-
 
 
 // Insert data from clipboard

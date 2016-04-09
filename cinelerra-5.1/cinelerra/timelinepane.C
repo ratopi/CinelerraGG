@@ -288,12 +288,12 @@ void TimelinePane::update(int scrollbars,
 	int patchbay)
 {
 	if(timebar && this->timebar) this->timebar->update(0);
-	if(patchbay && this->patchbay) this->patchbay->update();
 	if(scrollbars) 
 	{
 		if(samplescroll && this->samplescroll) samplescroll->set_position();
 		if(trackscroll && this->trackscroll) trackscroll->set_position();
 	}
+	if(patchbay && this->patchbay) this->patchbay->update();
 
 	if(do_canvas)
 	{

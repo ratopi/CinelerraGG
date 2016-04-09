@@ -215,6 +215,7 @@ static inline int bput(uint8_t *bp, FILE *fp)
   return 1;
 }
 
+static bool goog = false;
 
 static inline bool is_nlin(unsigned ch, uint8_t *bp)
 {
@@ -320,13 +321,14 @@ static bool chkfmt(int no, uint8_t *ap, uint8_t *bp, uint8_t *cp)
   uint8_t *bep = bp;
   unsigned bpr = 0, bch = wnext(bp);
   for( ; bch!=0; bch=wnext(bp) ) {
-    if( is_opnr(bch) ) ++n;
+    if( goog && is_opnr(bch) ) ++n;
     bep = bp;  bpr = bch;
   }
+
   // trim solitary opnrs on ends b
-  if( n != 1 || !is_opnr(bpr) ) bep = bp;
+  if( goog && ( n != 1 || !is_opnr(bpr) ) ) bep = bp;
   bp = bsp;  bch = wnext(bp);
-  if( n == 1 && is_opnr(bch) ) bch = wnext(bp);
+  if( goog && ( n == 1 && is_opnr(bch) ) ) bch = wnext(bp);
 
   unsigned apr = 0, ach = wnext(ap);
   apr = bpr = 0;
@@ -337,17 +339,19 @@ static bool chkfmt(int no, uint8_t *ap, uint8_t *bp, uint8_t *cp)
     }
     // move to % on b
     while( bch != 0 && !is_per(bch) ) {
-      if( is_nlin(bch, bp) ) {
-        bch = '\n';  bp += 3;
-      }
-      else if( is_ccln(bch, bp) ) {
-        wnext(cp, bch=':');  bp += 3;
-      }
-      else if( is_quot(bch, bp) ) {
-        bch = '\"';  bp += 3;
-      }
-      else if( is_colon(bch) ) {
-        bch = ':';
+      if( goog ) { // google xlat recoginizers
+        if( is_nlin(bch, bp) ) {
+          bch = '\n';  bp += 3;
+        }
+        else if( is_ccln(bch, bp) ) {
+          wnext(cp, bch=':');  bp += 3;
+        }
+        else if( is_quot(bch, bp) ) {
+          bch = '\"';  bp += 3;
+        }
+        else if( is_colon(bch) ) {
+          bch = ':';
+        }
       }
       wnext(cp,bch);  bpr = bch;
       bch = bp >= bep ? 0 : wnext(bp);
@@ -355,22 +359,29 @@ static bool chkfmt(int no, uint8_t *ap, uint8_t *bp, uint8_t *cp)
     if( !ach || !bch ) break;
     // if % on a and % on b and is fmt_spec
     if( is_per(ach) && is_per(bch) && (n=fmt_spec(ap)) > 0 ) {
-      if( apr != bpr ) wnext(cp,apr);
+      if( apr && apr != bpr ) wnext(cp,apr);
       wnext(cp,ach);  apr = ach;  ach = wnext(ap);
       // copy format data from a
       while( ach != 0 && --n >= 0 ) {
         wnext(cp, ach);  apr = ach;  ach = wnext(ap);
       }
       bpr = bch;  bch = bp >= bep ? 0 : wnext(bp);
-      // skip format data from b (ignore case)
-      while( bch != 0 && ((bpr ^ apr) & ~('a'-'A')) ) {
+      if( apr == '%' && bch == '%' ) {
+        // copy %% format data from b
         bpr = bch;
         bch = bp >= bep ? 0 : wnext(bp);
       }
-      // hit eol and didn't find end of spec on b
-      if( !bch && !((bpr ^ apr) & ~('a'-'A')) ) {
-        fprintf(stderr, "line %d: missed spec: %s\n", no, (char*)asp);
-        ret = false;
+      else {
+        // skip format data from b (ignore case)
+        while( bch != 0 && ((bpr ^ apr) & ~('a'-'A')) ) {
+          bpr = bch;
+          bch = bp >= bep ? 0 : wnext(bp);
+        }
+        // hit eol and didn't find end of spec on b
+        if( !bch && ((bpr ^ apr) & ~('a'-'A')) != 0 ) {
+          fprintf(stderr, "line %d: missed spec: %s\n", no, (char*)asp);
+          ret = false;
+        }
       }
     }
     else {
@@ -543,14 +554,17 @@ static void usage(const char *av0)
   printf("test csv    %s  csv < data.csv\n",av0);
   printf("test po     %s   po < data.po\n",av0);
   printf("get strings %s  key < xgettext.po\n",av0);
-  printf("gen xlation %s xlat < xgettext.po xlat.csv\n",av0);
-  printf("gen xlation %s xlat < xgettext.po text,xlat ...\n",av0);
+  printf("gen xlation %s xlat   xgettext.po xlat.csv\n",av0);
+  printf("gen xlation %s xlat - text,xlat ... < xgettext.po\n",av0);
   exit(1);
 }
 
 int main(int ac, char **av)
 {
   if( ac == 1 ) usage(av[0]);
+
+  // if to rework google xlat output
+  if( getenv("GOOG") ) goog = true;
 
   if( !strcmp(av[1],"csv") ) {  // test csv
     load(stdin, 0);

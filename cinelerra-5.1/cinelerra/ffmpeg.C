@@ -2502,7 +2502,7 @@ printf("audio%d pad %ld %ld (%ld)\n", aud->idx, pos, aud->curr_pos, pos-aud->cur
 				int got_frame = 0;
 				int ret = aud->decode_frame(&pkt, frame, got_frame);
 				if( ret <= 0 ) break;
-				if( got_frame ) {
+				if( got_frame && frame->channels == nch ) {
 					float *samples;
 					int len = aud->get_samples(samples,
 						 &frame->extended_data[0], frame->nb_samples);

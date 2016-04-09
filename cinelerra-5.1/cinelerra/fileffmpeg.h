@@ -59,7 +59,7 @@ public:
 	int read_frame(VFrame *frame);
 	int64_t get_memory_usage(void);
 	int colormodel_supported(int colormodel);
-	int get_best_colormodel(Asset *asset,int driver);
+	static int get_best_colormodel(Asset *asset, int driver);
 	int select_video_stream(Asset *asset, int vstream);
 	int select_audio_stream(Asset *asset, int astream);
 };

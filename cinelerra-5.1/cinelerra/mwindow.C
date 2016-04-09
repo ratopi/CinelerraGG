@@ -3512,7 +3512,7 @@ int MWindow::select_asset(int vtrack, int delete_tracks)
 	if( !edit ) return 1;
 	Asset *asset = edit->asset;
 	if( !asset || !asset->is_asset ) return 1;
-	return select_asset(asset, edit->channel, -1, delete_tracks);
+	return select_asset(asset, edit->channel, 0, delete_tracks);
 }
 
 void MWindow::dump_plugindb(FILE *fp)

@@ -1489,7 +1489,7 @@ size_t BC_Resources::encode(const char *from_enc, const char *to_enc,
 	{
 		if((cd = iconv_open(to_enc, from_enc)) == (iconv_t)-1)
 		{
-			printf(_("Conversion from %s to %s is not available"),
+			printf(_("Conversion from %s to %s is not available\n"),
 				from_enc, to_enc);
 			return 0;
 		}

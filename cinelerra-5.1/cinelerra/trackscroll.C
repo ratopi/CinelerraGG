@@ -110,6 +110,10 @@ int TrackScroll::flip_vertical(int top, int bottom)
 
 void TrackScroll::set_position()
 {
+	int64_t max_pos = mwindow->edl->get_tracks_height(mwindow->theme) - pane->view_h;
+	if( max_pos < 0 ) max_pos = 0;
+	if( mwindow->edl->local_session->track_start[pane->number] > max_pos )
+		mwindow->edl->local_session->track_start[pane->number] = max_pos;
 	update_length(
 		mwindow->edl->get_tracks_height(mwindow->theme),
 		mwindow->edl->local_session->track_start[pane->number],

@@ -1433,6 +1433,7 @@ int File::get_best_colormodel(Asset *asset, int driver)
 		case FILE_CR2:
 		case FILE_CR2_LIST:	return FileCR2::get_best_colormodel(asset, driver);
 		case FILE_DB:		return FileDB::get_best_colormodel(asset, driver);
+		case FILE_FFMPEG:	return FileFFMPEG::get_best_colormodel(asset, driver);
 	}
 
 	return BC_RGB888;
