@@ -38,8 +38,8 @@ DV1394Input::~DV1394Input()
 	{
 		done = 1;
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 
 	if(fd > 0) close(fd);
 }

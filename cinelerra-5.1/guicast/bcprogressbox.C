@@ -97,8 +97,8 @@ int BC_ProgressBox::stop_progress()
 {
 	if( Thread::running() ) {
 		pwindow->set_done(0);
-		Thread::join();
 	}
+	Thread::join();
 	return 0;
 }
 

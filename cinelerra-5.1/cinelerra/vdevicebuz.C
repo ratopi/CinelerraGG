@@ -79,8 +79,8 @@ VDeviceBUZInput::~VDeviceBUZInput()
 	{
 		done = 1;
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 
 	if(buffer)
 	{

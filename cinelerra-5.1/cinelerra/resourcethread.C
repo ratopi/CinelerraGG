@@ -338,8 +338,8 @@ void ResourceThread::stop()
 		done = 1;
 		interrupted = 1;
 		draw_lock->unlock();
-		join();
 	}
+	join();
 }
 
 

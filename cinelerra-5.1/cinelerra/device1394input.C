@@ -67,8 +67,8 @@ Device1394Input::~Device1394Input()
 	{
 		done = 1;
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 
 	if(buffer)
 	{

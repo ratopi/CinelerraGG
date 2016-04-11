@@ -94,8 +94,8 @@ SetFormatThread::~SetFormatThread()
 	if( running() ) {
 		window->set_done(1);
 		cancel();
-		join();
 	}
+	join();
 	delete window_lock;
 }
 

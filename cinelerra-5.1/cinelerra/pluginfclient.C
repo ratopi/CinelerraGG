@@ -521,6 +521,7 @@ PluginFClient::PluginFClient(PluginClient *plugin, const char *name)
 
 PluginFClient::~PluginFClient()
 {
+	delete ffilt;
 }
 
 bool PluginFClient::is_audio(AVFilter *fp)

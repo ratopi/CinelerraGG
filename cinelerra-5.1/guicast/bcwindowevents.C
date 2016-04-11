@@ -46,19 +46,16 @@ BC_WindowEvents::BC_WindowEvents(BC_Display *display)
 
 BC_WindowEvents::~BC_WindowEvents()
 {
-// First set done, then send dummy event through XSendEvent to unlock the loop in ::run()
+// no more external events, send one last event into X to flush out all of the
+//  pending events so that no straglers or shm leaks are possible.
 //printf("BC_WindowEvents::~BC_WindowEvents %d %s\n", __LINE__, window->title);
-	done = 1;
-	XEvent event;
+	XSelectInput(window->display, window->win, 0);
+	XEvent event;  memset(&event,0,sizeof(event));
 	XClientMessageEvent *ptr = (XClientMessageEvent*)&event;
 	event.type = ClientMessage;
-	ptr->message_type = XInternAtom(window->display, "DUMMY_XATOM", False);
+	ptr->message_type = window->DestroyAtom;
 	ptr->format = 32;
-	XSendEvent(window->display,
-		window->win,
-		0,
-		0,
-		&event);
+	XSendEvent(window->display, window->win, 0, 0, &event);
 	window->flush();
 	Thread::join();
 //printf("BC_WindowEvents::~BC_WindowEvents %d %s\n", __LINE__, window->title);
@@ -80,8 +77,6 @@ void BC_WindowEvents::run()
 	int x_fd = ConnectionNumber(window->display);
 #endif
 
-
-
 	while(!done)
 	{
 
@@ -90,7 +85,6 @@ void BC_WindowEvents::run()
 #ifdef SINGLE_THREAD
 		event = new XEvent;
 		XNextEvent(display->display, event);
-		display->put_event(event);
 #else
 // This came from a linuxquestions post.
 // We can get a file descriptor for the X display & use select instead of XNextEvent.  
@@ -107,20 +101,33 @@ void BC_WindowEvents::run()
 		{
 			event = new XEvent;
 			XNextEvent(window->display, event);
+#endif
 			if( event->type == BC_WindowBase::shm_completion_event ) {
-				window->top_level->active_bitmaps.reque(event);
+				window->active_bitmaps.reque(event);
 				delete event;
 				continue;
 			}
+			if( event->type == ClientMessage ) {
+				XClientMessageEvent *ptr = (XClientMessageEvent*)event;
+				if( ptr->message_type == window->DestroyAtom ) {
+					delete event;
+					done = 1;
+					break;
+				}
+			}
+#ifndef SINGLE_THREAD
 // HACK: delay is required to get the close event
-			usleep(1);
+			yield();
 //if(window && event)
 //printf("BC_WindowEvents::run %d %s %d\n", __LINE__, window->title, event->type);
 			window->put_event(event);
 		}
 		XUnlockDisplay(window->display);
 //printf("BC_WindowEvents::run %d %s\n", __LINE__, window->title);
+#else
+		display->put_event(event);
 #endif
+
 	}
 }
 

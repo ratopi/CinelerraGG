@@ -581,6 +581,8 @@ private:
 	int get_event_count();
 // Put event in common events.
 	void put_event(XEvent *event);
+// remove events queued for win
+	void dequeue_events(Window win);
 
 // Recursive event dispatchers
 	int dispatch_resize_event(int w, int h);
@@ -785,6 +787,7 @@ private:
 // Depth given by the X Server
 	int default_depth;
 	Atom DelWinXAtom;
+	Atom DestroyAtom;
 	Atom ProtoXAtom;
 	Atom RepeaterXAtom;
 	Atom SetDoneXAtom;

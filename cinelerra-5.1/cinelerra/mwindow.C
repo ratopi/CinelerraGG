@@ -3197,6 +3197,7 @@ int MWindow::run_script(FileXML *script)
 
 int MWindow::interrupt_indexes()
 {
+	mainprogress->cancelled = 1;
 	mainindexes->interrupt_build();
 	return 0;
 }

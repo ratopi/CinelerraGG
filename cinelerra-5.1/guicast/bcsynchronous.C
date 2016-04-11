@@ -119,8 +119,8 @@ BC_Synchronous::~BC_Synchronous()
 {
 	if( running() ) {
 		quit();
-		join();
 	}
+	join();
 	commands.remove_all_objects();
 	delete lock_sync;
 	delete next_command;

@@ -143,7 +143,7 @@ AndroidControl::~AndroidControl()
 	if( Thread::running() ) {
 		done = 1;
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 }
 

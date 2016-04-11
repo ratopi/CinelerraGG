@@ -408,8 +408,8 @@ RotateEngine::~RotateEngine()
 	{
 		done = 1;
 		input_lock->unlock();
-		join();
 	}
+	join();
 	delete input_lock;
 	delete output_lock;
 }

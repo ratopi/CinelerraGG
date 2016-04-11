@@ -342,8 +342,9 @@ int SWindowGUI::load_selection(int pos, int row)
 		script_entry->set_text_row(0);
 	}
 	script_text_no = row;
-	char line[BCTEXTLEN], *bp = line, *cp = rp;
-	while( *cp && *cp!='\n' ) *bp++ = *cp++;
+	char line[BCTEXTLEN], *bp = line;
+	char *ep = bp+sizeof(line)-1, *cp = rp;
+	while( bp < ep && *cp && *cp!='\n' ) *bp++ = *cp++;
 	*bp = 0;  bp = texts->text;
 	int char1 = rp-bp, char2 = cp-bp;
 	script_entry->set_selection(char1, char2, char2);
@@ -602,15 +603,15 @@ int ScriptLines::break_lines()
 			memmove(cp,sp,dp+1-sp);
 			used -= n;  dp -= n;  ep -= n;
 		}
-		// constrain line_limit
-		if( (n=(ep-cp)/2) < limit2 || n > line_limit )
+		// target about half remaining line, constrain line_limit
+		if( (n=(ep-1-cp)/2) < limit2 || n > line_limit )
 			n = line_limit;
-		// search for last punct, last space
+		// search for last punct, last space before line_limit
 		for( bp=cp, pp=sp=0; --n>=0 && cp<ep; ++cp ) {
 			if( ispunct(*cp) && isspace(*(cp+1)) ) pp = cp;
 			else if( isspace(*cp) ) sp = cp;
 		}
-		// long enough to break
+		// line not empty
 		if( cp < ep ) {
 			// first, after punctuation
 			if( pp && pp-bp >= limit4 )
@@ -731,10 +732,10 @@ int SWindowGUI::load_script_line(FILE *fp)
 
 	for(;;) { // load non-blank lines
 		//int len = strlen(line);
-		//if( cp[len-1] == '\n' ) cp[len-1] = 0;
+		//if( line[len-1] == '\n' ) line[len-1] = ' ';
 		entry->append(line);
 		char *cp = fgets(line,sizeof(line),fp);
-		if( !cp ) return 1;
+		if( !cp ) break;
 		++script_line_no;
 		while( *cp && isspace(*cp) ) ++cp;
 		if( !*cp ) break;
@@ -852,8 +853,8 @@ void SWindow::stop()
 		if( gui ) gui->stop(1);
 		window_lock->unlock();
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 }
 
 void SWindow::run()

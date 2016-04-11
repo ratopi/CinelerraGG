@@ -787,8 +787,8 @@ stop()
 	if( running() ) {
 		if( gui ) gui->set_done(1);
 		cancel();
-		join();
 	}
+	join();
 }
 
 void ScanStatus::
@@ -856,8 +856,8 @@ stop()
 		done = 1;
 		input_lock->unlock();
 		cancel();
-		join();
 	}
+	join();
 	if( commercials && !commercials->remove_user() )
 		commercials = 0;
 }

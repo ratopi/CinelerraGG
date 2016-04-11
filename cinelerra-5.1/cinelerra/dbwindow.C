@@ -87,8 +87,8 @@ stop()
 		if( gui ) gui->set_done(1);
 		window_lock->unlock();
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 }
 
 void DbWindow::

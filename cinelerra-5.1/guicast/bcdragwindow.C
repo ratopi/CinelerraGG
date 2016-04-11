@@ -46,6 +46,7 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 	pixmap)
 {
 	temp_frame = 0;
+	drag_pixmap = 0;
 //	init_x = icon_x;
 //	init_y = icon_y;
 	init_x = parent_window->get_abs_cursor_x(0) + DRAG_OFFSET_X;
@@ -90,6 +91,7 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 
 BC_DragWindow::~BC_DragWindow()
 {
+	delete drag_pixmap;
 }
 
 int BC_DragWindow::get_init_x(BC_WindowBase *parent_window, int icon_x)
@@ -202,11 +204,11 @@ BC_Pixmap *BC_DragWindow::prepare_frame(VFrame *frame, BC_WindowBase *parent_win
 			0, frame->get_w(), temp_frame->get_w());
 	}
 	temp_frame->get_rows()[(temp_frame->get_h() / 2)][(temp_frame->get_w() / 2) * 4 + 3] = 0;
-	my_pixmap = new BC_Pixmap(parent_window,
+	drag_pixmap = new BC_Pixmap(parent_window,
 			temp_frame,
 			PIXMAP_ALPHA);
 
-	return (my_pixmap);
+	return drag_pixmap;
 }
 
 

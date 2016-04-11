@@ -79,8 +79,8 @@ Device1394Output::~Device1394Output()
 		done = 1;
 		start_lock->unlock();
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 
 	if(buffer)
 	{

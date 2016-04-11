@@ -1044,8 +1044,8 @@ EndRecordThread::~EndRecordThread()
 		window->lock_window("EndRecordThread::~EndRecordThread");
 		window->set_done(1);
 		window->unlock_window();
-		Thread::join();
 	}
+	Thread::join();
 }
 
 void EndRecordThread::start(int is_ok)
@@ -1081,8 +1081,8 @@ RecordStartoverThread::~RecordStartoverThread()
 		window->lock_window("RecordStartoverThread::~RecordStartoverThread");
 		window->set_done(1);
 		window->unlock_window();
-		Thread::join();
 	}
+	Thread::join();
 }
 
 void RecordStartoverThread::run()
@@ -1382,8 +1382,8 @@ RecordStatusThread::~RecordStatusThread()
 	{
 		done = 1;
 		input_lock->unlock();
-		Thread::join();
 	}
+	Thread::join();
 }
 
 void RecordStatusThread::reset_video()
@@ -1537,8 +1537,8 @@ RecordGUIFlash::
 		done = 1;
 		flash_lock->unlock();
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 	delete flash_lock;
 }
 

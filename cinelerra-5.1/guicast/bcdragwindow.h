@@ -48,7 +48,7 @@ private:
 	int icon_offset_x, icon_offset_y;
 	int do_animation;
 	VFrame *temp_frame;
-	BC_Pixmap *my_pixmap;
+	BC_Pixmap *drag_pixmap;
 };
 
 #endif

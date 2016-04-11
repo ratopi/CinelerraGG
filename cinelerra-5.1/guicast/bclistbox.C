@@ -389,13 +389,9 @@ BC_ListBox::BC_ListBox(int x,
 	popup_w = w;
 	popup_h = h;
 
-	for(int i = 0; i < 3; i++)
-	{
-		button_images[i] = 0;
-		column_bg[i] = 0;
-	}
-	for(int i = 0; i < 5; i++)
-		toggle_images[i] = 0;
+	for(int i = 0; i < 3; i++) column_bg[i] = 0;
+	for(int i = 0; i < 4; i++) button_images[i] = 0;
+	for(int i = 0; i < 5; i++) toggle_images[i] = 0;
 
 	column_sort_up = 0;
 	column_sort_dn = 0;
@@ -447,13 +443,9 @@ BC_ListBox::~BC_ListBox()
 	if(bg_pixmap) delete bg_pixmap;
 	if(xscrollbar) delete xscrollbar;
 	if(yscrollbar) delete yscrollbar;
-	for(int i = 0; i < 3; i++)
-	{
-		if(button_images[i]) delete button_images[i];
-		if(column_bg[i]) delete column_bg[i];
-	}
-	for(int i = 0; i < 5; i++)
-		if(toggle_images[i]) delete toggle_images[i];
+	for(int i = 0; i < 3; i++) delete column_bg[i];
+	for(int i = 0; i < 4; i++) delete button_images[i];
+	for(int i = 0; i < 5; i++) delete toggle_images[i];
 	if(column_sort_up) delete column_sort_up;
 	if(column_sort_dn) delete column_sort_dn;
 
@@ -550,7 +542,7 @@ int BC_ListBox::initialize()
 	{
 		if(use_button)
 		{
-			for( volatile int i = 0; i < 4; ++i ) // volatile due to cplr bug
+			for( int i = 0; i < 4; ++i )
 			{
 				button_images[i] = new BC_Pixmap(parent_window,
 					BC_WindowBase::get_resources()->listbox_button[i],

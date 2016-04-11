@@ -45,8 +45,8 @@ AWindow::~AWindow()
 		gui->lock_window("AWindow::~AWindow");
 		gui->set_done(0);
 		gui->unlock_window();
-		Thread::join();
 	}
+	Thread::join();
 	delete asset_remove;
 	delete asset_edit;
 	delete label_edit;

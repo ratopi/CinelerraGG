@@ -668,10 +668,12 @@ int FileFFMPEG::get_index(IndexFile *index_file, MainProgressBar *progress_bar)
 	if( ff->scan(index_state, &scan_position, &canceled) || canceled ) {
 		index_state->reset_index();
 		index_state->reset_markers();
-		return 1;
+		canceled = 1;
 	}
 
 	delete scan_progress;
+	if( canceled ) return 1;
+
 	index_state->marker_status = MARKERS_READY;
 	return index_state->create_index(index_path, asset);
 }

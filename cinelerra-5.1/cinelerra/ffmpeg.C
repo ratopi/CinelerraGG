@@ -1992,8 +1992,8 @@ void FFMPEG::stop_muxer()
 	if( running() ) {
 		done = 1;
 		mux_lock->unlock();
-		join();
 	}
+	join();
 }
 
 void FFMPEG::flow_off()

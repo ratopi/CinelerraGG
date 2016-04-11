@@ -87,8 +87,8 @@ VIconThread::
 	draw_lock->unlock();
 	if( Thread::running() ) {
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 	t_heap.remove_all_objects();
 	delete timer;
 	delete draw_lock;

@@ -70,8 +70,8 @@ void ChanSearch::stop()
 		if( gui ) gui->set_done(1);
 		window_lock->unlock();
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 }
 
 void ChanSearch::run()
@@ -560,8 +560,8 @@ void ChannelProgress::stop()
 	if( Thread::running() ) {
 		done = 1;
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 }
 
 void ChannelProgress::run()
@@ -1050,8 +1050,8 @@ void ChannelThread::stop()
 	if( Thread::running() ) {
 		done = 1;
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 }
 
 ChannelThread::ChannelThread(ChannelInfoGUI *gui)
@@ -1655,8 +1655,8 @@ void ChannelInfo::stop()
 		if( gui ) gui->stop(1);
 		window_lock->unlock();
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 }
 
 void ChannelInfo::run()

@@ -41,8 +41,8 @@ RemoteControl::~RemoteControl()
 {
 	if( Thread::running() ) {
 		remote_window->close(1);
-		Thread::join();
 	}
+	Thread::join();
 	delete gui;
 	delete remote_window;
 	delete active_lock;

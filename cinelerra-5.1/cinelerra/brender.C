@@ -93,9 +93,9 @@ TRACE("BRender::~BRender 5\n");
 	{
 		kill(master_pid, SIGKILL);
 TRACE("BRender::~BRender 6\n");
-		Thread::join();
 TRACE("BRender::~BRender 7\n");
 	}
+	Thread::join();
 
 TRACE("BRender::~BRender 8\n");
 	delete map_lock;

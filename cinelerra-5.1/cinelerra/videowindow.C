@@ -45,8 +45,8 @@ VideoWindow::~VideoWindow()
 {
 	if(gui && running()) {
 		gui->set_done(0);
-		join();
 	}
+	join();
 	delete gui;  gui = 0;
 }
 

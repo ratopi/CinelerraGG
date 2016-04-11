@@ -493,14 +493,14 @@ void FormatTools::update(Asset *asset, int *strategy)
 void FormatTools::close_format_windows()
 {
 // This is done in ~file
-	if(aparams_thread && aparams_thread->running())
-	{
-		aparams_thread->file->close_window();
+	if( aparams_thread ) {
+		if( aparams_thread->running() )
+			aparams_thread->file->close_window();
 		aparams_thread->join();
 	}
-	if(vparams_thread && vparams_thread->running())
-	{
-		vparams_thread->file->close_window();
+	if( vparams_thread ) {
+		if( vparams_thread->running() )
+			vparams_thread->file->close_window();
 		vparams_thread->join();
 	}
 }

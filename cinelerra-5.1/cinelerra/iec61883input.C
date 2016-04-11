@@ -67,8 +67,8 @@ IEC61883Input::~IEC61883Input()
 	if(Thread::running())
 	{
 		done = 1;
-		Thread::join();
 	}
+	Thread::join();
 
 	if(buffer)
 	{

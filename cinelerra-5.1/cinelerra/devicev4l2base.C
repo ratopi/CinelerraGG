@@ -165,8 +165,8 @@ DeviceV4L2Put::~DeviceV4L2Put()
 		done = 1;
 		buffer_lock->unlock();
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 	delete buffer_lock;
 	delete putq;
 }
@@ -709,8 +709,8 @@ void DeviceV4L2Base::close_dev()
 		{
 			done = 1;
 			Thread::cancel();
-			Thread::join();
 		}
+		Thread::join();
 		if(put_thread)
 		{
 			delete put_thread;

@@ -64,9 +64,8 @@ Tracking::~Tracking()
 		state = DONE;
 // Not working in NPTL for some reason
 //		Thread::cancel();
-		Thread::join();
 	}
-
+	Thread::join();
 
 	delete startup_lock;
 }

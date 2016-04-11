@@ -101,15 +101,20 @@ BC_WindowBase::~BC_WindowBase()
 #endif
 
 #ifdef HAVE_LIBXXF86VM
-   if(window_type == VIDMODE_SCALED_WINDOW && vm_switched)
-   {
-	   restore_vm();
-   }
+	if(window_type == VIDMODE_SCALED_WINDOW && vm_switched) {
+		restore_vm();
+	}
 #endif
+	is_deleting = 1;
 
 	hide_tooltip();
 	if(window_type != MAIN_WINDOW)
 	{
+// stop event input
+		XSelectInput(top_level->display, this->win, 0);
+		motion_events = resize_events = translation_events = 0;
+		top_level->dequeue_events(win);
+
 		if(top_level->active_menubar == this) top_level->active_menubar = 0;
 		if(top_level->active_popup_menu == this) top_level->active_popup_menu = 0;
 		if(top_level->active_subwindow == this) top_level->active_subwindow = 0;
@@ -118,10 +123,10 @@ BC_WindowBase::~BC_WindowBase()
 	}
 
 	if(icon_window) delete icon_window;
-	if(window_type == POPUP_WINDOW) parent_window->remove_popup(this);
+	if(window_type == POPUP_WINDOW)
+		parent_window->remove_popup(this);
 
 // Delete the subwindows
-	is_deleting = 1;
 	if(subwindows)
 	{
 		while(subwindows->total)
@@ -338,6 +343,7 @@ int BC_WindowBase::initialize()
 	glx_win = 0;
 #endif
 
+	win = 0;
 	return 0;
 }
 
@@ -1962,12 +1968,9 @@ Atom BC_WindowBase::create_xatom(const char *atom_name)
 
 int BC_WindowBase::get_atoms()
 {
-	SetDoneXAtom =  create_xatom("BC_REPEAT_EVENT");
-	RepeaterXAtom = create_xatom("BC_CLOSE_EVENT");
-	DelWinXAtom = create_xatom("WM_DELETE_WINDOW");
-	ProtoXAtom = create_xatom("WM_PROTOCOLS");
 	SetDoneXAtom =  XInternAtom(display, "BC_REPEAT_EVENT", False);
 	RepeaterXAtom = XInternAtom(display, "BC_CLOSE_EVENT", False);
+	DestroyAtom =   XInternAtom(display, "BC_DESTROY_WINDOW", False);
 	DelWinXAtom =   XInternAtom(display, "WM_DELETE_WINDOW", False);
 	if( (ProtoXAtom = XInternAtom(display, "WM_PROTOCOLS", False)) != 0 )
 		XChangeProperty(display, win, ProtoXAtom, XA_ATOM, 32,
@@ -4349,6 +4352,20 @@ void BC_WindowBase::put_event(XEvent *event)
 	common_events.append(event);
 	event_lock->unlock();
 	event_condition->unlock();
+}
+
+void BC_WindowBase::dequeue_events(Window win)
+{
+	event_lock->lock("BC_WindowBase::dequeue_events");
+
+	int out = 0, total = common_events.size();
+	for( int in=0; in<total; ++in ) {
+		if( common_events[in]->xany.window == win ) continue;
+		common_events[out++] = common_events[in];
+	}
+	common_events.total = out;
+
+	event_lock->unlock();
 }
 
 #endif // SINGLE_THREAD

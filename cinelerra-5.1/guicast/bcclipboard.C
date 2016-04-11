@@ -90,7 +90,7 @@ int BC_Clipboard::stop_clipboard()
 #endif
 // Must use a different display handle to send events.
 	Display *display = BC_WindowBase::init_display(display_name);
-	XEvent event;
+	XEvent event;  memset(&event, 0, sizeof(event));
 	XClientMessageEvent *ptr = (XClientMessageEvent*)&event;
 
 	event.type = ClientMessage;
@@ -175,7 +175,7 @@ void BC_Clipboard::handle_selectionrequest(XSelectionRequestEvent *request)
 	else if (request->target == targets_atom)
 		success = handle_request_targets(request);
 
-	XEvent reply;
+	XEvent reply;  memset(&reply, 0, sizeof(reply));
 // 'None' tells the client that the request was denied
 	reply.xselection.property  = success ? request->property : None;
 	reply.xselection.type      = SelectionNotify;

@@ -305,6 +305,7 @@ int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 		mwindow->mainindexes->add_next_asset(0, nested_edl);
 	}
 	mwindow->mainindexes->start_build();
+	mwindow->update_plugin_guis(1);
 	return 0;
 }
 

@@ -74,8 +74,8 @@ IEC61883Output::~IEC61883Output()
 		done = 1;
 		start_lock->unlock();
 		Thread::cancel();
-		Thread::join();
 	}
+	Thread::join();
 
 	if(buffer)
 	{

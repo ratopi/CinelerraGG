@@ -534,7 +534,7 @@ private:
 
 
 // Popup button
-	BC_Pixmap *button_images[3];
+	BC_Pixmap *button_images[4];
 // Expander
 	BC_Pixmap *toggle_images[5];
 // Background for drawing on

@@ -1036,8 +1036,8 @@ void DetailAssetThread::stop()
 		dwindow->lock_window("DetailAssetThread::stop");
 		dwindow->set_done(1);
 		dwindow->unlock_window();
-		Thread::join();
 	}
+	Thread::join();
 }
 
 void DetailAssetWindow::create_objects()
