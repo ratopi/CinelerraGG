@@ -762,10 +762,8 @@ ScanThread::~ScanThread()
 
 void ScanThread::stop()
 {
-	if( !interrupt ) {
 // Cancel previous job
-		interrupt = 1;
-	}
+	interrupt = 1;
 	Thread::join();
 	if( progress ) {
 		progress->stop_progress();

@@ -501,8 +501,8 @@ int FileThread::stop_reading()
 	{
 		done = 1;
 		read_wait_lock->unlock();
+		Thread::join();
 	}
-	Thread::join();
 	return 0;
 }
 
