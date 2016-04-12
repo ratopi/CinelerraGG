@@ -58,6 +58,7 @@ public:
 // This is required in the top thread for Alsa to work
 	alsa_leaks() {
 		ArrayList<char*> *alsa_titles = new ArrayList<char*>;
+		alsa_titles->set_array_delete();
 		AudioALSA::list_devices(alsa_titles, 0, MODEPLAY);
 		alsa_titles->remove_all_objects();
 		delete alsa_titles;
@@ -73,9 +74,6 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 	snd_pcm_info_t *pcminfo;
 	char string[BCTEXTLEN];
 	snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;
-
-	devices->set_array_delete();
-
 
 	switch(mode)
 	{
@@ -95,7 +93,6 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 #define DEFAULT_DEVICE "default"
 	char *result = new char[strlen(DEFAULT_DEVICE) + 1];
 	devices->append(result);
-	devices->set_array_delete();     // since we are allocating by new[]
 	strcpy(result, DEFAULT_DEVICE);
 
 	while(snd_card_next(&card) >= 0)
@@ -219,7 +216,10 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 void AudioALSA::translate_name(char *output, char *input, int mode)
 {
 	ArrayList<char*> titles;
+	titles.set_array_delete();
+
 	ArrayList<char*> pcm_titles;
+	pcm_titles.set_array_delete();
 
 	list_devices(&titles, 0, mode);
 	list_devices(&pcm_titles, 1, mode);
@@ -382,7 +382,7 @@ int AudioALSA::open_input()
 	translate_name(pcm_name, device->in_config->alsa_in_device,MODERECORD);
 //printf("AudioALSA::open_input %s\n", pcm_name);
 
-	err = snd_pcm_open(&dsp_in, device->in_config->alsa_in_device, stream, open_mode);
+	err = snd_pcm_open(&dsp_in, pcm_name, stream, open_mode);
 
 	if(err < 0) {
 		dsp_in = 0;
@@ -427,7 +427,7 @@ int AudioALSA::open_output()
 		return 1;
 	}
 
-	set_params(dsp_out, MODEPLAY,
+	err = set_params(dsp_out, MODEPLAY,
 		device->get_ochannels(),
 		device->out_config->alsa_out_bits,
 		device->out_samplerate,
