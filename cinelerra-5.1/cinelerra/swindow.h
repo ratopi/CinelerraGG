@@ -215,6 +215,7 @@ public:
 	void load_defaults();
 	void save_defaults();
 	void load_script();
+	void load_script(FILE *fp);
 	int load_script_line(FILE *fp);
 	void set_script_pos(int64_t entry_no, int text_no=0);
 	int load_selection();

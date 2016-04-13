@@ -5,6 +5,7 @@
 #include "cstrdup.h"
 #include "edl.h"
 #include "filesystem.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainerror.h"
 #include "mainmenu.h"
@@ -197,19 +198,36 @@ void SWindowGUI::create_objects()
 
 void SWindowGUI::load()
 {
+	static const char script_text[] =
+	_("Adding Subtitles: quick \"How To\" (= or * indicates comment)\n"
+	"*2345678901234567890123456789012345678901234567890123456789\n"
+	"For regular DVD subtitles, put script in a text file. "
+	"Lines can be any length but they will be broken up "
+	"to fit according to some criteria below.\n"
+	"Running text used as script lines will be broken into multilple lines.\n"
+	"The target line length is 60 characters.\n"
+	"Punctuation may be flagged to create an early line break.\n"
+	"Single carriage return ends an individual script line.\n"
+	"Double carriage return indicates the end of an entry.\n"
+	"Whitespace at beginning or end of line is removed.\n"
+	"You can edit the active line in the Line Text box.\n"
+	"\n"
+	"== A new entry is here for illustration purposes.\n"
+	"*  Entry 2\n"
+	"This is the second entry.\n");
+
 	if( script_path[0] && !access(script_path,R_OK) ) {
 		load_script();
-		int text_no = script_text_no;
-		script_text_no = -1;
-		load_selection(script_entry_no, text_no);
 	}
 	else {
-		script.remove_all_objects();
 		script_path[0] = 0;
 		load_path->update(script_path);
-		script_entry_no = 0;
-		script_text_no = 0;
+		FILE *fp = fmemopen((void *)script_text, sizeof(script_text), "r");
+		load_script(fp);
 	}
+	int text_no = script_text_no;
+	script_text_no = -1;
+	load_selection(script_entry_no, text_no);
 }
 
 SWindowGUI::SWindowGUI(SWindow *swindow, int x, int y, int w, int h)
@@ -753,7 +771,11 @@ void SWindowGUI::load_script()
 		MainError::show_error(string);
 		return;
 	}
+	load_script(fp);
+}
 
+void SWindowGUI::load_script(FILE *fp)
+{
 	script.remove_all_objects();
 	script_line_no = 0;
 	script_text_lines = 0;

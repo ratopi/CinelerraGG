@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-09 07:34-0600\n"
+"POT-Creation-Date: 2016-04-13 14:06-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,7 +35,7 @@ msgid "cannot connect to X server.\n"
 msgstr ""
 
 #: guicast//bccapture.C:67 guicast//bcdisplay.C:59 guicast//bcdisplayinfo.C:242
-#: guicast//bcwindowbase.C:659
+#: guicast//bcwindowbase.C:665
 #, c-format
 msgid "'DISPLAY' environment variable not set.\n"
 msgstr ""
@@ -160,7 +160,7 @@ msgstr ""
 
 #: guicast//bcresources.C:1492
 #, c-format
-msgid "Conversion from %s to %s is not available"
+msgid "Conversion from %s to %s is not available\n"
 msgstr ""
 
 #: guicast//bctheme.C:470
@@ -178,7 +178,7 @@ msgstr ""
 msgid "%s: opengl initialization failed failed\n"
 msgstr ""
 
-#: guicast//bcwindowbase.C:204
+#: guicast//bcwindowbase.C:209
 #, c-format
 msgid ""
 "BC_WindowBase::~BC_WindowBase window deleted but opengl deletion is not\n"
@@ -292,7 +292,7 @@ msgstr ""
 msgid "Device Path:"
 msgstr ""
 
-#: cinelerra//adeviceprefs.C:512 cinelerra//channeledit.C:1038
+#: cinelerra//adeviceprefs.C:512 cinelerra//channeledit.C:1036
 #: cinelerra//vdeviceprefs.C:365
 msgid "Channel:"
 msgstr ""
@@ -517,7 +517,7 @@ msgid "View in new window"
 msgstr ""
 
 #: cinelerra//assetpopup.C:295 cinelerra//mainmenu.C:868
-#: cinelerra//swindow.C:517
+#: cinelerra//swindow.C:536
 msgid "Paste"
 msgstr ""
 
@@ -915,7 +915,7 @@ msgstr ""
 msgid ": Create BD"
 msgstr ""
 
-#: cinelerra//bdcreate.C:565 cinelerra//channeledit.C:1031
+#: cinelerra//bdcreate.C:565 cinelerra//channeledit.C:1029
 #: cinelerra//clipedit.C:188 cinelerra//dvdcreate.C:651
 msgid "Title:"
 msgstr ""
@@ -1122,40 +1122,40 @@ msgstr ""
 msgid "Set parameters for channel scanning."
 msgstr ""
 
-#: cinelerra//channeledit.C:665 cinelerra//channeledit.C:1044
+#: cinelerra//channeledit.C:665 cinelerra//channeledit.C:1042
 msgid "Frequency table:"
 msgstr ""
 
-#: cinelerra//channeledit.C:668 cinelerra//channeledit.C:1063
+#: cinelerra//channeledit.C:668 cinelerra//channeledit.C:1061
 msgid "Norm:"
 msgstr ""
 
-#: cinelerra//channeledit.C:671 cinelerra//channeledit.C:1076
+#: cinelerra//channeledit.C:671 cinelerra//channeledit.C:1074
 msgid "Input:"
 msgstr ""
 
-#: cinelerra//channeledit.C:1056
+#: cinelerra//channeledit.C:1054
 msgid "Fine:"
 msgstr ""
 
-#: cinelerra//channeledit.C:1524 plugins/brightness/brightnesswindow.C:54
+#: cinelerra//channeledit.C:1522 plugins/brightness/brightnesswindow.C:54
 msgid "Brightness:"
 msgstr ""
 
-#: cinelerra//channeledit.C:1533 plugins/brightness/brightnesswindow.C:61
+#: cinelerra//channeledit.C:1531 plugins/brightness/brightnesswindow.C:61
 msgid "Contrast:"
 msgstr ""
 
-#: cinelerra//channeledit.C:1541 plugins/chromakey/chromakey.C:128
+#: cinelerra//channeledit.C:1539 plugins/chromakey/chromakey.C:128
 #: plugins/chromakeyhsv/chromakey.C:179
 msgid "Color:"
 msgstr ""
 
-#: cinelerra//channeledit.C:1549 plugins/huesaturation/huesaturation.C:310
+#: cinelerra//channeledit.C:1547 plugins/huesaturation/huesaturation.C:310
 msgid "Hue:"
 msgstr ""
 
-#: cinelerra//channeledit.C:1557
+#: cinelerra//channeledit.C:1555
 msgid "Whiteness:"
 msgstr ""
 
@@ -1272,7 +1272,7 @@ msgid "Directory:"
 msgstr ""
 
 #: cinelerra//channelinfo.C:1334 cinelerra//recordgui.C:156
-#: cinelerra//swindow.C:144
+#: cinelerra//swindow.C:145
 msgid "Path:"
 msgstr ""
 
@@ -3835,7 +3835,7 @@ msgid "Copy"
 msgstr ""
 
 #: cinelerra//mainmenu.C:880 cinelerra//recordbatches.C:566
-#: cinelerra//swindow.C:533 plugins/compressor/compressor.C:1394
+#: cinelerra//swindow.C:552 plugins/compressor/compressor.C:1394
 #: plugins/piano/piano.C:912 plugins/synthesizer/synthesizer.C:1466
 msgid "Clear"
 msgstr ""
@@ -3944,7 +3944,7 @@ msgstr ""
 msgid "Shift-Y"
 msgstr ""
 
-#: cinelerra//mainmenu.C:1226 cinelerra//swindow.C:431
+#: cinelerra//mainmenu.C:1226 cinelerra//swindow.C:450
 msgid "paste subttl"
 msgstr ""
 
@@ -4285,19 +4285,19 @@ msgstr ""
 msgid "remove assets"
 msgstr ""
 
-#: cinelerra//mwindow.C:3245
+#: cinelerra//mwindow.C:3246
 #, c-format
 msgid "Using %s"
 msgstr ""
 
-#: cinelerra//mwindow.C:3382 cinelerra//mwindowedit.C:234
+#: cinelerra//mwindow.C:3383 cinelerra//mwindowedit.C:234
 #: cinelerra//mwindowedit.C:300 cinelerra//preferencesthread.C:232
 msgid ""
 "This project's dimensions are not multiples of 4 so\n"
 "it can't be rendered by OpenGL."
 msgstr ""
 
-#: cinelerra//mwindow.C:3501
+#: cinelerra//mwindow.C:3502
 msgid "select asset"
 msgstr ""
 
@@ -5286,7 +5286,7 @@ msgid "apply preset"
 msgstr ""
 
 #: cinelerra//presetsgui.C:336 cinelerra//savefile.C:70
-#: cinelerra//swindow.C:123
+#: cinelerra//swindow.C:124
 msgid "Save"
 msgstr ""
 
@@ -6025,50 +6025,68 @@ msgstr ""
 msgid "Subttl %d"
 msgstr ""
 
-#: cinelerra//swindow.C:105
+#: cinelerra//swindow.C:106
 msgid "Load"
 msgstr ""
 
-#: cinelerra//swindow.C:156
+#: cinelerra//swindow.C:157
 msgid "File Size:"
 msgstr ""
 
-#: cinelerra//swindow.C:159
+#: cinelerra//swindow.C:160
 msgid "Entries:"
 msgstr ""
 
-#: cinelerra//swindow.C:164
+#: cinelerra//swindow.C:165
 msgid "Lines:"
 msgstr ""
 
-#: cinelerra//swindow.C:165
+#: cinelerra//swindow.C:166
 msgid "Texts:"
 msgstr ""
 
-#: cinelerra//swindow.C:216
+#: cinelerra//swindow.C:202
+msgid ""
+"Adding Subtitles: quick \"How To\" (= or * indicates comment)\n"
+"*2345678901234567890123456789012345678901234567890123456789\n"
+"For regular DVD subtitles, put script in a text file. Lines can be any length but they will be broken up to fit according to some criteria below.\n"
+"Running text used as script lines will be broken into multilple lines.\n"
+"The target line length is 60 characters.\n"
+"Punctuation may be flagged to create an early line break.\n"
+"Single carriage return ends an individual script line.\n"
+"Double carriage return indicates the end of an entry.\n"
+"Whitespace at beginning or end of line is removed.\n"
+"You can edit the active line in the Line Text box.\n"
+"\n"
+"== A new entry is here for illustration purposes.\n"
+"*  Entry 2\n"
+"This is the second entry.\n"
+msgstr ""
+
+#: cinelerra//swindow.C:234
 msgid ": Subtitle"
 msgstr ""
 
-#: cinelerra//swindow.C:485
+#: cinelerra//swindow.C:504
 msgid "Prev"
 msgstr ""
 
-#: cinelerra//swindow.C:501
+#: cinelerra//swindow.C:520
 msgid "Next"
 msgstr ""
 
-#: cinelerra//swindow.C:751
+#: cinelerra//swindow.C:770
 #, c-format
 msgid ""
 "cannot open: \"%s\"\n"
 "%s"
 msgstr ""
 
-#: cinelerra//swindow.C:954
+#: cinelerra//swindow.C:977
 msgid "SubTitle..."
 msgstr ""
 
-#: cinelerra//swindow.C:954
+#: cinelerra//swindow.C:977
 msgid "Alt-y"
 msgstr ""
 
