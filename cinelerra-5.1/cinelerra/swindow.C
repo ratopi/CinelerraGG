@@ -198,7 +198,7 @@ void SWindowGUI::create_objects()
 
 void SWindowGUI::load()
 {
-	static const char script_text[] =
+	const char *script_text =
 	_("Adding Subtitles: quick \"How To\" (= or * indicates comment)\n"
 	"*2345678901234567890123456789012345678901234567890123456789\n"
 	"For regular DVD subtitles, put script in a text file. "
@@ -222,7 +222,7 @@ void SWindowGUI::load()
 	else {
 		script_path[0] = 0;
 		load_path->update(script_path);
-		FILE *fp = fmemopen((void *)script_text, sizeof(script_text), "r");
+		FILE *fp = fmemopen((void *)script_text, strlen(script_text), "r");
 		load_script(fp);
 	}
 	int text_no = script_text_no;
