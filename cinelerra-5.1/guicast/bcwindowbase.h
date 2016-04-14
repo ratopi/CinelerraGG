@@ -571,7 +571,7 @@ private:
 	int trigger_tooltip();
 	int untrigger_tooltip();
 	void draw_tooltip();
-	int arm_repeat(int64_t duration);
+	static XEvent *new_xevent();
 // delete all repeater opjects for a close
 	int unset_all_repeaters();
 
@@ -699,6 +699,7 @@ private:
 #ifndef SINGLE_THREAD
 // Array of repeaters for multiple repeating objects.
 	ArrayList<BC_Repeater*> repeaters;
+	int arm_repeat(int64_t duration);
 #endif
 // Text for tooltip if one exists
 	const char *tooltip_text;

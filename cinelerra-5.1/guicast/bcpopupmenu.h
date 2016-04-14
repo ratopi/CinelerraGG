@@ -59,6 +59,7 @@ public:
 	char* get_text();
 	int initialize();
 	int add_item(BC_MenuItem *item);
+	int del_item(BC_MenuItem *item);
 	int remove_item(BC_MenuItem *item);
 	int total_items();
 	BC_MenuItem* get_item(int i);

@@ -70,9 +70,9 @@ int BC_Menu::add_item(BC_MenuItem* menuitem)
 	return 0;
 }
 
-int BC_Menu::remove_item(BC_MenuItem *item)
+int BC_Menu::del_item(BC_MenuItem *item)
 {
-	menu_popup->remove_item(item, 0);
+	menu_popup->del_item(item);
 	return 0;
 }
 

@@ -1920,11 +1920,17 @@ int BC_WindowBase::unset_all_repeaters()
 // 	return top_level->next_repeat_id++;
 // }
 
+XEvent *BC_WindowBase::new_xevent()
+{
+	XEvent *event = new XEvent;
+	memset(event, 0, sizeof(*event));
+	return event;
+}
 
 #ifndef SINGLE_THREAD
 int BC_WindowBase::arm_repeat(int64_t duration)
 {
-	XEvent *event = new XEvent;
+	XEvent *event = new_xevent();
 	XClientMessageEvent *ptr = (XClientMessageEvent*)event;
 	ptr->type = ClientMessage;
 	ptr->message_type = RepeaterXAtom;
@@ -1944,7 +1950,7 @@ int BC_WindowBase::recieve_custom_xatoms(xatom_event *event)
 
 int BC_WindowBase::send_custom_xatom(xatom_event *event)
 {
-	XEvent *myevent = new XEvent;
+	XEvent *myevent = new_xevent();
 	XClientMessageEvent *ptr = (XClientMessageEvent*)myevent;
 	ptr->type = ClientMessage;
 	ptr->message_type = event->message_type;
@@ -3307,7 +3313,7 @@ void BC_WindowBase::set_done(int return_value)
 #else // SINGLE_THREAD
 		init_wait();
 		if( !event_thread ) return;
-		XEvent *event = new XEvent;
+		XEvent *event = new_xevent();
 		XClientMessageEvent *ptr = (XClientMessageEvent*)event;
 		event->type = ClientMessage;
 		ptr->message_type = SetDoneXAtom;

@@ -191,6 +191,7 @@ public:
 	EditPopup *edit_menu;
 	PluginPopup *plugin_menu;
 	KeyframePopup *keyframe_menu;
+	KeyframeHidePopup *keyframe_hide;
 	TransitionPopup *transition_menu;
 
 	MainClock *mainclock;

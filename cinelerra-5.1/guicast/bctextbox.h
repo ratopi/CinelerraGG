@@ -68,6 +68,7 @@ public:
 // Whenever the position of the text changes
 	virtual int motion_event() { return 0; };
 	void set_selection(int char1, int char2, int ibeam);
+	void wset_selection(int char1, int char2, int ibeam);
 	int update(const char *text);
 	int update(const wchar_t *wtext);
 	int update(int64_t value);
@@ -98,6 +99,7 @@ public:
 // Set top left of text view
 	void set_text_row(int row);
 	int get_text_row();
+
 	int reposition_window(int x, int y, int w = -1, int rows = -1);
 	int uses_text();
 #ifdef X_HAVE_UTF8_STRING
@@ -106,6 +108,8 @@ public:
 	static int calculate_h(BC_WindowBase *gui, int font, int has_border, int rows);
 	static int calculate_row_h(int rows, BC_WindowBase *parent_window, int has_border = 1, int font = MEDIUMFONT);
 	static int pixels_to_rows(BC_WindowBase *window, int font, int pixels);
+	static int wcpos(const char *text, const char *ep);
+
 	void set_precision(int precision);
 // Whether to draw every time there is a keypress or rely on user to
 // follow up every keypress with an update().
@@ -242,6 +246,7 @@ public:
 	void update(const char *text);
 	void update(const wchar_t *wtext);
 	void set_selection(int char1, int char2, int ibeam);
+	void wset_selection(int char1, int char2, int ibeam);
 	void reposition_window(int x, int y, int w, int rows);
 	int get_x();
 	int get_y();

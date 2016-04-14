@@ -358,8 +358,7 @@ const char* LensMode::to_text(int mode)
 // 	int total = total_items();
 // 	for(int i = 0; i < total; i++)
 // 	{
-// 		BC_MenuItem *item = get_item(0);
-// 		remove_item(item);
+// 		del_item();
 // 	}
 // 
 // // Create current items

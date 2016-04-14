@@ -119,6 +119,7 @@ MWindowGUI::MWindowGUI(MWindow *mwindow)
 	edit_menu = 0;
 	plugin_menu = 0;
 	keyframe_menu = 0;
+	keyframe_hide = 0;
  	transition_menu = 0;
 	remote_control = 0;
 	cwindow_remote_handler = 0;
@@ -344,6 +345,8 @@ void MWindowGUI::create_objects()
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(keyframe_menu = new KeyframePopup(mwindow, this));
 	keyframe_menu->create_objects();
+	add_subwindow(keyframe_hide = new KeyframeHidePopup(mwindow, this));
+	keyframe_hide->create_objects();
 
 
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);

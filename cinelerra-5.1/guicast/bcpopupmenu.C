@@ -208,7 +208,13 @@ int BC_PopupMenu::add_item(BC_MenuItem *item)
 
 int BC_PopupMenu::remove_item(BC_MenuItem *item)
 {
-	menu_popup->remove_item(item, 0);
+	menu_popup->remove_item(item);
+	return 0;
+}
+
+int BC_PopupMenu::del_item(BC_MenuItem *item)
+{
+	menu_popup->del_item(item);
 	return 0;
 }
 

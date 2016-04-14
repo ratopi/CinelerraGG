@@ -344,7 +344,7 @@ int BC_Display::unset_all_repeaters(BC_WindowBase *window)
 
 void BC_Display::arm_repeat(int64_t duration)
 {
-	XEvent *event = new XEvent;
+	XEvent *event = BC_WindowBase::new_xevent();
 	XClientMessageEvent *ptr = (XClientMessageEvent*)event;
 	event->xany.window = 0;
 	ptr->type = ClientMessage;
@@ -358,7 +358,7 @@ void BC_Display::arm_repeat(int64_t duration)
 
 void BC_Display::arm_completion(BC_WindowBase *window)
 {
-	XEvent *event = new XEvent;
+	XEvent *event = BC_WindowBase::new_xevent();
 	XClientMessageEvent *ptr = (XClientMessageEvent*)event;
 	event->xany.window = window->win;
 	event->type = ClientMessage;

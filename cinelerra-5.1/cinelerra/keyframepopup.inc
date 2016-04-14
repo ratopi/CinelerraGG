@@ -22,14 +22,13 @@
 #ifndef KEYFRAMEPOPUP_INC
 #define KEYFRAMEPOPUP_INC
 
-
-
-
-
 class KeyframePopup;
-
-
-
-
-
+class KeyframePopupDelete;
+class KeyframePopupShow;
+class KeyframePopupCopy;
+class KeyframePopupCurveMode;
+class KeyframePopupEdit;
+class KeyframePopupHide;
+class KeyframeHidePopup;
+ 
 #endif

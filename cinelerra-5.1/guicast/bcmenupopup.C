@@ -112,7 +112,12 @@ int BC_MenuPopup::add_item(BC_MenuItem *item)
 	return 0;
 }
 
-int BC_MenuPopup::remove_item(BC_MenuItem *item, int recursive)
+int BC_MenuPopup::remove_item(BC_MenuItem *item)
+{
+	menu_items.remove(item);
+}
+
+int BC_MenuPopup::del_item(BC_MenuItem *item)
 {
 	if(!item && menu_items.size() > 0)
 	{
@@ -121,9 +126,9 @@ int BC_MenuPopup::remove_item(BC_MenuItem *item, int recursive)
 
 	if(item)
 	{
-		menu_items.remove(item);
+		remove_item(item);
 		item->menu_popup = 0;
-		if(!recursive) delete item;
+		delete item;
 	}
 	return 0;
 }

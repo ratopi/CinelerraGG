@@ -475,12 +475,35 @@ void BC_TextBox::set_suggestions(ArrayList<char*> *suggestions, int column)
 	}
 }
 
-void BC_TextBox::set_selection(int char1, int char2, int ibeam)
+void BC_TextBox::wset_selection(int char1, int char2, int ibeam)
 {
 	highlight_letter1 = char1;
 	highlight_letter2 = char2;
 	ibeam_letter = ibeam;
 	draw(1);
+}
+
+// count utf8 chars in text which occur before cp
+int BC_TextBox::wcpos(const char *text, const char *cp)
+{
+	int len = 0;
+	const unsigned char *bp = (const unsigned char *)text;
+	const unsigned char *ep = (const unsigned char *)cp;
+	while( bp < ep && *bp != 0 ) {
+		++len;
+		int ch = *bp++;
+		if( ch < 0x80 ) continue;
+		int i = ch - 0x0c0;
+		int n = i<0? 0 : i<32? 1 : i<48? 2 : i<56? 3 : i<60? 4 : 5;
+		for( i=n; bp < ep && --i>=0 && (*bp&0xc0) == 0x80; ++bp );
+	}
+	return len;
+}
+
+void BC_TextBox::set_selection(int char1, int char2, int ibeam)
+{
+	const char *cp = get_text();
+	wset_selection(wcpos(cp, cp+char1), wcpos(cp, cp+char2), wcpos(cp, cp+ibeam));
 }
 
 int BC_TextBox::update(const char *text)
@@ -2256,12 +2279,6 @@ int BC_TextBoxSuggestions::handle_event()
 }
 
 
-
-
-
-
-
-
 BC_ScrollTextBox::BC_ScrollTextBox(BC_WindowBase *parent_window,
 	int x, int y, int w, int rows,
 	const char *default_text, int default_size)
@@ -2410,6 +2427,11 @@ void BC_ScrollTextBox::reposition_window(int x, int y, int w, int rows)
 void BC_ScrollTextBox::set_selection(int char1, int char2, int ibeam)
 {
 	this->text->set_selection(char1, char2, ibeam);
+}
+
+void BC_ScrollTextBox::wset_selection(int char1, int char2, int ibeam)
+{
+	this->text->wset_selection(char1, char2, ibeam);
 }
 
 

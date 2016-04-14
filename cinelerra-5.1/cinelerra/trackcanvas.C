@@ -2031,6 +2031,12 @@ int TrackCanvas::do_keyframes(int cursor_x,
 							gui->keyframe_menu->activate_menu();
 							rerender = 1; // the position changes
 						}
+						else if( autos )
+						{
+							gui->keyframe_hide->update(autos);
+							gui->keyframe_hide->activate_menu();
+							rerender = 1; // the position changes
+						}
 						if(buttonpress == 1 && ctrl_down() &&
 						   AUTOMATION_TYPE_FLOAT == autos->get_type())
 							rerender = 1; // special case: curve mode changed
@@ -2506,7 +2512,7 @@ void TrackCanvas::draw_floatline(int center_pixel,
 
 // Not using slope intercept
 	x1 = MAX(0, x1);
-	int prev_y = y1;
+	int prev_y = y1 + center_pixel;
 
 
 // Call by reference fails for some reason here
@@ -2529,6 +2535,7 @@ void TrackCanvas::draw_floatline(int center_pixel,
 // (int)(center_pixel - yscale / 2),
 // (int)(center_pixel + yscale / 2 - 1));
 
+//printf("draw_line(%d,%d,  %d,%d)\n", x - 1, prev_y  , x, y);
  			draw_line(x - 1, prev_y  , x, y   );
 		}
 		prev_y = y;
@@ -2853,10 +2860,10 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 		 autos->first ? autos->first : autos->default_auto;
 
 	double ax = 0, ay = 0, ax2 = 0, ay2 = 0;
-	if( first_auto )
+	if( first_auto ) {
 		calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
 			first_auto, unit_start, zoom_units, yscale, autogrouptype);
-
+	}
 	if( current )
 		current = NEXT;
 	else {

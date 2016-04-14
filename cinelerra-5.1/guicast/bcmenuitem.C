@@ -68,8 +68,8 @@ BC_MenuItem::~BC_MenuItem()
 	hotkey_text = 0;
 	if(submenu) delete submenu;
 	submenu = 0;
-// deletes this
-	if(menu_popup) menu_popup->remove_item(this, 1);
+	if(menu_popup)
+		menu_popup->remove_item(this);
 }
 
 void BC_MenuItem::reset()

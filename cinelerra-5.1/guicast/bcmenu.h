@@ -50,7 +50,7 @@ public:
 // Called by user to add items
 	int add_item(BC_MenuItem* menuitem);
 // Remove the item ptr and the object
-	int remove_item(BC_MenuItem* item = 0);
+	int del_item(BC_MenuItem* item=0);
 	int total_menuitems();
 	int set_text(char *text);
 

@@ -28,16 +28,11 @@
 #include "plugin.inc"
 #include "plugindialog.inc"
 #include "keyframe.inc"
+#include "keyframepopup.inc"
 #include "automation.h" 
 #include "floatauto.h"
 
 
-class KeyframePopupDelete;
-class KeyframePopupShow;
-class KeyframePopupCopy;
-class KeyframePopupCurveMode;
-class KeyframePopupEdit;
- 
  
 class KeyframePopup : public BC_PopupMenu
 {
@@ -133,6 +128,30 @@ public:
 
 	MWindow *mwindow;
 	KeyframePopup *popup;
+};
+
+class KeyframeHidePopup : public BC_PopupMenu
+{
+public:
+        KeyframeHidePopup(MWindow *mwindow, MWindowGUI *gui);
+        ~KeyframeHidePopup();
+
+        void create_objects();
+	int update(Autos *autos);
+
+	MWindow *mwindow;
+	MWindowGUI *gui;
+	Autos *keyframe_autos;
+};
+
+class KeyframePopupHide : public BC_MenuItem
+{
+public:
+	KeyframePopupHide(MWindow *mwindow, KeyframeHidePopup *popup);
+	int handle_event();
+
+	MWindow *mwindow;
+	KeyframeHidePopup *popup;
 };
 
 #endif
