@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
       int64_t elapsed_seconds = new_time.tv_sec - start_time.tv_sec;
       int64_t total_seconds = elapsed_seconds * total_bytes / bytes_processed;
       int64_t eta = total_seconds - elapsed_seconds;
-      fprintf(stderr, _LD"%% ETA: "_LD"m"_LD"s        \r", 
+      fprintf(stderr,"%jd%% ETA: %jdm%jds        \r", 
         bytes_processed * 100 / total_bytes,
         eta / 60, eta % 60);
       fflush(stdout);
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
   gettimeofday(&new_time, 0);
   int64_t elapsed = new_time.tv_sec - start_time.tv_sec;
   if(verbose) {
-    fprintf(stderr, _LD"m"_LD"s elapsed           \n", 
+    fprintf(stderr,"%jdm%jds elapsed           \n", 
       elapsed / 60, elapsed % 60);
   }
 

@@ -44,10 +44,10 @@ title_t(ztitle_t &title)
 int ztitle_t::
 dump_title()
 {
-  printf("path %s "_LX"-"_LX" cell_table_size %d\n", 
+  printf("path %s 0x%jx-0x%jx cell_table_size %d\n", 
     fs->path, start_byte, end_byte, cell_table_size);
   for( int i=0; i<cell_table_size; ++i ) {
-    printf(_LX"-"_LX" "_LX"-"_LX"\n", 
+    printf("0x%jx-0x%jx 0x%jx-0x%jx\n", 
       cell_table[i].title_start, cell_table[i].title_end, 
       cell_table[i].program_start, cell_table[i].program_end);
   }
@@ -91,7 +91,7 @@ print_cells(FILE *output)
   if( cell_table ) {
     for( int i=0; i<cell_table_size; ++i ) {
       cell_t *cell = &cell_table[i];
-      fprintf(output, "REGION: "_LX"-"_LX" "_LX"-"_LX"\n",
+      fprintf(output, "REGION: 0x%jx-0x%jx 0x%jx-0x%jx\n",
         cell->program_start, cell->program_end,
         cell->title_start, cell->title_end);
     }

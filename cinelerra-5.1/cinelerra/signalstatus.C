@@ -1,3 +1,5 @@
+#ifdef HAVE_DVB
+
 #include "bctitle.h"
 #include "colors.h"
 #include "devicedvbinput.h"
@@ -126,3 +128,4 @@ void SignalStatus::update()
 	flash();
 }
 
+#endif

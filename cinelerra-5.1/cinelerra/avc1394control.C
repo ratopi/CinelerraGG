@@ -24,6 +24,7 @@
 // adapted to libavc1394 by Dan Dennedy <dan@dennedy.org>. Released under
 // the GPL.)
 
+#ifdef HAVE_FIREWIRE
 #include "avc1394control.h"
 #include "mutex.h"
 #include "transportque.inc"
@@ -198,3 +199,4 @@ void AVC1394Control::seek(const char *time)
 	avc1394_vcr_seek_timecode(handle, device, const_cast<char*>(time));
 	device_lock->unlock();
 }
+#endif

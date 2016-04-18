@@ -19,6 +19,8 @@
  * 
  */
 
+#ifdef HAVE_VIDEO4LINUX2
+
 #include "asset.h"
 #include "condition.h"
 #include "file.inc"
@@ -62,3 +64,4 @@ int VDeviceV4L2MPEG::open_input()
 	return 0;
 }
 
+#endif

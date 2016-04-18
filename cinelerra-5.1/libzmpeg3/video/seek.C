@@ -35,7 +35,7 @@ drop_frames(long frames, int cache_it)
         cache_frame();
     }
     else {
-//zmsgs("framenum %d frame_offset "_LX" last_packet_start "_LX" repeat %d/%d",
+//zmsgs("framenum %d frame_offset %jx last_packet_start %jx repeat %d/%d",
 //  framenum,track->frame_offsets[framenum+1],vstream->demuxer->last_packet_start,
 //  repeat_fields, current_field);
       result = read_frame_backend(frame_number - framenum);
@@ -153,13 +153,13 @@ seek()
       if( byte > 0 ) {
   //zmsg("1\n");
         demux->start_reverse();
-  //zmsgs("1 "_LD"\n", demux->tell_byte());
+  //zmsgs("1 %jd\n", demux->tell_byte());
         for( int i=0; i<2; ++i ) {     /* Rewind 2 I-frames */
           if( has_gops ?
             demux->prev_code(GOP_START_CODE) :
             demux->prev_code(SEQUENCE_START_CODE) ) break;
         }
-  //zmsgs("2 "_LD"\n", demux->tell_byte());
+  //zmsgs("2 %jd\n", demux->tell_byte());
         demux->start_forward();
         if( track->frame_offsets ) {
           int64_t offset = demux->tell_byte();
@@ -182,7 +182,7 @@ seek()
       }
       vstream->reset();
       repeat_data = ref_frames = 0;
-  //zmsgs("4 "_LD"\n", demux->tell_byte());
+  //zmsgs("4 %jd\n", demux->tell_byte());
       while( !result && !demux->eof() && demux->tell_byte() < byte ) {
         result = read_frame_backend(0);
       }
@@ -213,7 +213,7 @@ seek()
           byte = track->frame_offsets[idx];
           /* maybe lots of frames in one block, move is to earliest frame */
           while( idx > 0 && track->frame_offsets[idx-1] == byte ) --idx;
-          if( debug ) zmsgs("%ld idx=%d, byte="_LD"\n", frame_number,idx,byte);
+          if( debug ) zmsgs("%ld idx=%d, byte=%jd\n", frame_number,idx,byte);
           framenum = idx-1;
           vstream->seek_byte(byte);
           track->reset_pts();

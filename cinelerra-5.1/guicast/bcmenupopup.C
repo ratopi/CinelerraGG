@@ -115,6 +115,7 @@ int BC_MenuPopup::add_item(BC_MenuItem *item)
 int BC_MenuPopup::remove_item(BC_MenuItem *item)
 {
 	menu_items.remove(item);
+	return 0;
 }
 
 int BC_MenuPopup::del_item(BC_MenuItem *item)

@@ -19,6 +19,7 @@
  *
  */
 
+#ifdef HAVE_FIREWIRE
 #include "audio1394.h"
 #include "playbackconfig.h"
 #include "device1394input.h"
@@ -230,3 +231,5 @@ int Audio1394::interrupt_playback()
 		output_iec->interrupt();
 	return 0;
 }
+
+#endif

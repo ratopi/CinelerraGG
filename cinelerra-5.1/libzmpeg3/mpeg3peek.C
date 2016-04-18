@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  sscanf(argv[2], _LX, &frame_number);
+  sscanf(argv[2], "%jx", &frame_number);
   if(frame_number < 0) frame_number = 0;
 
   file = mpeg3_open(argv[1], &error);
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
       int64_t chunk_number = frame_number / zmpeg3_t::AUDIO_CHUNKSIZE;
       if(chunk_number >= file->atrack[0]->total_sample_offsets)
         chunk_number = file->atrack[0]->total_sample_offsets - 1;
-      printf("sample="_LX" offset=0x"_LX"\n",
+      printf("sample=%jx offset=0x%jx\n",
         frame_number,
         file->atrack[0]->sample_offsets[chunk_number]);
       exit(0);
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 
     if(frame_number >= file->vtrack[0]->total_frame_offsets)
       frame_number = file->vtrack[0]->total_frame_offsets - 1;
-    printf("frame="_LX" offset=0x"_LX"\n", 
+    printf("frame=%jx offset=0x%jx\n", 
       frame_number,
       file->vtrack[0]->frame_offsets[frame_number]);
   }

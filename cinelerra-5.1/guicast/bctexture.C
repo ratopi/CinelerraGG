@@ -231,6 +231,7 @@ void write_ppm(uint8_t *tp, int w, int h, const char *fmt, ...);
 
 void BC_Texture::write_tex(const char *fn)
 {
+#ifdef HAVE_GL
 	int prev_id = -1;
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &prev_id);
 	glActiveTexture(this->texture_id);
@@ -239,6 +240,7 @@ void BC_Texture::write_tex(const char *fn)
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
 	write_ppm(img, w, h, "%s", fn);
 	glActiveTexture(prev_id);
+#endif
 }
 
 

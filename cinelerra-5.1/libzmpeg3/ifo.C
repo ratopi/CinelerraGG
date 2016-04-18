@@ -361,7 +361,7 @@ get_playinfo(zmpeg3_t *zsrc, icell_table_t *icell_addrs)
 zmsgs(" cell: %d\n"
   "   blk_ty %u, seemless %u, interlv %u, discon %u, angle %u @secs %f\n"
   "   mode %u, restrict %u, still %u, cmd_nr %u, ptime %02u:%02u:%02u.%02u %5.5s\n"
-  "   1st sect "_LX", end sect "_LX", start sect "_LX", last sect "_LX"\n",
+  "   1st sect %jx, end sect %jx, start sect %jx, last sect %jx\n",
   pcell_no+1,
   cell_block_type(), cell_seamless_play(), cell_interleaved(),
   cell_stc_discontinuity(), cell_seamless_angle(), cur_time,
@@ -392,7 +392,7 @@ zmsgs(" cell: %d\n"
     use_position(pcell_no);
     pcell->vob_id = vob_id_nr();
     pcell->cell_id = cell_id_nr();
-//zmsgs(" %3d vob/cell %d/%d  start: "_LX" end: "_LX" discon %d inlv/ang %d/%d\n",
+//zmsgs(" %3d vob/cell %d/%d  start: %jx end: %jx discon %d inlv/ang %d/%d\n",
 //  pcell_no+1, pcell->vob_id, pcell->cell_id,
 //  pcell->start_byte, pcell->end_byte, pcell->discon, pcell->inlv,pcell->angle);
   }
@@ -543,7 +543,7 @@ icell_addresses(zicell_table_t *icell_addrs)
 zmsgs("sorted labeled icells %d\n",total_icells);
   for( i=0; i<total_icells; ++i ) {
     icell_t *cell = icells[i];
-    zmsgs("cell %d, vob_id %u, cell_id %u, start "_LX", last "_LX" inlv %04x\n",
+    zmsgs("cell %d, vob_id %u, cell_id %u, start %jx, last %jx inlv %04x\n",
       i, cell->vob_id, cell->cell_id, cell->start_byte, cell->end_byte, cell->inlv);
   }
 #endif
@@ -619,7 +619,7 @@ icell_map(zmpeg3_t *zsrc, icell_table_t *icell_addrs)
         for( title_no=0; title_no<demuxer->total_titles; ++title_no )
           if( demuxer->titles[title_no]->end_byte > start_byte ) break;
         if( title_no >= demuxer->total_titles ) {
-          zerrs("cell map past titles "_LX"\n", start_byte);
+          zerrs("cell map past titles %jx\n", start_byte);
           break;
         }
         ztitle_t *title = demuxer->titles[title_no];

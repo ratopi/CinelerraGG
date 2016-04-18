@@ -22,6 +22,8 @@
 #ifndef DEVICEDVBINPUT_H
 #define DEVICEDVBINPUT_H
 
+#ifdef HAVE_DVB
+
 #include "devicedvbinput.inc"
 #include "devicempeginput.h"
 #include "libzmpeg3.h"
@@ -121,4 +123,5 @@ public:
 	int operator [](int i) { return bfr[i]; }
 };
 
+#endif
 #endif

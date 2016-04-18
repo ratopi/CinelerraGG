@@ -1,5 +1,6 @@
 #ifndef _SIGNALSTATUS_H_
 #define _SIGNALSTATUS_H_
+#ifdef HAVE_DVB
 
 #include "bcwindowbase.h"
 #include "bcsubwindow.h"
@@ -48,4 +49,5 @@ public:
 	~SignalStatus();
 };
 
+#endif
 #endif

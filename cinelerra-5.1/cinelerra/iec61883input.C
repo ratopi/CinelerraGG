@@ -19,6 +19,8 @@
  * 
  */
 
+#ifdef HAVE_FIREWIRE
+
 #include "condition.h"
 #include "iec61883input.h"
 #include "language.h"
@@ -346,7 +348,4 @@ int IEC61883Input::read_audio(char *data, int samples)
 	return result;
 }
 
-
-
-
-
+#endif

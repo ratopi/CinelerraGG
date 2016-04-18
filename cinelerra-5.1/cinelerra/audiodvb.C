@@ -19,6 +19,7 @@
  * 
  */
 
+#ifdef HAVE_DVB
 #include "audiodvb.h"
 #include "condition.h"
 #include "devicedvbinput.h"
@@ -54,3 +55,4 @@ int AudioDVB::open_input()
 	return 0;
 }
 
+#endif

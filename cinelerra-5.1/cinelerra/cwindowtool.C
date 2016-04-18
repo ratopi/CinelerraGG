@@ -19,6 +19,9 @@
  *
  */
 
+#include <stdio.h>
+#include <stdint.h>
+
 #include "automation.h"
 #include "cicolors.h"
 #include "clip.h"

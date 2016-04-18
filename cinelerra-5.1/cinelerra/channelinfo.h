@@ -1,6 +1,8 @@
 #ifndef CHANNELINFO_H
 #define CHANNELINFO_H
 
+#ifdef HAVE_DVB
+
 #include "channel.inc"
 #include "channeldb.h"
 #include "channelinfo.inc"
@@ -646,5 +648,5 @@ public:
 };
 
 
-
+#endif
 #endif

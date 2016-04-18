@@ -20,6 +20,7 @@
 
 
 
+#include "bctheme.h"
 #include "cicolors.h"
 #include "language.h"
 #include "mainsession.h"
@@ -27,6 +28,7 @@
 #include "preferences.h"
 #include "recordmonitor.h"
 #include "recordscopes.h"
+#include "theme.h"
 
 RecordScopeThread::RecordScopeThread(MWindow *mwindow, RecordMonitor *record_monitor)
  : BC_DialogThread()

@@ -22,12 +22,13 @@
 #ifndef VDEVICEMPEG_H
 #define VDEVICEMPEG_H
 
-#ifdef HAVE_VIDEO4LINUX2
 #include "condition.inc"
 #include "mutex.inc"
 #include "vdevicebase.h"
-#include <linux/types.h>
+//#include <linux/types.h>
+#ifdef HAVE_VIDEO4LINUX2
 #include <linux/videodev2.h>
+#endif
 #include "devicempeginput.inc"
 #include "videodevice.inc"
 #include "vdevicempeg.inc"
@@ -71,7 +72,6 @@ public:
 	DeviceMPEGInput *mpeg_input;
 };
 
-#endif
 #endif
 
 

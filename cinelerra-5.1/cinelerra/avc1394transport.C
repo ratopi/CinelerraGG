@@ -19,6 +19,7 @@
  * 
  */
 
+#ifdef HAVE_FIREWIRE
 #include "avc1394transport.h"
 #include "bcsignals.h"
 #include "keys.h"
@@ -381,3 +382,4 @@ int AVC1394GUISeekEnd::keypress_event()
      return 0;
 }
 
+#endif

@@ -22,6 +22,7 @@
 #ifndef AUDIOV4L2MPEG_H
 #define AUDIOV4L2MPEG_H
 
+#ifdef HAVE_VIDEO4LINUX2
 
 #include "audiodevice.h"
 #include "audiompeg.h"
@@ -40,4 +41,5 @@ public:
 };
 
 
+#endif
 #endif

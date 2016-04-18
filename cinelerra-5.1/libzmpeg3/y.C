@@ -594,7 +594,7 @@ int main(int ac, char **av)
   }
 #endif
   mpeg3_seek_byte(zsrc, pos);
-  mpeg3_show_subtitle(zsrc, 0);
+  mpeg3_show_subtitle(zsrc, 0, 0);
   signal(SIGINT,sigint);
 
 #ifdef AUDIO

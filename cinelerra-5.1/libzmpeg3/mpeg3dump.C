@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
       if( print_offsets ) {
         fprintf(stderr, "total_sample_offsets=%d\n", file->atrack[i]->total_sample_offsets);
         for( j=0; j < file->atrack[i]->total_sample_offsets; ++j ) {
-          fprintf(stderr, _LX " ", file->atrack[i]->sample_offsets[j]);
+          fprintf(stderr, "%jx ", file->atrack[i]->sample_offsets[j]);
           if( j > 0 && !(j % 8)) fprintf(stderr, "\n" );
         }
         fprintf(stderr, "\n");
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
       if( print_offsets ) {
         fprintf(stderr, "total_frame_offsets=%d\n", file->vtrack[i]->total_frame_offsets);
         for( j=0; j < file->vtrack[i]->total_frame_offsets; ++j ) {
-          fprintf(stderr, "%d=" _LX " ", j, file->vtrack[i]->frame_offsets[j]);
+          fprintf(stderr, "%d=%jx ", j, file->vtrack[i]->frame_offsets[j]);
           if( j > 0 && !(j % 8)) fprintf(stderr, "\n" );
         }
         fprintf(stderr, "\n");
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
         strack->id, strack->total_offsets);
       if( print_offsets ) {
         for( j=0; j < strack->total_offsets; ++j ) {
-          printf(_LX" ", strack->offsets[j]);
+          printf("%jx ", strack->offsets[j]);
         }
         printf("\n");
       }
@@ -136,14 +136,14 @@ int main(int argc, char *argv[])
 // Titles
     fprintf(stderr, "total_titles=%d\n", file->demuxer->total_titles);
     for( i=0; i < file->demuxer->total_titles; ++i ) {
-      fprintf(stderr, "  Title path=%s total_bytes="_LX" cell_table_size=%d\n", 
+      fprintf(stderr, "  Title path=%s total_bytes=%jx cell_table_size=%d\n", 
         file->demuxer->titles[i]->fs->path,
         file->demuxer->titles[i]->total_bytes, 
         file->demuxer->titles[i]->cell_table_size);
       
       if( print_offsets ) {
         for( j=0; j < file->demuxer->titles[i]->cell_table_size; ++j )
-          fprintf(stderr, "    Cell: "_LX"-"_LX" "_LX"-"_LX"\n", 
+          fprintf(stderr, "    Cell: %jx-%jx %jx-%jx\n", 
             file->demuxer->titles[i]->cell_table[j].program_start, 
             file->demuxer->titles[i]->cell_table[j].program_end,
             file->demuxer->titles[i]->cell_table[j].title_start, 

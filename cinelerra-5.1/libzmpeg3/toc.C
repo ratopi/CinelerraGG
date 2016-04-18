@@ -61,7 +61,7 @@ read_toc(int *atracks_return, int *vtracks_return, const char *title_path)
   while( !fs->eof() ) {
   /* Get section type */
     int section_type = fs->read_uint32();
-//zmsgs("section_type=%d position="_LX"\n", section_type, fs->tell());
+//zmsgs("section_type=%d position=%jx\n", section_type, fs->tell());
     switch( section_type ) {
       case toc_FILE_TYPE_PROGRAM:
         file_type = FT_PROGRAM_STREAM;
@@ -86,10 +86,10 @@ read_toc(int *atracks_return, int *vtracks_return, const char *title_path)
           concat_path(string2, fs->path, string);
         source_date = fs->read_uint64();
         int64_t current_date = calculate_source_date(string2);
-//zmsgs("zsrc=%s source_date="_LD" current_date="_LD"\n", 
+//zmsgs("zsrc=%s source_date=%jd current_date=%jd\n", 
 // string2, source_date, current_date);
         if( current_date != source_date ) {
-          zerrs("date mismatch "_LX" (should be "_LX")\n",
+          zerrs("date mismatch %jx (should be %jx)\n",
              current_date, source_date);
           return ERR_TOC_DATE_MISMATCH;
         }
@@ -158,7 +158,7 @@ read_toc(int *atracks_return, int *vtracks_return, const char *title_path)
           video_eof[i] = fs->read_uint64();
           total_frame_offsets[i] = fs->read_uint32();
           frame_offsets[i] = new int64_t[total_frame_offsets[i]];
-          if( debug ) zmsgs("62 %d "_LX" "_LX"\n",
+          if( debug ) zmsgs("62 %d %jx %jx\n",
             total_frame_offsets[i], fs->tell(), fs->ztotal_bytes());
           for( j=0; j < total_frame_offsets[i]; ++j ) {
             frame_offsets[i][j] = fs->read_uint64();
@@ -193,7 +193,7 @@ read_toc(int *atracks_return, int *vtracks_return, const char *title_path)
         char string[STRLEN];
         fs->read_data((uint8_t*)string, STRLEN);
         /* Detect Blu-Ray */
-        if( debug ) printf("11 position="_LX"\n", fs->tell());
+        if( debug ) printf("11 position=%jx\n", fs->tell());
         char *ext = strrchr(string, '.');
         if( ext ) {
           if( !strncasecmp(ext, ".m2ts", 5) ||
@@ -267,7 +267,7 @@ read_toc(int *atracks_return, int *vtracks_return, const char *title_path)
           cell->cell_time = cell_time.d;
           cell->cell_no = fs->read_uint32();
           cell->discontinuity = fs->read_uint32();
-//zmsgs("50 %"_LX"-"_LX" "_LX"-_LX" %d %d\n", 
+//zmsgs("50 %jx-%jx %jx-%jx %d %d\n", 
 // cell->title_start, cell->title_end, cell->program_start,
 // cell->program_end, cell->cell_no, cell->discontinuity);
         }
@@ -879,7 +879,7 @@ handle_cell(int cell_no)
   if( pts_padding <= 0 ) return;
 
   int discon = cell ? cell->discontinuity : 0;
-//zmsgs("cell %d cell_time=%f pos="_LX" discon %d\n",
+//zmsgs("cell %d cell_time=%f pos=%jx discon %d\n",
 //  cell_no, cell_time, !cell? -1 : cell->program_start, discon);
   if( !discon ) return;
 
@@ -1014,7 +1014,7 @@ handle_nudging()
   // nudge audio to align timestamps
   while( elems ) {
     ep = elems;  elems = elems->next;
-//zmsgs("v/atrk %d/%d, dist " _LD "\n", ep->vtrk, ep->atrk, ep->pts_dist);
+//zmsgs("v/atrk %d/%d, dist %jd\n", ep->vtrk, ep->atrk, ep->pts_dist);
 //zmsgs("   v/apts %f/%f, nudge %f\n", ep->vpts, ep->apts, ep->pts_nudge);
 //zmsgs("   v/aorg %f/%f, nudge %f\n",
 // vtrack[ep->vtrk]->pts_origin, atrack[ep->atrk]->pts_origin,
@@ -1119,7 +1119,7 @@ do_toc(int64_t *bytes_processed)
   }
   /* Make user value independant of data type in packet */
   *bytes_processed = demuxer->tell_byte();
-//zmsgs("1000 "_LX"\n", *bytes_processed);
+//zmsgs("1000 %jx\n", *bytes_processed);
   return 0;
 }
 
@@ -1430,7 +1430,7 @@ show_toc(int flags)
         fs->read_data((uint8_t*)&string[0],STRLEN);
         concat_path(string2, fs->path, string);
         int64_t sdate = fs->read_uint64();
-        zmsgs("zsrc=%s source_date="_LD"\n", string2, sdate);
+        zmsgs("zsrc=%s source_date=%jd\n", string2, sdate);
         break; }
 
       case toc_STREAM_AUDIO: {
@@ -1460,12 +1460,12 @@ show_toc(int flags)
           int nudge = fs->read_uint32();
           int total_sample_offsets = fs->read_uint32();
           int64_t total_samples = fs->read_uint64();
-          zmsgs(" audio %d, eof=0x" _LXv(012) " ch=%d, offsets=%d samples=" _LD " nudge=%d\n",
+          zmsgs(" audio %d, eof=0x%012jx ch=%d, offsets=%d samples=%jd nudge=%d\n",
             i, eof, channels, total_sample_offsets, total_samples, nudge);
           if( flags & show_toc_SAMPLE_OFFSETS ) {
             for( j=0; j < total_sample_offsets; ) {
               if( !(j&7) ) zmsgs(" %8d: ",j*AUDIO_CHUNKSIZE);
-              printf(" " _LXv(08), fs->read_uint64());
+              printf(" %08jx", fs->read_uint64());
               if( !(++j&7) ) printf("\n");
             }
             if( (j&7) ) printf("\n");
@@ -1507,7 +1507,7 @@ show_toc(int flags)
               frame_offsets[k] = fs->read_uint64();
             }
             int total_keyframes = fs->read_uint32();
-            zmsgs(" video %d, eof=0x" _LXv(012) " offsets=%d keyframes=%d\n",
+            zmsgs(" video %d, eof=0x%012jx offsets=%d keyframes=%d\n",
               i, eof, total_frame_offsets, total_keyframes);
             int *keyframe_numbers = new int[total_keyframes];
             for( j=0; j<total_keyframes; ++j ) {
@@ -1520,7 +1520,7 @@ show_toc(int flags)
               }
               else
                 printf("  ");
-              printf(_LXv(08),frame_offsets[k]);
+              printf("%08jx",frame_offsets[k]);
               if( !(++k&7) ) printf("\n");
             }
             if( (k&7) ) printf("\n");
@@ -1530,7 +1530,7 @@ show_toc(int flags)
           else {
             fs->seek_relative(sizeof(int64_t) * total_frame_offsets);
             int total_keyframes = fs->read_uint32();
-            zmsgs(" video %d, eof=0x" _LXv(012) " offsets=%d keyframes=%d\n",
+            zmsgs(" video %d, eof=0x%012jx offsets=%d keyframes=%d\n",
               i, eof, total_frame_offsets, total_keyframes);
             fs->seek_relative(sizeof(int) * total_keyframes);
           }
@@ -1558,7 +1558,7 @@ show_toc(int flags)
         int64_t end_byte = start_byte + total_bytes;
         current_byte = end_byte;
         zmsgs("title %s,\n", &string[0]);
-        zmsgs(" bytes=0x" _LXv(012) ", start=0x" _LXv(012) ", end=0x" _LXv(012) "\n",
+        zmsgs(" bytes=0x%012jx, start=0x%012jx, end=0x%012jx\n",
           total_bytes, start_byte, end_byte);
         int cell_table_size = fs->read_uint32();
         for( i=0; i < cell_table_size; ++i ) {
@@ -1570,9 +1570,9 @@ show_toc(int flags)
           cell_time.u = fs->read_uint64();
           int cell_no = fs->read_uint32();
           int discontinuity = fs->read_uint32();
-          zmsgs("  cell[%2d],  title 0x" _LXv(012) "-0x" _LXv(012) ", cell_no %2d, cell_time %5.3f\n",
+          zmsgs("  cell[%2d],  title 0x%012jx-0x%012jx, cell_no %2d, cell_time %5.3f\n",
             i, title_start, title_end, cell_no, cell_time.d);
-          zmsgs("     discon %d program 0x" _LXv(012) "-0x" _LXv(012) "\n",
+          zmsgs("     discon %d program 0x%012jx-0x%012jx\n",
             discontinuity, program_start, program_end);
         }
         break; }
@@ -1600,7 +1600,7 @@ show_toc(int flags)
           int cell_id = fs->read_uint32();
           int inlv = fs->read_uint32();
           int discon = fs->read_uint32();
-          zmsgs("  cell[%2d], start=0x" _LXv(012) ", end=0x" _LXv(012) " discon %d\n",
+          zmsgs("  cell[%2d], start=0x%012jx, end=0x%012jx discon %d\n",
             i, start_byte, end_byte, discon);
           zmsgs("             vob_id %d, cell_id %d, inlv %d\n",
             vob_id, cell_id, inlv);

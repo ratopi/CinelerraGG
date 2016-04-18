@@ -887,7 +887,7 @@ int BC_WindowBase::keysym_lookup(XEvent *event)
 	return ret;
 }
 
-pthread_t locking_task = -1;
+pthread_t locking_task = (pthread_t)-1L;
 int locking_event = -1;
 int locking_message = -1;
 

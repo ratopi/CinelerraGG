@@ -23,14 +23,21 @@
 #define CLIP_H
 
 // Math macros
-
+#undef SQR
 #define SQR(x) ((x) * (x))
+#undef CLIP
 #define CLIP(x, y, z) ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x)))
+#undef RECLIP
 #define RECLIP(x, y, z) ((x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x))))
+#undef CLAMP
 #define CLAMP(x, y, z) ((x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x))))
+#undef MAX
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
+#undef MIN
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
+#undef EQUIV
 #define EQUIV(x, y) (fabs((x) - (y)) < 0.001)
+#undef DISTANCE
 #define DISTANCE(x1, y1, x2, y2) \
 (sqrt(((x2) - (x1)) * ((x2) - (x1)) + ((y2) - (y1)) * ((y2) - (y1))))
 

@@ -355,7 +355,6 @@ LIBS += \
 	-lpthread \
 	-lm \
 	-lpng \
-	-ldl \
 	-lz \
 	-lbz2 \
 	-llzma \
@@ -452,7 +451,7 @@ $(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FFMPEG_OBJS) $(FILEFLAC) $(LIBRARIES)
 
 $(CUTADS):	$(CUTOBJS) $(CUTLIBS)
 	@echo g++ -o $@ $(CUTOBJS)
-	@g++ $(CFLAGS) -pthread -o $@ $(CUTOBJS) $(CUTLIBS)
+	@g++ $(CFLAGS) -pthread -o $@ $(CUTOBJS) $(CUTLIBS) $(LIBS)
 
 $(BDWRITE):	$(BDWOBJS) $(LIBRARIES)
 	@echo g++ -o $@ $(BDWOBJS)

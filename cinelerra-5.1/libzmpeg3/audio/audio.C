@@ -204,7 +204,7 @@ read_frame(int render)
 //  int64_t aud_pos = audio_position();
 //  double atime = track->get_audio_time();
 //  int64_t pts_pos = atime * track->sample_rate + 0.5;
-//  zmsgs(" apr_pos " _LD "/" _LD " + " _LD "  " _LD " + " _LD "\n",
+//  zmsgs(" apr_pos %jd/%jd + %jd  %jd + %jd\n",
 //    app_pos, aud_pos, app_pos-aud_pos, pts_pos, pts_pos-aud_pos);
 //}
   if( !result ) {
@@ -313,7 +313,7 @@ calculate_format(zmpeg3_t *src)
   case afmt_UNKNOWN:
     /* Need these 8 bytes later on for header parsing */
     result = demuxer->read_data(header, sizeof(header));
-//zmsgs(_LD"\n", demuxer->tell_byte());
+//zmsgs("%jd\n", demuxer->tell_byte());
     if( !result )
       format = !zaudio_decoder_ac3_t::ac3_check(header) ? afmt_AC3 : afmt_MPEG;
     if( audio ) {
@@ -344,7 +344,7 @@ init_audio(zmpeg3_t *zsrc, zatrack_t *ztrack, int zformat)
 
   if( zsrc->seekable )
     result = track->calculate_format(src);
-//zmsgs(_LD"\n", demux->tell_byte());
+//zmsgs("%jd\n", demux->tell_byte());
   /* get stream parameters */
   if( !result && zsrc->seekable ) {
     switch( track->format ) {
@@ -375,7 +375,7 @@ init_audio(zmpeg3_t *zsrc, zatrack_t *ztrack, int zformat)
         start_byte = demux->tell_byte() - zsrc->packet_size;
       demux->stream_end = stream_end;
     }
-//zmsgs("1 %d %d %d start_byte=0x"_LX"\n", track->format, 
+//zmsgs("1 %d %d %d start_byte=0x%jx\n", track->format, 
 // layer_decoder->layer, result, start_byte);
   }
   return result;
@@ -412,7 +412,7 @@ seek()
     sample_seek += track->nudge;
     if( sample_seek < 0 ) sample_seek = 0;
 /* Doesn't work with VBR streams + ID3 tags */
-//zmsgs("%d "_LD" "_LD" "_LD" "_LD"\n", __LINE__, sample_seek,
+//zmsgs("%d %jd %jd %jd %jd\n", __LINE__, sample_seek,
 //  track->current_position, output_position, audio_position());
 /* Don't do anything if the destination is inside the sample buffer */
     if( sample_seek < output_position ||
@@ -440,7 +440,7 @@ seek()
           int64_t total_bytes = demux->movie_size() - start_byte;
           int64_t byte = (int64_t)(total_bytes * 
             ((double)sample_seek)/track->total_samples) + start_byte;
-//zmsgs("%d byte="_LD"\n", __LINE__, byte);
+//zmsgs("%d byte=%jd\n", __LINE__, byte);
           output_position = sample_seek;
           output_size = 0;
           demux->seek_byte(byte);
@@ -573,7 +573,7 @@ audio_pts_padding()
         int limit = track->sample_rate/8;
         if( padding > limit ) {
           int64_t aud_pos = audio_position();
-          zmsgs("audio start padding  pid %02x @ " _LDv(12)" (%12.6f) %d samples\n",
+          zmsgs("audio start padding  pid %02x @ %12jd (%12.6f) %d samples\n",
                 track->pid, aud_pos, track->get_audio_time(), padding);
           track->askip = 1;
           result = 1;
@@ -611,7 +611,7 @@ audio_pts_padding()
     }
     else if( track->askip > 0 ) {
       int64_t aud_pos = audio_position();
-      zmsgs("audio end   padding  pid %02x @ " _LDv(12) " (%12.6f) %d\n",
+      zmsgs("audio end   padding  pid %02x @ %12jd (%12.6f) %d\n",
             track->pid, aud_pos, track->get_audio_time(), (1+track->askip)/2);
       track->askip = 0;
     }
@@ -631,7 +631,7 @@ audio_pts_skipping(int samples)
         int limit = track->sample_rate/8;
         if( skipping > 3*limit ) {
           int64_t aud_pos = audio_position();
-          zmsgs("audio start skipping pid %02x @ " _LDv(12)" (%12.6f) %d samples\n",
+          zmsgs("audio start skipping pid %02x @ %12jd (%12.6f) %d samples\n",
                 track->pid, aud_pos, track->get_audio_time(), skipping);
           track->askip = -1;
           result = 1;
@@ -648,7 +648,7 @@ audio_pts_skipping(int samples)
     }
     else if( track->askip < 0 ) {
       int64_t aud_pos = audio_position();
-      zmsgs("audio end   skipping pid %02x @ " _LDv(12) " (%12.6f) %d\n",
+      zmsgs("audio end   skipping pid %02x @ %12jd (%12.6f) %d\n",
             track->pid, aud_pos, track->get_audio_time(), (1-track->askip)/2);
       track->askip = 0;
     }
@@ -670,7 +670,7 @@ decode_audio(void *output_v, int atyp, int channel, int len)
 {
   int i, j, k;
   zdemuxer_t *demux = track->demuxer;
-//zmsgs("decode_audio(out_pos="_LD"-"_LD", aud_pos "_LD", seek "_LD"  ch=%d, len=%d)\n",
+//zmsgs("decode_audio(out_pos=%jd-%jd, aud_pos %jd, seek %jd  ch=%d, len=%d)\n",
 //  output_position, audio_position(), track->track_position(),
 //  (sample_seek<0 ? sample_seek : sample_seek+track->nudge), channel, len);
 
@@ -716,8 +716,8 @@ decode_audio(void *output_v, int atyp, int channel, int len)
     if( demand <= 0 ) break;
     if( audio_pts_padding() ) continue;
     if( output_allocated-output_size < AUDIO_MAX_DECODE ) break;
-//zmsgs(" out_pos/sz "_LD"/%d=aud_pos "_LD", end_pos "_LD", demand "_LD",
-//  tell/eof "_LD"/%d\n", output_position, output_size, aud_pos, end_pos,
+//zmsgs(" out_pos/sz %jd/%d=aud_pos %jd, end_pos %jd, demand %jd,
+//  tell/eof %jd/%d\n", output_position, output_size, aud_pos, end_pos,
 //  demand, demux->tell_byte(), demux->eof());
     if( demux->eof() ) break;
     /* if overflowing, shift audio back */

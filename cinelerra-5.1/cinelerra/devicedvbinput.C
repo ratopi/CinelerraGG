@@ -24,6 +24,7 @@
  * 
  */
 
+#ifdef HAVE_DVB
 #include "chantables.h"
 #include "devicedvbinput.h"
 #include "devicempeginput.h"
@@ -37,10 +38,8 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
-#ifdef HAVE_DVB
 #include <linux/dvb/dmx.h>
 #include <linux/dvb/frontend.h>
-#endif
 #include <sys/ioctl.h>
 
 
@@ -469,3 +468,4 @@ void DeviceDVBInput::set_signal_status(SignalStatus *stat)
 	dvb_lock->unlock();
 }
 
+#endif

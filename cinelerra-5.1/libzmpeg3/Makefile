@@ -1,10 +1,10 @@
 CC = gcc
 NASM = nasm
-USE_MMX = 0
-USE_CSS = 1
-A52DIR := $(shell expr a52dec* )
-DYNAMIC_FONTS = 1
-
+USE_MMX ?= 0
+USE_CSS ?= 1
+DYNAMIC_FONTS ?= 1
+A52DIR := $(shell ls -d ../thirdparty/a52dec* ../../thirdparty/a52dec* 2> /dev/null)
+OBJDIR := $(shell uname -m)
 
 ifeq ("$(DST)", "")
 DST=/usr/bin
@@ -16,8 +16,6 @@ else
 HAVE_CFLAGS := n
 endif
 
-OBJDIR := $(shell uname --machine)
-USE_MMX = 0
 
 ifeq ($(OBJDIR), alpha)
   ifneq ($(HAVE_CFLAGS), y)
@@ -27,12 +25,11 @@ endif
 
 ifneq ($(HAVE_CFLAGS), y)
   #CFLAGS := -O2 -fomit-frame-pointer -I/usr/local/include
-  CFLAGS := -O3 -ggdb -fno-omit-frame-pointer -I/usr/local/include \
-	-falign-loops=2 -falign-jumps=2 -falign-functions=2
+  CFLAGS := -O3 -ggdb -fno-omit-frame-pointer
+  #CFLAGS += -falign-loops=2 -falign-jumps=2 -falign-functions=2
 endif
 
 ifeq ($(OBJDIR), i686)
-  #USE_MMX = 1
   CFLAGS += -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE
 endif
 
@@ -94,26 +91,9 @@ OBJS = \
 	$(OBJDIR)/toc.o \
 	$(OBJDIR)/mpeg3.o \
 
-#OBJS = \
-#	$(OBJDIR)/audio/ac3.o \
-#	$(OBJDIR)/audio/bit_allocation.o \
-#	$(OBJDIR)/audio/exponents.o \
-#	$(OBJDIR)/audio/header.o \
-#	$(OBJDIR)/audio/huffman.o \
-#	$(OBJDIR)/audio/layer2.o \
-#	$(OBJDIR)/audio/layer3.o \
-#	$(OBJDIR)/audio/mantissa.o \
-#	$(OBJDIR)/audio/pcm.o \
-#	$(OBJDIR)/audio/tables.o \
-
 DIRS := \
 	$(OBJDIR)/audio \
 	$(OBJDIR)/video
-
-include Makefile.a52
-
-DIRS += $(A52DIRS)
-
 
 OUTPUT = $(OBJDIR)/libzmpeg3.a
 UTILS := $(OBJDIR)/mpeg3dump
@@ -129,6 +109,8 @@ UTILS += $(OBJDIR)/mpeg3cc2txt
 
 LIBS = -lm -lpthread
 
+LIBS += $(A52DIR)/liba52/.libs/liba52.a
+
 ifeq ($(DYNAMIC_FONTS), 1)
 LIBS += -lX11
 else
@@ -139,11 +121,9 @@ endif
 $(shell mkdir -p $(OBJDIR) )
 
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
-$(shell echo $(A52CFLAGS) > $(OBJDIR)/a52_flags)
-$(shell echo $(OBJS) $(ASMOBJS) $(A52OBJS) $(NASMOBJS) > $(OBJDIR)/objs)
+$(shell echo $(OBJS) $(ASMOBJS) $(NASMOBJS) > $(OBJDIR)/objs)
 $(shell mkdir -p $(DIRS) )
 
-TAGS = tags
 all: $(OUTPUT) $(UTILS) $(TAGS)
 #all: $(OUTPUT) $(TAGS) b.out
 
@@ -154,9 +134,9 @@ xfont1.C:	xfont.C
 
 b.out:	y.C $(OUTPUT)
 	$(CXX) `pkg-config --cflags --libs gtk+-2.0` y.C ./$(OBJDIR)/libzmpeg3.a \
-		 -lpthread -lasound -lm -O0 -g -o b.out
+		$(CFLAGS) -lpthread -lasound -lm -O0 -g -o b.out $(LIBS)
 
-$(OUTPUT): $(OBJS) $(ASMOBJS) $(NASMOBJS) $(A52OBJS)
+$(OUTPUT): $(OBJS) $(ASMOBJS) $(NASMOBJS)
 	ar rcs $(OUTPUT) `cat $(OBJDIR)/objs`
 
 
@@ -192,8 +172,6 @@ $(ASMOBJS):
 	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.S) -o $*.o
 $(NASMOBJS): 
 	$(NASM) -f elf $(subst $(OBJDIR)/,, $*.s) -o $*.o
-$(A52OBJS):
-	$(CC) -c `cat $(OBJDIR)/a52_flags` $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
 $(OBJDIR)/libzmpeg3.o: 				    libzmpeg3.C
 $(OBJDIR)/atrack.o: 				    atrack.C
@@ -247,5 +225,4 @@ $(OBJDIR)/video/cc.o:                               video/cc.C
 $(OBJDIR)/video/vlc.o:  			    video/vlc.C
 #$(OBJDIR)/workarounds.o:  			    workarounds.c
 
-include depend.a52
 

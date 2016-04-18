@@ -48,8 +48,9 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#ifdef HAVE_VIDEO4LINUX2
 #include <linux/videodev2.h>
-
+#endif
 
 Condition DeviceMPEGInput::in_mpeg_lock(1,"DeviceMPEGInput::in_mpeg_lock");
 DeviceMPEGList DeviceMPEGInput::in_mpeg;
@@ -484,35 +485,51 @@ int DeviceMPEGInput::stop_record()
 
 int DeviceMPEGInput::subchannel_count()
 {
+#ifdef HAVE_DVB
 	return src ? src->dvb.channel_count() : 0;
+#else
+	return 0;
+#endif
 }
 
 int DeviceMPEGInput::subchannel_definition(int subchan, char *name,
 	int &major, int &minor, int &total_astreams, int &total_vstreams)
 {
+#ifdef HAVE_DVB
 	int result = src != 0 ? 0 : -1;
 	if( !result ) result = src->dvb.get_channel(subchan, major, minor);
 	if( !result ) result = src->dvb.get_station_id(subchan, &name[0]);
 	if( !result ) result = src->dvb.total_astreams(subchan, total_astreams);
 	if( !result ) result = src->dvb.total_vstreams(subchan, total_vstreams);
 	return result;
+#else
+	return -1;
+#endif
 }
 
 int DeviceMPEGInput::subchannel_video_stream(int subchan, int vstream)
 {
+#ifdef HAVE_DVB
 	int result = src != 0 ? 0 : -1;
 	if( !result && src->dvb.vstream_number(subchan, vstream, result) )
 		result = -1;
 	return result;
+#else
+	return -1;
+#endif
 }
 
 int DeviceMPEGInput::subchannel_audio_stream(int subchan, int astream, char *enc)
 {
+#ifdef HAVE_DVB
 	int result = src != 0 ? 0 : -1;
 	if( src && src->dvb.astream_number(subchan, astream, result, enc) ) {
 		enc[0] = 0; result = -1;
 	}
 	return result;
+#else
+	return -1;
+#endif
 }
 
 int DeviceMPEGInput::get_video_pid(int track)

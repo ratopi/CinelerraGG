@@ -1,5 +1,9 @@
 include ../global_config
 
+ifeq ($(HAVE_DVB), y)
+LIVEDVB = liveaudio livevideo
+endif
+
 # burn must come before any other effecttv plugin
 # colors must come before any plugin
 # parametric must come before fourier plugins
@@ -70,8 +74,7 @@ DIRS = \
 	level \
 	libeffecttv \
 	linearblur \
-	liveaudio \
-	livevideo \
+	$(LIVEDVB) \
 	loopaudio \
 	loopvideo \
 	motion \

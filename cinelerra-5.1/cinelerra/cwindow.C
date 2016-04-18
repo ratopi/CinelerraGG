@@ -360,9 +360,11 @@ int CWindowRemoteHandler::remote_process_key(RemoteControl *remote_control, int 
 	case 'a':  gui->tile_windows(0);		return 1;
 	case 'b':  gui->tile_windows(1);		return 1;
 	case 'c':  gui->tile_windows(2);		return 1;
+#ifdef HAVE_DVB
 	case 'd':
 		mwindow_gui->channel_info->toggle_scan();
 		return 1;
+#endif
 	case 'e':
 		break;
 	case 'f': {

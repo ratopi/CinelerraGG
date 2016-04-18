@@ -220,7 +220,9 @@ MWindow::~MWindow()
 	gui->stop_drawing();
 	gui->remote_control->deactivate();
 	gui->record->stop();
+#ifdef HAVE_DVB
 	gui->channel_info->stop();
+#endif
 	brender_lock->lock("MWindow::quit");
 	delete brender;         brender = 0;
 	brender_lock->unlock();
@@ -1814,7 +1816,7 @@ void MWindow::init_shm()
 	}
 
 	int64_t result = 0;
-	fscanf(fd, _LD, &result);
+	fscanf(fd, "%jd", &result);
 	fclose(fd);
 	fd = 0;
 	if(result < 0x7fffffff) {

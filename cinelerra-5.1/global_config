@@ -1,17 +1,23 @@
 SHELL := /bin/bash
 
+# not probed
 HAVE_ALSA := y
-HAVE_DVB := y
+HAVE_DV := y
 HAVE_ESOUND := y
 HAVE_FIREWIRE := y
 HAVE_OSS := y
 HAVE_XFT := y
 HAVE_VIDEO4LINUX := n
-HAVE_VIDEO4LINUX2 := y
 
-STATIC_LIBRARIES := y
+# probed, uncomment and set to override probe
+#STATIC_LIBRARIES := y
+#HAVE_VIDEO4LINUX2 := y
+#HAVE_DVB := y
+#HAVE_GL := y
+#HAVE_DL := y
+#HAVE_NUMA := y
 
-OBJDIR := $(shell uname --machine)
+OBJDIR := $(shell uname -m)
 
 GLOBAL_CONFIG := $(lastword $(wildcard ./global_config ../global_config ../../global_config))
 TOPDIR := $(dir $(GLOBAL_CONFIG))
@@ -20,14 +26,6 @@ PLUGIN_DIR := $(BINDIR)/plugins
 # abs path
 THIRDPARTY := $(shell cd $(TOPDIR)/thirdparty; pwd)
 
-ifneq (,$(findstring HAVE_GL,$(shell cat $(GLOBAL_CONFIG))))
-HAVE_GL := y
-else
-HAVE_GL := n
-endif
-
-
-
 ifeq ($(origin CFLAGS), environment)
 HAVE_CFLAGS := y
 else
@@ -35,15 +33,9 @@ HAVE_CFLAGS := n
 endif
 
 
-############################# C++ and C COMPILERS
-
-############################# FINAL DESTINATION FOR INSTALLATION BINARIES
-
 PREFIX = /usr/
 LIBPREFIX = $(PREFIX)/lib
 
-
-########################## THE COMPILER
 
 CC = g++
 GCC = gcc
@@ -76,7 +68,6 @@ CFLAGS += -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
 #FREETYPE_DIR := $(shell expr $(THIRDPARTY)/freetype-* )
 FREETYPE_DIR := $(shell pkg-config --cflags freetype2 )
 CFLAGS += $(FREETYPE_DIR) -I$(TOPDIR)
-CFLAGS += -DHAVE_VIDEO4LINUX2
 
 ifeq ($(HAVE_ALSA), y)
 CFLAGS += $(ALSA_CFLAGS)
@@ -102,19 +93,20 @@ ifeq ($(HAVE_VIDEO4LINUX2), y)
 CFLAGS += -DHAVE_VIDEO4LINUX2
 endif
 
+ifeq ($(HAVE_DV), y)
+CFLAGS += -DHAVE_DV
+endif
+
 ifeq ($(OBJDIR), alpha)
 CXXREPOSITORY = cxx_repository/*.o
 endif
 
 $(shell mkdir -p $(OBJDIR) )
 
-########################## LINKER
 
 LFLAGS = 
 LDLINKER = g++ -shared 
 
-
-############### MAKEFILE MACROS
 
 LOOP_BEGIN = @ for i in $(DIRS) ; \
 	do \
@@ -122,3 +114,18 @@ LOOP_BEGIN = @ for i in $(DIRS) ; \
 
 LOOP_END = done
 
+#EXTRA_LIBS += -L/usr/local/lib
+#CPATH = /usr/local/include
+
+ifeq ($(HAVE_DL), y)
+EXTRA_LIBS += -ldl
+EXTRA_FFMPEG_CFG += --extra-ldflags="-ldl"
+endif
+
+ifeq ($(HAVE_NUMA), y)
+EXTRA_LIBS += -lnuma
+endif
+
+CFLAGS += -D__STDC_CONSTANT_MACROS
+CFLAGS += -D__STDC_LIMIT_MACROS
+CFLAGS += -DPNG_SKIP_SETJMP_CHECK=1

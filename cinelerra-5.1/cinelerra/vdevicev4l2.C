@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  */
+#ifdef HAVE_VIDEO4LINUX2
 
 #include "channel.h"
 #include "file.h"
@@ -27,7 +28,6 @@
 #include "vframe.h"
 #include "videodevice.h"
 
-#ifdef HAVE_VIDEO4LINUX2
 
 
 VDeviceV4L2::VDeviceV4L2(VideoDevice *device)

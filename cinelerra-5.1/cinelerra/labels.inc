@@ -20,7 +20,7 @@
  */
 
 #ifndef LABEL_INC
-#define LABEL_INc
+#define LABEL_INC
 
 class Label;
 class Labels;

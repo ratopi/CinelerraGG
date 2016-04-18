@@ -146,7 +146,7 @@ get_pes_packet_header(uint64_t *pts, uint64_t *dts)
   packet_skip(pes_header_data_length-pes_header_bytes);
   time = (double)*pts / 90000;
   if( dump ) {
-    zmsgs("pos=0x"_LXv(012)" pid=%04x  pts=%f dts=%f pts_dts_flags=0x%02x\n",
+    zmsgs("pos=0x%012jx pid=%04x  pts=%f dts=%f pts_dts_flags=0x%02x\n",
       absolute_position(), pid, (double)*pts / 90000, (double)*dts / 90000, pts_dts_flags);
   }
   return 0;
@@ -179,7 +179,7 @@ get_transport_pes_packet()
     if( read_all ) astream_table[custom_id] = afmt_AC3;
     if( astream == -1 ) astream = custom_id;
     if( dump ) {
-      zmsgs("offset="_LX" 0x%x bytes AC3 custom_id=0x%x astream=0x%x do_audio=%p\n", 
+      zmsgs("offset=0x%jx 0x%x bytes AC3 custom_id=0x%x astream=0x%x do_audio=%p\n", 
         absolute_position(), raw_size - raw_offset,
         custom_id, astream, do_audio);
     }
@@ -276,7 +276,7 @@ get_payload()
     if( pid == audio_pid && (do_audio || read_all) ) {
       if( do_audio ) got_audio = 1;
       if( dump ) {
-        zmsgs(" offset="_LX" 0x%x bytes AC3 pid=0x%x\n", 
+        zmsgs(" offset=0x%jx 0x%x bytes AC3 pid=0x%x\n", 
           absolute_position(), raw_size-raw_offset, pid);
       }
       get_transport_payload(1, 0);
@@ -312,7 +312,7 @@ read_transport()
   got_video = 0;
   custom_id = -1;
 
-//zerrs("read transport 1 "_LX" "_LX"\n", title->fs->current_byte, title->fs->total_bytes);
+//zerrs("read transport 1 %jx %jx\n", title->fs->current_byte, title->fs->total_bytes);
 
   /* Skip BD or AVC-HD header */
   if( src->is_bd() )
@@ -355,7 +355,7 @@ read_transport()
 
   is_padding = pid == 0x1fff ? 1 : 0;
   if( dump ) {
-    zmsgs("offset=0x"_LX" pid=0x%02x continuity=0x%02x padding=%d adaptation=%d unit_start=%d\n", 
+    zmsgs("offset=0x%jx pid=0x%02x continuity=0x%02x padding=%d adaptation=%d unit_start=%d\n", 
       last_packet_start, pid, continuity_counter, is_padding,
       adaptation_field_control, payload_unit_start_indicator);
   }
@@ -679,7 +679,7 @@ get_program_pes_packet( uint32_t header)
   pes_packet_length = title->fs->read_uint16();
   pes_packet_start = absolute_position();
   pes_packet_end = pes_packet_start + pes_packet_length;
-//zmsgs(" pes_packet_start="_LX" pes_packet_length=%x zdata.size=%x\n", 
+//zmsgs(" pes_packet_start=0x%jx pes_packet_length=%x zdata.size=%x\n", 
 //      pes_packet_start, pes_packet_length, zdata.size);
 
   if( stream_id != PRIVATE_STREAM_2 && stream_id != PADDING_STREAM ) {
@@ -702,13 +702,13 @@ get_program_pes_packet( uint32_t header)
       /* Get Presentation and Decoding Time Stamps */
       if( pts_dts_flags == 2 ) {
         pts = get_timestamp();
-        if( dump ) zmsgs("pts=" _LD "\n", pts);
+        if( dump ) zmsgs("pts=0x%jx\n", pts);
         pes_header_bytes += 5;
       }
       else if( pts_dts_flags == 3 ) {
         pts = get_timestamp();
         dts = get_timestamp();
-        if( dump ) zmsgs("pts=" _LD " dts=" _LD "\n", pts, dts);
+        if( dump ) zmsgs("pts=%jd dts=%jd\n", pts, dts);
 /*      pts = (title->fs->read_char() >> 1) & 7;
  *      pts <<= 15;
  *      pts |= (title->fs->read_uint16() >> 1);
@@ -771,7 +771,7 @@ get_program_pes_packet( uint32_t header)
         set_audio_pts(pts, 90000.); //60000
         decryption_offset = absolute_position() - last_packet_start;
         if( dump ) {
-          zmsgs(" MP2 audio data offset="_LX" custom_id=%x size=%x\n", 
+          zmsgs(" MP2 audio data offset=0x%jx custom_id=%x size=%x\n", 
             program_byte, custom_id, pes_packet_length);
         }
         get_program_payload(pes_packet_length, 1, 0);
@@ -794,7 +794,7 @@ get_program_pes_packet( uint32_t header)
         set_video_pts(pts, 90000.); //60000
         decryption_offset = absolute_position() - last_packet_start;
         if( dump ) {
-          zmsgs(" video offset="_LX" custom_id=%x size=%x\n", 
+          zmsgs(" video offset=0x%jx custom_id=%x size=%x\n", 
             program_byte, custom_id, pes_packet_length);
         }
         get_program_payload(pes_packet_length, 0, 1);
@@ -855,7 +855,7 @@ get_program_pes_packet( uint32_t header)
           if( format == afmt_PCM )
             do_pcm = 1;
 //zmsgs("get_program_pes_packet 5 %x\n", decryption_offset);
-          if( dump ) zmsgs(" AC3 audio offset="_LX", custom_id=%03x, size=%x\n",
+          if( dump ) zmsgs(" AC3 audio offset=0x%jx, custom_id=%03x, size=%x\n",
                program_byte, custom_id, pes_packet_length);
           get_program_payload(pes_packet_length, 1, 0);
         }
@@ -885,13 +885,13 @@ get_program_pes_packet( uint32_t header)
           pes_packet_length -= NAV_DSI_BYTES;
           int64_t blk_pos = ((int64_t)nav->dsi_gi_pck_lbn() & 0x7fffffffU) * DVD_PACKET_SIZE;
           if( blk_pos != 0 && last_packet_start != blk_pos )
-            zmsgs("blk_pos "_LX" != "_LX" last_packet_start\n", blk_pos, last_packet_start);
+            zmsgs("blk_pos 0x%jx != 0x%jx last_packet_start\n", blk_pos, last_packet_start);
           int64_t next_pos, next_vobu, end_byte, end_pos;
           int64_t blk_size = (int64_t)nav->dsi_gi_vobu_ea() * DVD_PACKET_SIZE;
           nav_cell_end_byte = program_byte + blk_size + DVD_PACKET_SIZE;
           end_pos = program_to_absolute(nav_cell_end_byte, &end_byte);
           if( end_byte != nav_cell_end_byte ) 
-            zmsgs("end_byte "_LX" != "_LX" nav_cell_end_byte\n", end_byte, nav_cell_end_byte);
+            zmsgs("end_byte 0x%jx != 0x%jx nav_cell_end_byte\n", end_byte, nav_cell_end_byte);
           uint32_t next_vobu_offset = nav->dsi_si_next_vobu();
           if( next_vobu_offset == NAV_SRI_END_OF_CELL ) {
             next_vobu = playinfo_next_cell();
@@ -903,13 +903,13 @@ get_program_pes_packet( uint32_t header)
           }
           if( next_vobu > 0 && end_pos != next_pos ) {
             nav_cell_next_vobu = next_vobu;
-            zmsgs("blk end_pos "_LX" != "_LX" next_pos, jump to "_LX"\n",
+            zmsgs("blk end_pos 0x%jx != 0x%jx next_pos, jump to 0x%jx\n",
               end_pos, next_pos, nav_cell_next_vobu);
           }
           else
             nav_cell_end_byte = nav_cell_next_vobu = -1;
 if( nav_cell_end_byte >= 0 )
-  zmsgs("nav pkt at "_LX" ends "_LX" next_vobu "_LX"/"_LX"\n",
+  zmsgs("nav pkt at 0x%jx ends 0x%jx next_vobu 0x%jx/0x%jx\n",
     program_byte, nav_cell_end_byte, nav_cell_next_vobu, next_pos);
         }
         break;
@@ -955,14 +955,14 @@ read_program()
   while( !result ) {
     title = titles[current_title];
     if( debug )
-      zmsgs("%d %d "_LX" "_LX"\n", 
+      zmsgs("%d %d 0x%jx 0x%jx\n", 
         __LINE__, result, title->fs->current_byte, title->fs->total_bytes);
     if( title->fs->eof() ) break;
     pos = absolute_position();
     header = title->fs->read_uint32();
     if( header == PACK_START_CODE ) {
       if( debug )
-        zmsgs("%d %d "_LX" "_LX"\n", 
+        zmsgs("%d %d 0x%jx 0x%jx\n", 
           __LINE__, result, title->fs->current_byte, title->fs->total_bytes);
 /* Second start code in this call.  Don't read it. */
       if( pack_count ) {
@@ -973,16 +973,16 @@ read_program()
       result = get_pack_header();
       pack_count++;
       if( debug )
-        zmsgs("%d %d "_LX" "_LX"\n",
+        zmsgs("%d %d 0x%jx 0x%jx\n",
           __LINE__, result, title->fs->current_byte, title->fs->total_bytes);
     }
     else if( header == SYSTEM_START_CODE && pack_count ) {
       if( debug )
-        zmsgs("%d %d "_LX" "_LX"\n",
+        zmsgs("%d %d 0x%jx 0x%jx\n",
           __LINE__, result, title->fs->current_byte, title->fs->total_bytes);
       result = get_system_header();
       if( debug )
-        zmsgs("%d %d "_LX" "_LX"\n",
+        zmsgs("%d %d 0x%jx 0x%jx\n",
           __LINE__, result, title->fs->current_byte, title->fs->total_bytes);
     }
     else if( header == PROGRAM_END_CODE ) {
@@ -991,11 +991,11 @@ read_program()
     }
     else if( (header >> 8) == PACKET_START_CODE_PREFIX && pack_count ) {
       if( debug )
-        zmsgs("%d %d "_LX" "_LX"\n",
+        zmsgs("%d %d 0x%jx 0x%jx\n",
           __LINE__, result, title->fs->current_byte, title->fs->total_bytes);
       result = get_program_pes_packet(header);
       if( debug )
-        zmsgs("%d %d "_LX" "_LX"\n",
+        zmsgs("%d %d 0x%jx 0x%jx\n",
           __LINE__, result, title->fs->current_byte, title->fs->total_bytes);
     }
     else {
@@ -1055,7 +1055,7 @@ seek_phys()
   if( !reverse && nav_cell_end_byte >= 0 && next_byte >= nav_cell_end_byte ) {
     if( nav_cell_next_vobu >= 0 ) {
       if( next_byte != nav_cell_next_vobu ) {
-        zmsgs("next_vobu "_LX"!="_LX" next_byte\n", nav_cell_next_vobu, next_byte);
+        zmsgs("next_vobu 0x%jx!=0x%jx next_byte\n", nav_cell_next_vobu, next_byte);
         next_byte = nav_cell_next_vobu;
       }
       nav_cell_next_vobu = -1;
@@ -1070,7 +1070,7 @@ seek_phys()
 
   int do_cell_change = 0;
   if( program_byte != next_byte ) {
-    zmsgs("program_byte hopped from "_LX" to "_LX"\n", program_byte, next_byte);
+    zmsgs("program_byte hopped from 0x%jx to 0x%jx\n", program_byte, next_byte);
     program_byte = next_byte;
     do_cell_change = 1;
   }
@@ -1147,7 +1147,7 @@ read_next_packet()
   zdata.position = 0;
   zaudio.size = 0;
   zvideo.size = 0;
-//zmsgs("%d program_byte="_LX" reverse=%d\n", 
+//zmsgs("%d program_byte=0x%jx reverse=%d\n", 
 //   __LINE__, program_byte, reverse);
 
 /* Switch to forward direction. */
@@ -1178,7 +1178,7 @@ read_next_packet()
 /* Read a single packet if not fetching audio or video. */
   if( !result ) do {
     title = titles[current_title];
-//zmsgs("10 "_LX"\n", absolute_position());
+//zmsgs("10 0x%jx\n", absolute_position());
     if( src->is_transport_stream() ) {
       result = seek_phys();
       if( !result )
@@ -1186,10 +1186,10 @@ read_next_packet()
     }
     else if( src->is_program_stream() ) {
       result = seek_phys();
-//zmsgs("%d "_LX"\n", __LINE__, tell_byte());
+//zmsgs("%d 0x%jx\n", __LINE__, tell_byte());
       if( !result )
         result = read_program();
-//zmsgs("%d "_LX"\n", __LINE__, tell_byte());
+//zmsgs("%d 0x%jx\n", __LINE__, tell_byte());
     }
     else {
       if( read_all && src->is_audio_stream() ) {
@@ -1261,11 +1261,11 @@ read_prev_packet()
 
 /* Transport stream or elementary stream case */
     if( src->packet_size > 0 ) {
-//zmsgs("1 result=%d title=%d tell="_LX" program_byte="_LX"\n",
+//zmsgs("1 result=%d title=%d tell=0x%jx program_byte=0x%jx\n",
 //        result, current_title, absolute_position(), program_byte);
       program_byte -= src->packet_size;
       result = seek_phys();
-//zmsgs("100 result=%d title=%d tell="_LX" program_byte="_LX"\n",
+//zmsgs("100 result=%d title=%d tell=0x%jx program_byte=0x%jx\n",
 //        result, current_title, absolute_position(), program_byte);
     }
     else {
@@ -1326,7 +1326,7 @@ read_data(uint8_t *output, int size)
       count += fragment_size;
       if( count >= size ) break;
       result = read_next_packet();
-//zmsgs("10 offset="_LX" pid=0x%x bytes=0x%x i=0x%x\n", 
+//zmsgs("10 offset=0x%jx pid=0x%x bytes=0x%x i=0x%x\n", 
 //   tell_byte(), pid, zdata.size, count);
     }
 //zmsg("10\n");
@@ -1537,7 +1537,7 @@ seek_byte(int64_t byte)
   zdata.size = 0;
 
   int result = seek_phys();
-//zmsgs("1 %p %d "_LX" "_LX"\n", do_video, result, byte, program_byte);
+//zmsgs("1 %p %d 0x%jx 0x%jx\n", do_video, result, byte, program_byte);
   return result;
 }
 
@@ -1547,7 +1547,7 @@ set_audio_pts(uint64_t pts, const double denom)
   if( pts ) {
     pes_audio_pid = custom_id;
     pes_audio_time = pts / denom;
-//zmsgs("pid 0x%03x, pts %f @"_LX"\n",pes_audio_pid, pes_audio_time,
+//zmsgs("pid 0x%03x, pts %f @0x%jx\n",pes_audio_pid, pes_audio_time,
 //  absolute_position());
   }
 }
@@ -1558,7 +1558,7 @@ set_video_pts(uint64_t pts, const double denom)
   if( pts ) {
     pes_video_pid = custom_id;
     pes_video_time = pts / denom;
-//zmsgs("pid 0x%03x, pts %f @"_LX"\n",pes_video_pid, pes_video_time,
+//zmsgs("pid 0x%03x, pts %f @0x%jx\n",pes_video_pid, pes_video_time,
 //  absolute_position());
   }
 }
@@ -1864,7 +1864,7 @@ create_title(int full_scan)
   title->start_byte = 0;
   title->end_byte = title->total_bytes;
   if( debug )
-    zmsgs("%d path=%s total_bytes="_LD"\n",
+    zmsgs("%d path=%s total_bytes=%jd\n",
       __LINE__, src->fs->path, title->total_bytes);
 
 /* Create default cell */

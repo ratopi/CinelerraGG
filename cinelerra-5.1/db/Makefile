@@ -5,7 +5,7 @@ else
 HAVE_CFLAGS := n
 endif
 
-OBJDIR := $(shell uname --machine)
+OBJDIR := $(shell uname -m)
 $(shell mkdir -p $(OBJDIR) )
 
 ifneq ($(HAVE_CFLAGS), y)

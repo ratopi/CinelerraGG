@@ -19,6 +19,8 @@
  * 
  */
 
+#ifdef HAVE_VIDEO4LINUX2
+
 #include "audiov4l2mpeg.h"
 #include "condition.h"
 #include "devicev4l2input.h"
@@ -55,3 +57,4 @@ int AudioV4L2MPEG::open_input()
 	return 0;
 }
 
+#endif

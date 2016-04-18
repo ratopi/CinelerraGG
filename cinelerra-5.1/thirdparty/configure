@@ -1,5 +1,17 @@
 #!/bin/bash
 
+if [ -x "`which gmake`" ]; then
+  MAKE=gmake
+else
+  MAKE=make
+fi
+
+for v in OBJDIR CPATH EXTRA_LIBS \
+    HAVE_ALSA HAVE_DVB HAVE_ESOUND HAVE_FIREWIRE HAVE_DV \
+    HAVE_OSS HAVE_XFT HAVE_VIDEO4LINUX HAVE_VIDEO4LINUX2 ; do
+  eval export "$v=\"`$MAKE -s val-$v`\""
+done
+
 if [ "$1" = "static" ]; then
   STATIC_LIBRARIES="y"
 elif [ "$1" = "shared" ]; then
@@ -52,11 +64,13 @@ add_library audiofile \
 	libaudiofile/alac/.libs/libalac.a
 inc_encore="."
 add_library encore \
-	`uname -m`/libencore.a
+	$OBJDIR/libencore.a
+if [ "$HAVE_ESOUND" = "y" ]; then
 inc_esound="."
 add_library esound \
 	.libs/libesd.a \
 	.libs/libesddsp.a
+fi
 inc_faac="include"
 add_library faac \
 	libfaac/.libs/libfaac.a \
@@ -125,17 +139,24 @@ inc_lame="include"
 add_library lame \
 	libmp3lame/.libs/libmp3lame.a \
 	mpglib/.libs/libmpgdecoder.a
+if [ "$HAVE_FIREWIRE" = "y" ]; then
 inc_libavc1394="."
 add_library libavc1394 \
 	libavc1394/.libs/libavc1394.a \
 	librom1394/.libs/librom1394.a \
 	common/.libs/libraw1394util.a
-inc_libdv="."
-add_library libdv \
-	libdv/.libs/libdv.a
+inc_libraw1394="."
+add_library libraw1394 \
+	src/.libs/libraw1394.a
 inc_libiec61883="src"
 add_library libiec61883 \
 	src/.libs/libiec61883.a
+fi
+if [ "$HAVE_DV" = "y" ]; then
+inc_libdv="."
+add_library libdv \
+	libdv/.libs/libdv.a
+fi
 inc_libjpeg="."
 add_library libjpeg \
 	.libs/libjpeg.a \
@@ -147,9 +168,6 @@ add_library openjpeg \
 inc_libogg="include"
 add_library libogg \
 	src/.libs/libogg.a
-inc_libraw1394="."
-add_library libraw1394 \
-	src/.libs/libraw1394.a
 inc_libsndfile="."
 add_library libsndfile \
 	src/.libs/libsndfile.a \
@@ -222,6 +240,7 @@ echo ""
 probe() {
   if ! `echo $LIBS | grep -qw $1`; then return 0; fi
   local name="$1"
+  if [ -n "${!name}" ]; then return 0; fi
   local headers="$2"
   local func="$3"
   shift 3
@@ -243,7 +262,7 @@ probe() {
       echo "long check_$func(void) { return (long) $func; }"
     done
     echo "int main(void) { return 0; }"
-  } | cc -x c - -o $exe $@ >& /dev/null
+  } | cc -x c - -o $exe $@ $EXTRA_LIBS >& /dev/null
   ret=$?
   rm -f "${exe}"
   if [ $ret = 0 ]; then
@@ -288,9 +307,7 @@ probe twolame "twolame.h" twolame_encode_buffer_float32_interleaved -ltwolame
 probe x264 "stdint.h x264.h" x264_encoder_encode -lx264
 probe x265 "x265.h" x265_encoder_encode -lx265
 
-if [ -n "$forced_libs" ]; then
-  forced_libs="encore ffmpeg giflib libuuid"
-fi
+forced_libs="$forced_libs a52dec encore ffmpeg giflib libuuid openjpeg"
 
 # for ffmpeg link/broken disto libs
 for name in $LIBS; do

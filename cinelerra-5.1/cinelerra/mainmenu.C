@@ -112,7 +112,9 @@ void MainMenu::create_objects()
 	save->create_objects(saveas);
 	saveas->set_mainmenu(this);
 	filemenu->add_item(record_menu_item = new RecordMenuItem(mwindow));
+#ifdef HAVE_DVB
 	filemenu->add_item(new ChannelScan(mwindow));
+#endif
 	if( mwindow->has_commercials() )
 		filemenu->add_item(new DbWindowScan(mwindow));
 	filemenu->add_item(new SubttlSWin(mwindow));

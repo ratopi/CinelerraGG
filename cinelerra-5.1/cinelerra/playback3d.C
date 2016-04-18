@@ -53,6 +53,7 @@
 // Can't hard code sampler2D
 
 
+#ifdef HAVE_GL
 static const char *yuv_to_rgb_frag =
 	"uniform sampler2D tex;\n"
 	"void main()\n"
@@ -477,11 +478,7 @@ static const char *fade_yuv_frag =
 	"	gl_FragColor.gb += vec2(0.5, 0.5);\n"
 	"}\n";
 
-
-
-
-
-
+#endif
 
 
 Playback3DCommand::Playback3DCommand()

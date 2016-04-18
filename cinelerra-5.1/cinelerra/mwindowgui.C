@@ -143,7 +143,9 @@ MWindowGUI::~MWindowGUI()
 	delete resource_thread;
 	resource_pixmaps.remove_all_objects();
 	delete swindow;
+#ifdef HAVE_DVB
 	delete channel_info;
+#endif
 	delete db_window;
 	delete x_divider;
 	delete y_divider;
@@ -353,7 +355,9 @@ void MWindowGUI::create_objects()
 	add_subwindow(transition_menu = new TransitionPopup(mwindow, this));
 	transition_menu->create_objects();
 
+#ifdef HAVE_DVB
 	channel_info = new ChannelInfo(mwindow);
+#endif
 	db_window = new DbWindow(mwindow);
 	swindow = new SWindow(mwindow);
 
@@ -1412,9 +1416,11 @@ int MWindowGUI::keyboard_listener(int key)
 	case KPHAND:
 		mwindow->quit(0);
 		break;
+#ifdef HAVE_DVB
 	case KPBOOK:
 		channel_info->toggle_scan();
 		break;
+#endif
 	case KPMENU:
 		if( !remote_control->deactivate() )
 			remote_control->activate();

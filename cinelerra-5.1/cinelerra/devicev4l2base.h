@@ -22,6 +22,8 @@
 #ifndef DEVICEV4L2BASE_H
 #define DEVICEV4L2BASE_H
 
+#ifdef HAVE_VIDEO4LINUX2
+
 #include "channel.inc"
 #include "condition.h"
 #include "vframe.inc"
@@ -127,4 +129,5 @@ public:
 	int putq_sz() { return put_thread->putq->sz(); }
 };
 
+#endif
 #endif

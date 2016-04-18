@@ -41,6 +41,7 @@
 #include "recordscopes.h"
 #include "recordtransport.h"
 #include "recordmonitor.h"
+#include "signalstatus.h"
 #include "theme.h"
 #include "videodevice.inc"
 #include "vframe.h"
@@ -279,12 +280,14 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 RecordMonitorGUI::~RecordMonitorGUI()
 {
 	lock_window("RecordMonitorGUI::~RecordMonitorGUI");
+#ifdef HAVE_DVB
 	delete signal_status;
+#endif
 	delete canvas;
 	if( bitmap ) delete bitmap;
 	if( channel_picker ) delete channel_picker;
-	if( avc1394transport_thread )
 #ifdef HAVE_FIREWIRE
+	if( avc1394transport_thread )
 		delete avc1394transport_thread;
 	if( avc ) {
 		delete avc;
@@ -373,12 +376,14 @@ void RecordMonitorGUI::create_objects()
 		canvas->create_objects(0);
 		canvas->use_rwindow();
 
+#ifdef HAVE_DVB
 		if( driver == CAPTURE_DVB ) {
 			int ssw = SignalStatus::calculate_w(this);
 			signal_status = new SignalStatus(this, get_w()-ssw-3, 0);
 			add_subwindow(signal_status);
 			signal_status->create_objects();
 		}
+#endif
 
 		int x = mwindow->theme->widget_border;
 		int y = mwindow->theme->widget_border;
@@ -528,8 +533,10 @@ int RecordMonitorGUI::keypress_event()
 
 	default:
 		if(canvas) result = canvas->keypress_event(this);
+#ifdef HAVE_FIREWIRE
 		if(!result && avc1394_transport)
 			result = avc1394_transport->keypress_event(get_keypress());
+#endif
 		break;
 	}
 
@@ -667,6 +674,7 @@ int RecordMonitorGUI::create_bitmap()
 
 void RecordMonitorGUI::enable_signal_status(int enable)
 {
+#ifdef HAVE_DVB
 	if( !signal_status ) return;
 	signal_status->lock_window("RecordMonitorGUI::enable_signal_status");
 	if( !enable )
@@ -677,6 +685,7 @@ void RecordMonitorGUI::enable_signal_status(int enable)
 	DeviceDVBInput *dvb_input = record->dvb_device();
 	if( dvb_input )
 		dvb_input->set_signal_status(!enable ? 0 : signal_status);
+#endif
 }
 
 void RecordMonitorGUI::
@@ -1231,18 +1240,23 @@ RecVideoDVThread::~RecVideoDVThread()
 
 int RecVideoDVThread::start_rendering()
 {
+#ifdef HAVE_DV
 	dv = dv_new();
+#endif
 	return 0;
 }
 
 int RecVideoDVThread::stop_rendering()
 {
+#ifdef HAVE_DV
 	if( dv ) { dv_delete(((dv_t*)dv));  dv = 0; }
+#endif
 	return 0;
 }
 
 int RecVideoDVThread::render_frame(VFrame *frame, long size)
 {
+#ifdef HAVE_DV
 	unsigned char *yuv_planes[3];
 	yuv_planes[0] = thread->output_frame->get_y();
 	yuv_planes[1] = thread->output_frame->get_u();
@@ -1252,7 +1266,7 @@ int RecVideoDVThread::render_frame(VFrame *frame, long size)
 		frame->get_data(),
 		frame->get_compressed_size(),
 		thread->output_frame->get_color_model());
-
+#endif
 	return 0;
 }
 

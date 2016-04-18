@@ -20,6 +20,7 @@
  */
 
 
+#ifdef HAVE_VIDEO4LINUX2
 
 #include "bctimer.h"
 #include "channel.h"
@@ -41,9 +42,7 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#ifdef HAVE_VIDEO4LINUX2
 #include <linux/videodev2.h>
-#endif
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
@@ -949,3 +948,4 @@ void DeviceV4L2Base::run()
 	}
 }
 
+#endif

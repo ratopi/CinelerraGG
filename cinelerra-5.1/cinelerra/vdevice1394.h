@@ -22,6 +22,8 @@
 #ifndef VDEVICE1394_H
 #define VDEVICE1394_H
 
+#ifdef HAVE_FIREWIRE
+
 #include "device1394input.inc"
 #include "device1394output.inc"
 #include "guicast.h"
@@ -62,4 +64,5 @@ private:
 	VFrame *user_frame;
 };
 
+#endif
 #endif

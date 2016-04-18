@@ -19,6 +19,8 @@
  *
  */
 
+#ifdef HAVE_FIREWIRE
+
 #include "condition.h"
 #include "device1394input.h"
 #include "ieee1394-ioctl.h"
@@ -370,7 +372,4 @@ int Device1394Input::read_audio(char *data, int samples)
 	return result;
 }
 
-
-
-
-
+#endif

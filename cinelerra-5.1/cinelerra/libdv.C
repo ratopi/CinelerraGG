@@ -2,6 +2,8 @@
  * Grabbing algorithm is from dvgrab
  */
 
+#ifdef HAVE_DV
+
 #include "bccmodels.h"
 #include "libdv.h"
 
@@ -317,4 +319,4 @@ int dv_write_audio(dv_t *dv,
 	return samples;
 }
 
-
+#endif

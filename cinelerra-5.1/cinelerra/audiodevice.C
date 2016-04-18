@@ -246,13 +246,17 @@ int AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver,int in)
 			break;
 #endif
 
+#ifdef HAVE_DVB
 		case AUDIO_DVB:
 			lowlevel = new AudioDVB(this);
 			break;
+#endif
 
+#ifdef HAVE_VIDEO4LINUX2
 		case AUDIO_V4L2MPEG:
 			lowlevel = new AudioV4L2MPEG(this);
 			break;
+#endif
 		}
 	}
 	return 0;

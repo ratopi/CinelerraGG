@@ -22,6 +22,7 @@
 #ifndef _AVC1394Control_H
 #define _AVC1394Control_H
 
+#ifdef HAVE_FIREWIRE
 #include <stdio.h>
 #include <sys/types.h>
 #include <errno.h>
@@ -66,4 +67,5 @@ private:
 	char text_return[BCTEXTLEN];
 };
 
+#endif
 #endif

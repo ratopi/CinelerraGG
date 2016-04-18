@@ -19,6 +19,8 @@
  *
  */
 
+#ifdef HAVE_FIREWIRE
+
 #include "assets.h"
 #include "audio1394.h"
 #include "audioconfig.h"
@@ -280,3 +282,5 @@ int VDevice1394::can_copy_from(Asset *asset, int output_w, int output_h)
 {
 	return 0;
 }
+
+#endif

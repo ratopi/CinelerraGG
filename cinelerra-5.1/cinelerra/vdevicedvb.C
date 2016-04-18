@@ -19,6 +19,8 @@
  * 
  */
 
+#ifdef HAVE_DVB
+
 #include "vdevicedvb.h"
 #include "videodevice.h"
 #include "devicedvbinput.h"
@@ -51,3 +53,4 @@ int VDeviceDVB::open_input()
 	return 0;
 }
 
+#endif

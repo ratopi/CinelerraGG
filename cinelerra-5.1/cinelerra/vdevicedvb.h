@@ -22,7 +22,7 @@
 #ifndef VDEVICEDVB_H
 #define VDEVICEDVB_H
 
-
+#ifdef HAVE_DVB
 
 #include "vdevicebase.h"
 #include "vdevicempeg.h"
@@ -39,4 +39,5 @@ public:
 };
 
 
+#endif
 #endif

@@ -22,6 +22,8 @@
 #ifndef DEVICEV4L2INPUT_H
 #define DEVICEV4L2INPUT_H
 
+#ifdef HAVE_VIDEO4LINUX2
+
 #include "devicev4l2base.h"
 #include "devicev4l2input.inc"
 #include "devicempeginput.h"
@@ -79,4 +81,5 @@ public:
 	}
 };
 
+#endif
 #endif

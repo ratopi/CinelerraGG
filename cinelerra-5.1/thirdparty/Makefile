@@ -25,7 +25,7 @@
 #
 
 include ../global_config
-include config.mak
+-include config.mak
 BLD := $(THIRDPARTY)/build
 
 pkg-source=$(BLD)/$(1).source
@@ -73,7 +73,7 @@ $(call pkg-config,$(1)): $(call pkg-source,$(1)) $(foreach dep,$(2),$(call bld_d
 	touch $$@
 
 $(call pkg-built,$(1)): $(call pkg-config,$(1))
-	+$($(1).mak_vars) $(MAK_VARS) make -C $(1)* $($(1).mak_params) $(MAK_PARAMS)
+	+$($(1).mak_vars) $(MAK_VARS) $(MAKE) -C $(1)* $($(1).mak_params) $(MAK_PARAMS)
 	touch $$@
 
 endef
@@ -142,24 +142,24 @@ ffmpeg.cfg_params= \
 		$(call ld_path,x264) \
 		$(call ld_path,x265) \
 		$(call ld_path,fdk,.libs) \
-		-ldl $(EXTRA_LIBS)" \
-	--extra-ldflags="-ldl"
+		$(EXTRA_LIBS)" $(EXTRA_FFMPEG_CFG) \
 
 a52dec.mak_params= ; cd $(call bld_path,a52dec,include); ln -sf . a52dec
+a52dec.cfg_vars= CFLAGS+=" -U__FreeBSD__"
 audiofile.cfg_params=--enable-shared=no
 audiofile.mak_params=LIBS="-lm -lstdc++"
 flac.cfg_params= --enable-shared=no
 flac.cflags="$(call inc_path,libogg,include) $(call ld_path,libogg,src/.libs)"
 giflib.cfg_params=--enable-shared=no
 ilmbase.cfg_params=--prefix=$(call bld_path,ilmbase,usr)
-ilmbase.mak_params=; make -C ilmbase* install; cd $(call bld_path,ilmbase); ln -sf lib64 usr/lib
+ilmbase.mak_params=; $(MAKE) -C ilmbase* install; cd $(call bld_path,ilmbase); ln -sf lib64 usr/lib
 lame.cfg_vars= CFLAGS+=" -O"
 lame.cfg_params=--enable-shared=no
 lame.mak_params= ; cd $(call bld_path,lame,include); ln -sf . lame
 mjpegtools.cflags="$(call inc_path,libjpeg) $(call ld_path,libjpeg,.libs)"
 mjpegtools.mak_params=; ln -s . $(call bld_path,mjpegtools,utils)/mjpegtools 
 mjpegtools.cfg_params= --enable-shared=no
-ladspa.mak_params=; make -C ladspa* install DESTDIR=$(call bld_path,ladspa)
+ladspa.mak_params=; $(MAKE) -C ladspa* install DESTDIR=$(call bld_path,ladspa)
 libavc1394.cfg_vars=PKG_CONFIG_PATH=$(bld_path libraw1394)
 libavc1394.cflags="$(inc_path libraw1394)"
 libavc1394.ldflags="$(ld_path libraw1394,src/.libs)"
@@ -263,7 +263,7 @@ $(call pkg-config,festival): $(call pkg-source,festival) $(call pkg-built,speech
 	touch $@
 
 $(call pkg-built,festival): $(call pkg-config,festival)
-	make -C festival* -j1
+	$(MAKE) -C festival* -j1
 	touch $@
 
 clean:

@@ -1,3 +1,5 @@
+#ifdef HAVE_DVB
+
 #include "asset.h"
 #include "batch.h"
 #include "bctimer.h"
@@ -1036,7 +1038,6 @@ int ChannelInfoFind::handle_event()
 	return 1;
 }
 
-
 void ChannelThread::start()
 {
 	if( !Thread::running() ) {
@@ -1946,4 +1947,5 @@ int ChannelDeleteBatch::handle_event()
 	return RecordBatchesGUI::DeleteBatch::handle_event();
 }
 
+#endif
 

@@ -177,6 +177,7 @@ int File::get_options(FormatTools *format,
 				audio_options,
 				video_options);
 			break;
+#ifdef HAVE_DV
 		case FILE_RAWDV:
 			FileDV::get_parameters(parent_window,
 				asset,
@@ -184,6 +185,7 @@ int File::get_options(FormatTools *format,
 				audio_options,
 				video_options);
 			break;
+#endif
 		case FILE_PCM:
 		case FILE_WAV:
 		case FILE_AU:
@@ -417,12 +419,14 @@ int File::open_file(Preferences *preferences,
 				file = new FileScene(this->asset, this);
 				break;
 			}
+#ifdef HAVE_DV
 			if(FileDV::check_sig(this->asset)) {
 // libdv
 				fclose(stream);
 				file = new FileDV(this->asset, this);
 				break;
 			}
+#endif
 			if(FileSndFile::check_sig(this->asset)) {
 // libsndfile
 				fclose(stream);
@@ -592,11 +596,11 @@ int File::open_file(Preferences *preferences,
 		case FILE_VORBIS:
 			file = new FileVorbis(this->asset, this);
 			break;
-
+#ifdef HAVE_DV
 		case FILE_RAWDV:
 			file = new FileDV(this->asset, this);
 			break;
-
+#endif
 // try plugins
 		default:
 			return 1;
@@ -1420,7 +1424,9 @@ int File::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(asset->format)
 	{
+#ifdef HAVE_FIREWIRE
 		case FILE_RAWDV:	return FileDV::get_best_colormodel(asset, driver);
+#endif
 		case FILE_MPEG:		return FileMPEG::get_best_colormodel(asset, driver);
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:	return FileJPEG::get_best_colormodel(asset, driver);

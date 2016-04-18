@@ -21,6 +21,7 @@
 
 #ifndef AVC1394TRANSPORT_H
 #define AVC1394TRANSPORT_H
+#ifdef HAVE_FIREWIRE
 
 #include "avc1394control.h"
 #include "mwindow.h"
@@ -178,4 +179,5 @@ public:
    AVC1394Control *avc;
 };
 
+#endif
 #endif

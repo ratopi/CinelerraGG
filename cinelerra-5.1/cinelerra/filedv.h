@@ -22,6 +22,8 @@
 #ifndef FILEDV_H
 #define FILEDV_H
 
+#ifdef HAVE_DV
+
 #include "../config.h"
 #include "filebase.h"
 #include "file.inc"
@@ -140,4 +142,5 @@ private:
 };
 
 
+#endif
 #endif

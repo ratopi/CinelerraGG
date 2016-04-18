@@ -269,11 +269,11 @@ restart(int lk)
   if( !(access_type & io_SEQUENTIAL) ) {
     if( !(access_type & io_UNBUFFERED) ) {
       if( ::fseek(fp,0,SEEK_SET) < 0 )
-        perrs("fseek "_LD, file_pos);
+        perrs("fseek %jd", file_pos);
     }
     else {
       if( ::lseek(fd,0,SEEK_SET) < 0 )
-        perrs("lseek "_LD, file_pos);
+        perrs("lseek %jd", file_pos);
     }
   }
   if( lk ) unlock();
@@ -445,17 +445,17 @@ read_in(int64_t len)
           int64_t pos = file_pos + count + xfr;
           if( (access_type & io_UNBUFFERED) ) {
             if( ::lseek(fd,pos,SEEK_SET) < 0 )
-              perrs("lseek pos "_LX,pos);
+              perrs("lseek pos %jx",pos);
           }
           else {
             if( ::fseek(fp,pos,SEEK_SET) < 0 )
-              perrs("fseek pos "_LX,pos);
+              perrs("fseek pos %jx",pos);
           }
         }
         avl = xfr;
       }
       else {
-        perrs("read pos "_LX,file_pos + count);
+        perrs("read pos %jx",file_pos + count);
         avl = 0;
       }
     }
@@ -499,7 +499,7 @@ seek_in(int64_t pos)
     else if( pos != 0 ) {
       if( (access_type & io_THREADED) )
         src->restart();
-      zerrs("seek on sequential from " _LD " to " _LD "\n", file_pos, pos);
+      zerrs("seek on sequential from %jd to %jd\n", file_pos, pos);
       result = 1;
     }
     else {
@@ -542,7 +542,7 @@ read_to(int64_t pos)
   int result = 0;
   int64_t len = pos - file_pos;
   if( len < 0 ) {
-    zerrs("reversed seq read ("_LD" < "_LD")\n", pos, file_pos);
+    zerrs("reversed seq read (%jd < %jd)\n", pos, file_pos);
     result = 1;
   }
   else
@@ -559,7 +559,7 @@ sync(int64_t pos)
   if( pos < start_pos ) { /* before buffer */
     if( (access_type & io_THREADED) ) {
       if( pos ) {
-        zerrs("threaded sync before buffer "_LD" < "_LD"\n", pos, start_pos);
+        zerrs("threaded sync before buffer %jd < %jd\n", pos, start_pos);
         int64_t mid_pos = start_pos + size/2;
         file_nudge += mid_pos - pos;
         pos = mid_pos;
@@ -871,7 +871,7 @@ read_data(uint8_t *bfr, int64_t len)
 int zfs_t::
 seek(int64_t byte)
 {
-//zmsgs("1 " _LD "\n", byte);
+//zmsgs("1 %jd\n", byte);
   current_byte = byte;
   int result = (current_byte < 0) || (current_byte > total_bytes);
   return result;
@@ -880,7 +880,7 @@ seek(int64_t byte)
 int zfs_t::
 seek_relative(int64_t bytes)
 {
-//zmsgs("1 " _LD "\n", bytes);
+//zmsgs("1 %jd\n", bytes);
   current_byte += bytes;
   int result = (current_byte < 0) || (current_byte > total_bytes);
   return result;

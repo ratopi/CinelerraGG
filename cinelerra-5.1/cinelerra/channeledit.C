@@ -826,6 +826,7 @@ void ScanThread::run()
 		edit->window->update_list();
 		edit->window->unlock_window();
 	}
+	edit->window->set_done(interrupt || progress->is_cancelled() ? 1 : 0);
 }
 
 

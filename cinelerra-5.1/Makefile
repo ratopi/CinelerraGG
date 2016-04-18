@@ -7,6 +7,7 @@ install:
 
 clean:
 	$(MAKE) -f build/Makefile.cinelerra clean
+	./configure reset
 
 rebuild:
 	$(MAKE) -C guicast clean

@@ -19,7 +19,7 @@
  * 
  */
 
-
+#ifdef HAVE_VIDEO4LINUX2
 
 #include "bctimer.h"
 #include "channel.h"
@@ -149,4 +149,4 @@ void DeviceV4L2Status::run()
 	}
 }
  
-
+#endif

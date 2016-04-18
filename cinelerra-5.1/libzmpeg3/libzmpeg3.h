@@ -6,8 +6,11 @@
 #define ZDVB
 #define USE_FUTEX
 
-#include <stdio.h>
+#ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
+#endif
+
+#include <stdio.h>
 #include <stdint.h>
 
 typedef int (*zthumbnail_cb)(void *p, int trk);
@@ -37,7 +40,7 @@ typedef int (*zcc_text_cb)(int sid, int id, int sfrm, int efrm, const char *txt)
 #endif
 
 extern "C" {
-#include "a52dec-0.7.3/include/a52.h"
+#include "a52.h"
 }
 
 #define ZMPEG3_MAJOR   2
@@ -87,21 +90,6 @@ extern "C" {
 #define zlikely(x)   __builtin_expect((x),1)
 #define zunlikely(x) __builtin_expect((x),0)
 
-#if defined(__x86_64__)
-#define _LD "%ld"
-#define _LDv(v) "%" #v "ld"
-#define _LU "%lu"
-#define _LUv(v) "%" #v "lu"
-#define _LX "%lx"
-#define _LXv(v) "%" #v "lx"
-#else
-#define _LD "%lld"
-#define _LDv(v) "%" #v "lld"
-#define _LU "%llu"
-#define _LUv(v) "%" #v "llu"
-#define _LX "%llx"
-#define _LXv(v) "%" #v "llx"
-#endif
 #define bcd(n) ((((n)>>4)&0x0f)*10+((n)&0x0f))
 
 #define new_memset(s) \

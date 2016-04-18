@@ -48,6 +48,7 @@
 #include "localsession.h"
 #include "libdv.h"
 #include "libmjpeg.h"
+#include "libzmpeg3.h"
 #include "mainmenu.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -864,7 +865,7 @@ void Record::resync()
 	}
 	else if( diff > 0. ) {
 		int64_t delay = (int64_t)(1000.0 * diff);
-		dbmsg("  delay " _LDv(8), delay);
+		dbmsg("  delay %8jd", delay);
 		if( delay > 500 ) {
 			video_time = audio_time = -1.;
 			delay = 500;
@@ -1524,6 +1525,7 @@ display_cut_icon(int x, int y)
 	display_vframe(cut_icon, x, y, 200, 1.0, scale);
 }
 
+#ifdef HAVE_DVB
 DeviceDVBInput *Record::
 dvb_device()
 { 
@@ -1533,6 +1535,7 @@ dvb_device()
 		(DeviceDVBInput *)adevice->mpeg_device();
 	return dvb_dev;
 }
+#endif
 
 #if 0
 
@@ -1596,6 +1599,7 @@ undisplay_vframe()
 int Record::
 display_channel_info()
 {
+#ifdef HAVE_DVB
 	if( !channel ) return 1;
 	if( !vdevice || vdevice->in_config->driver != CAPTURE_DVB ) return 1;
 	DeviceDVBInput *dvb_input = dvb_device();
@@ -1648,11 +1652,15 @@ display_channel_info()
 		display_video_text(20, 20, text,
 				BIGFONT, WHITE, BLACK, 0, 3., 1.);
 	return result;
+#else
+	return 1;
+#endif
 }
 
 int Record::
 display_channel_schedule()
 {
+#ifdef HAVE_DVB
 	if( !channel ) return 1;
 	if( !vdevice || vdevice->in_config->driver != CAPTURE_DVB ) return 1;
 	DeviceDVBInput *dvb_input = dvb_device();
@@ -1702,6 +1710,9 @@ display_channel_schedule()
 	display_video_text(20, 20, text,
 				BIGFONT, WHITE, BLACK, 0, 3., 1.);
 	return 0;
+#else
+	return 1;
+#endif
 }
 
 void Record::clear_keybfr()
