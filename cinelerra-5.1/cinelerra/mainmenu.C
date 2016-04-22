@@ -830,7 +830,7 @@ int PasteDefaultKeyframe::handle_event()
 }
 
 ClearDefaultKeyframe::ClearDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem(_("Clear default keyframe"), _("Alt-Del"), BACKSPACE)
+ : BC_MenuItem(_("Clear default keyframe"), _("Alt-Del"), DELETE)
 {
 	set_alt();
 	this->mwindow = mwindow;
@@ -879,7 +879,7 @@ int Paste::handle_event()
 }
 
 Clear::Clear(MWindow *mwindow)
- : BC_MenuItem(_("Clear"), _("Del"), BACKSPACE)
+ : BC_MenuItem(_("Clear"), _("Del"), DELETE)
 {
 	this->mwindow = mwindow;
 }

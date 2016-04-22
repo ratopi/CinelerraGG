@@ -92,7 +92,7 @@ public:
 	int test_edl_files();
 	void calculate_dest_paths(ArrayList<char*> *paths,
 		Preferences *preferences);
-
+	void reset();
 // Load batch rendering jobs
 	void load_jobs(char *path, Preferences *preferences);
 // Not applicable to western civilizations

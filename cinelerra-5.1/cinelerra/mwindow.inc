@@ -44,6 +44,11 @@
 // Index of vwindow that always exists
 #define DEFAULT_VWINDOW 0
 
+// keyframe reticle
+#define HAIRLINE_NEVER 0
+#define HAIRLINE_DRAGGING 1
+#define HAIRLINE_ALWAYS 2
+
 class MWindow;
 
 #if 0

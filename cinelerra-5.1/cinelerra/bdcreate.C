@@ -250,9 +250,10 @@ void CreateBD_Thread::handle_close_event(int result)
 		insert_video_plugin("Inverse Telecine", &keyframe);
 	}
 	if( use_scale ) {
-		sprintf(data,"<PHOTOSCALE WIDTH=%d HEIGHT=%d USE_FILE=1>", BD_WIDTH, BD_HEIGHT);
+		sprintf(data,"<SCALE TYPE=1 X_FACTOR=1 Y_FACTOR=1 "
+			" WIDTH=%d HEIGHT=%d CONSTRAIN=0>", BD_WIDTH, BD_HEIGHT);
 		keyframe.set_data(data);
-		insert_video_plugin("Auto Scale", &keyframe);
+		insert_video_plugin("Scale", &keyframe);
 	}
 	if( use_resize_tracks )
 		resize_tracks();
@@ -278,6 +279,7 @@ void CreateBD_Thread::handle_close_event(int result)
 		keyframe.set_data(data);
 		insert_video_plugin("Histogram", &keyframe);
 	}
+	mwindow->batch_render->reset();
 	create_bd_jobs(&mwindow->batch_render->jobs, tmp_path, asset_title);
 	mwindow->save_backup();
 	mwindow->undo->update_undo_after(_("create bd"), LOAD_ALL);
@@ -648,7 +650,7 @@ insert_video_plugin(const char *title, KeyFrame *default_keyframe)
 		vtrk->plugin_set.append(plugin_set);
 		Edits *edits = vtrk->edits;
 		for( Edit *edit=edits->first; edit; edit=edit->next ) {
-			plugin_set->insert_plugin(title,
+			plugin_set->insert_plugin(_(title),
 				edit->startproject, edit->length,
 				PLUGIN_STANDALONE, 0, default_keyframe, 0);
 		}
@@ -661,7 +663,6 @@ int CreateBD_Thread::
 resize_tracks()
 {
 	Tracks *tracks = mwindow->edl->tracks;
-#if 0
 	int max_w = 0, max_h = 0;
 	for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
 		if( vtrk->data_type != TRACK_VIDEO ) continue;
@@ -675,12 +676,12 @@ resize_tracks()
 			if( h > max_h ) max_h = h;
 		}
 	}
-#endif
+
 	for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
 		if( vtrk->data_type != TRACK_VIDEO ) continue;
 		if( !vtrk->record ) continue;
-		vtrk->track_w = BD_WIDTH; // max_w;
-		vtrk->track_h = BD_HEIGHT; // max_h;
+		vtrk->track_w = max_w;
+		vtrk->track_h = max_h;
 	}
 	return 0;
 }
@@ -698,6 +699,7 @@ option_presets()
 		switch( trk->data_type ) {
 		case TRACK_VIDEO:
 			for( Edit *edit=edits->first; edit; edit=edit->next ) {
+				if( edit->silence() ) continue;
 				Indexable *indexable = edit->get_source();
 				int w = indexable->get_w();
 				if( w > max_w ) max_w = w;
@@ -710,10 +712,10 @@ option_presets()
 				for(Plugin *plugin = (Plugin*)trk->plugin_set[i]->first;
 						plugin;
 						plugin = (Plugin*)plugin->next) {
-					if( !strcmp(plugin->title, "Deinterlace") )
+					if( !strcmp(plugin->title, _("Deinterlace")) )
 						has_deinterlace = 1;
-					if( !strcmp(plugin->title, "Auto Scale") ||
-					    !strcmp(plugin->title, "Scale") )
+					if( !strcmp(plugin->title, _("Auto Scale")) ||
+					    !strcmp(plugin->title, _("Scale")) )
 						has_scale = 1;
 				}
 			}

@@ -1661,9 +1661,9 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 	}
 
 	// if just opening one new resource in replace mode
-	if( load_mode == LOADMODE_REPLACE && new_edls.size() == 1 &&
-		ftype != FILE_IS_XML )
-	{
+	if( ftype != FILE_IS_XML &&
+	    ( load_mode == LOADMODE_REPLACE ||
+	      load_mode == LOADMODE_REPLACE_CONCATENATE ) ) {
 		select_asset(0, 0);
 		edl->local_session->preview_start = 0;
 		edl->local_session->preview_end = edl->tracks->total_playable_length();

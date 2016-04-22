@@ -235,6 +235,18 @@ BatchRenderThread::~BatchRenderThread()
 	}
 }
 
+void BatchRenderThread::reset()
+{
+	current_job = 0;
+	rendering_job = -1;
+	delete default_job;  default_job = 0;
+	jobs.remove_all_objects();
+	if(file_entries) {
+		file_entries->remove_all_objects();
+		delete file_entries;  file_entries = 0;
+	}
+}
+
 void BatchRenderThread::handle_close_event(int result)
 {
 // Save settings
@@ -242,15 +254,7 @@ void BatchRenderThread::handle_close_event(int result)
 	path[0] = 0;
 	save_jobs(path);
 	save_defaults(mwindow->defaults);
-	delete default_job;
-	default_job = 0;
-	jobs.remove_all_objects();
-	if(file_entries)
-	{
-		file_entries->remove_all_objects();
-		delete file_entries;
-		file_entries = 0;
-	}
+	reset();
 }
 
 BC_Window* BatchRenderThread::new_gui()
@@ -737,108 +741,61 @@ void BatchRenderGUI::create_objects()
 
 	int x = mwindow->theme->batchrender_x1;
 	int y = 5;
-	int x1 = mwindow->theme->batchrender_x1;
-	int x2 = mwindow->theme->batchrender_x2;
-	//int x3 = mwindow->theme->batchrender_x3;
-	int y1 = y;
-	int y2;
+	int x1 = x, x2 = get_w()/2 + 10; // mwindow->theme->batchrender_x2;
+	int y1 = 5, y2 = 5;
 
 // output file
-	add_subwindow(output_path_title = new BC_Title(x1, y, _("Output path:")));
-	y += 20;
-	format_tools = new BatchFormat(mwindow,
-					this,
-					thread->get_current_asset());
-	format_tools->set_w(get_w() / 2);
-	format_tools->create_objects(x,
-						y,
-						1,
-						1,
-						1,
-						1,
-						0,
-						1,
-						0,
-						0,
-						&thread->get_current_job()->strategy,
-						0);
+	add_subwindow(output_path_title = new BC_Title(x1, y1, _("Output path:")));
+	y1 += output_path_title->get_h() + mwindow->theme->widget_border;
 
-	x2 = x;
-	y2 = y + 10;
-	x += format_tools->get_w();
-	y = y1;
-	x1 = x;
-	//x3 = x + 80;
+	format_tools = new BatchFormat(mwindow, this, thread->get_current_asset());
+	format_tools->set_w(get_w() / 2);
+	format_tools->create_objects(x1, y1, 1, 1, 1, 1, 0, 1, 0, 0,
+			&thread->get_current_job()->strategy, 0); 
 
 // input EDL
-	x = x1;
-	add_subwindow(edl_path_title = new BC_Title(x, y, _("EDL Path:")));
-	y += 20;
-	add_subwindow(edl_path_text = new BatchRenderEDLPath(
-		thread,
-		x,
-		y,
-		get_w() - x - 40,
-		thread->get_current_edl()));
-
-	x += edl_path_text->get_w();
+	add_subwindow(edl_path_title = new BC_Title(x2, y2, _("EDL Path:")));
+	y2 += edl_path_title->get_h() + mwindow->theme->widget_border;
+	
+	x = x2;  y = y2;
+	add_subwindow(edl_path_text = new BatchRenderEDLPath( thread,
+		x, y, get_w()-x - 40, thread->get_current_edl())); 
+	x =  x2 + edl_path_text->get_w();
 	add_subwindow(edl_path_browse = new BrowseButton(
 		mwindow, this, edl_path_text, x, y, thread->get_current_edl(),
 		_("Input EDL"), _("Select an EDL to load:"), 0));
+	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
 
-	x = x1;
-	y += 64;
-	update_selected_edl = new BatchRenderUpdateEDL(thread, x, y);
-	add_subwindow(update_selected_edl);
+	x = x2;  y = y2;
+	add_subwindow(update_selected_edl = new BatchRenderUpdateEDL(thread, x, y));
 	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
-
-	add_subwindow(new_batch = new BatchRenderNew(thread,
-		x,
-		y));
-	x += new_batch->get_w() + 10;
-
-	add_subwindow(delete_batch = new BatchRenderDelete(thread,
-		x,
-		y));
-	x = new_batch->get_x();
-	y += new_batch->get_h() + mwindow->theme->widget_border;
-	use_current_edl = new BatchRenderCurrentEDL(thread, x, y);
-	add_subwindow(use_current_edl);
+	add_subwindow(use_current_edl = new BatchRenderCurrentEDL(thread, x, y));
+	y += use_current_edl->get_h() + mwindow->theme->widget_border;
 	if( !mwindow->edl || !mwindow->edl->path[0] ) use_current_edl->disable();
+	add_subwindow(new_batch = new BatchRenderNew(thread, x, y));
+	x += new_batch->get_w() + mwindow->theme->widget_border;
+	add_subwindow(delete_batch = new BatchRenderDelete(thread, x, y));
+	x = x2;  y += delete_batch->get_h() + mwindow->theme->widget_border;
+	add_subwindow(savelist_batch = new BatchRenderSaveList(thread, x, y));
+	x += savelist_batch->get_w() + mwindow->theme->widget_border;
+	add_subwindow(loadlist_batch = new BatchRenderLoadList(thread, x, y));
+	y2 = y + loadlist_batch->get_h() + mwindow->theme->widget_border;
+	if( y2 > y1 ) y1 = y2;
+	x = mwindow->theme->batchrender_x1, y = y1;
 
-	savelist_batch = new BatchRenderSaveList(thread, x, y);
-	add_subwindow(savelist_batch);
-	x += savelist_batch->get_w() + 10;
-
-	loadlist_batch = new BatchRenderLoadList(thread, x, y);
-	add_subwindow(loadlist_batch);
-	x += loadlist_batch->get_w() + 10;
-
-	x = x2;
-	y = y2;
 	add_subwindow(list_title = new BC_Title(x, y, _("Batches to render:")));
-	y += 20;
-	add_subwindow(batch_list = new BatchRenderList(thread,
-		x,
-		y,
-		get_w() - x - 10,
-		get_h() - y - BC_GenericButton::calculate_h() - 15));
+	y += list_title->get_h() + mwindow->theme->widget_border;
+	y1 = get_h();
+	y1 -= 15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
+	add_subwindow(batch_list = new BatchRenderList(thread, x, y,
+		get_w() - x - 10, y1 - y));
+	y += batch_list->get_h() + mwindow->theme->widget_border;
 
-	y += batch_list->get_h() + 10;
-	add_subwindow(start_button = new BatchRenderStart(thread,
-	    x,
-	    y));
-	x = get_w() / 2 -
-		BC_GenericButton::calculate_w(this, _("Stop")) / 2;
-	add_subwindow(stop_button = new BatchRenderStop(thread,
-		x,
-		y));
-	x = get_w() -
-		BC_GenericButton::calculate_w(this, _("Close")) -
-		10;
-	add_subwindow(cancel_button = new BatchRenderCancel(thread,
-		x,
-		y));
+	add_subwindow(start_button = new BatchRenderStart(thread, x, y));
+	x = get_w() / 2 - BC_GenericButton::calculate_w(this, _("Stop")) / 2;
+	add_subwindow(stop_button = new BatchRenderStop(thread, x, y));
+	x = get_w() - BC_GenericButton::calculate_w(this, _("Close")) - 10;
+	add_subwindow(cancel_button = new BatchRenderCancel(thread, x, y));
 
 	show_window(1);
 	unlock_window();
@@ -869,63 +826,52 @@ int BatchRenderGUI::resize_event(int w, int h)
 
 	int x = mwindow->theme->batchrender_x1;
 	int y = 5;
-	int x1 = mwindow->theme->batchrender_x1;
-	int x2 = mwindow->theme->batchrender_x2;
-	//int x3 = mwindow->theme->batchrender_x3;
-	int y1 = y;
-	int y2;
+	int x1 = x, x2 = get_w()/2 + 10; // mwindow->theme->batchrender_x2;
+	int y1 = 5, y2 = 5;
 
-	output_path_title->reposition_window(x1, y);
-	y += 20;
-	format_tools->reposition_window(x, y);
-	x2 = x;
-	y2 = y + 10;
-	y = y1;
-	x += format_tools->get_w();
-	x1 = x;
-	//x3 = x + 80;
+// output file
+	output_path_title->reposition_window(x1, y1);
+	y1 += output_path_title->get_h() + mwindow->theme->widget_border;
+	format_tools->reposition_window(x1, y1);
 
-	x = x1;
+// input EDL
+	x = x2, y = y2;
 	edl_path_title->reposition_window(x, y);
-	y += 20;
+	y += edl_path_title->get_h() + mwindow->theme->widget_border;
 	edl_path_text->reposition_window(x, y, w - x - 40);
 	x += edl_path_text->get_w();
 	edl_path_browse->reposition_window(x, y);
+	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
 
- 	x = x1;
-// 	y += 30;
-// 	status_title->reposition_window(x, y);
-// 	x = x3;
-// 	status_text->reposition_window(x, y);
-// 	x = x1;
-// 	y += 30;
-// 	progress_bar->reposition_window(x, y, w - x - 10);
-
-	y += 30;
+	x = x2;  y = y2;
 	update_selected_edl->reposition_window(x, y);
 	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
-	new_batch->reposition_window(x, y);
-	x += new_batch->get_w() + 10;
-	delete_batch->reposition_window(x, y);
-	x = new_batch->get_x();
-	y += new_batch->get_h() + mwindow->theme->widget_border;
 	use_current_edl->reposition_window(x, y);
+	y += use_current_edl->get_h() + mwindow->theme->widget_border;
+	new_batch->reposition_window(x, y);
+	x += new_batch->get_w() + mwindow->theme->widget_border;
+	delete_batch->reposition_window(x, y);
 
-	x = x2;
-	y = y2;
-	int y_margin = get_h() - batch_list->get_h();
+	x = x2;  y += delete_batch->get_h() + mwindow->theme->widget_border;
+	savelist_batch->reposition_window(x, y);
+	x += savelist_batch->get_w() + mwindow->theme->widget_border;
+	loadlist_batch->reposition_window(x, y);
+	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
+
+	y1 = 15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
+	y2 = get_h() - y1 - batch_list->get_h();
+	y2 -= list_title->get_h() + mwindow->theme->widget_border;
+
+	x = mwindow->theme->batchrender_x1;  y = y2;
 	list_title->reposition_window(x, y);
-	y += 20;
-	batch_list->reposition_window(x, y, w - x - 10, h - y_margin);
+	y += list_title->get_h() + mwindow->theme->widget_border;
+	batch_list->reposition_window(x, y, w - x - 10, h - y - y1);
+	y += batch_list->get_h() + mwindow->theme->widget_border;
 
-	y += batch_list->get_h() + 10;
 	start_button->reposition_window(x, y);
-	x = w / 2 -
-		stop_button->get_w() / 2;
+	x = w / 2 - stop_button->get_w() / 2;
 	stop_button->reposition_window(x, y);
-	x = w -
-		cancel_button->get_w() -
-		10;
+	x = w - cancel_button->get_w() - 10;
 	cancel_button->reposition_window(x, y);
 	return 1;
 }

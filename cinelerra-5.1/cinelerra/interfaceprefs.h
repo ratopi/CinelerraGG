@@ -43,6 +43,7 @@ class ViewThemeItem;
 class UseTipWindow;
 class StillImageUseDuration;
 class StillImageDuration;
+class KeyframeReticle;
 
 #include "browsebutton.h"
 #include "deleteallindexes.inc"
@@ -84,6 +85,7 @@ public:
 	ViewBehaviourText *button1, *button2, *button3;
 	ViewThumbnails *thumbnails;
 	ShBtnEditDialog *shbtn_dialog;
+	KeyframeReticle *keyframe_reticle;
 };
 
 
@@ -349,5 +351,26 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class KeyframeReticle : public BC_PopupMenu
+{
+public:
+	KeyframeReticle(int x, int y, int *output);
+	~KeyframeReticle();
+
+	const char* hairline_to_string(int type);
+	void create_objects();
+	int *output;
+};
+
+class HairlineItem : public BC_MenuItem
+{
+public:
+	HairlineItem(KeyframeReticle *popup, int hairline);
+	~HairlineItem();
+
+	KeyframeReticle *popup;
+	int handle_event();
+	int hairline;
+};
 
 #endif

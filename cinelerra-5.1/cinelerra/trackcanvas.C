@@ -204,13 +204,23 @@ int TrackCanvas::drag_motion(Track **over_track,
 					int64_t edit_x, edit_y, edit_w, edit_h;
 					edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
 
-					if(cursor_x >= edit_x &&
-						cursor_y >= edit_y &&
-						cursor_x < edit_x + edit_w &&
-						cursor_y < edit_y + edit_h)
-					{
+					if( cursor_x >= edit_x && cursor_x < edit_x + edit_w &&
+					    cursor_y >= edit_y && cursor_y < edit_y + edit_h ) {
 						*over_edit = edit;
 						break;
+					}
+					if( edit != track->edits->last ) continue;
+					if( edit->silence() ) continue;
+					if( mwindow->session->current_operation != DRAG_ATRANSITION &&
+					    mwindow->session->current_operation != DRAG_VTRANSITION ) continue;
+					if( cursor_x >= edit_x + edit_w &&
+					    cursor_y >= edit_y && cursor_y < edit_y + edit_h ) {
+						// add silence to allow drag transition past last edit
+						//  will be deleted by Edits::optimize if not used
+						double length = mwindow->edl->session->default_transition_length;
+						int64_t start = edit->startproject+edit->length;
+						int64_t units = track->to_units(length, 1); 
+						track->edits->create_silence(start, start+units);
 					}
 				}
 
@@ -2091,6 +2101,45 @@ int TrackCanvas::do_keyframes(int cursor_x,
 	return result;
 }
 
+void TrackCanvas::draw_keyframe_reticle()
+{
+	int keyframe_hairline = mwindow->preferences->keyframe_reticle;
+	if( keyframe_hairline == HAIRLINE_NEVER ) return;
+
+	int current_op = mwindow->session->current_operation, dragging = 0;
+	for( int i=0; !dragging && i<AUTOMATION_TOTAL; ++i )
+		if( current_op == auto_operations[i] ) dragging = 1;
+
+	if( keyframe_hairline == HAIRLINE_DRAGGING && dragging ) {
+		if( mwindow->session->drag_auto && get_buttonpress() == 1 ) {
+			draw_hairline(mwindow->session->drag_auto, RED);
+			return;
+		}
+	}
+
+	if( keyframe_hairline == HAIRLINE_ALWAYS || ( get_buttonpress() == 2 &&
+	    keyframe_hairline == HAIRLINE_DRAGGING && dragging ) ) {
+		for( Track *track = mwindow->edl->tracks->first; track;
+		     track=track->next ) {
+			Automation *automation = track->automation;
+			for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
+				if( !mwindow->edl->session->auto_conf->autos[i] ) continue;
+				// automation visible
+				Autos *autos = automation->autos[i];
+				if( !autos ) continue;
+				for( Auto *auto_keyframe=autos->first; auto_keyframe;
+				     auto_keyframe = auto_keyframe->next ) {
+					draw_hairline(auto_keyframe, GREEN);
+				}
+			}
+
+			if( dragging && mwindow->session->drag_auto ) {
+				draw_hairline(mwindow->session->drag_auto, RED);
+			}
+		}
+	}
+}
+
 void TrackCanvas::draw_auto(Auto *current,
 	int x,
 	int y,
@@ -3328,6 +3377,28 @@ int TrackCanvas::do_plugin_autos(Track *track, int cursor_x, int cursor_y,
 	return result;
 }
 
+int TrackCanvas::draw_hairline(Auto *auto_keyframe, int color)
+{
+	Track *track = auto_keyframe->autos->track;
+	int autogrouptype = auto_keyframe->autos->get_type();
+
+	int center_pixel;
+	double view_start, unit_start;
+	double view_end, unit_end, yscale;
+	double zoom_sample, zoom_units;
+
+	calculate_viewport(track, view_start, unit_start, view_end, unit_end,
+			yscale, center_pixel, zoom_sample, zoom_units);
+
+	double ax = 0, ay = 0;
+	calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
+		auto_keyframe, unit_start, zoom_units, yscale, autogrouptype);
+
+	set_color(color);
+	draw_line(ax, 0, ax, get_h());
+	return 0;
+}
+
 void TrackCanvas::draw_overlays()
 {
 	int new_cursor, update_cursor, rerender;
@@ -3368,6 +3439,8 @@ void TrackCanvas::draw_overlays()
 
 // Playback cursor
 	draw_playback_cursor();
+
+	draw_keyframe_reticle();
 
 	show_window(0);
 }

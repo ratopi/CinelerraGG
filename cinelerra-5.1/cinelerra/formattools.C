@@ -179,21 +179,20 @@ void FormatTools::create_objects(int &init_x,
 
 	if(!recording)
 	{
-		window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
-		x += path_textbox->get_w() + 5;
+		int px = x;
+		window->add_subwindow(path_textbox = new FormatPathText(px, y, this));
+		px += path_textbox->get_w() + 5;
 		path_recent = new BC_RecentList("PATH", mwindow->defaults,
-					path_textbox, 10, x, y, 300, 100);
+					path_textbox, 10, px, y, 300, 100);
 		window->add_subwindow(path_recent);
 		path_recent->load_items(File::formattostr(asset->format));
-		x += path_recent->get_w() + 8;
+		px += path_recent->get_w() + 8;
 		window->add_subwindow(path_button = new BrowseButton(
-			mwindow, window, path_textbox, x, y, asset->path,
+			mwindow, window, path_textbox, px, y, asset->path,
 			_("Output to file"), _("Select a file to write to:"), 0));
 
 // Set w for user.
 		w = MAX(w, 305);
-//		w = x + path_button->get_w() + 5;
-		x -= path_textbox->get_w() + 5;
 		y += path_textbox->get_h() + 10;
 	}
 	else
@@ -212,10 +211,10 @@ void FormatTools::create_objects(int &init_x,
 	window->add_subwindow(format_button = new FormatFormat(x, y, this));
 	format_button->create_objects();
 	x += format_button->get_w() + 5;
-	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y, 50, 1, asset->fformat));
+	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y+5, 50, 1, asset->fformat));
 	FFMPEG::set_asset_format(asset, asset->fformat);
 	x += ffmpeg_type->get_w();
-	window->add_subwindow(format_ffmpeg = new FormatFFMPEG(x, y, this));
+	window->add_subwindow(format_ffmpeg = new FormatFFMPEG(x, y+5, this));
 	format_ffmpeg->create_objects();
 	x = init_x;
 	y += format_button->get_h() + 10;
@@ -507,7 +506,8 @@ void FormatTools::close_format_windows()
 
 int FormatTools::get_w()
 {
-	return w;
+	return asset->format != FILE_FFMPEG ? w :
+		format_ffmpeg->get_x() + format_ffmpeg->get_w();
 }
 
 void FormatTools::set_w(int w)
@@ -522,11 +522,13 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 
 	if(path_textbox)
 	{
-		path_textbox->reposition_window(x, y);
-		x += path_textbox->get_w() + 5;
-		path_button->reposition_window(x, y);
-		x -= path_textbox->get_w() + 5;
-		y += 35;
+		int px = x;
+		path_textbox->reposition_window(px, y);
+		px += path_textbox->get_w() + 5;
+		path_recent->reposition_window(px, y);
+		px += path_recent->get_w() + 8;
+		path_button->reposition_window(px, y);
+		y += path_textbox->get_h() + 10;
 	}
 
 	format_title->reposition_window(x, y);
@@ -547,7 +549,7 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 		if(prompt_audio) audio_switch->reposition_window(x, y);
 
 		x = init_x;
-		y += aparams_button->get_h() + 20;
+		y += aparams_button->get_h() + 10;
 		if(prompt_audio_channels)
 		{
 			channels_title->reposition_window(x, y);

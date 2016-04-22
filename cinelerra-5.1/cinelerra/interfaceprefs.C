@@ -160,7 +160,6 @@ void InterfacePrefs::create_objects()
 		MEDIUMFONT, 
 		resources->text_default));
 	sprintf(string, "%jd", pwindow->thread->preferences->index_size);
-	x1 = x + 230;
 	add_subwindow(isize = new IndexSize(x + 230, y, pwindow, string));
 	add_subwindow(new ScanCommercials(pwindow, 350,y));
 	y += 30;
@@ -179,11 +178,16 @@ void InterfacePrefs::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Editing"), LARGEFONT, resources->text_default));
 
+	int y1 = y + 5;
 	y += 35;
-
-	add_subwindow(thumbnails = new ViewThumbnails(x, y, pwindow));
+	add_subwindow(title = new BC_Title(x, y, _("Keyframe reticle:")));
+	x1 = x + title->get_w() + 10;
+	keyframe_reticle = new KeyframeReticle(x1, y, &pwindow->thread->preferences->keyframe_reticle);
+	add_subwindow(keyframe_reticle);
+	keyframe_reticle->create_objects();
 
 	int x2 = x + 400, y2 = y;
+	add_subwindow(thumbnails = new ViewThumbnails(x2, y1, pwindow));
 	AndroidRemote *android_remote = new AndroidRemote(pwindow, x2, y2);
 	add_subwindow(android_remote);
 	y2 += android_remote->get_h() + 10;
@@ -793,5 +797,52 @@ int StillImageDuration::handle_event()
 {
 	pwindow->thread->edl->session->si_duration = atof(get_text());
 	return 1;
+}
+
+
+HairlineItem::HairlineItem(KeyframeReticle *popup, int hairline)
+ : BC_MenuItem(popup->hairline_to_string(hairline))
+{
+	this->popup = popup;
+	this->hairline = hairline;
+}
+
+HairlineItem::~HairlineItem()
+{
+}
+
+int HairlineItem::handle_event()
+{
+	popup->set_text(get_text());
+	*(popup->output) = hairline;
+	return 1;
+}
+
+
+KeyframeReticle::KeyframeReticle(int x, int y, int *output)
+ : BC_PopupMenu(x, y, 175, hairline_to_string(*output))
+{
+	this->output = output;
+}
+
+KeyframeReticle::~KeyframeReticle()
+{
+}
+
+const char *KeyframeReticle::hairline_to_string(int type)
+{
+	switch( type ) {
+	case HAIRLINE_NEVER:    return _("Never");
+	case HAIRLINE_DRAGGING:	return _("Dragging");
+	case HAIRLINE_ALWAYS:   return _("Always");
+	}
+	return _("Unknown");
+}
+
+void KeyframeReticle::create_objects()
+{
+	add_item(new HairlineItem(this, HAIRLINE_NEVER));
+	add_item(new HairlineItem(this, HAIRLINE_DRAGGING));
+	add_item(new HairlineItem(this, HAIRLINE_ALWAYS));
 }
 

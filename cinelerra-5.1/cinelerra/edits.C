@@ -408,7 +408,7 @@ int Edits::optimize()
 	    		current = current->next;
 		}
 
-		if(last && last->silence()) {
+		if(last && last->silence() && !last->transition ) {
 			delete last;
 			result = 1;
 		}

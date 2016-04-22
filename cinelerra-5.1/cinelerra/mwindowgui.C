@@ -1018,7 +1018,7 @@ int MWindowGUI::drag_stop()
 		if(pane[i]) result |= pane[i]->canvas->drag_stop(
 			&redraw);
 	}
-
+	mwindow->edl->optimize();
 
 // since we don't have subwindows we have to terminate any drag operation
 	if(result)

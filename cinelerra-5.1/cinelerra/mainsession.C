@@ -315,8 +315,8 @@ void MainSession::default_window_positions(int window_config)
 	swindow_w = 600;
 	swindow_h = 400;
 
-	batchrender_w = 540;
-	batchrender_h = 340;
+	batchrender_w = 750;
+	batchrender_h = 400;
 	batchrender_x = root_w / 2 - batchrender_w / 2;
 	batchrender_y = root_h / 2 - batchrender_h / 2;
 }

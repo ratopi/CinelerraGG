@@ -76,6 +76,9 @@ public:
 	void draw_highlight_insertion(int x, int y, int w, int h);
 	void draw_playback_cursor();
 	void draw_highlighting();
+	void draw_keyframe_reticle();
+	int draw_hairline(Auto *auto_keyframe, int color);
+
 // User can either call draw or draw_overlays to copy a fresh
 // canvas and just draw the overlays over it
 	void draw_overlays();

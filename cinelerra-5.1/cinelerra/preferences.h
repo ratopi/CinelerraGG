@@ -85,6 +85,7 @@ public:
 	int index_count;
 // Use thumbnails in AWindow assets.
 	int use_thumbnails;
+	int keyframe_reticle;
 	int trap_sigsegv;
 	int trap_sigintr;
 // Title of theme

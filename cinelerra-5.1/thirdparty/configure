@@ -57,7 +57,7 @@ add_library() {
 inc_a52dec="include"
 add_library a52dec \
 	liba52/.libs/liba52.a
-inc_audiofile="."
+inc_audiofile="libaudiofile"
 add_library audiofile \
 	libaudiofile/.libs/libaudiofile.a \
 	libaudiofile/modules/.libs/libmodules.a \
