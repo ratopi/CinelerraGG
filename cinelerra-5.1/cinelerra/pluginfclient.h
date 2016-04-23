@@ -232,7 +232,7 @@ public:
 	int activate();
 	void reactivate();
 
-        PluginFClientConfig curr_config, av_config;
+        PluginFClientConfig curr_config;
         PLUGIN_CLASS_MEMBERS(PluginFClientConfig)
 };
 

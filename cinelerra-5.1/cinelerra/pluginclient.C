@@ -55,8 +55,9 @@ PluginClientThread::PluginClientThread(PluginClient *client)
 
 PluginClientThread::~PluginClientThread()
 {
-//printf("PluginClientThread::~PluginClientThread %p %d\n", this, __LINE__);
 	join();
+//printf("PluginClientThread::~PluginClientThread %p %d\n", this, __LINE__);
+	delete window;  window = 0;
 //printf("PluginClientThread::~PluginClientThread %p %d\n", this, __LINE__);
 	delete init_complete;
 }
@@ -67,10 +68,10 @@ void PluginClientThread::run()
 	int result = 0;
 	if(client->window_x < 0) client->window_x = info.get_abs_cursor_x();
 	if(client->window_y < 0) client->window_y = info.get_abs_cursor_y();
-	window = client->new_window();
+	if(!window)
+		window = client->new_window();
 
-	if(window)
-	{
+	if(window) {
 		window->lock_window("PluginClientThread::run");
 		window->create_objects();
 		window->unlock_window();
@@ -84,7 +85,6 @@ void PluginClientThread::run()
 //printf("PluginClientThread::run %p %d\n", this, __LINE__);
 		window->hide_window(1);
 		window->unlock_window();
-		delete window;  window = 0;
 // Can't save defaults in the destructor because it's not called immediately
 // after closing.
 		/* if(client->defaults) */ client->save_defaults_xml();
@@ -656,12 +656,6 @@ int64_t PluginClient::get_out_buffers(int64_t recommended_size)
 int PluginClient::get_gui_status()
 {
 	return server->get_gui_status();
-}
-
-int PluginClient::start_plugin()
-{
-	printf(_("No processing defined for this plugin.\n"));
-	return 0;
 }
 
 // close event from client side

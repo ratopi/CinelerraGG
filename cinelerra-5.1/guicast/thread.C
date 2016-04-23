@@ -316,7 +316,7 @@ void Thread::dump_threads(FILE *fp)
 {
 	int i = thread_list.size();
 	while( --i >= 0 ) {
-		fprintf(fp, "thread %016lx, owner %016lx, %s\n",
+		fprintf(fp, "thread 0x%012lx, owner 0x%012lx, %s\n",
 			(unsigned long)thread_list[i]->tid, (unsigned long)thread_list[i]->owner,
 			thread_list[i]->name);
 	}

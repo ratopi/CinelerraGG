@@ -470,6 +470,9 @@ tags:
 $(OBJDIR)/%.o:		%.C
 	$(CXX) `cat $(OBJDIR)/c_flags` -c $< -o $@
 
+$(OBJDIR)/sha1.o:	sha1.C sha1.h
+	$(CXX) `cat $(OBJDIR)/c_flags` -O3 -c $< -o $@
+
 $(DCRAW): dcraw.c
 	$(GCC) `cat $(OBJDIR)/c_flags` dcraw.c -o $*.o
 

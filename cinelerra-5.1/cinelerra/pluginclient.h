@@ -241,7 +241,6 @@ public:
 // For realtime plugins give the requested framerate.
 	virtual double get_framerate();
 	virtual int delete_nonrealtime_parameters();
-	virtual int start_plugin();         // run a non realtime plugin
 	virtual int get_parameters();     // get information from user before non realtime processing
 	virtual int64_t get_in_buffers(int64_t recommended_size);  // return desired size for input buffers
 	virtual int64_t get_out_buffers(int64_t recommended_size);     // return desired size for output buffers

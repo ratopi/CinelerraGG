@@ -3,10 +3,24 @@
 
 void SHA1::addBytes(const uint8_t* input, size_t length)
 {
-	while (length--) {
-		m_buffer[m_cursor++] = *input++;
-		++m_totalBytes;
-		if (m_cursor == 64) processBlock();
+	m_totalBytes += length;
+	while (length > 0) {
+#if 1
+// allow unaliged access
+		uint64_t *buf = (uint64_t*)&m_buffer[m_cursor];
+		const uint64_t *inp = (const uint64_t*)input;
+		while (length >= sizeof(uint64_t) && m_cursor < 64) {
+			*buf++ = *inp++;
+			m_cursor += sizeof(uint64_t);
+			length -= sizeof(uint64_t);
+		}
+		input = (const uint8_t *)inp;
+#endif
+		while (length > 0 && m_cursor < 64) {
+			m_buffer[m_cursor++] = *input++;
+			--length;
+		}
+		if( m_cursor >= 64 ) processBlock();
 	}
 }
 

@@ -76,6 +76,7 @@ void PluginFClientConfig::interpolate(PluginFClientConfig &prev, PluginFClientCo
 
 void PluginFClientConfig::initialize(const char *name)
 {
+	delete ffilt;
 	ffilt = PluginFFilter::new_ffilter(name);
 	const AVOption *opt = 0;
 	void *obj = ffilt->filter_config();
@@ -154,7 +155,7 @@ PluginFClientReset::
 
 int PluginFClientReset::handle_event()
 {
-	av_opt_set_defaults(fwin->ffmpeg->config.filter_config());
+	fwin->ffmpeg->config.initialize(fwin->ffmpeg->name);
 	if( fwin->ffmpeg->config.update() > 0 )
 		fwin->draw();
 	fwin->ffmpeg->plugin->send_configure_change();

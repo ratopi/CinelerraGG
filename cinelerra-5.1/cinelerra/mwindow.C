@@ -119,11 +119,17 @@
 #include "defaultformats.h"
 #include "ntsczones.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/mman.h>
+#include <limits.h>
+#include <errno.h>
 
 
 extern "C"
@@ -3107,37 +3113,50 @@ void MWindow::dump_exe(FILE *fp)
 {
         char proc_path[BCTEXTLEN], exe_path[BCTEXTLEN];
         sprintf(proc_path, "/proc/%d/exe", (int)getpid());
-        int len = readlink(proc_path, exe_path, sizeof(exe_path));
-	if( len < 0 ) { fprintf(fp,"readlink: %m\n"); return; }
-	exe_path[len] = 0;
+        int ret = readlink(proc_path, exe_path, sizeof(exe_path));
+	if( ret < 0 ) { fprintf(fp,"readlink: %m\n"); return; }
+	exe_path[ret] = 0;
 	struct stat st;
 	if( stat(exe_path,&st) ) { fprintf(fp,"stat: %m\n"); return; }
 	fprintf(fp, "path: %s = %9jd bytes\n",exe_path,st.st_size);
-	int fd = open(exe_path,O_RDONLY);
+	int fd = open(exe_path,O_RDONLY+O_NONBLOCK);
 	if( fd < 0 ) { fprintf(fp,"open: %m\n"); return; }
-	uint8_t buf[65536];  SHA1 sha1;
-	while( (len=read(fd,buf,sizeof(buf))) > 0 ) {
-		sha1.addBytes(buf, len);
+	uint8_t *bfr = 0;
+	int64_t bfrsz = 0;
+	int64_t pagsz = sysconf(_SC_PAGE_SIZE);
+	int64_t maxsz = 1024*pagsz;
+	int64_t size = st.st_size, pos = 0;
+	SHA1 sha1;
+	while( (bfrsz = size-pos) > 0 ) {
+		if( bfrsz > maxsz ) bfrsz = maxsz;
+		bfr = (uint8_t *)mmap(NULL, bfrsz, PROT_READ,
+			MAP_PRIVATE+MAP_NORESERVE+MAP_POPULATE, fd, pos);
+		if( bfr == MAP_FAILED ) break;
+		sha1.addBytes(bfr, bfrsz);
+		munmap(bfr, bfrsz);
+		pos += bfrsz;
 	}
 	close(fd);
+	ret = pos < size ? EIO : 0;
 	fprintf(fp, "SHA1: ");
 	uint8_t digest[20];  sha1.computeHash(digest);
 	for( int i=0; i<20; ++i ) fprintf(fp, "%02x", digest[i]);
+	if( ret < 0 ) fprintf(fp, " (ret %d)", ret);
+	if( pos < st.st_size ) fprintf(fp, " (pos %jd)", pos);
 	fprintf(fp, "\n");
 }
-
 
 void MWindow::trap_hook(FILE *fp, void *vp)
 {
 	MWindow *mwindow = (MWindow *)vp;
-	fprintf(fp, "\nEXE:\n");
-	mwindow->dump_exe(fp);
-	fprintf(fp, "\nPLUGINS:\n");
-	mwindow->dump_plugins(fp);
+//	fprintf(fp, "\nPLUGINS:\n");
+//	mwindow->dump_plugins(fp);
 	fprintf(fp, "\nEDL:\n");
 	mwindow->dump_edl(fp);
 	fprintf(fp, "\nUNDO:\n");
 	mwindow->dump_undo(fp);
+	fprintf(fp, "\nEXE:\n");
+	mwindow->dump_exe(fp);
 }
 
 
@@ -3400,7 +3419,7 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 	int result = file->open_file(preferences, asset, 1, 0);
 	if( !result && delete_tracks > 0 )
 		undo->update_undo_before();
-	if( !result && asset->get_video_layers() > 0 ) {
+	if( !result && asset->video_data && asset->get_video_layers() > 0 ) {
 		// try to get asset up to date, may fail
 		file->select_video_stream(asset, vstream);
 		// either way use what was/is there.
@@ -3452,14 +3471,16 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 		}
 		edl->resample(old_framerate, session->frame_rate, TRACK_VIDEO);
 	}
-	if( !result && asset->channels > 0 ) {
+	if( !result && asset->audio_data && asset->channels > 0 ) {
 		session->sample_rate = asset->get_sample_rate();
 		int64_t channel_mask = 0;
-		int astrm = file->get_audio_for_video(vstream, astream, channel_mask);
+		int astrm = !asset->video_data ? -1 :
+			file->get_audio_for_video(vstream, astream, channel_mask);
 		if( astrm >= 0 ) file->select_audio_stream(asset, astrm);
 		if( astrm < 0 || !channel_mask ) channel_mask = (1<<asset->channels)-1;
 		int channels = 0;
 		for( uint64_t mask=channel_mask; mask!=0; mask>>=1 ) channels += mask & 1;
+		if( channels < 1 ) channels = 1;
 		if( channels > 6 ) channels = 6;
 		session->audio_tracks = session->audio_channels = channels;
 		switch( channels ) {
@@ -3475,6 +3496,15 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 			session->achannel_positions[0] = 180;
 			session->achannel_positions[1] = 0;
 			break;
+		case 1:
+			session->achannel_positions[1] = 90;
+			break;
+		default: {
+			if( !channels ) break;
+			double t = 0, dt = 360./channels;
+			for( int i=channels; --i>=0; t+=dt )
+				session->achannel_positions[i] = int(t+0.5);
+			break; }
 		}
 		remap_audio(MWindow::AUDIO_1_TO_1);
 
@@ -3510,6 +3540,8 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 int MWindow::select_asset(int vtrack, int delete_tracks)
 {
 	Track *track = edl->tracks->get(vtrack, TRACK_VIDEO);
+	if( !track )
+		track = edl->tracks->get(vtrack, TRACK_AUDIO);
 	if( !track ) return 1;
 	Edit *edit = track->edits->first;
 	if( !edit ) return 1;

@@ -618,7 +618,7 @@ Tree::~Tree()
 	int i;
 
 	for (i = 2 * levels - 1; i >= 0; i--)
-		delete values[i];
+		delete [] values[i];
 
 	delete values;
 }
