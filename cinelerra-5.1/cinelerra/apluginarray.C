@@ -19,6 +19,7 @@
  * 
  */
 
+#include "asset.h"
 #include "amodule.h"
 #include "apluginarray.h"
 #include "atrack.h"
@@ -81,7 +82,8 @@ void APluginArray::create_modules()
 
 void APluginArray::process_realtime(int module, int64_t input_position, int64_t len)
 {
-	values[module]->process_buffer(realtime_buffers + module,
+	int ibfr = module % file->asset->channels;
+	values[module]->process_buffer(realtime_buffers + ibfr,
 			input_position, 
 			len,
 			edl->session->sample_rate,
@@ -92,7 +94,8 @@ void APluginArray::process_realtime(int module, int64_t input_position, int64_t 
 int APluginArray::process_loop(int module, int64_t &write_length)
 {
 	if(!realtime_buffers) realtime_buffers = file->get_audio_buffer();
-	int result = values[module]->process_loop(&realtime_buffers[module], 
+	int ibfr = module % file->asset->channels;
+	int result = values[module]->process_loop(&realtime_buffers[ibfr], 
 		write_length);
 	return result;
 }

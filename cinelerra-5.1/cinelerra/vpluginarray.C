@@ -19,6 +19,7 @@
  * 
  */
 
+#include "asset.h"
 #include "bcsignals.h"
 #include "cache.h"
 #include "edl.h"
@@ -97,7 +98,8 @@ void VPluginArray::process_realtime(int module,
 	int64_t input_position, 
 	int64_t len)
 {
-	values[module]->process_buffer(realtime_buffers[module], 
+	int ibfr = module % file->asset->layers;
+	values[module]->process_buffer(realtime_buffers[ibfr], 
 			input_position, 
 			edl->session->frame_rate,
 			end - start,
@@ -109,15 +111,16 @@ int VPluginArray::process_loop(int module, int64_t &write_length)
 	if(!realtime_buffers) realtime_buffers = file->get_video_buffer();
 
 // Convert from array of frames to array of tracks
-	VFrame **temp_buffer;
-	temp_buffer = new VFrame*[total_tracks()];
-	for(int i = 0; i < total_tracks(); i++)
-	{
-		temp_buffer[i] = realtime_buffers[i][0];
-	}
+//	VFrame **temp_buffer;
+//	temp_buffer = new VFrame*[total_tracks()];
+//	for(int i = 0; i < total_tracks(); i++)
+//	{
+//		temp_buffer[i] = realtime_buffers[i][0];
+//	}
 
-	int result = values[module]->process_loop(realtime_buffers[module], write_length);
-	delete [] temp_buffer;
+	int ibfr = module % file->asset->layers;
+	int result = values[module]->process_loop(realtime_buffers[ibfr], write_length);
+//	delete [] temp_buffer;
 	return result;
 }
 

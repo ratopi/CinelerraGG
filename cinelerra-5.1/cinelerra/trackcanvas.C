@@ -203,25 +203,24 @@ int TrackCanvas::drag_motion(Track **over_track,
 				{
 					int64_t edit_x, edit_y, edit_w, edit_h;
 					edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
-
-					if( cursor_x >= edit_x && cursor_x < edit_x + edit_w &&
-					    cursor_y >= edit_y && cursor_y < edit_y + edit_h ) {
+					if( cursor_y < edit_y || cursor_y >= edit_y + edit_h ) continue;
+					if( cursor_x >= edit_x && cursor_x < edit_x + edit_w ) {
 						*over_edit = edit;
 						break;
 					}
 					if( edit != track->edits->last ) continue;
-					if( edit->silence() ) continue;
 					if( mwindow->session->current_operation != DRAG_ATRANSITION &&
 					    mwindow->session->current_operation != DRAG_VTRANSITION ) continue;
-					if( cursor_x >= edit_x + edit_w &&
-					    cursor_y >= edit_y && cursor_y < edit_y + edit_h ) {
+					if( !edit->silence() ) {
 						// add silence to allow drag transition past last edit
 						//  will be deleted by Edits::optimize if not used
 						double length = mwindow->edl->session->default_transition_length;
 						int64_t start = edit->startproject+edit->length;
 						int64_t units = track->to_units(length, 1); 
 						track->edits->create_silence(start, start+units);
+						continue;
 					}
+					if( cursor_x >= edit_x ) { *over_edit = edit; break; }
 				}
 
 				for(int i = 0; i < track->plugin_set.total; i++)

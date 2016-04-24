@@ -2871,11 +2871,9 @@ void MWindow::rebuild_indices()
 void MWindow::save_backup()
 {
 	FileXML file;
+	edl->optimize();
 	edl->set_path(session->filename);
-	edl->save_xml(&file,
-		BACKUP_PATH,
-		0,
-		0);
+	edl->save_xml(&file, BACKUP_PATH, 0, 0);
 	file.terminate_string();
 	char path[BCTEXTLEN];
 	FileSystem fs;

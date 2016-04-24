@@ -361,6 +361,10 @@ void Tracks::set_transition_length(double start, double end, double length)
 				{
 					current_edit->transition->length =
 						current_track->to_units(length, 1);
+					if( current_edit == current_track->edits->last &&
+					    current_edit->silence() ) {
+						current_edit->length = current_edit->transition->length;
+					}
 				}
 			}
 		}
@@ -383,6 +387,10 @@ void Tracks::set_transition_length(Transition *transition, double length)
 			if(current_edit->transition == transition)
 			{
 				transition->length = current_track->to_units(length, 1);
+				if( current_edit == current_track->edits->last &&
+				    current_edit->silence() ) {
+					current_edit->length = current_edit->transition->length;
+				}
 				done = 1;
 			}
 		}
@@ -399,20 +407,30 @@ void Tracks::paste_transitions(double start, double end, int track_type, char* t
 		{
 			int64_t start_units = current_track->to_units(start, 0);
 			int64_t end_units = current_track->to_units(end, 0);
-
-			for(Edit *current_edit = current_track->edits->first;
-				current_edit;
-				current_edit = current_edit->next)
-			{
-				if(current_edit->startproject > 0 &&
-					((end_units > start_units &&
-					current_edit->startproject >= start_units &&
-					current_edit->startproject < end_units) ||
-					(end_units == start_units &&
-					current_edit->startproject <= start_units &&
-					current_edit->startproject + current_edit->length > start_units)))
-				{
+			if( start_units == end_units ) {
+				for( Edit *current_edit = current_track->edits->first;
+				     current_edit; current_edit = current_edit->next) {
+					int64_t edit_start = current_edit->startproject;
+					int64_t edit_end = edit_start + current_edit->length;
+					if( edit_start > start_units ) continue;
+					if( start_units == current_track->edits->length() ) {
+						double length = edl->session->default_transition_length;
+						int64_t units = current_track->to_units(length, 1);
+						current_edit = current_track->edits->
+							create_silence(start_units, start_units+units);
+					}
+					else if( start_units >= edit_end ) continue;
 					current_edit->insert_transition(title);
+				}
+			}
+			else {
+				for( Edit *current_edit = current_track->edits->first;
+				     current_edit; current_edit = current_edit->next) {
+					int64_t edit_start = current_edit->startproject;
+					if( !edit_start ) continue;
+					if( edit_start >= start_units && edit_start < end_units ) {
+						current_edit->insert_transition(title);
+					}
 				}
 			}
 		}
@@ -978,6 +996,11 @@ void Tracks::paste_audio_transition(PluginServer *server)
 			Edit *current_edit = current->edits->editof(position,
 				PLAY_FORWARD,
 				0);
+			if( !current_edit && position == current->edits->length() ) {
+				double length = edl->session->default_transition_length;
+				int64_t units = current->to_units(length, 1);
+				current_edit = current->edits->create_silence(position, position+units);
+			}
 			if(current_edit)
 			{
 				paste_transition(server, current_edit);
@@ -1127,6 +1150,11 @@ void Tracks::paste_video_transition(PluginServer *server, int first_track)
 			Edit *current_edit = current->edits->editof(position,
 				PLAY_FORWARD,
 				0);
+			if( !current_edit && position == current->edits->length() ) {
+				double length = edl->session->default_transition_length;
+				int64_t units = current->to_units(length, 1);
+				current_edit = current->edits->create_silence(position, position+units);
+			}
 			if(current_edit)
 			{
 				paste_transition(server, current_edit);

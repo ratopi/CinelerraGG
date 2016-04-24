@@ -213,10 +213,8 @@ int64_t Edit::get_source_end(int64_t default_)
 void Edit::insert_transition(char *title)
 {
 //printf("Edit::insert_transition this=%p title=%p title=%s\n", this, title, title);
-	detach_transition();
-	transition = new Transition(edl,
-		this,
-		title,
+	delete transition;
+	transition = new Transition(edl, this, title,
 		track->to_units(edl->session->default_transition_length, 1));
 }
 
@@ -228,10 +226,7 @@ void Edit::detach_transition()
 
 int Edit::silence()
 {
-	if(asset || nested_edl)
-		return 0;
-	else
-		return 1;
+	return asset || nested_edl ? 0 : 1;
 }
 
 

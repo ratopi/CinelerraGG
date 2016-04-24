@@ -245,7 +245,8 @@ double Track::get_length()
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		if( !plugin_set.values[i]->last ) continue;
-		length = from_units(plugin_set.values[i]->last->startproject);
+		length = from_units(plugin_set.values[i]->last->startproject +
+			plugin_set.values[i]->last->length);
 		if(length > total_length) total_length = length;
 	}
 
