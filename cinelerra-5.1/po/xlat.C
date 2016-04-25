@@ -141,6 +141,11 @@ static void xlat3(const char *cp, uint8_t *out)
     }
     wnext(out,'\\');
     wnext(out, ch);
+    if( ch == 'n' && *bp ) {
+      wnext(out, '\"');
+      wnext(out, '\n');
+      wnext(out, '\"');
+    }
   }
   wnext(out, '\"');
   wnext(out, 0);
@@ -216,6 +221,7 @@ static inline int bput(uint8_t *bp, FILE *fp)
 }
 
 static bool goog = false;
+static bool nocmts = false;
 
 static inline bool is_nlin(unsigned ch, uint8_t *bp)
 {
@@ -448,6 +454,7 @@ void scan_po(FILE *ifp, FILE *ofp)
 
   while( bgets(ibfr, sizeof(ibfr), ifp) ) {
     if( !prefix_is(ibfr, "msgid ") ) {
+      if( nocmts && ibfr[0] == '#' ) continue;
       bputs(ibfr, ofp);  ++no;
       continue;
     }
@@ -565,6 +572,7 @@ int main(int ac, char **av)
 
   // if to rework google xlat output
   if( getenv("GOOG") ) goog = true;
+  if( getenv("NOCMTS") ) nocmts = true;
 
   if( !strcmp(av[1],"csv") ) {  // test csv
     load(stdin, 0);
