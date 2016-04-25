@@ -1,9 +1,7 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Cinelerra 5.1
+# Copyright (C) 2016
+# This file is distributed under the same license as Cinelerra 5.1
 #
-#, fuzzy
 msgid ""
 msgstr "Project-Id-Version: cinelerra 5.1\n"
 "Report-Msgid-Bugs-To: cinelerra@lists.cinelerra-cv.org\n"
@@ -16,16 +14,6 @@ msgstr "Project-Id-Version: cinelerra 5.1\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.8.6\n"
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-25 11:35-0600\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
-"Content-Transfer-Encoding: 8bit\n"
 
 #: guicast//bcbutton.C:268 guicast//bcbutton.C:276 guicast//bcbutton.C:492
 #: cinelerra//preferencesthread.C:621
@@ -268,14 +256,17 @@ msgid ""
 "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n"
 "without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n"
 "PURPOSE.  See the GNU General Public License for more details.\n"
-msgstr "This program is free software; you can redistribute it and/or modify it under the terms\n"
-"of the GNU General Public License as published by the Free Software Foundation; either version\n"
-"2 of the License, or (at your option) any later version.\n"
+msgstr ""
+"Dieses Programm ist freie Software; Sie können es weitergeben und/oder\n"
+"modifizieren unter den Bedingungen der GNU General Public License wie\n"
+"von der Free Software Foundation veröffentlicht; entweder Version 2\n"
+"der Lizenz oder (nach ihrer Wahl) einer neueren Version.\n"
 "\n"
-"This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n"
-"without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n"
-"PURPOSE.  See the GNU General Public License for more details.\n"
-#msgstr ""
+"Dieses Programm wird in der Hoffnung vertrieben, dass es nützlich ist,\n"
+"aber OHNE JEGLICHE WARNUNG; selbst ohne die implizite Gewähr\n"
+"der MARKTGÄNGIGKEIT oder TAUGLICHKEIT FÜR EINEN BESTIMMTEN ZWECK.\n"
+"Vergleichen Sie mit der GNU General Public License\n"
+"für weitere Details.\n"
 
 #: cinelerra//adcuts.C:30
 #, c-format
@@ -6415,21 +6406,21 @@ msgid ""
 "== A new entry is here for illustration purposes.\n"
 "*  Entry 2\n"
 "This is the second entry.\n"
-msgstr "Hinzufügen von Untertiteln: schnell \"How To\" (= oder * zeigt Kommentar)\n"
-"* 2345678901234567890123456789012345678901234567890123456789\n"
-"Für normalen DVD-Untertitel, setzen Skript in einer Textdatei. Linien können beliebig lang sein, aber sie werden aufgeteilt nach einigen Kriterien unten zu passen.\n"
-"Lauftext als Skriptzeilen verwendet\n"
-"wird in multilple Linien gebrochen werden.\n"
-"Die Zielzeilenlänge beträgt 60 Zeichen.\n"
-"Interpunktion kann eine frühe Zeilenumbruch zu erstellen markiert.\n"
-"Einzelwagenrücklauf endet eine individuelle Skriptzeile .\n"
-"Doppelwagenrücklauf zeigt das Ende eines Eintrags.\n"
-"Leerzeichen am Anfang oder Ende der Zeile wird entfernt.\n"
-"Sie können die aktive Zeile in der Zeile Textfeld bearbeiten.\n"
+msgstr ""
+"Adding Subtitles: quick \"How To\" (= or * indicates comment)\n"
+"*2345678901234567890123456789012345678901234567890123456789\n"
+"For regular DVD subtitles, put script in a text file. Lines can be any length but they will be broken up to fit according to some criteria below.\n"
+"Running text used as script lines will be broken into multilple lines.\n"
+"The target line length is 60 characters.\n"
+"Punctuation may be flagged to create an early line break.\n"
+"Single carriage return ends an individual script line.\n"
+"Double carriage return indicates the end of an entry.\n"
+"Whitespace at beginning or end of line is removed.\n"
+"You can edit the active line in the Line Text box.\n"
 "\n"
-"== Ein neuer Eintrag ist hier zur Illustration.\n"
-"*  Eintrag 2\n"
-"Dies ist der zweite Eintrag.\n"
+"== A new entry is here for illustration purposes.\n"
+"*  Entry 2\n"
+"This is the second entry.\n"
 
 #: cinelerra//swindow.C:234
 msgid ": Subtitle"
