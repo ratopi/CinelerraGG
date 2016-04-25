@@ -61,6 +61,7 @@ TransitionDialogThread::TransitionDialogThread(MWindow *mwindow, int data_type)
 {
 	this->mwindow = mwindow;
 	this->data_type = data_type;
+	this->number = -1;
 }
 
 TransitionDialogThread::~TransitionDialogThread()
@@ -72,22 +73,20 @@ void TransitionDialogThread::start()
 {
 	if(!transition_names.total)
 	{
+		strcpy(transition_title, data_type == TRACK_AUDIO ?
+			mwindow->edl->session->default_atransition :
+			mwindow->edl->session->default_vtransition);
+
 // Construct listbox names	
 		ArrayList<PluginServer*> plugindb;
 		mwindow->search_plugindb(data_type == TRACK_AUDIO, 
-			data_type == TRACK_VIDEO, 
-			0, 
-			1,
-			0,
-			plugindb);
-		for(int i = 0; i < plugindb.total; i++)
-			transition_names.append(new BC_ListBoxItem(_(plugindb.values[i]->title)));
+			data_type == TRACK_VIDEO, 0, 1, 0, plugindb);
+		for(int i = 0; i < plugindb.total; i++) {
+			const char *title = _(plugindb.values[i]->title);
+			if( !strcmp(transition_title, title) ) number = i;
+			transition_names.append(new BC_ListBoxItem(title));
+		}
 	}
-
-	if(data_type == TRACK_AUDIO)
-		strcpy(transition_title, mwindow->edl->session->default_atransition);
-	else
-		strcpy(transition_title, mwindow->edl->session->default_vtransition);
 
 	mwindow->gui->unlock_window();
 	BC_DialogThread::start();
@@ -103,10 +102,7 @@ BC_Window* TransitionDialogThread::new_gui()
 		mwindow->session->transitiondialog_w / 2;
 	int y = mwindow->gui->get_abs_cursor_y(0) -
 		mwindow->session->transitiondialog_h / 2;
-	TransitionDialog *window = new TransitionDialog(mwindow, 
-		this,
-		x, 
-		y);
+	TransitionDialog *window = new TransitionDialog(mwindow, this, x, y);
 	window->create_objects();
 	mwindow->gui->unlock_window();
 	return window;
@@ -123,19 +119,11 @@ void TransitionDialogThread::handle_close_event(int result)
 
 
 TransitionDialog::TransitionDialog(MWindow *mwindow, 
-	TransitionDialogThread *thread,
-	int x,
-	int y)
- : BC_Window(_("Attach Transition"), 
- 	x,
-	y,
+	TransitionDialogThread *thread, int x, int y)
+ : BC_Window(_("Attach Transition"), x, y,
 	mwindow->session->transitiondialog_w,
 	mwindow->session->transitiondialog_h, 
-	320, 
-	240,
-	1,
-	0,
-	1)
+	320, 240, 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -155,10 +143,13 @@ void TransitionDialog::create_objects()
 		y,
 		get_w() - x - x,
 		get_h() - y - BC_OKButton::calculate_h() - 10));
+	if( thread->number >= 0 ) {
+		name_list->update_selection(&thread->transition_names, thread->number, 0);
+		name_list->draw_items(0);
+	}
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
-	flush();
 	unlock_window();
 }
 
@@ -181,11 +172,7 @@ int TransitionDialog::resize_event(int w, int h)
 
 
 TransitionDialogName::TransitionDialogName(TransitionDialogThread *thread, 
-	ArrayList<BC_ListBoxItem*> *standalone_data, 
-	int x,
-	int y, 
-	int w, 
-	int h)
+	ArrayList<BC_ListBoxItem*> *standalone_data, int x, int y, int w, int h)
  : BC_ListBox(x, 
  	y, 
 	w, 
@@ -204,9 +191,9 @@ int TransitionDialogName::handle_event()
 
 int TransitionDialogName::selection_changed()
 {
-	int number = get_selection_number(0, 0);
+	thread->number = get_selection_number(0, 0);
 	strcpy(thread->transition_title, 
-		thread->transition_names.values[number]->get_text());
+		thread->transition_names.values[thread->number]->get_text());
 	return 1;
 }
 

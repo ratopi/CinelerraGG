@@ -21,6 +21,7 @@
 
 #include "bcdisplayinfo.h"
 #include "bchash.h"
+#include "cstrdup.h"
 #include "edl.inc"
 #include "filesystem.h"
 #include "filexml.h"
@@ -332,6 +333,8 @@ ShapeWipeMain::ShapeWipeMain(PluginServer *server)
 	preserve_aspect = 0;
 	last_preserve_aspect = 0;
 	shapes_initialized = 0;
+	shape_paths.set_array_delete();
+	shape_titles.set_array_delete();
 }
 
 ShapeWipeMain::~ShapeWipeMain()
@@ -399,8 +402,8 @@ void ShapeWipeMain::init_shapes()
 			FileItem *file_item = fs.get_entry(i);
 			if(!file_item->get_is_dir())
 			{
-				shape_paths.append(strdup(file_item->get_path()));
-				char *ptr = strdup(file_item->get_name());
+				shape_paths.append(cstrdup(file_item->get_path()));
+				char *ptr = cstrdup(file_item->get_name());
 				char *ptr2 = strrchr(ptr, '.');
 				if(ptr2) *ptr2 = 0;
 				shape_titles.append(ptr);
@@ -610,26 +613,40 @@ void ShapeWipeMain::reset_pattern_image()
 	type *in_row; \
 	type *out_row; \
 	\
-	for(j = 0; j < h; j++) \
-	{ \
-		in_row = (type*) in_rows[j]; \
-		out_row = (type*)out_rows[j]; \
-		pattern_row = pattern_image[j]; \
-		\
-		col_offset = 0; \
-		for(k = 0; k < w; k++) \
-		{ \
-			value = pattern_row[k]; \
-			if ((direction == 0 && value >= threshold) || \
-			(direction == 1 && value <= threshold)) \
-			{ \
+	if( !direction ) { \
+		for(j = 0; j < h; j++) { \
+			in_row = (type*) in_rows[j]; \
+			out_row = (type*)out_rows[j]; \
+			pattern_row = pattern_image[j]; \
+			\
+			col_offset = 0; \
+			for(k = 0; k < w; k++, col_offset += components ) { \
+				value = pattern_row[k]; \
+				if (value < threshold) continue; \
 				out_row[col_offset]     = in_row[col_offset]; \
 				out_row[col_offset + 1] = in_row[col_offset + 1]; \
 				out_row[col_offset + 2] = in_row[col_offset + 2]; \
 				if(components == 4) \
 					out_row[col_offset + 3] = in_row[col_offset + 3]; \
 			} \
-			col_offset += components; \
+		} \
+	} \
+	else { \
+		for(j = 0; j < h; j++) { \
+			in_row = (type*) in_rows[j]; \
+			out_row = (type*)out_rows[j]; \
+			pattern_row = pattern_image[j]; \
+			\
+			col_offset = 0; \
+			for(k = 0; k < w; k++, col_offset += components ) { \
+				value = pattern_row[k]; \
+				if (value > threshold) continue; \
+				out_row[col_offset]     = in_row[col_offset]; \
+				out_row[col_offset + 1] = in_row[col_offset + 1]; \
+				out_row[col_offset + 2] = in_row[col_offset + 2]; \
+				if(components == 4) \
+					out_row[col_offset + 3] = in_row[col_offset + 3]; \
+			} \
 		} \
 	} \
 }

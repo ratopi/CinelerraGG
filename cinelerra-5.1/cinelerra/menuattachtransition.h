@@ -60,6 +60,7 @@ public:
 	char transition_title[BCTEXTLEN];
 	MWindow *mwindow;
 	int data_type;
+	int number;
 	ArrayList<BC_ListBoxItem*> transition_names;
 };
 
