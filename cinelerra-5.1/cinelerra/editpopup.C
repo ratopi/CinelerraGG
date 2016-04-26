@@ -73,10 +73,8 @@ int EditPopup::update(Track *track, Edit *edit)
 	else
 	if(track->data_type == TRACK_AUDIO && resize_option)
 	{
-		remove_item(resize_option);
-		remove_item(matchsize_option);
-		resize_option = 0;
-		matchsize_option = 0;
+		del_item(resize_option);     resize_option = 0;
+		del_item(matchsize_option);  matchsize_option = 0;
 	}
 	return 0;
 }

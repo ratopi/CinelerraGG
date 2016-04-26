@@ -144,10 +144,7 @@ int ZoomPanel::calculate_w(int menu_w)
 
 void ZoomPanel::update_menu()
 {
-	while(zoom_text->total_items())
-	{
-		zoom_text->remove_item(0);
-	}
+	while(zoom_text->total_items()) zoom_text->del_item(0);
 
 	zoom_table.remove_all_objects();
 	calculate_menu();

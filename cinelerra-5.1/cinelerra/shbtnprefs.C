@@ -338,7 +338,7 @@ MainShBtns::MainShBtns(MWindow *mwindow, int x, int y)
 
 int MainShBtns::load(Preferences *preferences)
 {
-	while( total_items() ) remove_item(get_item(0));
+	while( total_items() ) del_item(0);
 	for( int i=0; i<preferences->shbtn_prefs.size(); ++i )
 		add_item(new MainShBtnItem(this, preferences->shbtn_prefs[i]));
 	return 0;

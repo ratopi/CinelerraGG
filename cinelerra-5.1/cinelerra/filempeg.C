@@ -1875,10 +1875,7 @@ void MPEGABitrate::create_objects()
 
 void MPEGABitrate::set_layer(int layer)
 {
-	while(total_items())
-	{
-		remove_item(0);
-	}
+	while(total_items()) del_item(0);
 
 	if(layer == 2)
 	{

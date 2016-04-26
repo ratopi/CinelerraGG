@@ -272,7 +272,7 @@ void PluginFClientWindow::update(PluginFClient_Opt *opt)
 	*(sp=str) = 0;
 	if( opt ) opt->ranges(sp);
 	range->update(str);
-	while( units->total_items() ) units->remove_item(0);
+	while( units->total_items() ) units->del_item(0);
 	ArrayList<const AVOption *> opts;
 	int n = !opt ? 0 : opt->units(opts);
 	for( int i=0; i<n; ++i )
