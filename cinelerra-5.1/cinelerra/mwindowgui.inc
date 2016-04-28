@@ -32,6 +32,11 @@
 #define BOTTOM_LEFT_PANE 2
 #define BOTTOM_RIGHT_PANE 3
 
+// keyframe reticle
+#define HAIRLINE_NEVER 0
+#define HAIRLINE_DRAGGING 1
+#define HAIRLINE_ALWAYS 2
+
 class MWindowGUI;
 
 #endif

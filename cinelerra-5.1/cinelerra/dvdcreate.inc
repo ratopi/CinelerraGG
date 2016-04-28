@@ -24,6 +24,23 @@
 
 class CreateDVD_MenuItem;
 class CreateDVD_Thread;
+class CreateDVD_OK;
+class CreateDVD_Cancel;
+class CreateDVD_DiskSpace;
+class CreateDVD_TmpPath;
+class CreateDVD_AssetTitle;
+class CreateDVD_Deinterlace;
+class CreateDVD_InverseTelecine;
+class CreateDVD_Scale;
+class CreateDVD_ResizeTracks;
+class CreateDVD_Histogram;
+class CreateDVD_LabelChapters;
+class CreateDVD_WideAudio;
+class CreateDVD_WideAspect;
+class CreateDVD_UseFFMpeg;
 class CreateDVD_GUI;
+class CreateDVD_FormatItem;
+class CreateDVD_Format;
+class CreateDVD_MediaSize;
 
 #endif

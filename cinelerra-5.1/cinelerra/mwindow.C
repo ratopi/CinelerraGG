@@ -379,43 +379,36 @@ void MWindow::create_defaults_path(char *string, const char *config_file)
 }
 const char *MWindow::default_std()
 {
-	int fd, i, l = 0;
-	char buf[BCTEXTLEN];
-        char *p;
+	char buf[BCTEXTLEN], *p = 0;
 
-	if((fd = open(TIMEZONE_NAME, O_RDONLY)) >= 0)
-	{
-		l = read(fd, buf, BCTEXTLEN);
+	int fd = open(TIMEZONE_NAME, O_RDONLY);
+	if( fd >= 0 ) {
+		int l = read(fd, buf, sizeof(buf)-1);
 		close(fd);
-		if(l > 0)
-		{
+		if( l > 0 ) {
+			if( buf[l-1] == '\n' ) --l;
 			buf[l] = 0;
-			if(buf[l - 1] == '\n')
-				buf[--l] = 0;
-		}
-		p = buf;
-	}
-	if(l < 1)
-	{
-		if((l = readlink(LOCALTIME_LINK, buf, BCTEXTLEN)) > 0)
-		{
-			buf[l] = 0;
-			if( (p=strstr(buf, ZONEINFO_STR)) != 0 )
-			{
-				p += strlen(ZONEINFO_STR);
-				l = strlen(p);
-			}
-			else
-				l = 0;
+			p = buf;
 		}
 	}
-	if(l)
-	{
-		for(i = 0; ntsc_zones[i]; i++)
-		if(strcmp(ntsc_zones[i], p) == 0)
+	if( !p ) {
+		int l = readlink(LOCALTIME_LINK, buf, sizeof(buf)-1);
+		if( l > 0 ) {
+			buf[l] = 0;
+			if( !(p=strstr(buf, ZONEINFO_STR)) != 0 ) return "PAL";
+			p += strlen(ZONEINFO_STR);
+		}
+	}
+
+	for( int i=0; ntsc_zones[i]; ++i ) {
+		if( !strcmp(ntsc_zones[i], p) )
 			return "NTSC";
 	}
-	return "PAL";
+
+//__timezone: Seconds west of UTC.  240sec/deg
+	double tz_deg = __timezone / 240.;
+// from Honolulu = -10, to New York = -5, 15deg/hr   lat -150..-75
+	return tz_deg >= -10*15 && tz_deg <= -5*15 ? "NTSC" : "PAL";
 }
 
 void MWindow::fill_preset_defaults(const char *preset, EDLSession *session)
@@ -424,7 +417,7 @@ void MWindow::fill_preset_defaults(const char *preset, EDLSession *session)
 
 	for(fpr = &format_presets[0]; fpr->name; fpr++)
 	{
-		if(strcmp(fpr->name, preset) == 0)
+		if(strcmp(_(fpr->name), preset) == 0)
 		{
 			session->audio_channels = fpr->audio_channels;
 			session->audio_tracks = fpr->audio_tracks;
@@ -447,7 +440,7 @@ const char *MWindow::get_preset_name(int index)
 {
 	if(index < 0 || index >= (int)MAX_NUM_PRESETS)
 		return "Error";
-	return format_presets[index].name;
+	return _(format_presets[index].name);
 }
 
 

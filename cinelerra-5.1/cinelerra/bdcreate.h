@@ -6,13 +6,12 @@
 #include "bcwindowbase.h"
 #include "bcbutton.h"
 #include "bcdialog.h"
+#include "bclistboxitem.inc"
 #include "bcmenuitem.h"
 #include "bctextbox.h"
 #include "mwindow.h"
 
 #include "bdcreate.inc"
-
-
 
 
 class CreateBD_MenuItem : public BC_MenuItem
@@ -51,6 +50,17 @@ public:
 	int use_scale, use_resize_tracks;
 	int use_wide_audio, use_wide_aspect;
 	int use_histogram, use_label_chapters;
+	int use_standard;
+
+	int64_t bd_size;
+	int bd_width;
+	int bd_height;
+	double bd_aspect_width;
+	double bd_aspect_height;
+	double bd_framerate;
+	int bd_samplerate;
+	int bd_max_bitrate;
+	double bd_kaudio_rate;
 };
 
 class CreateBD_OK : public BC_OKButton
@@ -191,14 +201,17 @@ public:
 	int resize_event(int w, int h);
 	int translation_event();
 	int close_event();
+	void update();
 
-	int64_t needed_disk_space;
 	CreateBD_Thread *thread;
 	int at_x, at_y;
 	CreateBD_AssetTitle *asset_title;
 	int tmp_x, tmp_y;
 	CreateBD_TmpPath *tmp_path;
 	CreateBD_DiskSpace *disk_space;
+	CreateBD_Format *standard;
+	ArrayList<BC_ListBoxItem *> media_sizes;
+	CreateBD_MediaSize *media_size;
 	CreateBD_Deinterlace *need_deinterlace;
 	CreateBD_InverseTelecine *need_inverse_telecine;
 	CreateBD_Scale *need_scale;
@@ -211,6 +224,38 @@ public:
 	CreateBD_OK *ok;
 	int cancel_x, cancel_y, cancel_w, cancel_h;
 	CreateBD_Cancel *cancel;
+};
+
+class CreateBD_FormatItem : public BC_MenuItem
+{
+public:
+	int handle_event();
+	CreateBD_FormatItem(CreateBD_Format *popup, int standard, const char *name);
+	~CreateBD_FormatItem();
+
+	CreateBD_Format *popup;
+	int standard;
+};
+
+class CreateBD_Format : public BC_PopupMenu
+{
+public:
+	void create_objects();
+	int handle_event();
+	CreateBD_Format(CreateBD_GUI *gui, int x, int y);
+	~CreateBD_Format();
+
+	CreateBD_GUI *gui;
+};
+
+class CreateBD_MediaSize : public BC_PopupTextBox
+{
+public:
+	CreateBD_MediaSize(CreateBD_GUI *gui, int x, int y);
+	~CreateBD_MediaSize();
+	int handle_event();
+
+	CreateBD_GUI *gui;
 };
 
 #endif

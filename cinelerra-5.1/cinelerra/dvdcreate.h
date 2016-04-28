@@ -6,12 +6,12 @@
 #include "bcwindowbase.h"
 #include "bcbutton.h"
 #include "bcdialog.h"
+#include "bclistboxitem.inc"
 #include "bcmenuitem.h"
 #include "bctextbox.h"
 #include "mwindow.h"
 
 #include "dvdcreate.inc"
-
 
 class CreateDVD_MenuItem : public BC_MenuItem
 {
@@ -49,7 +49,17 @@ public:
 	int use_scale, use_resize_tracks;
 	int use_wide_audio, use_wide_aspect;
 	int use_histogram, use_label_chapters;
-	int use_ffmpeg;
+	int use_ffmpeg, use_standard;
+
+	int64_t dvd_size;
+	int dvd_width;
+	int dvd_height;
+	double dvd_aspect_width;
+	double dvd_aspect_height;
+	double dvd_framerate;
+	int dvd_samplerate;
+	int dvd_max_bitrate;
+	double dvd_kaudio_rate;
 };
 
 class CreateDVD_OK : public BC_OKButton
@@ -199,14 +209,17 @@ public:
 	int resize_event(int w, int h);
 	int translation_event();
 	int close_event();
+	void update();
 
-	int64_t needed_disk_space;
 	CreateDVD_Thread *thread;
 	int at_x, at_y;
 	CreateDVD_AssetTitle *asset_title;
 	int tmp_x, tmp_y;
 	CreateDVD_TmpPath *tmp_path;
 	CreateDVD_DiskSpace *disk_space;
+	CreateDVD_Format *standard;
+	ArrayList<BC_ListBoxItem *> media_sizes;
+	CreateDVD_MediaSize *media_size;
 	CreateDVD_Deinterlace *need_deinterlace;
 	CreateDVD_InverseTelecine *need_inverse_telecine;
 	CreateDVD_Scale *need_scale;
@@ -220,6 +233,38 @@ public:
 	CreateDVD_OK *ok;
 	int cancel_x, cancel_y, cancel_w, cancel_h;
 	CreateDVD_Cancel *cancel;
+};
+
+class CreateDVD_FormatItem : public BC_MenuItem
+{
+public:
+	int handle_event();
+	CreateDVD_FormatItem(CreateDVD_Format *popup, int standard, const char *name);
+	~CreateDVD_FormatItem();
+
+	CreateDVD_Format *popup;
+	int standard;
+};
+
+class CreateDVD_Format : public BC_PopupMenu
+{
+public:
+	void create_objects();
+	int handle_event();
+	CreateDVD_Format(CreateDVD_GUI *gui, int x, int y);
+	~CreateDVD_Format();
+
+	CreateDVD_GUI *gui;
+};
+
+class CreateDVD_MediaSize : public BC_PopupTextBox
+{
+public:
+	CreateDVD_MediaSize(CreateDVD_GUI *gui, int x, int y);
+	~CreateDVD_MediaSize();
+	int handle_event();
+
+	CreateDVD_GUI *gui;
 };
 
 #endif

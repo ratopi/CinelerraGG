@@ -1,5 +1,6 @@
 #include "asset.h"
 #include "bdcreate.h"
+#include "clip.h"
 #include "edl.h"
 #include "edit.h"
 #include "edits.h"
@@ -24,6 +25,34 @@
 #include <sys/statfs.h>
 
 // BD Creation
+
+#define BD_1920x1080_2997i	0
+#define BD_1920x1080_2500i	1
+#define BD_1920x1080_2400p	2
+#define BD_1920x1080_23976p	3
+#define BD_1280x720_5997p	4
+#define BD_1280x720_5000p	5
+#define BD_1280x720_23976p	6
+#define BD_1280x720_2400p	7
+#define BD_720x576_2500i	8
+#define BD_720x480_2997i	9
+
+static struct bd_format {
+	const char *name;
+	int w, h;
+	double framerate;
+} bd_formats[] = {
+	{ "1920x1080 29.97i",	  1920,1080, 29.97  },
+	{ "1920x1080 25i",	  1920,1080, 25     },
+	{ "1920x1080 24p",	  1920,1080, 24     },
+	{ "1920x1080 23.976p",	  1920,1080, 23.976 },
+	{ "1280x720 59.97p",	  1280,720,  59.97  },
+	{ "1280x720 50p",	  1280,720,  50     },
+	{ "1280x720 23.976p",	  1280,720,  23.976 },
+	{ "1280x720 24p",	  1280,720,  24     },
+	{ "720x576 25i (PAL)",	   720,576,  25     },
+	{ "720x480 29.97i (NTSC)", 720,480,  29.97  },
+};
 
 const int64_t CreateBD_Thread::BD_SIZE = 25000000000;
 const int CreateBD_Thread::BD_STREAMS = 1;
@@ -62,12 +91,12 @@ CreateBD_Thread::CreateBD_Thread(MWindow *mwindow)
 	this->mwindow = mwindow;
 	this->gui = 0;
 	this->use_deinterlace = 0;
-	this->use_inverse_telecine = 0;
 	this->use_scale = 0;
-	this->use_resize_tracks = 0;
 	this->use_histogram = 0;
+	this->use_inverse_telecine = 0;
 	this->use_wide_audio = 0;
 	this->use_wide_aspect = 0;
+	this->use_resize_tracks = 0;
 	this->use_label_chapters = 0;
 }
 
@@ -112,13 +141,12 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 
 	session->video_channels = BD_STREAMS;
 	session->video_tracks = BD_STREAMS;
-// use session framerate
-//	session->frame_rate = BD_FRAMERATE;
-	session->output_w = BD_WIDTH;
-	session->output_h = BD_HEIGHT;
-	session->aspect_w = use_wide_aspect ? BD_WIDE_ASPECT_WIDTH : BD_ASPECT_WIDTH;
-	session->aspect_h = use_wide_aspect ? BD_WIDE_ASPECT_HEIGHT : BD_ASPECT_HEIGHT;
-	session->sample_rate = BD_SAMPLERATE;
+	session->frame_rate = bd_framerate;
+	session->output_w = bd_width;
+	session->output_h = bd_height;
+	session->aspect_w = bd_aspect_width;
+	session->aspect_h = bd_aspect_height;
+	session->sample_rate = bd_samplerate;
 	session->audio_channels = session->audio_tracks =
 		use_wide_audio ? BD_WIDE_CHANNELS : BD_CHANNELS;
 
@@ -174,11 +202,11 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	edl->resample(old_samplerate, new_samplerate, TRACK_AUDIO);
 	edl->resample(old_framerate, new_framerate, TRACK_VIDEO);
 
-	int64_t aud_size = ((BD_KAUDIO_RATE * total_length)/8 + 1000-1) * 1000;
-	int64_t vid_size = BD_SIZE*0.96 - aud_size;
+	int64_t aud_size = ((bd_kaudio_rate * total_length)/8 + 1000-1) * 1000;
+	int64_t vid_size = bd_size*0.96 - aud_size;
 	int64_t vid_bitrate = (vid_size * 8) / total_length;
 	vid_bitrate /= 1000;  vid_bitrate *= 1000;
-	if( vid_bitrate > BD_MAX_BITRATE ) vid_bitrate = BD_MAX_BITRATE;
+	if( vid_bitrate > bd_max_bitrate ) vid_bitrate = bd_max_bitrate;
 
 	char xml_filename[BCTEXTLEN];
 	sprintf(xml_filename, "%s/bd.xml", asset_dir);
@@ -213,7 +241,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
 	FFMPEG::load_options(option_path, asset->ff_audio_options,
 			 sizeof(asset->ff_audio_options));
-	asset->ff_audio_bitrate = BD_KAUDIO_RATE * 1000;
+	asset->ff_audio_bitrate = bd_kaudio_rate * 1000;
 
 	asset->video_data = 1;
 	strcpy(asset->vcodec, "bluray.m2ts");
@@ -251,7 +279,7 @@ void CreateBD_Thread::handle_close_event(int result)
 	}
 	if( use_scale ) {
 		sprintf(data,"<SCALE TYPE=1 X_FACTOR=1 Y_FACTOR=1 "
-			" WIDTH=%d HEIGHT=%d CONSTRAIN=0>", BD_WIDTH, BD_HEIGHT);
+			" WIDTH=%d HEIGHT=%d CONSTRAIN=0>", bd_width, bd_height);
 		keyframe.set_data(data);
 		insert_video_plugin("Scale", &keyframe);
 	}
@@ -299,18 +327,43 @@ BC_Window* CreateBD_Thread::new_gui()
 		dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
 		dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
 	use_deinterlace = 0;
-	use_inverse_telecine = 0;
 	use_scale = 0;
-	use_resize_tracks = 0;
 	use_histogram = 0;
+	use_inverse_telecine = 0;
 	use_wide_audio = 0;
 	use_wide_aspect = 0;
+	use_resize_tracks = 0;
 	use_label_chapters = 0;
+	use_standard = BD_1920x1080_2997i;
+
+	bd_size = BD_SIZE;
+	bd_width = BD_WIDTH;
+	bd_height = BD_HEIGHT;
+	bd_aspect_width = BD_ASPECT_WIDTH;
+	bd_aspect_height = BD_ASPECT_HEIGHT;
+	bd_framerate = BD_FRAMERATE;
+	bd_samplerate = BD_SAMPLERATE;
+	bd_max_bitrate = BD_MAX_BITRATE;
+	bd_kaudio_rate = BD_KAUDIO_RATE;
+
+	int has_standard = -1;
+	if( mwindow->edl ) {
+		EDLSession *session = mwindow->edl->session;
+// match the session to any known standard
+		for( int i=0; i<(int)(sizeof(bd_formats)/sizeof(bd_formats[0])); ++i ) {
+			if( !EQUIV(session->frame_rate, bd_formats[i].framerate) ) continue;
+			if( session->output_w != bd_formats[i].w ) continue;
+			if( session->output_h != bd_formats[i].h ) continue;
+			has_standard = i;  break;
+		}
+	}
+	use_standard = has_standard >= 0 ? has_standard : BD_1920x1080_2400p;
+
 	option_presets();
 	int scr_x = mwindow->gui->get_screen_x(0, -1);
 	int scr_w = mwindow->gui->get_screen_w(0, -1);
 	int scr_h = mwindow->gui->get_screen_h(0, -1);
-	int w = 500, h = 250;
+	int w = 500, h = 280;
 	int x = scr_x + scr_w/2 - w/2, y = scr_h/2 - h/2;
 
 	gui = new CreateBD_GUI(this, x, y, w, h);
@@ -386,10 +439,17 @@ int64_t CreateBD_DiskSpace::tmp_path_space()
 
 void CreateBD_DiskSpace::update()
 {
-//	gui->disk_space->set_color(get_bg_color());
-	int64_t disk_space = tmp_path_space();
-	int color = disk_space<gui->needed_disk_space ? RED : GREEN;
 	static const char *suffix[] = { "", "KB", "MB", "GB", "TB", "PB" };
+	int64_t disk_space = tmp_path_space();
+	double media_size = 100e9, msz = 0, m = 1;
+	char sfx[BCSTRLEN];
+	if( sscanf(gui->media_size->get_text(), "%lf%s", &msz, sfx) == 2 ) {
+		int i = sizeof(suffix)/sizeof(suffix[0]);
+		while( --i >= 0 && strcmp(sfx, suffix[i]) );
+		while( --i >= 0 ) m *= 1000;
+		media_size = msz * m;
+	}
+	int color = disk_space < media_size*2 ? RED : GREEN;
 	int i = 0;
 	for( int64_t space=disk_space; i<5 && (space/=1000)>0; disk_space=space, ++i );
 	char text[BCTEXTLEN];
@@ -541,7 +601,6 @@ CreateBD_GUI::CreateBD_GUI(CreateBD_Thread *thread, int x, int y, int w, int h)
 	asset_title = 0;
 	tmp_path = 0;
 	disk_space = 0;
-	needed_disk_space = 100e9;
 	need_deinterlace = 0;
 	need_inverse_telecine = 0;
 	need_scale = 0;
@@ -578,8 +637,26 @@ void CreateBD_GUI::create_objects()
 	y += title->get_h() + pady/2;
 	disk_space = new CreateBD_DiskSpace(this, x, y);
 	add_subwindow(disk_space);
+	int x0 = get_w() - 170;
+	title = new BC_Title(x0, y, _("Media:"), MEDIUMFONT, YELLOW);
+	add_subwindow(title);
+	x0 +=  title->get_w() + padx;
+	media_size = new CreateBD_MediaSize(this, x0, y);
+	media_size->create_objects();
+	media_sizes.append(new BC_ListBoxItem("25GB"));
+	media_sizes.append(new BC_ListBoxItem("50GB"));
+	media_size->update_list(&media_sizes);
+	media_size->update(media_sizes[0]->get_text());
 	disk_space->update();
+	x0 = x;
 	y += disk_space->get_h() + pady/2;
+	title = new BC_Title(x0, y, _("Format:"), MEDIUMFONT, YELLOW);
+	add_subwindow(title);
+	x0 +=  title->get_w() + padx;
+	standard = new CreateBD_Format(this, x0, y);
+	add_subwindow(standard);
+	standard->create_objects();
+	y += standard->get_h() + pady/2;
 	need_deinterlace = new CreateBD_Deinterlace(this, x, y);
 	add_subwindow(need_deinterlace);
 	int x1 = x + 150, x2 = x1 + 150;
@@ -638,6 +715,18 @@ int CreateBD_GUI::close_event()
 	return 1;
 }
 
+void CreateBD_GUI::update()
+{
+	need_deinterlace->set_value(thread->use_deinterlace);
+	need_inverse_telecine->set_value(thread->use_inverse_telecine);
+	need_scale->set_value(thread->use_scale);
+	need_resize_tracks->set_value(thread->use_resize_tracks);
+	need_histogram->set_value(thread->use_histogram);
+	need_wide_audio->set_value(thread->use_wide_audio);
+	need_wide_aspect->set_value(thread->use_wide_aspect);
+//	need_label_chapters->set_value(thread->use_label_chapters);
+}
+
 int CreateBD_Thread::
 insert_video_plugin(const char *title, KeyFrame *default_keyframe)
 {
@@ -689,7 +778,20 @@ resize_tracks()
 int CreateBD_Thread::
 option_presets()
 {
+// reset only probed options
+	use_deinterlace = 0;
+	use_scale = 0;
+	use_resize_tracks = 0;
+	use_wide_audio = 0;
+	use_wide_aspect = 0;
+	use_label_chapters = 0;
+
 	if( !mwindow->edl ) return 1;
+
+	bd_width = bd_formats[use_standard].w;
+	bd_height = bd_formats[use_standard].h;
+	bd_framerate = bd_formats[use_standard].framerate;
+
 	Tracks *tracks = mwindow->edl->tracks;
 	int max_w = 0, max_h = 0;
 	int has_deinterlace = 0, has_scale = 0;
@@ -703,10 +805,10 @@ option_presets()
 				Indexable *indexable = edit->get_source();
 				int w = indexable->get_w();
 				if( w > max_w ) max_w = w;
-				if( w != BD_WIDTH ) use_scale = 1;
+				if( w != bd_width ) use_scale = 1;
 				int h = indexable->get_h();
 				if( h > max_h ) max_h = h;
-				if( h != BD_HEIGHT ) use_scale = 1;
+				if( h != bd_height ) use_scale = 1;
 			}
 			for( int i=0; i<trk->plugin_set.size(); ++i ) {
 				for(Plugin *plugin = (Plugin*)trk->plugin_set[i]->first;
@@ -725,8 +827,8 @@ option_presets()
 	if( has_scale )
 		use_scale = 0;
 	if( use_scale ) {
-		if( max_w != BD_WIDTH ) use_resize_tracks = 1;
-		if( max_h != BD_HEIGHT ) use_resize_tracks = 1;
+		if( max_w != bd_width ) use_resize_tracks = 1;
+		if( max_h != bd_height ) use_resize_tracks = 1;
 	}
 	for( Track *trk=tracks->first; trk && !use_resize_tracks; trk=trk->next ) {
 		if( !trk->record ) continue;
@@ -737,15 +839,80 @@ option_presets()
 			break;
 		}
 	}
-	if( !has_deinterlace && max_h > 2*BD_HEIGHT ) use_deinterlace = 1;
+	if( !has_deinterlace && max_h > 2*bd_height ) use_deinterlace = 1;
 	// Labels *labels = mwindow->edl->labels;
 	// use_label_chapters = labels && labels->first ? 1 : 0;
-	float w, h;
-	MWindow::create_aspect_ratio(w, h, max_w, max_h);
-	if( w == BD_WIDE_ASPECT_WIDTH && h == BD_WIDE_ASPECT_HEIGHT )
+	float aw, ah;
+	MWindow::create_aspect_ratio(aw, ah, max_w, max_h);
+	if( aw == BD_WIDE_ASPECT_WIDTH && ah == BD_WIDE_ASPECT_HEIGHT )
 		use_wide_aspect = 1;
+	bd_aspect_width = use_wide_aspect ? BD_WIDE_ASPECT_WIDTH : BD_ASPECT_WIDTH;
+	bd_aspect_height = use_wide_aspect ? BD_WIDE_ASPECT_HEIGHT : BD_ASPECT_HEIGHT;
+
 	if( tracks->recordable_audio_tracks() == BD_WIDE_CHANNELS )
 		use_wide_audio = 1;
+
 	return 0;
+}
+
+
+CreateBD_FormatItem::CreateBD_FormatItem(CreateBD_Format *popup,
+		int standard, const char *name)
+ : BC_MenuItem(name)
+{
+	this->popup = popup;
+	this->standard = standard;
+}
+
+CreateBD_FormatItem::~CreateBD_FormatItem()
+{
+}
+
+int CreateBD_FormatItem::handle_event()
+{
+	popup->set_text(get_text());
+	popup->gui->thread->use_standard = standard;
+	return popup->handle_event();
+}
+
+
+CreateBD_Format::CreateBD_Format(CreateBD_GUI *gui, int x, int y)
+ : BC_PopupMenu(x, y, 180, bd_formats[gui->thread->use_standard].name, 1)
+{
+	this->gui = gui;
+}
+
+CreateBD_Format::~CreateBD_Format()
+{
+}
+
+void CreateBD_Format::create_objects()
+{
+	for( int i=0; i<(int)(sizeof(bd_formats)/sizeof(bd_formats[0])); ++i ) {
+		add_item(new CreateBD_FormatItem(this, i, bd_formats[i].name));
+	}
+}
+
+int CreateBD_Format::handle_event()
+{
+	gui->thread->option_presets();
+	gui->update();
+	return 1;
+}
+
+CreateBD_MediaSize::CreateBD_MediaSize(CreateBD_GUI *gui, int x, int y)
+ : BC_PopupTextBox(gui, 0, 0, x, y, 70,50)
+{
+	this->gui = gui;
+}
+
+CreateBD_MediaSize::~CreateBD_MediaSize()
+{
+}
+
+int CreateBD_MediaSize::handle_event()
+{
+	gui->disk_space->update();
+	return 1;
 }
 

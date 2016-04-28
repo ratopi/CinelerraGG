@@ -24,6 +24,22 @@
 
 class CreateBD_MenuItem;
 class CreateBD_Thread;
+class CreateBD_OK;
+class CreateBD_Cancel;
+class CreateBD_DiskSpace;
+class CreateBD_TmpPath;
+class CreateBD_AssetTitle;
+class CreateBD_Deinterlace;
+class CreateBD_InverseTelecine;
+class CreateBD_Scale;
+class CreateBD_ResizeTracks;
+class CreateBD_Histogram;
+class CreateBD_LabelChapters;
+class CreateBD_WideAudio;
+class CreateBD_WideAspect;
 class CreateBD_GUI;
+class CreateBD_FormatItem;
+class CreateBD_Format;
+class CreateBD_MediaSize;
 
 #endif
