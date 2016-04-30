@@ -98,6 +98,17 @@ CreateBD_Thread::CreateBD_Thread(MWindow *mwindow)
 	this->use_wide_aspect = 0;
 	this->use_resize_tracks = 0;
 	this->use_label_chapters = 0;
+
+	this->bd_size = BD_SIZE;
+	this->bd_width = BD_WIDTH;
+	this->bd_height = BD_HEIGHT;
+	this->bd_aspect_width = BD_ASPECT_WIDTH;
+	this->bd_aspect_height = BD_ASPECT_HEIGHT;
+	this->bd_framerate = BD_FRAMERATE;
+	this->bd_samplerate = BD_SAMPLERATE;
+	this->bd_max_bitrate = BD_MAX_BITRATE;
+	this->bd_kaudio_rate = BD_KAUDIO_RATE;
+	this->max_w = this->max_h = 0;
 }
 
 CreateBD_Thread::~CreateBD_Thread()
@@ -278,8 +289,12 @@ void CreateBD_Thread::handle_close_event(int result)
 		insert_video_plugin("Inverse Telecine", &keyframe);
 	}
 	if( use_scale ) {
-		sprintf(data,"<SCALE TYPE=1 X_FACTOR=1 Y_FACTOR=1 "
-			" WIDTH=%d HEIGHT=%d CONSTRAIN=0>", bd_width, bd_height);
+		sprintf(data,"<SCALE TYPE=%d X_FACTOR=%f Y_FACTOR=%f "
+			"WIDTH=%d HEIGHT=%d CONSTRAIN=0>",
+			max_w >= bd_width || max_h >= bd_height ? 1 : 0,
+			max_w > 0 ? (double)bd_width/max_w : 1,
+			max_h > 0 ? (double)bd_height/max_h : 1,
+			bd_width, bd_height);
 		keyframe.set_data(data);
 		insert_video_plugin("Scale", &keyframe);
 	}
@@ -345,6 +360,7 @@ BC_Window* CreateBD_Thread::new_gui()
 	bd_samplerate = BD_SAMPLERATE;
 	bd_max_bitrate = BD_MAX_BITRATE;
 	bd_kaudio_rate = BD_KAUDIO_RATE;
+	max_w = 0; max_h = 0;
 
 	int has_standard = -1;
 	if( mwindow->edl ) {
@@ -752,25 +768,14 @@ int CreateBD_Thread::
 resize_tracks()
 {
 	Tracks *tracks = mwindow->edl->tracks;
-	int max_w = 0, max_h = 0;
+	int trk_w = max_w, trk_h = max_h;
+	if( trk_w < bd_width ) trk_w = bd_width;
+	if( trk_h < bd_height ) trk_h = bd_height;
 	for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
 		if( vtrk->data_type != TRACK_VIDEO ) continue;
 		if( !vtrk->record ) continue;
-		Edits *edits = vtrk->edits;
-		for( Edit *edit=edits->first; edit; edit=edit->next ) {
-			Indexable *indexable = edit->get_source();
-			int w = indexable->get_w();
-			if( w > max_w ) max_w = w;
-			int h = indexable->get_h();
-			if( h > max_h ) max_h = h;
-		}
-	}
-
-	for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
-		if( vtrk->data_type != TRACK_VIDEO ) continue;
-		if( !vtrk->record ) continue;
-		vtrk->track_w = max_w;
-		vtrk->track_h = max_h;
+		vtrk->track_w = trk_w;
+		vtrk->track_h = trk_h;
 	}
 	return 0;
 }
@@ -793,7 +798,7 @@ option_presets()
 	bd_framerate = bd_formats[use_standard].framerate;
 
 	Tracks *tracks = mwindow->edl->tracks;
-	int max_w = 0, max_h = 0;
+	max_w = 0;  max_h = 0;
 	int has_deinterlace = 0, has_scale = 0;
 	for( Track *trk=tracks->first; trk; trk=trk->next ) {
 		if( !trk->record ) continue;

@@ -6,7 +6,7 @@ else
   MAKE=make
 fi
 
-for v in OBJDIR CPATH EXTRA_LIBS \
+for v in OBJDIR CPATH EXTRA_LIBS HAVE_LADSPA \
     HAVE_ALSA HAVE_DVB HAVE_ESOUND HAVE_FIREWIRE HAVE_DV \
     HAVE_OSS HAVE_XFT HAVE_VIDEO4LINUX HAVE_VIDEO4LINUX2 ; do
   eval export "$v=\"`$MAKE -s val-$v`\""
@@ -133,8 +133,10 @@ add_library ilmbase \
 	Half/.libs/libHalf.a \
 	Imath/.libs/libImath.a \
 	IlmThread/.libs/libIlmThread.a
+if [ "$HAVE_LADSPA" = "y" ]; then
 inc_ladspa=""
 add_library ladspa
+fi
 inc_lame="include"
 add_library lame \
 	libmp3lame/.libs/libmp3lame.a \

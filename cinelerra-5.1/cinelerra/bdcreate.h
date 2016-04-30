@@ -61,6 +61,7 @@ public:
 	int bd_samplerate;
 	int bd_max_bitrate;
 	double bd_kaudio_rate;
+	int max_w, max_h;
 };
 
 class CreateBD_OK : public BC_OKButton

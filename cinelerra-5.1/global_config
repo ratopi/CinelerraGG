@@ -8,6 +8,8 @@ HAVE_FIREWIRE := y
 HAVE_OSS := y
 HAVE_XFT := y
 HAVE_VIDEO4LINUX := n
+# build thirdparty ladspa
+HAVE_LADSPA := y
 
 # probed, uncomment and set to override probe
 #STATIC_LIBRARIES := y

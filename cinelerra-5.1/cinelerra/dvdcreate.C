@@ -93,6 +93,17 @@ CreateDVD_Thread::CreateDVD_Thread(MWindow *mwindow)
 	this->use_ffmpeg = 0;
 	this->use_resize_tracks = 0;
 	this->use_label_chapters = 0;
+
+	this->dvd_size = DVD_SIZE;
+	this->dvd_width = DVD_WIDTH;
+	this->dvd_height = DVD_HEIGHT;
+	this->dvd_aspect_width = DVD_ASPECT_WIDTH;
+	this->dvd_aspect_height = DVD_ASPECT_HEIGHT;
+	this->dvd_framerate = DVD_FRAMERATE;
+	this->dvd_samplerate = DVD_SAMPLERATE;
+	this->dvd_max_bitrate = DVD_MAX_BITRATE;
+	this->dvd_kaudio_rate = DVD_KAUDIO_RATE;
+	this->max_w = this->max_h = 0;
 }
 
 CreateDVD_Thread::~CreateDVD_Thread()
@@ -349,8 +360,12 @@ void CreateDVD_Thread::handle_close_event(int result)
 		insert_video_plugin("Inverse Telecine", &keyframe);
 	}
 	if( use_scale ) {
-		sprintf(data,"<SCALE TYPE=1 X_FACTOR=1 Y_FACTOR=1 "
-			"WIDTH=%d HEIGHT=%d CONSTRAIN=0>", dvd_width, dvd_height);
+		sprintf(data,"<SCALE TYPE=%d X_FACTOR=%f Y_FACTOR=%f "
+			"WIDTH=%d HEIGHT=%d CONSTRAIN=0>",
+			max_w >= dvd_width || max_h >= dvd_height ? 1 : 0,
+			max_w > 0 ? (double)dvd_width/max_w : 1,
+			max_h > 0 ? (double)dvd_height/max_h : 1,
+			dvd_width, dvd_height);
 		keyframe.set_data(data);
 		insert_video_plugin("Scale", &keyframe);
 	}
@@ -417,6 +432,7 @@ BC_Window* CreateDVD_Thread::new_gui()
 	dvd_samplerate = DVD_SAMPLERATE;
 	dvd_max_bitrate = DVD_MAX_BITRATE;
 	dvd_kaudio_rate = DVD_KAUDIO_RATE;
+	max_w = 0; max_h = 0;
 
 	int has_standard = -1;
 	if( mwindow->edl ) {
@@ -844,25 +860,14 @@ int CreateDVD_Thread::
 resize_tracks()
 {
 	Tracks *tracks = mwindow->edl->tracks;
-	int max_w = 0, max_h = 0;
+	int trk_w = max_w, trk_h = max_h;
+	if( trk_w < dvd_width ) trk_w = dvd_width;
+	if( trk_h < dvd_height ) trk_h = dvd_height;
 	for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
 		if( vtrk->data_type != TRACK_VIDEO ) continue;
 		if( !vtrk->record ) continue;
-		Edits *edits = vtrk->edits;
-		for( Edit *edit=edits->first; edit; edit=edit->next ) {
-			Indexable *indexable = edit->get_source();
-			int w = indexable->get_w();
-			if( w > max_w ) max_w = w;
-			int h = indexable->get_h();
-			if( h > max_h ) max_h = h;
-		}
-	}
-
-	for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
-		if( vtrk->data_type != TRACK_VIDEO ) continue;
-		if( !vtrk->record ) continue;
-		vtrk->track_w = max_w;
-		vtrk->track_h = max_h;
+		vtrk->track_w = trk_w;
+		vtrk->track_h = trk_h;
 	}
 	return 0;
 }
@@ -885,7 +890,7 @@ option_presets()
 	dvd_framerate = hd_formats[use_standard].framerate;
 
 	Tracks *tracks = mwindow->edl->tracks;
-	int max_w = 0, max_h = 0;
+	max_w = 0;  max_h = 0;
 	int has_deinterlace = 0, has_scale = 0;
 	for( Track *trk=tracks->first; trk; trk=trk->next ) {
 		if( !trk->record ) continue;

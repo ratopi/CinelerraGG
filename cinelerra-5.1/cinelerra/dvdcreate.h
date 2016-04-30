@@ -60,6 +60,7 @@ public:
 	int dvd_samplerate;
 	int dvd_max_bitrate;
 	double dvd_kaudio_rate;
+	int max_w, max_h;
 };
 
 class CreateDVD_OK : public BC_OKButton
