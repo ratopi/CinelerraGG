@@ -57,12 +57,12 @@ case "$dir" in
       ln -s libtermcap.so.2 /usr/lib64/libtermcap.so
     fi
   ;;
-"ubuntu" | "mint" | "ub14" | "ub15")
+"ubuntu" | "mint" | "ub14" | "ub15" | "debian")
   apt-get -y install apt-file sox nasm yasm g++ build-essential libz-dev \
     texinfo libpng-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \
     libtiff5-dev exuberant-ctags ttf-bitstream-vera xfonts-75dpi xfonts-100dpi \
-    fonts-dejavu libopenexr-dev libavc1394-dev festival-dev fftw3-dev \
+    fonts-dejavu libopenexr-dev libavc1394-dev festival-dev fftw3-dev gdb \
     libdc1394-22-dev libiec61883-dev libesd0-dev libflac-dev inkscape \
     libsndfile1-dev libtheora-dev cmake udftools libxml2-utils git
   ;;

@@ -400,13 +400,23 @@ const char *MWindow::default_std()
 		}
 	}
 
-	for( int i=0; ntsc_zones[i]; ++i ) {
-		if( !strcmp(ntsc_zones[i], p) )
-			return "NTSC";
+	if( p ) {
+		for( int i=0; ntsc_zones[i]; ++i ) {
+			if( !strcmp(ntsc_zones[i], p) )
+				return "NTSC";
+		}
+	}
+
+	p = getenv("TZ");
+	if( p ) {
+		for( int i=0; ntsc_zones[i]; ++i ) {
+			if( !strcmp(ntsc_zones[i], p) )
+				return "NTSC";
+		}
 	}
 
 //__timezone: Seconds west of UTC.  240sec/deg
-	double tz_deg = __timezone / 240.;
+	double tz_deg = -__timezone / 240.;
 // from Honolulu = -10, to New York = -5, 15deg/hr   lat -150..-75
 	return tz_deg >= -10*15 && tz_deg <= -5*15 ? "NTSC" : "PAL";
 }
