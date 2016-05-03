@@ -79,6 +79,7 @@ public:
 		int64_t next_frame,
 		int64_t current_frame);
 	void boundaries();
+	void set_cpus(int cpus);
 
 	int block_count;
 	int global_range_w;

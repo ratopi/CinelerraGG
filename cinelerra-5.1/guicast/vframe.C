@@ -1047,7 +1047,7 @@ int VFrame::copy_from(VFrame *frame)
 	return 0;
 }
 
-int VFrame::transfer_from(VFrame *that, int bg_color)
+int VFrame::transfer_from(VFrame *that, int bg_color, int in_x, int in_y, int in_w, int in_h)
 {
 	if( this->get_color_model() == that->get_color_model() &&
 	    this->get_w() == that->get_w() && this->get_h() == that->get_h() )
@@ -1088,7 +1088,7 @@ int VFrame::transfer_from(VFrame *that, int bg_color)
 	BC_CModels::transfer(outp, this->get_color_model(),
 			0, 0, this->get_w(), this->get_h(), this->get_w(),
 		inp, that->get_color_model(),
-			0, 0, that->get_w(), that->get_h(), that->get_w(),
+			in_x, in_y, in_w, in_h, that->get_w(),
 		bg_color);
 #endif
 	return 0;

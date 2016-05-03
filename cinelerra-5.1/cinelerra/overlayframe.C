@@ -224,17 +224,61 @@ int OverlayFrame::overlay(VFrame *output, VFrame *input,
 		isnan(out_x1) || isnan(out_x2) ||
 		isnan(out_y1) || isnan(out_y2)) return 1;
 
-	if(in_x1 < 0) in_x1 = 0;
-	if(in_y1 < 0) in_y1 = 0;
-	if(in_x2 > input->get_w()) in_x2 = input->get_w();
-	if(in_y2 > input->get_h()) in_y2 = input->get_h();
-	if(out_x1 < 0) out_x1 = 0;
-	if(out_y1 < 0) out_y1 = 0;
-	if(out_x2 > output->get_w()) out_x2 = output->get_w();
-	if(out_y2 > output->get_h()) out_y2 = output->get_h();
+	if( in_x2 <= in_x1 || in_y2 <= in_y1 ) return 1;
+	if( out_x2 <= out_x1 || out_y2 <= out_y1 ) return 1;
 
 	float xscale = (out_x2 - out_x1) / (in_x2 - in_x1);
 	float yscale = (out_y2 - out_y1) / (in_y2 - in_y1);
+	int in_w = input->get_w(), in_h = input->get_h();
+	int out_w = output->get_w(), out_h = output->get_h();
+
+	if( in_x1 < 0 ) {
+		out_x1 -= in_x1 * xscale;
+		in_x1 = 0;
+	}
+	if( in_x2 > in_w ) {
+		out_x2 -= (in_x2 - in_w) * xscale;
+		in_x2 = in_w;
+	}
+	if( in_y1 < 0 ) {
+		out_y1 -= in_y1 * yscale;
+		in_y1 = 0;
+	}
+	if( in_y2 > in_h ) {
+		out_y2 -= (in_y2 - in_h) * yscale;
+		in_y2 = in_h;
+	}
+
+	if( out_x1 < 0 ) {
+		in_x1 -= out_x1 / xscale;
+		out_x1 = 0;
+	}
+	if( out_x2 > out_w ) {
+		in_x2 -= (out_x2 - out_w) / xscale;
+		out_x2 = out_w;
+	}
+	if( out_y1 < 0 ) {
+		in_y1 -= out_y1 / yscale;
+		out_y1 = 0;
+	}
+	if( out_y2 > out_h ) {
+		in_y2 -= (out_y2 - out_h) / yscale;
+		out_y2 = out_h;
+	}
+
+	if( in_x1 < 0) in_x1 = 0;
+	if( in_y1 < 0) in_y1 = 0;
+	if( in_x2 > in_w ) in_x2 = in_w;
+	if( in_y2 > in_h ) in_y2 = in_h;
+	if( out_x1 < 0) out_x1 = 0;
+	if( out_y1 < 0) out_y1 = 0;
+	if( out_x2 > out_w ) out_x2 = out_w;
+	if( out_y2 > out_h ) out_y2 = out_h;
+
+	if( in_x2 <= in_x1 || in_y2 <= in_y1 ) return 1;
+	if( out_x2 <= out_x1 || out_y2 <= out_y1 ) return 1;
+	xscale = (out_x2 - out_x1) / (in_x2 - in_x1);
+	yscale = (out_y2 - out_y1) / (in_y2 - in_y1);
 
 	/* don't interpolate integer translations, or scale no-ops */
 	if(xscale == 1. && yscale == 1. &&

@@ -131,7 +131,10 @@ public:
 // direct copy with no alpha
 	int copy_from(VFrame *frame);
 // BC_CModels::transfer
-	int transfer_from(VFrame *frame, int bg_color=0);
+	int transfer_from(VFrame *frame, int bg_color, int in_x, int in_y, int in_w, int in_h);
+	int transfer_from(VFrame *frame, int bg_color=0) {
+		return transfer_from(frame, bg_color, 0,0, frame->get_w(),frame->get_h());
+	}
 // Required for YUV
 	int clear_frame();
 	int allocate_compressed_data(long bytes);

@@ -52,34 +52,46 @@ REGISTER_PLUGIN(MotionMain)
 
 MotionConfig::MotionConfig()
 {
-	global_range_w = 5;
-	global_range_h = 5;
+	global_range_w = 10;
+	global_range_h = 10;
 	rotation_range = 5;
 	rotation_center = 0;
 	block_count = 1;
-	global_block_w = MIN_BLOCK;
-	global_block_h = MIN_BLOCK;
+	global_block_w = 50; // MIN_BLOCK;
+	global_block_h = 50; // MIN_BLOCK;
 //	rotation_block_w = MIN_BLOCK;
 //	rotation_block_h = MIN_BLOCK;
 	block_x = 50;
 	block_y = 50;
 	global_positions = 256;
 	rotate_positions = 4;
-	magnitude = 100;
-	rotate_magnitude = 90;
-	return_speed = 0;
-	rotate_return_speed = 0;
-	action_type = MotionScan::STABILIZE;
+	magnitude = 25;
+	rotate_magnitude = 30;
+	return_speed = 8;
+	rotate_return_speed = 8;
+	action_type = MotionScan::STABILIZE_PIXEL;
 	global = 1;
 	rotate = 1;
 	addtrackedframeoffset = 0;
-	tracking_type = MotionScan::NO_CALCULATE;
-	draw_vectors = 1;
-	tracking_object = MotionScan::TRACK_SINGLE;
+	tracking_type = MotionScan::CALCULATE;
+	draw_vectors = 0;
+	tracking_object = MotionScan::TRACK_PREVIOUS;
 	track_frame = 0;
 	bottom_is_master = 1;
 	horizontal_only = 0;
 	vertical_only = 0;
+}
+
+void MotionConfig::set_cpus(int cpus)
+{
+	int gpos = 64, gpos_limit = 16 * cpus;
+	if( gpos_limit > 131072 ) gpos_limit = 131072;
+	while( gpos < gpos_limit ) gpos *= 2;
+	global_positions = gpos;
+	int rpos = 4, rpos_limit = cpus / 4;
+	if( rpos_limit > 32 ) gpos_limit = 32;
+	while( rpos < rpos_limit ) rpos *= 2;
+	rotate_positions = rpos;
 }
 
 void MotionConfig::boundaries()
@@ -238,6 +250,8 @@ MotionMain::MotionMain(PluginServer *server)
 	current_rotate_ref = 0;
 	rotate_target_src = 0;
 	rotate_target_dst = 0;
+
+	config.set_cpus(get_project_smp() + 1);
 }
 
 MotionMain::~MotionMain()
@@ -1551,18 +1565,17 @@ void RotateScanUnit::process_package(LoadPackage *package)
 //printf("RotateScanUnit::process_package %d\n", __LINE__);
 			server->put_cache(pkg->angle, pkg->difference);
 		}
-
-// printf("RotateScanUnit::process_package 10 x=%d y=%d w=%d h=%d block_x=%d block_y=%d angle=%f scan_w=%d scan_h=%d diff=%lld\n",
-// server->block_x1,
-// server->block_y1,
-// server->block_x2 - server->block_x1,
-// server->block_y2 - server->block_y1,
-// server->block_x,
-// server->block_y,
-// pkg->angle,
-// server->scan_w,
-// server->scan_h,
-// pkg->difference);
+#if 0
+	VFrame png(x2-x1, y2-y1, BC_RGB888, -1);
+	png.transfer_from(temp, 0, x1, y1, x2-x1, y2-y1);
+	char fn[64];
+	sprintf(fn,"%s%f.png","/tmp/temp",pkg->angle); png.write_png(fn);
+	png.transfer_from(server->current_frame, 0, x1, y1, x2-x1, y2-y1);
+	sprintf(fn,"%s%f.png","/tmp/curr",pkg->angle); png.write_png(fn);
+printf("RotateScanUnit::process_package 10 x=%d y=%d w=%d h=%d block_x=%d block_y=%d angle=%f scan_w=%d scan_h=%d diff=%jd\n",
+ server->block_x1, server->block_y1, server->block_x2 - server->block_x1, server->block_y2 - server->block_y1,
+ server->block_x,  server->block_y,  pkg->angle,  server->scan_w, server->scan_h, pkg->difference);
+#endif
 	}
 }
 

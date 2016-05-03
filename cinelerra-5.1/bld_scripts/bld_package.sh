@@ -2,7 +2,7 @@
 
 if [ $# -ne 2 ]; then
   echo "usage: $0 <os> <typ>"
-  echo "  os = centos | ubuntu | suse"
+  echo "  os = centos | ubuntu | suse | debian"
   echo " typ = static | dynamic"
   exit 1
 fi
@@ -14,6 +14,7 @@ proj="cinelerra5"
 base="cinelerra-5.1"
 
 centos="centos-7.0-1406"
+debian="debian-8.4.0"
 fedora="fedora-23"
 leap="leap-42.1"
 mint="mint-14.04.1"
