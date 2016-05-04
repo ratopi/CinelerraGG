@@ -97,6 +97,10 @@ ifeq ($(HAVE_DV), y)
 CFLAGS += -DHAVE_DV
 endif
 
+ifeq ($(HAVE_PACTL), y)
+CFLAGS += -DHAVE_PACTL
+endif
+
 ifeq ($(OBJDIR), alpha)
 CXXREPOSITORY = cxx_repository/*.o
 endif
