@@ -156,6 +156,7 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 		snd_ctl_close(handle);
 	}
 
+#ifdef HAVE_PACTL
 // attempt to add pulseaudio "monitor" devices
 //  run: pactl list <sources>|<sinks>
 //   scan output for <Source/Sink> #n,  Name: <device>
@@ -211,6 +212,7 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 		}
 		pclose(pactl);
 	}
+#endif
 }
 
 void AudioALSA::translate_name(char *output, char *input, int mode)

@@ -47,20 +47,14 @@ static void ff_err(int ret, const char *fmt, ...)
 	fprintf(stderr,_("%s  err: %s\n"),msg, errmsg);
 }
 
-FFPacket::FFPacket()
-{
-	init();
-}
-
-FFPacket::~FFPacket()
-{
-	av_packet_unref(&pkt);
-}
-
 void FFPacket::init()
 {
 	av_init_packet(&pkt);
 	pkt.data = 0; pkt.size = 0;
+}
+void FFPacket::finit()
+{
+	av_packet_unref(&pkt);
 }
 
 FFrame::FFrame(FFStream *fst)
@@ -449,7 +443,7 @@ int FFStream::flush()
 
 int FFStream::seek(int64_t no, double rate)
 {
-	if( no < 0 ) no = 0;
+	int64_t tstmp = -INT64_MAX+1;
 // default ffmpeg native seek
 	int npkts = 1;
 	int64_t pos = no, plmt = -1;
@@ -461,27 +455,30 @@ int FFStream::seek(int64_t no, double rate)
 		if( no-n < 30*rate ) {
 			if( n < 0 ) n = 0;
 			pos = n;
-			if( ++i < marks.size() ) plmt = marks[i].pos;
+			if( i < marks.size() ) plmt = marks[i].pos;
 			npkts = MAX_RETRY;
 		}
 	}
-	double secs = pos / rate;
-	int64_t pkt_ts, tstmp = secs * st->time_base.den / st->time_base.num;
-	if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
+	if( pos > 0 ) {
+		double secs = pos / rate;
+		tstmp = secs * st->time_base.den / st->time_base.num;
+		if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
+	}
 	int ret = avformat_seek_file(fmt_ctx, st->index,
 		-INT64_MAX, tstmp, INT64_MAX, AVSEEK_FLAG_ANY);
 	if( ret >= 0 ) {
 		avcodec_flush_buffers(st->codec);
+		ipkt.finit();  ipkt.init();
 		need_packet = 0;  flushed = 0;
 		seeked = 1;  st_eof(0);
 // read up to retry packets, limited to npkts in stream, and not past pkt.pos plmt
-		for( int retry=MAX_RETRY; ret>=0 && --retry>=0; ) {
+		for(;;) {
 			if( read_packet() <= 0 ) { ret = -1;  break; }
 			if( plmt >= 0 && ipkt->pos >= plmt ) break;
 			if( ipkt->stream_index != st->index ) continue;
 			if( --npkts <= 0 ) break;
-			if( (pkt_ts=ipkt->dts) == AV_NOPTS_VALUE &&
-			    (pkt_ts=ipkt->pts) == AV_NOPTS_VALUE ) continue;
+			int64_t pkt_ts = ipkt->dts != AV_NOPTS_VALUE ? ipkt->dts : ipkt->pts;
+			if( pkt_ts == AV_NOPTS_VALUE ) continue;
 			if( pkt_ts >= tstmp ) break;
 		}
 	}

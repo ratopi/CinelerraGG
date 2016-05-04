@@ -40,12 +40,14 @@ extern "C" {
 class FFPacket  {
 	AVPacket pkt;
 public:
-	FFPacket();
-	~FFPacket();
-	void init();
 	operator AVPacket*() { return &pkt; }
 	operator AVPacket&() { return pkt; }
 	AVPacket *operator ->() { return &pkt; }
+
+	void init();
+	void finit();
+	FFPacket() { init(); }
+	~FFPacket() { finit(); }
 };
 
 class FFrame : public ListItem<FFrame> {

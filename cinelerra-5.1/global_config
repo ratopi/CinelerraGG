@@ -18,6 +18,7 @@ HAVE_LADSPA := y
 #HAVE_GL := y
 #HAVE_DL := y
 #HAVE_NUMA := y
+#HAVE_PACTL := y
 
 OBJDIR := $(shell uname -m)
 

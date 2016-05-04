@@ -6,7 +6,7 @@
 #edit global_config and set HAVE_var to override probe
 
 PROBED="STATIC_LIBRARIES HAVE_VIDEO4LINUX2 HAVE_DVB HAVE_GL"
-PROBED="$PROBED HAVE_DL HAVE_NUMA"
+PROBED="$PROBED HAVE_DL HAVE_NUMA HAVE_PACTL"
 
 if [ $# -gt 0 ]; then
   if [ "$1" = "reset" ]; then
@@ -169,6 +169,7 @@ if [ -x a.out ]; then HAVE_NUMA=y; else HAVE_NUMA=n; fi
 
 rm -f a.out conftest.c
 
+if pactl --version >& /dev/null; then HAVE_PACTL=y; else HAVE_PACTL=n; fi
 
 # update global_config with probe data
 
