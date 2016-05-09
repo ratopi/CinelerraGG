@@ -9,6 +9,7 @@
 #include "bclistboxitem.inc"
 #include "bcmenuitem.h"
 #include "bctextbox.h"
+#include "browsebutton.h"
 #include "mwindow.h"
 
 #include "dvdcreate.inc"
@@ -217,6 +218,7 @@ public:
 	CreateDVD_AssetTitle *asset_title;
 	int tmp_x, tmp_y;
 	CreateDVD_TmpPath *tmp_path;
+	BrowseButton *btmp_path;
 	CreateDVD_DiskSpace *disk_space;
 	CreateDVD_Format *standard;
 	ArrayList<BC_ListBoxItem *> media_sizes;

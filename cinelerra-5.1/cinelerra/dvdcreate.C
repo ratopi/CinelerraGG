@@ -187,7 +187,8 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	fprintf(fp,"  </vmgm>\n");
 	fprintf(fp,"  <titleset>\n");
 	fprintf(fp,"    <titles>\n");
-	fprintf(fp,"    <video format=\"ntsc\" aspect=\"%d:%d\" resolution=\"%dx%d\"/>\n",
+	fprintf(fp,"    <video format=\"%s\" aspect=\"%d:%d\" resolution=\"%dx%d\"/>\n",
+		use_standard == HD_720x576_2500 ? "pal" : "ntsc",
 		(int)session->aspect_w, (int)session->aspect_h,
 		session->output_w, session->output_h);
 	fprintf(fp,"    <audio format=\"ac3\" lang=\"en\"/>\n");
@@ -705,6 +706,7 @@ CreateDVD_GUI::CreateDVD_GUI(CreateDVD_Thread *thread, int x, int y, int w, int 
 	cancel_x = cancel_y = cancel_w = cancel_h = 0;
 	asset_title = 0;
 	tmp_path = 0;
+	btmp_path = 0;
 	disk_space = 0;
 	need_deinterlace = 0;
 	need_inverse_telecine = 0;
@@ -734,11 +736,15 @@ void CreateDVD_GUI::create_objects()
 	asset_title = new CreateDVD_AssetTitle(this, at_x, at_y, get_w()-at_x-10);
 	add_subwindow(asset_title);
 	y += title->get_h() + pady/2;
-	title = new BC_Title(x, y, _("tmp path:"), MEDIUMFONT, YELLOW);
+	title = new BC_Title(x, y, _("Work path:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
 	tmp_x = x + title->get_w();  tmp_y = y;
-	tmp_path = new CreateDVD_TmpPath(this, tmp_x, tmp_y,  get_w()-tmp_x-10);
+	tmp_path = new CreateDVD_TmpPath(this, tmp_x, tmp_y,  get_w()-tmp_x-35);
 	add_subwindow(tmp_path);
+	btmp_path = new BrowseButton(thread->mwindow, this, tmp_path,
+		tmp_x+tmp_path->get_w(), tmp_y, "/tmp",
+		_("Work path"), _("Select a Work directory:"), 1);
+	add_subwindow(btmp_path);
 	y += title->get_h() + pady/2;
 	disk_space = new CreateDVD_DiskSpace(this, x, y);
 	add_subwindow(disk_space);
@@ -802,7 +808,8 @@ void CreateDVD_GUI::create_objects()
 int CreateDVD_GUI::resize_event(int w, int h)
 {
 	asset_title->reposition_window(at_x, at_y, get_w()-at_x-10);
-	tmp_path->reposition_window(tmp_x, tmp_y,  get_w()-tmp_x-10);
+	tmp_path->reposition_window(tmp_x, tmp_y,  get_w()-tmp_x-35);
+	btmp_path->reposition_window(tmp_x+tmp_path->get_w(), tmp_y);
 	ok_y = h - ok_h - 10;
 	ok->reposition_window(ok_x, ok_y);
 	cancel_x = w - cancel_w - 10,

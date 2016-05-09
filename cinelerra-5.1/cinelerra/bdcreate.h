@@ -9,6 +9,7 @@
 #include "bclistboxitem.inc"
 #include "bcmenuitem.h"
 #include "bctextbox.h"
+#include "browsebutton.h"
 #include "mwindow.h"
 
 #include "bdcreate.inc"
@@ -209,6 +210,7 @@ public:
 	CreateBD_AssetTitle *asset_title;
 	int tmp_x, tmp_y;
 	CreateBD_TmpPath *tmp_path;
+	BrowseButton *btmp_path;
 	CreateBD_DiskSpace *disk_space;
 	CreateBD_Format *standard;
 	ArrayList<BC_ListBoxItem *> media_sizes;

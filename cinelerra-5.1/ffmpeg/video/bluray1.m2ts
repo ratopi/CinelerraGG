@@ -1,0 +1,8 @@
+mpegts libx264
+id=0x1011
+profile=high422
+pixel_format=yuv422p
+level=3.0
+preset=medium
+bluray-compat=1
+x264opts keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8

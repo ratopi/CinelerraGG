@@ -30,7 +30,7 @@
 #define BD_1920x1080_2500i	1
 #define BD_1920x1080_2400p	2
 #define BD_1920x1080_23976p	3
-#define BD_1280x720_5997p	4
+#define BD_1280x720_5994p	4
 #define BD_1280x720_5000p	5
 #define BD_1280x720_23976p	6
 #define BD_1280x720_2400p	7
@@ -46,7 +46,7 @@ static struct bd_format {
 	{ "1920x1080 25i",	  1920,1080, 25     },
 	{ "1920x1080 24p",	  1920,1080, 24     },
 	{ "1920x1080 23.976p",	  1920,1080, 23.976 },
-	{ "1280x720 59.97p",	  1280,720,  59.97  },
+	{ "1280x720 59.94p",	  1280,720,  59.94  },
 	{ "1280x720 50p",	  1280,720,  50     },
 	{ "1280x720 23.976p",	  1280,720,  23.976 },
 	{ "1280x720 24p",	  1280,720,  24     },
@@ -184,7 +184,8 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	fprintf(fp,"bdwrite $1/udfs $1/bd.m2ts\n");
 	fprintf(fp,"umount $1/udfs\n");
 	fprintf(fp,"echo To burn bluray, load writable media and run:\n");
-	fprintf(fp,"echo growisofs -dvd-compat -Z /dev/bd=$1/bd.udfs\n");
+	fprintf(fp,"echo for WORM: growisofs -dvd-compat -Z /dev/bd=$1/bd.udfs\n");
+	fprintf(fp,"echo for RW:   dd if=$1/bd.udfs of=/dev/bd bs=2048000\n");
 	fprintf(fp,"\n");
 	fclose(fp);
 
@@ -373,7 +374,7 @@ BC_Window* CreateBD_Thread::new_gui()
 			has_standard = i;  break;
 		}
 	}
-	use_standard = has_standard >= 0 ? has_standard : BD_1920x1080_2400p;
+	use_standard = has_standard >= 0 ? has_standard : BD_1920x1080_23976p;
 
 	option_presets();
 	int scr_x = mwindow->gui->get_screen_x(0, -1);
@@ -616,6 +617,7 @@ CreateBD_GUI::CreateBD_GUI(CreateBD_Thread *thread, int x, int y, int w, int h)
 	cancel_x = cancel_y = cancel_w = cancel_h = 0;
 	asset_title = 0;
 	tmp_path = 0;
+	btmp_path = 0;
 	disk_space = 0;
 	need_deinterlace = 0;
 	need_inverse_telecine = 0;
@@ -645,11 +647,15 @@ void CreateBD_GUI::create_objects()
 	asset_title = new CreateBD_AssetTitle(this, at_x, at_y, get_w()-at_x-10);
 	add_subwindow(asset_title);
 	y += title->get_h() + pady/2;
-	title = new BC_Title(x, y, _("tmp path:"), MEDIUMFONT, YELLOW);
+	title = new BC_Title(x, y, _("Work path:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
 	tmp_x = x + title->get_w();  tmp_y = y;
-	tmp_path = new CreateBD_TmpPath(this, tmp_x, tmp_y,  get_w()-tmp_x-10);
+	tmp_path = new CreateBD_TmpPath(this, tmp_x, tmp_y,  get_w()-tmp_x-35);
 	add_subwindow(tmp_path);
+	btmp_path = new BrowseButton(thread->mwindow, this, tmp_path,
+		tmp_x+tmp_path->get_w(), tmp_y, "/tmp",
+		_("Work path"), _("Select a Work directory:"), 1);
+	add_subwindow(btmp_path);
 	y += title->get_h() + pady/2;
 	disk_space = new CreateBD_DiskSpace(this, x, y);
 	add_subwindow(disk_space);
@@ -711,7 +717,8 @@ void CreateBD_GUI::create_objects()
 int CreateBD_GUI::resize_event(int w, int h)
 {
 	asset_title->reposition_window(at_x, at_y, get_w()-at_x-10);
-	tmp_path->reposition_window(tmp_x, tmp_y,  get_w()-tmp_x-10);
+	tmp_path->reposition_window(tmp_x, tmp_y,  get_w()-tmp_x-35);
+	btmp_path->reposition_window(tmp_x+tmp_path->get_w(), tmp_y);
 	ok_y = h - ok_h - 10;
 	ok->reposition_window(ok_x, ok_y);
 	cancel_x = w - cancel_w - 10,

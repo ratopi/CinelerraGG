@@ -1530,6 +1530,14 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				float x2 = point2->x + point2->control_x1;
 				float y2 = point2->y + point2->control_y1;
 				float x3 = point2->x, y3 = point2->y;
+				float canvas_x0 = (x0 - half_track_w) * projector_z + projector_x;
+				float canvas_y0 = (y0 - half_track_h) * projector_z + projector_y;
+				float canvas_x1 = (x1 - half_track_w) * projector_z + projector_x;
+				float canvas_y1 = (y1 - half_track_h) * projector_z + projector_y;
+				float canvas_x2 = (x2 - half_track_w) * projector_z + projector_x;
+				float canvas_y2 = (y2 - half_track_h) * projector_z + projector_y;
+				float canvas_x3 = (x3 - half_track_w) * projector_z + projector_x;
+				float canvas_y3 = (y3 - half_track_h) * projector_z + projector_y;
 
 				float t = (float)j / segments;
 				float tpow2 = t * t;
@@ -1546,9 +1554,8 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					+ 3 * t     * invtpow2 * y1
 					+ 3 * tpow2 * invt     * y2
 					+     tpow3            * y3);
-
-				x = (x - half_track_w) * projector_z + projector_x;
-				y = (y - half_track_h) * projector_z + projector_y;
+				float canvas_x = (x - half_track_w) * projector_z + projector_x;
+				float canvas_y = (y - half_track_h) * projector_z + projector_y;
 // Test new point addition
 				if(button_press) {
 					float line_distance = line_dist(x,y, mask_cursor_x,mask_cursor_y);
@@ -1565,13 +1572,9 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					}
 
 // Test existing point selection
-					float canvas_x = (x0 - half_track_w) * projector_z + projector_x;
-					float canvas_y = (y0 - half_track_h) * projector_z + projector_y;
 // Test first point
 					if(gui->ctrl_down()) {
-						float control_x = (x1 - half_track_w) * projector_z + projector_x;
-						float control_y = (y1 - half_track_h) * projector_z + projector_y;
-						float distance = line_dist(control_x,control_y, mask_cursor_x,mask_cursor_y);
+						float distance = line_dist(x1,y1, mask_cursor_x,mask_cursor_y);
 
 						if(distance < selected_control_point_distance) {
 							selected_point = i;
@@ -1581,7 +1584,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					}
 					else {
 						if(!gui->shift_down()) {
-							if(test_bbox(cursor_x, cursor_y, canvas_x, canvas_y)) {
+							if(test_bbox(cursor_x, cursor_y, canvas_x0, canvas_y0)) {
 								selected_point = i;
 							}
 						}
@@ -1590,13 +1593,8 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 						}
 					}
 // Test second point
-					canvas_x = (x3 - half_track_w) * projector_z + projector_x;
-					canvas_y = (y3 - half_track_h) * projector_z + projector_y;
-
 					if(gui->ctrl_down()) {
-						float control_x = (x2 - half_track_w) * projector_z + projector_x;
-						float control_y = (y2 - half_track_h) * projector_z + projector_y;
-						float distance = line_dist(control_x,control_y, mask_cursor_x,mask_cursor_y);
+						float distance = line_dist(x2,y2, mask_cursor_x,mask_cursor_y);
 
 //printf("CWindowCanvas::do_mask %d %f %f\n", i, distance, selected_control_point_distance);
 						if(distance < selected_control_point_distance) {
@@ -1607,7 +1605,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					}
 					else if(i < points.size() - 1) {
 						if(!gui->shift_down()) {
-							if(test_bbox(cursor_x, cursor_y, canvas_x, canvas_y)) {
+							if(test_bbox(cursor_x, cursor_y, canvas_x3, canvas_y3)) {
 								selected_point = (i < points.size() - 1 ? i + 1 : 0);
 							}
 						}
@@ -1617,14 +1615,13 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					}
 				}
 
-
-				output_to_canvas(mwindow->edl, 0, x, y);
+				output_to_canvas(mwindow->edl, 0, canvas_x, canvas_y);
 
 				if(j > 0) {
 
 					if(draw) { // Draw joining line
-						x_points.append((int)x);
-						y_points.append((int)y);
+						x_points.append((int)canvas_x);
+						y_points.append((int)canvas_y);
 					}
 
 					if(j == segments) {
@@ -1632,24 +1629,24 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 							if(i < points.size() - 1) {
 								if(i == gui->affected_point - 1)
 									get_canvas()->draw_disc(
-										(int)x - CONTROL_W / 2,
-										(int)y - CONTROL_W / 2,
+										(int)canvas_x - CONTROL_W / 2,
+										(int)canvas_y - CONTROL_W / 2,
 										CONTROL_W, CONTROL_H);
 								else
 									get_canvas()->draw_circle(
-										(int)x - CONTROL_W / 2,
-										(int)y - CONTROL_W / 2,
+										(int)canvas_x - CONTROL_W / 2,
+										(int)canvas_y - CONTROL_W / 2,
 										CONTROL_W, CONTROL_H);
 // char string[BCTEXTLEN];
 // sprintf(string, "%d", (i < points.size() - 1 ? i + 1 : 0));
-// canvas->draw_text((int)x + CONTROL_W, (int)y + CONTROL_W, string);
+// canvas->draw_text((int)canvas_x + CONTROL_W, (int)canvas_y + CONTROL_W, string);
 							}
 
 // Draw second control point.  Discard x2 and y2 after this.
-							x2 = (x2 - half_track_w) * projector_z + projector_x;
-							y2 = (y2 - half_track_h) * projector_z + projector_y;
 							output_to_canvas(mwindow->edl, 0, x2, y2);
-							get_canvas()->draw_line((int)x, (int)y, (int)x2, (int)y2);
+							get_canvas()->draw_line(
+								(int)canvas_x, (int)canvas_y,
+								(int)canvas_x2, (int)canvas_y2);
 							get_canvas()->draw_rectangle(
 								(int)x2 - CONTROL_W / 2,
 								(int)y2 - CONTROL_H / 2,
@@ -1664,29 +1661,29 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 						sprintf(mask_label, "%d",
 							mwindow->edl->session->cwindow_mask);
 						get_canvas()->draw_text(
-							(int)x - FIRST_CONTROL_W,
-							(int)y - FIRST_CONTROL_H,
+							(int)canvas_x - FIRST_CONTROL_W,
+							(int)canvas_y - FIRST_CONTROL_H,
 							mask_label);
 							
 						get_canvas()->draw_disc(
-							(int)x - FIRST_CONTROL_W / 2,
-							(int)y - FIRST_CONTROL_H / 2,
+							(int)canvas_x - FIRST_CONTROL_W / 2,
+							(int)canvas_y - FIRST_CONTROL_H / 2,
 							FIRST_CONTROL_W, FIRST_CONTROL_H);
 					}
 
-// Draw first control point.  Discard x1 and y1 after this.
+// Draw first control point.
 					if(draw) {
-						x1 = (x1 - half_track_w) * projector_z + projector_x;
-						y1 = (y1 - half_track_h) * projector_z + projector_y;
-						output_to_canvas(mwindow->edl, 0, x1, y1);
-						get_canvas()->draw_line((int)x, (int)y, (int)x1, (int)y1);
+						output_to_canvas(mwindow->edl, 0, canvas_x1, canvas_y1);
+						get_canvas()->draw_line(
+							(int)canvas_x, (int)canvas_y,
+							(int)canvas_x1, (int)canvas_y1);
 						get_canvas()->draw_rectangle(
-							(int)x1 - CONTROL_W / 2,
-							(int)y1 - CONTROL_H / 2,
+							(int)canvas_x1 - CONTROL_W / 2,
+							(int)canvas_y1 - CONTROL_H / 2,
 							CONTROL_W, CONTROL_H);
 
-						x_points.append((int)x);
-						y_points.append((int)y);
+						x_points.append((int)canvas_x);
+						y_points.append((int)canvas_y);
 					}
 				}
 //printf("CWindowCanvas::do_mask 1\n");
@@ -2006,26 +2003,26 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				float y1 = point->y + point->control_y1;
 				float x2 = point->x + point->control_x2;
 				float y2 = point->y + point->control_y2;
-				float canvas_x = (x0 - half_track_w) * projector_z + projector_x;
-				float canvas_y = (y0 - half_track_h) * projector_z + projector_y;
+				float canvas_x0 = (x0 - half_track_w) * projector_z + projector_x;
+				float canvas_y0 = (y0 - half_track_h) * projector_z + projector_y;
 
-				output_to_canvas(mwindow->edl, 0, canvas_x, canvas_y);
-				if(test_bbox(cursor_x, cursor_y, canvas_x, canvas_y)) {
+				output_to_canvas(mwindow->edl, 0, canvas_x0, canvas_y0);
+				if(test_bbox(cursor_x, cursor_y, canvas_x0, canvas_y0)) {
 					over_point = 1;
 				}
 
 				if(!over_point && gui->ctrl_down()) {
-					canvas_x = (x1 - half_track_w) * projector_z + projector_x;
-					canvas_y = (y1 - half_track_h) * projector_z + projector_y;
-					output_to_canvas(mwindow->edl, 0, canvas_x, canvas_y);
-					if(test_bbox(cursor_x, cursor_y, canvas_x, canvas_y)) {
+					float canvas_x1 = (x1 - half_track_w) * projector_z + projector_x;
+					float canvas_y1 = (y1 - half_track_h) * projector_z + projector_y;
+					output_to_canvas(mwindow->edl, 0, canvas_x1, canvas_y1);
+					if(test_bbox(cursor_x, cursor_y, canvas_x1, canvas_y1)) {
 						over_point = 1;
 					}
 					else {
-						canvas_x = (x2 - half_track_w) * projector_z + projector_x;
-						canvas_y = (y2 - half_track_h) * projector_z + projector_y;
-						output_to_canvas(mwindow->edl, 0, canvas_x, canvas_y);
-						if(test_bbox(cursor_x, cursor_y, canvas_x, canvas_y)) {
+						float canvas_x2 = (x2 - half_track_w) * projector_z + projector_x;
+						float canvas_y2 = (y2 - half_track_h) * projector_z + projector_y;
+						output_to_canvas(mwindow->edl, 0, canvas_x2, canvas_y2);
+						if(test_bbox(cursor_x, cursor_y, canvas_x2, canvas_y2)) {
 							over_point = 1;
 						}
 					}

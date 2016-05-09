@@ -263,7 +263,8 @@ public:
 
 	static void set_option_path(char *path, const char *fmt, ...);
 	static void get_option_path(char *path, const char *type, const char *spec);
-	static int get_format(char *format, const char *path, char *spec);
+	static int get_format(char *format, const char *path, const char *spec);
+	static int get_codec(char *codec, const char *path, const char *spec);
 	static int scan_option_line(char *cp,char *tag,char *val);
 	static int load_defaults(const char *path, const char *type,
 		 char *codec, char *codec_options, int len);

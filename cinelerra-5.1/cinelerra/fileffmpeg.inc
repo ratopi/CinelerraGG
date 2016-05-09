@@ -23,11 +23,36 @@
 #define FILEFFMPEG_INC
 
 class FileFFMPEG;
+class FFMpegConfigNum;
+class FFMpegAudioNum;
+class FFMpegAudioBitrate;
+class FFMpegVideoNum;
+class FFMpegVideoBitrate;
+class FFMpegVideoQuality;
 class FFMPEGConfigAudio;
+class FFAudioOptions;
 class FFMPEGConfigAudioPopup;
 class FFMPEGConfigAudioToggle;
 class FFMPEGConfigVideo;
+class FFVideoOptions;
 class FFMPEGConfigVideoPopup;
 class FFMPEGConfigVideoToggle;
+class FFMPEGScanProgress;
+
+class FFOptions_OptName;
+class FFOptions_OptValue;
+class FFOptions_Opt;
+class FFOptions;
+class FFOptions_OptPanel;
+class FFOptionsUnits;
+class FFOptionsText;
+class FFOptionsApply;
+class FFOptionsWindow;
+class FFOptionsDialog;
+class FFOptionsKindItem;
+class FFOptionsKind;
+
+#define FF_KIND_CODEC 0
+#define FF_KIND_FFMPEG 1
 
 #endif

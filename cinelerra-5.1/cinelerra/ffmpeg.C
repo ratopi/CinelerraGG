@@ -1137,9 +1137,25 @@ void FFMPEG::get_option_path(char *path, const char *type, const char *spec)
 		set_option_path(path, "%s/%s", type, spec);
 }
 
-int FFMPEG::get_format(char *format, const char *path, char *spec)
+int FFMPEG::get_format(char *format, const char *path, const char *spec)
 {
 	char option_path[BCTEXTLEN], line[BCTEXTLEN], codec[BCTEXTLEN];
+	get_option_path(option_path, path, spec);
+	FILE *fp = fopen(option_path,"r");
+	if( !fp ) return 1;
+	int ret = 0;
+	if( !fgets(line, sizeof(line), fp) ) ret = 1;
+	if( !ret ) {
+		line[sizeof(line)-1] = 0;
+		ret = scan_option_line(line, format, codec);
+	}
+	fclose(fp);
+	return ret;
+}
+
+int FFMPEG::get_codec(char *codec, const char *path, const char *spec)
+{
+	char option_path[BCTEXTLEN], line[BCTEXTLEN], format[BCTEXTLEN];
 	get_option_path(option_path, path, spec);
 	FILE *fp = fopen(option_path,"r");
 	if( !fp ) return 1;

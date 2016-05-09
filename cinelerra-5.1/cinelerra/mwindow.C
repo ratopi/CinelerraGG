@@ -2925,6 +2925,9 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 {
 	w = 1;  h = 1;
 	if(!width || !height) return 1;
+	if( width == 720 && (height == 480 || height == 576) ) {
+		w = 4;  h = 3;  return 0; // for NTSC and PAL
+	}
 	double ar = (double)width / height;
 // square-ish pixels
 	if( EQUIV(ar, 1.0000) ) return 0;

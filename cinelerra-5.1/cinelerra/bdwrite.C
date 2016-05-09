@@ -2882,8 +2882,8 @@ bd_path(const char *bp, const char *fmt, va_list ap)
 int Media::
 bd_copy(const char *ifn, const char *fmt, ...)
 {
-  int n, ret = 1;
-  char bfr[0x40000];
+  int bfrsz = 0x40000, ret = 1;
+  char bfr[bfrsz];
   FILE *ifp = fopen(ifn,"r");
   if( ifp ) {
     va_list ap;
@@ -2894,9 +2894,27 @@ bd_copy(const char *ifn, const char *fmt, ...)
     if( ofp ) {
       setvbuf(ifp, 0, _IOFBF, 0x80000);
       setvbuf(ofp, 0, _IOFBF, 0x80000);
-      while( (n=fread(bfr,1,sizeof(bfr),ifp)) > 0 ) fwrite(bfr,1,n,ofp);
-      fclose(ofp);
       ret = 0;
+      int n = bfrsz;
+      while( !ret && n >= bfrsz ) {
+	n = fread(bfr,1,bfrsz,ifp);
+        if( n > 0 && (int)fwrite(bfr,1,n,ofp) != n ) {
+          fprintf(stderr, "cant write: %s\n",filename);
+          ret = 1;
+	}
+      }
+      if( ferror(ifp) ) {
+        fprintf(stderr, "read error: %s = %m\n",ifn);
+        ret = 1;
+      }
+      if( ferror(ofp) ) {
+        fprintf(stderr, "write error: %s = %m\n",filename);
+        ret = 1;
+      }
+      if( fclose(ofp) ) {
+        fprintf(stderr, "close error: %s = %m\n",filename);
+        ret = 1;
+      }
     }
     fclose(ifp);
   }
