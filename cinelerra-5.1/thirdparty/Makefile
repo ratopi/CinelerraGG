@@ -190,7 +190,7 @@ twolame.cfg_params=--enable-shared=no
 #$(error HAVE_HIGH_DEPTH $(HAVE_HIGH_DEPTH))
 x264.cfg_params= --enable-static $(if $(filter y,$(HAVE_HIGH_DEPTH)),--bit-depth=10)
 x265.cfg_vars=echo "exec cmake source -DENABLE_SHARED=no \
- $(if $(filter y,$(HAVE_HIGH_DEPTH)),-DBUILD_SHARED_LIBS:BOOL=HIGH_BIT_DEPTH) \
+ $(if $(filter y,$(HAVE_HIGH_DEPTH)),-DHIGH_BIT_DEPTH:BOOL=ON) \
 " > ./configure; chmod +x ./configure;
 
 # compile flag vars
