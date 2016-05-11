@@ -180,6 +180,9 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	fprintf(fp,"rm -rf $1/iso\n");
 	fprintf(fp,"mkdir -p $1/iso\n");
 	fprintf(fp,"\n");
+// dvdauthor ver 0.7.0 requires this to work
+	fprintf(fp,"export VIDEO_FORMAT=%s\n",
+		use_standard == HD_720x576_2500 ? "PAL" : "NTSC");
 	fprintf(fp,"dvdauthor -x - <<eof\n");
 	fprintf(fp,"<dvdauthor dest=\"$1/iso\">\n");
 	fprintf(fp,"  <vmgm>\n");

@@ -10,6 +10,7 @@
 #include "asset.h"
 #include "bcwindowbase.h"
 #include "bitspopup.h"
+#include "ctype.h"
 #include "ffmpeg.h"
 #include "filebase.h"
 #include "file.h"
@@ -481,6 +482,7 @@ FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 
 FFMPEGConfigVideo::~FFMPEGConfigVideo()
 {
+	delete ff_options_dialog;
 	lock_window("FFMPEGConfigVideo::~FFMPEGConfigVideo");
 	if(preset_popup) delete preset_popup;
 	presets.remove_all_objects();
@@ -792,7 +794,7 @@ FFOptions_Opt::~FFOptions_Opt()
 
 char *FFOptions_Opt::get(char *vp, int sz)
 {
-	char *cp = vp, *ep = vp+sz-1;
+	char *cp = vp;
 	*cp = 0;
 	if( !opt ) return cp;
 
@@ -808,10 +810,8 @@ char *FFOptions_Opt::get(char *vp, int sz)
                 cp = sz >= 0 ? strncpy(vp,val,sz) : strcpy(vp, val);
                 if( sz > 0 ) vp[sz-1] = 0;
                 av_freep(&bp);
-		return cp;
         }
 
-	*vp = 0;
 	return cp;
 }
 
@@ -1088,6 +1088,50 @@ void FFOptionsWindow::update(FFOptions_Opt *opt)
 	panel->update();
 }
 
+void FFOptions_OptPanel::show_tip(const char *tip)
+{
+	if( !tip ) return;
+	int len = strlen(tip);
+	if( len > (int)sizeof(tip_text)-1 ) len = sizeof(tip_text)-1;
+	strncpy(tip_text,tip,len);
+	tip_text[len] = 0;
+	int line_limit = 60;
+	int limit2 = line_limit/2;
+	int limit4 = line_limit/4-2;
+	char *cp = tip_text, *dp = cp+len;
+	int n;  char *bp, *ep, *pp, *sp;
+	while( cp < dp ) {
+		for( ep=cp; ep<dp && *ep!='\n'; ++ep );
+		// target about half remaining line, constrain line_limit
+		if( (n=(ep-1-cp)/2) < limit2 || n > line_limit )
+			n = line_limit;
+		// search for last punct, last space before line_limit
+		for( bp=cp, pp=sp=0; --n>=0 && cp<ep; ++cp ) {
+			if( ispunct(*cp) && isspace(*(cp+1)) ) pp = cp;
+			else if( isspace(*cp) ) sp = cp;
+		}
+		// line not empty
+		if( cp < ep ) {
+			// first, after punctuation
+			if( pp && pp-bp >= limit4 )
+				cp = pp+1;
+			// then, on spaces
+			else if( sp ) {
+				cp = sp;
+			}
+			// last, on next space
+			else {
+				while( cp<dp && !isspace(*cp) ) ++cp;
+			}
+			// add new line
+			if( !*cp ) break;
+			*cp++ = '\n';
+		}
+	}
+	fwin->panel->set_tooltip(tip_text);
+	fwin->panel->show_tooltip();
+}
+
 int FFOptions_OptPanel::selection_changed()
 {
 	FFOptions_Opt *opt = 0;
@@ -1097,8 +1141,7 @@ int FFOptions_OptPanel::selection_changed()
 		opt = opt_name->opt;
 	}
 	fwin->update(opt);
-	fwin->panel->set_tooltip(!opt ? 0 : opt->tip());
-	fwin->panel->show_tooltip();
+	if( opt ) show_tip(opt->tip());
 	return 1;
 }
 
@@ -1415,6 +1458,7 @@ FFOptionsAudioDialog::FFOptionsAudioDialog(FFMPEGConfigAudio *aud_config)
 
 FFOptionsAudioDialog::~FFOptionsAudioDialog()
 {
+	close_window();
 }
 
 void FFOptionsAudioDialog::update_options()
@@ -1429,6 +1473,7 @@ FFOptionsVideoDialog::FFOptionsVideoDialog(FFMPEGConfigVideo *vid_config)
 
 FFOptionsVideoDialog::~FFOptionsVideoDialog()
 {
+	close_window();
 }
 
 void FFOptionsVideoDialog::update_options()

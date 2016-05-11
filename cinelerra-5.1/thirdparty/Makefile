@@ -187,8 +187,11 @@ openexr.cfg_params=--enable-shared=no
 openexr.cfg_params+=--with-ilmbase-prefix=$(call bld_path,ilmbase,usr)
 speech_tools.mak_params=-j1
 twolame.cfg_params=--enable-shared=no
-x264.cfg_params= --enable-static
-x265.cfg_vars=echo "exec cmake source -DENABLE_SHARED=no" > ./configure; chmod +x ./configure;
+#$(error HAVE_HIGH_DEPTH $(HAVE_HIGH_DEPTH))
+x264.cfg_params= --enable-static $(if $(filter y,$(HAVE_HIGH_DEPTH)),--bit-depth=10)
+x265.cfg_vars=echo "exec cmake source -DENABLE_SHARED=no \
+ $(if $(filter y,$(HAVE_HIGH_DEPTH)),-DBUILD_SHARED_LIBS:BOOL=HIGH_BIT_DEPTH) \
+" > ./configure; chmod +x ./configure;
 
 # compile flag vars
 $(foreach tgt,$(TARGETS), \

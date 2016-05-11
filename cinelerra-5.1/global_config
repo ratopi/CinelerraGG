@@ -10,6 +10,8 @@ HAVE_XFT := y
 HAVE_VIDEO4LINUX := n
 # build thirdparty ladspa
 HAVE_LADSPA := y
+# x264/x265 build flags
+HAVE_HIGH_DEPTH := n
 
 # probed, uncomment and set to override probe
 #STATIC_LIBRARIES := y
@@ -133,3 +135,4 @@ endif
 CFLAGS += -D__STDC_CONSTANT_MACROS
 CFLAGS += -D__STDC_LIMIT_MACROS
 CFLAGS += -DPNG_SKIP_SETJMP_CHECK=1
+EXTRA_LIBS += -lbluray

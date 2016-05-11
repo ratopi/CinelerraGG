@@ -288,9 +288,11 @@ public:
 	ArrayList<BC_ListBoxItem*> items[2];
 	ArrayList<BC_ListBoxItem*> &opts;
 	ArrayList<BC_ListBoxItem*> &vals;
+	char tip_text[BCTEXTLEN];
 
 	int selection_changed();
 	int update();
+	void show_tip(const char *tip);
 };
 
 class FFOptionsKindItem : public BC_MenuItem
