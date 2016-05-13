@@ -112,14 +112,16 @@ void FileFFMPEG::get_parameters(BC_WindowBase *parent_window,
 		FFMPEGConfigAudio *window = new FFMPEGConfigAudio(parent_window, asset);
 		format_window = window;
 		window->create_objects();
-		window->run_window();
+		if( !window->run_window() )
+			strcpy(asset->ff_audio_options, window->audio_options->get_text());
 		delete window;
 	}
 	else if(video_options) {
 		FFMPEGConfigVideo *window = new FFMPEGConfigVideo(parent_window, asset);
 		format_window = window;
 		window->create_objects();
-		window->run_window();
+		if( !window->run_window() )
+			strcpy(asset->ff_video_options, window->video_options->get_text());
 		delete window;
 	}
 }
@@ -414,11 +416,6 @@ int FFMPEGConfigAudio::close_event()
 	return 1;
 }
 
-void FFMPEGConfigAudio::update_options()
-{
-	audio_options->update(asset->ff_audio_options);
-}
-
 FFAudioOptions::FFAudioOptions(FFMPEGConfigAudio *audio_popup,
 	int x, int y, int w, int rows, int size, char *text)
  : BC_ScrollTextBox(audio_popup, x, y, w, rows, text, size)
@@ -574,11 +571,6 @@ int FFMPEGConfigVideo::close_event()
 {
 	set_done(1);
 	return 1;
-}
-
-void FFMPEGConfigVideo::update_options()
-{
-	video_options->update(asset->ff_video_options);
 }
 
 FFVideoOptions::FFVideoOptions(FFMPEGConfigVideo *video_popup,
@@ -1370,9 +1362,8 @@ FFOptionsDialog::FFOptionsDialog()
 	this->options_window = 0;
 	this->codec_name = 0;
 	this->codec = 0;
-	this->ff_options = 0;
-	this->ff_len = 0;
 	this->ff_opts = 0;
+	this->ff_len = 0;
 }
 
 FFOptionsDialog::~FFOptionsDialog()
@@ -1381,11 +1372,11 @@ FFOptionsDialog::~FFOptionsDialog()
 	delete [] codec_name;
 }
 
-void FFOptionsDialog::load_options()
+void FFOptionsDialog::load_options(const char *bp, int len)
 {
 	char line[BCTEXTLEN];
 	char key[BCSTRLEN], val[BCTEXTLEN];
-	char *bp = ff_options, *dp = bp + ff_len-1;
+	const char *dp = bp + len-1;
 	int no = 0;
 	while( bp < dp && *bp != 0 ) {
 		++no;
@@ -1403,9 +1394,9 @@ void FFOptionsDialog::load_options()
 	}
 }
 
-void FFOptionsDialog::store_options()
+void FFOptionsDialog::store_options(char *cp, int len)
 {
-	char *cp = ff_options, *ep = cp + ff_len-1;
+	char *ep = cp + len-1;
 	AVDictionaryEntry *elem = 0;
 	while( (elem=av_dict_get(ff_opts, "", elem, AV_DICT_IGNORE_SUFFIX)) != 0 ) {
 		if( elem->key[0] == '#' ) {
@@ -1417,7 +1408,8 @@ void FFOptionsDialog::store_options()
 	*cp = 0;
 }
 
-void FFOptionsDialog::start(const char *codec_name, AVCodec *codec, char *options, int len)
+void FFOptionsDialog::start(const char *codec_name, AVCodec *codec,
+	const char *options, int len)
 {
 	if( options_window ) {
 		options_window->lock_window("FFOptionsDialog::start");
@@ -1429,9 +1421,8 @@ void FFOptionsDialog::start(const char *codec_name, AVCodec *codec, char *option
 	this->codec_name = cstrdup(codec_name);
 	this->codec = codec;
 	this->ff_opts = 0;
-	this->ff_options = options;
 	this->ff_len = len;
-	load_options();
+	load_options(options, len);
 
 	BC_DialogThread::start();
 }
@@ -1446,8 +1437,9 @@ BC_Window* FFOptionsDialog::new_gui()
 void FFOptionsDialog::handle_done_event(int result)
 {
 	if( !result ) {
-		store_options();
-		update_options();
+		char options[ff_len];
+		store_options(options, ff_len);
+		update_options(options);
 	}
 	options_window = 0;
 	delete [] codec_name;  codec_name = 0;
@@ -1464,9 +1456,9 @@ FFOptionsAudioDialog::~FFOptionsAudioDialog()
 	close_window();
 }
 
-void FFOptionsAudioDialog::update_options()
+void FFOptionsAudioDialog::update_options(const char *options)
 {
-	aud_config->update_options();
+	aud_config->audio_options->update(options);
 }
 
 FFOptionsVideoDialog::FFOptionsVideoDialog(FFMPEGConfigVideo *vid_config)
@@ -1479,9 +1471,9 @@ FFOptionsVideoDialog::~FFOptionsVideoDialog()
 	close_window();
 }
 
-void FFOptionsVideoDialog::update_options()
+void FFOptionsVideoDialog::update_options(const char *options)
 {
-	vid_config->update_options();
+	vid_config->video_options->update(options);
 }
 
 
@@ -1508,7 +1500,7 @@ int FFOptionsViewAudio::handle_event()
 		return 1;
 	}
 	aud_config->ff_options_dialog->start(audio_codec, codec,
-		 asset->ff_audio_options, sizeof(asset->ff_audio_options));
+		asset->ff_audio_options, sizeof(asset->ff_audio_options));
 	return 1;
 }
 
@@ -1535,7 +1527,7 @@ int FFOptionsViewVideo::handle_event()
 		return 1;
 	}
 	vid_config->ff_options_dialog->start(video_codec, codec,
-		 asset->ff_video_options, sizeof(asset->ff_video_options));
+		asset->ff_video_options, sizeof(asset->ff_video_options));
 	return 1;
 }
 

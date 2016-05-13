@@ -117,7 +117,6 @@ public:
 	~FFMPEGConfigAudio();
 
 	void create_objects();
-	void update_options();
 	int close_event();
 
 	ArrayList<BC_ListBoxItem*> presets;
@@ -166,7 +165,6 @@ public:
 	~FFMPEGConfigVideo();
 
 	void create_objects();
-	void update_options();
 	int close_event();
 
 	ArrayList<BC_ListBoxItem*> presets;
@@ -379,27 +377,26 @@ class FFOptionsDialog : public BC_DialogThread
 public:
 	FFOptionsDialog();
 	~FFOptionsDialog();
-	virtual void update_options() = 0;
+	virtual void update_options(const char *options) = 0;
 
-	void load_options();
-	void store_options();
-	void start(const char *codec_name, AVCodec *codec, char *ff_options, int ff_len);
+	void load_options(const char *bp, int len);
+	void store_options(char *cp, int len);
+	void start(const char *codec_name, AVCodec *codec, const char *options, int len);
 	BC_Window* new_gui();
 	void handle_done_event(int result);
 
 	FFOptionsWindow *options_window;
 	const char *codec_name;
 	AVCodec *codec;
-	char *ff_options;
-	int ff_len;
 	AVDictionary *ff_opts;
+	int ff_len;
 };
 
 class FFOptionsAudioDialog : public FFOptionsDialog
 {
 public:
 	FFMPEGConfigAudio *aud_config;
-	void update_options();
+	void update_options(const char *options);
 
 	FFOptionsAudioDialog(FFMPEGConfigAudio *aud_config);
 	~FFOptionsAudioDialog();
@@ -409,7 +406,7 @@ class FFOptionsVideoDialog : public FFOptionsDialog
 {
 public:
 	FFMPEGConfigVideo *vid_config;
-	void update_options();
+	void update_options(const char *options);
 
 	FFOptionsVideoDialog(FFMPEGConfigVideo *vid_config);
 	~FFOptionsVideoDialog();
