@@ -10,8 +10,12 @@ HAVE_XFT := y
 HAVE_VIDEO4LINUX := n
 # build thirdparty ladspa
 HAVE_LADSPA := y
-# x264/x265 build flags
-HAVE_HIGH_DEPTH := n
+
+#thirdparty configure tweaks, uncomment for overrides
+# x264 hi depth
+#x264.cfg_params:= --enable-static --bit-depth=10
+# x265 hi depth
+#x265.cfg_params:= -DENABLE_SHARED=no -DHIGH_BIT_DEPTH:BOOL=ON
 
 # probed, uncomment and set to override probe
 #STATIC_LIBRARIES := y

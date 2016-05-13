@@ -145,53 +145,54 @@ ffmpeg.cfg_params= \
 		$(call ld_path,fdk,.libs) \
 		$(EXTRA_LIBS)" $(EXTRA_FFMPEG_CFG) \
 
-a52dec.mak_params= ; cd $(call bld_path,a52dec,include); ln -sf . a52dec
-a52dec.cfg_vars= CFLAGS+=" -U__FreeBSD__"
-audiofile.cfg_params=--enable-shared=no
-audiofile.mak_params=LIBS="-lm -lstdc++"
-flac.cfg_params= --enable-shared=no
-flac.cflags="$(call inc_path,libogg,include) $(call ld_path,libogg,src/.libs)"
-giflib.cfg_params=--enable-shared=no
-ilmbase.cfg_params=--prefix=$(call bld_path,ilmbase,usr)
-ilmbase.mak_params=; $(MAKE) -C ilmbase* install; cd $(call bld_path,ilmbase); ln -sf lib64 usr/lib
-lame.cfg_vars= CFLAGS+=" -O"
-lame.cfg_params=--enable-shared=no
-lame.mak_params= ; cd $(call bld_path,lame,include); ln -sf . lame
-mjpegtools.cflags="$(call inc_path,libjpeg) $(call ld_path,libjpeg,.libs)"
-mjpegtools.mak_params=; ln -s . $(call bld_path,mjpegtools,utils)/mjpegtools 
-mjpegtools.cfg_params= --enable-shared=no
-ladspa.mak_params=; $(MAKE) -C ladspa* install DESTDIR=$(call bld_path,ladspa)
-libavc1394.cfg_vars=PKG_CONFIG_PATH=$(bld_path libraw1394)
-libavc1394.cflags="$(inc_path libraw1394)"
-libavc1394.ldflags="$(ld_path libraw1394,src/.libs)"
-libavc1394.cfg_params= --enable-shared=no
-libdv.cfg_params= --disable-gtk --enable-shared=no
-libiec61883.cfg_vars=PKG_CONFIG_PATH=$(bld_path libraw1394)
-libiec61883.cflags="$(inc_path libraw1394)"
-libiec61883.ldflags="$(ld_path libraw1394,src/.libs)"
-libiec61883.cfg_params= --enable-shared=no
-libjpeg.cfg_params= --enable-shared=no
-libogg.cfg_params= --enable-shared=no
-libraw1394.cfg_params=  --enable-shared=no; ln -sf src libraw1394
-libtheora.cfg_vars=PKG_CONFIG_PATH=$(bld_path libogg):$(bld_path libvorbis)
-libtheora.cflags="$(inc_path libogg,include) $(inc_path libogg,src) $(inc_path libvorbis,include)"
-libtheora.ldflags="$(ld_path libvorbis,lib/.libs) $(ld_path libogg,src/.libs)"
-libtheora.cfg_params= --disable-examples --enable-shared=no
-libuuid.cfg_params=--enable-shared=no
-libvorbis.cfg_params= --disable-oggtest --enable-shared=no
-openjpeg.cfg_vars=echo "exec cmake -DBUILD_SHARED_LIBS:BOOL=OFF ." > ./configure; chmod +x ./configure;
-openjpeg.mak_params= ; cd $(call bld_path,openjpeg,src/lib/openjp2); ln -sf . openjpeg-2.1
-opencv.cfg_vars=echo "exec cmake -DBUILD_SHARED_LIBS:BOOL=OFF ." > ./configure; chmod +x ./configure;
-openexr.cfg_vars=LD_LIBRARY_PATH=$(call bld_path,ilmbase,usr/lib)
-openexr.cfg_params=--enable-shared=no
-openexr.cfg_params+=--with-ilmbase-prefix=$(call bld_path,ilmbase,usr)
-speech_tools.mak_params=-j1
-twolame.cfg_params=--enable-shared=no
-#$(error HAVE_HIGH_DEPTH $(HAVE_HIGH_DEPTH))
-x264.cfg_params= --enable-static $(if $(filter y,$(HAVE_HIGH_DEPTH)),--bit-depth=10)
-x265.cfg_vars=echo "exec cmake source -DENABLE_SHARED=no \
- $(if $(filter y,$(HAVE_HIGH_DEPTH)),-DHIGH_BIT_DEPTH:BOOL=ON) \
-" > ./configure; chmod +x ./configure;
+cmake_config=echo "exec cmake \$$$$@ $(1)" > ./configure; chmod +x ./configure;
+a52dec.mak_params?= ; cd $(call bld_path,a52dec,include); ln -sf . a52dec
+a52dec.cfg_vars?= CFLAGS+=" -U__FreeBSD__"
+audiofile.cfg_params?=--enable-shared=no
+audiofile.mak_params?=LIBS="-lm -lstdc++"
+flac.cfg_params?= --enable-shared=no
+flac.cflags?="$(call inc_path,libogg,include) $(call ld_path,libogg,src/.libs)"
+giflib.cfg_params?=--enable-shared=no
+ilmbase.cfg_params?=--prefix=$(call bld_path,ilmbase,usr)
+ilmbase.mak_params?=; $(MAKE) -C ilmbase* install; cd $(call bld_path,ilmbase); ln -sf lib64 usr/lib
+lame.cfg_vars?= CFLAGS+=" -O"
+lame.cfg_params?=--enable-shared=no
+lame.mak_params?= ; cd $(call bld_path,lame,include); ln -sf . lame
+mjpegtools.cflags?="$(call inc_path,libjpeg) $(call ld_path,libjpeg,.libs)"
+mjpegtools.mak_params?=; ln -s . $(call bld_path,mjpegtools,utils)/mjpegtools 
+mjpegtools.cfg_params?= --enable-shared=no
+ladspa.mak_params?=; $(MAKE) -C ladspa* install DESTDIR=$(call bld_path,ladspa)
+libavc1394.cfg_vars?=PKG_CONFIG_PATH=$(bld_path libraw1394)
+libavc1394.cflags?="$(inc_path libraw1394)"
+libavc1394.ldflags?="$(ld_path libraw1394,src/.libs)"
+libavc1394.cfg_params?= --enable-shared=no
+libdv.cfg_params?= --disable-gtk --enable-shared=no
+libiec61883.cfg_vars?=PKG_CONFIG_PATH=$(bld_path libraw1394)
+libiec61883.cflags?="$(inc_path libraw1394)"
+libiec61883.ldflags?="$(ld_path libraw1394,src/.libs)"
+libiec61883.cfg_params?= --enable-shared=no
+libjpeg.cfg_params?= --enable-shared=no
+libogg.cfg_params?= --enable-shared=no
+libraw1394.cfg_params?=  --enable-shared=no; ln -sf src libraw1394
+libtheora.cfg_vars?=PKG_CONFIG_PATH=$(bld_path libogg):$(bld_path libvorbis)
+libtheora.cflags?="$(inc_path libogg,include) $(inc_path libogg,src) $(inc_path libvorbis,include)"
+libtheora.ldflags?="$(ld_path libvorbis,lib/.libs) $(ld_path libogg,src/.libs)"
+libtheora.cfg_params?= --disable-examples --enable-shared=no
+libuuid.cfg_params?=--enable-shared=no
+libvorbis.cfg_params?= --disable-oggtest --enable-shared=no
+openjpeg.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
+openjpeg.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
+openjpeg.cfg_vars?=$(call cmake_config,.)
+openjpeg.mak_params?= ; cd $(call bld_path,openjpeg,src/lib/openjp2); ln -sf . openjpeg-2.1
+opencv.cfg_vars?=$(call cmake_config,.)
+opencv.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
+openexr.cfg_vars?=LD_LIBRARY_PATH=$(call bld_path,ilmbase,usr/lib)
+openexr.cfg_params?=--enable-shared=no --with-ilmbase-prefix=$(call bld_path,ilmbase,usr)
+speech_tools.mak_params?=-j1
+twolame.cfg_params?=--enable-shared=no
+x264.cfg_params?= --enable-static
+x265.cfg_vars?=$(call cmake_config,source)
+x265.cfg_params?= -DENABLE_SHARED=no
 
 # compile flag vars
 $(foreach tgt,$(TARGETS), \

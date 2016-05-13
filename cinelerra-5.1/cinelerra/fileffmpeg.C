@@ -396,10 +396,12 @@ void FFMPEGConfigAudio::create_objects()
 		FFMPEG::load_options(option_path, asset->ff_audio_options,
 			 sizeof(asset->ff_audio_options));
 	}
+
 	audio_options = new FFAudioOptions(this, x, y, get_w()-x-20, 10,
 		 sizeof(asset->ff_audio_options)-1, asset->ff_audio_options);
 	audio_options->create_objects();
 	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new BC_CancelButton(this));
 	
 	show_window(1);
 	bitrate->handle_event();
@@ -408,7 +410,7 @@ void FFMPEGConfigAudio::create_objects()
 
 int FFMPEGConfigAudio::close_event()
 {
-	set_done(0);
+	set_done(1);
 	return 1;
 }
 
@@ -557,8 +559,9 @@ void FFMPEGConfigVideo::create_objects()
 	video_options = new FFVideoOptions(this, x, y, get_w()-x-20, 10,
 		 sizeof(asset->ff_video_options)-1, asset->ff_video_options);
 	video_options->create_objects();
-
 	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new BC_CancelButton(this));
+
 	show_window(1);
 	if( asset->ff_video_bitrate )
 		quality->disable();
@@ -569,7 +572,7 @@ void FFMPEGConfigVideo::create_objects()
 
 int FFMPEGConfigVideo::close_event()
 {
-	set_done(0);
+	set_done(1);
 	return 1;
 }
 

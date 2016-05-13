@@ -690,9 +690,8 @@ FormatAThread::FormatAThread(FormatTools *format)
 
 FormatAThread::~FormatAThread()
 {
+	delete file;  file = 0;
 	join();
-	delete file;
-	file = 0;
 }
 
 void FormatAThread::start()
@@ -721,9 +720,8 @@ FormatVThread::FormatVThread(FormatTools *format)
 
 FormatVThread::~FormatVThread()
 {
+	delete file;  file = 0;
 	join();
-	delete file;
-	file = 0;
 }
 
 void FormatVThread::start()
