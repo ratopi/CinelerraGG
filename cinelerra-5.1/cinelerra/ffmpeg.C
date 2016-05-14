@@ -1161,11 +1161,17 @@ int FFMPEG::get_codec(char *codec, const char *path, const char *spec)
 	if( !fp ) return 1;
 	int ret = 0;
 	if( !fgets(line, sizeof(line), fp) ) ret = 1;
+	fclose(fp);
 	if( !ret ) {
 		line[sizeof(line)-1] = 0;
 		ret = scan_option_line(line, format, codec);
 	}
-	fclose(fp);
+	if( !ret ) {
+		char *vp = codec, *ep = vp+BCTEXTLEN-1;
+		while( vp < ep && *vp && *vp != '|' ) ++vp;
+		if( *vp == '|' ) --vp;
+		while( vp > codec && (*vp==' ' || *vp=='\t') ) *vp-- = 0;
+	}
 	return ret;
 }
 

@@ -381,12 +381,13 @@ public:
 
 	void load_options(const char *bp, int len);
 	void store_options(char *cp, int len);
-	void start(const char *codec_name, AVCodec *codec, const char *options, int len);
+	void start(const char *format_name, const char *codec_name,
+		AVCodec *codec, const char *options, int len);
 	BC_Window* new_gui();
 	void handle_done_event(int result);
 
 	FFOptionsWindow *options_window;
-	const char *codec_name;
+	const char *format_name, *codec_name;
 	AVCodec *codec;
 	AVDictionary *ff_opts;
 	int ff_len;
