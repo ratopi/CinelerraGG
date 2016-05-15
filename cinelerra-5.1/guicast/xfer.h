@@ -1,4 +1,9 @@
 #include "bccmodels.h"
+#include "bcresources.h"
+#include "condition.h"
+#include "linklist.h"
+#include "mutex.h"
+#include "thread.h"
 #include "clip.h"
 
 static inline float clp(const int n, float v) {
@@ -78,7 +83,7 @@ ZTYP(float);
 
 
 #define xfer_flat_row_out(oty_t) \
-  for( unsigned i=0; i<out_h; ++i ) { \
+  for( unsigned i=y0; i<y1; ++i ) { \
     oty_t *out = (oty_t *)(output_rows[i + out_y] + out_x * out_pixelsize); \
 
 #define xfer_flat_row_in(ity_t) \
@@ -90,7 +95,7 @@ ZTYP(float);
 
 // yuv420p  2x2
 #define xfer_yuv420p_row_out(oty_t) \
-  for( unsigned i=0; i<out_h; ++i ) { \
+  for( unsigned i=y0; i<y1; ++i ) { \
     int out_rofs = i * total_out_w + out_x; \
     oty_t *yop = (oty_t *)(out_yp + out_rofs); \
     out_rofs = i / 2 * total_out_w / 2 + out_x / 2; \
@@ -112,7 +117,7 @@ ZTYP(float);
 
 // yuv422p  2x1
 #define xfer_yuv422p_row_out(oty_t) \
-  for( unsigned i=0; i<out_h; ++i ) { \
+  for( unsigned i=y0; i<y1; ++i ) { \
     int out_rofs = i * total_out_w + out_x; \
     oty_t *yop = (oty_t *)(out_yp + out_rofs); \
     out_rofs = i * total_out_w / 2 + out_x / 2; \
@@ -134,7 +139,7 @@ ZTYP(float);
 
 // yuv444p  1x1
 #define xfer_yuv444p_row_out(oty_t) \
-  for( unsigned i=0; i<out_h; ++i ) { \
+  for( unsigned i=y0; i<y1; ++i ) { \
     int out_rofs = i * total_out_w + out_x; \
     oty_t *yop = (oty_t *)((oty_t *)(out_yp + out_rofs)); \
     oty_t *uop = (oty_t *)(out_up + out_rofs); \
@@ -153,7 +158,7 @@ ZTYP(float);
 
 // yuv411p  4x1
 #define xfer_yuv411p_row_out(oty_t) \
-  for( unsigned i=0; i<out_h; ++i ) { \
+  for( unsigned i=y0; i<y1; ++i ) { \
     int out_rofs = i * total_out_w + out_x; \
     oty_t *yop = (oty_t *)(out_yp + out_rofs); \
     out_rofs = i * total_out_w / 4 + out_x / 4; \
@@ -175,7 +180,7 @@ ZTYP(float);
 
 // yuv410p  4x4
 #define xfer_yuv410p_row_out(oty_t) \
-  for( unsigned i=0; i<out_h; ++i ) { \
+  for( unsigned i=y0; i<y1; ++i ) { \
     int out_rofs = i * total_out_w + out_x; \
     oty_t *yop = (oty_t *)(out_yp + out_rofs); \
     out_rofs = i / 4 * total_out_w / 4 + out_x / 4; \
@@ -197,7 +202,7 @@ ZTYP(float);
 
 // rgb_floatp
 #define xfer_rgb_fltp_row_out(oty_t) \
-  for( unsigned i=0; i<out_h; ++i ) { \
+  for( unsigned i=y0; i<y1; ++i ) { \
     int out_rofs = i * total_out_w + out_x; \
     oty_t *rop = (oty_t *)(out_yp + out_rofs); \
     oty_t *gop = (oty_t *)(out_up + out_rofs); \
@@ -262,6 +267,31 @@ public:
   uint32_t bg_r, bg_g, bg_b;
 
   void xfer();
+  void xfer_slices(int slices);
+  typedef void (BC_Xfer::*xfer_fn)(unsigned y0, unsigned y1);
+  xfer_fn xfn;
+
+  class Slicer : public ListItem<Slicer>, public Thread {
+  public:
+    Condition *init, *complete;
+    Slicer(BC_Xfer *xp);
+    ~Slicer();
+    void slice(BC_Xfer *xp, unsigned y0, unsigned y1);
+    void run();
+    BC_Xfer *xp;
+    int done, y0, y1;
+  };
+
+  class SlicerList : public List<Slicer>, public Mutex {
+  public:
+    int count;
+    Condition *waiting;
+    Slicer *get_slicer(BC_Xfer *xp);
+    void reset();
+    SlicerList();
+    ~SlicerList();
+  };
+  static SlicerList slicers;
 
   static void init();
   static class Tables { public: Tables() { init(); } } tables;

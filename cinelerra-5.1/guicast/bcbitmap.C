@@ -56,7 +56,7 @@ BC_BitmapImage::~BC_BitmapImage()
 
 bool BC_BitmapImage::is_avail()
 {
-	return owner == &bitmap->avail;
+	return list == &bitmap->avail;
 }
 
 BC_BitmapImage *BC_Bitmap::cur_bfr()

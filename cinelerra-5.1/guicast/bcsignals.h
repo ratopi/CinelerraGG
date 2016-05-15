@@ -64,6 +64,7 @@ class BC_Signals
 	static int x_error_handler(Display *display, XErrorEvent *event);
 public:
 	BC_Signals();
+	~BC_Signals();
 	void initialize();
 	void initialize2();
 	void terminate();

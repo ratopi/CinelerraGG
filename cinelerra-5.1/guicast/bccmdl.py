@@ -392,13 +392,17 @@ base = {
 }
 
 cmodels = []
+bcmodels = {}
 layout = {}
-dtype = {}
+dtype = { None: None }
 special = {}
+mx_bcmdl = -1
 
-def add_cmodel(nm, typ=None, *args):
-  global cmodels, layout, dtype
+def add_cmodel(n, nm, typ=None, *args):
+  global cmodels, bcmodels, layout, dtype, mx_bcmdl
   cmodels += [nm,]
+  bcmodels[n] = nm
+  if( n > mx_bcmdl ): mx_bcmdl = n
   dtype[nm] = typ
   layout[nm] = args
 
@@ -406,44 +410,44 @@ def specialize(fr_cmdl, to_cmdl, fn):
   global special
   special[(fr_cmdl, to_cmdl)] = fn
 
-add_cmodel("bc_transparency")
-add_cmodel("bc_compressed")
+add_cmodel( 0, "bc_transparency")
+add_cmodel( 1, "bc_compressed")
 
-add_cmodel("bc_rgb8", "i8", "rgb8")
-add_cmodel("bc_rgb565", "i8", "rgb565")
-add_cmodel("bc_bgr565", "i8", "bgr565")
-add_cmodel("bc_bgr888", "i8", "bgr888")
-add_cmodel("bc_bgr8888", "i8", "bgr8888")
+add_cmodel( 2, "bc_rgb8", "i8", "rgb8")
+add_cmodel( 3, "bc_rgb565", "i8", "rgb565")
+add_cmodel( 4, "bc_bgr565", "i8", "bgr565")
+add_cmodel( 5, "bc_bgr888", "i8", "bgr888")
+add_cmodel( 6, "bc_bgr8888", "i8", "bgr8888")
 
-add_cmodel("bc_rgb888", "i8", "rgb888")
-add_cmodel("bc_rgba8888", "i8", "rgb888", "a8")
-add_cmodel("bc_argb8888", "i8", "a8", "rgb888")
-add_cmodel("bc_abgr8888", "i8", "a8", "bgr888")
-add_cmodel("bc_rgb161616", "i16", "rgb161616")
-add_cmodel("bc_rgba16161616", "i16", "rgb161616", "a16")
-add_cmodel("bc_yuv888", "i8", "yuv888")
-add_cmodel("bc_yuva8888", "i8", "yuv888", "a8")
-add_cmodel("bc_yuv161616", "i16", "yuv161616")
-add_cmodel("bc_yuva16161616", "i16", "yuv161616", "a16")
+add_cmodel( 9, "bc_rgb888", "i8", "rgb888")
+add_cmodel(10, "bc_rgba8888", "i8", "rgb888", "a8")
+add_cmodel(20, "bc_argb8888", "i8", "a8", "rgb888")
+add_cmodel(21, "bc_abgr8888", "i8", "a8", "bgr888")
+add_cmodel(11, "bc_rgb161616", "i16", "rgb161616")
+add_cmodel(12, "bc_rgba16161616", "i16", "rgb161616", "a16")
+add_cmodel(13, "bc_yuv888", "i8", "yuv888")
+add_cmodel(14, "bc_yuva8888", "i8", "yuv888", "a8")
+add_cmodel(15, "bc_yuv161616", "i16", "yuv161616")
+add_cmodel(16, "bc_yuva16161616", "i16", "yuv161616", "a16")
 
-add_cmodel("bc_yuv422", "i8", "yuyv8888")
-add_cmodel("bc_uvy422", "i8", "uyvy8888")
-add_cmodel("bc_a8")
-add_cmodel("bc_a16")
-add_cmodel("bc_a_float")
-add_cmodel("bc_yuv101010", "i16", "yuv10101010")
-add_cmodel("bc_vyu888", "i8", "vyu888")
-add_cmodel("bc_uyva8888", "i8", "uyv888", "a8")
-add_cmodel("bc_rgb_float", "fp", "rgbfloat")
-add_cmodel("bc_rgba_float", "fp", "rgbfloat", "afp")
+add_cmodel(18, "bc_yuv422", "i8", "yuyv8888")
+add_cmodel(19, "bc_uvy422", "i8", "uyvy8888")
+add_cmodel(22, "bc_a8")
+add_cmodel(23, "bc_a16")
+add_cmodel(31, "bc_a_float")
+add_cmodel(24, "bc_yuv101010", "i16", "yuv10101010")
+add_cmodel(25, "bc_vyu888", "i8", "vyu888")
+add_cmodel(26, "bc_uyva8888", "i8", "uyv888", "a8")
+add_cmodel(29, "bc_rgb_float", "fp", "rgbfloat")
+add_cmodel(30, "bc_rgba_float", "fp", "rgbfloat", "afp")
 
-add_cmodel("bc_yuv420p", "i8", "yuv420p")
-add_cmodel("bc_yuv422p", "i8", "yuv422p")
-add_cmodel("bc_yuv444p", "i8", "yuv444p")
-add_cmodel("bc_yuv411p", "i8", "yuv411p")
-add_cmodel("bc_yuv410p", "i8", "yuv410p")
-add_cmodel("bc_rgb_floatp", "fp", "rgbfltp")
-add_cmodel("bc_rgba_floatp", "fp", "rgbfltp", "afpp")
+add_cmodel( 7, "bc_yuv420p", "i8", "yuv420p")
+add_cmodel( 8, "bc_yuv422p", "i8", "yuv422p")
+add_cmodel(27, "bc_yuv444p", "i8", "yuv444p")
+add_cmodel(17, "bc_yuv411p", "i8", "yuv411p")
+add_cmodel(28, "bc_yuv410p", "i8", "yuv410p")
+add_cmodel(32, "bc_rgb_floatp", "fp", "rgbfltp")
+add_cmodel(33, "bc_rgba_floatp", "fp", "rgbfltp", "afpp")
 
 specialize("bc_rgba8888", "bc_transparency", "XFER_rgba8888_to_transparency")
 
@@ -498,7 +502,7 @@ def gen_xfer_proto(pfx, cls, fr_cmdl, to_cmdl):
   print "%svoid %sxfer_%s_to_%s" % (pfx, cls, fr_cmdl[3:], to_cmdl[3:]),
   ityp = dtype[fr_cmdl];  fr_typ = ctype[ityp];
   otyp = dtype[to_cmdl];  to_typ = ctype[otyp];
-  print "()",
+  print "(unsigned y0, unsigned y1)",
 
 def gen_xfer_fn(fr_cmdl, to_cmdl):
   global layout, dtype, adata
@@ -574,7 +578,7 @@ for fr_cmdl in cmodels:
   for to_cmdl in cmodels:
     otyp = dtype[to_cmdl]
     if( is_specialized(fr_cmdl, to_cmdl) ):
-      print "  void %s();" % (special[(fr_cmdl, to_cmdl)])
+      print "  void %s(unsigned y0, unsigned y1);" % (special[(fr_cmdl, to_cmdl)])
       continue
     if( ityp is None or otyp is None ): continue
     gen_xfer_proto("  ", "", fr_cmdl, to_cmdl);
@@ -592,24 +596,27 @@ for fr_cmdl in cmodels:
 print ""
 print "void %sxfer()" % class_qual
 print "{"
-print "  switch(in_colormodel) {"
-for fr_cmdl in cmodels:
+mx_no = mx_bcmdl + 1
+print "  static xfer_fn xfns[%d][%d] = {" % (mx_no, mx_no)
+for fr_no in range(mx_no):
+  fr_cmdl = bcmodels.get(fr_no)
   ityp = dtype[fr_cmdl]
-  if( ityp is None ):
-    if( not fr_cmdl in [it[0] for it in special] ): continue
-  print "  case %s:" % (fr_cmdl.upper())
-  print "    switch(out_colormodel) {"
-  for to_cmdl in cmodels:
-    if( is_specialized(fr_cmdl, to_cmdl) ):
-      print "    case %s: %s(); break;" % (to_cmdl.upper(), special[(fr_cmdl, to_cmdl)])
-      continue
+  print "  { // %s" % (fr_cmdl.upper() if ityp else "None")
+  n = 0
+  for to_no in range(mx_no):
+    to_cmdl = bcmodels.get(to_no)
     otyp = dtype[to_cmdl]
-    if( ityp is None or otyp is None ): continue
-    print "    case %s:" % (to_cmdl.upper()),
-    print "xfer_%s_to_%s();  break;" % (fr_cmdl[3:], to_cmdl[3:])
-  print "    }"
-  print "    break;"
-print "  }"
+    xfn = special[(fr_cmdl, to_cmdl)] if( is_specialized(fr_cmdl, to_cmdl) ) else \
+      "xfer_%s_to_%s" % (fr_cmdl[3:], to_cmdl[3:]) if ( ityp and otyp ) else None
+    if( n > 72 ): print ""; n = 0
+    if( n == 0 ): print "   ",; n += 4
+    fn = "&%s%s" % (class_qual, xfn) if( xfn ) else "0"
+    print "%s, " % (fn),
+    n += len(fn) + 3
+  print "}, "
+print "  }; "
+print "  xfn = xfns[in_colormodel][out_colormodel];"
+print "  xfer_slices(out_w*out_h/0x80000+1);"
 print "}"
 print ""
 print "#include \"xfer.C\""

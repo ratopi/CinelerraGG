@@ -189,7 +189,7 @@ Clip(int clip_id, double start, double end, int index)
 Clip::
 ~Clip()
 {
-	Clips *clips = (Clips *)owner;
+	Clips *clips = (Clips *)list;
 	if( clips && clips->current == this ) clips->current = 0;
 }
 

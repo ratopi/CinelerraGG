@@ -21,6 +21,7 @@
 
 #include "bcsignals.h"
 #include "bcwindowbase.h"
+#include "bccmodels.h"
 #include "bckeyboard.h"
 #include "bcresources.h"
 
@@ -418,6 +419,10 @@ void BC_Signals::set_sighup_exit(int enable)
 
 BC_Signals::BC_Signals()
 {
+}
+BC_Signals::~BC_Signals()
+{
+  BC_CModels::bcxfer_stop_slicers();
 }
 
 void BC_Signals::dump_traces(FILE *fp)

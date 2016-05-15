@@ -7,12 +7,12 @@ template<class TYPE>
 class ListItem {
 public:
 	TYPE *previous, *next;
-	List<TYPE> *owner;
+	List<TYPE> *list;
 
-	int get_item_number() { return !owner ? -1 : owner->number_of(this); }
-	ListItem() { owner = 0;  previous = next = 0; }
-	ListItem(List<TYPE> &me) { owner = me;  previous = next = 0; }
-	virtual ~ListItem() { if( owner ) owner->remove_pointer(this); }
+	int get_item_number() { return !list ? -1 : list->number_of(this); }
+	ListItem() { list = 0;  previous = next = 0; }
+	ListItem(List<TYPE> &me) { list = me;  previous = next = 0; }
+	virtual ~ListItem() { if( list ) list->remove_pointer(this); }
 };
 
 template<class TYPE>
@@ -57,7 +57,7 @@ public:
 template<class TYPE>
 TYPE* List<TYPE>::append(TYPE *item)
 {
-	item->owner = this;  item->next = 0;
+	item->list = this;  item->next = 0;
 	if( !last ) { item->previous = 0; first = item; }
 	else { item->previous = last;  last->next = item; }
 	return last = item;
@@ -67,7 +67,7 @@ template<class TYPE>
 TYPE* List<TYPE>::insert_before(TYPE *here, TYPE *item)
 {
 	if( !here || !last ) return append(item);
-	item->owner = this;  item->next = here;
+	item->list = this;  item->next = here;
 	*( !(item->previous=here->previous) ? &first : &here->previous->next ) = item;
 	return here->previous = item;
 }
@@ -76,7 +76,7 @@ template<class TYPE>
 TYPE* List<TYPE>::insert_after(TYPE *here, TYPE *item)
 {
 	if( !here || !last ) return append(item);
-	item->owner = this;  item->previous = here;
+	item->list = this;  item->previous = here;
 	*( !(item->next=here->next) ? &last : &here->next->previous ) = item;
 	return here->next = item;
 }
@@ -89,7 +89,7 @@ void List<TYPE>::remove_pointer(ListItem<TYPE> *item)
 	TYPE *previous = item->previous, *next = item->next;
 	*( previous ? &previous->next : &first ) = next;
 	*( next ? &next->previous : &last ) = previous;
-	item->owner = 0;
+	item->list = 0;
 }
 
 template<class TYPE>

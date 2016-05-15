@@ -127,7 +127,7 @@ int ATrack::load_defaults(BC_Hash *defaults)
 
 void ATrack::set_default_title()
 {
-	Track *current = ListItem<Track>::owner->first;
+	Track *current = ListItem<Track>::list->first;
 	int i;
 	for(i = 0; current; current = NEXT)
 	{

@@ -37,7 +37,6 @@ DIRS = \
 	delayvideo \
 	denoise \
 	denoisefft \
-	denoisemjpeg \
 	denoiseseltempavg \
 	denoisevideo \
 	despike \
@@ -58,7 +57,6 @@ DIRS = \
 	gamma \
 	gradient \
 	graphic \
-	greycstoration \
 	histogram \
 	histogram_bezier \
 	holo \
@@ -139,7 +137,11 @@ DIRS = \
 	theme_suv \
 	theme_unflat \
 
+# too costly
 #	findobject \
+#	greycstoration \
+# not finished
+#	denoisemjpeg \
 
 DATA = $(PLUGIN_DIR)/fonts $(PLUGIN_DIR)/shapes
 LADSPA = $(BINDIR)/ladspa

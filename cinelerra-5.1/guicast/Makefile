@@ -115,7 +115,7 @@ $(shell echo $(OBJS) > $(OBJDIR)/objs)
 all: $(OUTPUT) $(UTILS)
 
 $(OBJDIR)/bcxfer.o:	bcxfer.C xfer.C xfer.h
-	$(CXX) `cat $(OBJDIR)/c_flags` -c $< -o $@
+	$(CXX) `cat $(OBJDIR)/c_flags` -O3 -c $< -o $@
 
 bcxfer.C:	bccmdl.py
 	python < ./bccmdl.py > bcxfer.C

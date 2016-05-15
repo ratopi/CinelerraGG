@@ -245,9 +245,9 @@ void BC_CModels::transfer(
 // specialized functions
 
 //  in bccmdl.py:  specialize("bc_rgba8888", "bc_transparency", "XFER_rgba8888_to_transparency")
-void BC_Xfer::XFER_rgba8888_to_transparency()
+void BC_Xfer::XFER_rgba8888_to_transparency(unsigned y0, unsigned y1)
 {
-  for( unsigned i=0; i<out_h; ++i ) {
+  for( unsigned i=y0; i<y1; ++i ) {
     uint8_t *outp = output_rows[i + out_y] + out_x * out_pixelsize;
     uint8_t *inp_row = input_rows[row_table[i]];
     int bit_no = 0, bit_vec = 0;
@@ -259,5 +259,111 @@ void BC_Xfer::XFER_rgba8888_to_transparency()
     }
     if( bit_no ) *outp = bit_vec;
   } 
+}
+
+BC_Xfer::SlicerList BC_Xfer::slicers;
+
+BC_Xfer::SlicerList::SlicerList()
+{
+  waiting = new Condition(0, "BC_Xfer::SlicerList", 1);
+  count = 0;
+}
+
+BC_Xfer::SlicerList::~SlicerList()
+{
+  reset();
+  delete waiting;
+}
+
+void BC_Xfer::SlicerList::reset()
+{
+  lock("BC_Xfer::SlicerList::reset");
+  while( last ) remove(last);
+  count = 0;
+  unlock();
+}
+
+BC_Xfer::Slicer *BC_Xfer::SlicerList::get_slicer(BC_Xfer *xp)
+{
+  while( !first ) {
+    if( count < BC_Resources::machine_cpus ) {
+      append(new Slicer(xp));
+      ++count;
+    }
+    else
+      waiting->lock("BC_Xfer::SlicerList::get_slicer");
+  }
+  Slicer *slicer = first;
+  remove_pointer(slicer);
+  return slicer;
+}
+
+void BC_Xfer::xfer_slices(int slices)
+{
+  if( !xfn ) return;
+  int max_slices = BC_Resources::machine_cpus/2+1;
+  if( slices > max_slices ) slices = max_slices;
+  Slicer *active[slices];
+  unsigned y0 = 0, y1 = out_h;
+  int slices1 = slices-1;
+  if( slices1 > 0 ) {
+    slicers.lock("BC_Xfer::xfer_slices");
+    for( int i=0; i<slices1; y0=y1 ) {
+      Slicer *slicer = slicers.get_slicer(this);
+      active[i] = slicer;
+      y1 = out_h * ++i / slices;
+      slicer->slice(this, y0, y1);
+    }
+    slicers.unlock();
+  }
+  (this->*xfn)(y0, out_h);
+  if( slices1 > 0 ) {
+    for( int i=0; i<slices1; ++i )
+      active[i]->complete->lock("BC_Xfer::xfer_slices");
+    slicers.lock("BC_Xfer::xfer_slices");
+    for( int i=0; i<slices1; ++i )
+      slicers.append(active[i]);
+    slicers.unlock();
+    slicers.waiting->unlock();
+  }
+}
+
+BC_Xfer::Slicer::Slicer(BC_Xfer *xp)
+{
+  this->xp = xp;
+  init = new Condition(0, "BC_Xfer::Slicer::init", 0);
+  complete = new Condition(0, "BC_Xfer::Slicer::complete", 0);
+  done = 0;
+  start();
+}
+BC_Xfer::Slicer::~Slicer()
+{
+  done = 1;
+  init->unlock();
+  join();
+}
+
+void BC_Xfer::Slicer::slice(BC_Xfer *xp, unsigned y0, unsigned y1)
+{
+  this->xp = xp;
+  this->y0 = y0;
+  this->y1 = y1;
+  init->unlock();
+}
+
+void BC_Xfer::Slicer::run()
+{
+  while( !done ) {
+    init->lock("Slicer::run");
+    if( done ) break;
+    xfer_fn xfn = xp->xfn;
+    (xp->*xfn)(y0, y1);
+    complete->unlock();
+  }
+}
+
+void BC_CModels::bcxfer_stop_slicers()
+{
+  BC_Xfer::slicers.reset();
 }
 
