@@ -536,7 +536,7 @@ void VFrame::set_memory(BC_Bitmap *bitmap)
 {
 	int shmid = 0;
 	unsigned char *data = 0;
-	if( bitmap->is_shared() )
+	if( bitmap->is_shared() && !bitmap->is_zombie() )
 		shmid = bitmap->get_shmid();
 	else
 		data = bitmap->get_data();

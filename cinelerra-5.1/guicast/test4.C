@@ -1,5 +1,5 @@
 
-//c++ -g -I../guicast testwindow.C ../guicast/x86_64/libguicast.a \
+//c++ -g -I../guicast test4.C ../guicast/x86_64/libguicast.a \
 // -DHAVE_GL -DHAVE_XFT -I/usr/include/freetype2 -lGL -lX11 -lXext \
 // -lXinerama -lXv -lpng  -lfontconfig -lfreetype -lXft -pthread
 
@@ -119,7 +119,7 @@ int main(int ac, char **av)
 	struct stat st;  fstat(fd,&st);
 	unsigned char *dat = new unsigned char[st.st_size];
 	read(fd, dat, st.st_size);
-	VFrame ifrm(dat, st.st_size);
+	VFramePng ifrm(dat, st.st_size);
 	delete [] dat;
 	close(fd);
 	int w = ifrm.get_w(), h = ifrm.get_h();
@@ -141,9 +141,9 @@ int main(int ac, char **av)
 			cfrm.transfer_from(&bfrm, 0);
 			printf("xfer_%s_to_%s\n",cmdl[fr_cmdl],cmdl[to_cmdl]);
 			test_window.show_text(50,50, "xfer_%s_to_%s",cmdl[fr_cmdl],cmdl[to_cmdl]);
-			write_pgm(cfrm.get_data(), w,h, "/tmp/test/xfer_%s_to_%s.pgm",
-				cmdl[fr_cmdl],cmdl[to_cmdl]);
-			//usleep(100000);
+//			write_ppm(cfrm.get_data(), w,h, "/tmp/test/xfer_%s_to_%s.pgm",
+//				cmdl[fr_cmdl],cmdl[to_cmdl]);
+//			usleep(100000);
 		}
 	}
 	test_window.close_window();

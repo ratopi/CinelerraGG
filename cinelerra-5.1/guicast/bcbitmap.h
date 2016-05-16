@@ -261,6 +261,7 @@ public:
 	int is_xwindow() { return type==bmXShmImage || type==bmXImage; }
 	int is_shared() { return type==bmXvShmImage || type==bmXShmImage; }
 	int is_unshared() { return type==bmXvImage  || type==bmXImage; }
+	int is_zombie() { return cur_bfr()->is_zombie(); }
 
 	int set_bg_color(int color);
 	int invert();
