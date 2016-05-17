@@ -265,14 +265,12 @@ BC_Xfer::SlicerList BC_Xfer::slicers;
 
 BC_Xfer::SlicerList::SlicerList()
 {
-  waiting = new Condition(0, "BC_Xfer::SlicerList", 1);
   count = 0;
 }
 
 BC_Xfer::SlicerList::~SlicerList()
 {
   reset();
-  delete waiting;
 }
 
 void BC_Xfer::SlicerList::reset()
@@ -285,24 +283,24 @@ void BC_Xfer::SlicerList::reset()
 
 BC_Xfer::Slicer *BC_Xfer::SlicerList::get_slicer(BC_Xfer *xp)
 {
-  while( !first ) {
+  Slicer *slicer = first;
+  if( !slicer ) {
     if( count < BC_Resources::machine_cpus ) {
-      append(new Slicer(xp));
+      slicer = new Slicer(xp);
       ++count;
     }
-    else
-      waiting->lock("BC_Xfer::SlicerList::get_slicer");
   }
-  Slicer *slicer = first;
-  remove_pointer(slicer);
+  else
+    remove_pointer(slicer);
   return slicer;
 }
 
 void BC_Xfer::xfer_slices(int slices)
 {
   if( !xfn ) return;
-  int max_slices = BC_Resources::machine_cpus/2+1;
+  int max_slices = BC_Resources::machine_cpus/2;
   if( slices > max_slices ) slices = max_slices;
+  if( slices < 1 ) slices = 1;
   Slicer *active[slices];
   unsigned y0 = 0, y1 = out_h;
   int slices1 = slices-1;
@@ -310,6 +308,7 @@ void BC_Xfer::xfer_slices(int slices)
     slicers.lock("BC_Xfer::xfer_slices");
     for( int i=0; i<slices1; y0=y1 ) {
       Slicer *slicer = slicers.get_slicer(this);
+      if( !slicer ) { slices1 = i;  break; }
       active[i] = slicer;
       y1 = out_h * ++i / slices;
       slicer->slice(this, y0, y1);
@@ -324,7 +323,6 @@ void BC_Xfer::xfer_slices(int slices)
     for( int i=0; i<slices1; ++i )
       slicers.append(active[i]);
     slicers.unlock();
-    slicers.waiting->unlock();
   }
 }
 

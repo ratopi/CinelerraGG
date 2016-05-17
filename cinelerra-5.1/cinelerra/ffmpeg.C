@@ -862,12 +862,26 @@ int FFVideoConvert::pix_fmt_to_color_model(AVPixelFormat pix_fmt)
 	default: break;
 	}
 
-	return BC_TRANSPARENCY;
+	return -1;
 }
 
 int FFVideoConvert::convert_picture_vframe(VFrame *frame,
 		AVFrame *ip, AVPixelFormat ifmt, int iw, int ih)
 {
+	// try bc_xfer methods
+	int imodel = pix_fmt_to_color_model(ifmt);
+	if( imodel >= 0 ) {
+		long y_ofs = 0, u_ofs = 0, v_ofs = 0;
+		uint8_t *data = ip->data[0];
+		if( BC_CModels::is_yuv(imodel) ) {
+			u_ofs = ip->data[1] - data;
+			v_ofs = ip->data[2] - data;
+		}
+		VFrame iframe(data, -1, y_ofs, u_ofs, v_ofs, iw, ih, imodel, ip->linesize[0]);
+		frame->transfer_from(&iframe);
+		return 0;
+	}
+	// try sws methods
 	AVFrame opic;
 	int cmodel = frame->get_color_model();
 	AVPixelFormat ofmt = color_model_to_pix_fmt(cmodel);

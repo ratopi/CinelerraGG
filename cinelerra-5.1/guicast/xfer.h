@@ -285,7 +285,6 @@ public:
   class SlicerList : public List<Slicer>, public Mutex {
   public:
     int count;
-    Condition *waiting;
     Slicer *get_slicer(BC_Xfer *xp);
     void reset();
     SlicerList();
