@@ -1050,7 +1050,8 @@ int VFrame::copy_from(VFrame *frame)
 int VFrame::transfer_from(VFrame *that, int bg_color, int in_x, int in_y, int in_w, int in_h)
 {
 	if( this->get_color_model() == that->get_color_model() &&
-	    this->get_w() == that->get_w() && this->get_h() == that->get_h() )
+	    this->get_w() == that->get_w() && this->get_h() == that->get_h() &&
+	    this->get_bytes_per_line() == that->get_bytes_per_line() )
 		return this->copy_from(that);
 
 	timestamp = that->timestamp;
@@ -1063,7 +1064,8 @@ int VFrame::transfer_from(VFrame *that, int bg_color, int in_x, int in_y, int in
 		0, 0, this->get_w(), this->get_h(),
 		that->get_color_model(), this->get_color_model(), // Color models in/out
 		bg_color,				     // alpha blend bg_color
-		that->get_w(), this->get_w()); 		     // rowspans (of luma for YUV)
+		that->get_bytes_per_line(),
+		this->get_bytes_per_line()); 		     // rowspans (of luma for YUV)
 #else
 	unsigned char *in_ptrs[4], *out_ptrs[4];
 	unsigned char **inp, **outp;
@@ -1086,9 +1088,11 @@ int VFrame::transfer_from(VFrame *that, int bg_color, int in_x, int in_y, int in
 	else
 		outp = this->get_rows();	
 	BC_CModels::transfer(outp, this->get_color_model(),
-			0, 0, this->get_w(), this->get_h(), this->get_w(),
+			0, 0, this->get_w(), this->get_h(),
+			this->get_bytes_per_line(),
 		inp, that->get_color_model(),
-			in_x, in_y, in_w, in_h, that->get_w(),
+			in_x, in_y, in_w, in_h,
+			that->get_bytes_per_line(),
 		bg_color);
 #endif
 	return 0;
