@@ -1,4 +1,3 @@
-
 # to see the make rules:
 #   make rules
 #
@@ -24,8 +23,8 @@
 #     add config enables if other libraries use the new library
 #
 
-include ../global_config
--include config.mak
+TOPDIR ?= $(CURDIR)/..
+include $(TOPDIR)/global_config
 BLD := $(THIRDPARTY)/build
 
 pkg-source=$(BLD)/$(1).source
@@ -38,10 +37,10 @@ unpack=$(call unpack_$(call ext,$(1)),$(1))
 unpack_gz=tar -xzf $(1)
 unpack_bz2=tar -xjf $(1)
 unpack_xz=tar -xJf $(1)
-bld_depends=$(if $(filter $(firstword $($(1))),static),$(call pkg-built,$(1)))
-bld_path=`echo $(THIRDPARTY)/$(1)*`/$(2)
-inc_path=$(if $(filter $(firstword $($(1))),static),-I$(call bld_path,$(1),$(2)))
-ld_path=$(if $(filter $(firstword $($(1))),static),-L$(call bld_path,$(1),$(2)))
+bld_depends=$(if $(ver_$(1)),$(call pkg-built,$(1)))
+bld_path=$(ver_$(1))/$(2)
+inc_path=$(inc_$(1))
+ld_path=$(if $(ver_$(1)),-L$(call bld_path,$(1),$(2)))
 
 #$(eval $(call std-build,pkg,deps...))
 #$(pkg.cflags) added as CFLAGS+=$(cflags) to pkg.vars
@@ -78,7 +77,7 @@ $(call pkg-built,$(1)): $(call pkg-config,$(1))
 
 endef
 
-TARGETS := $(static_libs)
+TARGETS := $(static_blds)
 
 all:	$(TARGETS)
 
@@ -92,12 +91,13 @@ encore.cfg_vars= true ||
 esound.cfg_vars:= AUDIOFILE_CFLAGS="$(call inc_path,audiofile,libaudiofile) -laudiofile"
 esound.cfg_vars+= AUDIOFILE_LIBS="$(call ld_path,audiofile,libaudiofile/.libs)"
 esound.cfg_params= --enable-shared=no --with-pic
-esound.ldflags="-lm -lstdc++"
+esound.mak_vars+= CFLAGS="" 
+esound.ldflags=" -lm -lstdc++"
 faac.cfg_params= --enable-shared=no
 faad2.cfg_params= --enable-shared=no
 fdk.cfg_vars= ./autogen.sh ;
 fdk.cfg_params= --enable-shared=no
-fdk.mak_params= ; for f in $(call bld_path,fdk,/lib*/include); do ln -s include `dirname $$$$f`/fdk-aac ; done
+fdk.mak_params= ; for f in $(call bld_path,fdk,/lib*/include); do ln -s . $$$$f/fdk-aac; done
 fftw.cfg_params= --disable-fortran --enable-shared=no
 ffmpeg.cfg_params= \
 	--enable-pthreads --enable-gpl \
@@ -143,7 +143,7 @@ ffmpeg.cfg_params= \
 		$(call ld_path,x264) \
 		$(call ld_path,x265) \
 		$(call ld_path,fdk,.libs) \
-		$(EXTRA_LIBS)" $(EXTRA_FFMPEG_CFG) \
+		$(EXTRA_LIBS)" $(FFMPEG_EXTRA_CFG) \
 
 cmake_config=echo "exec cmake \$$$$@ $(1)" > ./configure; chmod +x ./configure;
 a52dec.mak_params?= ; cd $(call bld_path,a52dec,include); ln -sf . a52dec
@@ -162,21 +162,22 @@ mjpegtools.cflags?="$(call inc_path,libjpeg) $(call ld_path,libjpeg,.libs)"
 mjpegtools.mak_params?=; ln -s . $(call bld_path,mjpegtools,utils)/mjpegtools 
 mjpegtools.cfg_params?= --enable-shared=no
 ladspa.mak_params?=; $(MAKE) -C ladspa* install DESTDIR=$(call bld_path,ladspa)
-libavc1394.cfg_vars?=PKG_CONFIG_PATH=$(bld_path libraw1394)
-libavc1394.cflags?="$(inc_path libraw1394)"
-libavc1394.ldflags?="$(ld_path libraw1394,src/.libs)"
+libavc1394.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libraw1394)
+libavc1394.cflags?="$(call inc_path,libraw1394)"
+libavc1394.ldflags?="$(call ld_path,libraw1394,src/.libs)"
 libavc1394.cfg_params?= --enable-shared=no
+libavc1394.mak_params?=; cd $(call bld_path,libavc1394); ln -sf ../librom1394/rom1394.h libavc1394/.
 libdv.cfg_params?= --disable-gtk --enable-shared=no
-libiec61883.cfg_vars?=PKG_CONFIG_PATH=$(bld_path libraw1394)
-libiec61883.cflags?="$(inc_path libraw1394)"
-libiec61883.ldflags?="$(ld_path libraw1394,src/.libs)"
+libiec61883.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libraw1394)
+libiec61883.cflags?="$(call inc_path,libraw1394)"
+libiec61883.ldflags?="$(call ld_path,libraw1394,src/.libs)"
 libiec61883.cfg_params?= --enable-shared=no
 libjpeg.cfg_params?= --enable-shared=no
 libogg.cfg_params?= --enable-shared=no
 libraw1394.cfg_params?=  --enable-shared=no; ln -sf src libraw1394
-libtheora.cfg_vars?=PKG_CONFIG_PATH=$(bld_path libogg):$(bld_path libvorbis)
-libtheora.cflags?="$(inc_path libogg,include) $(inc_path libogg,src) $(inc_path libvorbis,include)"
-libtheora.ldflags?="$(ld_path libvorbis,lib/.libs) $(ld_path libogg,src/.libs)"
+libtheora.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libogg):$(call bld_path,libvorbis)
+libtheora.cflags?="$(call inc_path,libogg,include) $(call inc_path,libogg,src) $(call inc_path,libvorbis,include)"
+libtheora.ldflags?="$(call ld_path,libvorbis,lib/.libs) $(call ld_path,libogg,src/.libs)"
 libtheora.cfg_params?= --disable-examples --enable-shared=no
 libuuid.cfg_params?=--enable-shared=no
 libvorbis.cfg_params?= --disable-oggtest --enable-shared=no
@@ -272,8 +273,12 @@ $(call pkg-built,festival): $(call pkg-config,festival)
 	touch $@
 
 clean:
-	for f in $(thirdparty); do rm -rf $$f*; done
+	for f in $(static_pkgs); do rm -rf $$f*; done
 	rm -rf $(BLD)
+
+install:
+	cp -a $(ver_mjpegtools)/mpeg2enc/mpeg2enc $(BINDIR)/.
+	cp -a $(ver_mjpegtools)/mplex/mplex $(BINDIR)/.
 
 val-%:
 	@echo $($(subst val-,,$@))

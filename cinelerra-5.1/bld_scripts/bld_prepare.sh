@@ -23,7 +23,8 @@ case "$dir" in
     libpng-devel bzip2-devel zlib-devel kernel-headers libtiff-devel \
     libavc1394 festival-devel libiec61883-devel flac-devel inkscape \
     libsndfile-devel libtheora-devel linux-firmware ivtv-firmware \
-    libvorbis-devel texinfo xz-devel lzma-devel cmake udftools git
+    libvorbis-devel texinfo xz-devel lzma-devel cmake udftools git \
+    autoconf automake
     yasm=yasm-1.2.0-7.fc21.x86_64.rpm
     release=http://archives.fedoraproject.org/pub/fedora/linux/releases/21
     url=$release/Everything/x86_64/os/Packages/y/$yasm
@@ -42,7 +43,8 @@ case "$dir" in
     libpng-devel bzip2-devel zlib-devel kernel-headers libavc1394 \
     festival-devel libdc1394-devel libiec61883-devel esound-devel \
     flac-devel libsndfile-devel libtheora-devel linux-firmware \
-    ivtv-firmware libvorbis-devel texinfo xz-devel lzma-devel cmake
+    ivtv-firmware libvorbis-devel texinfo xz-devel lzma-devel cmake git \
+    autoconf automake
   ;;
 "suse" | "leap")
   zypper -n install nasm gcc gcc-c++ zlib-devel texinfo libpng16-devel \
@@ -52,7 +54,8 @@ case "$dir" in
     openexr-devel libavc1394-devel festival-devel libjpeg8-devel libdv-devel \
     libdvdnav-devel libdvdread-devel libiec61883-devel libuuid-devel \
     ilmbase-devel fftw3-devel libsndfile-devel libtheora-devel flac-devel \
-    libtiff-devel inkscape cmake patch libnuma-devel lzma-devel udftools git
+    libtiff-devel inkscape cmake patch libnuma-devel lzma-devel udftools git \
+    autoconf automake
     if [ ! -f /usr/lib64/libtermcap.so ]; then
       ln -s libtermcap.so.2 /usr/lib64/libtermcap.so
     fi
@@ -64,7 +67,8 @@ case "$dir" in
     libtiff5-dev exuberant-ctags ttf-bitstream-vera xfonts-75dpi xfonts-100dpi \
     fonts-dejavu libopenexr-dev libavc1394-dev festival-dev fftw3-dev gdb \
     libdc1394-22-dev libiec61883-dev libesd0-dev libflac-dev inkscape \
-    libsndfile1-dev libtheora-dev cmake udftools libxml2-utils git
+    libsndfile1-dev libtheora-dev cmake udftools libxml2-utils git \
+    autoconf automake
   ;;
  *)
   echo "unknown os: $dir"

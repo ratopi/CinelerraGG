@@ -1,4 +1,4 @@
-include ../../global_config
+include ../../plugin_defs
 
 OBJS =  $(OBJDIR)/bluebanana.o
 OBJS += $(OBJDIR)/bluebananaconfig.o

@@ -375,8 +375,9 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	shbtn_prefs.remove_all_objects();
 	int shbtns_total = defaults->get("SHBTNS_TOTAL", -1);
 	if( shbtns_total < 0 ) {
-//		shbtn_prefs.append(new ShBtnPref("manual", "firefox file:///$CINELERRA_PATH/manual.pdf", 0));
-		shbtn_prefs.append(new ShBtnPref("online help", "firefox https://cinelerra-cv.org/docs/cinelerra_cv_manual_en.html", 0));
+		shbtn_prefs.append(new ShBtnPref("Features5", "firefox file:///$CINELERRA_PATH/doc/Features5.pdf", 0));
+		shbtn_prefs.append(new ShBtnPref("Online Help", "firefox https://cinelerra-cv.org/docs.php", 0));
+		shbtn_prefs.append(new ShBtnPref("Orignal Manual", "firefox file:///$CINELERRA_PATH/doc/cinelerra.html", 0));
 		shbtns_total = 0;
 	}
 	for( int i=0; i<shbtns_total; ++i ) {

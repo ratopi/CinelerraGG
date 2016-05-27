@@ -1,4 +1,4 @@
-include ../../global_config
+include ../../plugin_defs
 
 OBJS = $(OBJDIR)/gamma.o  \
 	$(OBJDIR)/gammawindow.o

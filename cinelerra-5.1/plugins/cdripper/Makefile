@@ -1,8 +1,4 @@
-#########################################################
-#                         SAMPLERATE CONVERTER
-#########################################################
-
-include ../../global_config
+include ../../plugin_defs
 
 OBJS = $(OBJDIR)/cdripper.o \
 	$(OBJDIR)/cdripwindow.o

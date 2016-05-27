@@ -1,0 +1,754 @@
+
+AC_PREREQ([2.69])
+AC_INIT([cinelerra], [5.1], [mail@lists.cinelerra-cv.org])
+AM_INIT_AUTOMAKE([foreign])
+
+AM_PROG_AS
+AC_LANG_CPLUSPLUS
+AC_LANG_C
+AC_PROG_CXX
+
+CFLAGS+=" -fno-omit-frame-pointer -fno-math-errno -fno-signed-zeros"
+CFLAGS+=" -pthread -Wall"
+CFLAGS+=" -D__STDC_CONSTANT_MACROS"
+CFLAGS+=" -D__STDC_LIMIT_MACROS"
+CFLAGS+=" -DPNG_SKIP_SETJMP_CHECK=1"
+CFLAGS+=" -I/usr/include/freetype2"
+
+CPUS=`grep -c "^proc" /proc/cpuinfo`
+JOBS=`expr $CPUS + $CPUS / 2 + 2`
+AC_ARG_WITH([jobs],
+  AC_HELP_STRING([--with-jobs],[parallel build jobs (cpus+cpus/2+2)]),
+  [WANT_JOBS=$withval], [WANT_JOBS=$JOBS])
+AC_SUBST(WANT_JOBS)
+
+AC_DEFUN([PKG_3RD],[
+AC_ARG_ENABLE([$1],
+  AC_HELP_STRING([--enable-$1],[build $1 ($2)]),
+  [PKG_$1=$enableval], [PKG_$1=$2])
+STATIC_PKGS+=" [$1]"
+ver_$1="$3"
+lib_$1="$4"
+inc_$1="$5"
+])
+
+# thirdparty builds
+
+PKG_3RD([a52dec],[yes],
+  [a52dec-0.7.4],
+  [ liba52/.libs/liba52.a ],
+  [ include ])
+
+PKG_3RD([audiofile],[auto],
+  [audiofile-0.3.6],
+  [ libaudiofile/.libs/libaudiofile.a \
+    libaudiofile/modules/.libs/libmodules.a \
+    libaudiofile/alac/.libs/libalac.a ],
+  [ libaudiofile ])
+
+PKG_3RD([encore],[yes],
+  [encore-5.0],
+  [ \$(OBJDIR)/libencore.a ],
+  [ . ])
+
+PKG_3RD([esound],[auto],
+  [esound-0.2.41],
+  [ .libs/libesd.a \
+    .libs/libesddsp.a ],
+  [ . ])
+
+PKG_3RD([faac],[auto],
+  [faac-1.28],
+  [ libfaac/.libs/libfaac.a \
+    common/mp4v2/libmp4v2.a ],
+  [ include ])
+
+PKG_3RD([faad2],[auto],
+  [faad2-2.7],
+  [ libfaad/.libs/libfaad.a \
+    common/mp4ff/libmp4ff.a ],
+  [ include ])
+
+PKG_3RD([fdk],[auto],
+  [fdk-aac-0.1.4],
+  [ .libs/libfdk-aac.a ],
+  [ libAACdec/include libAACenc/include libSYS/include ])
+
+PKG_3RD([ffmpeg],[yes],
+  [ffmpeg-3.0],
+  [ libavutil/libavutil.a \
+    libavcodec/libavcodec.a \
+    libpostproc/libpostproc.a \
+    libavdevice/libavdevice.a \
+    libavformat/libavformat.a \
+    libswscale/libswscale.a \
+    libavfilter/libavfilter.a \
+    libswresample/libswresample.a ],
+  [ . ])
+
+PKG_3RD([fftw],[auto],
+  [fftw-3.3.4],
+  [ .libs/libfftw3.a \
+    libbench2/libbench2.a \
+    rdft/scalar/r2cb/.libs/librdft_scalar_r2cb.a \
+    rdft/scalar/r2r/.libs/librdft_scalar_r2r.a \
+    rdft/scalar/.libs/librdft_scalar.a \
+    rdft/scalar/r2cf/.libs/librdft_scalar_r2cf.a \
+    rdft/.libs/librdft.a \
+    api/.libs/libapi.a \
+    reodft/.libs/libreodft.a \
+    dft/scalar/codelets/.libs/libdft_scalar_codelets.a \
+    dft/scalar/.libs/libdft_scalar.a \
+    dft/.libs/libdft.a \
+    kernel/.libs/libkernel.a \
+    simd-support/.libs/libsimd_support.a \
+    simd-support/.libs/libsimd_sse2_nonportable.a ],
+  [ api ])
+
+PKG_3RD([flac],[auto],
+  [flac-1.3.1],
+  [ src/libFLAC/.libs/libFLAC.a \
+    src/libFLAC++/.libs/libFLAC++.a \
+    src/share/replaygain_analysis/.libs/libreplaygain_analysis.a \
+    src/share/replaygain_synthesis/.libs/libreplaygain_synthesis.a \
+    src/share/grabbag/.libs/libgrabbag.a \
+    src/share/utf8/.libs/libutf8.a \
+    src/test_libs_common/.libs/libtest_libs_common.a ],
+  [ include ])
+
+PKG_3RD([giflib],[yes],
+  [giflib-5.1.2],
+  [ lib/.libs/libgif.a \
+    util/libgetarg.a ],
+  [ lib ])
+
+PKG_3RD([ilmbase],[auto],
+  [ilmbase-2.2.0],
+  [ Iex/.libs/libIex.a \
+    IexMath/.libs/libIexMath.a \
+    Half/.libs/libHalf.a \
+    Imath/.libs/libImath.a \
+    IlmThread/.libs/libIlmThread.a ],
+  [ Iex Half Imath config IlmThread ])
+
+PKG_3RD([ladspa],[auto],
+  [ladspa-05182015],
+  [],
+  [])
+
+PKG_3RD([lame],[auto],
+  [lame-3.99.5],
+  [ libmp3lame/.libs/libmp3lame.a \
+    mpglib/.libs/libmpgdecoder.a ],
+  [ include ])
+
+PKG_3RD([libavc1394],[auto],
+  [libavc1394-0.5.4],
+  [ libavc1394/.libs/libavc1394.a \
+    librom1394/.libs/librom1394.a \
+    common/.libs/libraw1394util.a ],
+  [ . ])
+
+PKG_3RD([libraw1394],[auto],
+  [libraw1394-2.0.5],
+  [ src/.libs/libraw1394.a ],
+  [ . ])
+
+PKG_3RD([libiec61883],[auto],
+  [libiec61883-1.2.0],
+  [ src/.libs/libiec61883.a ],
+  [ src ])
+
+PKG_3RD([libdv],[auto],
+  [libdv-1.0.0],
+  [ libdv/.libs/libdv.a ],
+  [ . ])
+
+PKG_3RD([libjpeg],[auto],
+  [libjpeg-turbo-1.4.0],
+  [ .libs/libjpeg.a \
+    .libs/libturbojpeg.a \
+    simd/.libs/libsimd.a ],
+  [ . ])
+
+PKG_3RD([openjpeg],[yes],
+  [openjpeg-2.1.0-20160221],
+  [ bin/libopenjp2.a ],
+  [ src/lib/openjp2 ])
+
+PKG_3RD([libogg],[auto],
+  [libogg-1.3.2],
+  [ src/.libs/libogg.a ],
+  [ include ])
+
+PKG_3RD([libsndfile],[auto],
+  [libsndfile-1.0.26],
+  [ src/.libs/libsndfile.a \
+    src/.libs/libcommon.a \
+    src/G72x/.libs/libg72x.a \
+    src/GSM610/.libs/libgsm.a ],
+  [ . ])
+
+PKG_3RD([libtheora],[auto],
+  [libtheora-1.1.1],
+  [ lib/.libs/libtheora.a \
+    lib/.libs/libtheoradec.a \
+    lib/.libs/libtheoraenc.a ],
+  [ . ])
+
+PKG_3RD([libuuid],[yes],
+  [libuuid-1.0.3],
+  [ .libs/libuuid.a ],
+  [ . ])
+
+PKG_3RD([libvorbis],[auto],
+  [libvorbis-1.3.5],
+  [ lib/.libs/libvorbis.a \
+    lib/.libs/libvorbisenc.a \
+    lib/.libs/libvorbisfile.a ],
+  [ include . ])
+
+PKG_3RD([mjpegtools],[yes],
+  [mjpegtools-2.1.0],
+  [ utils/mmxsse/.libs/libmmxsse.a \
+    utils/.libs/libmjpegutils.a \
+    lavtools/.libs/liblavfile.a \
+    lavtools/.libs/liblavjpeg.a \
+    mplex/.libs/libmplex2.a \
+    yuvfilters/.libs/libyuvfilters.a \
+    mpeg2enc/.libs/libmpeg2encpp.a ],
+  [ .  lavtools utils ])
+
+PKG_3RD([openexr],[auto],
+  [openexr-2.2.0],
+  [ IlmImf/.libs/libIlmImf.a \
+    IlmImfUtil/.libs/libIlmImfUtil.a ],
+  [ IlmImf config ])
+
+#PKG_3RD([festival],[no],
+#  [festival],
+#  [],
+#  [])
+#PKG_3RD(speech_tools,[no],
+#  [speech_tools],
+#  [],
+#  [])
+#
+PKG_3RD([tiff],[auto],
+  [tiff-3.8.2],
+  [ libtiff/.libs/libtiff.a \
+    libtiff/.libs/libtiffxx.a \
+    port/.libs/libport.a ],[
+   . ])
+
+PKG_3RD([twolame],[auto],
+  [twolame-0.3.13],
+  [ libtwolame/.libs/libtwolame.a ],
+  [  libtwolame ])
+
+PKG_3RD([x264],[yes],
+  [x264-snapshot-20160220-2245-stable],
+  [ libx264.a ],
+  [ . ])
+
+PKG_3RD([x265],[yes],
+  [x265_1.9],
+  [ libx265.a ],
+  [ . source ])
+
+PKG_3RD([libvpx],[auto],
+  [libvpx-1.5.0],
+  [ libvpx.a ],
+  [ . ])
+
+AC_SUBST(STATIC_PKGS)
+
+
+AC_DEFUN([CHECK_WITH], [
+AC_ARG_WITH([$1],
+  AC_HELP_STRING([--with-[$1]], [$3 ([$4])]),
+  [WANT_$2=$withval], [WANT_$2=[$4]])
+])
+
+CHECK_WITH([ladspa], [ladspa], [build ladspa library], [yes])
+
+AC_DEFUN([CHECK_ENABLE], [
+AC_ARG_ENABLE([$1],
+  AC_HELP_STRING([--enable-[$1]], [$3 ([$4])]),
+  [WANT_$2=$enableval], [WANT_$2=[$4]])
+])
+
+CHECK_ENABLE([static], [STATIC_BUILD], [build static], [yes])
+CHECK_ENABLE([forced], [FORCED_BUILD], [build forced], [no])
+CHECK_ENABLE([x264_hidepth], [X264_HIDEPTH], [build x264 10bit], [no])
+CHECK_ENABLE([x265_hidepth], [X265_HIDEPTH], [build x265 10/12bit], [no])
+
+AC_DEFUN([CHECK_PROG], [
+ AC_CHECK_PROG([PROG_$1], [$2], [yes],[no])
+])
+AC_DEFUN([REQUIRE_PROG], [
+ CHECK_PROG([$1],[$2])
+ if test "x$PROG_$1" = "xno"; then
+   AC_MSG_WARN([$2 is missing and required.])
+   FATAL_ERROR=1
+ fi
+])
+
+# Checks for programs.
+
+REQUIRE_PROG(NASM, [nasm])
+REQUIRE_PROG(YASM, [yasm])
+REQUIRE_PROG(OBJCOPY, [objcopy])
+if test "x$FATAL_ERROR" != "x"; then
+ AC_MSG_ERROR("fatal eror.")
+fi
+CHECK_PROG(PACTL, [pactl])
+   
+# Checks for headers/libraries.
+
+AC_DEFUN([CHECK_HEADERS], [
+if test "x$HAVE_$1" != "xno"; then
+ AC_CHECK_HEADER(m4_apply([m4_car],m4_split([$3])), [HAVE_$1=yes], [HAVE_$1=no],
+  [m4_foreach([i], m4_split([$3]), [[#include "]i["
+]])])
+ AC_SUBST([HAVE_$1])
+ AC_MSG_CHECKING([$2])
+ AC_MSG_RESULT([$HAVE_$1])
+ if test "x$HAVE_$1" = "xno"; then
+  if test "x$PKG_$1" = "x"; then RESULT=no; fi
+ fi
+fi
+])
+
+AC_DEFUN([CHECK_LIB], [
+if test "x$HAVE_$1" != "xno"; then
+ if test "x$PKG_$1" = "x" -o "x$WANT_STATIC_BUILD" = "xno"; then
+  AC_CHECK_LIB([$2], [$3], [HAVE_$1=yes], [HAVE_$1=no], [$4])
+  AC_SUBST([HAVE_$1])
+  if test "x$HAVE_$1" = "xyes"; then
+   if test "x$PKG_$1" = "x"; then
+    SYSTEM_LIBS+=" -l[$2]"
+    for lib in [$4]; do SYSTEM_LIBS+=" $lib"; done
+   else
+    SHARED_$1+=" -l[$2]"
+    for lib in [$4]; do SHARED_LIBS+=" $lib"; done
+   fi
+  elif test "x$PKG_$1" = "x"; then RESULT=no; fi
+ fi
+fi
+])
+
+CHECK_LIB([X11], [X11], [XOpenDisplay])
+CHECK_HEADERS([X11], [X11 headers], [X11/X.h X11/Xlib.h X11/Xutil.h X11/cursorfont.h])
+CHECK_HEADERS([X11], [X11 headers], [X11/keysym.h X11/Sunkeysym.h X11/Xatom.h X11/XF86keysym.h])
+CHECK_LIB([XEXT], [Xext], [XShmQueryExtension])
+CHECK_HEADERS([XEXT], [Xlib XShm extention], [X11/Xlib.h X11/extensions/XShm.h X11/extensions/shape.h])
+CHECK_LIB([XINERAMA], [Xinerama], [XineramaQueryExtension])
+CHECK_HEADERS([XINERAMA], [Xinerama headers], [X11/extensions/Xinerama.h])
+CHECK_LIB([XV], [Xv], [XvQueryExtension])
+CHECK_HEADERS([XV], [Xlib Xv extention], [X11/Xlib.h X11/extensions/Xvlib.h])
+CHECK_LIB([BZ2], [bz2], [BZ2_bzDecompress])
+CHECK_LIB([FONTCONFIG], [fontconfig], [FcInit])
+CHECK_LIB([FREETYPE], [freetype], [FT_Init_FreeType])
+CHECK_LIB([LZMA], [lzma], [lzma_version_number])
+CHECK_LIB([PNG], [png], [png_read_png])
+CHECK_LIB([PTHREAD], [pthread], [pthread_create])
+CHECK_LIB([Z], [z], [gzopen])
+CHECK_LIB([fftw], [fftw3], [fftw_execute])
+CHECK_HEADERS([fftw], [fftw headers], [fftw3.h])
+CHECK_LIB([libuuid], [uuid], [uuid_clear])
+CHECK_HEADERS([libuuid], [uuid headers], [uuid/uuid.h])
+CHECK_HEADERS([LINUX_CDROM], [linux cdrom headers], [linux/cdrom.h linux/futex.h])
+CHECK_HEADERS([LINUX_SYS], [linux sys], [sys/ioctl.h sys/stat.h sys/types.h sys/time.h sys/syscall.h])
+CHECK_LIB([flac], [FLAC], [FLAC__stream_decoder_new])
+CHECK_HEADERS([flac], [FLAC headers], [FLAC/stream_decoder.h])
+CHECK_LIB([lame], [mp3lame], [lame_init])
+CHECK_HEADERS([lame], [lame headers], [lame/lame.h])
+CHECK_LIB([libjpeg], [jpeg], [jpeg_start_decompress])
+CHECK_HEADERS([libjpeg], [jpeg headers], [stdio.h jpeglib.h])
+CHECK_LIB([libogg], [ogg], [ogg_stream_init])
+CHECK_HEADERS([libogg], [ogg headers], [ogg/ogg.h])
+CHECK_LIB([openjpeg], [openjpeg], [opj_version])
+CHECK_HEADERS([openjpeg], [openjpeg headers], [openjpeg.h])
+CHECK_LIB([libsndfile], [sndfile], [sf_open])
+CHECK_HEADERS([libsndfile], [sndfile headers], [sndfile.h])
+CHECK_LIB([ilmbase], [IlmImf], [ImfOpenInputFile])
+CHECK_HEADERS([ilmbase], [IlmImf headers], [OpenEXR/ImfCRgbaFile.h])
+CHECK_LIB([libtheora], [theora], [theora_info_init], [-ltheoraenc -ltheoradec -logg])
+CHECK_HEADERS([libtheora], [threora headers], [theora/theoraenc.h])
+CHECK_LIB([libvorbis], [vorbisenc], [vorbis_encode_init], [-lvorbis -lvorbisfile -logg])
+CHECK_HEADERS([libvorbis], [vorbis encoders headers], [vorbis/vorbisenc.h])
+CHECK_LIB([libvorbis], [vorbisfile], [ov_open])
+CHECK_HEADERS([libvorbis], [vorbis file headers], [vorbis/vorbisfile.h])
+CHECK_LIB([libvpx], [vpx], [vpx_codec_decode])
+CHECK_HEADERS([libvpx], [vpx headers], [vpx/vpx_decoder.h])
+CHECK_LIB([tiff], [tiff], [TIFFOpen])
+CHECK_HEADERS([tiff], [tiff headers], [tiff.h tiffio.h])
+CHECK_LIB([twolame], [twolame], [twolame_encode_buffer_float32_interleaved])
+CHECK_HEADERS([twolame], [twolame headers], [twolame.h])
+CHECK_LIB([x264], [x264], [x264_encoder_encode])
+CHECK_HEADERS([x264], [x264 headers], [stdint.h x264.h])
+CHECK_LIB([x265], [x265], [x265_encoder_encode])
+CHECK_HEADERS([x265], [x265 headers], [x265.h])
+CHECK_LIB([a52dec], [a52], [a52_init])
+CHECK_HEADERS([a52dec], [a52 headers], [a52.h])
+CHECK_LIB([encore], [encore], [encore])
+CHECK_HEADERS([encore], [encore headers], [encore.h])
+CHECK_LIB([faac], [faac], [faacEncOpen])
+CHECK_HEADERS([faac], [faac headers], [faac.h])
+CHECK_LIB([faad2], [faad], [faacDecInit])
+CHECK_HEADERS([faad2], [faad headers], [faad.h])
+CHECK_LIB([giflib], [gif], [DGifOpen])
+CHECK_HEADERS([giflib], [gif lib headers], [gif_lib.h])
+CHECK_LIB([fdk], [fdk-aac], [faacDecInit])
+CHECK_HEADERS([fdk], [fdk headers], [fdk-aac/genericStds.h])
+
+
+AC_DEFUN([CHECK_WANT], [
+RESULT=yes
+AC_ARG_WITH(m4_tolower([$1]),
+ AC_HELP_STRING([m4_join([-],[--with],m4_tolower([$1]))], [$2] (auto)),
+  [WANT_$1=$withval],[WANT_$1=auto])
+# WANT_$1
+if test "x$WANT_$1" != "xno" ; then
+ m4_quote($3)
+fi
+if test "x$RESULT" = "xno" -a "x$PKG_$1" = "x"; then
+ echo "=== want $1 Failed."
+ WANT_$1=no
+fi
+AC_SUBST([WANT_$1])
+])
+
+CHECK_WANT([GL], [use opengl], [
+ CHECK_LIB([GL], [GL], [glUseProgram])
+ CHECK_LIB([GL], [GLU], [gluOrtho2D])
+ CHECK_HEADERS([GL], [opengl headers], [GL/gl.h GL/glext.h GL/glu.h GL/glx.h])])
+
+CHECK_WANT([OSS], [use OSS audio], [
+ CHECK_HEADERS([OSS], [oss headers], [sys/soundcard.h])])
+
+CHECK_WANT([XFT], [use libXft], [
+ CHECK_LIB([XFT], [Xft], [XftInit])
+ CHECK_HEADERS([XFT], [Xft/freetype headers], [X11/Xlib.h X11/Xft/Xft.h])])
+
+CHECK_WANT([ALSA], [use libasound/alsa], [
+ CHECK_LIB([ALSA], [asound], [snd_pcm_open])
+ CHECK_HEADERS([ALSA], [asound headers], [alsa/asoundlib.h])])
+
+CHECK_WANT([FIREWIRE], [use firewire], [
+ CHECK_LIB([libavc1394], [avc1394], [avc1394_init_target])
+ CHECK_HEADERS([libavc1394], [libavc1394 headers], [libavc1394/avc1394.h])
+ CHECK_LIB([libavc1394], [rom1394], [rom1394_get_bus_id])
+ CHECK_HEADERS([libavc1394], [librom1394 headers], [libavc1394/rom1394.h])
+ CHECK_LIB([libiec61883], [iec61883], [iec61883_mpeg2_recv_init])
+ CHECK_HEADERS([libiec61883], [libiec61883 headers], [libiec61883/iec61883.h])
+ CHECK_LIB([libraw1394], [raw1394], [raw1394_iso_recv_init])
+ CHECK_HEADERS([libraw1394], [libraw1394 headers], [libraw1394/raw1394.h])])
+
+CHECK_WANT([DV], [use dv], [
+ CHECK_LIB([libdv], [dv], [dv_init])
+ CHECK_HEADERS([libdv], [libdv headers], [libdv/dv.h])])
+
+CHECK_WANT([DVB], [use dvb], [
+ CHECK_HEADERS([DVB], [dvb device headers], [linux/dvb/dmx.h linux/dvb/frontend.h])])
+
+CHECK_WANT([VIDEO4LINUX2], [use v4l2], [
+ CHECK_HEADERS([VIDEO4LINUX2], [v4l2 system headers], [linux/kernel.h linux/types.h linux/videodev2.h])])
+
+CHECK_WANT([XXF86VM], [use xf86vmode], [
+ CHECK_HEADERS([XXF86VM], [XF86VM headers], [X11/Xlib.h X11/extensions/xf86vmode.h])])
+
+CHECK_WANT([ESOUND], [use esd], [
+ CHECK_LIB([esound], [esd], [esd_open_sound])
+ CHECK_HEADERS([esound], [esound headers], [esd.h])
+ CHECK_LIB([audiofile], [audiofile], [afOpenFile])
+ CHECK_HEADERS([audiofile], [audiofile headers], [audiofile.h])])
+
+CHECK_WANT([DL], [system has libdl], [
+ CHECK_LIB([DL], [dl], [dlopen])])
+
+CHECK_WANT([NUMA], [system has libnuma], [
+ CHECK_LIB([NUMA], [numa], [numa_alloc])])
+
+
+AC_MSG_CHECKING([for openexr available])
+saved_LIBS="$LIBS"
+saved_CXXFLAGS="$CXXFLAGS"
+# ilmbase libs
+LIBS=" -lIlmImf -lIlmThread -lIex"
+CXXFLAGS="-I/usr/include/OpenEXR"
+AC_LANG_PUSH(C++)
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+#include "ImfChannelList.h"
+#include "ImfChromaticities.h"
+#include "ImfCompression.h"
+#include "ImfIO.h"
+#include "ImfInputFile.h"
+#include "ImfOutputFile.h"
+#include "ImfPixelType.h"
+#include "ImfRgbaFile.h"
+#include "ImfRgbaYca.h"
+#include "ImfVersion.h"
+class EXRIStream : public Imf::IStream { public:
+EXRIStream() : Imf::IStream("mypath") {} };
+class EXROStream : public Imf::OStream { public: 
+EXROStream() : Imf::OStream("mypath") {} };
+]])], [HAVE_openexr=yes], [HAVE_openexr=no])
+if test "x$HAVE_openexr" = "xyes"; then
+  SHARED_openexr="$LIBS"
+fi
+LIBS="$saved_LIBS"
+CXXFLAGS="$saved_CXXFLAGS"
+AC_LANG_POP(C++)
+AC_MSG_RESULT([$HAVE_openexr])
+AC_SUBST([HAVE_openexr])
+
+# false=speed up
+if false; then
+# pointless Checks for header files.
+AC_CHECK_HEADERS([assert.h fcntl.h float.h libintl.h limits.h])
+AC_CHECK_HEADERS([stdio.h stdint.h stdlib.h string.h strings.h])
+AC_CHECK_HEADERS([ctype.h dlfcn.h byteswap.h endian.h errno.h error.h])
+AC_CHECK_HEADERS([unistd.h asm/unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h locale.h netdb.h netinet/in.h])
+AC_CHECK_HEADERS([sys/ioctl.h sys/socket.h sys/statfs.h sys/time.h utime.h])
+
+# pointless Checks for typedefs, structures, and compiler characteristics.
+AC_CHECK_HEADER_STDBOOL
+AC_C_INLINE
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_INT64_T
+AC_TYPE_INT8_T
+AC_TYPE_OFF_T
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_CHECK_MEMBERS([struct stat.st_blksize])
+AC_STRUCT_ST_BLOCKS
+AC_CHECK_MEMBERS([struct stat.st_rdev])
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
+AC_TYPE_UINT8_T
+
+# pointless Checks for library functions.
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_FORK
+AC_FUNC_FSEEKO
+AC_FUNC_MALLOC
+AC_FUNC_MKTIME
+AC_FUNC_MMAP
+AC_FUNC_REALLOC
+AC_FUNC_STRERROR_R
+AC_FUNC_STRTOD
+AC_CHECK_FUNCS([bzero floor getcwd gethostbyname gettimeofday inet_ntoa localtime_r])
+AC_CHECK_FUNCS([memmove memset mkdir modf munmap nl_langinfo pow putenv rint rmdir])
+AC_CHECK_FUNCS([select setenv setlocale socket sqrt])
+AC_CHECK_FUNCS([strcasecmp strchr strdup strerror strncasecmp strrchr strstr strtol strtoul])
+AC_CHECK_FUNCS([tzset uname utime])
+#end speed up
+fi
+
+OBJDIR=`uname -m`
+AC_SUBST(OBJDIR)
+
+echo "AC_HELP_STRING([Reason],[Package])"
+echo "AC_HELP_STRING([------],[-------])"
+
+AC_DEFUN([PKG_SHARED],[
+ BUILD_$1=0
+ AC_SUBST(BUILD_$1)
+ SHARED_LIBS+="$SHARED_$1"
+ echo "AC_HELP_STRING([shared],[$1])"
+])
+AC_DEFUN([PKG_STATIC],[
+ BUILD_$1=1
+ AC_SUBST(BUILD_$1)
+ STATIC_BLDS+=" [$1]"
+ echo "AC_HELP_STRING([$2],[$1])"
+])
+AC_DEFUN([PKG_FORCED],[PKG_STATIC([$1],[forced])])
+
+AC_DEFUN([PKG_PROVIDE],[
+if test "x$BUILD_$1" = "x" ; then
+ if test "x$2" = "xno"; then
+  BUILD_$1=0
+  AC_SUBST(BUILD_$1)
+ elif test "x$PKG_$1" = "xyes"; then
+  PKG_FORCED([$1])
+ elif test "x$PKG_$1" = "xno"; then
+  if test "x$WANT_FORCED_BUILD" = "xyes"; then
+   BUILD_$1=0
+   AC_SUBST(BUILD_$1)
+  elif test "x$HAVE_$1" = "xyes"; then
+   PKG_SHARED([$1])
+  else
+   AC_MSG_ERROR([$1 missing and required.])
+  fi
+ elif test "x$WANT_STATIC_BUILD" = "xyes"; then
+  PKG_STATIC([$1],[static])
+ elif test "x$HAVE_$1" = "xyes"; then
+  PKG_SHARED([$1])
+ else
+  PKG_STATIC([$1],[needed])
+ fi
+fi
+])
+
+PKG_PROVIDE([a52dec])
+PKG_PROVIDE([encore])
+PKG_PROVIDE([audiofile],[$WANT_ESOUND])
+PKG_PROVIDE([esound],[$WANT_ESOUND])
+PKG_PROVIDE([faac])
+PKG_PROVIDE([faad2])
+PKG_PROVIDE([fdk])
+PKG_PROVIDE([ffmpeg])
+PKG_PROVIDE([fftw])
+PKG_PROVIDE([flac])
+PKG_PROVIDE([giflib])
+PKG_PROVIDE([ilmbase])
+PKG_PROVIDE([ladspa])
+PKG_PROVIDE([lame])
+PKG_PROVIDE([libavc1394],[$WANT_FIREWIRE])
+PKG_PROVIDE([libraw1394],[$WANT_FIREWIRE])
+PKG_PROVIDE([libiec61883],[$WANT_FIREWIRE])
+PKG_PROVIDE([libdv],[$WANT_DV])
+PKG_PROVIDE([libjpeg])
+PKG_PROVIDE([libogg])
+PKG_PROVIDE([libsndfile])
+PKG_PROVIDE([libtheora])
+PKG_PROVIDE([libuuid])
+PKG_PROVIDE([libvorbis])
+PKG_PROVIDE([mjpegtools])
+PKG_PROVIDE([openexr])
+PKG_PROVIDE([openjpeg])
+PKG_PROVIDE([tiff])
+PKG_PROVIDE([twolame])
+PKG_PROVIDE([x264])
+PKG_PROVIDE([x265])
+PKG_PROVIDE([libvpx])
+
+AC_SUBST(STATIC_BLDS)
+AC_SUBST(SHARED_LIBS)
+
+for f in $SYSTEM_LIBS; do
+  echo "AC_HELP_STRING([system],[$f])"
+done
+AC_SUBST(SYSTEM_LIBS)
+
+echo "  using: with-jobs = $WANT_JOBS"
+for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB VIDEO4LINUX2 ESOUND; do
+  eval vv="\$WANT_$v"
+  if test "x$vv" != "xno"; then
+    CFLAGS+=" -DHAVE_$v"
+    vv=with
+  else
+    vv=without
+  fi
+  v=`echo "$v" | tr "A-Z" "a-z"`
+  echo "  using: $vv-$v"
+done
+
+# build extras
+if test "x$HAVE_NUMA" = "xyes"; then
+  EXTRA_LIBS+=' -lnuma'
+fi
+if test "x$HAVE_DL" = "xyes"; then
+  EXTRA_LIBS+=' -ldl'
+  FFMPEG_EXTRA_CFG+=' --extra-ldflags="-ldl"'
+fi
+AC_SUBST(EXTRA_LIBS)
+AC_SUBST(FFMPEG_EXTRA_CFG)
+AC_SUBST(WANT_X264_HIDEPTH)
+AC_SUBST(WANT_X265_HIDEPTH)
+
+if test "x$BUILD_openexr" = "x0"; then
+  CFLAGS+=" -I/usr/include/OpenEXR"
+fi
+
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
+
+exec > global_config
+
+echo "SHELL := /bin/bash"
+echo "export SHELL"
+echo ""
+echo "OBJDIR := $OBJDIR"
+echo "BINDIR := \$(TOPDIR)/bin"
+echo "CINELERRA := \$(TOPDIR)/cinelerra"
+echo "GUICAST := \$(TOPDIR)/guicast"
+echo "LIBZMPEG3 := \$(TOPDIR)/libzmpeg3"
+echo "MPEG2ENC := \$(TOPDIR)/mpeg2enc"
+echo "MPLEXLO := \$(TOPDIR)/mplexlo"
+echo "PLUGIN_DIR := \$(BINDIR)/plugins"
+echo "PLUGINS := \$(TOPDIR)/plugins"
+echo "TDB := \$(TOPDIR)/db"
+echo "THIRDPARTY := \$(TOPDIR)/thirdparty"
+echo "EXTRA_LIBS := $EXTRA_LIBS"
+echo "FFMPEG_EXTRA_CFG := $FFMPEG_EXTRA_CFG"
+echo "export OBJDIR BINDIR CINELERRA GUICAST LIBZMPEG3"
+echo "export MPEG2ENC MPLEXLO PLUGIN_DIR PLUGINS TDB"
+echo "export THIRDPARTY EXTRA_LIBS FFMPEG_EXTRA_CFG"
+echo ""
+echo "WANT_X264_HIDEPTH := $WANT_X264_HIDEPTH"
+echo "WANT_X265_HIDEPTH := $WANT_X265_HIDEPTH"
+echo "export WANT_X264_HIDEPTH WANT_X265_HIDEPTH"
+echo ""
+
+for flg in $CFLAGS; do echo "CFLAGS += $flg"; done
+echo ""
+for flg in $CXXFLAGS; do echo "CXXFLAGS += $flg"; done
+echo ""
+echo "export CFLAGS CXXFLAGS"
+
+if test  $WANT_X264_HIDEPTH = "yes" ; then
+  echo "x264.cfg_params:= --enable-static --bit-depth=10"
+fi
+if test  $WANT_X265_HIDEPTH = "yes" ; then
+  echo "x265.cfg_params:= -DENABLE_SHARED=no -DHIGH_BIT_DEPTH:BOOL=ON"
+fi
+
+for pkg in $STATIC_PKGS; do echo "static_pkgs += $pkg"; done
+echo ""
+for pkg in $STATIC_BLDS; do
+  echo "static_blds += $pkg"
+  ver_pkg=ver_$pkg
+  echo "$ver_pkg := \$(THIRDPARTY)/${!ver_pkg}"
+  inc_pkg=inc_$pkg
+  echo "$inc_pkg := \\"
+  for inc in ${!inc_pkg}; do
+    echo "  -I\$($ver_pkg)/$inc \\"
+  done
+  echo ""
+  echo "static_incs += \$(inc_$pkg)"
+  lib_pkg=lib_$pkg
+  echo "$lib_pkg := \\"
+  for lib in ${!lib_pkg}; do
+    echo "  \$($ver_pkg)/$lib \\"
+  done
+  echo ""
+  echo "static_libs += \$($lib_pkg)"
+  echo ""
+done
+echo ""
+
+for lib in $SHARED_LIBS; do echo "shared_libs += $lib"; done
+echo ""
+for lib in $SYSTEM_LIBS; do echo "system_libs += $lib"; done
+echo "export static_pkgs static_blds shared_libs system_libs"
+echo ""
+
+echo "thirdparty_libraries := \$(static_libs) \$(shared_libs)"
+echo "libraries += -Wl,--start-group"
+echo "libraries += \$(thirdparty_libraries)"
+echo "libraries += \$(system_libs)"
+echo "libraries += \$(EXTRA_LIBS)"
+echo "libraries += -Wl,--end-group"
+# -Wl,--start-group ... -Wl,--end-group does not work on ubuntu
+echo "libraries += \$(thirdparty_libraries)"
+echo "libraries += \$(system_libs)"
+echo "libraries += \$(EXTRA_LIBS)"
+echo "export thirdparty_libraries libraries"
+echo ""

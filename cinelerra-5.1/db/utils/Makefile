@@ -1,9 +1,8 @@
-
-OBJDIR := $(shell uname -m)
-
-TOPDIR=../..
+TOPDIR ?= $(CURDIR)/../..
+export TOPDIR
 include $(TOPDIR)/global_config
-include $(THIRDPARTY)/config.mak
+
+$(shell mkdir -p $(OBJDIR))
 
 CXXFLAGS:=-ggdb -I.. -Wall $(CFLAGS)
 LDLIBS:=../$(OBJDIR)/db.a
@@ -45,12 +44,13 @@ dbtv:	dbtv.C
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) dbtv.C $(LDLIBS) -lX11 -o $@
 
 XTV_MEDIA_OBJS := $(TOPDIR)/cinelerra/$(OBJDIR)/mediadb.o $(TOPDIR)/cinelerra/$(OBJDIR)/filexml.o
+
 XTV_LIBS := $(TOPDIR)/libzmpeg3/$(OBJDIR)/libzmpeg3.a
 XTV_LIBS += $(TOPDIR)/db/$(OBJDIR)/db.a
-XTV_LIBS += -Wl,--start-group $(thirdparty_libraries) -Wl,--end-group 
-XTV_LIBS += -lX11 -lXext -lasound -lm $(EXTRA_LIBS)
+XTV_LIBS += $(libraries)
+
 XTV_INCLUDES := -I$(TOPDIR) -I$(TOPDIR)/guicast
-XTV_INCLUDES += $(static_includes)
+XTV_INCLUDES += $(static_incs)
 
 xtv:	xtv.C $(XTV_MEDIA_OBJS)
 	@echo c++ -pthread $(CXXFLAGS) xtv.C $(XTV_MEDIA_OBJS) -o xtv

@@ -1,17 +1,20 @@
-include ../global_config
-include $(THIRDPARTY)/config.mak
+TOPDIR ?= $(CURDIR)/..
+export TOPDIR
+include $(TOPDIR)/global_config
 
+$(shell mkdir -p $(OBJDIR))
 OBJS = $(OBJDIR)/mplex.o
 CC = gcc
-CFLAGS += -I../libzmpeg3
-CFLAGS += $(static_includes)
-LIBS += ../libzmpeg3/$(OBJDIR)/libzmpeg3.a
-LIBS += -Wl,--start-group $(thirdparty_libraries) -Wl,--end-group 
-LIBS += -lpthread -lasound -lm -lX11 $(EXTRA_LIBS)
+
+CFLAGS += -I$(LIBZMPEG3)
+CFLAGS += $(static_incs)
+
+LIBS := $(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a
+LIBS += $(libraries)
 
 OUTPUT := $(OBJDIR)/mplexlo
 
-$(OUTPUT): $(OBJS)
+$(OUTPUT) all: $(OBJS)
 	@echo $(CXX) -o $(OUTPUT) $(OBJS)
 	@$(CXX) -o $(OUTPUT) $(OBJS) $(LIBS)
 
@@ -19,13 +22,9 @@ $(OBJS):
 	$(CXX) -c $(CFLAGS) $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
 clean:
-	find \( -name core \
-		-o -name '*.o' \
-		-o -name '*.a' \
-		-o -name '*.so' \) -exec rm -f {} \;
 	rm -rf $(OBJDIR)
 
 install:
-	cp $(OUTPUT) /usr/bin
+	cp $(OUTPUT) $(BINDIR)/.
 
 $(OBJDIR)/mplex.o: mplex.c

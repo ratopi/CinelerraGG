@@ -1,8 +1,9 @@
-include ../global_config
-include $(THIRDPARTY)/config.mak
+TOPDIR ?= $(CURDIR)/..
+export TOPDIR
+include $(TOPDIR)/global_config
 
 CC = gcc
-CFLAGS += -I../libzmpeg3
+CFLAGS += -I$(TOPDIR)/libzmpeg3
 
 ifeq ($(OBJDIR), i686)
 CFLAGS += -DX86_CPU
@@ -51,27 +52,14 @@ OBJ = \
 	$(OBJDIR)/stats.o \
 	$(OBJDIR)/writepic.o
 
-LIBS = \
-	../libzmpeg3/$(OBJDIR)/libzmpeg3.a \
-	$(thirdparty_libraries) $(static_libraries) \
-	-lasound \
-	-lpthread \
-	-lpng \
-	-ljpeg \
-	-lX11 \
-	-lz \
-	-llzma \
-	-lbz2 \
-	-lm \
-	-ldl \
-
-LIBS += -Wl,--start-group $(thirdparty_libraries) -Wl,--end-group 
-LIBS += $(EXTRA_LIBS)
+LIBS := $(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a
+LIBS += $(libraries)
 
 HVEG2LIB = $(OBJDIR)/hveg2enc.a
 HVEG2ENC = $(OBJDIR)/hveg2enc
 HVEG2ENC_G = $(OBJDIR)/hveg2enc_g
 
+$(shell mkdir -p $(OBJDIR))
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo $(HVEG2LIB)  $(OBJ) $(NASMOBJ) $(ASMOBJ) > $(OBJDIR)/objs)
 
@@ -91,7 +79,7 @@ clean:
 	rm -rf $(OBJDIR)
 
 install:	$(OUTPUT)
-	cp -a $(HVEG2LIB) ../bin/.
+	cp -a $(HVEG2ENC) $(BINDIR)/.
 
 $(HVEG2LIB): $(OBJ) $(NASMOBJ) $(ASMOBJ)
 	ar rcs `cat $(OBJDIR)/objs`

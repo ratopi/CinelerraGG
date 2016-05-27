@@ -1,4 +1,4 @@
-include ../../global_config
+include ../../plugin_defs
 
 OBJS = $(OBJDIR)/sharpen.o  \
 	$(OBJDIR)/sharpenwindow.o

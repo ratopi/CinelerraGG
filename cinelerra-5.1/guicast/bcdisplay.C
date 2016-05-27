@@ -27,6 +27,7 @@
 #include "bcwindowbase.h"
 #include "bcwindowevents.h"
 #include "condition.h"
+#include "language.h"
 #include "mutex.h"
 
 #include <pthread.h>

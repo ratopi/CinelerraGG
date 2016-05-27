@@ -1,4 +1,4 @@
-include ../../global_config
+include ../../plugin_defs
 
 OPENCV_DIR := $(shell cd ../../thirdparty/OpenCV*; pwd)
 

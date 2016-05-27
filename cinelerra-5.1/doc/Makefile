@@ -1,4 +1,8 @@
-TARGET_DIR := ../bin/doc
+TOPDIR ?= $(CURDIR)/..
+export TOPDIR
+include $(TOPDIR)/global_config
+
+TARGET_DIR := $(BINDIR)/doc
 
 IMAGES = \
 	arrow.png \
@@ -13,9 +17,9 @@ IMAGES = \
 	ibeam.png \
 	left_justify.png \
 	loadmode_cat.png \
-	loadmode_new.png \
 	loadmode_nested.png \
 	loadmode_newcat.png \
+	loadmode_new.png \
 	loadmode_newtracks.png \
 	loadmode_none.png \
 	loadmode_paste.png \
@@ -24,35 +28,35 @@ IMAGES = \
 	mask.png \
 	mutepatch_up.png \
 	paste.png \
+	picon.png \
 	projector.png \
 	protect.png \
-	record.png \
 	recordpatch.png \
+	record.png \
 	rewind.png \
-	singleframe.png \
 	show_meters.png \
+	singleframe.png \
 	titlesafe.png \
 	toolwindow.png \
 	top_justify.png \
 	wrench.png \
-	magnify.png
+
+OUTPUT := cinelerra.html
+
+all: $(OUTPUT)
 
 $(OUTPUT):
-	cinelerra.html
-
-all:
-	for i in $(IMAGES) ; \
-		do if ! test -e $$i ; \
-			then cp -a ../plugins/theme_suv/data/$$i . ; \
-		fi ; \
-	done
+	tar -C ../plugins/theme_suv/data/ -cf - $(IMAGES) | tar -xkf -
 	makeinfo --html --no-split cinelerra.texi
 #	makeinfo --html cinelerra.texi
 
 install:
 	mkdir -p $(TARGET_DIR)
-	cp $(IMAGES) $(TARGET_DIR)
-	cp cinelerra.html $(TARGET_DIR)
+	cp -a *.png $(TARGET_DIR)/.
+	cp -a cinelerra.html $(TARGET_DIR)/.
+	cp -a manual.pdf $(TARGET_DIR)/.
+	cp -a Features5.pdf $(TARGET_DIR)/.
 
 clean:
 	rm -f $(IMAGES) $(OUTPUT)
+

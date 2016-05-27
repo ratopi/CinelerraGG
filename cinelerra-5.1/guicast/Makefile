@@ -1,10 +1,6 @@
-include ../global_config
-
-# must only define here so applications using libpng don't see any of the XFT
-# includes at all.  They use a conflicting setjmp.
-ifeq ($(HAVE_XFT), y)
-CFLAGS += -DHAVE_XFT
-endif
+TOPDIR ?= $(CURDIR)/..
+export TOPDIR
+include $(TOPDIR)/global_config
 
 ifeq ($(OBJDIR), i686)
 BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B i386 -I binary -O elf32-i386\""
@@ -13,7 +9,6 @@ endif
 ifeq ($(OBJDIR), x86_64)
 BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B i386 -I binary -O elf64-x86-64\""
 endif
-
 
 $(shell mkdir -p $(OBJDIR) )
 
@@ -87,27 +82,9 @@ OBJS = \
 
 OUTPUT = $(OBJDIR)/libguicast.a
 
-TESTLIBS := \
-		$(OUTPUT) \
-		../quicktime/$(OBJDIR)/libquicktime.a \
-		$(LDFLAGS) \
-		$(GLLIBS) \
-		-lX11 \
-		-lXext \
-		-lXv \
-		-lpthread \
-		-lm \
-		-lpng
-
-ifeq ($(HAVE_XFT), y)
-TESTLIBS += -lXft
-endif	
-
-ifeq ($(HAVE_GL), y)
-TESTLIBS += -lGL -lGLU
-endif
-
 UTILS = $(OBJDIR)/bootstrap $(OBJDIR)/pngtoh $(OBJDIR)/pngtoraw
+
+CFLAGS += -I/usr/include/freetype2
 
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo $(OBJS) > $(OBJDIR)/objs)
@@ -132,36 +109,11 @@ $(OBJDIR)/pngtoh: pngtoh.c
 $(OBJDIR)/pngtoraw: pngtoraw.c
 	gcc -O2 pngtoraw.c -o $(OBJDIR)/pngtoraw -lpng -lz
 
-replace:  replace.o $(OUTPUT)
-	$(CC) -o replace replace.o $(OUTPUT) \
-	../quicktime/i686/libquicktime.a \
-	$(LDFLAGS) $(XLIBS) -lpng
-
-#	$(XXF86VM) \
-
-
-
-test:	$(OBJDIR)/test.o $(STATICOUTPUT)
-	$(CC) -o $(OBJDIR)/test \
-		$(OBJDIR)/test.o \
-		$(TESTLIBS)
-
-test2:	$(OBJDIR)/test2.o $(STATICOUTPUT)
-	$(CC) -o $(OBJDIR)/test2 \
-		$(OBJDIR)/test2.o \
-		$(TESTLIBS)
-
-test3:	$(OBJDIR)/test3.o $(STATICOUTPUT)
-	$(CC) -o $(OBJDIR)/test3 \
-		$(OBJDIR)/test3.o \
-		$(TESTLIBS)
-
 clean:
 	rm -rf $(OBJDIR)
 	rm -f bcxfer.C
-	find \( -name core \
-		-o -name '*.o' -o -name '*.a' \
-		-o -name '*.so' \) -exec rm -f {} \;
+
+install:
 
 $(LIBOBJS) $(OBJS) $(CUTOBJ):
 
@@ -170,7 +122,6 @@ $(OBJDIR)/%.o:          %.C
 
 $(OBJDIR)/bootstrap: bootstrap.c
 $(OBJDIR)/pngtoh: pngtoh.c
-$(OBJDIR)/bccmodel_default.o:	      bccmodel_default.C  bccmodel_permutation.h
 
 val-%:
 	@echo $($(subst val-,,$@))

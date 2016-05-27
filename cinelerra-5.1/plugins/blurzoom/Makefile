@@ -1,6 +1,4 @@
-CFLAGS += -g
-
-include ../../global_config
+include ../../plugin_defs
 
 OBJS = $(OBJDIR)/blurzoom.o  \
 	$(OBJDIR)/blurzoomwindow.o

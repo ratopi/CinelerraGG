@@ -1,4 +1,6 @@
-include $(TOPDIR)/plugin_defs
+TOPDIR ?= $(CURDIR)/..
+export TOPDIR
+include $(TOPDIR)/global_config
 
 CFLAGS += -I../ -I$(TOPDIR)/cinelerra \
 	-I$(TOPDIR)/guicast \
@@ -6,9 +8,10 @@ CFLAGS += -I../ -I$(TOPDIR)/cinelerra \
 	-I../colors \
 	-fPIC \
 
-include $(TOPDIR)/thirdparty/config.mak
-CFLAGS += $(static_includes)
-LFLAGS += $(static_libraries)
+CFLAGS += $(static_incs)
+LFLAGS += $(static_libs)
+LDLINKER ?= g++ -shared
+$(shell mkdir -p $(OBJDIR))
 
 OUTPUT_DIR = $(PLUGIN_DIR)/$($(PLUGIN))
 PLUGIN_PNGS = $(wildcard $(foreach t,$(themes),$(t).png)) picon.png

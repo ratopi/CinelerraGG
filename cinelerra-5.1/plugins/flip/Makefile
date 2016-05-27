@@ -1,8 +1,4 @@
-#########################################################
-#                         LEVEL
-#########################################################
-
-include ../../global_config
+include ../../plugin_defs
 
 OBJS = $(OBJDIR)/flip.o \
 	$(OBJDIR)/flipwindow.o

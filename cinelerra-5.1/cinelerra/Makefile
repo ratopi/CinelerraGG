@@ -1,5 +1,6 @@
-include ../global_config
-include $(THIRDPARTY)/config.mak
+TOPDIR ?= $(CURDIR)/..
+export TOPDIR
+include $(TOPDIR)/global_config
 
 OBJS = \
 	$(OBJDIR)/aattachmentpoint.o \
@@ -332,37 +333,22 @@ OBJS = \
 #	$(OBJDIR)/renderfarmfsclient.o \
 #	$(OBJDIR)/renderfarmfsserver.o \
 
+GCC ?= gcc
 DCRAW := $(OBJDIR)/dcraw.o
 THEME_DATA := $(OBJDIR)/theme_data.o
 
 OUTPUT_G = $(OBJDIR)/cinelerra.debuginfo
-OUTPUT = ../bin/cinelerra
+OUTPUT = $(BINDIR)/cinelerra
 
 LIBRARIES := \
-	../guicast/$(OBJDIR)/libguicast.a \
-	../libzmpeg3/$(OBJDIR)/libzmpeg3.a \
-	../mpeg2enc/$(OBJDIR)/hveg2enc.a \
-	../db/$(OBJDIR)/db.a \
+	$(GUICAST)/$(OBJDIR)/libguicast.a \
+	$(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a \
+	$(MPEG2ENC)/$(OBJDIR)/hveg2enc.a \
+	$(TDB)/$(OBJDIR)/db.a \
 	$(THEME_DATA) \
 
-LIBS = $(LIBRARIES)
-LIBS += $(thirdparty_libraries) $(static_libraries)
-LIBS += \
-	-lX11 \
-	-lXext \
-	-lXinerama \
-	-lXv \
-	-lpthread \
-	-lm \
-	-lpng \
-	-lz \
-	-lbz2 \
-	-llzma \
-	-lfontconfig \
-	-lfreetype \
-
-LIBS += -Wl,--start-group $(thirdparty_libraries) -Wl,--end-group 
-LIBS += $(EXTRA_LIBS)
+LIBS := $(LIBRARIES)
+LIBS += $(libraries)
 
 CUTADS = $(OBJDIR)/cutads
 CUTOBJ = $(OBJDIR)/cutads.o
@@ -370,42 +356,23 @@ CUTOBJS = $(CUTOBJ) \
 	$(OBJDIR)/mediadb.o \
 	$(OBJDIR)/filexml.o
 CUTLIBS = \
-	../libzmpeg3/$(OBJDIR)/libzmpeg3.a -lX11 \
-	../db/$(OBJDIR)/db.a
+	$(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a -lX11 \
+	$(TDB)/$(OBJDIR)/db.a
 
 BDWRITE = $(OBJDIR)/bdwrite
 BDWOBJS = $(OBJDIR)/bdwrite.o
 
-ifeq ($(HAVE_GL), y)
-LIBS += -lGL -lGLU
-endif
-
-ifeq ($(HAVE_ALSA), y)
-CFLAGS += -DHAVE_ALSA
-LIBS += -lasound
-endif
-
-ifeq ($(HAVE_XFT), y)
-LIBS += -lXft
-endif
-
-
 CFLAGS += \
-	-I../guicast \
-	-I../libzmpeg3 \
-	$(static_includes) \
-
-ifeq ($(call lib_typ,$(ilmbase)),shared)
-CFLAGS += \
-	-I/usr/include/OpenEXR
-endif
+	-I$(GUICAST) \
+	-I$(LIBZMPEG3) \
+	$(static_incs) \
 
 # Speed up linking with this linking sequence
 ifeq ($(OBJDIR), alpha)
 
 LDFLAGS1 = \
 	--demangle=compaq -export-dynamic -L./ \
-	-L../guicast -L/usr/X11R6/lib \
+	-L$(GUICAST) -L/usr/X11R6/lib \
 	-L`expr /usr/lib/compaq/cxx-*/alpha-linux/`lib -L/usr/local/lib \
 	-L`expr /usr/lib/gcc-lib/alpha-redhat-linux/*` \
 	-rpath `expr /usr/lib/compaq/cxx-*/alpha-linux/`bin/ -m elf64alpha \
@@ -434,6 +401,7 @@ endif
 FFMPEG_CFLAGS := \
 	-include /usr/include/time.h \
 
+$(shell mkdir -p $(OBJDIR))
 $(shell echo $(CFLAGS) -c > $(OBJDIR)/c_flags)
 $(shell echo $(CFLAGS) -c $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_cflags)
 $(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(AVIOBJS) \
@@ -459,9 +427,10 @@ $(BDWRITE):	$(BDWOBJS) $(LIBRARIES)
 
 clean:
 	rm -rf $(OBJDIR)
-	find \( -name core \
-		-o -name '*.o' -o -name '*.a' \
-		-o -name '*.so' \) -exec rm -f {} \; -prune
+
+install:
+	cp -a $(OBJDIR)/cutads $(BINDIR)/.
+	cp -a $(OBJDIR)/bdwrite $(BINDIR)/.
 
 tags:
 	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins
@@ -478,7 +447,7 @@ $(DCRAW): dcraw.c
 
 $(THEME_DATA):
 	cd $(OBJDIR) && \
-	../../guicast/$(OBJDIR)/bootstrap theme_data.o ../data/mode_*.png
+	$(GUICAST)/$(OBJDIR)/bootstrap theme_data.o $(CINELERRA)/data/mode_*.png
 
 val-%:
 	@echo $($(subst val-,,$@))

@@ -1,3 +1,6 @@
+TOPDIR ?= ../..
+export TOPDIR
+include $(TOPDIR)/global_config
 
 plugin_dirs := themes
 themes := theme_bright theme_suv theme_blond theme_blue theme_blue_dot \

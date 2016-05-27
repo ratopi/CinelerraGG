@@ -14,7 +14,7 @@ fi
 
 cd "$path/$dir/$bld"
 rm -rf "$proj"
-git clone "git://git.cinelerra-cv.org/goodguy/cinelerra.git" "$proj"
+git clone --depth 1 "git://git.cinelerra-cv.org/goodguy/cinelerra.git" "$proj"
 #rsh host tar -C /mnt0 -cf - cinelerra5 | tar -xf -
 if [ $? -ne 0 ]; then
   echo "git clone $proj failed"
@@ -22,21 +22,10 @@ if [ $? -ne 0 ]; then
 fi
 
 cd "$proj/$base"
-#case "$dir" in
-#  "ubuntu" | "mint" | "ub14" | "ub15")
-#     echo "CFLAGS += -DPNG_SKIP_SETJMP_CHECK=1" >> global_config ;;
-#  "centos")
-#     echo "CFLAGS += -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS" >> global_config
-##     echo "EXTRA_LIBS += -lnuma" >> global_config ;;
-#  "suse" | "leap")
-#     echo "EXTRA_LIBS += -lnuma" >> global_config ;;
-#  "fedora")
-#     echo "EXTRA_LIBS += -lnuma" >> global_config ;;
-#esac
 
-./configure shared >& log
-make >> log 2>&1 $@
-make install >> log 2>&1
+./autogen.sh
+./configure --enable-static=no
+make all install >& log
 
 echo "finished: scanning log for ***"
 grep -ai "\*\*\*.*error" log

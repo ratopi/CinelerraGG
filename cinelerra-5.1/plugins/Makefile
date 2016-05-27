@@ -1,6 +1,7 @@
-include ../global_config
+TOPDIR ?= $(CURDIR)/..
+include $(TOPDIR)/global_config
 
-ifeq ($(HAVE_DVB), y)
+ifeq ($(HAVE_DVB), yes)
 LIVEDVB = liveaudio livevideo
 endif
 
@@ -164,7 +165,7 @@ $(DIRS):
 
 clean:
 	rm -rf $(foreach d,$(DIRS),$(d)/$(OBJDIR))
-	rm -rf $(PLUGIN_DIR)
+	rm -rf $(PLUGIN_DIR) $(LADSPA)
 
 install:
 

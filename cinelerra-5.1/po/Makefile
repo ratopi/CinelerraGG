@@ -1,52 +1,20 @@
+TOPDIR ?= $(CURDIR)/..
+include $(TOPDIR)/global_config
 
-
-OBJS := \
-	de.mo \
-	es.mo \
-	eu.mo \
-	fr.mo \
-	it.mo \
-	nb.mo \
-	pt.mo \
-	sl.mo \
-	hi.mo \
-	ko.mo \
-	vi.mo \
-	zh.mo \
-	el.mo \
-	ja.mo \
-	uk.mo \
-	ru.mo \
+OBJS := $(foreach i,de es eu fr it nb pt sl hi ko vi zh el ja uk ru, $(i).mo)
+MOBJS := $(foreach i,$(OBJS),$(BINDIR)/locale/$(basename $(i))/LC_MESSAGES/cinelerra.mo)
 
 all: $(OBJS)
 
-
-install:
-	@for i in $(OBJS) ; \
-	do \
-		BASENAME=`echo $$i | sed 's/\.mo//'` ; \
-		DST=cinelerra.mo ; \
-		DIR=../bin/locale/$$BASENAME/LC_MESSAGES ; \
-		echo mkdir -p $$DIR ; \
-		mkdir -p $$DIR ; \
-		echo cp $$i $$DIR/$$DST ; \
-		cp $$i $$DIR/$$DST ; \
-	done
+install: $(MOBJS)
 
 clean:
-	rm -f *.mo
+	rm -f $(OBJS)
 
-$(OBJS):
-	msgfmt -c -o $@ $(subst .mo,.po,$@)
+%.mo: %.po
+	msgfmt -c -o $@ $*.po
 
-
-de.mo:	     de.po
-es.mo:	     es.po
-eu.mo:	     eu.po
-fr.mo:	     fr.po
-it.mo:	     it.po
-nb.mo:	     nb.po
-pt_BR.mo:    pt_BR.po
-sl.mo:	     sl.po
-
+$(BINDIR)/locale/%/LC_MESSAGES/cinelerra.mo: %.mo
+	mkdir -p $(dir $@)
+	cp $*.mo $@
 

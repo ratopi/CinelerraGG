@@ -113,8 +113,9 @@ BC_WindowBase::~BC_WindowBase()
 // stop event input
 		XSelectInput(top_level->display, this->win, 0);
 		motion_events = resize_events = translation_events = 0;
+#ifndef SINGLE_THREAD
 		top_level->dequeue_events(win);
-
+#endif
 		if(top_level->active_menubar == this) top_level->active_menubar = 0;
 		if(top_level->active_popup_menu == this) top_level->active_popup_menu = 0;
 		if(top_level->active_subwindow == this) top_level->active_subwindow = 0;
@@ -1950,6 +1951,7 @@ int BC_WindowBase::recieve_custom_xatoms(xatom_event *event)
 
 int BC_WindowBase::send_custom_xatom(xatom_event *event)
 {
+#ifndef SINGLE_THREAD
 	XEvent *myevent = new_xevent();
 	XClientMessageEvent *ptr = (XClientMessageEvent*)myevent;
 	ptr->type = ClientMessage;
@@ -1962,6 +1964,7 @@ int BC_WindowBase::send_custom_xatom(xatom_event *event)
 	ptr->data.l[4] = event->data.l[4];
 
 	put_event(myevent);
+#endif
 	return 0;
 }
 
@@ -3325,8 +3328,8 @@ void BC_WindowBase::set_done(int return_value)
 // it is deleted.
 // Deletion of event_thread is done at the end of BC_WindowBase::run_window() - by calling the destructor
 		put_event(event);
-	}
 #endif
+	}
 }
 
 void BC_WindowBase::close(int return_value)

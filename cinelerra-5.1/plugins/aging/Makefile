@@ -1,5 +1,4 @@
-
-include ../../global_config
+include ../../plugin_defs
 
 OBJS = $(OBJDIR)/aging.o  \
 	$(OBJDIR)/agingwindow.o \

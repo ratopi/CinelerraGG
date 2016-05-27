@@ -1,28 +1,8 @@
+TOPDIR ?= $(CURDIR)/..
+export TOPDIR
+include $(TOPDIR)/global_config
 
-ifeq ($(origin CFLAGS), environment)
-HAVE_CFLAGS := y
-else
-HAVE_CFLAGS := n
-endif
-
-OBJDIR := $(shell uname -m)
-$(shell mkdir -p $(OBJDIR) )
-
-ifneq ($(HAVE_CFLAGS), y)
-  #CFLAGS := -O2 -fno-omit-frame-pointer
-  CFLAGS := -fno-omit-frame-pointer
-endif
-
-ifeq ($(OBJDIR), i686)
-  CFLAGS += -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE
-endif
-
-ifeq ($(OBJDIR), x86_64)
-  CFLAGS += -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE
-endif
-
-CXXFLAGS := -pthread -Wall -ggdb -I.. $(CFLAGS)
-LDFLAGS := -pthread
+$(shell mkdir -p $(OBJDIR))
 LIBS := $(OBJDIR)/db.a ../libzmpeg3/$(OBJDIR)/libzmpeg3.a -lasound -lm -lX11
 OUTPUT := $(OBJDIR)/db.a s.C
 
@@ -44,6 +24,8 @@ clean:
 	make -C utils clean
 	rm -rf a.out s.C tags $(OBJDIR)
 
+.PHONY:	install
+install:
 
 OBJECTS := \
 	$(OBJDIR)/tdb.o \

@@ -1,4 +1,4 @@
-include ../../global_config
+include ../../plugin_defs
 
 PLUGIN = theme_suv
 OBJS = $(OBJDIR)/suv.o

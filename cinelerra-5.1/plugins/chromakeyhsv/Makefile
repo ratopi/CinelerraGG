@@ -1,4 +1,4 @@
-include ../../global_config
+include ../../plugin_defs
 
 PLUGIN = chromakeyhsv
 SHADER := $(OBJDIR)/chromakey_sl.o
