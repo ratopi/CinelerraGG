@@ -178,16 +178,17 @@ public:
 		int *result /* = 0 */,
 		int master_column);
 
-
-	int focus_out_event();
+	virtual int focus_out_event();
+	virtual int keypress_event();
 	virtual int button_press_event();
-	int button_release_event();
-	int cursor_enter_event();
-	int cursor_leave_event();
-	int cursor_motion_event();
+	virtual int button_release_event();
+	virtual int cursor_enter_event();
+	virtual int cursor_leave_event();
+	virtual int cursor_motion_event();
 	virtual int drag_start_event();
 	virtual int drag_motion_event();
 	virtual int drag_stop_event();
+
 	int deactivate();
 // After popping up a menu call this to interrupt the selection process
 	void deactivate_selection();
@@ -196,7 +197,6 @@ public:
 // textbox
 	int activate(int take_focus = 1);
 
-	virtual int keypress_event();
 	int translation_event();
 	int repeat_event(int64_t duration);
 	BC_DragWindow* get_drag_popup();

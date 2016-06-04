@@ -702,7 +702,8 @@ int Preferences::get_asset_file_path(Asset *asset, char *path)
 {
 	strcpy(path, asset->path);
 	int result = !access(path, R_OK) ? 0 : -1;
-	if( !result && asset->format == FILE_MPEG ) {
+	if( !result && ( asset->format == FILE_MPEG ||
+		asset->format == FILE_VMPEG || asset->format == FILE_AMPEG ) ) {
 		char source_filename[BCTEXTLEN], index_filename[BCTEXTLEN];
 		IndexFile::get_index_filename(source_filename,
 			index_directory, index_filename, asset->path, ".toc");

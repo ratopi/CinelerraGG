@@ -76,7 +76,7 @@ VIconThread(BC_WindowBase *wdw, int vw, int vh)
 	timer = new Timer();
 	this->refresh_rate = VICON_RATE;
 	done = 0;
-	interrupted = 1;
+	interrupted = -1;
 }
 
 VIconThread::
@@ -100,8 +100,9 @@ start_drawing()
 	wdw->lock_window("VIconThread::start_drawing");
 	if( view_win )
 		wdw->set_active_subwindow(view_win);
-        if( interrupted )
+        if( interrupted < 0 )
 		draw_lock->unlock();
+	interrupted = 0;
 	wdw->unlock_window();
 }
 
@@ -110,7 +111,8 @@ stop_drawing()
 {
 	wdw->lock_window("VIconThread::stop_drawing");
 	set_view_popup(0);
-	interrupted = 1;
+	if( !interrupted )
+		interrupted = 1;
 	wdw->unlock_window();
 }
 
@@ -260,9 +262,8 @@ run()
 {
 	while(!done) {
 		draw_lock->lock("VIconThread::run 0");
-		if( done ) break;;
+		if( done ) break;
 		wdw->lock_window("BC_WindowBase::run 1");
-		interrupted = 0;
 		drawing_started();
 		reset_images();
 		int64_t seq_no = 0, now = 0;

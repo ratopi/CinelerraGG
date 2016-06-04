@@ -492,6 +492,7 @@ int FileMPEG::open_file(int rd, int wr)
 			{
 				const char *exec_path = File::get_cinlib_path();
 				sprintf(mjpeg_command, "%s/%s", exec_path, HVPEG_EXE);
+				append_vcommand_line(mjpeg_command);
 
 				if(asset->aspect_ratio > 0)
 				{
@@ -515,7 +516,7 @@ int FileMPEG::open_file(int rd, int wr)
 				append_vcommand_line(asset->vmpeg_cmodel == BC_YUV422P ? "-422" : "");
 				if(asset->vmpeg_fix_bitrate)
 				{
-					append_vcommand_line("--cbr -b");
+					append_vcommand_line("-b");
 					append_vcommand_line(bitrate_string);
 				}
 				else

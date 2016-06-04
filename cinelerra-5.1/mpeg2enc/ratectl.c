@@ -253,9 +253,9 @@ static double calc_actj(pict_data_s *picture)
 			 */
 
 
-			for( l = 0; l < 6; ++l )
-				actsum += 
-					(*pquant_weight_coeff_sum)
+			if( cur_picture.mbinfo[k].dctblocks )
+				for( l = 0; l < 6; ++l )
+					actsum += (*pquant_weight_coeff_sum)
 					    ( cur_picture.mbinfo[k].dctblocks[l], i_q_mat ) ;
 			actj = (double)actsum / (double)COEFFSUM_SCALE;
 			if( actj < 12.0 )

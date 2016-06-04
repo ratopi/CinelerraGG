@@ -2880,7 +2880,6 @@ void MWindow::save_backup()
 		File::get_config_path(), BACKUP_FILE);
 	edl->save_xml(&file, backup_path, 0, 0);
 	file.terminate_string();
-	char path[BCTEXTLEN];
 	FileSystem fs;
 	fs.complete_path(backup_path);
 

@@ -840,7 +840,6 @@ void AWindowRemovePlugin::handle_close_event(int result)
 		strcpy(plugin_path, plugin->path);
 		MWindow *mwindow = awindow->mwindow;
 		mwindow->plugindb->remove(plugin);
-		delete plugin;  plugin = 0;
 		remove(plugin_path);
 		char index_path[BCTEXTLEN];
         	sprintf(index_path, "%s/%s", mwindow->preferences->plugin_dir, PLUGIN_FILE);
@@ -850,6 +849,7 @@ void AWindowRemovePlugin::handle_close_event(int result)
 			remove(png_path);
 		if( plugin->get_theme_png_path(png_path, "picon") )
 			remove(png_path);
+		delete plugin;  plugin = 0;
 		awindow->gui->async_update_assets();
 	}
 }
@@ -1843,17 +1843,16 @@ int AWindowAssets::column_resize_event()
 	return 1;
 }
 
-int AWindowAssets::cursor_enter_event()
+int AWindowAssets::focus_in_event()
 {
-	int ret = BC_ListBox::cursor_enter_event();
 	gui->start_vicon_drawing();
-	return ret;
+	return 0;
 }
 
-int AWindowAssets::cursor_leave_event()
+int AWindowAssets::focus_out_event()
 {
 	gui->stop_vicon_drawing();
-	return BC_ListBox::cursor_leave_event();
+	return BC_ListBox::focus_out_event();
 }
 
 
