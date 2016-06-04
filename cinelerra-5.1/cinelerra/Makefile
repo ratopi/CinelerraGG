@@ -337,8 +337,8 @@ GCC ?= gcc
 DCRAW := $(OBJDIR)/dcraw.o
 THEME_DATA := $(OBJDIR)/theme_data.o
 
-OUTPUT_G = $(OBJDIR)/cinelerra.debuginfo
-OUTPUT = $(BINDIR)/cinelerra
+OUTPUT = $(BINDIR)/$(WANT_CIN)
+OUTPUT_G = $(OBJDIR)/$(WANT_CIN).debuginfo
 
 LIBRARIES := \
 	$(GUICAST)/$(OBJDIR)/libguicast.a \
@@ -397,33 +397,32 @@ LINKER = g++ -o $(OUTPUT)
 
 endif
 
-
-FFMPEG_CFLAGS := \
-	-include /usr/include/time.h \
-
 $(shell mkdir -p $(OBJDIR))
-$(shell echo $(CFLAGS) -c > $(OBJDIR)/c_flags)
-$(shell echo $(CFLAGS) -c $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_cflags)
-$(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(AVIOBJS) \
- $(FFMPEG_OBJS) $(LIBS) $(LDFLAGS2) > $(OBJDIR)/objs)
+$(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
+$(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(LIBS) $(LDFLAGS2) > $(OBJDIR)/objs)
 
 all:	$(OUTPUT) $(CUTADS) $(BDWRITE)
 
 # Static linking is not possible because the plugins depend on symbols
 # in the main executable.
 # Also VFS only overrides the C library when dynamic linking is used.
-$(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FFMPEG_OBJS) $(FILEFLAC) $(LIBRARIES)
+$(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(LIBRARIES)
 	$(LINKER) `cat $(OBJDIR)/objs`
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT) $(OUTPUT_G))
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
+	ln -f -s $(OUTPUT) ci
 
 $(CUTADS):	$(CUTOBJS) $(CUTLIBS)
 	@echo g++ -o $@ $(CUTOBJS)
 	@g++ $(CFLAGS) -pthread -o $@ $(CUTOBJS) $(CUTLIBS) $(LIBS)
+	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(CUTADS) $(CUTADS).debuginfo)
+	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(CUTADS))
 
 $(BDWRITE):	$(BDWOBJS) $(LIBRARIES)
 	@echo g++ -o $@ $(BDWOBJS)
 	@g++ $(CFLAGS) -pthread -o $@ $(BDWOBJS) $(LIBS)
+	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(BDWRITE) $(BDWRITE).debuginfo)
+	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(BDWRITE))
 
 clean:
 	rm -rf $(OBJDIR)
@@ -443,7 +442,7 @@ $(OBJDIR)/sha1.o:	sha1.C sha1.h
 	$(CXX) `cat $(OBJDIR)/c_flags` -O3 -c $< -o $@
 
 $(DCRAW): dcraw.c
-	$(GCC) `cat $(OBJDIR)/c_flags` dcraw.c -o $*.o
+	$(GCC) `cat $(OBJDIR)/c_flags` dcraw.c -c -o $*.o
 
 $(THEME_DATA):
 	cd $(OBJDIR) && \

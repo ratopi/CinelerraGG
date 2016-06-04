@@ -26,6 +26,7 @@
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "file.h"
 #include "filesystem.h"
 #include "language.h"
 #include "localsession.h"
@@ -808,7 +809,7 @@ int PluginClient::get_project_smp()
 
 const char* PluginClient::get_defaultdir()
 {
-	return BCASTDIR;
+	return File::get_plugin_path();
 }
 
 

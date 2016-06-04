@@ -10,12 +10,14 @@
 #   make val-<var>
 #
 # to add a new library:
-#   vi configure
-#     add inc_<name> <inc_paths>
-#     add add_library name <lib_paths>
-#     add probe call if the library may be already in system
-#     fix forced_libs list: for lib in $forced_libs; do
-#     add dependencies (order matters): for dep in <pairs>; do
+#   vi ../configure.ac
+#     add PKG_3RD(pkg,<yes/no/auto>, <ver_basename>, <lib_paths>, <inc_paths>)
+#     add CHECK_LIB(pkg, <syslib>, <entry_pt>, [opt libs]) if may be in system
+#     add CHECK_HEADERS(pkg, <title>, <entry_pt>) to check for devel headers
+#     add CHECK_WANT(<want>, <title>, [ checks ]) around tests if conditional
+#     see openexr check for example if c++ lib
+#     add PKG_PROVIDE(pkg,<cond>) to instance pkg if probe succeeds
+#     add to exec > global_config if additional environment needed
 #   vi Makefile
 #     add pkg.<data> (pkg.x = .flags, .vars, .params)
 #     add $(call rules,$(call std-build,<name>,<dep>...))
@@ -25,7 +27,17 @@
 
 TOPDIR ?= $(CURDIR)/..
 include $(TOPDIR)/global_config
+-include $(TOPDIR)/cin_config
 BLD := $(THIRDPARTY)/build
+
+# package build flags, if needed
+# need frame pointer for debugs and helps with profiling
+PKG_CFLAGS_ ?= -g -O2 -fno-omit-frame-pointer
+# NOTE: the trailing blank is MANDITORY or the builds fail
+# due to bugs in the build scripts from auto*
+CFLAGS = $(PKG_CFLAGS_) 
+LDFLAGS += $(PKG_LDFLAGS_) 
+CXXFLAGS += $(PKG_CXXFLAGS_) 
 
 pkg-source=$(BLD)/$(1).source
 pkg-config=$(BLD)/$(1).configure

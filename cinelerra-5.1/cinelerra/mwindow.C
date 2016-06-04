@@ -369,7 +369,7 @@ void MWindow::create_defaults_path(char *string, const char *config_file)
 // set the .bcast path
 	FileSystem fs;
 
-	sprintf(string, "%s", BCASTDIR);
+	sprintf(string, "%s/", File::get_config_path());
 	fs.complete_path(string);
 	if(!fs.is_dir(string))
 		fs.create_dir(string);
@@ -597,8 +597,7 @@ int MWindow::init_ladspa_plugins(MWindow *mwindow, Preferences *preferences)
 	char *path = getenv("LADSPA_PATH");
 	char ladspa_path[BCTEXTLEN];
 	if( !path ) {
-		get_exe_path(ladspa_path);
-		strcat(ladspa_path, "/ladspa");
+		strncpy(ladspa_path, File::get_ladspa_path(), sizeof(ladspa_path));
 		path = ladspa_path;
 	}
 	for( int len=0; *path; path+=len ) {
@@ -2876,17 +2875,19 @@ void MWindow::save_backup()
 	FileXML file;
 	edl->optimize();
 	edl->set_path(session->filename);
-	edl->save_xml(&file, BACKUP_PATH, 0, 0);
+	char backup_path[BCTEXTLEN];
+	snprintf(backup_path, sizeof(backup_path), "%s/%s",
+		File::get_config_path(), BACKUP_FILE);
+	edl->save_xml(&file, backup_path, 0, 0);
 	file.terminate_string();
 	char path[BCTEXTLEN];
 	FileSystem fs;
-	strcpy(path, BACKUP_PATH);
-	fs.complete_path(path);
+	fs.complete_path(backup_path);
 
-	if(file.write_to_file(path))
+	if(file.write_to_file(backup_path))
 	{
 		char string2[256];
-		sprintf(string2, _("Couldn't open %s for writing."), BACKUP_PATH);
+		sprintf(string2, _("Couldn't open %s for writing."), backup_path);
 		gui->show_message(string2);
 	}
 }
@@ -2896,13 +2897,14 @@ void MWindow::load_backup()
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
 	char *out_path;
-	char string[BCTEXTLEN];
-	strcpy(string, BACKUP_PATH);
+	char backup_path[BCTEXTLEN];
+	snprintf(backup_path, sizeof(backup_path), "%s/%s",
+		File::get_config_path(), BACKUP_FILE);
 	FileSystem fs;
-	fs.complete_path(string);
+	fs.complete_path(backup_path);
 
-	path_list.append(out_path = new char[strlen(string) + 1]);
-	strcpy(out_path, string);
+	path_list.append(out_path = new char[strlen(backup_path) + 1]);
+	strcpy(out_path, backup_path);
 
 	load_filenames(&path_list, LOADMODE_REPLACE, 0);
 	edl->local_session->clip_title[0] = 0;

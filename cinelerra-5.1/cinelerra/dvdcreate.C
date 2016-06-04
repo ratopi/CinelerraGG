@@ -5,6 +5,7 @@
 #include "edit.h"
 #include "edits.h"
 #include "edlsession.h"
+#include "file.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "labels.h"
@@ -170,9 +171,8 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	fprintf(fp,"#!/bin/bash\n");
 	fprintf(fp,"echo \"running %s\" $# $*\n", script_filename);
 	fprintf(fp,"\n");
-	char exe_path[BCTEXTLEN];
-	get_exe_path(exe_path);
-	fprintf(fp,"PATH=$PATH:%s\n",exe_path);
+	const char *exec_path = File::get_cinlib_path();
+	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
 	if( !use_ffmpeg ) {
 		fprintf(fp,"mplex -f 8 -o $1/dvd.mpg $1/dvd.m2v $1/dvd.ac3\n");
 		fprintf(fp,"\n");

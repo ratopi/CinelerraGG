@@ -22,6 +22,7 @@
 #include "720to480.h"
 #include "clip.h"
 #include "bchash.h"
+#include "file.h"
 #include "filexml.h"
 #include "bcdisplayinfo.h"
 #include "keyframe.h"
@@ -203,7 +204,7 @@ double _720to480Main::get_framerate()
 int _720to480Main::load_defaults()
 {
 	char directory[BCTEXTLEN];
-	sprintf(directory, "%s720to480.rc", BCASTDIR);
+	sprintf(directory, "%s/720to480.rc", File::get_config_path());
 	
 	defaults = new BC_Hash(directory);
 	defaults->load();

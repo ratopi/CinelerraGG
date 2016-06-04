@@ -1,26 +1,27 @@
+Jun 3, 2016
 
 == for configuration help:
-./autogen.sh
-./configure --help
+  ./autogen.sh
+  ./configure --help
 
-== for static BUILD for $HOME/cin install:
-./autogen.sh
-./configure
-make >& log
-make install
-cp -a bin $HOME/cin
+== for system BUILD install:
+  ./autogen.sh
+  ./configure --prefix=/usr
+  make 2>&1 | tee log
+  make install
 
 == for shared BUILD for $HOME/cin install:
-./autogen.sh
-./configure --disable-static
-./configure
-make >& log
-make install
-cp -a bin $HOME/cin
+  ./autogen.sh
+  ./configure --without-system_build
+  make >& log
+  make install >> log
+  grep "\*\*\*.*error" -ai log
+  mkdir -p $HOME/cin
+  cp -a ./bin/. $HOME/cin/.
 
 == to RUN from $HOME/cin install:
-cd
-./cin/cinelerra
+  cd
+  ./cin/cinelerra
 
 == Build notes:
 Shared builds are not recommended, since system versions of thirdparty
@@ -41,4 +42,15 @@ eg. --disable-giflib
 Using without-feature means that the feature is omitted from cinelerra.
 eg. --without-firewire
 
+== variable parameters    description                     default
+  --with-jobs=n:          n = parallel build jobs         1.5*cpus+2
+  --exec-name=<app>       app = binary executable name    cin
+  --with-cinlib=lib       lib = cinelerra library path    $libdir/$app
+  --with-cindat=dat       dat = cinelerra share path      $datadir/$app
+  --with-config-dir=cfg   cfg = .bcast config dir         $$HOME/.bcast5
+  --with-plugin-dir=plg   plg = plugin install dir        $cinlib/plugins
+  --with-ladspa_dir=lad   lad = ladspa install dir        $cinlib/ladspa
+
+$var represents configure shell value
+$$ stuttered represents as makefile data = $
 

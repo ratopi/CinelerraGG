@@ -32,10 +32,6 @@
 #include "thread.h"
 #include "vframe.inc"
 
-#if defined(HAVE_CONFIG_H)
-#include "config.h"
-#endif
-
 #ifdef HAVE_GL
 #include <GL/gl.h>
 #include <GL/glx.h>

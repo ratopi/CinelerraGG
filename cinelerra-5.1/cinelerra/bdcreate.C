@@ -5,7 +5,7 @@
 #include "edit.h"
 #include "edits.h"
 #include "edlsession.h"
-#include "file.inc"
+#include "file.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "labels.h"
@@ -172,10 +172,9 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 		MainError::show_error(msg);
 		return 1;
 	}
-	char exe_path[BCTEXTLEN];
-	get_exe_path(exe_path);
+	const char *exec_path = File::get_cinlib_path();
 	fprintf(fp,"#!/bin/bash -ex\n");
-	fprintf(fp,"PATH=$PATH:%s\n",exe_path);
+	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
 	fprintf(fp,"mkdir -p $1/udfs\n");
 	fprintf(fp,"sz=`du -sb $1/bd.m2ts | sed -e 's/[ \t].*//'`\n");
 	fprintf(fp,"blks=$((sz/2048 + 4096))\n");

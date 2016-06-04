@@ -313,6 +313,22 @@ public:
 	int wr, rd;
 	static PackagingEngine *new_packaging_engine(Asset *asset);
 
+	static void init_cin_path();
+	static void get_exe_path(char *result, char *bnp=0);
+	static void getenv_path(char *result, const char *path);
+	static char cinexe_path[BCTEXTLEN], cinpkg_path[BCTEXTLEN];
+	static char cindat_path[BCTEXTLEN], cinlib_path[BCTEXTLEN];
+	static char cincfg_path[BCTEXTLEN], cinplg_path[BCTEXTLEN];
+	static char cinlad_path[BCTEXTLEN], cinlcl_path[BCTEXTLEN];
+	static const char *get_cin() { return getenv("CIN_PKG"); }
+	static const char *get_cin_path() { return getenv("CIN_PATH"); }
+	static const char *get_cindat_path() { return getenv("CIN_DAT"); }
+	static const char *get_cinlib_path() { return getenv("CIN_LIB"); }
+	static const char *get_config_path() { return getenv("CIN_CONFIG"); }
+	static const char *get_plugin_path() { return getenv("CIN_PLUGIN"); }
+	static const char *get_ladspa_path() { return getenv("CIN_LADSPA"); }
+	static const char *get_locale_path() { return getenv("CIN_LOCALE"); }
+
 private:
 	void reset_parameters();
 

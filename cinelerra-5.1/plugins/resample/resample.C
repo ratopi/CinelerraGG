@@ -22,6 +22,7 @@
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "bcsignals.h"
+#include "file.h"
 #include "language.h"
 #include "mainprogress.h"
 #include "../../cinelerra/resample.h"
@@ -148,7 +149,7 @@ int ResampleEffect::load_defaults()
 	char directory[BCTEXTLEN];
 
 // set the default directory
-	sprintf(directory, "%sresample.rc", BCASTDIR);
+	sprintf(directory, "%s/resample.rc", File::get_config_path());
 // load the defaults
 	defaults = new BC_Hash(directory);
 	defaults->load();

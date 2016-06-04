@@ -8,28 +8,83 @@ AC_LANG_CPLUSPLUS
 AC_LANG_C
 AC_PROG_CXX
 
-CFLAGS+=" -fno-omit-frame-pointer -fno-math-errno -fno-signed-zeros"
-CFLAGS+=" -pthread -Wall"
-CFLAGS+=" -D__STDC_CONSTANT_MACROS"
-CFLAGS+=" -D__STDC_LIMIT_MACROS"
-CFLAGS+=" -DPNG_SKIP_SETJMP_CHECK=1"
-CFLAGS+=" -I/usr/include/freetype2"
+CFG_CFLAGS+=" -fno-omit-frame-pointer -fno-math-errno -fno-signed-zeros"
+CFG_CFLAGS+=" -pthread -Wall -Wno-unused-result"
+CFG_CFLAGS+=" -D__STDC_CONSTANT_MACROS"
+CFG_CFLAGS+=" -D__STDC_LIMIT_MACROS"
+CFG_CFLAGS+=" -DPNG_SKIP_SETJMP_CHECK=1"
+CFG_CFLAGS+=" -I/usr/include/freetype2"
 
-CPUS=`grep -c "^proc" /proc/cpuinfo`
-JOBS=`expr $CPUS + $CPUS / 2 + 2`
-AC_ARG_WITH([jobs],
-  AC_HELP_STRING([--with-jobs],[parallel build jobs (cpus+cpus/2+2)]),
-  [WANT_JOBS=$withval], [WANT_JOBS=$JOBS])
-AC_SUBST(WANT_JOBS)
+AC_DEFUN([CHECK_WITH], [
+AC_ARG_WITH([$1],
+  AC_HELP_STRING([--with-[$1]], [$2 ($4)]),
+  [WANT_$3=$withval], [WANT_$3='$4'])
+AC_SUBST([WANT_$3])
+])
+
+CHECK_WITH([jobs],[parallel build jobs],[JOBS],[auto])
+CHECK_WITH([exec-name],[binary executable name],[CIN],[cin])
+CHECK_WITH([single-user],[to install cin in bin],[CINBIN_BUILD],[no])
+CHECK_WITH([ladspa-build],[build ladspa library],[LADSPA_BUILD],[yes])
+CHECK_WITH([cinlib],[cinelerra library path],[CINLIB_DIR],[auto])
+CHECK_WITH([cindat],[cinelerra share path],[CINDAT_DIR],[auto])
+CHECK_WITH([plugin-dir],[plugin install dir],[PLUGIN_DIR],[auto])
+CHECK_WITH([ladspa-dir],[ladspa install dir],[LADSPA_DIR],[auto])
+CHECK_WITH([config-dir],[.bcast config dir],[CONFIG_DIR],[$$HOME/.bcast5])
+
+if test "x$WANT_CINBIN_BUILD" = "xyes"; then
+  WANT_LOCALE_DIR='$$CIN_LIB/locale'
+  test "x$WANT_CINDAT_DIR" = "xauto" && WANT_CINDAT_DIR='$$CIN_PATH'
+  test "x$WANT_CINLIB_DIR" = "xauto" && WANT_CINLIB_DIR='$$CIN_PATH'
+  test "x$WANT_PLUGIN_DIR" = "xauto" && WANT_PLUGIN_DIR='$$CIN_LIB/plugins'
+  test "x$WANT_LADSPA_DIR" = "xauto" && WANT_LADSPA_DIR='$$CIN_LIB/ladspa'
+  sinstall=dinstall
+  suninstall=duninstall
+else
+  lcldir=`test "x$prefix" = "xNONE" && prefix=$ac_default_prefix; \
+    test "x$exec_prefix" = "xNONE" && exec_prefix="${prefix}"; \
+    eval "dir=\"$localedir\""; eval "dir=\"$dir\""; eval "dir=\"$dir\""; \
+    echo "$dir"`
+  usrdat=`test "x$prefix" = "xNONE" && prefix=$ac_default_prefix; \
+    test "x$exec_prefix" = "xNONE" && exec_prefix="${prefix}"; \
+    eval "dir=\"$datadir\""; eval "dir=\"$dir\""; eval "dir=\"$dir\""; \
+    echo "$dir"`
+  usrlib=`test "x$prefix" = "xNONE" && prefix="$ac_default_prefix"; \
+    test "x$exec_prefix" = "xNONE" && exec_prefix="${prefix}"; \
+    eval "dir=\"$libdir\""; eval "dir=\"$dir\""; eval "dir=\"$dir\""; \
+    echo "$dir"`
+  test "x$usrlib" = "x/lib" -o "x$usrlib" = "x/usr/lib" -o \
+       "x$usrlib" = "x/usr/local/lib" -a -e "/usr/lib64" && \
+  test ! -e "/usr/lib" -o `ls -1 /usr/lib64 | wc -l` -gt `ls -1 /usr/lib | wc -l` && \
+    usrlib+="64"
+  WANT_LOCALE_DIR="$lcldir"
+  test "x$WANT_CINDAT_DIR" = "xauto" && WANT_CINDAT_DIR="$usrdat/$WANT_CIN"
+  test "x$WANT_CINLIB_DIR" = "xauto" && WANT_CINLIB_DIR="$usrlib/$WANT_CIN"
+  test "x$WANT_PLUGIN_DIR" = "xauto" && WANT_PLUGIN_DIR="$WANT_CINLIB_DIR/plugins"
+  test "x$WANT_LADSPA_DIR" = "xauto" && WANT_LADSPA_DIR="$WANT_CINLIB_DIR/ladspa"
+  sinstall=cinstall
+  suninstall=cuninstall
+fi
+AC_SUBST(sinstall)
+AC_SUBST(suninstall)
+
+if test "x$WANT_JOBS" = "xauto"; then
+  CPUS=`grep -c "^proc" /proc/cpuinfo`
+  WANT_JOBS=`expr $CPUS + $CPUS / 2 + 2`
+fi
+
+AC_DEFUN([PKG_DEF],[
+STATIC_PKGS+=" [$1]"
+ver_$1="$2"
+lib_$1="$3"
+inc_$1="$4"
+])
 
 AC_DEFUN([PKG_3RD],[
 AC_ARG_ENABLE([$1],
   AC_HELP_STRING([--enable-$1],[build $1 ($2)]),
   [PKG_$1=$enableval], [PKG_$1=$2])
-STATIC_PKGS+=" [$1]"
-ver_$1="$3"
-lib_$1="$4"
-inc_$1="$5"
+PKG_DEF([$1],[$3],[$4],[$5])
 ])
 
 # thirdparty builds
@@ -131,10 +186,7 @@ PKG_3RD([ilmbase],[auto],
     IlmThread/.libs/libIlmThread.a ],
   [ Iex Half Imath config IlmThread ])
 
-PKG_3RD([ladspa],[auto],
-  [ladspa-05182015],
-  [],
-  [])
+PKG_DEF([ladspa], [ladspa-05182015], [], [])
 
 PKG_3RD([lame],[auto],
   [lame-3.99.5],
@@ -263,25 +315,17 @@ PKG_3RD([libvpx],[auto],
 
 AC_SUBST(STATIC_PKGS)
 
-
-AC_DEFUN([CHECK_WITH], [
-AC_ARG_WITH([$1],
-  AC_HELP_STRING([--with-[$1]], [$3 ([$4])]),
-  [WANT_$2=$withval], [WANT_$2=[$4]])
-])
-
-CHECK_WITH([ladspa], [ladspa], [build ladspa library], [yes])
-
 AC_DEFUN([CHECK_ENABLE], [
 AC_ARG_ENABLE([$1],
   AC_HELP_STRING([--enable-[$1]], [$3 ([$4])]),
   [WANT_$2=$enableval], [WANT_$2=[$4]])
 ])
 
-CHECK_ENABLE([static], [STATIC_BUILD], [build static], [yes])
-CHECK_ENABLE([forced], [FORCED_BUILD], [build forced], [no])
+CHECK_ENABLE([static-build], [STATIC_BUILD], [build static], [auto])
 CHECK_ENABLE([x264_hidepth], [X264_HIDEPTH], [build x264 10bit], [no])
 CHECK_ENABLE([x265_hidepth], [X265_HIDEPTH], [build x265 10/12bit], [no])
+
+test "x$WANT_STATIC_BUILD" = "xauto" && WANT_STATIC_BUILD=$WANT_CINBIN_BUILD
 
 AC_DEFUN([CHECK_PROG], [
  AC_CHECK_PROG([PROG_$1], [$2], [yes],[no])
@@ -303,7 +347,12 @@ if test "x$FATAL_ERROR" != "x"; then
  AC_MSG_ERROR("fatal eror.")
 fi
 CHECK_PROG(PACTL, [pactl])
-   
+
+AC_CHECK_DECL([X_HAVE_UTF8_STRING],,[no_utf=yes],[#include <X11/Xlib.h>])
+if test "$no_utf" = "yes"; then
+  AC_MSG_ERROR([Cinelerra requires utf8 support in X Windows.])
+fi
+
 # Checks for headers/libraries.
 
 AC_DEFUN([CHECK_HEADERS], [
@@ -416,7 +465,10 @@ fi
 if test "x$RESULT" = "xno" -a "x$PKG_$1" = "x"; then
  echo "=== want $1 Failed."
  WANT_$1=no
+else
+ WANT_$1=yes
 fi
+CFG_WANTS+=" $1"
 AC_SUBST([WANT_$1])
 ])
 
@@ -504,58 +556,18 @@ AC_LANG_POP(C++)
 AC_MSG_RESULT([$HAVE_openexr])
 AC_SUBST([HAVE_openexr])
 
-# false=speed up
-if false; then
-# pointless Checks for header files.
-AC_CHECK_HEADERS([assert.h fcntl.h float.h libintl.h limits.h])
-AC_CHECK_HEADERS([stdio.h stdint.h stdlib.h string.h strings.h])
-AC_CHECK_HEADERS([ctype.h dlfcn.h byteswap.h endian.h errno.h error.h])
-AC_CHECK_HEADERS([unistd.h asm/unistd.h])
-AC_CHECK_HEADERS([arpa/inet.h locale.h netdb.h netinet/in.h])
-AC_CHECK_HEADERS([sys/ioctl.h sys/socket.h sys/statfs.h sys/time.h utime.h])
-
-# pointless Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
-AC_C_INLINE
-AC_TYPE_INT16_T
-AC_TYPE_INT32_T
-AC_TYPE_INT64_T
-AC_TYPE_INT8_T
-AC_TYPE_OFF_T
-AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_CHECK_MEMBERS([struct stat.st_blksize])
-AC_STRUCT_ST_BLOCKS
-AC_CHECK_MEMBERS([struct stat.st_rdev])
-AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
-AC_TYPE_UINT64_T
-AC_TYPE_UINT8_T
-
-# pointless Checks for library functions.
-AC_FUNC_ERROR_AT_LINE
-AC_FUNC_FORK
-AC_FUNC_FSEEKO
-AC_FUNC_MALLOC
-AC_FUNC_MKTIME
-AC_FUNC_MMAP
-AC_FUNC_REALLOC
-AC_FUNC_STRERROR_R
-AC_FUNC_STRTOD
-AC_CHECK_FUNCS([bzero floor getcwd gethostbyname gettimeofday inet_ntoa localtime_r])
-AC_CHECK_FUNCS([memmove memset mkdir modf munmap nl_langinfo pow putenv rint rmdir])
-AC_CHECK_FUNCS([select setenv setlocale socket sqrt])
-AC_CHECK_FUNCS([strcasecmp strchr strdup strerror strncasecmp strrchr strstr strtol strtoul])
-AC_CHECK_FUNCS([tzset uname utime])
-#end speed up
-fi
-
+# build global_config
 OBJDIR=`uname -m`
 AC_SUBST(OBJDIR)
 
 echo "AC_HELP_STRING([Reason],[Package])"
 echo "AC_HELP_STRING([------],[-------])"
 
+AC_DEFUN([PKG_DISABLED],[
+  BUILD_$1=0
+  AC_SUBST(BUILD_$1)
+  echo "AC_HELP_STRING([disabled],[$1])"
+])
 AC_DEFUN([PKG_SHARED],[
  BUILD_$1=0
  AC_SUBST(BUILD_$1)
@@ -572,20 +584,10 @@ AC_DEFUN([PKG_FORCED],[PKG_STATIC([$1],[forced])])
 
 AC_DEFUN([PKG_PROVIDE],[
 if test "x$BUILD_$1" = "x" ; then
- if test "x$2" = "xno"; then
-  BUILD_$1=0
-  AC_SUBST(BUILD_$1)
+ if test "x$2" = "xno" -o "x$PKG_$1" = "xno"; then
+  PKG_DISABLED([$1])
  elif test "x$PKG_$1" = "xyes"; then
   PKG_FORCED([$1])
- elif test "x$PKG_$1" = "xno"; then
-  if test "x$WANT_FORCED_BUILD" = "xyes"; then
-   BUILD_$1=0
-   AC_SUBST(BUILD_$1)
-  elif test "x$HAVE_$1" = "xyes"; then
-   PKG_SHARED([$1])
-  else
-   AC_MSG_ERROR([$1 missing and required.])
-  fi
  elif test "x$WANT_STATIC_BUILD" = "xyes"; then
   PKG_STATIC([$1],[static])
  elif test "x$HAVE_$1" = "xyes"; then
@@ -608,7 +610,7 @@ PKG_PROVIDE([fftw])
 PKG_PROVIDE([flac])
 PKG_PROVIDE([giflib])
 PKG_PROVIDE([ilmbase])
-PKG_PROVIDE([ladspa])
+PKG_PROVIDE([ladspa],[$WANT_LADSPA_BUILD])
 PKG_PROVIDE([lame])
 PKG_PROVIDE([libavc1394],[$WANT_FIREWIRE])
 PKG_PROVIDE([libraw1394],[$WANT_FIREWIRE])
@@ -637,11 +639,12 @@ for f in $SYSTEM_LIBS; do
 done
 AC_SUBST(SYSTEM_LIBS)
 
-echo "  using: with-jobs = $WANT_JOBS"
-for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB VIDEO4LINUX2 ESOUND; do
+echo ""
+for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB \
+	 VIDEO4LINUX2 ESOUND; do
   eval vv="\$WANT_$v"
   if test "x$vv" != "xno"; then
-    CFLAGS+=" -DHAVE_$v"
+    CFG_CFLAGS+=" -DHAVE_$v"
     vv=with
   else
     vv=without
@@ -649,6 +652,19 @@ for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB VIDEO4LINUX2 ESOUND; do
   v=`echo "$v" | tr "A-Z" "a-z"`
   echo "  using: $vv-$v"
 done
+
+echo "  using: with-jobs = $WANT_JOBS"
+echo "  using: exec-name = $WANT_CIN"
+echo "  using: with-cinlib = $WANT_CINLIB_DIR"
+echo "  using: with-cindat = $WANT_CINDAT_DIR"
+echo "  using: with-config-dir = $WANT_CONFIG_DIR"
+echo "  using: with-plugin-dir = $WANT_PLUGIN_DIR"
+echo "  using: with-ladspa-dir = $WANT_LADSPA_DIR"
+echo ""
+echo "  using: single-user  = $WANT_CINBIN_BUILD"
+echo "  using: static-build = $WANT_STATIC_BUILD"
+echo "  using: ladspa-build = $WANT_LADSPA_BUILD"
+echo ""
 
 # build extras
 if test "x$HAVE_NUMA" = "xyes"; then
@@ -664,8 +680,11 @@ AC_SUBST(WANT_X264_HIDEPTH)
 AC_SUBST(WANT_X265_HIDEPTH)
 
 if test "x$BUILD_openexr" = "x0"; then
-  CFLAGS+=" -I/usr/include/OpenEXR"
+  CFG_CFLAGS+=" -I/usr/include/OpenEXR"
 fi
+
+AC_SUBST(CFG_CFLAGS)
+AC_SUBST(CFG_CXXFLAGS)
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
@@ -674,6 +693,7 @@ exec > global_config
 
 echo "SHELL := /bin/bash"
 echo "export SHELL"
+echo "WANT_JOBS := $WANT_JOBS"
 echo ""
 echo "OBJDIR := $OBJDIR"
 echo "BINDIR := \$(TOPDIR)/bin"
@@ -682,32 +702,39 @@ echo "GUICAST := \$(TOPDIR)/guicast"
 echo "LIBZMPEG3 := \$(TOPDIR)/libzmpeg3"
 echo "MPEG2ENC := \$(TOPDIR)/mpeg2enc"
 echo "MPLEXLO := \$(TOPDIR)/mplexlo"
-echo "PLUGIN_DIR := \$(BINDIR)/plugins"
 echo "PLUGINS := \$(TOPDIR)/plugins"
 echo "TDB := \$(TOPDIR)/db"
 echo "THIRDPARTY := \$(TOPDIR)/thirdparty"
 echo "EXTRA_LIBS := $EXTRA_LIBS"
 echo "FFMPEG_EXTRA_CFG := $FFMPEG_EXTRA_CFG"
 echo "export OBJDIR BINDIR CINELERRA GUICAST LIBZMPEG3"
-echo "export MPEG2ENC MPLEXLO PLUGIN_DIR PLUGINS TDB"
+echo "export MPEG2ENC MPLEXLO PLUGINS TDB"
 echo "export THIRDPARTY EXTRA_LIBS FFMPEG_EXTRA_CFG"
 echo ""
-echo "WANT_X264_HIDEPTH := $WANT_X264_HIDEPTH"
-echo "WANT_X265_HIDEPTH := $WANT_X265_HIDEPTH"
-echo "export WANT_X264_HIDEPTH WANT_X265_HIDEPTH"
+
+echo "WANT_CIN := $WANT_CIN"
+for w in $CFG_WANTS; do ww=WANT_$w; echo "WANT_$w := ${!ww}"; done
 echo ""
 
-for flg in $CFLAGS; do echo "CFLAGS += $flg"; done
+echo "CFLAGS ?= ${CFLAGS:--g -O2}"
+echo "CFLAGS += '-DCIN=\"\$(WANT_CIN)\"'"
+echo "CFLAGS += '-DCINLIB_DIR=\"$WANT_CINLIB_DIR\"'"
+echo "CFLAGS += '-DCINDAT_DIR=\"$WANT_CINDAT_DIR\"'"
+echo "CFLAGS += '-DCONFIG_DIR=\"$WANT_CONFIG_DIR\"'"
+echo "CFLAGS += '-DPLUGIN_DIR=\"$WANT_PLUGIN_DIR\"'"
+echo "CFLAGS += '-DLOCALE_DIR=\"$WANT_LOCALE_DIR\"'"
+echo "CFLAGS += '-DLADSPA_DIR=\"$WANT_LADSPA_DIR\"'"
+for flg in $CFG_CFLAGS; do echo "CFLAGS += $flg"; done
 echo ""
-for flg in $CXXFLAGS; do echo "CXXFLAGS += $flg"; done
+for flg in $CFG_CXXFLAGS; do echo "CXXFLAGS += $flg"; done
+echo "unexport CFLAGS CXXFLAGS"
 echo ""
-echo "export CFLAGS CXXFLAGS"
 
 if test  $WANT_X264_HIDEPTH = "yes" ; then
-  echo "x264.cfg_params:= --enable-static --bit-depth=10"
+  echo "x264.cfg_params := --enable-static --bit-depth=10"
 fi
 if test  $WANT_X265_HIDEPTH = "yes" ; then
-  echo "x265.cfg_params:= -DENABLE_SHARED=no -DHIGH_BIT_DEPTH:BOOL=ON"
+  echo "x265.cfg_params := -DENABLE_SHARED=no -DHIGH_BIT_DEPTH:BOOL=ON"
 fi
 
 for pkg in $STATIC_PKGS; do echo "static_pkgs += $pkg"; done

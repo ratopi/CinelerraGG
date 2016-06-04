@@ -22,6 +22,7 @@
 #include "bcsignals.h"
 #include "bcwindowbase.inc"
 #include "cstrdup.h"
+#include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "keyframe.h"
@@ -51,7 +52,7 @@ void PresetsDB::load()
 	FileXML file;
 	char path[BCTEXTLEN];
 	char string[BCTEXTLEN];
-	sprintf(path, "%s%s", BCASTDIR, PRESETS_FILE);
+	sprintf(path, "%s/%s", File::get_config_path(), PRESETS_FILE);
 	FileSystem fs;
 	fs.complete_path(path);
 	file.read_from_file(path);
@@ -102,7 +103,7 @@ void PresetsDB::save()
 	file.terminate_string();
 
 	char path[BCTEXTLEN];
-	sprintf(path, "%s%s", BCASTDIR, PRESETS_FILE);
+	sprintf(path, "%s/%s", File::get_config_path(), PRESETS_FILE);
 	FileSystem fs;
 	fs.complete_path(path);
 	file.write_to_file(path);

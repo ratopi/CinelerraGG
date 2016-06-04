@@ -1,4 +1,5 @@
 #include "bccmodels.h"
+#include "file.h"
 #include "filexml.h"
 #include "rgb601.h"
 #include "rgb601window.h"
@@ -48,7 +49,7 @@ int RGB601Main::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
-	sprintf(directory, "%srgb601.rc", BCASTDIR);
+	sprintf(directory, "%s/rgb601.rc", File::get_config_path());
 
 // load the defaults
 	defaults = new Defaults(directory);

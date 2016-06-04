@@ -31,6 +31,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "errorbox.h"
+#include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "keyframe.h"
@@ -386,7 +387,7 @@ void BatchRenderThread::save_defaults(BC_Hash *defaults)
 char* BatchRenderThread::create_path(char *string)
 {
 	FileSystem fs;
-	sprintf(string, "%s", BCASTDIR);
+	sprintf(string, "%s/", File::get_config_path());
 	fs.complete_path(string);
 	strcat(string, BATCH_PATH);
 	return string;

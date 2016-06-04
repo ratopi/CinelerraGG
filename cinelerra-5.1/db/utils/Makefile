@@ -3,8 +3,8 @@ export TOPDIR
 include $(TOPDIR)/global_config
 
 $(shell mkdir -p $(OBJDIR))
-
-CXXFLAGS:=-ggdb -I.. -Wall $(CFLAGS)
+$(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
+CXXFLAGS:=-ggdb -I.. -Wall `cat $(OBJDIR)/c_flags`
 LDLIBS:=../$(OBJDIR)/db.a
 LDFLAGS:=
 

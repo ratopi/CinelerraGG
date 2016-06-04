@@ -198,7 +198,7 @@ FileScene::FileScene(Asset *asset, File *file)
  : FileBase(asset, file)
 {
 	reset_parameters();
-	get_exe_path(exe_path);
+	strncpy(exec_path, File::get_cinlib_path(), sizeof(exec_path));
 }
 
 
@@ -1300,10 +1300,8 @@ void SceneChunk::render()
 		FILE *script_fd = fopen(script_path, "w");
 
 		sprintf(command_line, "%s%s --libdir %s%s -b %s", 
-			script->file->exe_path,
-			FESTIVAL_PATH,
-			script->file->exe_path,
-			FESTIVAL_LIB_PATH,
+			script->file->exec_path, FESTIVAL_PATH,
+			script->file->exec_path, FESTIVAL_LIB_PATH,
 			script_path);
 
 // Create script.
@@ -1822,7 +1820,7 @@ void SceneTokens::convert_path(char *dst, char *src)
 		if(stat(dst, &ostat))
 		{
 // Try cinelerra directory
-			get_exe_path(dst);
+			strcpy(dst, File::get_cindat_path());
 			strcat(dst, ASSET_PATH);
 			strcat(dst, src);
 //printf("SceneTokens::convert_path %d %s\n", __LINE__, dst);

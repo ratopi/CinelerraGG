@@ -2,17 +2,14 @@ TOPDIR ?= $(CURDIR)/..
 export TOPDIR
 include $(TOPDIR)/global_config
 
-CFLAGS += -I../ -I$(TOPDIR)/cinelerra \
-	-I$(TOPDIR)/guicast \
-	-I$(TOPDIR)/quicktime \
-	-I../colors \
-	-fPIC \
+CFLAGS += -I../ -I$(CINELERRA) -I$(GUICAST) -I../colors -fPIC
 
 CFLAGS += $(static_incs)
 LFLAGS += $(static_libs)
 LDLINKER ?= g++ -shared
 $(shell mkdir -p $(OBJDIR))
 
+PLUGIN_DIR := $(BINDIR)/plugins
 OUTPUT_DIR = $(PLUGIN_DIR)/$($(PLUGIN))
 PLUGIN_PNGS = $(wildcard $(foreach t,$(themes),$(t).png)) picon.png
 OUTPUT_PNGS = $(foreach png,$(PLUGIN_PNGS), $(PLUGIN_DIR)/$(basename $(png))/$(PLUGIN).png)

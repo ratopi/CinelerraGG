@@ -50,7 +50,7 @@ $(OUTPUT):
 	makeinfo --html --no-split cinelerra.texi
 #	makeinfo --html cinelerra.texi
 
-install:
+install:	all
 	mkdir -p $(TARGET_DIR)
 	cp -a *.png $(TARGET_DIR)/.
 	cp -a cinelerra.html $(TARGET_DIR)/.

@@ -1629,16 +1629,88 @@ int File::record_fd()
 }
 
 
-void get_exe_path(char *result)
+void File::get_exe_path(char *result, char *bnp)
 {
-// Get executable path
+// Get executable path, basename
 	int len = readlink("/proc/self/exe", result, BCTEXTLEN-1);
 	if( len >= 0 ) {
 		result[len] = 0;
 		char *ptr = strrchr(result, '/');
-		if( ptr ) *ptr = 0;
+		if( ptr ) *ptr++ = 0; else ptr = result;
+		if( bnp ) strncpy(bnp, ptr, BCTEXTLEN);
 	}
-	else
-		result[0] = 0;
+	else {
+		*result = 0;
+		if( bnp ) *bnp = 0;
+	}
 }
+
+void File::getenv_path(char *result, const char *path)
+{
+	char *rp = result, *ep = rp + BCTEXTLEN-1;
+	const char *cp = path;
+// any env var can be used here to expand a path as:
+//   "path...$id...": and id is a word as alpha,alnum...
+//   expands as "path...getenv(id)..."
+// CIN_PATH, CIN_LIB are set in main.C,
+	for( int ch=*cp++; ch && rp < ep; ch=*cp++ ) {
+		if( ch == '$' && isalpha(*cp) ) { // scan alpha,alnum...
+			const char *bp = cp;  char *p = rp;
+			while( p < ep && *bp && (isalnum(*bp) || *bp == '_') ) *p++ = *bp++;
+			*p = 0;
+			const char *envp = getenv(rp); // read env value
+			if( !envp ) continue;
+			while( *envp && rp < ep ) *rp++ = *envp++;
+			cp = bp;		 // subst id=value
+			continue;
+		}
+		*rp++ = ch;
+	}
+	*rp = 0;
+}
+
+char File::cinexe_path[BCTEXTLEN];
+char File::cinpkg_path[BCTEXTLEN];
+char File::cindat_path[BCTEXTLEN];
+char File::cinlib_path[BCTEXTLEN];
+char File::cincfg_path[BCTEXTLEN];
+char File::cinplg_path[BCTEXTLEN];
+char File::cinlad_path[BCTEXTLEN];
+char File::cinlcl_path[BCTEXTLEN];
+
+void File::init_cin_path()
+{
+	char env_path[BCTEXTLEN], env_pkg[BCTEXTLEN];
+// these values are advertised for forks/shell scripts
+	get_exe_path(env_path, env_pkg);
+	snprintf(cinexe_path, sizeof(cinexe_path), "CIN_PATH=%s", env_path);
+	putenv(cinexe_path);
+	snprintf(cinpkg_path, sizeof(cinpkg_path), "CIN_PKG=%s", env_pkg);
+	putenv(cinpkg_path);
+
+	getenv_path(env_path, CINDAT_DIR);
+	snprintf(cindat_path, sizeof(cindat_path), "CIN_DAT=%s", env_path);
+	putenv(cindat_path);
+
+	getenv_path(env_path, CINLIB_DIR);
+	snprintf(cinlib_path, sizeof(cinlib_path), "CIN_LIB=%s", env_path);
+	putenv(cinlib_path);
+
+	getenv_path(env_path, CONFIG_DIR);
+	snprintf(cincfg_path, sizeof(cincfg_path), "CIN_CONFIG=%s", env_path);
+	putenv(cincfg_path);
+
+	getenv_path(env_path, PLUGIN_DIR);
+	snprintf(cinplg_path, sizeof(cinplg_path), "CIN_PLUGIN=%s", env_path);
+	putenv(cinplg_path);
+
+	getenv_path(env_path, LADSPA_DIR);
+	snprintf(cinlad_path, sizeof(cinlad_path), "CIN_LADSPA=%s", env_path);
+	putenv(cinlad_path);
+
+	getenv_path(env_path, LOCALE_DIR);
+	snprintf(cinlcl_path, sizeof(cinlcl_path), "CIN_LOCALE=%s", env_path);
+	putenv(cinlcl_path);
+}
+
 

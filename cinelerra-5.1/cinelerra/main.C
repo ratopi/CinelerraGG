@@ -22,7 +22,7 @@
 #include "batchrender.h"
 #include "bcsignals.h"
 #include "edl.h"
-#include "file.inc"
+#include "file.h"
 #include "filexml.h"
 #include "filesystem.h"
 #include "language.h"
@@ -40,10 +40,6 @@
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define PACKAGE "cinelerra"
-#define LOCALEDIR "/locale/"
-
 
 enum
 {
@@ -105,45 +101,20 @@ int main(int argc, char *argv[])
 	char deamon_path[BCTEXTLEN];
 	char config_path[BCTEXTLEN];
 	char batch_path[BCTEXTLEN];
-	char locale_path[BCTEXTLEN];
-	char exe_path[BCTEXTLEN];
-	char env_path[BCTEXTLEN];
 	int nice_value = 20;
 	config_path[0] = 0;
 	batch_path[0] = 0;
 	deamon_path[0] = 0;
 	EDL::id_lock = new Mutex("EDL::id_lock");
 
-	get_exe_path(exe_path);
-	snprintf(env_path, sizeof(env_path), "CINELERRA_PATH=%s", exe_path);
-	putenv(env_path);
-	sprintf(locale_path, "%s%s", exe_path, LOCALEDIR);
+	File::init_cin_path();
+	const char *locale_path = File::get_locale_path();
+	const char *cin = File::get_cin();
 
-// detect an UTF-8 locale and try to use a non-Unicode locale instead
-// <---Beginning of dirty hack
-// This hack will be removed as soon as Cinelerra is UTF-8 compliant
-//    char *s, *language;
+	bindtextdomain(cin, locale_path);
+	textdomain(cin);
+	setlocale(LC_MESSAGES, "");
 
-// Query user locale
-//    if ((s = getenv("LC_ALL"))  ||
-//		(s = getenv("LC_MESSAGES")) ||
-//		(s = getenv("LC_CTYPE")) ||
-//		(s = getenv ("LANG")))
-//    {
-// Test if user locale is set to Unicode
-//        if (strstr(s, ".UTF-8"))
-//        {
-// extract language  from language-charset@variant
-//          language = strtok (s, ".@");
-// set language as the default locale
-//          setenv("LANG", language, 1);
-//        }
-//    }
-// End of dirty hack --->
-
-	bindtextdomain (PACKAGE, locale_path);
-	textdomain (PACKAGE);
-	setlocale (LC_MESSAGES, "");
 #ifdef X_HAVE_UTF8_STRING
 	char *loc = setlocale(LC_CTYPE, "");
 	if( loc ) {
@@ -308,12 +279,10 @@ int main(int argc, char *argv[])
 			printf(_("-d = Run in the background as renderfarm client.  The port (400) is optional.\n"));
 			printf(_("-f = Run in the foreground as renderfarm client.  Substitute for -d.\n"));
 			printf(_("-n = Nice value if running as renderfarm client. (20)\n"));
-			printf(_("-c = Configuration file to use instead of %s%s.\n"),
-				BCASTDIR,
-				CONFIG_FILE);
-			printf(_("-r = batch render the contents of the batch file (%s%s) with no GUI.  batch file is optional.\n"),
-				BCASTDIR,
-				BATCH_PATH);
+			printf(_("-c = Configuration file to use instead of %s/%s.\n"),
+				File::get_config_path(), CONFIG_FILE);
+			printf(_("-r = batch render the contents of the batch file (%s/%s) with no GUI.  batch file is optional.\n"),
+				File::get_config_path(), BATCH_PATH);
 			printf(_("filenames = files to load\n\n\n"));
 			exit(0);
 			break;

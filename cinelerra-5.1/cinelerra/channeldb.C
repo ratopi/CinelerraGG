@@ -21,6 +21,7 @@
 
 #include "channel.h"
 #include "channeldb.h"
+#include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "preferences.inc"
@@ -41,7 +42,7 @@ char* ChannelDB::prefix_to_path(char *path, const char *filename)
 {
 	FileSystem fs;
 	char directory[BCTEXTLEN];
-	sprintf(directory, BCASTDIR);
+	sprintf(directory, "%s/", File::get_config_path());
 	fs.complete_path(directory);
 	fs.join_names(path, directory, filename);
 	return path;

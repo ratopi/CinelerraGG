@@ -21,6 +21,7 @@
 
 #include "bcdisplayinfo.h"
 #include "bchash.h"
+#include "file.h"
 #include "language.h"
 #include "mainprogress.h"
 #include "reframe.h"
@@ -59,7 +60,7 @@ int ReFrame::load_defaults()
 	char directory[1024];
 
 // set the default directory
-	sprintf(directory, "%sreframe.rc", BCASTDIR);
+	sprintf(directory, "%s/reframe.rc", File::get_config_path());
 
 // load the defaults
 

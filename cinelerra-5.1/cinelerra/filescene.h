@@ -202,7 +202,7 @@ public:
 	int reset_parameters_derived();
 
 // Path to all prepackaged assets
-	char exe_path[BCTEXTLEN];
+	char exec_path[BCTEXTLEN];
 
 
 private:

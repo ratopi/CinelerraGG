@@ -1912,11 +1912,12 @@ int Record::stop_commercial_capture(int run_job)
 int Record::
 spawn(const char *fmt, ...)
 {
-	char exe_path[BCTEXTLEN], cmd[BCTEXTLEN];
-	get_exe_path(exe_path);
+	const char *exec_path = File::get_cinlib_path();
+	char cmd[BCTEXTLEN], *cp = cmd, *ep = cp+sizeof(cmd)-1;
 	va_list ap;  va_start(ap, fmt);
-	int n = snprintf(cmd, sizeof(cmd), "exec %s/", exe_path);
-	vsnprintf(cmd+n, sizeof(cmd)-n, fmt, ap);  va_end(ap);
+	cp += snprintf(cp, ep-cp, "exec %s/", exec_path);
+	cp += vsnprintf(cp, ep-cp, fmt, ap);  va_end(ap);
+	*cp = 0;
 	pid_t pid = vfork();
 	if( pid < 0 ) return -1;
 	if( pid > 0 ) return pid;

@@ -5,11 +5,10 @@ include $(TOPDIR)/global_config
 CC = gcc
 NASM = nasm
 USE_MMX ?= 0
-USE_CSS ?= 1
 DYNAMIC_FONTS ?= 1
 
 ifeq ($(OBJDIR), alpha)
-  ifneq ($(HAVE_CFLAGS), y)
+  ifneq ($(origin CFLAGS), environment)
     CFLAGS := -O4 -arch ev67 -ieee -accept c99_keywords -gcc_messages
   endif
 endif
@@ -21,7 +20,6 @@ ifeq ($(USE_MMX), 1)
 endif
 
 CFLAGS += -I.  $(inc_a52dec)
-CFLAGS += -Wall
 
 OBJS = \
 	$(OBJDIR)/audio/ac3.o \
@@ -64,9 +62,12 @@ OBJS = \
 	$(OBJDIR)/toc.o \
 	$(OBJDIR)/mpeg3.o \
 
+$(shell mkdir -p $(OBJDIR) )
+
 DIRS := \
 	$(OBJDIR)/audio \
 	$(OBJDIR)/video
+$(shell mkdir -p $(DIRS) )
 
 OUTPUT = $(OBJDIR)/libzmpeg3.a
 UTILS += $(OBJDIR)/mpeg3toc
@@ -74,8 +75,6 @@ UTILS += $(OBJDIR)/mpeg3show
 UTILS += $(OBJDIR)/mpeg3cat
 UTILS += $(OBJDIR)/mpeg3ifochk
 UTILS += $(OBJDIR)/mpeg3cc2txt
-
-#$(OBJDIR)/mpeg3split
 
 LIBS = -lm -lpthread
 
@@ -88,11 +87,8 @@ CFLAGS += -DBUILTIN_FONT_DATA
 OBJS += $(OBJDIR)/xfont1.o
 endif
 
-$(shell mkdir -p $(OBJDIR) )
-
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo $(OBJS) $(ASMOBJS) $(NASMOBJS) > $(OBJDIR)/objs)
-$(shell mkdir -p $(DIRS) )
 
 all: $(OUTPUT) $(UTILS)
 

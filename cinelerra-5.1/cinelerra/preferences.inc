@@ -23,9 +23,8 @@
 #define PREFERENCES_INC
 
 // Run-time configuration directory
-#define BCASTDIR "~/.bcast5/"
-#define BACKUP_PATH BCASTDIR "backup.xml"
 #define DEAMON_PORT 400
+#define BACKUP_FILE "backup.xml"
 
 class Preferences;
 class PlaybackConfig;

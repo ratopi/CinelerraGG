@@ -1134,13 +1134,15 @@ AVRational FFMPEG::to_time_base(int sample_rate)
 
 void FFMPEG::set_option_path(char *path, const char *fmt, ...)
 {
-	get_exe_path(path);
-	strcat(path, "/ffmpeg/");
+	char *ep = path + BCTEXTLEN-1;
+	strncpy(path, File::get_cindat_path(), ep-path);
+	strncat(path, "/ffmpeg/", ep-path);
 	path += strlen(path);
 	va_list ap;
 	va_start(ap, fmt);
-	vsprintf(path, fmt, ap);
+	path += vsnprintf(path, ep-path, fmt, ap);
 	va_end(ap);
+	*path = 0;
 }
 
 void FFMPEG::get_option_path(char *path, const char *type, const char *spec)

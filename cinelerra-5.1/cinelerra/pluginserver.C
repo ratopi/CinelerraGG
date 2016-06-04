@@ -29,6 +29,7 @@
 #include "cwindow.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "file.h"
 #include "floatautos.h"
 #include "keyframes.h"
 #include "localsession.h"
@@ -990,14 +991,10 @@ void PluginServer::get_defaults_path(char *path)
 	char *ptr2 = strrchr(get_path(), '.');
 	if(!ptr1) ptr1 = get_path();
 	if(!ptr2) ptr2 = get_path() + strlen(get_path());
-	char string2[BCTEXTLEN];
-	char *ptr3 = string2;
-	while(ptr1 < ptr2)
-	{
-		*ptr3++ = *ptr1++;
-	}
+	char string2[BCTEXTLEN], *ptr3 = string2;
+	while( ptr1 < ptr2 ) *ptr3++ = *ptr1++;
 	*ptr3 = 0;
-	sprintf(path, "%s%s.xml", BCASTDIR, string2);
+	sprintf(path, "%s/%s.xml", File::get_config_path(), string2);
 }
 
 void PluginServer::save_defaults()

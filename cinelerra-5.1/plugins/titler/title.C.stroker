@@ -5,6 +5,7 @@
 
 #include "clip.h"
 #include "bccmodels.h"
+#include "file.h"
 #include "filexml.h"
 #include "filesystem.h"
 #include "freetype/ftbbox.h"
@@ -2067,7 +2068,7 @@ int TitleMain::load_defaults()
 {
 	char directory[1024], text_path[1024];
 // set the default directory
-	sprintf(directory, "%stitle.rc", BCASTDIR);
+	sprintf(directory, "%s/title.rc", File::get_config_path());
 
 // load the defaults
 	defaults = new Defaults(directory);
@@ -2096,7 +2097,7 @@ int TitleMain::load_defaults()
 
 // Store text in separate path to isolate special characters
 	FileSystem fs;
-	sprintf(text_path, "%stitle_text.rc", BCASTDIR);
+	sprintf(text_path, "%s/title_text.rc", File::get_config_path());
 	fs.complete_path(text_path);
 	FILE *fd = fopen(text_path, "rb");
 	if(fd)
@@ -2142,7 +2143,7 @@ int TitleMain::save_defaults()
 
 // Store text in separate path to isolate special characters
 	FileSystem fs;
-	sprintf(text_path, "%stitle_text.rc", BCASTDIR);
+	sprintf(text_path, "%s/title_text.rc", File::get_config_path());
 	fs.complete_path(text_path);
 	FILE *fd = fopen(text_path, "wb");
 	if(fd)

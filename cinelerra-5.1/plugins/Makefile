@@ -1,7 +1,7 @@
 TOPDIR ?= $(CURDIR)/..
 include $(TOPDIR)/global_config
 
-ifeq ($(HAVE_DVB), yes)
+ifeq ($(WANT_DVB), yes)
 LIVEDVB = liveaudio livevideo
 endif
 
@@ -144,15 +144,19 @@ DIRS = \
 # not finished
 #	denoisemjpeg \
 
+PLUGIN_DIR = $(BINDIR)/plugins
 DATA = $(PLUGIN_DIR)/fonts $(PLUGIN_DIR)/shapes
-LADSPA = $(BINDIR)/ladspa
+LADSPA_DIR = $(BINDIR)/ladspa
 
-all:	$(DIRS) $(DATA) $(LADSPA)
+all:	$(PLUGIN_DIR) $(DIRS) $(DATA) $(LADSPA_DIR)
+
+$(PLUGIN_DIR):
+	mkdir -p $@
 
 $(DATA):
 	cp -a $(notdir $@) $(PLUGIN_DIR)/.
 
-$(LADSPA):
+$(LADSPA_DIR):
 	mkdir -p $@
 	if [ -d $(THIRDPARTY)/ladspa-*/usr/local/lib/ladspa ]; then \
 		cp -a $(THIRDPARTY)/ladspa-*/usr/local/lib/ladspa/. $@/. ; \
@@ -165,7 +169,7 @@ $(DIRS):
 
 clean:
 	rm -rf $(foreach d,$(DIRS),$(d)/$(OBJDIR))
-	rm -rf $(PLUGIN_DIR) $(LADSPA)
+	rm -rf $(PLUGIN_DIR) $(LADSPA_DIR)
 
 install:
 

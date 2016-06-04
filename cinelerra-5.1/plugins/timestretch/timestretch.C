@@ -22,6 +22,7 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
+#include "file.h"
 #include "language.h"
 #include "mainprogress.h"
 #include "resample.h"
@@ -485,7 +486,7 @@ int TimeStretch::load_defaults()
 	char directory[BCTEXTLEN];
 
 // set the default directory
-	sprintf(directory, "%stimestretch.rc", BCASTDIR);
+	sprintf(directory, "%s/timestretch.rc", File::get_config_path());
 // load the defaults
 	defaults = new BC_Hash(directory);
 	defaults->load();

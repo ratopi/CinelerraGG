@@ -21,7 +21,7 @@
 
 #include "aboutprefs.h"
 #include "bcsignals.h"
-#include "file.inc"
+#include "file.h"
 #include "language.h"
 #include "libzmpeg3.h"
 #include "mwindow.h"
@@ -71,18 +71,10 @@ void AboutPrefs::create_objects()
 	);
 	y += get_text_height(MEDIUMFONT) * 3;
 
-// 	char versions[BCTEXTLEN];
-// 	sprintf(versions,
-// _("Libmpeg3 version %d.%d.%d\n"),
-// mpeg3_major(),
-// mpeg3_minor(),
-// mpeg3_release());
-// 	draw_text(x, y, versions);
 
-
-	char exe_path[BCTEXTLEN], msg_path[BCTEXTLEN];
-	get_exe_path(exe_path);
-	snprintf(msg_path, sizeof(msg_path), "%s/msg.txt", exe_path);
+	const char *cfg_path = File::get_cindat_path();
+	char msg_path[BCTEXTLEN];
+	snprintf(msg_path, sizeof(msg_path), "%s/msg.txt", cfg_path);
 	FILE *fp = fopen(msg_path, "r");
 	if( fp ) {
 		set_font(LARGEFONT);

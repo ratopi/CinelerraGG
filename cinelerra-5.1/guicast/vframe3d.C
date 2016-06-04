@@ -29,9 +29,6 @@
 #include "bcwindowbase.h"
 #include "vframe.h"
 
-#if defined(HAVE_CONFIG_H)
-#include "config.h"
-#endif
 #ifdef HAVE_GL
 #include <GL/gl.h>
 #include <GL/glext.h>

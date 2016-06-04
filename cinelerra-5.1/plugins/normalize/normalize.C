@@ -21,6 +21,7 @@
 
 #include "bcdisplayinfo.h"
 #include "bchash.h"
+#include "file.h"
 #include "language.h"
 #include "mainprogress.h"
 #include "normalize.h"
@@ -59,7 +60,7 @@ int NormalizeMain::load_defaults()
 	char directory[BCTEXTLEN];
 
 // set the default directory
-	sprintf(directory, "%snormalize.rc", BCASTDIR);
+	sprintf(directory, "%s/normalize.rc", File::get_config_path());
 	
 // load the defaults
 

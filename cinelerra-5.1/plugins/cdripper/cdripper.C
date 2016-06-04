@@ -24,6 +24,7 @@
 #include "cdripper.h"
 #include "cdripwindow.h"
 #include "bchash.h"
+#include "file.h"
 #include "language.h"
 #include "mainprogress.h"
 #include "mwindow.inc"
@@ -59,7 +60,7 @@ int CDRipMain::load_defaults()
 {
 // set the default directory
 	char directory[1024];
-	sprintf(directory, "%scdripper.rc", BCASTDIR);
+	sprintf(directory, "%s/cdripper.rc", File::get_config_path());
 
 // load the defaults
 	defaults = new BC_Hash(directory);

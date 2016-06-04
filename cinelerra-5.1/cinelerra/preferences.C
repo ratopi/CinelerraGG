@@ -27,7 +27,7 @@
 #include "cache.inc"
 #include "clip.h"
 #include "bchash.h"
-#include "file.inc"
+#include "file.h"
 #include "filesystem.h"
 #include "guicast.h"
 #include "indexfile.h"
@@ -54,11 +54,9 @@ Preferences::Preferences()
 	preferences_lock = new Mutex("Preferences::preferences_lock");
 
 
-
-	get_exe_path(plugin_dir);
-	strcat(plugin_dir,"/plugins");
-
-	sprintf(index_directory, BCASTDIR);
+// initial plugin path from build -DPLUGIN_DIR="..."
+	sprintf(plugin_dir, "%s/", File::get_plugin_path());
+	sprintf(index_directory, "%s/", File::get_config_path());
 	if(strlen(index_directory))
 		fs.complete_path(index_directory);
 	cache_size = 0x1000000;
@@ -375,9 +373,9 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	shbtn_prefs.remove_all_objects();
 	int shbtns_total = defaults->get("SHBTNS_TOTAL", -1);
 	if( shbtns_total < 0 ) {
-		shbtn_prefs.append(new ShBtnPref("Features5", "firefox file:///$CINELERRA_PATH/doc/Features5.pdf", 0));
+		shbtn_prefs.append(new ShBtnPref("Features5", "firefox file://$CIN_DAT/doc/Features5.pdf", 0));
 		shbtn_prefs.append(new ShBtnPref("Online Help", "firefox https://cinelerra-cv.org/docs.php", 0));
-		shbtn_prefs.append(new ShBtnPref("Orignal Manual", "firefox file:///$CINELERRA_PATH/doc/cinelerra.html", 0));
+		shbtn_prefs.append(new ShBtnPref("Orignal Manual", "firefox file://$CIN_DAT/doc/cinelerra.html", 0));
 		shbtns_total = 0;
 	}
 	for( int i=0; i<shbtns_total; ++i ) {

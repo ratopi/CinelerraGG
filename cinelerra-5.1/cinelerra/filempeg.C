@@ -490,9 +490,8 @@ int FileMPEG::open_file(int rd, int wr)
 // Construct command line
 			if(!result)
 			{
-				char string[BCTEXTLEN];
-				get_exe_path(string);
-				sprintf(mjpeg_command, "%s/%s", string, HVPEG_EXE);
+				const char *exec_path = File::get_cinlib_path();
+				sprintf(mjpeg_command, "%s/%s", exec_path, HVPEG_EXE);
 
 				if(asset->aspect_ratio > 0)
 				{
@@ -540,9 +539,8 @@ int FileMPEG::open_file(int rd, int wr)
 // mjpegtools encoder
 //  this one is cinelerra-x.x.x/thirdparty/mjpegtools/mpeg2enc
 		{
-			char string[BCTEXTLEN];
-			get_exe_path(string);
-			sprintf(mjpeg_command, "%s/%s -v 0 ", string, MJPEG_EXE);
+			const char *exec_path = File::get_cinlib_path();
+			sprintf(mjpeg_command, "%s/%s -v 0 ", exec_path, MJPEG_EXE);
 
 // Must disable interlacing if MPEG-1
 			switch (asset->vmpeg_preset)
@@ -555,6 +553,7 @@ int FileMPEG::open_file(int rd, int wr)
 // Be quiet
 			strcat(mjpeg_command, " -v0");
 
+			char string[BCTEXTLEN];
 // The current usage of mpeg2enc requires bitrate of 0 when quantization is fixed and
 // quantization of 1 when bitrate is fixed.  Perfectly intuitive.
 			if(asset->vmpeg_fix_bitrate)

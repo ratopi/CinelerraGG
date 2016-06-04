@@ -23,6 +23,7 @@
 #include "bchash.h"
 #include "bcsignals.h"
 #include "clip.h"
+#include "file.h"
 #include "filexml.h"
 #include "language.h"
 #include "lens.h"
@@ -725,7 +726,7 @@ void LensMain::update_gui()
 //void LensMain::save_presets()
 //{
 //	char path[BCTEXTLEN], string[BCTEXTLEN];
-//	sprintf(path, "%slenspresets.rc", BCASTDIR);
+//	sprintf(path, "%s/lenspresets.rc", File::get_config_path());
 //	BC_Hash *defaults = new BC_Hash(path);
 //
 //// Save presets

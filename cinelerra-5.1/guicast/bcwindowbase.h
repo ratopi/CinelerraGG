@@ -22,12 +22,6 @@
 #ifndef BCWINDOWBASE_H
 #define BCWINDOWBASE_H
 
-#if defined(HAVE_CONFIG_H)
-#include "config.h"
-#endif
-
-//#define HAVE_LIBXXF86VM
-
 // Window types
 #define MAIN_WINDOW 0
 #define SUB_WINDOW 1

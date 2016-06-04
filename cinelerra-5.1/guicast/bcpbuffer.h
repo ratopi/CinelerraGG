@@ -22,9 +22,6 @@
 #ifndef BCPBUFFER_H
 #define BCPBUFFER_H
 
-#if defined(HAVE_CONFIG_H)
-#include "config.h"
-#endif
 #ifdef HAVE_GL
 #include <GL/glx.h>
 #endif
