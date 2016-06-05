@@ -50,7 +50,9 @@ cinstall:
 		COPYING README msg.txt ffmpeg doc models
 	cd bin/locale; $(inst_sh) "$(DESTDIR)$(localedir)" .
 	cd bin/plugins; $(inst_sh) "$(DESTDIR)$(WANT_PLUGIN_DIR)" .
-	cd bin/ladspa; $(inst_sh) "$(DESTDIR)$(WANT_LADSPA_DIR)" .
+	if test "x$(WANT_LADSPA_BUILD)" = "xyes"; then \
+	  cd bin/ladspa; $(inst_sh) "$(DESTDIR)$(WANT_LADSPA_DIR)" . ; \
+	fi
 	cd bin/applications; $(inst_sh) "$(DESTDIR)$(datadir)/applications" .
 	cd bin/pixmaps; $(inst_sh) "$(DESTDIR)$(datadir)/pixmaps" .
 
