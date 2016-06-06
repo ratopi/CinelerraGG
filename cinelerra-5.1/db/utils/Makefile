@@ -56,6 +56,8 @@ xtv:	xtv.C $(XTV_MEDIA_OBJS)
 	@echo c++ -pthread $(CXXFLAGS) xtv.C $(XTV_MEDIA_OBJS) -o xtv
 	@c++ -pthread $(XTV_INCLUDES) $(CXXFLAGS) xtv.C $(XTV_MEDIA_OBJS) $(XTV_LIBS) -o xtv
 
+install:
+
 clean:
 	rm -f $(TARGETS) *.o a.out
 

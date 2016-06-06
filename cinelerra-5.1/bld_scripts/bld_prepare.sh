@@ -60,7 +60,7 @@ case "$dir" in
       ln -s libtermcap.so.2 /usr/lib64/libtermcap.so
     fi
   ;;
-"ubuntu" | "mint" | "ub14" | "ub15" | "debian")
+"ubuntu" | "mint" | "ub14" | "ub15" | "ub16" | "debian")
   apt-get -y install apt-file sox nasm yasm g++ build-essential libz-dev \
     texinfo libpng-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \

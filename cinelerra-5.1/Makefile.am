@@ -11,7 +11,7 @@ AUTOMAKE_OPTIONS=foreign
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = thirdparty libzmpeg3 mpeg2enc mplexlo \
-	db guicast cinelerra plugins doc po
+	db guicast cinelerra plugins doc po db/utils
 
 BUILT_SOURCES := bin
 bin:
@@ -34,8 +34,9 @@ binstall:	install-recursive
 	cp -a COPYING README models ffmpeg msg.txt bin/.
 	sed -e 's/\<cin\>/$(WANT_CIN)/g' < image/cin.desktop \
 		> "bin/applications/$(WANT_CIN).desktop"
-	cp -a image/cin.svg "bin/pixmaps/?$(WANT_CIN)".svg
+	cp -a image/cin.svg "bin/pixmaps/$(WANT_CIN)".svg
 	cp -a image/cin.xpm "bin/pixmaps/$(WANT_CIN)".xpm
+	cp -a db/utils/new_db "bin/cin_db"
 
 buninstall:
 	rm -rf bin
@@ -43,7 +44,7 @@ buninstall:
 # with system_build
 cinstall:
 	cd bin; $(inst_sh) "$(DESTDIR)$(bindir)" "$(WANT_CIN)" \
-		mpeg3{cat,cc2txt,ifochk,show,toc}
+		cin_db mpeg3{cat,cc2txt,ifochk,show,toc}
 	cd bin; $(inst_sh) "$(DESTDIR)$(WANT_CINLIB_DIR)" \
 		bdwrite cutads hveg2enc mpeg2enc mplex mplexlo
 	cd bin; $(inst_sh) "$(DESTDIR)$(datadir)/$(WANT_CIN)" \
@@ -57,6 +58,7 @@ cinstall:
 cuninstall:
 	rm -f "$(DESTDIR)$(bindir)/$(WANT_CIN)"
 	rm -f "$(DESTDIR)$(bindir)"/mpeg3{cat,cc2txt,ifochk,show,toc}
+	rm -f "$(DESTDIR)$(bindir)/cin_db"
 	rm -rf "$(DESTDIR)$(WANT_CINLIB_DIR)"
 	rm -rf "$(DESTDIR)$(datadir)/$(WANT_CIN)"
 	rm -rf "$(DESTDIR)$(localedir)"/*/"LC_MESSAGES/$(WANT_CIN).mo"

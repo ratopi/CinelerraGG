@@ -21,6 +21,7 @@ mint="mint-14.04.1"
 suse="opensuse-13.2"
 ub14="ub14.04.1"
 ub15="ub15.10"
+ub15="ub16.04"
 ubuntu="ubuntu-14.04.1"
 
 eval os="\${$dir}"

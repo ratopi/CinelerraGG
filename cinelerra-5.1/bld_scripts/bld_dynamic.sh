@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 dir="$1"
 shift
@@ -13,20 +13,24 @@ if [ ! -d "$path/$dir/$bld" ]; then
 fi
 
 cd "$path/$dir/$bld"
-rm -rf "$proj"
-git clone --depth 1 "git://git.cinelerra-cv.org/goodguy/cinelerra.git" "$proj"
-#rsh host tar -C /mnt0 -cf - cinelerra5 | tar -xf -
+rm -rf "$proj.dyn"
+mkdir "$proj.dyn"
+
+git clone "git://git.cinelerra-cv.org/goodguy/cinelerra.git" "$proj.dyn"
+#rsh host tar -C "/mnt0/$proj" -cf - "$base" | tar -C "$proj.dyn" -xf -
 if [ $? -ne 0 ]; then
   echo "git clone $proj failed"
   exit 1
 fi
 
-cd "$proj/$base"
-
-./autogen.sh
-./configure --enable-static=no
-make all install >& log
+cd "$proj.dyn/$base"
+{
+./autogen.sh && \
+./configure --with-single-user --disable-static-build && \
+make $@ && \
+make install
+} 2>&1 | tee log || true
 
 echo "finished: scanning log for ***"
-grep -ai "\*\*\*.*error" log
+grep -ai "\*\*\*.*error" log | head
 

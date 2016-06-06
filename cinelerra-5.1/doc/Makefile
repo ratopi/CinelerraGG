@@ -28,7 +28,6 @@ IMAGES = \
 	mask.png \
 	mutepatch_up.png \
 	paste.png \
-	picon.png \
 	projector.png \
 	protect.png \
 	recordpatch.png \
@@ -45,18 +44,19 @@ OUTPUT := cinelerra.html
 
 all: $(OUTPUT)
 
-$(OUTPUT):
-	tar -C ../plugins/theme_suv/data/ -cf - $(IMAGES) | tar -xkf -
+$(OUTPUT): $(IMAGES)
 	makeinfo --html --no-split cinelerra.texi
 #	makeinfo --html cinelerra.texi
+
+$(IMAGES):
+	cp $(PLUGINS)/theme_suv/data/$@ .
 
 install:	all
 	mkdir -p $(TARGET_DIR)
 	cp -a *.png $(TARGET_DIR)/.
 	cp -a cinelerra.html $(TARGET_DIR)/.
-	cp -a manual.pdf $(TARGET_DIR)/.
 	cp -a Features5.pdf $(TARGET_DIR)/.
 
 clean:
-	rm -f $(IMAGES) $(OUTPUT)
+	rm -f $(OUTPUT) $(IMAGES)
 
