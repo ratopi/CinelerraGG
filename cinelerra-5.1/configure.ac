@@ -582,6 +582,21 @@ AC_DEFUN([PKG_STATIC],[
 ])
 AC_DEFUN([PKG_FORCED],[PKG_STATIC([$1],[forced])])
 
+# order matters
+for dep in \
+        ffmpeg/faac ffmpeg/faad2 ffmpeg/twolame ffmpeg/lame ffmpeg/openjpeg \
+        ffmpeg/libvorbis ffmpeg/libtheora ffmpeg/x264 ffmpeg/fdk \
+        libiec61883/libraw1394 libavc1394/librom1394 \
+        openexr/ilmbase ilmbase/libogg \
+        libtheora/libogg libtheora/libvorbis ; do
+  lib=`dirname $dep`
+  eval pkg_lib="\$PKG_$lib"; eval have_lib="\$HAVE_$lib";
+  if test "x$pkg_lib" != "xno" ; then
+    needs=`basename $dep`
+    eval "PKG_$needs=yes"
+  fi
+done
+
 AC_DEFUN([PKG_PROVIDE],[
 if test "x$BUILD_$1" = "x" ; then
  if test "x$2" = "xno" -o "x$PKG_$1" = "xno"; then
