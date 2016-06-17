@@ -92,7 +92,7 @@ public:
 	int test_edl_files();
 	void calculate_dest_paths(ArrayList<char*> *paths,
 		Preferences *preferences);
-	void reset();
+	void reset(int warn=0);
 // Load batch rendering jobs
 	void load_jobs(char *path, Preferences *preferences);
 // Not applicable to western civilizations
@@ -134,25 +134,16 @@ public:
 // job being rendered
 	int rendering_job;
 	int is_rendering;
+	int warn;
 	ArrayList<BC_ListBoxItem*> *file_entries;
 };
-
-
-
-
-
-
-
 
 
 
 class BatchRenderEDLPath : public BC_TextBox
 {
 public:
-	BatchRenderEDLPath(BatchRenderThread *thread,
-		int x,
-		int y,
-		int w,
+	BatchRenderEDLPath(BatchRenderThread *thread, int x, int y, int w,
 		char *text);
 	int handle_event();
 	BatchRenderThread *thread;
@@ -162,9 +153,7 @@ public:
 class BatchRenderCurrentEDL : public BC_GenericButton
 {
 public:
-	BatchRenderCurrentEDL(BatchRenderThread *thread,
-		int x,
-		int y);
+	BatchRenderCurrentEDL(BatchRenderThread *thread, int x, int y);
 	int handle_event();
 	BatchRenderThread *thread;
 };
@@ -173,9 +162,7 @@ public:
 class BatchRenderUpdateEDL : public BC_GenericButton
 {
 public:
-	BatchRenderUpdateEDL(BatchRenderThread *thread,
-		int x,
-		int y);
+	BatchRenderUpdateEDL(BatchRenderThread *thread, int x, int y);
 	int handle_event();
 	BatchRenderThread *thread;
 };
@@ -184,9 +171,7 @@ public:
 class BatchRenderNew : public BC_GenericButton
 {
 public:
-	BatchRenderNew(BatchRenderThread *thread,
-		int x,
-		int y);
+	BatchRenderNew(BatchRenderThread *thread, int x, int y);
 	int handle_event();
 	BatchRenderThread *thread;
 };
@@ -194,9 +179,7 @@ public:
 class BatchRenderDelete : public BC_GenericButton
 {
 public:
-	BatchRenderDelete(BatchRenderThread *thread,
-		int x,
-		int y);
+	BatchRenderDelete(BatchRenderThread *thread, int x, int y);
 	int handle_event();
 	BatchRenderThread *thread;
 };
@@ -206,9 +189,7 @@ public:
 class BatchRenderSaveList : public BC_GenericButton, public Thread
 {
 public:
-	BatchRenderSaveList(BatchRenderThread *thread,
-			    int x,
-			    int y);
+	BatchRenderSaveList(BatchRenderThread *thread, int x, int y);
 	~BatchRenderSaveList();
 	int handle_event();
 	BatchRenderThread *thread;
@@ -221,9 +202,7 @@ public:
 class BatchRenderLoadList : public BC_GenericButton, public Thread
 {
 public:
-	BatchRenderLoadList(BatchRenderThread *thread,
-			    int x,
-			    int y);
+	BatchRenderLoadList(BatchRenderThread *thread, int x, int y);
 	~BatchRenderLoadList();
 	int handle_event();
 	BatchRenderThread *thread;
@@ -238,11 +217,7 @@ public:
 class BatchRenderList : public BC_ListBox
 {
 public:
-	BatchRenderList(BatchRenderThread *thread,
-		int x,
-		int y,
-		int w,
-		int h);
+	BatchRenderList(BatchRenderThread *thread, int x, int y, int w, int h);
 	int handle_event();
 	int selection_changed();
 	int column_resize_event();
@@ -255,9 +230,7 @@ public:
 class BatchRenderStart : public BC_GenericButton
 {
 public:
-	BatchRenderStart(BatchRenderThread *thread,
-		int x,
-		int y);
+	BatchRenderStart(BatchRenderThread *thread, int x, int y);
 	int handle_event();
 	BatchRenderThread *thread;
 };
@@ -265,9 +238,15 @@ public:
 class BatchRenderStop : public BC_GenericButton
 {
 public:
-	BatchRenderStop(BatchRenderThread *thread,
-		int x,
-		int y);
+	BatchRenderStop(BatchRenderThread *thread, int x, int y);
+	int handle_event();
+	BatchRenderThread *thread;
+};
+
+class BatchRenderWarning : public BC_CheckBox
+{
+public:
+	BatchRenderWarning(BatchRenderThread *thread, int x, int y);
 	int handle_event();
 	BatchRenderThread *thread;
 };
@@ -275,9 +254,7 @@ public:
 class BatchRenderCancel : public BC_GenericButton
 {
 public:
-	BatchRenderCancel(BatchRenderThread *thread,
-		int x,
-		int y);
+	BatchRenderCancel(BatchRenderThread *thread, int x, int y);
 	int handle_event();
 	int keypress_event();
 	BatchRenderThread *thread;
@@ -287,9 +264,7 @@ public:
 class BatchFormat : public FormatTools
 {
 public:
-	BatchFormat(MWindow *mwindow,
-				BatchRenderGUI *gui,
-				Asset *asset);
+	BatchFormat(MWindow *mwindow, BatchRenderGUI *gui, Asset *asset);
 	~BatchFormat();
 
 	int handle_event();
@@ -336,6 +311,7 @@ public:
 	BatchRenderDelete *delete_batch;
 	BatchRenderSaveList *savelist_batch;
 	BatchRenderLoadList *loadlist_batch;
+	BatchRenderWarning *warning;
 	BatchRenderList *batch_list;
 	BatchRenderStart *start_button;
 	BatchRenderStop *stop_button;

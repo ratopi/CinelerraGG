@@ -1,4 +1,4 @@
-TOPDIR ?= $(CURDIR)/..
+export TOPDIR ?= $(CURDIR)/..
 include $(TOPDIR)/global_config
 
 OBJS := $(foreach i,de es eu fr it nb pt sl hi ko vi zh el ja uk ru, $(i).mo)

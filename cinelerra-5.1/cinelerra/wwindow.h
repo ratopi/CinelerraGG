@@ -41,10 +41,12 @@ public:
 	void handle_close_event(int result);
 	void show_warning(int *do_warning, const char *warn_text);
 	BC_Window* new_gui();
+	int wait_result();
 
 	MWindow *mwindow;
 	WWindowGUI *gui;
 	int *do_warning;
+	int result;
 	const char *warn_text;
 };
 

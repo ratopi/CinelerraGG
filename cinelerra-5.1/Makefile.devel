@@ -2,7 +2,7 @@
 
 TOPDIR := $(CURDIR)
 CFLAGS ?= -ggdb
-export CFLAGS
+export CFLAGS_ := $(CFLAGS)
 
 cpus:=$(shell grep -c "^proc" /proc/cpuinfo)
 jobs:=-j$(shell echo $$(($(cpus) + $(cpus)/2 +2)))

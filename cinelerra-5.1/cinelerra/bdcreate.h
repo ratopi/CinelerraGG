@@ -11,6 +11,7 @@
 #include "bctextbox.h"
 #include "browsebutton.h"
 #include "mwindow.h"
+#include "rescale.h"
 
 #include "bdcreate.inc"
 
@@ -49,7 +50,7 @@ public:
 	char tmp_path[BCTEXTLEN];
 	int use_deinterlace, use_inverse_telecine;
 	int use_scale, use_resize_tracks;
-	int use_wide_audio, use_wide_aspect;
+	int use_wide_audio;
 	int use_histogram, use_label_chapters;
 	int use_standard;
 
@@ -138,15 +139,6 @@ public:
 	CreateBD_GUI *gui;
 };
 
-class CreateBD_Scale : public BC_CheckBox
-{
-public:
-	CreateBD_Scale(CreateBD_GUI *gui, int x, int y);
-	~CreateBD_Scale();
-
-	CreateBD_GUI *gui;
-};
-
 class CreateBD_ResizeTracks : public BC_CheckBox
 {
 public:
@@ -183,15 +175,6 @@ public:
 	CreateBD_GUI *gui;
 };
 
-class CreateBD_WideAspect : public BC_CheckBox
-{
-public:
-	CreateBD_WideAspect(CreateBD_GUI *gui, int x, int y);
-	~CreateBD_WideAspect();
-
-	CreateBD_GUI *gui;
-};
-
 class CreateBD_GUI : public BC_Window
 {
 public:
@@ -213,15 +196,14 @@ public:
 	BrowseButton *btmp_path;
 	CreateBD_DiskSpace *disk_space;
 	CreateBD_Format *standard;
+	CreateBD_Scale *scale;
 	ArrayList<BC_ListBoxItem *> media_sizes;
 	CreateBD_MediaSize *media_size;
 	CreateBD_Deinterlace *need_deinterlace;
 	CreateBD_InverseTelecine *need_inverse_telecine;
-	CreateBD_Scale *need_scale;
 	CreateBD_ResizeTracks *need_resize_tracks;
 	CreateBD_Histogram *need_histogram;
 	CreateBD_WideAudio *need_wide_audio;
-	CreateBD_WideAspect *need_wide_aspect;
 	CreateBD_LabelChapters *need_label_chapters;
 	int ok_x, ok_y, ok_w, ok_h;
 	CreateBD_OK *ok;
@@ -247,8 +229,32 @@ public:
 	int handle_event();
 	CreateBD_Format(CreateBD_GUI *gui, int x, int y);
 	~CreateBD_Format();
+	void set_value(int v) { set_text(get_item(v)->get_text()); }
 
 	CreateBD_GUI *gui;
+};
+
+class CreateBD_ScaleItem : public BC_MenuItem
+{
+public:
+	int handle_event();
+	CreateBD_ScaleItem(CreateBD_Scale *popup, int scale, const char *text);
+	~CreateBD_ScaleItem();
+
+	CreateBD_Scale *popup;
+	int scale;
+};
+
+class CreateBD_Scale : public BC_PopupMenu
+{
+public:
+	void create_objects();
+	int handle_event();
+	CreateBD_Scale(CreateBD_GUI *gui, int x, int y);
+	~CreateBD_Scale();
+
+	CreateBD_GUI *gui;
+	void set_value(int v) { set_text(Rescale::scale_types[v]); }
 };
 
 class CreateBD_MediaSize : public BC_PopupTextBox

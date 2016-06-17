@@ -731,7 +731,15 @@ echo "WANT_CIN := $WANT_CIN"
 for w in $CFG_WANTS; do ww=WANT_$w; echo "WANT_$w := ${!ww}"; done
 echo ""
 
-echo "CFLAGS ?= ${CFLAGS:--g -O2}"
+echo "ifndef CFLAGS_"
+echo "ifdef CFLAGS"
+echo "CFLAGS_ := \$(CFLAGS)"
+echo "else"
+echo "CFLAGS_ := ${CFLAGS:--g -O2}"
+echo "endif"
+echo "endif"
+
+echo "CFLAGS := \$(CFLAGS_)"
 echo "CFLAGS += '-DCIN=\"\$(WANT_CIN)\"'"
 echo "CFLAGS += '-DCINLIB_DIR=\"$WANT_CINLIB_DIR\"'"
 echo "CFLAGS += '-DCINDAT_DIR=\"$WANT_CINDAT_DIR\"'"
@@ -742,7 +750,6 @@ echo "CFLAGS += '-DLADSPA_DIR=\"$WANT_LADSPA_DIR\"'"
 for flg in $CFG_CFLAGS; do echo "CFLAGS += $flg"; done
 echo ""
 for flg in $CFG_CXXFLAGS; do echo "CXXFLAGS += $flg"; done
-echo "unexport CFLAGS CXXFLAGS"
 echo ""
 
 if test  $WANT_X264_HIDEPTH = "yes" ; then
@@ -792,5 +799,7 @@ echo "libraries += -Wl,--end-group"
 echo "libraries += \$(thirdparty_libraries)"
 echo "libraries += \$(system_libs)"
 echo "libraries += \$(EXTRA_LIBS)"
-echo "export thirdparty_libraries libraries"
 echo ""
+echo "export thirdparty_libraries libraries"
+echo "export CFLAGS_ CXXFLAGS_ LDFLAGS_"
+echo "unexport CFLAGS CXXFLAGS LDFLAGS"

@@ -1,6 +1,3 @@
-TOPDIR ?= $(CURDIR)/..
-export TOPDIR
-include $(TOPDIR)/global_config
 
 CFLAGS += -I../ -I$(CINELERRA) -I$(GUICAST) -I../colors -fPIC
 

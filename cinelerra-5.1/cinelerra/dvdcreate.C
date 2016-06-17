@@ -15,6 +15,7 @@
 #include "mwindowgui.h"
 #include "plugin.h"
 #include "pluginset.h"
+#include "rescale.h"
 #include "track.h"
 #include "tracks.h"
 
@@ -24,30 +25,43 @@
 #include <sys/stat.h>
 #include <sys/statfs.h>
 
-// DVD Creation
 
-#define HD_1920x1080_2997	0
-#define HD_1920x1080_2500	1
-#define HD_1280x720_5994p	2
-#define HD_1280x720_5000p	3
-#define HD_720x576_5000p	4
-#define HD_720x576_2500		5
-#define HD_720x480_5994p	6
-#define HD_720x480_2997		7
+#define DVD_PAL_4x3	0
+#define DVD_PAL_16x9	1
+#define DVD_NTSC_4x3	2
+#define DVD_NTSC_16x9	3
 
-static struct hd_format {
+#define DVD_NORM_PAL	0
+#define DVD_NORM_NTSC	1
+
+#define DVD_ASPECT_4x3	0
+#define DVD_ASPECT_16x9 1
+
+static struct dvd_norm {
 	const char *name;
 	int w, h;
 	double framerate;
-} hd_formats[] = {
-	{ "1920x1080 29.97",	  1920,1080, 29.97  },
-	{ "1920x1080 25",	  1920,1080, 25     },
-	{ "1280x720 59.94p",	  1280,720,  59.94  },
-	{ "1280x720 50p",	  1280,720,  50     },
-	{ "720x576 50p(PAL)",	   720,576,  50     },
-	{ "720x576 25 (PAL)",	   720,576,  25     },
-	{ "720x480 59.94p(NTSC)",  720,480,  59.94  },
-	{ "720x480 29.97 (NTSC)",  720,480,  29.97  },
+} dvd_norms[] = {
+	{ "PAL",  720,576, 25 },
+	{ "NTSC", 720,480, 29.97 },
+};
+
+static struct dvd_aspect {
+	int w, h;
+} dvd_aspects[] = {
+	{ 4, 3, },
+	{ 16, 9, },
+};
+
+// DVD Creation
+
+static struct dvd_format {
+	int norm, aspect;
+} dvd_formats[] = {
+	{ DVD_NORM_PAL,  DVD_ASPECT_4x3, },
+	{ DVD_NORM_PAL,  DVD_ASPECT_16x9, },
+	{ DVD_NORM_NTSC, DVD_ASPECT_4x3, },
+	{ DVD_NORM_NTSC, DVD_ASPECT_16x9, },
 };
 
 const int64_t CreateDVD_Thread::DVD_SIZE = 4700000000;
@@ -90,7 +104,6 @@ CreateDVD_Thread::CreateDVD_Thread(MWindow *mwindow)
 	this->use_histogram = 0;
 	this->use_inverse_telecine = 0;
 	this->use_wide_audio = 0;
-	this->use_wide_aspect = 0;
 	this->use_ffmpeg = 0;
 	this->use_resize_tracks = 0;
 	this->use_label_chapters = 0;
@@ -181,8 +194,9 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	fprintf(fp,"mkdir -p $1/iso\n");
 	fprintf(fp,"\n");
 // dvdauthor ver 0.7.0 requires this to work
-	fprintf(fp,"export VIDEO_FORMAT=%s\n",
-		use_standard == HD_720x576_2500 ? "PAL" : "NTSC");
+	int norm = dvd_formats[use_standard].norm;
+	const char *name = dvd_norms[norm].name;
+	fprintf(fp,"export VIDEO_FORMAT=%s\n", name);
 	fprintf(fp,"dvdauthor -x - <<eof\n");
 	fprintf(fp,"<dvdauthor dest=\"$1/iso\">\n");
 	fprintf(fp,"  <vmgm>\n");
@@ -190,9 +204,11 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	fprintf(fp,"  </vmgm>\n");
 	fprintf(fp,"  <titleset>\n");
 	fprintf(fp,"    <titles>\n");
+	char std[BCSTRLEN], *cp = std;
+	for( const char *np=name; *np!=0; ++cp,++np) *cp = *np + 'a'-'A';
+	*cp = 0;
 	fprintf(fp,"    <video format=\"%s\" aspect=\"%d:%d\" resolution=\"%dx%d\"/>\n",
-		use_standard == HD_720x576_2500 ? "pal" : "ntsc",
-		(int)session->aspect_w, (int)session->aspect_h,
+		std, (int)session->aspect_w, (int)session->aspect_h,
 		session->output_w, session->output_h);
 	fprintf(fp,"    <audio format=\"ac3\" lang=\"en\"/>\n");
 	fprintf(fp,"    <pgc>\n");
@@ -363,16 +379,39 @@ void CreateDVD_Thread::handle_close_event(int result)
 		keyframe.set_data(data);
 		insert_video_plugin("Inverse Telecine", &keyframe);
 	}
-	if( use_scale ) {
-		sprintf(data,"<SCALE TYPE=%d X_FACTOR=%f Y_FACTOR=%f "
-			"WIDTH=%d HEIGHT=%d CONSTRAIN=0>",
-			max_w >= dvd_width || max_h >= dvd_height ? 1 : 0,
-			max_w > 0 ? (double)dvd_width/max_w : 1,
-			max_h > 0 ? (double)dvd_height/max_h : 1,
-			dvd_width, dvd_height);
-		keyframe.set_data(data);
-		insert_video_plugin("Scale", &keyframe);
+	if( use_scale != Rescale::none ) {
+		double dvd_aspect = dvd_aspect_height > 0 ? dvd_aspect_width/dvd_aspect_height : 1;
+
+		Tracks *tracks = mwindow->edl->tracks;
+		for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
+			if( vtrk->data_type != TRACK_VIDEO ) continue;
+			if( !vtrk->record ) continue;
+			vtrk->expand_view = 1;
+			PluginSet *plugin_set = new PluginSet(mwindow->edl, vtrk);
+			vtrk->plugin_set.append(plugin_set);
+			Edits *edits = vtrk->edits;
+			for( Edit *edit=edits->first; edit; edit=edit->next ) {
+				Indexable *indexable = edit->get_source();
+				if( !indexable ) continue;
+				Rescale in(indexable);
+				Rescale out(dvd_width, dvd_height, dvd_aspect);
+				float src_w, src_h, dst_w, dst_h;
+				in.rescale(out,use_scale, src_w,src_h, dst_w,dst_h);
+				sprintf(data,"<SCALERATIO TYPE=%d"
+					" IN_W=%d IN_H=%d IN_ASPECT_RATIO=%f"
+					" OUT_W=%d OUT_H=%d OUT_ASPECT_RATIO=%f"
+					" SRC_X=%f SRC_Y=%f SRC_W=%f SRC_H=%f"
+					" DST_X=%f DST_Y=%f DST_W=%f DST_H=%f>", use_scale,
+					in.w, in.h, in.aspect, out.w, out.h, out.aspect,
+					0., 0., src_w, src_h, 0., 0., dst_w, dst_h);
+				keyframe.set_data(data);
+				plugin_set->insert_plugin(_("Scale Ratio"),
+					edit->startproject, edit->length,
+					PLUGIN_STANDALONE, 0, &keyframe, 0);
+			}
+		}
 	}
+
 	if( use_resize_tracks )
 		resize_tracks();
 	if( use_histogram ) {
@@ -397,7 +436,7 @@ void CreateDVD_Thread::handle_close_event(int result)
 		keyframe.set_data(data);
 		insert_video_plugin("Histogram", &keyframe);
 	}
-	mwindow->batch_render->reset();
+	mwindow->batch_render->reset(1);
 	create_dvd_jobs(&mwindow->batch_render->jobs, tmp_path, asset_title);
 	mwindow->save_backup();
 	mwindow->undo->update_undo_after(_("create dvd"), LOAD_ALL);
@@ -417,15 +456,14 @@ BC_Window* CreateDVD_Thread::new_gui()
 		dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
 		dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
 	use_deinterlace = 0;
-	use_scale = 0;
+	use_scale = Rescale::none;
 	use_histogram = 0;
 	use_inverse_telecine = 0;
 	use_wide_audio = 0;
-	use_wide_aspect = 0;
 	use_ffmpeg = 0;
 	use_resize_tracks = 0;
 	use_label_chapters = 0;
-	use_standard = HD_720x480_2997;
+	use_standard = DVD_NTSC_4x3;
 
 	dvd_size = DVD_SIZE;
 	dvd_width = DVD_WIDTH;
@@ -441,26 +479,36 @@ BC_Window* CreateDVD_Thread::new_gui()
 	int has_standard = -1;
 	if( mwindow->edl ) {
 		EDLSession *session = mwindow->edl->session;
+		double framerate = session->frame_rate;
+		double aspect_ratio = session->aspect_h > 0 ?
+			session->aspect_w / session->aspect_h > 0 : 1;
+		int output_w = session->output_w, output_h = session->output_h;
 // match the session to any known standard
-		for( int i=0; i<(int)(sizeof(hd_formats)/sizeof(hd_formats[0])); ++i ) {
-			if( !EQUIV(session->frame_rate, hd_formats[i].framerate) ) continue;
-			if( session->output_w != hd_formats[i].w ) continue;
-			if( session->output_h != hd_formats[i].h ) continue;
+		for( int i=0; i<(int)(sizeof(dvd_formats)/sizeof(dvd_formats[0])); ++i ) {
+			int norm = dvd_formats[i].norm;
+			if( !EQUIV(framerate, dvd_norms[norm].framerate) ) continue;
+			if( output_w != dvd_norms[norm].w ) continue;
+			if( output_h != dvd_norms[norm].h ) continue;
+			int aspect = dvd_formats[i].aspect;
+			double dvd_aspect_ratio =
+				(double)dvd_aspects[aspect].w / dvd_aspects[aspect].h; 
+			if( !EQUIV(aspect_ratio, dvd_aspect_ratio) ) continue;
 			has_standard = i;  break;
 		}
 		if( has_standard < 0 ) {
 // or use the default standard
-			if( !strcmp(mwindow->default_standard, "NTSC") ) has_standard = HD_720x480_2997;
-			else if( !strcmp(mwindow->default_standard, "PAL") ) has_standard = HD_720x576_2500;
+			if( !strcmp(mwindow->default_standard, "NTSC") ) has_standard = DVD_NTSC_4x3;
+			else if( !strcmp(mwindow->default_standard, "PAL") ) has_standard = DVD_PAL_4x3;
 		}
 	}
-	use_standard = has_standard >= 0 ? has_standard : HD_720x480_2997;
+	if( has_standard >= 0 )
+		use_standard = has_standard;
 
 	option_presets();
 	int scr_x = mwindow->gui->get_screen_x(0, -1);
 	int scr_w = mwindow->gui->get_screen_w(0, -1);
 	int scr_h = mwindow->gui->get_screen_h(0, -1);
-	int w = 500, h = 280;
+	int w = 520, h = 280;
 	int x = scr_x + scr_w/2 - w/2, y = scr_h/2 - h/2;
 
 	gui = new CreateDVD_GUI(this, x, y, w, h);
@@ -625,17 +673,6 @@ int CreateDVD_InverseTelecine::handle_event()
 }
 
 
-CreateDVD_Scale::CreateDVD_Scale(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_scale, _("Scale"))
-{
-	this->gui = gui;
-}
-
-CreateDVD_Scale::~CreateDVD_Scale()
-{
-}
-
-
 CreateDVD_ResizeTracks::CreateDVD_ResizeTracks(CreateDVD_GUI *gui, int x, int y)
  : BC_CheckBox(x, y, &gui->thread->use_resize_tracks, _("Resize Tracks"))
 {
@@ -677,16 +714,6 @@ CreateDVD_WideAudio::~CreateDVD_WideAudio()
 {
 }
 
-CreateDVD_WideAspect::CreateDVD_WideAspect(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_wide_aspect, _("Aspect 16x9"))
-{
-	this->gui = gui;
-}
-
-CreateDVD_WideAspect::~CreateDVD_WideAspect()
-{
-}
-
 CreateDVD_UseFFMpeg::CreateDVD_UseFFMpeg(CreateDVD_GUI *gui, int x, int y)
  : BC_CheckBox(x, y, &gui->thread->use_ffmpeg, _("Use FFMPEG"))
 {
@@ -711,13 +738,13 @@ CreateDVD_GUI::CreateDVD_GUI(CreateDVD_Thread *thread, int x, int y, int w, int 
 	tmp_path = 0;
 	btmp_path = 0;
 	disk_space = 0;
+	standard = 0;
+	scale = 0;
 	need_deinterlace = 0;
 	need_inverse_telecine = 0;
-	need_scale = 0;
 	need_resize_tracks = 0;
 	need_histogram = 0;
 	need_wide_audio = 0;
-	need_wide_aspect = 0;
 	need_label_chapters = 0;
 	ok = 0;
 	cancel = 0;
@@ -754,43 +781,45 @@ void CreateDVD_GUI::create_objects()
 	int x0 = get_w() - 170;
 	title = new BC_Title(x0, y, _("Media:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
-	x0 +=  title->get_w() + padx;
-	media_size = new CreateDVD_MediaSize(this, x0, y);
+	int x1 = x0+title->get_w()+padx;
+	media_size = new CreateDVD_MediaSize(this, x1, y);
 	media_size->create_objects();
 	media_sizes.append(new BC_ListBoxItem("4.7GB"));
 	media_sizes.append(new BC_ListBoxItem("8.3GB"));
 	media_size->update_list(&media_sizes);
 	media_size->update(media_sizes[0]->get_text());
 	disk_space->update();
-	x0 = x;
 	y += disk_space->get_h() + pady/2;
-	title = new BC_Title(x0, y, _("Format:"), MEDIUMFONT, YELLOW);
+	title = new BC_Title(x, y, _("Format:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
-	x0 +=  title->get_w() + padx;
-	standard = new CreateDVD_Format(this, x0, y);
+	standard = new CreateDVD_Format(this, title->get_w() + padx, y);
 	add_subwindow(standard);
 	standard->create_objects();
+	x0 -= 30;
+	title = new BC_Title(x0, y, _("Scale:"), MEDIUMFONT, YELLOW);
+	add_subwindow(title);
+	x1 = x0+title->get_w()+padx;
+	scale = new CreateDVD_Scale(this, x1, y);
+	add_subwindow(scale);
+	scale->create_objects();
 	y += standard->get_h() + pady/2;
 	need_deinterlace = new CreateDVD_Deinterlace(this, x, y);
 	add_subwindow(need_deinterlace);
-	int x1 = x + 150, x2 = x1 + 150;
+	x1 = x + 170;
+	int x2 = x1 + 170;
 	need_inverse_telecine = new CreateDVD_InverseTelecine(this, x1, y);
 	add_subwindow(need_inverse_telecine);
 	need_use_ffmpeg = new CreateDVD_UseFFMpeg(this, x2, y);
 	add_subwindow(need_use_ffmpeg);
 	y += need_deinterlace->get_h() + pady/2;
-	need_scale = new CreateDVD_Scale(this, x, y);
-	add_subwindow(need_scale);
+	need_histogram = new CreateDVD_Histogram(this, x, y);
+	add_subwindow(need_histogram);
 	need_wide_audio = new CreateDVD_WideAudio(this, x1, y);
 	add_subwindow(need_wide_audio);
 	need_resize_tracks = new CreateDVD_ResizeTracks(this, x2, y);
 	add_subwindow(need_resize_tracks);
-	y += need_scale->get_h() + pady/2;
-	need_histogram = new CreateDVD_Histogram(this, x, y);
-	add_subwindow(need_histogram);
-	need_wide_aspect = new CreateDVD_WideAspect(this, x1, y);
-	add_subwindow(need_wide_aspect);
-	need_label_chapters = new CreateDVD_LabelChapters(this, x2, y);
+	y += need_histogram->get_h() + pady/2;
+	need_label_chapters = new CreateDVD_LabelChapters(this, x1, y);
 	add_subwindow(need_label_chapters);
 	ok_w = BC_OKButton::calculate_w();
 	ok_h = BC_OKButton::calculate_h();
@@ -834,14 +863,13 @@ int CreateDVD_GUI::close_event()
 
 void CreateDVD_GUI::update()
 {
+	scale->set_value(thread->use_scale);
 	need_deinterlace->set_value(thread->use_deinterlace);
 	need_inverse_telecine->set_value(thread->use_inverse_telecine);
-	need_scale->set_value(thread->use_scale);
 	need_use_ffmpeg->set_value(thread->use_ffmpeg);
 	need_resize_tracks->set_value(thread->use_resize_tracks);
 	need_histogram->set_value(thread->use_histogram);
 	need_wide_audio->set_value(thread->use_wide_audio);
-	need_wide_aspect->set_value(thread->use_wide_aspect);
 	need_label_chapters->set_value(thread->use_label_chapters);
 }
 
@@ -861,7 +889,6 @@ insert_video_plugin(const char *title, KeyFrame *default_keyframe)
 				edit->startproject, edit->length,
 				PLUGIN_STANDALONE, 0, default_keyframe, 0);
 		}
-		vtrk->optimize();
 	}
 	return 0;
 }
@@ -887,17 +914,21 @@ option_presets()
 {
 // reset only probed options
 	use_deinterlace = 0;
-	use_scale = 0;
+	use_scale = Rescale::none;
 	use_resize_tracks = 0;
 	use_wide_audio = 0;
-	use_wide_aspect = 0;
 	use_label_chapters = 0;
 
 	if( !mwindow->edl ) return 1;
 
-	dvd_width = hd_formats[use_standard].w;
-	dvd_height = hd_formats[use_standard].h;
-	dvd_framerate = hd_formats[use_standard].framerate;
+	int norm = dvd_formats[use_standard].norm;
+	dvd_width = dvd_norms[norm].w;
+	dvd_height = dvd_norms[norm].h;
+	dvd_framerate = dvd_norms[norm].framerate;
+	int aspect = dvd_formats[use_standard].aspect;
+	dvd_aspect_width = dvd_aspects[aspect].w;
+	dvd_aspect_height = dvd_aspects[aspect].h;
+	double dvd_aspect = dvd_aspect_height > 0 ? dvd_aspect_width/dvd_aspect_height : 1;
 
 	Tracks *tracks = mwindow->edl->tracks;
 	max_w = 0;  max_h = 0;
@@ -912,10 +943,14 @@ option_presets()
 				Indexable *indexable = edit->get_source();
 				int w = indexable->get_w();
 				if( w > max_w ) max_w = w;
-				if( w != dvd_width ) use_scale = 1;
+				if( w != dvd_width ) use_scale = Rescale::scaled;
 				int h = indexable->get_h();
 				if( h > max_h ) max_h = h;
-				if( h != dvd_height ) use_scale = 1;
+				if( h != dvd_height ) use_scale = Rescale::scaled;
+				float aw, ah;
+				MWindow::create_aspect_ratio(aw, ah, w, h);
+				double aspect = ah > 0 ? aw / ah : 1;
+				if( !EQUIV(aspect, dvd_aspect) ) use_scale = Rescale::scaled;
 			}
 			for( int i=0; i<trk->plugin_set.size(); ++i ) {
 				for(Plugin *plugin = (Plugin*)trk->plugin_set[i]->first;
@@ -924,6 +959,7 @@ option_presets()
 					if( !strcmp(plugin->title, _("Deinterlace")) )
 						has_deinterlace = 1;
 					if( !strcmp(plugin->title, _("Auto Scale")) ||
+					    !strcmp(plugin->title, _("Scale Ratio")) ||
 					    !strcmp(plugin->title, _("Scale")) )
 						has_scale = 1;
 				}
@@ -932,8 +968,8 @@ option_presets()
 		}
 	}
 	if( has_scale )
-		use_scale = 0;
-	if( use_scale ) {
+		use_scale = Rescale::none;
+	if( use_scale != Rescale::none ) {
 		if( max_w != dvd_width ) use_resize_tracks = 1;
 		if( max_h != dvd_height ) use_resize_tracks = 1;
 	}
@@ -950,13 +986,6 @@ option_presets()
 	Labels *labels = mwindow->edl->labels;
 	use_label_chapters = labels && labels->first ? 1 : 0;
 
-	float aw, ah;
-	MWindow::create_aspect_ratio(aw, ah, max_w, max_h);
-	if( aw == DVD_WIDE_ASPECT_WIDTH && ah == DVD_WIDE_ASPECT_HEIGHT )
-		use_wide_aspect = 1;
-	dvd_aspect_width = use_wide_aspect ? DVD_WIDE_ASPECT_WIDTH : DVD_ASPECT_WIDTH;
-	dvd_aspect_height = use_wide_aspect ? DVD_WIDE_ASPECT_HEIGHT : DVD_ASPECT_HEIGHT;
-
 	if( tracks->recordable_audio_tracks() == DVD_WIDE_CHANNELS )
 		use_wide_audio = 1;
 
@@ -966,8 +995,8 @@ option_presets()
 
 
 CreateDVD_FormatItem::CreateDVD_FormatItem(CreateDVD_Format *popup,
-		int standard, const char *name)
- : BC_MenuItem(name)
+		int standard, const char *text)
+ : BC_MenuItem(text)
 {
 	this->popup = popup;
 	this->standard = standard;
@@ -986,7 +1015,7 @@ int CreateDVD_FormatItem::handle_event()
 
 
 CreateDVD_Format::CreateDVD_Format(CreateDVD_GUI *gui, int x, int y)
- : BC_PopupMenu(x, y, 180, hd_formats[gui->thread->use_standard].name, 1)
+ : BC_PopupMenu(x, y, 180, "", 1)
 {
 	this->gui = gui;
 }
@@ -997,9 +1026,16 @@ CreateDVD_Format::~CreateDVD_Format()
 
 void CreateDVD_Format::create_objects()
 {
-	for( int i=0; i<(int)(sizeof(hd_formats)/sizeof(hd_formats[0])); ++i ) {
-		add_item(new CreateDVD_FormatItem(this, i, hd_formats[i].name));
+	for( int i=0; i<(int)(sizeof(dvd_formats)/sizeof(dvd_formats[0])); ++i ) {
+		int norm = dvd_formats[i].norm;
+		int aspect = dvd_formats[i].aspect;
+		char item_text[BCTEXTLEN];
+		sprintf(item_text,"%4s (%5.2f) %dx%d",
+			dvd_norms[norm].name, dvd_norms[norm].framerate,
+			dvd_aspects[aspect].w, dvd_aspects[aspect].h);
+		add_item(new CreateDVD_FormatItem(this, i, item_text));
 	}
+	set_value(gui->thread->use_standard);
 }
 
 int CreateDVD_Format::handle_event()
@@ -1008,6 +1044,53 @@ int CreateDVD_Format::handle_event()
 	gui->update();
 	return 1;
 }
+
+
+CreateDVD_ScaleItem::CreateDVD_ScaleItem(CreateDVD_Scale *popup,
+		int scale, const char *text)
+ : BC_MenuItem(text)
+{
+	this->popup = popup;
+	this->scale = scale;
+}
+
+CreateDVD_ScaleItem::~CreateDVD_ScaleItem()
+{
+}
+
+int CreateDVD_ScaleItem::handle_event()
+{
+	popup->gui->thread->use_scale = scale;
+	popup->set_value(scale);
+	return popup->handle_event();
+}
+
+
+CreateDVD_Scale::CreateDVD_Scale(CreateDVD_GUI *gui, int x, int y)
+ : BC_PopupMenu(x, y, 100, "", 1)
+{
+	this->gui = gui;
+}
+
+CreateDVD_Scale::~CreateDVD_Scale()
+{
+}
+
+void CreateDVD_Scale::create_objects()
+{
+
+	for( int i=0; i<(int)Rescale::n_scale_types; ++i ) {
+		add_item(new CreateDVD_ScaleItem(this, i, Rescale::scale_types[i]));
+	}
+	set_value(gui->thread->use_scale);
+}
+
+int CreateDVD_Scale::handle_event()
+{
+	gui->update();
+	return 1;
+}
+
 
 CreateDVD_MediaSize::CreateDVD_MediaSize(CreateDVD_GUI *gui, int x, int y)
  : BC_PopupTextBox(gui, 0, 0, x, y, 70,50)

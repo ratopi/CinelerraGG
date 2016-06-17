@@ -32,12 +32,12 @@ BLD := $(THIRDPARTY)/build
 
 # package build flags, if needed
 # need frame pointer for debugs and helps with profiling
-PKG_CFLAGS_ ?= -g -O2 -fno-omit-frame-pointer
 # NOTE: the trailing blank is MANDITORY or the builds fail
 # due to bugs in the build scripts from auto*
-CFLAGS = $(PKG_CFLAGS_) 
-LDFLAGS += $(PKG_LDFLAGS_) 
-CXXFLAGS += $(PKG_CXXFLAGS_) 
+CFLAGS_ ?= -g -O2 -fno-omit-frame-pointer
+CFLAGS ?= $(CFLAGS_) 
+LDFLAGS += $(LDFLAGS_) 
+CXXFLAGS += $(CXXFLAGS_) 
 
 pkg-source=$(BLD)/$(1).source
 pkg-config=$(BLD)/$(1).configure

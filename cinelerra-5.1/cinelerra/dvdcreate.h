@@ -11,6 +11,7 @@
 #include "bctextbox.h"
 #include "browsebutton.h"
 #include "mwindow.h"
+#include "rescale.h"
 
 #include "dvdcreate.inc"
 
@@ -48,7 +49,7 @@ public:
 	char tmp_path[BCTEXTLEN];
 	int use_deinterlace, use_inverse_telecine;
 	int use_scale, use_resize_tracks;
-	int use_wide_audio, use_wide_aspect;
+	int use_wide_audio;
 	int use_histogram, use_label_chapters;
 	int use_ffmpeg, use_standard;
 
@@ -137,15 +138,6 @@ public:
 	CreateDVD_GUI *gui;
 };
 
-class CreateDVD_Scale : public BC_CheckBox
-{
-public:
-	CreateDVD_Scale(CreateDVD_GUI *gui, int x, int y);
-	~CreateDVD_Scale();
-
-	CreateDVD_GUI *gui;
-};
-
 class CreateDVD_ResizeTracks : public BC_CheckBox
 {
 public:
@@ -182,15 +174,6 @@ public:
 	CreateDVD_GUI *gui;
 };
 
-class CreateDVD_WideAspect : public BC_CheckBox
-{
-public:
-	CreateDVD_WideAspect(CreateDVD_GUI *gui, int x, int y);
-	~CreateDVD_WideAspect();
-
-	CreateDVD_GUI *gui;
-};
-
 class CreateDVD_UseFFMpeg : public BC_CheckBox
 {
 public:
@@ -221,16 +204,15 @@ public:
 	BrowseButton *btmp_path;
 	CreateDVD_DiskSpace *disk_space;
 	CreateDVD_Format *standard;
+	CreateDVD_Scale *scale;
 	ArrayList<BC_ListBoxItem *> media_sizes;
 	CreateDVD_MediaSize *media_size;
 	CreateDVD_Deinterlace *need_deinterlace;
 	CreateDVD_InverseTelecine *need_inverse_telecine;
-	CreateDVD_Scale *need_scale;
 	CreateDVD_UseFFMpeg *need_use_ffmpeg;
 	CreateDVD_ResizeTracks *need_resize_tracks;
 	CreateDVD_Histogram *need_histogram;
 	CreateDVD_WideAudio *need_wide_audio;
-	CreateDVD_WideAspect *need_wide_aspect;
 	CreateDVD_LabelChapters *need_label_chapters;
 	int ok_x, ok_y, ok_w, ok_h;
 	CreateDVD_OK *ok;
@@ -242,7 +224,7 @@ class CreateDVD_FormatItem : public BC_MenuItem
 {
 public:
 	int handle_event();
-	CreateDVD_FormatItem(CreateDVD_Format *popup, int standard, const char *name);
+	CreateDVD_FormatItem(CreateDVD_Format *popup, int standard, const char *text);
 	~CreateDVD_FormatItem();
 
 	CreateDVD_Format *popup;
@@ -256,8 +238,32 @@ public:
 	int handle_event();
 	CreateDVD_Format(CreateDVD_GUI *gui, int x, int y);
 	~CreateDVD_Format();
+	void set_value(int v) { set_text(get_item(v)->get_text()); }
 
 	CreateDVD_GUI *gui;
+};
+
+class CreateDVD_ScaleItem : public BC_MenuItem
+{
+public:
+	int handle_event();
+	CreateDVD_ScaleItem(CreateDVD_Scale *popup, int scale, const char *text);
+	~CreateDVD_ScaleItem();
+
+	CreateDVD_Scale *popup;
+	int scale;
+};
+
+class CreateDVD_Scale : public BC_PopupMenu
+{
+public:
+	void create_objects();
+	int handle_event();
+	CreateDVD_Scale(CreateDVD_GUI *gui, int x, int y);
+	~CreateDVD_Scale();
+
+	CreateDVD_GUI *gui;
+	void set_value(int v) { set_text(Rescale::scale_types[v]); }
 };
 
 class CreateDVD_MediaSize : public BC_PopupTextBox

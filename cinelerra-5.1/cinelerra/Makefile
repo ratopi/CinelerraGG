@@ -1,5 +1,4 @@
-TOPDIR ?= $(CURDIR)/..
-export TOPDIR
+export TOPDIR ?= $(CURDIR)/..
 include $(TOPDIR)/global_config
 
 OBJS = \
@@ -13,15 +12,15 @@ OBJS = \
 	$(OBJDIR)/amodule.o \
 	$(OBJDIR)/androidcontrol.o \
 	$(OBJDIR)/apatchgui.o \
-	$(OBJDIR)/aplugin.o \
 	$(OBJDIR)/apluginarray.o \
+	$(OBJDIR)/aplugin.o \
 	$(OBJDIR)/apluginset.o \
 	$(OBJDIR)/arender.o \
 	$(OBJDIR)/assetedit.o \
+	$(OBJDIR)/asset.o \
 	$(OBJDIR)/assetpopup.o \
 	$(OBJDIR)/assetremove.o \
 	$(OBJDIR)/assets.o \
-	$(OBJDIR)/asset.o \
 	$(OBJDIR)/atrack.o \
 	$(OBJDIR)/attachmentpoint.o \
 	$(OBJDIR)/audio1394.o \
@@ -30,56 +29,66 @@ OBJS = \
 	$(OBJDIR)/audiodvb.o \
 	$(OBJDIR)/audioesound.o \
 	$(OBJDIR)/audioidevice.o \
+	$(OBJDIR)/audiompeg.o \
 	$(OBJDIR)/audioodevice.o \
 	$(OBJDIR)/audiooss.o \
-	$(OBJDIR)/auto.o \
-	$(OBJDIR)/autos.o \
+	$(OBJDIR)/audiov4l2mpeg.o \
 	$(OBJDIR)/autoconf.o \
 	$(OBJDIR)/automation.o \
+	$(OBJDIR)/auto.o \
+	$(OBJDIR)/autos.o \
 	$(OBJDIR)/avc1394control.o \
 	$(OBJDIR)/avc1394transport.o \
-	$(OBJDIR)/awindow.o \
 	$(OBJDIR)/awindowgui.o \
 	$(OBJDIR)/awindowmenu.o \
+	$(OBJDIR)/awindow.o \
 	$(OBJDIR)/batch.o \
 	$(OBJDIR)/batchrender.o \
+	$(OBJDIR)/bdcreate.o \
 	$(OBJDIR)/bitspopup.o \
 	$(OBJDIR)/brender.o \
 	$(OBJDIR)/browsebutton.o \
 	$(OBJDIR)/byteorderpopup.o \
-	$(OBJDIR)/cache.o \
 	$(OBJDIR)/cachebase.o \
+	$(OBJDIR)/cache.o \
 	$(OBJDIR)/canvas.o \
 	$(OBJDIR)/canvastools.o \
-	$(OBJDIR)/channel.o \
 	$(OBJDIR)/channeldb.o \
 	$(OBJDIR)/channeledit.o \
+	$(OBJDIR)/channelinfo.o \
+	$(OBJDIR)/channel.o \
 	$(OBJDIR)/channelpicker.o \
 	$(OBJDIR)/chantables.o \
-	$(OBJDIR)/clipedit.o \
 	$(OBJDIR)/cicolors.o \
+	$(OBJDIR)/clipedit.o \
 	$(OBJDIR)/colorpicker.o \
+	$(OBJDIR)/commercials.o \
 	$(OBJDIR)/commonrender.o \
-	$(OBJDIR)/confirmsave.o \
 	$(OBJDIR)/confirmquit.o \
+	$(OBJDIR)/confirmsave.o \
 	$(OBJDIR)/cpanel.o \
 	$(OBJDIR)/cplayback.o \
 	$(OBJDIR)/ctimebar.o \
 	$(OBJDIR)/ctracking.o \
 	$(OBJDIR)/cursor.o \
-	$(OBJDIR)/cwindow.o \
 	$(OBJDIR)/cwindowgui.o \
+	$(OBJDIR)/cwindow.o \
 	$(OBJDIR)/cwindowtool.o \
+	$(OBJDIR)/dbwindow.o \
 	$(OBJDIR)/dcoffset.o \
-	$(OBJDIR)/device1394input.o \
-	$(OBJDIR)/devicedvbinput.o \
-	$(OBJDIR)/device1394output.o \
 	$(OBJDIR)/deleteallindexes.o \
-	$(OBJDIR)/dvbtune.o \
+	$(OBJDIR)/device1394input.o \
+	$(OBJDIR)/device1394output.o \
+	$(OBJDIR)/devicedvbinput.o \
+	$(OBJDIR)/devicempeginput.o \
+	$(OBJDIR)/devicev4l2base.o \
+	$(OBJDIR)/devicev4l2input.o \
 	$(OBJDIR)/drivesync.o \
-	$(OBJDIR)/edit.o \
+	$(OBJDIR)/dvbtune.o \
+	$(OBJDIR)/dvdcreate.o \
 	$(OBJDIR)/edithandles.o \
 	$(OBJDIR)/editlength.o \
+	$(OBJDIR)/edit.o \
 	$(OBJDIR)/editpanel.o \
 	$(OBJDIR)/editpopup.o \
 	$(OBJDIR)/edits.o \
@@ -88,21 +97,22 @@ OBJS = \
 	$(OBJDIR)/exportedl.o \
 	$(OBJDIR)/fadeengine.o \
 	$(OBJDIR)/ffmpeg.o \
-	$(OBJDIR)/file.o \
 	$(OBJDIR)/fileac3.o \
-	$(OBJDIR)/filebase.o \
 	$(OBJDIR)/filebaseaudio.o \
+	$(OBJDIR)/filebase.o \
 	$(OBJDIR)/filebaseulaw.o \
 	$(OBJDIR)/filecr2.o \
-	$(OBJDIR)/fileffmpeg.o \
+	$(OBJDIR)/filedb.o \
 	$(OBJDIR)/filedv.o \
 	$(OBJDIR)/fileexr.o \
+	$(OBJDIR)/fileffmpeg.o \
 	$(OBJDIR)/fileflac.o \
 	$(OBJDIR)/fileformat.o \
 	$(OBJDIR)/filegif.o \
-	$(OBJDIR)/filelist.o \
 	$(OBJDIR)/filejpeg.o \
+	$(OBJDIR)/filelist.o \
 	$(OBJDIR)/filempeg.o \
+	$(OBJDIR)/file.o \
 	$(OBJDIR)/fileogg.o \
 	$(OBJDIR)/filepng.o \
 	$(OBJDIR)/filescene.o \
@@ -115,14 +125,14 @@ OBJS = \
 	$(OBJDIR)/floatauto.o \
 	$(OBJDIR)/floatautos.o \
 	$(OBJDIR)/formatcheck.o \
-	$(OBJDIR)/formatpresets.o \
 	$(OBJDIR)/formatpopup.o \
+	$(OBJDIR)/formatpresets.o \
 	$(OBJDIR)/formattools.o \
 	$(OBJDIR)/fourier.o \
 	$(OBJDIR)/framecache.o \
 	$(OBJDIR)/garbage.o \
-	$(OBJDIR)/gwindow.o \
 	$(OBJDIR)/gwindowgui.o \
+	$(OBJDIR)/gwindow.o \
 	$(OBJDIR)/iec61883input.o \
 	$(OBJDIR)/iec61883output.o \
 	$(OBJDIR)/indexable.o \
@@ -133,28 +143,28 @@ OBJS = \
 	$(OBJDIR)/intautos.o \
 	$(OBJDIR)/interfaceprefs.o \
 	$(OBJDIR)/interlacemodes.o \
-	$(OBJDIR)/keyframe.o \
 	$(OBJDIR)/keyframegui.o \
+	$(OBJDIR)/keyframehandles.o \
+	$(OBJDIR)/keyframe.o \
 	$(OBJDIR)/keyframepopup.o \
 	$(OBJDIR)/keyframes.o \
-	$(OBJDIR)/keyframehandles.o \
 	$(OBJDIR)/labeledit.o \
 	$(OBJDIR)/labelnavigate.o \
 	$(OBJDIR)/labels.o \
-	$(OBJDIR)/levelwindow.o \
 	$(OBJDIR)/levelwindowgui.o \
+	$(OBJDIR)/levelwindow.o \
 	$(OBJDIR)/libdv.o \
 	$(OBJDIR)/libmjpeg.o \
 	$(OBJDIR)/loadbalance.o \
 	$(OBJDIR)/loadfile.o \
 	$(OBJDIR)/loadmode.o \
 	$(OBJDIR)/localsession.o \
-	$(OBJDIR)/main.o \
 	$(OBJDIR)/mainclock.o \
 	$(OBJDIR)/maincursor.o \
 	$(OBJDIR)/mainerror.o \
 	$(OBJDIR)/mainindexes.o \
 	$(OBJDIR)/mainmenu.o \
+	$(OBJDIR)/main.o \
 	$(OBJDIR)/mainprogress.o \
 	$(OBJDIR)/mainsession.o \
 	$(OBJDIR)/mainundo.o \
@@ -163,6 +173,7 @@ OBJS = \
 	$(OBJDIR)/maskautos.o \
 	$(OBJDIR)/maskengine.o \
 	$(OBJDIR)/mbuttons.o \
+	$(OBJDIR)/mediadb.o \
 	$(OBJDIR)/menuaeffects.o \
 	$(OBJDIR)/menuattacheffect.o \
 	$(OBJDIR)/menuattachtransition.o \
@@ -173,13 +184,13 @@ OBJS = \
 	$(OBJDIR)/meterpanel.o \
 	$(OBJDIR)/module.o \
 	$(OBJDIR)/mtimebar.o \
-	$(OBJDIR)/mwindow.o \
 	$(OBJDIR)/mwindowedit.o \
 	$(OBJDIR)/mwindowgui.o \
 	$(OBJDIR)/mwindowmove.o \
+	$(OBJDIR)/mwindow.o \
 	$(OBJDIR)/nestededls.o \
-	$(OBJDIR)/new.o \
 	$(OBJDIR)/newfolder.o \
+	$(OBJDIR)/new.o \
 	$(OBJDIR)/overlayframe.o \
 	$(OBJDIR)/packagedispatcher.o \
 	$(OBJDIR)/packagerenderer.o \
@@ -197,75 +208,83 @@ OBJS = \
 	$(OBJDIR)/playbackengine.o \
 	$(OBJDIR)/playbackprefs.o \
 	$(OBJDIR)/playtransport.o \
-	$(OBJDIR)/plugin.o \
-	$(OBJDIR)/pluginaclient.o \
 	$(OBJDIR)/pluginaclientlad.o \
+	$(OBJDIR)/pluginaclient.o \
 	$(OBJDIR)/pluginarray.o \
 	$(OBJDIR)/pluginclient.o \
 	$(OBJDIR)/plugindialog.o \
+	$(OBJDIR)/pluginfclient.o \
+	$(OBJDIR)/plugin.o \
 	$(OBJDIR)/pluginpopup.o \
-	$(OBJDIR)/pluginset.o \
 	$(OBJDIR)/pluginserver.o \
+	$(OBJDIR)/pluginset.o \
 	$(OBJDIR)/plugintclient.o \
 	$(OBJDIR)/plugintoggles.o \
 	$(OBJDIR)/pluginvclient.o \
 	$(OBJDIR)/preferences.o \
 	$(OBJDIR)/preferencesthread.o \
-	$(OBJDIR)/presets.o \
 	$(OBJDIR)/presetsgui.o \
+	$(OBJDIR)/presets.o \
 	$(OBJDIR)/question.o \
 	$(OBJDIR)/quit.o \
 	$(OBJDIR)/recconfirmdelete.o \
-	$(OBJDIR)/record.o \
 	$(OBJDIR)/recordableatracks.o \
 	$(OBJDIR)/recordablevtracks.o \
 	$(OBJDIR)/recordaudio.o \
+	$(OBJDIR)/recordbatches.o \
 	$(OBJDIR)/recordconfig.o \
 	$(OBJDIR)/recordgui.o \
 	$(OBJDIR)/recordlabel.o \
 	$(OBJDIR)/recordmonitor.o \
+	$(OBJDIR)/record.o \
 	$(OBJDIR)/recordprefs.o \
 	$(OBJDIR)/recordscopes.o \
 	$(OBJDIR)/recordthread.o \
 	$(OBJDIR)/recordtransport.o \
 	$(OBJDIR)/recordvideo.o \
+	$(OBJDIR)/remotecontrol.o \
 	$(OBJDIR)/removefile.o \
-	$(OBJDIR)/render.o \
-	$(OBJDIR)/renderfarm.o \
-	$(OBJDIR)/renderfarmclient.o \
 	$(OBJDIR)/renderengine.o \
+	$(OBJDIR)/renderfarmclient.o \
+	$(OBJDIR)/renderfarm.o \
+	$(OBJDIR)/render.o \
 	$(OBJDIR)/renderprofiles.o \
 	$(OBJDIR)/resample.o \
+	$(OBJDIR)/rescale.o \
 	$(OBJDIR)/resizetrackthread.o \
 	$(OBJDIR)/resourcepixmap.o \
 	$(OBJDIR)/resourcethread.o \
-	$(OBJDIR)/samples.o \
 	$(OBJDIR)/samplescroll.o \
+	$(OBJDIR)/samples.o \
 	$(OBJDIR)/savefile.o \
 	$(OBJDIR)/scenegraph.o \
 	$(OBJDIR)/scopewindow.o \
 	$(OBJDIR)/setformat.o \
 	$(OBJDIR)/sha1.o \
 	$(OBJDIR)/sharedlocation.o \
+	$(OBJDIR)/shbtnprefs.o \
 	$(OBJDIR)/shmemory.o \
 	$(OBJDIR)/sighandler.o \
+	$(OBJDIR)/signalstatus.o \
 	$(OBJDIR)/splashgui.o \
 	$(OBJDIR)/statusbar.o \
+	$(OBJDIR)/strack.o \
+	$(OBJDIR)/swindow.o \
 	$(OBJDIR)/theme.o \
 	$(OBJDIR)/threadexec.o \
 	$(OBJDIR)/threadloader.o \
-	$(OBJDIR)/timelinepane.o \
 	$(OBJDIR)/timebar.o \
 	$(OBJDIR)/timeentry.o \
+	$(OBJDIR)/timelinepane.o \
 	$(OBJDIR)/tipwindow.o \
-	$(OBJDIR)/track.o \
 	$(OBJDIR)/trackcanvas.o \
 	$(OBJDIR)/tracking.o \
-	$(OBJDIR)/tracks.o \
+	$(OBJDIR)/track.o \
 	$(OBJDIR)/trackscroll.o \
 	$(OBJDIR)/tracksedit.o \
-	$(OBJDIR)/transition.o \
+	$(OBJDIR)/tracks.o \
 	$(OBJDIR)/transitionhandles.o \
+	$(OBJDIR)/transition.o \
 	$(OBJDIR)/transitionpopup.o \
 	$(OBJDIR)/transportque.o \
 	$(OBJDIR)/tunerserver.o \
@@ -276,59 +295,39 @@ OBJS = \
 	$(OBJDIR)/vdevicebase.o \
 	$(OBJDIR)/vdevicebuz.o \
 	$(OBJDIR)/vdevicedvb.o \
+	$(OBJDIR)/vdevicempeg.o \
 	$(OBJDIR)/vdeviceprefs.o \
-	$(OBJDIR)/vdevicev4l.o \
-	$(OBJDIR)/vdevicev4l2.o \
 	$(OBJDIR)/vdevicev4l2jpeg.o \
+	$(OBJDIR)/vdevicev4l2mpeg.o \
+	$(OBJDIR)/vdevicev4l2.o \
+	$(OBJDIR)/vdevicev4l.o \
 	$(OBJDIR)/vdevicex11.o \
 	$(OBJDIR)/vedit.o \
 	$(OBJDIR)/vedits.o \
 	$(OBJDIR)/videodevice.o \
 	$(OBJDIR)/viewmenu.o \
-	$(OBJDIR)/virtualnode.o \
 	$(OBJDIR)/virtualaconsole.o \
 	$(OBJDIR)/virtualanode.o \
 	$(OBJDIR)/virtualconsole.o \
+	$(OBJDIR)/virtualnode.o \
 	$(OBJDIR)/virtualvconsole.o \
 	$(OBJDIR)/virtualvnode.o \
 	$(OBJDIR)/vmodule.o \
 	$(OBJDIR)/vpatchgui.o \
 	$(OBJDIR)/vplayback.o \
-	$(OBJDIR)/vplugin.o \
 	$(OBJDIR)/vpluginarray.o \
+	$(OBJDIR)/vplugin.o \
 	$(OBJDIR)/vpluginset.o \
-	$(OBJDIR)/vtimebar.o \
 	$(OBJDIR)/vrender.o \
-	$(OBJDIR)/vtrack.o \
+	$(OBJDIR)/vtimebar.o \
 	$(OBJDIR)/vtracking.o \
-	$(OBJDIR)/vwindow.o \
+	$(OBJDIR)/vtrack.o \
 	$(OBJDIR)/vwindowgui.o \
+	$(OBJDIR)/vwindow.o \
 	$(OBJDIR)/wavecache.o \
+	$(OBJDIR)/wwindow.o \
 	$(OBJDIR)/zoombar.o \
 	$(OBJDIR)/zoompanel.o \
-\
-	$(OBJDIR)/audiompeg.o \
-	$(OBJDIR)/audiov4l2mpeg.o \
-	$(OBJDIR)/bdcreate.o \
-	$(OBJDIR)/channelinfo.o \
-	$(OBJDIR)/commercials.o \
-	$(OBJDIR)/dbwindow.o \
-	$(OBJDIR)/devicempeginput.o \
-	$(OBJDIR)/devicev4l2base.o \
-	$(OBJDIR)/devicev4l2input.o \
-	$(OBJDIR)/dvdcreate.o \
-	$(OBJDIR)/filedb.o \
-	$(OBJDIR)/mediadb.o \
-	$(OBJDIR)/recordbatches.o \
-	$(OBJDIR)/remotecontrol.o \
-	$(OBJDIR)/shbtnprefs.o \
-	$(OBJDIR)/signalstatus.o \
-	$(OBJDIR)/strack.o \
-	$(OBJDIR)/swindow.o \
-	$(OBJDIR)/vdevicempeg.o \
-	$(OBJDIR)/vdevicev4l2mpeg.o \
-	$(OBJDIR)/wwindow.o \
-	$(OBJDIR)/pluginfclient.o \
 
 #	$(OBJDIR)/renderfarmfsclient.o \
 #	$(OBJDIR)/renderfarmfsserver.o \

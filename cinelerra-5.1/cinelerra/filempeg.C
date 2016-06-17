@@ -2089,17 +2089,6 @@ void MPEGConfigVideo::update_cmodel_objs()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 MPEGDerivative::MPEGDerivative(int x, int y, MPEGConfigVideo *gui)
  : BC_PopupMenu(x, y, 150, derivative_to_string(gui->asset->vmpeg_derivative))
 {
@@ -2120,40 +2109,19 @@ int MPEGDerivative::handle_event()
 
 int MPEGDerivative::string_to_derivative(char *string)
 {
-	if(!strcasecmp(derivative_to_string(1), string))
-		return 1;
-	if(!strcasecmp(derivative_to_string(2), string))
-		return 2;
-
+	if( !strcasecmp(derivative_to_string(1), string) ) return 1;
+	if( !strcasecmp(derivative_to_string(2), string) ) return 2;
 	return 1;
 }
 
 char* MPEGDerivative::derivative_to_string(int derivative)
 {
-	switch(derivative)
-	{
-		case 1:
-			return _("MPEG-1");
-			break;
-
-		case 2:
-			return _("MPEG-2");
-			break;
-
-		default:
-			return _("MPEG-1");
-			break;
+	switch(derivative) {
+	case 1: return _("MPEG-1");
+	case 2: return _("MPEG-2");
 	}
+	return _("MPEG-1");
 }
-
-
-
-
-
-
-
-
-
 
 
 MPEGPreset::MPEGPreset(int x, int y, MPEGConfigVideo *gui)
@@ -2164,8 +2132,7 @@ MPEGPreset::MPEGPreset(int x, int y, MPEGConfigVideo *gui)
 
 void MPEGPreset::create_objects()
 {
-	for(int i = 0; i < 10; i++)
-	{
+	for(int i = 0; i < 14; i++) {
 		add_item(new BC_MenuItem(value_to_string(i)));
 	}
 }
@@ -2178,8 +2145,7 @@ int MPEGPreset::handle_event()
 
 int MPEGPreset::string_to_value(char *string)
 {
-	for(int i = 0; i < 10; i++)
-	{
+	for(int i = 0; i < 14; i++) {
 		if(!strcasecmp(value_to_string(i), string))
 			return i;
 	}
@@ -2188,20 +2154,23 @@ int MPEGPreset::string_to_value(char *string)
 
 char* MPEGPreset::value_to_string(int derivative)
 {
-	switch(derivative)
-	{
-		case 0: return _("Generic MPEG-1"); break;
-		case 1: return _("standard VCD"); break;
-		case 2: return _("user VCD"); break;
-		case 3: return _("Generic MPEG-2"); break;
-		case 4: return _("standard SVCD"); break;
-		case 5: return _("user SVCD"); break;
-		case 6: return _("VCD Still sequence"); break;
-		case 7: return _("SVCD Still sequence"); break;
-		case 8: return _("DVD NAV"); break;
-		case 9: return _("DVD"); break;
-		default: return _("Generic MPEG-1"); break;
+	switch( derivative ) {
+	case 0: return _("Generic MPEG-1"); break;
+	case 1: return _("standard VCD"); break;
+	case 2: return _("user VCD"); break;
+	case 3: return _("Generic MPEG-2"); break;
+	case 4: return _("standard SVCD"); break;
+	case 5: return _("user SVCD"); break;
+	case 6: return _("VCD Still sequence"); break;
+	case 7: return _("SVCD Still sequence"); break;
+	case 8: return _("DVD NAV"); break;
+	case 9: return _("DVD"); break;
+	case 10: return _("ATSC 480i"); break;
+	case 11: return _("ATSC 480p"); break;
+	case 12: return _("ATSC 720p"); break;
+	case 13: return _("ATSC 1080i"); break;
 	}
+	return _("Generic MPEG-1");
 }
 
 

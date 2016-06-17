@@ -118,7 +118,7 @@ public:
 // Return the number of seconds from the beginning of this which are
 // equivalent to the argument.
 // If they're completely equivalent, -1 is returned;
-// This is used by BRender.
+// This is used by BRender + BatchRender.
 	double equivalent_output(EDL *edl);
 // Set project path for filename prefixes in the assets
 	void set_path(char *path);

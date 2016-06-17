@@ -102,6 +102,7 @@ public:
 	int ffmpeg_early_probe;
 // ffmpeg builds marker indexes as it builds idx files
 	int ffmpeg_marker_indexes;
+// warning
 	int warn_indexes;
 
 // Default positions for channels

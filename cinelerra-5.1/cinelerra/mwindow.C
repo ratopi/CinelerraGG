@@ -902,6 +902,11 @@ void MWindow::show_warning(int *do_warning, const char *text)
 	wwindow->show_warning(do_warning, text);
 }
 
+int MWindow::wait_warning()
+{
+	return wwindow->wait_result();
+}
+
 void MWindow::init_theme()
 {
 	Timer timer;

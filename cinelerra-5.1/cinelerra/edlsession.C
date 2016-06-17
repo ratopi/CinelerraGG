@@ -24,6 +24,7 @@
 #include "autoconf.h"
 #include "bccmodels.h"
 #include "bchash.h"
+#include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -172,7 +173,7 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 {
 	if(session->output_w != output_w ||
 		session->output_h != output_h ||
-		session->frame_rate != frame_rate ||
+		!EQUIV(session->frame_rate, frame_rate) ||
 		session->color_model != color_model ||
 		session->interpolation_type != interpolation_type ||
 		session->interpolate_raw != interpolate_raw ||
@@ -335,14 +336,13 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	video_write_length = defaults->get("VIDEO_WRITE_LENGTH", 30);
 	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", 1);
 	vwindow_meter = defaults->get("VWINDOW_METER", 0);
-
+	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
 
 	decode_subtitles = defaults->get("DECODE_SUBTITLES", decode_subtitles);
 	subtitle_number = defaults->get("SUBTITLE_NUMBER", subtitle_number);
 	label_cells = defaults->get("LABEL_CELLS", label_cells);
 	program_no = defaults->get("PROGRAM_NO", program_no);
 
-	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
 	boundaries();
 
 	return 0;
@@ -640,6 +640,7 @@ int EDLSession::load_xml(FileXML *file,
 		subtitle_number = file->tag.get_property("SUBTITLE_NUMBER", subtitle_number);
 		label_cells = file->tag.get_property("LABEL_CELLS", label_cells);
 		program_no = file->tag.get_property("PROGRAM_NO", program_no);
+
 		boundaries();
 	}
 

@@ -31,6 +31,7 @@ WWindow::WWindow(MWindow *mwindow)
  : BC_DialogThread()
 {
 	this->mwindow = mwindow;
+	this->result = 0;
 }
 
 WWindow::~WWindow()
@@ -43,11 +44,13 @@ void WWindow::show_warning(int *do_warning, const char *warn_text)
 	if( running() ) return;
 	this->do_warning = do_warning;
 	this->warn_text = warn_text;
+	this->result = 0;
 	start();
 }
 
 void WWindow::handle_close_event(int result)
 {
+	this->result = result;
 	gui = 0;
 }
 
@@ -59,6 +62,13 @@ BC_Window* WWindow::new_gui()
 	WWindowGUI *gui = new WWindowGUI(this, x, y);
 	gui->create_objects();
 	return gui;
+}
+
+int WWindow::wait_result()
+{
+	if( !running() ) return -1;
+	join();
+	return result;
 }
 
 WWindowGUI::WWindowGUI(WWindow *thread, int x, int y)

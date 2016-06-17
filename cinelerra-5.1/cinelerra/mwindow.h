@@ -584,6 +584,7 @@ public:
 // Warning window
 	WWindow *wwindow;
 	void show_warning(int *do_warning, const char *text);
+	int wait_warning();
 // Levels
 	LevelWindow *lwindow;
 // Lock during creation and destruction of GUI

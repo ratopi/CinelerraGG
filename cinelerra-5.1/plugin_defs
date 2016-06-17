@@ -1,5 +1,4 @@
-TOPDIR ?= ../..
-export TOPDIR
+export TOPDIR ?= ../..
 include $(TOPDIR)/global_config
 
 plugin_dirs := themes
@@ -15,7 +14,7 @@ video_transitions := bandslide bandwipe dissolve flip irissquare \
 
 plugin_dirs += transforms
 transforms := 1080to480 1080to540 720to480 lens perspective photoscale \
-	polar rotate scale translate whirl
+	polar rotate scale translate whirl scaleratio
 
 plugin_dirs += colors
 colors := brightness bluebanana C41 color3way colorbalance huesaturation \

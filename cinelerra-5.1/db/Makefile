@@ -1,5 +1,4 @@
-TOPDIR ?= $(CURDIR)/..
-export TOPDIR
+export TOPDIR ?= $(CURDIR)/..
 include $(TOPDIR)/global_config
 
 $(shell mkdir -p $(OBJDIR))

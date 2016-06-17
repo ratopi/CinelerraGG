@@ -1,4 +1,4 @@
-TOPDIR ?= $(CURDIR)/..
+export TOPDIR ?= $(CURDIR)/..
 include $(TOPDIR)/global_config
 
 ifeq ($(WANT_DVB), yes)
@@ -15,6 +15,7 @@ DIRS = \
 	1080to540 \
 	720to480 \
 	aging \
+	scaleratio \
 	audioscope \
 	bandslide \
 	bandwipe \

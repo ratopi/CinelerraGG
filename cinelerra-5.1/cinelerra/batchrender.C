@@ -206,6 +206,7 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
 	default_job = 0;
 	boot_defaults = 0;
 	preferences = 0;
+	warn = 1;
 	render = 0;
 	file_entries = 0;
 }
@@ -220,6 +221,7 @@ BatchRenderThread::BatchRenderThread()
 	default_job = 0;
 	boot_defaults = 0;
 	preferences = 0;
+	warn = 1;
 	render = 0;
 	file_entries = 0;
 }
@@ -236,8 +238,9 @@ BatchRenderThread::~BatchRenderThread()
 	}
 }
 
-void BatchRenderThread::reset()
+void BatchRenderThread::reset(int warn)
 {
+	if( warn ) this->warn = 1;
 	current_job = 0;
 	rendering_job = -1;
 	delete default_job;  default_job = 0;
@@ -310,7 +313,11 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
 	{
 		if(!(result = file.read_tag()))
 		{
-			if(file.tag.title_is("JOB"))
+			if(file.tag.title_is("JOBS"))
+			{
+				warn = file.tag.get_property("WARN", 1);
+			}
+			else if(file.tag.title_is("JOB"))
 			{
 				BatchRenderJob *job;
 				jobs.append(job = new BatchRenderJob(preferences));
@@ -323,6 +330,10 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
 void BatchRenderThread::save_jobs(char *path)
 {
 	FileXML file;
+	file.tag.set_title("JOBS");
+	file.tag.set_property("WARN", warn);
+	file.append_tag();
+	file.append_newline();
 
 	for(int i = 0; i < jobs.total; i++)
 	{
@@ -341,12 +352,7 @@ void BatchRenderThread::load_defaults(BC_Hash *defaults)
 	if(default_job)
 	{
 		default_job->asset->load_defaults(defaults,
-			"BATCHRENDER_",
-			1,
-			1,
-			1,
-			1,
-			1);
+			"BATCHRENDER_", 1, 1, 1, 1, 1);
 		default_job->fix_strategy();
 	}
 
@@ -363,12 +369,7 @@ void BatchRenderThread::save_defaults(BC_Hash *defaults)
 	if(default_job)
 	{
 		default_job->asset->save_defaults(defaults,
-			"BATCHRENDER_",
-			1,
-			1,
-			1,
-			1,
-			1);
+			"BATCHRENDER_", 1, 1, 1, 1, 1);
 		defaults->update("BATCHRENDER_STRATEGY", default_job->strategy);
 	}
 	for(int i = 0; i < BATCHRENDER_COLUMNS; i++)
@@ -469,43 +470,71 @@ char* BatchRenderThread::get_current_edl()
 // Test EDL files for existence
 int BatchRenderThread::test_edl_files()
 {
-	for(int i = 0; i < jobs.total; i++)
-	{
-		if(jobs.values[i]->enabled)
-		{
-			const char *path = jobs.values[i]->edl_path;
-			if( *path == '@' ) ++path;
-			FILE *fd = fopen(path, "r");
-			if(!fd)
-			{
-				char string[BCTEXTLEN];
-				sprintf(string, _("EDL %s not found.\n"), jobs.values[i]->edl_path);
-				if(mwindow)
-				{
-					ErrorBox error_box(_(PROGRAM_NAME ": Error"),
-						mwindow->gui->get_abs_cursor_x(1),
-						mwindow->gui->get_abs_cursor_y(1));
-					error_box.create_objects(string);
-					error_box.run_window();
-					gui->button_enable();
+	int not_equiv = 0, ret = 0;
+	const char *path = 0;
+
+	for( int i=0; !ret && i<jobs.size(); ++i ) {
+		if( !jobs.values[i]->enabled ) continue;
+		const char *path = jobs.values[i]->edl_path;
+		int is_script = *path == '@' ? 1 : 0;
+		if( is_script ) ++path;
+		FILE *fp = fopen(path, "r");
+		if( fp ) {
+			if( warn && mwindow && !is_script ) {
+				fseek(fp, 0, SEEK_END);
+				int64_t sz = ftell(fp);
+				fseek(fp, 0, SEEK_SET);
+				char *bfr = new char[sz+1];
+				int64_t len = fread(bfr, 1, sz+1, fp);
+				if( len == sz ) {
+					FileXML file;  file.set_shared_input(bfr, len);
+					EDL *edl = new EDL; edl->create_objects();
+					edl->load_xml(&file, LOAD_ALL);
+					double pos = edl->equivalent_output(mwindow->edl);
+					if( pos >= 0 ) ++not_equiv;
+					edl->remove_user();
 				}
 				else
-				{
-					fprintf(stderr,
-						"%s",
-						string);
-				}
-
-				is_rendering = 0;
-				return 1;
+					ret = 1;
+				delete [] bfr;
 			}
-			else
-			{
-				fclose(fd);
-			}
+			fclose(fp);
 		}
+		else
+			ret = 1;
 	}
-	return 0;
+
+	if( ret ) {
+		char string[BCTEXTLEN];
+		sprintf(string, _("EDL %s not found.\n"), path);
+		if( mwindow ) {
+			ErrorBox error_box(_(PROGRAM_NAME ": Error"),
+				mwindow->gui->get_abs_cursor_x(1),
+				mwindow->gui->get_abs_cursor_y(1));
+			error_box.create_objects(string);
+			error_box.run_window();
+			gui->button_enable();
+		}
+		else {
+			fprintf(stderr, "%s", string);
+		}
+		is_rendering = 0;
+	}
+	else if( warn && mwindow && not_equiv > 0 ) {
+		fprintf(stderr, _("%d job EDLs do not match session edl\n"), not_equiv);
+		char string[BCTEXTLEN], *sp = string;
+		sp += sprintf(sp, _("%d job EDLs do not match session edl\n"),not_equiv);
+		sp += sprintf(sp, _("press cancel to abandon batch render"));
+		mwindow->show_warning(&warn, string);
+		if( mwindow->wait_warning() ) {
+			gui->button_enable();
+			is_rendering = 0;
+			ret = 1;
+		}
+		gui->warning->update(warn);
+	}
+
+	return ret;
 }
 
 void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
@@ -706,21 +735,9 @@ void BatchRenderThread::move_batch(int src, int dst)
 
 
 BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
-	BatchRenderThread *thread,
-	int x,
-	int y,
-	int w,
-	int h)
+	BatchRenderThread *thread, int x, int y, int w, int h)
  : BC_Window(_(PROGRAM_NAME ": Batch Render"),
-	x,
-	y,
-	w,
-	h,
-	50,
-	50,
-	1,
-	0,
-	1)
+	x, y, w, h, 50, 50, 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -780,7 +797,9 @@ void BatchRenderGUI::create_objects()
 	add_subwindow(savelist_batch = new BatchRenderSaveList(thread, x, y));
 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
 	add_subwindow(loadlist_batch = new BatchRenderLoadList(thread, x, y));
-	y2 = y + loadlist_batch->get_h() + mwindow->theme->widget_border;
+	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
+	add_subwindow(warning = new BatchRenderWarning(thread, x2, y));
+	y2 = y + warning->get_h() + mwindow->theme->widget_border;
 	if( y2 > y1 ) y1 = y2;
 	x = mwindow->theme->batchrender_x1, y = y1;
 
@@ -1388,6 +1407,19 @@ int BatchRenderStop::handle_event()
 	unlock_window();
 	thread->stop_rendering();
 	lock_window("BatchRenderStop::handle_event");
+	return 1;
+}
+
+
+BatchRenderWarning::BatchRenderWarning(BatchRenderThread *thread, int x, int y)
+ : BC_CheckBox(x, y, thread->warn, _("warn if jobs/session mismatched"))
+{
+	this->thread = thread;
+}
+
+int BatchRenderWarning::handle_event()
+{
+	thread->warn = get_value();
 	return 1;
 }
 

@@ -92,6 +92,7 @@ void InterfacePrefs::create_objects()
 
 	y += get_text_height(LARGEFONT) + 5;
 
+	int y1 = y;
 
 	add_subwindow(hms = new TimeFormatHMS(pwindow, this, 
 		pwindow->thread->edl->session->time_format == TIME_HMS, 
@@ -128,12 +129,16 @@ void InterfacePrefs::create_objects()
 	add_subwindow(seconds = new TimeFormatSeconds(pwindow, this, 
 		pwindow->thread->edl->session->time_format == TIME_SECONDS, 
 		x, y));
-
 	y += 35;
-	add_subwindow(new UseTipWindow(pwindow, x, y));
-	add_subwindow(new UseWarnIndecies(pwindow, x+200, y));
 
-	y += 35;
+	x1 = get_w()/2;
+	UseTipWindow *tip_win = new UseTipWindow(pwindow, x1, y1);
+	add_subwindow(tip_win);
+	y1 += tip_win->get_h() + 5;
+	UseWarnIndecies *idx_win = new UseWarnIndecies(pwindow, x1, y1);
+	add_subwindow(idx_win);
+	y1 += idx_win->get_h() + 25;
+
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
 
@@ -178,7 +183,7 @@ void InterfacePrefs::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Editing"), LARGEFONT, resources->text_default));
 
-	int y1 = y + 5;
+	y1 = y + 5;
 	y += 35;
 	add_subwindow(title = new BC_Title(x, y, _("Keyframe reticle:")));
 	x1 = x + title->get_w() + 10;
@@ -690,8 +695,6 @@ int UseWarnIndecies::handle_event()
 	pwindow->thread->preferences->warn_indexes = get_value();
 	return 1;
 }
-
-
 
 
 ScanCommercials::ScanCommercials(PreferencesWindow *pwindow, int x, int y)
