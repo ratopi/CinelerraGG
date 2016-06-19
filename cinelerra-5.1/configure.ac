@@ -461,12 +461,12 @@ AC_ARG_WITH(m4_tolower([$1]),
 # WANT_$1
 if test "x$WANT_$1" != "xno" ; then
  m4_quote($3)
-fi
-if test "x$RESULT" = "xno" -a "x$PKG_$1" = "x"; then
- echo "=== want $1 Failed."
- WANT_$1=no
-else
- WANT_$1=yes
+ if test "x$RESULT" = "xno" -a "x$PKG_$1" = "x"; then
+  echo "=== want $1 Failed."
+  WANT_$1=no
+ else
+  WANT_$1=yes
+ fi
 fi
 CFG_WANTS+=" $1"
 AC_SUBST([WANT_$1])

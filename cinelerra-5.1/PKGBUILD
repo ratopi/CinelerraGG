@@ -1,0 +1,36 @@
+# Maintainer: goodguy <lists.cinelerra-cv.org>
+pkgname=cin
+pkgver=5.1
+pkgrel=20160619
+pkgdesc="Cinelerra git://git.cinelerra-cv.org/goodguy/cinelerra.git ($pkgrel)"
+arch=('x86_64')
+url="http://www.cinelerra-cv.org"
+license=('GPL')
+depends=('xorg-server' 'xorg-server-utils' 'libpng' 'libxv' 'libva'
+         'libxft' 'freetype2' 'alsa-lib' 'inkscape' 'dvdauthor')
+makedepends=('yasm' 'nasm' 'cmake'
+	 'libxml2' 'perl-xml-libxml' 'perl-xml-parser')
+conflicts=()
+source=(https://www.cinelerra-cv.org/five/pkgs/src/cin_$pkgver.$pkgrel-src.tgz)
+md5sums=('00000000000000000000000000000000')
+
+prepare() {
+  cd "$srcdir/cinelerra-$pkgver"
+  sed -i 's/\<python\>/python2.7/' ./guicast/Makefile
+}
+
+build() {
+  cd "$srcdir/cinelerra-$pkgver"
+  ./autogen.sh
+  ./configure --prefix=/usr --with-exec-name=$pkgname
+CFG_VARS="\
+CFLAGS='-Wno-narrowing -O2 -ggdb -fno-omit-frame-pointer' \
+CXXFLAGS='-Wno-narrowing -O2 -ggdb -fno-omit-frame-pointer' \
+WERROR_CFLAGS='-fpermissive'" \
+  make 2>&1 | tee log
+}
+
+package() {
+  cd "$srcdir/cinelerra-$pkgver"
+  make install DESTDIR="$pkgdir"
+}
