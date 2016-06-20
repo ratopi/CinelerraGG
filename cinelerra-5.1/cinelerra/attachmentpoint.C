@@ -62,7 +62,7 @@ int AttachmentPoint::reset_parameters()
 
 void AttachmentPoint::reset_status()
 {
-	if(!this) printf("AttachmentPoint::reset_status NULL\n");
+	if(!(void *)this) printf("AttachmentPoint::reset_status NULL\n");
 	start_position = 0;
 	len = 0;
 	sample_rate = 0;
@@ -79,7 +79,7 @@ int AttachmentPoint::identical(AttachmentPoint *old)
 
 int AttachmentPoint::render_init()
 {
-	if(!this) printf("AttachmentPoint::render_init NULL\n");
+	if(!(void *)this) printf("AttachmentPoint::render_init NULL\n");
 	if(plugin_server && plugin->on)
 	{
 // Start new plugin servers if the number of nodes changed.
@@ -155,7 +155,7 @@ void AttachmentPoint::render_stop()
 
 int AttachmentPoint::attach_virtual_plugin(VirtualNode *virtual_plugin)
 {
-	if(!this) printf("AttachmentPoint::attach_virtual_plugin NULL\n");
+	if(!(void *)this) printf("AttachmentPoint::attach_virtual_plugin NULL\n");
 	int buffer_number = 0;
 
 	if(plugin_server && plugin->on)
@@ -183,7 +183,7 @@ int AttachmentPoint::attach_virtual_plugin(VirtualNode *virtual_plugin)
 
 int AttachmentPoint::multichannel_shared(int search_new)
 {
-	if(!this) printf("AttachmentPoint::multichannel_shared NULL\n");
+	if(!(void *)this) printf("AttachmentPoint::multichannel_shared NULL\n");
 	if(search_new)
 	{
 		if(new_virtual_plugins.total &&
@@ -201,7 +201,7 @@ int AttachmentPoint::multichannel_shared(int search_new)
 
 int AttachmentPoint::singlechannel()
 {
-	if(!this) printf("AttachmentPoint::singlechannel NULL\n");
+	if(!(void *)this) printf("AttachmentPoint::singlechannel NULL\n");
 	if(plugin_server && !plugin_server->multichannel) return 1;
 	return 0;
 }
@@ -210,7 +210,7 @@ int AttachmentPoint::singlechannel()
 void AttachmentPoint::render_gui(void *data, PluginServer *server)
 {
 //printf("AttachmentPoint::render_gui 1 %p %p\n", server, plugin_servers.get(0));
-	if(!this) printf("AttachmentPoint::render_gui 1 NULL\n");
+	if(!(void *)this) printf("AttachmentPoint::render_gui 1 NULL\n");
 
 // Discard if not 1st plugin server, so single channel plugins don't get double GUI updates
 	if(server != plugin_servers.get(0)) return;
@@ -221,7 +221,7 @@ void AttachmentPoint::render_gui(void *data, PluginServer *server)
 
 void AttachmentPoint::render_gui(void *data, int size, PluginServer *server)
 {
-	if(!this) printf("AttachmentPoint::render_gui 2 NULL\n");
+	if(!(void *)this) printf("AttachmentPoint::render_gui 2 NULL\n");
 
 // Discard if not 1st plugin server, so single channel plugins don't get double GUI updates
 	if(server != plugin_servers.get(0)) return;
@@ -239,7 +239,7 @@ int AttachmentPoint::gui_open()
 
 int AttachmentPoint::dump(FILE *fp)
 {
-	if(this)
+	if((void *)this)
 	{
 		fprintf(fp,"    Attachmentpoint this=%p virtual_plugins=%d\n", this, new_virtual_plugins.total);
 		if(plugin_server) plugin_server->dump(fp);

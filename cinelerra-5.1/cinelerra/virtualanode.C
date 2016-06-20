@@ -515,53 +515,50 @@ void VirtualANode::get_pan_automation(double &slope,
 	intercept = 0;
 	slope = 0;
 
-	PanAuto *prev_keyframe = 0;
-	PanAuto *next_keyframe = 0;
-	prev_keyframe = (PanAuto*)autos->get_prev_auto(input_position,
-		direction,
-		(Auto* &)prev_keyframe);
-	next_keyframe = (PanAuto*)autos->get_next_auto(input_position,
-		direction,
-		(Auto* &)next_keyframe);
+	Auto *prev_keyframe = 0, *next_keyframe = 0;
+	prev_keyframe = autos->get_prev_auto(input_position, direction, prev_keyframe);
+	next_keyframe = autos->get_next_auto(input_position, direction, next_keyframe);
+	PanAuto *prev_pan_auto = (PanAuto *)prev_keyframe;
+	PanAuto *next_pan_auto = (PanAuto *)next_keyframe;
 
 	if(direction == PLAY_FORWARD)
 	{
 // Two distinct automation points within range
-		if(next_keyframe->position > prev_keyframe->position)
+		if(next_pan_auto->position > prev_pan_auto->position)
 		{
-			slope = ((double)next_keyframe->values[channel] - prev_keyframe->values[channel]) /
-				((double)next_keyframe->position - prev_keyframe->position);
-			intercept = ((double)input_position - prev_keyframe->position) * slope +
-				prev_keyframe->values[channel];
+			slope = ((double)next_pan_auto->values[channel] - prev_pan_auto->values[channel]) /
+				((double)next_pan_auto->position - prev_pan_auto->position);
+			intercept = ((double)input_position - prev_pan_auto->position) * slope +
+				prev_pan_auto->values[channel];
 
-			if(next_keyframe->position < input_position + slope_len)
-				slope_len = next_keyframe->position - input_position;
+			if(next_pan_auto->position < input_position + slope_len)
+				slope_len = next_pan_auto->position - input_position;
 		}
 		else
 // One automation point within range
 		{
 			slope = 0;
-			intercept = prev_keyframe->values[channel];
+			intercept = prev_pan_auto->values[channel];
 		}
 	}
 	else
 	{
 // Two distinct automation points within range
-		if(next_keyframe->position < prev_keyframe->position)
+		if(next_pan_auto->position < prev_pan_auto->position)
 		{
-			slope = ((double)next_keyframe->values[channel] - prev_keyframe->values[channel]) /
-				((double)next_keyframe->position - prev_keyframe->position);
-			intercept = ((double)input_position - prev_keyframe->position) * slope +
-				prev_keyframe->values[channel];
+			slope = ((double)next_pan_auto->values[channel] - prev_pan_auto->values[channel]) /
+				((double)next_pan_auto->position - prev_pan_auto->position);
+			intercept = ((double)input_position - prev_pan_auto->position) * slope +
+				prev_pan_auto->values[channel];
 
-			if(next_keyframe->position > input_position - slope_len)
-				slope_len = input_position - next_keyframe->position;
+			if(next_pan_auto->position > input_position - slope_len)
+				slope_len = input_position - next_pan_auto->position;
 		}
 		else
 // One automation point within range
 		{
 			slope = 0;
-			intercept = next_keyframe->values[channel];
+			intercept = next_pan_auto->values[channel];
 		}
 	}
 }

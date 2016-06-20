@@ -94,7 +94,7 @@ extern "C" {
 
 #define new_memset(s) \
   void *operator new(size_t n) { \
-    void *t = (void*) new char[n]; \
+    void * volatile t = (void*) new char[n]; \
     memset(t,s,n); \
     return t; \
   } \
@@ -102,7 +102,7 @@ extern "C" {
     delete[](char*)t; \
   } \
   void *operator new[](size_t n) { \
-    void *t = (void*) new char[n]; \
+    void * volatile t = (void*) new char[n]; \
     memset(t,s,n); \
     return t; \
   } \

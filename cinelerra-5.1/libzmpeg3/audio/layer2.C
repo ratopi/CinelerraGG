@@ -221,11 +221,10 @@ step_one(uint8_t *bit_alloc, int *scale)
     /* mono */
     for( i=sblimit; --i>=0 ; alloc1+=(1<<step) )
       *bita++ = (char)stream->get_bits(step = alloc1->bits);
-      bita = bit_alloc;
-      scfsi = scfsi_buf;
-      for( i=sblimit; --i>=0 ; )
-        if( *bita++ )
-          *scfsi++ = (char)stream->get_bits(2);
+    bita = bit_alloc;
+    scfsi = scfsi_buf;
+    for( i=sblimit; --i>=0 ; )
+      if( *bita++ ) *scfsi++ = (char)stream->get_bits(2);
   }
 
   bita = bit_alloc;

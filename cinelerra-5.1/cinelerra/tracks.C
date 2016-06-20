@@ -402,23 +402,20 @@ int Tracks::detach_shared_effects(int module)
 int Tracks::total_of(int type)
 {
 	int result = 0;
-	IntAuto *mute_keyframe = 0;
 
 	for(Track *current = first; current; current = NEXT)
 	{
 		long unit_start = current->to_units(edl->local_session->get_selectionstart(1), 0);
-		mute_keyframe =
-			(IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
-			unit_start,
-			PLAY_FORWARD,
-			(Auto* &)mute_keyframe);
+		Auto *mute_keyframe = current->automation->autos[AUTOMATION_MUTE]->
+			get_prev_auto(unit_start, PLAY_FORWARD, mute_keyframe);
+		IntAuto *mute_auto = (IntAuto *)mute_keyframe;
 
 		result +=
 			(current->play && type == PLAY) ||
 			(current->record && type == RECORD) ||
 			(current->gang && type == GANG) ||
 			(current->draw && type == DRAW) ||
-			(mute_keyframe->value && type == MUTE) ||
+			(mute_auto->value && type == MUTE) ||
 			(current->expand_view && type == EXPAND);
 	}
 	return result;

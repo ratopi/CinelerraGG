@@ -381,45 +381,45 @@ void VirtualNode::get_mute_fragment(int64_t input_position,
 {
 	if(use_nudge) input_position += track->nudge;
 
-	IntAuto *prev_keyframe = 0;
-	IntAuto *next_keyframe = 0;
-	prev_keyframe = (IntAuto*)autos->get_prev_auto(input_position,
-		direction,
-		(Auto* &)prev_keyframe);
-	next_keyframe = (IntAuto*)autos->get_next_auto(input_position,
-		direction,
-		(Auto* &)next_keyframe);
+	Auto *prev_keyframe = 0;
+	Auto *next_keyframe = 0;
+	prev_keyframe = autos->get_prev_auto(input_position,
+		direction, prev_keyframe);
+	next_keyframe = autos->get_next_auto(input_position,
+		direction, next_keyframe);
+	IntAuto *prev_int_auto = (IntAuto *)prev_keyframe;
+	IntAuto *next_int_auto = (IntAuto *)next_keyframe;
 
 	if(direction == PLAY_FORWARD)
 	{
 // Two distinct keyframes within range
-		if(next_keyframe->position > prev_keyframe->position)
+		if(next_int_auto->position > prev_int_auto->position)
 		{
-			mute_constant = prev_keyframe->value;
+			mute_constant = prev_int_auto->value;
 
-			if(next_keyframe->position < input_position + fragment_len)
-				fragment_len = next_keyframe->position - input_position;
+			if(next_int_auto->position < input_position + fragment_len)
+				fragment_len = next_int_auto->position - input_position;
 		}
 		else
 // One keyframe within range
 		{
-			mute_constant = prev_keyframe->value;
+			mute_constant = prev_int_auto->value;
 		}
 	}
 	else
 	{
 // Two distinct keyframes within range
-		if(next_keyframe->position < prev_keyframe->position)
+		if(next_int_auto->position < prev_int_auto->position)
 		{
-			mute_constant = next_keyframe->value;
+			mute_constant = next_int_auto->value;
 
-			if(next_keyframe->position > input_position - fragment_len)
-				fragment_len = input_position - next_keyframe->position;
+			if(next_int_auto->position > input_position - fragment_len)
+				fragment_len = input_position - next_int_auto->position;
 		}
 		else
 // One keyframe within range
 		{
-			mute_constant = next_keyframe->value;
+			mute_constant = next_int_auto->value;
 		}
 	}
 }

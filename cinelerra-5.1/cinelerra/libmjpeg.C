@@ -771,13 +771,12 @@ printf("decompress_field %d\n", __LINE__);
 	jpeg_start_decompress(&engine->jpeg_decompress);
 
 // Generate colormodel from jpeg sampling
-	if(engine->jpeg_decompress.comp_info[0].v_samp_factor == 2 &&
-		engine->jpeg_decompress.comp_info[0].h_samp_factor == 2)
-    	mjpeg->jpeg_color_model = BC_YUV420P;
-    else
-	if(engine->jpeg_decompress.comp_info[0].v_samp_factor == 1 &&
-		engine->jpeg_decompress.comp_info[0].h_samp_factor == 2)
-    	mjpeg->jpeg_color_model = BC_YUV422P;
+	if( engine->jpeg_decompress.comp_info[0].v_samp_factor == 2 &&
+	    engine->jpeg_decompress.comp_info[0].h_samp_factor == 2)
+		mjpeg->jpeg_color_model = BC_YUV420P;
+	else if(engine->jpeg_decompress.comp_info[0].v_samp_factor == 1 &&
+	    engine->jpeg_decompress.comp_info[0].h_samp_factor == 2)
+		mjpeg->jpeg_color_model = BC_YUV422P;
 	else
 		mjpeg->jpeg_color_model = BC_YUV444P;
 

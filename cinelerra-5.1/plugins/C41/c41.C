@@ -460,7 +460,8 @@ float C41Effect::myLog2(float i)
 	float x;
 	float y;
 	float LogBodge = 0.346607f;
-	x = *(int *)&i;
+	union { float f; int i; } v;
+	v.f = i;  x = v.i;
 	x *= 1.0 / (1 << 23); // 1/pow(2,23);
 	x = x - 127;
 
@@ -478,7 +479,8 @@ float C41Effect::myPow2(float i)
 
 	x = i + 127 - y;
 	x *= (1 << 23);
-	*(int*) &x = (int)x;
+	union { float f; int i; } v;
+	v.i = (int)x;  x = v.f;
 	return x;
 }
 
