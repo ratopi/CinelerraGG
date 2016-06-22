@@ -662,7 +662,7 @@ void Canvas::create_objects(EDL *edl)
 
 }
 
-int Canvas::button_press_event()
+int Canvas::button_release_event()
 {
 	int result = 0;
 

@@ -95,7 +95,6 @@ private:
 	int highlighted;
 	int popup_down;
 	int use_title;
-	int button_releases;
 	BC_MenuPopup *menu_popup;
 // Remember cursor position when no title
 	int button_press_x, button_press_y;

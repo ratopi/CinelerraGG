@@ -437,16 +437,6 @@ int RecordMonitorGUI::button_press_event()
 {
 	if(mwindow->session->rwindow_fullscreen && canvas && canvas->get_canvas())
 		return canvas->button_press_event_base(canvas->get_canvas());
-
-	if( get_buttonpress() == 2 ) {
-		return 0;
-	}
-	else
-// Right button
-	if( get_buttonpress() == 3 ) {
-		monitor_menu->activate_menu();
-		return 1;
-	}
 	return 0;
 }
 
@@ -466,6 +456,10 @@ int RecordMonitorGUI::cursor_enter_event()
 
 int RecordMonitorGUI::button_release_event()
 {
+	if( get_buttonpress() == 3 && cursor_inside() ) {
+		monitor_menu->activate_menu();
+		return 1;
+	}
 	if( canvas && canvas->get_canvas() )
 		return canvas->button_release_event();
 	return 0;
@@ -862,6 +856,9 @@ RecordMonitorFullsize::RecordMonitorFullsize(MWindow *mwindow,
 }
 int RecordMonitorFullsize::handle_event()
 {
+	Record *record = window->record;
+	record->video_zoom = 1.0;
+	record->record_gui->set_translation(record->video_x, record->video_y, record->video_zoom);
 	return 1;
 }
 

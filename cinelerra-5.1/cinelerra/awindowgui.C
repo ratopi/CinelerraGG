@@ -684,38 +684,12 @@ int AWindowGUI::translation_event()
 
 void AWindowGUI::reposition_objects()
 {
-	int wmax = mwindow->session->awindow_w-mwindow->theme->adivider_w;
-	int x = mwindow->theme->afolders_x;
-	int w = mwindow->theme->afolders_w;
-	if (w > wmax)
-		w = wmax;
-	if (w <= 0)
-		w = 1;
-	folder_list->reposition_window(x, mwindow->theme->afolders_y,
-		w, mwindow->theme->afolders_h);
-	x = mwindow->theme->adivider_x;
-	if (x > wmax)
-		x = wmax;
-	if (x < 0)
-		x = 0;
-	divider->reposition_window(x,
-		mwindow->theme->adivider_y,
-		mwindow->theme->adivider_w,
-		mwindow->theme->adivider_h);
-	int x2 = mwindow->theme->alist_x;
-	if (x2 < x+mwindow->theme->adivider_w)
-		x2 = x+mwindow->theme->adivider_w;
-	w = mwindow->theme->alist_w;
-	if (w > wmax)
-		w = wmax;
-	if (w <= 0)
-		w = 1;
-	asset_list->reposition_window(x2, mwindow->theme->alist_y,
-		w, mwindow->theme->alist_h);
-	mwindow->theme->get_awindow_sizes(this);
+	divider->reposition_window(
+		mwindow->theme->adivider_x, mwindow->theme->adivider_y,
+		mwindow->theme->adivider_w, mwindow->theme->adivider_h);
 	asset_list->reposition_window(
 		mwindow->theme->alist_x, mwindow->theme->alist_y,
-	    	mwindow->theme->alist_w, mwindow->theme->alist_h);
+		mwindow->theme->alist_w, mwindow->theme->alist_h);
 	divider->reposition_window(
 		mwindow->theme->adivider_x, mwindow->theme->adivider_y,
 		mwindow->theme->adivider_w, mwindow->theme->adivider_h);
@@ -908,11 +882,10 @@ int AWindowGUI::create_custom_xatoms()
 }
 int AWindowGUI::recieve_custom_xatoms(xatom_event *event)
 {
-	if (event->message_type == UpdateAssetsXAtom)
-	{
+	if( event->message_type == UpdateAssetsXAtom ) {
 		update_assets();
 		return 1;
-	} else
+	}
 	return 0;
 }
 
@@ -1364,6 +1337,7 @@ void AWindowGUI::update_assets()
 		asset_list->get_yposition(),
 		-1,
 		0);
+	asset_list->center_selection();
 //printf("AWindowGUI::update_assets 7\n");
 
 	flush();
@@ -1461,7 +1435,12 @@ int AWindowDivider::cursor_motion_event()
 {
 	if(mwindow->session->current_operation == DRAG_PARTITION)
 	{
-		mwindow->session->afolders_w = gui->get_relative_cursor_x();
+		int wmin = 25;
+		int wmax = mwindow->session->awindow_w - mwindow->theme->adivider_w - wmin;
+		int fw = gui->get_relative_cursor_x();
+		if( fw > wmax ) fw = wmax;
+		if( fw < wmin ) fw = wmin;
+		mwindow->session->afolders_w = fw;
 		mwindow->theme->get_awindow_sizes(gui);
 		gui->reposition_objects();
 		gui->flush();
@@ -1517,12 +1496,6 @@ int AWindowFolders::selection_changed()
 	{
 		gui->stop_vicon_drawing();
 
-		if(get_button_down() && get_buttonpress() == 3)
-		{
-			gui->folderlist_menu->update_titles();
-			gui->folderlist_menu->activate_menu();
-		}
-
 		strcpy(mwindow->edl->session->current_folder, picon->get_text());
 //printf("AWindowFolders::selection_changed 1\n");
 		gui->asset_list->draw_background();
@@ -1535,24 +1508,24 @@ int AWindowFolders::selection_changed()
 
 int AWindowFolders::button_press_event()
 {
-	int result = 0;
-
-	result = BC_ListBox::button_press_event();
-
-	if(!result)
-	{
-		if(get_buttonpress() == 3 && is_event_win() && cursor_inside())
-		{
-			gui->folderlist_menu->update_titles();
-			gui->folderlist_menu->activate_menu();
-			result = 1;
-		}
-	}
-
-
-	return result;
+	if( get_buttonpress() == 3 && is_event_win() && cursor_inside() )
+		return 0;
+	return BC_ListBox::button_press_event();
 }
 
+int AWindowFolders::button_release_event()
+{
+	int result = 0;
+	if(get_buttonpress() == 3 && is_event_win() && cursor_inside())
+	{
+		gui->folderlist_menu->update_titles();
+		gui->folderlist_menu->activate_menu();
+		result = 1;
+	}
+	else
+		result = BC_ListBox::button_release_event();
+	return result;
+}
 
 
 
@@ -1587,19 +1560,35 @@ AWindowAssets::~AWindowAssets()
 
 int AWindowAssets::button_press_event()
 {
+	if( get_buttonpress() == 3 && is_event_win() && cursor_inside() )
+		return 0;
+	return BC_ListBox::button_press_event();
+}
+
+int AWindowAssets::button_release_event()
+{
 	int result = 0;
-
-	result = BC_ListBox::button_press_event();
-
-	if(!result && get_buttonpress() == 3 && is_event_win() && cursor_inside())
-	{
-		BC_ListBox::deactivate_selection();
-		gui->assetlist_menu->update_titles();
-		gui->assetlist_menu->activate_menu();
+	if(get_buttonpress() == 3 && is_event_win() && cursor_inside()) {
+		if( !strcasecmp(mwindow->edl->session->current_folder, AEFFECT_FOLDER) ||
+		    !strcasecmp(mwindow->edl->session->current_folder, VEFFECT_FOLDER) ||
+		    !strcasecmp(mwindow->edl->session->current_folder, ATRANSITION_FOLDER) ||
+		    !strcasecmp(mwindow->edl->session->current_folder, VTRANSITION_FOLDER)) {
+			BC_ListBox::deactivate_selection();
+			gui->assetlist_menu->update_titles();
+			gui->assetlist_menu->activate_menu();
+		}
+                else if (!strcasecmp(mwindow->edl->session->current_folder, LABEL_FOLDER)) {
+			gui->label_menu->update();
+			gui->label_menu->activate_menu();
+		}
+		else {
+			gui->asset_menu->update();
+			gui->asset_menu->activate_menu();
+		}
 		result = 1;
 	}
-
-
+	else
+		result = BC_ListBox::button_release_event();
 	return result;
 }
 
@@ -1609,24 +1598,11 @@ int AWindowAssets::handle_event()
 //printf("AWindowAssets::handle_event 1 %d %d\n", get_buttonpress(), get_selection(0, 0));
 	if(get_selection(0, 0))
 	{
-		if(!strcasecmp(mwindow->edl->session->current_folder, AEFFECT_FOLDER))
-		{
-		}
-		else
-		if(!strcasecmp(mwindow->edl->session->current_folder, VEFFECT_FOLDER))
-		{
-		}
-		else
-		if(!strcasecmp(mwindow->edl->session->current_folder, ATRANSITION_FOLDER))
-		{
-		}
-		else
-		if(!strcasecmp(mwindow->edl->session->current_folder, VTRANSITION_FOLDER))
-		{
-		}
-		else
-		if(mwindow->vwindows.size())
-		{
+		if(!strcasecmp(mwindow->edl->session->current_folder, AEFFECT_FOLDER)) {}
+		else if(!strcasecmp(mwindow->edl->session->current_folder, VEFFECT_FOLDER)) {}
+		else if(!strcasecmp(mwindow->edl->session->current_folder, ATRANSITION_FOLDER)) {}
+		else if(!strcasecmp(mwindow->edl->session->current_folder, VTRANSITION_FOLDER)) {}
+		else if(mwindow->vwindows.size()) {
 //printf("AWindowAssets::handle_event 2 %d %d\n", get_buttonpress(), get_selection(0, 0));
 			mwindow->vwindows.get(DEFAULT_VWINDOW)->gui->lock_window("AWindowAssets::handle_event");
 
@@ -1662,18 +1638,6 @@ int AWindowAssets::selection_changed()
 		{
 			if(((AssetPicon*)get_selection(0, 0))->label)
 				gui->label_menu->activate_menu();
-		}
-		else
-		{
-			if(((AssetPicon*)get_selection(0, 0))->indexable)
-				gui->asset_menu->update();
-			else
-			if(((AssetPicon*)get_selection(0, 0))->edl)
-				gui->asset_menu->update();
-
-
-
-			gui->asset_menu->activate_menu();
 		}
 
 		BC_ListBox::deactivate_selection();
@@ -2024,6 +1988,11 @@ void LabelPopup::create_objects()
 	add_item(editlabel = new LabelPopupEdit(mwindow, this));
 }
 
+int LabelPopup::update()
+{
+	gui->collect_assets();
+	return 0;
+}
 
 
 

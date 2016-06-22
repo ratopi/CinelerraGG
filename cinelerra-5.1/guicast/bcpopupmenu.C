@@ -301,7 +301,6 @@ int BC_PopupMenu::activate_menu()
 			button_press_y = top_level->cursor_y;
 		}
 
-		button_releases = 0;
 		if(use_title)
 		{
 			Window tempwin;
@@ -412,8 +411,6 @@ int BC_PopupMenu::button_release_event()
 // try the title
 	int result = 0;
 
-	button_releases++;
-
 	if(is_event_win() && use_title)
 	{
 		hide_tooltip();
@@ -427,75 +424,16 @@ int BC_PopupMenu::button_release_event()
 	if( !use_title && status == BUTTON_DN ) {
 		result = 1;
 	}
-	else if(popup_down)
-	{
+	else if(popup_down) {
 // Menu is down so dispatch to popup.
 		result = menu_popup->dispatch_button_release();
 	}
-
-	if(popup_down && button_releases >= 2)
-	{
-		deactivate();
-	}
-
-	if(!result && use_title && cursor_inside() && is_event_win())
-	{
-		hide_tooltip();
-		result = 1;
-	}
-	else
-	if(!result && !use_title && popup_down && button_releases < 2)
-	{
-		result = 1;
-	}
-
-
-	if(!result && popup_down)
-	{
-// Button was released outside any menu.
+// released outside popup
+	if( !result && popup_down ) {
 		deactivate();
 		result = 1;
 	}
-
-	return result;
-
-
-
-
-
-
-
-
-
-
-	if(popup_down)
-	{
-// Menu is down so dispatch to popup.
-		result = menu_popup->dispatch_button_release();
-	}
-
-	if(!result && use_title && cursor_inside() && top_level->event_win == win)
-	{
-// Inside title
-		if(button_releases >= 2)
-		{
-			highlighted = 1;
-			deactivate();
-		}
-		result = 1;
-	}
-	else
-	if(!result && !use_title && button_releases < 2)
-	{
-// First release outside a floating menu
-// Released outside a fictitious title area
-// 		if(top_level->cursor_x < button_press_x - 5 ||
-// 			top_level->cursor_y < button_press_y - 5 ||
-// 			top_level->cursor_x > button_press_x + 5 ||
-// 			top_level->cursor_y > button_press_y + 5)
-			deactivate();
-		result = 1;
-	}
+	hide_tooltip();
 
 	return result;
 }

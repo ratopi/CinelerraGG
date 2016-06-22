@@ -3342,7 +3342,9 @@ int CWindowCanvas::button_release_event()
 			gui->mask_keyframe = 0;
 			mwindow->undo->update_undo_after(_("mask"), LOAD_AUTOMATION);
 			break;
-
+		case CWINDOW_NONE:
+			result = Canvas::button_release_event();
+			break;
 	}
 
 	gui->current_operation = CWINDOW_NONE;

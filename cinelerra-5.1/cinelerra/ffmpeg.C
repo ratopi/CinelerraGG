@@ -831,6 +831,9 @@ AVPixelFormat FFVideoConvert::color_model_to_pix_fmt(int color_model)
 	case BC_RGBA8888:	return AV_PIX_FMT_RGBA;
 	case BC_BGR8888:	return AV_PIX_FMT_BGR0;
 	case BC_BGR888:		return AV_PIX_FMT_BGR24;
+	case BC_ARGB8888:	return AV_PIX_FMT_ARGB;
+	case BC_ABGR8888:	return AV_PIX_FMT_ABGR;
+	case BC_RGB8:		return AV_PIX_FMT_RGB8;
 	case BC_YUV420P:	return AV_PIX_FMT_YUV420P;
 	case BC_YUV422P:	return AV_PIX_FMT_YUV422P;
 	case BC_YUV444P:	return AV_PIX_FMT_YUV444P;
@@ -852,6 +855,9 @@ int FFVideoConvert::pix_fmt_to_color_model(AVPixelFormat pix_fmt)
 	case AV_PIX_FMT_RGBA:		return BC_RGBA8888;
 	case AV_PIX_FMT_BGR0:		return BC_BGR8888;
 	case AV_PIX_FMT_BGR24:		return BC_BGR888;
+	case AV_PIX_FMT_ARGB:		return BC_ARGB8888;
+	case AV_PIX_FMT_ABGR:		return BC_ABGR8888;
+	case AV_PIX_FMT_RGB8:		return BC_RGB8;
 	case AV_PIX_FMT_YUV420P:	return BC_YUV420P;
 	case AV_PIX_FMT_YUV422P:	return BC_YUV422P;
 	case AV_PIX_FMT_YUV444P:	return BC_YUV444P;

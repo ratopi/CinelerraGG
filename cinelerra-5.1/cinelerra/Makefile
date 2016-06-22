@@ -409,7 +409,7 @@ $(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(LIBRARIES)
 	$(LINKER) `cat $(OBJDIR)/objs`
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT) $(OUTPUT_G))
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
-	ln -f -s $(OUTPUT) ci
+	ln -f -s ../bin/$(WANT_CIN) ci
 
 $(CUTADS):	$(CUTOBJS) $(CUTLIBS)
 	@echo g++ -o $@ $(CUTOBJS)
