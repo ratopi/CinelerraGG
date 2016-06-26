@@ -3126,17 +3126,14 @@ int BC_ListBox::button_release_event()
 //printf("BC_ListBox::button_release_event 10\n");
 			unset_repeat(get_resources()->scroll_repeat);
 			current_operation = NO_OPERATION;
-			translate_coordinates(top_level->event_win,
-				gui->win,
-				gui->get_cursor_x(),
-				gui->get_cursor_y(),
-				&cursor_x,
-				&cursor_y);
-
-			selection_number1 =
-				selection_number =
-				get_cursor_item(data, cursor_x, cursor_y);
+			if( gui ) {
+				translate_coordinates(top_level->event_win, gui->win,
+					gui->get_cursor_x(), gui->get_cursor_y(),
+					&cursor_x, &cursor_y);
+				selection_number1 = selection_number =
+					get_cursor_item(data, cursor_x, cursor_y);
 //printf("BC_ListBox::button_release_event %d %d\n", selection_number2, selection_number1);
+			}
 
 			if(is_popup)
 			{

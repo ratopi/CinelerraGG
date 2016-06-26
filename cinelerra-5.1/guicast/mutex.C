@@ -96,6 +96,10 @@ int Mutex::lock(const char *location)
 
 int Mutex::unlock()
 {
+	if( count <= 0 ) {
+		printf("Mutex::unlock not locked: %s\n", title);
+		return 0;
+	}
 // Remove from recursive status
 	if(recursive)
 	{

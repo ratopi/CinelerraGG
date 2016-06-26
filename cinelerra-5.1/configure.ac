@@ -94,19 +94,19 @@ PKG_3RD([a52dec],[yes],
   [ liba52/.libs/liba52.a ],
   [ include ])
 
-PKG_3RD([audiofile],[auto],
+PKG_3RD([audiofile],[no],
   [audiofile-0.3.6],
   [ libaudiofile/.libs/libaudiofile.a \
     libaudiofile/modules/.libs/libmodules.a \
     libaudiofile/alac/.libs/libalac.a ],
   [ libaudiofile ])
 
-PKG_3RD([encore],[yes],
+PKG_3RD([encore],[no],
   [encore-5.0],
   [ \$(OBJDIR)/libencore.a ],
   [ . ])
 
-PKG_3RD([esound],[auto],
+PKG_3RD([esound],[no],
   [esound-0.2.41],
   [ .libs/libesd.a \
     .libs/libesddsp.a ],
@@ -456,11 +456,11 @@ CHECK_HEADERS([fdk], [fdk headers], [fdk-aac/genericStds.h])
 AC_DEFUN([CHECK_WANT], [
 RESULT=yes
 AC_ARG_WITH(m4_tolower([$1]),
- AC_HELP_STRING([m4_join([-],[--with],m4_tolower([$1]))], [$2] (auto)),
-  [WANT_$1=$withval],[WANT_$1=auto])
+ AC_HELP_STRING([m4_join([-],[--with],m4_tolower([$1]))], [$3] (auto)),
+  [WANT_$1=$withval],[WANT_$1=$2])
 # WANT_$1
 if test "x$WANT_$1" != "xno" ; then
- m4_quote($3)
+ m4_quote($4)
  if test "x$RESULT" = "xno" -a "x$PKG_$1" = "x"; then
   echo "=== want $1 Failed."
   WANT_$1=no
@@ -472,23 +472,23 @@ CFG_WANTS+=" $1"
 AC_SUBST([WANT_$1])
 ])
 
-CHECK_WANT([GL], [use opengl], [
+CHECK_WANT([GL], [auto], [use opengl], [
  CHECK_LIB([GL], [GL], [glUseProgram])
  CHECK_LIB([GL], [GLU], [gluOrtho2D])
  CHECK_HEADERS([GL], [opengl headers], [GL/gl.h GL/glext.h GL/glu.h GL/glx.h])])
 
-CHECK_WANT([OSS], [use OSS audio], [
+CHECK_WANT([OSS], [auto], [use OSS audio], [
  CHECK_HEADERS([OSS], [oss headers], [sys/soundcard.h])])
 
-CHECK_WANT([XFT], [use libXft], [
+CHECK_WANT([XFT], [auto], [use libXft], [
  CHECK_LIB([XFT], [Xft], [XftInit])
  CHECK_HEADERS([XFT], [Xft/freetype headers], [X11/Xlib.h X11/Xft/Xft.h])])
 
-CHECK_WANT([ALSA], [use libasound/alsa], [
+CHECK_WANT([ALSA], [auto], [use libasound/alsa], [
  CHECK_LIB([ALSA], [asound], [snd_pcm_open])
  CHECK_HEADERS([ALSA], [asound headers], [alsa/asoundlib.h])])
 
-CHECK_WANT([FIREWIRE], [use firewire], [
+CHECK_WANT([FIREWIRE], [auto], [use firewire], [
  CHECK_LIB([libavc1394], [avc1394], [avc1394_init_target])
  CHECK_HEADERS([libavc1394], [libavc1394 headers], [libavc1394/avc1394.h])
  CHECK_LIB([libavc1394], [rom1394], [rom1394_get_bus_id])
@@ -498,29 +498,29 @@ CHECK_WANT([FIREWIRE], [use firewire], [
  CHECK_LIB([libraw1394], [raw1394], [raw1394_iso_recv_init])
  CHECK_HEADERS([libraw1394], [libraw1394 headers], [libraw1394/raw1394.h])])
 
-CHECK_WANT([DV], [use dv], [
+CHECK_WANT([DV], [auto], [use dv], [
  CHECK_LIB([libdv], [dv], [dv_init])
  CHECK_HEADERS([libdv], [libdv headers], [libdv/dv.h])])
 
-CHECK_WANT([DVB], [use dvb], [
+CHECK_WANT([DVB], [auto], [use dvb], [
  CHECK_HEADERS([DVB], [dvb device headers], [linux/dvb/dmx.h linux/dvb/frontend.h])])
 
-CHECK_WANT([VIDEO4LINUX2], [use v4l2], [
+CHECK_WANT([VIDEO4LINUX2], [auto], [use v4l2], [
  CHECK_HEADERS([VIDEO4LINUX2], [v4l2 system headers], [linux/kernel.h linux/types.h linux/videodev2.h])])
 
-CHECK_WANT([XXF86VM], [use xf86vmode], [
+CHECK_WANT([XXF86VM], [auto], [use xf86vmode], [
  CHECK_HEADERS([XXF86VM], [XF86VM headers], [X11/Xlib.h X11/extensions/xf86vmode.h])])
 
-CHECK_WANT([ESOUND], [use esd], [
+CHECK_WANT([ESOUND], [no], [use esd], [
  CHECK_LIB([esound], [esd], [esd_open_sound])
  CHECK_HEADERS([esound], [esound headers], [esd.h])
  CHECK_LIB([audiofile], [audiofile], [afOpenFile])
  CHECK_HEADERS([audiofile], [audiofile headers], [audiofile.h])])
 
-CHECK_WANT([DL], [system has libdl], [
+CHECK_WANT([DL], [auto], [system has libdl], [
  CHECK_LIB([DL], [dl], [dlopen])])
 
-CHECK_WANT([NUMA], [system has libnuma], [
+CHECK_WANT([NUMA], [auto], [system has libnuma], [
  CHECK_LIB([NUMA], [numa], [numa_alloc])])
 
 

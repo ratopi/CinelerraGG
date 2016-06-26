@@ -2438,7 +2438,7 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 			ptr->hide_gui();
 			delete_plugin(ptr);
 //sleep(1);
-//			return;
+			return;
 		}
 	}
 	if(lock) plugin_gui_lock->unlock();
