@@ -240,7 +240,7 @@ int BC_Clipboard::to_clipboard(const char *data, long len, int clipboard_num)
 #endif
 
 // Store in local buffer
-	if(this->data[clipboard_num] && length[clipboard_num] != len + 1)
+	if(this->data[clipboard_num] && length[clipboard_num] != len)
 	{
 		delete [] this->data[clipboard_num];
 		this->data[clipboard_num] = 0;
@@ -250,9 +250,10 @@ int BC_Clipboard::to_clipboard(const char *data, long len, int clipboard_num)
 	{
 		length[clipboard_num] = len;
 		this->data[clipboard_num] = new char[len + 1];
-		memcpy(this->data[clipboard_num], data, len);
-		this->data[clipboard_num][len] = 0;
 	}
+
+	memcpy(this->data[clipboard_num], data, len);
+	this->data[clipboard_num][len] = 0;
 
 	if(clipboard_num == PRIMARY_SELECTION)
 	{
@@ -370,7 +371,8 @@ int BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
 #else
 	XUnlockDisplay(in_display);
 #endif
-
+//int len = strlen(data);
+//printf("BC_Clipboard::from_clipboard %d: %d '%*.*s'\n",clipboard_num,len,len,len,data);
 	return 0;
 }
 

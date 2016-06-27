@@ -374,6 +374,8 @@ void ResourceThread::open_render_engine(EDL *nested_edl,
 
 File *ResourceThread::get_audio_source(Asset *asset)
 {
+	if( interrupted ) asset = 0;
+
 	if( audio_asset && audio_asset != asset && (!asset ||
 		strcmp(audio_asset->path, asset->path)) )
 	{
@@ -394,6 +396,8 @@ File *ResourceThread::get_audio_source(Asset *asset)
 
 File *ResourceThread::get_video_source(Asset *asset)
 {
+	if( interrupted ) asset = 0;
+
 	if( video_asset && video_asset != asset && (!asset ||
 		strcmp(video_asset->path, asset->path)) )
 	{

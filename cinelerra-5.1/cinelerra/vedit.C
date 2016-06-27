@@ -129,6 +129,8 @@ int VEdit::read_frame(VFrame *video_out,
 	int use_cache,
 	int use_asynchronous)
 {
+	File *file = 0;
+	int result = 0;
 	int64_t source_position = 0;
 	const int debug = 0;
 
@@ -139,20 +141,19 @@ if(debug) printf("VEdit::read_frame %d source_position=%jd input_position=%jd\n"
 	Asset *asset = get_nested_asset(&source_position,
 		input_position,
 		direction);
+	if( !asset ) result = 1;
 
 if(debug) printf("VEdit::read_frame %d source_position=%jd input_position=%jd\n",
 __LINE__, source_position, input_position);
 
-	File *file = cache->check_out(asset,
-		edl);
-	int result = 0;
-
+	if( !result ) {
+		file = cache->check_out(asset, edl);
+		if( !file ) result = 1;
+	}
 if(debug) printf("VEdit::read_frame %d path=%s source_position=%jd\n",
 __LINE__, asset->path, source_position);
 
-	if(file)
-	{
-
+	if( !result ) {
 if(debug) printf("VEdit::read_frame %d\n", __LINE__);
 		source_position = (direction == PLAY_FORWARD) ?
 			source_position :
@@ -179,8 +180,6 @@ if(debug) printf("VEdit::read_frame %d\n", __LINE__);
 		cache->check_in(asset);
 if(debug) printf("VEdit::read_frame %d\n", __LINE__);
 	}
-	else
-		result = 1;
 
 //for(int i = 0; i < video_out->get_w() * 3 * 20; i++) video_out->get_rows()[0][i] = 128;
 	return result;

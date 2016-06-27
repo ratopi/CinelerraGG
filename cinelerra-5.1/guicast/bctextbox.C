@@ -2079,26 +2079,20 @@ int BC_TextBox::get_cursor_letter2(int cursor_x, int cursor_y)
 void BC_TextBox::select_word(int &letter1, int &letter2, int ibeam_letter)
 {
 	int wtext_len = wtext_update();
-	if(!wtext_len) return;
-
 	letter1 = letter2 = ibeam_letter;
-	do {
-		if(iswalnum(wtext[letter1])) letter1--;
-	} while(letter1 > 0 && iswalnum(wtext[letter1]));
+	if( letter1 < 0 ) letter1 = 0;
+	if( letter2 < 0 ) letter2 = 0;
+	if( letter1 > wtext_len ) letter1 = wtext_len;
+	if( letter2 > wtext_len ) letter2 = wtext_len;
+	if( !wtext_len ) return;
 
-	if( !iswalnum(wtext[letter1]) ) letter1++;
+	while( letter1 > 0 && iswalnum(wtext[letter1]) ) --letter1;
+	if( letter1 < wtext_len && iswspace(wtext[letter1]) ) ++letter1;
 
-	do {
-		if( iswalnum(wtext[letter2]) ) letter2++;
-	} while( letter2 < wtext_len && isalnum(wtext[letter2]) );
-
-	if( letter2 < wtext_len && wtext[letter2] == ' ') letter2++;
-
-	if(letter1 < 0) letter1 = 0;
-	if(letter2 < 0) letter2 = 0;
-	if(letter1 > wtext_len) letter1 = wtext_len;
-	if(letter2 > wtext_len) letter2 = wtext_len;
+	while( letter2 < wtext_len && iswalnum(wtext[letter2]) ) ++letter2;
+	if( letter2 < wtext_len && wtext[letter2] == ' ' ) ++letter2;
 }
+
 
 void BC_TextBox::select_line(int &letter1, int &letter2, int ibeam_letter)
 {
@@ -2134,9 +2128,9 @@ void BC_TextBox::copy_selection(int clipboard_num)
 		highlight_letter1 < 0 || highlight_letter2 < 0 ||
 		highlight_letter2 - highlight_letter1 <= 0) return;
 	int clip_len = highlight_letter2 - highlight_letter1;
-	char ctext[clip_len+1];
 //printf(" BC_TextBox::copy_selection %d %d %d\n",highlight_letter1, highlight_letter2, clip_len);
-	text_update(&wtext[highlight_letter1],clip_len, ctext,clip_len+1);
+	char ctext[4*clip_len+4];
+	clip_len = text_update(&wtext[highlight_letter1],clip_len, ctext,4*clip_len+4);
 	get_clipboard()->to_clipboard(ctext, clip_len, clipboard_num);
 }
 
@@ -2146,11 +2140,11 @@ void BC_TextBox::paste_selection(int clipboard_num)
 	int len = get_clipboard()->clipboard_len(clipboard_num);
 	if( len > 0 )
 	{
-		char cstring[len];  wchar_t wstring[len];  --len;
-		get_clipboard()->from_clipboard(cstring, len, clipboard_num);
+		char cstring[len];  wchar_t wstring[len];
+		get_clipboard()->from_clipboard(cstring, len, clipboard_num);  --len;
 //printf("BC_TextBox::paste_selection %d '%*.*s'\n",len,len,len,cstring);
-		BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
-			cstring,(len+1), (char *)wstring,(len+1)*sizeof(wchar_t));
+		len = BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
+			cstring,len, (char *)wstring,(len+1)*sizeof(wchar_t)) / sizeof(wchar_t);
 		insert_text(wstring, len);
 	}
 }

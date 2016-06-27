@@ -1508,8 +1508,6 @@ int AWindowFolders::selection_changed()
 
 int AWindowFolders::button_press_event()
 {
-	if( get_buttonpress() == 3 && is_event_win() && cursor_inside() )
-		return 0;
 	return BC_ListBox::button_press_event();
 }
 
@@ -1560,8 +1558,6 @@ AWindowAssets::~AWindowAssets()
 
 int AWindowAssets::button_press_event()
 {
-	if( get_buttonpress() == 3 && is_event_win() && cursor_inside() )
-		return 0;
 	return BC_ListBox::button_press_event();
 }
 

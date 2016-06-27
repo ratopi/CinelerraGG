@@ -634,7 +634,9 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas,
 
 		if(indexable->is_asset)
 		{
+			mwindow->gui->unlock_window();
 			File *source = mwindow->audio_cache->check_out(edit->asset, mwindow->edl);
+			mwindow->gui->lock_window("draw_audio_source");
 
 			if(!source)
 			{
