@@ -2419,9 +2419,8 @@ int BC_ListBox::get_cursor_item(ArrayList<BC_ListBoxItem*> *data,
 			}
 		}
 	}
-	else
+	else if( gui ) {
 // Text is treed
-	{
 // Cursor is inside items rectangle
 		if(cursor_x >= 0 &&
 			cursor_x < (yscrollbar ?

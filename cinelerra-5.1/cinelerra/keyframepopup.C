@@ -127,12 +127,13 @@ void KeyframePopup::handle_curve_mode(Autos *autos, Auto *auto_keyframe)
 // determines the type of automation node. if floatauto, adds
 // menu entries showing the curve mode of the node
 {
+	deactivate();
 	if( !key_edit_displayed && keyframe_plugin ) {
 		add_item(key_edit);
 		key_edit_displayed = true;
 	}
 	else if( key_edit_displayed && !keyframe_plugin ) {
-		remove_item(key_mbar);
+		remove_item(key_edit);
 		key_edit_displayed = false;
 	}
 
@@ -161,6 +162,7 @@ void KeyframePopup::handle_curve_mode(Autos *autos, Auto *auto_keyframe)
 		key_free_t->toggle_mode((FloatAuto*)auto_keyframe);
 		key_free  ->toggle_mode((FloatAuto*)auto_keyframe);
 	}
+	activate();
 }
 
 KeyframePopupDelete::KeyframePopupDelete(MWindow *mwindow, KeyframePopup *popup)

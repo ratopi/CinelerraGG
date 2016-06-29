@@ -1584,6 +1584,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					}
 					else {
 						if(!gui->shift_down()) {
+							output_to_canvas(mwindow->edl, 0, canvas_x0, canvas_y0);
 							if(test_bbox(cursor_x, cursor_y, canvas_x0, canvas_y0)) {
 								selected_point = i;
 							}
@@ -1605,6 +1606,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					}
 					else if(i < points.size() - 1) {
 						if(!gui->shift_down()) {
+							output_to_canvas(mwindow->edl, 0, canvas_x3, canvas_y3);
 							if(test_bbox(cursor_x, cursor_y, canvas_x3, canvas_y3)) {
 								selected_point = (i < points.size() - 1 ? i + 1 : 0);
 							}
@@ -1641,15 +1643,14 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 // sprintf(string, "%d", (i < points.size() - 1 ? i + 1 : 0));
 // canvas->draw_text((int)canvas_x + CONTROL_W, (int)canvas_y + CONTROL_W, string);
 							}
-
-// Draw second control point.  Discard x2 and y2 after this.
-							output_to_canvas(mwindow->edl, 0, x2, y2);
+// Draw second control point.
+							output_to_canvas(mwindow->edl, 0, canvas_x2, canvas_y2);
 							get_canvas()->draw_line(
 								(int)canvas_x, (int)canvas_y,
 								(int)canvas_x2, (int)canvas_y2);
 							get_canvas()->draw_rectangle(
-								(int)x2 - CONTROL_W / 2,
-								(int)y2 - CONTROL_H / 2,
+								(int)canvas_x2 - CONTROL_W / 2,
+								(int)canvas_y2 - CONTROL_H / 2,
 								CONTROL_W, CONTROL_H);
 						}
 					}
