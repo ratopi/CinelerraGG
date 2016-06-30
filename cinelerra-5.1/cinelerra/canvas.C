@@ -666,7 +666,8 @@ int Canvas::button_release_event()
 {
 	int result = 0;
 
-	if(get_canvas()->get_buttonpress() == 3)
+	BC_WindowBase *cvs = get_canvas();
+	if( cvs->is_event_win() && cvs->get_buttonpress() == 3 && cvs->cursor_inside() )
 	{
 		if(get_fullscreen())
 			fullscreen_menu->activate_menu();
