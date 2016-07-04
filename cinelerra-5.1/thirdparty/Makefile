@@ -2,11 +2,9 @@
 #   make rules
 #
 # command uses:
-#   ./configure <static/shared>
 #   make <name>-clean
 #   make <name>
 #   make rules
-#   make list
 #   make val-<var>
 #
 # to add a new library:
@@ -159,7 +157,10 @@ ffmpeg.cfg_params= \
 
 cmake_config=echo "exec cmake \$$$$@ $(1)" > ./configure; chmod +x ./configure;
 a52dec.mak_params?= ; cd $(call bld_path,a52dec,include); ln -sf . a52dec
-a52dec.cfg_vars?= CFLAGS+=" -U__FreeBSD__"
+a52dec.cfg_vars?= CFLAGS+=" -U__FreeBSD__ $(call inc_path,djbfft)" LIBS+=" $(call ld_path,djbfft)"
+a52dec.cfg_params?=--enable-djbfft
+djbfft.cfg_vars?=echo "$(call bld_path,djbfft)" > conf-home; echo "$(CC) $(CFLAGS)" > conf-cc; echo > ./configure; chmod +x ./configure;
+djbfft.mak_params?=; cd $(call bld_path,djbfft); ln -sf djbfft.a libdjbfft.a
 audiofile.cfg_params?=--enable-shared=no
 audiofile.mak_params?=LIBS="-lm -lstdc++"
 flac.cfg_params?= --enable-shared=no
@@ -184,6 +185,7 @@ libiec61883.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libraw1394)
 libiec61883.cflags?="$(call inc_path,libraw1394)"
 libiec61883.ldflags?="$(call ld_path,libraw1394,src/.libs)"
 libiec61883.cfg_params?= --enable-shared=no
+libiec61883.mak_params?=; cd $(call bld_path,libiec61883,src); ln -sf . libiec61883
 libjpeg.cfg_params?= --enable-shared=no
 libogg.cfg_params?= --enable-shared=no
 libraw1394.cfg_params?=  --enable-shared=no; ln -sf src libraw1394
@@ -227,7 +229,8 @@ else
 rules=$(eval $(1))
 endif
 
-$(call rules,$(call std-build,a52dec))
+$(call rules,$(call std-build,a52dec,djbfft))
+$(call rules,$(call std-build,djbfft))
 $(call rules,$(call std-build,audiofile))
 $(call rules,$(call std-build,encore))
 $(call rules,$(call std-build,esound,audiofile))
@@ -243,7 +246,7 @@ $(call rules,$(call std-build,ladspa))
 $(call rules,$(call std-build,lame))
 $(call rules,$(call std-build,libavc1394,libraw1394))
 $(call rules,$(call std-build,libdv))
-$(call rules,$(call std-build,libiec61883))
+$(call rules,$(call std-build,libiec61883,libraw1394))
 $(call rules,$(call std-build,libjpeg))
 $(call rules,$(call std-build,libogg))
 $(call rules,$(call std-build,libraw1394))

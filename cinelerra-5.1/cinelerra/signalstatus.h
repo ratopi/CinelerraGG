@@ -11,7 +11,7 @@
 
 class SignalStatus : public BC_SubWindow
 {
-	friend DeviceDVBInput;
+	friend class DeviceDVBInput;
 	enum {  pad0 = 3, pad1 = 8,
 		lck_w = 5,  lck_h = 5,
 		crr_w = 5,  crr_h = 5,

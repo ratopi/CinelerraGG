@@ -77,7 +77,7 @@ UTILS += $(OBJDIR)/mpeg3cc2txt
 
 LIBS = -lm -lpthread
 
-LIBS += $(lib_a52dec)
+LIBS += $(lib_a52dec) $(lib_djbfft)
 
 ifeq ($(DYNAMIC_FONTS), 1)
 LIBS += -lX11

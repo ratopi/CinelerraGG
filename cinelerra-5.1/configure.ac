@@ -94,6 +94,11 @@ PKG_3RD([a52dec],[yes],
   [ liba52/.libs/liba52.a ],
   [ include ])
 
+PKG_3RD([djbfft],[yes],
+  [djbfft-0.76],
+  [ djbfft.a ],
+  [ . ])
+
 PKG_3RD([audiofile],[no],
   [audiofile-0.3.6],
   [ libaudiofile/.libs/libaudiofile.a \
@@ -614,6 +619,7 @@ fi
 ])
 
 PKG_PROVIDE([a52dec])
+PKG_PROVIDE([djbfft])
 PKG_PROVIDE([encore])
 PKG_PROVIDE([audiofile],[$WANT_ESOUND])
 PKG_PROVIDE([esound],[$WANT_ESOUND])
