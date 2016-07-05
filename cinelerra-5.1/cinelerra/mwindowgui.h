@@ -132,7 +132,7 @@ public:
 	int resize_event(int w, int h);          // handle a resize event
 	int keypress_event();
 	int keyboard_listener(BC_WindowBase *wp);
-	int keyboard_listener(int key);
+	int key_listener(int key);
 	void use_android_remote(int on);
 	int close_event();
 	int quit();

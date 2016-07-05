@@ -1400,10 +1400,10 @@ int MWindowGUI::keypress_event()
 
 int MWindowGUI::keyboard_listener(BC_WindowBase *wp)
 {
-	return keyboard_listener(wp->get_keypress());
+	return key_listener(wp->get_keypress());
 }
 
-int MWindowGUI::keyboard_listener(int key)
+int MWindowGUI::key_listener(int key)
 {
 	int result = 1;
 	switch( key ) {

@@ -59,7 +59,7 @@ bool AndroidControl::is_msg(const char *cp)
 void AndroidControl::press(int key)
 {
 // printf("press 0x%04x\n",key);
-	if( mwindow_gui->keyboard_listener(key) ) return;
+	if( mwindow_gui->key_listener(key) ) return;
 	mwindow_gui->remote_control->remote_key(key);
 }
 
