@@ -103,7 +103,7 @@ esound.cfg_vars+= AUDIOFILE_LIBS="$(call ld_path,audiofile,libaudiofile/.libs)"
 esound.cfg_params= --enable-shared=no --with-pic
 esound.mak_vars+= CFLAGS="" 
 esound.ldflags=" -lm -lstdc++"
-faac.cfg_params= --enable-shared=no
+faac.cfg_params= --enable-shared=no --without-mp4v2
 faad2.cfg_params= --enable-shared=no
 fdk.cfg_vars= ./autogen.sh ;
 fdk.cfg_params= --enable-shared=no

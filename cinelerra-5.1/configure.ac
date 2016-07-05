@@ -119,8 +119,7 @@ PKG_3RD([esound],[no],
 
 PKG_3RD([faac],[auto],
   [faac-1.28],
-  [ libfaac/.libs/libfaac.a \
-    common/mp4v2/libmp4v2.a ],
+  [ libfaac/.libs/libfaac.a ],
   [ include ])
 
 PKG_3RD([faad2],[auto],

@@ -1,0 +1,24 @@
+--- faac-1.28.orig/configure.in	2009-02-04 17:55:38.000000000 -0700
++++ faac-1.28/configure.in	2016-07-05 09:30:08.119772898 -0600
+@@ -34,9 +34,9 @@
+                             external_mp4v2=no, -lstdc++),
+                external_mp4v2=no, [#include <mp4.h>])
+ 
+-if test x$external_mp4v2 = xyes; then
+-  AC_MSG_NOTICE([*** Building with external mp4v2 ***])
+-else
++# if test x$external_mp4v2 = xyes; then
++#  AC_MSG_NOTICE([*** Building with external mp4v2 ***])
++# else
+   if test x$WITHMP4V2 = xyes; then
+      AC_MSG_NOTICE([*** Building with internal mp4v2 ***])
+      AM_CONDITIONAL(WITH_MP4V2, true)
+@@ -44,7 +44,7 @@
+      MY_DEFINE(HAVE_LIBMP4V2)
+   else
+      AC_MSG_NOTICE([*** Building WITHOUT mp4v2 ***])
+-  fi
++#  fi
+ fi
+ 
+ dnl Check for DRM mode
