@@ -71,6 +71,7 @@ equalizer frequency=1000.000000:width_type=1:width=200.000000:gain=-10.000000
 #ffbuffersink
 #fftfilt
 #field
+#fieldhint
 #fieldmatch
 #fieldorder
 #fifo
@@ -117,6 +118,7 @@ hflip
 #pullup
 #qp
 #random
+#remap
 #removelogo
 #repeatfields
 #replaygain

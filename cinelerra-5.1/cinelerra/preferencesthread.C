@@ -360,15 +360,7 @@ PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	int x,
 	int y)
  : BC_Window(_(PROGRAM_NAME ": Preferences"),
- 	x,
-	y,
- 	WIDTH,
-	HEIGHT,
-	(int)BC_INFINITY,
-	(int)BC_INFINITY,
-	0,
-	0,
-	1)
+ 	x,y, WIDTH,HEIGHT, WIDTH,HEIGHT, 1,0,1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;

@@ -209,10 +209,9 @@ void MainPackageRenderer::set_progress(int64_t value)
 				eta,
 				TIME_HMS2);
 
-			printf(_("\r%d%% ETA: %s      "), (int)(100 *
-				(float)render->total_rendered /
-					render->progress_max),
-				string);
+			printf("\r%d%% %s: %s      ",
+				(int)(100 * (float)render->total_rendered / render->progress_max),
+				_("ETA"), string);
 			fflush(stdout);
 			render->last_eta = current_eta;
 		}

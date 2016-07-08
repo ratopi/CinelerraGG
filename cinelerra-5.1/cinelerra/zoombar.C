@@ -88,7 +88,12 @@ void ZoomBar::create_objects()
 	track_zoom->zoom_tumbler->set_tooltip(_("Height of tracks in the timeline"));
 	x += track_zoom->get_w() + 10;
 
-	add_subwindow(auto_type = new AutoTypeMenu(mwindow, this, x, y));
+	int wid = 120;
+	for( int i=AUTOGROUPTYPE_AUDIO_FADE; i<=AUTOGROUPTYPE_Y; ++i ) {
+		int ww = BC_GenericButton::calculate_w(this, AutoTypeMenu::to_text(i));
+		if( ww > wid ) wid = ww;
+	}
+	add_subwindow(auto_type = new AutoTypeMenu(mwindow, this, x, y, wid));
 	auto_type->create_objects();
 	x += auto_type->get_w() + 10;
 #define DEFAULT_TEXT "000.00 to 000.00"
@@ -448,8 +453,8 @@ int AutoZoom::handle_down_event()
 
 
 
-AutoTypeMenu::AutoTypeMenu(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
-	: BC_PopupMenu(x, y, 120,to_text(mwindow->edl->local_session->zoombar_showautotype), 1)
+AutoTypeMenu::AutoTypeMenu(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int wid)
+	: BC_PopupMenu(x, y, wid, to_text(mwindow->edl->local_session->zoombar_showautotype), 1)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;

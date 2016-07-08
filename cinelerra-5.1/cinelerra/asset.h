@@ -145,8 +145,8 @@ public:
 
 	int64_t audio_length;
 
-// contains video data
-	int video_data;
+// contains video data, single frame data set
+	int video_data, single_frame;
 	int layers, program;
 	double frame_rate;
 

@@ -385,9 +385,9 @@ int TitleWindow::resize_event(int w, int h)
 #endif
 	size_title->reposition_window(size_title->get_x(), size_title->get_y());
 	size->reposition_window(size->get_x(), size->get_y());
-	size_tumbler->reposition_window(size_title->get_x(), size_title->get_y());
+	size_tumbler->reposition_window(size_tumbler->get_x(), size_tumbler->get_y());
 	pitch_title->reposition_window(pitch_title->get_x(), pitch_title->get_y());
-	pitch->reposition_window(size->get_x(), size->get_y());
+	pitch->reposition_window(pitch->get_x(), pitch->get_y());
 
 #ifndef X_HAVE_UTF8_STRING
 	encoding->reposition_window(encoding->get_x(), encoding->get_y());

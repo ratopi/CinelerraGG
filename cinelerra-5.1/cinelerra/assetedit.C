@@ -227,7 +227,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	mwindow->gui->get_abs_cursor_y(1) - (128 + 64 +
 		(!asset_edit->indexable->have_audio() ? 0 : 180) +
 		(!asset_edit->indexable->have_video() ? 0 : 350)) / 2,
-	400, (128 + 64 +
+	450, (128 + 64 +
 		(!asset_edit->indexable->have_audio() ? 0 : 180) +
 		(!asset_edit->indexable->have_video() ? 0 : 350)), 0, 0, 1)
 {
@@ -259,7 +259,7 @@ AssetEditWindow::~AssetEditWindow()
 
 void AssetEditWindow::create_objects()
 {
-	int y = 10, x = 10, x1 = 10, x2 = 160;
+	int y = 10, x = 10, x1 = 10, x2 = 190;
 	char string[BCTEXTLEN];
 	int vmargin;
 	FileSystem fs;

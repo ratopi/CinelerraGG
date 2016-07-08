@@ -339,6 +339,7 @@ int FileList::read_frame(VFrame *frame)
 	}
 	else
 	{
+		asset->single_frame = 1;
 // Allocate and decompress single frame into new temporary
 //printf("FileList::read_frame %d\n", frame->get_color_model());
 		if(!temp || temp->get_color_model() != frame->get_color_model())

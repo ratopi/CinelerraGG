@@ -116,10 +116,8 @@ public:
 class AutoTypeMenu : public BC_PopupMenu
 {
 public:
-	AutoTypeMenu(MWindow *mwindow,
-		     ZoomBar *zoombar,
-		     int x, 
-		     int y);
+	AutoTypeMenu(MWindow *mwindow, ZoomBar *zoombar,
+		     int x, int y, int wid);
 	void create_objects();
 	static const char* to_text(int shape);
 	static int from_text(char *text);

@@ -623,9 +623,12 @@ int File::open_file(Preferences *preferences,
 
 	if( rd ) {
 // one frame image file, no specific length
-		if( !this->asset->audio_data && this->asset->video_data &&
-		    this->asset->video_length <= 1 )
+		if( !this->asset->audio_data &&
+		    this->asset->video_data && !this->asset->single_frame &&
+		    this->asset->video_length >= 0 && this->asset->video_length <= 1 ) {
+			this->asset->single_frame = 1;
 			this->asset->video_length = -1;
+		}
 	}
 
 // Synchronize header parameters
@@ -1124,7 +1127,7 @@ VFrame*** File::get_video_buffer()
 int File::read_samples(Samples *samples, int64_t len)
 {
 // Never try to read more samples than exist in the file
-	if (current_sample + len > asset->audio_length) {
+	if (asset->audio_length >= 0 && current_sample + len > asset->audio_length) {
 		len = asset->audio_length - current_sample;
 	}
 	if(len <= 0) return 0;
@@ -1173,8 +1176,8 @@ int File::read_frame(VFrame *frame, int is_thread)
 	if(debug) PRINT_TRACE
 	int supported_colormodel = colormodel_supported(frame->get_color_model());
 	int advance_position = 1;
-	int cache_active = use_cache || asset->video_length < 0 ? 1 : 0;
-	int64_t cache_position = asset->video_length >= 0 ? current_frame : -1;
+	int cache_active = use_cache || asset->single_frame ? 1 : 0;
+	int64_t cache_position = !asset->single_frame ? current_frame : -1;
 // Test cache
 	if( cache_active && frame_cache->get_frame(frame, cache_position,
 			current_layer, asset->frame_rate) )

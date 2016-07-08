@@ -154,6 +154,7 @@ void Asset::reset_video()
 	actual_width = width = 0;
 	actual_height = height = 0;
 	video_length = 0;
+	single_frame = 0;
 	vmpeg_cmodel = BC_YUV420P;
 	frame_rate = 0;
 	program = -1;
@@ -235,7 +236,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 	this->audio_length = asset->audio_length;
 	this->video_length = asset->video_length;
-
+	this->single_frame = asset->single_frame;
 
 	ampeg_bitrate = asset->ampeg_bitrate;
 	ampeg_derivative = asset->ampeg_derivative;
@@ -532,6 +533,7 @@ int Asset::read_video(FileXML *file)
 	file->tag.get_property("VCODEC", vcodec);
 
 	video_length = file->tag.get_property("VIDEO_LENGTH", (int64_t)0);
+	single_frame = file->tag.get_property("SINGLE_FRAME", (int64_t)0);
 
 	interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIX",0);
 
@@ -692,6 +694,7 @@ int Asset::write_video(FileXML *file)
 		file->tag.set_property("VCODEC", vcodec);
 
 	file->tag.set_property("VIDEO_LENGTH", video_length);
+	file->tag.set_property("SINGLE_FRAME", single_frame);
 
 	file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
 
@@ -799,6 +802,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 		layers = GET_DEFAULT("LAYERS", layers);
 		if(EQUIV(frame_rate, 0)) frame_rate = GET_DEFAULT("FRAMERATE", frame_rate);
 		video_length = GET_DEFAULT("VIDEO_LENGTH", (int64_t)0);
+		single_frame = GET_DEFAULT("SINGLE_FRAME", (int64_t)0);
 	}
 
 	ampeg_bitrate = GET_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
@@ -983,6 +987,7 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("LAYERS", layers);
 		UPDATE_DEFAULT("FRAMERATE", frame_rate);
 		UPDATE_DEFAULT("VIDEO_LENGTH", video_length);
+		UPDATE_DEFAULT("SINGLE_FRAME", single_frame);
 
 	}
 
@@ -1026,7 +1031,7 @@ int Asset::dump(FILE *fp)
 		vcodec, aspect_ratio,string);
 	fprintf(fp,"   reel_name %s reel_number %i tcstart %jd tcend %jd tcf %d\n",
 		reel_name, reel_number, tcstart, tcend, tcformat);
-	fprintf(fp,"   video_length %jd \n", video_length);
+	fprintf(fp,"   video_length %jd repeat %d\n", video_length, single_frame);
 
 
 	return 0;

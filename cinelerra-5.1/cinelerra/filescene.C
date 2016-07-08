@@ -44,8 +44,10 @@ extern "C"
 
 
 // Paths relative to the exe path
+#ifdef HAVE_FESTIVAL_BUILTIN
 #define FESTIVAL_PATH "/festival"
 #define FESTIVAL_LIB_PATH "/lib/"
+#endif
 #define ASSET_PATH "/models/"
 #define FREAD_SIZE 0x10000
 #define WAVHEADER 44
@@ -1299,10 +1301,14 @@ void SceneChunk::render()
 		uuid_unparse(temp_id, script_path + strlen(script_path));
 		FILE *script_fd = fopen(script_path, "w");
 
+#ifdef HAVE_FESTIVAL_BUILTIN
 		sprintf(command_line, "%s%s --libdir %s%s -b %s", 
 			script->file->exec_path, FESTIVAL_PATH,
 			script->file->exec_path, FESTIVAL_LIB_PATH,
 			script_path);
+#else
+		sprintf(command_line, "festival -b %s", script_path);
+#endif
 
 // Create script.
 // The maximum text length is limited with the command line
