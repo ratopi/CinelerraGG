@@ -204,17 +204,17 @@ void FormatTools::create_objects(int &init_x,
 	x = init_x;
 	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
 	x += 90;
-	window->add_subwindow(format_text = new BC_TextBox(x, y, 180, 1,
+	window->add_subwindow(format_text = new BC_TextBox(x, y, 160, 1,
 		File::formattostr(asset->format)));
 	x += format_text->get_w();
 //printf("FormatTools::create_objects %d %p\n", __LINE__, window);
 	window->add_subwindow(format_button = new FormatFormat(x, y, this));
 	format_button->create_objects();
 	x += format_button->get_w() + 5;
-	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y+5, 50, 1, asset->fformat));
+	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y, 64, 1, asset->fformat));
 	FFMPEG::set_asset_format(asset, asset->fformat);
 	x += ffmpeg_type->get_w();
-	window->add_subwindow(format_ffmpeg = new FormatFFMPEG(x, y+5, this));
+	window->add_subwindow(format_ffmpeg = new FormatFFMPEG(x, y, this));
 	format_ffmpeg->create_objects();
 	x = init_x;
 	y += format_button->get_h() + 10;

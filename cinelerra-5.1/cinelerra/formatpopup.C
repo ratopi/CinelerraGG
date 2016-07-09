@@ -97,7 +97,7 @@ int FormatPopup::handle_event()
 
 
 FFMPEGPopup::FFMPEGPopup(ArrayList<PluginServer*> *plugindb, int x, int y)
- : BC_ListBox(x, y, 50, 200, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
+ : BC_ListBox(x, y, 100, 200, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
 {
 	this->plugindb = plugindb;
 	set_tooltip(_("Set ffmpeg file type"));

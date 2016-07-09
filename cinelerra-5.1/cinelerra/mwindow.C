@@ -235,6 +235,7 @@ MWindow::~MWindow()
 	delete create_bd;       create_bd = 0;
 	delete create_dvd;      create_dvd = 0;
 	delete batch_render;    batch_render = 0;
+	delete render;          render = 0;
 	commit_commercial();
 	if( commercials && !commercials->remove_user() ) commercials = 0;
 
@@ -292,15 +293,13 @@ MWindow::~MWindow()
 	finit_error();
 	keyframe_threads->remove_all_objects();
 	colormodels.remove_all_objects();
-	delete gui;		gui = 0;
-	delete render;          render = 0;
 	delete awindow;         awindow = 0;
 	delete lwindow;         lwindow = 0;
 	delete twindow;         twindow = 0;
 	delete wwindow;         wwindow = 0;
 	delete gwindow;         gwindow = 0;
-	// must be last or nouveau chokes
 	delete cwindow;         cwindow = 0;
+	delete gui;		gui = 0;
 	//delete file_server;  file_server = 0; // reusable
 	delete mainindexes;     mainindexes = 0;
 	delete mainprogress;    mainprogress = 0;
