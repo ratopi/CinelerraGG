@@ -36,12 +36,7 @@
 
 
 MotionWindow::MotionWindow(MotionMain *plugin)
- : PluginClientWindow(plugin,
- 	600,
-	650,
-	600,
-	650,
-	0)
+ : PluginClientWindow(plugin, 600, 650, 600, 650, 0)
 {
 	this->plugin = plugin;
 }

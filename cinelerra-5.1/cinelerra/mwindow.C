@@ -339,8 +339,8 @@ MWindow::~MWindow()
 
 void MWindow::quit(int unlock)
 {
-	stop_playback(1);
 	if(unlock) gui->unlock_window();
+	stop_playback(1);
 
 	brender_lock->lock("MWindow::quit");
 	delete brender;         brender = 0;

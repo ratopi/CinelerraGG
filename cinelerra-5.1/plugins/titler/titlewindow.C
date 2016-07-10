@@ -239,6 +239,7 @@ void TitleWindow::create_objects()
 	pitch = new TitlePitch(client, this, x1, y2+10, &client->config.line_pitch);
 	pitch->create_objects();
 	x = x2 + size_tumbler->get_w() + margin;
+	int y3 = pitch->get_y() + pitch->get_h();
 
 	add_tool(style_title = new BC_Title(x, y, _("Style:")));
 	add_tool(italic = new TitleItalic(client, this, x, y + 20));
@@ -263,8 +264,8 @@ void TitleWindow::create_objects()
 	add_tool(mid = new TitleMid(client, this, x, y + 50));
 	add_tool(bottom= new TitleBottom(client, this, x, y + 80));
 
-	y += 50;
 	x = 10;
+	y = y3;
 
 	add_tool(x_title = new BC_Title(x, y, _("X:")));
 	title_x = new TitleX(client, this, x, y + 20);

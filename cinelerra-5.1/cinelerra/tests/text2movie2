@@ -9,13 +9,13 @@ background: tree01.png
 LION
 
 # voice directory in festival/lib/voices/us/
-voice: cmu_us_bdl_arctic_hts
+voice: cmu_us_slt_arctic_hts
 # path to model file
 model: lion01
 
 HEROINE
 
-voice: nitech_us_clb_arctic_hts
+voice: nitech_us_slt_arctic_hts
 model: warrior01
 
 

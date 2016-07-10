@@ -103,15 +103,10 @@ ResizeVTrackWindow::ResizeVTrackWindow(MWindow *mwindow,
 	int x,
 	int y)
  : BC_Window(_(PROGRAM_NAME ": Resize Track"), 
-				x - 320 / 2,
-				y - get_resources()->ok_images[0]->get_h() + 100 / 2,
-				340, 
-				get_resources()->ok_images[0]->get_h() + 100, 
-				340, 
-				get_resources()->ok_images[0]->get_h() + 100, 
-				0,
-				0, 
-				1)
+				x - 320 / 2, y - get_resources()->ok_images[0]->get_h() + 100 / 2,
+				400, get_resources()->ok_images[0]->get_h() + 100,
+				400, get_resources()->ok_images[0]->get_h() + 100,
+				0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -126,45 +121,30 @@ void ResizeVTrackWindow::create_objects()
 	int x = 10, y = 10;
 
 	lock_window("ResizeVTrackWindow::create_objects");
-	add_subwindow(new BC_Title(x, y, _("Size:")));
-	x += 50;
-	add_subwindow(w = new ResizeVTrackWidth(this, 
-		thread,
-		x,
-		y));
-	x += w->get_w() + 10;
-	add_subwindow(new BC_Title(x, y, _("x")));
-	x += 15;
-	add_subwindow(h = new ResizeVTrackHeight(this, 
-		thread,
-		x,
-		y));
-	x += h->get_w() + 5;
+	BC_Title *size_title = new BC_Title(x, y, _("Size:"));
+	add_subwindow(size_title);
+	int x1 = x + size_title->get_w();
+	int y1 = y + size_title->get_h() + 10;
+	BC_Title *scale_title = new BC_Title(x, y1, _("Scale:"));
+	add_subwindow(scale_title);
+	int x2 = x + scale_title->get_w();
+	if( x2 > x1 ) x1 = x2;
+	x1 += 10;
+	add_subwindow(w = new ResizeVTrackWidth(this, thread, x1, y));
+	x2 = x1 + w->get_w() + 5;
+	BC_Title *xy = new BC_Title(x2, y, _("x"));
+	add_subwindow(xy);
+	int x3 = x2 + xy->get_w() + 5;
+	add_subwindow(h = new ResizeVTrackHeight(this, thread, x3, y));
+	x = x3 + h->get_w() + 5;
 	FrameSizePulldown *pulldown;
-	add_subwindow(pulldown = new FrameSizePulldown(mwindow->theme, 
-		w, 
-		h, 
-		x, 
-		y));
+	add_subwindow(pulldown = new FrameSizePulldown(mwindow->theme, w, h, x, y));
 	x += pulldown->get_w() + 5;
 	add_subwindow(new ResizeVTrackSwap(this, thread, x, y));
 
-
-	y += 30;
-	x = 10;
-	add_subwindow(new BC_Title(x, y, _("Scale:")));
-	x += 50;
-	add_subwindow(w_scale = new ResizeVTrackScaleW(this, 
-		thread,
-		x,
-		y));
-	x += 100;
-	add_subwindow(new BC_Title(x, y, _("x")));
-	x += 15;
-	add_subwindow(h_scale = new ResizeVTrackScaleH(this, 
-		thread,
-		x,
-		y));
+	add_subwindow(w_scale = new ResizeVTrackScaleW(this, thread, x1, y1));
+	add_subwindow(new BC_Title(x2, y1, _("x")));
+	add_subwindow(h_scale = new ResizeVTrackScaleH(this, thread, x3, y1));
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));

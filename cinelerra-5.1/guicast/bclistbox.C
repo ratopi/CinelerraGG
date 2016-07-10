@@ -732,9 +732,10 @@ void BC_ListBox::calculate_last_coords_recursive(
 // Lowest right icon coordinate.
 				current_icon_x = item->icon_x;
 				if(current_icon_x > *icon_x) *icon_x = current_icon_x;
-				if(current_icon_x + get_item_w(item) > *next_icon_x)
+				if(current_icon_x + get_item_w(item) > *next_icon_x) {
 					*next_icon_x = current_icon_x + get_item_w(item);
-
+					*next_icon_y = 0;
+				}
 				current_icon_y = item->icon_y + get_item_h(item);
 				if(current_icon_y > *next_icon_y)
 					*next_icon_y = current_icon_y;

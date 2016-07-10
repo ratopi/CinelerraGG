@@ -240,7 +240,6 @@ FFStream::FFStream(FFMPEG *ffmpeg, AVStream *st, int fidx)
 	nudge = AV_NOPTS_VALUE;
 	seek_pos = curr_pos = 0;
 	seeked = 1;  eof = 0;
-	index_markers = 0;
 	reading = writing = 0;
 	flushed = 0;
 	need_packet = 1;
@@ -447,6 +446,7 @@ int FFStream::seek(int64_t no, double rate)
 // default ffmpeg native seek
 	int npkts = 1;
 	int64_t pos = no, plmt = -1;
+	IndexMarks *index_markers = get_markers();
 	if( index_markers && index_markers->size() > 1 ) {
 		IndexMarks &marks = *index_markers;
 		int i = marks.find(pos);
@@ -703,9 +703,16 @@ int FFAudioStream::encode_frame(AVPacket *pkt, AVFrame *frame, int &got_packet)
 void FFAudioStream::load_markers()
 {
 	IndexState *index_state = ffmpeg->file_base->asset->index_state;
-	if( index_state->marker_status == MARKERS_NOTTESTED ) return;
 	if( !index_state || idx >= index_state->audio_markers.size() ) return;
+	if( index_state->marker_status == MARKERS_NOTTESTED ) return;
 	FFStream::load_markers(*index_state->audio_markers[idx], sample_rate);
+}
+
+IndexMarks *FFAudioStream::get_markers()
+{
+	IndexState *index_state = ffmpeg->file_base->asset->index_state;
+	if( !index_state || idx >= index_state->audio_markers.size() ) return 0;
+	return index_state->audio_markers[idx];
 }
 
 FFVideoStream::FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx)
@@ -1041,8 +1048,15 @@ int FFVideoConvert::transfer_pixfmt(VFrame *frame,
 void FFVideoStream::load_markers()
 {
 	IndexState *index_state = ffmpeg->file_base->asset->index_state;
-	if( idx >= index_state->video_markers.size() ) return;
+	if( !index_state || idx >= index_state->video_markers.size() ) return;
 	FFStream::load_markers(*index_state->video_markers[idx], frame_rate);
+}
+
+IndexMarks *FFVideoStream::get_markers()
+{
+	IndexState *index_state = ffmpeg->file_base->asset->index_state;
+	if( !index_state || idx >= index_state->video_markers.size() ) return 0;
+	return !index_state ? 0 : index_state->video_markers[idx];
 }
 
 
@@ -2564,7 +2578,6 @@ printf("audio%d pad %ld %ld (%ld)\n", aud->idx, pos, aud->curr_pos, pos-aud->cur
 
 void FFStream::load_markers(IndexMarks &marks, double rate)
 {
-	index_markers = &marks;
 	int in = 0;
 	int64_t sz = marks.size();
 	int max_entries = fmt_ctx->max_index_size / sizeof(AVIndexEntry) - 1;

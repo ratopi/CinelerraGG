@@ -95,6 +95,7 @@ public:
 	virtual int create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx) = 0;
 	virtual void load_markers() = 0;
+	virtual IndexMarks *get_markers() = 0;
 	int create_filter(const char *filter_spec);
 	int load_filter(AVFrame *frame);
 	int read_filter(AVFrame *frame);
@@ -132,7 +133,6 @@ public:
 	int frm_count;
 	List<FFrame> frms;
 	Mutex *frm_lock;
-	IndexMarks *index_markers;
 
 	int64_t nudge;
 	int64_t seek_pos, curr_pos;
@@ -173,6 +173,7 @@ public:
 	int create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx);
 	void load_markers();
+	IndexMarks *get_markers();
 
 	int encode_activate();
 	int nb_samples();
@@ -233,6 +234,7 @@ public:
 	int create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx);
 	void load_markers();
+	IndexMarks *get_markers();
 
 	int init_frame(AVFrame *picture);
 	int load(VFrame *vframe, int64_t pos);
