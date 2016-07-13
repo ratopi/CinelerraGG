@@ -46,26 +46,26 @@ GWindowGUI::GWindowGUI(MWindow *mwindow, int w, int h)
 
 static const char *other_text[NON_AUTOMATION_TOTAL] =
 {
-	_("Assets"),
-	_("Titles"),
-	_("Transitions"),
-	_("Plugin Autos")
+	"Assets",
+	"Titles",
+	"Transitions",
+	"Plugin Autos"
 };
 
 static const char *auto_text[AUTOMATION_TOTAL] =
 {
-	_("Mute"),
-	_("Camera X"),
-	_("Camera Y"),
-	_("Camera Z"),
-	_("Projector X"),
-	_("Projector Y"),
-	_("Projector Z"),
-	_("Fade"),
-	_("Pan"),
-	_("Mode"),
-	_("Mask"),
-	_("Speed")
+	"Mute",
+	"Camera X",
+	"Camera Y",
+	"Camera Z",
+	"Projector X",
+	"Projector Y",
+	"Projector Z",
+	"Fade",
+	"Pan",
+	"Mode",
+	"Mask",
+	"Speed"
 };
 
 
@@ -102,9 +102,9 @@ void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 			BC_WindowBase::get_resources()->checkbox_images,
 			0, &temp1, &current_w, &current_h,
 			&temp2, &temp3, &temp4, &temp5, &temp6, &temp7,
-			toggle_order[i].isauto ?
+			_(toggle_order[i].isauto ?
 				auto_text[toggle_order[i].ref] :
-				other_text[toggle_order[i].ref], MEDIUMFONT);
+				other_text[toggle_order[i].ref]), MEDIUMFONT);
 		*w = MAX(current_w, *w);
 		*h += current_h + 5;
 	}
@@ -198,7 +198,7 @@ int GWindowGUI::keypress_event()
 GWindowToggle::GWindowToggle(MWindow *mwindow,
 	GWindowGUI *gui, int x, int y, toggleinfo toggleinf)
  : BC_CheckBox(x, y, *get_main_value(mwindow, toggleinf),
-        toggleinf.isauto ? auto_text[toggleinf.ref] : other_text[toggleinf.ref])
+        _((toggleinf.isauto ? auto_text[toggleinf.ref] : other_text[toggleinf.ref])))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
