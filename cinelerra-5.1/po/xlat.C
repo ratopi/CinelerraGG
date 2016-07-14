@@ -546,8 +546,15 @@ void list_po(FILE *ifp, FILE *ofp, int xeqx = 0, int nnul = 0)
       xlat2(&tbfr[0], str);  txt.append((const char*)str);
       ++no;
     }
-    if( nnul && !txt.size() ) { ++nul; continue; }
-    if( xeqx && !key.compare(txt) ) { ++dup; continue; }
+    if( nnul && !txt.size() ) {
+      ++nul;
+      if( nnul > 0 ) continue;
+    }
+    else if( xeqx && !key.compare(txt) ) {
+       ++dup;
+       if( xeqx > 0 ) continue;
+    }
+    else if( nnul < 0 || xeqx < 0 ) continue;
     xlat4(key.c_str(), str);
     fprintf(ofp, "%s,", (char *)str);
     xlat4(txt.c_str(), str);
@@ -558,8 +565,9 @@ void list_po(FILE *ifp, FILE *ofp, int xeqx = 0, int nnul = 0)
 
 static void usage(const char *av0)
 {
-  printf("test csv    %s csv < data.csv\n",av0);
-  printf("list po     %s po < data.po\n",av0);
+  printf("list csv    %s csv < data.csv > data.po\n",av0);
+  printf("list po     %s po < data.po > data.csv\n",av0);
+  printf("list po     %s dups < data.po\n",av0);
   printf("list po     %s nodups < data.po\n",av0);
   printf("get strings %s key  < xgettext.po\n",av0);
   printf("gen xlation %s xlat   xgettext.po xlat.csv\n",av0);
@@ -578,9 +586,16 @@ int main(int ac, char **av)
   if( !strcmp(av[1],"csv") ) {  // test csv
     load(stdin, 0);
     for( Trans::iterator it = trans.begin(); it!=trans.end(); ++it ) {
-      uint8_t str[MX_STR];  xlat3(it->second.c_str(), str);
-      printf("key = \"%s\", val = %s\n", it->first.c_str(), (char *)str);
+      uint8_t str1[MX_STR];  xlat3(it->first.c_str(), str1);
+      printf("msgid %s\n", (char *)str1);
+      uint8_t str2[MX_STR];  xlat3(it->second.c_str(), str2);
+      printf("msgstr %s\n\n", (char *)str2);
     }
+    return 0;
+  }
+
+  if( !strcmp(av[1],"dups") ) {  // test po
+    list_po(stdin, stdout, -1, -1);
     return 0;
   }
 
