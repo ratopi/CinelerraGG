@@ -509,7 +509,7 @@ void scan_po(FILE *ifp, FILE *ofp)
   if( ifp != stdin ) fclose(ifp);
 }
 
-void list_po(FILE *ifp, FILE *ofp)
+void list_po(FILE *ifp, FILE *ofp, int xeqx = 0, int nnul = 0)
 {
   int no = 0;
   int dup = 0, nul = 0;
@@ -546,8 +546,8 @@ void list_po(FILE *ifp, FILE *ofp)
       xlat2(&tbfr[0], str);  txt.append((const char*)str);
       ++no;
     }
-    if( !txt.size() ) { ++nul; continue; }
-    if( !key.compare(txt) ) { ++dup; continue; }
+    if( nnul && !txt.size() ) { ++nul; continue; }
+    if( xeqx && !key.compare(txt) ) { ++dup; continue; }
     xlat4(key.c_str(), str);
     fprintf(ofp, "%s,", (char *)str);
     xlat4(txt.c_str(), str);
@@ -558,9 +558,10 @@ void list_po(FILE *ifp, FILE *ofp)
 
 static void usage(const char *av0)
 {
-  printf("test csv    %s  csv < data.csv\n",av0);
-  printf("test po     %s   po < data.po\n",av0);
-  printf("get strings %s  key < xgettext.po\n",av0);
+  printf("test csv    %s csv < data.csv\n",av0);
+  printf("list po     %s po < data.po\n",av0);
+  printf("list po     %s nodups < data.po\n",av0);
+  printf("get strings %s key  < xgettext.po\n",av0);
   printf("gen xlation %s xlat   xgettext.po xlat.csv\n",av0);
   printf("gen xlation %s xlat - text,xlat ... < xgettext.po\n",av0);
   exit(1);
@@ -580,6 +581,11 @@ int main(int ac, char **av)
       uint8_t str[MX_STR];  xlat3(it->second.c_str(), str);
       printf("key = \"%s\", val = %s\n", it->first.c_str(), (char *)str);
     }
+    return 0;
+  }
+
+  if( !strcmp(av[1],"nodups") ) {  // test po
+    list_po(stdin, stdout, 1, 1);
     return 0;
   }
 
