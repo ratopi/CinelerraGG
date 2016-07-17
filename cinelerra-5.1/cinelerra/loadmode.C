@@ -29,14 +29,14 @@
 // Must match macros
 static const char *mode_text[] =
 {
-	_("Insert nothing"),
-	_("Replace current project"),
-	_("Replace current project and concatenate tracks"),
-	_("Append in new tracks"),
-	_("Concatenate to existing tracks"),
-	_("Paste at insertion point"),
-	_("Create new resources only"),
-	_("Nest sequence")
+	N_("Insert nothing"),
+	N_("Replace current project"),
+	N_("Replace current project and concatenate tracks"),
+	N_("Append in new tracks"),
+	N_("Concatenate to existing tracks"),
+	N_("Paste at insertion point"),
+	N_("Create new resources only"),
+	N_("Nest sequence")
 };
 
 
@@ -58,9 +58,9 @@ LoadMode::LoadMode(MWindow *mwindow, BC_WindowBase *window,
 	this->use_nothing = use_nothing;
 	int mode = LOADMODE_NOTHING;
 	if(use_nothing)
-		load_modes.append(new LoadModeItem(mode_text[mode], mode));
+		load_modes.append(new LoadModeItem(_(mode_text[mode]), mode));
 	while( ++mode < TOTAL_LOADMODES )
-		load_modes.append(new LoadModeItem(mode_text[mode], mode));
+		load_modes.append(new LoadModeItem(_(mode_text[mode]), mode));
 }
 
 LoadMode::~LoadMode()
