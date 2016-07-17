@@ -959,7 +959,7 @@ void ChannelPanel::get_xtime(int x, char *cp)
 	struct tm xtm;  localtime_r(&xt,&xtm);
 	cp += sprintf(cp,"%02d:%02d",xtm.tm_hour, xtm.tm_min);
 	if( !xtm.tm_hour && !xtm.tm_min ) {
-		sprintf(cp,_("(%3.3s) "),&_("sunmontuewedthufrisat")[xtm.tm_wday*3]);
+		sprintf(cp,"(%3.3s) ",&_("sunmontuewedthufrisat")[xtm.tm_wday*3]);
 	}
 }
 

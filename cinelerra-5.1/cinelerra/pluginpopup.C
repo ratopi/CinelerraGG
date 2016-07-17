@@ -26,8 +26,8 @@
 #include "plugin.h"
 #include "plugindialog.h"
 #include "pluginpopup.h"
-#include "presets.h"
-#include "presetsgui.h"
+//#include "presets.h"
+//#include "presetsgui.h"
 #include "track.h"
 
 

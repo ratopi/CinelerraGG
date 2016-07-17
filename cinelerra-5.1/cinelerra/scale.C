@@ -273,7 +273,7 @@ void ScaleWindow::create_objects()
 	sprintf(string, "%.0f", thread->aspect_w);
 	add_subwindow(aspect_w = new ScaleAspectW(x, y, thread, &(thread->aspect_w), string));
 	x += 55;
-	add_subwindow(new BC_Title(x, y, _(":")));
+	add_subwindow(new BC_Title(x, y, ":"));
 	x += 10;
 	sprintf(string, "%.0f", thread->aspect_h);
 	add_subwindow(aspect_h = new ScaleAspectH(x, y, thread, &(thread->aspect_h), string));

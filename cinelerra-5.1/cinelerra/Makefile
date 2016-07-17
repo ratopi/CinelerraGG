@@ -223,8 +223,6 @@ OBJS = \
 	$(OBJDIR)/pluginvclient.o \
 	$(OBJDIR)/preferences.o \
 	$(OBJDIR)/preferencesthread.o \
-	$(OBJDIR)/presetsgui.o \
-	$(OBJDIR)/presets.o \
 	$(OBJDIR)/question.o \
 	$(OBJDIR)/quit.o \
 	$(OBJDIR)/recconfirmdelete.o \

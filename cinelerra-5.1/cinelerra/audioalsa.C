@@ -22,6 +22,7 @@
 #include "audiodevice.h"
 #include "audioalsa.h"
 #include "bcsignals.h"
+#include "language.h"
 #include "mutex.h"
 #include "playbackconfig.h"
 #include "preferences.h"
@@ -273,7 +274,8 @@ int AudioALSA::set_params(snd_pcm_t *dsp, int mode,
 	err = snd_pcm_hw_params_any(dsp, params);
 
 	if (err < 0) {
-		fprintf(stderr, "AudioALSA::set_params: no PCM configurations available\n");
+		fprintf(stderr, "AudioALSA::set_params: ");
+		fprintf(stderr, _("no PCM configurations available\n"));
 		return 1;
 	}
 
@@ -281,8 +283,8 @@ int AudioALSA::set_params(snd_pcm_t *dsp, int mode,
 		params,
 		SND_PCM_ACCESS_RW_INTERLEAVED);
         if(err) {
-		fprintf(stderr, "AudioALSA::set_params: failed to set up "
-				"interleaved device access.\n");
+		fprintf(stderr, "AudioALSA::set_params: ");
+		fprintf(stderr, _("failed to set up interleaved device access.\n"));
 		return 1;
         }
 
@@ -290,7 +292,8 @@ int AudioALSA::set_params(snd_pcm_t *dsp, int mode,
 		params,
 		translate_format(bits));
         if(err) {
-		fprintf(stderr, "AudioALSA::set_params: failed to set output format.\n");
+		fprintf(stderr, "AudioALSA::set_params: ");
+		fprintf(stderr, _("failed to set output format.\n"));
 		return 1;
         }
 
@@ -298,8 +301,8 @@ int AudioALSA::set_params(snd_pcm_t *dsp, int mode,
 		params,
 		channels);
         if(err) {
-		fprintf(stderr, "AudioALSA::set_params: Configured ALSA device "
-				"does not support %d channel operation.\n",
+		fprintf(stderr, "AudioALSA::set_params: ");
+		fprintf(stderr, _("Configured ALSA device does not support %d channel operation.\n"),
 			channels);
 		return 1;
         }
@@ -309,8 +312,8 @@ int AudioALSA::set_params(snd_pcm_t *dsp, int mode,
 		(unsigned int*)&samplerate,
 		(int*)0);
         if(err) {
-		fprintf(stderr, "AudioALSA::set_params: Configured ALSA device "
-				"does not support %u Hz playback.\n",
+		fprintf(stderr, "AudioALSA::set_params: ");
+		fprintf(stderr, _(" Configured ALSA device does not support %u Hz playback.\n"),
 			(unsigned int)samplerate);
 		return 1;
         }

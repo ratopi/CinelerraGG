@@ -25,6 +25,7 @@
 #include "clip.h"
 #include "condition.h"
 #include "errno.h"
+#include "language.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
@@ -197,15 +198,15 @@ int AudioOSS::open_input()
 				buffer_info = 0x7fff000f;
 			int ret = 1;
 			if(ioctl(dsp_in[i], SNDCTL_DSP_SETFRAGMENT, &buffer_info))
-				fprintf(stderr, "SNDCTL_DSP_SETFRAGMENT failed.\n");
+				fprintf(stderr, _("%s failed\n"), "SNDCTL_DSP_SETFRAGMENT");
 			else if(ioctl(dsp_in[i], SNDCTL_DSP_SETFMT, &format) < 0)
-				fprintf(stderr, "SNDCTL_DSP_SETFMT failed\n");
+				fprintf(stderr, _("%s failed\n"), "SNDCTL_DSP_SETFMT");
 			else {
 				int channels = device->get_ichannels();
 				if(ioctl(dsp_in[i], SNDCTL_DSP_CHANNELS, &channels) < 0)
-					fprintf(stderr, "SNDCTL_DSP_CHANNELS failed\n");
+					fprintf(stderr, _("%s failed\n"), "SNDCTL_DSP_CHANNELS");
 				else if(ioctl(dsp_in[i], SNDCTL_DSP_SPEED, &device->in_samplerate) < 0)
-					fprintf(stderr, "SNDCTL_DSP_SPEED failed\n");
+					fprintf(stderr, _("%s failed\n"), "SNDCTL_DSP_SPEED");
 				else
 					ret = 0;
 			}

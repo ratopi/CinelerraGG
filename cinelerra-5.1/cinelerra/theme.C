@@ -40,7 +40,7 @@
 #include "overlayframe.h"
 #include "patchbay.h"
 #include "playtransport.h"
-#include "presetsgui.h"
+//#include "presetsgui.h"
 #include "recordgui.h"
 #include "recordmonitor.h"
 #include "resourcepixmap.h"

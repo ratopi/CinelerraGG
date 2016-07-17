@@ -176,7 +176,7 @@ static int take_page_out_autoadvance(FILE *in, sync_window_t *sw, ogg_page *og)
 		}
 		else if (ret < 0)
 		{
-			eprintf("FileOGG: Taking page out on nonsynced stream!\n");
+			eprintf(_("FileOGG: Taking page out on nonsynced stream!\n"));
 			return ret;
 
 		} else
@@ -229,7 +229,7 @@ int FileOGG::open_file(int rd, int wr)
 
 		if((stream = fopen(asset->path, "w+b")) == 0)
 		{
-			eprintf("Error while opening \"%s\" for writing. %m\n", asset->path);
+			eprintf(_("Error while opening \"%s\" for writing. %m\n"), asset->path);
 			return 1;
 		}
 
@@ -264,7 +264,7 @@ int FileOGG::open_file(int rd, int wr)
 			tf->ti.height = ((asset->height + 15) >>4)<<4; // round up to the nearest multiple of 16
 			if (tf->ti.width != tf->ti.frame_width || tf->ti.height != tf->ti.frame_height)
 			{
-				eprintf("WARNING: Encoding theora when width or height are not dividable by 16 is suboptimal\n");
+				eprintf(_("WARNING: Encoding theora when width or height are not dividable by 16 is suboptimal\n"));
 			}
 
 			tf->ti.offset_x = 0;
@@ -313,7 +313,7 @@ int FileOGG::open_file(int rd, int wr)
 
 			if (theora_encode_init (&tf->td, &tf->ti))
 			{
-				eprintf("(FileOGG:file_open) initialization of theora codec failed\n");
+				eprintf(_("(FileOGG:file_open) initialization of theora codec failed\n"));
 			}
 		}
 		/* init theora done */
@@ -451,7 +451,7 @@ int FileOGG::open_file(int rd, int wr)
 
 		if((stream = fopen(asset->path, "rb")) == 0)
 		{
-			eprintf("Error while opening %s for reading. %m\n", asset->path);
+			eprintf(_("Error while opening %s for reading. %m\n"), asset->path);
 			return 1;
 		}
 
@@ -636,7 +636,7 @@ Not yet available in alpha4, we assume 420 for now
 
 			if(tf->ti.width!=tf->ti.frame_width || tf->ti.height!=tf->ti.frame_height)
 			{
-				eprintf("Frame content is %dx%d with offset (%d,%d), We do not support this yet. You will get black border.\n",
+				eprintf(_("Frame content is %dx%d with offset (%d,%d), We do not support this yet. You will get black border.\n"),
 							tf->ti.frame_width, tf->ti.frame_height, tf->ti.offset_x, tf->ti.offset_y);
 			}
 			tf->videosync = new sync_window_t;
@@ -731,7 +731,7 @@ Not yet available in alpha4, we assume 420 for now
 		{
 			vorbis_synthesis_init(&tf->vd, &tf->vi);
 			vorbis_block_init(&tf->vd, &tf->vb);
-/*			eprintf("FileOGG: Ogg logical stream %x is Vorbis %d channel %d Hz audio.\n",
+/*			eprintf(_("FileOGG: Ogg logical stream %x is Vorbis %d channel %d Hz audio.\n"),
 				(unsigned int)tf->vo.serialno, tf->vi.channels, (int)tf->vi.rate);
 */
 			/* init audio_sync structure */
@@ -1110,7 +1110,7 @@ int FileOGG::ogg_seek_to_sample(sync_window_t *sw, long serialno, int64_t sample
 				{
 					if (previous_comming_sample > sample)
 					{
-						eprintf("Ogg decoding error while seeking sample\n");
+						eprintf(_("Ogg decoding error while seeking sample\n"));
 					}
 					vorbis_synthesis_read(&tf->vd, (sample - previous_comming_sample));
 //					printf("WE GOT IT, samples already decoded: %jd\n", vorbis_synthesis_pcmout(&tf->vd,NULL));
@@ -1617,7 +1617,7 @@ int FileOGG::read_samples(double *buffer, int64_t len)
 
 	if(len > HISTORY_MAX)
 	{
-		eprintf("max samples=%d\n", HISTORY_MAX);
+		eprintf(_("max samples=%d\n"), HISTORY_MAX);
 		return 1;
 	}
 
@@ -1700,7 +1700,7 @@ int FileOGG::read_samples(double *buffer, int64_t len)
 			ogg_sample_position = hole_absstart;
 			if (!ogg_seek_to_sample(tf->audiosync, tf->vo.serialno, ogg_sample_position))
 			{
-				eprintf("Error while seeking to sample\n");
+				eprintf(_("Error while seeking to sample\n"));
 				return 1;
 			}
 		}
@@ -1771,7 +1771,7 @@ int FileOGG::write_audio_page()
 	ret = fwrite(tf->apage, 1, tf->apage_len, stream);
 	if(ret < tf->apage_len)
 	{
-		eprintf("error writing audio page\n");
+		eprintf(_("error writing audio page\n"));
 	}
 	tf->apage_valid = 0;
 	tf->a_pkg -= ogg_page_packets((ogg_page *)&tf->apage);
@@ -1785,7 +1785,7 @@ int FileOGG::write_video_page()
 	ret = fwrite(tf->vpage, 1, tf->vpage_len, stream);
 	if(ret < tf->vpage_len)
 	{
-		eprintf("error writing video page\n");
+		eprintf(_("error writing video page\n"));
 	}
 	tf->vpage_valid = 0;
 	tf->v_pkg -= ogg_page_packets((ogg_page *)&tf->vpage);

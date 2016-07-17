@@ -160,7 +160,7 @@ char* ChannelEditThread::value_to_input(int value)
 
 ChannelEditWindow::ChannelEditWindow(ChannelEditThread *thread,
 	ChannelPicker *channel_picker)
- : BC_Window(PROGRAM_NAME ": Channels",
+ : BC_Window(_(PROGRAM_NAME ": Channels"),
  	channel_picker->mwindow->session->channels_x,
 	channel_picker->mwindow->session->channels_y,
 	350, 400, 350, 400, 0, 0, 1)
@@ -639,7 +639,7 @@ int ChannelEditPicture::handle_event()
 
 
 ConfirmScan::ConfirmScan(ChannelEditWindow *gui, int x, int y)
- : BC_Window(PROGRAM_NAME ": Scan confirm",
+ : BC_Window(_(PROGRAM_NAME ": Scan confirm"),
  	x,
 	y,
 	350,
@@ -779,7 +779,7 @@ void ScanThread::start()
 	progress = new BC_ProgressBox(
 		edit->channel_picker->parent_window->get_abs_cursor_x(1),
 		edit->channel_picker->parent_window->get_abs_cursor_y(1),
-		"Scanning",
+		_("Scanning"),
 		chanlists[edit->scan_params.freqtable].count);
 	progress->start();
 
@@ -794,7 +794,7 @@ void ScanThread::run()
 		char string[BCTEXTLEN];
 		sprintf(edit->scan_params.title, "%s",
 			chanlists[edit->scan_params.freqtable].list[i].name);
-		sprintf(string, "Scanning %s", edit->scan_params.title);
+		sprintf(string, _("Scanning %s"), edit->scan_params.title);
 		progress->update_title(string, 1);
 		progress->update(i, 1);
 		edit->channel_picker->set_channel(&edit->scan_params);
@@ -991,7 +991,7 @@ void ChannelEditEditThread::run()
 ChannelEditEditWindow::ChannelEditEditWindow(ChannelEditEditThread *thread,
 	ChannelEditWindow *window,
 	ChannelPicker *channel_picker)
- : BC_Window(PROGRAM_NAME ": Edit Channel",
+ : BC_Window(_(PROGRAM_NAME ": Edit Channel"),
  	channel_picker->parent_window->get_abs_cursor_x(1),
 	channel_picker->parent_window->get_abs_cursor_y(1),
  	390,
@@ -1387,7 +1387,7 @@ void ChannelEditPictureThread::edit_picture()
 
 ChannelEditPictureWindow::ChannelEditPictureWindow(ChannelEditPictureThread *thread,
 	ChannelPicker *channel_picker)
- : BC_Window(PROGRAM_NAME ": Picture",
+ : BC_Window(_(PROGRAM_NAME ": Picture"),
  	channel_picker->mwindow->session->picture_x,
 	channel_picker->mwindow->session->picture_y,
  	calculate_w(channel_picker),
@@ -1446,8 +1446,8 @@ int ChannelEditPictureWindow::calculate_w(ChannelPicker *channel_picker)
 		!channel_picker->get_controls()))
 	{
 		result = BC_Title::calculate_w(channel_picker->parent_window,
-			"Device has no picture controls." +
-			2 * widget_border);
+			_("Device has no picture controls.")) +
+			2 * widget_border;
 	}
 
 // Only used for Video4Linux 1
@@ -1455,27 +1455,27 @@ int ChannelEditPictureWindow::calculate_w(ChannelPicker *channel_picker)
 	{
 		if(picture_usage->use_brightness)
 		{
-			int new_w = BC_Title::calculate_w(channel_picker->parent_window, "Brightness:") + pad;
+			int new_w = BC_Title::calculate_w(channel_picker->parent_window, _("Brightness:")) + pad;
 			result = MAX(result, new_w);
 		}
 		if(picture_usage->use_contrast)
 		{
-			int new_w = BC_Title::calculate_w(channel_picker->parent_window, "Contrast:") + pad;
+			int new_w = BC_Title::calculate_w(channel_picker->parent_window, _("Contrast:")) + pad;
 			result = MAX(result, new_w);
 		}
 		if(picture_usage->use_color)
 		{
-			int new_w = BC_Title::calculate_w(channel_picker->parent_window, "Color:") + pad;
+			int new_w = BC_Title::calculate_w(channel_picker->parent_window, _("Color:")) + pad;
 			result = MAX(result, new_w);
 		}
 		if(picture_usage->use_hue)
 		{
-			int new_w = BC_Title::calculate_w(channel_picker->parent_window, "Hue:") + pad;
+			int new_w = BC_Title::calculate_w(channel_picker->parent_window, _("Hue:")) + pad;
 			result = MAX(result, new_w);
 		}
 		if(picture_usage->use_whiteness)
 		{
-			int new_w = BC_Title::calculate_w(channel_picker->parent_window, "Whiteness:") + pad;
+			int new_w = BC_Title::calculate_w(channel_picker->parent_window, _("Whiteness:")) + pad;
 			result = MAX(result, new_w);
 		}
 	}

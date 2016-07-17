@@ -250,9 +250,9 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	cwindow_xscroll = defaults->get("CWINDOW_XSCROLL", 0);
 	cwindow_yscroll = defaults->get("CWINDOW_YSCROLL", 0);
 	cwindow_zoom = defaults->get("CWINDOW_ZOOM", (float)1);
-	sprintf(default_atransition, "Crossfade");
+	sprintf(default_atransition, _("Crossfade"));
 	defaults->get("DEFAULT_ATRANSITION", default_atransition);
-	sprintf(default_vtransition, "Dissolve");
+	sprintf(default_vtransition, _("Dissolve"));
 	defaults->get("DEFAULT_VTRANSITION", default_vtransition);
 	default_transition_length = defaults->get("DEFAULT_TRANSITION_LENGTH", (double)1);
 	edit_handle_mode[0] = defaults->get("EDIT_HANDLE_MODE0", MOVE_ALL_EDITS);

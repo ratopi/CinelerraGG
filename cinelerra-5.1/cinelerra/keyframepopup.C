@@ -439,7 +439,7 @@ const char* KeyframePopupCurveMode::get_labeltext(int mode)
 	case FloatAuto::TFREE:  return _("tangent edit");
 	case FloatAuto::FREE:   return _("disjoint edit");
 	}
-	return "misconfigured";
+	return _("misconfigured");
 }
 
 

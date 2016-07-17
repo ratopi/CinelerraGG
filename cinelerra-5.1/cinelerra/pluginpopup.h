@@ -35,8 +35,8 @@ class PluginPresets;
 #include "mwindowgui.inc"
 #include "plugin.inc"
 #include "plugindialog.inc"
-#include "presets.inc"
-#include "presetsgui.inc"
+//#include "presets.inc"
+//#include "presetsgui.inc"
 
 
 
@@ -185,6 +185,5 @@ public:
 	MWindow *mwindow;
 	PluginPopup *popup;
 };
-
 
 #endif

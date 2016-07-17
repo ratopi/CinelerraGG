@@ -423,7 +423,7 @@ ScopeGUI::ScopeGUI(Theme *theme,
 	int w,
 	int h,
 	int cpus)
- : PluginClientWindow(PROGRAM_NAME ": Scopes", 
+ : PluginClientWindow(_(PROGRAM_NAME ": Scopes"), 
  	x, 
 	y, 
 	w, 
@@ -1323,26 +1323,26 @@ ScopeToggle::ScopeToggle(ScopeGUI *gui,
 	this->value = value;
 	if(value == &gui->use_hist_parade)
 	{
-		set_tooltip("Histogram Parade");
+		set_tooltip(_("Histogram Parade"));
 	}
 	else
 	if(value == &gui->use_hist)
 	{
-		set_tooltip("Histogram");
+		set_tooltip(_("Histogram"));
 	}
 	else
 	if(value == &gui->use_wave_parade)
 	{
-		set_tooltip("Waveform Parade");
+		set_tooltip(_("Waveform Parade"));
 	}
 	else
 	if(value == &gui->use_wave)
 	{
-		set_tooltip("Waveform");
+		set_tooltip(_("Waveform"));
 	}
 	else
 	{
-		set_tooltip("Vectorscope");
+		set_tooltip(_("Vectorscope"));
 	}
 }
 

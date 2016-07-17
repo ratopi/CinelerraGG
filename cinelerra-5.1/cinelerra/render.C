@@ -294,7 +294,7 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 		start_render();
 	}
 	else if( in_progress ) {
-		ErrorBox error_box(PROGRAM_NAME ": Error",
+		ErrorBox error_box(_(PROGRAM_NAME ": Error"),
 				   mwindow->gui->get_abs_cursor_x(1),
 				   mwindow->gui->get_abs_cursor_y(1));
 		error_box.create_objects("Already rendering");

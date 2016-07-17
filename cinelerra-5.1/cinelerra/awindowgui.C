@@ -397,16 +397,10 @@ void AssetPicon::create_objects()
 
 
 AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
- : BC_Window(PROGRAM_NAME ": Resources",
- 	mwindow->session->awindow_x,
-    mwindow->session->awindow_y,
-    mwindow->session->awindow_w,
-    mwindow->session->awindow_h,
-    100,
-    100,
-    1,
-    1,
-    1)
+ : BC_Window(_(PROGRAM_NAME ": Resources"),
+	mwindow->session->awindow_x, mwindow->session->awindow_y,
+	mwindow->session->awindow_w, mwindow->session->awindow_h,
+	100, 100, 1, 1, 1)
 {
 // printf("AWindowGUI::AWindowGUI %d %d %d %d\n",
 // mwindow->session->awindow_x,
@@ -597,7 +591,7 @@ SET_TRACE
 	VFrame **images = mwindow->theme->get_image_set("playpatch_data");
 	AVIconDrawing::calculate_geometry(this, images, &avicon_w, &avicon_h);
 	add_subwindow(avicon_drawing = new AVIconDrawing(this, fw-avicon_w, fy, images));
-	add_subwindow(add_tools = new AddTools(mwindow, this, fx, fy, "Visibility"));
+	add_subwindow(add_tools = new AddTools(mwindow, this, fx, fy, _("Visibility")));
 	add_tools->create_objects();
 	fy += add_tools->get_h();  fh -= add_tools->get_h();
 SET_TRACE
@@ -747,7 +741,7 @@ void AWindowGUI::stop_vicon_drawing()
 AWindowRemovePluginGUI::
 AWindowRemovePluginGUI(AWindow *awindow, AWindowRemovePlugin *thread,
 	int x, int y, PluginServer *plugin)
- : BC_Window(PROGRAM_NAME ": Remove plugin", x,y, 500,200, 50, 50, 1, 0, 1, -1, "", 1)
+ : BC_Window(_(PROGRAM_NAME ": Remove plugin"), x,y, 500,200, 50, 50, 1, 0, 1, -1, "", 1)
 {
 	this->awindow = awindow;
 	this->thread = thread;
@@ -800,7 +794,7 @@ int AWindowRemovePlugin::remove_plugin(PluginServer *plugin, ArrayList<BC_ListBo
 void AWindowRemovePlugin::handle_close_event(int result)
 {
 	if( !result ) {
-		printf("remove %s\n", plugin->path);
+		printf(_("remove %s\n"), plugin->path);
 		ArrayList<BC_ListBoxItem*> *folder =
 			plugin->audio ? plugin->transition ?
 				&awindow->gui->atransitions :

@@ -211,7 +211,9 @@ static inline int bputs(uint8_t *bp, FILE *fp)
   if( !fp ) return 0;
   fputs((const char*)bp, fp);
   fputc('\n',fp);
-  return 1;
+  int n = 1;
+  while( *bp ) if( *bp++ == '\n' ) ++n;
+  return n;
 }
 static inline int bput(uint8_t *bp, FILE *fp)
 {
@@ -455,7 +457,7 @@ void scan_po(FILE *ifp, FILE *ofp)
   while( bgets(ibfr, sizeof(ibfr), ifp) ) {
     if( !prefix_is(ibfr, "msgid ") ) {
       if( nocmts && ibfr[0] == '#' ) continue;
-      bputs(ibfr, ofp);  ++no;
+      no += bputs(ibfr, ofp);
       continue;
     }
     uint8_t str[MX_STR]; xlat2(&ibfr[6], str);
@@ -464,10 +466,10 @@ void scan_po(FILE *ifp, FILE *ofp)
       fprintf(stderr, "file truncated line %d: %s", no, ibfr);
       exit(1);
     }
-    bputs(ibfr, ofp);  ++no;
+    no += bputs(ibfr, ofp);
    
     while( tbfr[0] == '"' ) {
-      bputs(tbfr, ofp);  ++no;
+      no += bputs(tbfr, ofp);
       xlat2(&tbfr[0], str);  key.append((const char*)str);
       if( !bgets(tbfr, sizeof(tbfr), ifp) ) {
         fprintf(stderr, "file truncated line %d: %s", no, ibfr);
@@ -490,20 +492,20 @@ void scan_po(FILE *ifp, FILE *ofp)
     if( it == trans.end() || it->first.compare(key) ) {
       fprintf(stderr, "no trans line %d: %s\n", no, ibfr);
       xlat3(key.c_str(), &tbfr[7]);
-      bputs(tbfr, ofp);  ++no;
-      bputs((uint8_t*)"#msgstr \"\"", ofp); ++no;
+      no += bputs(tbfr, ofp);
+      no += bputs((uint8_t*)"#msgstr \"\"", ofp);
     }
     else if( !it->second.ok ) {
       fprintf(stderr, "bad fmt line %d: %s\n", no, ibfr);
       xlat3(it->first.c_str(), &tbfr[7]);
-      bputs(tbfr, ofp);  ++no;
+      no += bputs(tbfr, ofp);
       xlat3(it->second.c_str(), str);
       bput((uint8_t*)"#msgstr ", ofp);
-      bputs(str, ofp);  ++no;
+      no += bputs(str, ofp);
     }
     else {
       xlat3(it->second.c_str(), &tbfr[7]);
-      bputs(tbfr, ofp);  ++no;
+      no += bputs(tbfr, ofp);
     }
   }
   if( ifp != stdin ) fclose(ifp);

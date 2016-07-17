@@ -589,27 +589,26 @@ const _CVD Camera_Crv_Smooth =
 	{	FloatAuto::SMOOTH,
 		true,
 		"tan_smooth",
-		_("\"smooth\" Curve on current Camera Keyframes")
+		N_("\"smooth\" Curve on current Camera Keyframes")
 	};
 const _CVD Camera_Crv_Linear =
 	{	FloatAuto::LINEAR,
 		true,
 		"tan_linear",
-		_("\"linear\" Curve on current Camera Keyframes")
+		N_("\"linear\" Curve on current Camera Keyframes")
 	};
 const _CVD Projector_Crv_Smooth =
 	{	FloatAuto::SMOOTH,
 		false,
 		"tan_smooth",
-		_("\"smooth\" Curve on current Projector Keyframes")
+		N_("\"smooth\" Curve on current Projector Keyframes")
 	};
 const _CVD Projector_Crv_Linear =
 	{	FloatAuto::LINEAR,
 		false,
 		"tan_linear",
-		_("\"linear\" Curve on current Projector Keyframes")
+		N_("\"linear\" Curve on current Projector Keyframes")
 	};
-
 
 // Implementation Class für Keyframe Curve Mode buttons
 //
@@ -638,7 +637,7 @@ CWindowCurveToggle::CWindowCurveToggle(_CVD mode, MWindow *mwindow, CWindowToolG
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
-	set_tooltip(cfg.tooltip);
+	set_tooltip(_(cfg.tooltip));
 }
 
 void CWindowCurveToggle::check_toggle_state(FloatAuto *x, FloatAuto *y, FloatAuto *z)

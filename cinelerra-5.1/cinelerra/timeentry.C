@@ -20,6 +20,7 @@
  */
 
 #include "timeentry.h"
+#include "language.h"
 #include <string.h>
 
 TimeEntry::TimeEntry(BC_WindowBase *gui, int x, int y, 
@@ -47,13 +48,13 @@ TimeEntry::~TimeEntry()
 }
 const char* TimeEntry::day_table[] = 
 {
-	"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "*"
+	N_("Sun"), N_("Mon"), N_("Tue"), N_("Wed"), N_("Thu"), N_("Fri"), N_("Sat"), "*"
 };
 
 int TimeEntry::day_to_int(const char *day)
 {
 	for(int i = 0; i < TOTAL_DAYS; i++)
-		if(!strcasecmp(day, day_table[i])) return i;
+		if(!strcasecmp(day, _(day_table[i]))) return i;
 	return 0;
 }
 
@@ -192,7 +193,7 @@ DayText::DayText(TimeEntry *timeentry,
 		int x, int y, int w, 
 		const char **table, int table_items,
 		const char *text)
- : BC_TextBox(x, y, w, 1, text)
+ : BC_TextBox(x, y, w, 1, _(text))
 {
 	this->timeentry = timeentry;
 	this->table = table;
@@ -220,7 +221,7 @@ int DayTumbler::handle_up_event()
 	*timeentry->output_day += 1;
 	if(*timeentry->output_day >= text->table_items)
 		*timeentry->output_day = 0;
-	text->update(text->table[*timeentry->output_day]);
+	text->update(_(text->table[*timeentry->output_day]));
 	return timeentry->handle_event();
 }
 
@@ -230,7 +231,7 @@ int DayTumbler::handle_down_event()
 	*timeentry->output_day -= 1;
 	if(*timeentry->output_day < 0)
 		*timeentry->output_day = text->table_items - 1;
-	text->update(text->table[*timeentry->output_day]);
+	text->update(_(text->table[*timeentry->output_day]));
 	return timeentry->handle_event();
 }
 

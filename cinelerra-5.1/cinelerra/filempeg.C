@@ -244,7 +244,7 @@ void FileMPEG::get_info(char *title_path, char *path, char *text, int len)
 		cp += snprintf(cp,ep-cp, _("cell times:"));
 		for( int i=0; i<cell_times.size(); ++i ) {
 			if( (i%4) == 0 ) *cp++ = '\n';
-			cp += snprintf(cp,ep-cp,_("  %3d.  %8.3f"),i,cell_times.get(i));
+			cp += snprintf(cp,ep-cp,"  %3d.  %8.3f",i,cell_times.get(i));
 		}
 		cp += snprintf(cp,ep-cp, "\n");
 	}

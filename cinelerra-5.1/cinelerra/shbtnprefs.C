@@ -189,7 +189,7 @@ ShBtnTextWindow::~ShBtnTextWindow()
 }
 
 ShBtnErrWarn::ShBtnErrWarn(ShBtnTextWindow *st_window, int x, int y)
- : BC_CheckBox(x, y, &st_window->warn, "Warn on err exit")
+ : BC_CheckBox(x, y, &st_window->warn, _("Warn on err exit"))
 {
         this->st_window = st_window;
 }

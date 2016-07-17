@@ -349,7 +349,7 @@ TimeFrontShape::TimeFrontShape(TimeFrontMain *plugin,
 	TimeFrontWindow *gui, 
 	int x, 
 	int y)
- : BC_PopupMenu(x, y, 190, to_text(plugin->config.shape), 1)
+ : BC_PopupMenu(x, y, 230, to_text(plugin->config.shape), 1)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -491,7 +491,7 @@ int TimeFrontAngle::handle_event()
 TimeFrontRate::TimeFrontRate(TimeFrontMain *plugin, int x, int y)
  : BC_PopupMenu(x,
  	y,
-	100,
+	155,
 	to_text(plugin->config.rate),
 	1)
 {

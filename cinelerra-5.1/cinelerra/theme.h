@@ -36,7 +36,7 @@
 #include "overlayframe.inc"
 #include "patchbay.inc"
 #include "preferencesthread.inc"
-#include "presetsgui.inc"
+//#include "presetsgui.inc"
 #include "recordgui.inc"
 #include "recordmonitor.inc"
 #include "resourcepixmap.inc"

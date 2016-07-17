@@ -163,7 +163,7 @@ int FileVorbis::open_file(int rd, int wr)
 	{
 		if(!(fd = fopen(asset->path, "wb")))
 		{
-			eprintf("Error while opening \"%s\" for writing. \n%m\n", asset->path);
+			eprintf(_("Error while opening \"%s\" for writing. \n%m\n"), asset->path);
 			result = 1;
 		}
 		else

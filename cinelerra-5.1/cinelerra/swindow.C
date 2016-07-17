@@ -818,6 +818,10 @@ void SWindowGUI::save_spumux_data()
 		*cp = 0;
 		snprintf(ext,len,"-%s.udvd",track_title);
 		FILE *fp = fopen(filename, "w");
+		if( !fp ) {
+			eprintf(_("Unable to open %s:\n%m"), filename);
+			continue;
+		}
 		int64_t start = 0;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			SEdit *sedit = (SEdit *)edit;

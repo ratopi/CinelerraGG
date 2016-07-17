@@ -108,7 +108,7 @@ FormatPresetItem* FormatPresets::find_preset(EDL *edl)
 const char* FormatPresets::get_preset_text(EDL *edl)
 {
 	FormatPresetItem *item = edl ? find_preset(edl) : 0;
-	return item ? item->get_text() : "User Defined";
+	return item ? item->get_text() : _("User Defined");
 }
 
 

@@ -1,9 +1,10 @@
 #include "rescale.h"
 #include "indexable.h"
+#include "language.h"
 #include "mwindow.h"
 
 const char *Rescale::scale_types[] = {
-  "None", "Scaled", "Cropped", "Filled", "Horiz Edge", "Vert Edge",
+  N_("None"), N_("Scaled"), N_("Cropped"), N_("Filled"), N_("Horiz Edge"), N_("Vert Edge"),
 };
 
 Rescale::Rescale(int w, int h, double aspect)

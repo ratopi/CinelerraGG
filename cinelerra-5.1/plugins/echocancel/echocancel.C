@@ -439,7 +439,7 @@ void EchoCancelWindow::create_objects()
 	x = x1;
 	add_subwindow(normalize = new EchoCancelNormalize(plugin, x, y));
 	x += normalize->get_w() + 3*pad;
-	y += normalize->get_h() - BC_Title::calculate_h(this,"Gain: ");
+	y += normalize->get_h() - BC_Title::calculate_h(this,_("Gain: "));
 	add_subwindow(gain_title = new EchoCancelTitle(x, y, _("Gain: "), 0.));
 	x += gain_title->get_w() + 2*pad;
 	add_subwindow(offset_title = new EchoCancelTitle(x, y, _("Offset: "), 0));
@@ -500,7 +500,7 @@ void EchoCancelWindow::create_objects()
 	y = y1;
 	add_subwindow(freq_title = new BC_Title(x, y, _("0 Hz")));
 	y += freq_title->get_h() + pad;
-	add_subwindow(amplitude_title = new BC_Title(x, y, "Amplitude: 0 dB"));
+	add_subwindow(amplitude_title = new BC_Title(x, y, _("Amplitude: 0 dB")));
 
 	show_window();
 }
@@ -576,14 +576,14 @@ void EchoCancelWindow::calculate_frequency(int x, int y, int do_overlay)
 		int freq = plugin->header.sample_rate / offset;
 		int msecs = 1000. / freq;
 		char string[BCTEXTLEN];
-		sprintf(string, "%d Hz, %d ms (%d))", freq, msecs, (int)offset);
+		sprintf(string, _("%d Hz, %d ms (%d))"), freq, msecs, (int)offset);
 		freq_title->update(string);
 		int frm_sz1 = frm->size()-1;
 		if( freq_pixel > frm_sz1 ) freq_pixel = frm_sz1;
 		float *frame_data = frm->samples();
 		double level = frame_data[freq_pixel];
 		double scale = frm->scale();
-		sprintf(string, "Amplitude: %.3f (%.6g)", level, scale);
+		sprintf(string, _("Amplitude: %.3f (%.6g)"), level, scale);
 		amplitude_title->update(string);
 	}
 	if( y >= 0 ) {

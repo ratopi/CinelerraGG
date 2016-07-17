@@ -193,7 +193,7 @@ int PluginArray::run_plugins()
 		MainProgressBar *progress;
 		char string[BCTEXTLEN], string2[BCTEXTLEN];
 
-		sprintf(string, _("%s..."), plugin_server->title);
+		sprintf(string, "%s...", plugin_server->title);
 		progress = mwindow->mainprogress->start_progress(string, end - start);
 
 		for(int64_t current_position = start; 

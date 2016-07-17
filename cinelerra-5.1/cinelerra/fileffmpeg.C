@@ -1281,7 +1281,7 @@ const char *FFOptions_Opt::tip()
 
 
 FFOptionsWindow::FFOptionsWindow(FFOptionsDialog *dialog)
- : BC_Window(PROGRAM_NAME ": Options", 60, 30, 640, 400)
+ : BC_Window(_(PROGRAM_NAME ": Options"), 60, 30, 640, 400)
 {
 	this->dialog = dialog;
 	this->selected = 0;

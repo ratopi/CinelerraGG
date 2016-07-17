@@ -314,10 +314,10 @@ int FFStream::decode_activate()
 			if( ret >= 0 )
 				reading = 1;
 			else
-				eprintf("FFStream::decode_activate: open decoder failed\n");
+				eprintf(_("open decoder failed\n"));
 		}
 		else
-			eprintf("FFStream::decode_activate: can't clone input file\n");
+			eprintf(_("can't clone input file\n"));
 		av_dict_free(&copts);
 		ff_unlock();
 	}
@@ -384,7 +384,7 @@ int FFStream::load_filter(AVFrame *frame)
 			frame, AV_BUFFERSRC_FLAG_KEEP_REF);
 	if( ret < 0 ) {
 		av_frame_unref(frame);
-		eprintf("FFStream::load_filter: av_buffersrc_add_frame_flags failed\n");
+		eprintf(_("av_buffersrc_add_frame_flags failed\n"));
 	}
 	return ret;
 }
@@ -1290,12 +1290,11 @@ int FFMPEG::get_encoder(const char *options,
 {
 	FILE *fp = fopen(options,"r");
 	if( !fp ) {
-		eprintf("FFMPEG::get_encoder: options open failed %s\n",options);
+		eprintf(_("options open failed %s\n"),options);
 		return 1;
 	}
 	if( get_encoder(fp, format, codec, bsfilter, bsargs) )
-		eprintf(_("FFMPEG::get_encoder:"
-			  " err: format/codec not found %s\n"), options);
+		eprintf(_("format/codec not found %s\n"), options);
 	fclose(fp);
 	return 0;
 }
@@ -1347,8 +1346,7 @@ int FFMPEG::read_options(FILE *fp, const char *options, AVDictionary *&opts)
 		if( line[0] == '\n' ) continue;
 		char key[BCSTRLEN], val[BCTEXTLEN];
 		if( scan_option_line(line, key, val) ) {
-			eprintf(_("FFMPEG::read_options:"
-				  " err reading %s: line %d\n"), options, no);
+			eprintf(_("err reading %s: line %d\n"), options, no);
 			ret = 1;
 		}
 		if( !ret ) {
@@ -1541,8 +1539,7 @@ int FFMPEG::open_decoder()
 {
 	struct stat st;
 	if( stat(fmt_ctx->filename, &st) < 0 ) {
-		eprintf("FFMPEG::open_decoder: can't stat file: %s\n",
-			fmt_ctx->filename);
+		eprintf(_("can't stat file: %s\n"), fmt_ctx->filename);
 		return 1;
 	}
 
@@ -1634,24 +1631,24 @@ int FFMPEG::init_encoder(const char *filename)
 	int fd = ::open(filename,O_WRONLY);
 	if( fd < 0 ) fd = open(filename,O_WRONLY+O_CREAT,0666);
 	if( fd < 0 ) {
-		eprintf("FFMPEG::init_encoder: bad file path: %s\n", filename);
+		eprintf(_("bad file path: %s\n"), filename);
 		return 1;
 	}
 	::close(fd);
 	int ret = get_file_format();
 	if( ret > 0 ) {
-		eprintf("FFMPEG::init_encoder: bad file format: %s\n", filename);
+		eprintf(_("bad file format: %s\n"), filename);
 		return 1;
 	}
 	if( ret < 0 ) {
-		eprintf("FFMPEG::init_encoder: mismatch audio/video file format: %s\n", filename);
+		eprintf(_("mismatch audio/video file format: %s\n"), filename);
 		return 1;
 	}
 	ff_lock("FFMPEG::init_encoder");
 	av_register_all();
 	avformat_alloc_output_context2(&fmt_ctx, 0, file_format, filename);
 	if( !fmt_ctx ) {
-		eprintf("FFMPEG::init_encoder: failed: %s\n", filename);
+		eprintf(_("failed: %s\n"), filename);
 		ret = 1;
 	}
 	if( !ret ) {
@@ -1676,8 +1673,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 	char format_name[BCSTRLEN], codec_name[BCTEXTLEN];
 	char bsfilter[BCSTRLEN], bsargs[BCTEXTLEN];
 	if( get_encoder(option_path, format_name, codec_name, bsfilter, bsargs) ) {
-		eprintf("FFMPEG::open_encoder: get_encoder failed %s:%s\n",
-			option_path, filename);
+		eprintf(_("get_encoder failed %s:%s\n"), option_path, filename);
 		return 1;
 	}
 
@@ -1693,23 +1689,20 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 	const AVCodecDescriptor *codec_desc = 0;
 	AVCodec *codec = avcodec_find_encoder_by_name(codec_name);
 	if( !codec ) {
-		eprintf("FFMPEG::open_encoder: cant find codec %s:%s\n",
-			codec_name, filename);
+		eprintf(_("cant find codec %s:%s\n"), codec_name, filename);
 		ret = 1;
 	}
 	if( !ret ) {
 		codec_desc = avcodec_descriptor_get(codec->id);
 		if( !codec_desc ) {
-			eprintf("FFMPEG::open_encoder: unknown codec %s:%s\n",
-				codec_name, filename);
+			eprintf(_("unknown codec %s:%s\n"), codec_name, filename);
 			ret = 1;
 		}
 	}
 	if( !ret ) {
 		st = avformat_new_stream(fmt_ctx, 0);
 		if( !st ) {
-			eprintf("FFMPEG::open_encoder: cant create stream %s:%s\n",
-				codec_name, filename);
+			eprintf(_("cant create stream %s:%s\n"), codec_name, filename);
 			ret = 1;
 		}
 	} 
@@ -1718,15 +1711,13 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 		switch( codec_desc->type ) {
 		case AVMEDIA_TYPE_AUDIO: {
 			if( has_audio ) {
-				eprintf("FFMPEG::open_encoder: duplicate audio %s:%s\n",
-					codec_name, filename);
+				eprintf(_("duplicate audio %s:%s\n"), codec_name, filename);
 				ret = 1;
 				break;
 			}
 			has_audio = 1;
 			if( scan_options(asset->ff_audio_options, sopts, st) ) {
-				eprintf("FFMPEG::open_encoder: bad audio options %s:%s\n",
-					codec_name, filename);
+				eprintf(_("bad audio options %s:%s\n"), codec_name, filename);
 				ret = 1;
 				break;
 			}
@@ -1747,8 +1738,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			ctx->channel_layout =  av_get_default_channel_layout(ctx->channels);
 			ctx->sample_rate = check_sample_rate(codec, asset->sample_rate);
 			if( !ctx->sample_rate ) {
-				eprintf("FFMPEG::open_encoder:"
-					" check_sample_rate failed %s\n", filename);
+				eprintf(_("check_sample_rate failed %s\n"), filename);
 				ret = 1;
 				break;
 			}
@@ -1764,15 +1754,13 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			break; }
 		case AVMEDIA_TYPE_VIDEO: {
 			if( has_video ) {
-				eprintf("FFMPEG::open_encoder: duplicate video %s:%s\n",
-					codec_name, filename);
+				eprintf(_("duplicate video %s:%s\n"), codec_name, filename);
 				ret = 1;
 				break;
 			}
 			has_video = 1;
 			if( scan_options(asset->ff_video_options, sopts, st) ) {
-				eprintf("FFMPEG::open_encoder: bad video options %s:%s\n",
-					codec_name, filename);
+				eprintf(_("bad video options %s:%s\n"), codec_name, filename);
 				ret = 1;
 				break;
 			}
@@ -1809,8 +1797,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			ctx->pix_fmt = codec->pix_fmts ? codec->pix_fmts[0] : AV_PIX_FMT_YUV420P;
 			AVRational frame_rate = check_frame_rate(codec, vid->frame_rate);
 			if( !frame_rate.num || !frame_rate.den ) {
-				eprintf("FFMPEG::open_encoder:"
-					" check_frame_rate failed %s\n", filename);
+				eprintf(_("check_frame_rate failed %s\n"), filename);
 				ret = 1;
 				break;
 			}
@@ -1819,8 +1806,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			vid->writing = -1;
 			break; }
 		default:
-			eprintf("FFMPEG::open_encoder: not audio/video, %s:%s\n",
-				codec_name, filename);
+			eprintf(_("not audio/video, %s:%s\n"), codec_name, filename);
 			ret = 1;
 		}
 	}
@@ -1831,8 +1817,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 		ret = avcodec_open2(st->codec, codec, &sopts);
 		if( ret < 0 ) {
 			ff_err(ret,"FFMPEG::open_encoder");
-			eprintf("FFMPEG::open_encoder: open failed %s:%s\n",
-				codec_name, filename);
+			eprintf(_("open failed %s:%s\n"), codec_name, filename);
 			ret = 1;
 		}
 		else
@@ -2179,7 +2164,7 @@ const char* FFMPEG::ff_audio_format(int stream)
 	AVStream *st = ffaudio[stream]->st;
 	AVCodecID id = st->codec->codec_id;
 	const AVCodecDescriptor *desc = avcodec_descriptor_get(id);
-	return desc ? desc->name : "Unknown";
+	return desc ? desc->name : _("Unknown");
 }
 
 int FFMPEG::ff_audio_pid(int stream)
@@ -2289,7 +2274,7 @@ const char* FFMPEG::ff_video_format(int stream)
 	AVStream *st = ffvideo[stream]->st;
 	AVCodecID id = st->codec->codec_id;
 	const AVCodecDescriptor *desc = avcodec_descriptor_get(id);
-	return desc ? desc->name : "Unknown";
+	return desc ? desc->name : _("Unknown");
 }
 
 double FFMPEG::ff_frame_rate(int stream)
@@ -2466,7 +2451,8 @@ int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
 	av_init_packet(&pkt);
 	AVFrame *frame = av_frame_alloc();
 	if( !frame ) {
-		fprintf(stderr, "FFMPEG::scan: av_frame_alloc failed\n");
+		fprintf(stderr,"FFMPEG::scan: ");
+		fprintf(stderr,_("av_frame_alloc failed\n"));
 		return -1;
 	}
 
@@ -2479,8 +2465,10 @@ int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
 		AVStream *st = fmt_ctx->streams[i];
 		AVCodecID codec_id = st->codec->codec_id;
 		AVCodec *decoder = avcodec_find_decoder(codec_id);
-		if( avcodec_open2(st->codec, decoder, &copts) < 0 )
-			fprintf(stderr, "FFMPEG::scan: codec open failed\n");
+		if( avcodec_open2(st->codec, decoder, &copts) < 0 ) {
+			fprintf(stderr,"FFMPEG::scan: ");
+			fprintf(stderr,_("codec open failed\n"));
+		}
 		av_dict_free(&copts);
 	}
 	int errs = 0;
@@ -2492,7 +2480,7 @@ int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
 		if( ret < 0 ) {
 			if( ret == AVERROR_EOF ) break;
 			if( ++errs > 100 ) {
-				ff_err(ret, "over 100 read_frame errs\n");
+				ff_err(ret,_("over 100 read_frame errs\n"));
 				break;
 			}
 			continue;

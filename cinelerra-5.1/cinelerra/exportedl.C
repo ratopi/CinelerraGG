@@ -365,7 +365,7 @@ static int list_widths[] =
 };
 	
 ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportEDLAsset *exportasset)
- : BC_Window(PROGRAM_NAME ": Export EDL", 
+ : BC_Window(_(PROGRAM_NAME ": Export EDL"), 
  	mwindow->gui->get_screen_w(1, 0) / 2 - WIDTH / 2,
 	mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2,
  	WIDTH, 

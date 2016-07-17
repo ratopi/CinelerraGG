@@ -124,7 +124,7 @@ int FileAC3::open_file(int rd, int wr)
 			mpg_file = new FileMPEG(file->asset, file);
 		result = mpg_file->open_file(1, 0);
 		if( result ) {
-			eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+			eprintf(_("Error while opening \"%s\" for reading. \n%m\n"), asset->path);
 		}
 	}
 
@@ -135,12 +135,12 @@ int FileAC3::open_file(int rd, int wr)
 		codec = avcodec_find_encoder(AV_CODEC_ID_AC3);
 		if(!codec)
 		{
-			eprintf("FileAC3::open_file codec not found.\n");
+			eprintf(_("FileAC3::open_file codec not found.\n"));
 			result = 1;
 		}
 		if( !result && !(fd = fopen(asset->path, "w")))
 		{
-			eprintf("Error while opening \"%s\" for writing. \n%m\n", asset->path);
+			eprintf(_("Error while opening \"%s\" for writing. \n%m\n"), asset->path);
 			result = 1;
 		}
 		if( !result ) {
@@ -161,7 +161,7 @@ int FileAC3::open_file(int rd, int wr)
 			swr_init(resample_context);
 			if(avcodec_open2(codec_context, codec, 0))
 			{
-				eprintf("FileAC3::open_file failed to open codec.\n");
+				eprintf(_("FileAC3::open_file failed to open codec.\n"));
 				result = 1;
 			}
 		}
@@ -320,7 +320,7 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 	int bytes_written = fwrite(temp_compressed, 1, output_size, fd);
 	if(bytes_written < output_size)
 	{
-		eprintf("Error while writing samples. \n%m\n");
+		eprintf(_("Error while writing samples. \n%m\n"));
 		return 1;
 	}
 	return 0;
@@ -334,7 +334,7 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 
 AC3ConfigAudio::AC3ConfigAudio(BC_WindowBase *parent_window,
 	Asset *asset)
- : BC_Window(PROGRAM_NAME ": Audio Compression",
+ : BC_Window(_(PROGRAM_NAME ": Audio Compression"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	500,
@@ -354,7 +354,7 @@ void AC3ConfigAudio::create_objects()
 	int x = 10, y = 10;
 	int x1 = 150;
 	lock_window("AC3ConfigAudio::create_objects");
-	add_tool(new BC_Title(x, y, "Bitrate (kbps):"));
+	add_tool(new BC_Title(x, y, _("Bitrate (kbps):")));
 	AC3ConfigAudioBitrate *bitrate;
 	add_tool(bitrate =
 		new AC3ConfigAudioBitrate(this,

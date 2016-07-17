@@ -69,7 +69,7 @@ void ManualGoto::handle_done_event(int result)
 
 
 ManualGotoWindow::ManualGotoWindow(ManualGoto *mango, int x, int y)
- : BC_Window(PROGRAM_NAME ": Goto position", x, y,
+ : BC_Window(_(PROGRAM_NAME ": Goto position"), x, y,
 	250, 80, 250, 80, 0, 0, 1)
 {
 	this->mango = mango;

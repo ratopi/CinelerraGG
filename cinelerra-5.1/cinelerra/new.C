@@ -227,10 +227,6 @@ int NewThread::update_aspect()
 
 
 
-#if 0
-N_("Cinelerra: New Project");
-#endif
-
 NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
  : BC_Window(_(_(PROGRAM_NAME ": New Project")),
  		x,

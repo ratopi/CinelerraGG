@@ -347,7 +347,7 @@ void RecordMonitorGUI::create_objects()
 				add_subwindow(avc1394transport_timecode =
 					new BC_Title(avc1394_transport->x_end,
 						mwindow->theme->rmonitor_tx_y + 10,
-						_("00:00:00:00"),
+						"00:00:00:00",
 						MEDIUM_7SEGMENT,
 						BLACK));
 

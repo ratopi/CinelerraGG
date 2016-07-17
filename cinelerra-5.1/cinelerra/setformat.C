@@ -479,7 +479,7 @@ void SetFormatWindow::create_objects()
 		thread,
 		&(thread->new_settings->session->aspect_w)));
 	x += aspect_w->get_w() + 5;
-	add_subwindow(new BC_Title(x, y, _(":")));
+	add_subwindow(new BC_Title(x, y, ":"));
 	x += 10;
 	add_subwindow(aspect_h = new ScaleAspectText(x,
 		y,
