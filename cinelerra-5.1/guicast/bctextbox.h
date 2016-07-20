@@ -93,7 +93,6 @@ public:
 	int deactivate();
 	const char* get_text();
 	const wchar_t* get_wtext();
-	const char* get_utf8text();
 	void set_text(char *text, int isz);
 	int get_text_rows();
 // Set top left of text view
@@ -102,9 +101,6 @@ public:
 
 	int reposition_window(int x, int y, int w = -1, int rows = -1);
 	int uses_text();
-#ifdef X_HAVE_UTF8_STRING
-	int utf8seek(int i, int reverse);
-#endif
 	static int calculate_h(BC_WindowBase *gui, int font, int has_border, int rows);
 	static int calculate_row_h(int rows, BC_WindowBase *parent_window, int has_border = 1, int font = MEDIUMFONT);
 	static int pixels_to_rows(BC_WindowBase *window, int font, int pixels);
@@ -254,6 +250,7 @@ public:
 	int get_h();
 // Visible rows for resizing
 	int get_rows();
+	int get_ibeam_letter();
 
 	friend class BC_ScrollTextBoxText;
 	friend class BC_ScrollTextBoxYScroll;

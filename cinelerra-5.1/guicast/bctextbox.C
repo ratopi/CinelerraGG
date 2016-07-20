@@ -2085,11 +2085,8 @@ void BC_TextBox::select_word(int &letter1, int &letter2, int ibeam_letter)
 	if( letter1 > wtext_len ) letter1 = wtext_len;
 	if( letter2 > wtext_len ) letter2 = wtext_len;
 	if( !wtext_len ) return;
-
-	while( letter1 > 0 && iswalnum(wtext[letter1]) ) --letter1;
-	if( letter1 < wtext_len && iswspace(wtext[letter1]) ) ++letter1;
-
-	while( letter2 < wtext_len && iswalnum(wtext[letter2]) ) ++letter2;
+	for( int i=letter1; i>=0 && iswalnum(wtext[i]); --i ) letter1 = i;
+	for( int i=letter2; i<wtext_len && iswalnum(wtext[i]); ) letter2 = ++i;
 	if( letter2 < wtext_len && wtext[letter2] == ' ' ) ++letter2;
 }
 
@@ -2097,26 +2094,14 @@ void BC_TextBox::select_word(int &letter1, int &letter2, int ibeam_letter)
 void BC_TextBox::select_line(int &letter1, int &letter2, int ibeam_letter)
 {
 	int wtext_len = wtext_update();
-	if(!wtext_len) return;
-
 	letter1 = letter2 = ibeam_letter;
-
-// Rewind to previous linefeed
-	do {
-		if( wtext[letter1] != '\n' ) letter1--;
-	} while( letter1 > 0 && wtext[letter1] != '\n' );
-	if( wtext[letter1] == '\n' ) letter1++;
-
-// Advance to next linefeed
-	do {
-		if( wtext[letter2] != '\n' ) letter2++;
-	} while( letter2 < wtext_len && wtext[letter2] != '\n' );
-	if( letter2 < wtext_len && wtext[letter2] == '\n') letter2++;
-
-	if(letter1 < 0) letter1 = 0;
-	if(letter2 < 0) letter2 = 0;
-	if(letter1 > wtext_len) letter1 = wtext_len;
-	if(letter2 > wtext_len) letter2 = wtext_len;
+	if( letter1 < 0 ) letter1 = 0;
+	if( letter2 < 0 ) letter2 = 0;
+	if( letter1 > wtext_len ) letter1 = wtext_len;
+	if( letter2 > wtext_len ) letter2 = wtext_len;
+	if( !wtext_len ) return;
+	for( int i=letter1; i>=0 && wtext[i]!='\n'; --i ) letter1 = i;
+	for( int i=letter2; i<wtext_len && wtext[i]!='\n'; ) letter2 = ++i;
 }
 
 void BC_TextBox::copy_selection(int clipboard_num)
@@ -2426,6 +2411,11 @@ void BC_ScrollTextBox::set_selection(int char1, int char2, int ibeam)
 void BC_ScrollTextBox::wset_selection(int char1, int char2, int ibeam)
 {
 	this->text->wset_selection(char1, char2, ibeam);
+}
+
+int BC_ScrollTextBox::get_ibeam_letter()
+{
+	return this->text->get_ibeam_letter();
 }
 
 

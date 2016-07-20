@@ -114,9 +114,14 @@ SWindowLoadFile::~SWindowLoadFile()
 
 int SWindowLoadFile::handle_event()
 {
-	sw_gui->load_path->set_suggestions(0,0);
-	sw_gui->load_script();
-	sw_gui->set_script_pos(0);
+	if( sw_gui->script_path[0] ) {
+		sw_gui->load_path->set_suggestions(0,0);
+		sw_gui->load_script();
+		sw_gui->set_script_pos(0);
+	}
+	else {
+		eprintf(_("script text file path required"));
+	}
 	return 1;
 }
 
@@ -132,7 +137,12 @@ SWindowSaveFile::~SWindowSaveFile()
 
 int SWindowSaveFile::handle_event()
 {
-	sw_gui->save_spumux_data();
+	if( sw_gui->script_path[0] ) {
+		sw_gui->save_spumux_data();
+	}
+	else {
+		eprintf(_("script microdvd file path required"));
+	}
 	return 1;
 }
 
@@ -183,11 +193,16 @@ void SWindowGUI::create_objects()
 	x1 = x + pad;
 	blank_line = new char[2];
 	blank_line[0] = ' ';  blank_line[1] = 0;
-	int rows = (ok_y - y - 4*pad) / text_rowsz - 3;
-	int w1 = get_w()-x1-pad;
+	add_subwindow(script_title = new BC_Title(x1, y, _("Script Text:")));
+	y += script_title->get_h() + pad;
+	int rows = (ok_y - y - BC_Title::calculate_h(this,_("Line Text:")) -
+		4*pad) / text_rowsz - 3;
+	int w1 = get_w() - x1 - pad;
 	script_entry = new ScriptEntry(this, x1, y, w1, rows, blank_line);
 	script_entry->create_objects();
 	y += script_entry->get_h() + pad;
+	add_subwindow(line_title = new BC_Title(x1, y, _("Line Text:")));
+	y += line_title->get_h() + pad;
 	line_entry = new ScriptEntry(this, x1, y, w1, 3);
 	line_entry->create_objects();
 	ok = new SWindowOK(this, ok_x, ok_y);
@@ -315,10 +330,14 @@ int SWindowGUI::resize_event(int w, int h)
 	int w1 = w - x1 - pad;
 	script_scroll->reposition_window(x1, y, w1);
 	y += hh + 2*pad;
+	script_title->reposition_window(x, y);
+	y += script_title->get_h() + pad;
 	w1 = w - x - pad;
-	int rows = (ok_y - y - 4*pad) / text_rowsz - 3;
+	int rows = (ok_y - y - line_title->get_h() - 4*pad) / text_rowsz - 3;
 	script_entry->reposition_window(x, y, w1, rows);
-	y += script_entry->get_h() + pad;
+	y += script_entry->get_h() + 2*pad;
+	line_title->reposition_window(x, y);
+	y += line_title->get_h() + pad;
 	line_entry->reposition_window(x, y, w1, 3);
 	return 0;
 }
@@ -728,11 +747,26 @@ ScriptEntry::~ScriptEntry()
 void ScriptEntry::set_text(char *text, int isz)
 {
 	if( !text || !*text ) return;
-	if( isz < 0 ) isz = strlen(text);
+	if( isz < 0 ) isz = strlen(text)+1;
 	BC_ScrollTextBox::set_text(text, isz);
 	ttext = text;
 }
 
+int ScriptEntry::handle_event()
+{
+	if( sw_gui->get_button_down() &&
+	    sw_gui->get_buttonpress() == 1 &&
+	    sw_gui->get_triple_click() ) {
+		int ibeam = get_ibeam_letter(), row = 0;
+		const char *tp = ttext;
+		while( *tp && tp-ttext < ibeam ) {
+			if( *tp++ == '\n' ) ++row;
+		}
+		int pos = sw_gui->script_entry_no;
+		sw_gui->load_selection(pos, row);
+	}
+	return 1;
+}
 
 int SWindowGUI::load_script_line(FILE *fp)
 {

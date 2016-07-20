@@ -133,6 +133,7 @@ public:
 
 	char *ttext;
 	void set_text(char *text, int isz=-1);
+	int handle_event();
 
 	ScriptEntry(SWindowGUI *gui, int x, int y, int w, int rows, char *text);
 	ScriptEntry(SWindowGUI *gui, int x, int y, int w, int rows);
@@ -193,6 +194,8 @@ public:
 	BC_Title *script_lines;
 	BC_Title *script_entries;
 	BC_Title *script_texts;
+	BC_Title *script_title;
+	BC_Title *line_title;
 	ScriptPrev *prev_script;
 	ScriptNext *next_script;
 	ScriptPaste *paste_script;
