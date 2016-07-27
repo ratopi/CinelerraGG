@@ -104,7 +104,7 @@ void PerformancePrefs::create_objects()
 	PrefsForceUniprocessor *force_1cpu = new PrefsForceUniprocessor(pwindow, x, y);
 	add_subwindow(force_1cpu);
 
-	int x1 = force_1cpu->get_x() + force_1cpu->get_w() + 50;
+	int x1 = force_1cpu->get_x() + force_1cpu->get_w() + 100;
 
 	PrefsTrapSigSEGV *trap_segv = new PrefsTrapSigSEGV(this, x1, y);
 	add_subwindow(trap_segv);
@@ -121,10 +121,10 @@ void PerformancePrefs::create_objects()
 
 	ffmpeg_early_probe = new PrefsFFMPEGEarlyProbe(this, x, y);
 	add_subwindow(ffmpeg_early_probe);
+
+	yuv420p_dvdlace = new PrefsYUV420P_DVDlace(pwindow, this, x1, y);
+	add_subwindow(yuv420p_dvdlace);
 	y += 30;
-
-
-
 
 // Background rendering
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
@@ -914,10 +914,9 @@ int PrefsRenderFarmMountpoint::handle_event()
 
 
 PrefsRenderFarmVFS::PrefsRenderFarmVFS(PreferencesWindow *pwindow,
-	PerformancePrefs *subwindow,
-	int x,
-	int y)
- : BC_CheckBox(x, y, pwindow->thread->preferences->renderfarm_vfs, _("Use virtual filesystem"))
+	PerformancePrefs *subwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->renderfarm_vfs,
+	_("Use virtual filesystem"))
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
@@ -926,6 +925,22 @@ PrefsRenderFarmVFS::PrefsRenderFarmVFS(PreferencesWindow *pwindow,
 int PrefsRenderFarmVFS::handle_event()
 {
 	pwindow->thread->preferences->renderfarm_vfs = get_value();
+	return 1;
+}
+
+
+PrefsYUV420P_DVDlace::PrefsYUV420P_DVDlace(PreferencesWindow *pwindow,
+	PerformancePrefs *subwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->dvd_yuv420p_interlace,
+	_("Use yuv420p dvd interlace format"))
+{
+	this->pwindow = pwindow;
+	this->subwindow = subwindow;
+}
+
+int PrefsYUV420P_DVDlace::handle_event()
+{
+	pwindow->thread->preferences->dvd_yuv420p_interlace = get_value();
 	return 1;
 }
 

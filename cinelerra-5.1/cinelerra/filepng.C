@@ -191,6 +191,7 @@ int FilePNG::read_frame_header(char *path)
 	    native_cmodel = BC_RGB888;
 	}
 
+	asset->png_use_alpha = BC_CModels::has_alpha(native_cmodel) ? 1 : 0;
 
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 	fclose(stream);

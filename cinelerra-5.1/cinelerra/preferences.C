@@ -80,6 +80,7 @@ Preferences::Preferences()
 	ffmpeg_early_probe = 0;
 	ffmpeg_marker_indexes = 1;
 	warn_indexes = 1;
+	dvd_yuv420p_interlace = 0;
 
 // Default brender asset
 	brender_asset = new Asset;
@@ -184,6 +185,7 @@ void Preferences::copy_from(Preferences *that)
 	ffmpeg_early_probe = that->ffmpeg_early_probe;
 	ffmpeg_marker_indexes = that->ffmpeg_marker_indexes;
 	warn_indexes = that->warn_indexes;
+	dvd_yuv420p_interlace = that->dvd_yuv420p_interlace;
 	renderfarm_nodes.remove_all_objects();
 	renderfarm_ports.remove_all();
 	renderfarm_enabled.remove_all();
@@ -330,6 +332,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	ffmpeg_early_probe = defaults->get("FFMPEG_EARLY_PROBE", ffmpeg_early_probe);
 	ffmpeg_marker_indexes = defaults->get("FFMPEG_MARKER_INDEXES", ffmpeg_marker_indexes);
 	warn_indexes = defaults->get("WARN_INDEXES", warn_indexes);
+	dvd_yuv420p_interlace = defaults->get("DVD_YUV420P_INTERLACE", dvd_yuv420p_interlace);
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
 	cache_size = defaults->get("CACHE_SIZE", cache_size);
@@ -430,6 +433,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("FFMPEG_EARLY_PROBE", ffmpeg_early_probe);
 	defaults->update("FFMPEG_MARKER_INDEXES", ffmpeg_marker_indexes);
 	defaults->update("WARN_INDEXES", warn_indexes);
+	defaults->update("DVD_YUV420P_INTERLACE", dvd_yuv420p_interlace);
 	brender_asset->save_defaults(defaults,
 		"BRENDER_",
 		1,

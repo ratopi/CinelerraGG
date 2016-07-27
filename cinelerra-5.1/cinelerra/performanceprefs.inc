@@ -45,6 +45,7 @@ class PrefsRenderFarmReplaceNode;
 class PrefsRenderFarmDelNode;
 class PrefsRenderFarmSortNodes;
 class PrefsRenderFarmReset;
+class PrefsYUV420P_DVDlace;
 class CICacheSize;
 
 #endif

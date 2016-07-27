@@ -104,6 +104,8 @@ public:
 	int ffmpeg_marker_indexes;
 // warning
 	int warn_indexes;
+// use dvd yuv420p interlace format
+	int dvd_yuv420p_interlace;
 
 // Default positions for channels
 	int channel_positions[MAXCHANNELS * MAXCHANNELS];

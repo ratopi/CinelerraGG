@@ -311,6 +311,7 @@ int VFrame::clear_objects(int do_opengl)
 		case BC_YUV410P:
 		case BC_YUV411P:
 		case BC_YUV420P:
+		case BC_YUV420PI:
 		case BC_YUV422P:
 		case BC_YUV444P:
 		case BC_RGB_FLOATP:
@@ -386,6 +387,7 @@ void VFrame::create_row_pointers()
 		break;
 
 	case BC_YUV420P:
+	case BC_YUV420PI:
 	case BC_YUV411P:
 		if( this->v_offset ) break;
 		this->y_offset = 0;
@@ -851,6 +853,7 @@ int VFrame::clear_frame()
 
 	case BC_YUV411P:
 	case BC_YUV420P:
+	case BC_YUV420PI:
 		bzero(get_y(), sz);
 		bzero(get_u(), sz / 4);
 		bzero(get_v(), sz / 4);
@@ -1014,6 +1017,7 @@ int VFrame::copy_from(VFrame *frame)
 			break;
 
 		case BC_YUV420P:
+		case BC_YUV420PI:
 		case BC_YUV411P:
 //printf("%d %d %p %p %p %p %p %p\n", w, h, get_y(), get_u(), get_v(), frame->get_y(), frame->get_u(), frame->get_v());
 			memcpy(get_y(), frame->get_y(), w * h);

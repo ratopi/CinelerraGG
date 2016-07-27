@@ -1991,7 +1991,7 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		config.size = 72;
 	if(config.stroke_width < 0 || config.stroke_width >= 512)
 		config.stroke_width = 0.0;
-	if(!config.wlen)
+	if(!config.wlen && !config.timecode)
 		return 0;
 	if(!strlen(config.encoding))
 		strcpy(config.encoding, DEFAULT_ENCODING);
@@ -2190,7 +2190,7 @@ void TitleMain::read_data(KeyFrame *keyframe)
 			config.dropshadow = input.tag.get_property("DROPSHADOW", config.dropshadow);
 			config.outline_size = input.tag.get_property("OUTLINE_SIZE", config.outline_size);
 			config.timecode = input.tag.get_property("TIMECODE", config.timecode);
-			input.tag.get_property("TIMECODEFORMAT", config.timecode_format);
+			config.timecode_format = input.tag.get_property("TIMECODEFORMAT", config.timecode_format);
 			config.window_w = input.tag.get_property("WINDOW_W", config.window_w);
 			config.window_h = input.tag.get_property("WINDOW_H", config.window_h);
 			const char *text = input.read_text();

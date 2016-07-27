@@ -451,7 +451,11 @@ int FileMPEG::open_file(int rd, int wr)
 
 			asset->video_data = mpeg3_has_video(fd);
 			if( !result && asset->video_data ) {
-				asset->interlace_mode = BC_ILACE_MODE_UNDETECTED;
+//TODO: this is not as easy as just looking at headers.
+//most interlaced media is rendered as FRM, not TOP/BOT in coding ext hdrs.
+//currently, just using the assetedit menu to set the required result as needed.
+//				if( asset->interlace_mode == BC_ILACE_MODE_UNDETECTED )
+//					asset->interlace_mode = mpeg3_detect_interlace(fd, 0);
 				if( !asset->layers ) {
 					asset->layers = mpeg3_total_vstreams(fd);
 				}
@@ -550,9 +554,6 @@ int FileMPEG::open_file(int rd, int wr)
 				case 1: asset->vmpeg_progressive = 1; break;
 				case 2: asset->vmpeg_progressive = 1; break;
 			}
-
-// Be quiet
-			strcat(mjpeg_command, " -v0");
 
 			char string[BCTEXTLEN];
 // The current usage of mpeg2enc requires bitrate of 0 when quantization is fixed and
@@ -1271,6 +1272,10 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 // verify colormodel supported in MPEG output
 		switch( output_cmodel ) {
 		case BC_YUV420P:
+			if( file->preferences->dvd_yuv420p_interlace &&
+			    ( asset->interlace_mode == BC_ILACE_MODE_TOP_FIRST ||
+			      asset->interlace_mode == BC_ILACE_MODE_BOTTOM_FIRST ) )
+				output_cmodel = BC_YUV420PI;
 		case BC_YUV422P:
 			break;
 		default:
@@ -1388,27 +1393,7 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 // frame->get_h(),
 // temp_frame->get_color_model(),
 // frame->get_color_model()); sleep(1);
-						BC_CModels::transfer(temp_frame->get_rows(), 
-							frame->get_rows(),
-							temp_frame->get_y(),
-							temp_frame->get_u(),
-							temp_frame->get_v(),
-							frame->get_y(),
-							frame->get_u(),
-							frame->get_v(),
-							0,
-							0,
-							frame->get_w(),
-							frame->get_h(),
-							0,
-							0,
-							temp_frame->get_w(),
-							temp_frame->get_h(),
-							frame->get_color_model(), 
-							temp_frame->get_color_model(),
-							0, 
-							frame->get_w(),
-							temp_frame->get_w());
+						temp_frame->transfer_from(frame);
 //printf("FileMPEG::write_frames %d\n", __LINE__);sleep(1);
 
 						mjpeg_y = temp_frame->get_y();
@@ -1515,12 +1500,13 @@ int FileMPEG::read_frame(VFrame *frame)
 	int stream_cmdl = mpeg3_colormodel(fd,file->current_layer);
 	int stream_color_model = bc_colormodel(stream_cmdl);
 	int frame_color_model = frame->get_color_model();
-	int frame_cmdl = zmpeg3_cmdl(frame_color_model);
+	int frame_cmdl = asset->interlace_mode == BC_ILACE_MODE_NOTINTERLACED ?
+		zmpeg3_cmdl(frame_color_model) : -1;
 	mpeg3_show_subtitle(fd, file->current_layer, file->playback_subtitle);
-
 
 	switch( frame_color_model ) { // check for direct copy
 	case BC_YUV420P:
+		if( frame_cmdl < 0 ) break;
 	case BC_YUV422P:
 		if( stream_color_model == frame_color_model &&
 			width == frame->get_w() && height == frame->get_h() ) {
@@ -1574,20 +1560,16 @@ int FileMPEG::read_frame(VFrame *frame)
 	char *y, *u, *v;
 	mpeg3_read_yuvframe_ptr(fd, &y, &u, &v, file->current_layer);
 	if( y && u && v ) {
+		if( stream_color_model == BC_YUV420P &&
+		    file->preferences->dvd_yuv420p_interlace && (
+			asset->interlace_mode == BC_ILACE_MODE_TOP_FIRST ||
+			asset->interlace_mode == BC_ILACE_MODE_BOTTOM_FIRST ) )
+				stream_color_model = BC_YUV420PI;
 		BC_CModels::transfer(frame->get_rows(), 0,
-			frame->get_y(),
-			frame->get_u(),
-			frame->get_v(),
-			(unsigned char*)y,
-			(unsigned char*)u,
-			(unsigned char*)v,
-			0, 0, width, height,
-			0, 0, frame->get_w(), frame->get_h(),
-			stream_color_model, 
-			frame_color_model,
-			0, 
-			width,
-			frame->get_w());
+			frame->get_y(), frame->get_u(), frame->get_v(),
+			(unsigned char*)y, (unsigned char*)u, (unsigned char*)v,
+			0,0, width,height,  0,0, frame->get_w(),frame->get_h(),
+			stream_color_model, frame_color_model, 0, width, frame->get_w());
 	}
 
 	return result;

@@ -106,7 +106,8 @@ void BC_Xfer::init(
 	switch( in_colormodel ) {
 	case BC_UVY422:
 	case BC_YUV422:   in_w &= ~1;               break;  // 2x1
-	case BC_YUV420P:  in_w &= ~1;  in_h &= ~1;  break;  // 2x2
+	case BC_YUV420P:
+	case BC_YUV420PI: in_w &= ~1;  in_h &= ~1;  break;  // 2x2
 	case BC_YUV422P:  in_w &= ~1;               break;  // 2x1
 	case BC_YUV410P:  in_w &= ~3;  in_h &= ~3;  break;  // 4x4
 	case BC_YUV411P:  in_w &= ~3;               break;  // 4x1
@@ -114,7 +115,8 @@ void BC_Xfer::init(
 	switch( out_colormodel ) {
 	case BC_UVY422:
 	case BC_YUV422:  out_w &= ~1;               break;
-	case BC_YUV420P: out_w &= ~1; out_h &= ~1;  break;
+	case BC_YUV420P:
+	case BC_YUV420PI: out_w &= ~1; out_h &= ~1; break;
 	case BC_YUV422P: out_w &= ~1;               break;
 	case BC_YUV410P: out_w &= ~3; out_h &= ~3;  break;
 	case BC_YUV411P: out_w &= ~3;               break;

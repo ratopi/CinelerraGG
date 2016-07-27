@@ -103,9 +103,35 @@ ZTYP(float);
     oty_t *vop = (oty_t *)(out_vp + out_rofs); \
 
 #define xfer_yuv420p_row_in(ity_t) \
-    int in_rofs = row_table[i] * total_in_w; \
+    int in_r = row_table[i]; \
+    int in_rofs = in_r * total_in_w; \
     uint8_t *yip_row = in_yp + in_rofs; \
-    in_rofs = row_table[i] / 2 * total_in_w / 2; \
+    in_rofs = in_r / 2 * total_in_w / 2; \
+    uint8_t *uip_row = in_up + in_rofs; \
+    uint8_t *vip_row = in_vp + in_rofs; \
+    for( unsigned j=0; j<out_w; ++j ) { \
+      int in_ofs = column_table[j]; \
+      ity_t *yip = (ity_t *)(yip_row + in_ofs); \
+      in_ofs /= 2; \
+      ity_t *uip = (ity_t *)(uip_row + in_ofs); \
+      ity_t *vip = (ity_t *)(vip_row + in_ofs); \
+
+// yuv420pi  2x2
+#define xfer_yuv420pi_row_out(oty_t) \
+  for( unsigned i=y0; i<y1; ++i ) { \
+    int out_rofs = i * total_out_w + out_x; \
+    oty_t *yop = (oty_t *)(out_yp + out_rofs); \
+    int ot_k = ((i/4)<<1) + (i&1); \
+    out_rofs = ot_k * total_out_w / 2 + out_x / 2; \
+    oty_t *uop = (oty_t *)(out_up + out_rofs); \
+    oty_t *vop = (oty_t *)(out_vp + out_rofs); \
+
+#define xfer_yuv420pi_row_in(ity_t) \
+    int in_r = row_table[i]; \
+    int in_rofs = in_r * total_in_w; \
+    uint8_t *yip_row = in_yp + in_rofs; \
+    int in_k = ((in_r/4)<<1) + (in_r&1); \
+    in_rofs = in_k * total_in_w / 2; \
     uint8_t *uip_row = in_up + in_rofs; \
     uint8_t *vip_row = in_vp + in_rofs; \
     for( unsigned j=0; j<out_w; ++j ) { \

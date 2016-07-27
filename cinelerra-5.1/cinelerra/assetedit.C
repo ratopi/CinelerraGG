@@ -95,14 +95,14 @@ void AssetEdit::edit_asset(Indexable *indexable)
 	{
 		EDL *nested_edl = (EDL*)indexable;
 
-        strcpy(changed_params->path, nested_edl->path);
+	        strcpy(changed_params->path, nested_edl->path);
 		changed_params->sample_rate = nested_edl->session->sample_rate;
-        changed_params->channels = nested_edl->session->audio_channels;
+		changed_params->channels = nested_edl->session->audio_channels;
 
 //printf("AssetEdit::edit_asset %d %f\n", __LINE__, nested_edl->session->frame_rate);
 		changed_params->frame_rate = nested_edl->session->frame_rate;
-        changed_params->width = nested_edl->session->output_w;
-        changed_params->height = nested_edl->session->output_h;
+		changed_params->width = nested_edl->session->output_w;
+		changed_params->height = nested_edl->session->output_h;
 	}
 
 	BC_DialogThread::start();
@@ -581,7 +581,7 @@ void AssetEditWindow::create_objects()
 		ilacefixoption_chkboxw->ilacemode_textbox = textboxw;
 		add_subwindow(listboxw = new AssetEditInterlacemodePulldown(mwindow,
 							textboxw,
-							&asset->interlace_mode,
+							&asset_edit->changed_params->interlace_mode,
 							(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_asset_modes,
 							ilacefixoption_chkboxw,
 							x2 + textboxw->get_w(),
@@ -595,7 +595,7 @@ void AssetEditWindow::create_objects()
 		ilacefixoption_chkboxw->ilacefixmethod_textbox = textboxw;
 		add_subwindow(listboxw = new InterlacefixmethodPulldown(mwindow,
 							textboxw,
-							&asset->interlace_fixmethod,
+							&asset_edit->changed_params->interlace_fixmethod,
 							(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_asset_fixmethods,
 							x2 + textboxw->get_w(),
 							y));
@@ -621,8 +621,11 @@ void AssetEditWindow::create_objects()
 
 // Calculate values to enter into textboxes
 		char text[32], *tc = text;
-		Units::totext(tc, asset->tcstart / asset->frame_rate,
-			TIME_HMSF, asset->sample_rate, asset->frame_rate);
+		if( asset )
+			Units::totext(tc, asset->tcstart / asset->frame_rate,
+				TIME_HMSF, asset->sample_rate, asset->frame_rate);
+		else
+			strcpy(tc, "0:00:00:00");
 
 		const char *tc_hours = tc, *tc_minutes, *tc_seconds, *tc_rest;
 		tc = strchr(tc, ':');  *tc++ = 0;  tc_minutes = tc;
@@ -704,7 +707,7 @@ int AssetEditFRate::handle_event()
 
 Interlaceautofix::Interlaceautofix(MWindow *mwindow,AssetEditWindow *fwindow, int x, int y)
  : BC_CheckBox(x, y,
-	((Asset *)fwindow->asset_edit->indexable)->interlace_autofixoption,
+	fwindow->asset_edit->changed_params->interlace_autofixoption,
 	_("Automatically Fix Interlacing"))
 {
 	this->fwindow = fwindow;
@@ -717,7 +720,7 @@ Interlaceautofix::~Interlaceautofix()
 
 int Interlaceautofix::handle_event()
 {
-	Asset *asset = (Asset *)fwindow->asset_edit->indexable;
+	Asset *asset = fwindow->asset_edit->changed_params;
 	asset->interlace_autofixoption = get_value();
 	showhideotherwidgets();
 	return 1;
@@ -727,7 +730,7 @@ void Interlaceautofix::showhideotherwidgets()
 {
   int thevalue = get_value();
 
-	Asset *asset = (Asset *)fwindow->asset_edit->indexable;
+	Asset *asset = fwindow->asset_edit->changed_params;
 	if (thevalue == BC_ILACE_AUTOFIXOPTION_AUTO)
 	  {
 	    this->ilacemode_textbox->enable();
@@ -788,7 +791,7 @@ AssetEditILaceautofixoption::AssetEditILaceautofixoption(AssetEditWindow *fwindo
 
 int AssetEditILaceautofixoption::handle_event()
 {
-	Asset *asset = (Asset *)fwindow->asset_edit->indexable;
+	Asset *asset = fwindow->asset_edit->changed_params;
 	asset->interlace_autofixoption = ilaceautofixoption_from_text(get_text(), this->thedefault);
 	return 1;
 }
@@ -803,7 +806,7 @@ AssetEditILacemode::AssetEditILacemode(AssetEditWindow *fwindow, const char *tex
 
 int AssetEditILacemode::handle_event()
 {
-	Asset *asset = (Asset *)fwindow->asset_edit->indexable;
+	Asset *asset = fwindow->asset_edit->changed_params;
 	asset->interlace_mode = ilacemode_from_text(get_text(),this->thedefault);
 	return 1;
 }
@@ -1086,8 +1089,7 @@ void DetailAssetThread::run()
 
 
 AssetEditReelName::AssetEditReelName(AssetEditWindow *fwindow, int x, int y)
- : BC_TextBox(x, y, 220, 1,
-	((Asset *)fwindow->asset_edit->indexable)->reel_name,
+ : BC_TextBox(x, y, 220, 1, fwindow->asset_edit->changed_params->reel_name,
 	1, MEDIUMFONT, 1)
 {
 	this->fwindow = fwindow;
@@ -1107,7 +1109,7 @@ int AssetEditReelName::handle_event()
 
 
 AssetEditReelNumber::AssetEditReelNumber(AssetEditWindow *fwindow, int x, int y)
- : BC_TextBox(x, y, 200, 1, ((Asset *)fwindow->asset_edit->indexable)->reel_number)
+ : BC_TextBox(x, y, 200, 1, fwindow->asset_edit->changed_params->reel_number)
 {
 	this->fwindow = fwindow;
 }

@@ -29,6 +29,7 @@
 #include "file.h"
 #include "filedv.h"
 #include "guicast.h"
+#include "interlacemodes.h"
 #include "language.h"
 #include "mutex.h"
 #include "mwindow.inc"
@@ -288,6 +289,12 @@ TRACE("FileDV::open_file 60")
 
 			asset->width = decoder->width;
 			asset->height = decoder->height;
+
+			if(dv_is_progressive(decoder) > 0)
+				asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
+			else
+				asset->interlace_mode = BC_ILACE_MODE_BOTTOM_FIRST;
+
 			isPAL = dv_is_PAL(decoder);
 			
 			output_size = (isPAL ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE);
@@ -489,12 +496,6 @@ TRACE("FileDV::write_samples 200")
 
 	video_position_lock->unlock();
 
-TRACE("FileDV::write_samples 210")
-	
-	int16_t **tmp_buf = new int16_t*[asset->channels];
-	for(int a = 0; a < asset->channels; a++)
-		tmp_buf[a] = new int16_t[asset->sample_rate];
-
 TRACE("FileDV::write_samples 220")
 	
 	for(int i = 0; i < nFrames; i++)
@@ -526,6 +527,11 @@ TRACE("FileDV::write_samples 230")
 
 		if(samples > audio_sample_buffer_maxsize - 1 - audio_sample_buffer_start)
 		{
+TRACE("FileDV::write_samples 210")
+			int16_t *tmp_buf[asset->channels];
+			for(int a = 0; a < asset->channels; a++)
+				tmp_buf[a] = new int16_t[asset->sample_rate];
+
 TRACE("FileDV::write_samples 240")
 			int copy_size = audio_sample_buffer_maxsize - audio_sample_buffer_start - 1;
 			
@@ -543,6 +549,10 @@ TRACE("FileDV::write_samples 250")
 			{
 				eprintf(_("ERROR: unable to encode audio frame %d\n"), audio_frames_written);
 			}
+TRACE("FileDV::write_samples 280")
+
+			for(int a = 0; a < asset->channels; a++)
+				delete[] tmp_buf[a];
 		}
 		else
 		{
@@ -584,15 +594,7 @@ TRACE("FileDV::write_samples 270")
 		if(audio_sample_buffer_start >= audio_sample_buffer_maxsize)
 			audio_sample_buffer_start -= audio_sample_buffer_maxsize;
 	}
-
-TRACE("FileDV::write_samples 280")
-
-	for(int a = 0; a < asset->channels; a++)
-		delete[] tmp_buf[a];
-	delete[] tmp_buf;
-
 TRACE("FileDV::write_samples 290")
-
 
 UNTRACE
 

@@ -26,6 +26,7 @@ int BC_CModels::is_planar(int colormodel)
 {
 	switch(colormodel) {
 	case BC_YUV420P:
+	case BC_YUV420PI:
 	case BC_YUV422P:
 	case BC_YUV444P:
 	case BC_YUV411P:
@@ -90,6 +91,7 @@ int BC_CModels::calculate_pixelsize(int colormodel)
 	case BC_RGBA_FLOAT:   return 16;
 // Planar
 	case BC_YUV420P:      return 1;
+	case BC_YUV420PI:     return 1;
 	case BC_YUV422P:      return 1;
 	case BC_YUV444P:      return 1;
 	case BC_YUV422:       return 2;
@@ -130,6 +132,7 @@ int BC_CModels::calculate_datasize(int w, int h, int bytes_per_line, int color_m
 	switch(color_model) {
 	case BC_YUV410P: return w * h + w * h / 8 + 4;
 	case BC_YUV420P:
+	case BC_YUV420PI:
 	case BC_YUV411P: return w * h + w * h / 2 + 4;
 	case BC_YUV422P: return w * h * 2 + 4;
 	case BC_YUV444P: return w * h * 3 + 4;
@@ -231,6 +234,7 @@ int BC_CModels::is_yuv(int colormodel)
 	case BC_VYU888:
 	case BC_UYVA8888:
 	case BC_YUV420P:
+	case BC_YUV420PI:
 	case BC_YUV422P:
 	case BC_YUV444P:
 	case BC_YUV411P:

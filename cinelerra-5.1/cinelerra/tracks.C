@@ -406,7 +406,8 @@ int Tracks::total_of(int type)
 	for(Track *current = first; current; current = NEXT)
 	{
 		long unit_start = current->to_units(edl->local_session->get_selectionstart(1), 0);
-		Auto *mute_keyframe = current->automation->autos[AUTOMATION_MUTE]->
+		Auto *mute_keyframe = 0;
+		current->automation->autos[AUTOMATION_MUTE]->
 			get_prev_auto(unit_start, PLAY_FORWARD, mute_keyframe);
 		IntAuto *mute_auto = (IntAuto *)mute_keyframe;
 

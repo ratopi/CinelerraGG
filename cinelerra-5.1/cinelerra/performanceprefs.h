@@ -61,6 +61,7 @@ public:
 	FormatTools *brender_tools;
 	BC_Title *master_rate;
 	PrefsFFMPEGEarlyProbe *ffmpeg_early_probe;
+	PrefsYUV420P_DVDlace *yuv420p_dvdlace;
 	PrefsFFMPEGMarkerIndecies *ffmpeg_marker_indexes;
 };
 
@@ -335,11 +336,24 @@ class PrefsRenderFarmReset : public BC_GenericButton
 public:
 	PrefsRenderFarmReset(PreferencesWindow *pwindow, 
 		PerformancePrefs *subwindow, 
-		int x, 
-		int y);
+		int x, int y);
 	
 	int handle_event();
 	
+	PerformancePrefs *subwindow;
+	PreferencesWindow *pwindow;
+};
+
+
+class PrefsYUV420P_DVDlace : public BC_CheckBox
+{
+public:
+	PrefsYUV420P_DVDlace(PreferencesWindow *pwindow,
+		PerformancePrefs *subwindow,
+		int x, int y);
+
+	int handle_event();
+
 	PerformancePrefs *subwindow;
 	PreferencesWindow *pwindow;
 };
@@ -356,9 +370,5 @@ public:
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
-
-
-
-
 
 #endif

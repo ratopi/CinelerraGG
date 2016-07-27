@@ -313,6 +313,7 @@ int FileEXR::read_frame_header(char *path)
 		native_cmodel = BC_RGBA_FLOAT;
 	else
 		native_cmodel = BC_RGB_FLOAT;
+	asset->exr_use_alpha = BC_CModels::has_alpha(native_cmodel) ? 1 : 0;
 
 	if(channels.findChannel("Y"))
 		is_yuv = 1;

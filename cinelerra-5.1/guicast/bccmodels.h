@@ -60,6 +60,7 @@
 #define BC_YUV410P      28
 #define BC_RGB_FLOATP   32
 #define BC_RGBA_FLOATP  33
+#define BC_YUV420PI     34
 
 // Colormodels purely used by Quicktime are done in Quicktime.
 
