@@ -1,7 +1,7 @@
 # Maintainer: goodguy <lists.cinelerra-cv.org>
 pkgname=cin
 pkgver=5.1
-pkgrel=20160630
+pkgrel=20160730
 pkgdesc="Cinelerra git://git.cinelerra-cv.org/goodguy/cinelerra.git ($pkgrel)"
 arch=('x86_64')
 url="http://www.cinelerra-cv.org"
@@ -22,11 +22,12 @@ prepare() {
 build() {
   cd "$srcdir/cinelerra-$pkgver"
   ./autogen.sh
+  export FFMPEG_EXTRA_CFG=" --disable-vdpau"
   ./configure --prefix=/usr --with-exec-name=$pkgname
 CFG_VARS="\
-CFLAGS='-Wno-narrowing -O2 -g -fno-omit-frame-pointer' \
-CXXFLAGS='-Wno-narrowing -O2 -g -fno-omit-frame-pointer' \
-WERROR_CFLAGS='-fpermissive'" \
+CFLAGS+=' -Wno-narrowing -O2 -g -fno-omit-frame-pointer' \
+CXXFLAGS+=' -Wno-narrowing -O2 -g -fno-omit-frame-pointer' \
+WERROR_CFLAGS+=' -fpermissive'" \
   make 2>&1 | tee log
 }
 
