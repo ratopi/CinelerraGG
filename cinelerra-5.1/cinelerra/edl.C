@@ -1024,7 +1024,7 @@ int EDL::dump(FILE *fp)
 		local_session->loop_end);
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		fprintf(fp,"  pane %d view_start=%jd track_start=%jd\n", i,
+		fprintf(fp,"  pane %d view_start=%jd track_start=%d\n", i,
 			local_session->view_start[i],
 			local_session->track_start[i]);
 	}
