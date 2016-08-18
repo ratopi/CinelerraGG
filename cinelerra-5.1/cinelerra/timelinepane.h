@@ -33,7 +33,8 @@ public:
 	void activate();
 	void create_track_scroll(int view_x, int view_y, int view_w, int view_h);
 	void create_sample_scroll(int view_x, int view_y, int view_w, int view_h);
-	Track *is_over_patchbay();
+	Track *over_track();
+	Track *over_patchbay();
 
 	MWindow *mwindow;
 	MWindowGUI *gui;

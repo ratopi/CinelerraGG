@@ -1161,238 +1161,124 @@ int MWindowGUI::save_defaults(BC_Hash *defaults)
 int MWindowGUI::keypress_event()
 {
 //printf("MWindowGUI::keypress_event 1 %d\n", get_keypress());
-	int result = 0;
-	result = mbuttons->keypress_event();
+	int result = mbuttons->keypress_event();
+	if( result ) return result;
 
-	if(!result)
-	{
-		switch(get_keypress())
-		{
-			case 'e':
-				mwindow->toggle_editing_mode();
-				result = 1;
-				break;
-			case '1': case '2': case '3': case '4':
-			case '5': case '6': case '7': case '8':
-			if( !alt_down() || shift_down() ) break;
-			if( !mwindow->select_asset(get_keypress()-'1',1) )
-				result = 1;
-			break;
-			case LEFT:
-				if(!ctrl_down())
-				{
-					if (alt_down())
-					{
-						unlock_window();
-						mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-						lock_window("MWindowGUI::keypress_event 1");
-						mwindow->prev_edit_handle(shift_down());
-					}
-					else
-						mwindow->move_left();
- 					result = 1;
-				}
-				break;
-			case RIGHT:
-				if(!ctrl_down())
-				{
-					if (alt_down())
-					{
-						unlock_window();
-						mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-						lock_window("MWindowGUI::keypress_event 2");
-						mwindow->next_edit_handle(shift_down());
-					}
-					else
-						mwindow->move_right();
-					result = 1;
-				}
-				break;
+	switch(get_keypress()) {
+	case 'e':
+		mwindow->toggle_editing_mode();
+		result = 1;
+		break;
 
-			case UP:
-				if(ctrl_down() && !alt_down())
-				{
-					mwindow->expand_y();
-					result = 1;
-				}
-				else
-				if(!ctrl_down() && alt_down())
-				{
-					mwindow->expand_autos(0,1,1);
-					result = 1;
-				}
-				else
-				if(ctrl_down() && alt_down())
-				{
-					mwindow->expand_autos(1,1,1);
-					result = 1;
-				}
-				else
-				{
-					mwindow->expand_sample();
-					result = 1;
-				}
-				break;
+	case '1': case '2': case '3': case '4':
+	case '5': case '6': case '7': case '8':
+		if( !alt_down() || shift_down() ) break;
+		if( !mwindow->select_asset(get_keypress()-'1',1) )
+			result = 1;
+		break;
 
-			case DOWN:
-				if(ctrl_down() && !alt_down())
-				{
-					mwindow->zoom_in_y();
-					result = 1;
-				}
-				else
-				if(!ctrl_down() && alt_down())
-				{
-					mwindow->shrink_autos(0,1,1);
-					result = 1;
-				}
-				else
-				if(ctrl_down() && alt_down())
-				{
-					mwindow->shrink_autos(1,1,1);
-					result = 1;
-				}
-				else
-				{
-					mwindow->zoom_in_sample();
-					result = 1;
-				}
-				break;
+	case LEFT:
+		if( !ctrl_down() ) {
+			if( alt_down() ) {
+				unlock_window();
+				mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+				lock_window("MWindowGUI::keypress_event 1");
+				mwindow->prev_edit_handle(shift_down());
+			}
+			else
+				mwindow->move_left();
+			result = 1;
+		}
+		break;
 
-			case PGUP:
-				if(!ctrl_down())
-				{
-					mwindow->move_up();
-					result = 1;
-				}
-				else
-				{
-					mwindow->expand_t();
-					result = 1;
-				}
-				break;
+	case RIGHT:
+		if( !ctrl_down() ) {
+			if( alt_down() ) {
+				unlock_window();
+				mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+				lock_window("MWindowGUI::keypress_event 2");
+				mwindow->next_edit_handle(shift_down());
+			}
+			else
+				mwindow->move_right();
+			result = 1;
+		}
+		break;
 
-			case PGDN:
-				if(!ctrl_down())
-				{
-					mwindow->move_down();
-					result = 1;
-				}
-				else
-				{
-					mwindow->zoom_in_t();
-					result = 1;
-				}
-				break;
+	case UP:
+		if( ctrl_down() && !alt_down() )
+			mwindow->expand_y();
+		else if( !ctrl_down() && alt_down() )
+			mwindow->expand_autos(0,1,1);
+		else if( ctrl_down() && alt_down() )
+			mwindow->expand_autos(1,1,1);
+		else
+			mwindow->expand_sample();
+		result = 1;
+		break;
 
-// 			case TAB:
-// 			case LEFTTAB:
-// 				//int cursor_x = 0;
-// 				int cursor_y = 0;
-// 				for(int i = 0; i < TOTAL_PANES; i++)
-// 				{
-// 					if(pane[i])
-// 					{
-// 						//cursor_x = pane[i]->canvas->get_relative_cursor_x();
-// 						cursor_y = pane[i]->canvas->get_relative_cursor_y();
-// 					}
-// 				}
-//
-//
-// 				if(get_keypress() == TAB)
-// 				{
-// // Switch the record button
-// 					for(Track *track = mwindow->edl->tracks->first; track; track = track->next)
-// 					{
-// 						int64_t track_x, track_y, track_w, track_h;
-// 						canvas->track_dimensions(track, track_x, track_y, track_w, track_h);
-//
-// 						if(cursor_y >= track_y &&
-// 							cursor_y < track_y + track_h)
-// 						{
-// 							if (track->record)
-// 								track->record = 0;
-// 							else
-// 								track->record = 1;
-// 							result = 1;
-// 							break;
-// 						}
-// 					}
-// 				}
-// 				else
-// 				{
-// 					Track *this_track = 0;
-// 					for(Track *track = mwindow->edl->tracks->first; track; track = track->next)
-// 					{
-// 						int64_t track_x, track_y, track_w, track_h;
-// 						canvas->track_dimensions(track, track_x, track_y, track_w, track_h);
-//
-// 						if(cursor_y >= track_y &&
-// 							cursor_y < track_y + track_h)
-// 						{
-// 							// This is our track
-// 							this_track = track;
-// 							break;
-// 						}
-// 					}
-//
-// 					int total_selected = mwindow->edl->tracks->total_of(Tracks::RECORD);
-//
-// 	// nothing previously selected
-// 					if(total_selected == 0)
-// 					{
-// 						mwindow->edl->tracks->select_all(Tracks::RECORD,
-// 							1);
-// 					}
-// 					else
-// 					if(total_selected == 1)
-// 					{
-// 	// this patch was previously the only one on
-// 						if(this_track && this_track->record)
-// 						{
-// 							mwindow->edl->tracks->select_all(Tracks::RECORD,
-// 								1);
-// 						}
-// 	// another patch was previously the only one on
-// 						else
-// 						{
-// 							mwindow->edl->tracks->select_all(Tracks::RECORD,
-// 								0);
-// 							if (this_track)
-// 								this_track->record = 1;
-//
-// 						}
-// 					}
-// 					else
-// 					if(total_selected > 1)
-// 					{
-// 						mwindow->edl->tracks->select_all(Tracks::RECORD,
-// 							0);
-// 						if (this_track)
-// 							this_track->record = 1;
-// 					}
-//
-// 				}
-//
-// 				update (0,
-// 						1,
-// 						0,
-// 						0,
-// 						1,
-// 						0,
-// 						1);
-// 				unlock_window();
-// 				mwindow->cwindow->update(0, 1, 1);
-// 				lock_window("TrackCanvas::keypress_event 3");
-//
-// 				result = 1;
-// 				break;
+	case DOWN:
+		if( ctrl_down() && !alt_down() )
+			mwindow->zoom_in_y();
+		else if( !ctrl_down() && alt_down() )
+			mwindow->shrink_autos(0,1,1);
+		else if( ctrl_down() && alt_down() )
+			mwindow->shrink_autos(1,1,1);
+		else
+			mwindow->zoom_in_sample();
+		result = 1;
+		break;
+
+	case PGUP:
+		if( !ctrl_down() )
+			mwindow->move_up();
+		else
+			mwindow->expand_t();
+		result = 1;
+		break;
+
+	case PGDN:
+		if( !ctrl_down() )
+			mwindow->move_down();
+		else
+			mwindow->zoom_in_t();
+		result = 1;
+		break;
+
+	case TAB:
+	case LEFTTAB:
+		Track *this_track = 0;
+		for( int i=0; i<TOTAL_PANES; ++i ) {
+			if( (this_track = pane[i]->over_track()) != 0 ) break;
+			if( (this_track = pane[i]->over_patchbay()) != 0 ) break;
 		}
 
-// since things under cursor have changed...
-		if(result)
-			cursor_motion_event();
+		if( get_keypress() == TAB ) { // Switch the record button
+			if( this_track )
+				this_track->record = !this_track->record ? 1 : 0;
+		}
+		else {
+			int total_selected = mwindow->edl->tracks->total_of(Tracks::RECORD);
+			// all selected if nothing previously selected or
+			// if this patch was previously the only one selected and armed
+			int selected = !total_selected || (total_selected == 1 &&
+				this_track && this_track->record ) ? 1 : 0;
+			mwindow->edl->tracks->select_all(Tracks::RECORD, selected);
+			if( !selected && this_track ) this_track->record = 1;
+		}
+
+		update(0, 1, 0, 0, 1, 0, 1);
+		unlock_window();
+		mwindow->cwindow->update(0, 1, 1);
+		lock_window("TrackCanvas::keypress_event 3");
+
+		result = 1;
+		break;
 	}
+
+// since things under cursor have changed...
+	if(result)
+		cursor_motion_event();
 
 	return result;
 }

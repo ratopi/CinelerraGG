@@ -221,19 +221,15 @@ Error(int v,const char *msg)
   dmsg(DBBUG_ERR,"%s\n",msg);
 }
 
-void
-Db::dmp()
+void Db::
+dmp()
 {
   tdmp();  pdmp();
-  printf("freeStoreIndex\n"); fdmp();
-  printf("addrStoreIndex\n"); admp();
-  printf("freeSpaceIndex\n"); edmp();
-  printf("addrSpaceIndex\n"); bdmp();
   printf("\n");
 }
 
-void
-Db::tdmp()
+void Db::
+tdmp()
 {
   printf("dmp  root_info->file_size %016lx\n",
     root_info->file_size);
@@ -249,10 +245,12 @@ Db::tdmp()
   for( int idx=0; idx<root_info->indeciesUsed; ++idx ) {
     IndexBase *ib = indecies[idx];
     if( !ib ) continue;
-    printf("     idx %d. %-24s %s  pop %5ld"
+    printf("     idx %d. %-24s %s%c pop %5ld"
       "   root %-5d rhs %-5d ky/Dt %2d/%-2d ",
       idx, &ib->st->name[0], ib->st->type==idxBin ? "bin" :
-      ib->st->type==idxStr ? "str" : "???", ib->st->count,
+      ib->st->type==idxStr ? "str" : "???",
+      ib->st->key_type >= ktyBin && ib->st->key_type <= ktyDir ?
+        " *="[ib->st->key_type] : '?', ib->st->count,
       ib->st->rootPageId, ib->st->rightHandSide,
       ib->st->keySz, ib->st->dataSz);
     printf("   free %d/",ib->st->freeBlocks);
@@ -282,8 +280,8 @@ Db::tdmp()
   } while( !entityIdIndex->Next(&eid,&ent.obj) );
 }
 
-void
-Db::pdmp()
+void Db::
+pdmp()
 {
   printf("   root_info->pageTableUsed %d\n",root_info->pageTableUsed);
   for( int pid=0; pid<root_info->pageTableUsed; ++pid ) {
@@ -304,8 +302,8 @@ Db::pdmp()
   printf(",  pages = %d\n",n);
 }
 
-void
-Db::fdmp()
+void Db::
+fdmp()
 {
   freeStoreRecord free;
   if( !freeStoreIndex->First(&free,0) ) do {
@@ -313,8 +311,8 @@ Db::fdmp()
   } while( !freeStoreIndex->Next(&free,0) );
 }
 
-void
-Db::admp()
+void Db::
+admp()
 {
   addrStoreRecord addr;
   if( !addrStoreIndex->First(&addr,0) ) do {
@@ -322,8 +320,19 @@ Db::admp()
   } while( !addrStoreIndex->Next(&addr,0) );
 }
 
-void
-Db::achk()
+void Db::
+cdmp()
+{
+  Entity e(this);  EntityLoc &ent = e.ent;  int ret, eid;
+  if( !(ret=entityIdIndex->First(&eid,&ent.obj)) ) do {
+    printf(" %d. %-32s  %5d/%-5d  %d\n",eid,ent->name,
+      ent->alloc_cache.loc.id, ent->alloc_cache.loc.offset,
+      ent->alloc_cache.avail);
+  } while( !(ret=entityIdIndex->Next(&eid,&ent.obj)) );
+}
+
+void Db::
+achk()
 {
   if( !indecies ) return;  addrStoreRecord addr;
   addrStoreRecord last;  last.io_addr = 0; last.size = 0;
@@ -338,8 +347,8 @@ Db::achk()
   } while( !addrStoreIndex->Next(&addr,0) );
 }
 
-void
-Db::fchk()
+void Db::
+fchk()
 {
   if( !indecies ) return;  freeStoreRecord free;
   freeStoreRecord last;  last.size = 0; last.io_addr = 0;
@@ -354,8 +363,8 @@ Db::fchk()
   } while( !freeStoreIndex->Next(&free,0) );
 }
 
-void
-Db::edmp()
+void Db::
+edmp(AllocCache &cache)
 {
   freeSpaceRecord free;
   if( !freeSpaceIndex->First(&free,0) ) do {
@@ -363,8 +372,8 @@ Db::edmp()
   } while( !freeSpaceIndex->Next(&free,0) );
 }
 
-void
-Db::bdmp()
+void Db::
+bdmp(AllocCache &cache)
 {
   addrSpaceRecord addr;
   if( !addrSpaceIndex->First(&addr,0) ) do {
@@ -373,7 +382,7 @@ Db::bdmp()
 }
 
 void Db::
-stats(int chk)
+stats()
 {
   long store_allocated=0, store_used=0;
   long loaded_allocated=0, loaded_used=0;
@@ -412,21 +421,6 @@ stats(int chk)
   printf("    write  %8d/%-7.3f%%  alloc:%-12ld  used:%-12ld  %7.3f%%\n",
     pages_written, percent(pages_written, root_info->pageTableUsed),
     written_allocated, written_used, percent(written_used, written_allocated));
-  if( chk ) {
-    long store_avail=0, space_avail=0;
-    freeStoreRecord store;
-    if( !freeStoreIndex->First(&store,0) ) do {
-      store_avail += store.size;
-    } while( !freeStoreIndex->Next(&store,0) );
-    freeSpaceRecord space;
-    if( !freeSpaceIndex->First(&space,0) ) do {
-      space_avail += space.size;
-    } while( !freeSpaceIndex->Next(&space,0) );
-    printf("  file %-12ld", root_info->file_size);
-    printf("  store %12ld/%-7.3f%%  space %12ld/%-7.3f%%\n",
-      store_avail, percent(store_avail, root_info->file_size),
-      space_avail, percent(space_avail, root_info->file_size));
-  }
 #undef percent
 }
 
@@ -1024,9 +1018,9 @@ Locate(int op, void *key, CmprFn cmpr, void *rtnKey, void *rtnData)
   if_fail( refLocate(last, op, key, cmpr) );
   char *kp = 0;
   if_err( db->addrRead_(last,kp) );
-  if( rtnKey )
-    memmove(rtnKey,kp,st->keySz);
-  if( rtnData )
+  if( rtnKey && st->keySz > 0 )
+    wr_key(kp, (char*)rtnKey,st->keySz);
+  if( rtnData && st->dataSz > 0 )
     memmove(rtnData,kp+st->keySz,st->dataSz);
   return 0;
 }
@@ -1210,8 +1204,10 @@ chkInsert(void *key, void *data)
   if( !rhs ) return 0;                          /* not a hit */
   if( spp->iallocated()-slen < kdSz ) return 0; /* doesnt fit */
   if( rp > kn ) memmove(kn+kdSz,kn,rp-kn);      /* move data up */
-  memmove(kn,key,st->keySz);
-  memmove(kn+st->keySz,data,st->dataSz);        /* add new key/data */
+  if( key && st->keySz > 0 )
+    wr_key(key, kn,st->keySz);
+  if( data && st->dataSz > 0 )
+    memmove(kn+st->keySz,data,st->dataSz);        /* add new key/data */
   spp->iused(slen + kdSz);
   keyInterior = 0;
   lastAccess.id = s;
@@ -1356,9 +1352,9 @@ keyInsert(pageId s, pageId &t)
 void Db::IndexBinary::
 makeKey(char *cp,char *key,int l,char *recd,int n)
 {
-  writePageId(cp,NIL);
-  memmove(cp+=sizeof(pageId),key,l);
-  if( recd ) memmove(cp+=l,recd,n);
+  writePageId(cp,NIL);  cp += sizeof(pageId);
+  if( l > 0 ) { wr_key(key, cp,l);  cp += l; }
+  if( n > 0 && recd ) memmove(cp,recd,n);
 }
 
 /***
@@ -1722,9 +1718,9 @@ First(void *rtnKey,void *rtnData)
   if_fail( keyFirst(first, st->rootPageId) );
   char *kp = 0;
   if_err( db->addrRead_(first,kp) );
-  if( rtnKey )
-    memmove(rtnKey,kp,st->keySz);
-  if( rtnData )
+  if( rtnKey && st->keySz > 0 )
+    wr_key(kp, (char*)rtnKey,st->keySz);
+  if( rtnData && st->dataSz > 0 )
     memmove(rtnData,kp+st->keySz,st->dataSz);
 { locked by(idxLk);
   lastNext = lastAccess = first; }
@@ -1780,9 +1776,9 @@ Last(void *rtnKey,void *rtnData)
   if_fail( keyLast(last, st->rootPageId) );
   char *kp = 0;
   if_err( db->addrRead_(last,kp) );
-  if( rtnKey )
-    memmove(rtnKey,kp,st->keySz);
-  if( rtnData )
+  if( rtnKey && st->keySz > 0 )
+    wr_key(kp, (char*)rtnKey,st->keySz);
+  if( rtnData && st->dataSz > 0 )
     memmove(rtnData,kp+st->keySz,st->dataSz);
 { locked by(idxLk);
   lastNext = lastAccess = last; }
@@ -1856,16 +1852,20 @@ Next(pgRef &loc,void *rtnKey,void *rtnData)
   if_ret( ret );
   if( !ret ) {
     char *ky = 0;
-    if( !st->keySz && rtnKey )                      // rtnKey is rKey class
+    switch( st->key_type ) {
+    case ktyInd:
       ky = (char *)rtnKey;
-    else 
+      break;
+    case ktyBin: case ktyDir:
       if_err( db->addrRead_(loc,ky) );
+      break;
+    }
     if_ret( keyNext(loc, ky) );                 // try the hard way
   }
   if_err( db->addrRead_(loc,kp) );
-  if( rtnKey )
-    memmove(rtnKey,kp,st->keySz);
-  if( rtnData )
+  if( rtnKey && st->keySz > 0 )
+    wr_key(kp, (char*)rtnKey,st->keySz);
+  if( rtnData && st->dataSz > 0 )
     memmove(rtnData,kp+st->keySz,st->dataSz);
 { locked by(idxLk);
   lastAccess = loc; }
@@ -1883,7 +1883,7 @@ Db::IndexBinary::
 IndexBinary(Db *zdb, int zidx, int ksz, int dsz, CmprFn cmpr)
  : IndexBase(zdb, idxBin, zidx, ksz, dsz)
 {
-  compare = !cmpr && !ksz ? cmprKey : cmpr;
+  compare = cmpr;
   bst = new(st+1) IndexBinaryStorage(zdb->findCmprFn(compare));
   iky = new char[st->blockSize/2+1];
   tky = new char[st->blockSize/2+1];
@@ -1895,7 +1895,7 @@ IndexBinary(Db *zdb, IndexBaseStorage *b, IndexBinaryStorage *d)
  : IndexBase(zdb, *b)
 {
   bst = new(d) IndexBinaryStorage();
-  compare = !bst->cmprId && !b->keySz ? cmprKey : cmprFns[bst->cmprId];
+  compare = cmprFns[bst->cmprId];
   iky = new char[st->blockSize/2+1];
   tky = new char[st->blockSize/2+1];
   init();
@@ -1906,7 +1906,7 @@ IndexBinary(IndexBase *ib, IndexBaseStorage *b, IndexBinaryStorage *d)
  : IndexBase(ib->db, *b)
 {
   bst = new(d) IndexBinaryStorage();
-  compare = !bst->cmprId && !ib->st->keySz ? cmprKey : cmprFns[bst->cmprId];
+  compare = cmprFns[bst->cmprId];
   init();
 }
 
@@ -3098,6 +3098,17 @@ UnmakeRoot()
 }
 
 void Db::IndexBase::
+chkLastReset()
+{
+  lastOp = opFind;
+  lastAccess.id = lastDelete.id = lastInsert.id =
+    lastFind.id = lastNext.id = NIL;
+  lastAccess.offset = lastDelete.offset = lastInsert.offset =
+    lastFind.offset = lastNext.offset = 0;
+  cFindCount = cDelCount = cInsCount = 0;
+}
+
+void Db::IndexBase::
 chkLastInsert()
 {
   if( lastAccess.id >= 0 && lastAccess.id == lastInsert.id )
@@ -3217,7 +3228,7 @@ Db::IndexBase::
  */
 
 int Db::
-objectHeapInsert(int sz,int id,int offset)
+objectHeapInsert(int sz,int id,int offset,AllocCache &cache)
 {
   freeSpaceRecord free;
   free.size = sz;  free.id = id;  free.offset = offset;
@@ -3241,7 +3252,7 @@ objectHeapInsert(int sz,int id,int offset)
  */
 
 int Db::
-objectHeapDelete(int sz,int id,int offset)
+objectHeapDelete(int sz,int id,int offset,AllocCache &cache)
 {
   freeSpaceRecord free;
   free.size = sz;  free.id = id;  free.offset = offset;
@@ -3278,7 +3289,7 @@ pgRefGet(int &size, pgRef &loc, AllocCache &cache)
     if( status == errNotFound ) return 1;
     if_err( status );
   }
-  if_err( objectHeapDelete(find.size,find.id,find.offset) );
+  if_err( objectHeapDelete(find.size,find.id,find.offset,cache) );
   loc.id = find.id;
   loc.offset = find.offset ? find.offset : sizeof(pagePrefix);
   Page &pg = *get_page(loc.id);
@@ -3286,7 +3297,7 @@ pgRefGet(int &size, pgRef &loc, AllocCache &cache)
   if( ofs > pg->used ) pg->used = ofs;
   int sz = find.offset+find.size - ofs;
   if( sz >= min_heap_allocation ) {
-    //if_err( objectHeapInsert(sz,find.id,ofs) );
+    //if_err( objectHeapInsert(sz,find.id,ofs,cache) );
     if_err( cache.Load(this, find.id, ofs, sz) );
   }
   else
@@ -3324,7 +3335,7 @@ pgRefNew(int &size, pgRef &loc, AllocCache &cache)
   int used = loc.offset + size;
   int free = pg->allocated - used;
   if( free >= min_heap_allocation ) {
-    //if_err( objectHeapInsert(free,id,used) );
+    //if_err( objectHeapInsert(free,id,used,cache) );
     if_err( cache.Load(this, id, used, free) );
   }
   else
@@ -3403,7 +3414,7 @@ objectAllocate(int typ, int &size, pgRef &loc, AllocCache &cache)
  * returns zero on success, error code on failure
  */
 
-int Db::objectFree(pgRef &loc)
+int Db::objectFree(pgRef &loc,AllocCache &cache)
 {
   allocPrefix *mp;
   if_err( addrRead_(loc,mp) );
@@ -3428,14 +3439,14 @@ int Db::objectFree(pgRef &loc)
   /* merge with prev if possible */
   if( prev.id == addr.id &&
     prev.offset + prev.size == addr.offset ) {
-    if_err( objectHeapDelete(prev.size,prev.id,prev.offset) );
+    if_err( objectHeapDelete(prev.size,prev.id,prev.offset,cache) );
     addr.offset = prev.offset;
     addr.size += prev.size;
   }
   /* merge with next if possible */
   if( addr.id == next.id &&
       addr.offset + addr.size == next.offset ) {
-    if_err( objectHeapDelete(next.size,next.id,next.offset) );
+    if_err( objectHeapDelete(next.size,next.id,next.offset,cache) );
     addr.size += next.size;
   }
   /* reduce used block bytes if possible */
@@ -3446,7 +3457,7 @@ int Db::objectFree(pgRef &loc)
   if( pg->used == sizeof(pagePrefix) )
     pg.release();
   else
-    if_err( objectHeapInsert(addr.size,addr.id,addr.offset) );
+    if_err( objectHeapInsert(addr.size,addr.id,addr.offset,cache) );
   return 0;
 }
 
@@ -3543,6 +3554,14 @@ blockRelease(pageId pid)
 {
   Page *pp = db->get_page(pid);
   return pp->release();
+}
+
+int Db::IndexBase::
+blockLoad(pageId pid)
+{
+  pgRef loc;  char *op = 0;
+  loc.id = pid;  loc.offset = 0;
+  return db->addrRead(loc, op);
 }
 
 /*** int Db::deleteFreeBlock()
@@ -3847,7 +3866,7 @@ int Db::AllocCache::
 cacheFlush(Db *db)
 {
   if( loc.id >= 0 ) {
-    if_ret( db->objectHeapInsert(avail,loc.id,loc.offset) );
+    if_ret( db->objectHeapInsert(avail,loc.id,loc.offset,*this) );
     loc.id = NIL;
   }
   return 0;
@@ -3880,7 +3899,7 @@ Load(Db *db, pageId id, int ofs, int sz)
 {
   if( loc.id >= 0 ) {
     if( avail > sz ) {
-      if_ret( db->objectHeapInsert(sz,id,ofs) );
+      if_ret( db->objectHeapInsert(sz,id,ofs,*this) );
       return 0;
     }
     cacheFlush(db);
@@ -3889,15 +3908,31 @@ Load(Db *db, pageId id, int ofs, int sz)
   return 0;
 }
 
+void Db::
+cacheDelete(AllocCache &cache)
+{
+  freeSpaceRecord free;
+  if( !freeSpaceIndex->First(&free,0) ) do {
+//    printf("free=%04lx %d/%d\n", free.size,free.id,free.offset);
+    objectHeapInsert(free.size, free.id, free.offset,alloc_cache);
+  } while( !freeSpaceIndex->Next(&free,0) );
+  indecies[cache.freeIdx]->Clear();
+  indecies[cache.addrIdx]->Clear();
+  del_index(cache.freeIdx);
+  del_index(cache.addrIdx);
+  cache.freeIdx = -1;
+  cache.addrIdx = -1;
+}
+
 int Db::cache_all_flush()
 {
-  if_err( cacheFlush() );
   Entity e(this);  EntityLoc &ent = e.ent;  int ret;
   if( !(ret=entityIdIndex->First(0,&ent.obj)) ) do {
     if_err( ent.cacheFlush() );
   } while( !(ret=entityIdIndex->Next(0,&ent.obj)) );
   if( ret == errNotFound ) ret = 0;
   if_err( ret );
+  if_err( cacheFlush() );
   return 0;
 }
 
@@ -3924,7 +3959,7 @@ deallocate(pgRef &loc, AllocCache &cache)
   locked by(db_info->objAlLk);
   cache.cacheFlush(this);
   if( loc.id < 0 ) return 0;
-  if_fail( objectFree(loc) );
+  if_fail( objectFree(loc, cache) );
   loc.id = NIL;  loc.offset = 0;
   return 0;
 }
@@ -4388,6 +4423,7 @@ start_transaction(int undo_save)
   for( int idx=0; idx<root_info->indeciesUsed; ++idx ) {
     IndexBase *bip = indecies[idx];
     if( !bip ) continue;
+    bip->chkLastReset();
     pageId r = bip->st->rootPageId;
     if( r < 0 ) continue;
     if( r != bip->st->rightHandSide ) continue;
@@ -4577,9 +4613,11 @@ icommit(int force)
       if( pg->used )
         if_err( pageWrite(pg) );
     }
-    if( force < 0 ) {
-      pageDealloc(pg);
-      pg->set_flags(fl_rd);
+    if( force ) {
+      if( force < 0 || pg->type < pg_index || pg->type > max_index_type ) {
+        pageDealloc(pg);
+        pg->set_flags(fl_rd);
+      }
     }
   }
 
@@ -4739,6 +4777,14 @@ readRootInfo(int(Db::*fn)(char *dp,int sz))
       Err(errCorrupt);
     }
   }
+
+  // allocator
+  int fidx = get_index(".free");
+  if( fidx < 0 ) Err(errCorrupt);
+  int aidx = get_index(".addr");
+  if( aidx < 0 ) Err(errCorrupt);
+  alloc_cache.freeIdx = fidx;
+  alloc_cache.addrIdx = aidx;
 
   // pageTable data
   page_table_sz = root_info->pageTableUsed;
@@ -5402,49 +5448,55 @@ copy(Db *db, Objects objs)
   int id, n = db->root_info->indeciesUsed;
   for( id=usrIdx; id<n; ++id ) {
     IndexBase *ib = db->indecies[id];
-    if( ib && ib->st->type != idxNil ) {
-      int ret = 0;
-      switch( ib->st->type ) {
-      // copy binary index
-      case idxBin: {
-        IndexBinary *bidx = (IndexBinary *)ib;
+    if( !ib ) continue;
+    int ret = 0;
+    switch( ib->st->type ) {
+    // copy binary index
+    case idxBin: {
+      IndexBinary *bidx = (IndexBinary *)ib;
+      int idx = get_index(&bidx->st->name[0]);
+      if( idx < 0 ) {
         int kySz = bidx->st->keySz, dtSz = bidx->st->dataSz;
-        int idx = get_index(&bidx->st->name[0]);
-        if( idx < 0 )
-          idx = new_binary_index(&bidx->st->name[0], kySz, dtSz, bidx->compare);
+        idx = new_binary_index(&bidx->st->name[0], kySz, dtSz, bidx->compare);
         if_err( idx );
-        // ignore empty indecies
-        if( bidx->st->rootPageId >= 0 ) {
-          // entity id indecies are processed below
-          if( db->entityNmIndex->Find(&ib->st->name[0],0) != 0 ) {
-            IndexBinary *bip = (IndexBinary *)indecies[idx];
-            // use cmprLast since index is in-order. Avoids using
-            //   user defined class key cmprs and compare functions.
-            bip->compare = cmprLast;
-            ret = bidx->keyCopy(bidx->st->rootPageId, indecies[idx]);
-            bip->compare = cmprFns[bip->bst->cmprId];
-          }
-        }
-        break; }
-      // copy string index
-      case idxStr: {
-        IndexString *sidx = (IndexString *)ib;
-        int dtSz = sidx->st->dataSz;
-        int idx = get_index(&sidx->st->name[0]);
-        if( idx < 0 )
-          idx = new_string_index(&sidx->st->name[0], dtSz);
-        if_err( idx );
-        // copy key/data
-        if( sidx->st->rootPageId >= 0 )
-          ret = sidx->keyCopy(sidx->st->rootPageId, indecies[idx]);
-        break; }
       }
-      if_err( ret );
-      if_err( db->flush() );
-      if_err( commit(-1) );
+      IndexBase *bib = indecies[idx];
+      bib->st->key_type = ib->st->key_type;
+      // ignore empty indecies
+      if( bidx->st->rootPageId < 0 ) break;
+      // ignore allocator indecies
+      if( bidx->compare == Db::cmprFrSp ) break;
+      if( bidx->compare == Db::cmprAdSp ) break;
+      // entity id indecies are processed below
+      if( !db->entityNmIndex->Find(&ib->st->name[0],0) ) break;
+      IndexBinary *bip = (IndexBinary *)bib;
+      // use cmprLast since index is in-order. Avoids using
+      //   user defined class key cmprs and compare functions.
+      bip->compare = cmprLast;
+      bib->st->key_type = ktyBin;
+      ret = bidx->keyCopy(bidx->st->rootPageId, bib);
+      bip->compare = cmprFns[bip->bst->cmprId];
+      bib->st->key_type = ib->st->key_type;
+      break; }
+    // copy string index
+    case idxStr: {
+      IndexString *sidx = (IndexString *)ib;
+      int idx = get_index(&sidx->st->name[0]);
+      if( idx < 0 ) {
+        int dtSz = sidx->st->dataSz;
+        idx = new_string_index(&sidx->st->name[0], dtSz);
+        if_err( idx );
+      }
+      IndexBase *bib = indecies[idx];
+      bib->st->key_type = ib->st->key_type;
+      if( sidx->st->rootPageId < 0 ) break;
+      // copy key/data
+      ret = sidx->keyCopy(sidx->st->rootPageId, bib);
+      break; }
     }
-    else
-      indecies[id] = 0;
+    if_err( ret );
+    if_err( db->flush() );
+    if_err( commit(-1) );
   }
   // copy entity indecies/data
   IndexBinary *eidx = (IndexBinary *)db->entityIdIndex;
@@ -5480,6 +5532,19 @@ copy(Db *db, Objects objs)
         EntityObj(*(EntityObj*)dent.addr(),eid);
       if_err( entityIdIndex->Insert(&eid,&nent.obj) );
       if_err( entityNmIndex->Insert(&name[0],&eid) );
+      // connect entity allocator
+      char idxNm[nmSz];  memset(idxNm,0,sizeof(idxNm));
+      strncpy(idxNm,name,sizeof(idxNm)-1);
+      strncat(idxNm,".free",sizeof(idxNm)-1);
+      int fidx = get_index(idxNm);
+      if( fidx < 0 ) Err(errCorrupt);
+      memset(idxNm,0,sizeof(idxNm));
+      strncpy(idxNm,name,sizeof(idxNm)-1);
+      strncat(idxNm,".addr",sizeof(idxNm)-1);
+      int aidx = get_index(idxNm);
+      if( aidx < 0 ) Err(errCorrupt);
+      nent->alloc_cache.freeIdx = fidx;
+      nent->alloc_cache.addrIdx = aidx;
     }
     else if( nid == eid )
       if_err( entityIdIndex->Find(&eid,&nent.obj) );
@@ -5593,7 +5658,7 @@ Db::CmprFn Db::cmprFns[] = {
   0,        cmprFrSt,
   cmprAdSt, cmprFrSp,
   cmprAdSp, cmprOIds,
-  cmprStr,  cmprKey,
+  cmprKey,  cmprStr,
   cmprLast,
 };
 
@@ -5606,15 +5671,33 @@ findCmprFn(CmprFn fn)
   return 0;
 }
 
+int Db::AllocCache::
+init_idx(Db *db,const char *nm)
+{
+  char idxNm[nmSz];
+  memset(idxNm,0,sizeof(idxNm));
+  snprintf(idxNm,sizeof(idxNm),"%s.free",nm);
+  int fidx = db->new_binary_index(idxNm, sizeof(freeSpaceRecord), 0, cmprFrSp);
+  if_ret( fidx );
+  memset(idxNm,0,sizeof(idxNm));
+  snprintf(idxNm,sizeof(idxNm),"%s.addr",nm);
+  int aidx = db->new_binary_index(idxNm, sizeof(addrSpaceRecord), 0, cmprAdSp);
+  if( aidx < 0 ) db->del_index(fidx);
+  if_ret( aidx );
+  freeIdx = fidx;  addrIdx = aidx;
+  loc.id = NIL;    loc.offset = 0;
+  avail = 0;
+  return 0;
+}
+
 int Db::
 init_idx()
 {
-  if_err( new_binary_index("freeStoreIndex", sizeof(freeStoreRecord), 0, cmprFrSt) );
-  if_err( new_binary_index("addrStoreIndex", sizeof(addrStoreRecord), 0, cmprAdSt) );
-  if_err( new_binary_index("freeSpaceIndex", sizeof(freeSpaceRecord), 0, cmprFrSp) );
-  if_err( new_binary_index("addrSpaceIndex", sizeof(addrSpaceRecord), 0, cmprAdSp) );
   if_err( new_binary_index("entityIdIndex", sizeof(int), sizeof(pgRef), cmprOIds) );
   if_err( new_binary_index("entityNmIndex", sizeof(char[nmSz]), sizeof(int), cmprStr) );
+  if_err( new_binary_index("freeStoreIndex", sizeof(freeStoreRecord), 0, cmprFrSt) );
+  if_err( new_binary_index("addrStoreIndex", sizeof(addrStoreRecord), 0, cmprAdSt) );
+  if_err( alloc_cache.init_idx(this,"") );
   return 0;
 }
 
@@ -5841,7 +5924,7 @@ new_entity_(Entity &entity, const char *nm, int sz)
   char name[nmSz];  memset(&name[0],0,sizeof(name));
   strncpy(name,nm,sizeof(name)-1);
   memmove(&ent->name[0],name,sizeof(name));
-  ent->alloc_cache.init();
+  if_err( ent->alloc_cache.init_idx(this,name) );
   ent->maxId = 0;
   ent->recdSz = sz;
   ent->count = 0;
@@ -5873,6 +5956,7 @@ del_entity(Entity &entity)
     } while( !(status=loc.NextId()) );
     if( status != errNotFound )
       if_err( status );
+    cacheDelete(ent->alloc_cache);
     for( int i=ent->nidxs; --i>=0; ) entity.del_index_(i);
     int id = ent->id;
     entityIdIndex->Delete(&id);
@@ -5935,7 +6019,7 @@ get_index(const char *nm, CmprFn cmpr)
 }
 
 int Db::Entity::
-add_index(int idx)
+add_index(int idx, int kty)
 {
   EntityLoc nent(this);
   // construct EntityObj
@@ -5957,6 +6041,8 @@ add_index(int idx)
   nent->nidxs = nidx+1;
   if_err( db->deallocate(ent.obj, db->alloc_cache) );
   ent.obj = nent.obj;
+  IndexBase *ib = db->indecies[idx];
+  ib->st->key_type = kty;
   return 0;
 }
 
@@ -6031,41 +6117,41 @@ size(varObj &vobj, int sz)
   return 0;
 }
 
+
+int Db::ObjectLoc::
+last(Index idx, ObjectLoc &last_loc)
+{
+  int id = -1;
+  if_ret( idx->Last(0,&id) );
+  if_err( last_loc.FindId(id) );
+  return 0;
+}
+
 // get last index id on member accessed with ip
 int Db::ObjectLoc::
 last(const char *nm,int (ObjectLoc::*ip)())
 {
-  int idx;  if_ret( idx = entity->get_index(nm) );
-  return last(idx, ip);
-}
-
-int Db::ObjectLoc::
-last(int idx,int (ObjectLoc::*ip)())
-{
+  Index idx = entity->index(nm);
+  if( !idx ) Err(errInvalid);
   ObjectLoc last_loc(*this);
-  int id, ret = entity->index(idx)->Last(0,&id);
-  if( ret < 0 ) return ret == errNotFound ? 0 : ret;
-  if_ret( entity->index(idxId)->Find((void*)&id, &last_loc.obj) );
+  int ret = last(idx, last_loc);
+  if( ret == errNotFound ) return 0;
+  if_err( ret );
   return (last_loc.*ip)();
 }
 
-// get last index unsigned id on member accessed with ip
 unsigned int Db::ObjectLoc::
 last(const char *nm,unsigned int (ObjectLoc::*ip)())
 {
-  int idx;  if_ret( idx = entity->get_index(nm) );
-  return last(idx, ip);
-}
-
-unsigned int Db::ObjectLoc::
-last(int idx,unsigned int (ObjectLoc::*ip)())
-{
+  Index idx = entity->index(nm);
+  if( !idx ) Err(errInvalid);
   ObjectLoc last_loc(*this);
-  int id, ret = entity->index(idx)->Last(0,&id);
-  if( ret < 0 ) return ret == errNotFound ? 0 : ret;
-  if_ret( entity->index(idxId)->Find((void*)&id, &last_loc.obj) );
+  int ret = last(idx, last_loc);
+  if( ret == errNotFound ) return 0;
+  if_err( ret );
   return (last_loc.*ip)();
 }
+
 
 #define cmpr_type(nm,ty) int Db::ObjectLoc:: \
 nm(const ty *ap, int asz, const ty *bp, int bsz) { \
@@ -6099,77 +6185,21 @@ cmpr_media(const unsigned char *ap, int asz, const unsigned char *bp, int bsz)
 }
 #endif
 
-int Db::iKey::
-Find()
-{
-  if( !idx ) Err(errInvalid);
-  int id;  if_fail( idx->Find(*this, &id) );
-  if_err( loc.entity->index(idxId)->Find(&id, &loc.obj) );
-  return 0;
+#define KeyFn(fn) { \
+  int id = -1; \
+  if_fail( idx->fn ); \
+  if_err( loc.FindId(id) ); \
+  return 0; \
 }
 
-int Db::iKey::
-Locate(int op)
-{
-  if( !idx ) Err(errInvalid);
-  int id;  if_fail( idx->Locate(op, *this,0, 0,&id) );
-  if_err( loc.entity->index(idxId)->Find(&id, &loc.obj) );
-  return 0;
-}
-
-int Db::rKey::
-First()
-{
-  if( !idx ) Err(errInvalid);
-  int id;  if_fail( idx->First(0,&id) );
-  if_err( loc.entity->index(idxId)->Find(&id, &loc.obj) );
-  return 0;
-}
-
-int Db::rKey::
-Last()
-{
-  if( !idx ) Err(errInvalid);
-  int id;  if_fail( idx->Last(0,&id) );
-  if_err( loc.entity->index(idxId)->Find(&id, &loc.obj) );
-  return 0;
-}
-
-int Db::rKey::
-Next()
-{
-  if( !idx ) Err(errInvalid);
-  int id;  if_fail( idx->Next(this,&id) );
-  if_err( loc.entity->index(idxId)->Find(&id, &loc.obj) );
-  return 0;
-}
-
-int Db::rKey::
-First(pgRef &pos)
-{
-  if( !idx ) Err(errInvalid);
-  int id;  if_fail( idx->First(pos,0,&id) );
-  if_err( loc.entity->index(idxId)->Find(&id, &loc.obj) );
-  return 0;
-}
-
-int Db::rKey::
-Next(pgRef &pos)
-{
-  if( !idx ) Err(errInvalid);
-  int id;  if_fail( idx->Next(pos,this,&id) );
-  if_err( loc.entity->index(idxId)->Find(&id, &loc.obj) );
-  return 0;
-}
-
-int Db::rKey::
-Locate(int op)
-{
-  if( !idx ) Err(errInvalid);
-  int id;  if_fail( idx->Locate(op, *this,0, 0,&id) );
-  if_err( loc.entity->index(idxId)->Find(&id, &loc.obj) );
-  return 0;
-}
+int Db::iKey::Find() KeyFn(Find(*this, &id))
+int Db::iKey::Locate(int op) KeyFn(Locate(op, *this,0, 0,&id))
+int Db::rKey::First() KeyFn(First(0,&id))
+int Db::rKey::Last() KeyFn(Last(0,&id))
+int Db::rKey::Next() KeyFn(Next(this,&id))
+int Db::rKey::First(pgRef &pos) KeyFn(First(pos,0,&id))
+int Db::rKey::Next(pgRef &pos) KeyFn(Next(pos,this,&id))
+int Db::rKey::Locate(int op) KeyFn(Locate(op, *this,0, 0,&id))
 
 int Db::ioCmpr(const void *a, const void *b, void *c)
 {
@@ -6186,9 +6216,22 @@ int Db::load()
   pageId *pages = new pageId[npages];
   for( int i=0 ; i<npages; ++i ) pages[i] = i;
   qsort_r(pages, npages, sizeof(*pages), ioCmpr, this);
-  for( int i=0 ; i<npages; ++i )
-    pageLoad(pages[i], *get_page(pages[i]));
+  for( int i=0 ; i<npages; ++i ) {
+    pgRef loc;  char *op = 0;
+    loc.id = pages[i];  loc.offset = 0;
+    if_err( addrRead(loc, op) );
+  }
   delete [] pages;
+  return 0;
+}
+
+int Db::load_indecies()
+{
+  for( int i=0 ; i<indecies_sz; ++i ) {
+    Index idx = indecies[i];
+    if( !idx || idx->st->rootPageId < 0 ) continue;
+    if_err( idx->keyMap(idx->st->rootPageId, &Db::IndexBase::blockLoad) );
+  }
   return 0;
 }
 

@@ -45,6 +45,7 @@ case "$dir" in
     flac-devel libsndfile-devel libtheora-devel linux-firmware \
     ivtv-firmware libvorbis-devel texinfo xz-devel lzma-devel cmake git \
     autoconf automake
+#   ctags patch gcc-c++ perl::XML_Parser libtiff-devel python dvdauthor
   ;;
 "suse" | "leap")
   zypper -n install nasm gcc gcc-c++ zlib-devel texinfo libpng16-devel \

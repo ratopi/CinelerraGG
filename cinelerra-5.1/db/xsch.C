@@ -14,7 +14,7 @@ public:
   FILE *fp;  long pos;
   char line[MAX_LINE_SZ];
   int no;
-  iline(FILE *f) : fp(f), pos(0), no(0) {}
+  iline(FILE *f) : fp(f), pos(0), no(0) { line[0] = 0; }
   iline(iline &i) {
     fp = i.fp;  pos = i.pos;
     strcpy(line,i.line);  no = i.no;
@@ -74,9 +74,14 @@ public:
       (1<<ty_media),
     text_types = (1<<ty_text) |
       (1<<ty_tinytext) | (1<<ty_mediumtext) | (1<<ty_longtext),
+    integer_types = (1<<ty_boolean) | (1<<ty_bit) | (1<<ty_binary) |
+      (1<<ty_tinyint) | (1<<ty_smallint) | (1<<ty_decimal) |
+      (1<<ty_mediumint) | (1<<ty_integer) | (1<<ty_bigint),
+    double_types = (1<<ty_real) | (1<<ty_double) | (1<<ty_float),
   };
   int is_var() { return (var_types>>ty) & 1; }
-  int is_text() { return (text_types>>ty) & 1; }
+  int is_integer() { return (integer_types>>ty) & 1; }
+  int is_double() { return (double_types>>ty) & 1; }
   int length, zeroed, is_null, is_autoincr, is_binary, is_unsign, has_def;
   iobj *idx;
   eobjs eop;
@@ -95,39 +100,43 @@ class tobj {
 public:
   string *name;
   dobjs dop;
+  dobj *dobj_of(const char *knm);
 
-  tobj() : name(0), dop(0) {}
+  tobj() : name(0) {}
   ~tobj() {};
 };
 
 list<tobj*> tables;
 
+tobj *tobj_of(const char *tnm)
+{
+  list<tobj*>::iterator it = tables.begin();
+  list<tobj*>::iterator eit = tables.end();
+  while( it!=eit && *(*it)->name!=tnm ) ++it;
+  return it == eit ? 0 : *it;
+}
 
-class kobj {
-public:
-  string *name;
-
-  kobj(string *s) : name(s) {}
-  ~kobj() {};
-};
-
-typedef list<kobj> kobjs;
+dobj *tobj::dobj_of(const char *knm)
+{
+    dobjs::iterator eid = dop.end();
+    dobjs::iterator id = dop.begin();
+    while( id!=eid && *(*id)->name!=knm ) ++id;
+    return id == eid ? 0 : *id;
+}
 
 class iobj {
 public:
   string *name;
-  string *tbl;
-  list<string *> keys;
-  short unique;
-  short primary;
-  int length;
-
-  iobj() : name(0), tbl(0), unique(0), primary(0), length(-1) {}
+  tobj *tbl;
+  dobjs keys;
+  short unique, primary;
+  int is_dir;
+  int is_direct();
+  iobj() : name(0), tbl(0), unique(0), primary(0), is_dir(-1) {}
   ~iobj() {};
 };
 
 list<iobj*> indecies;
-
 
 class robj {
 public:
@@ -561,10 +570,10 @@ int xtype(ichar &cp, dobj *dp)
       dp->idx = idx;
       idx->name = new string(*dp->name);
       idx->name->push_back('_');
-      idx->tbl = new string(*dp->top->name);
+      idx->tbl = dp->top;
       idx->unique = unique;
       idx->primary = primary;
-      idx->keys.push_back(dp->name);
+      idx->keys.push_back(dp);
       indecies.push_back(idx);
       return 0;
     }
@@ -618,7 +627,11 @@ int table(ichar &cp, tobj *top)
   int ch = *tws(cp);  expect('(');
   for(;;) {
     dobj *dp = new dobj(top);
-    if( member(cp,dp) < 0 ) return -1;
+    if( member(cp,dp) < 0 ) {
+      printf("  err in %s/%s at %d\n",id->c_str(),dp->name->c_str(),cp.no);
+      delete dp;
+      return -1;
+    }
     top->dop.push_back(dp);
     if( (ch=*tws(cp)) == ')' ) break;
     expect(',');
@@ -634,6 +647,22 @@ int table(ichar &cp, tobj *top)
   return 0;
 }
 
+int iobj::is_direct()
+{
+  if( is_dir < 0 ) {
+    is_dir = 1;
+    dobjs::iterator ekey = keys.end();
+    dobjs::iterator key = keys.begin();
+    for( int i=0; key!=ekey; ++i ) {
+      dobj *dp = *key++;
+      if( dp->is_integer() ) continue;
+      if( dp->is_double() ) continue;
+      is_dir = 0; break;
+    }
+  }
+  return is_dir;
+}
+
 // scan (number)
 int keylen(ichar &cp, iobj *ip)
 {
@@ -645,7 +674,6 @@ int keylen(ichar &cp, iobj *ip)
       n = n*10 + ch;  ch = *++cp;
     }
     ch = *tws(cp);  expect(')');
-    ip->length = n;
   }
   return 0;
 }
@@ -659,14 +687,29 @@ int index(ichar &cp, iobj *iop)
   if( !(id=tid(cp)) ) return -1;
   if( *id != "On" ) return -1;
   if( !(id=tid(cp)) ) return -1;
-  iop->tbl = id;
+  tobj *tp = tobj_of(id->c_str());
+  if( !tp ) {
+    printf("index err On:%s at %d\n",id->c_str(),cp.no);
+    return -1;
+  }
+  iop->tbl = tp;
   int ch = *tws(cp);  expect('(');
   if( !(id=tid(cp)) ) return -1;
-  iop->keys.push_back(id);
+  dobj *dp = tp->dobj_of(id->c_str());
+  if( !dp ) {
+    printf("index err Key:%s/%s at %d\n",tp->name->c_str(),id->c_str(),cp.no);
+    return -1;
+  }
+  iop->keys.push_back(dp);
   if( keylen(cp,iop) < 0 ) return -1;
   while( *tws(cp) == ',' ) {
     if( !(id=tid(++cp)) ) return -1;
-    iop->keys.push_back(id);
+    dp = tp->dobj_of(id->c_str());
+    if( !dp ) {
+      printf("index err Key:%s/%s at %d\n",tp->name->c_str(),id->c_str(),cp.no);
+      return -1;
+    }
+    iop->keys.push_back(dp);
     if( keylen(cp,iop) < 0 ) return -1;
   }
   ch = *tws(cp);  expect(')');
@@ -716,6 +759,7 @@ int create(ichar &cp)
     iobj *iop = new iobj();
     if( index(cp, iop) < 0 ) {
       delete iop;
+      printf("== FAILED!\n");
       return -1;
     }
     if( modifier == unique ) iop->unique = 1;
@@ -726,48 +770,12 @@ int create(ichar &cp)
   return -1;
 }
 
-#if 0
-void put_args(FILE *sp, tobj *tp, iobj *ip)
-{
-  list<string*>::iterator ekey=ip->keys.end();
-  list<string*>::iterator key=ip->keys.begin();
-  if( key == ekey ) return;
-
-  for(;;) {
-    const char *knm = (*key)->c_str();
-
-    list<dobj*>::iterator eid = tp->dop.end();
-    list<dobj*>::iterator id = tp->dop.begin();
-    while( id!=eid && *(*id)->name!=knm ) ++id;
-    if( id == eid ) {
-      fprintf(stderr,"  error: cant find index key %s in %s\n",knm,tp->name->c_str());
-      continue;
-    }
-
-    dobj *dp = *id;
-    const char *nm = dp->name->c_str();
-    fprintf(sp,"%s::t_%s &%s",tp->name->c_str(),nm,nm);
-    if( ++key == ekey ) break;
-    fprintf(sp, ", ");
-  }
-}
-#endif
-
-#if 0
-void varg_dobj(FILE *sp, dobj *dp, const char *ty, int is_unsign=-1)
-{
-  if( is_unsign < 0 ) is_unsign = dp->is_unsign;
-  if( is_unsign > 0 ) fprintf(sp, "unsigned ");
-  fprintf(sp,"%s *%s", ty, dp->name->c_str());
-}
-#else
 void varg_dobj(FILE *sp, dobj *dp, const char *ty, int is_unsign=-1)
 {
   const char *tnm = dp->top->name->c_str();
   const char *nm = dp->name->c_str();
   fprintf(sp,"const %sObj::t_%s &%s", tnm, nm, nm);
 }
-#endif
 
 void arg_dobj(FILE *sp, dobj *dp, const char *ty, int is_unsign=-1)
 {
@@ -820,32 +828,24 @@ void arg_dobj(FILE *sp, dobj *dp)
 
 void put_targs(FILE *sp, tobj *tp, iobj *ip)
 {
-  list<string*>::iterator ekey=ip->keys.end();
-  list<string*>::iterator key=ip->keys.begin();
+  dobjs::iterator ekey=ip->keys.end();
+  dobjs::iterator key=ip->keys.begin();
 
-  for( ; key != ekey; ) {
-    const char *knm = (*key)->c_str();  ++key;
-    list<dobj*>::iterator eid = tp->dop.end();
-    list<dobj*>::iterator id = tp->dop.begin();
-    while( id!=eid && *(*id)->name!=knm ) ++id;
-    if( id == eid ) {
-      fprintf(stderr,"  error: cant find index key %s in %s\n",knm,tp->name->c_str());
-      continue;
-    }
-    dobj *dp = *id;
-    if( dp->ty == dobj::ty_none ) {
+  while( key != ekey ) {
+    dobj *dp = *key++;
+    if( !dp || dp->ty == dobj::ty_none ) {
       fprintf(stderr," %s member %s error: ty_none\n",
         tp->name->c_str(),dp->name->c_str());
       continue;
     }
     fprintf(sp,"        ");
     arg_dobj(sp, dp);
-    if( key == ekey ) continue;
+    if( key == ekey ) break;
     fprintf(sp,",\n");
   }
 }
 
-void typ_dobj(FILE *sp, dobj *dp)
+const char *typ_dobj(dobj *dp)
 {
   const char *cp;
   switch( dp->ty ) {
@@ -882,27 +882,31 @@ void typ_dobj(FILE *sp, dobj *dp)
   case dobj::ty_media:     cp = "unsigned char"; break;
   default:                 cp = "unimplemented"; break;
   }
-  fprintf(sp,"%s",cp);
+  return cp;
+}
+
+void put_keysz(FILE *sp, tobj *tp, iobj *ip)
+{
+  dobjs::iterator ekey=ip->keys.end();
+  dobjs::iterator key=ip->keys.begin();
+  const char *tnm = tp->name->c_str();
+
+  while( key != ekey ) {
+    dobj *dp = *key++;
+    const char *nm = dp->name->c_str();
+    fprintf(sp," +sizeof(%sObj::t_%s)", tnm, nm);
+  }
+  if( ip->unique <= 0 ) fprintf(sp,"+sizeof(int)");
 }
 
 void put_keys(FILE *sp, tobj *tp, iobj *ip)
 {
-  list<string*>::iterator ekey=ip->keys.end();
-  list<string*>::iterator key=ip->keys.begin();
+  dobjs::iterator ekey = ip->keys.end();
+  dobjs::iterator key = ip->keys.begin();
   const char *tnm = tp->name->c_str();
 
-  for( ; key != ekey; ++key ) {
-    const char *knm = (*key)->c_str();
-
-    list<dobj*>::iterator eid = tp->dop.end();
-    list<dobj*>::iterator id = tp->dop.begin();
-    while( id!=eid && *(*id)->name!=knm ) ++id;
-    if( id == eid ) {
-      fprintf(stderr,"  error: cant find index key %s in %s\n", knm, tnm);
-      continue;
-    }
-
-    dobj *dp = *id;
+  while( key != ekey ) {
+    dobj *dp = *key++;
     const char *nm = dp->name->c_str();
     fprintf(sp,"    %sObj::t_%s v_%s;\n", tnm, nm, nm);
   }
@@ -911,27 +915,17 @@ void put_keys(FILE *sp, tobj *tp, iobj *ip)
 
 void put_init(FILE *sp, tobj *tp, iobj *ip)
 {
-  list<string*>::iterator ekey=ip->keys.end();
-  list<string*>::iterator key;
+  dobjs::iterator ekey = ip->keys.end();
+  dobjs::iterator key = ip->keys.begin();
 
-  for( key=ip->keys.begin(); key!=ekey; ++key ) {
-    const char *knm = (*key)->c_str();
-
-    list<dobj*>::iterator eid = tp->dop.end();
-    list<dobj*>::iterator id = tp->dop.begin();
-    while( id!=eid && *(*id)->name!=knm ) ++id;
-    if( id == eid ) {
-      fprintf(stderr,"  error: cant find index key %s in %s\n",knm,tp->name->c_str());
-      continue;
-    }
-
-    dobj *dp = *id;
+  while( key != ekey ) {
+    dobj *dp = *key++;
     const char *nm = dp->name->c_str();
     fprintf(sp,",\n      v_%s(%s)", nm, nm);
   }
 }
 
-void put_cmpr(FILE *sp, dobj *dp)
+const char *put_cmpr(dobj *dp)
 {
   const char *cp;
   switch( dp->ty ) {
@@ -968,67 +962,123 @@ void put_cmpr(FILE *sp, dobj *dp)
   case dobj::ty_media:     cp = "media"; break;
   default:                 cp = "unimplemented"; break;
   }
-  fprintf(sp,"%s",cp);
+  return cp;
 }
 
-void put_rcmpr(FILE *sp, tobj *tp, iobj *ip)
+void put_rkey(FILE *sp, tobj *tp, iobj *ip)
 {
-  list<string*>::iterator ekey=ip->keys.end();
-  list<string*>::iterator skey=ip->keys.begin();
-  list<string*>::iterator key;
+  dobjs::iterator ekey=ip->keys.end();
+  dobjs::iterator key=ip->keys.begin();
 
-  for( key=skey; key!=ekey; ++key ) {
-    const char *knm = (*key)->c_str();
-
-    list<dobj*>::iterator eid = tp->dop.end();
-    list<dobj*>::iterator id = tp->dop.begin();
-    while( id!=eid && *(*id)->name!=knm ) ++id;
-    if( id == eid ) {
-      fprintf(stderr,"  error: cant find index key %s in %s\n",knm,tp->name->c_str());
-      continue;
-    }
-
-    dobj *dp = *id;
+  while( key != ekey ) {
+    dobj *dp = *key++;
     const char *nm = dp->name->c_str();
-    fprintf(sp,"  v = cmpr_");  put_cmpr(sp,dp);
-    fprintf(sp,"( kloc._%s(), kloc->v_%s.size(),\n", nm, nm);
-    fprintf(sp,"                   vloc._%s(), vloc->v_%s.size());\n", nm, nm);
-    fprintf(sp,"  if( v != 0 ) return v;\n");
+    fprintf(sp,"  if( bp ) memcpy(cp, kloc._%s(), kloc.size_%s());\n", nm, nm);
+    fprintf(sp,"  cp += kloc.size_%s();\n", nm);
   }
   if( ip->unique <= 0 ) {
-    fprintf(sp,"  v = cmpr_int(kloc._id(), kloc._id_size(),\n");
-    fprintf(sp,"               vloc._id(), vloc._id_size());\n");
+    fprintf(sp,"  if( bp ) memcpy(cp, kloc._id(), kloc._id_size());\n");
+    fprintf(sp,"  cp += kloc._id_size();\n");
+  }
+}
+
+void dir_rcmpr(FILE *sp, tobj *tp, iobj *ip)
+{
+  dobjs::iterator ekey=ip->keys.end();
+  dobjs::iterator key=ip->keys.begin();
+
+  while( key != ekey ) {
+    dobj *dp = *key++;
+    fprintf(sp,"  { %s vv", typ_dobj(dp));
+    if( dp->length > 0 ) fprintf(sp, "[%d]", dp->length);
+    fprintf(sp,"; memcpy(&vv,b,sizeof(vv)); b += sizeof(vv);\n");
+    fprintf(sp,"    int v = cmpr_%s", put_cmpr(dp));
+    const char *nm = dp->name->c_str();
+    fprintf(sp,"( kloc._%s(), kloc->v_%s.size(), &vv", nm, nm);
+    if( dp->length > 0 ) fprintf(sp, "[0]");
+    fprintf(sp,", sizeof(vv));\n");
+    fprintf(sp,"    if( v != 0 ) return v; }\n");
+  }
+  if( ip->unique <= 0 ) {
+    fprintf(sp,"  int vid; memcpy(&vid,b,sizeof(vid)); b += sizeof(vid);\n");
+    fprintf(sp,"  int v = cmpr_int(kloc._id(), kloc._id_size(), &vid, sizeof(vid));\n");
     fprintf(sp,"  if( v != 0 ) return v;\n");
   }
 }
 
-void put_icmpr(FILE *sp, tobj *tp, iobj *ip)
+void ind_rcmpr(FILE *sp, tobj *tp, iobj *ip)
 {
-  list<string*>::iterator ekey=ip->keys.end();
-  list<string*>::iterator skey=ip->keys.begin();
-  list<string*>::iterator key;
+  fprintf(sp,"  int b_id; memcpy(&b_id,b,sizeof(b_id));\n");
+  fprintf(sp,"  if( kloc->id == b_id ) return 0;\n");
+  fprintf(sp,"  %sLoc vloc(kloc.entity);\n", tp->name->c_str());
+  fprintf(sp,"  if( vloc.FindId(b_id) )\n");
+  fprintf(sp,"    kloc.err_(Db::errCorrupt);\n");
+  dobjs::iterator ekey=ip->keys.end();
+  dobjs::iterator key=ip->keys.begin();
 
-  for( key=skey; key!=ekey; ++key ) {
-    const char *knm = (*key)->c_str();
-
-    list<dobj*>::iterator eid = tp->dop.end();
-    list<dobj*>::iterator id = tp->dop.begin();
-    while( id!=eid && *(*id)->name!=knm ) ++id;
-    if( id == eid ) {
-      fprintf(stderr,"  error: cant find index key %s in %s\n",knm,tp->name->c_str());
-      continue;
-    }
-
-    dobj *dp = *id;
+  while( key != ekey ) {
+    dobj *dp = *key++;
     const char *nm = dp->name->c_str();
-    fprintf(sp,"  v = cmpr_");  put_cmpr(sp,dp);
-    fprintf(sp,"( kp->v_%s.addr(), kp->v_%s.size(),\n", nm, nm);
-    fprintf(sp,"                  vloc._%s(), vloc->v_%s.size());\n", nm, nm);
-    fprintf(sp,"  if( v != 0 ) return v;\n");
+    fprintf(sp,"  { int v = cmpr_%s", put_cmpr(dp));
+    fprintf(sp,"( kloc._%s(), kloc->v_%s.size(),\n", nm, nm);
+    fprintf(sp,"                   vloc._%s(), vloc->v_%s.size());\n", nm, nm);
+    fprintf(sp,"    if( v != 0 ) return v; }\n");
+  }
+  if( ip->unique <= 0 ) {
+    fprintf(sp,"  { int v = cmpr_int(kloc._id(), kloc._id_size(),\n");
+    fprintf(sp,"               vloc._id(), vloc._id_size());\n");
+    fprintf(sp,"    if( v != 0 ) return v; }\n");
+  }
+}
+
+void dir_icmpr(FILE *sp, tobj *tp, iobj *ip)
+{
+  dobjs::iterator ekey=ip->keys.end();
+  dobjs::iterator key=ip->keys.begin();
+
+  while( key != ekey ) {
+    dobj *dp = *key++;
+    fprintf(sp,"  { %s vv", typ_dobj(dp));
+    if( dp->length > 0 ) fprintf(sp, "[%d]", dp->length);
+    fprintf(sp,"; memcpy(&vv,b,sizeof(vv)); b += sizeof(vv);\n");
+    fprintf(sp,"    int v = cmpr_%s", put_cmpr(dp));
+    const char *nm = dp->name->c_str();
+    fprintf(sp,"( kp->v_%s.addr(), kp->v_%s.size(), &vv", nm, nm);
+    if( dp->length > 0 ) fprintf(sp, "[0]");
+    fprintf(sp,", sizeof(vv));\n");
+    fprintf(sp,"    if( v != 0 ) return v; }\n");
   }
   if( ip->unique <= 0 ) {
     fprintf(sp,"  if( kp->v_id >= 0 ) {\n");
-    fprintf(sp,"    v = cmpr_int(&kp->v_id, sizeof(kp->v_id),\n");
+    fprintf(sp,"    int vid; memcpy(&vid,b,sizeof(vid)); b += sizeof(vid);\n");
+    fprintf(sp,"    int v = cmpr_int(&kp->v_id, sizeof(kp->v_id), &vid, sizeof(vid));\n");
+    fprintf(sp,"    if( v != 0 ) return v;\n");
+    fprintf(sp,"  }\n");
+  }
+}
+
+void ind_icmpr(FILE *sp, tobj *tp, iobj *ip)
+{
+  fprintf(sp,"  int b_id;  memcpy(&b_id,b,sizeof(b_id)); b += sizeof(b_id);\n");
+  if( ip->unique <= 0 ) fprintf(sp,"  if( kp->v_id == b_id ) return 0;\n");
+  fprintf(sp,"  %sLoc vloc(kp->loc.entity);\n", tp->name->c_str());
+  fprintf(sp,"  if( vloc.FindId(b_id) )\n");
+  fprintf(sp,"    vloc.err_(Db::errCorrupt);\n");
+
+  dobjs::iterator ekey=ip->keys.end();
+  dobjs::iterator key=ip->keys.begin();
+
+  while( key != ekey ) {
+    dobj *dp = *key++;
+    const char *nm = dp->name->c_str();
+    fprintf(sp,"  { int v = cmpr_%s", put_cmpr(dp));
+    fprintf(sp,"( kp->v_%s.addr(), kp->v_%s.size(),\n", nm, nm);
+    fprintf(sp,"                  vloc._%s(), vloc->v_%s.size());\n", nm, nm);
+    fprintf(sp,"    if( v != 0 ) return v; }\n");
+  }
+  if( ip->unique <= 0 ) {
+    fprintf(sp,"  if( kp->v_id >= 0 ) {\n");
+    fprintf(sp,"    int v = cmpr_int(&kp->v_id, sizeof(kp->v_id),\n");
     fprintf(sp,"                 vloc._id(), vloc._id_size());\n");
     fprintf(sp,"    if( v != 0 ) return v;\n");
     fprintf(sp,"  }\n");
@@ -1143,6 +1193,15 @@ int main(int ac, char **av)
   list<tobj*>::iterator eit = tables.end();
   list<tobj*>::iterator it;
 
+  list<iobj*>::iterator sidx = indecies.begin();
+  list<iobj*>::iterator eidx = indecies.end();
+  list<iobj*>::iterator idx;
+
+  for( idx=sidx; idx!=eidx; ++idx ) {
+      iobj *ip = *idx;
+      ip->is_dir = ip->is_direct();
+  }
+
   int i=0;
   for( it=sit ; it!=eit; ++i, ++it ) {
     tobj *tp = *it;
@@ -1171,21 +1230,21 @@ int main(int ac, char **av)
     fprintf(sp,"};\n");
     fprintf(sp,"\n");
 
-    list<iobj*>::iterator sidx=indecies.begin();
-    list<iobj*>::iterator eidx=indecies.end();
-    list<iobj*>::iterator idx;
-
     int j = 0, n = 0;
     for( idx=sidx; idx!=eidx; ++idx ) {
-      if( *(*idx)->tbl != *(*it)->name ) continue;
+      iobj *ip = *idx;
+      if( ip->tbl != tp ) continue;
       ++n;
-      printf("   %2d.%d. %s on %s(",i,j++,
-        (*idx)->name->c_str(),(*idx)->tbl->c_str());
-      list<string*>::iterator skey=(*idx)->keys.begin();
-      list<string*>::iterator ekey=(*idx)->keys.end();
-      list<string*>::iterator key;
-      for( key=skey; key!=ekey; ++key )
-        printf(" %s", (*key)->c_str());
+      printf("   %2d.%d%c %s on %s(",i,j++,
+        ip->is_dir>0 ? '=' : '.',
+        ip->name->c_str(),tp->name->c_str());
+      dobjs::iterator ekey=ip->keys.end();
+      dobjs::iterator key=ip->keys.begin();
+
+      while( key != ekey ) {
+        dobj *dp = *key++;
+        printf(" %s", dp->name->c_str());
+      }
       printf(" )\n");
     }
     if( n > 0 ) printf("\n");
@@ -1203,25 +1262,32 @@ int main(int ac, char **av)
     }
 
     for( idx=sidx; idx!=eidx; ++idx ) {
-      if( *(*idx)->tbl != *(*it)->name ) continue;
-      const char *knm = (*idx)->name->c_str();
+      iobj *ip = *idx;
+      if( ip->tbl != tp ) continue;
+      const char *knm = ip->name->c_str();
+      fprintf(sp,"\n");
+      fprintf(sp,"  class key_%s { public:\n", knm);
+      fprintf(sp,"    static const int size() { return 0");
+      put_keysz(sp, *it, ip);
+      fprintf(sp,"; }\n");
+      fprintf(sp,"  };\n");
       fprintf(sp,"\n");
       fprintf(sp,"  class ikey_%s : public Db::iKey { public:\n", knm);
-      put_keys(sp, *it, *idx);
-      fprintf(sp,"    static int cmpr(char *a, char *b);\n");
+      put_keys(sp, *it, ip);
+      fprintf(sp,"    static int icmpr(char *a, char *b);\n");
       // key constructors
       fprintf(sp,"    ikey_%s(ObjectLoc &loc,\n", knm);
-      put_targs(sp, *it, *idx);
-      if( (*idx)->unique <= 0 ) fprintf(sp,", int id=-1");
-      fprintf(sp,")\n    : iKey(\"%s\",loc,cmpr)", knm);
-      put_init(sp, *it, *idx);
-      if( (*idx)->unique <= 0 ) fprintf(sp,",\n      v_id(id)");
+      put_targs(sp, *it, ip);
+      if( ip->unique <= 0 ) fprintf(sp,", int id=-1");
+      fprintf(sp,")\n    : iKey(\"%s\",loc,icmpr)", knm);
+      put_init(sp, *it, ip);
+      if( ip->unique <= 0 ) fprintf(sp,",\n      v_id(id)");
       fprintf(sp," {}\n");
       fprintf(sp,"  };\n");
       fprintf(sp,"  class rkey_%s : public Db::rKey { public:\n", knm);
-      fprintf(sp,"    static int cmpr(char *a, char *b);\n");
-      fprintf(sp,"    rkey_%s(ObjectLoc &loc) : rKey(\"%s\",loc,cmpr)", knm, knm);
-      fprintf(sp," {}\n");
+      fprintf(sp,"    static int rcmpr(char *a, char *b);\n");
+      fprintf(sp,"    rkey_%s(ObjectLoc &loc) : rKey(\"%s\",loc,rcmpr) {}\n", knm, knm);
+      fprintf(sp,"    int wr_key(char *cp=0);\n");
       fprintf(sp,"  };\n");
     }
     fprintf(sp,"\n");
@@ -1272,39 +1338,34 @@ int main(int ac, char **av)
   for( it=sit ; it!=eit; ++it ) {
     tobj *tp = *it;
     const char * tnm = tp->name->c_str();
-    list<iobj*>::iterator sidx=indecies.begin();
-    list<iobj*>::iterator eidx=indecies.end();
-    list<iobj*>::iterator idx;
 
     for( idx=sidx; idx!=eidx; ++idx ) {
-      if( *(*idx)->tbl != *(*it)->name ) continue;
-      const char *knm = (*idx)->name->c_str();
+      iobj *ip = *idx;
+      if( ip->tbl != tp ) continue;
+      const char *knm = ip->name->c_str();
       fprintf(sp,"\n");
       fprintf(sp,"int %sLoc::ikey_%s::\n", tnm, knm);
-      fprintf(sp,"cmpr(char *a, char *b)\n");
+      fprintf(sp,"icmpr(char *a, char *b)\n");
       fprintf(sp,"{\n");
       fprintf(sp,"  ikey_%s *kp = (ikey_%s *)a;\n", knm, knm);
-      fprintf(sp,"  int v = *(int*)b;\n");
-      if( (*idx)->unique <= 0 ) fprintf(sp,"  if( kp->v_id == v ) return 0;\n");
-      fprintf(sp,"  %sLoc vloc(kp->loc.entity);\n", tnm);
-      fprintf(sp,"  if( vloc.FindId(v) )\n");
-      fprintf(sp,"    vloc.err_(Db::errCorrupt);\n");
-      put_icmpr(sp, tp, *idx);
+      (ip->is_dir>0 ? dir_icmpr : ind_icmpr)(sp, tp, ip);
       fprintf(sp,"  return 0;\n");
       fprintf(sp,"}\n");
-      fprintf(sp,"\n");
       fprintf(sp,"int %sLoc::rkey_%s::\n", tnm, knm);
-      fprintf(sp,"cmpr(char *a, char *b)\n");
+      fprintf(sp,"rcmpr(char *a, char *b)\n");
       fprintf(sp,"{\n");
       fprintf(sp,"  rkey_%s *kp = (rkey_%s *)a;\n", knm, knm);
       fprintf(sp,"  %sLoc &kloc = (%sLoc&)kp->loc;\n", tnm, tnm);
-      fprintf(sp,"  int v = kloc->id, b_id = *(int*)b;\n");
-      fprintf(sp,"  if( v == b_id ) return 0;\n");
-      fprintf(sp,"  %sLoc vloc(kloc.entity);\n", tnm);
-      fprintf(sp,"  if( vloc.FindId(b_id) )\n");
-      fprintf(sp,"    kloc.err_(Db::errCorrupt);\n");
-      put_rcmpr(sp, tp, *idx);
+      (ip->is_dir>0 ? dir_rcmpr : ind_rcmpr)(sp, tp, ip);
       fprintf(sp,"  return 0;\n");
+      fprintf(sp,"}\n");
+      fprintf(sp,"int %sLoc::rkey_%s::\n", tnm, knm);
+      fprintf(sp,"wr_key(char *bp)\n");
+      fprintf(sp,"{\n");
+      fprintf(sp,"  char *cp = bp;\n");
+      fprintf(sp,"  %sLoc &kloc = (%sLoc&)loc;\n", tnm, tnm);
+      put_rkey(sp, tp, ip);
+      fprintf(sp,"  return cp-bp;\n");
       fprintf(sp,"}\n");
     }
     fprintf(sp,"\n");
@@ -1344,10 +1405,10 @@ int main(int ac, char **av)
       const char *dnm = dp->name->c_str();
       if( dp->is_autoincr > 0 && dp->idx ) {
         const char *inm = dp->idx->name->c_str();
-        fprintf(sp,"  { ");  typ_dobj(sp, dp);
+        fprintf(sp,"  { %s", typ_dobj(dp));
         fprintf(sp," (%sLoc::*fn)() = &%sLoc::%s;\n", tnm, tnm, dnm);
-        fprintf(sp,"    "); typ_dobj(sp, dp);
-        fprintf(sp," v = last(\"%s\",(", inm); typ_dobj(sp, dp);
+        fprintf(sp,"    %s", typ_dobj(dp));
+        fprintf(sp," v = last(\"%s\",(%s", inm, typ_dobj(dp));
         fprintf(sp," (Db::ObjectLoc::*)())fn);  %s(v+1); }\n", dnm);
       }
       if( dp->has_def > 0 ) {
@@ -1400,7 +1461,7 @@ int main(int ac, char **av)
           case dobj::ty_mediumblob:
           case dobj::ty_longblob:
           case dobj::ty_media: {
-            fprintf(sp,"  %s((", dnm); typ_dobj(sp,dp);
+            fprintf(sp,"  %s((%s", dnm, typ_dobj(dp));
             fprintf(sp," *)\"%s\",%d);\n", dp->def.s->c_str(), (int)dp->def.s->size());
             break; }
           default:
@@ -1421,11 +1482,11 @@ int main(int ac, char **av)
     fprintf(sp,"  if_err( construct() );\n");
     n = 0;
     for( idx=sidx; idx!=eidx; ++idx ) {
-      if( *(*idx)->tbl != *(*it)->name ) continue;
-      if( !n++ ) fprintf(sp,"  int id = this->id();\n");
-      const char *knm = (*idx)->name->c_str();
+      iobj *ip = *idx;
+      if( ip->tbl != tp ) continue;
+      const char *knm = ip->name->c_str();
       fprintf(sp,"  { rkey_%s rkey(*this);\n",knm);
-        fprintf(sp,"    if_err( entity->index(\"%s\")->Insert(rkey,&id) ); }\n",knm);
+      fprintf(sp,"    if_err( entity->index(\"%s\")->Insert(rkey,(void*)_id()) ); }\n", knm);
     }
     fprintf(sp,"  if_err( insertCascade() );\n");
     fprintf(sp,"  return 0;\n");
@@ -1435,8 +1496,9 @@ int main(int ac, char **av)
     fprintf(sp,"{\n");
     fprintf(sp,"  if_err( deleteProhibit() );\n");
     for( idx=sidx; idx!=eidx; ++idx ) {
-      if( *(*idx)->tbl != *(*it)->name ) continue;
-      const char *knm = (*idx)->name->c_str();
+      iobj *ip = *idx;
+      if( ip->tbl != tp ) continue;
+      const char *knm = ip->name->c_str();
       fprintf(sp,"  { rkey_%s rkey(*this);\n",knm);
       fprintf(sp,"    if_err( entity->index(\"%s\")->Delete(rkey) ); }\n",knm);
     }
@@ -1492,13 +1554,15 @@ int main(int ac, char **av)
     tobj *tp = *it;
     const char *tnm = tp->name->c_str();
     fprintf(sp,"  if_ret( %s.new_entity(\"%s\", sizeof(%sObj)) );\n", tnm, tnm, tnm);
-    list<iobj*>::iterator sidx=indecies.begin();
-    list<iobj*>::iterator eidx=indecies.end();
-    list<iobj*>::iterator idx;
     for( idx=sidx; idx!=eidx; ++idx ) {
-      if( *(*idx)->tbl != *(*it)->name ) continue;
-      const char *nm = (*idx)->name->c_str();
-      fprintf(sp,"  if_ret( %s.add_kindex(\"%s\") );\n", tnm, nm);
+      iobj *ip = *idx;
+      if( ip->tbl != tp ) continue;
+      const char *nm = ip->name->c_str();
+      if( ip->is_dir > 0 )
+        fprintf(sp,"  if_ret( %s.add_dir_index(\"%s\", %sLoc::key_%s::size()) );\n",
+          tnm, nm, tnm, nm);
+      else
+        fprintf(sp,"  if_ret( %s.add_ind_index(\"%s\") );\n", tnm, nm);
     }
     fprintf(sp,"\n");
   }
@@ -1576,13 +1640,11 @@ int main(int ac, char **av)
     tobj *tp = *it;
     const char *tnm = tp->name->c_str();
     fprintf(sp,"  if_ret( %s.get_entity(\"%s\") );\n", tnm, tnm);
-    list<iobj*>::iterator sidx=indecies.begin();
-    list<iobj*>::iterator eidx=indecies.end();
-    list<iobj*>::iterator idx;
     for( idx=sidx; idx!=eidx; ++idx ) {
-      if( *(*idx)->tbl != *(*it)->name ) continue;
-      const char *nm = (*idx)->name->c_str();
-      fprintf(sp,"  if_ret( %s.key_index(\"%s\") );\n", tnm, nm);
+      iobj *ip = *idx;
+      if( ip->tbl != tp ) continue;
+      const char *nm = ip->name->c_str();
+      fprintf(sp,"  if_ret( %s.get_index(\"%s\") );\n", tnm, nm);
     }
     fprintf(sp,"\n");
   }

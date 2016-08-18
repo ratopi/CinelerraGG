@@ -114,6 +114,14 @@ void TrackScroll::set_position()
 	if( max_pos < 0 ) max_pos = 0;
 	if( mwindow->edl->local_session->track_start[pane->number] > max_pos )
 		mwindow->edl->local_session->track_start[pane->number] = max_pos;
+	if( pane->number == TOP_RIGHT_PANE ) {
+		if( mwindow->edl->local_session->track_start[TOP_LEFT_PANE] > max_pos )
+			mwindow->edl->local_session->track_start[TOP_LEFT_PANE] = max_pos;
+	}
+	else if( pane->number == BOTTOM_RIGHT_PANE ) {
+		if( mwindow->edl->local_session->track_start[BOTTOM_LEFT_PANE] > max_pos )
+			mwindow->edl->local_session->track_start[BOTTOM_LEFT_PANE] = max_pos;
+	}
 	update_length(
 		mwindow->edl->get_tracks_height(mwindow->theme),
 		mwindow->edl->local_session->track_start[pane->number],

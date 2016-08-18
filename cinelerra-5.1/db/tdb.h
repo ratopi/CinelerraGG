@@ -6,12 +6,12 @@
 #include <limits.h>
 #include <sys/types.h>
 
-#define freeStoreIndex indecies[freeStoreIdx]
-#define addrStoreIndex indecies[addrStoreIdx]
-#define freeSpaceIndex indecies[freeSpaceIdx]
-#define addrSpaceIndex indecies[addrSpaceIdx]
 #define entityIdIndex indecies[entityIdIdx]
 #define entityNmIndex indecies[entityNmIdx]
+#define freeStoreIndex indecies[freeStoreIdx]
+#define addrStoreIndex indecies[addrStoreIdx]
+#define freeSpaceIndex indecies[cache.freeIdx]
+#define addrSpaceIndex indecies[cache.addrIdx]
 
 #define noThrow std::nothrow
 #ifndef likely
@@ -430,15 +430,17 @@ private:
     root_info_offset=4,
     root_info_extra_pages = 2,
     idxNil=0, idxBin=1, idxStr=2,
+    ktyBin=0, ktyInd=1, ktyDir=2,
     opDelete=-1, opFind=0, opInsert=1,
     pg_unknown=0, pg_root_info=1, pg_free=2,
     pg_entity=0x0100, pg_index=0x1000,
     max_entity_type = pg_index-pg_entity-1,
     max_index_type = 0x10000-pg_index-1,
     min_heap_allocation = 32,
-    freeStoreIdx = 0, addrStoreIdx = 1,
-    freeSpaceIdx = 2, addrSpaceIdx = 3,
-    entityIdIdx = 4, entityNmIdx = 5, usrIdx = 6,
+    entityIdIdx = 0, entityNmIdx = 1,
+    freeStoreIdx = 2, addrStoreIdx = 3,
+    freeSpaceIdx = 4, addrSpaceIdx = 5,
+    usrIdx = 6,
     fl_wr=1, fl_rd=2, fl_new=4, fl_free=8,
     defaultNoShm = 1,
     defaultStoreBlockSize = 8192,
@@ -556,7 +558,8 @@ private:
   class IndexTypeInfo {
   public:
     int magic;
-    int type;                      /* type of index */
+    short type;                    /* type of index */
+    short key_type;
     char name[nmSz];               /* index string identifier */
   };
 
@@ -620,7 +623,9 @@ private:
     }
     int blockFree(pageId pid);
     int blockRelease(pageId pid);
+    int blockLoad(pageId pid);
     int deleteFreeBlocks();
+    void chkLastReset();
     void chkLastInsert();
     void chkLastDelete();
     void chkLastFind(pgRef &last);
@@ -715,7 +720,13 @@ private:
     int Next(void *rtnKey,void *rtnData) {
       return IndexBase::Next(rtnKey,rtnData);
     }
-
+    void wr_key(void *kp, char *bp, int sz) {
+      switch( st->key_type ) {
+      case ktyBin: memcpy(bp,kp,sz); break;
+      case ktyDir:
+      case ktyInd: ((Key *)kp)->wr_key(bp); break;
+      }
+    }
     char *ikey() { return iky; }
     char *tkey() { return tky; }
   public:
@@ -846,6 +857,7 @@ private:
   class AllocCache {
     pgRef loc;
     int avail;
+    friend class Db;
   public:
     int cacheFlush(Db *db);
     int Get(Db *db,int &size, pgRef &ref);
@@ -857,10 +869,12 @@ private:
     void dmp() {
       printf("loc: %d/%d  avl: %d\n", loc.id,loc.offset,avail);
     }
+    int freeIdx, addrIdx;
+    int init_idx(Db *db, const char *nm);
   } alloc_cache;
-  int cacheFlush() {
-    return alloc_cache.cacheFlush(this);
-  }
+
+  int cacheFlush() { return alloc_cache.cacheFlush(this); }
+  void cacheDelete(AllocCache &cache);
   int cache_all_flush();
 
   class PageStorage {
@@ -1162,9 +1176,8 @@ public:
     int _fail_(int v) { return entity->db->_fail_(v); }
 #endif
 
-    int last(int idx,int (ObjectLoc::*ip)());
+    int last(Index idx,ObjectLoc &last_loc);
     int last(const char *nm,int (ObjectLoc::*ip)());
-    unsigned int last(int idx,unsigned int (ObjectLoc::*ip)());
     unsigned int last(const char *nm,unsigned int (ObjectLoc::*ip)());
   };
 
@@ -1173,6 +1186,7 @@ public:
     ObjectLoc &loc;
     Index idx;
     CmprFn cmpr;
+    virtual int wr_key(char *cp) = 0;
     Key(Index i, ObjectLoc &l, CmprFn c) : loc(l), idx(i), cmpr(c) {}
     Key(const char *nm, ObjectLoc &l, CmprFn c) : loc(l), cmpr(c) {
       idx = loc.entity->index(nm);
@@ -1187,23 +1201,24 @@ public:
 #endif
   };
 
-  class iKey : public Key {
-  public:
-    iKey(Index i, ObjectLoc &l, CmprFn c) : Key(i,l,c) {}
-    iKey(const char *nm, ObjectLoc &l, CmprFn c) : Key(nm,l,c) {}
-    int NextLoc(pgRef &pos) { return idx->NextLoc(pos); }
-    int Find();
-    int Locate(int op=keyGE);
-  };
-
   class rKey : public Key {
   public:
     rKey(Index i, ObjectLoc &l, CmprFn c) : Key(i,l,c) {}
     rKey(const char *nm, ObjectLoc &l, CmprFn c) : Key(nm,l,c) {}
+    virtual int wr_key(char *cp=0) { return -1; }
     int NextLoc(pgRef &pos) { return idx->NextLoc(pos); }
     int First();  int First(pgRef &pos);
     int Next();   int Next(pgRef &pos);
     int Last();
+    int Locate(int op=keyGE);
+  };
+
+  class iKey : protected rKey {
+  public:
+    iKey(Index i, ObjectLoc &l, CmprFn c) : rKey(i,l,c) {}
+    iKey(const char *nm, ObjectLoc &l, CmprFn c) : rKey(nm,l,c) {}
+    int NextLoc(pgRef &pos) { return idx->NextLoc(pos); }
+    int Find();
     int Locate(int op=keyGE);
   };
 
@@ -1269,7 +1284,6 @@ public:
     int deallocate(pgRef &obj) { return db->deallocate(obj,ent->alloc_cache); }
     int deallocate(ObjectLoc &loc) { return deallocate(loc.obj); }
     int get_index(const char *nm, CmprFn cmpr=0);
-    int key_index(const char *nm) { return get_index(nm,Db::cmprKey); }
     Index index(int i) { return db->indecies[ent->indexs[i]]; }
     Index index(const char *nm) {
       int idx = get_index(nm);
@@ -1277,17 +1291,26 @@ public:
     }
     int MaxId() { return ent->maxId; }
     int Count() { return ent->count; }
-    int add_index(int idx);
+    int add_index(int idx, int kty=ktyBin);
     int add_bindex(const char *nm,int keySz,int dataSz) {
       int idx = db->new_binary_index(nm,keySz,dataSz);
-      if_err( idx );  if_err( add_index(idx) );
-      return 0;
+      if_err( idx );  if_err( add_index(idx,ktyBin) );
+      return idx;
     }
-    int add_kindex(const char *nm) { return add_bindex(nm,0,sizeof(int)); }
-    int add_sindex(const char *nm,int dataSz) {
-      int idx = db->new_string_index(nm,dataSz);
-      if_err( idx );  if_err( add_index(idx) );
-      return 0;
+    int add_ind_index(const char *nm) {
+      int idx = db->new_binary_index(nm,0,sizeof(int),Db::cmprKey);
+      if_err( idx );  if_err( add_index(idx,ktyInd) );
+      return idx;
+    }
+    int add_dir_index(const char *nm,int keySz) {
+      int idx = db->new_binary_index(nm,keySz,sizeof(int),Db::cmprKey);
+      if_err( idx );  if_err( add_index(idx,ktyDir) );
+      return idx;
+    }
+    int add_str_index(const char *nm,int dataSz) {
+      int idx = db->new_string_index(nm, dataSz);
+      if_err( idx );  if_err( add_index(idx,ktyDir) );
+      return idx;
     }
     int del_index_(int idx);
     int del_index(int idx);
@@ -1356,10 +1379,10 @@ private:
     return addrWrite_(loc, vp, sizeof(allocPrefix));
   }
 
-  int objectHeapInsert(int sz,int pg,int off);
-  int objectHeapDelete(int sz,int pg,int off);
+  int objectHeapInsert(int sz,int pg,int off,AllocCache &cache);
+  int objectHeapDelete(int sz,int pg,int off,AllocCache &cache);
   int objectAllocate(int typ, int &size, pgRef &loc,AllocCache &cache);
-  int objectFree(pgRef &loc);
+  int objectFree(pgRef &loc,AllocCache &cache);
   int pgRefGet(int &size, pgRef &loc,AllocCache &cache);
   int pgRefNew(int &size, pgRef &lo,AllocCache &cache);
   int pgRefAllocate(int &size, pgRef &lo,AllocCache &cache);
@@ -1471,6 +1494,7 @@ public:
   void error(int v);
   void Error(int v,const char *msg);
   int load();
+  int load_indecies();
 
   Db();
   ~Db();
@@ -1481,9 +1505,10 @@ public:
   void pdmp();
   void fdmp();
   void admp(); void achk(); void fchk();
-  void edmp();
-  void bdmp();
-  void stats(int chk=1);
+  void edmp(AllocCache &cache);
+  void bdmp(AllocCache &cache);
+  void cdmp();
+  void stats();
 #endif
 
 };

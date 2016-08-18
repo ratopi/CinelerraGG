@@ -253,7 +253,7 @@ int TrackCanvas::drag_motion(Track **over_track,
 	}
 
         if( !*over_track )
-		*over_track = pane->is_over_patchbay();
+		*over_track = pane->over_patchbay();
 
 	return 0;
 }
@@ -281,7 +281,7 @@ int TrackCanvas::drag_stop(int *redraw)
 		    (cursor_y = get_relative_cursor_y()) >= 0 && cursor_y < get_h() )
 			over_window = 1;
 		else {
-			Track *track = pane->is_over_patchbay();
+			Track *track = pane->over_patchbay();
 			if( track && mwindow->session->track_highlighted == track )
 				over_window = 1;
 		}

@@ -312,19 +312,13 @@ void TimelinePane::activate()
 	gui->focused_pane = number;
 }
 
-Track *TimelinePane::is_over_patchbay()
+Track *TimelinePane::over_track()
 {
-	if( !patchbay ) return 0;
-	int cursor_x = gui->get_relative_cursor_x() - x;
-	if( cursor_x < 0 || cursor_x >= w ) return 0;
-	int cursor_y = gui->get_relative_cursor_y() - y;
-	if( cursor_y < 0 || cursor_y >= h ) return 0;
-	int no = number;
-	TrackScroll *trackscroll = gui->pane[no]->trackscroll;
-	if( !trackscroll )
-		trackscroll = gui->pane[++no]->trackscroll;
-// left panes have patchbays, right panes have trackscroll
-	int pane_y = cursor_y + trackscroll->get_position();
+	int canvas_x = canvas->get_relative_cursor_x();
+	if( canvas_x < 0 || canvas_x >= canvas->get_w() ) return 0;
+	int canvas_y = canvas->get_relative_cursor_y();
+	if( canvas_y < 0 || canvas_y >= canvas->get_h() ) return 0;
+	int pane_y = canvas_y + mwindow->edl->local_session->track_start[number];
 	for( Track *track=mwindow->edl->tracks->first; track; track=track->next ) {
 		int track_y = track->y_pixel; 
 		if( pane_y < track_y ) continue;
@@ -336,4 +330,24 @@ Track *TimelinePane::is_over_patchbay()
 	return 0;
 }
 
+Track *TimelinePane::over_patchbay()
+{
+	if( !patchbay ) return 0;
+	int patch_x = patchbay->get_relative_cursor_x() ;
+	if( patch_x < 0 || patch_x >= patchbay->get_w() ) return 0;
+	int patch_y = patchbay->get_relative_cursor_y();
+	if( patch_y < 0 || patch_y >= patchbay->get_h() ) return 0;
+//	int canvas_x = patch_x + patchbay->get_x() - canvas->get_x();
+	int canvas_y = patch_y + patchbay->get_y() - canvas->get_y();
+	int pane_y = canvas_y + mwindow->edl->local_session->track_start[number];
+	for( Track *track=mwindow->edl->tracks->first; track; track=track->next ) {
+		int track_y = track->y_pixel; 
+		if( pane_y < track_y ) continue;
+		track_y += track->vertical_span(mwindow->theme);
+		if( pane_y < track_y )
+			return track;
+	}
+
+	return 0;
+}
 

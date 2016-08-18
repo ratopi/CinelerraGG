@@ -32,10 +32,11 @@ TARGETS:=clip_accesses \
 	root_info \
 	dmp \
 	cpdb \
-	add_path_pos \
 	path_ls \
-	dbcvt \
 	xtv
+
+#	add_path_pos \
+#	dbcvt \
 
 all:	$(TARGETS)
 

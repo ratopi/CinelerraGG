@@ -86,7 +86,7 @@ public:
 	double preview_start, preview_end;
 
 // Vertical start of track view in pixels
-	int64_t track_start[TOTAL_PANES];
+	int track_start[TOTAL_PANES];
 // Horizontal start of view in pixels.  This has to be pixels since either
 // samples or seconds would require drawing in fractional pixels.
 	int64_t view_start[TOTAL_PANES];
