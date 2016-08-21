@@ -1541,7 +1541,10 @@ void Track::shuffle_edits(double start, double end, int first_track)
 		int index = rand() % new_edits.size();
 		Edit *edit = new_edits.get(index);
 		new_edits.remove_number(index);
-		edits->insert_after(start_edit, edit);
+		if( !start_edit )
+			edits->insert_before(edits->first, edit);
+		else
+			edits->insert_after(start_edit, edit);
 		start_edit = edit;
 
 // Recalculate start position
@@ -1564,20 +1567,18 @@ void Track::shuffle_edits(double start, double end, int first_track)
 		if(first_track && edl->session->labels_follow_edits)
 		{
 			double start_seconds1 = from_units(startproject1);
+			double end_seconds1 = from_units(startproject1 + edit->length);
 			double start_seconds2 = from_units(startproject2);
-			//double end_seconds1 = from_units(edit->startproject +
-			//	edit->length);
 			for(int i = new_labels.size() - 1; i >= 0; i--)
 			{
 				Label *label = new_labels.get(i);
 // Was in old edit position
 				if(label->position >= start_seconds1 &&
-					label->position < start_seconds2)
+					label->position < end_seconds1)
 				{
 // Move to new edit position
 					double position = label->position -
-						start_seconds1 +
-						start_seconds2;
+						start_seconds1 + start_seconds2;
 					edl->labels->insert_label(position);
 					new_labels.remove_object_number(i);
 				}
@@ -1657,7 +1658,10 @@ void Track::reverse_edits(double start, double end, int first_track)
 		int index = new_edits.size() - 1;
 		Edit *edit = new_edits.get(index);
 		new_edits.remove_number(index);
-		edits->insert_after(start_edit, edit);
+		if( !start_edit )
+			edits->insert_before(edits->first, edit);
+		else
+			edits->insert_after(start_edit, edit);
 		start_edit = edit;
 
 // Recalculate start position
@@ -1680,19 +1684,18 @@ void Track::reverse_edits(double start, double end, int first_track)
 		if(first_track && edl->session->labels_follow_edits)
 		{
 			double start_seconds1 = from_units(startproject1);
+			double end_seconds1 = from_units(startproject1 + edit->length);
 			double start_seconds2 = from_units(startproject2);
-			//double end_seconds1 = from_units(edit->startproject + edit->length);
 			for(int i = new_labels.size() - 1; i >= 0; i--)
 			{
 				Label *label = new_labels.get(i);
 // Was in old edit position
 				if(label->position >= start_seconds1 &&
-					label->position < start_seconds2)
+					label->position < end_seconds1)
 				{
 // Move to new edit position
 					double position = label->position -
-						start_seconds1 +
-						start_seconds2;
+						start_seconds1 + start_seconds2;
 					edl->labels->insert_label(position);
 					new_labels.remove_object_number(i);
 				}
