@@ -1249,6 +1249,7 @@ int MWindowGUI::keypress_event()
 	case LEFTTAB:
 		Track *this_track = 0;
 		for( int i=0; i<TOTAL_PANES; ++i ) {
+			if( !pane[i] ) continue;
 			if( (this_track = pane[i]->over_track()) != 0 ) break;
 			if( (this_track = pane[i]->over_patchbay()) != 0 ) break;
 		}
