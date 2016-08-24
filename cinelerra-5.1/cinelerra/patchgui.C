@@ -239,39 +239,27 @@ void PatchGUI::toggle_behavior(int type,
 {
 	if(toggle->shift_down())
 	{
-		int total_selected = mwindow->edl->tracks->total_of(type);
-
-// nothing previously selected
-		if(total_selected == 0)
-		{
-			mwindow->edl->tracks->select_all(type,
-				1);
+		// all selected if nothing previously selected or
+		// if this patch was previously the only one selected
+		switch( type ) {
+		case Tracks::MUTE: {  // negative logic for normally off
+			int total_selected = mwindow->edl->tracks->total() -
+				mwindow->edl->tracks->total_of(type);
+			int current_output = *output;
+			int selected = !total_selected || (total_selected == 1 &&
+				 !current_output ) ? 0 : 1;
+			mwindow->edl->tracks->select_all(type, selected);
+			if( selected ) *output = 0;
+			break; }
+		default: {
+			int total_selected = mwindow->edl->tracks->total_of(type);
+			int current_output = *output;
+			int selected = !total_selected || (total_selected == 1 &&
+				 current_output ) ? 1 : 0;
+			mwindow->edl->tracks->select_all(type, selected);
+			if( !selected ) *output = 1;
+			break; }
 		}
-		else
-		if(total_selected == 1)
-		{
-// this patch was previously the only one on
-			if(*output)
-			{
-				mwindow->edl->tracks->select_all(type,
-					1);
-			}
-// another patch was previously the only one on
-			else
-			{
-				mwindow->edl->tracks->select_all(type,
-					0);
-				*output = 1;
-			}
-		}
-		else
-		if(total_selected > 1)
-		{
-			mwindow->edl->tracks->select_all(type,
-				0);
-			*output = 1;
-		}
-		toggle->set_value(*output);
 
 		patchbay->drag_operation = type;
 		patchbay->new_status = 1;
