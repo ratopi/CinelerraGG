@@ -44,7 +44,7 @@ blending := chromakeyhsv chromakey diffkey
 
 plugin_dirs += tv_effects
 tv_effects := deinterlace-cv deinterlace ivtc liveaudio livevideo rgb601 \
-	rgbshift shiftinterlace swapchannels swapframes yuv yuvshift
+	rgbshift shiftinterlace swapchannels swapframes yuv yuv411 yuvshift
 
 $(foreach dir,$(plugin_dirs),$(foreach plugin,$($(dir)), $(eval $(plugin):=$(dir))))
 

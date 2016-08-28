@@ -126,6 +126,7 @@ DIRS = \
 	whirl \
 	wipe \
 	yuv \
+	yuv411 \
 	yuvshift \
 	zoom \
 	zoomblur \
