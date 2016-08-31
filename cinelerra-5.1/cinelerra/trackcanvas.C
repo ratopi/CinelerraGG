@@ -4217,7 +4217,11 @@ int TrackCanvas::button_release_event()
 
 
 		default:
-			if(mwindow->session->current_operation) {
+			if( !mwindow->session->current_operation ) {
+				if( get_buttonpress() == 3 )
+					result = do_edit_popup();
+			}
+			else {
 //				if(mwindow->session->current_operation == SELECT_REGION) {
 //					mwindow->undo->update_undo_after(_("select"), LOAD_SESSION, 0, 0);
 //				}
@@ -4389,8 +4393,13 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 
 int TrackCanvas::do_tracks(int cursor_x, int cursor_y, int button_press)
 {
-	int result = 0;
+	return 0;
+}
 
+int TrackCanvas::do_edit_popup()
+{
+	int result = 0;
+	int cursor_y = get_cursor_y();
 //	if(!mwindow->edl->session->show_assets) return 0;
 
 	for(Track *track = mwindow->edl->tracks->first;
@@ -4399,8 +4408,7 @@ int TrackCanvas::do_tracks(int cursor_x, int cursor_y, int button_press)
 		int64_t track_x, track_y, track_w, track_h;
 		track_dimensions(track, track_x, track_y, track_w, track_h);
 
-		if(button_press && get_buttonpress() == 3 &&
-			cursor_y >= track_y && cursor_y < track_y + track_h) {
+		if( cursor_y >= track_y && cursor_y < track_y + track_h ) {
 			gui->edit_menu->update(track, 0);
 			gui->edit_menu->activate_menu();
 			result = 1;
@@ -4721,8 +4729,7 @@ int TrackCanvas::button_press_event()
 			switch(mwindow->edl->session->editing_mode) {
 // Test handles and resource boundaries and highlight a track
 			case EDITING_ARROW: {
-				if( mwindow->edl->session->auto_conf->transitions &&
-					do_transitions(cursor_x, cursor_y,
+				if( do_transitions(cursor_x, cursor_y,
 						1, new_cursor, update_cursor) ) break;
 
 				if( do_keyframes(cursor_x, cursor_y,
@@ -4761,8 +4768,7 @@ int TrackCanvas::button_press_event()
 					mwindow->edl->session->sample_rate;
 //printf("TrackCanvas::button_press_event %d\n", position);
 
-				if(mwindow->edl->session->auto_conf->transitions &&
-					do_transitions(cursor_x, cursor_y,
+				if( do_transitions(cursor_x, cursor_y,
 						1, new_cursor, update_cursor)) break;
 				if(do_keyframes(cursor_x, cursor_y,
 					0, get_buttonpress(), new_cursor,
@@ -4784,6 +4790,7 @@ int TrackCanvas::button_press_event()
 
 				if( do_tracks(cursor_x, cursor_y, 1) ) break;
 // Highlight selection
+				if( get_buttonpress() != LEFT_BUTTON ) break;
 				rerender = start_selection(position);
 				mwindow->session->current_operation = SELECT_REGION;
 				update_cursor = 1;
@@ -4803,16 +4810,16 @@ int TrackCanvas::button_press_event()
 		if( update_overlay ) {
 			gui->draw_overlays(1);
 		}
-
-		if( update_cursor > 0 ) {
+		if( update_cursor < 0 ) {
+// double_click edit
+			gui->swindow->update_selection();
+		}
+		if( update_cursor ) {
 			gui->update_timebar(0);
 			gui->hide_cursor(0);
 			gui->show_cursor(1);
 			gui->zoombar->update();
 			gui->flash_canvas(1);
-		}
-		else if(update_cursor < 0) {
-			gui->swindow->update_selection();
 		}
 	}
 	return result;

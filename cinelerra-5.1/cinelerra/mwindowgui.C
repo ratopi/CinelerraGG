@@ -2006,7 +2006,7 @@ void MWindowGUI::load_panes()
 						cursor_y,
 					mwindow->theme->mcanvas_x +
 						mwindow->theme->mcanvas_w -
-						cursor_x,
+						cursor_x -  mwindow->theme->pane_w,
 					mwindow->theme->mcanvas_h -
 						cursor_y);
 				pane[TOP_RIGHT_PANE]->create_objects();
@@ -2037,7 +2037,7 @@ void MWindowGUI::load_panes()
 						cursor_y,
 					mwindow->theme->mcanvas_x +
 						mwindow->theme->mcanvas_w -
-						cursor_x,
+						cursor_x - mwindow->theme->pane_w,
 					mwindow->theme->mcanvas_h -
 						cursor_y);
 				pane[BOTTOM_RIGHT_PANE]->resize_event(

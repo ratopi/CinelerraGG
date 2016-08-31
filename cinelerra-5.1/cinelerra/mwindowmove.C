@@ -884,6 +884,7 @@ void MWindow::split_x()
 	gui->mainmenu->update_toggles(0);
 	gui->update_pane_dividers();
 	gui->update_cursor();
+	gui->draw_samplemovement();
 // required to get new widgets to appear
 	gui->show_window();
 
@@ -907,6 +908,7 @@ void MWindow::split_y()
 	gui->mainmenu->update_toggles(0);
 	gui->update_pane_dividers();
 	gui->update_cursor();
+	gui->draw_trackmovement();
 // required to get new widgets to appear
 	gui->show_window();
 	gui->resource_thread->start_draw();
