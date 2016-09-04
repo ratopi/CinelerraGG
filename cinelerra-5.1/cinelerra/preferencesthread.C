@@ -244,9 +244,9 @@ int PreferencesThread::apply_settings()
 
 
 
-		for(int i = 0; i < mwindow->vwindows.size(); i++)
-		{
+		for(int i = 0; i < mwindow->vwindows.size(); i++) {
 			VWindow *vwindow = mwindow->vwindows.get(i);
+			if( !vwindow->is_running() ) continue;
 			vwindow->gui->lock_window("PreferencesThread::apply_settings");
 			vwindow->gui->meters->change_format(edl->session->meter_format,
 				edl->session->min_meter_db,

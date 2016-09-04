@@ -1054,7 +1054,8 @@ void MWindowGUI::default_positions()
 {
 //printf("MWindowGUI::default_positions 1\n");
 	VWindow *vwindow = mwindow->vwindows.size() > DEFAULT_VWINDOW ?
-		mwindow->vwindows.get(0) : 0;
+		mwindow->vwindows.get(DEFAULT_VWINDOW) : 0;
+	if( vwindow && !vwindow->is_running() ) vwindow = 0;
 	if( vwindow ) vwindow->gui->lock_window("MWindowGUI::default_positions");
 	mwindow->cwindow->gui->lock_window("MWindowGUI::default_positions");
 	mwindow->awindow->gui->lock_window("MWindowGUI::default_positions");

@@ -104,11 +104,10 @@ int New::create_new_project()
 
 	for(int i = 0; i < mwindow->vwindows.size(); i++)
 	{
-		mwindow->vwindows.get(i)->playback_engine->que->send_command(STOP,
-			CHANGE_NONE,
-			0,
-			0);
-		mwindow->vwindows.get(i)->playback_engine->interrupt_playback(0);
+		VWindow *vwindow = mwindow->vwindows.get(i);
+		if( !vwindow->is_running() ) continue;
+		vwindow->playback_engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
+		vwindow->playback_engine->interrupt_playback(0);
 	}
 
 	mwindow->cwindow->playback_engine->interrupt_playback(0);

@@ -1586,28 +1586,25 @@ int AWindowAssets::button_release_event()
 int AWindowAssets::handle_event()
 {
 //printf("AWindowAssets::handle_event 1 %d %d\n", get_buttonpress(), get_selection(0, 0));
-	if(get_selection(0, 0))
-	{
-		if(!strcasecmp(mwindow->edl->session->current_folder, AEFFECT_FOLDER)) {}
-		else if(!strcasecmp(mwindow->edl->session->current_folder, VEFFECT_FOLDER)) {}
-		else if(!strcasecmp(mwindow->edl->session->current_folder, ATRANSITION_FOLDER)) {}
-		else if(!strcasecmp(mwindow->edl->session->current_folder, VTRANSITION_FOLDER)) {}
-		else if(mwindow->vwindows.size()) {
+	AssetPicon *asset_picon = (AssetPicon *)get_selection(0, 0);
+	if( !asset_picon ) return 0;
+	const char *folder = mwindow->edl->session->current_folder;
+	if( !strcasecmp(folder, AEFFECT_FOLDER) ) return 1;
+	if( !strcasecmp(folder, VEFFECT_FOLDER) ) return 1;
+	if( !strcasecmp(folder, ATRANSITION_FOLDER) ) return 1;
+	if( !strcasecmp(folder, VTRANSITION_FOLDER) ) return 1;
+	VWindow *vwindow = mwindow->vwindows.size() > DEFAULT_VWINDOW ?
+		mwindow->vwindows.get(DEFAULT_VWINDOW) : 0;
+	if( !vwindow || !vwindow->is_running() ) return 1;
 //printf("AWindowAssets::handle_event 2 %d %d\n", get_buttonpress(), get_selection(0, 0));
-			mwindow->vwindows.get(DEFAULT_VWINDOW)->gui->lock_window("AWindowAssets::handle_event");
 
-			if(((AssetPicon*)get_selection(0, 0))->indexable)
-				mwindow->vwindows.get(DEFAULT_VWINDOW)->change_source(((AssetPicon*)get_selection(0, 0))->indexable);
-			else
-			if(((AssetPicon*)get_selection(0, 0))->edl)
-				mwindow->vwindows.get(DEFAULT_VWINDOW)->change_source(((AssetPicon*)get_selection(0, 0))->edl);
-
-			mwindow->vwindows.get(DEFAULT_VWINDOW)->gui->unlock_window();
-		}
-		return 1;
-	}
-
-	return 0;
+	vwindow->gui->lock_window("AWindowAssets::handle_event");
+	if( asset_picon->indexable )
+		vwindow->change_source(asset_picon->indexable);
+	else if( asset_picon->edl )
+		vwindow->change_source(asset_picon->edl);
+	vwindow->gui->unlock_window();
+	return 1;
 }
 
 int AWindowAssets::selection_changed()
@@ -1735,6 +1732,7 @@ int AWindowAssets::drag_motion_event()
 	for(int i = 0; i < mwindow->vwindows.size(); i++)
 	{
 		VWindow *vwindow = mwindow->vwindows.get(i);
+		if( !vwindow->is_running() ) continue;
 		vwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 		vwindow->gui->drag_motion();
 		vwindow->gui->unlock_window();
@@ -1768,6 +1766,7 @@ int AWindowAssets::drag_stop_event()
 		for(int i = 0; i < mwindow->vwindows.size(); i++)
 		{
 			VWindow *vwindow = mwindow->vwindows.get(i);
+			if( !vwindow->is_running() ) continue;
 			vwindow->gui->lock_window("AWindowAssets::drag_stop_event");
 			result = vwindow->gui->drag_stop();
 			vwindow->gui->unlock_window();
