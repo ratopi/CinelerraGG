@@ -2446,6 +2446,8 @@ int MWindow::toggle_label(int is_mwindow)
 		cwindow->gui->unlock_window();
 	}
 
+	awindow->gui->async_update_assets();
+
 	undo->update_undo_after(_("label"), LOAD_TIMEBAR);
 	return 0;
 }

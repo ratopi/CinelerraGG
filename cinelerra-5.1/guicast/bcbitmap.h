@@ -185,11 +185,6 @@ class BC_Bitmap
 	BC_WindowBase *top_level;
 	BC_WindowBase *parent_window;
 	int xv_portid;
-// For resetting XVideo
-	int last_pixmap_used;
-
-// Need last pixmap to stop XVideo
-	Drawable last_pixmap;
 
 	static uint8_t bitswap[256];
 	void transparency_bitswap(uint8_t *buf, int w, int h);

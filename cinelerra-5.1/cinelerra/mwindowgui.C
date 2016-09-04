@@ -408,6 +408,7 @@ int MWindowGUI::resize_event(int w, int h)
 	mbuttons->resize_event();
 	ffmpeg_toggle->reposition_window(menu_w(), menu_h()+2);
 	statusbar->resize_event();
+	zoombar->resize_event();
 
 	resource_thread->stop_draw(1);
 
@@ -527,17 +528,11 @@ int MWindowGUI::resize_event(int w, int h)
 				pane[BOTTOM_RIGHT_PANE]->y);
 	}
 
-	resource_thread->start_draw();
-
 	update_pane_dividers();
-	zoombar->resize_event();
 	pane_button->reposition_window(w - mwindow->theme->get_image_set("pane")[0]->get_w(),
 		mwindow->theme->mzoom_y + 1 - mwindow->theme->get_image_set("pane")[0]->get_h());
-//	get_scrollbars(0);
-//	canvas->resize_event();
-//printf("MWindowGUI::resize_event %d\n", __LINE__);
-// required to get new widgets to appear after a pane deletion
-	show_window();
+	resource_thread->start_draw();
+
 	return 0;
 }
 

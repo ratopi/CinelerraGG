@@ -335,8 +335,6 @@ int BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	else
 		this->avail_lock->reset();
 	this->buffers = 0;
-	this->last_pixmap_used = 0;
-	this->last_pixmap = 0;
 
 	this->active_bfr = 0;
 	this->buffer_count = 0;
@@ -459,12 +457,7 @@ int BC_Bitmap::allocate_data()
 int BC_Bitmap::delete_data()
 {
 //printf("BC_Bitmap::delete_data 1\n");
-	if( last_pixmap_used && xv_portid >= 0 )
-		XvStopVideo(top_level->display, xv_portid, last_pixmap);
 	update_buffers(0);
-	if( xv_portid >= 0 )
-		XvUngrabPort(top_level->display, xv_portid, CurrentTime);
-	last_pixmap_used = 0;
 	active_bfr = 0;
 	buffer_count = 0;
 	max_buffer_count = 0;
@@ -593,8 +586,6 @@ int BC_Bitmap::write_drawable(Drawable &pixmap, GC &gc,
 		avail.append(bfr);
 	active_bfr = 0;
 	avail_lock->unlock();
-	last_pixmap = pixmap;
-	last_pixmap_used = 1;
 	if( !dont_wait && !shm_reply )
 		XSync(top_level->display, False);
 	return 0;

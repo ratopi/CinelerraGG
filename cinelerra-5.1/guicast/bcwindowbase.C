@@ -199,6 +199,8 @@ BC_WindowBase::~BC_WindowBase()
 			XFree(xinerama_info);
 		xinerama_screens = 0;
 		xinerama_info = 0;
+		if( xvideo_port_id >= 0 )
+			XvUngrabPort(display, xvideo_port_id, CurrentTime);
 
 		unlock_window();
 // Can't close display if another thread is waiting for events.
@@ -344,6 +346,7 @@ int BC_WindowBase::initialize()
 	glx_win = 0;
 #endif
 
+	flash_enabled = 1;
 	win = 0;
 	return 0;
 }
@@ -1358,9 +1361,10 @@ int BC_WindowBase::dispatch_resize_event(int w, int h)
 // Can't store new w and h until the event is handles
 // because bcfilebox depends on the old w and h to
 // reposition widgets.
-	if(window_type == MAIN_WINDOW)
-	{
+	if( window_type == MAIN_WINDOW ) {
+		flash_enabled = 0;
 		resize_events = 0;
+
 		delete pixmap;
 		pixmap = new BC_Pixmap(this, w, h);
 
@@ -1368,20 +1372,27 @@ int BC_WindowBase::dispatch_resize_event(int w, int h)
 	}
 
 // Propagate to subwindows
-	for(int i = 0; i < subwindows->total; i++)
-	{
+	for(int i = 0; i < subwindows->total; i++) {
 		subwindows->values[i]->dispatch_resize_event(w, h);
 	}
 
 // Propagate to user
 	resize_event(w, h);
 
-	if(window_type == MAIN_WINDOW)
-	{
+	if( window_type == MAIN_WINDOW ) {
 		this->w = w;
 		this->h = h;
+		dispatch_flash();
 	}
 	return 0;
+}
+
+int BC_WindowBase::dispatch_flash()
+{
+	flash_enabled = 1;
+	for(int i = 0; i < subwindows->total; i++)
+		subwindows->values[i]->dispatch_flash();
+	return flash();
 }
 
 int BC_WindowBase::dispatch_translation_event()
@@ -2990,119 +3001,76 @@ void BC_WindowBase::init_wait()
 
 int BC_WindowBase::accel_available(int color_model, int lock_it)
 {
-	if(window_type != MAIN_WINDOW)
+	if( window_type != MAIN_WINDOW )
 		return top_level->accel_available(color_model, lock_it);
+	if( lock_it )
+		lock_window("BC_WindowBase::accel_available");
 
-	int result = 0;
+	switch(color_model) {
+	case BC_YUV420P:
+		grab_port_id(color_model);
+		break;
 
-	if(lock_it) lock_window("BC_WindowBase::accel_available");
-	switch(color_model)
-	{
-		case BC_YUV420P:
-			result = grab_port_id(this, color_model);
-			if(result >= 0)
-			{
-				xvideo_port_id = result;
-				result = 1;
-			}
-			else
-				result = 0;
-			break;
+	case BC_YUV422:
+		grab_port_id(color_model);
+		break;
 
-		case BC_YUV422P:
-			result = 0;
-			break;
-
-		case BC_YUV422:
-//printf("BC_WindowBase::accel_available 1\n");
-			result = grab_port_id(this, color_model);
-//printf("BC_WindowBase::accel_available 2 %d\n", result);
-			if(result >= 0)
-			{
-				xvideo_port_id = result;
-				result = 1;
-			}
-			else
-				result = 0;
-//printf("BC_WindowBase::accel_available 3 %d\n", xvideo_port_id);
-			break;
-
-		default:
-			result = 0;
-			break;
+	default:
+		break;
 	}
 
-	if(lock_it) unlock_window();
-//printf("BC_WindowBase::accel_available %d %d\n", color_model, result);
-	return result;
+	if( lock_it )
+		unlock_window();
+//printf("BC_WindowBase::accel_available %d %d\n", color_model, xvideo_port_id);
+	return xvideo_port_id >= 0 ? 1 : 0;
 }
 
 
-int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
+int BC_WindowBase::grab_port_id(int color_model)
 {
-	int numFormats, i, j, k;
-	unsigned int ver, rev, numAdapt, reqBase, eventBase, errorBase;
-	XvAdaptorInfo *info;
-	XvImageFormatValues *formats;
-	int x_color_model;
-
-	if(!get_resources()->use_xvideo) return -1;
-
-// Translate from color_model to X color model
-	x_color_model = BC_CModels::bc_to_x(color_model);
-
-// Only local server is fast enough.
-	if(!resources.use_shm) return -1;
-
-// XV extension is available
-	if(Success != XvQueryExtension(window->display, &ver, &rev,
-				  &reqBase, &eventBase, &errorBase)) {
+	if( !get_resources()->use_xvideo ||	// disabled
+	    !get_resources()->use_shm )		// Only local server is fast enough.
 		return -1;
-	}
+	if( xvideo_port_id >= 0 )
+		return xvideo_port_id;
+
+	unsigned int ver, rev, reqBase, eventBase, errorBase;
+	if( Success != XvQueryExtension(display, // XV extension is available
+		    &ver, &rev, &reqBase, &eventBase, &errorBase) )
+		return -1;
 
 // XV adaptors are available
-	XvQueryAdaptors(window->display,
-		DefaultRootWindow(window->display),
-		&numAdapt, &info);
-
-	if(!numAdapt) {
+	unsigned int numAdapt = 0;
+	XvAdaptorInfo *info = 0;
+	XvQueryAdaptors(display, DefaultRootWindow(display), &numAdapt, &info);
+	if( !numAdapt )
 		return -1;
-	}
+
+// Translate from color_model to X color model
+	int x_color_model = BC_CModels::bc_to_x(color_model);
 
 // Get adaptor with desired color model
-	for(i = 0; i < (int)numAdapt && xvideo_port_id == -1; i++) {
-/* adaptor supports XvImages */
-		if(info[i].type & XvImageMask)
-		{
-	    	formats = XvListImageFormats(window->display,
-							info[i].base_id,
-							&numFormats);
-// for(j = 0; j < numFormats; j++)
-// 	printf("%08x\n", formats[j].id);
+	for( int i = 0; i < (int)numAdapt && xvideo_port_id == -1; i++) {
+		if( !(info[i].type & XvImageMask) || !info[i].num_ports ) continue;
+// adaptor supports XvImages
+		int numFormats = 0, numPorts = info[i].num_ports;
+		XvImageFormatValues *formats =
+			XvListImageFormats(display, info[i].base_id, &numFormats);
+		if( !formats ) continue;
 
-		int numPorts = info[i].num_ports;
-	    	for(j = 0; j < (int)numFormats && xvideo_port_id < 0; j++)
-	    	{
-/* this adaptor supports the desired format */
-				if(formats[j].id == x_color_model)
-				{
-/* Try to grab a port */
-					for(k = 0; k < numPorts; k++)
-					{
-/* Got a port */
-						if(Success == XvGrabPort(top_level->display,
-							info[i].base_id + k,
-							CurrentTime))
-						{
+		for( int j=0; j<numFormats && xvideo_port_id<0; ++j ) {
+			if( formats[j].id != x_color_model ) continue;
+// this adaptor supports the desired format, grab a port
+			for( int k=0; k<numPorts; ++k ) {
+				if( Success == XvGrabPort(top_level->display,
+					info[i].base_id+k, CurrentTime) ) {
 //printf("BC_WindowBase::grab_port_id %llx\n", info[i].base_id);
-							xvideo_port_id = info[i].base_id + k;
-							break;
-						}
-					}
+					xvideo_port_id = info[i].base_id + k;
+					break;
 				}
 			}
-	    	if(formats) XFree(formats);
 		}
+		XFree(formats);
 	}
 
 	XvFreeAdaptorInfo(info);
@@ -3190,6 +3158,7 @@ BC_WindowBase* BC_WindowBase::add_tool(BC_WindowBase *subwindow)
 
 int BC_WindowBase::flash(int x, int y, int w, int h, int flush)
 {
+	if( !top_level->flash_enabled ) return 0;
 //printf("BC_WindowBase::flash %d %d %d %d %d\n", __LINE__, w, h, this->w, this->h);
 	set_opaque();
 	XSetWindowBackgroundPixmap(top_level->display, win, pixmap->opaque_pixmap);

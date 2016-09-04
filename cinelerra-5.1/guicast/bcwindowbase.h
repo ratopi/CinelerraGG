@@ -580,6 +580,7 @@ private:
 
 // Recursive event dispatchers
 	int dispatch_resize_event(int w, int h);
+	int dispatch_flash();
 	int dispatch_focus_in();
 	int dispatch_focus_out();
 	int dispatch_motion_event();
@@ -598,7 +599,7 @@ private:
 	int dispatch_expose_event();
 
 // Get the port ID for a color model or return -1 for failure
-	int grab_port_id(BC_WindowBase *window, int color_model);
+	int grab_port_id(int color_model);
 
 	int find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBase **next_textbox, int &result);
 	int find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result);
@@ -708,7 +709,7 @@ private:
 // If this subwindow has already shown a tooltip since the last EnterNotify
 	int tooltip_done;
 	int options;
-
+	int flash_enabled;
 
 
 // Font sets

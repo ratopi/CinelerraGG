@@ -312,8 +312,7 @@ int BC_PopupMenu::activate_menu()
 				w, h, 0, 1);
 		}
 		else
-// back off x,y just a bit so the menu doesnt deactivate without motion
-			menu_popup->activate_menu(x-10, y-10, w, h, 0, 1);
+			menu_popup->activate_menu(x+3, y+3, w, h, 0, 1);
 		popup_down = 1;
 		if(use_title) draw_title(1);
 	}
