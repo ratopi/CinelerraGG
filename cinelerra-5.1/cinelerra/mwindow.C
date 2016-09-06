@@ -106,6 +106,7 @@
 #include "transition.h"
 #include "transportque.h"
 #include "vframe.h"
+#include "versioninfo.h"
 #include "videodevice.inc"
 #include "videowindow.h"
 #include "vplayback.h"
@@ -213,6 +214,7 @@ MWindow::MWindow()
 	restart_status = 0;
 	screens = 1;
 	in_destructor = 0;
+	warn_version = 1;
 }
 
 
@@ -1499,7 +1501,29 @@ SET_TRACE
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				xml_file.read_from_file(filenames->get(i));
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
-
+				const char *cin_version = 0;
+				while( !xml_file.read_tag() ) {
+					if( xml_file.tag.title_is("EDL") ) {
+						cin_version = xml_file.tag.get_property("VERSION");
+						break;
+					}
+				}
+				xml_file.rewind();
+				if( !cin_version ) {
+					eprintf(_("XML file %s\n not from cinelerra."),filenames->get(i));
+					char string[BCTEXTLEN];
+					sprintf(string,_("Unknown %s"), filenames->get(i));
+					gui->show_message(string);
+					result = 1;
+					break;
+				}
+				if( strcmp(cin_version, CINELERRA_VERSION) ) {
+					char string[BCTEXTLEN];
+					snprintf(string, sizeof(string),
+						 _("Warning: XML from cinelerra version %s\n"
+						"Session data may be incompatible."), cin_version);
+					show_warning(&preferences->warn_version, string);
+				}
 				if(load_mode == LOADMODE_NESTED)
 				{
 // Load temporary EDL for nesting.

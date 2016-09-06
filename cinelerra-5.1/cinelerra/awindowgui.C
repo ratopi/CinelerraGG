@@ -536,25 +536,19 @@ SET_TRACE
 SET_TRACE
 
 // Mandatory folders
-	folders.append(picon = new AssetPicon(mwindow,
-		this,
-		AEFFECT_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, AEFFECT_FOLDER));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow,
-		this,
-		VEFFECT_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, VEFFECT_FOLDER));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow,
-		this,
-		ATRANSITION_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, ATRANSITION_FOLDER));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow,
-		this,
-		VTRANSITION_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, VTRANSITION_FOLDER));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow,
-		this,
-		LABEL_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, LABEL_FOLDER));
+	picon->persistent = 1;
+	folders.append(picon = new AssetPicon(mwindow, this, CLIP_FOLDER));
+	picon->persistent = 1;
+	folders.append(picon = new AssetPicon(mwindow, this, MEDIA_FOLDER));
 	picon->persistent = 1;
 
 	create_label_folder();
@@ -678,9 +672,6 @@ int AWindowGUI::translation_event()
 
 void AWindowGUI::reposition_objects()
 {
-	divider->reposition_window(
-		mwindow->theme->adivider_x, mwindow->theme->adivider_y,
-		mwindow->theme->adivider_w, mwindow->theme->adivider_h);
 	asset_list->reposition_window(
 		mwindow->theme->alist_x, mwindow->theme->alist_y,
 		mwindow->theme->alist_w, mwindow->theme->alist_h);
@@ -1610,27 +1601,7 @@ int AWindowAssets::handle_event()
 int AWindowAssets::selection_changed()
 {
 // Show popup window
-	if(get_button_down() && get_buttonpress() == 3 && get_selection(0, 0))
-	{
-		if(!strcasecmp(mwindow->edl->session->current_folder, AEFFECT_FOLDER) ||
-			!strcasecmp(mwindow->edl->session->current_folder, VEFFECT_FOLDER) ||
-			!strcasecmp(mwindow->edl->session->current_folder, ATRANSITION_FOLDER) ||
-			!strcasecmp(mwindow->edl->session->current_folder, VTRANSITION_FOLDER))
-		{
-			gui->assetlist_menu->update_titles();
-			gui->assetlist_menu->activate_menu();
-		}
-		else
-                if (!strcasecmp(mwindow->edl->session->current_folder, LABEL_FOLDER))
-		{
-			if(((AssetPicon*)get_selection(0, 0))->label)
-				gui->label_menu->activate_menu();
-		}
-
-		BC_ListBox::deactivate_selection();
-		return 1;
-	}
-	else if( get_button_down() && get_buttonpress() == 1 && get_selection(0, 0) ) {
+	if( get_button_down() && get_buttonpress() == 1 && get_selection(0, 0) ) {
 		VIcon *vicon = 0;
 		if( !gui->vicon_thread->viewing ) {
 			AssetPicon *picon = (AssetPicon*)get_selection(0, 0);

@@ -137,6 +137,9 @@ void InterfacePrefs::create_objects()
 	y1 += tip_win->get_h() + 5;
 	UseWarnIndecies *idx_win = new UseWarnIndecies(pwindow, x1, y1);
 	add_subwindow(idx_win);
+	y1 += tip_win->get_h() + 5;
+	UseWarnVersion *ver_win = new UseWarnVersion(pwindow, x1, y1);
+	add_subwindow(ver_win);
 	y1 += idx_win->get_h() + 25;
 
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
@@ -682,9 +685,7 @@ int UseTipWindow::handle_event()
 
 
 UseWarnIndecies::UseWarnIndecies(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, 
- 	y, 
-	pwindow->thread->preferences->warn_indexes, 
+ : BC_CheckBox(x, y, pwindow->thread->preferences->warn_indexes, 
 	_("ffmpeg probe warns rebuild indexes"))
 {
 	this->pwindow = pwindow;
@@ -693,6 +694,19 @@ UseWarnIndecies::UseWarnIndecies(PreferencesWindow *pwindow, int x, int y)
 int UseWarnIndecies::handle_event()
 {
 	pwindow->thread->preferences->warn_indexes = get_value();
+	return 1;
+}
+
+UseWarnVersion::UseWarnVersion(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->warn_version, 
+	_("EDL version warns if mismatched"))
+{
+	this->pwindow = pwindow;
+}
+
+int UseWarnVersion::handle_event()
+{
+	pwindow->thread->preferences->warn_version = get_value();
 	return 1;
 }
 

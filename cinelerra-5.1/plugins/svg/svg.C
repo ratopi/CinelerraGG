@@ -33,74 +33,42 @@
 #include <sys/mman.h>
 
 
-//#include "empty_svg.h"
-
 REGISTER_PLUGIN(SvgMain)
 
 SvgConfig::SvgConfig()
 {
-	in_x = 0;
-	in_y = 0;
-	in_w = 720;
-	in_h = 480;
 	out_x = 0;
 	out_y = 0;
-	out_w = 720;
-	out_h = 480;
 	strcpy(svg_file, "");
+	ms_time = 0;
 }
 
 int SvgConfig::equivalent(SvgConfig &that)
 {
-	return EQUIV(in_x, that.in_x) && 
-		EQUIV(in_y, that.in_y) && 
-		EQUIV(in_w, that.in_w) && 
-		EQUIV(in_h, that.in_h) &&
-		EQUIV(out_x, that.out_x) && 
-		EQUIV(out_y, that.out_y) && 
-		EQUIV(out_w, that.out_w) &&
-		EQUIV(out_h, that.out_h) &&
-		!strcmp(svg_file, that.svg_file);
+	// out_x/out_y always used by overlayer
+	return !strcmp(svg_file, that.svg_file) &&
+		ms_time == that.ms_time;
 }
 
 void SvgConfig::copy_from(SvgConfig &that)
 {
-	in_x = that.in_x;
-	in_y = that.in_y;
-	in_w = that.in_w;
-	in_h = that.in_h;
 	out_x = that.out_x;
 	out_y = that.out_y;
-	out_w = that.out_w;
-	out_h = that.out_h;
 	strcpy(svg_file, that.svg_file);
+	ms_time = that.ms_time;
 }
 
-void SvgConfig::interpolate(SvgConfig &prev, 
-	SvgConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+void SvgConfig::interpolate(SvgConfig &prev, SvgConfig &next, 
+	long prev_frame, long next_frame, long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 
-	this->in_x = prev.in_x * prev_scale + next.in_x * next_scale;
-	this->in_y = prev.in_y * prev_scale + next.in_y * next_scale;
-	this->in_w = prev.in_w * prev_scale + next.in_w * next_scale;
-	this->in_h = prev.in_h * prev_scale + next.in_h * next_scale;
 	this->out_x = prev.out_x * prev_scale + next.out_x * next_scale;
 	this->out_y = prev.out_y * prev_scale + next.out_y * next_scale;
-	this->out_w = prev.out_w * prev_scale + next.out_w * next_scale;
-	this->out_h = prev.out_h * prev_scale + next.out_h * next_scale;
 	strcpy(this->svg_file, prev.svg_file);
+	this->ms_time = prev.ms_time;
 }
-
-
-
-
-
-
 
 
 SvgMain::SvgMain(PluginServer *server)
@@ -131,23 +99,16 @@ void SvgMain::save_data(KeyFrame *keyframe)
 // cause data to be stored directly in text
 	output.set_shared_output(keyframe->get_data(), MESSAGESIZE);
 
-// Store data
 	output.tag.set_title("SVG");
-	output.tag.set_property("IN_X", config.in_x);
-	output.tag.set_property("IN_Y", config.in_y);
-	output.tag.set_property("IN_W", config.in_w);
-	output.tag.set_property("IN_H", config.in_h);
 	output.tag.set_property("OUT_X", config.out_x);
 	output.tag.set_property("OUT_Y", config.out_y);
-	output.tag.set_property("OUT_W", config.out_w);
-	output.tag.set_property("OUT_H", config.out_h);
 	output.tag.set_property("SVG_FILE", config.svg_file);
+	output.tag.set_property("MS_TIME", config.ms_time);
 	output.append_tag();
 	output.tag.set_title("/SVG");
 	output.append_tag();
 
 	output.terminate_string();
-// data is now in *text
 }
 
 void SvgMain::read_data(KeyFrame *keyframe)
@@ -156,52 +117,36 @@ void SvgMain::read_data(KeyFrame *keyframe)
 
 	const char *data = keyframe->get_data();
 	input.set_shared_input((char*)data, strlen(data));
-
 	int result = 0;
 
-	while(!result)
-	{
-		result = input.read_tag();
-
-		if(!result)
-		{
-			if(input.tag.title_is("SVG"))
-			{
- 				config.in_x = input.tag.get_property("IN_X", config.in_x);
-				config.in_y = input.tag.get_property("IN_Y", config.in_y);
-				config.in_w = input.tag.get_property("IN_W", config.in_w);
-				config.in_h = input.tag.get_property("IN_H", config.in_h);
-				config.out_x =	input.tag.get_property("OUT_X", config.out_x);
-				config.out_y =	input.tag.get_property("OUT_Y", config.out_y);
-				config.out_w =	input.tag.get_property("OUT_W", config.out_w);
-				config.out_h =	input.tag.get_property("OUT_H", config.out_h);
-				input.tag.get_property("SVG_FILE", config.svg_file);
-			}
+	while( !(result = input.read_tag()) ) {
+		if(input.tag.title_is("SVG")) {
+			config.out_x =	input.tag.get_property("OUT_X", config.out_x);
+			config.out_y =	input.tag.get_property("OUT_Y", config.out_y);
+			input.tag.get_property("SVG_FILE", config.svg_file);
+			config.ms_time = input.tag.get_property("MS_TIME", config.ms_time);
 		}
 	}
 }
 
 
-
-
-
-
-
-
 int SvgMain::process_realtime(VFrame *input, VFrame *output)
 {
+	if( input != output )
+		output->copy_from(input);
 
 	need_reconfigure |= load_configuration();
-	output->copy_from(input);
-	if( config.svg_file[0] == 0 ) return 0;
-
 	if( need_reconfigure ) {
 		need_reconfigure = 0;
+		if( config.svg_file[0] == 0 ) return 0;
 		delete ofrm;  ofrm = 0;
 		char filename_png[1024];
 		strcpy(filename_png, config.svg_file);
 		strncat(filename_png, ".png", sizeof(filename_png));
-		int fd = open(filename_png, O_RDWR);
+		struct stat st_png;
+		int64_t ms_time = stat(filename_png, &st_png) ? 0 :
+			st_png.st_mtim.tv_sec*1000 + st_png.st_mtim.tv_nsec/1000000;
+		int fd = ms_time < config.ms_time ? -1 : open(filename_png, O_RDWR);
 		if( fd < 0 ) { // file does not exist, export it
 			char command[1024];
 			sprintf(command,
@@ -216,9 +161,6 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 				printf(_("Export of %s to %s failed\n"), config.svg_file, filename_png);
 		}
 		if( fd >= 0 ) {
-			// file exists, ... lock it, mmap it and check time_of_creation
-			// Blocking call - will wait for inkscape to finish!
-			lockf(fd, F_LOCK, 0);
 			struct stat st_png;
 			fstat(fd, &st_png);
 			unsigned char *png_buffer = (unsigned char *)
@@ -230,13 +172,7 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 					if( ofrm->get_color_model() != output->get_color_model() ) {
 						VFrame *vfrm = new VFrame(ofrm->get_w(), ofrm->get_h(),
 							output->get_color_model());
-						BC_CModels::transfer(vfrm->get_rows(), ofrm->get_rows(),
-							0, 0, 0, 0, 0, 0,
-							0, 0, ofrm->get_w(), ofrm->get_h(),
-							0, 0, vfrm->get_w(), vfrm->get_h(), 
-							ofrm->get_color_model(), vfrm->get_color_model(),
-							0, ofrm->get_bytes_per_line(),
-							vfrm->get_bytes_per_line());
+						vfrm->transfer_from(ofrm);
 						delete ofrm;  ofrm = vfrm;
 					}
 				}
@@ -247,7 +183,6 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 			}
 			else
 				printf(_("Access mmap to %s as %s failed.\n"), config.svg_file, filename_png);
-			lockf(fd, F_ULOCK, 0);
 			close(fd);
 		}
 	}
@@ -269,20 +204,10 @@ NEW_WINDOW_MACRO(SvgMain, SvgWin)
 
 void SvgMain::update_gui()
 {
-	if(thread)
-	{
+	if(thread) {
 		load_configuration();
 		SvgWin *window = (SvgWin*)thread->window;
-		window->lock_window();
-//		window->in_x->update(config.in_x);
-//		window->in_y->update(config.in_y);
-//		window->in_w->update(config.in_w);
-//		window->in_h->update(config.in_h);
-		window->out_x->update(config.out_x);
-		window->out_y->update(config.out_y);
-//		window->out_w->update(config.out_w);
-//		window->out_h->update(config.out_h);
-		window->svg_file_title->update(config.svg_file);
-		window->unlock_window();
+		window->update_gui(config);
 	}
 }
+

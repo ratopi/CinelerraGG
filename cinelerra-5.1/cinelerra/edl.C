@@ -75,9 +75,9 @@ EDL::EDL(EDL *parent_edl)
 
 	folders.set_array_delete();
 
-	new_folder(CLIP_FOLDER);
-
-	new_folder(MEDIA_FOLDER);
+// persistent for now
+//	new_folder(CLIP_FOLDER);
+//	new_folder(MEDIA_FOLDER);
 
 	id = next_id();
 	path[0] = 0;

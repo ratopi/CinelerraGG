@@ -634,9 +634,6 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 	}
 
-
-
-
 	draw_background(0, 0, this->w, this->h);
 
 	flash(-1, -1, -1, -1, 0);
@@ -1367,7 +1364,6 @@ int BC_WindowBase::dispatch_resize_event(int w, int h)
 
 		delete pixmap;
 		pixmap = new BC_Pixmap(this, w, h);
-
 		clear_box(0, 0, w, h);
 	}
 
@@ -1383,6 +1379,7 @@ int BC_WindowBase::dispatch_resize_event(int w, int h)
 		this->w = w;
 		this->h = h;
 		dispatch_flash();
+		flush();
 	}
 	return 0;
 }
@@ -1392,7 +1389,7 @@ int BC_WindowBase::dispatch_flash()
 	flash_enabled = 1;
 	for(int i = 0; i < subwindows->total; i++)
 		subwindows->values[i]->dispatch_flash();
-	return flash();
+	return flash(0);
 }
 
 int BC_WindowBase::dispatch_translation_event()
@@ -3950,6 +3947,7 @@ int BC_WindowBase::reposition_window(int x, int y, int w, int h)
 	{
 		delete pixmap;
 		pixmap = new BC_Pixmap(this, this->w, this->h);
+		clear_box(0,0, this->w, this->h);
 // Propagate to menubar
 		for(int i = 0; i < subwindows->total; i++)
 		{
@@ -4000,9 +3998,7 @@ void BC_WindowBase::set_background(VFrame *bitmap)
 {
 	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
 
-	bg_pixmap = new BC_Pixmap(this,
-			bitmap,
-			PIXMAP_OPAQUE);
+	bg_pixmap = new BC_Pixmap(this, bitmap, PIXMAP_OPAQUE);
 	shared_bg_pixmap = 0;
 	draw_background(0, 0, w, h);
 }
@@ -4069,10 +4065,7 @@ int BC_WindowBase::get_toggle_drag()
 int BC_WindowBase::set_icon(VFrame *data)
 {
 	if(icon_pixmap) delete icon_pixmap;
-	icon_pixmap = new BC_Pixmap(top_level,
-		data,
-		PIXMAP_ALPHA,
-		1);
+	icon_pixmap = new BC_Pixmap(top_level, data, PIXMAP_ALPHA, 1);
 
 	if(icon_window) delete icon_window;
 	icon_window = new BC_Popup(this,

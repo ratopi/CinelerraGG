@@ -104,6 +104,7 @@ public:
 	int ffmpeg_marker_indexes;
 // warning
 	int warn_indexes;
+	int warn_version;
 // use dvd yuv420p interlace format
 	int dvd_yuv420p_interlace;
 

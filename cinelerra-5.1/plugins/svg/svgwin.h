@@ -45,10 +45,12 @@ public:
 
 	void create_objects();
 	int close_event();
+	void update_gui(SvgConfig &config);
 
 	SvgCoord *in_x, *in_y, *in_w, *in_h, *out_x, *out_y, *out_w, *out_h;
 	SvgMain *client;
 	BC_Title *svg_file_title;
+	BC_Title *svg_file_mstime;
 	NewSvgButton *new_svg_button;
 	NewSvgWindow *new_svg_thread;
 	EditSvgButton *edit_svg_button;
@@ -81,7 +83,6 @@ public:
 	int handle_event();
 	void run();
 	
-	int quit_now;
 	SvgMain *client;
 	SvgWin *window;
 };
@@ -92,12 +93,21 @@ public:
 	EditSvgButton(SvgMain *client, SvgWin *window, int x, int y);
 	~EditSvgButton();
 	int handle_event();
+	void stop();
 	void run();
-	
-	int quit_now;
-	int fh_fifo;
+
 	SvgMain *client;
 	SvgWin *window;
+	int fh_fifo;	
+};
+
+class SvgInkscapeThread : public Thread
+{
+public:
+	SvgInkscapeThread(EditSvgButton *edit);
+	~SvgInkscapeThread();
+	void run();
+	EditSvgButton *edit;
 };
 
 class NewSvgWindow : public BC_FileBox
@@ -107,17 +117,6 @@ public:
 	~NewSvgWindow();
 	SvgMain *client;
 	SvgWin *window;
-};
-
-class SvgInkscapeThread : public Thread
-{
-public:
-	SvgInkscapeThread(SvgMain *client, SvgWin *window);
-	~SvgInkscapeThread();
-	void run();
-	SvgMain *client;
-	SvgWin *window;
-	int fh_fifo;
 };
 
 

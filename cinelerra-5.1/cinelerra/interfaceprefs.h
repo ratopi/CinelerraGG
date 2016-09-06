@@ -294,6 +294,14 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class UseWarnVersion : public BC_CheckBox
+{
+public:
+	UseWarnVersion(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 class ScanCommercials : public BC_CheckBox
 {
 public:

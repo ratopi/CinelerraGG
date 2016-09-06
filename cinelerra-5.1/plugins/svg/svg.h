@@ -25,6 +25,7 @@
 // the simplest plugin possible
 
 class SvgMain;
+class SvgConfig;
 class SvgThread;
 
 #include "bchash.h"
@@ -40,14 +41,12 @@ public:
 	SvgConfig();
 	int equivalent(SvgConfig &that);
 	void copy_from(SvgConfig &that);
-	void interpolate(SvgConfig &prev, 
-		SvgConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+	void interpolate(SvgConfig &prev, SvgConfig &next, 
+		long prev_frame, long next_frame, long current_frame);
 
-	float in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h;
+	float out_x, out_y;
 	char svg_file[BCTEXTLEN];
+	int64_t ms_time;
 };
 
 

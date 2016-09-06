@@ -669,6 +669,7 @@ public:
 	int restart_status;
 	int screens;
 	int in_destructor;
+	int warn_version;
 };
 
 #endif

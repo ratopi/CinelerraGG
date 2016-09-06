@@ -30,16 +30,18 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-
-struct fifo_struct {
-        int pid;
-        int action;  // 1 = update from client, 2 = client closes
-      };
+#include <errno.h>
 
 #include "empty_svg.h"
 
+struct fifo_struct {
+	int pid;
+// 1 = update from client, 2 = client closes, 3 = quit
+	int action;
+};
+
 SvgWin::SvgWin(SvgMain *client)
- : PluginClientWindow(client, 300, 280, 300, 280, 1)
+ : PluginClientWindow(client, 300, 180, 300, 180, 1)
 { 
 	this->client = client; 
 	this->editing = 0;
@@ -51,65 +53,23 @@ SvgWin::~SvgWin()
 
 void SvgWin::create_objects()
 {
+	BC_Title *title;
 	int x = 10, y = 10;
-
-//	add_tool(new BC_Title(x, y, _("In X:")));
-	y += 20;
-//	in_x = new SvgCoord(this, client, x, y, &client->config.in_x);
-//	in_x->create_objects();
-	y += 30;
-
-//	add_tool(new BC_Title(x, y, _("In Y:")));
-	y += 20;
-//	in_y = new SvgCoord(this, client, x, y, &client->config.in_y);
-//	in_y->create_objects();
-	y += 30;
-
-//	add_tool(new BC_Title(x, y, _("In W:")));
-	y += 20;
-//	in_w = new SvgCoord(this, client, x, y, &client->config.in_w);
-//	in_w->create_objects();
-	y += 30;
-
-//	add_tool(new BC_Title(x, y, _("In H:")));
-	y += 20;
-//	in_h = new SvgCoord(this, client, x, y, &client->config.in_h);
-//	in_h->create_objects();
-	y += 30;
-
-
-	x += 150;
-	y = 10;
-	add_tool(new BC_Title(x, y, _("Out X:")));
-	y += 20;
-	out_x = new SvgCoord(this, client, x, y, &client->config.out_x);
+	add_tool(title = new BC_Title(x, y, _("Out X:")));
+	int x1 = x + title->get_w() + 10;
+	out_x = new SvgCoord(this, client, x1, y, &client->config.out_x);
 	out_x->create_objects();
-	y += 30;
-
+	y += out_x->get_h() + 5;
 	add_tool(new BC_Title(x, y, _("Out Y:")));
-	y += 20;
-	out_y = new SvgCoord(this, client, x, y, &client->config.out_y);
+	out_y = new SvgCoord(this, client, x1, y, &client->config.out_y);
 	out_y->create_objects();
-	y += 30;
+	y += out_y->get_h() + 20;
 
-/*	add_tool(new BC_Title(x, y, _("Out W:")));
-	y += 20;
-	out_w = new SvgCoord(this, client, x, y, &client->config.out_w);
-	out_w->create_objects();
-	y += 30;
-
-	add_tool(new BC_Title(x, y, _("Out H:")));
-	y += 20;
-	out_h = new SvgCoord(this, client, x, y, &client->config.out_h);
-	out_h->create_objects();
-	y += 30;
-*/
-	x -= 150;
 	add_tool(new_svg_button = new NewSvgButton(client, this, x, y));
 	add_tool(edit_svg_button = new EditSvgButton(client, this, x+190, y));
-	add_tool(svg_file_title = new BC_Title(x, y+26, client->config.svg_file));
 
-	x +=150;
+	add_tool(svg_file_title = new BC_Title(x, y+=42, client->config.svg_file));
+	add_tool(svg_file_mstime = new BC_Title(x, y+=26, ""));
 
 	show_window();
 	flush();
@@ -117,22 +77,40 @@ void SvgWin::create_objects()
 
 int SvgWin::close_event()
 {
+	edit_svg_button->stop();
 	set_done(1);
 	return 1;
 }
 
-SvgCoord::SvgCoord(SvgWin *win, 
-	SvgMain *client, 
-	int x, 
-	int y,
-	float *value)
- : BC_TumbleTextBox(win,
- 	*value,
-	(float)0,
-	(float)3000,
-	x, 
-	y, 
-	100)
+
+void SvgWin::update_gui(SvgConfig &config)
+{
+	lock_window("SvgWin::update_gui");
+	out_x->update(config.out_x);
+	out_y->update(config.out_y);
+	svg_file_title->update(config.svg_file);
+	char mtime[BCSTRLEN];  mtime[0] = 0;
+	if( config.ms_time > 0 ) {
+		time_t tm = config.ms_time/1000;
+		ctime_r(&tm ,mtime);
+	}
+	svg_file_mstime->update(mtime);
+	unlock_window();
+}
+
+static void flicker(BC_GenericButton *btn, int n, int clr)
+{
+	int color = btn->get_color();
+	while( --n >= 0 ) {
+		btn->text_color(clr);   btn->draw_face(1);
+		btn->sync_display();    usleep(100000);
+		btn->text_color(color); btn->draw_face(1);
+		btn->sync_display();    usleep(100000);
+	}
+}
+
+SvgCoord::SvgCoord(SvgWin *win, SvgMain *client, int x, int y, float *value)
+ : BC_TumbleTextBox(win, *value, (float)0, (float)3000, x, y, 100)
 {
 //printf("SvgWidth::SvgWidth %f\n", client->config.w);
 	this->client = client;
@@ -156,20 +134,18 @@ NewSvgButton::NewSvgButton(SvgMain *client, SvgWin *window, int x, int y)
 {
 	this->client = client;
 	this->window = window;
-	quit_now = 0;
 }
+
 int NewSvgButton::handle_event()
 {
 	window->editing_lock.lock();
-	if (!window->editing) 
-	{
+	if( !window->editing ) {
 		window->editing = 1;
 		window->editing_lock.unlock();
-		quit_now = 0;
 		start();
-	} else
-	{
-		// FIXME - display an error
+	}
+	else {
+		flicker(this, 5, RED);
 		window->editing_lock.unlock();
 	}
 
@@ -192,21 +168,21 @@ void NewSvgButton::run()
 		if( cp ) *cp = 0;
 		if( !directory[0] ) {
 			char *cp = getenv("HOME");
-			if( !cp ) strncpy(directory, cp, sizeof(directory));
+			if( cp ) strncpy(directory, cp, sizeof(directory));
 		}
 		NewSvgWindow *new_window = new NewSvgWindow(client, window, directory);
 		new_window->create_objects();
 		new_window->update_filter("*.svg");
 		result = new_window->run_window();
 		const char *filepath = new_window->get_path(0);
+		strcpy(filename, filepath);
+		delete new_window;
 		if( result || !filepath || !*filepath ) {
 			window->editing_lock.lock();
 			window->editing = 0;
 			window->editing_lock.unlock();
 			return;              // cancel or no filename given
 		}
-		strcpy(filename, filepath);
-		delete new_window;
 
 // Extend the filename with .svg
 		if(strlen(filename) < 4 || 
@@ -227,12 +203,13 @@ void NewSvgButton::run()
 		}
 	} while(result);        // file doesn't exist so repeat
 	
-
 	strcpy(client->config.svg_file, filename);
+	struct stat st;
+	client->config.ms_time = stat(filename, &st) ? 0 :
+		st.st_mtim.tv_sec*1000 + st.st_mtim.tv_nsec/1000000;
+	window->update_gui(client->config);
 	client->send_configure_change();
 
-// save it
-	if(quit_now) window->set_done(0);
 	window->editing_lock.lock();
 	window->editing = 0;
 	window->editing_lock.unlock();
@@ -241,19 +218,29 @@ void NewSvgButton::run()
 }
 
 EditSvgButton::EditSvgButton(SvgMain *client, SvgWin *window, int x, int y)
- : BC_GenericButton(x, y, _("Edit"))
+ : BC_GenericButton(x, y, _("Edit")), Thread(1)
 {
 	this->client = client;
 	this->window = window;
-	quit_now = 0;
+	fh_fifo = -1;
 }
 
-EditSvgButton::~EditSvgButton() {
-	struct fifo_struct fifo_buf;
-	fifo_buf.pid = getpid();
-	fifo_buf.action = 3;
-	quit_now = 1;
-	write (fh_fifo, &fifo_buf, sizeof(fifo_buf)); // break the thread out of reading from fifo
+EditSvgButton::~EditSvgButton()
+{
+	stop();
+}
+
+void EditSvgButton::stop()
+{
+	if( running() ) {
+		if( fh_fifo >= 0 ) {
+			struct fifo_struct fifo_buf;
+			fifo_buf.pid = getpid();
+			fifo_buf.action = 3;
+			write(fh_fifo, &fifo_buf, sizeof(fifo_buf));
+		}
+		join();
+	}
 }
 
 int EditSvgButton::handle_event()
@@ -265,9 +252,9 @@ int EditSvgButton::handle_event()
 		window->editing = 1;
 		window->editing_lock.unlock();
 		start();
-	} else
-	{
-		// FIXME - display an error
+	}
+	else {
+		flicker(this, 5, RED);
 		window->editing_lock.unlock();
 	}
 	return 1;
@@ -276,71 +263,77 @@ int EditSvgButton::handle_event()
 void EditSvgButton::run()
 {
 // ======================================= get path from user
-	Timer pausetimer;
-	//long delay;
-	//int result;
-	//struct stat st_png;
-	//char filename[1024];
 	char filename_png[1024];
 	char filename_fifo[1024];
-	struct fifo_struct fifo_buf;
-	SvgInkscapeThread *inkscape_thread = new SvgInkscapeThread(client, window);
-	
 	strcpy(filename_png, client->config.svg_file);
 	strcat(filename_png, ".png");
 	remove(filename_png);
 	strcpy(filename_fifo, filename_png);
 	strcat(filename_fifo, ".fifo");	
-	if (mkfifo(filename_fifo, S_IRWXU) != 0) {
-		perror(_("Error while creating fifo file"));
-	} 
-	fh_fifo = open(filename_fifo, O_RDWR);
-	fifo_buf.action = 0;
-	inkscape_thread->fh_fifo = fh_fifo;
-	inkscape_thread->start();
-	while (inkscape_thread->running() && (!quit_now)) { 
-		Timer::delay(200); // poll file every 200ms
-		read(fh_fifo, &fifo_buf, sizeof(fifo_buf));
-
-		if (fifo_buf.action == 1) {
-			client->send_configure_change();
-		} else if (fifo_buf.action == 2) {
-			printf(_("Inkscape has exited\n"));
-		} else if (fifo_buf.action == 3) {
-			printf(_("Plugin window has closed\n"));
-			delete inkscape_thread;
-			close(fh_fifo);
-			return;
+	remove(filename_fifo);
+	if( !mkfifo(filename_fifo, S_IRWXU) &&
+	    (fh_fifo = ::open(filename_fifo, O_RDWR+O_NONBLOCK)) >= 0 ) {
+		SvgInkscapeThread inkscape_thread(this);
+		inkscape_thread.start();
+		int done = 0;
+		while( inkscape_thread.running() && !done ) {
+			struct stat st;
+			int64_t ms_time = stat(client->config.svg_file, &st) ? 0 :
+				st.st_mtim.tv_sec*1000 + st.st_mtim.tv_nsec/1000000;
+			if( client->config.ms_time != ms_time ) {
+				client->config.ms_time = ms_time;
+				client->send_configure_change();
+			}
+			// select(fh_fifo+1,rds,0,ers,tmo) does not work here
+			Timer::delay(200);
+			struct fifo_struct fifo_buf; fifo_buf.action = 1;
+			int ret = read(fh_fifo, &fifo_buf, sizeof(fifo_buf));
+			if( ret < 0 ) {
+				if( errno == EAGAIN ) continue;
+				perror("fifo");
+				break;
+			}
+			if( ret != sizeof(fifo_buf) ) continue;
+			switch( fifo_buf.action ) {
+			case 1: break;
+			case 2: printf(_("Inkscape has exited\n"));
+				break;
+			case 3: printf(_("Plugin window has closed\n"));
+				done = 1;
+				break;
+			}
 		}
 	}
+	else
+		perror(_("Error opening fifo file"));
 	remove(filename_fifo); // fifo destroyed on last close
-	inkscape_thread->join();
-	close(fh_fifo);
+	::close(fh_fifo);
 	window->editing_lock.lock();
 	window->editing = 0;
 	window->editing_lock.unlock();
-
+	struct stat st;
+	client->config.ms_time = stat(client->config.svg_file, &st) ? 0 :
+		st.st_mtim.tv_sec*1000 + st.st_mtim.tv_nsec/1000000;
 	client->send_configure_change();
 }
 
-SvgInkscapeThread::SvgInkscapeThread(SvgMain *client, SvgWin *window)
+SvgInkscapeThread::SvgInkscapeThread(EditSvgButton *edit)
  : Thread(1)
 {
-	this->client = client;
-	this->window = window;
+	this->edit = edit;;
 }
 
 SvgInkscapeThread::~SvgInkscapeThread()
 {
-	// what do we do? kill inkscape?
 	cancel();
+	join();
 }
 
 void SvgInkscapeThread::run()
 {
 // Runs the inkscape
 	char command[1024];
-	sprintf(command, "inkscape --with-gui %s", client->config.svg_file);
+	sprintf(command, "inkscape --with-gui %s", edit->client->config.svg_file);
 	printf(_("Running external SVG editor: %s\n"), command);
 
 	enable_cancel();
@@ -349,7 +342,7 @@ void SvgInkscapeThread::run()
 	struct fifo_struct fifo_buf;
 	fifo_buf.pid = getpid();
 	fifo_buf.action = 2;
-	write (fh_fifo, &fifo_buf, sizeof(fifo_buf));
+	write(edit->fh_fifo, &fifo_buf, sizeof(fifo_buf));
 	disable_cancel();
 
 	return;
