@@ -41,10 +41,10 @@ public:
 	SvgConfig();
 	int equivalent(SvgConfig &that);
 	void copy_from(SvgConfig &that);
-	void interpolate(SvgConfig &prev, SvgConfig &next, 
+	void interpolate(SvgConfig &prev, SvgConfig &next,
 		long prev_frame, long next_frame, long current_frame);
 
-	float out_x, out_y;
+	float out_x, out_y, out_w, out_h, dpi;
 	char svg_file[BCTEXTLEN];
 	int64_t ms_time;
 };

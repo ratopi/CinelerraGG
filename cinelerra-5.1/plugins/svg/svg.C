@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
  */
 
 #include "clip.h"
@@ -24,6 +23,8 @@
 #include "language.h"
 #include "svg.h"
 #include "svgwin.h"
+#include "overlayframe.inc"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -37,16 +38,21 @@ REGISTER_PLUGIN(SvgMain)
 
 SvgConfig::SvgConfig()
 {
-	out_x = 0;
-	out_y = 0;
+	out_x = 0;   out_y = 0;
+	out_w = 640; out_h = 480;
+	dpi = 90;
 	strcpy(svg_file, "");
 	ms_time = 0;
 }
 
 int SvgConfig::equivalent(SvgConfig &that)
 {
-	// out_x/out_y always used by overlayer
-	return !strcmp(svg_file, that.svg_file) &&
+	return EQUIV(dpi, that.dpi) &&
+		EQUIV(out_x, that.out_x) &&
+		EQUIV(out_y, that.out_y) &&
+		EQUIV(out_w, that.out_w) &&
+		EQUIV(out_h, that.out_h) &&
+		!strcmp(svg_file, that.svg_file) &&
 		ms_time == that.ms_time;
 }
 
@@ -54,11 +60,14 @@ void SvgConfig::copy_from(SvgConfig &that)
 {
 	out_x = that.out_x;
 	out_y = that.out_y;
+	out_w = that.out_w;
+	out_h = that.out_h;
+	dpi = that.dpi;
 	strcpy(svg_file, that.svg_file);
 	ms_time = that.ms_time;
 }
 
-void SvgConfig::interpolate(SvgConfig &prev, SvgConfig &next, 
+void SvgConfig::interpolate(SvgConfig &prev, SvgConfig &next,
 	long prev_frame, long next_frame, long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -66,6 +75,9 @@ void SvgConfig::interpolate(SvgConfig &prev, SvgConfig &next,
 
 	this->out_x = prev.out_x * prev_scale + next.out_x * next_scale;
 	this->out_y = prev.out_y * prev_scale + next.out_y * next_scale;
+	this->out_w = prev.out_w * prev_scale + next.out_w * next_scale;
+	this->out_h = prev.out_h * prev_scale + next.out_h * next_scale;
+	this->dpi = prev.dpi;
 	strcpy(this->svg_file, prev.svg_file);
 	this->ms_time = prev.ms_time;
 }
@@ -102,6 +114,9 @@ void SvgMain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("SVG");
 	output.tag.set_property("OUT_X", config.out_x);
 	output.tag.set_property("OUT_Y", config.out_y);
+	output.tag.set_property("OUT_W", config.out_w);
+	output.tag.set_property("OUT_H", config.out_h);
+	output.tag.set_property("DPI", config.dpi);
 	output.tag.set_property("SVG_FILE", config.svg_file);
 	output.tag.set_property("MS_TIME", config.ms_time);
 	output.append_tag();
@@ -121,8 +136,11 @@ void SvgMain::read_data(KeyFrame *keyframe)
 
 	while( !(result = input.read_tag()) ) {
 		if(input.tag.title_is("SVG")) {
-			config.out_x =	input.tag.get_property("OUT_X", config.out_x);
-			config.out_y =	input.tag.get_property("OUT_Y", config.out_y);
+			config.out_x = input.tag.get_property("OUT_X", config.out_x);
+			config.out_y = input.tag.get_property("OUT_Y", config.out_y);
+			config.out_w = input.tag.get_property("OUT_W", config.out_w);
+			config.out_h = input.tag.get_property("OUT_H", config.out_h);
+			config.dpi = input.tag.get_property("DPI", config.dpi);
 			input.tag.get_property("SVG_FILE", config.svg_file);
 			config.ms_time = input.tag.get_property("MS_TIME", config.ms_time);
 		}
@@ -135,24 +153,35 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 	if( input != output )
 		output->copy_from(input);
 
-	need_reconfigure |= load_configuration();
-	if( need_reconfigure ) {
+	int need_export = 0;
+	float last_dpi = config.dpi;
+	char last_svg_file[BCTEXTLEN];
+	strcpy(last_svg_file, config.svg_file);
+	int64_t last_ms_time = config.ms_time;
+	load_configuration();
+	if( last_dpi != config.dpi )
+		need_export = 1;
+	if( strcmp(last_svg_file, config.svg_file) ||
+	    last_ms_time != config.ms_time )
+		need_reconfigure = 1;
+
+	if( need_reconfigure || need_export ) {
 		need_reconfigure = 0;
 		if( config.svg_file[0] == 0 ) return 0;
 		delete ofrm;  ofrm = 0;
-		char filename_png[1024];
+		char filename_png[BCTEXTLEN];
 		strcpy(filename_png, config.svg_file);
 		strncat(filename_png, ".png", sizeof(filename_png));
 		struct stat st_png;
-		int64_t ms_time = stat(filename_png, &st_png) ? 0 :
+		int64_t ms_time = need_export || stat(filename_png, &st_png) ? 0 :
 			st_png.st_mtim.tv_sec*1000 + st_png.st_mtim.tv_nsec/1000000;
 		int fd = ms_time < config.ms_time ? -1 : open(filename_png, O_RDWR);
 		if( fd < 0 ) { // file does not exist, export it
-			char command[1024];
+			char command[BCTEXTLEN];
 			sprintf(command,
 				"inkscape --without-gui --export-background=0x000000 "
-				"--export-background-opacity=0 %s --export-png=%s",
-				config.svg_file, filename_png);
+				"--export-background-opacity=0 -d %f %s --export-png=%s",
+				config.dpi, config.svg_file, filename_png);
 			printf(_("Running command %s\n"), command);
 			system(command);
 			// in order for lockf to work it has to be open for writing
@@ -164,7 +193,7 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 			struct stat st_png;
 			fstat(fd, &st_png);
 			unsigned char *png_buffer = (unsigned char *)
-				mmap (NULL, st_png.st_size, PROT_READ, MAP_SHARED, fd, 0); 
+				mmap (NULL, st_png.st_size, PROT_READ, MAP_SHARED, fd, 0);
 			if( png_buffer != MAP_FAILED ) {
 				if( png_buffer[0] == 0x89 && png_buffer[1] == 0x50 &&
 				    png_buffer[2] == 0x4e && png_buffer[3] == 0x47 ) {
@@ -190,11 +219,10 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 		if(!overlayer) overlayer = new OverlayFrame(smp + 1);
 		overlayer->overlay(output, ofrm,
 			 0, 0, ofrm->get_w(), ofrm->get_h(),
-			config.out_x, config.out_y, 
-			config.out_x + ofrm->get_w(),
-			config.out_y + ofrm->get_h(),
-			1, TRANSFER_NORMAL,
-			get_interpolation_type());
+			config.out_x, config.out_y,
+			config.out_x + config.out_w,
+			config.out_y + config.out_h,
+			1, TRANSFER_NORMAL, LINEAR_LINEAR);
 	}
 	return 0;
 }

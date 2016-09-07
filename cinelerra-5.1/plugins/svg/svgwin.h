@@ -36,6 +36,8 @@ class SvgCoord;
 class NewSvgButton;
 class NewSvgWindow;
 class EditSvgButton;
+class DpiValue;
+class DpiButton;
 
 class SvgWin : public PluginClientWindow
 {
@@ -46,8 +48,11 @@ public:
 	void create_objects();
 	int close_event();
 	void update_gui(SvgConfig &config);
+	int hide_window(int flush = 1);
 
-	SvgCoord *in_x, *in_y, *in_w, *in_h, *out_x, *out_y, *out_w, *out_h;
+	SvgCoord *out_x, *out_y, *out_w, *out_h;
+	DpiValue *dpi;
+	DpiButton *dpi_button;
 	SvgMain *client;
 	BC_Title *svg_file_title;
 	BC_Title *svg_file_mstime;
@@ -62,11 +67,8 @@ public:
 class SvgCoord : public BC_TumbleTextBox
 {
 public:
-	SvgCoord(SvgWin *win, 
-		SvgMain *client, 
-		int x, 
-		int y, 
-		float *value);
+	SvgCoord(SvgWin *win, SvgMain *client,
+		int x, int y, float *value);
 	~SvgCoord();
 	int handle_event();
 
@@ -115,6 +117,31 @@ class NewSvgWindow : public BC_FileBox
 public:
 	NewSvgWindow(SvgMain *client, SvgWin *window, char *init_directory);
 	~NewSvgWindow();
+	SvgMain *client;
+	SvgWin *window;
+};
+
+class DpiValue : public BC_TumbleTextBox
+{
+public:
+	DpiValue(SvgWin *win, SvgMain *client,
+		int x, int y, float *value);
+	~DpiValue();
+	int handle_event();
+
+	SvgMain *client;
+	SvgWin *win;
+	float *value;
+
+};
+
+class DpiButton : public BC_GenericButton
+{
+public:
+	DpiButton( SvgWin *window, SvgMain *client, int x, int y);
+	~DpiButton();
+	int handle_event();
+
 	SvgMain *client;
 	SvgWin *window;
 };

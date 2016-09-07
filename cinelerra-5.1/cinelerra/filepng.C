@@ -254,27 +254,27 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 
 //printf("FilePNG::write_frame 1\n");
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
-	if( png_ptr && !setjmp(png_jmpbuf(png_ptr)) ) {
-		info_ptr = png_create_info_struct(png_ptr);
-		png_set_write_fn(png_ptr, data,
-			(png_rw_ptr)write_function, (png_flush_ptr)flush_function);
-		png_set_compression_level(png_ptr, 5);
+	if( png_ptr ) {
+		if( !setjmp(png_jmpbuf(png_ptr)) ) {
+			info_ptr = png_create_info_struct(png_ptr);
+			png_set_write_fn(png_ptr, data,
+				(png_rw_ptr)write_function, (png_flush_ptr)flush_function);
+			png_set_compression_level(png_ptr, 5);
 
-		png_set_IHDR(png_ptr, info_ptr, asset->width, asset->height, 8,
-			asset->png_use_alpha ?  PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB,
-			PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-		png_write_info(png_ptr, info_ptr);
-		png_write_image(png_ptr, output_frame->get_rows());
-		png_write_end(png_ptr, info_ptr);
+			png_set_IHDR(png_ptr, info_ptr, asset->width, asset->height, 8,
+				asset->png_use_alpha ?  PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB,
+				PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+			png_write_info(png_ptr, info_ptr);
+			png_write_image(png_ptr, output_frame->get_rows());
+			png_write_end(png_ptr, info_ptr);
+			result = 0;
+		}
 		png_destroy_write_struct(&png_ptr, &info_ptr);
-		result = 0;
 	}
-	else {
+	if( result ) {
 		char error[256];  png_error(png_ptr, error);
 		fprintf(stderr, "FilePNG::write_frame failed: %s\n", error);
 	}
-
-	png_destroy_write_struct(&png_ptr, &info_ptr);
 //printf("FilePNG::write_frame 3 %d\n", data->get_compressed_size());
 	return result;
 }

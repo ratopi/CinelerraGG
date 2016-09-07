@@ -19,11 +19,10 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
-#include "clip.h"
 #include "svgwin.h"
 #include "filexml.h"
 #include "language.h"
+
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -41,9 +40,9 @@ struct fifo_struct {
 };
 
 SvgWin::SvgWin(SvgMain *client)
- : PluginClientWindow(client, 300, 180, 300, 180, 1)
-{ 
-	this->client = client; 
+ : PluginClientWindow(client, 420, 210, 420, 210, 1)
+{
+	this->client = client;
 	this->editing = 0;
 }
 
@@ -54,22 +53,51 @@ SvgWin::~SvgWin()
 void SvgWin::create_objects()
 {
 	BC_Title *title;
-	int x = 10, y = 10;
-	add_tool(title = new BC_Title(x, y, _("Out X:")));
-	int x1 = x + title->get_w() + 10;
+	int x0 = 10, y = 10;
+
+	add_tool(title = new BC_Title(x0, y, _("Out X:")));
+	int x1 = x0 + title->get_w() + 10;
 	out_x = new SvgCoord(this, client, x1, y, &client->config.out_x);
 	out_x->create_objects();
+	int x2 = x1 + out_x->get_w() + 15;
+	add_tool(title = new BC_Title(x2, y, _("Out W:")));
+	int x3 = x2 + title->get_w() + 10;
+	out_w = new SvgCoord(this, client, x3, y, &client->config.out_w);
+	out_w->create_objects();
 	y += out_x->get_h() + 5;
-	add_tool(new BC_Title(x, y, _("Out Y:")));
+
+	add_tool(new BC_Title(x0, y, _("Out Y:")));
 	out_y = new SvgCoord(this, client, x1, y, &client->config.out_y);
 	out_y->create_objects();
+	add_tool(title = new BC_Title(x2, y, _("Out H:")));
+	out_h = new SvgCoord(this, client, x3, y, &client->config.out_h);
+	out_h->create_objects();
 	y += out_y->get_h() + 20;
 
-	add_tool(new_svg_button = new NewSvgButton(client, this, x, y));
-	add_tool(edit_svg_button = new EditSvgButton(client, this, x+190, y));
+	add_tool(title = new BC_Title(x0, y, _("DPI:")));
+        dpi = new DpiValue(this, client, x1, y, &client->config.dpi);
+        dpi->create_objects();
+	add_tool(dpi_button = new DpiButton(this, client, x2, y));
+	dpi_button->create_objects();
+        y += dpi->get_h() + 20;
 
-	add_tool(svg_file_title = new BC_Title(x, y+=42, client->config.svg_file));
-	add_tool(svg_file_mstime = new BC_Title(x, y+=26, ""));
+	add_tool(svg_file_title = new BC_Title(x0, y, client->config.svg_file));
+	y += svg_file_title->get_h() + 5;
+	struct stat st;
+	int64_t ms_time = stat(client->config.svg_file, &st) ? 0 :
+		st.st_mtim.tv_sec*1000 + st.st_mtim.tv_nsec/1000000;
+	char mtime[BCSTRLEN];  mtime[0] = 0;
+	if( ms_time > 0 ) {
+		time_t tm = ms_time/1000;
+		ctime_r(&tm ,mtime);
+	}
+	add_tool(svg_file_mstime = new BC_Title(x0, y, mtime));
+	y += svg_file_mstime->get_h() + 15;
+
+	y = get_h() - NewSvgButton::calculate_h() - 5;
+	add_tool(new_svg_button = new NewSvgButton(client, this, x0, y));
+	y = get_h() - EditSvgButton::calculate_h() - 5;
+	add_tool(edit_svg_button = new EditSvgButton(client, this, x0+300, y));
 
 	show_window();
 	flush();
@@ -82,12 +110,21 @@ int SvgWin::close_event()
 	return 1;
 }
 
+int SvgWin::hide_window(int flush)
+{
+	edit_svg_button->stop();
+	return BC_WindowBase::hide_window(flush);
+}
+
 
 void SvgWin::update_gui(SvgConfig &config)
 {
 	lock_window("SvgWin::update_gui");
 	out_x->update(config.out_x);
 	out_y->update(config.out_y);
+	out_w->update(config.out_w);
+	out_h->update(config.out_h);
+	dpi->update(config.dpi);
 	svg_file_title->update(config.svg_file);
 	char mtime[BCSTRLEN];  mtime[0] = 0;
 	if( config.ms_time > 0 ) {
@@ -185,8 +222,8 @@ void NewSvgButton::run()
 		}
 
 // Extend the filename with .svg
-		if(strlen(filename) < 4 || 
-			strcasecmp(&filename[strlen(filename) - 4], ".svg")) {
+		if( strlen(filename) < 4 ||
+			strcasecmp(&filename[strlen(filename) - 4], ".svg") ) {
 			strcat(filename, ".svg");
 		}
 
@@ -247,8 +284,7 @@ int EditSvgButton::handle_event()
 {
 	
 	window->editing_lock.lock();
-	if (!window->editing && client->config.svg_file[0] != 0) 
-	{
+	if( !window->editing && client->config.svg_file[0] != 0 ) {
 		window->editing = 1;
 		window->editing_lock.unlock();
 		start();
@@ -353,18 +389,50 @@ void SvgInkscapeThread::run()
 NewSvgWindow::NewSvgWindow(SvgMain *client, SvgWin *window, char *init_directory)
  : BC_FileBox(0,
  	BC_WindowBase::get_resources()->filebox_h / 2,
- 	init_directory, 
-	_("SVG Plugin: Pick SVG file"), 
+ 	init_directory,
+	_("SVG Plugin: Pick SVG file"),
 	_("Open an existing SVG file or create a new one"))
-{ 
-	this->window = window; 
+{
+	this->window = window;
 }
 
 NewSvgWindow::~NewSvgWindow() {}
 
 
+DpiValue::DpiValue(SvgWin *win, SvgMain *client, int x, int y, float *value)
+ : BC_TumbleTextBox(win, *value, (float)10, (float)1000, x, y, 100)
+{
+//printf("SvgWidth::SvgWidth %f\n", client->config.w);
+	this->client = client;
+	this->win = win;
+	this->value = value;
+}
+
+DpiValue::~DpiValue()
+{
+}
+
+int DpiValue::handle_event()
+{
+	*value = atof(get_text());
+	return 1;
+}
 
 
+DpiButton::DpiButton( SvgWin *window, SvgMain *client, int x, int y)
+ : BC_GenericButton(x, y, _("update dpi"))
+{
+	this->client = client;
+	this->window = window;
+}
 
+DpiButton::~DpiButton()
+{
+}
 
+int DpiButton::handle_event()
+{
+	client->send_configure_change();
+	return 1;
+};
 
