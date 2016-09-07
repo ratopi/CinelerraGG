@@ -239,8 +239,8 @@ void EditSvgButton::stop()
 			fifo_buf.action = 3;
 			write(fh_fifo, &fifo_buf, sizeof(fifo_buf));
 		}
-		join();
 	}
+	join();
 }
 
 int EditSvgButton::handle_event()

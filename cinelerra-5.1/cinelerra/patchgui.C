@@ -237,29 +237,17 @@ void PatchGUI::toggle_behavior(int type,
 		BC_Toggle *toggle,
 		int *output)
 {
-	if(toggle->shift_down())
-	{
+	if(toggle->shift_down()) {
+		int sense = type != Tracks::MUTE ? 1 : 0;
 		// all selected if nothing previously selected or
 		// if this patch was previously the only one selected
-		switch( type ) {
-		case Tracks::MUTE: {  // negative logic for normally off
-			int total_selected = mwindow->edl->tracks->total() -
-				mwindow->edl->tracks->total_of(type);
-			int current_output = *output;
-			int selected = !total_selected || (total_selected == 1 &&
-				 !current_output ) ? 0 : 1;
-			mwindow->edl->tracks->select_all(type, selected);
-			if( selected ) *output = 0;
-			break; }
-		default: {
-			int total_selected = mwindow->edl->tracks->total_of(type);
-			int current_output = *output;
-			int selected = !total_selected || (total_selected == 1 &&
-				 current_output ) ? 1 : 0;
-			mwindow->edl->tracks->select_all(type, selected);
-			if( !selected ) *output = 1;
-			break; }
-		}
+		int total_type = mwindow->edl->tracks->total_of(type);
+		int total_selected = sense ? total_type :
+			mwindow->edl->tracks->total() - total_type;
+		int selected = !total_selected || (total_selected == 1 &&
+			 *output == sense ) ? sense : 1-sense;
+		mwindow->edl->tracks->select_all(type, selected);
+		if( selected != sense ) *output = sense;
 
 		patchbay->drag_operation = type;
 		patchbay->new_status = 1;
