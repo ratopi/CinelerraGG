@@ -527,13 +527,13 @@ ZTYP(int32_t);	ZTYP(uint32_t);
 ZTYP(int64_t);	ZTYP(uint64_t);
 ZTYP(float);	ZTYP(double);
 
-#define ALPHA3_BLEND(FN, typ, inp, out, mx, ofs, rnd) \
-  typ inp0 = (typ)inp[0], inp1 = (typ)inp[1] - ofs; \
-  typ inp2 = (typ)inp[2] - ofs, inp3 = mx; \
-  typ out0 = (typ)out[0], out1 = (typ)out[1] - ofs; \
-  typ out2 = (typ)out[2] - ofs, out3 = mx; \
+#define ALPHA3_BLEND(FN, typ, inp, out, mx, iofs, oofs, rnd) \
+  typ inp0 = (typ)inp[0], inp1 = (typ)inp[1] - iofs; \
+  typ inp2 = (typ)inp[2] - iofs, inp3 = mx; \
+  typ out0 = (typ)out[0], out1 = (typ)out[1] - oofs; \
+  typ out2 = (typ)out[2] - oofs, out3 = mx; \
   r = COLOR_##FN(mx, inp0, inp3, out0, out3); \
-  if( ofs ) { \
+  if( oofs ) { \
     g = CHROMA_##FN(mx, inp1, inp3, out1, out3); \
     b = CHROMA_##FN(mx, inp2, inp3, out2, out3); \
   } \
@@ -542,13 +542,13 @@ ZTYP(float);	ZTYP(double);
     b = COLOR_##FN(mx, inp2, inp3, out2, out3); \
   }
 
-#define ALPHA4_BLEND(FN, typ, inp, out, mx, ofs, rnd) \
-  typ inp0 = (typ)inp[0], inp1 = (typ)inp[1] - ofs; \
-  typ inp2 = (typ)inp[2] - ofs, inp3 = inp[3]; \
-  typ out0 = (typ)out[0], out1 = (typ)out[1] - ofs; \
-  typ out2 = (typ)out[2] - ofs, out3 = out[3]; \
+#define ALPHA4_BLEND(FN, typ, inp, out, mx, iofs, oofs, rnd) \
+  typ inp0 = (typ)inp[0], inp1 = (typ)inp[1] - iofs; \
+  typ inp2 = (typ)inp[2] - iofs, inp3 = inp[3]; \
+  typ out0 = (typ)out[0], out1 = (typ)out[1] - oofs; \
+  typ out2 = (typ)out[2] - oofs, out3 = out[3]; \
   r = COLOR_##FN(mx, inp0, inp3, out0, out3); \
-  if( ofs ) { \
+  if( oofs ) { \
     g = CHROMA_##FN(mx, inp1, inp3, out1, out3); \
     b = CHROMA_##FN(mx, inp2, inp3, out2, out3); \
   } \
@@ -587,7 +587,7 @@ ZTYP(float);	ZTYP(double);
   ALPHA_STORE(out, ofs, mx); \
   out[3] = aclip(a, mx)
 
-#define XBLEND(FN, temp_type, type, max, components, chroma_offset, round) { \
+#define XBLEND(FN, temp_type, type, max, components, ofs, round) { \
 	temp_type opcty = fade * max + round, trnsp = max - opcty; \
 	type** output_rows = (type**)output->get_rows(); \
 	type** input_rows = (type**)input->get_rows(); \
@@ -599,13 +599,13 @@ ZTYP(float);	ZTYP(double);
 		for(int j = 0; j < ow; j++) { \
 			if( components == 4 ) { \
 				temp_type r, g, b, a; \
-				ALPHA4_BLEND(FN, temp_type, in_row, output, max, chroma_offset, round); \
-				ALPHA4_STORE(output, chroma_offset, max); \
+				ALPHA4_BLEND(FN, temp_type, in_row, output, max, ofs, ofs, round); \
+				ALPHA4_STORE(output, ofs, max); \
 			} \
 			else { \
 				temp_type r, g, b; \
-				ALPHA3_BLEND(FN, temp_type, in_row, output, max, chroma_offset, round); \
-				ALPHA3_STORE(output, chroma_offset, max); \
+				ALPHA3_BLEND(FN, temp_type, in_row, output, max, ofs, ofs, round); \
+				ALPHA3_STORE(output, ofs, max); \
 			} \
 			in_row += components;  output += components; \
 		} \
@@ -732,7 +732,7 @@ LoadPackage* DirectEngine::new_package()
 
 /* Nearest Neighbor scale / translate / blend ********************/
 
-#define XBLEND_3NN(FN, temp_type, type, max, components, chroma_offset, round) { \
+#define XBLEND_3NN(FN, temp_type, type, max, components, ofs, round) { \
 	temp_type opcty = fade * max + round, trnsp = max - opcty; \
 	type** output_rows = (type**)output->get_rows(); \
 	type** input_rows = (type**)input->get_rows(); \
@@ -746,13 +746,13 @@ LoadPackage* DirectEngine::new_package()
 			in_row += *lx++; \
 			if( components == 4 ) { \
 				temp_type r, g, b, a; \
-				ALPHA4_BLEND(FN, temp_type, in_row, output, max, chroma_offset, round); \
-				ALPHA4_STORE(output, chroma_offset, max); \
+				ALPHA4_BLEND(FN, temp_type, in_row, output, max, ofs, ofs, round); \
+				ALPHA4_STORE(output, ofs, max); \
 			} \
 			else { \
 				temp_type r, g, b; \
-				ALPHA3_BLEND(FN, temp_type, in_row, output, max, chroma_offset, round); \
-				ALPHA3_STORE(output, chroma_offset, max); \
+				ALPHA3_BLEND(FN, temp_type, in_row, output, max, ofs, ofs, round); \
+				ALPHA3_STORE(output, ofs, max); \
 			} \
 			output += components; \
 		} \
@@ -949,7 +949,7 @@ LoadPackage* NNEngine::new_package()
 /* Fully resampled scale / translate / blend ******************************/
 /* resample into a temporary row vector, then blend */
 
-#define XSAMPLE(FN, temp_type, type, max, components, chroma_offset, round) { \
+#define XSAMPLE(FN, temp_type, type, max, components, ofs, round) { \
 	float temp[oh*components]; \
 	temp_type opcty = fade * max + round, trnsp = max - opcty; \
 	type **output_rows = (type**)voutput->get_rows() + o1i; \
@@ -962,8 +962,8 @@ LoadPackage* NNEngine::new_package()
 			type *ip = input + i1i * components; \
 			for(int j = 0; j < oh; j++) { \
 				*tempp++ = *ip++; \
-				*tempp++ = *ip++ - chroma_offset; \
-				*tempp++ = *ip++ - chroma_offset; \
+				*tempp++ = *ip++ - ofs; \
+				*tempp++ = *ip++ - ofs; \
 				if( components == 4 ) *tempp++ = *ip++; \
 			} \
 		} \
@@ -981,8 +981,8 @@ LoadPackage* NNEngine::new_package()
 					if( components == 4 ) { awacc += kv;  kv *= ip[3]; } \
 					wacc += kv; \
 					racc += kv * *ip++; \
-					gacc += kv * (*ip++ - chroma_offset); \
-					bacc += kv * (*ip++ - chroma_offset); \
+					gacc += kv * (*ip++ - ofs); \
+					bacc += kv * (*ip++ - ofs); \
 					if( components == 4 ) { aacc += kv;  ++ip; } \
 					ki += kd; \
 				} \
@@ -1009,13 +1009,13 @@ LoadPackage* NNEngine::new_package()
 			type *output = output_rows[j] + i * components; \
 			if( components == 4 ) { \
 				temp_type r, g, b, a; \
-				ALPHA4_BLEND(FN, temp_type, tempp, output, max, 0, round); \
-				ALPHA4_STORE(output, chroma_offset, max); \
+				ALPHA4_BLEND(FN, temp_type, tempp, output, max, 0, ofs, round); \
+				ALPHA4_STORE(output, ofs, max); \
 			} \
 			else { \
 				temp_type r, g, b; \
-				ALPHA3_BLEND(FN, temp_type, tempp, output, max, 0, round); \
-				ALPHA3_STORE(output, chroma_offset, max); \
+				ALPHA3_BLEND(FN, temp_type, tempp, output, max, 0, ofs, round); \
+				ALPHA3_STORE(output, ofs, max); \
 			} \
 			tempp += components; \
 		} \
