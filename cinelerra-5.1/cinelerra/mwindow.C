@@ -3146,13 +3146,23 @@ void MWindow::dump_exe(FILE *fp)
 {
         char proc_path[BCTEXTLEN], exe_path[BCTEXTLEN];
         sprintf(proc_path, "/proc/%d/exe", (int)getpid());
-        int ret = readlink(proc_path, exe_path, sizeof(exe_path));
-	if( ret < 0 ) { fprintf(fp,"readlink: %m\n"); return; }
-	exe_path[ret] = 0;
+
+        int ret = -1, n = 100;
+	for( int len; (len=readlink(proc_path, exe_path, sizeof(exe_path)))>0; --n ) {
+		exe_path[len] = 0;  strcpy(proc_path, exe_path);
+		ret = 0;
+	}
+	if( n < 0 || ret < 0 ) { fprintf(fp,"readlink: %m\n"); return; }
+
 	struct stat st;
-	if( stat(exe_path,&st) ) { fprintf(fp,"stat: %m\n"); return; }
-	fprintf(fp, "path: %s = %9jd bytes\n",exe_path,st.st_size);
-	int fd = open(exe_path,O_RDONLY+O_NONBLOCK);
+	if( stat(proc_path,&st) ) { fprintf(fp,"stat: %m\n"); return; }
+	fprintf(fp, "path: %s = %9jd bytes\n",proc_path,st.st_size);
+	struct tm *tm = localtime(&st.st_mtime);
+	char mtime[256];
+	strftime(mtime, sizeof(mtime), "%F %T", tm);
+	fprintf(fp,"mtime: %s\n", mtime);
+
+	int fd = open(proc_path,O_RDONLY+O_NONBLOCK);
 	if( fd < 0 ) { fprintf(fp,"open: %m\n"); return; }
 	uint8_t *bfr = 0;
 	int64_t bfrsz = 0;

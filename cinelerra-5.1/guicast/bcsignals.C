@@ -28,6 +28,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <execinfo.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -835,9 +836,10 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 	ucontext_t *uc = (ucontext_t *)sc;
 	int pid = getpid(), tid = gettid();
 	struct sigcontext *c = (struct sigcontext *)&uc->uc_mcontext;
+	uint8_t *ip = (uint8_t *)c->IP;
 	fprintf(stderr,"** %s at %p in pid %d, tid %d\n",
 		n==SIGSEGV? "segv" : n==SIGINT? "intr" : "trap",
-		(void*)c->IP, pid, tid);
+		(void*)ip, pid, tid);
 	FILE *fp = 0;
 	char fn[PATH_MAX];
 	if( BC_Signals::trap_path ) {
@@ -874,6 +876,27 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 	fprintf(fp,"\nVERSION:\n");  bc_copy_textfile(INT_MAX, fp,"/proc/version");
 	fprintf(fp,"\nMEMINFO:\n");  bc_copy_textfile(INT_MAX, fp,"/proc/meminfo");
 	fprintf(fp,"\nMAPS:\n");     bc_copy_textfile(INT_MAX, fp,"/proc/%d/maps",pid);
+	char proc_mem[64];
+	if( tid > 0 && tid != pid )
+		sprintf(proc_mem,"/proc/%d/task/%d/mem",pid,tid);
+	else
+		sprintf(proc_mem,"/proc/%d/mem",pid);
+	int pfd = open(proc_mem,O_RDONLY);
+	if( pfd >= 0 ) {
+		fprintf(fp,"\nCODE:\n");
+		for( int i=-32; i<32; ) {
+			uint8_t v;  void *vp = (void *)(ip + i);
+			if( !(i & 7) ) fprintf(fp,"%p:  ", vp);
+			if( pread(pfd,&v,sizeof(v),(off_t)vp) != sizeof(v) ) break;
+			fprintf(fp,"%c%02x", !i ? '>' : ' ', v);
+			if( !(++i & 7) ) fprintf(fp,"\n");
+		}
+		fprintf(fp,"\n");
+		close(pfd);
+	}
+	else
+		fprintf(fp,"err opening: %s, %m\n", proc_mem);
+
 	fprintf(fp,"\n\n");
 	if( fp != stdout ) fclose(fp);
 	char cmd[1024], *cp = cmd;

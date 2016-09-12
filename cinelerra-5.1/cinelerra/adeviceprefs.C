@@ -342,6 +342,7 @@ int ADevicePrefs::create_alsa_objs()
 	int x1 = x + menu->get_w() + 5;
 
 	ArrayList<char*> *alsa_titles = new ArrayList<char*>;
+	alsa_titles->set_array_delete();
 	AudioALSA::list_devices(alsa_titles, 0, mode);
 
 
