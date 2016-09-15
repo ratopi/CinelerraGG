@@ -93,8 +93,8 @@ public:
 	virtual void zoom_auto() {};
 	virtual int cursor_leave_event() { return 0; };
 	virtual int cursor_enter_event() { return 0; };
-	virtual int button_release_event();
-	virtual int button_press_event() { return 0; };
+	virtual int button_release_event() { return 0; };
+	virtual int button_press_event();
 	virtual int cursor_motion_event() { return 0; };
 	virtual void draw_overlays() { };
 	virtual void toggle_controls() { } ;

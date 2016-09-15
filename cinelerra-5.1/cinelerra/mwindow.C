@@ -21,6 +21,7 @@
 #include "asset.h"
 #include "assets.h"
 #include "audioalsa.h"
+#include "autos.h"
 #include "awindowgui.h"
 #include "awindow.h"
 #include "batchrender.h"
@@ -214,7 +215,6 @@ MWindow::MWindow()
 	restart_status = 0;
 	screens = 1;
 	in_destructor = 0;
-	warn_version = 1;
 }
 
 
@@ -796,6 +796,7 @@ void MWindow::init_preferences()
 	BC_Signals::set_trap_hook(trap_hook, this);
 	BC_Signals::set_catch_segv(preferences->trap_sigsegv);
 	BC_Signals::set_catch_intr(preferences->trap_sigintr);
+	BC_WindowBase::get_resources()->popupmenu_btnup = preferences->popupmenu_btnup;
 }
 
 void MWindow::clean_indexes()
@@ -2218,6 +2219,22 @@ void MWindow::set_auto_keyframes(int value, int lock_mwindow, int lock_cwindow)
 	cwindow->gui->edit_panel->keyframe->update(value);
 	cwindow->gui->flush();
 	if(lock_cwindow) cwindow->gui->unlock_window();
+}
+
+void MWindow::set_auto_visibility(Autos *autos, int value)
+{
+	if( autos->type == Autos::AUTOMATION_TYPE_PLUGIN )
+		edl->session->auto_conf->plugins = value;
+	else if( autos->autoidx >= 0 )
+		edl->session->auto_conf->autos[autos->autoidx] = value;
+	else
+		return;
+
+	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->mainmenu->update_toggles(1);
+	gui->unlock_window();
+	gwindow->gui->update_toggles(1);
+	gui->lock_window("MWindow::set_auto_visibility");
 }
 
 void MWindow::set_keyframe_type(int mode)

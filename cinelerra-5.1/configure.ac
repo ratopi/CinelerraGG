@@ -352,6 +352,7 @@ if test "x$FATAL_ERROR" != "x"; then
  AC_MSG_ERROR("fatal eror.")
 fi
 CHECK_PROG(PACTL, [pactl])
+WANT_PACTL=$PROG_PACTL
 
 AC_CHECK_DECL([X_HAVE_UTF8_STRING],,[no_utf=yes],[#include <X11/Xlib.h>])
 if test "$no_utf" = "yes"; then
@@ -662,7 +663,7 @@ AC_SUBST(SYSTEM_LIBS)
 
 echo ""
 for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB \
-	 VIDEO4LINUX2 ESOUND; do
+	 VIDEO4LINUX2 ESOUND PACTL; do
   eval vv="\$WANT_$v"
   if test "x$vv" != "xno"; then
     CFG_CFLAGS+=" -DHAVE_$v"

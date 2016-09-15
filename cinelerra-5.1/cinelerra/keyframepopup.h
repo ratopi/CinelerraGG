@@ -56,6 +56,7 @@ public:
 
 private:	
 	KeyframePopupDelete *key_delete;
+	KeyframePopupHide *key_hide;
 	KeyframePopupShow *key_show;
 	KeyframePopupCopy *key_copy;
 	KeyframePopupEdit *key_edit;
@@ -74,6 +75,17 @@ class KeyframePopupDelete : public BC_MenuItem
 public:
 	KeyframePopupDelete(MWindow *mwindow, KeyframePopup *popup);
 	~KeyframePopupDelete();
+	int handle_event();
+
+	MWindow *mwindow;
+	KeyframePopup *popup;
+};
+
+class KeyframePopupHide : public BC_MenuItem
+{
+public:
+	KeyframePopupHide(MWindow *mwindow, KeyframePopup *popup);
+	~KeyframePopupHide();
 	int handle_event();
 	
 	MWindow *mwindow;
@@ -144,10 +156,10 @@ public:
 	Autos *keyframe_autos;
 };
 
-class KeyframePopupHide : public BC_MenuItem
+class KeyframeHideItem : public BC_MenuItem
 {
 public:
-	KeyframePopupHide(MWindow *mwindow, KeyframeHidePopup *popup);
+	KeyframeHideItem(MWindow *mwindow, KeyframeHidePopup *popup);
 	int handle_event();
 
 	MWindow *mwindow;

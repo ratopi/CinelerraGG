@@ -51,7 +51,7 @@ public:
 	int add_item(BC_MenuItem* menuitem);
 // Remove the item ptr and the object
 	int del_item(BC_MenuItem* item=0);
-	int total_menuitems();
+	int total_items();
 	int set_text(char *text);
 
 // Called by BC_Menubar

@@ -211,6 +211,7 @@ int PreferencesThread::apply_settings()
 
 	BC_Signals::set_catch_segv(mwindow->preferences->trap_sigsegv);
 	BC_Signals::set_catch_intr(mwindow->preferences->trap_sigintr);
+	BC_WindowBase::get_resources()->popupmenu_btnup = mwindow->preferences->popupmenu_btnup;
 
 	mwindow->reset_android_remote();
 	mwindow->gui->ffmpeg_toggle->update(mwindow->preferences->ffmpeg_early_probe);

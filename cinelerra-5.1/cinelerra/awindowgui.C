@@ -1481,6 +1481,12 @@ int AWindowFolders::selection_changed()
 	{
 		gui->stop_vicon_drawing();
 
+		if(get_button_down() && get_buttonpress() == 3)
+		{
+			gui->folderlist_menu->update_titles();
+			gui->folderlist_menu->activate_menu();
+		}
+
 		strcpy(mwindow->edl->session->current_folder, picon->get_text());
 //printf("AWindowFolders::selection_changed 1\n");
 		gui->asset_list->draw_background();
@@ -1493,22 +1499,24 @@ int AWindowFolders::selection_changed()
 
 int AWindowFolders::button_press_event()
 {
-	return BC_ListBox::button_press_event();
-}
-
-int AWindowFolders::button_release_event()
-{
 	int result = 0;
-	if(get_buttonpress() == 3 && is_event_win() && cursor_inside())
+
+	result = BC_ListBox::button_press_event();
+
+	if(!result)
 	{
-		gui->folderlist_menu->update_titles();
-		gui->folderlist_menu->activate_menu();
-		result = 1;
+		if(get_buttonpress() == 3 && is_event_win() && cursor_inside())
+		{
+			gui->folderlist_menu->update_titles();
+			gui->folderlist_menu->activate_menu();
+			result = 1;
+		}
 	}
-	else
-		result = BC_ListBox::button_release_event();
+
+
 	return result;
 }
+
 
 
 
@@ -1543,33 +1551,19 @@ AWindowAssets::~AWindowAssets()
 
 int AWindowAssets::button_press_event()
 {
-	return BC_ListBox::button_press_event();
-}
-
-int AWindowAssets::button_release_event()
-{
 	int result = 0;
-	if(get_buttonpress() == 3 && is_event_win() && cursor_inside()) {
-		if( !strcasecmp(mwindow->edl->session->current_folder, AEFFECT_FOLDER) ||
-		    !strcasecmp(mwindow->edl->session->current_folder, VEFFECT_FOLDER) ||
-		    !strcasecmp(mwindow->edl->session->current_folder, ATRANSITION_FOLDER) ||
-		    !strcasecmp(mwindow->edl->session->current_folder, VTRANSITION_FOLDER)) {
-			BC_ListBox::deactivate_selection();
-			gui->assetlist_menu->update_titles();
-			gui->assetlist_menu->activate_menu();
-		}
-                else if (!strcasecmp(mwindow->edl->session->current_folder, LABEL_FOLDER)) {
-			gui->label_menu->update();
-			gui->label_menu->activate_menu();
-		}
-		else {
-			gui->asset_menu->update();
-			gui->asset_menu->activate_menu();
-		}
+
+	result = BC_ListBox::button_press_event();
+
+	if(!result && get_buttonpress() == 3 && is_event_win() && cursor_inside())
+	{
+		BC_ListBox::deactivate_selection();
+		gui->assetlist_menu->update_titles();
+		gui->assetlist_menu->activate_menu();
 		result = 1;
 	}
-	else
-		result = BC_ListBox::button_release_event();
+
+
 	return result;
 }
 
@@ -1601,7 +1595,39 @@ int AWindowAssets::handle_event()
 int AWindowAssets::selection_changed()
 {
 // Show popup window
-	if( get_button_down() && get_buttonpress() == 1 && get_selection(0, 0) ) {
+	if(get_button_down() && get_buttonpress() == 3 && get_selection(0, 0))
+	{
+		if(!strcasecmp(mwindow->edl->session->current_folder, AEFFECT_FOLDER) ||
+			!strcasecmp(mwindow->edl->session->current_folder, VEFFECT_FOLDER) ||
+			!strcasecmp(mwindow->edl->session->current_folder, ATRANSITION_FOLDER) ||
+			!strcasecmp(mwindow->edl->session->current_folder, VTRANSITION_FOLDER))
+		{
+			gui->assetlist_menu->update_titles();
+			gui->assetlist_menu->activate_menu();
+		}
+		else
+                if (!strcasecmp(mwindow->edl->session->current_folder, LABEL_FOLDER))
+		{
+			if(((AssetPicon*)get_selection(0, 0))->label)
+				gui->label_menu->activate_menu();
+		}
+		else
+		{
+			if(((AssetPicon*)get_selection(0, 0))->indexable)
+				gui->asset_menu->update();
+			else
+			if(((AssetPicon*)get_selection(0, 0))->edl)
+				gui->asset_menu->update();
+
+
+
+			gui->asset_menu->activate_menu();
+		}
+
+		BC_ListBox::deactivate_selection();
+		return 1;
+	}
+	else if( get_button_down() && get_buttonpress() == 1 && get_selection(0, 0) ) {
 		VIcon *vicon = 0;
 		if( !gui->vicon_thread->viewing ) {
 			AssetPicon *picon = (AssetPicon*)get_selection(0, 0);

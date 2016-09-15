@@ -85,13 +85,13 @@ void InterfacePrefs::create_objects()
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
 
-	add_subwindow(new BC_Title(x, y, 
-		_("Time Format"), 
-		LARGEFONT, 
+	add_subwindow(new BC_Title(x, y, _("Time Format"), LARGEFONT, 
+		resources->text_default));
+	int x1 = get_w()/2;
+	add_subwindow(new BC_Title(x1, y, _("Flags"), LARGEFONT, 
 		resources->text_default));
 
 	y += get_text_height(LARGEFONT) + 5;
-
 	int y1 = y;
 
 	add_subwindow(hms = new TimeFormatHMS(pwindow, this, 
@@ -114,33 +114,35 @@ void InterfacePrefs::create_objects()
 		pwindow->thread->edl->session->time_format == TIME_FRAMES, 
 		x, y));
 	y += 20;
-	int x1 = x;
+	int x0 = x;
 	add_subwindow(feet = new TimeFormatFeet(pwindow, this, 
 		pwindow->thread->edl->session->time_format == TIME_FEET_FRAMES, 
-		x1, y));
-	x1 += feet->get_w() + margin;
+		x0, y));
+	x0 += feet->get_w() + 15;
 	BC_Title *title;
-	add_subwindow(title = new BC_Title(x1, y, _("Frames per foot:")));
-	x1 += title->get_w() + margin;
+	add_subwindow(title = new BC_Title(x0, y, _("Frames per foot:")));
+	x0 += title->get_w() + margin;
 	sprintf(string, "%0.2f", pwindow->thread->edl->session->frames_per_foot);
 	add_subwindow(new TimeFormatFeetSetting(pwindow, 
-		x1, y - 5, 	string));
+		x0, y - 5, 	string));
 	y += 20;
 	add_subwindow(seconds = new TimeFormatSeconds(pwindow, this, 
 		pwindow->thread->edl->session->time_format == TIME_SECONDS, 
 		x, y));
 	y += 35;
 
-	x1 = get_w()/2;
 	UseTipWindow *tip_win = new UseTipWindow(pwindow, x1, y1);
 	add_subwindow(tip_win);
 	y1 += tip_win->get_h() + 5;
 	UseWarnIndecies *idx_win = new UseWarnIndecies(pwindow, x1, y1);
 	add_subwindow(idx_win);
-	y1 += tip_win->get_h() + 5;
+	y1 += idx_win->get_h() + 5;
 	UseWarnVersion *ver_win = new UseWarnVersion(pwindow, x1, y1);
 	add_subwindow(ver_win);
-	y1 += idx_win->get_h() + 25;
+	y1 += ver_win->get_h() + 5;
+	PopupMenuBtnup *pop_win = new PopupMenuBtnup(pwindow, x1, y1);
+	add_subwindow(pop_win);
+	y1 += pop_win->get_h() + 25;
 
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
@@ -707,6 +709,19 @@ UseWarnVersion::UseWarnVersion(PreferencesWindow *pwindow, int x, int y)
 int UseWarnVersion::handle_event()
 {
 	pwindow->thread->preferences->warn_version = get_value();
+	return 1;
+}
+
+PopupMenuBtnup::PopupMenuBtnup(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->popupmenu_btnup, 
+	_("Popups activate on button up"))
+{
+	this->pwindow = pwindow;
+}
+
+int PopupMenuBtnup::handle_event()
+{
+	pwindow->thread->preferences->popupmenu_btnup = get_value();
 	return 1;
 }
 

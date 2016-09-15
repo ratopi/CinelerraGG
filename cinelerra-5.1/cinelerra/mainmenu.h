@@ -284,18 +284,18 @@ public:
 class KeyframeCurveType : public BC_MenuItem
 {
 public:
-	KeyframeCurveType(MWindow *mwindow, int curve_type);
+	KeyframeCurveType(MWindow *mwindow);
 	~KeyframeCurveType();
 
 	void create_objects();
+	void update(int curve_type);
 	int handle_event();
 
 	MWindow *mwindow;
 	KeyframeCurveTypeMenu *curve_menu;
-	int curve_type;
 };
 
-class KeyframeCurveTypeMenu : public BC_PopupMenu
+class KeyframeCurveTypeMenu : public BC_SubMenu
 {
 public:
 	KeyframeCurveTypeMenu(KeyframeCurveType *menu_item);
@@ -307,11 +307,13 @@ public:
 class KeyframeCurveTypeItem : public BC_MenuItem
 {
 public:
-	KeyframeCurveTypeItem(int type);
+	KeyframeCurveTypeItem(int type, KeyframeCurveType *main_item);
 	~KeyframeCurveTypeItem();
 
-	int handle_event();
+	KeyframeCurveType *main_item;
 	int type;
+
+	int handle_event();
 };
 
 class CutDefaultKeyframe : public BC_MenuItem

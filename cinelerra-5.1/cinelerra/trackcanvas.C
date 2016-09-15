@@ -4217,11 +4217,7 @@ int TrackCanvas::button_release_event()
 
 
 		default:
-			if( !mwindow->session->current_operation ) {
-				if( get_buttonpress() == 3 )
-					result = do_edit_popup();
-			}
-			else {
+			if(mwindow->session->current_operation) {
 //				if(mwindow->session->current_operation == SELECT_REGION) {
 //					mwindow->undo->update_undo_after(_("select"), LOAD_SESSION, 0, 0);
 //				}
@@ -4393,13 +4389,8 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 
 int TrackCanvas::do_tracks(int cursor_x, int cursor_y, int button_press)
 {
-	return 0;
-}
-
-int TrackCanvas::do_edit_popup()
-{
 	int result = 0;
-	int cursor_y = get_cursor_y();
+
 //	if(!mwindow->edl->session->show_assets) return 0;
 
 	for(Track *track = mwindow->edl->tracks->first;
@@ -4408,7 +4399,8 @@ int TrackCanvas::do_edit_popup()
 		int64_t track_x, track_y, track_w, track_h;
 		track_dimensions(track, track_x, track_y, track_w, track_h);
 
-		if( cursor_y >= track_y && cursor_y < track_y + track_h ) {
+		if(button_press && get_buttonpress() == 3 &&
+			cursor_y >= track_y && cursor_y < track_y + track_h) {
 			gui->edit_menu->update(track, 0);
 			gui->edit_menu->activate_menu();
 			result = 1;

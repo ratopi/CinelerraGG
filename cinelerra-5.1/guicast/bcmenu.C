@@ -76,9 +76,9 @@ int BC_Menu::del_item(BC_MenuItem *item)
 	return 0;
 }
 
-int BC_Menu::total_menuitems()
+int BC_Menu::total_items()
 {
-	return menu_popup->total_menuitems();
+	return menu_popup->total_items();
 }
 
 int BC_Menu::dispatch_button_press()

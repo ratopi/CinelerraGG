@@ -607,6 +607,7 @@ BC_Resources::BC_Resources()
 
 
 	popupmenu_margin = 10;
+	popupmenu_btnup = 1;
 	popupmenu_triangle_margin = 10;
 
 	min_menu_w = 0;

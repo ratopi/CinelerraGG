@@ -67,6 +67,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 	this->data = data;
 	this->w_argument = w;
 	status = BUTTON_UP;
+	pending = 0;
 }
 
 BC_PopupMenu::BC_PopupMenu(int x,
@@ -88,6 +89,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 	this->data = data;
 	this->w_argument = -1;
 	status = BUTTON_UP;
+	pending = 0;
 }
 
 BC_PopupMenu::~BC_PopupMenu()
@@ -220,8 +222,7 @@ int BC_PopupMenu::del_item(BC_MenuItem *item)
 
 int BC_PopupMenu::total_items()
 {
-	return menu_popup->total_menuitems();
-	return 0;
+	return menu_popup->total_items();
 }
 
 BC_MenuItem* BC_PopupMenu::get_item(int i)
@@ -286,7 +287,16 @@ int BC_PopupMenu::deactivate()
 
 int BC_PopupMenu::activate_menu()
 {
-	if(!popup_down)
+	if( !get_button_down() || !BC_WindowBase::get_resources()->popupmenu_btnup )
+		return menu_activate();
+	pending = 1;
+	return 0;
+}
+
+int BC_PopupMenu::menu_activate()
+{
+	pending = 0;
+	if( !popup_down )
 	{
 		int x = this->x;
 		int y = this->y;
@@ -371,10 +381,10 @@ int BC_PopupMenu::button_press_event()
 	// Scrolling section
 	if (is_event_win()
 		&& (get_buttonpress() == 4 || get_buttonpress() == 5)
-		&& menu_popup->total_menuitems() > 1 )
+		&& menu_popup->total_items() > 1 )
 	{
 		int theval = -1;
-		for (int i = 0; i < menu_popup->total_menuitems(); i++) {
+		for (int i = 0; i < menu_popup->total_items(); i++) {
 			if (!strcmp(menu_popup->menu_items.values[i]->get_text(),get_text())) {
 				theval=i;
 				break;
@@ -387,8 +397,8 @@ int BC_PopupMenu::button_press_event()
 
 		if (theval < 0)
 			theval=0;
-		if (theval >= menu_popup->total_menuitems())
-			theval = menu_popup->total_menuitems() - 1;
+		if (theval >= menu_popup->total_items())
+			theval = menu_popup->total_items() - 1;
 
 		BC_MenuItem *tmp = menu_popup->menu_items.values[theval];
 		set_text(tmp->get_text());
@@ -409,6 +419,8 @@ int BC_PopupMenu::button_release_event()
 {
 // try the title
 	int result = 0;
+	if( pending )
+		return menu_activate();
 
 	if(is_event_win() && use_title)
 	{
@@ -423,12 +435,12 @@ int BC_PopupMenu::button_release_event()
 	if( !use_title && status == BUTTON_DN ) {
 		result = 1;
 	}
-	else if(popup_down) {
+	else if( popup_down && menu_popup->cursor_inside() ) {
 // Menu is down so dispatch to popup.
 		result = menu_popup->dispatch_button_release();
 	}
 // released outside popup
-	if( !result && popup_down ) {
+	if( get_resources()->popupmenu_btnup && !result && popup_down ) {
 		deactivate();
 		result = 1;
 	}
@@ -456,8 +468,10 @@ int BC_PopupMenu::cursor_leave_event()
 
 // dispatch to popup
 	if( popup_down ) {
-		if( !get_button_down() && !menu_popup->cursor_inside() )
+		if( !get_button_down() && !menu_popup->cursor_inside() ) {
+			status = BUTTON_UP;
 			deactivate_menu();
+		}
 		menu_popup->dispatch_cursor_leave();
 	}
 
@@ -497,7 +511,7 @@ int BC_PopupMenu::cursor_motion_event()
 	{
 		if(highlighted)
 		{
-			if(cursor_inside())
+			if(!cursor_inside())
 			{
 				highlighted = 0;
 				draw_title(1);

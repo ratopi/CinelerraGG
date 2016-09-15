@@ -165,10 +165,9 @@ void MainMenu::create_objects()
 	keyframemenu->add_item(new ClearKeyframes(mwindow));
 	keyframemenu->add_item(new StraightenKeyframes(mwindow));
 	keyframemenu->add_item(new BendKeyframes(mwindow));
-	keyframemenu->add_item(keyframe_curve_type =
-		 new KeyframeCurveType(mwindow,
-			mwindow->edl->local_session->floatauto_type));
+	keyframemenu->add_item(keyframe_curve_type = new KeyframeCurveType(mwindow));
 	keyframe_curve_type->create_objects();
+	keyframe_curve_type->update(mwindow->edl->local_session->floatauto_type);
 	keyframemenu->add_item(new BC_MenuItem("-"));
 	keyframemenu->add_item(new CopyDefaultKeyframe(mwindow));
 	keyframemenu->add_item(new PasteDefaultKeyframe(mwindow));
@@ -732,11 +731,10 @@ int BendKeyframes::handle_event()
 
 
 
-KeyframeCurveType::KeyframeCurveType(MWindow *mwindow, int curve_type)
+KeyframeCurveType::KeyframeCurveType(MWindow *mwindow)
  : BC_MenuItem(_("Create curve type..."))
 {
 	this->mwindow = mwindow;
-	this->curve_type = curve_type;
 	this->curve_menu = 0;
 }
 KeyframeCurveType::~KeyframeCurveType()
@@ -745,26 +743,28 @@ KeyframeCurveType::~KeyframeCurveType()
 
 void KeyframeCurveType::create_objects()
 {
-	curve_menu = new KeyframeCurveTypeMenu(this);
-	mwindow->gui->add_subwindow(curve_menu);
+	add_submenu(curve_menu = new KeyframeCurveTypeMenu(this));
 	for( int i=FloatAuto::SMOOTH; i<=FloatAuto::FREE; ++i ) {
-		curve_menu->add_item(new KeyframeCurveTypeItem(i));
+		KeyframeCurveTypeItem *curve_type_item = new KeyframeCurveTypeItem(i, this);
+		curve_menu->add_submenuitem(curve_type_item);
+	}
+}
+
+void KeyframeCurveType::update(int curve_type)
+{
+	for( int i=0; i<curve_menu->total_items(); ++i ) {
+		KeyframeCurveTypeItem *curve_type_item = (KeyframeCurveTypeItem *)curve_menu->get_item(i);
+		curve_type_item->set_checked(curve_type_item->type == curve_type);
 	}
 }
 
 int KeyframeCurveType::handle_event()
 {
-	for( int i=0; i<curve_menu->total_items(); ++i ) {
-		KeyframeCurveTypeItem *curve_type_item =
-			(KeyframeCurveTypeItem *)curve_menu->get_item(i);
-		curve_type_item->set_checked(curve_type_item->type == curve_type);
-	}
-	curve_menu->activate_menu();
 	return 1;
 }
 
 KeyframeCurveTypeMenu::KeyframeCurveTypeMenu(KeyframeCurveType *menu_item)
- : BC_PopupMenu(0, 0, 0, "", 0)
+ : BC_SubMenu()
 {
 	this->menu_item = menu_item;
 }
@@ -772,10 +772,11 @@ KeyframeCurveTypeMenu::~KeyframeCurveTypeMenu()
 {
 }
 
-KeyframeCurveTypeItem::KeyframeCurveTypeItem(int type)
+KeyframeCurveTypeItem::KeyframeCurveTypeItem(int type, KeyframeCurveType *main_item)
  : BC_MenuItem(FloatAuto::curve_name(type))
 {
 	this->type = type;
+	this->main_item = main_item;
 }
 KeyframeCurveTypeItem::~KeyframeCurveTypeItem()
 {
@@ -783,9 +784,8 @@ KeyframeCurveTypeItem::~KeyframeCurveTypeItem()
 
 int KeyframeCurveTypeItem::handle_event()
 {
-	KeyframeCurveType *menu_item = ((KeyframeCurveTypeMenu *)get_popup_menu())->menu_item;
-	menu_item->curve_type = type;
-	menu_item->mwindow->set_keyframe_type(type);
+	main_item->update(type);
+	main_item->mwindow->set_keyframe_type(type);
 	return 1;
 }
 

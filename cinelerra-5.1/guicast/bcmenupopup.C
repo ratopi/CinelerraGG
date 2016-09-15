@@ -134,9 +134,14 @@ int BC_MenuPopup::del_item(BC_MenuItem *item)
 	return 0;
 }
 
-int BC_MenuPopup::total_menuitems()
+BC_MenuItem *BC_MenuPopup::get_item(int i)
 {
-	return menu_items.total;
+	return menu_items[i];
+}
+
+int BC_MenuPopup::total_items()
+{
+	return menu_items.size();
 }
 
 int BC_MenuPopup::dispatch_button_press()
@@ -144,7 +149,7 @@ int BC_MenuPopup::dispatch_button_press()
 	int result = 0;
 	if(popup)
 	{
-		for(int i = 0; i < menu_items.total && !result; i++)
+		for(int i = 0; i < menu_items.total && !result && popup; i++)
 		{
 			result = menu_items.values[i]->dispatch_button_press();
 		}
@@ -158,7 +163,7 @@ int BC_MenuPopup::dispatch_button_release()
 	int result = 0, redraw = 0;
 	if(popup)
 	{
-		for(int i = 0; i < menu_items.total && !result; i++)
+		for(int i = 0; i < menu_items.total && !result && popup; i++)
 		{
 			result = menu_items.values[i]->dispatch_button_release(redraw);
 		}
@@ -423,12 +428,7 @@ BC_Popup* BC_MenuPopup::get_popup()
 
 int BC_MenuPopup::cursor_inside()
 {
-	if( !popup ) return 0;
-	int x = popup->get_relative_cursor_x();
-	if( x < 0 || x > popup->get_w() ) return 0;
-	int y = popup->get_relative_cursor_y();
-	if( y < 0 || y > popup->get_h() ) return 0;
-	return 1;
+	return !popup || !popup->cursor_above() ? 0 : 1;
 }
 
 int BC_MenuPopup::get_w()

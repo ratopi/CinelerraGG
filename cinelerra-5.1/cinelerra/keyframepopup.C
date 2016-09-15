@@ -50,6 +50,7 @@ KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	key_hide = 0;
 	key_show = 0;
 	key_delete = 0;
 	key_copy = 0;
@@ -77,6 +78,7 @@ KeyframePopup::~KeyframePopup()
 
 void KeyframePopup::create_objects()
 {
+	add_item(key_hide = new KeyframePopupHide(mwindow, this));
 	add_item(key_show = new KeyframePopupShow(mwindow, this));
 	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
 	add_item(key_copy = new KeyframePopupCopy(mwindow, this));
@@ -189,6 +191,24 @@ int KeyframePopupDelete::handle_event()
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
 
+	return 1;
+}
+
+KeyframePopupHide::KeyframePopupHide(MWindow *mwindow, KeyframePopup *popup)
+ : BC_MenuItem(_("Hide keyframe type"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+
+KeyframePopupHide::~KeyframePopupHide()
+{
+}
+
+int KeyframePopupHide::handle_event()
+{
+	if( popup->keyframe_autos )
+		mwindow->set_auto_visibility(popup->keyframe_autos, 0);
 	return 1;
 }
 
@@ -501,7 +521,7 @@ KeyframeHidePopup::~KeyframeHidePopup()
 
 void KeyframeHidePopup::create_objects()
 {
-        add_item(new KeyframePopupHide(mwindow, this));
+        add_item(new KeyframeHideItem(mwindow, this));
 }
 
 int KeyframeHidePopup::update(Autos *autos)
@@ -510,61 +530,18 @@ int KeyframeHidePopup::update(Autos *autos)
 	return 0;
 }
 
-KeyframePopupHide::KeyframePopupHide(MWindow *mwindow, KeyframeHidePopup *popup)
+KeyframeHideItem::KeyframeHideItem(MWindow *mwindow, KeyframeHidePopup *popup)
  : BC_MenuItem(_("Hide keyframe type"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
-int KeyframePopupHide::handle_event()
+
+int KeyframeHideItem::handle_event()
 {
-// Get the array index of the curve
-	int update_gui = 0;
-	if(popup->keyframe_autos)
-	{
-		if(popup->keyframe_autos->type == Autos::AUTOMATION_TYPE_PLUGIN)
-		{
-			mwindow->edl->session->auto_conf->plugins = 0;
-			update_gui = 1;
-		}
-		else
-		{
-			Track *track = popup->keyframe_autos->track;
-			if(track)
-			{
-				Automation *automation = track->automation;
-				if(automation)
-				{
-					for(int i = 0; i < AUTOMATION_TOTAL; i++)
-					{
-						if(automation->autos[i] == popup->keyframe_autos)
-						{
-							mwindow->edl->session->auto_conf->autos[i] = 0;
-							update_gui = 1;
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	if(update_gui)
-	{
-		mwindow->gui->update(0,
-	        	1,      // 1 for incremental drawing.  2 for full refresh
-	        	0,
-	        	0,
-	        	0,
-            	0,   
-            	0);
-		mwindow->gui->mainmenu->update_toggles(1);
-		mwindow->gui->unlock_window();
-		mwindow->gwindow->gui->update_toggles(1);
-		mwindow->gui->lock_window("KeyframePopupHide::handle_event");
-	}
-
+	if( popup->keyframe_autos )
+		mwindow->set_auto_visibility(popup->keyframe_autos, 0);
 	return 1;
 }
 

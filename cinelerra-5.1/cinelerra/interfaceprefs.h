@@ -44,6 +44,7 @@ class UseTipWindow;
 class StillImageUseDuration;
 class StillImageDuration;
 class KeyframeReticle;
+class PopupMenuBtnup;
 
 #include "browsebutton.h"
 #include "deleteallindexes.inc"
@@ -314,6 +315,14 @@ class AndroidRemote : public BC_CheckBox
 {
 public:
 	AndroidRemote(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+class PopupMenuBtnup : public BC_CheckBox
+{
+public:
+	PopupMenuBtnup(PreferencesWindow *pwindow, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };

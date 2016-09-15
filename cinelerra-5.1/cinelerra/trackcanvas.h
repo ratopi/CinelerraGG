@@ -307,7 +307,6 @@ public:
 	int do_tracks(int cursor_x,
 		int cursor_y,
 		int button_press);
-	int do_edit_popup();
 	int test_resources(int cursor_x, int cursor_y);
 	int do_plugins(int cursor_x,
 		int cursor_y,

@@ -127,6 +127,8 @@ public:
 	int popup_title_text;
 // Right and left margin for text not including triangle space.
 	int popupmenu_margin;
+// post popup on button release event
+	int popupmenu_btnup;
 // Right margin for triangle not including text margin.
 	int popupmenu_triangle_margin;
 // color for item text

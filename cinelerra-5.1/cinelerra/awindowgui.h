@@ -269,7 +269,6 @@ public:
 	int drag_motion_event();
 	int drag_stop_event();
 	int button_press_event();
-	int button_release_event();
 	int column_resize_event();
 	int focus_in_event();
 	int focus_out_event();
@@ -300,7 +299,6 @@ public:
 
 	int selection_changed();
 	int button_press_event();
-	int button_release_event();
 
 	MWindow *mwindow;
 	AWindowGUI *gui;

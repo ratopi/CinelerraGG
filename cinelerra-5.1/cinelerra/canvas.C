@@ -662,12 +662,11 @@ void Canvas::create_objects(EDL *edl)
 
 }
 
-int Canvas::button_release_event()
+int Canvas::button_press_event()
 {
 	int result = 0;
 
-	BC_WindowBase *cvs = get_canvas();
-	if( cvs->is_event_win() && cvs->get_buttonpress() == 3 && cvs->cursor_inside() )
+	if(get_canvas()->get_buttonpress() == 3)
 	{
 		if(get_fullscreen())
 			fullscreen_menu->activate_menu();
@@ -1093,6 +1092,7 @@ CanvasPopup::~CanvasPopup()
 
 void CanvasPopup::create_objects()
 {
+	add_item(new BC_MenuItem("-"));
 	add_item(new CanvasFullScreenItem(canvas));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 25%"), 0.25));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 33%"), 0.33));

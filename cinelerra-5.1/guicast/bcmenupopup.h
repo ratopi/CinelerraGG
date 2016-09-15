@@ -52,8 +52,9 @@ public:
 		BC_PopupMenu *popup_menu);
 	int add_item(BC_MenuItem *item);
 	int del_item(BC_MenuItem* item);
+	BC_MenuItem *get_item(int i);
+	int total_items();
 	int remove_item(BC_MenuItem* item);
-	int total_menuitems();
 
 // Deactivates all submenus in a downward progression except for the exclude
 	int deactivate_submenus(BC_MenuPopup *exclude = 0);

@@ -105,6 +105,8 @@ public:
 // warning
 	int warn_indexes;
 	int warn_version;
+// popup menus activate on button release
+	int popupmenu_btnup;
 // use dvd yuv420p interlace format
 	int dvd_yuv420p_interlace;
 

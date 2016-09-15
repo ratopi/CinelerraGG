@@ -72,6 +72,7 @@ public:
 	int reposition_window(int x, int y);
 	int deactivate();
 	int activate_menu();
+	int menu_activate();
 	int deactivate_menu();
 	int focus_out_event();
 	int repeat_event(int64_t duration);
@@ -100,6 +101,7 @@ private:
 	int button_press_x, button_press_y;
 	int w_argument;
 	int status;
+	int pending;
 };
 
 

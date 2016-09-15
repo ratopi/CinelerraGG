@@ -28,6 +28,7 @@
 #include "asset.inc"
 #include "assets.inc"
 #include "audiodevice.inc"
+#include "autos.inc"
 #include "awindow.inc"
 #include "batchrender.inc"
 #include "bcwindowbase.inc"
@@ -448,6 +449,7 @@ public:
 	void set_automation_mode(int mode);
 	void set_keyframe_type(int mode);
 	void set_auto_keyframes(int value, int lock_mwindow, int lock_cwindow);
+	void set_auto_visibility(Autos *autos, int value);
 	void set_labels_follow_edits(int value);
 
 // Update the editing mode
@@ -669,7 +671,6 @@ public:
 	int restart_status;
 	int screens;
 	int in_destructor;
-	int warn_version;
 };
 
 #endif
