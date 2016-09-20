@@ -458,7 +458,7 @@ int CWindowGUI::keypress_event()
 			mwindow->gui->unlock_window();
 			lock_window("CWindowGUI::keypress_event 2");
 			break;
-		case BACKSPACE:
+		case DELETE:
 			unlock_window();
 			mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
 			mwindow->clear_entry();

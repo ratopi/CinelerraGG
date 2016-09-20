@@ -1012,7 +1012,7 @@ msgstr ""
 
 #: cinelerra//bdcreate.C:662 cinelerra//dvdcreate.C:782
 msgid "Media:"
-msgstr ""
+msgstr "мультимедиа:"
 
 #: cinelerra//bdcreate.C:673 cinelerra//dvdcreate.C:793
 #: cinelerra//recordgui.C:223
@@ -3954,7 +3954,7 @@ msgstr ""
 
 #: cinelerra//keyframepopup.C:514
 msgid "Hide keyframe type"
-msgstr ""
+msgstr "Скрыть тип ключевой кадр"
 
 #: cinelerra//labeledit.C:79
 msgid ": Label Info"
@@ -10134,3 +10134,46 @@ msgstr "Увеличение"
 #: plugins/zoomblur/zoomblur.C:402
 msgid "Zoom Blur"
 msgstr "Размытие масштабом"
+
+msgid "Audio Effects"
+msgstr "Аудио эффектов"
+msgid "Video Effects"
+msgstr "Видео эффектов"
+msgid "Audio Transitions"
+msgstr "Аудио Переходы"
+msgid "Video Transitions"
+msgstr "Видео Переходы"
+msgid "Labels"
+msgstr "Метки"
+msgid "Clips"
+msgstr "Клипсы"
+msgid "Media"
+msgstr "мультимедиа"
+
+msgid "Flags"
+msgstr "флажки"
+
+msgid "Show Plugin Settings"
+msgstr "Показать Плагина настройки "
+
+msgid "speed"
+msgstr "скорость "
+
+msgid "XML file %s\n"
+msgstr "XML файла %s\n"
+
+msgid "Unknown %s"
+msgstr "Неизвестно %s"
+
+msgid "Vertical average"
+msgstr "Вертикальное усредняем"
+msgid "Horizontal interpolate"
+msgstr "Горизонтальное интерполировать"
+
+msgid "Offset:"
+msgstr "Смещение:"
+msgid "Bias:"
+msgstr "Смещение:"
+msgid "Warning: colormodel not YUV"
+msgstr "Предупреждение: colormodel not YUV"
+

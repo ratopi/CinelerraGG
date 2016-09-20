@@ -391,8 +391,9 @@ int VirtualVNode::render_projector(VFrame *input, VFrame *output,
 
 	if(output)
 	{
-		((VTrack*)track)->calculate_output_transfer(start_position_project,
-			renderengine->command->get_direction(),
+		int direction = renderengine->command->get_direction();
+		((VTrack*)track)->calculate_output_transfer(
+			start_position_project, direction,
 			in_x1, in_y1, in_x2, in_y2,
 			out_x1, out_y1, out_x2, out_y2);
 
@@ -405,11 +406,10 @@ int VirtualVNode::render_projector(VFrame *input, VFrame *output,
 		if(out_x2 > out_x1 && out_y2 > out_y1 && 
 			in_x2 > in_x1 && in_y2 > in_y1)
 		{
- 			int direction = renderengine->command->get_direction();
 			IntAuto *mode_keyframe = 0;
 			mode_keyframe = 
 				(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-					start_position_project, direction, (Auto* &)mode_keyframe);
+					start_position_project, PLAY_FORWARD, (Auto* &)mode_keyframe);
 
 			int mode = mode_keyframe->value;
 
