@@ -33,6 +33,7 @@ enum {
 	NONAUTOTOGGLES_TITLES,
 	NONAUTOTOGGLES_TRANSITIONS,
 	NONAUTOTOGGLES_PLUGIN_AUTOS,
+	NONAUTOTOGGLES_BAR,
 	NONAUTOTOGGLES_COUNT
 };
 
@@ -53,6 +54,10 @@ public:
 	int keypress_event();
 	void update_toggles(int use_lock);
 	void update_mwindow();
+
+	static const char *other_text[];
+	static const char *auto_text[];
+	static int auto_colors[];
 
 	MWindow *mwindow;
 	GWindowToggle *toggles[NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL];

@@ -57,20 +57,40 @@ public:
 	VFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y, int w);
 	int handle_event();
 	float update_edl();
-	static FloatAuto* get_keyframe(MWindow *mwindow, VPatchGUI *patch);
 	MWindow *mwindow;
 	VPatchGUI *patch;
+};
+
+class VKeyFadePatch : public BC_SubWindow
+{
+public:
+	VKeyFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y);
+	void create_objects();
+
+	MWindow *mwindow;
+	VPatchGUI *patch;
+	VKeyFadeValue *vkey_fade_value;
+};
+
+class VKeyFadeValue : public VFadePatch
+{
+public:
+	VKeyFadeValue(VKeyFadePatch *vkey_fade_patch);
+	int button_release_event();
+	int handle_event();
+
+	VKeyFadePatch *vkey_fade_patch;
 };
 
 class VModePatch : public BC_PopupMenu
 {
 public:
 	VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y);
+	VModePatch(MWindow *mwindow, VPatchGUI *patch);
 
 	int handle_event();
 	void create_objects();         // add initial items
 	static const char* mode_to_text(int mode);
-	static IntAuto* get_keyframe(MWindow *mwindow, VPatchGUI *patch);
 	void update(int mode);
 
 	MWindow *mwindow;
@@ -86,6 +106,14 @@ public:
 	int handle_event();
 	VModePatch *popup;
 	int mode;
+};
+
+class VKeyModePatch : public VModePatch
+{
+public:
+	VKeyModePatch(MWindow *mwindow, VPatchGUI *patch);
+	int button_release_event();
+	int handle_event();
 };
 
 

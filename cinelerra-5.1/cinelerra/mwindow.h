@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "apatchgui.h"
 #include "arraylist.h"
 #include "asset.inc"
 #include "assets.inc"
@@ -92,6 +93,7 @@
 #include "transition.inc"
 #include "transportque.inc"
 #include "videowindow.inc"
+#include "vpatchgui.h"
 #include "vwindow.inc"
 #include "wwindow.inc"
 #include "wavecache.inc"
@@ -135,6 +137,7 @@ public:
 	void show_lwindow();
 	void show_cwindow();
 	void show_gwindow();
+	void hide_gwindow();
 	int tile_windows(int window_config);
 	char *get_cwindow_display();
 //	void set_titles(int value);
@@ -480,6 +483,10 @@ public:
 // in the clipboard.
 	int paste_default_keyframe();
 	int clear_default_keyframe();
+
+	FloatAuto* get_float_auto(PatchGUI *patch,int idx);
+	IntAuto* get_int_auto(PatchGUI *patch,int idx);
+	PanAuto* get_pan_auto(PatchGUI *patch);
 
 	int modify_edithandles();
 	int modify_pluginhandles();

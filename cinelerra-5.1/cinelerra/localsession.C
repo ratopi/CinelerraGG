@@ -83,11 +83,11 @@ LocalSession::LocalSession(EDL *edl)
 	automation_mins[AUTOGROUPTYPE_VIDEO_FADE] = 0;
 	automation_maxs[AUTOGROUPTYPE_VIDEO_FADE] = 100;
 
-	automation_mins[AUTOGROUPTYPE_ZOOM] = 0.001;
-	automation_maxs[AUTOGROUPTYPE_ZOOM] = 4;
+	automation_mins[AUTOGROUPTYPE_ZOOM] = 0.005;
+	automation_maxs[AUTOGROUPTYPE_ZOOM] = 5.000;
 
-	automation_mins[AUTOGROUPTYPE_SPEED] = 0.05;
-	automation_maxs[AUTOGROUPTYPE_SPEED] = 3;
+	automation_mins[AUTOGROUPTYPE_SPEED] = 0.005;
+	automation_maxs[AUTOGROUPTYPE_SPEED] = 5.000;
 
 	automation_mins[AUTOGROUPTYPE_X] = -100;
 	automation_maxs[AUTOGROUPTYPE_X] = 100;

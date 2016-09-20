@@ -24,11 +24,16 @@
 
 class KeyframePopup;
 class KeyframePopupDelete;
+class KeyframePopupHide;
 class KeyframePopupShow;
 class KeyframePopupCopy;
 class KeyframePopupCurveMode;
 class KeyframePopupEdit;
-class KeyframePopupHide;
 class KeyframeHidePopup;
- 
+class KeyframeHideItem;
+class KeyMutePatch;
+class KeyMuteValue;
+class KeySpeedPatch;
+class KeySpeedValue;
+
 #endif

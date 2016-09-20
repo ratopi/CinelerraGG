@@ -55,16 +55,16 @@ class EDL;
 
 
 // Mandatory folders
-#define AEFFECT_FOLDER "Audio Effects"
-#define VEFFECT_FOLDER "Video Effects"
-#define ATRANSITION_FOLDER "Audio Transitions"
-#define VTRANSITION_FOLDER "Video Transitions"
+#define AEFFECT_FOLDER N_("Audio Effects")
+#define VEFFECT_FOLDER N_("Video Effects")
+#define ATRANSITION_FOLDER N_("Audio Transitions")
+#define VTRANSITION_FOLDER N_("Video Transitions")
 
-#define LABEL_FOLDER "Labels"
+#define LABEL_FOLDER N_("Labels")
 
 // Default folders
-#define CLIP_FOLDER "Clips"
-#define MEDIA_FOLDER "Media"
+#define CLIP_FOLDER N_("Clips")
+#define MEDIA_FOLDER N_("Media")
 
 
 

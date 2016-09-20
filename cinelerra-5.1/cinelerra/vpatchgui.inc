@@ -22,11 +22,14 @@
 #ifndef VPATCHGUI_INC
 #define VPATCHGUI_INC
 
-
-
 class VPatchGUI;
+class VFadePatch;
+class VKeyFadePatch;
+class VKeyFadeValue;
+class VModePatch;
+class VModePatchItem;
+class VKeyModePatch;
 
 #define MAX_VIDEO_FADE 100
-
 
 #endif

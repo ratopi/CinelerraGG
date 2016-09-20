@@ -130,6 +130,7 @@ public:
 
 	int translation_event();
 	int resize_event(int w, int h);          // handle a resize event
+	int button_release_event();
 	int keypress_event();
 	int keyboard_listener(BC_WindowBase *wp);
 	int key_listener(int key);
@@ -192,6 +193,7 @@ public:
 	PluginPopup *plugin_menu;
 	KeyframePopup *keyframe_menu;
 	KeyframeHidePopup *keyframe_hide;
+	BC_SubWindow *keyvalue_popup;
 	TransitionPopup *transition_menu;
 
 	MainClock *mainclock;
@@ -221,7 +223,6 @@ public:
 
 
 	BC_DragWindow *drag_popup;
-
 
 //	PatchBay *patchbay;
 //	MTimeBar *timebar;

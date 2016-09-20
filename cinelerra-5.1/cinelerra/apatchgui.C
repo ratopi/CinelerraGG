@@ -20,7 +20,6 @@
  */
 
 #include "apatchgui.h"
-#include "apatchgui.inc"
 #include "atrack.h"
 #include "autoconf.h"
 #include "automation.h"
@@ -28,6 +27,9 @@
 #include "edlsession.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "gwindowgui.h"
+#include "intauto.h"
+#include "intautos.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainundo.h"
@@ -223,14 +225,10 @@ void APatchGUI::synchronize_fade(float value_change)
 
 
 AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
- : BC_FSlider(x,
-			y,
-			0,
-			w,
-			w,
-			mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
-			mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE],
-			get_keyframe(mwindow, patch)->get_value())
+ : BC_FSlider(x, y, 0, w, w,
+	mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
+	mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE],
+	mwindow->get_float_auto(patch, AUTOMATION_FADE)->get_value())
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -279,31 +277,53 @@ int AFadePatch::handle_event()
 	return 1;
 }
 
-FloatAuto* AFadePatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
+AKeyFadePatch::AKeyFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
+ : BC_SubWindow(x,y, patch->patchbay->get_w(),20,
+	GWindowGUI::auto_colors[AUTOMATION_FADE])
 {
-	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-	unit_position = patch->atrack->to_units(unit_position, 0);
+	this->mwindow = mwindow;
+	this->patch = patch;
+}
 
-	FloatAutos *ptr = (FloatAutos*)patch->atrack->automation->autos[AUTOMATION_FADE];
-	return (FloatAuto*)ptr->get_prev_auto(
-		(long)unit_position, 
-		PLAY_FORWARD,
-		current);
+void AKeyFadePatch::create_objects()
+{
+	akey_fade_value = new AKeyFadeValue(this);
+	add_subwindow(akey_fade_value);
+	akey_fade_value->activate();
+	show_window();
+}
+
+AKeyFadeValue::AKeyFadeValue(AKeyFadePatch *akey_fade_patch)
+ : AFadePatch(akey_fade_patch->mwindow, akey_fade_patch->patch,
+	0,0, akey_fade_patch->get_w())
+{
+	this->akey_fade_patch = akey_fade_patch;
+}
+
+int AKeyFadeValue::button_release_event()
+{
+	AFadePatch::button_release_event();
+	return 0;
+}
+
+int AKeyFadeValue::handle_event()
+{
+	APatchGUI *patch = akey_fade_patch->patch;
+	int ret = AFadePatch::handle_event();
+	AFadePatch *fade = patch->fade;
+	if( fade )
+		fade->update(get_value());
+	return ret;
 }
 
 
 APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
- : BC_Pan(x, 
-		y, 
-		PAN_RADIUS, 
-		MAX_PAN, 
-		mwindow->edl->session->audio_channels, 
-		mwindow->edl->session->achannel_positions, 
-		get_keyframe(mwindow, patch)->handle_x, 
-		get_keyframe(mwindow, patch)->handle_y,
- 		get_keyframe(mwindow, patch)->values)
+ : BC_Pan(x, y, PAN_RADIUS, MAX_PAN,
+	mwindow->edl->session->audio_channels,
+	mwindow->edl->session->achannel_positions,
+	mwindow->get_pan_auto(patch)->handle_x,
+	mwindow->get_pan_auto(patch)->handle_y,
+	mwindow->get_pan_auto(patch)->values)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -336,21 +356,25 @@ int APanPatch::handle_event()
 	return 1;
 }
 
-PanAuto* APanPatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
+AKeyPanPatch::AKeyPanPatch(MWindow *mwindow, APatchGUI *patch)
+ : APanPatch(mwindow, patch, -1,-1)
 {
-	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-	unit_position = patch->atrack->to_units(unit_position, 0);
-
-	PanAutos *ptr = (PanAutos*)patch->atrack->automation->autos[AUTOMATION_PAN];
-	return (PanAuto*)ptr->get_prev_auto(
-		(long)unit_position, 
-		PLAY_FORWARD,
-		current);
 }
 
+int AKeyPanPatch::button_release_event()
+{
+	APanPatch::button_release_event();
+	return 0;
+}
 
+int AKeyPanPatch::handle_event()
+{
+	int ret = APanPatch::handle_event();
+	APanPatch *pan = patch->pan;
+	if( pan )
+		pan->update(get_stick_x(), get_stick_y());
+	return ret;
+}
 
 
 AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
@@ -380,8 +404,4 @@ int AMeterPatch::button_press_event()
 
 	return 0;
 }
-
-
-
-
 

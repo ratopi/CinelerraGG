@@ -22,9 +22,11 @@
 #ifndef KEYFRAMEPOPUP_H
 #define KEYFRAMEPOPUP_H
 
+#include "apatchgui.h"
 #include "guicast.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "patchgui.inc"
 #include "plugin.inc"
 #include "plugindialog.inc"
 #include "keyframe.inc"
@@ -97,6 +99,7 @@ class KeyframePopupShow : public BC_MenuItem
 public:
 	KeyframePopupShow(MWindow *mwindow, KeyframePopup *popup);
 	~KeyframePopupShow();
+	PatchGUI *get_patchgui(Track *track);
 	int handle_event();
 	
 	MWindow *mwindow;
@@ -164,6 +167,52 @@ public:
 
 	MWindow *mwindow;
 	KeyframeHidePopup *popup;
+};
+
+class KeyMutePatch : public BC_SubWindow
+{
+public:
+	KeyMutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	void create_objects();
+
+	MWindow *mwindow;
+	PatchGUI *patch;
+	KeyMuteValue *key_mute_checkbox;
+};
+
+class KeyMuteValue : public BC_CheckBox
+{
+public:
+	KeyMuteValue(KeyMutePatch *key_mute_patch);
+	void update_edl();
+	int button_release_event();
+	int handle_event();
+
+	KeyMutePatch *key_mute_patch;
+};
+
+class KeySpeedPatch : public BC_SubWindow
+{
+public:
+	KeySpeedPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	void create_objects();
+
+	MWindow *mwindow;
+	PatchGUI *patch;
+	KeySpeedValue *key_speed_slider;
+};
+
+class KeySpeedValue : public BC_FSlider
+{
+public:
+	KeySpeedValue(KeySpeedPatch *key_speed_patch);
+	~KeySpeedValue();
+
+	void update_edl();
+	int handle_event();
+	int button_release_event();
+
+	KeySpeedPatch *key_speed_patch;
 };
 
 #endif

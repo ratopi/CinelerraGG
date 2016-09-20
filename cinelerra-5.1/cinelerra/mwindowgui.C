@@ -120,6 +120,7 @@ MWindowGUI::MWindowGUI(MWindow *mwindow)
 	plugin_menu = 0;
 	keyframe_menu = 0;
 	keyframe_hide = 0;
+	keyvalue_popup = 0;
  	transition_menu = 0;
 	remote_control = 0;
 	cwindow_remote_handler = 0;
@@ -134,6 +135,7 @@ MWindowGUI::~MWindowGUI()
 	delete cwindow_remote_handler;
 	delete record_remote_handler;
 	delete remote_control;
+	delete keyvalue_popup;
 //	delete samplescroll;
 //	delete trackscroll;
 	for(int i = 0; i < TOTAL_PANES; i++)
@@ -1108,19 +1110,13 @@ void MWindowGUI::default_positions()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+int MWindowGUI::button_release_event()
+{
+	if( keyvalue_popup ) {
+		delete keyvalue_popup;  keyvalue_popup = 0;
+	}
+	return 0;
+}
 
 
 int MWindowGUI::repeat_event(int64_t duration)
@@ -1279,7 +1275,6 @@ int MWindowGUI::keypress_event()
 
 	return result;
 }
-
 
 int MWindowGUI::keyboard_listener(BC_WindowBase *wp)
 {
@@ -2270,7 +2265,6 @@ int PaneButton::cursor_motion_event()
 int PaneButton::button_release_event()
 {
 	mwindow->gui->stop_pane_drag();
-
 	int result = BC_Button::button_release_event();
 	return result;
 }

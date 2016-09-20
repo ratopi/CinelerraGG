@@ -536,19 +536,19 @@ SET_TRACE
 SET_TRACE
 
 // Mandatory folders
-	folders.append(picon = new AssetPicon(mwindow, this, AEFFECT_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, _(AEFFECT_FOLDER)));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, VEFFECT_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, _(VEFFECT_FOLDER)));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, ATRANSITION_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, _(ATRANSITION_FOLDER)));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, VTRANSITION_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, _(VTRANSITION_FOLDER)));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, LABEL_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, _(LABEL_FOLDER)));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, CLIP_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, _(CLIP_FOLDER)));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, MEDIA_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, _(MEDIA_FOLDER)));
 	picon->persistent = 1;
 
 	create_label_folder();

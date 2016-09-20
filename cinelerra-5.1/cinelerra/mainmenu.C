@@ -1417,14 +1417,19 @@ int ShowCWindow::handle_event()
 
 
 ShowGWindow::ShowGWindow(MWindow *mwindow)
- : BC_MenuItem(_("Show Overlays"))
+ : BC_MenuItem(_("Show Overlays"), _("Ctrl-0"), '0')
 {
 	this->mwindow = mwindow;
+	set_ctrl(1);
 	set_checked(mwindow->session->show_gwindow);
 }
 int ShowGWindow::handle_event()
 {
-	mwindow->show_gwindow();
+	if( !mwindow->session->show_gwindow )
+		mwindow->show_gwindow();
+	else
+		mwindow->hide_gwindow();
+	set_checked(mwindow->session->show_gwindow);
 	return 1;
 }
 

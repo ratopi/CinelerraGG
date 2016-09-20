@@ -399,8 +399,7 @@ public:
 	ArrayList<PluginOn*> plugin_on_toggles;
 	ArrayList<PluginShow*> plugin_show_toggles;
 
-
-
+	static int auto_operations[];
 // event handlers
 	void draw_paste_destination();
 

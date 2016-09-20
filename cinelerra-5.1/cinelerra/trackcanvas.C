@@ -38,6 +38,7 @@
 #include "edlsession.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "gwindowgui.h"
 #include "indexstate.h"
 #include "intauto.h"
 #include "intautos.h"
@@ -1868,24 +1869,8 @@ void TrackCanvas::draw_brender_start()
 	}
 }
 
-static int auto_colors[AUTOMATION_TOTAL] =
-{
-	BLUE,
-	RED,
-	GREEN,
-	BLUE,
-	RED,
-	GREEN,
-	BLUE,
-	WHITE,
-	0,
-	0,
-	0,
-	WHITE
-};
-
 // The operations which correspond to each automation type
-static int auto_operations[AUTOMATION_TOTAL] =
+int TrackCanvas::auto_operations[AUTOMATION_TOTAL] =
 {
 	DRAG_MUTE,
 	DRAG_CAMERA_X,
@@ -1990,8 +1975,8 @@ int TrackCanvas::do_keyframes(int cursor_x,
 								auto_keyframe, grouptype);
 
 						result = do_float_autos(track, autos,
-							cursor_x, cursor_y, draw, 
-							buttonpress, 0, 0, auto_colors[i],
+							cursor_x, cursor_y, draw, buttonpress,
+							0, 0, GWindowGUI::auto_colors[i],
 							auto_keyframe, grouptype);
 						break; }
 
@@ -2002,8 +1987,8 @@ int TrackCanvas::do_keyframes(int cursor_x,
 								buttonpress, 1, 1, MDGREY,
 								auto_keyframe);
 						result = do_int_autos(track, autos,
-							cursor_x, cursor_y, draw, 
-							buttonpress, 0, 0, auto_colors[i],
+							cursor_x, cursor_y, draw, buttonpress,
+							0, 0, GWindowGUI::auto_colors[i],
 							auto_keyframe);
 						break; }
 					}

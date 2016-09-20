@@ -199,7 +199,7 @@ int PatchGUI::update(int x, int y)
 			record->update(track->record);
 			gang->update(track->gang);
 			draw->update(track->draw);
-			mute->update(mute->get_keyframe(mwindow, this)->value);
+			mute->update(mwindow->get_int_auto(this, AUTOMATION_MUTE)->value);
 			expand->update(track->expand_view);
 		}
 	}
@@ -555,7 +555,7 @@ int DrawPatch::button_release_event()
 MutePatch::MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, y,
 		mwindow->theme->get_image_set("mutepatch_data"),
-		get_keyframe(mwindow, patch)->value,
+		mwindow->get_int_auto(patch, AUTOMATION_MUTE)->value,
 		"",
 		0,
 		0,
@@ -608,27 +608,6 @@ int MutePatch::button_release_event()
 	}
 	return result;
 }
-
-IntAuto* MutePatch::get_keyframe(MWindow *mwindow, PatchGUI *patch)
-{
-	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-	unit_position = patch->track->to_units(unit_position, 0);
-	return (IntAuto*)patch->track->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
-		(int64_t)unit_position,
-		PLAY_FORWARD,
-		current);
-}
-
-
-
-
-
-
-
-
-
 
 
 

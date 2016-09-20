@@ -26,5 +26,12 @@
 
 #define MAX_AUDIO_FADE 6
 
+class APatchGUI;
+class AFadePatch;
+class AKeyFadePatch;
+class AKeyFadeValue;
+class APanPatch;
+class AKeyPanPatch;
+class AMeterPatch;
 
 #endif

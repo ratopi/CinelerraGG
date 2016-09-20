@@ -191,20 +191,6 @@ public:
 										                  // 0 if after all autos
 	Auto* nearest_before(int64_t position);    // return nearest auto before or 0
 	Auto* nearest_after(int64_t position);     // return nearest auto after or 0
-
-	Auto *selected;
-	int skip_selected;      // if selected was added
-	int64_t selected_position, selected_position_;      // original position for moves
-	double selected_value, selected_value_;      // original position for moves
-	float virtual_h;  // height cursor moves to cover entire range when track height is less than this
-	int virtual_center;
-	int stack_number;
-	int stack_total;
 };
-
-
-
-
-
 
 #endif

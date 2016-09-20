@@ -505,45 +505,23 @@ void Canvas::get_scrollbars(EDL *edl,
 	}
 //printf("Canvas::get_scrollbars 1 %d %d\n", get_xscroll(), get_yscroll());
 
-	if(use_scrollbars)
-	{
+	if( use_scrollbars ) {
 		w_needed = edl->session->output_w;
 		h_needed = edl->session->output_h;
 		get_zooms(edl, 0, zoom_x, zoom_y, conformed_w, conformed_h);
 //printf("Canvas::get_scrollbars 2 %d %d\n", get_xscroll(), get_yscroll());
 
-//		while(!done)
-//		{
-			w_visible = (int)(canvas_w / zoom_x);
-			h_visible = (int)(canvas_h / zoom_y);
-//			done = 1;
+		w_visible = (int)(canvas_w / zoom_x);
+		h_visible = (int)(canvas_h / zoom_y);
+		if( w_needed > w_visible ) {
+			need_xscroll = 1;
+			canvas_h -= BC_ScrollBar::get_span(SCROLL_HORIZ);
+		}
 
-//			if(w_needed > w_visible)
-			if(1)
-			{
-				if(!need_xscroll)
-				{
-					need_xscroll = 1;
-					canvas_h -= BC_ScrollBar::get_span(SCROLL_HORIZ);
-//					done = 0;
-				}
-			}
-			else
-				need_xscroll = 0;
-
-//			if(h_needed > h_visible)
-			if(1)
-			{
-				if(!need_yscroll)
-				{
-					need_yscroll = 1;
-					canvas_w -= BC_ScrollBar::get_span(SCROLL_VERT);
-//					done = 0;
-				}
-			}
-			else
-				need_yscroll = 0;
-//		}
+		if( h_needed > h_visible ) {
+			need_yscroll = 1;
+			canvas_w -= BC_ScrollBar::get_span(SCROLL_VERT);
+		}
 //printf("Canvas::get_scrollbars %d %d %d %d %d %d\n", canvas_w, canvas_h, w_needed, h_needed, w_visible, h_visible);
 //printf("Canvas::get_scrollbars 3 %d %d\n", get_xscroll(), get_yscroll());
 
@@ -551,47 +529,41 @@ void Canvas::get_scrollbars(EDL *edl,
 		h_visible = (int)(canvas_h / zoom_y);
 	}
 
-	if(need_xscroll)
-	{
-		if(!xscroll)
-		{
-			subwindow->add_subwindow(xscroll =
-				new CanvasXScroll(edl, this, canvas_x, canvas_y + canvas_h,
-					w_needed, get_xscroll(), w_visible, canvas_w));
+	if( need_xscroll ) {
+		if( !xscroll ) {
+			xscroll = new CanvasXScroll(edl, this, canvas_x, canvas_y + canvas_h,
+					w_needed, get_xscroll(), w_visible, canvas_w);
+			subwindow->add_subwindow(xscroll);
 			xscroll->show_window(0);
 		}
 		else
 			xscroll->reposition_window(canvas_x, canvas_y + canvas_h, canvas_w);
 
-		if(xscroll->get_length() != w_needed ||
-			xscroll->get_handlelength() != w_visible)
+		if( xscroll->get_length() != w_needed ||
+		    xscroll->get_handlelength() != w_visible )
 			xscroll->update_length(w_needed, get_xscroll(), w_visible, 0);
 	}
-	else
-	{
-		if( xscroll ) { delete xscroll;  xscroll = 0; }
+	else if( xscroll ) {
+		delete xscroll;  xscroll = 0;
 	}
 //printf("Canvas::get_scrollbars 4 %d %d\n", get_xscroll(), get_yscroll());
 
-	if(need_yscroll)
-	{
-		if(!yscroll)
-		{
-			subwindow->add_subwindow(yscroll =
-				new CanvasYScroll(edl, this, canvas_x + canvas_w, canvas_y,
-					h_needed, get_yscroll(), h_visible, canvas_h));
+	if( need_yscroll ) {
+		if( !yscroll ) {
+			yscroll = new CanvasYScroll(edl, this, canvas_x + canvas_w, canvas_y,
+					h_needed, get_yscroll(), h_visible, canvas_h);
+			subwindow->add_subwindow(yscroll);
 			yscroll->show_window(0);
 		}
 		else
 			yscroll->reposition_window(canvas_x + canvas_w, canvas_y, canvas_h);
 
-		if(yscroll->get_length() != edl->session->output_h ||
-			yscroll->get_handlelength() != h_visible)
+		if( yscroll->get_length() != edl->session->output_h ||
+		    yscroll->get_handlelength() != h_visible )
 			yscroll->update_length(h_needed, get_yscroll(), h_visible, 0);
 	}
-	else
-	{
-		if( yscroll ) { delete yscroll;  yscroll = 0; }
+	else if( yscroll ) {
+		delete yscroll;  yscroll = 0;
 	}
 //printf("Canvas::get_scrollbars 5 %d %d\n", get_xscroll(), get_yscroll());
 }

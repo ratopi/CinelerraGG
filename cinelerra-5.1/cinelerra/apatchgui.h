@@ -29,9 +29,6 @@
 #include "panauto.inc"
 #include "patchgui.h"
 
-class AFadePatch;
-class APanPatch;
-class AMeterPatch;
 
 class APatchGUI : public PatchGUI
 {
@@ -55,20 +52,50 @@ class AFadePatch : public BC_FSlider
 public:
 	AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w);
 	static FloatAuto* get_keyframe(MWindow *mwindow, APatchGUI *patch);
-	int handle_event();
+	virtual int handle_event();
 	float update_edl();
 	MWindow *mwindow;
 	APatchGUI *patch;
 };
+
+class AKeyFadePatch : public BC_SubWindow
+{
+public:
+	AKeyFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y);
+	void create_objects();
+
+	MWindow *mwindow;
+	APatchGUI *patch;
+	AKeyFadeValue *akey_fade_value;
+};
+
+class AKeyFadeValue : public AFadePatch
+{
+public:
+	AKeyFadeValue(AKeyFadePatch *akey_fade_patch);
+	int button_release_event();
+	int handle_event();
+
+	AKeyFadePatch *akey_fade_patch;
+};
+
 
 class APanPatch : public BC_Pan
 {
 public:
 	APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y);
 	static PanAuto* get_keyframe(MWindow *mwindow, APatchGUI *patch);
-	int handle_event();
+	virtual int handle_event();
 	MWindow *mwindow;
 	APatchGUI *patch;
+};
+
+class AKeyPanPatch : public APanPatch
+{
+public:
+	AKeyPanPatch(MWindow *mwindow, APatchGUI *patch);
+	int button_release_event();
+	int handle_event();
 };
 
 class AMeterPatch : public BC_Meter
@@ -79,6 +106,5 @@ public:
 	MWindow *mwindow;
 	APatchGUI *patch;
 };
-
 
 #endif

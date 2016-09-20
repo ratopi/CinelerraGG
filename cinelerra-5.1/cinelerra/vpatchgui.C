@@ -25,6 +25,7 @@
 #include "edlsession.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "gwindowgui.h"
 #include "intauto.h"
 #include "intautos.h"
 #include "language.h"
@@ -103,16 +104,9 @@ int VPatchGUI::update(int x, int y)
 		}
 		else
 		{
-			FloatAuto *previous = 0, *next = 0;
-			double unit_position = mwindow->edl->local_session->get_selectionstart(1);
-			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-			unit_position = vtrack->to_units(unit_position, 0);
-			int value = (int)((FloatAutos*)vtrack->automation->autos[AUTOMATION_FADE])->get_value(
-				(int64_t)unit_position, PLAY_FORWARD, previous, next);
-			fade->update(fade->get_w(), value,
+			fade->update(fade->get_w(), mwindow->get_float_auto(this, AUTOMATION_FADE)->get_value(),
 				     mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
 				     mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
-//			fade->update((int)fade->get_keyframe(mwindow, this)->value);
 		}
 	}
 	else
@@ -137,7 +131,7 @@ int VPatchGUI::update(int x, int y)
 		}
 		else
 		{
-			mode->update(mode->get_keyframe(mwindow, this)->value);
+			mode->update(mwindow->get_int_auto(this, AUTOMATION_MODE)->value);
 			nudge->update();
 		}
 	}
@@ -179,14 +173,10 @@ void VPatchGUI::synchronize_fade(float value_change)
 
 
 VFadePatch::VFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y, int w)
- : BC_ISlider(x,
-			y,
-			0,
-			w,
-			w,
-			mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
-			mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE],
-			(int64_t)get_keyframe(mwindow, patch)->get_value())
+ : BC_ISlider(x, y, 0, w, w,
+		mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
+		mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE],
+		(int64_t)mwindow->get_float_auto(patch,AUTOMATION_FADE)->get_value())
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -240,37 +230,69 @@ int VFadePatch::handle_event()
 	return 1;
 }
 
-FloatAuto* VFadePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
-{
-	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-	unit_position = patch->vtrack->to_units(unit_position, 0);
-	Auto *current = 0;
 
-	return (FloatAuto*)patch->vtrack->automation->autos[AUTOMATION_FADE]->get_prev_auto(
-		(int64_t)unit_position,
-		PLAY_FORWARD,
-		current);
+VKeyFadePatch::VKeyFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
+ : BC_SubWindow(x,y, patch->patchbay->get_w(),20,
+	GWindowGUI::auto_colors[AUTOMATION_FADE])
+{
+	this->mwindow = mwindow;
+	this->patch = patch;
 }
+
+void VKeyFadePatch::create_objects()
+{
+	vkey_fade_value = new VKeyFadeValue(this);
+	add_subwindow(vkey_fade_value);
+	vkey_fade_value->activate();
+	show_window();
+}
+
+VKeyFadeValue::VKeyFadeValue(VKeyFadePatch *vkey_fade_patch)
+ : VFadePatch(vkey_fade_patch->mwindow, vkey_fade_patch->patch,
+	0,0, vkey_fade_patch->get_w())
+{
+	this->vkey_fade_patch = vkey_fade_patch;
+}
+
+int VKeyFadeValue::button_release_event()
+{
+	VFadePatch::button_release_event();
+	return 0;
+}
+
+int VKeyFadeValue::handle_event()
+{
+	VPatchGUI *patch = vkey_fade_patch->patch;
+	int ret = VFadePatch::handle_event();
+	VFadePatch *fade = patch->fade;
+	if( fade )
+		fade->update(get_value());
+	return ret;
+}
+
 
 
 
 
 VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
- : BC_PopupMenu(x,
- 	y,
-	patch->patchbay->mode_icons[0]->get_w() + 20,
-	"",
-	1,
-	mwindow->theme->get_image_set("mode_popup", 0),
-	10)
+ : BC_PopupMenu(x, y, patch->patchbay->mode_icons[0]->get_w() + 20,
+	"", 1, mwindow->theme->get_image_set("mode_popup", 0), 10)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
-	this->mode = get_keyframe(mwindow, patch)->value;
+	this->mode = mwindow->get_int_auto(patch, AUTOMATION_MODE)->value;
 	set_icon(patch->patchbay->mode_to_icon(this->mode));
 	set_tooltip(_("Overlay mode"));
 }
+
+VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch)
+ : BC_PopupMenu(0, 0, 0, "", 0)
+{
+	this->mwindow = mwindow;
+	this->patch = patch;
+	this->mode = mwindow->get_int_auto(patch, AUTOMATION_MODE)->value;
+}
+
 
 int VModePatch::handle_event()
 {
@@ -307,20 +329,6 @@ int VModePatch::handle_event()
 	mwindow->session->changes_made = 1;
 	return 1;
 }
-
-IntAuto* VModePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
-{
-	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-	unit_position = patch->vtrack->to_units(unit_position, 0);
-
-	return (IntAuto*)patch->vtrack->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-		(int64_t)unit_position,
-		PLAY_FORWARD,
-		current);
-}
-
 
 void VModePatch::create_objects()
 {
@@ -386,3 +394,27 @@ int VModePatchItem::handle_event()
 	popup->handle_event();
 	return 1;
 }
+
+
+VKeyModePatch::VKeyModePatch(MWindow *mwindow, VPatchGUI *patch)
+ : VModePatch(mwindow, patch)
+{
+}
+
+int VKeyModePatch::button_release_event()
+{
+	VModePatch::button_release_event();
+	return 0;
+}
+
+int VKeyModePatch::handle_event()
+{
+	int ret = VModePatch::handle_event();
+	VModePatch *mode = patch->mode;
+	if( mode )
+		mode->update(this->mode);
+	return ret;
+}
+
+
+

@@ -409,7 +409,7 @@ $(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(LIBRARIES)
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
 	ln -f -s ../bin/$(WANT_CIN) ci
 
-$(CUTADS):	$(CUTOBJS) $(CUTLIBS)
+$(CUTADS):	$(CUTOBJS) $(CUTLIBS) $(LIBRARIES)
 	@echo g++ -o $@ $(CUTOBJS)
 	@g++ $(CFLAGS) -pthread -o $@ $(CUTOBJS) $(CUTLIBS) $(LIBS)
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(CUTADS) $(CUTADS).debuginfo)

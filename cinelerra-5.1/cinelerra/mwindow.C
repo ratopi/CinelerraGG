@@ -20,6 +20,7 @@
 
 #include "asset.h"
 #include "assets.h"
+#include "atrack.h"
 #include "audioalsa.h"
 #include "autos.h"
 #include "awindowgui.h"
@@ -53,11 +54,13 @@
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "floatautos.h"
 #include "framecache.h"
 #include "gwindow.h"
 #include "gwindowgui.h"
 #include "keyframegui.h"
 #include "indexfile.h"
+#include "intautos.h"
 #include "interlacemodes.h"
 #include "language.h"
 #include "levelwindowgui.h"
@@ -77,6 +80,7 @@
 #include "mwindow.h"
 #include "nestededls.h"
 #include "new.h"
+#include "panautos.h"
 #include "patchbay.h"
 #include "playback3d.h"
 #include "playbackengine.h"
@@ -107,6 +111,7 @@
 #include "transition.h"
 #include "transportque.h"
 #include "vframe.h"
+#include "vtrack.h"
 #include "versioninfo.h"
 #include "videodevice.inc"
 #include "videowindow.h"
@@ -641,14 +646,14 @@ int MWindow::init_ladspa_index(MWindow *mwindow, Preferences *preferences,
 	strcpy(plugin_path, path);  delete [] path;
 	printf("init ladspa index: %s\n", plugin_dir);
 	FILE *fp = fopen(index_path,"w");
-        if( !fp ) {
+	if( !fp ) {
 		fprintf(stderr,_("MWindow::init_ladspa_index: "
 			"can't create plugin index: %s\n"), index_path);
 		return 1;
 	}
 	fprintf(fp, "%d\n", PLUGIN_FILE_VERSION);
 	fprintf(fp, "%s\n", plugin_dir);
-        init_plugin_index(mwindow, preferences, fp, plugin_path);
+	init_plugin_index(mwindow, preferences, fp, plugin_path);
 	fclose(fp);
 	return 0;
 }
@@ -1279,7 +1284,7 @@ int MWindow::put_commercial()
 void MWindow::stop_playback(int wait)
 {
 	int locked  = gui->get_window_lock();
-        if( locked ) gui->unlock_window();
+	if( locked ) gui->unlock_window();
 
 	cwindow->playback_engine->que->send_command(STOP,
 		CHANGE_NONE,
@@ -1293,7 +1298,7 @@ void MWindow::stop_playback(int wait)
 		vwindow->playback_engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
 		vwindow->playback_engine->interrupt_playback(wait);
 	}
-        if( locked ) gui->lock_window("MWindow::stop_playback");
+	if( locked ) gui->lock_window("MWindow::stop_playback");
 }
 
 int MWindow::load_filenames(ArrayList<char*> *filenames,
@@ -2158,6 +2163,14 @@ void MWindow::show_gwindow()
 	gwindow->gui->unlock_window();
 
 	gui->mainmenu->show_gwindow->set_checked(1);
+}
+void MWindow::hide_gwindow()
+{
+	session->show_gwindow = 0;
+
+	gwindow->gui->lock_window("MWindow::show_gwindow");
+	gwindow->gui->hide_window();
+	gwindow->gui->unlock_window();
 }
 
 void MWindow::show_lwindow()
@@ -3161,10 +3174,10 @@ void MWindow::dump_undo(FILE *fp)
 
 void MWindow::dump_exe(FILE *fp)
 {
-        char proc_path[BCTEXTLEN], exe_path[BCTEXTLEN];
-        sprintf(proc_path, "/proc/%d/exe", (int)getpid());
+	char proc_path[BCTEXTLEN], exe_path[BCTEXTLEN];
+	sprintf(proc_path, "/proc/%d/exe", (int)getpid());
 
-        int ret = -1, n = 100;
+	int ret = -1, n = 100;
 	for( int len; (len=readlink(proc_path, exe_path, sizeof(exe_path)))>0; --n ) {
 		exe_path[len] = 0;  strcpy(proc_path, exe_path);
 		ret = 0;
@@ -3476,6 +3489,8 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 	EDLSession *session = edl->session;
 	double old_framerate = session->frame_rate;
 	double old_samplerate = session->sample_rate;
+	int old_auto_keyframes = session->auto_keyframes;
+	session->auto_keyframes = 0;
 	int result = file->open_file(preferences, asset, 1, 0);
 	if( !result && delete_tracks > 0 )
 		undo->update_undo_before();
@@ -3589,6 +3604,7 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 		edl->resample(old_samplerate, session->sample_rate, TRACK_AUDIO);
 	}
 	delete file;
+	session->auto_keyframes = old_auto_keyframes;
 	if( !result && delete_tracks > 0 ) {
 		save_backup();
 		undo->update_undo_after(_("select asset"), LOAD_ALL);
@@ -3616,4 +3632,35 @@ void MWindow::dump_plugindb(FILE *fp)
 	for(int i = 0; i < plugindb->total; i++)
 		plugindb->get(i)->dump(fp);
 }
+
+FloatAuto* MWindow::get_float_auto(PatchGUI *patch,int idx)
+{
+	Auto *current = 0;
+	double unit_position = edl->local_session->get_selectionstart(1);
+	unit_position = patch->track->to_units(unit_position, 0);
+
+	FloatAutos *ptr = (FloatAutos*)patch->track->automation->autos[idx];
+	return (FloatAuto*)ptr->get_prev_auto( (long)unit_position, PLAY_FORWARD, current);
+}
+
+IntAuto* MWindow::get_int_auto(PatchGUI *patch,int idx)
+{
+	Auto *current = 0;
+	double unit_position = edl->local_session->get_selectionstart(1);
+	unit_position = patch->track->to_units(unit_position, 0);
+
+	IntAutos *ptr = (IntAutos*)patch->track->automation->autos[idx];
+	return (IntAuto*)ptr->get_prev_auto( (long)unit_position, PLAY_FORWARD, current);
+}
+
+PanAuto* MWindow::get_pan_auto(PatchGUI *patch)
+{
+	Auto *current = 0;
+	double unit_position = edl->local_session->get_selectionstart(1);
+	unit_position = patch->track->to_units(unit_position, 0);
+
+	PanAutos *ptr = (PanAutos*)patch->track->automation->autos[AUTOMATION_PAN];
+	return (PanAuto*)ptr->get_prev_auto( (long)unit_position, PLAY_FORWARD, current);
+}
+
 

@@ -153,7 +153,6 @@ public:
 	MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
 	int button_press_event();
 	int button_release_event();
-	static IntAuto* get_keyframe(MWindow *mwindow, PatchGUI *patch);
 	MWindow *mwindow;
 	PatchGUI *patch;
 };

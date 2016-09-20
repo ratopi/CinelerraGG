@@ -20,6 +20,7 @@
  */
 
 #include "apatchgui.h"
+#include "atrack.h"
 #include "autoconf.h"
 #include "autos.h"
 #include "bcwindowbase.h"
@@ -29,8 +30,10 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "floatauto.h"
 #include "gwindow.h"
 #include "gwindowgui.h"
+#include "intauto.h"
 #include "keyframe.h"
 #include "keyframepopup.h"
 #include "language.h"
@@ -42,8 +45,9 @@
 #include "mwindow.h"
 #include "patchbay.h"
 #include "patchgui.h" 
+#include "timelinepane.h"
 #include "track.h"
-#include "vpatchgui.h"
+#include "vtrack.h"
 
 KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
  : BC_PopupMenu(0, 0, 0, "", 0)
@@ -78,8 +82,8 @@ KeyframePopup::~KeyframePopup()
 
 void KeyframePopup::create_objects()
 {
-	add_item(key_hide = new KeyframePopupHide(mwindow, this));
 	add_item(key_show = new KeyframePopupShow(mwindow, this));
+	add_item(key_hide = new KeyframePopupHide(mwindow, this));
 	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
 	add_item(key_copy = new KeyframePopupCopy(mwindow, this));
 
@@ -93,6 +97,7 @@ void KeyframePopup::create_objects()
 
 int KeyframePopup::update(Plugin *plugin, KeyFrame *keyframe)
 {
+	key_show->set_text(_("Show Plugin Settings"));
 	this->keyframe_plugin = plugin;
 	this->keyframe_auto = keyframe;
 	this->keyframe_autos = 0;
@@ -103,6 +108,7 @@ int KeyframePopup::update(Plugin *plugin, KeyFrame *keyframe)
 
 int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyframe)
 {
+	key_show->set_text(_(GWindowGUI::auto_text[autos->autoidx]));
 	this->keyframe_plugin = 0;
 	this->keyframe_automation = automation;
 	this->keyframe_autos = autos;
@@ -186,7 +192,7 @@ int KeyframePopupDelete::handle_event()
 
 	mwindow->save_backup();
 	mwindow->gui->update(0, 1,      // 1 for incremental drawing.  2 for full refresh
-	        0, 0, 0, 0, 0);
+		0, 0, 0, 0, 0);
 	mwindow->update_plugin_guis();
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
@@ -223,107 +229,120 @@ KeyframePopupShow::~KeyframePopupShow()
 {
 }
 
+PatchGUI *KeyframePopupShow::get_patchgui(Track *track)
+{
+	PatchGUI *patchgui = 0;
+	TimelinePane **panes = mwindow->gui->pane;
+	for( int i=0; i<TOTAL_PANES && !patchgui; ++i ) {
+		if( !panes[i] ) continue;
+		PatchBay *patchbay = panes[i]->patchbay;
+		if( !patchbay ) continue;
+		for( int j=0; j<patchbay->patches.total && !patchgui; ++j ) {
+			if( patchbay->patches.values[j]->track == track )
+				patchgui = patchbay->patches.values[j];
+		}
+	}
+	return patchgui;
+}
+
 int KeyframePopupShow::handle_event()
 {
-	if (popup->keyframe_plugin)
-	{
+	MWindowGUI *mgui = mwindow->gui;
+	CWindowGUI *cgui = mwindow->cwindow->gui;
+	int cx = mgui->get_relative_cursor_x()+15, cy = mgui->get_relative_cursor_y()-15;
+	delete mgui->keyvalue_popup;
+	mgui->keyvalue_popup = 0;
+
+	if( popup->keyframe_plugin ) {
 		mwindow->update_plugin_guis();
 		mwindow->show_plugin(popup->keyframe_plugin);
 	}
 	else if( popup->keyframe_automation ) {
-/*
-
-		mwindow->cwindow->gui->lock_window();
+		cgui->lock_window();
 		int show_window = 1;
-		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->projector_autos ||
-		   popup->keyframe_autos == (Autos *)popup->keyframe_automation->pzoom_autos)
-		   
-		{
-			mwindow->cwindow->gui->set_operation(CWINDOW_PROJECTOR);	
-		} else
-		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->camera_autos ||
-		   popup->keyframe_autos == (Autos *)popup->keyframe_automation->czoom_autos)
-		   
-		{
-			mwindow->cwindow->gui->set_operation(CWINDOW_CAMERA);	
-		} else
-		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mode_autos)
-		   
-		{
-			// no window to be shown
+
+		switch( popup->keyframe_autos->autoidx ) {
+		case AUTOMATION_CAMERA_X:
+		case AUTOMATION_CAMERA_Y:
+		case AUTOMATION_CAMERA_Z: {
+			cgui->set_operation(CWINDOW_CAMERA);
+			break; }
+
+		case AUTOMATION_PROJECTOR_X:
+		case AUTOMATION_PROJECTOR_Y:
+		case AUTOMATION_PROJECTOR_Z: {
+			cgui->set_operation(CWINDOW_PROJECTOR);	
+			break; }
+
+		case AUTOMATION_MASK: {
+			cgui->set_operation(CWINDOW_MASK);
+			break; }
+
+		default: {
 			show_window = 0;
-			// first find the appropriate patchgui
-			PatchBay *patchbay = mwindow->gui->patchbay;
-			PatchGUI *patchgui = 0;
-			for (int i = 0; i < patchbay->patches.total; i++)
-				if (patchbay->patches.values[i]->track == popup->keyframe_automation->track)
-					patchgui = patchbay->patches.values[i];		
-			if (patchgui != 0)
-			{
-// FIXME: repositioning of the listbox needs support in guicast
-//				int cursor_x = popup->get_relative_cursor_x();
-//				int cursor_y = popup->get_relative_cursor_y();
-//				vpatchgui->mode->reposition_window(cursor_x, cursor_y);
+			PatchGUI *patchgui = get_patchgui(popup->keyframe_automation->track);
+			if( !patchgui ) break;
 
+			switch( popup->keyframe_autos->autoidx ) {
+			case AUTOMATION_MODE: {
+				VKeyModePatch *mode = new VKeyModePatch(mwindow, (VPatchGUI *)patchgui);
+				mgui->add_subwindow(mode);
+				mode->create_objects();
+				mode->activate_menu();
+				mgui->keyvalue_popup = mode;
+			break; }
 
-// Open the popup menu
-				VPatchGUI *vpatchgui = (VPatchGUI *)patchgui;
-				vpatchgui->mode->activate_menu();
+			case AUTOMATION_PAN: {
+				AKeyPanPatch *pan = new AKeyPanPatch(mwindow, (APatchGUI *)patchgui);
+				mgui->add_subwindow(pan);
+				pan->create_objects();
+				pan->activate(cx, cy);
+				mgui->keyvalue_popup = pan;
+			break; }
+
+			case AUTOMATION_FADE: {
+				switch( patchgui->data_type ) {
+				case TRACK_AUDIO: {
+					AKeyFadePatch *fade = new AKeyFadePatch(mwindow, (APatchGUI *)patchgui, cx, cy);
+					mgui->add_subwindow(fade);
+					fade->create_objects();
+					mgui->keyvalue_popup = fade;
+					break; }
+				case TRACK_VIDEO: {
+					VKeyFadePatch *fade = new VKeyFadePatch(mwindow, (VPatchGUI *)patchgui, cx, cy);
+					mgui->add_subwindow(fade);
+					fade->create_objects();
+					mgui->keyvalue_popup = fade;
+					break; }
+				}
+				break; }
+
+			case AUTOMATION_SPEED: {
+				KeySpeedPatch *speed = new KeySpeedPatch(mwindow, patchgui, cx, cy);
+				mgui->add_subwindow(speed);
+				speed->create_objects();
+				mgui->keyvalue_popup = speed;
+				break; }
+
+			case AUTOMATION_MUTE: {
+				KeyMutePatch *mute = new KeyMutePatch(mwindow, (APatchGUI *)patchgui, cx, cy);
+				mgui->add_subwindow(mute);
+				mute->create_objects();
+				mgui->keyvalue_popup = mute;
+				break; }
 			}
-		} else
-		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mask_autos)
-		   
-		{
-			mwindow->cwindow->gui->set_operation(CWINDOW_MASK);	
-		} else
-		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->pan_autos)
-		   
-		{
-			// no window to be shown
-			show_window = 0;
-			// first find the appropriate patchgui
-			PatchBay *patchbay = mwindow->gui->patchbay;
-			PatchGUI *patchgui = 0;
-			for (int i = 0; i < patchbay->patches.total; i++)
-				if (patchbay->patches.values[i]->track == popup->keyframe_automation->track)
-					patchgui = patchbay->patches.values[i];		
-			if (patchgui != 0)
-			{
-// Open the popup menu at current mouse position
-				APatchGUI *apatchgui = (APatchGUI *)patchgui;
-				int cursor_x = popup->get_relative_cursor_x();
-				int cursor_y = popup->get_relative_cursor_y();
-				apatchgui->pan->activate(cursor_x, cursor_y);
-			}
-			
-
-		} else
-		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->fade_autos)
-		   
-		{
-			// no window to be shown, so do nothing
-			// IDEA: open window for fading
-			show_window = 0;
-		} else
-		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mute_autos)
-		   
-		{
-			// no window to be shown, so do nothing
-			// IDEA: directly switch
-			show_window = 0;
-		} else;
-		
+			break; }
+		}
 
 // ensure bringing to front
-		if (show_window)
-		{
-			((CPanelToolWindow *)(mwindow->cwindow->gui->composite_panel->operation[CWINDOW_TOOL_WINDOW]))->set_shown(0);
-			((CPanelToolWindow *)(mwindow->cwindow->gui->composite_panel->operation[CWINDOW_TOOL_WINDOW]))->set_shown(1);
+		if( show_window ) {
+			mwindow->show_cwindow();
+			CPanelToolWindow *panel_tool_window =
+				(CPanelToolWindow *)cgui->composite_panel->operation[CWINDOW_TOOL_WINDOW];
+			panel_tool_window->set_shown(0);
+			panel_tool_window->set_shown(1);
 		}
-		mwindow->cwindow->gui->unlock_window();
-
-
-*/
+		cgui->unlock_window();
 	}
 	return 1;
 }
@@ -348,7 +367,7 @@ int KeyframePopupCopy::handle_event()
 	we want to copy just keyframe under cursor, NOT all keyframes at this frame
 	- very hard to do, so this is good approximation for now...
 */
-	
+
 #if 0
 	if (popup->keyframe_automation)
 	{
@@ -366,17 +385,17 @@ int KeyframePopupCopy::handle_event()
 		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->camera_autos)
 			autoconf.camera = 1;
 		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->czoom_autos)
-			autoconf.czoom = 1;		
+			autoconf.czoom = 1;
 		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mode_autos)
 		   	autoconf.mode = 1;
 		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mask_autos)
 			autoconf.mask = 1;
 		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->pan_autos)
-			autoconf.pan = 1;		   
+			autoconf.pan = 1;
 		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->fade_autos)
 			autoconf.fade = 1;
 		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mute_autos)
-			autoconf.mute = 1;		
+			autoconf.mute = 1;
 
 
 // now create a clipboard
@@ -388,8 +407,8 @@ int KeyframePopupCopy::handle_event()
 		file.append_newline();
 		file.append_newline();
 
-/*		track->copy_automation(position, 
-			position, 
+/*		track->copy_automation(position,
+			position,
 			&file,
 			0,
 			0);
@@ -400,23 +419,18 @@ int KeyframePopupCopy::handle_event()
 		file.append_tag();
 		file.append_newline();
 
-		track->automation->copy(position, 
-			position, 
+		track->automation->copy(position,
+			position,
 			&file,
 			0,
 			0,
 			&autoconf);
-		
-		
-		
 		file.tag.set_title("/TRACK");
 		file.append_tag();
 		file.append_newline();
 		file.append_newline();
 		file.append_newline();
 		file.append_newline();
-
-
 
 		file.tag.set_title("/AUTO_CLIPBOARD");
 		file.append_tag();
@@ -521,7 +535,7 @@ KeyframeHidePopup::~KeyframeHidePopup()
 
 void KeyframeHidePopup::create_objects()
 {
-        add_item(new KeyframeHideItem(mwindow, this));
+	add_item(new KeyframeHideItem(mwindow, this));
 }
 
 int KeyframeHidePopup::update(Autos *autos)
@@ -542,6 +556,132 @@ int KeyframeHideItem::handle_event()
 {
 	if( popup->keyframe_autos )
 		mwindow->set_auto_visibility(popup->keyframe_autos, 0);
+	return 1;
+}
+
+
+
+KeyMutePatch::KeyMutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
+ : BC_SubWindow(x, y, 100, 20, GWindowGUI::auto_colors[AUTOMATION_MUTE])
+{
+	this->mwindow = mwindow;
+	this->patch = patch;
+}
+
+void KeyMutePatch::create_objects()
+{
+	key_mute_checkbox = new KeyMuteValue(this);
+	add_subwindow(key_mute_checkbox);
+	key_mute_checkbox->activate();
+	show_window();
+}
+
+KeyMuteValue::KeyMuteValue(KeyMutePatch *key_mute_patch)
+ : BC_CheckBox(0,0, key_mute_patch->mwindow->
+	get_int_auto(key_mute_patch->patch, AUTOMATION_MUTE)->value,
+	_("Mute"), MEDIUMFONT, RED)
+{
+	this->key_mute_patch = key_mute_patch;
+}
+
+int KeyMuteValue::button_release_event()
+{
+	BC_CheckBox::button_release_event();
+	return 0;
+}
+
+void KeyMuteValue::update_edl()
+{
+	MWindow *mwindow = key_mute_patch->mwindow;
+	PatchGUI *patch = key_mute_patch->patch;
+	double position = mwindow->edl->local_session->get_selectionstart(1);
+	Autos *mute_autos = patch->track->automation->autos[AUTOMATION_MUTE];
+	int need_undo = !mute_autos->auto_exists_for_editing(position);
+	mwindow->undo->update_undo_before(_("mute"), need_undo ? 0 : this);
+	IntAuto *current = (IntAuto*)mute_autos->get_auto_for_editing(position);
+	current->value = this->get_value();
+	mwindow->undo->update_undo_after(_("mute"), LOAD_AUTOMATION);
+}
+
+int KeyMuteValue::handle_event()
+{
+	MWindow *mwindow = key_mute_patch->mwindow;
+	PatchGUI *patch = key_mute_patch->patch;
+	patch->change_source = 1;
+	update_edl();
+	patch->change_source = 0;
+	mwindow->sync_parameters(CHANGE_PARAMS);
+	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MUTE]) {
+		mwindow->gui->update_patchbay();
+		mwindow->gui->draw_overlays(1);
+	}
+	return 1;
+}
+
+KeySpeedPatch::KeySpeedPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
+ : BC_SubWindow(x,y, 200,20, GWindowGUI::auto_colors[AUTOMATION_SPEED])
+{
+	this->mwindow = mwindow;
+	this->patch = patch;
+}
+
+void KeySpeedPatch::create_objects()
+{
+	key_speed_slider = new KeySpeedValue(this);
+	add_subwindow(key_speed_slider);
+	key_speed_slider->activate();
+	show_window();
+}
+
+KeySpeedValue::KeySpeedValue(KeySpeedPatch *key_speed_patch)
+ : BC_FSlider(0,0, 0, key_speed_patch->get_w(), key_speed_patch->get_w(),
+	key_speed_patch->mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_SPEED],
+	key_speed_patch->mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_SPEED],
+	key_speed_patch->mwindow->get_float_auto(key_speed_patch->patch, AUTOMATION_SPEED)->get_value())
+{
+	this->key_speed_patch = key_speed_patch;
+	set_precision(0.01);
+}
+
+KeySpeedValue::~KeySpeedValue()
+{
+}
+
+int KeySpeedValue::button_release_event()
+{
+	BC_FSlider::button_release_event();
+	return 0;
+}
+
+void KeySpeedValue::update_edl()
+{
+	MWindow *mwindow = key_speed_patch->mwindow;
+	PatchGUI *patch = key_speed_patch->patch;
+	double position = mwindow->edl->local_session->get_selectionstart(1);
+	Autos *speed_autos = patch->track->automation->autos[AUTOMATION_SPEED];
+	int need_undo = !speed_autos->auto_exists_for_editing(position);
+	mwindow->undo->update_undo_before(_("speed"), need_undo ? 0 : this);
+	FloatAuto *current = (FloatAuto*)speed_autos->get_auto_for_editing(position);
+	current->set_value(get_value());
+	mwindow->undo->update_undo_after(_("speed"), LOAD_AUTOMATION);
+}
+
+int KeySpeedValue::handle_event()
+{
+	MWindow *mwindow = key_speed_patch->mwindow;
+	PatchGUI *patch = key_speed_patch->patch;
+	if( shift_down() ) {
+		update(1.0);
+		set_tooltip(get_caption());
+	}
+
+	patch->change_source = 1;
+	update_edl();
+	patch->change_source = 0;
+	mwindow->sync_parameters(CHANGE_PARAMS);
+	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_SPEED]) {
+		mwindow->gui->draw_overlays(1);
+	}
 	return 1;
 }
 
