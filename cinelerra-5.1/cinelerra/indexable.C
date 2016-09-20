@@ -22,6 +22,7 @@
 #include "bcsignals.h"
 #include "edl.h"
 #include "indexable.h"
+#include "language.h"
 
 #include <string.h>
 
