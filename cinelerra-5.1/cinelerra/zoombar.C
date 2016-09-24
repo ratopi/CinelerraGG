@@ -176,27 +176,30 @@ int ZoomBar::draw()
 void ZoomBar::update_autozoom()
 {
 	char string[BCTEXTLEN];
-	switch (mwindow->edl->local_session->zoombar_showautotype) {
+	int autogroup_type = mwindow->edl->local_session->zoombar_showautotype;
+	switch( autogroup_type ) {
 	case AUTOGROUPTYPE_AUDIO_FADE:
 	case AUTOGROUPTYPE_VIDEO_FADE:
 		sprintf(string, "%0.01f to %0.01f\n", 
-			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype],
-			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
+			mwindow->edl->local_session->automation_mins[autogroup_type],
+			mwindow->edl->local_session->automation_maxs[autogroup_type]);
 		break;
 	case AUTOGROUPTYPE_ZOOM:
 	case AUTOGROUPTYPE_SPEED:
 		sprintf(string, "%0.03f to %0.03f\n", 
-			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype],
-			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
+			mwindow->edl->local_session->automation_mins[autogroup_type],
+			mwindow->edl->local_session->automation_maxs[autogroup_type]);
 		break;
 	case AUTOGROUPTYPE_X:
 	case AUTOGROUPTYPE_Y:
 		sprintf(string, "%0.0f to %.0f\n", 
-			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype],
-			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
+			mwindow->edl->local_session->automation_mins[autogroup_type],
+			mwindow->edl->local_session->automation_maxs[autogroup_type]);
 		break;
 	}
 	auto_zoom_text->update(string);
+	const char *group_name = AutoTypeMenu::to_text(autogroup_type);
+	auto_type->set_text(group_name);
 }
 
 int ZoomBar::update()

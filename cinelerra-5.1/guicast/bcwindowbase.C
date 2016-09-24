@@ -53,6 +53,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <wchar.h>
+#include <typeinfo>
 
 #include <X11/extensions/Xinerama.h>
 #include <X11/extensions/Xvlib.h>
@@ -3756,8 +3757,8 @@ int BC_WindowBase::get_cursor_y()
 
 int BC_WindowBase::dump_windows()
 {
-	printf("\tBC_WindowBase::dump_windows window=%p win=%p\n",
-		this, (void*)this->win);
+	printf("\tBC_WindowBase::dump_windows window=%p win=%p '%s', %dx%d+%d+%d %s\n",
+		this, (void*)this->win, title, w,h,x,y, typeid(*this).name());
 	for(int i = 0; i < subwindows->size(); i++)
 		subwindows->get(i)->dump_windows();
 	for(int i = 0; i < popups.size(); i++)
@@ -4355,4 +4356,16 @@ BC_Pixmap *BC_WindowBase::create_pixmap(VFrame *vframe)
 	return icon;
 }
 
+
+void BC_WindowBase::flicker(int n, int ms)
+{
+	int color = get_bg_color();
+	for( int i=2*n; --i>=0; ) {
+		set_inverse();		set_bg_color(WHITE);
+		clear_box(0,0, w,h);	flash(1);
+		sync_display();		Timer::delay(ms);
+	}
+	set_bg_color(color);
+	set_opaque();
+}
 

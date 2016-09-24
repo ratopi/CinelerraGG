@@ -22,6 +22,7 @@
 #ifndef COLORPICKER_H
 #define COLORPICKER_H
 
+#include "bcdialog.h"
 #include "condition.inc"
 #include "guicast.h"
 #include "mutex.inc"
@@ -40,37 +41,26 @@ class PaletteGreen;
 class PaletteBlue;
 class PaletteAlpha;
 
-class ColorThread : public Thread
+class ColorThread : public BC_DialogThread
 {
 public:
-	ColorThread(int do_alpha = 0, char *title = 0);
+	ColorThread(int do_alpha = 0, const char *title = 0);
 	~ColorThread();
 
-
-	void run();
-	void start_window(int output, int alpha);
+	void start_window(int output, int alpha, int do_okcancel=0);
 	virtual int handle_new_color(int output, int alpha);
 	void update_gui(int output, int alpha);
-	ColorWindow* get_gui();
+	BC_Window* new_gui();
 
-private:
-	friend class ColorWindow;
-
-	ColorWindow *window;
-	Condition *completion;
-// protects window, output, alpha
-	Mutex *mutex;	
-// Starting color
-	int output;
-	int alpha;
-	int do_alpha;
-	char *title;
+	int output, alpha;
+	int do_alpha, do_okcancel;
+	const char *title;
 };
 
 class ColorWindow : public BC_Window
 {
 public:
-	ColorWindow(ColorThread *thread, int x, int y, char *title);
+	ColorWindow(ColorThread *thread, int x, int y, int w, int h, const char *title);
 
 	void create_objects();
 	void change_values();

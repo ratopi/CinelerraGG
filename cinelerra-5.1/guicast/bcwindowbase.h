@@ -477,6 +477,7 @@ public:
 	void slide_right(int distance);
 	void slide_up(int distance);
 	void slide_down(int distance);
+	void flicker(int n=3, int ms=66);
 
 	int cycle_textboxes(int amount);
 

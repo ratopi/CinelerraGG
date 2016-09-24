@@ -2618,7 +2618,10 @@ int TrackCanvas::test_floatline(int center_pixel,
 		{
 			Auto *current;
 			mwindow->undo->update_undo_before();
-			current = mwindow->session->drag_auto = autos->insert_auto(position1);
+			double position = autos->track->from_units(position1);
+			position = mwindow->edl->align_to_frame(position, 0);
+			int64_t new_position = autos->track->to_units(position,0);
+			current = mwindow->session->drag_auto = autos->insert_auto(new_position);
 			((FloatAuto*)current)->set_value(value);
 			mwindow->session->drag_start_percentage = value_to_percentage(value, autogrouptype);
 			mwindow->session->drag_start_position = current->position;

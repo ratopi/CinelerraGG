@@ -519,6 +519,7 @@ int PreferencesWindow::set_current_dialog(int number)
 //printf("PreferencesWindow::set_current_dialog %d\n", __LINE__);
 		dialog->create_objects();
 //printf("PreferencesWindow::set_current_dialog %d\n", __LINE__);
+		dialog->lower_window();
 		dialog->show_window(0);
 	}
 
@@ -598,10 +599,14 @@ PreferencesApply::PreferencesApply(MWindow *mwindow, PreferencesThread *thread)
 	this->mwindow = mwindow;
 	this->thread = thread;
 }
-
 int PreferencesApply::handle_event()
 {
 	thread->apply_settings();
+	return 1;
+}
+int PreferencesApply::resize_event(int w, int h)
+{
+	reposition_window(w/2 - get_w()/2, h-get_h()-10);
 	return 1;
 }
 
@@ -616,7 +621,6 @@ PreferencesOK::PreferencesOK(MWindow *mwindow, PreferencesThread *thread)
 	this->mwindow = mwindow;
 	this->thread = thread;
 }
-
 int PreferencesOK::keypress_event()
 {
 	if(get_keypress() == RETURN)
@@ -629,6 +633,11 @@ int PreferencesOK::keypress_event()
 int PreferencesOK::handle_event()
 {
 	thread->window->set_done(0);
+	return 1;
+}
+int PreferencesOK::resize_event(int w, int h)
+{
+	reposition_window(10, h-get_h()-10);
 	return 1;
 }
 
@@ -651,10 +660,14 @@ int PreferencesCancel::keypress_event()
 	}
 	return 0;
 }
-
 int PreferencesCancel::handle_event()
 {
 	thread->window->set_done(1);
+	return 1;
+}
+int PreferencesCancel::resize_event(int w, int h)
+{
+	reposition_window(w-get_w()-10, h-get_h()-10);
 	return 1;
 }
 

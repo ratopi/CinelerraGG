@@ -22,8 +22,10 @@
 #ifndef GWINDOWGUI_INC
 #define GWINDOWGUI_INC
 
-
 class GWindowGUI;
-
+class GWindowToggle;
+class GWindowColorButton;
+class GWindowColorThread;
+class GWindowColorUpdate;
 
 #endif

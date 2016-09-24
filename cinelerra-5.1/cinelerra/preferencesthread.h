@@ -166,6 +166,7 @@ class PreferencesApply : public BC_GenericButton
 public:
 	PreferencesApply(MWindow *mwindow, PreferencesThread *thread);
 	int handle_event();
+	int resize_event(int w, int h);
 	MWindow *mwindow;
 	PreferencesThread *thread;
 };
@@ -176,6 +177,7 @@ public:
 	PreferencesOK(MWindow *mwindow, PreferencesThread *thread);
 	int keypress_event();
 	int handle_event();
+	int resize_event(int w, int h);
 	MWindow *mwindow;
 	PreferencesThread *thread;
 };
@@ -186,6 +188,7 @@ public:
 	PreferencesCancel(MWindow *mwindow, PreferencesThread *thread);
 	int keypress_event();
 	int handle_event();
+	int resize_event(int w, int h);
 	MWindow *mwindow;
 	PreferencesThread *thread;
 };

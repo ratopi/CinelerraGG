@@ -33,7 +33,7 @@ GWindow::GWindow(MWindow *mwindow)
 GWindow::~GWindow()
 {
 	if(gui && running()) {
-		gui->set_done(0);
+		gui->set_done(1);
 	}
 	join();
 	delete gui;  gui = 0;
@@ -51,6 +51,7 @@ void GWindow::create_objects()
 
 	GWindowGUI::calculate_extents(mwindow->gui, &w, &h);
 	gui = new GWindowGUI(mwindow, w, h);
+	gui->load_defaults();
 	gui->create_objects();
 }
 

@@ -135,17 +135,6 @@ void SvgWin::update_gui(SvgConfig &config)
 	unlock_window();
 }
 
-static void flicker(BC_GenericButton *btn, int n, int clr)
-{
-	int color = btn->get_color();
-	while( --n >= 0 ) {
-		btn->text_color(clr);   btn->draw_face(1);
-		btn->sync_display();    usleep(100000);
-		btn->text_color(color); btn->draw_face(1);
-		btn->sync_display();    usleep(100000);
-	}
-}
-
 SvgCoord::SvgCoord(SvgWin *win, SvgMain *client, int x, int y, float *value)
  : BC_TumbleTextBox(win, *value, (float)0, (float)3000, x, y, 100)
 {
@@ -182,7 +171,7 @@ int NewSvgButton::handle_event()
 		start();
 	}
 	else {
-		flicker(this, 5, RED);
+		flicker();
 		window->editing_lock.unlock();
 	}
 
@@ -290,7 +279,7 @@ int EditSvgButton::handle_event()
 		start();
 	}
 	else {
-		flicker(this, 5, RED);
+		flicker();
 		window->editing_lock.unlock();
 	}
 	return 1;
