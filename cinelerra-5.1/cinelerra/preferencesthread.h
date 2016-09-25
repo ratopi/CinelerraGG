@@ -113,8 +113,7 @@ class PreferencesWindow : public BC_Window
 public:
 	PreferencesWindow(MWindow *mwindow,
 		PreferencesThread *thread,
-		int x,
-		int y);
+		int x, int y, int w, int h);
 	~PreferencesWindow();
 
 	void create_objects();

@@ -127,10 +127,17 @@ BC_Window* PreferencesThread::new_gui()
 	int scr_w = mwindow->gui->get_screen_w(0, -1);
 	int scr_h = mwindow->gui->get_screen_h(0, -1);
 
-	int x = scr_x + scr_w / 2 - WIDTH / 2;
-	int y = scr_h / 2 - HEIGHT / 2;
+	int w = WIDTH, h = HEIGHT;
+	int min_w = mwindow->theme->preferencescategory_x;
+	for(int i = 0; i < CATEGORIES; i++) {
+		min_w += PreferencesButton::calculate_w(mwindow->gui, category_to_text(i)) -
+			mwindow->theme->preferences_category_overlap;
+	}
+	if( w < min_w ) w = min_w;
+	int x = scr_x + scr_w / 2 - w / 2;
+	int y = scr_h / 2 - h / 2;
 
-	window = new PreferencesWindow(mwindow, this, x, y);
+	window = new PreferencesWindow(mwindow, this, x, y, w, h);
 	window->create_objects();
 	mwindow->gui->unlock_window();
 
@@ -357,11 +364,8 @@ SET_TRACE
 
 
 PreferencesWindow::PreferencesWindow(MWindow *mwindow,
-	PreferencesThread *thread,
-	int x,
-	int y)
- : BC_Window(_(PROGRAM_NAME ": Preferences"),
- 	x,y, WIDTH,HEIGHT, WIDTH,HEIGHT, 1,0,1)
+	PreferencesThread *thread, int x, int y, int w, int h)
+ : BC_Window(_(PROGRAM_NAME ": Preferences"), x,y, w,h, 1,0,1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;

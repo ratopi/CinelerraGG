@@ -41,12 +41,12 @@ void CDRipWindow::create_objects()
 	int y = 10, x = 10;
 	add_tool(new BC_Title(x, y, _("Select the range to transfer:"))); y += 25;
 	add_tool(new BC_Title(x, y, _("Track"))); x += 70;
-	add_tool(new BC_Title(x, y, _("Min"))); x += 70;
-	add_tool(new BC_Title(x, y, _("Sec"))); x += 100;
+	add_tool(new BC_Title(x, y, _("Min."))); x += 70;
+	add_tool(new BC_Title(x, y, _("Sec."))); x += 100;
 
 	add_tool(new BC_Title(x, y, _("Track"))); x += 70;
-	add_tool(new BC_Title(x, y, _("Min"))); x += 70;
-	add_tool(new BC_Title(x, y, _("Sec"))); x += 100;
+	add_tool(new BC_Title(x, y, _("Min."))); x += 70;
+	add_tool(new BC_Title(x, y, _("Sec."))); x += 100;
 	
 	x = 10;  y += 25;
 	add_tool(track1 = new CDRipTextValue(this, &(cdripper->track1), x, y, 50));

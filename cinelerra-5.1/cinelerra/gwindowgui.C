@@ -68,26 +68,26 @@ void GWindowGUI::start_color_thread(GWindowColorButton *color_button)
 
 const char *GWindowGUI::other_text[NON_AUTOMATION_TOTAL] =
 {
-	"Assets",
-	"Titles",
-	"Transitions",
-	"Plugin Autos"
+	N_("Assets"),
+	N_("Titles"),
+	N_("Transitions"),
+	N_("Plugin Autos")
 };
 
 const char *GWindowGUI::auto_text[AUTOMATION_TOTAL] =
 {
-	"Mute",
-	"Camera X",
-	"Camera Y",
-	"Camera Z",
-	"Projector X",
-	"Projector Y",
-	"Projector Z",
-	"Fade",
-	"Pan",
-	"Mode",
-	"Mask",
-	"Speed"
+	N_("Mute"),
+	N_("Camera X"),
+	N_("Camera Y"),
+	N_("Camera Z"),
+	N_("Projector X"),
+	N_("Projector Y"),
+	N_("Projector Z"),
+	N_("Fade"),
+	N_("Pan"),
+	N_("Mode"),
+	N_("Mask"),
+	N_("Speed")
 };
 
 int GWindowGUI::auto_colors[AUTOMATION_TOTAL] =
@@ -369,7 +369,7 @@ void GWindowGUI::create_objects()
 		case AUTOMATION_PAN:  vframe = mwindow->theme->pankeyframe_data;   break;
 		case AUTOMATION_MASK: vframe = mwindow->theme->maskkeyframe_data;  break;
 		}
-		const char *label = tp->isauto ? auto_text[tp->ref] : other_text[tp->ref] ;
+		const char *label = _(tp->isauto ? auto_text[tp->ref] : other_text[tp->ref]);
 		int color = !tp->isauto ? -1 : auto_colors[tp->ref];
 		GWindowToggle *toggle = new GWindowToggle(mwindow, this, x, y, label, color, tp);
 		add_tool(toggles[i] = toggle);
