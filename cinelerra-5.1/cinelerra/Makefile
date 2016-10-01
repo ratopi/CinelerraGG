@@ -191,7 +191,10 @@ OBJS = \
 	$(OBJDIR)/nestededls.o \
 	$(OBJDIR)/newfolder.o \
 	$(OBJDIR)/new.o \
+	$(OBJDIR)/overlaydirect.o \
 	$(OBJDIR)/overlayframe.o \
+	$(OBJDIR)/overlaynearest.o \
+	$(OBJDIR)/overlaysample.o \
 	$(OBJDIR)/packagedispatcher.o \
 	$(OBJDIR)/packagerenderer.o \
 	$(OBJDIR)/packagingengine.o \

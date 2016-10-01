@@ -332,8 +332,46 @@ int VModePatch::handle_event()
 
 void VModePatch::create_objects()
 {
-	for( int mode=0; mode<TRANSFER_TYPES; ++mode )
-		add_item(new VModePatchItem(this, mode_to_text(mode), mode));
+	VModePatchItem *mode_item;
+	VModePatchSubMenu *submenu;
+	add_item(mode_item = new VModePatchItem(this, mode_to_text(TRANSFER_NORMAL),  TRANSFER_NORMAL));
+	add_item(mode_item = new VModePatchItem(this, _("Arithmetic..."), -1));
+	mode_item->add_submenu(submenu = new VModePatchSubMenu(mode_item));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_ADDITION), TRANSFER_ADDITION));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_SUBTRACT), TRANSFER_SUBTRACT));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_DIVIDE),   TRANSFER_DIVIDE));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_MULTIPLY), TRANSFER_MULTIPLY));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_REPLACE),  TRANSFER_REPLACE));
+	add_item(mode_item = new VModePatchItem(this, _("PorterDuff..."), -1));
+	mode_item->add_submenu(submenu = new VModePatchSubMenu(mode_item));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_DST),	TRANSFER_DST));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_DST_ATOP), TRANSFER_DST_ATOP));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_DST_IN),   TRANSFER_DST_IN));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_DST_OUT),  TRANSFER_DST_OUT));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_DST_OVER), TRANSFER_DST_OVER));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_SRC),	TRANSFER_SRC));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_SRC_ATOP), TRANSFER_SRC_ATOP));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_SRC_IN),   TRANSFER_SRC_IN));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_SRC_OUT),  TRANSFER_SRC_OUT));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_SRC_OVER), TRANSFER_SRC_OVER));
+	add_item(mode_item = new VModePatchItem(this, _("Logical..."), -1));
+	mode_item->add_submenu(submenu = new VModePatchSubMenu(mode_item));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_MIN),	TRANSFER_MIN));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_MAX),	TRANSFER_MAX));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_DARKEN),	TRANSFER_DARKEN));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_LIGHTEN),	TRANSFER_LIGHTEN));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_AND),	TRANSFER_AND));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_OR),	TRANSFER_OR));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_XOR),	TRANSFER_XOR));
+	add_item(mode_item = new VModePatchItem(this, _("graphic art..."), -1));
+	mode_item->add_submenu(submenu = new VModePatchSubMenu(mode_item));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_OVERLAY),	TRANSFER_OVERLAY));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_SCREEN),	TRANSFER_SCREEN));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_BURN),	TRANSFER_BURN));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_DODGE),	TRANSFER_DODGE));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_DIFFERENCE),TRANSFER_DIFFERENCE));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_HARDLIGHT),TRANSFER_HARDLIGHT));
+	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_SOFTLIGHT),TRANSFER_SOFTLIGHT));
 }
 
 void VModePatch::update(int mode)
@@ -343,6 +381,13 @@ void VModePatch::update(int mode)
 	{
 		VModePatchItem *item = (VModePatchItem*)get_item(i);
 		item->set_checked(item->mode == mode);
+		VModePatchSubMenu *submenu = (VModePatchSubMenu *)item->get_submenu();
+		if( !submenu ) continue;
+		int n = submenu->total_items();
+		for( int j=0; j<n; ++j ) {
+			VModePatchItem *subitem = (VModePatchItem*)submenu->get_item(j);
+			subitem->set_checked(subitem->mode == mode);
+		}
 	}
 }
 
@@ -350,29 +395,36 @@ void VModePatch::update(int mode)
 const char* VModePatch::mode_to_text(int mode)
 {
 	switch(mode) {
-		case TRANSFER_NORMAL:		return _("Normal");
-		case TRANSFER_ADDITION:		return _("Addition");
-		case TRANSFER_SUBTRACT:		return _("Subtract");
-		case TRANSFER_MULTIPLY:		return _("Multiply");
-		case TRANSFER_DIVIDE:  		return _("Divide");
-		case TRANSFER_REPLACE:		return _("Replace");
-		case TRANSFER_MAX:   		return _("Max");
-		case TRANSFER_MIN:   		return _("Min");
-		case TRANSFER_AVERAGE:		return _("Average");
-		case TRANSFER_DARKEN:		return _("Darken");
-		case TRANSFER_LIGHTEN:		return _("Lighten");
-		case TRANSFER_DST:		return _("Dst");
-		case TRANSFER_DST_ATOP:		return _("DstAtop");
-		case TRANSFER_DST_IN:		return _("DstIn");
-		case TRANSFER_DST_OUT:		return _("DstOut");
-		case TRANSFER_DST_OVER:		return _("DstOver");
-		case TRANSFER_SRC:		return _("Src");
-		case TRANSFER_SRC_ATOP:		return _("SrcAtop");
-		case TRANSFER_SRC_IN:		return _("SrcIn");
-		case TRANSFER_SRC_OUT:		return _("SrcOut");
-		case TRANSFER_SRC_OVER:		return _("SrcOver");
-		case TRANSFER_OR:		return _("Or");
-		case TRANSFER_XOR:		return _("Xor");
+	case TRANSFER_NORMAL:		return _("Normal");
+	case TRANSFER_ADDITION:		return _("Addition");
+	case TRANSFER_SUBTRACT:		return _("Subtract");
+	case TRANSFER_MULTIPLY:		return _("Multiply");
+	case TRANSFER_DIVIDE:  		return _("Divide");
+	case TRANSFER_REPLACE:		return _("Replace");
+	case TRANSFER_MAX:   		return _("Max");
+	case TRANSFER_MIN:   		return _("Min");
+	case TRANSFER_DARKEN:		return _("Darken");
+	case TRANSFER_LIGHTEN:		return _("Lighten");
+	case TRANSFER_DST:		return _("Dst");
+	case TRANSFER_DST_ATOP:		return _("DstAtop");
+	case TRANSFER_DST_IN:		return _("DstIn");
+	case TRANSFER_DST_OUT:		return _("DstOut");
+	case TRANSFER_DST_OVER:		return _("DstOver");
+	case TRANSFER_SRC:		return _("Src");
+	case TRANSFER_SRC_ATOP:		return _("SrcAtop");
+	case TRANSFER_SRC_IN:		return _("SrcIn");
+	case TRANSFER_SRC_OUT:		return _("SrcOut");
+	case TRANSFER_SRC_OVER:		return _("SrcOver");
+	case TRANSFER_AND:		return _("And");
+	case TRANSFER_OR:		return _("Or");
+	case TRANSFER_XOR:		return _("Xor");
+	case TRANSFER_OVERLAY:		return _("Overlay");
+	case TRANSFER_SCREEN:		return _("Screen");
+	case TRANSFER_BURN:		return _("Burn");
+	case TRANSFER_DODGE:		return _("Dodge");
+	case TRANSFER_HARDLIGHT:	return _("Hardlight");
+	case TRANSFER_SOFTLIGHT:	return _("Softlight");
+	case TRANSFER_DIFFERENCE:	return _("Difference");
 	}
 	return _("Normal");
 }
@@ -389,6 +441,37 @@ VModePatchItem::VModePatchItem(VModePatch *popup, const char *text, int mode)
 
 int VModePatchItem::handle_event()
 {
+	if( mode >= 0 ) {
+		popup->mode = mode;
+//		popup->set_icon(popup->patch->patchbay->mode_to_icon(mode));
+		popup->handle_event();
+	}
+	return 1;
+}
+
+VModePatchSubMenu::VModePatchSubMenu(VModePatchItem *mode_item)
+{
+	this->mode_item = mode_item;
+}
+VModePatchSubMenu::~VModePatchSubMenu()
+{
+}
+
+VModeSubMenuItem::VModeSubMenuItem(VModePatchSubMenu *submenu, const char *text, int mode)
+ : BC_MenuItem(text)
+{
+	this->submenu = submenu;
+	this->mode = mode;
+	VModePatch *popup = submenu->mode_item->popup;
+	if(this->mode == popup->mode) set_checked(1);
+}
+VModeSubMenuItem::~VModeSubMenuItem()
+{
+}
+
+int VModeSubMenuItem::handle_event()
+{
+	VModePatch *popup = submenu->mode_item->popup;
 	popup->mode = mode;
 //	popup->set_icon(popup->patch->patchbay->mode_to_icon(mode));
 	popup->handle_event();

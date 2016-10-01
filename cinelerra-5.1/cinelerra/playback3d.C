@@ -30,6 +30,7 @@
 #include "maskauto.h"
 #include "mutex.h"
 #include "overlayframe.inc"
+#include "overlayframe.h"
 #include "playback3d.h"
 #include "pluginclient.h"
 #include "pluginvclient.h"
@@ -46,6 +47,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#define QQ(q)#q
+#define SS(s)QQ(s)
 
 
 // Shaders
@@ -144,8 +147,51 @@ static const char *rgba_to_rgb_flatten =
 	"	gl_FragColor.a = 1.0;\n"
 	"}\n";
 
+#define GL_STD_BLEND(FN) \
+static const char *blend_##FN##_frag = \
+	"uniform sampler2D tex2;\n" \
+	"uniform vec2 tex2_dimensions;\n" \
+	"uniform float alpha;\n" \
+	"void main() {\n" \
+	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n" \
+	"	vec4 result;\n" \
+	"	result.rgb = "SS(COLOR_##FN(1.0, gl_FragColor.rgb, gl_FragColor.a, canvas.rgb, canvas.a))";\n" \
+	"	result.a = "SS(ALPHA_##FN(1.0, gl_FragColor.a, canvas.a))";\n" \
+	"	gl_FragColor = mix(canvas, result, alpha);\n" \
+	"}\n"
+
+#define GL_VEC_BLEND(FN) \
+static const char *blend_##FN##_frag = \
+	"uniform sampler2D tex2;\n" \
+	"uniform vec2 tex2_dimensions;\n" \
+	"uniform float alpha;\n" \
+	"void main() {\n" \
+	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n" \
+	"	vec4 result;\n" \
+	"	result.r = "SS(COLOR_##FN(1.0, gl_FragColor.r, gl_FragColor.a, canvas.r, canvas.a))";\n" \
+	"	result.g = "SS(COLOR_##FN(1.0, gl_FragColor.g, gl_FragColor.a, canvas.g, canvas.a))";\n" \
+	"	result.b = "SS(COLOR_##FN(1.0, gl_FragColor.b, gl_FragColor.a, canvas.b, canvas.a))";\n" \
+	"	result.a = "SS(ALPHA_##FN(1.0, gl_FragColor.a, canvas.a))";\n" \
+	"	result = clamp(result, 0.0, 1.0);\n" \
+	"	gl_FragColor = mix(canvas, result, alpha);\n" \
+	"}\n"
+
+#undef mabs
+#define mabs abs
+#undef mmin
+#define mmin min
+#undef mmax
+#define mmax max
+
+#undef ZERO
+#define ZERO 0.0
+#undef ONE
+#define ONE 1.0
+#undef TWO
+#define TWO 2.0
+
 // NORMAL
-static const char *blend_normal_frag =
+static const char *blend_NORMAL_frag =
 	"uniform sampler2D tex2;\n"
 	"uniform vec2 tex2_dimensions;\n"
 	"uniform float alpha;\n"
@@ -155,264 +201,60 @@ static const char *blend_normal_frag =
 	"	gl_FragColor = mix(canvas, result, alpha);\n"
 	"}\n";
 
+// REPLACE
+static const char *blend_REPLACE_frag =
+	"uniform float alpha;\n"
+	"void main() {\n"
+	"}\n";
+
 // ADDITION
-static const char *blend_add_frag =
+static const char *blend_ADDITION_frag =
 	"uniform sampler2D tex2;\n"
 	"uniform vec2 tex2_dimensions;\n"
 	"uniform float alpha;\n"
 	"void main() {\n"
 	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = canvas + gl_FragColor;\n"
-	"	result = clamp(result, 0.0, 1.0);\n"
+	"	vec4 result = clamp(gl_FragColor + canvas, 0.0, 1.0);\n"
 	"	gl_FragColor = mix(canvas, result, alpha);\n"
 	"}\n";
 
 // SUBTRACT
-static const char *blend_subtract_frag =
+static const char *blend_SUBTRACT_frag =
 	"uniform sampler2D tex2;\n"
 	"uniform vec2 tex2_dimensions;\n"
 	"uniform float alpha;\n"
 	"void main() {\n"
 	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = gl_FragColor - canvas;\n"
-	"	result = clamp(result, 0.0, 1.0);\n"
+	"	vec4 result = clamp(gl_FragColor - canvas, 0.0, 1.0);\n"
 	"	gl_FragColor = mix(canvas, result, alpha);\n"
 	"}\n";
 
-// MULTIPLY
-static const char *blend_multiply_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = canvas * gl_FragColor;\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// DIVIDE
-static const char *blend_divide_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = gl_FragColor / canvas;\n"
-	"	if(canvas.r == 0.) result.r = 1.0;\n"
-	"	if(canvas.g == 0.) result.g = 1.0;\n"
-	"	if(canvas.b == 0.) result.b = 1.0;\n"
-	"	if(canvas.a == 0.) result.a = 1.0;\n"
-	"	result = clamp(result, 0.0, 1.0);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// REPLACE
-static const char *blend_replace_frag =
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"}\n";
-
-// MAX
-static const char *blend_max_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = max(canvas, gl_FragColor);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// MIN
-static const char *blend_min_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = min(canvas, gl_FragColor);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// AVERAGE
-static const char *blend_average_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = (canvas + gl_FragColor) * 0.5;\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// DARKEN
-static const char *blend_darken_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = vec4(canvas.rgb * (1.0 - gl_FragColor.a) +"
-			" gl_FragColor.rgb * (1.0 - canvas.a) +"
-			" min(canvas.rgb, gl_FragColor.rgb), "
-			" canvas.a + gl_FragColor.a - canvas.a * gl_FragColor.a);\n"
-	"	result = clamp(result, 0.0, 1.0);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// LIGHTEN
-static const char *blend_lighten_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = vec4(canvas.rgb * (1.0 - gl_FragColor.a) +"
-			" gl_FragColor.rgb * (1.0 - canvas.a) +"
-			" max(canvas.rgb, gl_FragColor.rgb), "
-			" canvas.a + gl_FragColor.a - canvas.a * gl_FragColor.a);\n"
-	"	result = clamp(result, 0.0, 1.0);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// DST
-static const char *blend_dst_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-//	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-//	"	vec4 result = canvas;\n"
-//	"	gl_FragColor = mix(result, canvas, alpha);\n"
-	"	gl_FragColor = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"}\n";
-
-// DST_ATOP
-static const char *blend_dst_atop_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = vec4(canvas.rgb * gl_FragColor.a + "
-			"(1.0 - canvas.a) * gl_FragColor.rgb, gl_FragColor.a);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// DST_IN
-static const char *blend_dst_in_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = canvas * gl_FragColor.a;\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// DST_OUT
-static const char *blend_dst_out_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = canvas * (1.0 - gl_FragColor.a);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// DST_OVER
-static const char *blend_dst_over_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = vec4(canvas.rgb + (1.0 - canvas.a) * gl_FragColor.rgb, "
-			" gl_FragColor.a + canvas.a - gl_FragColor.a * canvas.a);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// SRC
-static const char *blend_src_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = gl_FragColor;\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// SRC_ATOP
-static const char *blend_src_atop_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = vec4(gl_FragColor.rgb * canvas.a + "
-			"canvas.rgb * (1.0 - gl_FragColor.a), canvas.a);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// SRC_IN
-static const char *blend_src_in_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = gl_FragColor * canvas.a;\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// SRC_OUT
-static const char *blend_src_out_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = gl_FragColor * (1.0 - canvas.a);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// SRC_OVER
-static const char *blend_src_over_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = vec4(gl_FragColor.rgb + (1.0 - gl_FragColor.a) * canvas.rgb, "
-				"gl_FragColor.a + canvas.a - gl_FragColor.a * canvas.a);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// OR
-static const char *blend_or_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = canvas + gl_FragColor - canvas * gl_FragColor;\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
-
-// XOR
-static const char *blend_xor_frag =
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"uniform float alpha;\n"
-	"void main() {\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	vec4 result = vec4(gl_FragColor.rgb * (1.0 - canvas.a) + "
-			"(1.0 - gl_FragColor.a) * canvas.rgb, "
-			"gl_FragColor.a + canvas.a - 2.0 * gl_FragColor.a * canvas.a);\n"
-	"	gl_FragColor = mix(canvas, result, alpha);\n"
-	"}\n";
+GL_STD_BLEND(MULTIPLY);
+GL_VEC_BLEND(DIVIDE);
+GL_VEC_BLEND(MAX);
+GL_VEC_BLEND(MIN);
+GL_VEC_BLEND(DARKEN);
+GL_VEC_BLEND(LIGHTEN);
+GL_STD_BLEND(DST);
+GL_STD_BLEND(DST_ATOP);
+GL_STD_BLEND(DST_IN);
+GL_STD_BLEND(DST_OUT);
+GL_STD_BLEND(DST_OVER);
+GL_STD_BLEND(SRC);
+GL_STD_BLEND(SRC_ATOP);
+GL_STD_BLEND(SRC_IN);
+GL_STD_BLEND(SRC_OUT);
+GL_STD_BLEND(SRC_OVER);
+GL_STD_BLEND(AND);
+GL_STD_BLEND(OR);
+GL_STD_BLEND(XOR);
+GL_VEC_BLEND(OVERLAY);
+GL_STD_BLEND(SCREEN);
+GL_VEC_BLEND(BURN);
+GL_VEC_BLEND(DODGE);
+GL_VEC_BLEND(HARDLIGHT);
+GL_VEC_BLEND(SOFTLIGHT);
+GL_VEC_BLEND(DIFFERENCE);
 
 static const char *read_texture_frag =
 	"uniform sampler2D tex;\n"
@@ -1082,29 +924,36 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 // To do these operations, we need to copy the input buffer to a texture
 // and blend 2 textures in a shader
 	static const char * const overlay_shaders[TRANSFER_TYPES] = {
-		blend_normal_frag,	// TRANSFER_NORMAL
-		blend_add_frag,		// TRANSFER_ADDITION
-		blend_subtract_frag,	// TRANSFER_SUBTRACT
-		blend_multiply_frag,	// TRANSFER_MULTIPLY
-		blend_divide_frag,	// TRANSFER_DIVIDE
-		blend_replace_frag,	// TRANSFER_REPLACE
-		blend_max_frag,		// TRANSFER_MAX
-		blend_min_frag,		// TRANSFER_MIN
-		blend_average_frag,	// TRANSFER_AVERAGE
-		blend_darken_frag,	// TRANSFER_DARKEN
-		blend_lighten_frag,	// TRANSFER_LIGHTEN
-		blend_dst_frag,		// TRANSFER_DST
-		blend_dst_atop_frag,	// TRANSFER_DST_ATOP
-		blend_dst_in_frag,	// TRANSFER_DST_IN
-		blend_dst_out_frag,	// TRANSFER_DST_OUT
-		blend_dst_over_frag,	// TRANSFER_DST_OVER
-		blend_src_frag,		// TRANSFER_SRC
-		blend_src_atop_frag,	// TRANSFER_SRC_ATOP
-		blend_src_in_frag,	// TRANSFER_SRC_IN
-		blend_src_out_frag,	// TRANSFER_SRC_OUT
-		blend_src_over_frag,	// TRANSFER_SRC_OVER
-		blend_or_frag,		// TRANSFER_OR
-		blend_xor_frag		// TRANSFER_XOR
+		blend_NORMAL_frag,	// TRANSFER_NORMAL
+		blend_ADDITION_frag,	// TRANSFER_ADDITION
+		blend_SUBTRACT_frag,	// TRANSFER_SUBTRACT
+		blend_MULTIPLY_frag,	// TRANSFER_MULTIPLY
+		blend_DIVIDE_frag,	// TRANSFER_DIVIDE
+		blend_REPLACE_frag,	// TRANSFER_REPLACE
+		blend_MAX_frag,		// TRANSFER_MAX
+		blend_MIN_frag,		// TRANSFER_MIN
+		blend_DARKEN_frag,	// TRANSFER_DARKEN
+		blend_LIGHTEN_frag,	// TRANSFER_LIGHTEN
+		blend_DST_frag,		// TRANSFER_DST
+		blend_DST_ATOP_frag,	// TRANSFER_DST_ATOP
+		blend_DST_IN_frag,	// TRANSFER_DST_IN
+		blend_DST_OUT_frag,	// TRANSFER_DST_OUT
+		blend_DST_OVER_frag,	// TRANSFER_DST_OVER
+		blend_SRC_frag,		// TRANSFER_SRC
+		blend_SRC_ATOP_frag,	// TRANSFER_SRC_ATOP
+		blend_SRC_IN_frag,	// TRANSFER_SRC_IN
+		blend_SRC_OUT_frag,	// TRANSFER_SRC_OUT
+		blend_SRC_OVER_frag,	// TRANSFER_SRC_OVER
+		blend_AND_frag,		// TRANSFER_AND
+		blend_OR_frag,		// TRANSFER_OR
+		blend_XOR_frag,		// TRANSFER_XOR
+		blend_OVERLAY_frag,	// TRANSFER_OVERLAY
+		blend_SCREEN_frag,	// TRANSFER_SCREEN
+		blend_BURN_frag,	// TRANSFER_BURN
+		blend_DODGE_frag,	// TRANSFER_DODGE
+		blend_HARDLIGHT_frag,	// TRANSFER_HARDLIGHT
+		blend_SOFTLIGHT_frag,	// TRANSFER_SOFTLIGHT
+		blend_DIFFERENCE_frag,	// TRANSFER_DIFFERENCE
 	};
 
 	command->canvas->lock_canvas("Playback3D::overlay_sync");

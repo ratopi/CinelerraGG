@@ -212,7 +212,6 @@ void Theme::initialize()
 	new_image("mode_replace", "mode_replace.png");
 	new_image("mode_max", "mode_max.png");
 	new_image("mode_min", "mode_min.png");
-	new_image("mode_average", "mode_average.png");
 	new_image("mode_darken", "mode_darken.png");
 	new_image("mode_lighten", "mode_lighten.png");
 	new_image("mode_dst", "mode_dst.png");
@@ -225,8 +224,16 @@ void Theme::initialize()
 	new_image("mode_srcin", "mode_srcin.png");
 	new_image("mode_srcout", "mode_srcout.png");
 	new_image("mode_srcover", "mode_srcover.png");
+	new_image("mode_and", "mode_and.png");
 	new_image("mode_or", "mode_or.png");
 	new_image("mode_xor", "mode_xor.png");
+	new_image("mode_overlay", "mode_overlay.png");
+	new_image("mode_screen", "mode_screen.png");
+	new_image("mode_burn", "mode_burn.png");
+	new_image("mode_dodge", "mode_dodge.png");
+	new_image("mode_hardlight", "mode_hardlight.png");
+	new_image("mode_softlight", "mode_softlight.png");
+	new_image("mode_difference", "mode_difference.png");
 
 	new_image_set("mode_popup", 3, "mode_up.png", "mode_hi.png", "mode_dn.png");
 

@@ -130,6 +130,7 @@ int BC_MenuItem::deactivate_submenus(BC_MenuPopup *exclude)
 	{
 		submenu->deactivate_submenus(exclude);
 		submenu->deactivate_menu();
+		submenu->popup_menu = 0;
 		highlighted = 0;
 	}
 	return 0;
@@ -149,6 +150,7 @@ int BC_MenuItem::activate_submenu()
 			&new_x,
 			&new_y,
 			&tempwin);
+		submenu->popup_menu = menu_popup->popup_menu;
 		submenu->activate_menu(new_x + 5, new_y, menu_popup->w - 10, h, 0, 0);
 		highlighted = 1;
 	}
@@ -428,6 +430,11 @@ int BC_MenuItem::add_submenu(BC_SubMenu *submenu)
 	this->submenu = submenu;
 	submenu->initialize(top_level, menu_bar, 0, this, 0);
 	return 0;
+}
+
+BC_SubMenu* BC_MenuItem::get_submenu()
+{
+	return submenu;
 }
 
 char* BC_MenuItem::get_text()

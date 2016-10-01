@@ -29,6 +29,7 @@
 #include "language.h"
 #include "overlayframe.h"
 #include "pluginvclient.h"
+#include "vpatchgui.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -149,33 +150,7 @@ OverlayConfig::OverlayConfig()
 
 const char* OverlayConfig::mode_to_text(int mode)
 {
-	switch(mode) {
-	case TRANSFER_NORMAL:		return _("Normal");
-	case TRANSFER_ADDITION:		return _("Addition");
-	case TRANSFER_SUBTRACT:		return _("Subtract");
-	case TRANSFER_MULTIPLY:		return _("Multiply");
-	case TRANSFER_DIVIDE:		return _("Divide");
-	case TRANSFER_REPLACE:		return _("Replace");
-	case TRANSFER_MAX:		return _("Max");
-	case TRANSFER_MIN:		return _("Min");
-	case TRANSFER_AVERAGE:		return _("Average");
-	case TRANSFER_DARKEN:		return _("Darken");
-	case TRANSFER_LIGHTEN:		return _("Lighten");
-	case TRANSFER_DST:		return _("Dst");
-	case TRANSFER_DST_ATOP:		return _("DstAtop");
-	case TRANSFER_DST_IN:		return _("DstIn");
-	case TRANSFER_DST_OUT:		return _("DstOut");
-	case TRANSFER_DST_OVER:		return _("DstOver");
-	case TRANSFER_SRC:		return _("Src");
-	case TRANSFER_SRC_ATOP:		return _("SrcAtop");
-	case TRANSFER_SRC_IN:		return _("SrcIn");
-	case TRANSFER_SRC_OUT:		return _("SrcOut");
-	case TRANSFER_SRC_OVER:		return _("SrcOver");
-	case TRANSFER_OR:		return _("Or");
-	case TRANSFER_XOR:		return _("Xor");
-	default:			break;
-	}
-	return _("Normal");
+	return VModePatch::mode_to_text(mode);
 }
 
 const char* OverlayConfig::direction_to_text(int direction)
@@ -479,141 +454,109 @@ int Overlay::handle_opengl()
 		"	gl_FragColor = result;\n"
 		"}\n";
 
+#define QQ(q)#q
+#define SS(s)QQ(s)
 
-// NORMAL
-static const char *blend_normal_frag =
+#define GL_STD_FRAG(FN) static const char *blend_##FN##_frag = \
+	"	vec4 result;\n" \
+	"	result.rgb = "SS(COLOR_##FN(1.0, src_color.rgb, src_color.a, dst_color.rgb, dst_color.a))";\n" \
+	"	result.a = "SS(ALPHA_##FN(1.0, src_color.a, dst_color.a))";\n" \
+
+#define GL_VEC_FRAG(FN) static const char *blend_##FN##_frag = \
+	"	vec4 result;\n" \
+	"	result.r = "SS(COLOR_##FN(1.0, src_color.r, src_color.a, dst_color.r, dst_color.a))";\n" \
+	"	result.g = "SS(COLOR_##FN(1.0, src_color.g, src_color.a, dst_color.g, dst_color.a))";\n" \
+	"	result.b = "SS(COLOR_##FN(1.0, src_color.b, src_color.a, dst_color.b, dst_color.a))";\n" \
+	"	result.a = "SS(ALPHA_##FN(1.0, src_color.a, dst_color.a))";\n" \
+	"	result = clamp(result, 0.0, 1.0);\n" \
+
+#undef mabs
+#define mabs abs
+#undef mmin
+#define mmin min
+#undef mmax
+#define mmax max
+
+#undef ZERO
+#define ZERO 0.0
+#undef ONE
+#define ONE 1.0
+#undef TWO
+#define TWO 2.0
+
+static const char *blend_NORMAL_frag =
 	"	vec4 result = mix(src_color, src_color, src_color.a);\n";
 
-// ADDITION
-static const char *blend_add_frag =
+static const char *blend_ADDITION_frag =
 	"	vec4 result = dst_color + src_color;\n"
 	"	result = clamp(result, 0.0, 1.0);\n";
 
-// SUBTRACT
-static const char *blend_subtract_frag =
+static const char *blend_SUBTRACT_frag =
 	"	vec4 result = dst_color - src_color;\n"
 	"	result = clamp(result, 0.0, 1.0);\n";
 
-// MULTIPLY
-static const char *blend_multiply_frag =
-	"	vec4 result = dst_color * src_color;\n";
-
-// DIVIDE
-static const char *blend_divide_frag =
-	"	vec4 result = dst_color / src_color;\n"
-	"	if(src_color.r == 0.) result.r = 1.0;\n"
-	"	if(src_color.g == 0.) result.g = 1.0;\n"
-	"	if(src_color.b == 0.) result.b = 1.0;\n"
-	"	if(src_color.a == 0.) result.a = 1.0;\n"
-	"	result = clamp(result, 0.0, 1.0);\n";
-
-// MAX
-static const char *blend_max_frag =
-	"	vec4 result = max(src_color, dst_color);\n";
-
-// MIN
-static const char *blend_min_frag =
-	"	vec4 result = min(src_color, dst_color);\n";
-
-// AVERAGE
-static const char *blend_average_frag =
-	"	vec4 result = (src_color + dst_color) * 0.5;\n";
-
-// DARKEN
-static const char *blend_darken_frag =
-	"	vec4 result = vec4(src_color.rgb * (1.0 - dst_color.a) +"
-			" dst_color.rgb * (1.0 - src_color.a) +"
-			" min(src_color.rgb, dst_color.rgb), "
-			" src_color.a + dst_color.a - src_color.a * dst_color.a);\n"
-	"	result = clamp(result, 0.0, 1.0);\n";
-
-// LIGHTEN
-static const char *blend_lighten_frag =
-	"	vec4 result = vec4(src_color.rgb * (1.0 - dst_color.a) +"
-			" dst_color.rgb * (1.0 - src_color.a) +"
-			" max(src_color.rgb, dst_color.rgb), "
-			" src_color.a + dst_color.a - src_color.a * dst_color.a);\n"
-	"	result = clamp(result, 0.0, 1.0);\n";
-
-// DST
-static const char *blend_dst_frag =
-	"	vec4 result = dst_color;\n";
-
-// DST_ATOP
-static const char *blend_dst_atop_frag =
-	"	vec4 result = vec4(src_color.rgb * dst_color.a + "
-			"(1.0 - src_color.a) * dst_color.rgb, dst_color.a);\n";
-
-// DST_IN
-static const char *blend_dst_in_frag =
-	"	vec4 result = src_color * dst_color.a;\n";
-
-// DST_OUT
-static const char *blend_dst_out_frag =
-	"	vec4 result = src_color * (1.0 - dst_color.a);\n";
-
-// DST_OVER
-static const char *blend_dst_over_frag =
-	"	vec4 result = vec4(src_color.rgb + (1.0 - src_color.a) * dst_color.rgb, "
-			" dst_color.a + src_color.a - dst_color.a * src_color.a);\n";
-
-// SRC
-static const char *blend_src_frag =
+static const char *blend_REPLACE_frag =
 	"	vec4 result = src_color;\n";
 
-// SRC_ATOP
-static const char *blend_src_atop_frag =
-	"	vec4 result = vec4(dst_color.rgb * src_color.a + "
-			"src_color.rgb * (1.0 - dst_color.a), src_color.a);\n";
-
-// SRC_IN
-static const char *blend_src_in_frag =
-	"	vec4 result = dst_color * src_color.a;\n";
-
-// SRC_OUT
-static const char *blend_src_out_frag =
-	"	vec4 result = dst_color * (1.0 - src_color.a);\n";
-
-// SRC_OVER
-static const char *blend_src_over_frag =
-	"	vec4 result = vec4(dst_color.rgb + (1.0 - dst_color.a) * src_color.rgb, "
-				"dst_color.a + src_color.a - dst_color.a * src_color.a);\n";
-
-// OR
-static const char *blend_or_frag =
-	"	vec4 result = src_color + dst_color - src_color * dst_color;\n";
-
-// XOR
-static const char *blend_xor_frag =
-	"	vec4 result = vec4(dst_color.rgb * (1.0 - src_color.a) + "
-			"(1.0 - dst_color.a) * src_color.rgb, "
-			"dst_color.a + src_color.a - 2.0 * dst_color.a * src_color.a);\n";
+GL_STD_FRAG(MULTIPLY);
+GL_VEC_FRAG(DIVIDE);
+GL_VEC_FRAG(MAX);
+GL_VEC_FRAG(MIN);
+GL_VEC_FRAG(DARKEN);
+GL_VEC_FRAG(LIGHTEN);
+GL_STD_FRAG(DST);
+GL_STD_FRAG(DST_ATOP);
+GL_STD_FRAG(DST_IN);
+GL_STD_FRAG(DST_OUT);
+GL_STD_FRAG(DST_OVER);
+GL_STD_FRAG(SRC);
+GL_STD_FRAG(SRC_ATOP);
+GL_STD_FRAG(SRC_IN);
+GL_STD_FRAG(SRC_OUT);
+GL_STD_FRAG(SRC_OVER);
+GL_STD_FRAG(AND);
+GL_STD_FRAG(OR);
+GL_STD_FRAG(XOR);
+GL_VEC_FRAG(OVERLAY);
+GL_STD_FRAG(SCREEN);
+GL_VEC_FRAG(BURN);
+GL_VEC_FRAG(DODGE);
+GL_VEC_FRAG(HARDLIGHT);
+GL_VEC_FRAG(SOFTLIGHT);
+GL_VEC_FRAG(DIFFERENCE);
 
 static const char * const overlay_shaders[TRANSFER_TYPES] = {
-		blend_normal_frag,	// TRANSFER_NORMAL
-		blend_add_frag,		// TRANSFER_ADDITION
-		blend_subtract_frag,	// TRANSFER_SUBTRACT
-		blend_multiply_frag,	// TRANSFER_MULTIPLY
-		blend_divide_frag,	// TRANSFER_DIVIDE
-		blend_src_frag,		// TRANSFER_REPLACE
-		blend_max_frag,		// TRANSFER_MAX
-		blend_min_frag,		// TRANSFER_MIN
-		blend_average_frag,	// TRANSFER_AVERAGE
-		blend_darken_frag,	// TRANSFER_DARKEN
-		blend_lighten_frag,	// TRANSFER_LIGHTEN
-		blend_dst_frag,		// TRANSFER_DST
-		blend_dst_atop_frag,	// TRANSFER_DST_ATOP
-		blend_dst_in_frag,	// TRANSFER_DST_IN
-		blend_dst_out_frag,	// TRANSFER_DST_OUT
-		blend_dst_over_frag,	// TRANSFER_DST_OVER
-		blend_src_frag,		// TRANSFER_SRC
-		blend_src_atop_frag,	// TRANSFER_SRC_ATOP
-		blend_src_in_frag,	// TRANSFER_SRC_IN
-		blend_src_out_frag,	// TRANSFER_SRC_OUT
-		blend_src_over_frag,	// TRANSFER_SRC_OVER
-		blend_or_frag,		// TRANSFER_OR
-		blend_xor_frag		// TRANSFER_XOR
-	};
+	blend_NORMAL_frag,	// TRANSFER_NORMAL
+	blend_ADDITION_frag,	// TRANSFER_ADDITION
+	blend_SUBTRACT_frag,	// TRANSFER_SUBTRACT
+	blend_MULTIPLY_frag,	// TRANSFER_MULTIPLY
+	blend_DIVIDE_frag,	// TRANSFER_DIVIDE
+	blend_REPLACE_frag,	// TRANSFER_REPLACE
+	blend_MAX_frag,		// TRANSFER_MAX
+	blend_MIN_frag,		// TRANSFER_MIN
+	blend_DARKEN_frag,	// TRANSFER_DARKEN
+	blend_LIGHTEN_frag,	// TRANSFER_LIGHTEN
+	blend_DST_frag,		// TRANSFER_DST
+	blend_DST_ATOP_frag,	// TRANSFER_DST_ATOP
+	blend_DST_IN_frag,	// TRANSFER_DST_IN
+	blend_DST_OUT_frag,	// TRANSFER_DST_OUT
+	blend_DST_OVER_frag,	// TRANSFER_DST_OVER
+	blend_SRC_frag,		// TRANSFER_SRC
+	blend_SRC_ATOP_frag,	// TRANSFER_SRC_ATOP
+	blend_SRC_IN_frag,	// TRANSFER_SRC_IN
+	blend_SRC_OUT_frag,	// TRANSFER_SRC_OUT
+	blend_SRC_OVER_frag,	// TRANSFER_SRC_OVER
+	blend_AND_frag,		// TRANSFER_AND
+	blend_OR_frag,		// TRANSFER_OR
+	blend_XOR_frag,		// TRANSFER_XOR
+	blend_OVERLAY_frag,	// TRANSFER_OVERLAY
+	blend_SCREEN_frag,	// TRANSFER_SCREEN
+	blend_BURN_frag,	// TRANSFER_BURN
+	blend_DODGE_frag,	// TRANSFER_DODGE
+	blend_HARDLIGHT_frag,	// TRANSFER_HARDLIGHT
+	blend_SOFTLIGHT_frag,	// TRANSFER_SOFTLIGHT
+	blend_DIFFERENCE_frag,	// TRANSFER_DIFFERENCE
+};
 
 	glDisable(GL_BLEND);
 	VFrame *dst = get_output(output_layer);

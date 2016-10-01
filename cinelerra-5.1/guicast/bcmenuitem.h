@@ -66,6 +66,7 @@ public:
 	int draw();
 	BC_WindowBase* get_top_level();
 	BC_PopupMenu* get_popup_menu();
+	BC_SubMenu *get_submenu();
 
 private:
 	BC_WindowBase *top_level;

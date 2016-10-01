@@ -22,6 +22,8 @@
 #ifndef VPATCHGUI_H
 #define VPATCHGUI_H
 
+#include "bcmenuitem.h"
+#include "bcmenupopup.h"
 #include "floatauto.inc"
 #include "guicast.h"
 #include "patchgui.h"
@@ -105,6 +107,26 @@ public:
 
 	int handle_event();
 	VModePatch *popup;
+	int mode;
+};
+
+class VModePatchSubMenu : public BC_SubMenu
+{
+public:
+	VModePatchSubMenu(VModePatchItem *mode_item);
+	~VModePatchSubMenu();
+
+	VModePatchItem *mode_item;
+};
+
+class VModeSubMenuItem : public BC_MenuItem
+{
+public:
+	VModeSubMenuItem(VModePatchSubMenu *submenu, const char *text, int mode);
+	~VModeSubMenuItem();
+
+	int handle_event();
+	VModePatchSubMenu *submenu;
 	int mode;
 };
 

@@ -3761,9 +3761,11 @@ int BC_WindowBase::dump_windows()
 		this, (void*)this->win, title, w,h,x,y, typeid(*this).name());
 	for(int i = 0; i < subwindows->size(); i++)
 		subwindows->get(i)->dump_windows();
-	for(int i = 0; i < popups.size(); i++)
-		printf("\tBC_WindowBase::dump_windows popup=%p win=%p\n",
-			popups.get(i), (void*)popups.get(i)->win);
+	for(int i = 0; i < popups.size(); i++) {
+		BC_WindowBase *p = popups[i];
+		printf("\tBC_WindowBase::dump_windows popup=%p win=%p '%s', %dx%d+%d+%d %s\n",
+			p, (void*)p->win, p->title, p->w,p->h,p->x,p->y, typeid(*p).name());
+	}
 	return 0;
 }
 

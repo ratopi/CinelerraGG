@@ -428,7 +428,13 @@ BC_Popup* BC_MenuPopup::get_popup()
 
 int BC_MenuPopup::cursor_inside()
 {
-	return !popup || !popup->cursor_above() ? 0 : 1;
+	if( !popup ) return 0;
+	if( popup->cursor_above() ) return 1;
+	for( int i=0; i<menu_items.size(); ++i ) {
+		if( !menu_items[i]->submenu ) continue;
+		if( menu_items[i]->submenu->cursor_inside() ) return 1;
+	}
+	return 0;
 }
 
 int BC_MenuPopup::get_w()

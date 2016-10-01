@@ -365,7 +365,7 @@ SET_TRACE
 
 PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	PreferencesThread *thread, int x, int y, int w, int h)
- : BC_Window(_(PROGRAM_NAME ": Preferences"), x,y, w,h, 1,0,1)
+ : BC_Window(_(PROGRAM_NAME ": Preferences"), x,y, w,h,w,h, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
