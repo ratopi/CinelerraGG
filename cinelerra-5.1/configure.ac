@@ -135,7 +135,7 @@ PKG_3RD([fdk],[auto],
   [ libAACdec/include libAACenc/include libSYS/include ])
 
 PKG_3RD([ffmpeg],[yes],
-  [ffmpeg-3.1.2],
+  [ffmpeg-3.1.4],
   [ libavutil/libavutil.a \
     libavcodec/libavcodec.a \
     libpostproc/libpostproc.a \
@@ -309,7 +309,7 @@ PKG_3RD([x264],[yes],
   [ . ])
 
 PKG_3RD([x265],[yes],
-  [x265_2.0],
+  [x265_2.1],
   [ libx265.a ],
   [ . source ])
 
