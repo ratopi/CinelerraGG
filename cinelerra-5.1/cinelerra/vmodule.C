@@ -976,7 +976,7 @@ int VModule::render(VFrame *output,
 //printf("VModule::render %d %p %ld %d\n", __LINE__, current_edit, start_position_project, direction);
 
 	if(debug_render)
-		printf("    VModule::render %d %d %ld %s transition=%p opengl=%d current_edit=%p output=%p\n",
+		printf("    VModule::render %d %d %jd %s transition=%p opengl=%d current_edit=%p output=%p\n",
 			__LINE__,
 			use_nudge,
 			start_position_project,

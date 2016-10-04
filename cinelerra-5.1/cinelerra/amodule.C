@@ -268,7 +268,7 @@ nested_edl);
 if(debug) printf("AModule::import_samples %d\n", __LINE__);
 
 	this->channel = edit->channel;
-if(debug) printf("AModule::import_samples %d speed_fragment_len=%ld\n", 
+if(debug) printf("AModule::import_samples %d speed_fragment_len=%jd\n", 
 __LINE__,
 speed_fragment_len);
 
@@ -532,7 +532,7 @@ asset->sample_rate);
 			{
 
 if(debug)
-printf("AModule::import_samples %d channel=%d start_source=%ld len=%d\n", __LINE__, edit->channel, start_source, (int)speed_fragment_len);
+printf("AModule::import_samples %d channel=%d start_source=%jd len=%d\n", __LINE__, edit->channel, start_source, (int)speed_fragment_len);
 				file->set_audio_position(start_source);
 				file->set_channel(edit->channel);
 				result = file->read_samples(speed_buffer, speed_fragment_len);

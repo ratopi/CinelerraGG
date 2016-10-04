@@ -46,7 +46,8 @@ VAttachmentPoint::~VAttachmentPoint()
 
 void VAttachmentPoint::delete_buffer_vector()
 {
-	if(!(void *)this) printf("VAttachmentPoint::delete_buffer_vector NULL\n");
+	void *This = this;
+	if(!This) printf("VAttachmentPoint::delete_buffer_vector NULL\n");
 	if(buffer_vector)
 	{
 		for(int i = 0; i < virtual_plugins.total; i++)
@@ -58,7 +59,8 @@ void VAttachmentPoint::delete_buffer_vector()
 
 void VAttachmentPoint::new_buffer_vector(int width, int height, int colormodel)
 {
-	if(!(void *)this) printf("VAttachmentPoint::new_buffer_vector NULL\n");
+	void *This = this;
+	if(!This) printf("VAttachmentPoint::new_buffer_vector NULL\n");
 	if(buffer_vector &&
 		(width != buffer_vector[0]->get_w() ||
 		height != buffer_vector[0]->get_h() ||
@@ -94,7 +96,8 @@ void VAttachmentPoint::render(VFrame *output,
 	int debug_render,
 	int use_opengl)
 {
-	if(!(void *)this) printf("VAttachmentPoint::render NULL\n");
+	void *This = this;
+	if(!This) printf("VAttachmentPoint::render NULL\n");
 	if(!plugin_server || !plugin->on) return;
 
 	if(debug_render)

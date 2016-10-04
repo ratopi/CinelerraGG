@@ -817,11 +817,11 @@ void SWindowGUI::load_script(FILE *fp)
 	char value[64];
 	sprintf(value,"%ld",ftell(fp));
 	script_filesz->update(value);
-	sprintf(value,"%ld",script_line_no);
+	sprintf(value,"%jd",script_line_no);
 	script_lines->update(value);
 	sprintf(value,"%d",script.size());
 	script_entries->update(value);
-	sprintf(value,"%ld",script_text_lines);
+	sprintf(value,"%jd",script_text_lines);
 	script_texts->update(value);
 	int hw = 2*script_scroll->get_h();
 	script_scroll->update_length(script.size(), script_entry_no, hw, 0);
@@ -863,7 +863,7 @@ void SWindowGUI::save_spumux_data()
 				int64_t end = start + sedit->length;
 				char *text = sedit->get_text();
 				if( *text ) {
-					fprintf(fp, "{%ld}{%ld}%s\n", start, end-1, text);
+					fprintf(fp, "{%jd}{%jd}%s\n", start, end-1, text);
 				}
 				start = end;
 			}

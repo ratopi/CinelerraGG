@@ -813,7 +813,7 @@ cut_clip(Src &src, Dele *del, Dele *next)
 	// report ranges
 	clip_start = start_time - video.origin();
 	clip_end = end_time - video.origin();
-	printf(" %f-%f (%f), %f-%f %ld-%ld",
+	printf(" %f-%f (%f), %f-%f %jd-%jd",
 		start_time, end_time, end_time-start_time, clip_start, clip_end,
 		video.frame_count(clip_start), video.frame_count(clip_end));
 	return 0;

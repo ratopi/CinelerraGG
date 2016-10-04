@@ -58,7 +58,8 @@ void Garbage::add_user()
 
 int Garbage::remove_user()
 {
-	if(!(void *)this) return 0;
+	void *This = this;
+	if(!This) return 0;
 
 //printf("Garbage::remove_user %d lock=%p users=%d\n", __LINE__, lock, users);
 	if(users <= 0) {

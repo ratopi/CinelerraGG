@@ -302,7 +302,7 @@ void FrameCache::dump()
  	printf("FrameCache::dump 1 %d\n", total());
  	FrameCacheItem *item = (FrameCacheItem *)first;
 	while( item ) {
- 		printf("  position=%jd frame_rate=%f age=%d size=%jd\n", 
+ 		printf("  position=%jd frame_rate=%f age=%d size=%ld\n", 
  			item->position, item->frame_rate, item->age,
  			item->data->get_data_size());
 		item = (FrameCacheItem*)item->next;

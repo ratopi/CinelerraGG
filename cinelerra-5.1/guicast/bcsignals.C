@@ -510,7 +510,8 @@ int BC_Signals::x_error_handler(Display *display, XErrorEvent *event)
 	char string[1024];
 	XGetErrorText(event->display, event->error_code, string, 1024);
 	fprintf(stderr, "BC_Signals::x_error_handler: error_code=%d opcode=%d,%d id=0x%jx %s\n",
-		event->error_code, event->request_code, event->minor_code, event->resourceid, string);
+		event->error_code, event->request_code, event->minor_code,
+		(int64_t)event->resourceid, string);
 	return 0;
 }
 

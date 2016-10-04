@@ -159,7 +159,7 @@ void FileMPEG::get_info(char *title_path, char *path, char *text, int len)
 		cp += snprintf(cp,ep-cp, _("file path:%s\n"), path);
 	int64_t bytes = mpeg3_get_bytes(fd);
 	char string[BCTEXTLEN];
-	sprintf(string,"%ld",bytes);
+	sprintf(string,"%jd",bytes);
 	Units::punctuate(string);
 	cp += snprintf(cp,ep-cp, _("size: %s"), string);
 
@@ -192,7 +192,7 @@ void FileMPEG::get_info(char *title_path, char *path, char *text, int len)
 		cp += snprintf(cp,ep-cp, _("  v%d %s %dx%d"), vtrk, cmodel, width, height);
 		double frame_rate = mpeg3_frame_rate(fd, vtrk);
 		int64_t frames = mpeg3_video_frames(fd, vtrk);
-		cp += snprintf(cp,ep-cp, _(" (%5.2f), %ld frames"), frame_rate, frames);
+		cp += snprintf(cp,ep-cp, _(" (%5.2f), %jd frames"), frame_rate, frames);
 		if( frame_rate > 0 ) {
 			double secs = (double)frames / frame_rate;
 			cp += snprintf(cp,ep-cp, _(" (%0.3f secs)"),secs);
@@ -208,10 +208,10 @@ void FileMPEG::get_info(char *title_path, char *path, char *text, int len)
 		int sample_rate = mpeg3_sample_rate(fd, atrk);
 		cp += snprintf(cp,ep-cp, _(" ch%d (%d)"), channels, sample_rate);
 		int64_t samples = mpeg3_audio_samples(fd, atrk);
-		cp += snprintf(cp,ep-cp, " %ld",samples);
+		cp += snprintf(cp,ep-cp, " %jd",samples);
 		int64_t nudge = mpeg3_get_audio_nudge(fd, atrk);
 		*cp++ = nudge >= 0 ? '+' : (nudge=-nudge, '-');
-		cp += snprintf(cp,ep-cp, _("%ld samples"),nudge);
+		cp += snprintf(cp,ep-cp, _("%jd samples"),nudge);
 		if( sample_rate > 0 ) {
 			double secs = (double)(samples+nudge) / sample_rate;
 			cp += snprintf(cp,ep-cp, _(" (%0.3f secs)"),secs);

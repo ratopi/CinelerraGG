@@ -406,10 +406,10 @@ int VirtualVNode::render_projector(VFrame *input, VFrame *output,
 		if(out_x2 > out_x1 && out_y2 > out_y1 && 
 			in_x2 > in_x1 && in_y2 > in_y1)
 		{
-			IntAuto *mode_keyframe = 0;
-			mode_keyframe = 
+			Auto *auto_keyframe = 0;
+			IntAuto *mode_keyframe =
 				(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-					start_position_project, PLAY_FORWARD, (Auto* &)mode_keyframe);
+					start_position_project, PLAY_FORWARD, auto_keyframe);
 
 			int mode = mode_keyframe->value;
 

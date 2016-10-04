@@ -459,15 +459,15 @@ int Overlay::handle_opengl()
 
 #define GL_STD_FRAG(FN) static const char *blend_##FN##_frag = \
 	"	vec4 result;\n" \
-	"	result.rgb = "SS(COLOR_##FN(1.0, src_color.rgb, src_color.a, dst_color.rgb, dst_color.a))";\n" \
-	"	result.a = "SS(ALPHA_##FN(1.0, src_color.a, dst_color.a))";\n" \
+	"	result.rgb = " SS(COLOR_##FN(1.0, src_color.rgb, src_color.a, dst_color.rgb, dst_color.a)) ";\n" \
+	"	result.a = " SS(ALPHA_##FN(1.0, src_color.a, dst_color.a))";\n" \
 
 #define GL_VEC_FRAG(FN) static const char *blend_##FN##_frag = \
 	"	vec4 result;\n" \
-	"	result.r = "SS(COLOR_##FN(1.0, src_color.r, src_color.a, dst_color.r, dst_color.a))";\n" \
-	"	result.g = "SS(COLOR_##FN(1.0, src_color.g, src_color.a, dst_color.g, dst_color.a))";\n" \
-	"	result.b = "SS(COLOR_##FN(1.0, src_color.b, src_color.a, dst_color.b, dst_color.a))";\n" \
-	"	result.a = "SS(ALPHA_##FN(1.0, src_color.a, dst_color.a))";\n" \
+	"	result.r = " SS(COLOR_##FN(1.0, src_color.r, src_color.a, dst_color.r, dst_color.a)) ";\n" \
+	"	result.g = " SS(COLOR_##FN(1.0, src_color.g, src_color.a, dst_color.g, dst_color.a)) ";\n" \
+	"	result.b = " SS(COLOR_##FN(1.0, src_color.b, src_color.a, dst_color.b, dst_color.a)) ";\n" \
+	"	result.a = " SS(ALPHA_##FN(1.0, src_color.a, dst_color.a)) ";\n" \
 	"	result = clamp(result, 0.0, 1.0);\n" \
 
 #undef mabs

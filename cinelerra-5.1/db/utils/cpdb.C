@@ -75,7 +75,7 @@ int main(int ac, char **av)
     time_t t = (time_t) idb.clip_views.Access_time();
     long dt = st.tv_sec - t;
     // 3 weeks + access count days
-    if( dt < 3*7*24*60*60 + idb.clip_views.Access_count()*24*60*60 )
+    if( dt < 3*7*24*60*60 + (long)(idb.clip_views.Access_count()*24*60*60) )
       continue;
     del_clip_set(&idb, idb.clip_set.id());
   }

@@ -155,8 +155,8 @@ static const char *blend_##FN##_frag = \
 	"void main() {\n" \
 	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n" \
 	"	vec4 result;\n" \
-	"	result.rgb = "SS(COLOR_##FN(1.0, gl_FragColor.rgb, gl_FragColor.a, canvas.rgb, canvas.a))";\n" \
-	"	result.a = "SS(ALPHA_##FN(1.0, gl_FragColor.a, canvas.a))";\n" \
+	"	result.rgb = " SS(COLOR_##FN(1.0, gl_FragColor.rgb, gl_FragColor.a, canvas.rgb, canvas.a)) ";\n" \
+	"	result.a = " SS(ALPHA_##FN(1.0, gl_FragColor.a, canvas.a)) ";\n" \
 	"	gl_FragColor = mix(canvas, result, alpha);\n" \
 	"}\n"
 
@@ -168,10 +168,10 @@ static const char *blend_##FN##_frag = \
 	"void main() {\n" \
 	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n" \
 	"	vec4 result;\n" \
-	"	result.r = "SS(COLOR_##FN(1.0, gl_FragColor.r, gl_FragColor.a, canvas.r, canvas.a))";\n" \
-	"	result.g = "SS(COLOR_##FN(1.0, gl_FragColor.g, gl_FragColor.a, canvas.g, canvas.a))";\n" \
-	"	result.b = "SS(COLOR_##FN(1.0, gl_FragColor.b, gl_FragColor.a, canvas.b, canvas.a))";\n" \
-	"	result.a = "SS(ALPHA_##FN(1.0, gl_FragColor.a, canvas.a))";\n" \
+	"	result.r = " SS(COLOR_##FN(1.0, gl_FragColor.r, gl_FragColor.a, canvas.r, canvas.a)) ";\n" \
+	"	result.g = " SS(COLOR_##FN(1.0, gl_FragColor.g, gl_FragColor.a, canvas.g, canvas.a)) ";\n" \
+	"	result.b = " SS(COLOR_##FN(1.0, gl_FragColor.b, gl_FragColor.a, canvas.b, canvas.a)) ";\n" \
+	"	result.a = " SS(ALPHA_##FN(1.0, gl_FragColor.a, canvas.a)) ";\n" \
 	"	result = clamp(result, 0.0, 1.0);\n" \
 	"	gl_FragColor = mix(canvas, result, alpha);\n" \
 	"}\n"

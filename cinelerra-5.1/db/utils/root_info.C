@@ -27,8 +27,8 @@ int main(int ac, char **av)
   printf(" root_info_id = %d\n",ip->root_info_id);
   printf(" index_info_id = %d\n",ip->index_info_id);
   printf(" page_info_id = %d\n",ip->page_info_id);
-  printf(" oldness = %ld\n",ip->oldness);
-  printf(" newness = %ld\n",ip->newness);
+  printf(" oldness = %jd\n",ip->oldness);
+  printf(" newness = %jd\n",ip->newness);
   return 0;
 }
 

@@ -2538,7 +2538,7 @@ int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
 				int64_t pos = index_state->pos(ch);
 				if( pos != aud->curr_pos ) {
 if( abs(pos-aud->curr_pos) > 1 )
-printf("audio%d pad %ld %ld (%ld)\n", aud->idx, pos, aud->curr_pos, pos-aud->curr_pos);
+printf("audio%d pad %jd %jd (%jd)\n", aud->idx, pos, aud->curr_pos, pos-aud->curr_pos);
 					index_state->pad_data(ch, nch, aud->curr_pos);
 				}
 				av_frame_unref(frame);

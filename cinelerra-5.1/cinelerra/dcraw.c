@@ -968,12 +968,13 @@ void CLASS canon_sraw_load_raw()
   ip = (short (*)[4]) image;
   rp = ip[0];
   for (row=0; row < height; row++, ip+=width) {
-    if (row & (jh.sraw >> 1))
+    if (row & (jh.sraw >> 1)) {
       for (col=0; col < width; col+=2)
 	for (c=1; c < 3; c++)
 	  if (row == height-1)
 	       ip[col][c] =  ip[col-width][c];
 	  else ip[col][c] = (ip[col-width][c] + ip[col+width][c] + 1) >> 1;
+    }
     for (col=1; col < width; col+=2)
       for (c=1; c < 3; c++)
 	if (col == width-1)
