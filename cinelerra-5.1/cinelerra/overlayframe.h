@@ -151,7 +151,7 @@
 #define COLOR_SRC_OVER(mx, Sc, Sa, Dc, Da) (Sc + Dc * (mx - Sa) / mx)
 #define CHROMA_SRC_OVER COLOR_SRC_OVER
 
-// AND 	[Sa + Da - Sa * Da, Sc * Dc]
+// AND 	[Sa * Da, Sc * Dc]
 #define ALPHA_AND(mx, Sa, Da) ((Sa * Da) / mx)
 #define COLOR_AND(mx, Sc, Sa, Dc, Da) ((Sc * Dc) / mx)
 #define CHROMA_AND COLOR_AND
@@ -161,7 +161,7 @@
 #define COLOR_OR(mx, Sc, Sa, Dc, Da) (Sc + Dc - (Sc * Dc) / mx)
 #define CHROMA_OR COLOR_OR
 
-// XOR  	[Sa * (1 - Da) + Da * (1 - Sa), Sa + Da - 2 * Sa * Da]
+// XOR 	[Sa + Da - 2 * Sa * Da, Sc * (1 - Da) + Dc * (1 - Sa)]
 #define ALPHA_XOR(mx, Sa, Da) (Sa + Da - (TWO * Sa * Da / mx))
 #define COLOR_XOR(mx, Sc, Sa, Dc, Da) ((Sc * (mx - Da) + Dc * (mx - Sa)) / mx)
 #define CHROMA_XOR COLOR_XOR
@@ -214,7 +214,7 @@
 #define CHROMA_SOFTLIGHT COLOR_SOFTLIGHT
 
 // DIFFERENCE [Sa + Da - Sa * Da,  Sc*(1 - Da) + Dc*(1 - Sa) +
-//  abs(Sc * Da - Sc * Sa)]
+//  abs(Sc * Da - Dc * Sa)]
 #define ALPHA_DIFFERENCE STD_ALPHA
 #define COLOR_DIFFERENCE(mx, Sc, Sa, Dc, Da) (STD_BLEND(mx,Sc,Sa,Dc,Da) + \
   (mabs(Sc * Da - Dc * Sa) / mx))

@@ -615,22 +615,32 @@ ADriverMenu::~ADriverMenu()
 
 void ADriverMenu::create_objects()
 {
+#ifdef HAVE_OSS
 	add_item(new ADriverItem(this, AUDIO_OSS_TITLE, AUDIO_OSS));
 	add_item(new ADriverItem(this, AUDIO_OSS_ENVY24_TITLE, AUDIO_OSS_ENVY24));
+#endif
 
 #ifdef HAVE_ALSA
 	add_item(new ADriverItem(this, AUDIO_ALSA_TITLE, AUDIO_ALSA));
 #endif
 
+#ifdef HAVE_ESOUND
 	if(!do_input) add_item(new ADriverItem(this, AUDIO_ESOUND_TITLE, AUDIO_ESOUND));
-//	add_item(new ADriverItem(this, AUDIO_NAS_TITLE, AUDIO_NAS));
+#endif
+
 #ifdef HAVE_FIREWIRE
 	if(!do_input) add_item(new ADriverItem(this, AUDIO_1394_TITLE, AUDIO_1394));
 	add_item(new ADriverItem(this, AUDIO_DV1394_TITLE, AUDIO_DV1394));
 	add_item(new ADriverItem(this, AUDIO_IEC61883_TITLE, AUDIO_IEC61883));
 #endif
+
+#ifdef HAVE_DVB
 	if(do_input) add_item(new ADriverItem(this, AUDIO_DVB_TITLE, AUDIO_DVB));
+#endif
+
+#ifdef HAVE_VIDEO4LINUX2
 	if(do_input) add_item(new ADriverItem(this, AUDIO_V4L2MPEG_TITLE, AUDIO_V4L2MPEG));
+#endif
 }
 
 char* ADriverMenu::adriver_to_string(int driver)

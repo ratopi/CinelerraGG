@@ -152,7 +152,7 @@ int AudioESound::read_buffer(char *buffer, int size)
 
 int AudioESound::write_buffer(char *buffer, int size)
 {
-	return esd_out_fd>0 ? write(esd_out_fd, buffer, size) : 0;
+	return esd_out_fd>0 && write(esd_out_fd, buffer, size) > 0 ? 0 : -1;
 }
 
 // No flushing in ESD

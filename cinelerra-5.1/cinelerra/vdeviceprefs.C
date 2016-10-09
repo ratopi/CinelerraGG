@@ -604,7 +604,9 @@ void VDriverMenu::create_objects()
 		add_item(new VDriverItem(this, CAPTURE_FIREWIRE_TITLE, CAPTURE_FIREWIRE));
 		add_item(new VDriverItem(this, CAPTURE_IEC61883_TITLE, CAPTURE_IEC61883));
 #endif
+#ifdef HAVE_DVB
 		add_item(new VDriverItem(this, CAPTURE_DVB_TITLE, CAPTURE_DVB));
+#endif
 	}
 	else
 	{
