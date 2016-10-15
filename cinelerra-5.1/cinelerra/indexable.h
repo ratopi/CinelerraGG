@@ -63,7 +63,7 @@ public:
 // to the backup file, not the project file.
 	char path[BCTEXTLEN];
 // Folder in resource manager
-	char folder[BCTEXTLEN];
+	int awindow_folder;
 
 	int is_asset;
 // unique ID of this object for comparison

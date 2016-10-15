@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "assets.h"
 #include "autoconf.h"
+#include "awindowgui.h"
 #include "bccmodels.h"
 #include "bchash.h"
 #include "clip.h"
@@ -46,6 +47,7 @@ EDLSession::EDLSession(EDL *edl)
 	for(int i = 0; i < ASSET_COLUMNS; i++)
 		asset_columns[i] = 100;
 	auto_conf = new AutoConf;
+	awindow_folder = AW_MEDIA_FOLDER;
 	aspect_w = 4;  aspect_h = 3;
 	audio_channels = 2;
 	audio_tracks = 2;
@@ -54,13 +56,12 @@ EDLSession::EDLSession(EDL *edl)
 	brender_start = 0.0;
 	clipboard_length = 0; // unused
 	color_model = BC_RGBA8888;
-	interlace_mode = BC_ILACE_MODE_UNDETECTED;
+	interlace_mode = ILACE_MODE_UNDETECTED;
 	crop_x1 = 0; crop_x2 = 320;
 	crop_y1 = 0; crop_y2 = 240;
 	eyedrop_radius = 0;
 	ruler_x1 = ruler_y1 = 0.0;
 	ruler_x2 = ruler_y2 = 0.0;
-	strcpy(current_folder, "");
 	cursor_on_frames = 1;
 	typeless_keyframes = 0;
 	cwindow_dest = 0;
@@ -229,7 +230,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	eyedrop_radius = defaults->get("EYEDROP_RADIUS", 0);
 	ilacemode_to_xmltext(string, interlace_mode);
 	const char *ilace_mode = defaults->get("INTERLACE_MODE",string);
-	interlace_mode = ilacemode_from_xmltext(ilace_mode, BC_ILACE_MODE_NOTINTERLACED);
+	interlace_mode = ilacemode_from_xmltext(ilace_mode, ILACE_MODE_NOTINTERLACED);
 	crop_x1 = defaults->get("CROP_X1", 0);
 	crop_x2 = defaults->get("CROP_X2", 320);
 	crop_y1 = defaults->get("CROP_Y1", 0);
@@ -238,8 +239,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	ruler_x2 = defaults->get("RULER_X2", 0.0);
 	ruler_y1 = defaults->get("RULER_Y1", 0.0);
 	ruler_y2 = defaults->get("RULER_Y2", 0.0);
-	sprintf(current_folder, MEDIA_FOLDER);
-	defaults->get("CURRENT_FOLDER", current_folder);
+	awindow_folder = defaults->get("AWINDOW_FOLDER", awindow_folder);
 	cursor_on_frames = defaults->get("CURSOR_ON_FRAMES", 1);
 	typeless_keyframes = defaults->get("TYPELESS_KEYFRAMES", 0);
 	cwindow_dest = defaults->get("CWINDOW_DEST", 0);
@@ -385,7 +385,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("RULER_X2", ruler_x2);
 	defaults->update("RULER_Y1", ruler_y1);
 	defaults->update("RULER_Y2", ruler_y2);
-	defaults->update("CURRENT_FOLDER", current_folder);
+	defaults->update("AWINDOW_FOLDER", awindow_folder);
 	defaults->update("CURSOR_ON_FRAMES", cursor_on_frames);
 	defaults->update("TYPELESS_KEYFRAMES", typeless_keyframes);
 	defaults->update("CWINDOW_DEST", cwindow_dest);
@@ -518,6 +518,7 @@ void EDLSession::boundaries()
 	if(brender_start < 0) brender_start = 0.0;
 
 	Workarounds::clamp(subtitle_number, 0, 31);
+	Workarounds::clamp(awindow_folder, 0, AWINDOW_FOLDERS - 1);
 
 // Correct framerates
 	frame_rate = Units::fix_framerate(frame_rate);
@@ -535,7 +536,7 @@ int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_
 	BC_CModels::to_text(string, color_model);
 	color_model = BC_CModels::from_text(file->tag.get_property("COLORMODEL", string));
 	const char *ilace_mode = file->tag.get_property("INTERLACE_MODE");
-	interlace_mode = ilacemode_from_xmltext(ilace_mode, BC_ILACE_MODE_NOTINTERLACED);
+	interlace_mode = ilacemode_from_xmltext(ilace_mode, ILACE_MODE_NOTINTERLACED);
 	video_channels = file->tag.get_property("CHANNELS", video_channels);
 	for(int i = 0; i < video_channels; i++)
 	{
@@ -603,7 +604,13 @@ int EDLSession::load_xml(FileXML *file,
 		ruler_y1 = file->tag.get_property("RULER_Y1", ruler_y1);
 		ruler_x2 = file->tag.get_property("RULER_X2", ruler_x2);
 		ruler_y2 = file->tag.get_property("RULER_Y2", ruler_y2);
-		file->tag.get_property("CURRENT_FOLDER", current_folder);
+		string[0] = 0;
+		file->tag.get_property("CURRENT_FOLDER", string);
+		if( string[0] ) {
+			awindow_folder = AWindowGUI::folder_number(string);
+			if( awindow_folder < 0 ) awindow_folder = AW_MEDIA_FOLDER;
+		}
+		file->tag.get_property("AWINDOW_FOLDER", awindow_folder);
 		cursor_on_frames = file->tag.get_property("CURSOR_ON_FRAMES", cursor_on_frames);
 		typeless_keyframes = file->tag.get_property("TYPELESS_KEYFRAMES", typeless_keyframes);
 		cwindow_dest = file->tag.get_property("CWINDOW_DEST", cwindow_dest);
@@ -670,7 +677,7 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("RULER_Y1", ruler_y1);
 	file->tag.set_property("RULER_X2", ruler_x2);
 	file->tag.set_property("RULER_Y2", ruler_y2);
-	file->tag.set_property("CURRENT_FOLDER", current_folder);
+	file->tag.set_property("AWINDOW_FOLDER", awindow_folder);
 	file->tag.set_property("CURSOR_ON_FRAMES", cursor_on_frames);
 	file->tag.set_property("TYPELESS_KEYFRAMES", typeless_keyframes);
 	file->tag.set_property("CWINDOW_DEST", cwindow_dest);
@@ -801,7 +808,7 @@ int EDLSession::copy(EDLSession *session)
 	ruler_y1 = session->ruler_y1;
 	ruler_x2 = session->ruler_x2;
 	ruler_y2 = session->ruler_y2;
-	strcpy(current_folder, session->current_folder);
+	awindow_folder = session->awindow_folder;
 	cursor_on_frames = session->cursor_on_frames;
 	typeless_keyframes = session->typeless_keyframes;
 	cwindow_dest = session->cwindow_dest;

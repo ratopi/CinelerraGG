@@ -30,7 +30,7 @@ Indexable::Indexable(int is_asset) : Garbage(is_asset ? "Asset" : "EDL")
 {
 	index_state = new IndexState;
 	this->is_asset = is_asset;
-	strcpy(folder, MEDIA_FOLDER);
+	this->awindow_folder = AW_MEDIA_FOLDER;
 }
 
 

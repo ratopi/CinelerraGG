@@ -363,7 +363,7 @@ void VModePatch::create_objects()
 	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_AND),	TRANSFER_AND));
 	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_OR),	TRANSFER_OR));
 	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_XOR),	TRANSFER_XOR));
-	add_item(mode_item = new VModePatchItem(this, _("graphic art..."), -1));
+	add_item(mode_item = new VModePatchItem(this, _("Graphic Art..."), -1));
 	mode_item->add_submenu(submenu = new VModePatchSubMenu(mode_item));
 	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_OVERLAY),	TRANSFER_OVERLAY));
 	submenu->add_submenuitem(new VModeSubMenuItem(submenu, mode_to_text(TRANSFER_SCREEN),	TRANSFER_SCREEN));
@@ -415,9 +415,9 @@ const char* VModePatch::mode_to_text(int mode)
 	case TRANSFER_SRC_IN:		return _("SrcIn");
 	case TRANSFER_SRC_OUT:		return _("SrcOut");
 	case TRANSFER_SRC_OVER:		return _("SrcOver");
-	case TRANSFER_AND:		return _("And");
-	case TRANSFER_OR:		return _("Or");
-	case TRANSFER_XOR:		return _("Xor");
+	case TRANSFER_AND:		return _("AND");
+	case TRANSFER_OR:		return _("OR");
+	case TRANSFER_XOR:		return _("XOR");
 	case TRANSFER_OVERLAY:		return _("Overlay");
 	case TRANSFER_SCREEN:		return _("Screen");
 	case TRANSFER_BURN:		return _("Burn");

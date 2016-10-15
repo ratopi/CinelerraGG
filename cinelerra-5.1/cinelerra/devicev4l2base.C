@@ -126,6 +126,8 @@ DeviceV4L2Base::DeviceV4L2Base()
 	qbfrs_lock = new Mutex("DeviceV4L2Base::qbfrs_lock");
 	video_lock = new Condition(0, "DeviceV4L2Base::video_lock", 1);
 	dev_fd = -1;
+	iwidth = 0;
+	iheight = 0;
 	color_model = -1;
 	device_buffers = 0;
 	device_channel = 0;
@@ -302,7 +304,7 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 	unsigned int best_format = 0;
 	int best_merit = 0;
 	int best_color_model = -1;
-	int best_area = 1;
+	int best_area = INT_MAX;
 	int driver = video_device->in_config->driver;
 
 	for( int i=0; i<20; ++i ) {
@@ -319,15 +321,16 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 		int cmodel = -1;
 	        switch(fmt.pixelformat)
 		{
-		case V4L2_PIX_FMT_UYVY:    cmodel = BC_UVY422;  merit = 4;  break;
 		case V4L2_PIX_FMT_YUYV:    cmodel = BC_YUV422;  merit = 4;  break;
+		case V4L2_PIX_FMT_UYVY:    cmodel = BC_UVY422;  merit = 4;  break;
 		case V4L2_PIX_FMT_Y41P:    cmodel = BC_YUV411P; merit = 1;  break;
 		case V4L2_PIX_FMT_YVU420:  cmodel = BC_YUV420P; merit = 3;  break;
 		case V4L2_PIX_FMT_YUV422P: cmodel = BC_YUV422P; merit = 4;  break;
 		case V4L2_PIX_FMT_RGB24:   cmodel = BC_RGB888;  merit = 6;  break;
 		case V4L2_PIX_FMT_MJPEG:
 			cmodel = BC_COMPRESSED;
-			merit = driver == VIDEO4LINUX2JPEG ? 7 : 0;
+			merit = driver == VIDEO4LINUX2JPEG ||
+				driver == CAPTURE_JPEG_WEBCAM ? 7 : 0;
 			break;
 		case V4L2_PIX_FMT_MPEG:
 			cmodel = BC_YUV420P;
@@ -352,12 +355,9 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 			printf("%dx%d",w,h);
 			int area = w * h;
 			if( area > config_area ) continue;
-			int diff0 = area - best_area;
-			if( diff0 < 0 ) diff0 = -diff0;
-			int diff1 = area - config_area;
-			if( diff1 < 0 ) diff1 = -diff1;
-			if( diff1 < diff0 ) {
-				best_area = area;
+			int diff = abs(area-config_area);
+			if( diff < best_area ) {
+				best_area = diff;
 				best_width = w;
 				best_height = h;
 			}
@@ -426,6 +426,7 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 			perror("DeviceV4L2Base::v4l2_open VIDIOC_G_PARM");
 	}
 
+	printf("v4l2 s_fmt %dx%d %4.4s\n", best_width, best_height, (char*)&best_format);
 // Set up data format
 	struct v4l2_format v4l2_params;
 	memset(&v4l2_params, 0, sizeof(v4l2_params));
@@ -447,12 +448,12 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 			 (char*)&v4l2_params.fmt.pix.pixelformat, (char*)&best_format);
 		return 1;
 	}
-	if( (int)v4l2_params.fmt.pix.width != best_width ||
-	    (int)v4l2_params.fmt.pix.height != best_height )
+	iwidth = v4l2_params.fmt.pix.width;
+	iheight = v4l2_params.fmt.pix.height;
+	if( iwidth != best_width || iheight != best_height )
 	{
 		printf("DeviceV4L2Base::v4l2_open  set geom %dx%d != %dx%d best_geom\n",
-			v4l2_params.fmt.pix.width, v4l2_params.fmt.pix.height,
-			best_width, best_height);
+			iwidth, iheight, best_width, best_height);
 		return 1;
 	}
 
@@ -794,8 +795,6 @@ int DeviceV4L2Base::start_dev()
 	memset(device_buffers, 0, bfr_count*sizeof(device_buffers[0]));
 
 //printf("DeviceV4L2Base::start_dev color_model=%d\n", color_model);
-	int iwidth = video_device->in_config->w;
-	int iheight = video_device->in_config->h;
 	int y_offset = 0, line_size = -1;
 	int u_offset = 0, v_offset = 0;
 

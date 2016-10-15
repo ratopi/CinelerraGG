@@ -294,14 +294,12 @@ OBJS = \
 	$(OBJDIR)/vautomation.o \
 	$(OBJDIR)/vdevice1394.o \
 	$(OBJDIR)/vdevicebase.o \
-	$(OBJDIR)/vdevicebuz.o \
 	$(OBJDIR)/vdevicedvb.o \
 	$(OBJDIR)/vdevicempeg.o \
 	$(OBJDIR)/vdeviceprefs.o \
 	$(OBJDIR)/vdevicev4l2jpeg.o \
 	$(OBJDIR)/vdevicev4l2mpeg.o \
 	$(OBJDIR)/vdevicev4l2.o \
-	$(OBJDIR)/vdevicev4l.o \
 	$(OBJDIR)/vdevicex11.o \
 	$(OBJDIR)/vedit.o \
 	$(OBJDIR)/vedits.o \

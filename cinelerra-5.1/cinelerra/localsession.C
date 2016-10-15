@@ -20,6 +20,7 @@
  */
 
 #include "automation.h"
+#include "awindowgui.h"
 #include "clip.h"
 #include "bchash.h"
 #include "edl.h"
@@ -58,7 +59,7 @@ LocalSession::LocalSession(EDL *edl)
 
 	selectionstart = selectionend = 0;
 	in_point = out_point = -1;
-	strcpy(folder, CLIP_FOLDER);
+	awindow_folder = AW_CLIP_FOLDER;
 	sprintf(clip_title, _("Program"));
 	strcpy(clip_notes, _("Hello world"));
 	clipboard_length = 0;
@@ -113,7 +114,7 @@ void LocalSession::copy_from(LocalSession *that)
 {
 	strcpy(clip_title, that->clip_title);
 	strcpy(clip_notes, that->clip_notes);
-	strcpy(folder, that->folder);
+	awindow_folder = that->awindow_folder;
 	in_point = that->in_point;
 	loop_playback = that->loop_playback;
 	loop_start = that->loop_start;
@@ -160,7 +161,7 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("SELECTION_END", selectionend - start);
 	file->tag.set_property("CLIP_TITLE", clip_title);
 	file->tag.set_property("CLIP_NOTES", clip_notes);
-	file->tag.set_property("FOLDER", folder);
+	file->tag.set_property("AWINDOW_FOLDER", awindow_folder);
 	file->tag.set_property("X_PANE", x_pane);
 	file->tag.set_property("Y_PANE", y_pane);
 
@@ -228,7 +229,12 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 // Overwritten by MWindow::load_filenames
 		file->tag.get_property("CLIP_TITLE", clip_title);
 		file->tag.get_property("CLIP_NOTES", clip_notes);
-		file->tag.get_property("FOLDER", folder);
+		const char *folder = file->tag.get_property("FOLDER");
+		if( folder ) {
+			awindow_folder = AWindowGUI::folder_number(folder);
+			if( awindow_folder < 0 ) awindow_folder = AW_MEDIA_FOLDER;
+		}
+		awindow_folder = file->tag.get_property("AWINDOW_FOLDER", awindow_folder);
 		loop_playback = file->tag.get_property("LOOP_PLAYBACK", 0);
 		loop_start = file->tag.get_property("LOOP_START", (double)0);
 		loop_end = file->tag.get_property("LOOP_END", (double)0);

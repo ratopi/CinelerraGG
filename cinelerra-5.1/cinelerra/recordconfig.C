@@ -191,16 +191,15 @@ int AudioInConfig::save_defaults(BC_Hash *defaults)
 
 
 
+const char *VideoInConfig::default_video_device = "/dev/video0";
+
 VideoInConfig::VideoInConfig()
 {
-	driver = VIDEO4LINUX;
-	sprintf(v4l_in_device, "%s", "/dev/video0");
+	driver = VIDEO4LINUX2;
 	sprintf(v4l2_in_device, "%s", "/dev/video0");
 	sprintf(v4l2jpeg_in_device, "%s", "/dev/video0");
 	v4l2jpeg_in_fields = 2;
 	sprintf(v4l2mpeg_in_device, "%s", "/dev/video0");
-	sprintf(lml_in_device, "%s", "/dev/mvideo/stream");
-	sprintf(buz_in_device, "%s", "/dev/video0");
 	strcpy(dvb_in_adapter, "/dev/dvb/adapter0");
 	dvb_in_device = 0;
 	sprintf(screencapture_display, "%s", "");
@@ -220,31 +219,26 @@ VideoInConfig::~VideoInConfig()
 {
 }
 
-char* VideoInConfig::get_path()
+const char *VideoInConfig::get_path()
 {
 	switch(driver) {
-	case VIDEO4LINUX: return v4l_in_device;
 	case CAPTURE_JPEG_WEBCAM:
 	case CAPTURE_YUYV_WEBCAM:
 	case VIDEO4LINUX2: return v4l2_in_device;
 	case VIDEO4LINUX2JPEG: return v4l2jpeg_in_device;
 	case VIDEO4LINUX2MPEG: return v4l2mpeg_in_device;
-	case CAPTURE_BUZ: return buz_in_device;
 	case CAPTURE_DVB: return dvb_in_adapter;
 	}
-	return v4l_in_device;
+	return default_video_device;
 }
 
 void VideoInConfig::copy_from(VideoInConfig *src)
 {
 	driver = src->driver;
-	strcpy(v4l_in_device, src->v4l_in_device);
 	strcpy(v4l2_in_device, src->v4l2_in_device);
 	v4l2jpeg_in_fields = src->v4l2jpeg_in_fields;
 	strcpy(v4l2jpeg_in_device, src->v4l2jpeg_in_device);
 	strcpy(v4l2mpeg_in_device, src->v4l2mpeg_in_device);
-	strcpy(lml_in_device, src->lml_in_device);
-	strcpy(buz_in_device, src->buz_in_device);
 	strcpy(dvb_in_adapter, src->dvb_in_adapter);
 	dvb_in_device = src->dvb_in_device;
 	strcpy(screencapture_display, src->screencapture_display);
@@ -267,13 +261,10 @@ VideoInConfig& VideoInConfig::operator=(VideoInConfig &that)
 int VideoInConfig::load_defaults(BC_Hash *defaults)
 {
 	driver = defaults->get("R_VIDEO_IN_DRIVER", driver);
-	defaults->get("R_V4L_IN_DEVICE", v4l_in_device);
 	defaults->get("R_V4L2_IN_DEVICE", v4l2_in_device);
 	defaults->get("R_V4L2JPEG_IN_DEVICE", v4l2jpeg_in_device);
 	v4l2jpeg_in_fields = defaults->get("R_V4L2JPEG_IN_FIELDS", v4l2jpeg_in_fields);
 	defaults->get("R_V4L2MPEG_IN_DEVICE", v4l2mpeg_in_device);
-	defaults->get("R_LML_IN_DEVICE", lml_in_device);
-	defaults->get("R_BUZ_IN_DEVICE", buz_in_device);
 	defaults->get("R_VIDEO_DVB_IN_ADAPTER", dvb_in_adapter);
 	dvb_in_device = defaults->get("R_VIDEO_DVB_IN_DEVICE", dvb_in_device);
 	defaults->get("R_SCREENCAPTURE_DISPLAY", screencapture_display);
@@ -291,13 +282,10 @@ int VideoInConfig::load_defaults(BC_Hash *defaults)
 int VideoInConfig::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("R_VIDEO_IN_DRIVER", driver);
-	defaults->update("R_V4L_IN_DEVICE", v4l_in_device);
 	defaults->update("R_V4L2_IN_DEVICE", v4l2_in_device);
 	defaults->update("R_V4L2JPEG_IN_DEVICE", v4l2jpeg_in_device);
 	defaults->update("R_V4L2JPEG_IN_FIELDS", v4l2jpeg_in_fields);
 	defaults->update("R_V4L2MPEG_IN_DEVICE", v4l2mpeg_in_device);
-	defaults->update("R_LML_IN_DEVICE", lml_in_device);
-	defaults->update("R_BUZ_IN_DEVICE", buz_in_device);
 	defaults->update("R_VIDEO_DVB_IN_ADAPTER", dvb_in_adapter);
 	defaults->update("R_VIDEO_DVB_IN_DEVICE", dvb_in_device);
 	defaults->update("R_SCREENCAPTURE_DISPLAY", screencapture_display);

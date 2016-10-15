@@ -284,43 +284,6 @@ void VWindow::change_source(EDL *edl)
 		gui->change_source(edl, _("Viewer"));
 }
 
-void VWindow::change_source(char *folder, int item)
-{
-//printf("VWindow::change_source %d\n", __LINE__);
-	int result = 0;
-	if(!running()) return;
-// Search EDLs
-	if(!strcasecmp(folder, CLIP_FOLDER))
-	{
-		if(item < mwindow->edl->clips.total)
-		{
-			change_source(mwindow->edl->clips.values[item]);
-			result = 1;
-		}
-	}
-	else
-// Search media
-	if(!strcasecmp(folder, MEDIA_FOLDER))
-	{
-		if(item < mwindow->edl->assets->total())
-		{
-			change_source(mwindow->edl->assets->get_item_number(item));
-			result = 1;
-		}
-	}
-	else
-// Search extra clip folders
-	{
-	}
-
-	if(!result)
-	{
-		delete_source(1, 1);
-	}
-}
-
-
-
 
 void VWindow::goto_start()
 {

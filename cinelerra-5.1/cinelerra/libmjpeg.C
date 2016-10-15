@@ -1527,29 +1527,6 @@ typedef struct
 	int unpadded_field_size;
 } avi_hdr_t;
 
-#define LML_MARKER_SIZE 0x2c
-#define LML_MARKER_TAG 0xffe3
-void insert_lml33_markers(unsigned char **buffer,
-	long *field2_offset,
-	long *buffer_size,
-	long *buffer_allocated)
-{
-	long marker_offset = -1;
-
-/* Search for existing marker to replace */
-//	marker_offset = find_marker(*buffer, *buffer_size, LML_MARKER_TAG);
-
-/* Insert new marker */
-	if(marker_offset < 0)
-	{
-		marker_offset = 2;
-		insert_space(buffer,
-			buffer_size,
-			buffer_allocated,
-			2,
-			LML_MARKER_SIZE);
-	}
-}
 
 static int qt_table_offsets(unsigned char *buffer,
 	long buffer_size,

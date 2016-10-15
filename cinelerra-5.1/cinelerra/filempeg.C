@@ -454,7 +454,7 @@ int FileMPEG::open_file(int rd, int wr)
 //TODO: this is not as easy as just looking at headers.
 //most interlaced media is rendered as FRM, not TOP/BOT in coding ext hdrs.
 //currently, just using the assetedit menu to set the required result as needed.
-//				if( asset->interlace_mode == BC_ILACE_MODE_UNDETECTED )
+//				if( asset->interlace_mode == ILACE_MODE_UNDETECTED )
 //					asset->interlace_mode = mpeg3_detect_interlace(fd, 0);
 				if( !asset->layers ) {
 					asset->layers = mpeg3_total_vstreams(fd);
@@ -999,13 +999,9 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 				asset->vmpeg_cmodel : BC_RGB888;
 		case PLAYBACK_X11_GL:
  			return BC_YUV888;
-		case PLAYBACK_LML:
-		case PLAYBACK_BUZ:
-			return BC_YUV422P;
 		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			return BC_YUV422P;
-		case VIDEO4LINUX:
 		case VIDEO4LINUX2:
  			return zmpeg3_cmdl(asset->vmpeg_cmodel) > 0 ?
 				asset->vmpeg_cmodel : BC_RGB888;
@@ -1017,9 +1013,6 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 		case CAPTURE_JPEG_WEBCAM:
 			return BC_COMPRESSED;
 		case CAPTURE_YUYV_WEBCAM:
-			return BC_YUV422;
-		case CAPTURE_BUZ:
-		case CAPTURE_LML:
 			return BC_YUV422;
 		case CAPTURE_FIREWIRE:
 		case CAPTURE_IEC61883:
@@ -1273,8 +1266,8 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 		switch( output_cmodel ) {
 		case BC_YUV420P:
 			if( file->preferences->dvd_yuv420p_interlace &&
-			    ( asset->interlace_mode == BC_ILACE_MODE_TOP_FIRST ||
-			      asset->interlace_mode == BC_ILACE_MODE_BOTTOM_FIRST ) )
+			    ( asset->interlace_mode == ILACE_MODE_TOP_FIRST ||
+			      asset->interlace_mode == ILACE_MODE_BOTTOM_FIRST ) )
 				output_cmodel = BC_YUV420PI;
 		case BC_YUV422P:
 			break;
@@ -1500,7 +1493,7 @@ int FileMPEG::read_frame(VFrame *frame)
 	int stream_cmdl = mpeg3_colormodel(fd,file->current_layer);
 	int stream_color_model = bc_colormodel(stream_cmdl);
 	int frame_color_model = frame->get_color_model();
-	int frame_cmdl = asset->interlace_mode == BC_ILACE_MODE_NOTINTERLACED ?
+	int frame_cmdl = asset->interlace_mode == ILACE_MODE_NOTINTERLACED ?
 		zmpeg3_cmdl(frame_color_model) : -1;
 	mpeg3_show_subtitle(fd, file->current_layer, file->playback_subtitle);
 
@@ -1562,8 +1555,8 @@ int FileMPEG::read_frame(VFrame *frame)
 	if( y && u && v ) {
 		if( stream_color_model == BC_YUV420P &&
 		    file->preferences->dvd_yuv420p_interlace && (
-			asset->interlace_mode == BC_ILACE_MODE_TOP_FIRST ||
-			asset->interlace_mode == BC_ILACE_MODE_BOTTOM_FIRST ) )
+			asset->interlace_mode == ILACE_MODE_TOP_FIRST ||
+			asset->interlace_mode == ILACE_MODE_BOTTOM_FIRST ) )
 				stream_color_model = BC_YUV420PI;
 		BC_CModels::transfer(frame->get_rows(), 0,
 			frame->get_y(), frame->get_u(), frame->get_v(),

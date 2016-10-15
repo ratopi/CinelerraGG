@@ -49,16 +49,6 @@ struct mjpeg_error_mgr {
 
 typedef struct mjpeg_error_mgr* mjpeg_error_ptr;
 
-#ifndef __alpha__
-typedef struct
-{
-} mjpeg_lml_hdr;
-
-typedef struct
-{
-} mjpeg_dc10_hdr;
-#endif
-
 
 // The compressor structure is shared between decompressors and compressors
 typedef struct
@@ -208,8 +198,6 @@ void mjpeg_insert_avi_markers(unsigned char **buffer,
 	long *field2_offset);
 
 // Get the second field offset from the markers
-long mjpeg_get_buz_field2(unsigned char *buffer, long buffer_size);
-long mjpeg_get_lml33_field2(unsigned char *buffer, long buffer_size);
 long mjpeg_get_quicktime_field2(unsigned char *buffer, long buffer_size);
 // Field dominance is retrieved for the jpeg decoder.  AVI stores field
 // dominance in each field.

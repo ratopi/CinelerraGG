@@ -70,15 +70,12 @@ public:
 	PrefsChannelPicker *channel_picker;
 
 private:
-	int create_lml_objs();
 	int create_firewire_objs();
 	int create_dv1394_objs();
-	int create_v4l_objs();
 	int create_v4l2_objs();
 	int create_v4l2jpeg_objs();
 	int create_v4l2mpeg_objs();
 	int create_screencap_objs();
-	int create_buz_objs();
 	int create_x11_objs();
 	void create_dvb_objs();
 
@@ -102,7 +99,6 @@ private:
 	VDeviceTumbleBox *device_fields;
 	VDeviceTumbleBox *dvb_adapter_device;
 
-	VDeviceCheckBox *buz_swap_channels;
 	int driver, mode;
 	int x;
 	int y;

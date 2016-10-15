@@ -46,9 +46,7 @@
 #ifdef HAVE_FIREWIRE
 #include "vdevice1394.h"
 #endif
-#include "vdevicebuz.h"
 #include "vdevicedvb.h"
-#include "vdevicev4l.h"
 #include "vdevicev4l2.h"
 #include "vdevicev4l2jpeg.h"
 #include "vdevicev4l2mpeg.h"
@@ -211,12 +209,6 @@ int VideoDevice::open_input(VideoInConfig *config,
 	if( input_base ) return 1; // device already open
 
 	switch(in_config->driver) {
-		case VIDEO4LINUX:
-			keepalive = new KeepaliveThread(this);
-			keepalive->start_keepalive();
-			break;
-
-
 #ifdef HAVE_VIDEO4LINUX2
 
 		case VIDEO4LINUX2:
@@ -231,12 +223,6 @@ int VideoDevice::open_input(VideoInConfig *config,
 		case SCREENCAPTURE:
 			this->input_x = input_x;
 			this->input_y = input_y;
-			break;
-		case CAPTURE_LML:
-		case CAPTURE_BUZ:
-//printf("VideoDevice 1\n");
-			keepalive = new KeepaliveThread(this);
-			keepalive->start_keepalive();
 			break;
 #ifdef HAVE_FIREWIRE
 		case CAPTURE_FIREWIRE:
@@ -264,11 +250,6 @@ int VideoDevice::open_input(VideoInConfig *config,
 VDeviceBase* VideoDevice::new_device_base()
 {
 	switch(in_config->driver) {
-#ifdef HAVE_VIDEO4LINUX
-	case VIDEO4LINUX:
-		return input_base = new VDeviceV4L(this);
-#endif
-
 #ifdef HAVE_VIDEO4LINUX2
 	case VIDEO4LINUX2:
 	case CAPTURE_JPEG_WEBCAM:
@@ -282,13 +263,6 @@ VDeviceBase* VideoDevice::new_device_base()
 
 	case SCREENCAPTURE:
 		return input_base = new VDeviceX11(this, 0);
-
-#ifdef HAVE_VIDEO4LINUX
-	case CAPTURE_BUZ:
-		return input_base = new VDeviceBUZ(this);
-	case CAPTURE_LML:
-		return input_base = new VDeviceLML(this);
-#endif
 
 #ifdef HAVE_FIREWIRE
 	case CAPTURE_FIREWIRE:
@@ -309,9 +283,6 @@ static const char* get_channeldb_path(VideoInConfig *vconfig_in)
 	char *path = 0;
 	switch(vconfig_in->driver)
 	{
-		case VIDEO4LINUX:
-			path = (char*)"channels_v4l";
-			break;
 		case VIDEO4LINUX2:
 		case CAPTURE_JPEG_WEBCAM:
 		case CAPTURE_YUYV_WEBCAM:
@@ -322,9 +293,6 @@ static const char* get_channeldb_path(VideoInConfig *vconfig_in)
 			break;
 		case VIDEO4LINUX2MPEG:
 			path = (char*)"channels_v4l2mpeg";
-			break;
-		case CAPTURE_BUZ:
-			path = (char*)"channels_buz";
 			break;
 		case CAPTURE_DVB:
 			path = (char*)"channels_dvb";
@@ -362,10 +330,8 @@ DeviceMPEGInput *VideoDevice::mpeg_device()
 int VideoDevice::is_compressed(int driver, int use_file, int use_fixed)
 {
 // FileMOV needs to have write_frames called so the start codes get scanned.
-	return ((driver == CAPTURE_BUZ && use_fixed) ||
-		(driver == VIDEO4LINUX2JPEG && use_fixed) ||
+	return ((driver == VIDEO4LINUX2JPEG && use_fixed) ||
 		(driver == CAPTURE_JPEG_WEBCAM && use_fixed) ||
-		driver == CAPTURE_LML ||
 		driver == CAPTURE_FIREWIRE ||
 		driver == CAPTURE_IEC61883);
 }
@@ -386,8 +352,6 @@ void VideoDevice::fix_asset(Asset *asset, int driver)
 		vcodec = CODEC_TAG_DVSD;
 		break;
 
-	case CAPTURE_BUZ:
-	case CAPTURE_LML:
 	case VIDEO4LINUX2JPEG:
 		vcodec = CODEC_TAG_MJPEG;
 		break;
@@ -417,16 +381,12 @@ const char* VideoDevice::drivertostr(int driver)
 	case PLAYBACK_X11:     return PLAYBACK_X11_TITLE;
 	case PLAYBACK_X11_XV:  return PLAYBACK_X11_XV_TITLE;
 	case PLAYBACK_X11_GL:  return PLAYBACK_X11_GL_TITLE;
-	case PLAYBACK_BUZ:     return PLAYBACK_BUZ_TITLE;
-	case VIDEO4LINUX:      return VIDEO4LINUX_TITLE;
 	case VIDEO4LINUX2:     return VIDEO4LINUX2_TITLE;
 	case VIDEO4LINUX2JPEG: return VIDEO4LINUX2JPEG_TITLE;
 	case VIDEO4LINUX2MPEG: return VIDEO4LINUX2MPEG_TITLE;
 	case CAPTURE_JPEG_WEBCAM: return CAPTURE_JPEG_WEBCAM_TITLE;
 	case CAPTURE_YUYV_WEBCAM: return CAPTURE_YUYV_WEBCAM_TITLE;
 	case SCREENCAPTURE:    return SCREENCAPTURE_TITLE;
-	case CAPTURE_BUZ:      return CAPTURE_BUZ_TITLE;
-	case CAPTURE_LML:      return CAPTURE_LML_TITLE;
 	case CAPTURE_DVB:      return CAPTURE_DVB_TITLE;
 #ifdef HAVE_FIREWIRE
 	case CAPTURE_FIREWIRE: return CAPTURE_FIREWIRE_TITLE;
@@ -586,8 +546,7 @@ int VideoDevice::update_translation()
 	if(frame_resized) {
 		input_x = new_input_x;
 		input_y = new_input_y;
-		if( in_config->driver == VIDEO4LINUX ||
-			in_config->driver == VIDEO4LINUX2 ) {
+		if( in_config->driver == VIDEO4LINUX2 ) {
 			if(input_z != new_input_z) {
 				input_z = new_input_z;
 				//z_changed = 1;
@@ -691,14 +650,6 @@ int VideoDevice::open_output(VideoOutConfig *config, float rate,
 
 //printf("VideoDevice::open_output 1 %d\n", out_config->driver);
 	switch(out_config->driver) {
-#ifdef HAVE_VIDEO4LINUX
-	case PLAYBACK_BUZ:
-		output_base = new VDeviceBUZ(this);
-		break;
-	case PLAYBACK_LML:
-		output_base = new VDeviceLML(this);
-		break;
-#endif
 	case PLAYBACK_X11:
 	case PLAYBACK_X11_XV:
 	case PLAYBACK_X11_GL:

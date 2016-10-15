@@ -94,14 +94,11 @@ public:
 	void copy_from(VideoOutConfig *src);
 	int load_defaults(BC_Hash *defaults, int active_config);
 	int save_defaults(BC_Hash *defaults, int active_config);
-	char* get_path();
+	const char *get_path();
+	static const char *default_video_device;
 
 	int driver;
-	char lml_out_device[BCTEXTLEN];
-	char buz_out_device[BCTEXTLEN];
-// Entry in the buz channel table
-	int buz_out_channel;
-	int buz_swap_fields;
+	int out_channel;
 
 // X11 options
 	char x11_host[BCTEXTLEN];

@@ -199,8 +199,9 @@ void CWindowGUI::create_objects()
 		mwindow->theme->czoom_y,
 		mwindow->theme->czoom_w);
 	zoom_panel->create_objects();
-	zoom_panel->zoom_text->add_item(new BC_MenuItem(AUTO_ZOOM));
-	if(!mwindow->edl->session->cwindow_scrollbars) zoom_panel->set_text(AUTO_ZOOM);
+	auto_zoom = _(AUTO_ZOOM);
+	zoom_panel->zoom_text->add_item(new BC_MenuItem(auto_zoom));
+	if(!mwindow->edl->session->cwindow_scrollbars) zoom_panel->set_text(auto_zoom);
 
 // 	destination = new CWindowDestination(mwindow,
 // 		this,
@@ -379,7 +380,7 @@ void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
 	{
 		if(do_auto)
 		{
-			zoom_panel->update(AUTO_ZOOM);
+			zoom_panel->update(auto_zoom);
 		}
 		else
 		{
@@ -798,7 +799,7 @@ CWindowZoom::~CWindowZoom()
 
 int CWindowZoom::handle_event()
 {
-	if(!strcasecmp(AUTO_ZOOM, get_text()))
+	if(!strcasecmp(gui->auto_zoom, get_text()))
 	{
 		gui->zoom_canvas(1, get_value(), 0);
 	}

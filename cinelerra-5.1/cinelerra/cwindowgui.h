@@ -32,6 +32,7 @@
 #include "floatauto.inc"
 #include "floatautos.inc"
 #include "guicast.h"
+#include "language.h"
 #include "mainclock.inc"
 #include "maskauto.inc"
 #include "meterpanel.h"
@@ -51,7 +52,7 @@ class CWindowCanvas;
 class CWindowEditing;
 
 
-#define AUTO_ZOOM "Auto"
+#define AUTO_ZOOM N_("Auto")
 
 class CWindowGUI : public BC_Window
 {
@@ -87,7 +88,8 @@ public:
 	void update_meters();
 
 	MWindow *mwindow;
-    CWindow *cwindow;
+	CWindow *cwindow;
+	const char *auto_zoom;
 	CWindowEditing *edit_panel;
 //	APanel *automation_panel;
 	CPanel *composite_panel;

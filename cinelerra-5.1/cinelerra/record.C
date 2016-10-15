@@ -202,10 +202,6 @@ int Record::load_defaults()
 // These are locked by a specific driver.
 	const char *vcodec = 0;
 	switch( session->vconfig_in->driver ) {
-	case CAPTURE_LML:
-	case CAPTURE_BUZ:
-		vcodec = CODEC_TAG_MJPEG;
-		break;
 	case CAPTURE_DVB:
 	case VIDEO4LINUX2MPEG:
 		break;

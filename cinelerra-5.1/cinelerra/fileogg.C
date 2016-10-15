@@ -693,7 +693,7 @@ Not yet available in alpha4, we assume 420 for now
 				asset->frame_rate = fps;
 // All theora material is noninterlaced by definition
 			if(!asset->interlace_mode)
-				asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
+				asset->interlace_mode = ILACE_MODE_NOTINTERLACED;
 
 	/*		ogg_get_page_of_frame(tf->videosync, tf->to.serialno, &og, 0 +start_frame);
 			ogg_get_page_of_frame(tf->videosync, tf->to.serialno, &og, 1 +start_frame);

@@ -34,6 +34,7 @@
 #include "keys.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainmenu.h"
 #include "mainsession.h"
@@ -267,7 +268,7 @@ void CWindow::update(int position,
 	}
 
 	if(!mwindow->edl->session->cwindow_scrollbars)
-		gui->zoom_panel->update(AUTO_ZOOM);
+		gui->zoom_panel->update(_(AUTO_ZOOM));
 	else
 		gui->zoom_panel->update(mwindow->edl->session->cwindow_zoom);
 

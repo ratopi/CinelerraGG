@@ -291,9 +291,9 @@ TRACE("FileDV::open_file 60")
 			asset->height = decoder->height;
 
 			if(dv_is_progressive(decoder) > 0)
-				asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
+				asset->interlace_mode = ILACE_MODE_NOTINTERLACED;
 			else
-				asset->interlace_mode = BC_ILACE_MODE_BOTTOM_FIRST;
+				asset->interlace_mode = ILACE_MODE_BOTTOM_FIRST;
 
 			isPAL = dv_is_PAL(decoder);
 			
@@ -935,14 +935,7 @@ int FileDV::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_FIREWIRE:
 			return BC_COMPRESSED;
 			break;
-		case PLAYBACK_LML:
-		case PLAYBACK_BUZ:
-			return BC_YUV422P;
-			break;
-		case VIDEO4LINUX:
 		case VIDEO4LINUX2:
-		case CAPTURE_BUZ:
-		case CAPTURE_LML:
 		case VIDEO4LINUX2JPEG:
 			return BC_YUV422;
 			break;

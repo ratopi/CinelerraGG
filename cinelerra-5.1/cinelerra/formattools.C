@@ -319,8 +319,6 @@ void FormatTools::update_driver(int driver)
 
 		case CAPTURE_IEC61883:
 		case CAPTURE_FIREWIRE:
-		case CAPTURE_LML:
-		case CAPTURE_BUZ:
 		case VIDEO4LINUX2JPEG:
 		case CAPTURE_JPEG_WEBCAM:
 			asset->format = FILE_FFMPEG;
@@ -332,8 +330,6 @@ void FormatTools::update_driver(int driver)
 				locked_compressor = (char*)CODEC_TAG_DVSD;
 				break;
 
-			case CAPTURE_BUZ:
-			case CAPTURE_LML:
 			case VIDEO4LINUX2JPEG:
 				locked_compressor = (char*)CODEC_TAG_MJPEG;
 				break;

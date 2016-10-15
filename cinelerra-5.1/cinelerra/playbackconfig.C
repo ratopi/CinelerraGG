@@ -235,14 +235,11 @@ int AudioOutConfig::save_defaults(BC_Hash *defaults, int active_config)
 
 
 
+const char *VideoOutConfig::default_video_device = "/dev/video0";
 
 VideoOutConfig::VideoOutConfig()
 {
-	sprintf(lml_out_device, "/dev/mvideo/stream");
-	sprintf(buz_out_device, "/dev/video0");
 	driver = PLAYBACK_X11_XV;
-	buz_out_channel = 0;
-	buz_swap_fields = 0;
 	x11_host[0] = 0;
 	x11_use_fields = USE_NO_FIELDS;
 
@@ -261,6 +258,7 @@ VideoOutConfig::VideoOutConfig()
 	color = 32768;
 	contrast = 32768;
 	whiteness = 32768;
+	out_channel = -1;
 }
 
 VideoOutConfig::~VideoOutConfig()
@@ -276,10 +274,6 @@ int VideoOutConfig::operator!=(VideoOutConfig &that)
 int VideoOutConfig::operator==(VideoOutConfig &that)
 {
 	return (driver == that.driver) &&
-		!strcmp(lml_out_device, that.lml_out_device) &&
-		!strcmp(buz_out_device, that.buz_out_device) &&
-		(buz_out_channel == that.buz_out_channel) &&
-		(buz_swap_fields == that.buz_swap_fields) &&
 		!strcmp(x11_host, that.x11_host) &&
 		(x11_use_fields == that.x11_use_fields) &&
 		(brightness == that.brightness) &&
@@ -313,10 +307,6 @@ VideoOutConfig& VideoOutConfig::operator=(VideoOutConfig &that)
 void VideoOutConfig::copy_from(VideoOutConfig *src)
 {
 	this->driver = src->driver;
-	strcpy(this->lml_out_device, src->lml_out_device);
-	strcpy(this->buz_out_device, src->buz_out_device);
-	this->buz_out_channel = src->buz_out_channel;
-	this->buz_swap_fields = src->buz_swap_fields;
 	strcpy(this->x11_host, src->x11_host);
 	this->x11_use_fields = src->x11_use_fields;
 
@@ -331,13 +321,10 @@ void VideoOutConfig::copy_from(VideoOutConfig *src)
 	dv1394_syt = src->dv1394_syt;
 }
 
-char* VideoOutConfig::get_path()
+const char *VideoOutConfig::get_path()
 {
 	switch(driver)
 	{
-		case PLAYBACK_BUZ:
-			return buz_out_device;
-			break;
 		case PLAYBACK_X11:
 		case PLAYBACK_X11_XV:
 			return x11_host;
@@ -349,7 +336,7 @@ char* VideoOutConfig::get_path()
 			return firewire_path;
 			break;
 	};
-	return buz_out_device;
+	return default_video_device;
 }
 
 int VideoOutConfig::load_defaults(BC_Hash *defaults, int active_config)
@@ -358,10 +345,6 @@ int VideoOutConfig::load_defaults(BC_Hash *defaults, int active_config)
 	sprintf(prefix, "%c_", 'A'+active_config);
 
 	driver = defaults->getf(driver, "%sVIDEO_OUT_DRIVER", prefix);
-	defaults->getf(lml_out_device, "%sLML_OUT_DEVICE", prefix);
-	defaults->getf(buz_out_device, "%sBUZ_OUT_DEVICE", prefix);
-	buz_out_channel = defaults->getf(buz_out_channel, "%sBUZ_OUT_CHANNEL", prefix);
-	buz_swap_fields = defaults->getf(buz_swap_fields, "%sBUZ_SWAP_FIELDS", prefix);
 	defaults->getf(x11_host, "%sX11_OUT_DEVICE", prefix);
 	x11_use_fields = defaults->getf(x11_use_fields, "%sX11_USE_FIELDS", prefix);
 
@@ -385,10 +368,6 @@ int VideoOutConfig::save_defaults(BC_Hash *defaults, int active_config)
 	sprintf(prefix, "%c_", 'A'+active_config);
 
 	defaults->updatef(driver, "%sVIDEO_OUT_DRIVER", prefix);
-	defaults->updatef(lml_out_device, "%sLML_OUT_DEVICE", prefix);
-	defaults->updatef(buz_out_device, "%sBUZ_OUT_DEVICE", prefix);
-	defaults->updatef(buz_out_channel, "%sBUZ_OUT_CHANNEL", prefix);
-	defaults->updatef(buz_swap_fields, "%sBUZ_SWAP_FIELDS", prefix);
 	defaults->updatef(x11_host, "%sX11_OUT_DEVICE", prefix);
 	defaults->updatef(x11_use_fields, "%sX11_USE_FIELDS", prefix);
 

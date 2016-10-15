@@ -99,7 +99,7 @@ public:
 	float ruler_x2, ruler_y2;
 // Ruler points relative to the output frame.
 // Current folder in resource window
-	char current_folder[BCTEXTLEN];
+	int awindow_folder;
 // align cursor on frame boundaries
 	int cursor_on_frames;
 // paste keyframes to any track type

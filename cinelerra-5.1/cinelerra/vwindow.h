@@ -51,8 +51,6 @@ public:
 	void change_source(EDL *edl);
 // Change source to 1 of master EDL's vwindow EDLs after a load.
 	void change_source(int number);
-// Change source to folder and item number
-	void change_source(char *folder, int item);
 // Returns private EDL of VWindow
 // If an asset is dropped in, a new VWindow EDL is created in the master EDL
 // and this points to it.

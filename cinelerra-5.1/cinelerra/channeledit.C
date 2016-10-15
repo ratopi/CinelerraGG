@@ -39,6 +39,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define MSG_NO_PIC_CONTROLS _("Device has no picture controls.")
+//#define MSG_NO_INP_SELECTION _("Device has no input selection.")
 
 ChannelEditThread::ChannelEditThread(ChannelPicker *channel_picker,
 	ChannelDB *channeldb)
@@ -163,7 +165,7 @@ ChannelEditWindow::ChannelEditWindow(ChannelEditThread *thread,
  : BC_Window(_(PROGRAM_NAME ": Channels"),
  	channel_picker->mwindow->session->channels_x,
 	channel_picker->mwindow->session->channels_y,
-	350, 400, 350, 400, 0, 0, 1)
+	375, 400, 375, 400, 0, 0, 1)
 {
 	this->thread = thread;
 	this->channel_picker = channel_picker;
@@ -1022,7 +1024,7 @@ void ChannelEditEditWindow::create_objects(Channel *channel)
 // 		!channel_usage->use_norm &&
 // 		!channel_usage->use_input))
 // 	{
-// 		add_subwindow(new BC_Title(x, y, "Device has no input selection."));
+// 		add_subwindow(new BC_Title(x, y, MSG_NO_INP_SELECTION));
 // 		y += 30;
 // 	}
 // 	else
@@ -1406,12 +1408,21 @@ int ChannelEditPictureWindow::calculate_h(ChannelPicker *channel_picker)
 {
 	PictureConfig *picture_usage = channel_picker->get_picture_usage();
 	int pad = BC_Pot::calculate_h();
-	int result = 20 +
-		channel_picker->parent_window->get_text_height(MEDIUMFONT) + 5 +
-		BC_OKButton::calculate_h();
+	int text_h = channel_picker->parent_window->get_text_height(MEDIUMFONT);
+	int result = 20 + text_h + 5 + BC_OKButton::calculate_h();
 
 // Only used for Video4Linux 1
-	if(picture_usage)
+	if( !picture_usage || (
+             !picture_usage->use_brightness &&
+	     !picture_usage->use_contrast &&
+	     !picture_usage->use_color &&
+	     !picture_usage->use_hue &&
+	     !picture_usage->use_whiteness &&
+	     !channel_picker->get_controls() ) ) {
+		result += BC_Title::calculate_h(channel_picker->parent_window,
+			MSG_NO_PIC_CONTROLS);
+	}
+	else
 	{
 		if(picture_usage->use_brightness)
 			result += pad;
@@ -1446,8 +1457,7 @@ int ChannelEditPictureWindow::calculate_w(ChannelPicker *channel_picker)
 		!channel_picker->get_controls()))
 	{
 		result = BC_Title::calculate_w(channel_picker->parent_window,
-			_("Device has no picture controls.")) +
-			2 * widget_border;
+			MSG_NO_PIC_CONTROLS) + 20;
 	}
 
 // Only used for Video4Linux 1
@@ -1513,7 +1523,7 @@ void ChannelEditPictureWindow::create_objects()
 		!picture_usage->use_whiteness &&
 		!channel_picker->get_controls()))
 	{
-		add_subwindow(new BC_Title(x, y, "Device has no picture controls."));
+		add_subwindow(new BC_Title(x, y, MSG_NO_PIC_CONTROLS));
 		y += 50;
 	}
 

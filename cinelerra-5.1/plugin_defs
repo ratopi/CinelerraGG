@@ -1,6 +1,8 @@
 export TOPDIR ?= ../..
 include $(TOPDIR)/global_config
 
+# plugin_dirs is translated in awindowgui.C, update if changed.
+
 plugin_dirs := themes
 themes := theme_bright theme_suv theme_blond theme_blue theme_blue_dot \
 	theme_hulk theme_pinklady theme_unflat theme_blond_cv

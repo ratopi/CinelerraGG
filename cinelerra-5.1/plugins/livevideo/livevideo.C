@@ -402,7 +402,6 @@ int LiveVideo::process_buffer(VFrame *frame,
 			{
 				case CAPTURE_FIREWIRE:
 				case CAPTURE_IEC61883:
-				case CAPTURE_BUZ:
 				case VIDEO4LINUX2JPEG:
 				case CAPTURE_JPEG_WEBCAM:
 					input_cmodel = BC_COMPRESSED;
@@ -514,7 +513,6 @@ int LiveVideo::process_buffer(VFrame *frame,
 						frame->set_opengl_state(VFrame::RAM);
 						break;
 
-					case CAPTURE_BUZ:
 					case VIDEO4LINUX2JPEG:
 						if(!mjpeg)
 							mjpeg = mjpeg_new(frame->get_w(), 

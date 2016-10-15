@@ -24,7 +24,6 @@
 #include "asset.h"
 #include "audiodevice.h"
 #include "bcsignals.h"
-#include "channeldb.h"
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -46,13 +45,11 @@
 RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
  	Preferences *preferences,
 	Canvas *output,
-	ChannelDB *channeldb,
 	int is_nested)
  : Thread(1, 0, 0)
 {
 	this->playback_engine = playback_engine;
 	this->output = output;
-	this->channeldb = channeldb;
 	this->is_nested = is_nested;
 	audio = 0;
 	video = 0;
@@ -248,26 +245,6 @@ int RenderEngine::brender_available(int position, int direction)
 		return 0;
 }
 
-Channel* RenderEngine::get_current_channel()
-{
-	if(channeldb)
-	{
-		switch(config->vconfig->driver)
-		{
-			case PLAYBACK_BUZ:
-				if(config->vconfig->buz_out_channel >= 0 &&
-					config->vconfig->buz_out_channel < channeldb->size())
-				{
-					return channeldb->get(config->vconfig->buz_out_channel);
-				}
-				break;
-			case VIDEO4LINUX2JPEG:
-			case VIDEO4LINUX2MPEG:
-				break;
-		}
-	}
-	return 0;
-}
 
 CICache* RenderEngine::get_acache()
 {
@@ -356,8 +333,6 @@ int RenderEngine::open_output()
 				get_output_h(),
 				output,
 				command->single_frame());
-			Channel *channel = get_current_channel();
-			if(channel) video->set_channel(channel);
 			video->set_quality(80);
 			video->set_cpus(preferences->processors);
 		}

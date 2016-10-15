@@ -50,7 +50,7 @@ VDevicePrefs::VDevicePrefs(int x,
 {
 	this->pwindow = pwindow;
 	this->dialog = dialog;
-	this->driver = -1;
+	this->driver = DEV_UNKNOWN;
 	this->mode = mode;
 	this->out_config = out_config;
 	this->in_config = in_config;
@@ -72,7 +72,6 @@ VDevicePrefs::~VDevicePrefs()
 	}
 	if( config >= 0 )
 		pwindow->mwindow->session->save_x11_host(config, out_config->x11_host);
-	pwindow->mwindow->channeldb_buz->save("channeldb_buz");
 }
 
 
@@ -96,7 +95,6 @@ void VDevicePrefs::reset_objects()
 	fields_title = 0;
 	device_fields = 0;
 
-	buz_swap_channels = 0;
 	channel_picker = 0;
 }
 
@@ -129,8 +127,7 @@ int VDevicePrefs::initialize(int creation)
 
 	switch(this->driver)
 	{
-		case VIDEO4LINUX:
-			create_v4l_objs();
+		case DEV_UNKNOWN:
 			break;
 		case VIDEO4LINUX2:
 		case CAPTURE_JPEG_WEBCAM:
@@ -145,13 +142,6 @@ int VDevicePrefs::initialize(int creation)
 			break;
 		case SCREENCAPTURE:
 			create_screencap_objs();
-			break;
-		case CAPTURE_LML:
-			create_lml_objs();
-			break;
-		case CAPTURE_BUZ:
-		case PLAYBACK_BUZ:
-			create_buz_objs();
 			break;
 		case PLAYBACK_X11:
 		case PLAYBACK_X11_XV:
@@ -186,7 +176,6 @@ int VDevicePrefs::delete_objects()
 {
 	delete output_title;
 	delete channel_picker;
-	delete buz_swap_channels;
 	delete device_title;
 	delete device_text;
 	delete dvb_adapter_device;
@@ -231,74 +220,6 @@ void VDevicePrefs::create_dvb_objs()
 	follow_video_config = new BC_CheckBox(x1, y1,
 			&in_config->follow_video, _("Follow video config"));
 	dialog->add_subwindow(follow_video_config);
-}
-
-int VDevicePrefs::create_lml_objs()
-{
-	char *output_char = 0;
-	int x1 = x + menu->get_w() + 5;
-	BC_Resources *resources = BC_WindowBase::get_resources();
-
-	switch(mode)
-	{
-		case MODEPLAY:
-			output_char = out_config->lml_out_device;
-			break;
-		case MODERECORD:
-			output_char = in_config->lml_in_device;
-			break;
-	}
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
-	x1 += device_title->get_w() + 10;
-	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
-	return 0;
-}
-
-int VDevicePrefs::create_buz_objs()
-{
-#ifdef HAVE_VIDEO4LINUX
-
-
-	char *output_char = 0;
-	int x1 = x + menu->get_w() + 5;
-	int x2 = x1 + 210;
-	int y1 = y;
-	BC_Resources *resources = BC_WindowBase::get_resources();
-
-	switch(mode)
-	{
-		case MODEPLAY:
-			output_char = out_config->buz_out_device;
-			break;
-		case MODERECORD:
-			output_char = in_config->buz_in_device;
-			break;
-	}
-	dialog->add_subwindow(device_title = new BC_Title(x1, y1, _("Device path:"), MEDIUMFONT, resources->text_default));
-
-	y1 += 20;
-	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y1, output_char));
-
-	if(driver == PLAYBACK_BUZ)
-	{
-		dialog->add_subwindow(buz_swap_channels =
-			new VDeviceCheckBox(x2, y1, &out_config->buz_swap_fields, _("Swap fields")));
-	}
-	y1 += 30;
-	if(driver == PLAYBACK_BUZ)
-	{
-		dialog->add_subwindow(output_title = new BC_Title(x1, y1, _("Output channel:")));
-		y1 += 20;
-		channel_picker = new PrefsChannelPicker(pwindow->mwindow,
-			this,
-			pwindow->mwindow->channeldb_buz,
-			x1,
-			y1);
-		channel_picker->create_objects();
-	}
-#endif // HAVE_VIDEO4LINUX
-
-	return 0;
 }
 
 int VDevicePrefs::create_firewire_objs()
@@ -389,23 +310,6 @@ int VDevicePrefs::create_firewire_objs()
 		dialog->add_subwindow(firewire_syt = new VDeviceIntBox(x1, y + 20, output_int));
 	}
 
-	return 0;
-}
-
-int VDevicePrefs::create_v4l_objs()
-{
-#ifdef HAVE_VIDEO4LINUX
-
-
-	char *output_char;
-	BC_Resources *resources = BC_WindowBase::get_resources();
-	int x1 = x + menu->get_w() + 5;
-	output_char = pwindow->thread->edl->session->vconfig_in->v4l_in_device;
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
-	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
-
-
-#endif // HAVE_VIDEO4LINUX
 	return 0;
 }
 
@@ -510,8 +414,8 @@ char* VDriverMenu::driver_to_string(int driver)
 {
 	switch(driver)
 	{
-		case VIDEO4LINUX:
-			sprintf(string, VIDEO4LINUX_TITLE);
+		case DEV_UNKNOWN:
+			sprintf(string, DEV_UNKNOWN_TITLE);
 			break;
 		case VIDEO4LINUX2:
 			sprintf(string, VIDEO4LINUX2_TITLE);
@@ -530,12 +434,6 @@ char* VDriverMenu::driver_to_string(int driver)
 			break;
 		case SCREENCAPTURE:
 			sprintf(string, SCREENCAPTURE_TITLE);
-			break;
-		case CAPTURE_BUZ:
-			sprintf(string, CAPTURE_BUZ_TITLE);
-			break;
-		case CAPTURE_LML:
-			sprintf(string, CAPTURE_LML_TITLE);
 			break;
 #ifdef HAVE_FIREWIRE
 		case CAPTURE_FIREWIRE:
@@ -556,12 +454,6 @@ char* VDriverMenu::driver_to_string(int driver)
 			break;
 		case PLAYBACK_X11_GL:
 			sprintf(string, PLAYBACK_X11_GL_TITLE);
-			break;
-		case PLAYBACK_LML:
-			sprintf(string, PLAYBACK_LML_TITLE);
-			break;
-		case PLAYBACK_BUZ:
-			sprintf(string, PLAYBACK_BUZ_TITLE);
 			break;
 #ifdef HAVE_FIREWIRE
 		case PLAYBACK_FIREWIRE:
@@ -584,10 +476,6 @@ void VDriverMenu::create_objects()
 {
 	if(do_input)
 	{
-#ifdef HAVE_VIDEO4LINUX
-		add_item(new VDriverItem(this, VIDEO4LINUX_TITLE, VIDEO4LINUX));
-#endif
-
 #ifdef HAVE_VIDEO4LINUX2
 		add_item(new VDriverItem(this, VIDEO4LINUX2_TITLE, VIDEO4LINUX2));
 		add_item(new VDriverItem(this, CAPTURE_JPEG_WEBCAM_TITLE, CAPTURE_JPEG_WEBCAM));
@@ -597,9 +485,6 @@ void VDriverMenu::create_objects()
 #endif
 
 		add_item(new VDriverItem(this, SCREENCAPTURE_TITLE, SCREENCAPTURE));
-#ifdef HAVE_VIDEO4LINUX
-		add_item(new VDriverItem(this, CAPTURE_BUZ_TITLE, CAPTURE_BUZ));
-#endif
 #ifdef HAVE_FIREWIRE
 		add_item(new VDriverItem(this, CAPTURE_FIREWIRE_TITLE, CAPTURE_FIREWIRE));
 		add_item(new VDriverItem(this, CAPTURE_IEC61883_TITLE, CAPTURE_IEC61883));
@@ -617,7 +502,6 @@ void VDriverMenu::create_objects()
 		if(get_opengl_server_version() >= 103)
 			add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
 #endif
-		add_item(new VDriverItem(this, PLAYBACK_BUZ_TITLE, PLAYBACK_BUZ));
 #ifdef HAVE_FIREWIRE
 		add_item(new VDriverItem(this, PLAYBACK_FIREWIRE_TITLE, PLAYBACK_FIREWIRE));
 		add_item(new VDriverItem(this, PLAYBACK_DV1394_TITLE, PLAYBACK_DV1394));

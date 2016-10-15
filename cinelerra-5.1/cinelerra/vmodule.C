@@ -233,11 +233,7 @@ int VModule::import_frame(VFrame *output,
 				nested_command->get_edl()->copy_all(nested_edl);
 				nested_command->change_type = CHANGE_ALL;
 				nested_command->realtime = renderengine->command->realtime;
-				nested_renderengine = new RenderEngine(0,
-					get_preferences(),
-					0,
-					renderengine ? renderengine->channeldb : 0,
-					1);
+				nested_renderengine = new RenderEngine(0, get_preferences(), 0, 1);
 				nested_renderengine->set_vcache(get_cache());
 				nested_renderengine->arm_command(nested_command);
 			}
@@ -453,7 +449,7 @@ int VModule::import_frame(VFrame *output,
 //			current_edit->asset->interlace_fixmethod);
 
 			// Determine the interlacing method to use.
-			int interlace_fixmethod = !current_edit->asset ? BC_ILACE_FIXMETHOD_NONE :
+			int interlace_fixmethod = !current_edit->asset ? ILACE_FIXMETHOD_NONE :
 				 ilaceautofixmethod2(get_edl()->session->interlace_mode,
 					current_edit->asset->interlace_autofixoption,
 					current_edit->asset->interlace_mode,
@@ -465,13 +461,13 @@ int VModule::import_frame(VFrame *output,
 
 			// Compensate for the said interlacing...
 			switch (interlace_fixmethod) {
-				case BC_ILACE_FIXMETHOD_NONE:
+				case ILACE_FIXMETHOD_NONE:
 
 				break;
-				case BC_ILACE_FIXMETHOD_UPONE:
+				case ILACE_FIXMETHOD_UPONE:
 					out_y--;
 				break;
-				case BC_ILACE_FIXMETHOD_DOWNONE:
+				case ILACE_FIXMETHOD_DOWNONE:
 					out_y++;
 				break;
 				default:

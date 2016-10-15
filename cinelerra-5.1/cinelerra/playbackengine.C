@@ -107,8 +107,6 @@ ChannelDB* PlaybackEngine::get_channeldb()
 	{
 		case VIDEO4LINUX2JPEG:
 			return mwindow->channeldb_v4l2jpeg;
-		case PLAYBACK_BUZ:
-			return mwindow->channeldb_buz;
 	}
 	return 0;
 }
@@ -117,13 +115,7 @@ int PlaybackEngine::create_render_engine()
 {
 // Fix playback configurations
 	delete_render_engine();
-
-
-	render_engine = new RenderEngine(this,
-		preferences, 
-		output,
-		get_channeldb(),
-		0);
+	render_engine = new RenderEngine(this, preferences, output, 0);
 //printf("PlaybackEngine::create_render_engine %d\n", __LINE__);
 	return 0;
 }

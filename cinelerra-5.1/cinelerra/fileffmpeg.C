@@ -17,6 +17,7 @@
 #include "fileffmpeg.h"
 #include "filesystem.h"
 #include "indexfile.h"
+#include "language.h"
 #include "mainerror.h"
 #include "mainprogress.h"
 #include "mutex.h"
@@ -313,10 +314,33 @@ int FileFFMPEG::colormodel_supported(int colormodel)
 int FileFFMPEG::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(driver) {
-	case PLAYBACK_X11:	return BC_RGB888;
-	case PLAYBACK_X11_GL:	return BC_YUV888;
+	case PLAYBACK_X11:
+		return BC_RGB888;
+	case PLAYBACK_X11_XV:
+	case PLAYBACK_ASYNCHRONOUS:
+		return BC_YUV888;
+	case PLAYBACK_X11_GL:
+		return BC_YUV888;
+	case PLAYBACK_DV1394:
+	case PLAYBACK_FIREWIRE:
+		return BC_YUV422P;
+	case VIDEO4LINUX2:
+		return BC_RGB888;
+	case VIDEO4LINUX2JPEG:
+		return BC_COMPRESSED;
+	case CAPTURE_DVB:
+	case VIDEO4LINUX2MPEG:
+		return BC_YUV422P;
+	case CAPTURE_JPEG_WEBCAM:
+		return BC_COMPRESSED;
+	case CAPTURE_YUYV_WEBCAM:
+		return BC_YUV422;
+	case CAPTURE_FIREWIRE:
+	case CAPTURE_IEC61883:
+		return BC_YUV422P;
 	}
-	return BC_YUV420P;
+
+	return BC_RGB888;
 }
 
 //======
@@ -717,7 +741,7 @@ FFOptions_OptPanel::
 
 void FFOptions_OptPanel::create_objects()
 {
-	const char *cols[] = { "option", "value", };
+	const char *cols[] = { _("option"), _("value"), };
 	const int col1_w = 150;
 	int wids[] = { col1_w, get_w()-col1_w };
 	BC_ListBox::update(&items[0], &cols[0], &wids[0], sizeof(items)/sizeof(items[0]));
@@ -869,7 +893,7 @@ int FFOptionsKind::handle_event()
 void FFOptionsKind::set(int k)
 {
 	this->kind = k;
-	set_text(kinds[k]);
+	set_text(_(kinds[k]));
 }
 
 FFOptionsText::
@@ -1145,25 +1169,25 @@ int FFOptions_Opt::types(char *rp)
 {
 	const char *cp = "";
 	if( opt ) switch (opt->type) {
-	case AV_OPT_TYPE_FLAGS: cp = "<flags>";  break;
-	case AV_OPT_TYPE_INT: cp = "<int>"; break;
-	case AV_OPT_TYPE_INT64: cp = "<int64>"; break;
-	case AV_OPT_TYPE_DOUBLE: cp = "<double>"; break;
-	case AV_OPT_TYPE_FLOAT: cp = "<float>"; break;
-	case AV_OPT_TYPE_STRING: cp = "<string>"; break;
-	case AV_OPT_TYPE_RATIONAL: cp = "<rational>"; break;
-	case AV_OPT_TYPE_BINARY: cp = "<binary>"; break;
-	case AV_OPT_TYPE_IMAGE_SIZE: cp = "<image_size>"; break;
-	case AV_OPT_TYPE_VIDEO_RATE: cp = "<video_rate>"; break;
-	case AV_OPT_TYPE_PIXEL_FMT: cp = "<pix_fmt>"; break;
-	case AV_OPT_TYPE_SAMPLE_FMT: cp = "<sample_fmt>"; break;
-	case AV_OPT_TYPE_DURATION: cp = "<duration>"; break;
-	case AV_OPT_TYPE_COLOR: cp = "<color>"; break;
-	case AV_OPT_TYPE_CHANNEL_LAYOUT: cp = "<channel_layout>";  break;
-	case AV_OPT_TYPE_BOOL: cp = "<bool>";  break;
-	default: cp = "<undef>";  break;
+	case AV_OPT_TYPE_FLAGS: cp = N_("<flags>");  break;
+	case AV_OPT_TYPE_INT: cp = N_("<int>"); break;
+	case AV_OPT_TYPE_INT64: cp = N_("<int64>"); break;
+	case AV_OPT_TYPE_DOUBLE: cp = N_("<double>"); break;
+	case AV_OPT_TYPE_FLOAT: cp = N_("<float>"); break;
+	case AV_OPT_TYPE_STRING: cp = N_("<string>"); break;
+	case AV_OPT_TYPE_RATIONAL: cp = N_("<rational>"); break;
+	case AV_OPT_TYPE_BINARY: cp = N_("<binary>"); break;
+	case AV_OPT_TYPE_IMAGE_SIZE: cp = N_("<image_size>"); break;
+	case AV_OPT_TYPE_VIDEO_RATE: cp = N_("<video_rate>"); break;
+	case AV_OPT_TYPE_PIXEL_FMT: cp = N_("<pix_fmt>"); break;
+	case AV_OPT_TYPE_SAMPLE_FMT: cp = N_("<sample_fmt>"); break;
+	case AV_OPT_TYPE_DURATION: cp = N_("<duration>"); break;
+	case AV_OPT_TYPE_COLOR: cp = N_("<color>"); break;
+	case AV_OPT_TYPE_CHANNEL_LAYOUT: cp = N_("<channel_layout>");  break;
+	case AV_OPT_TYPE_BOOL: cp = N_("<bool>");  break;
+	default: cp = N_("<undef>");  break;
 	}
-	return sprintf(rp, "%s", cp);
+	return sprintf(rp, "%s", _(cp));
 }
 int FFOptions_Opt::scalar(double d, char *rp)
 {

@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "assets.h"
+#include "awindowgui.h"
 #include "bchash.h"
 #include "bcsignals.h"
 #include "clip.h"
@@ -90,9 +91,9 @@ int Asset::init_values()
 
 	jpeg_quality = 80;
 	aspect_ratio = -1;
-	interlace_autofixoption = BC_ILACE_AUTOFIXOPTION_AUTO;
-	interlace_mode = BC_ILACE_MODE_UNDETECTED;
-	interlace_fixmethod = BC_ILACE_FIXMETHOD_NONE;
+	interlace_autofixoption = ILACE_AUTOFIXOPTION_AUTO;
+	interlace_mode = ILACE_MODE_UNDETECTED;
+	interlace_fixmethod = ILACE_FIXMETHOD_NONE;
 
 	ampeg_bitrate = 256;
 	ampeg_derivative = 3;
@@ -192,8 +193,8 @@ void Asset::copy_from(Asset *asset, int do_index)
 
 void Asset::copy_location(Asset *asset)
 {
-	strcpy(this->path, asset->path);
-	strcpy(this->folder, asset->folder);
+	strcpy(path, asset->path);
+	awindow_folder = asset->awindow_folder;
 }
 
 void Asset::copy_format(Asset *asset, int do_index)
@@ -464,7 +465,9 @@ int Asset::read(FileXML *file,
 			else
 			if(file->tag.title_is("FOLDER"))
 			{
-				strcpy(folder, file->read_text());
+				const char *string = file->tag.get_property("NUMBER");
+				awindow_folder = string ? atoi(string) :
+					AWindowGUI::folder_number(file->read_text());
 			}
 			else
 			if(file->tag.title_is("VIDEO"))
@@ -537,11 +540,11 @@ int Asset::read_video(FileXML *file)
 
 	interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIX",0);
 
-	ilacemode_to_xmltext(string, BC_ILACE_MODE_NOTINTERLACED);
-	interlace_mode = ilacemode_from_xmltext(file->tag.get_property("INTERLACE_MODE",string), BC_ILACE_MODE_NOTINTERLACED);
+	ilacemode_to_xmltext(string, ILACE_MODE_NOTINTERLACED);
+	interlace_mode = ilacemode_from_xmltext(file->tag.get_property("INTERLACE_MODE",string), ILACE_MODE_NOTINTERLACED);
 
-	ilacefixmethod_to_xmltext(string, BC_ILACE_FIXMETHOD_NONE);
-	interlace_fixmethod = ilacefixmethod_from_xmltext(file->tag.get_property("INTERLACE_FIXMETHOD",string), BC_ILACE_FIXMETHOD_NONE);
+	ilacefixmethod_to_xmltext(string, ILACE_FIXMETHOD_NONE);
+	interlace_fixmethod = ilacefixmethod_from_xmltext(file->tag.get_property("INTERLACE_FIXMETHOD",string), ILACE_FIXMETHOD_NONE);
 
 	file->tag.get_property("REEL_NAME", reel_name);
 	reel_number = file->tag.get_property("REEL_NUMBER", reel_number);
@@ -593,8 +596,8 @@ int Asset::write(FileXML *file,
 	file->append_newline();
 
 	file->tag.set_title("FOLDER");
+	file->tag.set_property("NUMBER", awindow_folder);
 	file->append_tag();
-	file->append_text(folder);
 	file->tag.set_title("/FOLDER");
 	file->append_tag();
 	file->append_newline();
@@ -831,9 +834,9 @@ void Asset::load_defaults(BC_Hash *defaults,
 	jpeg_quality = GET_DEFAULT("JPEG_QUALITY", jpeg_quality);
 	aspect_ratio = GET_DEFAULT("ASPECT_RATIO", aspect_ratio);
 
-	interlace_autofixoption	= BC_ILACE_AUTOFIXOPTION_AUTO;
-	interlace_mode         	= BC_ILACE_MODE_UNDETECTED;
-	interlace_fixmethod    	= BC_ILACE_FIXMETHOD_UPONE;
+	interlace_autofixoption	= ILACE_AUTOFIXOPTION_AUTO;
+	interlace_mode         	= ILACE_MODE_UNDETECTED;
+	interlace_fixmethod    	= ILACE_FIXMETHOD_UPONE;
 
 // MPEG format information
 	vmpeg_iframe_distance = GET_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);

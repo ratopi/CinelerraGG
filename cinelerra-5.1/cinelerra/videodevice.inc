@@ -25,26 +25,22 @@
 class VideoDevice;
 
 // Flags for mainwindow->preferences->vconfig_in->driver
-#define VIDEO4LINUX          0
+#define DEV_UNKNOWN          0
 #define VIDEO4LINUX2         1
 #define VIDEO4LINUX2JPEG     2
 #define VIDEO4LINUX2MPEG     3
 #define SCREENCAPTURE        4
-#define CAPTURE_LML          5
 #define CAPTURE_FIREWIRE     6
-#define CAPTURE_BUZ          7
 #define CAPTURE_IEC61883     8
 #define CAPTURE_DVB          9
 #define CAPTURE_JPEG_WEBCAM  20
 #define CAPTURE_YUYV_WEBCAM  21
 
-#define VIDEO4LINUX_TITLE         "Video4Linux"
+#define DEV_UNKNOWN_TITLE         "Device Unknown"
 #define VIDEO4LINUX2_TITLE        "Video4Linux2"
 #define VIDEO4LINUX2JPEG_TITLE    "Video4Linux2 JPEG"
 #define VIDEO4LINUX2MPEG_TITLE    "Video4Linux2 MPEG"
 #define SCREENCAPTURE_TITLE       "Screencapture"
-#define CAPTURE_LML_TITLE         "LML 33"
-#define CAPTURE_BUZ_TITLE         "Buz"
 #define CAPTURE_FIREWIRE_TITLE    "DV 1394"
 #define CAPTURE_IEC61883_TITLE    "IEC 61883"
 #define CAPTURE_DVB_TITLE         "DVB"
@@ -55,8 +51,6 @@ class VideoDevice;
 #define PLAYBACK_X11 	  10
 #define PLAYBACK_X11_XV   14
 #define PLAYBACK_X11_GL   17
-#define PLAYBACK_BUZ 	  11
-#define PLAYBACK_LML 	  12
 #define PLAYBACK_FIREWIRE 13
 #define PLAYBACK_DV1394   15
 #define PLAYBACK_IEC61883   16
@@ -67,8 +61,6 @@ class VideoDevice;
 #define PLAYBACK_X11_TITLE  	"X11"
 #define PLAYBACK_X11_XV_TITLE   "X11-XV"
 #define PLAYBACK_X11_GL_TITLE   "X11-OpenGL"
-#define PLAYBACK_BUZ_TITLE  	"Buz"
-#define PLAYBACK_LML_TITLE  	"LML 33"
 #define PLAYBACK_FIREWIRE_TITLE "RAW 1394"
 #define PLAYBACK_DV1394_TITLE   "DV 1394"
 #define PLAYBACK_IEC61883_TITLE "IEC 61883"

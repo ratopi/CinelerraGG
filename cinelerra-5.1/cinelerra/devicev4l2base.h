@@ -98,6 +98,8 @@ class DeviceV4L2Base : public Thread
 // COMPRESSED or another color model the device should use.
         int color_model;
 	int dev_fd;
+	int iwidth;
+	int iheight;
 
 	int dev_open();
 	void dev_close();

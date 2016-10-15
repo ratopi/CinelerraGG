@@ -1428,7 +1428,7 @@ if(debug) printf("EDL::get_use_vconsole %d\n", __LINE__);
 // Asset and output device must have same resulting de-interlacing method
 	if( ilaceautofixmethod2(session->interlace_mode,
 	    asset->interlace_autofixoption, asset->interlace_mode,
-	    asset->interlace_fixmethod) != BC_ILACE_FIXMETHOD_NONE )
+	    asset->interlace_fixmethod) != ILACE_FIXMETHOD_NONE )
 		return 1;
 
 // If we get here the frame is going to be directly copied.  Whether it is

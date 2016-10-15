@@ -127,16 +127,9 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_X11_GL:
 			return BC_YUV888;
 			break;
-		case PLAYBACK_LML:
-		case PLAYBACK_BUZ:
-			return BC_YUV422P;
-			break;
-		case VIDEO4LINUX:
 		case VIDEO4LINUX2:
 			return BC_YUV420P;
 			break;
-		case CAPTURE_BUZ:
-		case CAPTURE_LML:
 		case VIDEO4LINUX2JPEG:
 			return BC_YUV422;
 			break;
@@ -229,7 +222,7 @@ int FileJPEG::read_frame_header(char *path)
 	asset->width = jpeg_decompress.image_width;
 	asset->height = jpeg_decompress.image_height;
 
-	asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
+	asset->interlace_mode = ILACE_MODE_NOTINTERLACED;
 
 	jpeg_destroy((j_common_ptr)&jpeg_decompress);
 	fclose(stream);

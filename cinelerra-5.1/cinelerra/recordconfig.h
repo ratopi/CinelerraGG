@@ -81,16 +81,14 @@ public:
 	void copy_from(VideoInConfig *src);
 	int load_defaults(BC_Hash *defaults);
 	int save_defaults(BC_Hash *defaults);
-	char* get_path();
+	const char *get_path();
+	static const char *default_video_device;
 
 	int driver;
-	char v4l_in_device[BCTEXTLEN];
 	char v4l2_in_device[BCTEXTLEN];
 	char v4l2jpeg_in_device[BCTEXTLEN];
 	int v4l2jpeg_in_fields;
 	char v4l2mpeg_in_device[BCTEXTLEN];
-	char lml_in_device[BCTEXTLEN];
-	char buz_in_device[BCTEXTLEN];
 	char screencapture_display[BCTEXTLEN];
 	int firewire_port, firewire_channel;
 	char firewire_path[BCTEXTLEN];

@@ -336,7 +336,7 @@ int IndexFile::open_source()
 		command.realtime = 0;
 		cache = new CICache(mwindow->preferences);
 		render_engine = new RenderEngine(0,
-			mwindow->preferences, 0, 0, 0);
+			mwindow->preferences, 0, 0);
 		render_engine->set_acache(cache);
 		render_engine->arm_command(&command);
 		FileSystem fs;

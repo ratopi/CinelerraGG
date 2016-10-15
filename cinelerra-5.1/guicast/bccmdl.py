@@ -181,12 +181,12 @@ base = {
 
   "yuyv8888": {
     "i8": {
-      "r": " int32_t iy = inp[(i&1)<<1], y = iy*0x010101u, u = inp[1], v = inp[3];",
+      "r": " int32_t iy = inp[(j&1)<<1], y = iy*0x010101u, u = inp[1], v = inp[3];",
       "w": " if( !(j&1) ) { *out++ = y; *out = u; out[2] = v; }\n" +
            " else { *out++ = u; *out++= y; *out++ = v; }",
     },
     "i16": {
-      "r": " int32_t iy = inp[(i&1)<<1], y = iy*0x010101u, u = inp[1]<<8, v = inp[3]<<8;",
+      "r": " int32_t iy = inp[(j&1)<<1], y = iy*0x010101u, u = inp[1]<<8, v = inp[3]<<8;",
       "w": " if( !(j&1) ) { *out++ = y>>8; *out = u>>8; out[2] = v>>8; }\n" +
            " else { *out++ = u>>8; *out++= y>>8; *out++ = v>>8; }",
     },
@@ -194,12 +194,12 @@ base = {
 
   "uyvy8888": {
     "i8": {
-      "r": " int32_t u = inp[0], iy = inp[((i&1)<<1)+1], y = iy*0x010101u, v = inp[2];",
+      "r": " int32_t u = inp[0], iy = inp[((j&1)<<1)+1], y = iy*0x010101u, v = inp[2];",
       "w": " if( !(j&1) ) { *out++ = u; *out++ = y; *out++ = v; *out = y; }\n" +
            " else { *out++= y; }",
     },
     "i16": {
-      "r": " int32_t u = inp[0]<<8, iy = inp[((i&1)<<1)+1], y = iy*0x010101u, v = inp[2]<<8;",
+      "r": " int32_t u = inp[0]<<8, iy = inp[((j&1)<<1)+1], y = iy*0x010101u, v = inp[2]<<8;",
       "w": " if( !(j&1) ) { *out++ = u>>8; *out++ = y>>8; *out++ = v>>8; *out = y>>8; }\n" +
            " else { *out++= y>>8; }",
     },
@@ -440,8 +440,8 @@ add_cmodel(14, "bc_yuva8888", "i8", "yuv888", "a8")
 add_cmodel(15, "bc_yuv161616", "i16", "yuv161616")
 add_cmodel(16, "bc_yuva16161616", "i16", "yuv161616", "a16")
 
-add_cmodel(18, "bc_yuv422", "i8", "yuyv8888")
-add_cmodel(19, "bc_uvy422", "i8", "uyvy8888")
+add_cmodel(18, "bc_uvy422", "i8", "uyvy8888")
+add_cmodel(19, "bc_yuv422", "i8", "yuyv8888")
 add_cmodel(22, "bc_a8")
 add_cmodel(23, "bc_a16")
 add_cmodel(31, "bc_a_float")

@@ -577,7 +577,7 @@ void AssetEditWindow::create_objects()
 		y += ilacefixoption_chkboxw->get_h() + 5;
 		// --------------------
 		add_subwindow(title = new BC_Title(x1, y, _("Asset's interlacing:")));
-		add_subwindow(textboxw = new AssetEditILacemode(this, "", BC_ILACE_ASSET_MODEDEFAULT, x2, y, 200));
+		add_subwindow(textboxw = new AssetEditILacemode(this, "", ILACE_ASSET_MODEDEFAULT, x2, y, 200));
 		ilacefixoption_chkboxw->ilacemode_textbox = textboxw;
 		add_subwindow(listboxw = new AssetEditInterlacemodePulldown(mwindow,
 							textboxw,
@@ -591,7 +591,7 @@ void AssetEditWindow::create_objects()
 
 		// --------------------
 		add_subwindow(title = new BC_Title(x1, y, _("Interlace correction:")));
-		add_subwindow(textboxw = new AssetEditILacefixmethod(this, "", BC_ILACE_FIXDEFAULT, x2, y, 200));
+		add_subwindow(textboxw = new AssetEditILacefixmethod(this, "", ILACE_FIXDEFAULT, x2, y, 200));
 		ilacefixoption_chkboxw->ilacefixmethod_textbox = textboxw;
 		add_subwindow(listboxw = new InterlacefixmethodPulldown(mwindow,
 							textboxw,
@@ -731,7 +731,7 @@ void Interlaceautofix::showhideotherwidgets()
   int thevalue = get_value();
 
 	Asset *asset = fwindow->asset_edit->changed_params;
-	if (thevalue == BC_ILACE_AUTOFIXOPTION_AUTO)
+	if (thevalue == ILACE_AUTOFIXOPTION_AUTO)
 	  {
 	    this->ilacemode_textbox->enable();
 	    this->ilacemode_listbox->enable();
@@ -741,7 +741,7 @@ void Interlaceautofix::showhideotherwidgets()
 	    ilacefixmethod_to_text(string,xx);
 	    this->ilacefixmethod_textbox->update(string);
 	  }
-	if (thevalue == BC_ILACE_AUTOFIXOPTION_MANUAL)
+	if (thevalue == ILACE_AUTOFIXOPTION_MANUAL)
 	  {
 	    this->ilacemode_textbox->disable();
 	    this->ilacemode_listbox->disable();

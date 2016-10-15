@@ -66,6 +66,18 @@
 #include<fcntl.h>
 
 
+const char *AWindowGUI::folder_names[] =
+{
+	N_("Audio Effects"),
+	N_("Video Effects"),
+	N_("Audio Transitions"),
+	N_("Video Transitions"),
+	N_("Labels"),
+	N_("Clips"),
+	N_("Media"),
+	N_("User")
+};
+
 
 AssetVIcon::AssetVIcon(AssetPicon *picon, int w, int h, double framerate, int64_t length)
  : VIcon(w, h, framerate)
@@ -150,11 +162,21 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 }
 
 AssetPicon::AssetPicon(MWindow *mwindow,
-	AWindowGUI *gui,
-	const char *folder)
- : BC_ListBoxItem(folder, gui->folder_icon)
+	AWindowGUI *gui, int folder)
+ : BC_ListBoxItem(_(AWindowGUI::folder_names[folder]), gui->folder_icon)
 {
 	reset();
+	foldernum = folder;
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+
+AssetPicon::AssetPicon(MWindow *mwindow,
+	AWindowGUI *gui, const char *folder_name, int folder_num)
+ : BC_ListBoxItem(folder_name, gui->folder_icon)
+{
+	reset();
+	foldernum = folder_num;
 	this->mwindow = mwindow;
 	this->gui = gui;
 }
@@ -536,19 +558,19 @@ SET_TRACE
 SET_TRACE
 
 // Mandatory folders
-	folders.append(picon = new AssetPicon(mwindow, this, AEFFECT_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, AW_AEFFECT_FOLDER));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, VEFFECT_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, AW_VEFFECT_FOLDER));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, ATRANSITION_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, AW_ATRANSITION_FOLDER));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, VTRANSITION_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, AW_VTRANSITION_FOLDER));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, LABEL_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, AW_LABEL_FOLDER));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, CLIP_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, AW_CLIP_FOLDER));
 	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, MEDIA_FOLDER));
+	folders.append(picon = new AssetPicon(mwindow, this, AW_MEDIA_FOLDER));
 	picon->persistent = 1;
 
 	create_label_folder();
@@ -719,7 +741,7 @@ int AWindowGUI::close_event()
 void AWindowGUI::start_vicon_drawing()
 {
 	if( !vicon_drawing ) return;
-	if( strcmp(mwindow->edl->session->current_folder, MEDIA_FOLDER) ) return;
+	if( mwindow->edl->session->awindow_folder != AW_MEDIA_FOLDER ) return;
 	if( mwindow->edl->session->assetlist_format != ASSETS_ICONS ) return;
 	vicon_thread->start_drawing();
 }
@@ -901,7 +923,7 @@ void AWindowGUI::update_folder_list()
 // Search assets for folders
 	for(int i = 0; i < mwindow->edl->folders.total; i++)
 	{
-		char *folder = mwindow->edl->folders.values[i];
+		const char *folder = mwindow->edl->folders.values[i];
 		int exists = 0;
 //printf("AWindowGUI::update_folder_list 1.1\n");
 
@@ -918,7 +940,10 @@ void AWindowGUI::update_folder_list()
 
 		if(!exists)
 		{
-			AssetPicon *picon = new AssetPicon(mwindow, this, folder);
+			int aw_folder = folder_number(folder);
+			AssetPicon *picon = aw_folder >= 0 ?
+				new AssetPicon(mwindow, this, aw_folder) :
+				new AssetPicon(mwindow, this, folder, AW_USER_FOLDER);
 			picon->create_objects();
 			folders.append(picon);
 		}
@@ -1118,47 +1143,31 @@ void AWindowGUI::update_asset_list()
 //printf("AWindowGUI::update_asset_list 7 %d\n", assets.total);
 }
 
-
-
-
-
 void AWindowGUI::sort_assets()
 {
 //printf("AWindowGUI::sort_assets 1 %s\n", mwindow->edl->session->current_folder);
-	if(!strcasecmp(mwindow->edl->session->current_folder, AEFFECT_FOLDER))
-		sort_picons(&aeffects,
-			0);
-	else
-	if(!strcasecmp(mwindow->edl->session->current_folder, VEFFECT_FOLDER))
-		sort_picons(&veffects,
-			0);
-	else
-	if(!strcasecmp(mwindow->edl->session->current_folder, ATRANSITION_FOLDER))
-		sort_picons(&atransitions,
-			0);
-	else
-	if(!strcasecmp(mwindow->edl->session->current_folder, VTRANSITION_FOLDER))
-		sort_picons(&vtransitions,
-			0);
-	else
-	if(!strcasecmp(mwindow->edl->session->current_folder, LABEL_FOLDER))
-		;// Labels should ALWAYS be sorted by time.
-	else
-		sort_picons(&assets,
-			mwindow->edl->session->current_folder);
+	switch( mwindow->edl->session->awindow_folder ) {
+	case AW_AEFFECT_FOLDER:
+		sort_picons(&aeffects);
+		break;
+	case AW_VEFFECT_FOLDER:
+		sort_picons(&veffects);
+		break;
+	case AW_ATRANSITION_FOLDER:
+		sort_picons(&atransitions);
+		break;
+	case AW_VTRANSITION_FOLDER:
+		sort_picons(&vtransitions);
+		break;
+	case AW_LABEL_FOLDER:
+		// Labels should ALWAYS be sorted by time
+		break;
+	default:
+		sort_picons(&assets);
+	}
 
 	update_assets();
 }
-
-
-
-
-
-
-
-
-
-
 
 void AWindowGUI::collect_assets()
 {
@@ -1176,8 +1185,7 @@ void AWindowGUI::collect_assets()
 }
 
 void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
-	ArrayList<BC_ListBoxItem*> *src,
-	char *folder)
+	ArrayList<BC_ListBoxItem*> *src, int folder)
 {
 // Remove current pointers
 	dst[0].remove_all();
@@ -1189,10 +1197,9 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 	{
 		AssetPicon *picon = (AssetPicon*)src->values[i];
 //printf("AWindowGUI::copy_picons 2 %s\n", picon->asset->folder);
-		if(!folder ||
-			(folder && picon->indexable && !strcasecmp(picon->indexable->folder, folder)) ||
-			(folder && picon->edl && !strcasecmp(picon->edl->local_session->folder, folder)))
-		{
+		if( folder < 0 ||
+		    (picon->indexable && picon->indexable->awindow_folder == folder) ||
+		    (picon->edl && picon->edl->local_session->awindow_folder == folder) ) {
 			BC_ListBoxItem *item2, *item1;
 			dst[0].append(item1 = picon);
 			if(picon->edl)
@@ -1209,8 +1216,7 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 	}
 }
 
-void AWindowGUI::sort_picons(ArrayList<BC_ListBoxItem*> *src,
-		char *folder)
+void AWindowGUI::sort_picons(ArrayList<BC_ListBoxItem*> *src)
 {
 //printf("AWindowGUI::sort_picons 1\n")
 	int done = 0;
@@ -1241,46 +1247,36 @@ void AWindowGUI::filter_displayed_assets()
 	allow_iconlisting = 1;
 	asset_titles[0] = _("Title");
 	asset_titles[1] = _("Comments");
-	if(!strcasecmp(mwindow->edl->session->current_folder, AEFFECT_FOLDER))
-		copy_picons(displayed_assets,
-			&aeffects,
-			0);
-	else
-	if(!strcasecmp(mwindow->edl->session->current_folder, VEFFECT_FOLDER))
-		copy_picons(displayed_assets,
-			&veffects,
-			0);
-	else
-	if(!strcasecmp(mwindow->edl->session->current_folder, ATRANSITION_FOLDER))
-		copy_picons(displayed_assets,
-			&atransitions,
-			0);
-	else
-	if(!strcasecmp(mwindow->edl->session->current_folder, VTRANSITION_FOLDER))
-		copy_picons(displayed_assets,
-			&vtransitions,
-			0);
-	else
-	if(!strcasecmp(mwindow->edl->session->current_folder, LABEL_FOLDER)) {
-		copy_picons(displayed_assets,
-			    &labellist,
-			    0);
+
+	switch( mwindow->edl->session->awindow_folder ) {
+	case AW_AEFFECT_FOLDER:
+		copy_picons(displayed_assets, &aeffects, AW_NO_FOLDER);
+		break;
+	case AW_VEFFECT_FOLDER:
+		copy_picons(displayed_assets, &veffects, AW_NO_FOLDER);
+		break;
+	case AW_ATRANSITION_FOLDER:
+		copy_picons(displayed_assets, &atransitions, AW_NO_FOLDER);
+		break;
+	case AW_VTRANSITION_FOLDER:
+		copy_picons(displayed_assets, &vtransitions, AW_NO_FOLDER);
+		break;
+	case AW_LABEL_FOLDER:
+		copy_picons(displayed_assets, &labellist, AW_NO_FOLDER);
 		asset_titles[0] = _("Time Stamps");
 		asset_titles[1] = _("Title");
 		allow_iconlisting = 0;
+		break;
+	default:
+		copy_picons(displayed_assets, &assets, mwindow->edl->session->awindow_folder);
+		break;
 	}
-	else
-		copy_picons(displayed_assets,
-			&assets,
-			mwindow->edl->session->current_folder);
+
 	// Ensure the current folder icon is highlighted
 	for(int i = 0; i < folders.total; i++)
-	{
-		if(!strcasecmp(mwindow->edl->session->current_folder, folders.values[i]->get_text()))
-			folders.values[i]->set_selected(1);
-		else
-			folders.values[i]->set_selected(0);
-	}
+		folders.values[i]->set_selected(0);
+
+	folders.values[mwindow->edl->session->awindow_folder]->set_selected(1);
 }
 
 
@@ -1342,18 +1338,12 @@ void AWindowGUI::update_effects()
 	create_persistent_folder(&vtransitions, 0, 1, 0, 1);
 }
 
-int AWindowGUI::current_folder_number()
+int AWindowGUI::folder_number(const char *name)
 {
-	int result = -1;
-	for(int i = 0; i < folders.total; i++)
-	{
-		if(!strcasecmp(folders.values[i]->get_text(), mwindow->edl->session->current_folder))
-		{
-			result = i;
-			break;
-		}
+	for(int i = 0; i < AWINDOW_FOLDERS; i++) {
+		if( !strcasecmp(name, folder_names[i]) ) return i;
 	}
-	return result;
+	return AW_NO_FOLDER;
 }
 
 int AWindowGUI::drag_motion()
@@ -1487,7 +1477,7 @@ int AWindowFolders::selection_changed()
 			gui->folderlist_menu->activate_menu();
 		}
 
-		strcpy(mwindow->edl->session->current_folder, picon->get_text());
+		mwindow->edl->session->awindow_folder =  picon->foldernum;
 //printf("AWindowFolders::selection_changed 1\n");
 		gui->asset_list->draw_background();
 		gui->async_update_assets();
@@ -1573,11 +1563,12 @@ int AWindowAssets::handle_event()
 //printf("AWindowAssets::handle_event 1 %d %d\n", get_buttonpress(), get_selection(0, 0));
 	AssetPicon *asset_picon = (AssetPicon *)get_selection(0, 0);
 	if( !asset_picon ) return 0;
-	const char *folder = mwindow->edl->session->current_folder;
-	if( !strcasecmp(folder, AEFFECT_FOLDER) ) return 1;
-	if( !strcasecmp(folder, VEFFECT_FOLDER) ) return 1;
-	if( !strcasecmp(folder, ATRANSITION_FOLDER) ) return 1;
-	if( !strcasecmp(folder, VTRANSITION_FOLDER) ) return 1;
+	switch( mwindow->edl->session->awindow_folder ) {
+	case AW_AEFFECT_FOLDER:
+	case AW_VEFFECT_FOLDER:
+	case AW_ATRANSITION_FOLDER:
+	case AW_VTRANSITION_FOLDER: return 1;
+	}
 	VWindow *vwindow = mwindow->vwindows.size() > DEFAULT_VWINDOW ?
 		mwindow->vwindows.get(DEFAULT_VWINDOW) : 0;
 	if( !vwindow || !vwindow->is_running() ) return 1;
@@ -1595,31 +1586,25 @@ int AWindowAssets::handle_event()
 int AWindowAssets::selection_changed()
 {
 // Show popup window
-	if(get_button_down() && get_buttonpress() == 3 && get_selection(0, 0))
-	{
-		if(!strcasecmp(mwindow->edl->session->current_folder, AEFFECT_FOLDER) ||
-			!strcasecmp(mwindow->edl->session->current_folder, VEFFECT_FOLDER) ||
-			!strcasecmp(mwindow->edl->session->current_folder, ATRANSITION_FOLDER) ||
-			!strcasecmp(mwindow->edl->session->current_folder, VTRANSITION_FOLDER))
-		{
+	if( get_button_down() && get_buttonpress() == 3 && get_selection(0, 0) ) {
+		switch( mwindow->edl->session->awindow_folder ) {
+		case AW_AEFFECT_FOLDER:
+		case AW_VEFFECT_FOLDER:
+		case AW_ATRANSITION_FOLDER:
+		case AW_VTRANSITION_FOLDER:
 			gui->assetlist_menu->update_titles();
 			gui->assetlist_menu->activate_menu();
-		}
-		else
-                if (!strcasecmp(mwindow->edl->session->current_folder, LABEL_FOLDER))
-		{
+			break;
+		case AW_LABEL_FOLDER:
 			if(((AssetPicon*)get_selection(0, 0))->label)
 				gui->label_menu->activate_menu();
-		}
-		else
-		{
+			break;
+		default:
 			if(((AssetPicon*)get_selection(0, 0))->indexable)
 				gui->asset_menu->update();
 			else
 			if(((AssetPicon*)get_selection(0, 0))->edl)
 				gui->asset_menu->update();
-
-
 
 			gui->asset_menu->activate_menu();
 		}
@@ -1644,12 +1629,11 @@ void AWindowAssets::draw_background()
 	clear_box(0,0,get_w(),get_h(),get_bg_surface());
 	set_color(BC_WindowBase::get_resources()->audiovideo_color);
 	set_font(LARGEFONT);
-	draw_text(get_w() -
-			get_text_width(LARGEFONT, mwindow->edl->session->current_folder) - 4,
-		30,
-		mwindow->edl->session->current_folder,
-		-1,
-		get_bg_surface());
+	int aw_folder = mwindow->edl->session->awindow_folder;
+	if( aw_folder < 0 ) return;
+	const char *aw_name = _(AWindowGUI::folder_names[aw_folder]);
+	draw_text(get_w() - get_text_width(LARGEFONT, aw_name) - 4, 30,
+		aw_name, -1, get_bg_surface());
 }
 
 int AWindowAssets::drag_start_event()
@@ -1657,42 +1641,32 @@ int AWindowAssets::drag_start_event()
 	int collect_pluginservers = 0;
 	int collect_assets = 0;
 
-	if(BC_ListBox::drag_start_event())
-	{
-		if(!strcasecmp(mwindow->edl->session->current_folder, AEFFECT_FOLDER))
-		{
+	if( BC_ListBox::drag_start_event() ) {
+		switch( mwindow->edl->session->awindow_folder ) {
+		case AW_AEFFECT_FOLDER:
 			mwindow->session->current_operation = DRAG_AEFFECT;
 			collect_pluginservers = 1;
-		}
-		else
-		if(!strcasecmp(mwindow->edl->session->current_folder, VEFFECT_FOLDER))
-		{
+			break;
+		case AW_VEFFECT_FOLDER:
 			mwindow->session->current_operation = DRAG_VEFFECT;
 			collect_pluginservers = 1;
-		}
-		else
-		if(!strcasecmp(mwindow->edl->session->current_folder, ATRANSITION_FOLDER))
-		{
+			break;
+		case AW_ATRANSITION_FOLDER:
 			mwindow->session->current_operation = DRAG_ATRANSITION;
 			collect_pluginservers = 1;
-		}
-		else
-		if(!strcasecmp(mwindow->edl->session->current_folder, VTRANSITION_FOLDER))
-		{
+			break;
+		case AW_VTRANSITION_FOLDER:
 			mwindow->session->current_operation = DRAG_VTRANSITION;
 			collect_pluginservers = 1;
-		}
-		else
-		if(!strcasecmp(mwindow->edl->session->current_folder, LABEL_FOLDER))
-		{
+			break;
+		case AW_LABEL_FOLDER:
 			// do nothing!
-		}
-		else
-		{
+			break;
+		default:
 			mwindow->session->current_operation = DRAG_ASSET;
 			collect_assets = 1;
+			break;
 		}
-
 
 		if(collect_pluginservers)
 		{
@@ -2040,8 +2014,23 @@ void AddTools::create_objects()
 	}
 }
 
+#if 0
+// plugin_dirs list from toplevel makefile include plugin_defs
+N_("ladspa")
+N_("ffmpeg")
+N_("audio_tools")
+N_("audio_transitions")
+N_("blending")
+N_("colors")
+N_("exotic")
+N_("transforms")
+N_("tv_effects")
+N_("video_tools")
+N_("video_transitions")
+#endif
+
 AddPluginItem::AddPluginItem(AddTools *menu, char const *text, int idx)
- : BC_MenuItem(text)
+ : BC_MenuItem(_(text))
 {
 	this->menu = menu;
 	this->idx = idx;

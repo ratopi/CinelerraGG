@@ -219,7 +219,7 @@ void AudioDevice::end_input()
 {
 	is_recording = 0;
 	polling_lock->unlock();
-	buffer_lock->unlock();
+	buffer_lock->reset();
 }
 
 int AudioDevice::reset_input()

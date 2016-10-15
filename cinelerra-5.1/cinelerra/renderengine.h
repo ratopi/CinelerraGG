@@ -48,7 +48,6 @@ public:
 	RenderEngine(PlaybackEngine *playback_engine,
 		Preferences *preferences,
 		Canvas *output,
-		ChannelDB *channeldb,
 		int is_nested);
 	~RenderEngine();
 
@@ -61,8 +60,6 @@ public:
 	int get_output_w();
 	int get_output_h();
 	int brender_available(int position, int direction);
-// Get current channel for the BUZ output
-	Channel* get_current_channel();
 	double get_tracking_position();
 	CICache* get_acache();
 	CICache* get_vcache();
@@ -130,29 +127,12 @@ public:
 // If the termination came from interrupt or end of selection
 	int interrupted;
 
-// Channels for the BUZ output
-	ChannelDB *channeldb;
-
 // Samples in audio buffer to process
 	int64_t fragment_len;
 // Samples to send to audio device after speed adjustment
 	int64_t adjusted_fragment_len;
 // CICaches for use if no playbackengine exists
 	CICache *audio_cache, *video_cache;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // constructing with an audio device forces output buffer allocation
