@@ -108,18 +108,19 @@ static inline unsigned gch(uint8_t *&in) {
 // converts string (with opn/cls attached) to c string
 static void xlat2(uint8_t *in, uint8_t *out)
 {
-  uint8_t *obp = out;
-  unsigned lch = 0, ch = gch(in);
-  if( ch ) {
-    if( !is_opnr(ch) ) wnext(out, ch);
-    while( (ch=gch(in)) != 0 ) {
-      lch = ch;  obp = out;
-      wnext(out, ch);
+  unsigned lch = gch(in), rch = 1, ch = 0;
+  if( lch ) {
+    if( is_opnr(lch) ) {
+      for( uint8_t *ip=in; (ch=gch(ip))!=0; rch=ch );
+      if( lch == rch ) { lch = gch(in);  rch = 0; }
     }
-    if( lch && is_opnr(lch) ) out = obp;
+    while( (ch=gch(in)) != 0 ) { wnext(out, lch);  lch = ch; }
+    if( rch ) wnext(out, lch);
   }
   *out = 0;
 }
+
+int brkput = 0;
 
 // converts c++ string to c string text
 static void xlat3(const char *cp, uint8_t *out)
@@ -141,7 +142,7 @@ static void xlat3(const char *cp, uint8_t *out)
     }
     wnext(out,'\\');
     wnext(out, ch);
-    if( ch == 'n' && *bp ) {
+    if( brkput && ch == 'n' && *bp ) {
       wnext(out, '\"');
       wnext(out, '\n');
       wnext(out, '\"');
@@ -495,7 +496,7 @@ void scan_po(FILE *ifp, FILE *ofp)
       no += bputs(tbfr, ofp);
       no += bputs((uint8_t*)"#msgstr \"\"", ofp);
     }
-    else if( !it->second.ok ) {
+    else if( 0 && !it->second.ok ) {
       fprintf(stderr, "bad fmt line %d: %s\n", no, ibfr);
       xlat3(it->first.c_str(), &tbfr[7]);
       no += bputs(tbfr, ofp);
@@ -628,6 +629,7 @@ int main(int ac, char **av)
     return 1;
   }
 
+  brkput = 1;
   for( int i=3; i<ac; ++i ) {  // create trans mapping
     fprintf(stderr,"*** load %s\n", av[i]);
     char fn[MX_STR*2];
