@@ -1233,78 +1233,53 @@ int FileOGG::ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *o
 }
 
 
-int FileOGG::ogg_seek_to_keyframe(sync_window_t *sw, long serialno, int64_t frame, int64_t *keyframe_number)
+int FileOGG::ogg_seek_to_keyframe(sync_window_t *sw, long serialno, int64_t frame, int64_t *position)
 {
+//printf("seek %jd\n", frame);
 	ogg_page og;
 	ogg_packet op;
-//	printf("Searching for the proper position to start decoding frame %lli\n", frame);
-	if (!ogg_get_page_of_frame(sw, serialno, &og, frame))
-	{
-		eprintf(_("FileOGG: Seeking to frame failed\n"));
+
+	if( !ogg_get_page_of_frame(sw, serialno, &og, frame) ) {
+		eprintf(_("FileOGG: seek to frame failed\n"));
 		return 0;
 	}
-	// TODO: if the frame we are looking for continoues on the next page, we don't need to do this
-	// Now go to previous page in order to find out the granulepos
-	// Don't do it in case this is the first page.
-//	printf("GP: %lli\n", ogg_page_granulepos(&og));
+	// find a page with packets
+	while( ogg_page_packets(&og) == 0 ) {
+		ogg_get_prev_page(sw, serialno, &og);
+	}
 	int64_t granulepos = ogg_page_granulepos(&og);
-	int64_t iframe = granulepos >> theora_keyframe_granule_shift;
-	//int64_t pframe = granulepos - (iframe << theora_keyframe_granule_shift);
-	// check if maybe iframe is known from this page already
-	if (granulepos != -1 && iframe <= frame)
-	{
-		// optimisation, iframe is already known from this page
-	} else
-	{
-		// get previous page so we will get the iframe number
-		do {
-			ogg_get_prev_page(sw, serialno, &og);
-		} while (ogg_page_packets(&og) == 0);
-
-		granulepos = ogg_page_granulepos(&og);
-		iframe = granulepos >> theora_keyframe_granule_shift;
-		//pframe = granulepos - (iframe << theora_keyframe_granule_shift);
+	granulepos &= ~((1<<theora_keyframe_granule_shift)-1);
+	int64_t iframe = theora_granule_frame(&tf->td, granulepos);
+	// iframe based on granulepos
+	if( frame < iframe || !ogg_get_page_of_frame(sw, serialno, &og, iframe) )  {
+		eprintf(_("FileOGG: seek to iframe failed\n"));
+		return 0;
 	}
-	int64_t first_frame_on_page = theora_granule_frame(&tf->td, ogg_page_granulepos(&og)) - ogg_page_packets(&og) + 2;
-	if (!ogg_page_continued(&og))
-		first_frame_on_page--;
-	if (first_frame_on_page <= iframe)
-	{
-		// optimisation, happens mainly in low-bitrate streams, it spares us one seek
-	} else
-	{
-		// get the page where keyframe starts
-		if (!ogg_get_page_of_frame(sw, serialno, &og, iframe))
-		{
-			eprintf(_("FileOGG: Seeking to keyframe failed\n"));
-			return 0;
-		}
+	while( ogg_page_packets(&og) == 0 ) {
+		ogg_get_prev_page(sw, serialno, &og);
 	}
-//	printf("looking for frame: %lli, last frame of the page: %lli, last keyframe: %lli\n", frame, pframe+iframe, iframe);
+	int64_t pageend_frame = theora_granule_frame(&tf->td, ogg_page_granulepos(&og));
+	int64_t frames_on_page = ogg_page_packets(&og);
+	if( ogg_page_continued(&og) ) --frames_on_page;
+	// get frame before page with with iframe
+	int64_t page_frame = pageend_frame - frames_on_page;
+	if( page_frame < 0 ) page_frame = 0;
+//printf("iframe %jd, page_frame %jd, frames_on_page %jd\n", iframe, page_frame, frames_on_page);
 	ogg_stream_reset(&tf->to);
 	ogg_stream_pagein(&tf->to, &og);
-	// Read until one frame before keyframe
-//	printf("c: %i\n", ogg_page_continued(&og));
-	int numread = iframe - (theora_granule_frame(&tf->td, ogg_page_granulepos(&og)) - ogg_page_packets(&og)) - 1;
-	if (ogg_page_continued(&og))
-		numread--;
-//	printf("numread: %i\n", numread);
-//	printf("FileOGG:: Proper position: %lli\n", theora_granule_frame(&tf->td, ogg_page_granulepos(&og)) + numread - ogg_page_packets(&og));
-	while (numread > 0)
-	{
-		while (ogg_stream_packetpeek(&tf->to, NULL) != 1)
-		{
-			if (!ogg_get_next_page(sw, serialno, &og))
-			{
+
+	while( ++page_frame < iframe ) {
+		while( ogg_stream_packetpeek(&tf->to, NULL) != 1 ) {
+			if( !ogg_get_next_page(sw, serialno, &og) ) {
 				eprintf(_("FileOGG: Cannot find next page while seeking\n"));
 				return 0;
 			}
 			ogg_stream_pagein(&tf->to, &og);
 		}
 		ogg_stream_packetout(&tf->to, &op);
-		numread --;
 	}
-	*keyframe_number = iframe;
+
+	*position = iframe - 1;
 	return 1;
 }
 
@@ -1467,8 +1442,7 @@ int FileOGG::read_frame(VFrame *frame)
 		}
 //		printf("For frame: %lli, keyframe is: %lli\n", next_frame_position,ogg_frame_position);
 		// skip frames must be > 0 here
-		decode_frames = next_frame_position - ogg_frame_position + 1;
-		ogg_frame_position --; // ogg_frame_position is at last decoded frame, so it will point right
+		decode_frames = next_frame_position - ogg_frame_position;
 		if (decode_frames <= 0)
 		{
 			eprintf(_("FileOGG:: Error while seeking to keyframe,"
@@ -1483,6 +1457,7 @@ int FileOGG::read_frame(VFrame *frame)
 //	printf("Frames to decode: %i\n", decode_frames);
 
 // THIS IS WHAT CAUSES SLOWNESS OF SEEKING, but we can do nothing about it.
+	int ret = -1;
 	while (decode_frames > 0)
 	{
 		ogg_page og;
@@ -1497,6 +1472,7 @@ int FileOGG::read_frame(VFrame *frame)
 			ogg_stream_pagein(&tf->to, &og);
 		}
 		ogg_stream_packetout(&tf->to, &op);
+//printf("frame %jd, key %d\n", ogg_frame_position, theora_packet_iskeyframe(&op));
 		if (expect_keyframe && !theora_packet_iskeyframe(&op))
 		{
 				eprintf(_("FileOGG: Expecting keyframe, but didn't get it\n"));
@@ -1505,12 +1481,12 @@ int FileOGG::read_frame(VFrame *frame)
 		expect_keyframe = 0;
 
 		// decode
-		theora_decode_packetin(&tf->td, &op);
-
+		ret = theora_decode_packetin(&tf->td, &op);
+//if(ret < 0 )printf("ret = %d\n", ret);
 		decode_frames --;
 		ogg_frame_position ++;
 	}
-	{
+	if( ret >= 0 ) {
 		yuv_buffer yuv;
 		int ret = theora_decode_YUVout (&tf->td, &yuv);
 		if (ret)
@@ -1558,6 +1534,8 @@ int FileOGG::read_frame(VFrame *frame)
 			frame->get_w());
 		delete temp_frame;
 	}
+	else if( !ogg_frame_position )
+		frame->clear_frame();
 
 	next_frame_position ++;
 

@@ -40,7 +40,7 @@ public:
 	void handle_close_event(int result);
 
 	BC_Window* new_gui();
-	char* get_current_tip();
+	char* get_current_tip(int n);
 	void next_tip();
 	void prev_tip();
 

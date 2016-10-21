@@ -107,11 +107,12 @@ BC_Window* TipWindow::new_gui()
 	return gui;
 }
 
-char* TipWindow::get_current_tip()
+char* TipWindow::get_current_tip(int n)
 {
-	if(mwindow->session->current_tip < 0)
-		mwindow->session->current_tip = 0;
-	else if(++mwindow->session->current_tip >= total_tips)
+	mwindow->session->current_tip += n;
+	if( mwindow->session->current_tip < 0 )
+		mwindow->session->current_tip = total_tips - 1;
+	else if( mwindow->session->current_tip >= total_tips )
 		mwindow->session->current_tip = 0;
 	char *result = _(tips[mwindow->session->current_tip]);
 	mwindow->save_defaults();
@@ -120,16 +121,12 @@ char* TipWindow::get_current_tip()
 
 void TipWindow::next_tip()
 {
-	gui->tip_text->update(get_current_tip());
+	gui->tip_text->update(get_current_tip(1));
 }
 
 void TipWindow::prev_tip()
 {
-	if(mwindow->session->current_tip >= total_tips)
-		mwindow->session->current_tip = 0;
-	else if(--mwindow->session->current_tip < 0)
-		mwindow->session->current_tip = total_tips - 1;
-	gui->tip_text->update(get_current_tip());
+	gui->tip_text->update(get_current_tip(-1));
 }
 
 
@@ -160,7 +157,7 @@ void TipWindowGUI::create_objects()
 {
 	int x = 10, y = 10;
 SET_TRACE
-	add_subwindow(tip_text = new BC_Title(x, y, thread->get_current_tip()));
+	add_subwindow(tip_text = new BC_Title(x, y, thread->get_current_tip(0)));
 	y = get_h() - 30;
 SET_TRACE
 	BC_CheckBox *checkbox;

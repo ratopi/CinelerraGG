@@ -151,7 +151,7 @@ private:
 	int ogg_decode_more_samples(sync_window_t *sw, long serialno);
 
 	int ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *og, int64_t frame);
-	int ogg_seek_to_keyframe(sync_window_t *sw, long serialno, int64_t frame, int64_t *keyframe_number);
+	int ogg_seek_to_keyframe(sync_window_t *sw, long serialno, int64_t frame, int64_t *position);
 	int ogg_seek_to_databegin(sync_window_t *sw, long serialno);
 
 
