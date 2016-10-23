@@ -1054,27 +1054,27 @@ do_toc(int64_t *bytes_processed)
   if( !result ) {
     int idx = 0;
     /* Find current PID in tracks. */
-    int custom_id = demuxer->custom_id;
     /* Got subtitle */
     if( demuxer->got_subtitle )
       handle_subtitle();
     if( is_transport_stream() )
-      dvb.atsc_tables(demuxer, custom_id);
+      dvb.atsc_tables(demuxer, demuxer->custom_id);
      /* In a transport stream the audio or video is determined by the PID. */
      /* In other streams the data type is determined by stream ID. */
-    if( demuxer->got_audio || is_transport_stream() || is_audio_stream() ) {
+    if( demuxer->got_audio >= 0 || is_transport_stream() || is_audio_stream() ) {
+      int audio_pid = demuxer->got_audio;
       atrack_t *atrk = 0;
       for( idx=0; idx < total_atracks; ++idx ) {
-        if( atrack[idx]->pid == custom_id ) { /* Update an audio track */
+        if( atrack[idx]->pid == audio_pid ) { /* Update an audio track */
           atrk = atrack[idx];
           break;
         }
       }
       if( !atrk ) {
         if( is_audio_stream() ||
-            (demuxer->got_audio && demuxer->astream_table[custom_id]) ) {
-          int format = demuxer->astream_table[custom_id];
-          atrk = new_atrack_t(custom_id, format, demuxer, total_atracks);
+            (audio_pid >= 0 && demuxer->astream_table[audio_pid]) ) {
+          int format = demuxer->astream_table[audio_pid];
+          atrk = new_atrack_t(audio_pid, format, demuxer, total_atracks);
           if( atrk ) {
             atrack[idx=total_atracks++] = atrk;
             atrk->prev_offset = start_byte;
@@ -1086,18 +1086,19 @@ do_toc(int64_t *bytes_processed)
         atrk->handle_audio(idx);
       }
     }
-    if( demuxer->got_video || is_transport_stream() || is_video_stream() ) {
+    if( demuxer->got_video >= 0 || is_transport_stream() || is_video_stream() ) {
+      int video_pid = demuxer->got_video;
       vtrack_t *vtrk = 0;
       for( idx=0; idx < total_vtracks; ++idx ) {
-        if( vtrack[idx]->pid == custom_id ) { /* Update a video track */
+        if( vtrack[idx]->pid == video_pid ) { /* Update a video track */
           vtrk = vtrack[idx];
           break;
         }
       }
       if( !vtrk ) {
         if( is_video_stream() ||
-            (demuxer->got_video && demuxer->vstream_table[custom_id]) ) {
-          vtrk = new_vtrack_t(custom_id, demuxer, total_vtracks);
+            (video_pid >= 0 && demuxer->vstream_table[video_pid]) ) {
+          vtrk = new_vtrack_t(video_pid, demuxer, total_vtracks);
           /* Make the first offset correspond to the */
           /*  start of the first packet. */
           if( vtrk ) {

@@ -173,8 +173,7 @@ get_transport_pes_packet()
 //zmsgs("get_transport_pes_packet %x\n", pid);
     /* AC3 audio */
     stream_id = 0x0;
-    got_audio = 1;
-    custom_id = pid;
+    custom_id = got_audio = pid;
 
     if( read_all ) astream_table[custom_id] = afmt_AC3;
     if( astream == -1 ) astream = custom_id;
@@ -191,8 +190,7 @@ get_transport_pes_packet()
   }
   else if( (stream_id >> 4) == 0x0c || (stream_id >> 4) == 0x0d ) {
     /* MPEG audio */
-    custom_id = pid;
-    got_audio = 1;
+    custom_id = got_audio = pid;
     /* Just pick the first available stream if no ID is set */
     if( read_all ) astream_table[custom_id] = afmt_MPEG;
     if( astream == -1 ) astream = custom_id;
@@ -205,8 +203,7 @@ get_transport_pes_packet()
   }
   else if( (stream_id >> 4) == 0x0e ) {
     /* Video */
-    custom_id = pid;
-    got_video = 1;
+    custom_id = got_video = pid;
 
     /* Just pick the first available stream if no ID is set */
     if( read_all )
@@ -274,7 +271,7 @@ get_payload()
     if( dump ) zmsgs(" 0x%x bytes elementary data\n", raw_size-raw_offset);
 // if( pid == 0x1100 ) zmsgs("get_payload 1 0x%x\n", audio_pid);
     if( pid == audio_pid && (do_audio || read_all) ) {
-      if( do_audio ) got_audio = 1;
+      if( do_audio ) got_audio = pid;
       if( dump ) {
         zmsgs(" offset=0x%jx 0x%x bytes AC3 pid=0x%x\n", 
           absolute_position(), raw_size-raw_offset, pid);
@@ -282,7 +279,7 @@ get_payload()
       get_transport_payload(1, 0);
     }
     else if( pid == video_pid && (do_video || read_all) ) {
-      if( do_video ) got_video = 1;
+      if( do_video ) got_video = pid;
       get_transport_payload(0, 1);
     }
     else {
@@ -308,8 +305,8 @@ read_transport()
   raw_size = src->packet_size;
   raw_offset = 0;
   stream_id = 0;
-  got_audio = 0;
-  got_video = 0;
+  got_audio = -1;
+  got_video = -1;
   custom_id = -1;
 
 //zerrs("read transport 1 %jx %jx\n", title->fs->current_byte, title->fs->total_bytes);
@@ -761,8 +758,7 @@ get_program_pes_packet( uint32_t header)
       /* Audio data */
       /* Take first stream ID if -1 */
       pes_packet_length -= absolute_position() - pes_packet_start;
-      got_audio = 1;
-      custom_id = stream_id & 0x0f;
+      custom_id = got_audio = stream_id & 0x0f;
       if( read_all )
         astream_table[custom_id] = afmt_MPEG;
       else if( astream == -1 )
@@ -784,8 +780,7 @@ get_program_pes_packet( uint32_t header)
       /* Video data */
       /* Take first stream ID if -1 */
       pes_packet_length -= absolute_position() - pes_packet_start;
-      got_video = 1;
-      custom_id = stream_id & 0x0f;
+      custom_id = got_video = stream_id & 0x0f;
       if( read_all ) {
         vstream_table[custom_id] = 1;
       } else if( vstream == -1 ) 
@@ -840,7 +835,7 @@ get_program_pes_packet( uint32_t header)
       /* only 8 streams, counting from 0x80 */
       custom_id = stream_id & 0x87;
       if( astream_table[custom_id] >= 0 ) {
-        got_audio = 1;
+        got_audio = custom_id;
         /* Take first stream ID if not building TOC. */
         if( read_all )
           astream_table[custom_id] = format;
@@ -940,9 +935,9 @@ read_program()
   int pack_count = 0;
   const int debug = 0;
 
-  got_audio = 0;
-  got_video = 0;
-  stream_id = 0;
+  got_audio = -1;
+  got_video = -1;
+  stream_id = -1;
   custom_id = -1;
   got_subtitle = 0;
 

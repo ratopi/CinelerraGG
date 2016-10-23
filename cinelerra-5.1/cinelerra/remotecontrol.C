@@ -148,7 +148,7 @@ void RemoteGUI::tile_windows(int config)
 	else {
 		unlock_window();
 		mwindow->restart_status = 1;
-		mwindow->quit(0);
+		mwindow->quit();
 	}
 }
 

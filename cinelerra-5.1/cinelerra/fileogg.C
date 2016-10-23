@@ -1472,6 +1472,7 @@ int FileOGG::read_frame(VFrame *frame)
 			ogg_stream_pagein(&tf->to, &og);
 		}
 		ogg_stream_packetout(&tf->to, &op);
+		if( theora_packet_isheader(&op) ) continue;
 //printf("frame %jd, key %d\n", ogg_frame_position, theora_packet_iskeyframe(&op));
 		if (expect_keyframe && !theora_packet_iskeyframe(&op))
 		{
@@ -1534,8 +1535,6 @@ int FileOGG::read_frame(VFrame *frame)
 			frame->get_w());
 		delete temp_frame;
 	}
-	else if( !ogg_frame_position )
-		frame->clear_frame();
 
 	next_frame_position ++;
 

@@ -1174,6 +1174,7 @@ int File::read_frame(VFrame *frame, int is_thread)
 	if(debug) PRINT_TRACE
 	if( !file ) return 1;
 	if(debug) PRINT_TRACE
+	int result = 0;
 	int supported_colormodel = colormodel_supported(frame->get_color_model());
 	int advance_position = 1;
 	int cache_active = use_cache || asset->single_frame ? 1 : 0;
@@ -1217,36 +1218,25 @@ int File::read_frame(VFrame *frame, int is_thread)
 
 //			printf("File::read_frame %d\n", __LINE__);
 		temp_frame->copy_stacks(frame);
-		int result = file->read_frame(temp_frame);
-		if( result && frame->get_status() > 0 )
+		result = file->read_frame(temp_frame);
+		if( !result )
+			frame->transfer_from(temp_frame);
+		else if( result && frame->get_status() > 0 )
 			frame->set_status(-1);
-//for(int i = 0; i < 1000 * 1000; i++) ((float*)temp_frame->get_rows()[0])[i] = 1.0;
-// printf("File::read_frame %d %d %d %d %d %d\n",
-// temp_frame->get_color_model(),
-// temp_frame->get_w(),
-// temp_frame->get_h(),
-// frame->get_color_model(),
-// frame->get_w(),
-// frame->get_h());
-		BC_CModels::transfer(frame->get_rows(), temp_frame->get_rows(),
-			frame->get_y(), frame->get_u(), frame->get_v(),
-			temp_frame->get_y(), temp_frame->get_u(), temp_frame->get_v(),
-			0, 0, temp_frame->get_w(), temp_frame->get_h(),
-			0, 0, frame->get_w(), frame->get_h(),
-			temp_frame->get_color_model(),
-			frame->get_color_model(), 0, temp_frame->get_w(),
-			frame->get_w());
-//			printf("File::read_frame %d\n", __LINE__);
+//printf("File::read_frame %d\n", __LINE__);
 	}
 	else
 	{
 // Can't advance position here because it needs to be added to cache
 //printf("File::read_frame %d\n", __LINE__);
-		int result = file->read_frame(frame);
+		result = file->read_frame(frame);
 		if( result && frame->get_status() > 0 )
 			frame->set_status(-1);
 //for(int i = 0; i < 100 * 1000; i++) ((float*)frame->get_rows()[0])[i] = 1.0;
 	}
+
+	if( result && !current_frame )
+		frame->clear_frame();
 
 	if( cache_active && advance_position && frame->get_status() > 0 )
 		frame_cache->put_frame(frame, cache_position,

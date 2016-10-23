@@ -61,7 +61,7 @@ int Quit::handle_event()
 	}
 	else 
 	{        // quit
-		mwindow->quit(1);
+		mwindow->quit();
 	}
 	return 0;
 }
@@ -90,35 +90,22 @@ void Quit::run()
 		error.run_window();
 		return;
 	}
-//printf("Quit::run 1\n");
-// Quit
-	{
-//printf("Quit::run 2\n");
-		ConfirmQuitWindow confirm(mwindow);
-//printf("Quit::run 2\n");
-		confirm.create_objects(_("Save edit list before exiting?"));
-//printf("Quit::run 2\n");
-		result = confirm.run_window();
-//printf("Quit::run 2\n");
-	}
-//printf("Quit::run 3\n");
 
-	switch(result)
-	{
-		case 0:          // quit
-			if(mwindow->gui)
-			{
-				mwindow->quit(0);
-			}
-			break;
+	ConfirmQuitWindow confirm(mwindow);
+	confirm.create_objects(_("Save edit list before exiting?"));
+	result = confirm.run_window();
 
-		case 1:        // cancel
-			return;
-			break;
+	switch( result ) {
+	case 0:		// quit
+		if( mwindow->gui )
+			mwindow->quit();
+		break;
 
-		case 2:           // save
-			save->save_before_quit(); 
-			return;
-			break;
+	case 1:		// cancel
+		break;
+
+	case 2:		// save
+		save->save_before_quit(); 
+		break;
 	}
 }

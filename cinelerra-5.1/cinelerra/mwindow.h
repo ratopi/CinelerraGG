@@ -121,7 +121,7 @@ public:
 	int run_script(FileXML *script);
 	int new_project();
 	int delete_project(int flash = 1);
-	void quit(int unlock);
+	void quit();
 	int restart() { return restart_status; }
 
 	int load_defaults();
@@ -596,6 +596,7 @@ public:
 	int wait_warning();
 // Levels
 	LevelWindow *lwindow;
+	Mutex *run_lock;
 // Lock during creation and destruction of GUI
 	Mutex *plugin_gui_lock;
 	Mutex *dead_plugin_lock;

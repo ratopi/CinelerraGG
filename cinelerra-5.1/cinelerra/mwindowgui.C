@@ -1292,7 +1292,7 @@ int MWindowGUI::key_listener(int key)
 			record->record_gui->interrupt_thread->start(0);
 		break;
 	case KPHAND:
-		mwindow->quit(0);
+		mwindow->quit();
 		break;
 #ifdef HAVE_DVB
 	case KPBOOK:

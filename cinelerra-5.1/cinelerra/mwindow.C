@@ -175,6 +175,7 @@ Commercials* MWindow::commercials = 0;
 MWindow::MWindow()
  : Thread(1, 0, 0)
 {
+	run_lock = new Mutex("MWindow::run_lock");
 	plugin_gui_lock = new Mutex("MWindow::plugin_gui_lock");
 	dead_plugin_lock = new Mutex("MWindow::dead_plugin_lock");
 	vwindows_lock = new Mutex("MWindow::vwindows_lock");
@@ -226,9 +227,8 @@ MWindow::MWindow()
 // Need to delete brender temporary here.
 MWindow::~MWindow()
 {
+	run_lock->lock("MWindow::~MWindow");
 	in_destructor = 1;
-	stop_playback(1);
-	stop_brender();
 //printf("MWindow::~MWindow %d\n", __LINE__);
 	gui->stop_drawing();
 	gui->remote_control->deactivate();
@@ -236,9 +236,6 @@ MWindow::~MWindow()
 #ifdef HAVE_DVB
 	gui->channel_info->stop();
 #endif
-	brender_lock->lock("MWindow::quit");
-	delete brender;         brender = 0;
-	brender_lock->unlock();
 	delete create_bd;       create_bd = 0;
 	delete create_dvd;      create_dvd = 0;
 	delete batch_render;    batch_render = 0;
@@ -341,23 +338,13 @@ MWindow::~MWindow()
 	interlace_asset_fixmethods.remove_all_objects();
 	sighandler->terminate();
 	delete sighandler;
+	delete run_lock;
 }
 
 
-void MWindow::quit(int unlock)
+void MWindow::quit()
 {
-	if(unlock) gui->unlock_window();
-	stop_playback(1);
-
-	brender_lock->lock("MWindow::quit");
-	delete brender;         brender = 0;
-	brender_lock->unlock();
-
-	interrupt_indexes();
-	clean_indexes();
-	save_defaults();
 	gui->set_done(0);
-	if(unlock) gui->lock_window("MWindow::quit");
 }
 
 void MWindow::init_error()
@@ -2097,7 +2084,18 @@ ENABLE_BUFFER
 
 void MWindow::run()
 {
+	run_lock->lock("MWindow::run");
 	gui->run_window();
+	stop_playback(1);
+
+	brender_lock->lock("MWindow::run 1");
+	delete brender;         brender = 0;
+	brender_lock->unlock();
+
+	interrupt_indexes();
+	clean_indexes();
+	save_defaults();
+	run_lock->unlock();
 }
 
 void MWindow::show_vwindow()

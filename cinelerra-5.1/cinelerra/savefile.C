@@ -116,8 +116,8 @@ int Save::handle_event()
 		}
 		mwindow->session->changes_made = 0;
 // Last command in program
-//		if(saveas->quit_now) mwindow->gui->set_done(0);
-		if(saveas->quit_now) mwindow->playback_3d->quit();
+		if( saveas->quit_now )
+			mwindow->quit();
 	}
 	return 1;
 }
@@ -227,8 +227,8 @@ void SaveAs::run()
 	mwindow->session->changes_made = 0;
 	mmenu->add_load(filename);
 // Last command in program
-//	if(quit_now) mwindow->gui->set_done(0);
-	if(quit_now) mwindow->playback_3d->quit();
+	if( quit_now )
+		mwindow->quit();
 	return;
 }
 

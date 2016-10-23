@@ -123,7 +123,7 @@ int EchoAtten::handle_event()
 }
 
 EchoOffset::EchoOffset(EchoWindow *window, int x, int y)
- : BC_FPot(x, y, window->plugin->config.offset, 0, 999)
+ : BC_FPot(x, y, window->plugin->config.offset, 1, 999)
 {
         this->window = window;
 }
