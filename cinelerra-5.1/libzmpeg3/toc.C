@@ -1062,7 +1062,7 @@ do_toc(int64_t *bytes_processed)
      /* In a transport stream the audio or video is determined by the PID. */
      /* In other streams the data type is determined by stream ID. */
     if( demuxer->got_audio >= 0 || is_transport_stream() || is_audio_stream() ) {
-      int audio_pid = demuxer->got_audio;
+      int audio_pid = is_transport_stream() ? demuxer->custom_id : demuxer->got_audio;
       atrack_t *atrk = 0;
       for( idx=0; idx < total_atracks; ++idx ) {
         if( atrack[idx]->pid == audio_pid ) { /* Update an audio track */
@@ -1087,7 +1087,7 @@ do_toc(int64_t *bytes_processed)
       }
     }
     if( demuxer->got_video >= 0 || is_transport_stream() || is_video_stream() ) {
-      int video_pid = demuxer->got_video;
+      int video_pid = is_transport_stream() ? demuxer->custom_id : demuxer->got_video;
       vtrack_t *vtrk = 0;
       for( idx=0; idx < total_vtracks; ++idx ) {
         if( vtrack[idx]->pid == video_pid ) { /* Update a video track */

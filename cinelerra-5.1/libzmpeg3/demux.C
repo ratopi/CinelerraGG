@@ -271,7 +271,7 @@ get_payload()
     if( dump ) zmsgs(" 0x%x bytes elementary data\n", raw_size-raw_offset);
 // if( pid == 0x1100 ) zmsgs("get_payload 1 0x%x\n", audio_pid);
     if( pid == audio_pid && (do_audio || read_all) ) {
-      if( do_audio ) got_audio = pid;
+      if( do_audio ) got_audio = audio_pid;
       if( dump ) {
         zmsgs(" offset=0x%jx 0x%x bytes AC3 pid=0x%x\n", 
           absolute_position(), raw_size-raw_offset, pid);
@@ -279,7 +279,7 @@ get_payload()
       get_transport_payload(1, 0);
     }
     else if( pid == video_pid && (do_video || read_all) ) {
-      if( do_video ) got_video = pid;
+      if( do_video ) got_video = video_pid;
       get_transport_payload(0, 1);
     }
     else {
@@ -1539,7 +1539,7 @@ seek_byte(int64_t byte)
 void zdemuxer_t::
 set_audio_pts(uint64_t pts, const double denom)
 {
-  if( pts ) {
+  if( pts && pes_audio_time < 0 ) {
     pes_audio_pid = custom_id;
     pes_audio_time = pts / denom;
 //zmsgs("pid 0x%03x, pts %f @0x%jx\n",pes_audio_pid, pes_audio_time,
@@ -1550,7 +1550,7 @@ set_audio_pts(uint64_t pts, const double denom)
 void zdemuxer_t::
 set_video_pts(uint64_t pts, const double denom)
 {
-  if( pts ) {
+  if( pts && pes_video_time < 0 ) {
     pes_video_pid = custom_id;
     pes_video_time = pts / denom;
 //zmsgs("pid 0x%03x, pts %f @0x%jx\n",pes_video_pid, pes_video_time,

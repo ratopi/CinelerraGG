@@ -605,6 +605,8 @@ private:
 	int find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBase **next_textbox, int &result);
 	int find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result);
 
+	void xft_draw_string(XftColor *xft_color, XftFont *xft_font, int x, int y,
+		const FcChar32 *fc, int len, BC_Pixmap *pixmap=0);
 
 	void translate_coordinates(Window src_w, Window dest_w,
 		int src_x, int src_y, int *dest_x_return, int *dest_y_return);

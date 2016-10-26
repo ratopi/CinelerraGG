@@ -277,6 +277,40 @@ int BC_WindowBase::wcharpos(const wchar_t *text, XftFont *font, int length,
 	}
 }
 
+void BC_WindowBase::xft_draw_string(XftColor *xft_color, XftFont *xft_font,
+		int x, int y, const FcChar32 *fc, int len, BC_Pixmap *pixmap)
+{
+	Pixmap draw_pixmap = 0;
+	XftDraw *xft_draw = (XftDraw *)
+		(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw);
+	int src_x = x, src_y = y, src_w = 0, src_h = 0;
+	XGCValues values;
+	XGetGCValues(top_level->display, top_level->gc, GCFunction, &values);
+	if( values.function != GXcopy ) {
+		XSetFunction(top_level->display, top_level->gc, GXcopy);
+		XGlyphInfo info;
+		XftTextExtents32(top_level->display, xft_font, fc, len, &info);
+		src_w = info.width;  src_h = info.height;
+		draw_pixmap = XCreatePixmap(top_level->display, top_level->win,
+                        src_w, src_h, top_level->default_depth);
+		int color = get_color(); set_color(0);
+		XFillRectangle(top_level->display, draw_pixmap, top_level->gc, 0, 0, src_w, src_h);
+		set_color(color);
+		xft_draw = XftDrawCreate(top_level->display, draw_pixmap,
+                           top_level->vis, top_level->cmap);
+		src_x = info.x;  src_y = info.y;
+	}
+	XftDrawString32(xft_draw, xft_color, xft_font, src_x, src_y, fc, len);
+	if( values.function != GXcopy ) {
+		XSetFunction(top_level->display, top_level->gc, values.function);
+		Pixmap xpixmap = pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap;
+		XCopyArea(top_level->display, draw_pixmap, xpixmap,
+                        top_level->gc, 0, 0, src_w, src_h, x, y);
+		XFreePixmap(top_level->display, draw_pixmap);
+		XftDrawDestroy(xft_draw);
+	}
+}
+
 void BC_WindowBase::draw_wtext(int x, int y,
 	const wchar_t *text, int length, BC_Pixmap *pixmap, int *charpos)
 {
@@ -360,13 +394,8 @@ void BC_WindowBase::draw_wtext(int x, int y,
 		if(nextfont != curfont)
 		{
 			l = up - ubp;
-			XftDrawString32((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
-				&xft_color,
-				curfont,
-				x,
-				y,
-				(const FcChar32*)ubp,
-				l);
+			xft_draw_string(&xft_color, curfont, x, y,
+				(const FcChar32*)ubp, l, pixmap);
 
 			if(charpos)
 				cp = &charpos[ubp - text + 1];
@@ -379,13 +408,8 @@ void BC_WindowBase::draw_wtext(int x, int y,
 
 	if(up > ubp)
 	{
-		XftDrawString32((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
-			&xft_color,
-			curfont,
-			x,
-			y,
-			(const FcChar32*)ubp,
-			up - ubp);
+		xft_draw_string(&xft_color, curfont, x, y,
+			(const FcChar32*)ubp, up - ubp, pixmap);
 		if(charpos)
 			wcharpos(ubp, curfont, up - ubp, &charpos[ubp - text + 1]);
 	}
