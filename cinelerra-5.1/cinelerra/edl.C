@@ -278,6 +278,8 @@ int EDL::load_xml(FileXML *file,
 					if((load_flags & LOAD_VCONFIG) &&
 						(load_flags & LOAD_SESSION))
 						session->load_video_config(file, 0, load_flags);
+					else
+						result = file->skip_tag();
 				}
 				else
 				if(file->tag.title_is("AUDIO"))
@@ -285,6 +287,8 @@ int EDL::load_xml(FileXML *file,
 					if((load_flags & LOAD_ACONFIG) &&
 						(load_flags & LOAD_SESSION))
 						session->load_audio_config(file, 0, load_flags);
+					else
+						result = file->skip_tag();
 				}
 				else
 				if(file->tag.title_is("FOLDER"))
@@ -298,12 +302,16 @@ int EDL::load_xml(FileXML *file,
 				{
 					if(load_flags & LOAD_ASSETS)
 						assets->load(file, load_flags);
+					else
+						result = file->skip_tag();
 				}
 				else
 				if(file->tag.title_is(labels->xml_tag))
 				{
 					if(load_flags & LOAD_TIMEBAR)
 						labels->load(file, load_flags);
+					else
+						result = file->skip_tag();
 				}
 				else
 				if(file->tag.title_is("LOCALSESSION"))
@@ -311,6 +319,8 @@ int EDL::load_xml(FileXML *file,
 					if((load_flags & LOAD_SESSION) ||
 						(load_flags & LOAD_TIMEBAR))
 						local_session->load_xml(file, load_flags);
+					else
+						result = file->skip_tag();
 				}
 				else
 				if(file->tag.title_is("SESSION"))
@@ -318,6 +328,8 @@ int EDL::load_xml(FileXML *file,
 					if((load_flags & LOAD_SESSION) &&
 						!parent_edl)
 						session->load_xml(file, 0, load_flags);
+					else
+						result = file->skip_tag();
 				}
 				else
 				if(file->tag.title_is("TRACK"))

@@ -149,6 +149,8 @@ save(FileXML &xml)
 		xml.tag.set_property("TIME", del->time);
 		xml.tag.set_property("ACTION", del->action);
 		xml.append_tag();
+		xml.tag.set_title("/DEL");
+		xml.append_tag();
 		xml.append_newline();
 	}
 
@@ -297,6 +299,8 @@ save(FileXML &xml)
 		xml.tag.set_property("ID", id);
 		xml.tag.set_property("START", start);
 		xml.tag.set_property("END", end);
+		xml.append_tag();
+		xml.tag.set_title("/CLIP");
 		xml.append_tag();
 		xml.append_newline();
 	}

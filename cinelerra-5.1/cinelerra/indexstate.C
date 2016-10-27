@@ -158,9 +158,14 @@ void IndexState::write_xml(FileXML *file)
 		file->tag.set_title("OFFSET");
 		file->tag.set_property("FLOAT", index_entries[i]->offset);
 		file->append_tag();
+		file->tag.set_title("/OFFSET");
+		file->append_tag();
 		file->tag.set_title("SIZE");
 		file->tag.set_property("FLOAT", index_entries[i]->size);
 		file->append_tag();
+		file->tag.set_title("/SIZE");
+		file->append_tag();
+		file->append_newline();
 	}
 
 	file->append_newline();

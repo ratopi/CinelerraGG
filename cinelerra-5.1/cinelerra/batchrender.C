@@ -340,6 +340,9 @@ void BatchRenderThread::save_jobs(char *path)
 		file.tag.set_title("JOB");
 		jobs.values[i]->save(&file);
 	}
+	file.tag.set_title("/JOBS");
+	file.append_tag();
+	file.append_newline();
 
 	if(path[0])
 		file.write_to_file(path);

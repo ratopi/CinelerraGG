@@ -79,6 +79,8 @@ save(FileXML &xml)
 		xml.tag.set_property("TIME", cut->time);
 		xml.tag.set_property("ACTION", cut->action);
 		xml.append_tag();
+		xml.tag.set_title("/CUT");
+		xml.append_tag();
 		xml.append_newline();
 	}
 

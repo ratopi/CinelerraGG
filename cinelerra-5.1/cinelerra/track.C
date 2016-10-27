@@ -339,7 +339,7 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 			else
 			if(file->tag.title_is("TITLE"))
 			{
-				file->read_text_until("/TITLE", title, BCTEXTLEN);
+				result = file->skip_tag();
 			}
 			else
 			if(load_flags && automation->load(file)
@@ -352,6 +352,8 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 			{
 				if(load_flags & LOAD_EDITS)
 					edits->load(file, track_offset);
+				else
+					result = file->skip_tag();
 			}
 			else
 			if(file->tag.title_is("PLUGINSET"))
@@ -372,6 +374,8 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 						current_plugin++;
 					}
 				}
+				else
+					result = file->skip_tag();
 			}
 			else
 				load_derived(file, load_flags);

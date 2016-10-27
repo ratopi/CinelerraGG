@@ -247,15 +247,23 @@ void yuv411Main::save_data(KeyFrame *keyframe)
 	if(config.avg_vertical) {
 		output.tag.set_title("VERTICAL");
 		output.append_tag();
+		output.tag.set_title("/VERTICAL");
+		output.append_tag();
 	}
 	if(config.int_horizontal) {	
 		output.tag.set_title("HORIZONTAL");
+		output.append_tag();
+		output.tag.set_title("/HORIZONTAL");
 		output.append_tag();
 	}
 	if(config.inpainting ) {	
 		output.tag.set_title("INPAINTING");
 		output.append_tag();
+		output.tag.set_title("/INPAINTING");
+		output.append_tag();
 	}
+	output.tag.set_title("/YUV411");
+	output.append_tag();
 	output.terminate_string();
 }
 

@@ -166,7 +166,8 @@ char* Units::totext(char *text, double seconds, int time_format,
 
 	switch(time_format) {
 	case TIME_SECONDS: {
-		seconds = fabs(seconds);
+// add 1.0e-6 to prevent round off truncation from glitching a bunch of digits
+		seconds = fabs(seconds) + 1.0e-6;
 		second = seconds;
 		seconds -= (int64_t)seconds;
 		thousandths = (int64_t)(seconds*1000) % 1000;
@@ -174,7 +175,7 @@ char* Units::totext(char *text, double seconds, int time_format,
 		break; }
 
 	case TIME_HMS: {
-		seconds = fabs(seconds);
+		seconds = fabs(seconds) + 1.0e-6;
 		hour = seconds/3600;
 		minute = seconds/60 - hour*60;
 		second = seconds - (hour*3600 + minute*60);
@@ -185,7 +186,7 @@ char* Units::totext(char *text, double seconds, int time_format,
 		break; }
 
 	case TIME_HMS2: {
-		seconds = fabs(seconds);
+		seconds = fabs(seconds) + 1.0e-6;
 		hour = seconds/3600;
 		minute = seconds/60 - hour*60;
 		second = seconds - (hour*3600 + minute*60);
@@ -193,7 +194,7 @@ char* Units::totext(char *text, double seconds, int time_format,
 		break; }
 
 	case TIME_HMS3: {
-		seconds = fabs(seconds);
+		seconds = fabs(seconds) + 1.0e-6;
 		hour = seconds/3600;
 		minute = seconds/60 - hour*60;
 		second = seconds - (hour*3600 + minute*60);
@@ -201,7 +202,7 @@ char* Units::totext(char *text, double seconds, int time_format,
 		break; }
 
 	case TIME_HMSF: {
-		seconds = fabs(seconds);
+		seconds = fabs(seconds) + 1.0e-6;
 		hour = seconds/3600;
 		minute = seconds/60 - hour*60;
 		second = seconds - (hour*3600 + minute*60);
@@ -232,7 +233,7 @@ char* Units::totext(char *text, double seconds, int time_format,
 		break; }
 
 	case TIME_MS1: {
-		seconds = fabs(seconds);
+		seconds = fabs(seconds) + 1.0e-6;
 		minute = seconds/60;
 		second = seconds - minute*60;
 		sprintf(text, "%d:%02d", minute, second);
@@ -240,7 +241,7 @@ char* Units::totext(char *text, double seconds, int time_format,
 
 	case TIME_MS2: {
 		int sign = seconds >= 0 ? '+' : '-';
-		seconds = fabs(seconds);
+		seconds = fabs(seconds) + 1.0e-6;
 		minute = seconds/60;
 		second = seconds - minute*60;
 		sprintf(text, "%c%d:%02d", sign, minute, second);

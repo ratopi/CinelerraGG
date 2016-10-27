@@ -2106,6 +2106,8 @@ void SynthOscillatorConfig::save_data(FileXML *file)
 	file->tag.set_property("PHASE", (float)phase);
 	file->tag.set_property("FREQFACTOR", (float)freq_factor);
 	file->append_tag();
+	file->tag.set_title("/OSCILLATOR");
+	file->append_tag();
 	file->append_newline();
 }
 

@@ -136,6 +136,7 @@ public:
 	int read_data_until(const char *tag_end, char *out, int len);
 	int read_text_until(const char *tag_end, char *out, int len);
 	int read_tag();
+	int skip_tag();
 	int write_to_file(const char *filename);
 	int write_to_file(FILE *file, const char *filename="");
 	int read_from_file(const char *filename, int ignore_error = 0);

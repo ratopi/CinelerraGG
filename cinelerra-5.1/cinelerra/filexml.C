@@ -472,6 +472,22 @@ int FileXML::read_tag()
 	return tag.read_tag(this);
 }
 
+int FileXML::skip_tag()
+{
+	char tag_title[sizeof(tag.title)];
+	strcpy(tag_title, tag.title);
+	int n = 1;
+	while( !read_tag() ) {
+		if( tag.title[0] == tag_title[0] ) {
+			if( !strcasecmp(&tag_title[1], &tag.title[1]) ) ++n;
+		}
+		else if( tag.title[0] != '/' ) continue;
+		else if( strcasecmp(&tag_title[0], &tag.title[1]) ) continue;
+		else if( --n <= 0 ) return 0;
+	}
+	return 1;
+}
+
 int FileXML::read_data_until(const char *tag_end, char *out, int len)
 {
 	long ipos = buffer->itell();

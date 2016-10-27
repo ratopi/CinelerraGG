@@ -150,6 +150,9 @@ int Edit::copy(int64_t start,
 				file->tag.set_title("NESTED_EDL");
 				file->tag.set_property("SRC", nested_edl->path);
 				file->append_tag();
+				file->tag.set_title("/NESTED_EDL");
+				file->append_tag();
+				file->append_newline();
 			}
 
 			if(asset)
