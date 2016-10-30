@@ -852,8 +852,11 @@ void ResourcePixmap::draw_video_resource(TrackCanvas *canvas,
 	int64_t picon_h = edit->picon_h();
 
 
-// Don't draw video if picon is empty or bigger than edit
-	if( picon_w <= 0 || picon_w > edit_w ) return;
+//	if( picon_w <= 0 || picon_w > edit_w ) return;
+// Don't draw video if picon is empty, or edit only hairline
+	if( picon_w < 1 || edit_w < 2 ) return;
+// or bigger than edit and fills at less than 1.5 percent timeline
+	if( picon_w > edit_w && edit_w < canvas->get_w()/64 ) return;
 
 // pixels spanned by a frame
 	double frame_w = edit->frame_w();
