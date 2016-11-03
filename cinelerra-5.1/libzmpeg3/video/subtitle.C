@@ -481,8 +481,8 @@ decode(video_t *video)
     if( video->framenum > late_frame ) return -1; // way too late
   }
   if( video->framenum < start_frame ) return 0; // too early
-  if( video->framenum < stop_frame ) return 1;  // not too late
-  return 0;
+  if( video->framenum >= stop_frame ) return -1;  // too late
+  return 1;
 }
 
 void zvideo_t::
