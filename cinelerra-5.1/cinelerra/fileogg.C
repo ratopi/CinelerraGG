@@ -1577,9 +1577,12 @@ int FileOGG::set_audio_position(int64_t x)
 
 int FileOGG::move_history(int from, int to, int len)
 {
-	for(int i = 0; i < asset->channels; i++)
-		memmove(pcm_history[i] + to, pcm_history[i] + from, sizeof(float) * len);
+	if( len > 0 ) {
+		for(int i = 0; i < asset->channels; i++)
+			memmove(pcm_history[i] + to, pcm_history[i] + from, sizeof(float) * len);
+	}
 	history_start = history_start + from - to;
+	if( history_start < 0 ) history_start = 0;
 	return 0;
 }
 
