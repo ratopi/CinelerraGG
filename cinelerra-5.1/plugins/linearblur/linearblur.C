@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <math.h>
@@ -49,10 +49,10 @@ public:
 
 	int equivalent(LinearBlurConfig &that);
 	void copy_from(LinearBlurConfig &that);
-	void interpolate(LinearBlurConfig &prev, 
-		LinearBlurConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(LinearBlurConfig &prev,
+		LinearBlurConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 
 	int radius;
@@ -69,9 +69,9 @@ public:
 class LinearBlurSize : public BC_ISlider
 {
 public:
-	LinearBlurSize(LinearBlurMain *plugin, 
-		int x, 
-		int y, 
+	LinearBlurSize(LinearBlurMain *plugin,
+		int x,
+		int y,
 		int *output,
 		int min,
 		int max);
@@ -83,9 +83,9 @@ public:
 class LinearBlurToggle : public BC_CheckBox
 {
 public:
-	LinearBlurToggle(LinearBlurMain *plugin, 
-		int x, 
-		int y, 
+	LinearBlurToggle(LinearBlurMain *plugin,
+		int x,
+		int y,
 		int *output,
 		char *string);
 	int handle_event();
@@ -167,8 +167,8 @@ public:
 class LinearBlurEngine : public LoadServer
 {
 public:
-	LinearBlurEngine(LinearBlurMain *plugin, 
-		int total_clients, 
+	LinearBlurEngine(LinearBlurMain *plugin,
+		int total_clients,
 		int total_packages);
 	void init_packages();
 	LoadClient* new_client();
@@ -211,7 +211,7 @@ LinearBlurConfig::LinearBlurConfig()
 
 int LinearBlurConfig::equivalent(LinearBlurConfig &that)
 {
-	return 
+	return
 		radius == that.radius &&
 		angle == that.angle &&
 		steps == that.steps &&
@@ -232,10 +232,10 @@ void LinearBlurConfig::copy_from(LinearBlurConfig &that)
 	a = that.a;
 }
 
-void LinearBlurConfig::interpolate(LinearBlurConfig &prev, 
-	LinearBlurConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void LinearBlurConfig::interpolate(LinearBlurConfig &prev,
+	LinearBlurConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -262,13 +262,13 @@ void LinearBlurConfig::interpolate(LinearBlurConfig &prev,
 
 LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin)
  : PluginClientWindow(plugin,
-	230, 
-	290, 
-	230, 
-	290, 
+	230,
+	290,
+	230,
+	290,
 	0)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
 }
 
 LinearBlurWindow::~LinearBlurWindow()
@@ -314,10 +314,10 @@ void LinearBlurWindow::create_objects()
 
 
 
-LinearBlurToggle::LinearBlurToggle(LinearBlurMain *plugin, 
-	int x, 
-	int y, 
-	int *output, 
+LinearBlurToggle::LinearBlurToggle(LinearBlurMain *plugin,
+	int x,
+	int y,
+	int *output,
 	char *string)
  : BC_CheckBox(x, y, *output, string)
 {
@@ -338,9 +338,9 @@ int LinearBlurToggle::handle_event()
 
 
 
-LinearBlurSize::LinearBlurSize(LinearBlurMain *plugin, 
-	int x, 
-	int y, 
+LinearBlurSize::LinearBlurSize(LinearBlurMain *plugin,
+	int x,
+	int y,
 	int *output,
 	int min,
 	int max)
@@ -368,7 +368,7 @@ int LinearBlurSize::handle_event()
 LinearBlurMain::LinearBlurMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 	scale_x_table = 0;
 	scale_y_table = 0;
@@ -381,7 +381,7 @@ LinearBlurMain::LinearBlurMain(PluginServer *server)
 
 LinearBlurMain::~LinearBlurMain()
 {
-	
+
 	if(engine) delete engine;
 	delete_tables();
 	if(accum) delete [] accum;
@@ -509,7 +509,7 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 	if(!engine) engine = new LinearBlurEngine(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
-	if(!accum) accum = new unsigned char[frame->get_w() * 
+	if(!accum) accum = new unsigned char[frame->get_w() *
 		frame->get_h() *
 		BC_CModels::components(frame->get_color_model()) *
 		MAX(sizeof(int), sizeof(float))];
@@ -528,10 +528,10 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 	this->input = temp;
 
 
-	bzero(accum, 
-		frame->get_w() * 
-		frame->get_h() * 
-		BC_CModels::components(frame->get_color_model()) * 
+	bzero(accum,
+		frame->get_w() *
+		frame->get_h() *
+		BC_CModels::components(frame->get_color_model()) *
 		MAX(sizeof(int), sizeof(float)));
 	engine->process_packages();
 	return 0;
@@ -637,9 +637,9 @@ int LinearBlurMain::handle_opengl()
 	glDrawBuffer(GL_BACK);
 	if(!config.r || !config.g || !config.b || !config.a)
 	{
-		glColor4f(config.r ? 0 : 1, 
-			config.g ? 0 : 1, 
-			config.b ? 0 : 1, 
+		glColor4f(config.r ? 0 : 1,
+			config.g ? 0 : 1,
+			config.b ? 0 : 1,
 			config.a ? 0 : 1);
 		get_output()->draw_texture();
 	}
@@ -650,9 +650,9 @@ int LinearBlurMain::handle_opengl()
 	for(int i = 0; i < config.steps; i++)
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
-		glColor4f(config.r ? 1 : 0, 
-			config.g ? 1 : 0, 
-			config.b ? 1 : 0, 
+		glColor4f(config.r ? 1 : 0,
+			config.g ? 1 : 0,
+			config.b ? 1 : 0,
 			config.a ? 1 : 0);
 
 		int w = get_output()->get_w();
@@ -672,9 +672,9 @@ int LinearBlurMain::handle_opengl()
 		glDisable(GL_TEXTURE_2D);
 		if(is_yuv)
 		{
-			glColor4f(config.r ? 0.0 : 0, 
-				config.g ? 0.5 : 0, 
-				config.b ? 0.5 : 0, 
+			glColor4f(config.r ? 0.0 : 0,
+				config.g ? 0.5 : 0,
+				config.b ? 0.5 : 0,
 				config.a ? 1.0 : 0);
 			float center_x1 = 0.0;
 			float center_x2 = get_output()->get_w();
@@ -694,16 +694,16 @@ int LinearBlurMain::handle_opengl()
 			}
 			if(project_y1 > 0)
 			{
-				draw_box(center_x1, 
-					-get_output()->get_h(), 
-					center_x2, 
+				draw_box(center_x1,
+					-get_output()->get_h(),
+					center_x2,
 					-get_output()->get_h() + project_y1);
 			}
 			if(project_y2 < get_output()->get_h())
 			{
-				draw_box(center_x1, 
-					-get_output()->get_h() + project_y2, 
-					center_x2, 
+				draw_box(center_x1,
+					-get_output()->get_h() + project_y2,
+					center_x2,
 					0);
 			}
 		}
@@ -713,9 +713,9 @@ int LinearBlurMain::handle_opengl()
 
 		glAccum(GL_ACCUM, fraction);
 		glEnable(GL_TEXTURE_2D);
-		glColor4f(config.r ? 1 : 0, 
-			config.g ? 1 : 0, 
-			config.b ? 1 : 0, 
+		glColor4f(config.r ? 1 : 0,
+			config.g ? 1 : 0,
+			config.b ? 1 : 0,
 			config.a ? 1 : 0);
 	}
 
@@ -743,7 +743,7 @@ LinearBlurPackage::LinearBlurPackage()
 
 
 
-LinearBlurUnit::LinearBlurUnit(LinearBlurEngine *server, 
+LinearBlurUnit::LinearBlurUnit(LinearBlurEngine *server,
 	LinearBlurMain *plugin)
  : LoadClient(server)
 {
@@ -927,8 +927,8 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 
 
 
-LinearBlurEngine::LinearBlurEngine(LinearBlurMain *plugin, 
-	int total_clients, 
+LinearBlurEngine::LinearBlurEngine(LinearBlurMain *plugin,
+	int total_clients,
 	int total_packages)
  : LoadServer(total_clients, total_packages)
 {

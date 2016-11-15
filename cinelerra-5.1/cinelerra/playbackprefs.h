@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef PLAYBACKPREFS_H
@@ -83,10 +83,10 @@ public:
 class PlaybackModuleFragment : public BC_PopupMenu
 {
 public:
-	PlaybackModuleFragment(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
-		PlaybackPrefs *playback, 
+	PlaybackModuleFragment(int x,
+		int y,
+		PreferencesWindow *pwindow,
+		PlaybackPrefs *playback,
 		char *text);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -96,9 +96,9 @@ public:
 class PlaybackAudioOffset : public BC_TumbleTextBox
 {
 public:
-	PlaybackAudioOffset(PreferencesWindow *pwindow, 
+	PlaybackAudioOffset(PreferencesWindow *pwindow,
 		PlaybackPrefs *subwindow,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -151,7 +151,7 @@ public:
 class VideoEveryFrame : public BC_CheckBox
 {
 public:
-	VideoEveryFrame(PreferencesWindow *pwindow, 
+	VideoEveryFrame(PreferencesWindow *pwindow,
 		PlaybackPrefs *playback_prefs, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -169,10 +169,10 @@ public:
 class PlaybackPreload : public BC_TextBox
 {
 public:
-	PlaybackPreload(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
-		PlaybackPrefs *playback, 
+	PlaybackPreload(int x,
+		int y,
+		PreferencesWindow *pwindow,
+		PlaybackPrefs *playback,
 		char *text);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -182,9 +182,9 @@ public:
 class PlaybackInterpolateRaw : public BC_CheckBox
 {
 public:
-	PlaybackInterpolateRaw(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
+	PlaybackInterpolateRaw(int x,
+		int y,
+		PreferencesWindow *pwindow,
 		PlaybackPrefs *playback);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -194,9 +194,9 @@ public:
 class PlaybackWhiteBalanceRaw : public BC_CheckBox
 {
 public:
-	PlaybackWhiteBalanceRaw(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
+	PlaybackWhiteBalanceRaw(int x,
+		int y,
+		PreferencesWindow *pwindow,
 		PlaybackPrefs *playback);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -217,9 +217,9 @@ class TimecodeOffset : public BC_TextBox
 class PlaybackSubtitle : public BC_CheckBox
 {
 public:
-	PlaybackSubtitle(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
+	PlaybackSubtitle(int x,
+		int y,
+		PreferencesWindow *pwindow,
 		PlaybackPrefs *playback);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -229,8 +229,8 @@ public:
 class PlaybackSubtitleNumber : public BC_TumbleTextBox
 {
 public:
-	PlaybackSubtitleNumber(int x, int y, 
-		PreferencesWindow *pwindow, 
+	PlaybackSubtitleNumber(int x, int y,
+		PreferencesWindow *pwindow,
 		PlaybackPrefs *playback);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -240,8 +240,8 @@ public:
 class PlaybackLabelCells : public BC_CheckBox
 {
 public:
-	PlaybackLabelCells(int x, int y, 
-		PreferencesWindow *pwindow, 
+	PlaybackLabelCells(int x, int y,
+		PreferencesWindow *pwindow,
 		PlaybackPrefs *playback);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -251,8 +251,8 @@ public:
 class PlaybackProgramNumber : public BC_TumbleTextBox
 {
 public:
-	PlaybackProgramNumber(int x, int y, 
-		PreferencesWindow *pwindow, 
+	PlaybackProgramNumber(int x, int y,
+		PreferencesWindow *pwindow,
 		PlaybackPrefs *playback);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -263,7 +263,7 @@ class PlaybackGain : public BC_TumbleTextBox
 {
 public:
 	PlaybackGain(int x, int y,
-		PreferencesWindow *pwindow, 
+		PreferencesWindow *pwindow,
 		PlaybackPrefs *gui);
 	int handle_event();
 	PreferencesWindow *pwindow;

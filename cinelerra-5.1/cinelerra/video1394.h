@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 /*
@@ -73,7 +73,7 @@ struct video1394_mmap {
 	unsigned int sync_tag;
 	unsigned int nb_buffers;
 	unsigned int buf_size;
-	unsigned int packet_size; /* For VARIABLE_PACKET_SIZE: 
+	unsigned int packet_size; /* For VARIABLE_PACKET_SIZE:
 				     Maximum packet size */
 	unsigned int fps;
 	unsigned int syt_offset;
@@ -84,7 +84,7 @@ struct video1394_mmap {
 struct video1394_queue_variable {
 	unsigned int channel;
 	unsigned int buffer;
-	unsigned int* packet_sizes; /* Buffer of size:  
+	unsigned int* packet_sizes; /* Buffer of size:
 				       buf_size / packet_size  */
 };
 

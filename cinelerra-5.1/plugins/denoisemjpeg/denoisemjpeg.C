@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -53,15 +53,15 @@ DenoiseMJPEGConfig::DenoiseMJPEGConfig()
 
 int DenoiseMJPEGConfig::equivalent(DenoiseMJPEGConfig &that)
 {
-	return 
-		that.radius == radius && 
-		that.threshold == threshold && 
-		that.threshold2 == threshold2 && 
-		that.sharpness == sharpness && 
-		that.lcontrast == lcontrast && 
-		that.ccontrast == ccontrast && 
-		that.deinterlace == deinterlace && 
-		that.mode == mode && 
+	return
+		that.radius == radius &&
+		that.threshold == threshold &&
+		that.threshold2 == threshold2 &&
+		that.sharpness == sharpness &&
+		that.lcontrast == lcontrast &&
+		that.ccontrast == ccontrast &&
+		that.deinterlace == deinterlace &&
+		that.mode == mode &&
 		that.delay == delay;
 }
 
@@ -78,10 +78,10 @@ void DenoiseMJPEGConfig::copy_from(DenoiseMJPEGConfig &that)
 	delay = that.delay;
 }
 
-void DenoiseMJPEGConfig::interpolate(DenoiseMJPEGConfig &prev, 
-	DenoiseMJPEGConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void DenoiseMJPEGConfig::interpolate(DenoiseMJPEGConfig &prev,
+	DenoiseMJPEGConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -104,8 +104,8 @@ void DenoiseMJPEGConfig::interpolate(DenoiseMJPEGConfig &prev,
 
 
 DenoiseMJPEGRadius::DenoiseMJPEGRadius(DenoiseMJPEG *plugin, int x, int y)
- : BC_IPot(x, 
- 	y, 
+ : BC_IPot(x,
+ 	y,
 	plugin->config.radius,
 	8,
 	24)
@@ -127,8 +127,8 @@ int DenoiseMJPEGRadius::handle_event()
 
 
 DenoiseMJPEGThresh::DenoiseMJPEGThresh(DenoiseMJPEG *plugin, int x, int y)
- : BC_IPot(x, 
- 	y, 
+ : BC_IPot(x,
+ 	y,
 	plugin->config.threshold,
 	0,
 	255)
@@ -150,8 +150,8 @@ int DenoiseMJPEGThresh::handle_event()
 
 
 DenoiseMJPEGThresh2::DenoiseMJPEGThresh2(DenoiseMJPEG *plugin, int x, int y)
- : BC_IPot(x, 
- 	y, 
+ : BC_IPot(x,
+ 	y,
 	plugin->config.threshold2,
 	0,
 	255)
@@ -173,8 +173,8 @@ int DenoiseMJPEGThresh2::handle_event()
 
 
 DenoiseMJPEGSharp::DenoiseMJPEGSharp(DenoiseMJPEG *plugin, int x, int y)
- : BC_IPot(x, 
- 	y, 
+ : BC_IPot(x,
+ 	y,
 	plugin->config.sharpness,
 	0,
 	255)
@@ -196,8 +196,8 @@ int DenoiseMJPEGSharp::handle_event()
 
 
 DenoiseMJPEGLContrast::DenoiseMJPEGLContrast(DenoiseMJPEG *plugin, int x, int y)
- : BC_IPot(x, 
- 	y, 
+ : BC_IPot(x,
+ 	y,
 	plugin->config.lcontrast,
 	0,
 	255)
@@ -219,8 +219,8 @@ int DenoiseMJPEGLContrast::handle_event()
 
 
 DenoiseMJPEGCContrast::DenoiseMJPEGCContrast(DenoiseMJPEG *plugin, int x, int y)
- : BC_IPot(x, 
- 	y, 
+ : BC_IPot(x,
+ 	y,
 	plugin->config.ccontrast,
 	0,
 	255)
@@ -242,8 +242,8 @@ int DenoiseMJPEGCContrast::handle_event()
 
 
 DenoiseMJPEGDeinterlace::DenoiseMJPEGDeinterlace(DenoiseMJPEG *plugin, int x, int y)
- : BC_CheckBox(x, 
- 	y, 
+ : BC_CheckBox(x,
+ 	y,
 	plugin->config.deinterlace,
 	_("Deinterlace"))
 {
@@ -264,8 +264,8 @@ int DenoiseMJPEGDeinterlace::handle_event()
 
 
 DenoiseMJPEGModeProgressive::DenoiseMJPEGModeProgressive(DenoiseMJPEG *plugin, DenoiseMJPEGWindow *gui, int x, int y)
- : BC_Radial(x, 
- 	y, 
+ : BC_Radial(x,
+ 	y,
 	plugin->config.mode == 0,
 	_("Progressive"))
 {
@@ -283,8 +283,8 @@ int DenoiseMJPEGModeProgressive::handle_event()
 
 
 DenoiseMJPEGModeInterlaced::DenoiseMJPEGModeInterlaced(DenoiseMJPEG *plugin, DenoiseMJPEGWindow *gui, int x, int y)
- : BC_Radial(x, 
- 	y, 
+ : BC_Radial(x,
+ 	y,
 	plugin->config.mode == 1,
 	_("Interlaced"))
 {
@@ -302,8 +302,8 @@ int DenoiseMJPEGModeInterlaced::handle_event()
 
 
 DenoiseMJPEGModeFast::DenoiseMJPEGModeFast(DenoiseMJPEG *plugin, DenoiseMJPEGWindow *gui, int x, int y)
- : BC_Radial(x, 
- 	y, 
+ : BC_Radial(x,
+ 	y,
 	plugin->config.mode == 2,
 	_("Fast"))
 {
@@ -325,8 +325,8 @@ int DenoiseMJPEGModeFast::handle_event()
 
 
 DenoiseMJPEGDelay::DenoiseMJPEGDelay(DenoiseMJPEG *plugin, int x, int y)
- : BC_IPot(x, 
- 	y, 
+ : BC_IPot(x,
+ 	y,
 	plugin->config.delay,
 	1,
 	8)
@@ -426,14 +426,14 @@ int DenoiseMJPEGWindow::close_event()
 DenoiseMJPEG::DenoiseMJPEG(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	accumulation = 0;
 }
 
 
 DenoiseMJPEG::~DenoiseMJPEG()
 {
-	
+
 
 	if(accumulation) delete [] accumulation;
 }
@@ -449,7 +449,7 @@ int DenoiseMJPEG::is_realtime() { return 1; }
 
 void DenoiseMJPEG::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		load_configuration();
 		DenoiseMJPEGWindow *window = (DenoiseMJPEGWindow *)thread->window;

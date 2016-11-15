@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "asset.h"
@@ -30,7 +30,7 @@
 #include "units.h"
 
 
-RecordTransport::RecordTransport(MWindow *mwindow, Record *record, 
+RecordTransport::RecordTransport(MWindow *mwindow, Record *record,
 		BC_WindowBase *window, int x, int y)
 {
 	this->mwindow = mwindow;
@@ -197,8 +197,8 @@ int RecordGUIRec::keypress_event()
 
 RecordGUIRecFrame::RecordGUIRecFrame(RecordTransport *record_transport, int x, int y)
  : BC_Button(x, y, record_transport->mwindow->theme->get_image_set("recframe"))
-{ 
-	this->record_transport = record_transport; 
+{
+	this->record_transport = record_transport;
 	set_tooltip(_("RecordTransport single frame"));
 }
 
@@ -222,8 +222,8 @@ int RecordGUIRecFrame::keypress_event()
 
 RecordGUIPlay::RecordGUIPlay(RecordTransport *record_transport, int x, int y)
  : BC_Button(x, y, record_transport->mwindow->theme->get_image_set("play"))
-{ 
-	this->record_transport = record_transport; 
+{
+	this->record_transport = record_transport;
 	set_tooltip(_("Preview recording"));
 }
 
@@ -247,7 +247,7 @@ int RecordGUIPlay::keypress_event()
 RecordGUIStop::RecordGUIStop(RecordTransport *record_transport, int x, int y)
  : BC_Button(x, y, record_transport->mwindow->theme->get_image_set("stoprec"))
 {
-	this->record_transport = record_transport; 
+	this->record_transport = record_transport;
 	set_tooltip(_("Stop operation"));
 }
 
@@ -273,7 +273,7 @@ int RecordGUIStop::keypress_event()
 RecordGUIPause::RecordGUIPause(RecordTransport *record_transport, int x, int y)
  : BC_Button(x, y, record_transport->mwindow->theme->get_image_set("pause"))
 {
-	this->record_transport = record_transport; 
+	this->record_transport = record_transport;
 	set_tooltip(_("Pause"));
 }
 
@@ -296,7 +296,7 @@ int RecordGUIPause::keypress_event()
 RecordGUIRewind::RecordGUIRewind(RecordTransport *record_transport, int x, int y)
  : BC_Button(x, y, record_transport->mwindow->theme->get_image_set("rewind"))
 {
-	this->record_transport = record_transport; 
+	this->record_transport = record_transport;
 	set_tooltip(_("Start over"));
 }
 
@@ -321,8 +321,8 @@ int RecordGUIRewind::keypress_event()
 
 RecordGUIBack::RecordGUIBack(RecordTransport *record_transport, int x, int y)
  : BC_Button(x, y, record_transport->mwindow->theme->get_image_set("fastrev"))
-{ 
-	this->record_transport = record_transport; 
+{
+	this->record_transport = record_transport;
 	set_tooltip(_("Fast rewind"));
 }
 
@@ -361,8 +361,8 @@ int RecordGUIBack::keypress_event()
 
 RecordGUIFwd::RecordGUIFwd(RecordTransport *record_transport, int x, int y)
  : BC_Button(x, y, record_transport->mwindow->theme->get_image_set("fastfwd"))
-{ 
-	this->record_transport = record_transport; 
+{
+	this->record_transport = record_transport;
 	set_tooltip(_("Fast forward"));
 }
 
@@ -400,8 +400,8 @@ int RecordGUIFwd::keypress_event()
 
 RecordGUIEnd::RecordGUIEnd(RecordTransport *record_transport, int x, int y)
  : BC_Button(x, y, record_transport->mwindow->theme->get_image_set("end"))
-{ 
-	this->record_transport = record_transport; 
+{
+	this->record_transport = record_transport;
 	set_tooltip(_("Seek to end of recording"));
 }
 

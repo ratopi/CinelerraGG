@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -38,14 +38,14 @@
 
 
 PhotoScaleWindow::PhotoScaleWindow(PhotoScaleMain *plugin)
- : PluginClientWindow(plugin, 
-	250, 
-	200, 
-	250, 
-	200, 
+ : PluginClientWindow(plugin,
+	250,
+	200,
+	250,
+	200,
 	0)
-{ 
-	this->plugin = plugin; 
+{
+	this->plugin = plugin;
 }
 
 PhotoScaleWindow::~PhotoScaleWindow()
@@ -58,8 +58,8 @@ void PhotoScaleWindow::create_objects()
 	BC_Title *title;
 
 	int x2 = x + BC_Title::calculate_w(this, _("Height:")) + plugin->get_theme()->widget_border;
-	add_subwindow(title = new BC_Title(x, 
-		y, 
+	add_subwindow(title = new BC_Title(x,
+		y,
 		_("Output size:")));
 
 	y += title->get_h() + plugin->get_theme()->widget_border;
@@ -67,8 +67,8 @@ void PhotoScaleWindow::create_objects()
 	add_subwindow(output_size[0] = new PhotoScaleSizeText(
 		plugin,
 		this,
-		x2, 
-		y, 
+		x2,
+		y,
 		100,
 		&(plugin->config.width)));
 
@@ -77,34 +77,34 @@ void PhotoScaleWindow::create_objects()
 	add_subwindow(output_size[1] = new PhotoScaleSizeText(
 		plugin,
 		this,
-		x2, 
-		y, 
+		x2,
+		y,
 		100,
 		&(plugin->config.height)));
 
 	FrameSizePulldown *pulldown;
-	add_subwindow(pulldown = new FrameSizePulldown(plugin->get_theme(), 
-		output_size[0], 
-		output_size[1], 
-		x + title->get_w() + output_size[1]->get_w() + plugin->get_theme()->widget_border, 
+	add_subwindow(pulldown = new FrameSizePulldown(plugin->get_theme(),
+		output_size[0],
+		output_size[1],
+		x + title->get_w() + output_size[1]->get_w() + plugin->get_theme()->widget_border,
 		y));
 
 	add_subwindow(new PhotoScaleSwapExtents(
-		plugin, 
-		this, 
+		plugin,
+		this,
 		x + title->get_w() + output_size[1]->get_w() + plugin->get_theme()->widget_border + pulldown->get_w(),
 		y));
 
 	y += pulldown->get_h() + plugin->get_theme()->widget_border;
-	add_subwindow(file = new PhotoScaleFile(plugin, 
-		this, 
-		x, 
+	add_subwindow(file = new PhotoScaleFile(plugin,
+		this,
+		x,
 		y));
 
 	y += file->get_h() + plugin->get_theme()->widget_border;
-	add_subwindow(scan = new PhotoScaleScan(plugin, 
-		this, 
-		x, 
+	add_subwindow(scan = new PhotoScaleScan(plugin,
+		this,
+		x,
 		y));
 
 	show_window();
@@ -113,17 +113,17 @@ void PhotoScaleWindow::create_objects()
 
 
 
-PhotoScaleSizeText::PhotoScaleSizeText(PhotoScaleMain *plugin, 
+PhotoScaleSizeText::PhotoScaleSizeText(PhotoScaleMain *plugin,
 	PhotoScaleWindow *gui,
-	int x, 
-	int y, 
+	int x,
+	int y,
 	int w,
 	int *output)
  : BC_TextBox(x, y, w, 1, *output)
-{ 
-	this->plugin = plugin; 
+{
+	this->plugin = plugin;
 	this->gui = gui;
-	this->output = output; 
+	this->output = output;
 }
 
 PhotoScaleSizeText::~PhotoScaleSizeText()
@@ -143,9 +143,9 @@ int PhotoScaleSizeText::handle_event()
 
 
 
-PhotoScaleFile::PhotoScaleFile(PhotoScaleMain *plugin, 
-	PhotoScaleWindow *gui, 
-	int x, 
+PhotoScaleFile::PhotoScaleFile(PhotoScaleMain *plugin,
+	PhotoScaleWindow *gui,
+	int x,
 	int y)
  : BC_Radial(x, y, plugin->config.use_file, _("Override camera"))
 {
@@ -162,9 +162,9 @@ int PhotoScaleFile::handle_event()
 }
 
 
-PhotoScaleScan::PhotoScaleScan(PhotoScaleMain *plugin, 
-	PhotoScaleWindow *gui, 
-	int x, 
+PhotoScaleScan::PhotoScaleScan(PhotoScaleMain *plugin,
+	PhotoScaleWindow *gui,
+	int x,
 	int y)
  : BC_Radial(x, y, !plugin->config.use_file, _("Use alpha/black level"))
 {
@@ -187,9 +187,9 @@ int PhotoScaleScan::handle_event()
 
 
 
-PhotoScaleSwapExtents::PhotoScaleSwapExtents(PhotoScaleMain *plugin, 
-	PhotoScaleWindow *gui, 
-	int x, 
+PhotoScaleSwapExtents::PhotoScaleSwapExtents(PhotoScaleMain *plugin,
+	PhotoScaleWindow *gui,
+	int x,
 	int y)
  : BC_Button(x, y, plugin->get_theme()->get_image_set("swap_extents"))
 {
@@ -238,7 +238,7 @@ PhotoScaleConfig::PhotoScaleConfig()
 
 int PhotoScaleConfig::equivalent(PhotoScaleConfig &that)
 {
-	return (width == that.width && 
+	return (width == that.width &&
 		height == that.height &&
 		use_file == that.use_file);
 }
@@ -250,10 +250,10 @@ void PhotoScaleConfig::copy_from(PhotoScaleConfig &that)
 	use_file = that.use_file;
 }
 
-void PhotoScaleConfig::interpolate(PhotoScaleConfig &prev, 
-	PhotoScaleConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void PhotoScaleConfig::interpolate(PhotoScaleConfig &prev,
+	PhotoScaleConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	copy_from(next);
@@ -310,9 +310,9 @@ int PhotoScaleMain::process_buffer(VFrame *frame,
 		frame->get_params()->update("AUTOSCALE", 1);
 		frame->get_params()->update("AUTOSCALE_W", config.width);
 		frame->get_params()->update("AUTOSCALE_H", config.height);
-		read_frame(frame, 
-			0, 
-			start_position, 
+		read_frame(frame,
+			0,
+			start_position,
 			frame_rate,
 			get_use_opengl());
 		return 0;
@@ -321,15 +321,15 @@ int PhotoScaleMain::process_buffer(VFrame *frame,
 	{
 		frame->get_params()->update("AUTOSCALE", 0);
 	}
-	
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		0);
 
-	if(!engine) engine = new PhotoScaleEngine(this, 
+	if(!engine) engine = new PhotoScaleEngine(this,
 		PluginClient::get_project_smp() + 1);
 	engine->process_packages();
 
@@ -349,7 +349,7 @@ int PhotoScaleMain::process_buffer(VFrame *frame,
 		engine->bottom_border < frame->get_h() ||
 		engine->right_border < frame->get_w()))
 	{
-		VFrame *temp_frame = new_temp(frame->get_w(), 
+		VFrame *temp_frame = new_temp(frame->get_w(),
 			frame->get_h(),
 			frame->get_color_model());
 		temp_frame->copy_from(frame);
@@ -365,8 +365,8 @@ int PhotoScaleMain::process_buffer(VFrame *frame,
 		float out_x2 = 0;
 		float out_y2 = 0;
 
-// printf("PhotoScaleMain::process_buffer %d %d %d %d %d\n", 
-// __LINE__, 
+// printf("PhotoScaleMain::process_buffer %d %d %d %d %d\n",
+// __LINE__,
 // engine->left_border,
 // engine->top_border,
 // engine->right_border,
@@ -387,27 +387,27 @@ int PhotoScaleMain::process_buffer(VFrame *frame,
 			out_y2 = (float)frame->get_h() / 2 + config.height / 2;
 		}
 
-// printf("PhotoScaleMain::process_buffer %d %d %d %d %d\n", 
-// __LINE__, 
-// (int)out_x1, 
-// (int)out_y1, 
-// (int)out_x2, 
+// printf("PhotoScaleMain::process_buffer %d %d %d %d %d\n",
+// __LINE__,
+// (int)out_x1,
+// (int)out_y1,
+// (int)out_x2,
 // (int)out_y2);
 		frame->clear_frame();
-		overlayer->overlay(frame, 
+		overlayer->overlay(frame,
 			temp_frame,
-			(float)engine->left_border, 
-			(float)engine->top_border, 
-			(float)engine->right_border, 
+			(float)engine->left_border,
+			(float)engine->top_border,
+			(float)engine->right_border,
 			(float)engine->bottom_border,
-			(float)out_x1, 
-			(float)out_y1, 
-			(float)out_x2, 
-			(float)out_y2, 
+			(float)out_x1,
+			(float)out_y1,
+			(float)out_x2,
+			(float)out_y2,
 			1,
 			TRANSFER_REPLACE,
 			get_interpolation_type());
-		
+
 	}
 
 	return 0;
@@ -419,7 +419,7 @@ void PhotoScaleMain::update_gui()
 	if(thread)
 	{
 		int reconfigure = load_configuration();
-		if(reconfigure) 
+		if(reconfigure)
 		{
 			PhotoScaleWindow *window = (PhotoScaleWindow*)thread->window;
 			window->lock_window("PhotoScaleMain::update_gui");
@@ -631,7 +631,7 @@ void PhotoScaleUnit::process_package(LoadPackage *package)
 	int w = input->get_w();
 	int h = input->get_h();
 
-	
+
 	switch(input->get_color_model())
 	{
 		case BC_RGB_FLOAT:

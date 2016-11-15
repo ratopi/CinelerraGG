@@ -1878,7 +1878,7 @@ int CWindowMaskFeather::handle_event()
 			mask, point, create_it);
 
 	if(track)
-	{	
+	{
 #ifdef USE_KEYFRAME_SPANNING
 // Create temp keyframe
 		MaskAuto temp_keyframe(mwindow->edl, autos);
@@ -1929,7 +1929,7 @@ int CWindowMaskValue::handle_event()
 #else
 	int create_it = 1;
 #endif
-	
+
 	mwindow->undo->update_undo_before(_("mask value"), this);
 	((CWindowMaskGUI*)gui)->get_keyframe(track, autos, keyframe,
 		mask, point, create_it);

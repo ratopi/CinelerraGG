@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "arender.h"
@@ -51,7 +51,7 @@
 Tracking::Tracking(MWindow *mwindow)
  : Thread(1, 0, 0)
 {
-	this->mwindow = mwindow; 
+	this->mwindow = mwindow;
 	state = DONE;
 	startup_lock = new Condition(0, "Tracking::startup_lock");
 }
@@ -103,7 +103,7 @@ int Tracking::stop_playback()
 		double position = get_tracking_position();
 // Update cursor
 		update_tracker(position);
-	
+
 		stop_meters();
 	}
 	return 0;
@@ -172,7 +172,7 @@ void Tracking::draw()
 // 	{
 // 		pixel = get_pixel(last_position);
 // 	}
-// 
+//
 // 	gui->canvas->set_color(GREEN);
 // 	gui->canvas->set_inverse();
 // 	gui->canvas->draw_line(pixel, 0, pixel, gui->canvas->get_h());

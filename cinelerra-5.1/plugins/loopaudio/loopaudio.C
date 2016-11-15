@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -76,7 +76,7 @@ public:
 	void update_gui();
 	int is_realtime();
 	int is_synthesis();
-	int process_buffer(int64_t size, 
+	int process_buffer(int64_t size,
 		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
@@ -102,11 +102,11 @@ LoopAudioConfig::LoopAudioConfig()
 
 
 LoopAudioWindow::LoopAudioWindow(LoopAudio *plugin)
- : PluginClientWindow(plugin, 
-	210, 
-	160, 
-	200, 
-	160, 
+ : PluginClientWindow(plugin,
+	210,
+	160,
+	200,
+	160,
 	0)
 {
 	this->plugin = plugin;
@@ -122,8 +122,8 @@ void LoopAudioWindow::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Samples to loop:")));
 	y += 20;
-	add_subwindow(samples = new LoopAudioSamples(plugin, 
-		x, 
+	add_subwindow(samples = new LoopAudioSamples(plugin,
+		x,
 		y));
 	show_window();
 	flush();
@@ -137,11 +137,11 @@ void LoopAudioWindow::create_objects()
 
 
 
-LoopAudioSamples::LoopAudioSamples(LoopAudio *plugin, 
-	int x, 
+LoopAudioSamples::LoopAudioSamples(LoopAudio *plugin,
+	int x,
 	int y)
- : BC_TextBox(x, 
-	y, 
+ : BC_TextBox(x,
+	y,
 	100,
 	1,
 	plugin->config.samples)
@@ -169,17 +169,17 @@ int LoopAudioSamples::handle_event()
 LoopAudio::LoopAudio(PluginServer *server)
  : PluginAClient(server)
 {
-	
+
 }
 
 
 LoopAudio::~LoopAudio()
 {
-	
+
 }
 
 const char* LoopAudio::plugin_title() { return _("Loop audio"); }
-int LoopAudio::is_realtime() { return 1; } 
+int LoopAudio::is_realtime() { return 1; }
 int LoopAudio::is_synthesis() { return 1; }
 
 
@@ -187,7 +187,7 @@ int LoopAudio::is_synthesis() { return 1; }
 NEW_WINDOW_MACRO(LoopAudio, LoopAudioWindow)
 
 
-int LoopAudio::process_buffer(int64_t size, 
+int LoopAudio::process_buffer(int64_t size,
 	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
@@ -225,15 +225,15 @@ int LoopAudio::process_buffer(int64_t size,
 
 // Get start of fragment in current loop
 			current_loop_position = prev_position +
-				((current_position - prev_position) % 
+				((current_position - prev_position) %
 					config.samples);
 			while(current_loop_position < prev_position) current_loop_position += config.samples;
 			while(current_loop_position >= prev_position + config.samples) current_loop_position -= config.samples;
 
 // Truncate fragment to end of loop
-			current_loop_end = current_position - 
+			current_loop_end = current_position -
 				current_loop_position +
-				prev_position + 
+				prev_position +
 				config.samples;
 			fragment_size = MIN(current_loop_end - current_position,
 				fragment_size);
@@ -251,14 +251,14 @@ int LoopAudio::process_buffer(int64_t size,
 				prev_position = get_source_start() + get_total_len();
 			read_data(prev_keyframe);
 
-			current_loop_position = prev_position - 
+			current_loop_position = prev_position -
 				((prev_position - current_position) %
 					  config.samples);
 			while(current_loop_position <= prev_position - config.samples) current_loop_position += config.samples;
 			while(current_loop_position > prev_position) current_loop_position -= config.samples;
 
 // Truncate fragment to end of loop
-			current_loop_end = current_position + 
+			current_loop_end = current_position +
 				prev_position -
 				current_loop_position -
 				config.samples;
@@ -267,7 +267,7 @@ int LoopAudio::process_buffer(int64_t size,
 		}
 
 
-// printf("LoopAudio::process_buffer 100 %lld %lld %lld %d\n", 
+// printf("LoopAudio::process_buffer 100 %lld %lld %lld %d\n",
 // current_position, current_loop_position, current_loop_end, fragment_size);
 		int offset = buffer->get_offset();
 		buffer->set_offset(offset + i);
@@ -281,7 +281,7 @@ int LoopAudio::process_buffer(int64_t size,
 
 		current_position += step * fragment_size;
 	}
-	
+
 
 	return 0;
 }

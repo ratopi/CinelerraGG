@@ -16,7 +16,7 @@ public:
 	yuv411Config();
 	void copy_from(yuv411Config &that);
 	int equivalent(yuv411Config &that);
-	void interpolate(yuv411Config &prev, yuv411Config &next, 
+	void interpolate(yuv411Config &prev, yuv411Config &next,
 		long prev_frame, long next_frame, long current_frame);
 	int int_horizontal;
 	int avg_vertical;

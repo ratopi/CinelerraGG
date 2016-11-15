@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "assets.h"
@@ -53,14 +53,14 @@ int VTrack::create_derived_objs(int flash)
 {
 	int i;
 	edits = new VEdits(mwindow, this);
-	camera_autos = new BezierAutos(this, 
-									WHITE, 
-									0, 
-									0, 
-									1, 
+	camera_autos = new BezierAutos(this,
+									WHITE,
+									0,
+									0,
+									1,
 									mwindow->track_w,
 									mwindow->track_h);
-	
+
 	projector_autos = new BezierAutos(this,
 									WHITE,
 									0,
@@ -68,7 +68,7 @@ int VTrack::create_derived_objs(int flash)
 									1,
 									mwindow->output_w,
 									mwindow->output_h);
-	
+
 	fade_autos = new FloatAutos(this, LTGREY, -100, 100);
 	fade_autos->create_objects();
 
@@ -192,11 +192,11 @@ int VTrack::paste_output(long startproject, long endproject, long startsource, l
 //printf("VTrack::paste_output startproject %ld endproject %ld\n", startproject, endproject);
 	//Track::samples_to_units(startproject, endproject);
 
-	result = ((VEdits*)edits)->paste_edit(startproject, 
-						endproject, 
-						startsource, 
-						endsource - startsource, 
-						layer, 
+	result = ((VEdits*)edits)->paste_edit(startproject,
+						endproject,
+						startsource,
+						endsource - startsource,
+						layer,
 						0,
 						0,
 						1,
@@ -242,20 +242,20 @@ int VTrack::paste_auto_silence_derived(long start, long end)
 
 int VTrack::draw_autos_derived(float view_start, float zoom_units, AutoConf *auto_conf)
 {
-		if(auto_conf->camera) 
-			camera_autos->draw(tracks->canvas, 
+		if(auto_conf->camera)
+			camera_autos->draw(tracks->canvas,
 							pixel,
-							mwindow->zoom_track, 
-							zoom_units, 
-							view_start, 
+							mwindow->zoom_track,
+							zoom_units,
+							view_start,
 							mwindow->session->tracks_vertical);
 
 		if(auto_conf->projector)
-			projector_autos->draw(tracks->canvas, 
+			projector_autos->draw(tracks->canvas,
 							pixel,
-							mwindow->zoom_track, 
-							zoom_units, 
-							view_start, 
+							mwindow->zoom_track,
+							zoom_units,
+							view_start,
 							mwindow->session->tracks_vertical);
 }
 
@@ -315,27 +315,27 @@ int VTrack::select_auto_derived(float zoom_units, float view_start, AutoConf *au
 {
 	int result = 0;
 
-	if(auto_conf->camera) 
-		result = camera_autos->select_auto(tracks->canvas, 
-						pixel, 
-						mwindow->zoom_track, 
-						zoom_units, 
-						view_start, 
-						cursor_x, 
-						cursor_y, 
+	if(auto_conf->camera)
+		result = camera_autos->select_auto(tracks->canvas,
+						pixel,
+						mwindow->zoom_track,
+						zoom_units,
+						view_start,
+						cursor_x,
+						cursor_y,
 						tracks->canvas->shift_down(),
 						tracks->canvas->ctrl_down(),
 						tracks->canvas->get_buttonpress(),
 						mwindow->session->tracks_vertical);
 
-	if(auto_conf->projector && !result) 
-		result = projector_autos->select_auto(tracks->canvas, 
-						pixel, 
-						mwindow->zoom_track, 
-						zoom_units, 
-						view_start, 
-						cursor_x, 
-						cursor_y, 
+	if(auto_conf->projector && !result)
+		result = projector_autos->select_auto(tracks->canvas,
+						pixel,
+						mwindow->zoom_track,
+						zoom_units,
+						view_start,
+						cursor_x,
+						cursor_y,
 						tracks->canvas->shift_down(),
 						tracks->canvas->ctrl_down(),
 						tracks->canvas->get_buttonpress(),
@@ -351,25 +351,25 @@ int VTrack::move_auto_derived(float zoom_units, float view_start, AutoConf *auto
 	result = 0;
 
 	if(auto_conf->camera)
-		result = camera_autos->move_auto(tracks->canvas, 
-					pixel, 
-					mwindow->zoom_track, 
-					zoom_units, 
-					view_start, 
-					cursor_x, 
-					cursor_y, 
-					shift_down, 
+		result = camera_autos->move_auto(tracks->canvas,
+					pixel,
+					mwindow->zoom_track,
+					zoom_units,
+					view_start,
+					cursor_x,
+					cursor_y,
+					shift_down,
 					mwindow->session->tracks_vertical);
 
 	if(auto_conf->projector && !result)
-		result = projector_autos->move_auto(tracks->canvas, 
-					pixel, 
-					mwindow->zoom_track, 
-					zoom_units, 
-					view_start, 
-					cursor_x, 
-					cursor_y, 
-					shift_down, 
+		result = projector_autos->move_auto(tracks->canvas,
+					pixel,
+					mwindow->zoom_track,
+					zoom_units,
+					view_start,
+					cursor_x,
+					cursor_y,
+					shift_down,
 					mwindow->session->tracks_vertical);
 
 	if(result)
@@ -385,20 +385,20 @@ int VTrack::move_auto_derived(float zoom_units, float view_start, AutoConf *auto
 
 int VTrack::draw_floating_autos_derived(float view_start, float zoom_units, AutoConf *auto_conf, int flash)
 {
-	if(auto_conf->camera) 
-		camera_autos->draw_floating_autos(tracks->canvas, 
-				pixel, 
-				mwindow->zoom_track, 
-				zoom_units, 
-				view_start, 
+	if(auto_conf->camera)
+		camera_autos->draw_floating_autos(tracks->canvas,
+				pixel,
+				mwindow->zoom_track,
+				zoom_units,
+				view_start,
 				mwindow->session->tracks_vertical, flash);
 
-	if(auto_conf->projector) 
-		projector_autos->draw_floating_autos(tracks->canvas, 
-				pixel, 
-				mwindow->zoom_track, 
-				zoom_units, 
-				view_start, 
+	if(auto_conf->projector)
+		projector_autos->draw_floating_autos(tracks->canvas,
+				pixel,
+				mwindow->zoom_track,
+				zoom_units,
+				view_start,
 				mwindow->session->tracks_vertical, flash);
 }
 
@@ -409,7 +409,7 @@ int VTrack::release_auto_derived()
 
 	result = camera_autos->release_auto();
 	if(!result) result = projector_autos->release_auto();
-		
+
 	return result;
 }
 
@@ -447,12 +447,12 @@ int VTrack::render(VFrame **output, long input_len, long input_position, float s
 //	printf("%d %d %d\n", input_position, current->startproject, current->startproject + current->length);
 		if(input_position < current->startproject + current->length + current->feather_right &&
 			input_position >= current->startproject)
-			current->render(output, 
-				input_len, 
-				input_position, 
-				step, 
-				before, 
-				after, 
+			current->render(output,
+				input_len,
+				input_position,
+				step,
+				before,
+				after,
 				get_patch_of()->automate);
 	}
 }
@@ -498,7 +498,7 @@ int VTrack::get_projection(float &in_x1, float &in_y1, float &in_x2, float &in_y
 		y[1] -= (y[3] - mwindow->output_h) / center_z;
 		y[3] = mwindow->output_h;
 	}
-	
+
 	in_x1 = x[0];
 	in_y1 = y[0];
 	in_x2 = x[1];

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -51,7 +51,7 @@ public:
 
 	const char* plugin_title();
 
-	int process_buffer(int64_t size, 
+	int process_buffer(int64_t size,
 		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
@@ -100,7 +100,7 @@ int InterpolateAudioEffect::is_realtime() { return 1; }
 
 
 
-int InterpolateAudioEffect::process_buffer(int64_t size, 
+int InterpolateAudioEffect::process_buffer(int64_t size,
 	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
@@ -138,10 +138,10 @@ int InterpolateAudioEffect::process_buffer(int64_t size,
 
 		for(int i = 0; i < size; i++)
 		{
-			double end_fraction = (double)(i + start_position - range_start) / 
+			double end_fraction = (double)(i + start_position - range_start) /
 				(range_end - range_start);
 			double start_fraction = 1.0 - end_fraction;
-			double out_sample = start_sample * start_fraction + 
+			double out_sample = start_sample * start_fraction +
 				end_sample * end_fraction;
 			buffer_samples[i] = out_sample;
 		}
@@ -172,10 +172,10 @@ int InterpolateAudioEffect::process_buffer(int64_t size,
 
 		for(int i = 0; i < size; i++)
 		{
-			double start_fraction = (double)(start_position - i - range_end) / 
+			double start_fraction = (double)(start_position - i - range_end) /
 				(range_start - range_end);
 			double end_fraction = 1.0 - start_fraction;
-			double out_sample = start_sample * start_fraction + 
+			double out_sample = start_sample * start_fraction +
 				end_sample * end_fraction;
 			buffer_samples[i] = out_sample;
 		}

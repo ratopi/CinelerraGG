@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcprogressbox.h"
@@ -147,27 +147,27 @@ int MainProgressBar::update(int64_t value)
 		double eta;
 
 		if(value > 0.001)
-			eta = (double)current_eta / 
-				1000 * 
-				length / 
-				value - 
-				current_eta / 
+			eta = (double)current_eta /
+				1000 *
+				length /
+				value -
+				current_eta /
 				1000;
 		else
 			eta = 0;
 
 //printf("MainProgressBar::update %f %d %d %f\n", current_eta, length, value, eta);
- 		Units::totext(time_string, 
+ 		Units::totext(time_string,
  			eta,
  			TIME_HMS2);
-// 		sprintf(time_string, 
-// 			"%dh%dm%ds", 
+// 		sprintf(time_string,
+// 			"%dh%dm%ds",
 // 			(int64_t)eta / 3600,
 // 			((int64_t)eta / 60) % 60,
 // 			(int64_t)eta % 60);
 
-		sprintf(string, _("%s ETA: %s"), 
-			default_title, 
+		sprintf(string, _("%s ETA: %s"),
+			default_title,
 			time_string);
 		update_title(string, 0);
 
@@ -193,7 +193,7 @@ void MainProgressBar::get_time(char *text)
 {
 	double current_time = (double)eta_timer->get_scaled_difference(1);
 //printf("MainProgressBar::get_time %f\n", current_time);
-	Units::totext(text, 
+	Units::totext(text,
 			current_time,
 			TIME_HMS2);
 }
@@ -226,7 +226,7 @@ MainProgress::~MainProgress()
 {
 }
 
-MainProgressBar* MainProgress::start_progress(char *text, 
+MainProgressBar* MainProgress::start_progress(char *text,
 	int64_t total_length,
 	int use_window)
 {
@@ -247,9 +247,9 @@ MainProgressBar* MainProgress::start_progress(char *text,
 	{
 		result = new MainProgressBar(mwindow, this);
 		progress_bars.append(result);
-		result->progress_box = new BC_ProgressBox(gui->get_abs_cursor_x(1), 
-			gui->get_abs_cursor_y(1), 
-			text, 
+		result->progress_box = new BC_ProgressBox(gui->get_abs_cursor_x(1),
+			gui->get_abs_cursor_y(1),
+			text,
 			total_length);
 	}
 

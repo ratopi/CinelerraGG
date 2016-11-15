@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef PLUGINACLIENT_H
@@ -33,19 +33,19 @@ class PluginAClient : public PluginClient
 public:
 	PluginAClient(PluginServer *server);
 	virtual ~PluginAClient();
-	
+
 	int get_render_ptrs();
 	int init_realtime_parameters();
 
 	int is_audio();
 // These should return 1 if error or 0 if success.
 // Multichannel buffer process for backwards compatibility
-	virtual int process_realtime(int64_t size, 
-		Samples **input_ptr, 
+	virtual int process_realtime(int64_t size,
+		Samples **input_ptr,
 		Samples **output_ptr);
 // Single channel buffer process for backwards compatibility and transitions
-	virtual int process_realtime(int64_t size, 
-		Samples *input_ptr, 
+	virtual int process_realtime(int64_t size,
+		Samples *input_ptr,
 		Samples *output_ptr);
 
 // Process buffer using pull method.  By default this loads the input into the
@@ -53,11 +53,11 @@ public:
 // start_position - requested position relative to sample_rate. Relative
 //     to start of EDL.  End of buffer if reverse.
 // sample_rate - scale of start_position.
-	virtual int process_buffer(int64_t size, 
+	virtual int process_buffer(int64_t size,
 		Samples **buffer,
 		int64_t start_position,
 		int sample_rate);
-	virtual int process_buffer(int64_t size, 
+	virtual int process_buffer(int64_t size,
 		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
@@ -67,9 +67,9 @@ public:
 	virtual int process_loop(Samples **buffers, int64_t &write_length) { return 1; };
 	int plugin_process_loop(Samples **buffers, int64_t &write_length);
 
-	int plugin_start_loop(int64_t start, 
-		int64_t end, 
-		int64_t buffer_size, 
+	int plugin_start_loop(int64_t start,
+		int64_t end,
+		int64_t buffer_size,
 		int total_buffers);
 
 	int plugin_get_parameters();
@@ -80,12 +80,12 @@ public:
 // start_position - start of samples in forward.  End of samples in reverse.
 //     Relative to start of EDL.  Scaled to sample_rate.
 // len - number of samples to read
-	int read_samples(Samples *buffer, 
-		int channel, 
-		int64_t start_position, 
+	int read_samples(Samples *buffer,
+		int channel,
+		int64_t start_position,
 		int64_t len);
-	int read_samples(Samples *buffer, 
-		int64_t start_position, 
+	int read_samples(Samples *buffer,
+		int64_t start_position,
 		int64_t len);
 
 // Called by realtime plugin to read audio from previous entity

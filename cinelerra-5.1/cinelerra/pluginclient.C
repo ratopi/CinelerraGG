@@ -1,22 +1,22 @@
- 
+
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -115,8 +115,8 @@ PluginClient* PluginClientThread::get_client()
 
 
 
-PluginClientFrame::PluginClientFrame(int data_size, 
-	int period_n, 
+PluginClientFrame::PluginClientFrame(int data_size,
+	int period_n,
 	int period_d)
 {
 	this->data_size = data_size;
@@ -127,28 +127,28 @@ PluginClientFrame::PluginClientFrame(int data_size,
 
 PluginClientFrame::~PluginClientFrame()
 {
-	
+
 }
 
 
 
 
 
-PluginClientWindow::PluginClientWindow(PluginClient *client, 
+PluginClientWindow::PluginClientWindow(PluginClient *client,
 	int w,
 	int h,
 	int min_w,
 	int min_h,
 	int allow_resize)
- : BC_Window(client->gui_string, 
-	client->window_x /* - w / 2 */, 
-	client->window_y /* - h / 2 */, 
+ : BC_Window(client->gui_string,
+	client->window_x /* - w / 2 */,
+	client->window_y /* - h / 2 */,
 	w, h, min_w, min_h, allow_resize, 0, 1)
 {
 	this->client = client;
 }
 
-PluginClientWindow::PluginClientWindow(const char *title, 
+PluginClientWindow::PluginClientWindow(const char *title,
 	int x, int y, int w, int h, int min_w, int min_h, int allow_resize)
  : BC_Window(title, x, y, w, h, min_w, min_h, allow_resize, 0, 1)
 {
@@ -243,7 +243,7 @@ void PluginClient::hide_gui()
 }
 
 // For realtime plugins initialize buffers
-int PluginClient::plugin_init_realtime(int realtime_priority, 
+int PluginClient::plugin_init_realtime(int realtime_priority,
 	int total_in_buffers,
 	int buffer_size)
 {
@@ -262,9 +262,9 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 	return 0;
 }
 
-int PluginClient::plugin_start_loop(int64_t start, 
-	int64_t end, 
-	int64_t buffer_size, 
+int PluginClient::plugin_start_loop(int64_t start,
+	int64_t end,
+	int64_t buffer_size,
 	int total_buffers)
 {
 //printf("PluginClient::plugin_start_loop %d %ld %ld %ld %d\n",
@@ -387,9 +387,9 @@ void PluginClient::end_process_buffer()
 
 void PluginClient::plugin_update_gui()
 {
-	
+
 	update_gui();
-	
+
 // Delete unused GUI frames
 	while(frame_buffer.size() > MAX_FRAME_BUFFER)
 		frame_buffer.remove_object_number(0);
@@ -405,17 +405,17 @@ int PluginClient::get_gui_update_frames()
 	if(frame_buffer.size())
 	{
 		PluginClientFrame *frame = frame_buffer.get(0);
-		int total_frames = update_timer->get_difference() * 
-			frame->period_d / 
-			frame->period_n / 
+		int total_frames = update_timer->get_difference() *
+			frame->period_d /
+			frame->period_n /
 			1000;
-		if(total_frames) update_timer->subtract(total_frames * 
-			frame->period_n * 
-			1000 / 
+		if(total_frames) update_timer->subtract(total_frames *
+			frame->period_n *
+			1000 /
 			frame->period_d);
 
-// printf("PluginClient::get_gui_update_frames %d %ld %d %d %d\n", 
-// __LINE__, 
+// printf("PluginClient::get_gui_update_frames %d %ld %d %d %d\n",
+// __LINE__,
 // update_timer->get_difference(),
 // frame->period_n * 1000 / frame->period_d,
 // total_frames,
@@ -485,12 +485,12 @@ void PluginClient::render_gui(void *data)
 	if(thread)
 	{
 		thread->get_window()->lock_window("PluginClient::render_gui");
-		
+
 // Set all previous frames to draw immediately
 		for(int i = 0; i < frame_buffer.size(); i++)
 			frame_buffer.get(i)->force = 1;
 
-		ArrayList<PluginClientFrame*> *src = 
+		ArrayList<PluginClientFrame*> *src =
 			(ArrayList<PluginClientFrame*>*)data;
 
 // Shift GUI data to GUI client
@@ -499,7 +499,7 @@ void PluginClient::render_gui(void *data)
 			this->frame_buffer.append(src->get(0));
 			src->remove_number(0);
 		}
-		
+
 // Start the timer for the current buffer
 		update_timer->update();
 		thread->get_window()->unlock_window();
@@ -523,20 +523,20 @@ int PluginClient::is_video() { return 0; }
 int PluginClient::is_theme() { return 0; }
 int PluginClient::uses_gui() { return 1; }
 int PluginClient::is_transition() { return 0; }
-int PluginClient::load_defaults() 
+int PluginClient::load_defaults()
 {
 //	printf("PluginClient::load_defaults undefined in %s.\n", plugin_title());
-	return 0; 
+	return 0;
 }
 
-int PluginClient::save_defaults() 
-{ 
+int PluginClient::save_defaults()
+{
 	save_defaults_xml();
 //	printf("PluginClient::save_defaults undefined in %s.\n", plugin_title());
-	return 0; 
+	return 0;
 }
 
-void PluginClient::load_defaults_xml() 
+void PluginClient::load_defaults_xml()
 {
 	char path[BCTEXTLEN];
 	server->get_defaults_path(path);
@@ -544,7 +544,7 @@ void PluginClient::load_defaults_xml()
 	fs.complete_path(path);
 	using_defaults = 1;
 //printf("PluginClient::load_defaults_xml %d %s\n", __LINE__, path);
-	
+
 	KeyFrame temp_keyframe;
 	FILE *fd = fopen(path, "r");
 	if(fd)
@@ -584,7 +584,7 @@ void PluginClient::load_defaults_xml()
 //printf("PluginClient::load_defaults_xml %d %s\n", __LINE__, path);
 }
 
-void PluginClient::save_defaults_xml() 
+void PluginClient::save_defaults_xml()
 {
 	char path[BCTEXTLEN];
 	server->get_defaults_path(path);
@@ -625,10 +625,10 @@ PluginClientThread* PluginClient::get_thread()
 	return thread;
 }
 
-BC_WindowBase* PluginClient::new_window() 
-{ 
+BC_WindowBase* PluginClient::new_window()
+{
 	printf("PluginClient::new_window undefined in %s.\n", plugin_title());
-	return 0; 
+	return 0;
 }
 int PluginClient::get_parameters() { return 0; }
 int PluginClient::get_samplerate() { return get_project_samplerate(); }
@@ -866,7 +866,7 @@ void PluginClient::get_projector(float *x, float *y, float *z, int64_t position)
 
 EDLSession* PluginClient::get_edlsession()
 {
-	if(server->edl) 
+	if(server->edl)
 		return server->edl->session;
 	return 0;
 }

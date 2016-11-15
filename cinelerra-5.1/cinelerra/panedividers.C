@@ -7,9 +7,9 @@
 
 
 PaneDivider::PaneDivider(MWindow *mwindow, int x, int y, int length, int is_x)
- : BC_SubWindow(x, 
-	y, 
-	is_x ? mwindow->theme->pane_w : length, 
+ : BC_SubWindow(x,
+	y,
+	is_x ? mwindow->theme->pane_w : length,
 	is_x ? length : mwindow->theme->pane_h,
 	mwindow->theme->pane_color)
 {
@@ -41,12 +41,12 @@ void PaneDivider::create_objects()
 		set_cursor(VSEPARATE_CURSOR, 0, 0);
 		image_src = mwindow->theme->get_image_set("ypane");
 	}
-	
+
 	for(int i = 0; i < 3; i++)
 	{
 		images[i] = new BC_Pixmap(this, image_src[i], PIXMAP_ALPHA);
 	}
-	
+
 	draw(0);
 }
 
@@ -54,15 +54,15 @@ void PaneDivider::draw(int flush)
 {
 	if(is_x)
 	{
-		draw_3segmentv(0, 
-			0, 
+		draw_3segmentv(0,
+			0,
 			get_h(),
 			images[status]);
 	}
 	else
 	{
-		draw_3segmenth(0, 
-			0, 
+		draw_3segmenth(0,
+			0,
 			get_w(),
 			images[status]);
 	}
@@ -71,10 +71,10 @@ void PaneDivider::draw(int flush)
 
 void PaneDivider::reposition_window(int x, int y, int length)
 {
-	BC_SubWindow::reposition_window(x, 
-		y, 
-		is_x ? mwindow->theme->pane_w : length, 
-		
+	BC_SubWindow::reposition_window(x,
+		y,
+		is_x ? mwindow->theme->pane_w : length,
+
 		is_x ? length : mwindow->theme->pane_h);
 }
 
@@ -97,7 +97,7 @@ int PaneDivider::button_release_event()
 	if(button_down)
 	{
 		button_down = 0;
-		
+
 		if(is_dragging)
 		{
 			is_dragging = 0;
@@ -106,7 +106,7 @@ int PaneDivider::button_release_event()
 			status = BUTTON_UPHI;
 			draw(1);
 		}
-		
+
 		return 1;
 	}
 	return 0;

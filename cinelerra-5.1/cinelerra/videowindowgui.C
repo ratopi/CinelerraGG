@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "mbuttons.h"
@@ -32,14 +32,14 @@
 #define CROPHANDLE_H 10
 
 VideoWindowGUI::VideoWindowGUI(VideoWindow *thread, int w, int h)
- : BC_Window(_(PROGRAM_NAME ": Video out"), 
+ : BC_Window(_(PROGRAM_NAME ": Video out"),
  	(int)BC_INFINITY,
 	(int)BC_INFINITY,
-	w, 
-	h, 
-	10, 
-	10, 
-	1, 
+	w,
+	h,
+	10,
+	10,
+	1,
 	1,
 	1)
 {
@@ -66,11 +66,11 @@ int VideoWindowGUI::resize_event(int w, int h)
 // 	int output_w = thread->mwindow->session->output_w;
 // 	int output_h = thread->mwindow->session->output_h;
 // 	int new_w, new_h, full_w, full_h;
-// 
+//
 // 	new_w = w;
 // 	new_h = h;
 // 	thread->get_full_sizes(full_w, full_h);
-// 
+//
 // 	if(labs(full_w - new_w) < 50)
 // 	{
 // 		new_w = full_w;
@@ -78,12 +78,12 @@ int VideoWindowGUI::resize_event(int w, int h)
 // 	}
 // 	else
 // 		thread->fix_size(new_w, new_h, w, thread->mwindow->get_aspect_ratio());
-// 
+//
 // 	if(new_w < 10) new_w = 10;
 // 	if(new_h < 10) new_h = 10;
 // 	w = thread->video_window_w = new_w;
 // 	h = new_h;
-// 
+//
 // 	resize_window(w, h);
 // 	canvas->reposition_window(0, 0, w, h);
 // 	update_title();
@@ -93,18 +93,18 @@ int VideoWindowGUI::resize_event(int w, int h)
 int VideoWindowGUI::update_title()
 {
 // 	char string[1024];
-// 
+//
 // 	if(thread->mwindow->get_aspect_ratio() > (float)thread->mwindow->session->output_w / thread->mwindow->session->output_h)
 // 	{
-// 		sprintf(string, PROGRAM_NAME ": Video out %d%%", 
+// 		sprintf(string, PROGRAM_NAME ": Video out %d%%",
 // 			(int)((float)thread->video_window_w / (thread->mwindow->session->output_h * thread->mwindow->get_aspect_ratio()) * 100 + 0.5));
 // 	}
 // 	else
 // 	{
-// 		sprintf(string, PROGRAM_NAME ": Video out %d%%", 
+// 		sprintf(string, PROGRAM_NAME ": Video out %d%%",
 // 			(int)((float)thread->video_window_w / thread->mwindow->session->output_w * 100 + 0.5));
 // 	}
-// 
+//
 // 	set_title(string);
 }
 

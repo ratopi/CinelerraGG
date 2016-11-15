@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef MOTION_H
@@ -80,10 +80,10 @@ public:
 
 	int equivalent(MotionConfig &that);
 	void copy_from(MotionConfig &that);
-	void interpolate(MotionConfig &prev, 
-		MotionConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(MotionConfig &prev,
+		MotionConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 	void boundaries();
 
@@ -170,10 +170,10 @@ public:
 // Get start and end of current motion vector in pixels
 	void get_current_vector(float *origin_x,
 		float *origin_y,
-		float *current_x1, 
-		float *current_y1, 
-		float *current_x2, 
-		float *current_y2, 
+		float *current_x1,
+		float *current_y1,
+		float *current_x2,
+		float *current_y2,
 		int point);
 
 // Number of the previous reference frame on the timeline.
@@ -299,8 +299,8 @@ public:
 class MotionScan : public LoadServer
 {
 public:
-	MotionScan(MotionMain2 *plugin, 
-		int total_clients, 
+	MotionScan(MotionMain2 *plugin,
+		int total_clients,
 		int total_packages);
 	~MotionScan();
 
@@ -320,7 +320,7 @@ public:
 	int64_t get_cache(int x, int y);
 	void put_cache(int x, int y, int64_t difference);
 
-// Change between previous frame and current frame multiplied by 
+// Change between previous frame and current frame multiplied by
 // OVERSAMPLE
 	int dx_result;
 	int dy_result;

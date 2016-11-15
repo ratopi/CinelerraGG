@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "renderfarm.h"
@@ -141,8 +141,8 @@ printf("RenderFarmFSServer::handle_request file=%p\n", file);
 			unsigned char datagram[4];
 			int i = 0;
 			int bytes;
-// printf("RenderFarmFSServer::handle_request RENDERFARM_FREAD %02x%02x%02x%02x%02x%02x%02x%02x %p %d %d\n", 
-// buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], 
+// printf("RenderFarmFSServer::handle_request RENDERFARM_FREAD %02x%02x%02x%02x%02x%02x%02x%02x %p %d %d\n",
+// buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7],
 // pointer,
 // file,
 // size,
@@ -155,7 +155,7 @@ printf("RenderFarmFSServer::handle_request file=%p\n", file);
 			server->write_socket((char*)server->buffer, size * bytes, RENDERFARM_TIMEOUT);
 			result = 1;
 if(DEBUG)
-printf("RenderFarmFSServer::handle_request file=%p size=%d num=%d bytes=%d\n", 
+printf("RenderFarmFSServer::handle_request file=%p size=%d num=%d bytes=%d\n",
 file, size, num, bytes);
 			break;
 		}
@@ -193,7 +193,7 @@ file, size, num, bytes);
 			STORE_INT32(return_value);
 			server->write_socket((char*)datagram, 4, RENDERFARM_TIMEOUT);
 if(DEBUG)
-printf("RenderFarmFSServer::handle_request file=%p fileno=%d\n", 
+printf("RenderFarmFSServer::handle_request file=%p fileno=%d\n",
 file, return_value);
 			result = 1;
 			break;
@@ -216,7 +216,7 @@ file, return_value);
 			server->write_socket((char*)datagram, 4, RENDERFARM_TIMEOUT);
 			result = 1;
 if(DEBUG)
-printf("RenderFarmFSServer::handle_request RENDERFARM_FWRITE file=%p size=%d num=%d bytes=%d\n", 
+printf("RenderFarmFSServer::handle_request RENDERFARM_FWRITE file=%p size=%d num=%d bytes=%d\n",
 file, size, num, bytes);
 			break;
 		}
@@ -238,7 +238,7 @@ file, size, num, bytes);
 			server->write_socket((char*)datagram, 4, RENDERFARM_TIMEOUT);
 			result = 1;
 if(DEBUG)
-printf("RenderFarmFSServer::handle_request file=%p offset=%jd whence=%d result=%d\n", 
+printf("RenderFarmFSServer::handle_request file=%p offset=%jd whence=%d result=%d\n",
 file, offset, whence, result);
 			break;
 		}
@@ -254,7 +254,7 @@ file, offset, whence, result);
 			server->write_socket((char*)datagram, 8, RENDERFARM_TIMEOUT);
 			result = 1;
 if(DEBUG)
-printf("RenderFarmFSServer::handle_request file=%p result=%jd\n", 
+printf("RenderFarmFSServer::handle_request file=%p result=%jd\n",
 file, return_value);
 			break;
 		}
@@ -266,7 +266,7 @@ file, return_value);
 			server->write_socket((char*)&stat_buf, sizeof(struct stat), RENDERFARM_TIMEOUT);
 			result = 1;
 if(DEBUG)
-printf("RenderFarmFSServer::handle_request path=%s result=%d\n", 
+printf("RenderFarmFSServer::handle_request path=%s result=%d\n",
 buffer, return_value);
 			break;
 		}
@@ -293,7 +293,7 @@ buffer, return_value);
 			server->write_socket((char*)&arg, sizeof(arg), RENDERFARM_TIMEOUT);
 			result = 1;
 if(DEBUG)
-printf("RenderFarmFSServer::handle_request path=%s result=%d\n", 
+printf("RenderFarmFSServer::handle_request path=%s result=%d\n",
 buffer, return_value);
 			break;
 		}

@@ -701,7 +701,7 @@ ScanStatusGUI(ScanStatus *sswindow, int x, int y, int nlines, int nbars)
 	40 + BC_CancelButton::calculate_h() +
 		(BC_Title::calculate_h((BC_WindowBase*) sswindow->
 			commercials->mwindow->gui, _("My")) + 5) * nlines +
-		(BC_ProgressBar::calculate_h() + 5) * nbars, 0, 0, 0) 
+		(BC_ProgressBar::calculate_h() + 5) * nbars, 0, 0, 0)
 {
 	this->sswindow = sswindow;
 	this->nlines = nlines;

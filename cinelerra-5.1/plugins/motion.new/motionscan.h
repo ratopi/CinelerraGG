@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef MOTIONSCAN_H
@@ -90,7 +90,7 @@ public:
 class MotionScan : public LoadServer
 {
 public:
-	MotionScan(int total_clients, 
+	MotionScan(int total_clients,
 		int total_packages);
 	~MotionScan();
 
@@ -143,8 +143,8 @@ public:
 		int sub_y);
 
 
-	static void clamp_scan(int w, 
-		int h, 
+	static void clamp_scan(int w,
+		int h,
 		int *block_x1,
 		int *block_y1,
 		int *block_x2,
@@ -155,7 +155,7 @@ public:
 		int *scan_y2,
 		int use_absolute);
 
-// Change between previous frame and current frame multiplied by 
+// Change between previous frame and current frame multiplied by
 // OVERSAMPLE
 	int dx_result;
 	int dy_result;
@@ -169,7 +169,7 @@ public:
 		STABILIZE_PIXEL,
 		NOTHING
 	};
-	
+
 	enum
 	{
 // tracking_type
@@ -178,7 +178,7 @@ public:
 		LOAD,
 		NO_CALCULATE
 	};
-	
+
 	enum
 	{
 // frame_type

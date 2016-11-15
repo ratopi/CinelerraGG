@@ -72,10 +72,10 @@ public:
 // Only used to clear glyphs
 	int equivalent(TitleConfig &that);
 	void copy_from(TitleConfig &that);
-	void interpolate(TitleConfig &prev, 
-		TitleConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(TitleConfig &prev,
+		TitleConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 
 
@@ -107,7 +107,7 @@ public:
 
 // Text to display
 	char text[BCTEXTLEN];
-// Encoding to convert from 
+// Encoding to convert from
 	char encoding[BCTEXTLEN];
 // Width of the stroke
 	double stroke_width;
@@ -161,7 +161,7 @@ public:
 
 
 // Draw a single character into the glyph cache
-// 
+//
 class GlyphPackage : public LoadPackage
 {
 public:

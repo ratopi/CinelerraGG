@@ -5,7 +5,7 @@
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
  * by Paolo Rampino <akir4d at gmail dot com>
  *
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -929,7 +929,7 @@ void HULKTHEME::draw_mwindow_bg(MWindowGUI *gui)
 
 // Zoombar
 	gui->set_color(0x75b697);
-	gui->draw_box(mzoom_x, 
+	gui->draw_box(mzoom_x,
 		mzoom_y,
 		mwindow->session->mwindow_w,
 		25);

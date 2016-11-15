@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef LOADBALANCE_H
@@ -30,7 +30,7 @@
 
 
 // Load balancing utils
-// There is no guarantee that all the load clients will be run in a 
+// There is no guarantee that all the load clients will be run in a
 // processing operation.
 
 
@@ -43,7 +43,7 @@ class LoadPackage
 public:
 	LoadPackage();
 	virtual ~LoadPackage();
-	
+
 	Condition *completion_lock;
 };
 
@@ -90,7 +90,7 @@ public:
 	void process_packages();
 
 // Use this to do an iteration with one client, in the current thread.
-// The single client is created specifically for this call and deleted in 
+// The single client is created specifically for this call and deleted in
 // delete_clients.  This simplifies the porting to OpenGL.
 // total_packages must be > 0.
 	void process_single();

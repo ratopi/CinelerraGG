@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <math.h>
@@ -48,10 +48,10 @@ public:
 
 	int equivalent(MotionBlurConfig &that);
 	void copy_from(MotionBlurConfig &that);
-	void interpolate(MotionBlurConfig &prev, 
-		MotionBlurConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(MotionBlurConfig &prev,
+		MotionBlurConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 
 	int radius;
@@ -67,9 +67,9 @@ public:
 class MotionBlurSize : public BC_ISlider
 {
 public:
-	MotionBlurSize(MotionBlurMain *plugin, 
-		int x, 
-		int y, 
+	MotionBlurSize(MotionBlurMain *plugin,
+		int x,
+		int y,
 		int *output,
 		int min,
 		int max);
@@ -139,8 +139,8 @@ public:
 class MotionBlurEngine : public LoadServer
 {
 public:
-	MotionBlurEngine(MotionBlurMain *plugin, 
-		int total_clients, 
+	MotionBlurEngine(MotionBlurMain *plugin,
+		int total_clients,
 		int total_packages);
 	void init_packages();
 	LoadClient* new_client();
@@ -182,7 +182,7 @@ MotionBlurConfig::MotionBlurConfig()
 
 int MotionBlurConfig::equivalent(MotionBlurConfig &that)
 {
-	return 
+	return
 		radius == that.radius &&
 		steps == that.steps &&
 		r == that.r &&
@@ -201,10 +201,10 @@ void MotionBlurConfig::copy_from(MotionBlurConfig &that)
 	a = that.a;
 }
 
-void MotionBlurConfig::interpolate(MotionBlurConfig &prev, 
-	MotionBlurConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void MotionBlurConfig::interpolate(MotionBlurConfig &prev,
+	MotionBlurConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -231,13 +231,13 @@ void MotionBlurConfig::interpolate(MotionBlurConfig &prev,
 
 MotionBlurWindow::MotionBlurWindow(MotionBlurMain *plugin)
  : PluginClientWindow(plugin,
-	260, 
-	120, 
-	260, 
-	120, 
+	260,
+	120,
+	260,
+	120,
 	0)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
 }
 
 MotionBlurWindow::~MotionBlurWindow()
@@ -264,9 +264,9 @@ void MotionBlurWindow::create_objects()
 
 
 
-MotionBlurSize::MotionBlurSize(MotionBlurMain *plugin, 
-	int x, 
-	int y, 
+MotionBlurSize::MotionBlurSize(MotionBlurMain *plugin,
+	int x,
+	int y,
 	int *output,
 	int min,
 	int max)
@@ -294,7 +294,7 @@ int MotionBlurSize::handle_event()
 MotionBlurMain::MotionBlurMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 	scale_x_table = 0;
 	scale_y_table = 0;
@@ -305,7 +305,7 @@ MotionBlurMain::MotionBlurMain(PluginServer *server)
 
 MotionBlurMain::~MotionBlurMain()
 {
-	
+
 	if(engine) delete engine;
 	delete_tables();
 	if(accum) delete [] accum;
@@ -343,7 +343,7 @@ void MotionBlurMain::delete_tables()
 int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	float xa,ya,za,xb,yb,zb,xd,yd,zd;
-	if (get_source_position() == 0)	
+	if (get_source_position() == 0)
 		get_camera(&xa, &ya, &za, get_source_position());
 	else
 		get_camera(&xa, &ya, &za, get_source_position()-1);
@@ -352,7 +352,7 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	xd = xb - xa;
 	yd = yb - ya;
 	zd = zb - za;
-	
+
 	//printf("Camera automation deltas: %.2f %.2f %.2f\n", xd, yd, zd);
 	load_configuration();
 
@@ -360,7 +360,7 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(!engine) engine = new MotionBlurEngine(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
-	if(!accum) accum = new unsigned char[input_ptr->get_w() * 
+	if(!accum) accum = new unsigned char[input_ptr->get_w() *
 		input_ptr->get_h() *
 		BC_CModels::components(input_ptr->get_color_model()) *
 		MAX(sizeof(int), sizeof(float))];
@@ -416,7 +416,7 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	max_y1 = 0;
 	max_x2 = w;
 	max_y2 = h;
-		
+
 	delete_tables();
 	scale_x_table = new int*[config.steps];
 	scale_y_table = new int*[config.steps];
@@ -426,7 +426,7 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	{
 		float fraction = (float)(i - config.steps / 2) / config.steps;
 		float inv_fraction = 1.0 - fraction;
-		
+
 		int x = (int)(fraction * x_offset);
 		int y = (int)(fraction * y_offset);
 		float out_x1 = min_x1 * fraction + max_x1 * inv_fraction;
@@ -444,7 +444,7 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		int *y_table;
                 scale_y_table[i] = y_table = new int[(int)(h + 1)];
                 scale_x_table[i] = x_table = new int[(int)(w + 1)];
-			
+
 		for(int j = 0; j < h; j++)
 		{
 			y_table[j] = (int)((j - out_y1) * scale_y) + y;
@@ -455,10 +455,10 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		}
 	}
 
-	bzero(accum, 
-		input_ptr->get_w() * 
-		input_ptr->get_h() * 
-		BC_CModels::components(input_ptr->get_color_model()) * 
+	bzero(accum,
+		input_ptr->get_w() *
+		input_ptr->get_h() *
+		BC_CModels::components(input_ptr->get_color_model()) *
 		MAX(sizeof(int), sizeof(float)));
 	engine->process_packages();
 	return 0;
@@ -534,7 +534,7 @@ MotionBlurPackage::MotionBlurPackage()
 
 
 
-MotionBlurUnit::MotionBlurUnit(MotionBlurEngine *server, 
+MotionBlurUnit::MotionBlurUnit(MotionBlurEngine *server,
 	MotionBlurMain *plugin)
  : LoadClient(server)
 {
@@ -698,8 +698,8 @@ void MotionBlurUnit::process_package(LoadPackage *package)
 
 
 
-MotionBlurEngine::MotionBlurEngine(MotionBlurMain *plugin, 
-	int total_clients, 
+MotionBlurEngine::MotionBlurEngine(MotionBlurMain *plugin,
+	int total_clients,
 	int total_packages)
  : LoadServer(total_clients, total_packages)
 {

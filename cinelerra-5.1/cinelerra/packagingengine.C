@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "packagingengine.h"
@@ -48,8 +48,8 @@ PackagingEngineDefault::~PackagingEngineDefault()
 int PackagingEngineDefault::create_packages_single_farm(
 		EDL *edl,
 		Preferences *preferences,
-		Asset *default_asset, 
-		double total_start, 
+		Asset *default_asset,
+		double total_start,
 		double total_end)
 {
 	this->total_start = total_start;
@@ -76,9 +76,9 @@ int PackagingEngineDefault::create_packages_single_farm(
 	int number_start;      // Character in the filename path at which the number begins
 	int total_digits;      // Total number of digits including padding the user specified.
 
-	Render::get_starting_number(default_asset->path, 
+	Render::get_starting_number(default_asset->path,
 		current_number,
-		number_start, 
+		number_start,
 		total_digits,
 		3);
 
@@ -87,8 +87,8 @@ int PackagingEngineDefault::create_packages_single_farm(
 		RenderPackage *package = packages[i] = new RenderPackage;
 
 // Create file number differently if image file sequence
-		Render::create_filename(package->path, 
-			default_asset->path, 
+		Render::create_filename(package->path,
+			default_asset->path,
 			current_number,
 			total_digits,
 			number_start);
@@ -97,7 +97,7 @@ int PackagingEngineDefault::create_packages_single_farm(
 	return 0;
 }
 
-RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per_second, 
+RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per_second,
 		int client_number,
 		int use_local_rate)
 {
@@ -128,14 +128,14 @@ RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per
 			else
 // No useful speed data.  May get infinity for real fast jobs.
 			if(frames_per_second > 0x7fffff || frames_per_second < 0 ||
-				EQUIV(frames_per_second, 0) || 
+				EQUIV(frames_per_second, 0) ||
 				EQUIV(avg_frames_per_second, 0))
 			{
 				scaled_len = MAX(package_len, min_package_len);
 
-				result->audio_end = audio_position + 
+				result->audio_end = audio_position +
 					Units::round(scaled_len * default_asset->sample_rate);
-				result->video_end = video_position + 
+				result->video_end = video_position +
 					Units::round(scaled_len * default_asset->frame_rate);
 
 // If we get here without any useful speed data render the whole thing.
@@ -154,15 +154,15 @@ RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per
 				video_position = result->video_end;
 			}
 			else
-// Useful speed data and future packages exist.  Scale the 
+// Useful speed data and future packages exist.  Scale the
 // package size to fit the requestor.
 			{
-				scaled_len = package_len * 
-					frames_per_second / 
+				scaled_len = package_len *
+					frames_per_second /
 					avg_frames_per_second;
 				scaled_len = MAX(scaled_len, min_package_len);
 
-				result->audio_end = result->audio_start + 
+				result->audio_end = result->audio_start +
 					Units::to_int64(scaled_len * default_asset->sample_rate);
 				result->video_end = result->video_start +
 					Units::to_int64(scaled_len * default_asset->frame_rate);
@@ -176,7 +176,7 @@ RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per
 // Package size is no longer touched between total_packages and total_allocated
 				if(current_package < total_packages - 1)
 				{
-					package_len = (double)(audio_end - audio_position) / 
+					package_len = (double)(audio_end - audio_position) /
 						(double)default_asset->sample_rate /
 						(double)(total_packages - current_package);
 				}
@@ -184,10 +184,10 @@ RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per
 			}
 
 			current_package++;
-//printf("Dispatcher::get_package 50 %lld %lld %lld %lld\n", 
-//result->audio_start, 
-//result->video_start, 
-//result->audio_end, 
+//printf("Dispatcher::get_package 50 %lld %lld %lld %lld\n",
+//result->audio_start,
+//result->video_start,
+//result->audio_end,
 //result->video_end);
 		}
 		return result;
@@ -205,10 +205,10 @@ void PackagingEngineDefault::get_package_paths(ArrayList<char*> *path_list)
 
 int64_t PackagingEngineDefault::get_progress_max()
 {
-	return Units::to_int64(default_asset->sample_rate * 
+	return Units::to_int64(default_asset->sample_rate *
 			(total_end - total_start)) +
-		Units::to_int64(preferences->render_preroll * 
-			2 * 
+		Units::to_int64(preferences->render_preroll *
+			2 *
 			default_asset->sample_rate);
 }
 

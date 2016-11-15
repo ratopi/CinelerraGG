@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcsignals.h"
@@ -80,7 +80,7 @@ FrameCache::~FrameCache()
 
 
 // Returns 1 if frame exists in cache and copies it to the frame argument.
-int FrameCache::get_frame(VFrame *frame, 
+int FrameCache::get_frame(VFrame *frame,
 	int64_t position,
 	int layer,
 	double frame_rate,
@@ -90,18 +90,18 @@ int FrameCache::get_frame(VFrame *frame,
 	FrameCacheItem *result = 0;
 
 	if(frame_exists(frame,
-		position, 
+		position,
 		layer,
 		frame_rate,
 		&result,
 		source_id))
 	{
-		if(result->data) 
+		if(result->data)
 		{
 // Frame may have come from the readahead thread.
 // Those frames are in the codec color model.
 // But to pass frame_exists, they must be identical.
-// 			BC_CModels::transfer(frame->get_rows(), 
+// 			BC_CModels::transfer(frame->get_rows(),
 // 				result->data->get_rows(),
 // 				result->data->get_y(),
 // 				result->data->get_u(),
@@ -109,15 +109,15 @@ int FrameCache::get_frame(VFrame *frame,
 // 				frame->get_y(),
 // 				frame->get_u(),
 // 				frame->get_v(),
-// 				0, 
-// 				0, 
-// 				result->data->get_w(), 
+// 				0,
+// 				0,
+// 				result->data->get_w(),
 // 				result->data->get_h(),
-// 				0, 
-// 				0, 
-// 				frame->get_w(), 
+// 				0,
+// 				0,
+// 				frame->get_w(),
 // 				frame->get_h(),
-// 				result->data->get_color_model(), 
+// 				result->data->get_color_model(),
 // 				frame->get_color_model(),
 // 				0,
 // 				result->data->get_w(),
@@ -200,7 +200,7 @@ void FrameCache::put_frame(VFrame *frame, int64_t position,
 	item->layer = layer;
 	item->frame_rate = frame_rate;
 	item->source_id = source_id;
-	if(indexable) 
+	if(indexable)
 		item->path = cstrdup(indexable->path);
 
 	item->age = position < 0 ? INT_MAX : get_age();
@@ -213,7 +213,7 @@ void FrameCache::put_frame(VFrame *frame, int64_t position,
 
 
 
-int FrameCache::frame_exists(VFrame *format, int64_t position, 
+int FrameCache::frame_exists(VFrame *format, int64_t position,
 	int layer, double frame_rate, FrameCacheItem **item_return, int source_id)
 {
 	FrameCacheItem *item = (FrameCacheItem*)get_item(position);
@@ -237,7 +237,7 @@ int FrameCache::frame_exists(VFrame *format, int64_t position,
 // item->data);
 // format->dump_params();
 
-// This originally tested the frame stacks because a change in the 
+// This originally tested the frame stacks because a change in the
 // interpolate plugin could cause CR2 to interpolate or not interpolate.
 // This was disabled.
 		if(EQUIV(item->frame_rate, frame_rate) &&
@@ -254,7 +254,7 @@ int FrameCache::frame_exists(VFrame *format, int64_t position,
 	return 0;
 }
 
-int FrameCache::frame_exists(int64_t position, 
+int FrameCache::frame_exists(int64_t position,
 	int layer,
 	double frame_rate,
 	int color_model,
@@ -302,7 +302,7 @@ void FrameCache::dump()
  	printf("FrameCache::dump 1 %d\n", total());
  	FrameCacheItem *item = (FrameCacheItem *)first;
 	while( item ) {
- 		printf("  position=%jd frame_rate=%f age=%d size=%ld\n", 
+ 		printf("  position=%jd frame_rate=%f age=%d size=%ld\n",
  			item->position, item->frame_rate, item->age,
  			item->data->get_data_size());
 		item = (FrameCacheItem*)item->next;

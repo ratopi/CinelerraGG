@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcsignals.h"
@@ -42,7 +42,7 @@ UndoStackItem* UndoStack::push()
 		current = insert_after(current);
 	else
 		current = insert_before(first);
-	
+
 // delete future undos if necessary
 	if(current && current->next)
 	{
@@ -72,7 +72,7 @@ UndoStackItem* UndoStack::push()
 			delete [] temp_data;
 		}
 	}
-	
+
 	return current;
 }
 
@@ -93,7 +93,7 @@ UndoStackItem* UndoStack::pull_next()
 // don't change current if there is no next entry
 	else
 		return 0;
-		
+
 	return current;
 }
 
@@ -106,10 +106,10 @@ void UndoStack::dump(FILE *fp)
 // Dump most recent
 	while(current && i < 10)
 	{
-		fprintf(fp,"  %d %p %s %c\n", 
-			i++, 
-			current, 
-			current->get_description(), 
+		fprintf(fp,"  %d %p %s %c\n",
+			i++,
+			current,
+			current->get_description(),
 			current == this->current ? '*' : ' ');
 		current = PREVIOUS;
 	}
@@ -133,7 +133,7 @@ void UndoStack::dump(FILE *fp)
 
 
 
-// These difference routines are straight out of the Heroinediff/Heroinepatch 
+// These difference routines are straight out of the Heroinediff/Heroinepatch
 // utilities.
 
 
@@ -149,7 +149,7 @@ void UndoStack::dump(FILE *fp)
 // Count everything up to first difference as equal.
 // Determine length of different block by searching for transposition with most
 // similar characters.
-// For every byte in different block, search for occurrence of 
+// For every byte in different block, search for occurrence of
 // transposed copy longer than a record header in remaining old buffer.
 // If no match is found, add 1 to the different block length and try the next
 // byte.  Once the most similar match is found, store the changed data leading up to it in the
@@ -159,7 +159,7 @@ void UndoStack::dump(FILE *fp)
 // Algorithm 2:
 // Search backwards from end of both files for last difference.
 // Count all data from last same bytes as a transposition.
-// Search forwards from start of both files until last same bytes 
+// Search forwards from start of both files until last same bytes
 // for differences.
 
 
@@ -178,8 +178,8 @@ void UndoStack::dump(FILE *fp)
 // The next 4 bytes are the number of bytes of new data.
 // The next 4 bytes are the number of bytes of old data replaced.
 // The new data follows.
-static void append_record(unsigned char **result, 
-	int *result_size, 
+static void append_record(unsigned char **result,
+	int *result_size,
 	unsigned char *new_data,
 	int new_offset,
 	int new_size,
@@ -208,7 +208,7 @@ static void append_record(unsigned char **result,
 
 
 
-static unsigned char* get_difference_fast(unsigned char *before, 
+static unsigned char* get_difference_fast(unsigned char *before,
 		int before_len,
 		unsigned char *after,
 		int after_len,
@@ -228,7 +228,7 @@ static unsigned char* get_difference_fast(unsigned char *before,
 	unsigned char *last_difference_before = before + before_len - 1;
 	while(1)
 	{
-		if(last_difference_after < after || 
+		if(last_difference_after < after ||
 			last_difference_before < before) break;
 		if(*last_difference_after != *last_difference_before)
 		{
@@ -254,7 +254,7 @@ static unsigned char* get_difference_fast(unsigned char *before,
 // Scan forward for first difference
 	while(!done)
 	{
-		if(before_ptr < before_end && 
+		if(before_ptr < before_end &&
 			after_ptr < after_end)
 		{
 // Both characters equal
@@ -263,7 +263,7 @@ static unsigned char* get_difference_fast(unsigned char *before,
 				after_ptr < last_difference_after)
 			{
 				before_ptr++;
-				after_ptr++;			
+				after_ptr++;
 			}
 			else
 // Characters differ
@@ -302,8 +302,8 @@ static unsigned char* get_difference_fast(unsigned char *before,
 					char string[1024];
 					memcpy(string, after_difference_start, MIN(after_len, 40));
 					string[MIN(after_len, 40)] = 0;
-					printf("after_offset=0x%x before_offset=0x%x after_size=%d before_size=%d \"%s\"\n", 
-						after_start, 
+					printf("after_offset=0x%x before_offset=0x%x after_size=%d before_size=%d \"%s\"\n",
+						after_start,
 						before_start,
 						after_len,
 						before_len,
@@ -360,7 +360,7 @@ static void get_record(unsigned char **patch_ptr,
 
 
 
-static unsigned char* apply_difference(unsigned char *before, 
+static unsigned char* apply_difference(unsigned char *before,
 		int before_len,
 		unsigned char *patch,
 		int patch_len,
@@ -518,7 +518,7 @@ void UndoStackItem::set_data(char *data)
 // FILE *test3 = fopen("/tmp/undo2.diff", "w");
 // fwrite(this->data, this->data_size, 1, test3);
 // fclose(test3);
-// 
+//
 //printf("UndoStackItem::set_data 3 %d %d\n", new_size, this->data_size);
 
 // Diff was bigger than original.

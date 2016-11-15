@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -47,7 +47,7 @@ LoadModeItem::LoadModeItem(const char *text, int value)
 }
 
 
-LoadMode::LoadMode(MWindow *mwindow, BC_WindowBase *window, 
+LoadMode::LoadMode(MWindow *mwindow, BC_WindowBase *window,
 	int x, int y, int *output, int use_nothing)
 {
 	this->mwindow = mwindow;
@@ -87,7 +87,7 @@ char* LoadMode::mode_to_text()
 {
 	for(int i = 0; i < load_modes.total; i++)
 	{
-		if(load_modes.values[i]->value == *output) 
+		if(load_modes.values[i]->value == *output)
 			return load_modes.values[i]->get_text();
 	}
 	return _("Unknown");
@@ -101,7 +101,7 @@ int LoadMode::create_objects()
 
 	window->add_subwindow(title = new BC_Title(x, y, _("Insertion strategy:")));
 	y += title->get_h();
-	window->add_subwindow(textbox = new BC_TextBox(x, y, 
+	window->add_subwindow(textbox = new BC_TextBox(x, y,
 		mwindow->theme->loadmode_w, 1, default_text));
 	x += textbox->get_w();
 	window->add_subwindow(listbox = new LoadModeListBox(window, this, x, y));
@@ -135,16 +135,16 @@ int LoadMode::reposition_window(int x, int y)
 	y += 20;
 	textbox->reposition_window(x, y);
 	x += textbox->get_w();
-	listbox->reposition_window(x, 
-		y, 
+	listbox->reposition_window(x,
+		y,
 		mwindow->theme->loadmode_w);
 	return 0;
 }
 
 
-LoadModeListBox::LoadModeListBox(BC_WindowBase *window, 
-	LoadMode *loadmode, 
-	int x, 
+LoadModeListBox::LoadModeListBox(BC_WindowBase *window,
+	LoadMode *loadmode,
+	int x,
 	int y)
  : BC_ListBox(x,
  	y,

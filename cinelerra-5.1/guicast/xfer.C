@@ -164,7 +164,7 @@ void BC_Xfer::init(
 	this->out_pixelsize = BC_CModels::calculate_pixelsize(out_colormodel);
 	this->scale = (out_w != in_w) || (in_x != 0);
 
-/* + 1 so we don't overflow when calculating in advance */ 
+/* + 1 so we don't overflow when calculating in advance */
 	column_table = new int[out_w+1];
         double hscale = (double)in_w/out_w;
 	for( int i=0; i<out_w; ++i ) {
@@ -260,7 +260,7 @@ void BC_Xfer::XFER_rgba8888_to_transparency(unsigned y0, unsigned y1)
       if( !bit_no ) { *outp++ = bit_vec;  bit_vec = 0; }
     }
     if( bit_no ) *outp = bit_vec;
-  } 
+  }
 }
 
 BC_Xfer::SlicerList BC_Xfer::slicers;

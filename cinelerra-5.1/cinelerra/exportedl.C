@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2006 Andraz Tori
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "asset.h"
@@ -54,7 +54,7 @@ ExportEDLAsset::ExportEDLAsset(MWindow *mwindow, EDL *edl)
 {
 	this->mwindow = mwindow;
 	this->edl = edl;
-	
+
 	path[0] = 0;
 	edl_type = EDLTYPE_CMX3600;
 	track_number = -1;
@@ -67,11 +67,11 @@ ExportEDLAsset::~ExportEDLAsset()
 void ExportEDLAsset::double_to_CMX3600(double seconds, double frame_rate, char *str)
 {
 	char tmp[20];
-	Units::totext(tmp, 
-			seconds, 
-			TIME_HMSF, 
-			0, // sample_rate ... unnecessary 
-			frame_rate, 
+	Units::totext(tmp,
+			seconds,
+			TIME_HMSF,
+			0, // sample_rate ... unnecessary
+			frame_rate,
 			0);    // frames per foot
 	if ((int)(seconds / 3600) <= 9)
 	{
@@ -81,7 +81,7 @@ void ExportEDLAsset::double_to_CMX3600(double seconds, double frame_rate, char *
 	{
 		strcpy(str, tmp);
 	}
-	
+
 //	str[8]='.';
 
 	//sprintf(str, "%02d:%02d:%02d:%02d", hour, minute, second, hundredths);
@@ -101,7 +101,7 @@ int ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sou
 	if (asset)
 	{
 		// reelname should be 8 chars long
-		
+
 		strncpy(reel_name, asset->reel_name, 9);
 		if (strlen(asset->reel_name) > 8)
 		{
@@ -110,7 +110,7 @@ int ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sou
 		reel_name[8] = 0;
 		for (int i = strlen(reel_name); i<8; i++)
 			reel_name[i] = ' ';
-			
+
 		edit_sourcestart = (double)asset->tcstart / asset->frame_rate
 			+ track->from_units(edit->startsource);
 		edit_sourceend = (double)asset->tcstart / asset->frame_rate
@@ -122,7 +122,7 @@ int ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sou
 		edit_sourcestart = 0;
 		edit_sourceend = track->from_units(edit->length);
 	}
-	
+
 	edit_deststart = track->from_units(edit->startproject);
 	edit_destend = track->from_units(edit->startproject + edit->length);
 
@@ -130,7 +130,7 @@ int ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sou
 	double_to_CMX3600(edit_sourceend, frame_rate, sourceoutpoint);
 	double_to_CMX3600(edit_deststart, frame_rate, destinpoint);
 	double_to_CMX3600(edit_destend, frame_rate, destoutpoint);
-	
+
 	return 0;
 }
 
@@ -148,22 +148,22 @@ void ExportEDLAsset::export_it()
 		track;
 		track = track->next)
 	{
-		if (serial == track_number) 
-			break;		
+		if (serial == track_number)
+			break;
 		serial ++;
 	}
-	
-	
+
+
 	int last_dissolve = 1;
 
-	if (edl_type == EDLTYPE_CMX3600) 
+	if (edl_type == EDLTYPE_CMX3600)
 	{
 
 		// TODO: Find docs about exact header for CMX3600
 		fprintf(fh, "TITLE: Cinproj   FORMAT: CMX 3600 4-Ch\n");
 
 		int colnum = 1;
-		
+
 
 		for (Edit *edit = track->edits->first;
 			edit;
@@ -181,7 +181,7 @@ void ExportEDLAsset::export_it()
 				strcpy(avselect, "A   ");
 			else
 				strcpy(avselect, "V   ");
-			
+
 			//if (edit->transition)
 			//	printf("title: %s, length: %i\n", edit->transition->title, edit->transition->length);
 			if (edit->transition && !strcmp(edit->transition->title, "Dissolve"))
@@ -195,7 +195,7 @@ void ExportEDLAsset::export_it()
 					fprintf(fh, "%03d %8s %s %4s %3s", colnum, reel_name, avselect, edittype, cutinfo);
 					fprintf(fh, " %s %s", last_sourceout, last_sourceout);
 					fprintf(fh, " %s %s", destinpoint, destinpoint);
-					fprintf(fh,"\n");		
+					fprintf(fh,"\n");
 				} else
 				{
 					colnum --;
@@ -205,23 +205,23 @@ void ExportEDLAsset::export_it()
 				fprintf(fh, " %s %s", sourceinpoint, sourceoutpoint);
 				fprintf(fh, " %s %s", destinpoint, destoutpoint);
 				fprintf(fh,"\n");
-				last_dissolve = 1;		
+				last_dissolve = 1;
 			} else
 			{
 							edit_to_timecodes(edit, sourceinpoint, sourceoutpoint, destinpoint, destoutpoint, reel_name);
 				fprintf(fh, "%03d %8s %s %4s %3s", colnum, reel_name, avselect, edittype, cutinfo);
 				fprintf(fh, " %s %s", sourceinpoint, sourceoutpoint);
 				fprintf(fh, " %s %s", destinpoint, destoutpoint);
-				fprintf(fh,"\n");		
+				fprintf(fh,"\n");
 				last_dissolve = 0;
 			}
 
 			colnum ++;
-			
+
 		}
-		
+
 	}
-		
+
 	fclose(fh);
 
 
@@ -258,7 +258,7 @@ ExportEDLItem::ExportEDLItem(MWindow *mwindow)
 	set_shift(1);
 }
 
-int ExportEDLItem::handle_event() 
+int ExportEDLItem::handle_event()
 {
 	mwindow->exportedl->start_interactive();
 	return 1;
@@ -299,7 +299,7 @@ void ExportEDL::run()
 {
 	int result = 0;
 	exportasset = new ExportEDLAsset(mwindow, mwindow->edl);
-	
+
 	exportasset->load_defaults();
 
 // Get format from user
@@ -324,11 +324,11 @@ void ExportEDL::run()
 			if (!result)
 			{
 				ArrayList<char*> paths;
-			
+
 				paths.append(exportasset->path);
 				filesok = ConfirmSave::test_files(mwindow, &paths);
 			}
-			
+
 		} while (!result && filesok);
 	mwindow->save_defaults();
 	exportasset->save_defaults();
@@ -351,24 +351,24 @@ void ExportEDL::run()
 #define WIDTH 410
 #define HEIGHT 400
 
-static const char *list_titles[] = 
+static const char *list_titles[] =
 {
 	N_("No."),
 	N_("Track name")
 };
 
 
-static int list_widths[] = 
+static int list_widths[] =
 {
 	40,
 	200
 };
-	
+
 ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportEDLAsset *exportasset)
- : BC_Window(_(PROGRAM_NAME ": Export EDL"), 
+ : BC_Window(_(PROGRAM_NAME ": Export EDL"),
  	mwindow->gui->get_screen_w(1, 0) / 2 - WIDTH / 2,
 	mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2,
- 	WIDTH, 
+ 	WIDTH,
 	HEIGHT,
 	(int)BC_INFINITY,
 	(int)BC_INFINITY,
@@ -391,8 +391,8 @@ ExportEDLWindow::~ExportEDLWindow()
 void ExportEDLWindow::create_objects()
 {
 	int x = 5, y = 5;
-	add_subwindow(new BC_Title(x, 
-		y, 
+	add_subwindow(new BC_Title(x,
+		y,
 			_("Select a file to export to:")));
 	y += 25;
 
@@ -408,13 +408,13 @@ void ExportEDLWindow::create_objects()
 	add_subwindow(path_button = new BrowseButton(
 		mwindow->theme, this, path_textbox, x, y - 4, exportasset->path,
 		_("Output to file"), _("Select a file to write to:"), 0));
-	
+
 	y += 34;
 	x = 5;
 	add_subwindow(new BC_Title(x, y, _("Select track to be exported:")));
 	y += 25;
 
-	
+
 	items_tracks[0].remove_all_objects();
 	items_tracks[1].remove_all_objects();
 	int serial = 0;
@@ -424,25 +424,25 @@ void ExportEDLWindow::create_objects()
 		track;
 		track = track->next)
 	{
-		
+
 		char tmp[10];
 		sprintf(tmp, "%i\n", serial+1);
-		
+
 		BC_ListBoxItem *listitem = new BC_ListBoxItem(tmp);
 		if (serial == exportasset->track_number)
 			listitem->set_selected(1);
 		items_tracks[0].append(listitem);
 		items_tracks[1].append(new BC_ListBoxItem(track->title));
 		serial ++;
-		
+
 	}
 
-	
+
 	add_subwindow(track_list = new ExportEDLWindowTrackList(this, x, y, 400, 200, items_tracks));
 
 	y += 5 + track_list->get_h();
 	add_subwindow(new BC_Title(x, y, _("Currently only CMX 3600 format is supported")));
-	
+
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
@@ -451,44 +451,44 @@ void ExportEDLWindow::create_objects()
 
 
 ExportEDLPathText::ExportEDLPathText(int x, int y, ExportEDLWindow *window)
- : BC_TextBox(x, y, 300, 1, window->exportasset->path) 
+ : BC_TextBox(x, y, 300, 1, window->exportasset->path)
 {
-	this->window = window; 
+	this->window = window;
 }
-ExportEDLPathText::~ExportEDLPathText() 
+ExportEDLPathText::~ExportEDLPathText()
 {
 }
-int ExportEDLPathText::handle_event() 
+int ExportEDLPathText::handle_event()
 {
 	strcpy(window->exportasset->path, get_text());
 //	window->handle_event();
 	return 1;
 }
 
-ExportEDLWindowTrackList::ExportEDLWindowTrackList(ExportEDLWindow *window, 
-	int x, 
-	int y, 
-	int w, 
-	int h, 
+ExportEDLWindowTrackList::ExportEDLWindowTrackList(ExportEDLWindow *window,
+	int x,
+	int y,
+	int w,
+	int h,
 	ArrayList<BC_ListBoxItem*> *track_list)
- : BC_ListBox(x, 
- 		y, 
-		w, 
-		h, 
-		LISTBOX_TEXT, 
+ : BC_ListBox(x,
+ 		y,
+		w,
+		h,
+		LISTBOX_TEXT,
 		track_list,
 		list_titles,
 		list_widths,
 		2)
-{ 
-	this->window = window; 
+{
+	this->window = window;
 }
 
-int ExportEDLWindowTrackList::handle_event() 
+int ExportEDLWindowTrackList::handle_event()
 {
 //	window->exportasset->track_number = get_selection_number(0, 0);
 //	printf("aaaaa %i\n", window->exportasset->track_number );
-//	window->set_done(0); 
+//	window->set_done(0);
 	return 1;
 }
 

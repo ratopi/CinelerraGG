@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bchash.h"
@@ -81,9 +81,9 @@ KeyFrame* KeyFrames::get_prev_keyframe(int64_t position,
 KeyFrame* KeyFrames::get_keyframe()
 {
 // Search for keyframe on or before selection
-	KeyFrame *result = 
+	KeyFrame *result =
 		get_prev_keyframe(
-			track->to_units(edl->local_session->get_selectionstart(1), 0), 
+			track->to_units(edl->local_session->get_selectionstart(1), 0),
 			PLAY_FORWARD);
 
 // Return nearest keyframe if not in automatic keyframe generation
@@ -93,7 +93,7 @@ KeyFrame* KeyFrames::get_keyframe()
 	}
 	else
 // Return new keyframe
-	if(result == (KeyFrame*)default_auto || 
+	if(result == (KeyFrame*)default_auto ||
 		result->position != track->to_units(edl->local_session->get_selectionstart(1), 0))
 	{
 		return (KeyFrame*)insert_auto(track->to_units(edl->local_session->get_selectionstart(1), 0));
@@ -121,7 +121,7 @@ void KeyFrames::update_parameter(KeyFrame *src)
 	{
 // Search for keyframe to write to
 		KeyFrame *dst = get_keyframe();
-		
+
 		dst->copy_data(src);
 	}
 	else
@@ -136,42 +136,42 @@ void KeyFrames::update_parameter(KeyFrame *src)
 		int64_t start = track->to_units(selection_start, 0);
 		int64_t end = track->to_units(selection_end, 0);
 		KeyFrame *current = get_prev_keyframe(
-				start, 
+				start,
 				PLAY_FORWARD);
 
 // The first one determines the changed parameters since it is the one displayed
 // in the GUI.
 		current->get_diff(src,
-			&params, 
+			&params,
 			&text,
 			&extra);
 
 
-if(debug) printf("KeyFrames::update_parameter %d params=%p position=%jd start=%jd\n", 
+if(debug) printf("KeyFrames::update_parameter %d params=%p position=%jd start=%jd\n",
   __LINE__,  params, current->position, track->to_units(start, 0));
 
 if(debug && params)
 {
 for(int i = 0; i < params->size(); i++)
-printf("KeyFrames::update_parameter %d changed=%s %s\n", 
-__LINE__,  
+printf("KeyFrames::update_parameter %d changed=%s %s\n",
+__LINE__,
 params->get_key(i),
 params->get_value(i));
 }
 
 // Always update the first one
-		current->update_parameter(params, 
+		current->update_parameter(params,
 			text,
 			extra);
 		for(current = (KeyFrame*)NEXT ; current && current->position < end; current = (KeyFrame*)NEXT)
 		{
-if(debug) printf("KeyFrames::update_parameter %d position=%jd\n", 
+if(debug) printf("KeyFrames::update_parameter %d position=%jd\n",
   __LINE__, current->position);
-			current->update_parameter(params, 
+			current->update_parameter(params,
 				text,
 				extra);
 		}
-		
+
 		delete params;
 		delete [] text,
 		delete [] extra;

@@ -2,27 +2,27 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "chantables.h"
 
 
-static CHANLIST ntsc_dvb[] = 
+static CHANLIST ntsc_dvb[] =
 {
     { "2",      57 },
     { "3",      63 },
@@ -134,7 +134,7 @@ static CHANLIST ntsc_dvb[] =
     { "109",  1043 },
 };
 
-static CHANLIST catv_dvb[] = 
+static CHANLIST catv_dvb[] =
 {
     { "2",     57 },
     { "3",     63 },
@@ -295,7 +295,7 @@ static CHANLIST catv_dvb[] =
     { "158",    999 },
 };
 
-static CHANLIST ntsc_bcast[] = 
+static CHANLIST ntsc_bcast[] =
 {
     { "2",	 55250 },
     { "3",	 61250 },
@@ -381,7 +381,7 @@ static CHANLIST ntsc_bcast[] =
     { "83",	885250 },
 };
 
-static CHANLIST ntsc_cable[] = 
+static CHANLIST ntsc_cable[] =
 {
     { "1",	 73250 },
     { "2",	 55250 },
@@ -518,14 +518,14 @@ static CHANLIST ntsc_cable[] =
     { "T14",	 50250 }
 };
 
-static CHANLIST ntsc_hrc[] = 
+static CHANLIST ntsc_hrc[] =
 {
     { "1",	  72000 },
-    { "2",	  54000 }, 
-    { "3",	  60000 }, 
-    { "4",	  66000 }, 
-    { "5",	  78000 }, 
-    { "6",	  84000 }, 
+    { "2",	  54000 },
+    { "3",	  60000 },
+    { "4",	  66000 },
+    { "5",	  78000 },
+    { "6",	  84000 },
     { "7",	 174000 },
     { "8",	 180000 },
     { "9",	 186000 },
@@ -645,17 +645,17 @@ static CHANLIST ntsc_hrc[] =
     { "123",	 786000 },
     { "124",	 792000 },
     { "125",	 798000 },
-    { "T7",		   7000 },  
-    { "T8",		  13000 }, 
-    { "T9",		  19000 }, 
-    { "T10",	  25000 }, 
-    { "T11",	  31000 }, 
-    { "T12",	  37000 }, 
-    { "T13",	  43000 }, 
-    { "T14",	  49000 }, 
+    { "T7",		   7000 },
+    { "T8",		  13000 },
+    { "T9",		  19000 },
+    { "T10",	  25000 },
+    { "T11",	  31000 },
+    { "T12",	  37000 },
+    { "T13",	  43000 },
+    { "T14",	  49000 },
 };
 
-static CHANLIST ntsc_bcast_jp[] = 
+static CHANLIST ntsc_bcast_jp[] =
 {
     { "1",   91250 },
     { "2",   97250 },
@@ -721,7 +721,7 @@ static CHANLIST ntsc_bcast_jp[] =
     { "62", 765250 },
 };
 
-static CHANLIST ntsc_cable_jp[] = 
+static CHANLIST ntsc_cable_jp[] =
 {
     { "13",	109250 },
     { "14",	115250 },
@@ -776,7 +776,7 @@ static CHANLIST ntsc_cable_jp[] =
     { "63",	463250 },
 };
 
-static CHANLIST pal_australia[] = 
+static CHANLIST pal_australia[] =
 {
     { "0",	 46250 },
     { "1",	 57250 },
@@ -984,7 +984,7 @@ static CHANLIST pal_australia[] =
     { "68",  847250 },	\
     { "69",  855250 }
 
-static CHANLIST pal_europe[] = 
+static CHANLIST pal_europe[] =
 {
     FREQ_CCIR_I_III,
     FREQ_CCIR_SL_SH,
@@ -992,7 +992,7 @@ static CHANLIST pal_europe[] =
     FREQ_UHF
 };
 
-static CHANLIST pal_europe_east[] = 
+static CHANLIST pal_europe_east[] =
 {
     FREQ_OIRT_I_III,
     FREQ_OIRT_SL_SH,
@@ -1000,7 +1000,7 @@ static CHANLIST pal_europe_east[] =
     FREQ_UHF
 };
 
-static CHANLIST pal_italy[] = 
+static CHANLIST pal_italy[] =
 {
     { "2",	 53750 },
     { "3",	 62250 },
@@ -1015,7 +1015,7 @@ static CHANLIST pal_italy[] =
     { "12",	224250 },
 };
 
-static CHANLIST pal_ireland[] = 
+static CHANLIST pal_ireland[] =
 {
     { "0",    45750 },
     { "1",    53750 },
@@ -1029,10 +1029,10 @@ static CHANLIST pal_ireland[] =
     FREQ_UHF,
 };
 
-static CHANLIST pal_newzealand[] = 
+static CHANLIST pal_newzealand[] =
 {
-    { "1", 	  45250 }, 
-    { "2",	  55250 }, 
+    { "1", 	  45250 },
+    { "2",	  55250 },
     { "3",	  62250 },
     { "4",	 175250 },
     { "5",	 182250 },
@@ -1044,7 +1044,7 @@ static CHANLIST pal_newzealand[] =
     { "10",	 217250 },
 };
 
-CHANLISTS chanlists[] = 
+CHANLISTS chanlists[] =
 {
     { "ntsc-dvb",        ntsc_dvb,        CHAN_COUNT(ntsc_dvb)        },
     { "catv-dvb",        catv_dvb,        CHAN_COUNT(catv_dvb)        },

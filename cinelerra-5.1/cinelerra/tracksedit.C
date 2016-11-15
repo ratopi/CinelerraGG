@@ -560,7 +560,7 @@ int Tracks::delete_tracks()
 	return total_deleted;
 }
 
-void Tracks::move_edits(ArrayList<Edit*> *edits, 
+void Tracks::move_edits(ArrayList<Edit*> *edits,
 	Track *track,
 	double position,
 	int edit_labels,  // Ignored
@@ -629,9 +629,9 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 
 					temp_autoconf.set_all(1);
 
-					source_track->automation->copy(source_edit->startproject, 
-						source_edit->startproject + source_edit->length, 
-						&temp, 
+					source_track->automation->copy(source_edit->startproject,
+						source_edit->startproject + source_edit->length,
+						&temp,
 						0,
 						0);
 					temp.terminate_string();
@@ -639,7 +639,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 // Insert new keyframes
 //printf("Tracks::move_edits 2 %d %p\n", result->startproject, result->asset);
 					source_track->automation->clear(source_edit->startproject,
-						source_edit->startproject + source_edit->length, 
+						source_edit->startproject + source_edit->length,
 						&temp_autoconf,
 						1);
 					int64_t position_a = position_i;
@@ -647,45 +647,45 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					{
 						if (position_a > source_edit->startproject)
 							position_a -= source_length;
-					}	        
+					}
 
-					dest_track->automation->paste_silence(position_a, 
+					dest_track->automation->paste_silence(position_a,
 						position_a + source_length);
 					while(!temp.read_tag())
-						dest_track->automation->paste(position_a, 
+						dest_track->automation->paste(position_a,
 							source_length, 1.0, &temp, 0, 1,
 							&temp_autoconf);
 
 // Insert new edit
-					Edit *dest_edit = dest_track->edits->shift(position_i, 
+					Edit *dest_edit = dest_track->edits->shift(position_i,
 						source_length);
-					Edit *result = dest_track->edits->insert_before(dest_edit, 
+					Edit *result = dest_track->edits->insert_before(dest_edit,
 						dest_track->edits->create_edit());
 					result->copy_from(source_edit);
 					result->startproject = position_i;
 					result->length = source_length;
 
 // Clear source
-					source_track->edits->clear(source_edit->startproject, 
+					source_track->edits->clear(source_edit->startproject,
 						source_edit->startproject + source_length);
 
 	/*
 //this is outline for future thinking how it is supposed to be done trough C&P mechanisms
 					temp.reset_tag();
-					source_track->cut(source_edit->startproject, 
-						source_edit->startproject + source_edit->length, 
-						&temp, 
+					source_track->cut(source_edit->startproject,
+						source_edit->startproject + source_edit->length,
+						&temp,
 						NULL);
 					temp.terminate_string();
 					temp.rewind();
-					dest_track->paste_silence(position_a, 
+					dest_track->paste_silence(position_a,
 						position_a + source_length,
 						edit_plugins);
 					while(!temp.read_tag())
-						dest_track->paste(position_a,          // MISSING PIECE OF FUNCTIONALITY 
-							source_length, 
-							1.0, 
-							&temp, 
+						dest_track->paste(position_a,          // MISSING PIECE OF FUNCTIONALITY
+							source_length,
+							1.0,
+							&temp,
 							0,
 							&temp_autoconf);
 	*/
@@ -696,18 +696,18 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				// ONLY edit is moved, all other edits stay where they are
 				{
 					// Copy edit to temp, delete the edit, insert the edit
-					Edit *temp_edit = dest_track->edits->create_edit(); 
+					Edit *temp_edit = dest_track->edits->create_edit();
 					temp_edit->copy_from(source_edit);
 					// we call the edits directly since we do not want to move keyframes or anything else
-					source_track->edits->clear(source_startproject, 
+					source_track->edits->clear(source_startproject,
 						source_startproject + source_length);
-					source_track->edits->paste_silence(source_startproject, 
-						source_startproject + source_length); 
+					source_track->edits->paste_silence(source_startproject,
+						source_startproject + source_length);
 
-					dest_track->edits->clear(position_i, 
+					dest_track->edits->clear(position_i,
 						position_i + source_length);
 					Edit *dest_edit = dest_track->edits->shift(position_i,  source_length);
-					Edit *result = dest_track->edits->insert_before(dest_edit, 
+					Edit *result = dest_track->edits->insert_before(dest_edit,
 						dest_track->edits->create_edit());
 					result->copy_from(temp_edit);
 					result->startproject = position_i;

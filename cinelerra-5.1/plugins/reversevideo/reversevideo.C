@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -101,11 +101,11 @@ ReverseVideoConfig::ReverseVideoConfig()
 
 
 ReverseVideoWindow::ReverseVideoWindow(ReverseVideo *plugin)
- : PluginClientWindow(plugin, 
-	210, 
-	160, 
-	200, 
-	160, 
+ : PluginClientWindow(plugin,
+	210,
+	160,
+	200,
+	160,
 	0)
 {
 	this->plugin = plugin;
@@ -119,8 +119,8 @@ void ReverseVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(enabled = new ReverseVideoEnabled(plugin, 
-		x, 
+	add_subwindow(enabled = new ReverseVideoEnabled(plugin,
+		x,
 		y));
 	show_window();
 	flush();
@@ -137,11 +137,11 @@ void ReverseVideoWindow::create_objects()
 
 
 
-ReverseVideoEnabled::ReverseVideoEnabled(ReverseVideo *plugin, 
-	int x, 
+ReverseVideoEnabled::ReverseVideoEnabled(ReverseVideo *plugin,
+	int x,
 	int y)
- : BC_CheckBox(x, 
-	y, 
+ : BC_CheckBox(x,
+	y,
 	plugin->config.enabled,
 	_("Enabled"))
 {
@@ -166,13 +166,13 @@ int ReverseVideoEnabled::handle_event()
 ReverseVideo::ReverseVideo(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 }
 
 
 ReverseVideo::~ReverseVideo()
 {
-	
+
 }
 
 const char* ReverseVideo::plugin_title() { return _("Reverse video"); }
@@ -217,7 +217,7 @@ int ReverseVideo::load_configuration()
 	int64_t prev_position = edl_to_local(prev_keyframe->position);
 	int64_t next_position = edl_to_local(next_keyframe->position);
 
-	if(prev_position == 0 && next_position == 0) 
+	if(prev_position == 0 && next_position == 0)
 	{
 		next_position = prev_position = get_source_start();
 	}
@@ -268,9 +268,9 @@ int ReverseVideo::load_configuration()
 		input_position = range_end - get_source_position();
 		input_position = range_start + input_position + 1;
 	}
-// printf("ReverseVideo::load_configuration 2 start=%lld end=%lld current=%lld input=%lld\n", 
-// range_start, 
-// range_end, 
+// printf("ReverseVideo::load_configuration 2 start=%lld end=%lld current=%lld input=%lld\n",
+// range_start,
+// range_end,
 // get_source_position(),
 // input_position);
 

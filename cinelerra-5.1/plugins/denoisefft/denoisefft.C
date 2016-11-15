@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -106,8 +106,8 @@ class DenoiseFFTRemove : public CrossfadeFFT
 public:
 	DenoiseFFTRemove(DenoiseFFTEffect *plugin);
 	int signal_process();
-	int read_samples(int64_t output_sample, 
-		int samples, 
+	int read_samples(int64_t output_sample,
+		int samples,
 		Samples *buffer);
 	DenoiseFFTEffect *plugin;
 };
@@ -117,8 +117,8 @@ class DenoiseFFTCollect : public CrossfadeFFT
 public:
 	DenoiseFFTCollect(DenoiseFFTEffect *plugin);
 	int signal_process();
-	int read_samples(int64_t output_sample, 
-		int samples, 
+	int read_samples(int64_t output_sample,
+		int samples,
 		Samples *buffer);
 	DenoiseFFTEffect *plugin;
 };
@@ -132,7 +132,7 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int64_t size, 
+	int process_buffer(int64_t size,
 		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
@@ -207,9 +207,9 @@ int DenoiseFFTLevel::handle_event()
 	return 1;
 }
 
-DenoiseFFTSamples::DenoiseFFTSamples(DenoiseFFTEffect *plugin, 
-	int x, 
-	int y, 
+DenoiseFFTSamples::DenoiseFFTSamples(DenoiseFFTEffect *plugin,
+	int x,
+	int y,
 	char *text)
  : BC_PopupMenu(x, y, 100, text, 1)
 {
@@ -227,9 +227,9 @@ int DenoiseFFTSamples::handle_event()
 
 DenoiseFFTWindow::DenoiseFFTWindow(DenoiseFFTEffect *plugin)
  : PluginClientWindow(plugin,
- 	300, 
-	130, 
-	300, 
+ 	300,
+	130,
+	300,
 	130,
 	0)
 {
@@ -284,12 +284,12 @@ DenoiseFFTEffect::DenoiseFFTEffect(PluginServer *server)
  : PluginAClient(server)
 {
 	reset();
-	
+
 }
 
 DenoiseFFTEffect::~DenoiseFFTEffect()
 {
-	
+
 	if(reference) delete [] reference;
 	if(remove_engine) delete remove_engine;
 	if(collect_engine) delete collect_engine;
@@ -380,7 +380,7 @@ int DenoiseFFTEffect::load_configuration()
 	return 0;
 }
 
-int DenoiseFFTEffect::process_buffer(int64_t size, 
+int DenoiseFFTEffect::process_buffer(int64_t size,
 		Samples *buffer,
 		int64_t start_position,
 		int sample_rate)
@@ -400,9 +400,9 @@ int DenoiseFFTEffect::process_buffer(int64_t size,
 		remove_engine = new DenoiseFFTRemove(this);
 		remove_engine->initialize(WINDOW_SIZE);
 	}
-	remove_engine->process_buffer(start_position, 
+	remove_engine->process_buffer(start_position,
 		size,
-		buffer, 
+		buffer,
 		get_direction());
 
 	return 0;
@@ -474,8 +474,8 @@ int DenoiseFFTRemove::signal_process()
 	return 0;
 }
 
-int DenoiseFFTRemove::read_samples(int64_t output_sample, 
-	int samples, 
+int DenoiseFFTRemove::read_samples(int64_t output_sample,
+	int samples,
 	Samples *buffer)
 {
 	return plugin->read_samples(buffer,
@@ -504,8 +504,8 @@ int DenoiseFFTCollect::signal_process()
 	return 0;
 }
 
-int DenoiseFFTCollect::read_samples(int64_t output_sample, 
-	int samples, 
+int DenoiseFFTCollect::read_samples(int64_t output_sample,
+	int samples,
 	Samples *buffer)
 {
 	return plugin->read_samples(buffer,

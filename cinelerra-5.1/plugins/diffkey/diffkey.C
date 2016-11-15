@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef DIFFKEY_H
@@ -48,10 +48,10 @@ public:
 	DiffKeyConfig();
 	void copy_from(DiffKeyConfig &src);
 	int equivalent(DiffKeyConfig &src);
-	void interpolate(DiffKeyConfig &prev, 
-		DiffKeyConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(DiffKeyConfig &prev,
+		DiffKeyConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 
 	float threshold;
@@ -193,10 +193,10 @@ int DiffKeyConfig::equivalent(DiffKeyConfig &src)
 		do_value == src.do_value;
 }
 
-void DiffKeyConfig::interpolate(DiffKeyConfig &prev, 
-	DiffKeyConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void DiffKeyConfig::interpolate(DiffKeyConfig &prev,
+	DiffKeyConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -313,13 +313,13 @@ void DiffKeyGUI::create_objects()
 DiffKey::DiffKey(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 }
 
 DiffKey::~DiffKey()
 {
-	
+
 	delete engine;
 }
 
@@ -385,25 +385,25 @@ int DiffKey::process_buffer(VFrame **frame,
 	load_configuration();
 
 // Don't process if only 1 layer.
-	if(get_total_buffers() < 2) 
+	if(get_total_buffers() < 2)
 	{
-		read_frame(frame[0], 
-			0, 
-			start_position, 
+		read_frame(frame[0],
+			0,
+			start_position,
 			frame_rate,
 			get_use_opengl());
 		return 0;
 	}
 
 // Read frames from 2 layers
-	read_frame(frame[0], 
-		0, 
-		start_position, 
+	read_frame(frame[0],
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
-	read_frame(frame[1], 
-		1, 
-		start_position, 
+	read_frame(frame[1],
+		1,
+		start_position,
 		frame_rate,
 		get_use_opengl());
 
@@ -432,7 +432,7 @@ int DiffKey::process_buffer(VFrame **frame,
 int DiffKey::handle_opengl()
 {
 #ifdef HAVE_GL
-	static const char *diffkey_head = 
+	static const char *diffkey_head =
 		"uniform sampler2D tex_bg;\n"
 		"uniform sampler2D tex_fg;\n"
 		"uniform float threshold;\n"
@@ -443,17 +443,17 @@ int DiffKey::handle_opengl()
 		"	vec4 foreground = texture2D(tex_fg, gl_TexCoord[0].st);\n"
 		"	vec4 background = texture2D(tex_bg, gl_TexCoord[0].st);\n";
 
-	static const char *colorcube = 
+	static const char *colorcube =
 		"	float difference = length(foreground.rgb - background.rgb);\n";
 
-	static const char *yuv_value = 
+	static const char *yuv_value =
 		"	float difference = abs(foreground.r - background.r);\n";
 
-	static const char *rgb_value = 
+	static const char *rgb_value =
 		"	float difference = abs(dot(foreground.rgb, vec3(0.29900, 0.58700, 0.11400)) - \n"
 		"						dot(background.rgb, vec3(0.29900, 0.58700, 0.11400)));\n";
 
-	static const char *diffkey_tail = 
+	static const char *diffkey_tail =
 		"	vec4 result;\n"
 		"	if(difference < threshold)\n"
 		"		result.a = 0.0;\n"
@@ -483,13 +483,13 @@ int DiffKey::handle_opengl()
 	if(config.do_value)
 	{
 		if(BC_CModels::is_yuv(top_frame->get_color_model()))
-			shader_id = VFrame::make_shader(0, 
+			shader_id = VFrame::make_shader(0,
 				diffkey_head,
 				yuv_value,
 				diffkey_tail,
 				0);
 		else
-			shader_id = VFrame::make_shader(0, 
+			shader_id = VFrame::make_shader(0,
 				diffkey_head,
 				rgb_value,
 				diffkey_tail,
@@ -497,7 +497,7 @@ int DiffKey::handle_opengl()
 	}
 	else
 	{
-			shader_id = VFrame::make_shader(0, 
+			shader_id = VFrame::make_shader(0,
 				diffkey_head,
 				colorcube,
 				diffkey_tail,
@@ -543,7 +543,7 @@ int DiffKey::handle_opengl()
 
 
 
-DiffKeyEngine::DiffKeyEngine(DiffKey *plugin) 
+DiffKeyEngine::DiffKeyEngine(DiffKey *plugin)
  : LoadServer(plugin->get_project_smp() + 1, plugin->get_project_smp() + 1)
 {
 	this->plugin = plugin;
@@ -557,7 +557,7 @@ void DiffKeyEngine::init_packages()
 	{
 		DiffKeyPackage *pkg = (DiffKeyPackage*)get_package(i);
 		pkg->row1 = y;
-		pkg->row2 = MIN(y + increment, plugin->top_frame->get_h()); 
+		pkg->row2 = MIN(y + increment, plugin->top_frame->get_h());
 		y  += increment;
 	}
 }

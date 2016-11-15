@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -55,7 +55,7 @@ void EditLengthThread::start(Edit *edit)
 	double start = mwindow->edl->local_session->get_selectionstart();
 	double end = mwindow->edl->local_session->get_selectionend();
 
-// get the default length from the first edit selected	
+// get the default length from the first edit selected
 	if(!edit)
 	{
 		Track *track = 0;
@@ -76,8 +76,8 @@ void EditLengthThread::start(Edit *edit)
 					if(edit->startproject >= start_units &&
 						edit->startproject < end_units)
 					{
-						this->length = 
-							this->orig_length = 
+						this->length =
+							this->orig_length =
 							track->from_units(edit->length);
 						got_it = 1;
 					}
@@ -94,7 +94,7 @@ BC_Window* EditLengthThread::new_gui()
 	BC_DisplayInfo display_info;
 	int x = display_info.get_abs_cursor_x() - 150;
 	int y = display_info.get_abs_cursor_y() - 50;
-	EditLengthDialog *gui = new EditLengthDialog(mwindow, 
+	EditLengthDialog *gui = new EditLengthDialog(mwindow,
 		this,
 		x,
 		y);
@@ -125,19 +125,19 @@ void EditLengthThread::handle_close_event(int result)
 
 
 
-EditLengthDialog::EditLengthDialog(MWindow *mwindow, 
+EditLengthDialog::EditLengthDialog(MWindow *mwindow,
 	EditLengthThread *thread,
 	int x,
 	int y)
- : BC_Window(_(PROGRAM_NAME ": Edit length"), 
+ : BC_Window(_(PROGRAM_NAME ": Edit length"),
 	x,
 	y,
-	300, 
-	100, 
-	-1, 
-	-1, 
+	300,
+	100,
+	-1,
+	-1,
 	0,
-	0, 
+	0,
 	1)
 {
 	this->mwindow = mwindow;
@@ -148,7 +148,7 @@ EditLengthDialog::~EditLengthDialog()
 {
 }
 
-	
+
 void EditLengthDialog::create_objects()
 {
 	lock_window("EditLengthDialog::create_objects");
@@ -172,14 +172,14 @@ int EditLengthDialog::close_event()
 
 
 
-EditLengthText::EditLengthText(MWindow *mwindow, 
+EditLengthText::EditLengthText(MWindow *mwindow,
 	EditLengthDialog *gui,
-	int x, 
+	int x,
 	int y)
- : BC_TumbleTextBox(gui, 
+ : BC_TumbleTextBox(gui,
  	(float)gui->thread->length,
-	(float)0, 
-	(float)100, 
+	(float)0,
+	(float)100,
 	x,
 	y,
 	100)

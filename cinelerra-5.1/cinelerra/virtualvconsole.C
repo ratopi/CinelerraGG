@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcsignals.h"
@@ -62,20 +62,20 @@ VDeviceBase* VirtualVConsole::get_vdriver()
 void VirtualVConsole::get_playable_tracks()
 {
 	if(!playable_tracks)
-		playable_tracks = new PlayableTracks(renderengine->get_edl(), 
-			commonrender->current_position, 
+		playable_tracks = new PlayableTracks(renderengine->get_edl(),
+			commonrender->current_position,
 			renderengine->command->get_direction(),
 			TRACK_VIDEO,
 			1);
 //printf("VirtualVConsole::get_playable_tracks %d %d\n", __LINE__, playable_tracks->size());
 }
 
-VirtualNode* VirtualVConsole::new_entry_node(Track *track, 
+VirtualNode* VirtualVConsole::new_entry_node(Track *track,
 	Module *module,
 	int track_number)
 {
-	return new VirtualVNode(renderengine, 
-		this, 
+	return new VirtualVNode(renderengine,
+		this,
 		module,
 		0,
 		track,
@@ -91,13 +91,13 @@ int VirtualVConsole::process_buffer(int64_t input_position,
 
 
 // The use of single frame is determined in RenderEngine::arm_command
-// printf("VirtualVConsole::process_buffer %d this=%p %d\n", 
+// printf("VirtualVConsole::process_buffer %d this=%p %d\n",
 // __LINE__,
 // this,
 // use_opengl);
 
-	if(debug_tree) 
-		printf("VirtualVConsole::process_buffer %d exit_nodes=%d\n", 
+	if(debug_tree)
+		printf("VirtualVConsole::process_buffer %d exit_nodes=%d\n",
 			__LINE__,
 			exit_nodes.total);
 
@@ -144,7 +144,7 @@ int VirtualVConsole::process_buffer(int64_t input_position,
 
 
 
-		if(output_temp && 
+		if(output_temp &&
 			(output_temp->get_w() != track->track_w ||
 			output_temp->get_h() != track->track_h))
 		{
@@ -156,10 +156,10 @@ int VirtualVConsole::process_buffer(int64_t input_position,
 		if(!output_temp)
 		{
 // Texture is created on demand
-			output_temp = new VFrame(0, 
+			output_temp = new VFrame(0,
 				-1,
-				track->track_w, 
-				track->track_h, 
+				track->track_w,
+				track->track_h,
 				renderengine->get_edl()->session->color_model,
 				-1);
 		}

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2010-2016 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -58,10 +58,10 @@ void ResampleRTConfig::copy_from(ResampleRTConfig &src)
 	this->denom = src.denom;
 }
 
-void ResampleRTConfig::interpolate(ResampleRTConfig &prev, 
-	ResampleRTConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void ResampleRTConfig::interpolate(ResampleRTConfig &prev,
+	ResampleRTConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	this->num = prev.num;
@@ -78,11 +78,11 @@ void ResampleRTConfig::boundaries()
 
 
 ResampleRTWindow::ResampleRTWindow(ResampleRT *plugin)
- : PluginClientWindow(plugin, 
-	210, 
-	160, 
-	200, 
-	160, 
+ : PluginClientWindow(plugin,
+	210,
+	160,
+	200,
+	160,
 	0)
 {
 	this->plugin = plugin;
@@ -102,13 +102,13 @@ void ResampleRTWindow::create_objects()
 	y += title->get_h() + plugin->get_theme()->widget_border;
 	num = new ResampleRTNum(this, plugin, x, y);
 	num->create_objects();
-	
+
 	y += num->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(title = new BC_Title(x, y, _("Output samples:")));
 	y += title->get_h() + plugin->get_theme()->widget_border;
 	denom = new ResampleRTDenom(this, plugin, x, y);
 	denom->create_objects();
-	
+
 	show_window();
 }
 
@@ -118,15 +118,15 @@ void ResampleRTWindow::create_objects()
 
 
 ResampleRTNum::ResampleRTNum(ResampleRTWindow *window,
-	ResampleRT *plugin, 
-	int x, 
+	ResampleRT *plugin,
+	int x,
 	int y)
  : BC_TumbleTextBox(window,
  	plugin->config.num,
 	(float)0.0001,
 	(float)1000,
- 	x, 
-	y, 
+ 	x,
+	y,
 	100)
 {
 	this->plugin = plugin;
@@ -145,15 +145,15 @@ int ResampleRTNum::handle_event()
 
 
 ResampleRTDenom::ResampleRTDenom(ResampleRTWindow *window,
-	ResampleRT *plugin, 
-	int x, 
+	ResampleRT *plugin,
+	int x,
 	int y)
  : BC_TumbleTextBox(window,
  	plugin->config.denom,
 	(float)0.0001,
 	(float)1000,
- 	x, 
-	y, 
+ 	x,
+	y,
 	100)
 {
 	this->plugin = plugin;
@@ -181,8 +181,8 @@ ResampleRTResample::ResampleRTResample(ResampleRT *plugin)
 
 // To get the keyframes to work, resampling is always done in the forward
 // direction with the plugin converting to reverse.
-int ResampleRTResample::read_samples(Samples *buffer, 
-	int64_t start, 
+int ResampleRTResample::read_samples(Samples *buffer,
+	int64_t start,
 	int64_t len)
 {
 	int result = plugin->read_samples(buffer,
@@ -196,7 +196,7 @@ int ResampleRTResample::read_samples(Samples *buffer,
 		plugin->source_start += len;
 	else
 		plugin->source_start -= len;
-	
+
 	return result;
 }
 
@@ -230,7 +230,7 @@ NEW_WINDOW_MACRO(ResampleRT, ResampleRTWindow)
 LOAD_CONFIGURATION_MACRO(ResampleRT, ResampleRTConfig)
 
 
-int ResampleRT::process_buffer(int64_t size, 
+int ResampleRT::process_buffer(int64_t size,
 	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
@@ -238,8 +238,8 @@ int ResampleRT::process_buffer(int64_t size,
 	if(!resample) resample = new ResampleRTResample(this);
 
 	need_reconfigure |= load_configuration();
-	
-	
+
+
 	if(start_position != dest_start) need_reconfigure = 1;
 	dest_start = start_position;
 
@@ -256,7 +256,7 @@ int ResampleRT::process_buffer(int64_t size,
 			prev_position = get_source_start();
 		}
 
-		source_start = (int64_t)((start_position - prev_position) * 
+		source_start = (int64_t)((start_position - prev_position) *
 			config.num / config.denom) + prev_position;
 
 		resample->reset();
@@ -268,7 +268,7 @@ int ResampleRT::process_buffer(int64_t size,
 		(int)(65536 * config.num),
 		(int)(65536 * config.denom),
 		start_position,
-		get_direction());	
+		get_direction());
 
 	if(get_direction() == PLAY_FORWARD)
 		dest_start += size;

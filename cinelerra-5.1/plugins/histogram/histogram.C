@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008-2012 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <math.h>
@@ -66,7 +66,7 @@ REGISTER_PLUGIN(HistogramMain)
 HistogramMain::HistogramMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
@@ -86,7 +86,7 @@ HistogramMain::HistogramMain(PluginServer *server)
 
 HistogramMain::~HistogramMain()
 {
-	
+
 	for(int i = 0; i < HISTOGRAM_MODES;i++)
 	{
 		delete [] lookup[i];
@@ -159,7 +159,7 @@ void HistogramMain::update_gui()
 	{
 		((HistogramWindow*)thread->window)->lock_window("HistogramMain::update_gui");
 		int reconfigure = load_configuration();
-		if(reconfigure) 
+		if(reconfigure)
 		{
 			((HistogramWindow*)thread->window)->update(1,
 				1,
@@ -271,7 +271,7 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 
 }
 
-float HistogramMain::calculate_level(float input, 
+float HistogramMain::calculate_level(float input,
 	int mode,
 	int use_value)
 {
@@ -287,7 +287,7 @@ float HistogramMain::calculate_level(float input,
 	{
 		output = input;
 	}
-	
+
 
 
 	if(!EQUIV(config.gamma[mode], 0))
@@ -420,7 +420,7 @@ int HistogramMain::calculate_use_opengl()
 {
 // glHistogram doesn't work.
 	int result = get_use_opengl() &&
-		!config.automatic && 
+		!config.automatic &&
 		(!config.plot || !gui_open());
 	return result;
 }
@@ -437,9 +437,9 @@ int HistogramMain::process_buffer(VFrame *frame,
 	int use_opengl = calculate_use_opengl();
 
 //printf("%d\n", use_opengl);
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		use_opengl);
 
@@ -459,8 +459,8 @@ int HistogramMain::process_buffer(VFrame *frame,
 // table to avoid green borders
 
 
-	if(need_reconfigure || 
-		!lookup[0] || 
+	if(need_reconfigure ||
+		!lookup[0] ||
 		config.automatic)
 	{
 // Calculate new curves
@@ -475,8 +475,8 @@ int HistogramMain::process_buffer(VFrame *frame,
 			tabulate_curve(i, 1);
 	}
 
-// printf("HistogramMain::process_buffer %d %f %f %f  %f %f %f  %f %f %f\n", 
-// __LINE__, 
+// printf("HistogramMain::process_buffer %d %f %f %f  %f %f %f  %f %f %f\n",
+// __LINE__,
 // config.low_input[HISTOGRAM_RED],
 // config.gamma[HISTOGRAM_RED],
 // config.high_input[HISTOGRAM_RED],
@@ -516,8 +516,8 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 			case BC_RGBA8888:
 				for(i = 0; i < 0x100; i++)
 				{
-					lookup[subscript][i] = 
-						(int)(calculate_level((float)i / 0xff, subscript, use_value) * 
+					lookup[subscript][i] =
+						(int)(calculate_level((float)i / 0xff, subscript, use_value) *
 						0xff);
 					CLAMP(lookup[subscript][i], 0, 0xff);
 				}
@@ -526,8 +526,8 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 			default:
 				for(i = 0; i < 0x10000; i++)
 				{
-					lookup[subscript][i] = 
-						(int)(calculate_level((float)i / 0xffff, subscript, use_value) * 
+					lookup[subscript][i] =
+						(int)(calculate_level((float)i / 0xffff, subscript, use_value) *
 						0xffff);
 					CLAMP(lookup[subscript][i], 0, 0xffff);
 				}
@@ -546,8 +546,8 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 	{
 		for(i = 0; i < 0x10000; i++)
 		{
-			preview_lookup[subscript][i] = 
-				(int)(calculate_level((float)i / 0xffff, subscript, use_value) * 
+			preview_lookup[subscript][i] =
+				(int)(calculate_level((float)i / 0xffff, subscript, use_value) *
 				0xffff);
 			CLAMP(preview_lookup[subscript][i], 0, 0xffff);
 		}
@@ -571,7 +571,7 @@ int HistogramMain::handle_opengl()
 		"	return texture2D(tex, gl_TexCoord[0].st);\n"
 		"}\n";
 
-	static const char *head_frag = 
+	static const char *head_frag =
 		"uniform vec4 low_input;\n"
 		"uniform vec4 high_input;\n"
 		"uniform vec4 gamma;\n"
@@ -597,7 +597,7 @@ int HistogramMain::handle_opengl()
 
 
 
-	static const char *apply_histogram_frag = 
+	static const char *apply_histogram_frag =
 		APPLY_INPUT_CURVE("pixel.r", "low_input.r", "high_input.r", "gamma.r")
 		APPLY_INPUT_CURVE("pixel.g", "low_input.g", "high_input.g", "gamma.g")
 		APPLY_INPUT_CURVE("pixel.b", "low_input.b", "high_input.b", "gamma.b")
@@ -674,17 +674,17 @@ int HistogramMain::handle_opengl()
 
 // The order of processing is fixed by this sequence
 	if(aggregate_interpolation)
-		INTERPOLATE_COMPILE(shader_stack, 
+		INTERPOLATE_COMPILE(shader_stack,
 			current_shader)
 
 	if(aggregate_gamma)
-		GAMMA_COMPILE(shader_stack, 
-			current_shader, 
+		GAMMA_COMPILE(shader_stack,
+			current_shader,
 			aggregate_interpolation)
 
 	if(aggregate_colorbalance)
-		COLORBALANCE_COMPILE(shader_stack, 
-			current_shader, 
+		COLORBALANCE_COMPILE(shader_stack,
+			current_shader,
 			aggregate_interpolation || aggregate_gamma)
 
 
@@ -730,8 +730,8 @@ int HistogramMain::handle_opengl()
 		shader_stack[15],
 		0);
 
-// printf("HistogramMain::handle_opengl %d %d %d %d shader=%d\n", 
-// aggregate_interpolation, 
+// printf("HistogramMain::handle_opengl %d %d %d %d shader=%d\n",
+// aggregate_interpolation,
 // aggregate_gamma,
 // aggregate_colorbalance,
 // current_shader,
@@ -784,16 +784,16 @@ int HistogramMain::handle_opengl()
 		glBegin(GL_TRIANGLES);
 		glNormal3f(0, 0, 1.0);
 
-		glTexCoord2f(0.0 / get_output()->get_texture_w(), 
+		glTexCoord2f(0.0 / get_output()->get_texture_w(),
 			0.0 / get_output()->get_texture_h());
 		glVertex3f(0.0, -(float)get_output()->get_h(), 0);
 
 
-		glTexCoord2f((float)get_output()->get_w() / get_output()->get_texture_w(), 
+		glTexCoord2f((float)get_output()->get_w() / get_output()->get_texture_w(),
 			(float)get_output()->get_h() / get_output()->get_texture_h());
 		glVertex3f((float)get_output()->get_w(), -0.0, 0);
 
-		glTexCoord2f(0.0 / get_output()->get_texture_w(), 
+		glTexCoord2f(0.0 / get_output()->get_texture_w(),
 			(float)get_output()->get_h() / get_output()->get_texture_h());
 		glVertex3f(0.0, -0.0, 0);
 
@@ -814,16 +814,16 @@ int HistogramMain::handle_opengl()
 		glNormal3f(0, 0, 1.0);
 
 
-		glTexCoord2f(0.0 / get_output()->get_texture_w(), 
+		glTexCoord2f(0.0 / get_output()->get_texture_w(),
 			0.0 / get_output()->get_texture_h());
 		glVertex3f(0.0, -(float)get_output()->get_h(), 0);
 
-		glTexCoord2f((float)get_output()->get_w() / get_output()->get_texture_w(), 
+		glTexCoord2f((float)get_output()->get_w() / get_output()->get_texture_w(),
 			0.0 / get_output()->get_texture_h());
-		glVertex3f((float)get_output()->get_w(), 
+		glVertex3f((float)get_output()->get_w(),
 			-(float)get_output()->get_h(), 0);
 
-		glTexCoord2f((float)get_output()->get_w() / get_output()->get_texture_w(), 
+		glTexCoord2f((float)get_output()->get_w() / get_output()->get_texture_w(),
 			(float)get_output()->get_h() / get_output()->get_texture_h());
 		glVertex3f((float)get_output()->get_w(), -0.0, 0);
 
@@ -855,7 +855,7 @@ HistogramPackage::HistogramPackage()
 
 
 
-HistogramUnit::HistogramUnit(HistogramEngine *server, 
+HistogramUnit::HistogramUnit(HistogramEngine *server,
 	HistogramMain *plugin)
  : LoadClient(server)
 {
@@ -1163,8 +1163,8 @@ void HistogramUnit::process_package(LoadPackage *package)
 
 
 
-HistogramEngine::HistogramEngine(HistogramMain *plugin, 
-	int total_clients, 
+HistogramEngine::HistogramEngine(HistogramMain *plugin,
+	int total_clients,
 	int total_packages)
  : LoadServer(total_clients, total_packages)
 {

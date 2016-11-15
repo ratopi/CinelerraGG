@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2016 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "affine.h"
@@ -111,7 +111,7 @@ int MotionConfig::equivalent(MotionConfig &that)
 	if(magnitude != that.magnitude ||
 		return_speed != that.return_speed ||
 		action != that.action ||
-		calculation != that.calculation || 
+		calculation != that.calculation ||
 		tracking_object != that.tracking_object ||
 		track_frame != that.track_frame ||
 		bottom_is_master != that.bottom_is_master ||
@@ -119,7 +119,7 @@ int MotionConfig::equivalent(MotionConfig &that)
 		vertical_only != that.vertical_only ||
  	    global_positions != that.global_positions) result = 0;
 
-	return result;	
+	return result;
 }
 
 void MotionConfig::copy_from(MotionConfig &that)
@@ -150,10 +150,10 @@ void MotionConfig::copy_from(MotionConfig &that)
 	vertical_only = that.vertical_only;
 }
 
-void MotionConfig::interpolate(MotionConfig &prev, 
-	MotionConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void MotionConfig::interpolate(MotionConfig &prev,
+	MotionConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	//double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -206,7 +206,7 @@ void MotionConfig::interpolate(MotionConfig &prev,
 MotionMain2::MotionMain2(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 	affine = 0;
 	for(int i = 0; i < TOTAL_POINTS; i++)
@@ -228,7 +228,7 @@ MotionMain2::MotionMain2(PluginServer *server)
 
 MotionMain2::~MotionMain2()
 {
-	
+
 	delete engine;
 	delete affine;
 	delete overlayer;
@@ -260,9 +260,9 @@ void MotionMain2::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("MotionMain2::update_gui");
-			
+
 			char string[BCTEXTLEN];
-			
+
 			for(int i = 0; i < TOTAL_POINTS; i++)
 			{
 				((MotionWindow*)thread->window)->global[i]->update(config.global[i]);
@@ -430,7 +430,7 @@ void MotionMain2::read_data(KeyFrame *keyframe)
 
 void MotionMain2::allocate_temp(int w, int h, int color_model)
 {
-	if(temp_frame && 
+	if(temp_frame &&
 		(temp_frame->get_w() != w ||
 		temp_frame->get_h() != h))
 	{
@@ -453,8 +453,8 @@ void MotionMain2::scan_motion(int point)
 		PluginClient::get_project_smp() + 1);
 
 // Get the current motion vector between the previous and current frame
-	engine->scan_frame(current_global_ref, 
-		prev_global_ref, 
+	engine->scan_frame(current_global_ref,
+		prev_global_ref,
 		config.global_range_w[point] * w / 100,
 		config.global_range_h[point] * h / 100,
 		config.global_block_w[point] * w / 100,
@@ -493,52 +493,52 @@ void MotionMain2::scan_motion(int point)
 	{
 		total_dx[point] = engine->dx_result;
 		total_dy[point] = engine->dy_result;
-// printf("MotionMain2::scan_motion %d %d %d %d\n", 
-// __LINE__, 
+// printf("MotionMain2::scan_motion %d %d %d %d\n",
+// __LINE__,
 // point,
-// total_dx[point], 
+// total_dx[point],
 // total_dy[point]);
 	}
 
 // Clamp accumulation vector
 	if(config.magnitude < 100)
 	{
-		//int block_w = (int64_t)config.global_block_w[point] * 
+		//int block_w = (int64_t)config.global_block_w[point] *
 		//		current_global_ref->get_w() / 100;
-		//int block_h = (int64_t)config.global_block_h[point] * 
+		//int block_h = (int64_t)config.global_block_h[point] *
 		//		current_global_ref->get_h() / 100;
-		int block_x_orig = (int64_t)(config.block_x[point] * 
-			current_global_ref->get_w() / 
+		int block_x_orig = (int64_t)(config.block_x[point] *
+			current_global_ref->get_w() /
 			100);
 		int block_y_orig = (int64_t)(config.block_y[point] *
-			current_global_ref->get_h() / 
+			current_global_ref->get_h() /
 			100);
 
 		int max_block_x = (int64_t)(current_global_ref->get_w() - block_x_orig) *
-			OVERSAMPLE * 
-			config.magnitude / 
+			OVERSAMPLE *
+			config.magnitude /
 			100;
 		int max_block_y = (int64_t)(current_global_ref->get_h() - block_y_orig) *
 			OVERSAMPLE *
-			config.magnitude / 
+			config.magnitude /
 			100;
-		int min_block_x = (int64_t)-block_x_orig * 
-			OVERSAMPLE * 
-			config.magnitude / 
+		int min_block_x = (int64_t)-block_x_orig *
+			OVERSAMPLE *
+			config.magnitude /
 			100;
-		int min_block_y = (int64_t)-block_y_orig * 
-			OVERSAMPLE * 
-			config.magnitude / 
+		int min_block_y = (int64_t)-block_y_orig *
+			OVERSAMPLE *
+			config.magnitude /
 			100;
 
 		CLAMP(total_dx[point], min_block_x, max_block_x);
 		CLAMP(total_dy[point], min_block_y, max_block_y);
 	}
 
-// printf("MotionMain2::scan_motion %d %d %d %d\n", 
-// __LINE__, 
+// printf("MotionMain2::scan_motion %d %d %d %d\n",
+// __LINE__,
 // point,
-// total_dx[point], 
+// total_dx[point],
 // total_dy[point]);
 
 
@@ -565,12 +565,12 @@ void MotionMain2::apply_motion()
 	float end_y[TOTAL_POINTS];
 	for(int i = 0; i < TOTAL_POINTS; i++)
 	{
-		get_current_vector(&origin_x[i], 
-			&origin_y[i], 
+		get_current_vector(&origin_x[i],
+			&origin_y[i],
 			0,
 			0,
-			&end_x[i], 
-			&end_y[i], 
+			&end_x[i],
+			&end_y[i],
 			i);
 	}
 
@@ -586,9 +586,9 @@ void MotionMain2::apply_motion()
 			if(end_x[1] - end_x[0])
 				angle = atan((double)(end_y[0] - end_y[1]) /
 					(double)(end_x[0] - end_x[1]));
-// printf("MotionMain2::apply_motion %d angle0=%f angle=%f\n", 
+// printf("MotionMain2::apply_motion %d angle0=%f angle=%f\n",
 // __LINE__,
-// angle0 * 360 / 2 / M_PI, 
+// angle0 * 360 / 2 / M_PI,
 // angle * 360 / 2 / M_PI);
 
 			angle -= angle0;
@@ -599,10 +599,10 @@ void MotionMain2::apply_motion()
 
 	}
 
-printf("MotionMain2::apply_motion %d total_dx=%.02f total_dy=%.02f angle=%f zoom=%f\n", 
+printf("MotionMain2::apply_motion %d total_dx=%.02f total_dy=%.02f angle=%f zoom=%f\n",
 __LINE__,
 (float)total_dx[TRANSLATION_POINT] / OVERSAMPLE,
-(float)total_dy[TRANSLATION_POINT] / OVERSAMPLE, 
+(float)total_dy[TRANSLATION_POINT] / OVERSAMPLE,
 angle * 360 / 2 / M_PI,
 zoom);
 
@@ -675,26 +675,26 @@ zoom);
 
 // printf("MotionMain2::apply_motion %d %.02f %.02f %.02f %.02f %.02f %.02f %.02f %.02f\n",
 // __LINE__,
-// x1, 
-// y1, 
-// x2, 
-// y2, 
-// x3, 
-// y3, 
-// x4, 
+// x1,
+// y1,
+// x2,
+// y2,
+// x3,
+// y3,
+// x4,
 // y4);
 
 		affine->process(global_target_dst,
-			global_target_src, 
+			global_target_src,
 			0,
 			AffineEngine::PERSPECTIVE,
-			x1, 
-			y1, 
-			x2, 
-			y2, 
-			x3, 
-			y3, 
-			x4, 
+			x1,
+			y1,
+			x2,
+			y2,
+			x3,
+			y3,
+			x4,
 			y4,
 			1);
 	}
@@ -713,7 +713,7 @@ int MotionMain2::process_buffer(VFrame **frame,
 	int color_model = frame[0]->get_color_model();
 	w = frame[0]->get_w();
 	h = frame[0]->get_h();
-	
+
 
 #ifdef DEBUG
 printf("MotionMain2::process_buffer 1 start_position=%jd\n", start_position);
@@ -779,7 +779,7 @@ printf("MotionMain2::process_buffer 1 start_position=%jd\n", start_position);
 		}
 
 // Only count motion since last keyframe
-		
+
 
 	}
 
@@ -791,13 +791,13 @@ printf("MotionMain2::process_buffer 1 start_position=%jd\n", start_position);
 		skip_current = 1;
 
 
-// printf("process_buffer %d %lld %lld %d\n", 
-// skip_current, 
-// previous_frame_number, 
+// printf("process_buffer %d %lld %lld %d\n",
+// skip_current,
+// previous_frame_number,
 // actual_previous_number,
 // need_reconfigure);
 // Load match frame and reset vectors
-	int need_reload = !skip_current && 
+	int need_reload = !skip_current &&
 		(previous_frame_number != actual_previous_number ||
 		need_reconfigure);
 	if(need_reload)
@@ -837,7 +837,7 @@ printf("MotionMain2::process_buffer 1 start_position=%jd\n", start_position);
 		if(!current_global_ref)
 			current_global_ref = new VFrame(w, h, color_model);
 
-// Global loads the current target frame into the src and 
+// Global loads the current target frame into the src and
 // writes it to the dst frame with desired translation.
 		if(!global_target_src)
 			global_target_src = new VFrame(w, h, color_model);
@@ -848,16 +848,16 @@ printf("MotionMain2::process_buffer 1 start_position=%jd\n", start_position);
 // Load the global frames
 		if(need_reload)
 		{
-			read_frame(prev_global_ref, 
-				reference_layer, 
-				previous_frame_number, 
+			read_frame(prev_global_ref,
+				reference_layer,
+				previous_frame_number,
 				frame_rate,
 				0);
 		}
 
-		read_frame(current_global_ref, 
-			reference_layer, 
-			start_position, 
+		read_frame(current_global_ref,
+			reference_layer,
+			start_position,
 			frame_rate,
 			0);
 		read_frame(global_target_src,
@@ -877,12 +877,12 @@ printf("MotionMain2::process_buffer 1 start_position=%jd\n", start_position);
 	if(!skip_current)
 	{
 // Get position change from previous frame to current frame
-		if(config.global[0]) 
+		if(config.global[0])
 		{
 			for(int i = 0; i < TOTAL_POINTS; i++)
 				if(config.global[i]) scan_motion(i);
 		}
-		
+
 		apply_motion();
 	}
 
@@ -922,8 +922,8 @@ printf("MotionMain2::process_buffer 100 skip_current=%d\n", skip_current);
 
 #if 0
 
-void MotionMain2::clamp_scan(int w, 
-	int h, 
+void MotionMain2::clamp_scan(int w,
+	int h,
 	int *block_x1,
 	int *block_y1,
 	int *block_x2,
@@ -1045,10 +1045,10 @@ void MotionMain2::clamp_scan(int w,
 
 void MotionMain2::get_current_vector(float *origin_x,
 	float *origin_y,
-	float *current_x1, 
-	float *current_y1, 
-	float *current_x2, 
-	float *current_y2, 
+	float *current_x1,
+	float *current_y1,
+	float *current_x2,
+	float *current_y2,
 	int point)
 {
 	int w = get_output()->get_w();
@@ -1072,8 +1072,8 @@ void MotionMain2::get_current_vector(float *origin_x,
 	*current_y1 = 0.0;
 	*current_x2 = 0.0;
 	*current_y2 = 0.0;
-	
-	
+
+
 	if(config.global[point])
 	{
 // Get vector
@@ -1081,11 +1081,11 @@ void MotionMain2::get_current_vector(float *origin_x,
 // End of vector is total accumulation.
 		if(config.tracking_object == MotionScan::TRACK_SINGLE)
 		{
-			(*origin_x) = (*current_x1) = ((float)config.block_x[point] * 
-				w / 
+			(*origin_x) = (*current_x1) = ((float)config.block_x[point] *
+				w /
 				100);
 			(*origin_y) = (*current_y1) = ((float)config.block_y[point] *
-				h / 
+				h /
 				100);
 			(*current_x2) = (*current_x1) + (float)total_dx[point] / OVERSAMPLE;
 			(*current_y2) = (*current_y1) + (float)total_dy[point] / OVERSAMPLE;
@@ -1095,31 +1095,31 @@ void MotionMain2::get_current_vector(float *origin_x,
 // End of vector is current change.
 		if(config.tracking_object == MotionScan::PREVIOUS_SAME_BLOCK)
 		{
-			(*origin_x) = (*current_x1) = ((float)config.block_x[point] * 
-				w / 
+			(*origin_x) = (*current_x1) = ((float)config.block_x[point] *
+				w /
 				100);
 			(*origin_y) = (*current_y1) = ((float)config.block_y[point] *
-				h / 
+				h /
 				100);
 			(*current_x2) = (*origin_x) + (float)current_dx[point] / OVERSAMPLE;
 			(*current_y2) = (*origin_y) + (float)current_dy[point] / OVERSAMPLE;
 		}
 		else
 		{
-			(*origin_x) = (float)config.block_x[point] * 
-				w / 
+			(*origin_x) = (float)config.block_x[point] *
+				w /
 				100;
 			(*origin_y) = (float)config.block_y[point] *
-				h / 
+				h /
 				100;
-			(*current_x1) = ((*origin_x) + 
-				(float)(total_dx[point] - current_dx[point]) / 
+			(*current_x1) = ((*origin_x) +
+				(float)(total_dx[point] - current_dx[point]) /
 				OVERSAMPLE);
 			(*current_y1) = ((*origin_y) +
 				(float)(total_dy[point] - current_dy[point]) /
 				OVERSAMPLE);
-			(*current_x2) = ((*origin_x) + 
-				(float)total_dx[point] / 
+			(*current_x2) = ((*origin_x) +
+				(float)total_dx[point] /
 				OVERSAMPLE);
 			(*current_y2) = ((*origin_y) +
 				(float)total_dy[point] /
@@ -1153,15 +1153,15 @@ void MotionMain2::draw_vectors(VFrame *frame, int point)
 // Get vector
 		get_current_vector(0,
 			0,
-			&global_x1, 
-			&global_y1, 
-			&global_x2, 
-			&global_y2, 
+			&global_x1,
+			&global_y1,
+			&global_x2,
+			&global_y2,
 			point);
 
 
 // Draw destination rectangle
-		if(config.action == MotionScan::NOTHING || 
+		if(config.action == MotionScan::NOTHING ||
 			config.action == MotionScan::TRACK)
 		{
 			block_x = (int)global_x2;
@@ -1202,8 +1202,8 @@ void MotionMain2::draw_vectors(VFrame *frame, int point)
 // search_x2,
 // search_y2);
 
-		MotionScan::clamp_scan(w, 
-			h, 
+		MotionScan::clamp_scan(w,
+			h,
 			&block_x1,
 			&block_y1,
 			&block_x2,
@@ -1576,7 +1576,7 @@ MotionScanPackage::MotionScanPackage()
 
 
 
-MotionScanUnit::MotionScanUnit(MotionScan *server, 
+MotionScanUnit::MotionScanUnit(MotionScan *server,
 	MotionMain2 *plugin)
  : LoadClient(server)
 {
@@ -1623,11 +1623,11 @@ void MotionScanUnit::process_package(LoadPackage *package)
 		pkg->difference1 = server->get_cache(search_x, search_y);
 		if(pkg->difference1 < 0)
 		{
-//printf("MotionScanUnit::process_package 1 %d %d\n", 
+//printf("MotionScanUnit::process_package 1 %d %d\n",
 //search_x, search_y, pkg->block_x2 - pkg->block_x1, pkg->block_y2 - pkg->block_y1);
 // Pointers to first pixel in each block
 			unsigned char *prev_ptr = server->previous_frame->get_rows()[
-				search_y] +	
+				search_y] +
 				search_x * pixel_size;
 			unsigned char *current_ptr = server->current_frame->get_rows()[
 				pkg->block_y1] +
@@ -1764,12 +1764,12 @@ void MotionScanUnit::put_cache(int x, int y, int64_t difference)
 
 
 
-MotionScan::MotionScan(MotionMain2 *plugin, 
+MotionScan::MotionScan(MotionMain2 *plugin,
 	int total_clients,
 	int total_packages)
  : LoadServer(
-//1, 1 
-total_clients, total_packages 
+//1, 1
+total_clients, total_packages
 )
 {
 	this->plugin = plugin;
@@ -1871,8 +1871,8 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 printf("MotionScan::scan_frame %d\n", __LINE__);
 // Load result from disk
 			char string[BCTEXTLEN];
-			sprintf(string, "%s%06d", 
-				MOTION_FILE, 
+			sprintf(string, "%s%06d",
+				MOTION_FILE,
 				plugin->get_source_position());
 			FILE *input;
 			input = fopen(string, "r");
@@ -1880,8 +1880,8 @@ printf("MotionScan::scan_frame %d\n", __LINE__);
 			{
 				for(int i = 0; i <= point; i++)
 				{
-					fscanf(input, 
-						"%d %d", 
+					fscanf(input,
+						"%d %d",
 						&dx_result,
 						&dy_result);
 				}
@@ -1948,8 +1948,8 @@ printf("MotionScan::scan_frame %d\n", __LINE__);
 // scan_x2,
 // scan_y2);
 // Clamp the block coords before the scan so we get useful scan coords.
-			MotionScan::clamp_scan(w, 
-				h, 
+			MotionScan::clamp_scan(w,
+				h,
 				&block_x1,
 				&block_y1,
 				&block_x2,
@@ -1959,16 +1959,16 @@ printf("MotionScan::scan_frame %d\n", __LINE__);
 				&scan_x2,
 				&scan_y2,
 				0);
-// printf("MotionScan::scan_frame 1\n    block_x1=%d block_y1=%d block_x2=%d block_y2=%d\n    scan_x1=%d scan_y1=%d scan_x2=%d scan_y2=%d\n    x_result=%d y_result=%d\n", 
+// printf("MotionScan::scan_frame 1\n    block_x1=%d block_y1=%d block_x2=%d block_y2=%d\n    scan_x1=%d scan_y1=%d scan_x2=%d scan_y2=%d\n    x_result=%d y_result=%d\n",
 // block_x1,
 // block_y1,
 // block_x2,
 // block_y2,
-// scan_x1, 
-// scan_y1, 
-// scan_x2, 
-// scan_y2, 
-// x_result, 
+// scan_x1,
+// scan_y1,
+// scan_x2,
+// scan_y2,
+// x_result,
 // y_result);
 
 
@@ -2011,13 +2011,13 @@ printf("MotionScan::scan_frame %d\n", __LINE__);
 						if(plugin->config.vertical_only)
 							x_result = scan_x1 * OVERSAMPLE;
 						else
-							x_result = scan_x1 * OVERSAMPLE + 
+							x_result = scan_x1 * OVERSAMPLE +
 								(pkg->pixel % (OVERSAMPLE * 2 - 1)) + 1;
-						
+
 						if(plugin->config.horizontal_only)
 							y_result = scan_y1 * OVERSAMPLE;
 						else
-							y_result = scan_y1 * OVERSAMPLE + 
+							y_result = scan_y1 * OVERSAMPLE +
 								(pkg->pixel / (OVERSAMPLE * 2 - 1)) + 1;
 
 
@@ -2078,24 +2078,24 @@ printf("MotionScan::scan_frame %d\n", __LINE__);
 
 
 // printf("MotionScan::scan_frame 10 total_steps=%d total_pixels=%d subpixel=%d\n",
-// total_steps, 
+// total_steps,
 // total_pixels,
 // subpixel);
-// 
+//
 // printf("	scan w=%d h=%d scan x1=%d y1=%d x2=%d y2=%d\n",
 // scan_w,
-// scan_h, 
+// scan_h,
 // scan_x1,
 // scan_y1,
 // scan_x2,
 // scan_y2);
-// 
-// printf("MotionScan::scan_frame 2 block x1=%d y1=%d x2=%d y2=%d result x=%.2f y=%.2f\n", 
-// block_x1, 
-// block_y1, 
+//
+// printf("MotionScan::scan_frame 2 block x1=%d y1=%d x2=%d y2=%d result x=%.2f y=%.2f\n",
+// block_x1,
+// block_y1,
 // block_x2,
 // block_y2,
-// (float)x_result / 4, 
+// (float)x_result / 4,
 // (float)y_result / 4);
 
 
@@ -2145,9 +2145,9 @@ printf("MotionScan::scan_frame %d\n", __LINE__);
 	if(plugin->config.calculation == MotionScan::SAVE)
 	{
 		char string[BCTEXTLEN];
-		sprintf(string, 
-			"%s%06d", 
-			MOTION_FILE, 
+		sprintf(string,
+			"%s%06d",
+			MOTION_FILE,
 			plugin->get_source_position());
 		FILE *output;
 		if(point == 0)
@@ -2156,7 +2156,7 @@ printf("MotionScan::scan_frame %d\n", __LINE__);
 			output = fopen(string, "a");
 		if(output)
 		{
-			fprintf(output, 
+			fprintf(output,
 				"%d %d\n",
 				dx_result,
 				dy_result);
@@ -2169,7 +2169,7 @@ printf("MotionScan::scan_frame %d\n", __LINE__);
 	}
 
 #ifdef DEBUG
-printf("MotionScan::scan_frame 10 point=%d dx=%.2f dy=%.2f\n", 
+printf("MotionScan::scan_frame 10 point=%d dx=%.2f dy=%.2f\n",
 point,
 (float)this->dx_result / OVERSAMPLE,
 (float)this->dy_result / OVERSAMPLE);

@@ -2,7 +2,7 @@
 /*
  * CINELERRA
  * Copyright (C) 2008-2016 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -236,9 +236,9 @@ void ReframeRTWindow::create_objects()
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Input frames:")));
 	y += title->get_h() + plugin->get_theme()->widget_border;
-	num = new ReframeRTNum(plugin, 
+	num = new ReframeRTNum(plugin,
 		this,
-		x, 
+		x,
 		y);
 	num->create_objects();
 	num->set_increment(1.0);
@@ -246,14 +246,14 @@ void ReframeRTWindow::create_objects()
 	y += num->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(title = new BC_Title(x, y, _("Output frames:")));
 	y += title->get_h() + plugin->get_theme()->widget_border;
-	denom = new ReframeRTDenom(plugin, 
+	denom = new ReframeRTDenom(plugin,
 		this,
-		x, 
+		x,
 		y);
 	denom->create_objects();
 	denom->set_increment(1.0);
-	
-	
+
+
 	y += denom->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(stretch = new ReframeRTStretch(plugin, this, x, y));
 	y += 30;
@@ -274,16 +274,16 @@ void ReframeRTWindow::create_objects()
 
 
 
-ReframeRTNum::ReframeRTNum(ReframeRT *plugin, 
+ReframeRTNum::ReframeRTNum(ReframeRT *plugin,
 	ReframeRTWindow *gui,
-	int x, 
+	int x,
 	int y)
  : BC_TumbleTextBox(gui,
  	(float)plugin->config.num,
 	(float)0.0001,
 	(float)1000,
- 	x, 
-	y, 
+ 	x,
+	y,
 	gui->get_w() - plugin->get_theme()->window_border * 3)
 {
 	this->plugin = plugin;
@@ -298,9 +298,9 @@ int ReframeRTNum::handle_event()
 }
 
 
-ReframeRTDenom::ReframeRTDenom(ReframeRT *plugin, 
+ReframeRTDenom::ReframeRTDenom(ReframeRT *plugin,
 	ReframeRTWindow *gui,
-	int x, 
+	int x,
 	int y)
  : BC_TumbleTextBox(gui,
  	(float)plugin->config.denom,

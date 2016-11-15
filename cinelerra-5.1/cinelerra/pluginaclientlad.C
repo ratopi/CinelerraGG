@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -86,10 +86,10 @@ void PluginAClientConfig::copy_from(PluginAClientConfig &that)
 
 }
 
-void PluginAClientConfig::interpolate(PluginAClientConfig &prev, 
-	PluginAClientConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void PluginAClientConfig::interpolate(PluginAClientConfig &prev,
+	PluginAClientConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	copy_from(prev);
@@ -293,7 +293,7 @@ void PluginAClientWindow::create_objects()
 		int use_min = LADSPA_IS_HINT_BOUNDED_BELOW(hint_desc);
 		int use_max = LADSPA_IS_HINT_BOUNDED_ABOVE(hint_desc);
 		sprintf(string, "%s:", lad_desc->PortNames[i]);
-// printf("PluginAClientWindow::create_objects 1 %s type=%d lower: %d %f upper: %d %f\n", 
+// printf("PluginAClientWindow::create_objects 1 %s type=%d lower: %d %f upper: %d %f\n",
 // string, plugin->config.port_type[current_port],
 // use_min, lad_hint->LowerBound,  use_max, lad_hint->UpperBound);
 
@@ -315,7 +315,7 @@ void PluginAClientWindow::create_objects()
 			add_subwindow(freq = new PluginACLientFreq(plugin,
 					(current_port % 2) ? x2 : x3, y,
 						&plugin->config.port_data[current_port], 0
-					/*	(plugin->config.port_type[current_port] == 
+					/*	(plugin->config.port_type[current_port] ==
 							PluginAClientConfig::PORT_FREQ_INDEX */));
 			freqs.append(freq);
 			break; }
@@ -476,7 +476,7 @@ void PluginAClientLAD::save_data(KeyFrame *keyframe)
 		if( !LADSPA_IS_PORT_INPUT(port_desc[i]) ) continue;
 		if( !LADSPA_IS_PORT_CONTROL(port_desc[i]) ) continue;
 // Convert LAD port name to default title
-		PluginAClientLAD::lad_to_upper(string, 
+		PluginAClientLAD::lad_to_upper(string,
 			(char*)lad_desc->PortNames[i]);
 		output.tag.set_property(string, config.port_data[port]);
 //printf("PluginAClientLAD::save_data %d %f\n", port, config.port_data[port]);
@@ -505,7 +505,7 @@ void PluginAClientLAD::read_data(KeyFrame *keyframe)
 			if( !LADSPA_IS_PORT_INPUT(port_desc[i]) ) continue;
 			if( !LADSPA_IS_PORT_CONTROL(port_desc[i]) ) continue;
 			PluginAClientLAD::lad_to_upper(string, (char*)lad_desc->PortNames[i]);
-			config.port_data[port] = 
+			config.port_data[port] =
 				input.tag.get_property(string, config.port_data[port]);
 //printf("PluginAClientLAD::read_data %d %f\n", port, config.port_data[port]);
 			port++;
@@ -548,7 +548,7 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 	if(!in_buffers) {
 		total_inbuffers = total_in;
 		in_buffers = new LADSPA_Data*[total_inbuffers];
-		for(int i = 0; i < total_inbuffers; i++) 
+		for(int i = 0; i < total_inbuffers; i++)
 			in_buffers[i] = new LADSPA_Data[buffer_allocation];
 		need_reconfigure = 1;
 	}
@@ -556,7 +556,7 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 	if(!out_buffers) {
 		total_outbuffers = total_out;
 		out_buffers = new LADSPA_Data*[total_outbuffers];
-		for(int i = 0; i < total_outbuffers; i++) 
+		for(int i = 0; i < total_outbuffers; i++)
 			out_buffers[i] = new LADSPA_Data[buffer_allocation];
 		need_reconfigure = 1;
 	}
@@ -572,7 +572,7 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 				lad_desc,PluginAClient::project_sample_rate);
 		const LADSPA_PortDescriptor *port_desc = lad_desc->PortDescriptors;
 		int port_count = lad_desc->PortCount;
-	
+
 		for(int port = 0, i = 0; i < port_count; i++) {
 			if( LADSPA_IS_PORT_INPUT(port_desc[i]) &&
 			    LADSPA_IS_PORT_CONTROL(port_desc[i]) ) {
@@ -604,8 +604,8 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 	}
 }
 
-int PluginAClientLAD::process_realtime(int64_t size, 
-	Samples *input_ptr, 
+int PluginAClientLAD::process_realtime(int64_t size,
+	Samples *input_ptr,
 	Samples *output_ptr)
 {
 	int in_channels = get_inchannels();
@@ -628,7 +628,7 @@ int PluginAClientLAD::process_realtime(int64_t size,
 	return size;
 }
 
-int PluginAClientLAD::process_realtime(int64_t size, 
+int PluginAClientLAD::process_realtime(int64_t size,
 	Samples **input_ptr, Samples **output_ptr)
 {
 	int in_channels = get_inchannels();
@@ -657,4 +657,4 @@ int PluginAClientLAD::process_realtime(int64_t size,
 }
 
 
- 
+

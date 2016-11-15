@@ -1044,7 +1044,7 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 void MWindow::move_effect(Plugin *plugin, Track *track, int64_t position)
 {
 	undo->update_undo_before();
-	edl->tracks->move_effect(plugin, track, position); 
+	edl->tracks->move_effect(plugin, track, position);
 	save_backup();
 	undo->update_undo_after(_("paste effect"), LOAD_ALL);
 

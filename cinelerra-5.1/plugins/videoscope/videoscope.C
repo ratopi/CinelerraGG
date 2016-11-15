@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -146,8 +146,8 @@ VideoScopeConfig::VideoScopeConfig()
 
 
 VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin)
- : ScopeGUI(plugin, 
-	plugin->w, 
+ : ScopeGUI(plugin,
+	plugin->w,
 	plugin->h)
 {
 	this->plugin = plugin;
@@ -229,7 +229,7 @@ VideoScopeEffect::VideoScopeEffect(PluginServer *server)
 
 VideoScopeEffect::~VideoScopeEffect()
 {
-	
+
 
 }
 
@@ -348,7 +348,7 @@ VideoScopePackage::VideoScopePackage()
 
 
 
-VideoScopeUnit::VideoScopeUnit(VideoScopeEffect *plugin, 
+VideoScopeUnit::VideoScopeUnit(VideoScopeEffect *plugin,
 	VideoScopeEngine *server)
  : LoadClient(server)
 {
@@ -361,12 +361,12 @@ VideoScopeUnit::VideoScopeUnit(VideoScopeEffect *plugin,
 									((p)[2] * 29)) >> 8)
 
 
-static void draw_point(unsigned char **rows, 
-	int color_model, 
-	int x, 
-	int y, 
-	int r, 
-	int g, 
+static void draw_point(unsigned char **rows,
+	int color_model,
+	int x,
+	int y,
+	int r,
+	int g,
 	int b)
 {
 	switch(color_model)

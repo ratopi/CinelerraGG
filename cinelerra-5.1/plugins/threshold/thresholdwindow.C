@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -36,12 +36,12 @@ ThresholdMin::ThresholdMin(ThresholdMain *plugin,
 	int x,
 	int y,
 	int w)
- : BC_TumbleTextBox(gui, 
+ : BC_TumbleTextBox(gui,
 	plugin->config.min,
 	HISTOGRAM_MIN,
 	HISTOGRAM_MAX,
-	x, 
-	y, 
+	x,
+	y,
 	w)
 {
 	this->plugin = plugin;
@@ -70,12 +70,12 @@ ThresholdMax::ThresholdMax(ThresholdMain *plugin,
 	int x,
 	int y,
 	int w)
- : BC_TumbleTextBox(gui, 
+ : BC_TumbleTextBox(gui,
 	plugin->config.max,
 	HISTOGRAM_MIN,
 	HISTOGRAM_MAX,
-	x, 
-	y, 
+	x,
+	y,
 	w)
 {
 	this->plugin = plugin;
@@ -107,7 +107,7 @@ ThresholdPlot::ThresholdPlot(ThresholdMain *plugin,
 int ThresholdPlot::handle_event()
 {
 	plugin->config.plot = get_value();
-	
+
 	plugin->send_configure_change();
 	return 1;
 }
@@ -138,8 +138,8 @@ int ThresholdCanvas::button_press_event()
 		state = DRAG_SELECTION;
 		if(shift_down())
 		{
-			x1 = (int)((plugin->config.min - HISTOGRAM_MIN) / 
-				(HISTOGRAM_MAX - HISTOGRAM_MIN) * 
+			x1 = (int)((plugin->config.min - HISTOGRAM_MIN) /
+				(HISTOGRAM_MAX - HISTOGRAM_MIN) *
 				get_w());
 			x2 = (int)((plugin->config.max - HISTOGRAM_MIN) /
 				(HISTOGRAM_MAX - HISTOGRAM_MIN) *
@@ -161,13 +161,13 @@ int ThresholdCanvas::button_press_event()
 			x1 = x2 = center_x = get_cursor_x();
 		}
 
-		plugin->config.min = x1 * 
-			(HISTOGRAM_MAX - HISTOGRAM_MIN) / 
-			get_w() + 
+		plugin->config.min = x1 *
+			(HISTOGRAM_MAX - HISTOGRAM_MIN) /
+			get_w() +
 			HISTOGRAM_MIN;
-		plugin->config.max = x2 * 
-			(HISTOGRAM_MAX - HISTOGRAM_MIN) / 
-			get_w() + 
+		plugin->config.max = x2 *
+			(HISTOGRAM_MAX - HISTOGRAM_MIN) /
+			get_w() +
 			HISTOGRAM_MIN;
 
 		draw();
@@ -201,14 +201,14 @@ int ThresholdCanvas::cursor_motion_event()
 			x2 = center_x;
 		}
 
-		plugin->config.min = x1 * 
-			(HISTOGRAM_MAX - HISTOGRAM_MIN) / 
-			get_w() + 
+		plugin->config.min = x1 *
+			(HISTOGRAM_MAX - HISTOGRAM_MIN) /
+			get_w() +
 			HISTOGRAM_MIN;
 
-		plugin->config.max = x2 * 
-			(HISTOGRAM_MAX - HISTOGRAM_MIN) / 
-			get_w() + 
+		plugin->config.max = x2 *
+			(HISTOGRAM_MAX - HISTOGRAM_MIN) /
+			get_w() +
 			HISTOGRAM_MIN;
 
 		gui->min->update(plugin->config.min);
@@ -225,15 +225,15 @@ void ThresholdCanvas::draw()
 	int max = 0;
 	set_color(WHITE);
 	draw_box(0, 0, get_w(), get_h());
-	int border_x1 = (int)((0 - HISTOGRAM_MIN) / 
+	int border_x1 = (int)((0 - HISTOGRAM_MIN) /
 		(HISTOGRAM_MAX - HISTOGRAM_MIN) *
 		get_w());
-	int border_x2 = (int)((1.0 - HISTOGRAM_MIN) / 
+	int border_x2 = (int)((1.0 - HISTOGRAM_MIN) /
 		(HISTOGRAM_MAX - HISTOGRAM_MIN) *
 		get_w());
 
-	int x1 = (int)((plugin->config.min - HISTOGRAM_MIN) / 
-		(HISTOGRAM_MAX - HISTOGRAM_MIN) * 
+	int x1 = (int)((plugin->config.min - HISTOGRAM_MIN) /
+		(HISTOGRAM_MAX - HISTOGRAM_MIN) *
 		get_w());
 	int x2 = (int)((plugin->config.max - HISTOGRAM_MIN) /
 		(HISTOGRAM_MAX - HISTOGRAM_MIN) *

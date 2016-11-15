@@ -1,10 +1,10 @@
 #ifndef __FILEFFMPEG_H__
 #define __FILEFFMPEG_H__
 
-#include "asset.inc" 
+#include "asset.inc"
 #include "bcdialog.h"
 #include "bcwindowbase.inc"
-#include "bitspopup.inc" 
+#include "bitspopup.inc"
 #include "ffmpeg.h"
 #include "filebase.h"
 #include "fileffmpeg.inc"

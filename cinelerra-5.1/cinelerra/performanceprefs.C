@@ -106,7 +106,7 @@ void PerformancePrefs::create_objects()
 	int x2 = x1 + smp_title->get_w() + 5;
 	PrefsProjectSMP *proj_smp = new PrefsProjectSMP(pwindow, this, x2, y);
 	proj_smp->create_objects();
-	
+
 	y += 30;
 	PrefsForceUniprocessor *force_1cpu = new PrefsForceUniprocessor(pwindow, x, y);
 	add_subwindow(force_1cpu);

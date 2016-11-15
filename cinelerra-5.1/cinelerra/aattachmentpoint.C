@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "aattachmentpoint.h"
@@ -85,9 +85,9 @@ int AAttachmentPoint::get_buffer_size()
 // 		return fragment_size;
 }
 
-void AAttachmentPoint::render(Samples *output, 
+void AAttachmentPoint::render(Samples *output,
 	int buffer_number,
-	int64_t start_position, 
+	int64_t start_position,
 	int64_t len,
 	int64_t sample_rate)
 {
@@ -96,7 +96,7 @@ void AAttachmentPoint::render(Samples *output,
 	if(plugin_server->multichannel)
 	{
 // Test against previous parameters for reuse of previous data
-		if( !is_processed || this->start_position != start_position || 
+		if( !is_processed || this->start_position != start_position ||
 			this->len != len || this->sample_rate != sample_rate ) {
 // Update status
 			this->start_position = start_position;
@@ -114,8 +114,8 @@ void AAttachmentPoint::render(Samples *output,
 					renderengine->get_edl()->session->sample_rate,
 				renderengine->command->get_direction());
 		}
-		memcpy(output->get_data(), 
-			buffer_vector[buffer_number]->get_data(), 
+		memcpy(output->get_data(),
+			buffer_vector[buffer_number]->get_data(),
 			sizeof(double) * len);
 	}
 	else
@@ -124,8 +124,8 @@ void AAttachmentPoint::render(Samples *output,
 		Samples *output_temp[1];
 		output_temp[0] = output;
 
-if(0) printf("AAttachmentPoint::render %d buffer_number=%d renderengine=%p plugin_server=%p\n", 
-__LINE__, 
+if(0) printf("AAttachmentPoint::render %d buffer_number=%d renderengine=%p plugin_server=%p\n",
+__LINE__,
 buffer_number,
 renderengine,
 plugin_servers.values[buffer_number]);

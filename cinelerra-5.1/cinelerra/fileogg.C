@@ -2342,8 +2342,8 @@ PackagingEngineOGG::~PackagingEngineOGG()
 int PackagingEngineOGG::create_packages_single_farm(
 		EDL *edl,
 		Preferences *preferences,
-		Asset *default_asset, 
-		double total_start, 
+		Asset *default_asset,
+		double total_start,
 		double total_end)
 {
 	this->total_start = total_start;
@@ -2352,7 +2352,7 @@ int PackagingEngineOGG::create_packages_single_farm(
 
 	this->preferences = preferences;
 
-// We make A COPY of the asset, because we set audio_data = 0 on local asset which is the same copy as default_asset... 
+// We make A COPY of the asset, because we set audio_data = 0 on local asset which is the same copy as default_asset...
 // Should be taken care of somewhere else actually
 	this->default_asset = new Asset(*default_asset);
 
@@ -2382,7 +2382,7 @@ int PackagingEngineOGG::create_packages_single_farm(
 		sprintf(packages[current_package]->path, "%s.audio", default_asset->path);
 		local_current_package++;
 	}
-	
+
 	if (default_asset->video_data)
 	{
 		video_package_len = (total_len) / preferences->renderfarm_job_count;
@@ -2390,17 +2390,17 @@ int PackagingEngineOGG::create_packages_single_farm(
 		int number_start;      // Character in the filename path at which the number begins
 		int total_digits;      // Total number of digits including padding the user specified.
 
-		Render::get_starting_number(default_asset->path, 
+		Render::get_starting_number(default_asset->path,
 			current_number,
-			number_start, 
+			number_start,
 			total_digits,
 			3);
 
 		for(int i = 0; i < preferences->renderfarm_job_count; i++)
 		{
 			RenderPackage *package = packages[local_current_package] = new RenderPackage;
-			Render::create_filename(package->path, 
-				default_asset->path, 
+			Render::create_filename(package->path,
+				default_asset->path,
 				current_number,
 				total_digits,
 				number_start);
@@ -2411,7 +2411,7 @@ int PackagingEngineOGG::create_packages_single_farm(
 	return 0;
 }
 
-RenderPackage* PackagingEngineOGG::get_package_single_farm(double frames_per_second, 
+RenderPackage* PackagingEngineOGG::get_package_single_farm(double frames_per_second,
 		int client_number,
 		int use_local_rate)
 {
@@ -2439,13 +2439,13 @@ RenderPackage* PackagingEngineOGG::get_package_single_farm(double frames_per_sec
 
 		result->audio_start = audio_position;
 		result->video_start = video_position;
-		result->audio_end = audio_position + 
+		result->audio_end = audio_position +
 			Units::round(video_package_len * default_asset->sample_rate);
-		result->video_end = video_position + 
+		result->video_end = video_position +
 			Units::round(video_package_len * default_asset->frame_rate);
 
 // Last package... take it all!
-		if (current_package == total_packages -1 ) 
+		if (current_package == total_packages -1 )
 		{
 			result->audio_end = audio_end;
 			result->video_end = video_end;
@@ -2455,7 +2455,7 @@ RenderPackage* PackagingEngineOGG::get_package_single_farm(double frames_per_sec
 		video_position = result->video_end;
 
 	}
-	
+
 	current_package ++;
 	return result;
 
@@ -2474,9 +2474,9 @@ void PackagingEngineOGG::get_package_paths(ArrayList<char*> *path_list)
 
 int64_t PackagingEngineOGG::get_progress_max()
 {
-	return Units::to_int64(default_asset->sample_rate * 
+	return Units::to_int64(default_asset->sample_rate *
 			(total_end - total_start)) * 2+
-		Units::to_int64(preferences->render_preroll * 
+		Units::to_int64(preferences->render_preroll *
 			total_packages *
 			default_asset->sample_rate);
 }
@@ -2485,7 +2485,7 @@ int PackagingEngineOGG::packages_are_done()
 {
 
 
-// Mux audio and video into one file	
+// Mux audio and video into one file
 
 // First fix our asset... have to workaround the bug of corruption of local asset
 //	Render::check_asset(edl, *default_asset);
@@ -2494,7 +2494,7 @@ int PackagingEngineOGG::packages_are_done()
 	File *audio_file_gen = 0, *video_file_gen = 0;
 	FileOGG *video_file = 0, *audio_file = 0;
 	ogg_stream_state audio_in_stream, video_in_stream;
-	
+
 	int local_current_package = 0;
 	if (default_asset->audio_data)
 	{
@@ -2580,20 +2580,20 @@ int PackagingEngineOGG::packages_are_done()
 				int64_t granulepos = op.granulepos;
 				if (granulepos != -1)
 				{
-				// Fix granulepos!	
+				// Fix granulepos!
 					int64_t rel_iframe = granulepos >> video_file->theora_keyframe_granule_shift;
 					int64_t rel_pframe = granulepos - (rel_iframe << video_file->theora_keyframe_granule_shift);
 					int64_t rel_current_frame = rel_iframe + rel_pframe;
 					current_frame = frame_offset + rel_current_frame;
 					int64_t abs_iframe = current_frame - rel_pframe;
-					
+
 					op.granulepos = (abs_iframe << video_file->theora_keyframe_granule_shift) + rel_pframe;
-					
-//					printf("iframe: %i, pframe: %i, granulepos: %i, op.packetno %lli, abs_iframe: %i\n", rel_iframe, rel_pframe, granulepos, op.packetno, abs_iframe);				
-				
+
+//					printf("iframe: %i, pframe: %i, granulepos: %i, op.packetno %lli, abs_iframe: %i\n", rel_iframe, rel_pframe, granulepos, op.packetno, abs_iframe);
+
 				}
 				ogg_stream_packetin (&output_file->tf->to, &op);
-				output_file->tf->v_pkg++; 
+				output_file->tf->v_pkg++;
 			}
 		}
 		if (audio_ready)
@@ -2612,21 +2612,21 @@ int PackagingEngineOGG::packages_are_done()
 				ogg_stream_packetout(&audio_in_stream, &op);
 				ogg_stream_packetin (&output_file->tf->vo, &op);
 				audio_packetno++;
-				output_file->tf->a_pkg++; 
+				output_file->tf->a_pkg++;
 			}
 		}
-		
+
 		output_file->flush_ogg(0);
-		
-	
+
+
 	}
-	
-// flush_ogg(1) is called on file closing time...	
+
+// flush_ogg(1) is called on file closing time...
 //	output_file->flush_ogg(1);
 
 // Just prevent thet write_samples and write_frames are called
 	output_file->final_write = 0;
-		
+
 	if (default_asset->audio_data)
 	{
 		ogg_stream_clear(&audio_in_stream);

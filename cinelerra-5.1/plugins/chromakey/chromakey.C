@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -72,10 +72,10 @@ int ChromaKeyConfig::equivalent(ChromaKeyConfig &src)
 		use_value == src.use_value);
 }
 
-void ChromaKeyConfig::interpolate(ChromaKeyConfig &prev, 
-	ChromaKeyConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void ChromaKeyConfig::interpolate(ChromaKeyConfig &prev,
+	ChromaKeyConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -104,11 +104,11 @@ int ChromaKeyConfig::get_color()
 
 
 ChromaKeyWindow::ChromaKeyWindow(ChromaKey *plugin)
- : PluginClientWindow(plugin, 
-	320, 
-	220, 
-	320, 
-	220, 
+ : PluginClientWindow(plugin,
+	320,
+	220,
+	320,
+	220,
 	0)
 {
 	this->plugin = plugin;
@@ -157,14 +157,14 @@ void ChromaKeyWindow::create_objects()
 void ChromaKeyWindow::update_sample()
 {
 	sample->set_color(plugin->config.get_color());
-	sample->draw_box(0, 
-		0, 
-		sample->get_w(), 
+	sample->draw_box(0,
+		0,
+		sample->get_w(),
 		sample->get_h());
 	sample->set_color(BLACK);
-	sample->draw_rectangle(0, 
-		0, 
-		sample->get_w(), 
+	sample->draw_rectangle(0,
+		0,
+		sample->get_w(),
 		sample->get_h());
 	sample->flash();
 }
@@ -177,11 +177,11 @@ void ChromaKeyWindow::update_sample()
 
 
 
-ChromaKeyColor::ChromaKeyColor(ChromaKey *plugin, 
-	ChromaKeyWindow *gui, 
-	int x, 
+ChromaKeyColor::ChromaKeyColor(ChromaKey *plugin,
+	ChromaKeyWindow *gui,
+	int x,
 	int y)
- : BC_GenericButton(x, 
+ : BC_GenericButton(x,
 	y,
 	_("Color..."))
 {
@@ -200,13 +200,13 @@ int ChromaKeyColor::handle_event()
 
 
 ChromaKeyThreshold::ChromaKeyThreshold(ChromaKey *plugin, int x, int y)
- : BC_FSlider(x, 
+ : BC_FSlider(x,
 			y,
 			0,
-			200, 
-			200, 
-			(float)0, 
-			(float)100, 
+			200,
+			200,
+			(float)0,
+			(float)100,
 			plugin->config.threshold)
 {
 	this->plugin = plugin;
@@ -221,13 +221,13 @@ int ChromaKeyThreshold::handle_event()
 
 
 ChromaKeySlope::ChromaKeySlope(ChromaKey *plugin, int x, int y)
- : BC_FSlider(x, 
+ : BC_FSlider(x,
 			y,
 			0,
-			200, 
-			200, 
-			(float)0, 
-			(float)100, 
+			200,
+			200,
+			(float)0,
+			(float)100,
 			plugin->config.slope)
 {
 	this->plugin = plugin;
@@ -255,9 +255,9 @@ int ChromaKeyUseValue::handle_event()
 }
 
 
-ChromaKeyUseColorPicker::ChromaKeyUseColorPicker(ChromaKey *plugin, 
+ChromaKeyUseColorPicker::ChromaKeyUseColorPicker(ChromaKey *plugin,
 	ChromaKeyWindow *gui,
-	int x, 
+	int x,
 	int y)
  : BC_GenericButton(x, y, _("Use color picker"))
 {
@@ -317,7 +317,7 @@ void ChromaKeyServer::init_packages()
 		pkg->y1 = plugin->input->get_h() * i / get_total_packages();
 		pkg->y2 = plugin->input->get_h() * (i + 1) / get_total_packages();
 	}
-	
+
 }
 LoadClient* ChromaKeyServer::new_client()
 {
@@ -349,7 +349,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 	int w = plugin->input->get_w();
 
 	float h, s, v;
-	HSV::rgb_to_hsv(plugin->config.red, 
+	HSV::rgb_to_hsv(plugin->config.red,
 		plugin->config.green,
 		plugin->config.blue,
 		h,
@@ -528,13 +528,13 @@ REGISTER_PLUGIN(ChromaKey)
 ChromaKey::ChromaKey(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 }
 
 ChromaKey::~ChromaKey()
 {
-	
+
 	delete engine;
 }
 
@@ -549,9 +549,9 @@ SET_TRACE
 	this->input = frame;
 	this->output = frame;
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
 
@@ -638,7 +638,7 @@ int ChromaKey::handle_opengl()
 {
 #ifdef HAVE_GL
 	OUTER_VARIABLES(this)
-	
+
 
 
 	static const char *uniform_frag =
@@ -655,8 +655,8 @@ int ChromaKey::handle_opengl()
 		"{\n"
 		"	return abs(color.r);\n"
 		"}\n";
-		
-	static const char *get_rgbvalue_frag = 
+
+	static const char *get_rgbvalue_frag =
 		"float get_value(vec4 color)\n"
 		"{\n"
 		"	return dot(color.rgb, vec3(0.29900, 0.58700, 0.11400));\n"
@@ -684,7 +684,7 @@ int ChromaKey::handle_opengl()
 		"	gl_FragColor = vec4(color.rgb, alpha);\n"
 		"}\n";
 
-	static const char *cube_frag = 
+	static const char *cube_frag =
 		"void main()\n"
 		"{\n"
 		"	vec4 color = texture2D(tex, gl_TexCoord[0].st);\n"
@@ -736,11 +736,11 @@ int ChromaKey::handle_opengl()
 	}
 SET_TRACE
 
-	unsigned int frag = VFrame::make_shader(0, 
-		shader_stack[0], 
-		shader_stack[1], 
-		shader_stack[2], 
-		shader_stack[3], 
+	unsigned int frag = VFrame::make_shader(0,
+		shader_stack[0],
+		shader_stack[1],
+		shader_stack[2],
+		shader_stack[3],
 		0);
 	get_output()->bind_texture(0);
 
@@ -755,12 +755,12 @@ SET_TRACE
 		glUniform1f(glGetUniformLocation(frag, "threshold_run"), threshold_run);
 		if(get_output()->get_color_model() != BC_YUV888 &&
 			get_output()->get_color_model() != BC_YUVA8888)
-			glUniform3f(glGetUniformLocation(frag, "key"), 
+			glUniform3f(glGetUniformLocation(frag, "key"),
 				r_key, g_key, b_key);
 		else
-			glUniform3f(glGetUniformLocation(frag, "key"), 
+			glUniform3f(glGetUniformLocation(frag, "key"),
 				(float)y_key / 0xff, (float)u_key / 0xff, (float)v_key / 0xff);
-		
+
 	}
 SET_TRACE
 

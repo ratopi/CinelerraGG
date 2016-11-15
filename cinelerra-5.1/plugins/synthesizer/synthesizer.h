@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef SYNTHESIZER_H
@@ -271,9 +271,9 @@ class OscScroll : public BC_ScrollBar
 public:
 	OscScroll(Synth *synth, SynthWindow *window, int x, int y, int h);
 	~OscScroll();
-	
+
 	int handle_event();
-	
+
 	Synth *synth;
 	SynthWindow *window;
 };
@@ -283,9 +283,9 @@ class NoteScroll : public BC_ScrollBar
 public:
 	NoteScroll(Synth *synth, SynthWindow *window, int x, int y, int w);
 	~NoteScroll();
-	
+
 	int handle_event();
-	
+
 	Synth *synth;
 	SynthWindow *window;
 };
@@ -295,9 +295,9 @@ class SynthAddOsc : public BC_GenericButton
 public:
 	SynthAddOsc(Synth *synth, SynthWindow *window, int x, int y);
 	~SynthAddOsc();
-	
+
 	int handle_event();
-	
+
 	Synth *synth;
 	SynthWindow *window;
 };
@@ -308,9 +308,9 @@ class SynthDelOsc : public BC_GenericButton
 public:
 	SynthDelOsc(Synth *synth, SynthWindow *window, int x, int y);
 	~SynthDelOsc();
-	
+
 	int handle_event();
-	
+
 	Synth *synth;
 	SynthWindow *window;
 };
@@ -339,9 +339,9 @@ class SynthWaveFormItem : public BC_MenuItem
 public:
 	SynthWaveFormItem(Synth *synth, char *text, int value);
 	~SynthWaveFormItem();
-	
+
 	int handle_event();
-	
+
 	int value;
 	Synth *synth;
 };
@@ -380,11 +380,11 @@ public:
 class SynthCanvas : public BC_SubWindow
 {
 public:
-	SynthCanvas(Synth *synth, 
-		SynthWindow *window, 
-		int x, 
-		int y, 
-		int w, 
+	SynthCanvas(Synth *synth,
+		SynthWindow *window,
+		int x,
+		int y,
+		int w,
 		int h);
 	~SynthCanvas();
 
@@ -564,7 +564,7 @@ class SynthOscillatorConfig
 public:
 	SynthOscillatorConfig(int number);
 	~SynthOscillatorConfig();
-	
+
 	int equivalent(SynthOscillatorConfig &that);
 	void copy_from(SynthOscillatorConfig& that);
 	void reset();
@@ -585,16 +585,16 @@ class SynthConfig
 public:
 	SynthConfig();
 	~SynthConfig();
-	
+
 	int equivalent(SynthConfig &that);
 	void copy_from(SynthConfig &that);
-	void interpolate(SynthConfig &prev, 
-		SynthConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(SynthConfig &prev,
+		SynthConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 	void reset();
-	
+
 	double wetness;
 // base frequency for oscillators
 // Freqs of 0 are unused.
@@ -632,12 +632,12 @@ public:
 	void add_oscillator();
 	void delete_oscillator();
 	double get_total_power();
-	double get_oscillator_point(float x, 
-		double normalize_constant, 
+	double get_oscillator_point(float x,
+		double normalize_constant,
 		int oscillator);
-	double solve_eqn(double *output, 
+	double solve_eqn(double *output,
 		int length,
-		double freq, 
+		double freq,
 		double normalize_constant,
 		int oscillator);
 	double get_point(float x, double normalize_constant);
@@ -648,8 +648,8 @@ public:
 	double function_triangle(double x);
 	void reconfigure();
 	int overlay_synth(double freq,
-		int64_t length, 
-		double *input, 
+		int64_t length,
+		double *input,
 		double *output);
 	void update_gui();
 	void reset();

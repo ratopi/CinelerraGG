@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef GRAPHIC_H
@@ -57,13 +57,13 @@ class GraphicConfig
 public:
 	GraphicConfig();
 	~GraphicConfig();
-	
+
 	int equivalent(GraphicConfig &that);
 	void copy_from(GraphicConfig &that);
-	void interpolate(GraphicConfig &prev, 
-		GraphicConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(GraphicConfig &prev,
+		GraphicConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 	void insert_point(GraphicPoint *point);
 	void delete_point(int number);
@@ -225,11 +225,11 @@ class GraphicFFT : public CrossfadeFFT
 public:
 	GraphicFFT(GraphicEQ *plugin);
 	~GraphicFFT();
-	
+
 	int post_process();
 	int signal_process();
-	int read_samples(int64_t output_sample, 
-		int samples, 
+	int read_samples(int64_t output_sample,
+		int samples,
 		Samples *buffer);
 // Current GUI frame being filled
 	GraphicGUIFrame *frame;
@@ -248,8 +248,8 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int64_t size, 
-		Samples *buffer, 
+	int process_buffer(int64_t size,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
 	void update_gui();

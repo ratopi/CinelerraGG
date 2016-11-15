@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef BLUR_H
@@ -50,10 +50,10 @@ public:
 
 	int equivalent(BlurConfig &that);
 	void copy_from(BlurConfig &that);
-	void interpolate(BlurConfig &prev, 
-		BlurConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(BlurConfig &prev,
+		BlurConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 
 	int vertical;
@@ -104,7 +104,7 @@ public:
 	~BlurEngine();
 
 	void run();
-	void set_range(int start_y, 
+	void set_range(int start_y,
 		int end_y,
 		int start_x,
 		int end_x);
@@ -114,11 +114,11 @@ public:
 // parameters needed for blur
 	int get_constants(BlurConstants *ptr, double std_dev);
 	int reconfigure(BlurConstants *constants, double alpha);
-	int transfer_pixels(pixel_f *src1, 
-		pixel_f *src2, 
-		pixel_f *src, 
+	int transfer_pixels(pixel_f *src1,
+		pixel_f *src2,
+		pixel_f *src,
 		double *radius,
-		pixel_f *dest, 
+		pixel_f *dest,
 		int size);
 	int multiply_alpha(pixel_f *row, int size);
 	int separate_alpha(pixel_f *row, int size);

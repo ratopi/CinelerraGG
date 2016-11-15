@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -186,11 +186,11 @@ int FrameFieldConfig::equivalent(FrameFieldConfig &src)
 
 
 FrameFieldWindow::FrameFieldWindow(FrameField *plugin)
- : PluginClientWindow(plugin, 
-	210, 
-	160, 
-	200, 
-	160, 
+ : PluginClientWindow(plugin,
+	210,
+	160,
+	200,
+	160,
 	0)
 {
 	this->plugin = plugin;
@@ -218,12 +218,12 @@ void FrameFieldWindow::create_objects()
 
 
 
-FrameFieldTop::FrameFieldTop(FrameField *plugin, 
-	FrameFieldWindow *gui, 
-	int x, 
+FrameFieldTop::FrameFieldTop(FrameField *plugin,
+	FrameFieldWindow *gui,
+	int x,
 	int y)
- : BC_Radial(x, 
-	y, 
+ : BC_Radial(x,
+	y,
 	plugin->config.field_dominance == TOP_FIELD_FIRST,
 	_("Top field first"))
 {
@@ -243,12 +243,12 @@ int FrameFieldTop::handle_event()
 
 
 
-FrameFieldBottom::FrameFieldBottom(FrameField *plugin, 
-	FrameFieldWindow *gui, 
-	int x, 
+FrameFieldBottom::FrameFieldBottom(FrameField *plugin,
+	FrameFieldWindow *gui,
+	int x,
 	int y)
- : BC_Radial(x, 
-	y, 
+ : BC_Radial(x,
+	y,
 	plugin->config.field_dominance == BOTTOM_FIELD_FIRST,
 	_("Bottom field first"))
 {
@@ -289,7 +289,7 @@ int FrameFieldBottom::handle_event()
 FrameField::FrameField(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	field_number = 0;
 	src_frame = 0;
 	src_frame_number = -1;
@@ -302,7 +302,7 @@ FrameField::FrameField(PluginServer *server)
 
 FrameField::~FrameField()
 {
-	
+
 
 	if(src_frame) delete src_frame;
 	if(src_texture) delete src_texture;
@@ -351,10 +351,10 @@ int FrameField::process_buffer(VFrame *frame,
 
 		if(!src_frame)
 		{
-			src_frame = new VFrame(0, 
+			src_frame = new VFrame(0,
 				-1,
-				frame->get_w(), 
-				frame->get_h(), 
+				frame->get_w(),
+				frame->get_h(),
 				frame->get_color_model(),
 				-1);
 		}
@@ -367,9 +367,9 @@ int FrameField::process_buffer(VFrame *frame,
 // If same frame was requested, assume it was a configuration change and reprocess.
 		start_position == last_frame)
 	{
-		read_frame(ptr, 
-			0, 
-			current_frame_number, 
+		read_frame(ptr,
+			0,
+			current_frame_number,
 			frame_rate / 2,
 			get_use_opengl());
 		src_frame_number = current_frame_number;
@@ -383,7 +383,7 @@ int FrameField::process_buffer(VFrame *frame,
 		return 0;
 	}
 
-	int row_size = VFrame::calculate_bytes_per_pixel(frame->get_color_model()) * 
+	int row_size = VFrame::calculate_bytes_per_pixel(frame->get_color_model()) *
 		frame->get_w();
 
 	unsigned char **src_rows = src_frame->get_rows();
@@ -393,13 +393,13 @@ int FrameField::process_buffer(VFrame *frame,
 // Even field
 	if(field_number == 0)
 	{
-		if(config.field_dominance == TOP_FIELD_FIRST) 
+		if(config.field_dominance == TOP_FIELD_FIRST)
 		{
 			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
 // Copy even lines of src to both lines of output
-				memcpy(output_rows[i], 
-					src_rows[i], 
+				memcpy(output_rows[i],
+					src_rows[i],
 					row_size);
 			}
 
@@ -411,8 +411,8 @@ int FrameField::process_buffer(VFrame *frame,
 			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
 // Copy odd lines of current to both lines of output with shift up.
-				memcpy(output_rows[i + 1], 
-					src_rows[i + 1], 
+				memcpy(output_rows[i + 1],
+					src_rows[i + 1],
 					row_size);
 			}
 
@@ -428,8 +428,8 @@ int FrameField::process_buffer(VFrame *frame,
 			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
 // Copy odd lines of src to both lines of output
-				memcpy(output_rows[i + 1], 
-					src_rows[i + 1], 
+				memcpy(output_rows[i + 1],
+					src_rows[i + 1],
 					row_size);
 			}
 
@@ -441,8 +441,8 @@ int FrameField::process_buffer(VFrame *frame,
 			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
 // Copy even lines of src to both lines of output.
-				memcpy(output_rows[i], 
-					src_rows[i], 
+				memcpy(output_rows[i],
+					src_rows[i],
 					row_size);
 			}
 
@@ -627,7 +627,7 @@ void FrameField::update_gui()
 int FrameField::handle_opengl()
 {
 #ifdef HAVE_GL
-	static const char *field_frag = 
+	static const char *field_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float double_line_h;\n"
 		"uniform float y_offset;\n"
@@ -647,25 +647,25 @@ int FrameField::handle_opengl()
 		"		frac);\n"
 		"}\n";
 
-	static const char *_601_to_rgb_frag = 
+	static const char *_601_to_rgb_frag =
 		"void main()\n"
 		"{\n"
 		"	gl_FragColor.rgb = gl_FragColor.rgb * vec3(1.1644, 1.1644, 1.1644) - vec3(0.0627, 0.0627, 0.0627);\n"
 		"}\n";
 
-	static const char *_601_to_yuv_frag = 
+	static const char *_601_to_yuv_frag =
 		"void main()\n"
 		"{\n"
 		"	gl_FragColor.r = gl_FragColor.r * 1.1644 - 0.0627;\n"
 		"}\n";
 
-	static const char *rgb_to_601_frag = 
+	static const char *rgb_to_601_frag =
 		"void main()\n"
 		"{\n"
 		"	gl_FragColor.rgb = gl_FragColor.rgb * vec3(0.8588, 0.8588, 0.8588) + vec3(0.0627, 0.0627, 0.0627);\n"
 		"}\n";
 
-	static const char *yuv_to_601_frag = 
+	static const char *yuv_to_601_frag =
 		"void main()\n"
 		"{\n"
 		"	gl_FragColor.r = gl_FragColor.r * 0.8588 + 0.0627;\n"
@@ -692,8 +692,8 @@ int FrameField::handle_opengl()
 		VFrame::init_screen(get_output()->get_w(), get_output()->get_h());
 		glActiveTexture(GL_TEXTURE0);
 		BC_Texture::new_texture(&src_texture,
-			get_output()->get_w(), 
-			get_output()->get_h(), 
+			get_output()->get_w(),
+			get_output()->get_h(),
 			get_output()->get_color_model());
 		src_texture->bind(0);
 		glCopyTexSubImage2D(GL_TEXTURE_2D,
@@ -738,8 +738,8 @@ int FrameField::handle_opengl()
 	VFrame::init_screen(get_output()->get_w(), get_output()->get_h());
 	glActiveTexture(GL_TEXTURE0);
 	BC_Texture::new_texture(&src_texture,
-		get_output()->get_w(), 
-		get_output()->get_h(), 
+		get_output()->get_w(),
+		get_output()->get_h(),
 		get_output()->get_color_model());
 
 
@@ -777,9 +777,9 @@ int FrameField::handle_opengl()
 	{
 		glUseProgram(frag);
 		glUniform1i(glGetUniformLocation(frag, "tex"), 0);
-		glUniform1f(glGetUniformLocation(frag, "double_line_h"), 
+		glUniform1f(glGetUniformLocation(frag, "double_line_h"),
 			2.0 / src_texture->get_texture_h());
-		glUniform1f(glGetUniformLocation(frag, "y_offset"), 
+		glUniform1f(glGetUniformLocation(frag, "y_offset"),
 			y_offset / src_texture->get_texture_h());
 	}
 

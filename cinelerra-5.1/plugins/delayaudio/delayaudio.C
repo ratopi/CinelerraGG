@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -47,7 +47,7 @@ DelayAudio::DelayAudio(PluginServer *server)
 DelayAudio::~DelayAudio()
 {
 
-	
+
 	if(buffer) delete buffer;
 }
 
@@ -69,7 +69,7 @@ int DelayAudio::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 	prev_keyframe = get_prev_keyframe(get_source_position());
-	
+
 	DelayAudioConfig old_config;
 	old_config.copy_from(config);
  	read_data(prev_keyframe);
@@ -126,20 +126,20 @@ void DelayAudio::reconfigure()
 	Samples *new_buffer = new Samples(new_allocation);
 	bzero(new_buffer->get_data(), sizeof(double) * new_allocation);
 
-// printf("DelayAudio::reconfigure %f %d %d %d\n", 
-// config.length, 
-// PluginAClient::project_sample_rate, 
+// printf("DelayAudio::reconfigure %f %d %d %d\n",
+// config.length,
+// PluginAClient::project_sample_rate,
 // PluginClient::in_buffer_size,
 // new_allocation);
-// 
+//
 
 
 	if(buffer)
 	{
 		int size = MIN(new_allocation, allocation);
 
-		memcpy(new_buffer->get_data(), 
-			buffer->get_data(), 
+		memcpy(new_buffer->get_data(),
+			buffer->get_data(),
 			(size - PluginClient::in_buffer_size) * sizeof(double));
 		delete buffer;
 	}
@@ -218,9 +218,9 @@ void DelayAudioWindow::create_objects()
 {
 	add_subwindow(new BC_Title(10, 10, _("Delay seconds:")));
 	length = new DelayAudioTextBox(
-		plugin, 
+		plugin,
 		this,
-		10, 
+		10,
 		40);
 	length->create_objects();
 	update_gui();
@@ -246,16 +246,16 @@ void DelayAudioWindow::update_gui()
 
 
 DelayAudioTextBox::DelayAudioTextBox(
-	DelayAudio *plugin, 
+	DelayAudio *plugin,
 	DelayAudioWindow *window,
-	int x, 
+	int x,
 	int y)
  : BC_TumbleTextBox(window,
  	(float)plugin->config.length,
 	(float)0,
 	(float)10,
- 	x, 
-	y, 
+ 	x,
+	y,
 	100)
 {
 	this->plugin = plugin;
@@ -285,7 +285,7 @@ DelayAudioConfig::DelayAudioConfig()
 {
 	length = 1;
 }
-	
+
 int DelayAudioConfig::equivalent(DelayAudioConfig &that)
 {
 	return(EQUIV(this->length, that.length));

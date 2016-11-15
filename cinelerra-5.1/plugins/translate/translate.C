@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -46,12 +46,12 @@ TranslateConfig::TranslateConfig()
 
 int TranslateConfig::equivalent(TranslateConfig &that)
 {
-	return EQUIV(in_x, that.in_x) && 
-		EQUIV(in_y, that.in_y) && 
-		EQUIV(in_w, that.in_w) && 
+	return EQUIV(in_x, that.in_x) &&
+		EQUIV(in_y, that.in_y) &&
+		EQUIV(in_w, that.in_w) &&
 		EQUIV(in_h, that.in_h) &&
-		EQUIV(out_x, that.out_x) && 
-		EQUIV(out_y, that.out_y) && 
+		EQUIV(out_x, that.out_x) &&
+		EQUIV(out_y, that.out_y) &&
 		EQUIV(out_w, that.out_w) &&
 		EQUIV(out_h, that.out_h);
 }
@@ -68,10 +68,10 @@ void TranslateConfig::copy_from(TranslateConfig &that)
 	out_h = that.out_h;
 }
 
-void TranslateConfig::interpolate(TranslateConfig &prev, 
-	TranslateConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void TranslateConfig::interpolate(TranslateConfig &prev,
+	TranslateConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -99,12 +99,12 @@ TranslateMain::TranslateMain(PluginServer *server)
 {
 	temp_frame = 0;
 	overlayer = 0;
-	
+
 }
 
 TranslateMain::~TranslateMain()
 {
-	
+
 
 	if(temp_frame) delete temp_frame;
 	temp_frame = 0;
@@ -192,10 +192,10 @@ int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			delete temp_frame;
 			temp_frame = 0;
 		}
-		if(!temp_frame) 
-			temp_frame = new VFrame(0, 
+		if(!temp_frame)
+			temp_frame = new VFrame(0,
 				-1,
-				input_ptr->get_w(), 
+				input_ptr->get_w(),
 				input_ptr->get_h(),
 				input->get_color_model(),
 				-1);

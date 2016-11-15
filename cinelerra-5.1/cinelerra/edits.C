@@ -820,7 +820,7 @@ Edit *Edits::create_silence(int64_t start, int64_t end)
 	}
 	return new_edit;
 }
-				     
+
 Edit* Edits::shift(int64_t position, int64_t difference)
 {
 	Edit *new_edit = split_edit(position);

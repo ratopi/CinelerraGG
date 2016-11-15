@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "apatchgui.h"
@@ -25,7 +25,7 @@
 #include "autos.h"
 #include "bcwindowbase.h"
 #include "cpanel.h"
-#include "cwindowgui.h" 
+#include "cwindowgui.h"
 #include "cwindow.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -44,7 +44,7 @@
 #include "mwindowgui.h"
 #include "mwindow.h"
 #include "patchbay.h"
-#include "patchgui.h" 
+#include "patchgui.h"
 #include "timelinepane.h"
 #include "track.h"
 #include "vtrack.h"
@@ -125,7 +125,7 @@ int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyfr
 		mwindow->edl->local_session->set_selectionstart(new_position);
 		mwindow->edl->local_session->set_selectionend(new_position);
 		mwindow->gui->lock_window();
-		mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);	
+		mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);
 		mwindow->gui->unlock_window();
 	}
 	return 0;
@@ -271,7 +271,7 @@ int KeyframePopupShow::handle_event()
 		case AUTOMATION_PROJECTOR_X:
 		case AUTOMATION_PROJECTOR_Y:
 		case AUTOMATION_PROJECTOR_Z: {
-			cgui->set_operation(CWINDOW_PROJECTOR);	
+			cgui->set_operation(CWINDOW_PROJECTOR);
 			break; }
 
 		case AUTOMATION_MASK: {
@@ -438,8 +438,8 @@ int KeyframePopupCopy::handle_event()
 		file.terminate_string();
 
 		mwindow->gui->lock_window();
-		mwindow->gui->get_clipboard()->to_clipboard(file.string, 
-			strlen(file.string), 
+		mwindow->gui->get_clipboard()->to_clipboard(file.string,
+			strlen(file.string),
 			SECONDARY_SELECTION);
 		mwindow->gui->unlock_window();
 
@@ -452,8 +452,8 @@ int KeyframePopupCopy::handle_event()
 
 
 KeyframePopupCurveMode::KeyframePopupCurveMode(
-	MWindow *mwindow, 
-	KeyframePopup *popup, 
+	MWindow *mwindow,
+	KeyframePopup *popup,
 	int curve_mode)
  : BC_MenuItem( get_labeltext(curve_mode))
 {
@@ -485,18 +485,18 @@ void KeyframePopupCurveMode::toggle_mode(FloatAuto *keyframe)
 
 int KeyframePopupCurveMode::handle_event()
 {
-	if (popup->keyframe_autos && 
+	if (popup->keyframe_autos &&
 	    popup->keyframe_autos->get_type() == AUTOMATION_TYPE_FLOAT)
 	{
 		mwindow->undo->update_undo_before(_("change keyframe curve mode"), 0);
 		((FloatAuto*)popup->keyframe_auto)->
 			change_curve_mode((FloatAuto::t_mode)curve_mode);
-		
+
 		// if we switched to some "auto" mode, this may imply a
 		// real change to parameters, so this needs to be undoable...
 		mwindow->undo->update_undo_after(_("change keyframe curve mode"), LOAD_ALL);
 		mwindow->save_backup();
-		
+
 		mwindow->gui->update(0, 1, 0,0,0,0,0); // incremental redraw for canvas
 		mwindow->cwindow->update(0,0, 1, 0,0); // redraw tool window in compositor
 		mwindow->update_plugin_guis();

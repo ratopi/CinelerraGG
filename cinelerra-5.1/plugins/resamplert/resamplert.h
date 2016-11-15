@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef RESAMPLERT_H
@@ -39,10 +39,10 @@ public:
 	void boundaries();
 	int equivalent(ResampleRTConfig &src);
 	void copy_from(ResampleRTConfig &src);
-	void interpolate(ResampleRTConfig &prev, 
-		ResampleRTConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(ResampleRTConfig &prev,
+		ResampleRTConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 // was scale
 	double num;
@@ -108,7 +108,7 @@ public:
 	void update_gui();
 	int is_realtime();
 	int is_synthesis();
-	int process_buffer(int64_t size, 
+	int process_buffer(int64_t size,
 		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);

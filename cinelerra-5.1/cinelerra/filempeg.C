@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "asset.h"
@@ -55,7 +55,7 @@
 
 
 // M JPEG dependancies
-static double frame_rate_codes[] = 
+static double frame_rate_codes[] =
 {
 	0,
 	24000.0/1001.0,
@@ -104,8 +104,8 @@ FileMPEG::~FileMPEG()
 	vcommand_line.remove_all_objects();
 }
 
-void FileMPEG::get_parameters(BC_WindowBase *parent_window, 
-	Asset *asset, 
+void FileMPEG::get_parameters(BC_WindowBase *parent_window,
+	Asset *asset,
 	BC_WindowBase* &format_window,
 	int audio_options,
 	int video_options)
@@ -477,7 +477,7 @@ int FileMPEG::open_file(int rd, int wr)
 			eprintf(_("Couldn't open %s: failed.\n"), asset->path);
 		}
 	}
-	
+
 	if( !result && wr && asset->format == FILE_VMPEG ) {
 // Heroine Virtual encoder
 //  this one is cinelerra-x.x.x/mpeg2enc
@@ -592,7 +592,7 @@ int FileMPEG::open_file(int rd, int wr)
 // Square pixels
 			if(EQUIV((double)asset->width / asset->height, asset->aspect_ratio))
 				aspect_ratio_code = 1;
-			
+
 			if(aspect_ratio_code < 0)
 			{
 				eprintf(_("Unsupported aspect ratio %f\n"), asset->aspect_ratio);
@@ -629,9 +629,9 @@ int FileMPEG::open_file(int rd, int wr)
 
 
 
-			strcat(mjpeg_command, 
+			strcat(mjpeg_command,
 				asset->vmpeg_progressive ? " -I 0" : " -I 1");
-			
+
 
 
 			sprintf(string, " -M %d", file->cpus);
@@ -699,7 +699,7 @@ int FileMPEG::open_file(int rd, int wr)
 //			lame_set_brate(lame_global, asset->ampeg_bitrate / 1000);
 			lame_set_brate(lame_global, asset->ampeg_bitrate);
 			lame_set_quality(lame_global, 0);
-			lame_set_in_samplerate(lame_global, 
+			lame_set_in_samplerate(lame_global,
 				asset->sample_rate);
 			lame_set_num_channels(lame_global,
 				asset->channels);
@@ -847,7 +847,7 @@ int FileMPEG::create_toc(char *toc_path)
 			sprintf(string, "%sETA: %jdm%jds",
 				progress_title, eta / 60, eta % 60);
 			progress.update_title(string, 1);
-// 			fprintf(stderr, "ETA: %dm%ds        \r", 
+// 			fprintf(stderr, "ETA: %dm%ds        \r",
 // 				bytes_processed * 100 / total_bytes,
 // 				eta / 60, eta % 60);
 // 			fflush(stdout);
@@ -952,7 +952,7 @@ int FileMPEG::close_file()
 	vcommand_line.remove_all_objects();
 
 	if(twofp) {
-		unsigned char opkt[1152*2]; 
+		unsigned char opkt[1152*2];
 		int ret = twolame_encode_flush(twopts, opkt, sizeof(opkt));
 		if( ret > 0 )
 			fwrite(opkt, 1, ret, twofp);
@@ -1036,7 +1036,7 @@ int FileMPEG::set_audio_position(int64_t sample)
 {
 #if 0
 	if(!fd) return 1;
-	
+
 	int channel, stream;
 	to_streamchannel(file->current_channel, stream, channel);
 
@@ -1274,7 +1274,7 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 		default:
 			return 1;
 		}
-		
+
 // Height depends on progressiveness
 		if(asset->vmpeg_progressive || asset->vmpeg_derivative == 1)
 			temp_h = (int)((asset->height + 15) / 16) * 16;
@@ -1282,23 +1282,23 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 			temp_h = (int)((asset->height + 31) / 32) * 32;
 
 //printf("FileMPEG::write_frames 1\n");
-		
+
 // Only 1 layer is supported in MPEG output
 		for(int i = 0; i < 1; i++)
 		{
 			for(int j = 0; j < len && !result; j++)
 			{
 				VFrame *frame = frames[i][j];
-				
-				
-				
+
+
+
 				if(asset->vmpeg_cmodel == BC_YUV422P)
 				{
 					if(frame->get_w() == temp_w &&
 						frame->get_h() == temp_h &&
 						frame->get_color_model() == output_cmodel)
 					{
-						mpeg2enc_set_input_buffers(0, 
+						mpeg2enc_set_input_buffers(0,
 							(char*)frame->get_y(),
 							(char*)frame->get_u(),
 							(char*)frame->get_v());
@@ -1317,15 +1317,15 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 
 						if(!temp_frame)
 						{
-							temp_frame = new VFrame(0, 
+							temp_frame = new VFrame(0,
 								-1,
-								temp_w, 
-								temp_h, 
+								temp_w,
+								temp_h,
 								output_cmodel,
 								-1);
 						}
 
-						BC_CModels::transfer(temp_frame->get_rows(), 
+						BC_CModels::transfer(temp_frame->get_rows(),
 							frame->get_rows(),
 							temp_frame->get_y(),
 							temp_frame->get_u(),
@@ -1341,13 +1341,13 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 							0,
 							temp_frame->get_w(),
 							temp_frame->get_h(),
-							frame->get_color_model(), 
+							frame->get_color_model(),
 							temp_frame->get_color_model(),
-							0, 
+							0,
 							frame->get_w(),
 							temp_frame->get_w());
 
-						mpeg2enc_set_input_buffers(0, 
+						mpeg2enc_set_input_buffers(0,
 							(char*)temp_frame->get_y(),
 							(char*)temp_frame->get_u(),
 							(char*)temp_frame->get_v());
@@ -1368,15 +1368,15 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 //printf("FileMPEG::write_frames %d\n", __LINE__);sleep(1);
 						if(!temp_frame)
 						{
-							temp_frame = new VFrame(0, 
+							temp_frame = new VFrame(0,
 								-1,
-								asset->width, 
-								asset->height, 
+								asset->width,
+								asset->height,
 								output_cmodel,
 								-1);
 						}
 
-// printf("FileMPEG::write_frames %d temp_frame=%p %p %p %p frame=%p %p %p %p color_model=%p %p\n", 
+// printf("FileMPEG::write_frames %d temp_frame=%p %p %p %p frame=%p %p %p %p color_model=%p %p\n",
 // __LINE__,
 // temp_frame,
 // temp_frame->get_w(),
@@ -1416,7 +1416,7 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 }
 
 int FileMPEG::zmpeg3_cmdl(int colormodel)
-{   
+{
 	switch( colormodel ) {
 	case BC_BGR888:       return zmpeg3_t::cmdl_BGR888;
 	case BC_BGR8888:      return zmpeg3_t::cmdl_BGRA8888;
@@ -1431,7 +1431,7 @@ int FileMPEG::zmpeg3_cmdl(int colormodel)
 	case BC_YUVA8888:     return zmpeg3_t::cmdl_YUVA8888;
 	}
 	return -1;
-}   
+}
 
 int FileMPEG::bc_colormodel(int cmdl)
 {
@@ -1540,11 +1540,11 @@ int FileMPEG::read_frame(VFrame *frame)
 			for( int i=0; i<uvh; ++i, rp+=uvw ) rows[n++] = rp;
 		}
 
-		mpeg3_read_frame(fd, 
+		mpeg3_read_frame(fd,
 				rows,                /* start of each output row */
 				0, 0, width, height, /* input box */
 				frame->get_w(),      /* Dimensions of output_rows */
-				frame->get_h(), 
+				frame->get_h(),
 				frame_cmdl,
 				file->current_layer);
 		return result;
@@ -1592,10 +1592,10 @@ int FileMPEG::read_samples(double *buffer, int64_t len)
 
 //printf("FileMPEG::read_samples 1 current_sample=%jd len=%jd channel=%d\n", file->current_sample, len, channel);
 
-	mpeg3_set_sample(fd, 
+	mpeg3_set_sample(fd,
 		file->current_sample,
 		stream);
-	mpeg3_read_audio_d(fd, 
+	mpeg3_read_audio_d(fd,
 		buffer, /* Pointer to pre-allocated buffer of doubles */
 		channel,          /* Channel to decode */
 		len,         /* Number of samples to decode */

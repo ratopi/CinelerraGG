@@ -291,7 +291,7 @@ save(FileXML &xml)
 	xml.tag.set_property("PID", pid);
 	xml.append_tag();
 	xml.append_newline();
-	
+
 	for( int idx=0; idx<count; ++idx ) {
 		int id;  double start, end;
 		if( !get_clip(idx, id, start, end) ) continue;

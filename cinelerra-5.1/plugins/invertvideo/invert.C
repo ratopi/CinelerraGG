@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -44,10 +44,10 @@ public:
 
 	void copy_from(InvertVideoConfig &src);
 	int equivalent(InvertVideoConfig &src);
-	void interpolate(InvertVideoConfig &prev, 
-		InvertVideoConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(InvertVideoConfig &prev,
+		InvertVideoConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 
 	int r, g, b, a;
@@ -118,16 +118,16 @@ void InvertVideoConfig::copy_from(InvertVideoConfig &src)
 
 int InvertVideoConfig::equivalent(InvertVideoConfig &src)
 {
-	return r == src.r && 
-		g == src.g && 
-		b == src.b && 
+	return r == src.r &&
+		g == src.g &&
+		b == src.b &&
 		a == src.a;
 }
 
-void InvertVideoConfig::interpolate(InvertVideoConfig &prev, 
-	InvertVideoConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void InvertVideoConfig::interpolate(InvertVideoConfig &prev,
+	InvertVideoConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	r = prev.r;
@@ -157,11 +157,11 @@ int InvertVideoEnable::handle_event()
 
 
 InvertVideoWindow::InvertVideoWindow(InvertVideoEffect *plugin)
- : PluginClientWindow(plugin, 
-	260, 
-	130, 
-	260, 
-	130, 
+ : PluginClientWindow(plugin,
+	260,
+	130,
+	260,
+	130,
 	0)
 {
 	this->plugin = plugin;
@@ -194,11 +194,11 @@ void InvertVideoWindow::create_objects()
 InvertVideoEffect::InvertVideoEffect(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 }
 InvertVideoEffect::~InvertVideoEffect()
 {
-	
+
 }
 
 const char* InvertVideoEffect::plugin_title() { return _("Invert Video"); }
@@ -282,9 +282,9 @@ int InvertVideoEffect::process_buffer(VFrame *frame,
 {
 	load_configuration();
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
 
@@ -331,7 +331,7 @@ int InvertVideoEffect::process_buffer(VFrame *frame,
 int InvertVideoEffect::handle_opengl()
 {
 #ifdef HAVE_GL
-	static const char *invert_frag = 
+	static const char *invert_frag =
 		"uniform sampler2D tex;\n"
 		"uniform bool do_r;\n"
 		"uniform bool do_g;\n"

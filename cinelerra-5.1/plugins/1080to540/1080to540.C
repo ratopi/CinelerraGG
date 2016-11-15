@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "1080to540.h"
@@ -58,10 +58,10 @@ void _1080to540Config::copy_from(_1080to540Config &that)
 	first_field = that.first_field;
 }
 
-void _1080to540Config::interpolate(_1080to540Config &prev, 
-	_1080to540Config &next, 
-	long prev_frame, 
-	long next_frame, 
+void _1080to540Config::interpolate(_1080to540Config &prev,
+	_1080to540Config &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	copy_from(prev);
@@ -72,14 +72,14 @@ void _1080to540Config::interpolate(_1080to540Config &prev,
 
 
 _1080to540Window::_1080to540Window(_1080to540Main *client)
- : PluginClientWindow(client, 
-	200, 
-	100, 
-	200, 
-	100, 
+ : PluginClientWindow(client,
+	200,
+	100,
+	200,
+	100,
 	0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 
@@ -116,15 +116,15 @@ int _1080to540Window::set_first_field(int first_field, int send_event)
 
 
 
-_1080to540Option::_1080to540Option(_1080to540Main *client, 
-		_1080to540Window *window, 
-		int output, 
-		int x, 
-		int y, 
+_1080to540Option::_1080to540Option(_1080to540Main *client,
+		_1080to540Window *window,
+		int output,
+		int x,
+		int y,
 		char *text)
- : BC_Radial(x, 
- 	y, 
-	client->config.first_field == output, 
+ : BC_Radial(x,
+ 	y,
+	client->config.first_field == output,
 	text)
 {
 	this->client = client;
@@ -149,13 +149,13 @@ int _1080to540Option::handle_event()
 _1080to540Main::_1080to540Main(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	temp = 0;
 }
 
 _1080to540Main::~_1080to540Main()
 {
-	
+
 	if(temp) delete temp;
 }
 
@@ -252,7 +252,7 @@ int _1080to540Main::process_realtime(VFrame *input, VFrame *output)
 
 	reduce_field(temp, input, config.first_field == 0 ? 0 : 1, 0);
 	reduce_field(temp, input, config.first_field == 0 ? 1 : 0, 1);
-	
+
 	output->copy_from(temp);
 
 	return 0;
@@ -289,7 +289,7 @@ void _1080to540Main::read_data(KeyFrame *keyframe)
 
 void _1080to540Main::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		load_configuration();
 		thread->window->lock_window();

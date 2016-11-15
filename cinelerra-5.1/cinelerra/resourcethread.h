@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef RESOURCETHREAD_H
@@ -47,7 +47,7 @@
 class ResourceThreadItem
 {
 public:
-	ResourceThreadItem(ResourcePixmap *pixmap, 
+	ResourceThreadItem(ResourcePixmap *pixmap,
 		int pane_number,
 		Indexable *indexable,
 		int data_type,
@@ -86,8 +86,8 @@ class VResourceThreadItem : public ResourceThreadItem
 public:
 	VResourceThreadItem(ResourcePixmap *pixmap,
 		int pane_number,
-		int picon_x, 
-		int picon_y, 
+		int picon_x,
+		int picon_y,
 		int picon_w,
 		int picon_h,
 		double frame_rate,
@@ -98,7 +98,7 @@ public:
 	~VResourceThreadItem();
 
 
-	
+
 	int picon_x;
 	int picon_y;
 	int picon_w;
@@ -121,12 +121,12 @@ public:
 	void stop_draw(int reset);
 	void start_draw();
 
-// Be sure to stop_draw before changing the asset table, 
+// Be sure to stop_draw before changing the asset table,
 // closing files.
-	void add_picon(ResourcePixmap *pixmap, 
+	void add_picon(ResourcePixmap *pixmap,
 		int pane_number,
-		int picon_x, 
-		int picon_y, 
+		int picon_x,
+		int picon_y,
 		int picon_w,
 		int picon_h,
 		double frame_rate,
@@ -149,8 +149,8 @@ public:
 	void do_video(VResourceThreadItem *item);
 	void do_audio(AResourceThreadItem *item);
 
-	void open_render_engine(EDL *nested_edl, 
-		int do_audio, 
+	void open_render_engine(EDL *nested_edl,
+		int do_audio,
 		int do_video);
 
 	File *get_video_source(Asset *asset);

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "errorbox.h"
@@ -126,7 +126,7 @@ int CDRipMain::open_drive()
 	{
 		BC_DisplayInfo info;
 		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
-			info.get_abs_cursor_x(), 
+			info.get_abs_cursor_x(),
 			info.get_abs_cursor_y());
 		window.create_objects(_("Can't open cdrom drive."));
 		window.run_window();
@@ -151,14 +151,14 @@ int CDRipMain::get_toc()
 	struct cdrom_tochdr hdr;
 	struct cdrom_tocentry entry[100];
 	BC_DisplayInfo info;
-	
+
 	result = open_drive();
-	
+
 	if(ioctl(cdrom, CDROMREADTOCHDR, &hdr) < 0)
 	{
 		close(cdrom);
  		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
-			info.get_abs_cursor_x(), 
+			info.get_abs_cursor_x(),
 			info.get_abs_cursor_y());
 		window.create_objects(_("Can't get total from table of contents."));
 		window.run_window();
@@ -174,7 +174,7 @@ int CDRipMain::get_toc()
 			ioctl(cdrom, CDROMSTOP);
 			close(cdrom);
  			ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
-				info.get_abs_cursor_x(), 
+				info.get_abs_cursor_x(),
 				info.get_abs_cursor_y());
 			window.create_objects(_("Can't get table of contents entry."));
 			window.run_window();
@@ -190,14 +190,14 @@ int CDRipMain::get_toc()
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
  		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
-			info.get_abs_cursor_x(), 
+			info.get_abs_cursor_x(),
 			info.get_abs_cursor_y());
 		window.create_objects(_("Can't get table of contents leadout."));
 		window.run_window();
 		result = 1;
 	}
-			
-			
+
+
   	tracks = hdr.cdth_trk1+1;
 
 	if(track1 <= 0 || track1 > tracks)
@@ -205,7 +205,7 @@ int CDRipMain::get_toc()
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
  		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
-			info.get_abs_cursor_x(), 
+			info.get_abs_cursor_x(),
 			info.get_abs_cursor_y());
 		window.create_objects(_("Start track is out of range."));
 		window.run_window();
@@ -217,25 +217,25 @@ int CDRipMain::get_toc()
 	{
 		track2 = tracks;
 	}
-	
+
 	if(track2 < track1 || track2 <= 0)
 	{
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
  		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
-			info.get_abs_cursor_x(), 
+			info.get_abs_cursor_x(),
 			info.get_abs_cursor_y());
 		window.create_objects(_("End track is out of range."));
 		window.run_window();
 		result = 1;
 	}
-	
+
 	if(track1 == track2 && min2 == 0 && sec2 == 0)
 	{
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
  		ErrorBox window(_(PROGRAM_NAME ": CD Ripper"),
-			info.get_abs_cursor_x(), 
+			info.get_abs_cursor_x(),
 			info.get_abs_cursor_y());
 		window.create_objects(_("End position is out of range."));
 		window.run_window();
@@ -328,7 +328,7 @@ int CDRipMain::process_loop(Samples **plugin_buffer, int64_t &write_length)
 		}
 //printf("CDRipMain::process_loop 2 %d %jd\n", arg.addr.lba, endlba);
 
-		for(i = 0; i < fragment_length; 
+		for(i = 0; i < fragment_length;
 			i += NFRAMES * FRAMESIZE,
 			arg.addr.lba += NFRAMES)
 		{

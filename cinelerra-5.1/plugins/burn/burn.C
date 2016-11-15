@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -63,12 +63,12 @@ BurnMain::BurnMain(PluginServer *server)
 	buffer = 0;
 	effecttv = 0;
 	yuv = new YUV;
-	
+
 }
 
 BurnMain::~BurnMain()
 {
-	
+
 
 	if(buffer) delete [] buffer;
 	if(burn_server) delete burn_server;
@@ -102,11 +102,11 @@ void BurnMain::read_data(KeyFrame *keyframe)
 
 #define MAXCOLOR 120
 
-void BurnMain::HSItoRGB(double H, 
-	double S, 
-	double I, 
-	int *r, 
-	int *g, 
+void BurnMain::HSItoRGB(double H,
+	double S,
+	double I,
+	int *r,
+	int *g,
 	int *b,
 	int color_model)
 {
@@ -130,12 +130,12 @@ void BurnMain::make_palette(int color_model)
 
 	for(i = 0; i < MAXCOLOR; i++)
 	{
-		HSItoRGB(4.6 - 1.5 * i / MAXCOLOR, 
-			(double)i / MAXCOLOR, 
-			(double)i / MAXCOLOR,  
-			&r, 
-			&g, 
-			&b, 
+		HSItoRGB(4.6 - 1.5 * i / MAXCOLOR,
+			(double)i / MAXCOLOR,
+			(double)i / MAXCOLOR,
+			&r,
+			&g,
+			&b,
 			color_model);
 		palette[0][i] = r;
 		palette[1][i] = g;
@@ -203,7 +203,7 @@ BurnServer::BurnServer(BurnMain *plugin, int total_clients, int total_packages)
 }
 
 
-LoadClient* BurnServer::new_client() 
+LoadClient* BurnServer::new_client()
 {
 	return new BurnClient(this);
 }
@@ -211,9 +211,9 @@ LoadClient* BurnServer::new_client()
 
 
 
-LoadPackage* BurnServer::new_package() 
-{ 
-	return new BurnPackage; 
+LoadPackage* BurnServer::new_package()
+{
+	return new BurnPackage;
 }
 
 
@@ -359,7 +359,7 @@ void BurnClient::process_package(LoadPackage *package)
 	int a1, a2, a3;
 	int b1, b2, b3;
 
-	diff = plugin->effecttv->image_bgsubtract_y(input_rows, 
+	diff = plugin->effecttv->image_bgsubtract_y(input_rows,
 		plugin->input_ptr->get_color_model());
 
 	for(x = 1; x < width - 1; x++)
@@ -373,18 +373,18 @@ void BurnClient::process_package(LoadPackage *package)
 		}
 	}
 
-	for(x = 1; x < width - 1; x++) 
+	for(x = 1; x < width - 1; x++)
 	{
 		i = width + x;
 
-		for(y = 1; y < height; y++) 
+		for(y = 1; y < height; y++)
 		{
 			int v = plugin->buffer[i];
 
 			if(v < plugin->config.decay)
 				plugin->buffer[i - width] = 0;
 			else
-				plugin->buffer[i - width + EffectTV::fastrand() % 3 - 1] = 
+				plugin->buffer[i - width + EffectTV::fastrand() % 3 - 1] =
 					v - (EffectTV::fastrand() & plugin->config.decay);
 
 			i += width;

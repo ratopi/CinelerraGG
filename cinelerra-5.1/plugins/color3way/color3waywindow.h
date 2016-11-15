@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef COLOR3WAYWINDOW_H
@@ -44,11 +44,11 @@ class Color3WayWindow;
 class Color3WayPoint : public BC_SubWindow
 {
 public:
-	Color3WayPoint(Color3WayMain *plugin, 
+	Color3WayPoint(Color3WayMain *plugin,
 		Color3WayWindow *gui,
-		float *x_output, 
+		float *x_output,
 		float *y_output,
-		int x, 
+		int x,
 		int y,
 		int radius,
 		int section);
@@ -84,7 +84,7 @@ public:
 	int starting_x;
 	int starting_y;
 	int offset_x;
-	int offset_y;	
+	int offset_y;
 	int drag_operation;
 	Color3WayMain *plugin;
 	Color3WayWindow *gui;
@@ -101,10 +101,10 @@ public:
 class Color3WaySlider : public BC_FSlider
 {
 public:
-	Color3WaySlider(Color3WayMain *plugin, 
-		Color3WayWindow *gui, 
-		float *output, 
-		int x, 
+	Color3WaySlider(Color3WayMain *plugin,
+		Color3WayWindow *gui,
+		float *output,
+		int x,
 		int y,
 		int w,
 		int section);
@@ -124,9 +124,9 @@ public:
 class Color3WayResetSection : public BC_GenericButton
 {
 public:
-	Color3WayResetSection(Color3WayMain *plugin, 
-		Color3WayWindow *gui, 
-		int x, 
+	Color3WayResetSection(Color3WayMain *plugin,
+		Color3WayWindow *gui,
+		int x,
 		int y,
 		int section);
 	int handle_event();
@@ -138,9 +138,9 @@ public:
 class Color3WayBalanceSection : public BC_GenericButton
 {
 public:
-	Color3WayBalanceSection(Color3WayMain *plugin, 
-		Color3WayWindow *gui, 
-		int x, 
+	Color3WayBalanceSection(Color3WayMain *plugin,
+		Color3WayWindow *gui,
+		int x,
 		int y,
 		int section);
 	int handle_event();
@@ -152,9 +152,9 @@ public:
 class Color3WayCopySection : public BC_CheckBox
 {
 public:
-	Color3WayCopySection(Color3WayMain *plugin, 
-		Color3WayWindow *gui, 
-		int x, 
+	Color3WayCopySection(Color3WayMain *plugin,
+		Color3WayWindow *gui,
+		int x,
 		int y,
 		int section);
 	int handle_event();
@@ -166,7 +166,7 @@ public:
 class Color3WaySection
 {
 public:
-	Color3WaySection(Color3WayMain *plugin, 
+	Color3WaySection(Color3WayMain *plugin,
 		Color3WayWindow *gui,
 		int x,
 		int y,
@@ -205,7 +205,7 @@ public:
 
 	Color3WayMain *plugin;
 	Color3WayPoint *active_point;
-	
+
 	Color3WaySection *sections[SECTIONS];
 };
 

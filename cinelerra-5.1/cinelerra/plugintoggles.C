@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "language.h"
@@ -28,8 +28,8 @@
 
 
 PluginOn::PluginOn(MWindow *mwindow, int x, int y, Plugin *plugin)
- : BC_Toggle(x, 
- 		y, 
+ : BC_Toggle(x,
+ 		y,
 		mwindow->theme->get_image_set("plugin_on"),
 		plugin->on)
 {
@@ -66,8 +66,8 @@ int PluginOn::handle_event()
 
 
 PluginShow::PluginShow(MWindow *mwindow, int x, int y, Plugin *plugin)
- : BC_Toggle(x, 
- 		y, 
+ : BC_Toggle(x,
+ 		y,
 		mwindow->theme->get_image_set("plugin_show"),
 		plugin->show)
 {
@@ -93,7 +93,7 @@ void PluginShow::update(int x, int y, Plugin *plugin)
 int PluginShow::handle_event()
 {
 	unlock_window();
-	if(get_value()) 
+	if(get_value())
 		mwindow->show_plugin(plugin);
 	else
 		mwindow->hide_plugin(plugin, 1);

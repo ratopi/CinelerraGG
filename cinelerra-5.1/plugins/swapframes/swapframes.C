@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -62,10 +62,10 @@ int SwapFramesConfig::equivalent(SwapFramesConfig &src)
 		swap_even == src.swap_even;
 }
 
-void SwapFramesConfig::interpolate(SwapFramesConfig &prev, 
-	SwapFramesConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void SwapFramesConfig::interpolate(SwapFramesConfig &prev,
+	SwapFramesConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	on = prev.on;
@@ -81,11 +81,11 @@ void SwapFramesConfig::interpolate(SwapFramesConfig &prev,
 
 
 
-SwapFramesOn::SwapFramesOn(SwapFrames *plugin, 
+SwapFramesOn::SwapFramesOn(SwapFrames *plugin,
 	int x, int y)
- : BC_CheckBox(x, 
- 	y, 
-	plugin->config.on, 
+ : BC_CheckBox(x,
+ 	y,
+	plugin->config.on,
 	_("Enabled"))
 {
 	this->plugin = plugin;
@@ -103,13 +103,13 @@ int SwapFramesOn::handle_event()
 
 
 
-SwapFramesEven::SwapFramesEven(SwapFrames *plugin, 
-	SwapFramesWindow *gui, 
-	int x, 
+SwapFramesEven::SwapFramesEven(SwapFrames *plugin,
+	SwapFramesWindow *gui,
+	int x,
 	int y)
- : BC_Radial(x, 
-	y, 
-	plugin->config.swap_even, 
+ : BC_Radial(x,
+	y,
+	plugin->config.swap_even,
 	_("Swap 0-1, 2-3, 4-5..."))
 {
 	this->plugin = plugin;
@@ -129,13 +129,13 @@ int SwapFramesEven::handle_event()
 
 
 
-SwapFramesOdd::SwapFramesOdd(SwapFrames *plugin, 
-	SwapFramesWindow *gui, 
-	int x, 
+SwapFramesOdd::SwapFramesOdd(SwapFrames *plugin,
+	SwapFramesWindow *gui,
+	int x,
 	int y)
- : BC_Radial(x, 
-	y, 
-	!plugin->config.swap_even, 
+ : BC_Radial(x,
+	y,
+	!plugin->config.swap_even,
 	_("Swap 1-2, 3-4, 5-6..."))
 {
 	this->plugin = plugin;
@@ -156,11 +156,11 @@ int SwapFramesOdd::handle_event()
 
 
 SwapFramesWindow::SwapFramesWindow(SwapFrames *plugin)
- : PluginClientWindow(plugin, 
-	260, 
-	130, 
-	260, 
-	130, 
+ : PluginClientWindow(plugin,
+	260,
+	130,
+	260,
+	130,
 	0)
 {
 	this->plugin = plugin;
@@ -174,14 +174,14 @@ void SwapFramesWindow::create_objects()
 	BC_Bar *bar;
 	add_subwindow(bar = new BC_Bar(x, y, get_w() - x * 2));
 	y += bar->get_h() + 5;
-	add_subwindow(swap_even = new SwapFramesEven(plugin, 
-		this, 
-		x, 
+	add_subwindow(swap_even = new SwapFramesEven(plugin,
+		this,
+		x,
 		y));
 	y += swap_even->get_h() + 5;
-	add_subwindow(swap_odd = new SwapFramesOdd(plugin, 
-		this, 
-		x, 
+	add_subwindow(swap_odd = new SwapFramesOdd(plugin,
+		this,
+		x,
 		y));
 	show_window();
 }
@@ -201,7 +201,7 @@ void SwapFramesWindow::create_objects()
 SwapFrames::SwapFrames(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	buffer = 0;
 	buffer_position = -1;
 	prev_frame = -1;
@@ -209,7 +209,7 @@ SwapFrames::SwapFrames(PluginServer *server)
 
 SwapFrames::~SwapFrames()
 {
-	
+
 	delete buffer;
 }
 
@@ -275,7 +275,7 @@ int SwapFrames::process_buffer(VFrame *frame,
 	{
 		if(config.swap_even)
 		{
-			if(new_position % 2) 
+			if(new_position % 2)
 				new_position--;
 			else
 				new_position++;
@@ -308,14 +308,14 @@ int SwapFrames::process_buffer(VFrame *frame,
 			frame->get_color_model(),
 			-1);
 		buffer_position = new_position - 1;
-		read_frame(buffer, 
-			0, 
-			buffer_position, 
+		read_frame(buffer,
+			0,
+			buffer_position,
 			frame_rate,
 			0);
-		read_frame(frame, 
-			0, 
-			new_position, 
+		read_frame(frame,
+			0,
+			new_position,
 			frame_rate,
 			get_use_opengl());
 		prev_frame = new_position;
@@ -324,9 +324,9 @@ int SwapFrames::process_buffer(VFrame *frame,
 	else
 	{
 //printf("SwapFrames::process_buffer %d\n", __LINE__);
-		read_frame(frame, 
-			0, 
-			new_position, 
+		read_frame(frame,
+			0,
+			new_position,
 			frame_rate,
 			get_use_opengl());
 		prev_frame = new_position;

@@ -27,7 +27,7 @@ class PluginFVClient;
 #ifndef  FLT_MIN
 #define FLT_MIN 1.17549435082228750797e-38F
 #endif
-    
+
 #ifndef  DBL_MAX
 #define DBL_MAX ((double)1.79769313486231570815e+308L)
 #endif

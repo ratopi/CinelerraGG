@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bandwipe.h"
@@ -43,16 +43,16 @@ REGISTER_PLUGIN(BandWipeMain)
 
 
 
-BandWipeCount::BandWipeCount(BandWipeMain *plugin, 
+BandWipeCount::BandWipeCount(BandWipeMain *plugin,
 	BandWipeWindow *window,
 	int x,
 	int y)
- : BC_TumbleTextBox(window, 
+ : BC_TumbleTextBox(window,
 		(int64_t)plugin->bands,
 		(int64_t)0,
 		(int64_t)1000,
-		x, 
-		y, 
+		x,
+		y,
 		50)
 {
 	this->plugin = plugin;
@@ -67,13 +67,13 @@ int BandWipeCount::handle_event()
 }
 
 
-BandWipeIn::BandWipeIn(BandWipeMain *plugin, 
+BandWipeIn::BandWipeIn(BandWipeMain *plugin,
 	BandWipeWindow *window,
 	int x,
 	int y)
- : BC_Radial(x, 
-		y, 
-		plugin->direction == 0, 
+ : BC_Radial(x,
+		y,
+		plugin->direction == 0,
 		_("In"))
 {
 	this->plugin = plugin;
@@ -89,13 +89,13 @@ int BandWipeIn::handle_event()
 	return 0;
 }
 
-BandWipeOut::BandWipeOut(BandWipeMain *plugin, 
+BandWipeOut::BandWipeOut(BandWipeMain *plugin,
 	BandWipeWindow *window,
 	int x,
 	int y)
- : BC_Radial(x, 
-		y, 
-		plugin->direction == 1, 
+ : BC_Radial(x,
+		y,
+		plugin->direction == 1,
 		_("Out"))
 {
 	this->plugin = plugin;
@@ -118,11 +118,11 @@ int BandWipeOut::handle_event()
 
 
 BandWipeWindow::BandWipeWindow(BandWipeMain *plugin)
- : PluginClientWindow(plugin, 
-	320, 
-	50, 
-	320, 
-	50, 
+ : PluginClientWindow(plugin,
+	320,
+	50,
+	320,
+	50,
 	0)
 {
 	this->plugin = plugin;
@@ -134,7 +134,7 @@ void BandWipeWindow::create_objects()
 	int x = 10, y = 10;
 	add_subwindow(new BC_Title(x, y, _("Bands:")));
 	x += 50;
-	count = new BandWipeCount(plugin, 
+	count = new BandWipeCount(plugin,
 		this,
 		x,
 		y);
@@ -142,17 +142,17 @@ void BandWipeWindow::create_objects()
 // 	y += 30;
 // 	add_subwindow(new BC_Title(x, y, _("Direction:")));
 // 	x += 100;
-// 	add_subwindow(in = new BandWipeIn(plugin, 
+// 	add_subwindow(in = new BandWipeIn(plugin,
 // 		this,
 // 		x,
 // 		y));
 // 	x += 100;
 // 	x = 10;
-// 	add_subwindow(out = new BandWipeOut(plugin, 
+// 	add_subwindow(out = new BandWipeOut(plugin,
 // 		this,
 // 		x,
 // 		y));
-	
+
 	show_window();
 	flush();
 }
@@ -170,12 +170,12 @@ BandWipeMain::BandWipeMain(PluginServer *server)
 {
 	bands = 9;
 	direction = 0;
-	
+
 }
 
 BandWipeMain::~BandWipeMain()
 {
-	
+
 }
 
 const char* BandWipeMain::plugin_title() { return _("BandWipe"); }

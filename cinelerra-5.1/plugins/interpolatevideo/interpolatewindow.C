@@ -1,12 +1,12 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 
@@ -33,11 +33,11 @@
 
 
 InterpolateVideoWindow::InterpolateVideoWindow(InterpolateVideo *plugin)
- : PluginClientWindow(plugin, 
-	250, 
-	250, 
-	250, 
-	250, 
+ : PluginClientWindow(plugin,
+	250,
+	250,
+	250,
+	250,
 	0)
 {
 	this->plugin = plugin;
@@ -52,47 +52,47 @@ void InterpolateVideoWindow::create_objects()
 	int x = 10, y = 10;
 
 	BC_Title *title;
-	
-	
+
+
 	add_subwindow(title = new BC_Title(x, y, _("Input frames per second:")));
 	y += title->get_h() + plugin->get_theme()->widget_border;
-	add_subwindow(rate = new InterpolateVideoRate(plugin, 
-		this, 
-		x, 
+	add_subwindow(rate = new InterpolateVideoRate(plugin,
+		this,
+		x,
 		y));
-	add_subwindow(rate_menu = new InterpolateVideoRateMenu(plugin, 
-		this, 
-		x + rate->get_w() + 5, 
+	add_subwindow(rate_menu = new InterpolateVideoRateMenu(plugin,
+		this,
+		x + rate->get_w() + 5,
 		y));
 	y += rate->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(keyframes = new InterpolateVideoKeyframes(plugin,
 		this,
-		x, 
+		x,
 		y));
 	y += keyframes->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(flow = new InterpolateVideoFlow(plugin,
 		this,
-		x, 
+		x,
 		y));
 
 	y += flow->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(vectors = new InterpolateVideoVectors(plugin,
 		this,
-		x, 
+		x,
 		y));
 
 	y += vectors->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(radius_title = new BC_Title(x, y, _("Search radius:")));
 	add_subwindow(radius = new InterpolateVideoRadius(plugin,
 		this,
-		x + radius_title->get_w() + plugin->get_theme()->widget_border, 
+		x + radius_title->get_w() + plugin->get_theme()->widget_border,
 		y));
 
 	y += radius->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(size_title = new BC_Title(x, y, _("Macroblock size:")));
 	add_subwindow(size = new InterpolateVideoSize(plugin,
 		this,
-		x + size_title->get_w() + plugin->get_theme()->widget_border, 
+		x + size_title->get_w() + plugin->get_theme()->widget_border,
 		y));
 
 
@@ -141,12 +141,12 @@ void InterpolateVideoWindow::update_enabled()
 
 
 
-InterpolateVideoRate::InterpolateVideoRate(InterpolateVideo *plugin, 
-	InterpolateVideoWindow *gui, 
-	int x, 
+InterpolateVideoRate::InterpolateVideoRate(InterpolateVideo *plugin,
+	InterpolateVideoWindow *gui,
+	int x,
 	int y)
- : BC_TextBox(x, 
-	y, 
+ : BC_TextBox(x,
+	y,
 	90,
 	1,
 	(float)plugin->config.input_rate)
@@ -165,9 +165,9 @@ int InterpolateVideoRate::handle_event()
 
 
 
-InterpolateVideoRateMenu::InterpolateVideoRateMenu(InterpolateVideo *plugin, 
-	InterpolateVideoWindow *gui, 
-	int x, 
+InterpolateVideoRateMenu::InterpolateVideoRateMenu(InterpolateVideo *plugin,
+	InterpolateVideoWindow *gui,
+	int x,
 	int y)
  : BC_ListBox(x,
  	y,
@@ -199,11 +199,11 @@ int InterpolateVideoRateMenu::handle_event()
 
 InterpolateVideoKeyframes::InterpolateVideoKeyframes(InterpolateVideo *plugin,
 	InterpolateVideoWindow *gui,
-	int x, 
+	int x,
 	int y)
- : BC_CheckBox(x, 
- 	y, 
-	plugin->config.use_keyframes, 
+ : BC_CheckBox(x,
+ 	y,
+	plugin->config.use_keyframes,
 	_("Use keyframes as input"))
 {
 	this->plugin = plugin;
@@ -222,11 +222,11 @@ int InterpolateVideoKeyframes::handle_event()
 
 InterpolateVideoFlow::InterpolateVideoFlow(InterpolateVideo *plugin,
 	InterpolateVideoWindow *gui,
-	int x, 
+	int x,
 	int y)
- : BC_CheckBox(x, 
- 	y, 
-	plugin->config.optic_flow, 
+ : BC_CheckBox(x,
+ 	y,
+	plugin->config.optic_flow,
 	_("Use optic flow"))
 {
 	this->plugin = plugin;
@@ -244,11 +244,11 @@ int InterpolateVideoFlow::handle_event()
 
 InterpolateVideoVectors::InterpolateVideoVectors(InterpolateVideo *plugin,
 	InterpolateVideoWindow *gui,
-	int x, 
+	int x,
 	int y)
- : BC_CheckBox(x, 
- 	y, 
-	plugin->config.draw_vectors, 
+ : BC_CheckBox(x,
+ 	y,
+	plugin->config.draw_vectors,
 	_("Draw motion vectors"))
 {
 	this->plugin = plugin;
@@ -268,11 +268,11 @@ int InterpolateVideoVectors::handle_event()
 
 InterpolateVideoRadius::InterpolateVideoRadius(InterpolateVideo *plugin,
 	InterpolateVideoWindow *gui,
-	int x, 
+	int x,
 	int y)
- : BC_IPot(x, 
- 	y, 
-	plugin->config.search_radius, 
+ : BC_IPot(x,
+ 	y,
+	plugin->config.search_radius,
 	MIN_SEARCH_RADIUS,
 	MAX_SEARCH_RADIUS)
 {
@@ -296,11 +296,11 @@ int InterpolateVideoRadius::handle_event()
 
 InterpolateVideoSize::InterpolateVideoSize(InterpolateVideo *plugin,
 	InterpolateVideoWindow *gui,
-	int x, 
+	int x,
 	int y)
- : BC_IPot(x, 
- 	y, 
-	plugin->config.macroblock_size, 
+ : BC_IPot(x,
+ 	y,
+	plugin->config.macroblock_size,
 	MIN_MACROBLOCK_SIZE,
 	MAX_MACROBLOCK_SIZE)
 {

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bccmodels.h"
@@ -24,7 +24,7 @@
 #include "cicolors.h"
 #include "vframe.h"
 
-#include <stdint.h> 
+#include <stdint.h>
 #include <stdio.h>
 
 
@@ -115,7 +115,7 @@ void EffectTV::frame_to_effecttv(VFrame *frame, uint32_t *tmp)
 		case BC_YUV888:
 			FRAME_TO_EFFECTTV(uint8_t, 3);
 			break;
-		
+
 		case BC_RGBA8888:
 		case BC_YUVA8888:
 			FRAME_TO_EFFECTTV(uint8_t, 4);
@@ -125,7 +125,7 @@ void EffectTV::frame_to_effecttv(VFrame *frame, uint32_t *tmp)
 		case BC_YUV161616:
 			FRAME_TO_EFFECTTV(uint16_t, 3);
 			break;
-		
+
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
 			FRAME_TO_EFFECTTV(uint16_t, 4);
@@ -176,7 +176,7 @@ void EffectTV::effecttv_to_frame(VFrame *frame, uint32_t *tmp)
 		case BC_YUV888:
 			EFFECTTV_TO_FRAME(uint8_t, 3, 0xff);
 			break;
-		
+
 		case BC_RGBA8888:
 		case BC_YUVA8888:
 			EFFECTTV_TO_FRAME(uint8_t, 4, 0xff);
@@ -186,7 +186,7 @@ void EffectTV::effecttv_to_frame(VFrame *frame, uint32_t *tmp)
 		case BC_YUV161616:
 			EFFECTTV_TO_FRAME(uint16_t, 3, 0xffff);
 			break;
-		
+
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
 			EFFECTTV_TO_FRAME(uint16_t, 4, 0xffff);
@@ -277,8 +277,8 @@ IMAGE_BGSUBTRACT_UPDATE_Y(type, components, is_yuv) \
 
 
 
-unsigned char* EffectTV::image_bgsubtract_update_y(unsigned char **input_rows, 
-	unsigned char **output_rows, 
+unsigned char* EffectTV::image_bgsubtract_update_y(unsigned char **input_rows,
+	unsigned char **output_rows,
 	int color_model)
 {
 	switch(color_model)
@@ -314,7 +314,7 @@ unsigned char* EffectTV::image_bgsubtract_update_y(unsigned char **input_rows,
 			IMAGE_BGSUBTRACT_UPDATE_Y(uint16_t, 4, 1);
 			break;
 	}
-	
+
 	return diff;
 }
 
@@ -383,7 +383,7 @@ unsigned char* EffectTV::image_bgsubtract_update_y(unsigned char **input_rows,
 }
 
 
-unsigned char* EffectTV::image_bgsubtract_y(unsigned char **input_rows, 
+unsigned char* EffectTV::image_bgsubtract_y(unsigned char **input_rows,
 	int color_model)
 {
 	int16_t *q;
@@ -465,13 +465,13 @@ unsigned char* EffectTV::image_diff_filter(unsigned char *diff)
 
 	src = diff;
 	dest = diff2 + width + 1;
-	for(y = 1; y < height - 1; y++) 
+	for(y = 1; y < height - 1; y++)
 	{
 		sum1 = src[0] + src[width] + src[width * 2];
 		sum2 = src[1] + src[width + 1] + src[width * 2 + 1];
 		src += 2;
 
-		for(x = 1; x < width - 1; x++) 
+		for(x = 1; x < width - 1; x++)
 		{
 			sum3 = src[0] + src[width] + src[width * 2];
 			count = sum1 + sum2 + sum3;

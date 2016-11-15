@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcsignals.h"
@@ -51,7 +51,7 @@ GammaConfig::GammaConfig()
 
 int GammaConfig::equivalent(GammaConfig &that)
 {
-	return (EQUIV(max, that.max) && 
+	return (EQUIV(max, that.max) &&
 		EQUIV(gamma, that.gamma) &&
 		automatic == that.automatic) &&
 		plot == that.plot;
@@ -65,10 +65,10 @@ void GammaConfig::copy_from(GammaConfig &that)
 	plot = that.plot;
 }
 
-void GammaConfig::interpolate(GammaConfig &prev, 
-	GammaConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void GammaConfig::interpolate(GammaConfig &prev,
+	GammaConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -107,7 +107,7 @@ GammaUnit::GammaUnit(GammaMain *plugin)
 	this->plugin = plugin;
 }
 
-	
+
 void GammaUnit::process_package(LoadPackage *package)
 {
 	GammaPackage *pkg = (GammaPackage*)package;
@@ -320,7 +320,7 @@ void GammaUnit::process_package(LoadPackage *package)
 
 
 GammaEngine::GammaEngine(GammaMain *plugin)
- : LoadServer(plugin->get_project_smp() + 1, 
+ : LoadServer(plugin->get_project_smp() + 1,
  	plugin->get_project_smp() + 1)
 {
 	this->plugin = plugin;
@@ -388,12 +388,12 @@ GammaMain::GammaMain(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	
+
 }
 
 GammaMain::~GammaMain()
 {
-	
+
 
 	delete engine;
 }
@@ -423,12 +423,12 @@ int GammaMain::process_buffer(VFrame *frame,
 	frame->get_params()->update("GAMMA_MAX", config.max);
 
 	int use_opengl = get_use_opengl() &&
-		!config.automatic && 
+		!config.automatic &&
 		(!config.plot || !gui_open());
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		use_opengl);
 
@@ -440,7 +440,7 @@ int GammaMain::process_buffer(VFrame *frame,
 		if(next_effect_is(_("Color Balance")))
 			return 0;
 
-	
+
 		return run_opengl();
 	}
 	else
@@ -451,7 +451,7 @@ int GammaMain::process_buffer(VFrame *frame,
 		send_render_gui(this);
 	}
 	else
-	if(config.plot) 
+	if(config.plot)
 	{
 		send_render_gui(this);
 	}
@@ -502,8 +502,8 @@ void GammaMain::render_gui(void *data)
 	if(!engine) engine = new GammaEngine(this);
 	if(ptr->engine && ptr->config.automatic)
 	{
-		memcpy(engine->accum, 
-			ptr->engine->accum, 
+		memcpy(engine->accum,
+			ptr->engine->accum,
 			sizeof(int) * HISTOGRAM_SIZE);
 		thread->window->lock_window("GammaMain::render_gui");
 		((GammaWindow*)thread->window)->update();
@@ -511,7 +511,7 @@ void GammaMain::render_gui(void *data)
 	}
 	else
 	{
-		engine->process_packages(GammaEngine::HISTOGRAM, 
+		engine->process_packages(GammaEngine::HISTOGRAM,
 			ptr->frame);
 		thread->window->lock_window("GammaMain::render_gui");
 		((GammaWindow*)thread->window)->update_histogram();
@@ -600,7 +600,7 @@ int GammaMain::handle_opengl()
 				0);
 
 
-	if(shader > 0) 
+	if(shader > 0)
 	{
 		glUseProgram(shader);
 		glUniform1i(glGetUniformLocation(shader, "tex"), 0);

@@ -586,15 +586,15 @@ void SUV::initialize()
 		"label_checkedhi.png");
 
 	ffmpeg_toggle = new_image_set(5,
-		"ff_up.png", 
-		"ff_hi.png", 
-		"ff_checked.png", 
-		"ff_down.png", 
+		"ff_up.png",
+		"ff_hi.png",
+		"ff_checked.png",
+		"ff_down.png",
 		"ff_checkedhi.png");
 
 	shbtn_data = new_image_set(3,
-		"shbtn_up.png", 
-		"shbtn_hi.png", 
+		"shbtn_up.png",
+		"shbtn_hi.png",
 		"shbtn_dn.png");
 
 	new_image_set("histogram_carrot",

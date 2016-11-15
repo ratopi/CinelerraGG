@@ -120,7 +120,7 @@ int APatchGUI::update(int x, int y)
 			FloatAutos *ptr = (FloatAutos*)atrack->automation->autos[AUTOMATION_FADE];
 			float value = ptr->get_value(
 				(long)unit_position,
-				PLAY_FORWARD, 
+				PLAY_FORWARD,
 				previous,
 				next);
 			fade->update(fade->get_w(),
@@ -256,7 +256,7 @@ float AFadePatch::update_edl()
 
 int AFadePatch::handle_event()
 {
-	if(shift_down()) 
+	if(shift_down())
 	{
 		update(0.0);
 		set_tooltip(get_caption());
@@ -264,7 +264,7 @@ int AFadePatch::handle_event()
 
 	patch->change_source = 1;
 	float change = update_edl();
-	if(patch->track->gang && patch->track->record) 
+	if(patch->track->gang && patch->track->record)
 		patch->patchbay->synchronize_faders(change, TRACK_AUDIO, patch->track);
 	patch->change_source = 0;
 
@@ -338,7 +338,7 @@ int APanPatch::handle_event()
 	int need_undo = !pan_autos->auto_exists_for_editing(position);
 
 	mwindow->undo->update_undo_before(_("pan"), need_undo ? 0 : this);
-	
+
 	current = (PanAuto*)pan_autos->get_auto_for_editing(position);
 
 	current->handle_x = get_stick_x();
@@ -378,13 +378,13 @@ int AKeyPanPatch::handle_event()
 
 
 AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
- : BC_Meter(x, 
-			y, 
-			METER_HORIZ, 
-			patch->patchbay->get_w() - 10, 
-			mwindow->edl->session->min_meter_db, 
-			mwindow->edl->session->max_meter_db, 
-			mwindow->edl->session->meter_format, 
+ : BC_Meter(x,
+			y,
+			METER_HORIZ,
+			patch->patchbay->get_w() - 10,
+			mwindow->edl->session->min_meter_db,
+			mwindow->edl->session->max_meter_db,
+			mwindow->edl->session->meter_format,
 			0,
 			-1)
 {

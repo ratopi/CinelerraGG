@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcbitmap.h"
@@ -135,7 +135,7 @@ BC_XvShmImage::BC_XvShmImage(BC_Bitmap *bitmap, int index,
 			0, w, h, &shm_info);
 	dataSize = xv_image->data_size;
 // Create the shared memory
-	shm_info.shmid = shmget(IPC_PRIVATE, 
+	shm_info.shmid = shmget(IPC_PRIVATE,
 		dataSize + 8, IPC_CREAT | 0777);
 	if(shm_info.shmid < 0)
 		perror("BC_XvShmImage::BC_XvShmImage shmget");
@@ -175,16 +175,16 @@ BC_XShmImage::BC_XShmImage(BC_Bitmap *bitmap, int index,
 	Display *display = top_level->display;
 	Visual *visual = top_level->vis;
 	int default_depth = bitmap->get_default_depth();
-    	ximage = XShmCreateImage(display, visual, 
-		default_depth, default_depth == 1 ? XYBitmap : ZPixmap, 
+    	ximage = XShmCreateImage(display, visual,
+		default_depth, default_depth == 1 ? XYBitmap : ZPixmap,
 		(char*)NULL, &shm_info, w, h);
 // Create shared memory
  	bytesPerLine = ximage->bytes_per_line;
 	bitsPerPixel = ximage->bits_per_pixel;
 	dataSize = h * bytesPerLine;
-	shm_info.shmid = shmget(IPC_PRIVATE, 
+	shm_info.shmid = shmget(IPC_PRIVATE,
 		dataSize + 8, IPC_CREAT | 0777);
-	if(shm_info.shmid < 0) 
+	if(shm_info.shmid < 0)
 		perror("BC_XShmImage::BC_XShmImage shmget");
 	data = (unsigned char *)shmat(shm_info.shmid, NULL, 0);
 // This causes it to automatically delete when the program exits.
@@ -246,8 +246,8 @@ BC_XImage::BC_XImage(BC_Bitmap *bitmap, int index,
 	Display *display = top_level->display;
 	Visual *visual = top_level->vis;
 	int default_depth = bitmap->get_default_depth();
-	ximage = XCreateImage(display, visual, default_depth, 
-		default_depth == 1 ? XYBitmap : ZPixmap, 
+	ximage = XCreateImage(display, visual, default_depth,
+		default_depth == 1 ? XYBitmap : ZPixmap,
 		0, (char*)data, w, h, 8, 0);
  	bytesPerLine = ximage->bytes_per_line;
 	bitsPerPixel = ximage->bits_per_pixel;
@@ -277,10 +277,10 @@ BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, unsigned char *png_data, doub
 
 	avail_lock = 0;
 // Initialize the bitmap
-	initialize(parent_window, 
-		frame.get_w(), 
-		frame.get_h(), 
-		parent_window->get_color_model(), 
+	initialize(parent_window,
+		frame.get_w(),
+		frame.get_h(),
+		parent_window->get_color_model(),
 		0);
 
 // Copy the vframe to the bitmap
@@ -291,17 +291,17 @@ BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, VFrame *frame)
 {
 	avail_lock = 0;
 // Initialize the bitmap
-	initialize(parent_window, 
-		frame->get_w(), 
-		frame->get_h(), 
-		parent_window->get_color_model(), 
+	initialize(parent_window,
+		frame->get_w(),
+		frame->get_h(),
+		parent_window->get_color_model(),
 		0);
 
 // Copy the vframe to the bitmap
 	read_frame(frame, 0, 0, w, h);
 }
 
-BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, 
+BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window,
 	int w, int h, int color_model, int use_shm)
 {
 	avail_lock = 0;
@@ -314,7 +314,7 @@ BC_Bitmap::~BC_Bitmap()
 	delete avail_lock;
 }
 
-int BC_Bitmap::initialize(BC_WindowBase *parent_window, 
+int BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	int w, int h, int color_model, int use_shm)
 {
 	BC_Resources *resources = parent_window->get_resources();
@@ -509,7 +509,7 @@ int BC_XShmImage::get_shm_size()
 }
 
 int BC_Bitmap::write_drawable(Drawable &pixmap, GC &gc,
-	int dest_x, int dest_y, int source_x, int source_y, 
+	int dest_x, int dest_y, int source_x, int source_y,
 	int dest_w, int dest_h, int dont_wait)
 {
 	return write_drawable(pixmap, gc,
@@ -561,7 +561,7 @@ int BC_XvShmImage::write_drawable(Drawable &pixmap, GC &gc,
 
 int BC_Bitmap::write_drawable(Drawable &pixmap, GC &gc,
 		int source_x, int source_y, int source_w, int source_h,
-		int dest_x, int dest_y, int dest_w, int dest_h, 
+		int dest_x, int dest_y, int dest_w, int dest_h,
 		int dont_wait)
 {
 //printf("BC_Bitmap::write_drawable 1 %p %d\n", this, current_ringbuffer); fflush(stdout);
@@ -620,13 +620,13 @@ int BC_Bitmap::read_drawable(Drawable &pixmap, int source_x, int source_y, VFram
 
 int BC_Bitmap::read_frame(VFrame *frame, int x1, int y1, int x2, int y2)
 {
-	return read_frame(frame, 
+	return read_frame(frame,
 		0, 0, frame->get_w(), frame->get_h(),
 		x1, y1, x2 - x1, y2 - y1);
 }
 
 
-int BC_Bitmap::read_frame(VFrame *frame, 
+int BC_Bitmap::read_frame(VFrame *frame,
 	int in_x, int in_y, int in_w, int in_h,
 	int out_x, int out_y, int out_w, int out_h)
 {

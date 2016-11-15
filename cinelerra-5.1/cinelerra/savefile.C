@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "confirmsave.h"
@@ -68,9 +68,9 @@ int SaveBackup::handle_event()
 
 
 Save::Save(MWindow *mwindow) : BC_MenuItem(_("Save"), "s", 's')
-{ 
-	this->mwindow = mwindow; 
-	quit_now = 0; 
+{
+	this->mwindow = mwindow;
+	quit_now = 0;
 }
 
 void Save::create_objects(SaveAs *saveas)
@@ -80,7 +80,7 @@ void Save::create_objects(SaveAs *saveas)
 
 int Save::handle_event()
 {
-	if(mwindow->session->filename[0] == 0) 
+	if(mwindow->session->filename[0] == 0)
 	{
 		saveas->start();
 	}
@@ -89,7 +89,7 @@ int Save::handle_event()
 // save it
 // TODO: Move this into mwindow.
 		FileXML file;
-		mwindow->edl->save_xml(&file, 
+		mwindow->edl->save_xml(&file,
 			mwindow->session->filename,
 			0,
 			0);
@@ -105,7 +105,7 @@ int Save::handle_event()
 			error.create_objects(string2);
 			error.raise_window();
 			error.run_window();
-			return 1;		
+			return 1;
 		}
 		else
 		{
@@ -131,8 +131,8 @@ int Save::save_before_quit()
 
 SaveAs::SaveAs(MWindow *mwindow)
  : BC_MenuItem(_("Save as..."), ""), Thread()
-{ 
-	this->mwindow = mwindow; 
+{
+	this->mwindow = mwindow;
 	quit_now = 0;
 }
 
@@ -142,8 +142,8 @@ int SaveAs::set_mainmenu(MainMenu *mmenu)
 	return 0;
 }
 
-int SaveAs::handle_event() 
-{ 
+int SaveAs::handle_event()
+{
 	quit_now = 0;
 	start();
 	return 1;
@@ -172,7 +172,7 @@ void SaveAs::run()
 		delete window;
 
 // Extend the filename with .xml
-		if(strlen(filename) < 4 || 
+		if(strlen(filename) < 4 ||
 			strcasecmp(&filename[strlen(filename) - 4], ".xml"))
 		{
 			strcat(filename, ".xml");
@@ -193,8 +193,8 @@ void SaveAs::run()
 	FileXML file;
 	mwindow->gui->lock_window("SaveAs::run 1");
 // update the project name
-	mwindow->set_filename(filename);      
-	mwindow->edl->save_xml(&file, 
+	mwindow->set_filename(filename);
+	mwindow->edl->save_xml(&file,
 		filename,
 		0,
 		0);
@@ -212,7 +212,7 @@ void SaveAs::run()
 		error.create_objects(string2);
 		error.raise_window();
 		error.run_window();
-		return;		
+		return;
 	}
 	else
 	{
@@ -242,11 +242,11 @@ void SaveAs::run()
 SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
  : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
  	mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
- 	init_directory, 
-	_(PROGRAM_NAME ": Save"), 
+ 	init_directory,
+	_(PROGRAM_NAME ": Save"),
 	_("Enter a filename to save as"))
-{ 
-	this->mwindow = mwindow; 
+{
+	this->mwindow = mwindow;
 }
 
 SaveFileWindow::~SaveFileWindow() {}

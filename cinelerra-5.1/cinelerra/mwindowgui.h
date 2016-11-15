@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef MAINWINDOWGUI_H
@@ -99,10 +99,10 @@ public:
 //          FORCE_REDRAW for delete and redraw of resources
 //          IGNORE_THREAD to ignore picon thread
 	void update(int scrollbars,
-		int do_canvas, 
+		int do_canvas,
 		int timebar,
 		int zoombar,
-		int patchbay, 
+		int patchbay,
 		int clock,
 		int buttonbar);
 	void draw_overlays(int flash_it);
@@ -156,7 +156,7 @@ public:
 // 1 if there are 2 panes horizontally
 	int horizontal_panes();
 
-// get pane number where cursor updates should be drawn in, 
+// get pane number where cursor updates should be drawn in,
 // whether active or not
 	TimelinePane* get_focused_pane();
 	void start_x_pane_drag();

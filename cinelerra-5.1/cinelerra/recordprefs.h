@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef RECORDPREFS_H
@@ -49,10 +49,10 @@ public:
 class RecordFragment : public BC_PopupMenu
 {
 public:
-	RecordFragment(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
-		RecordPrefs *record, 
+	RecordFragment(int x,
+		int y,
+		PreferencesWindow *pwindow,
+		RecordPrefs *record,
 		char *text);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -75,7 +75,7 @@ public:
  * 	int handle_event();
  * 	PreferencesWindow *pwindow;
  * };
- * 
+ *
  */
 class RecordRealTime : public BC_CheckBox
 {
@@ -195,9 +195,9 @@ class RecordFrameRateText : public BC_TextBox
 class RecordChannels : public BC_TumbleTextBox
 {
 public:
-	RecordChannels(PreferencesWindow *pwindow, 
-		BC_SubWindow *gui, 
-		int x, 
+	RecordChannels(PreferencesWindow *pwindow,
+		BC_SubWindow *gui,
+		int x,
 		int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -206,9 +206,9 @@ public:
 class RecordGain : public BC_TumbleTextBox
 {
 public:
-	RecordGain(PreferencesWindow *pwindow, 
-		BC_SubWindow *gui, 
-		int x, 
+	RecordGain(PreferencesWindow *pwindow,
+		BC_SubWindow *gui,
+		int x,
 		int y);
 	int handle_event();
 	PreferencesWindow *pwindow;

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -55,10 +55,10 @@ int FreezeFrameConfig::equivalent(FreezeFrameConfig &that)
 		line_double == that.line_double;
 }
 
-void FreezeFrameConfig::interpolate(FreezeFrameConfig &prev, 
-	FreezeFrameConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void FreezeFrameConfig::interpolate(FreezeFrameConfig &prev,
+	FreezeFrameConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	this->enabled = prev.enabled;
@@ -77,7 +77,7 @@ void FreezeFrameConfig::interpolate(FreezeFrameConfig &prev,
 FreezeFrameWindow::FreezeFrameWindow(FreezeFrameMain *client)
  : PluginClientWindow(client, 260, 100, 260, 100, 0)
 {
-	this->client = client; 
+	this->client = client;
 }
 
 FreezeFrameWindow::~FreezeFrameWindow()
@@ -87,17 +87,17 @@ FreezeFrameWindow::~FreezeFrameWindow()
 void FreezeFrameWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(enabled = new FreezeFrameToggle(client, 
+	add_tool(enabled = new FreezeFrameToggle(client,
 		&client->config.enabled,
-		x, 
+		x,
 		y,
 		_("Enabled")));
 // Try using extra effect for the line double since it doesn't
 // change the overhead.
 // 	y += 30;
-// 	add_tool(line_double = new FreezeFrameToggle(client, 
+// 	add_tool(line_double = new FreezeFrameToggle(client,
 // 		&client->config.line_double,
-// 		x, 
+// 		x,
 // 		y,
 // 		_("Line double")));
 	show_window();
@@ -109,9 +109,9 @@ void FreezeFrameWindow::create_objects()
 
 
 
-FreezeFrameToggle::FreezeFrameToggle(FreezeFrameMain *client, 
-	int *value, 
-	int x, 
+FreezeFrameToggle::FreezeFrameToggle(FreezeFrameMain *client,
+	int *value,
+	int x,
 	int y,
 	char *text)
  : BC_CheckBox(x, y, *value, text)
@@ -143,14 +143,14 @@ int FreezeFrameToggle::handle_event()
 FreezeFrameMain::FreezeFrameMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	first_frame = 0;
 	first_frame_position = -1;
 }
 
 FreezeFrameMain::~FreezeFrameMain()
 {
-	
+
 	if(first_frame) delete first_frame;
 }
 
@@ -258,15 +258,15 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 	if(!first_frame && config.enabled)
 	{
 		if(!first_frame)
-			first_frame = new VFrame(0, 
+			first_frame = new VFrame(0,
 				-1,
-				frame->get_w(), 
+				frame->get_w(),
 				frame->get_h(),
 				frame->get_color_model(),
 				-1);
 //printf("FreezeFrameMain::process_buffer 1 %jd\n", first_frame_position);
-		read_frame(first_frame, 
-				0, 
+		read_frame(first_frame,
+				0,
 				get_direction() == PLAY_REVERSE ? first_frame_position + 1 : first_frame_position,
 				frame_rate,
 				get_use_opengl());
@@ -277,8 +277,8 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 // Still not frozen
 	if(!first_frame && !config.enabled)
 	{
-		read_frame(frame, 
-			0, 
+		read_frame(frame,
+			0,
 			start_position,
 			frame_rate,
 			get_use_opengl());
@@ -289,8 +289,8 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 	{
 		delete first_frame;
 		first_frame = 0;
-		read_frame(frame, 
-			0, 
+		read_frame(frame,
+			0,
 			start_position,
 			frame_rate,
 			get_use_opengl());
@@ -302,8 +302,8 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 // Had a keyframe in frozen range.  Load new first frame
 		if(previous_first_frame != first_frame_position)
 		{
-			read_frame(first_frame, 
-				0, 
+			read_frame(first_frame,
+				0,
 				get_direction() == PLAY_REVERSE ? first_frame_position + 1 : first_frame_position,
 				frame_rate,
 				get_use_opengl());
@@ -318,8 +318,8 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 // 	{
 // 		for(int i = 0; i < frame->get_h() - 1; i += 2)
 // 		{
-// 			memcpy(frame->get_rows()[i + 1], 
-// 				frame->get_rows()[i], 
+// 			memcpy(frame->get_rows()[i + 1],
+// 				frame->get_rows()[i],
 // 				frame->get_bytes_per_line());
 // 		}
 // 	}

@@ -213,7 +213,7 @@ public:
 // Flag when output is interrupted
 	int interrupt;
 // Compression format in use by the output device
-	int output_format;   
+	int output_format;
 	int is_playing_back;
 // Audio device to share data with
 	AudioDevice *adevice;
@@ -281,7 +281,7 @@ public:
 
 
 // Change the capture size when ready
-	int update_translation();  
+	int update_translation();
 
 	VDeviceBase *input_base;
 	VDeviceBase *output_base;

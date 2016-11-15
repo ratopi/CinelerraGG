@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bchash.h"
@@ -75,7 +75,7 @@ int VideoWindow::init_window()
 {
 // 	int w = mwindow->session->output_w;
 // 	int h = mwindow->session->output_h;
-// 
+//
 // 	fix_size(w, h, video_window_w, mwindow->get_aspect_ratio());
 // 	gui = new VideoWindowGUI(this, w, h);
 // 	gui->create_objects();
@@ -109,7 +109,7 @@ int VideoWindow::resize_window()
 //	fix_size(proper_w, proper_h, video_window_w, mwindow->get_aspect_ratio());
 
 	gui->update_title();
-	if(gui && 
+	if(gui &&
 		(gui->get_w() != proper_w ||
 			gui->get_h() != proper_h))
 	{
@@ -229,7 +229,7 @@ int VideoWindow::stop_cropping()
 // 	float x_zoom, y_zoom;
 // 	int new_w, new_h;
 // 	float zoom_factor;
-// 
+//
 // 	if(mwindow->get_aspect_ratio() < (float)mwindow->session->output_w / mwindow->session->output_h)
 // 	{
 // 		x_zoom = 1;
@@ -242,16 +242,16 @@ int VideoWindow::stop_cropping()
 // 		y_zoom = 1;
 // 		zoom_factor = (float)video_window_w / (mwindow->session->output_h * mwindow->get_aspect_ratio());
 // 	}
-// 
-// 
+//
+//
 // 	gui->canvas->draw_crop_box();
 // 	gui->canvas->flash();
 // 	video_window_w = gui->x2 - gui->x1;
-// 
+//
 // 	gui->x1 = (int)(gui->x1 / zoom_factor / x_zoom);
 // 	gui->y1 = (int)(gui->y1 / zoom_factor / y_zoom);
 // 	gui->x2 = (int)(gui->x2 / zoom_factor / x_zoom);
 // 	gui->y2 = (int)(gui->y2 / zoom_factor / y_zoom);
-// 
+//
 // 	video_cropping = 0;
 }

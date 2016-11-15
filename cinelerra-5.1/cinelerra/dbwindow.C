@@ -167,7 +167,7 @@ handle_event()
 
 DbWindowText::
 DbWindowText(DbWindowGUI *gui, int x, int y, int w)
- : BC_TextBox(x, y, w, 1, "") 
+ : BC_TextBox(x, y, w, 1, "")
 {
 	this->gui = gui;
 }

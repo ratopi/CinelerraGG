@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "filexml.h"
@@ -49,8 +49,8 @@ BlurConfig::BlurConfig()
 
 int BlurConfig::equivalent(BlurConfig &that)
 {
-	return (vertical == that.vertical && 
-		horizontal == that.horizontal && 
+	return (vertical == that.vertical &&
+		horizontal == that.horizontal &&
 		radius == that.radius &&
 		a_key == that.a_key &&
 		a == that.a &&
@@ -71,10 +71,10 @@ void BlurConfig::copy_from(BlurConfig &that)
 	b = that.b;
 }
 
-void BlurConfig::interpolate(BlurConfig &prev, 
-	BlurConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void BlurConfig::interpolate(BlurConfig &prev,
+	BlurConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -147,9 +147,9 @@ int BlurMain::process_buffer(VFrame *frame,
 
 	need_reconfigure |= load_configuration();
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		0);
 
@@ -166,16 +166,16 @@ int BlurMain::process_buffer(VFrame *frame,
 			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
 		}
 
-		overlayer->overlay(PluginVClient::get_temp(), 
-			frame, 
-			0, 
-			0, 
-			frame->get_w(), 
-			frame->get_h(), 
-			0, 
-			0, 
-			PluginVClient::get_temp()->get_w(), 
-			PluginVClient::get_temp()->get_h(), 
+		overlayer->overlay(PluginVClient::get_temp(),
+			frame,
+			0,
+			0,
+			frame->get_w(),
+			frame->get_h(),
+			0,
+			0,
+			PluginVClient::get_temp()->get_w(),
+			PluginVClient::get_temp()->get_h(),
 			1,        // 0 - 1
 			TRANSFER_REPLACE,
 			NEAREST_NEIGHBOR);
@@ -212,7 +212,7 @@ int BlurMain::process_buffer(VFrame *frame,
 	}
 
 
-	if(config.radius < MIN_RADIUS || 
+	if(config.radius < MIN_RADIUS ||
 		(!config.vertical && !config.horizontal))
 	{
 // Data never processed
@@ -220,13 +220,13 @@ int BlurMain::process_buffer(VFrame *frame,
 	else
 	{
 // Process blur
-// Need to blur vertically to a temp and 
+// Need to blur vertically to a temp and
 // horizontally to the output in 2 discrete passes.
 
 		for(i = 0; i < get_project_smp() + 1; i++)
 		{
 			engine[i]->set_range(
-				input_frame->get_h() * i / (get_project_smp() + 1), 
+				input_frame->get_h() * i / (get_project_smp() + 1),
 				input_frame->get_h() * (i + 1) / (get_project_smp() + 1),
 				input_frame->get_w() * i / (get_project_smp() + 1),
 				input_frame->get_w() * (i + 1) / (get_project_smp() + 1));
@@ -259,16 +259,16 @@ int BlurMain::process_buffer(VFrame *frame,
 // Downsample
 	if(config.a_key)
 	{
-		overlayer->overlay(frame, 
-			PluginVClient::get_temp(), 
-			0, 
-			0, 
-			PluginVClient::get_temp()->get_w(), 
-			PluginVClient::get_temp()->get_h(), 
-			0, 
-			0, 
-			frame->get_w(), 
-			frame->get_h(), 
+		overlayer->overlay(frame,
+			PluginVClient::get_temp(),
+			0,
+			0,
+			PluginVClient::get_temp()->get_w(),
+			PluginVClient::get_temp()->get_h(),
+			0,
+			0,
+			frame->get_w(),
+			frame->get_h(),
 			1,        // 0 - 1
 			TRANSFER_REPLACE,
 			NEAREST_NEIGHBOR);
@@ -283,7 +283,7 @@ void BlurMain::update_gui()
 	if(thread)
 	{
 		int reconfigure = load_configuration();
-		if(reconfigure) 
+		if(reconfigure)
 		{
 			((BlurWindow*)thread->window)->lock_window("BlurMain::update_gui");
 			((BlurWindow*)thread->window)->horizontal->update(config.horizontal);
@@ -371,7 +371,7 @@ BlurEngine::BlurEngine(BlurMain *plugin)
 	last_frame = 0;
 
 // Strip size
-	int size = plugin->get_input()->get_w() > plugin->get_input()->get_h() ? 
+	int size = plugin->get_input()->get_w() > plugin->get_input()->get_h() ?
 		plugin->get_input()->get_w() : plugin->get_input()->get_h();
 // Prepare for oversampling
 	size *= 2;
@@ -398,7 +398,7 @@ BlurEngine::~BlurEngine()
 	delete [] radius;
 }
 
-void BlurEngine::set_range(int start_y, 
+void BlurEngine::set_range(int start_y,
 	int end_y,
 	int start_x,
 	int end_x)
@@ -589,7 +589,7 @@ int BlurEngine::reconfigure(BlurConstants *constants, double radius)
 {
 // Blurring an oversampled temp
 	if(plugin->config.a_key) radius *= 2;
-	double std_dev = sqrt(-(double)(radius * radius) / 
+	double std_dev = sqrt(-(double)(radius * radius) /
 		(2 * log (1.0 / 255.0)));
 	get_constants(constants, std_dev);
 	return 0;
@@ -620,18 +620,18 @@ int BlurEngine::get_constants(BlurConstants *ptr, double std_dev)
 				(2 * constants[6] + constants[4]) * cos(constants[2]));
 
 	ptr->n_p[2] = 2 * exp(constants[0] + constants[1]) *
-				((constants[4] + constants[6]) * cos(constants[3]) * 
-				cos(constants[2]) - constants[5] * 
+				((constants[4] + constants[6]) * cos(constants[3]) *
+				cos(constants[2]) - constants[5] *
 				cos(constants[3]) * sin(constants[2]) -
 				constants[7] * cos(constants[2]) * sin(constants[3])) +
 				constants[6] * exp(2 * constants[0]) +
 				constants[4] * exp(2 * constants[1]);
 
 	ptr->n_p[3] = exp(constants[1] + 2 * constants[0]) *
-				(constants[7] * sin(constants[3]) - 
+				(constants[7] * sin(constants[3]) -
 				constants[6] * cos(constants[3])) +
 				exp(constants[0] + 2 * constants[1]) *
-				(constants[5] * sin(constants[2]) - constants[4] * 
+				(constants[5] * sin(constants[2]) - constants[4] *
 				cos(constants[2]));
 	ptr->n_p[4] = 0.0;
 
@@ -639,7 +639,7 @@ int BlurEngine::get_constants(BlurConstants *ptr, double std_dev)
 	ptr->d_p[1] = -2 * exp(constants[1]) * cos(constants[3]) -
 				2 * exp(constants[0]) * cos(constants[2]);
 
-	ptr->d_p[2] = 4 * cos(constants[3]) * cos(constants[2]) * 
+	ptr->d_p[2] = 4 * cos(constants[3]) * cos(constants[2]) *
 				exp(constants[0] + constants[1]) +
 				exp(2 * constants[1]) + exp (2 * constants[0]);
 
@@ -681,20 +681,20 @@ int BlurEngine::get_constants(BlurConstants *ptr, double std_dev)
 
 #define BOUNDARY(x) if((x) > vmax) (x) = vmax; else if((x) < 0) (x) = 0;
 
-int BlurEngine::transfer_pixels(pixel_f *src1, 
-	pixel_f *src2, 
+int BlurEngine::transfer_pixels(pixel_f *src1,
+	pixel_f *src2,
 	pixel_f *src,
 	double *radius,
-	pixel_f *dest, 
+	pixel_f *dest,
 	int size)
 {
 	int i;
 	double sum;
 
-// printf("BlurEngine::transfer_pixels %d %d %d %d\n", 
-// plugin->config.r, 
-// plugin->config.g, 
-// plugin->config.b, 
+// printf("BlurEngine::transfer_pixels %d %d %d %d\n",
+// plugin->config.r,
+// plugin->config.g,
+// plugin->config.b,
 // plugin->config.a);
 
 	for(i = 0; i < size; i++)
@@ -748,7 +748,7 @@ int BlurEngine::separate_alpha(pixel_f *row, int size)
 //	register int i;
 //	register double alpha;
 //	register double result;
-	
+
 // 	for(i = 0; i < size; i++)
 // 	{
 // 		if(row[i].a > 0 && row[i].a < vmax)
@@ -835,7 +835,7 @@ int BlurEngine::blur_strip3(int &size)
 
 int BlurEngine::blur_strip4(int &size)
 {
-	
+
 //	multiply_alpha(src, size);
 
 	pixel_f *sp_p = src;
@@ -858,7 +858,7 @@ int BlurEngine::blur_strip4(int &size)
 	for(int k = 0; k < size; k++)
 	{
 		terms = (k < 4) ? k : 4;
-		
+
 		if(plugin->config.a_key)
 		{
 			if(radius[k] != prev_forward_radius)

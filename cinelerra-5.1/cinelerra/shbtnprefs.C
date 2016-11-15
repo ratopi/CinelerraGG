@@ -120,7 +120,7 @@ ShBtnAddButton::~ShBtnAddButton()
 
 int ShBtnAddButton::handle_event()
 {
-	
+
 	Preferences *preferences = sb_window->shbtn_edit->pwindow->thread->preferences;
 	ShBtnPref *pref = new ShBtnPref(_("new"), "", 0);
 	preferences->shbtn_prefs.append(pref);

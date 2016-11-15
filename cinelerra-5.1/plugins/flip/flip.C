@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -55,10 +55,10 @@ int FlipConfig::equivalent(FlipConfig &that)
 		flip_vertical == that.flip_vertical;
 }
 
-void FlipConfig::interpolate(FlipConfig &prev, 
-	FlipConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void FlipConfig::interpolate(FlipConfig &prev,
+	FlipConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	this->flip_horizontal = prev.flip_horizontal;
@@ -77,17 +77,17 @@ void FlipConfig::interpolate(FlipConfig &prev,
 FlipMain::FlipMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 }
 
 FlipMain::~FlipMain()
 {
-	
+
 }
 
 const char* FlipMain::plugin_title() { return _("Flip"); }
 int FlipMain::is_realtime() { return 1; }
-	
+
 
 #define SWAP_PIXELS(type, components, in, out) \
 { \
@@ -168,7 +168,7 @@ int FlipMain::process_buffer(VFrame *frame,
 
 
 
-	if(get_use_opengl()) 
+	if(get_use_opengl())
 	{
 		if(config.flip_vertical || config.flip_horizontal)
 			return run_opengl();
@@ -237,7 +237,7 @@ void FlipMain::save_data(KeyFrame *keyframe)
 	}
 
 	if(config.flip_horizontal)
-	{	
+	{
 		output.tag.set_title("HORIZONTAL");
 		output.append_tag();
 		output.tag.set_title("/HORIZONTAL");

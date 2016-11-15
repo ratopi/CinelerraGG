@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -62,13 +62,13 @@ DotMain::DotMain(PluginServer *server)
 	sampy = 0;
 	effecttv = 0;
 	need_reconfigure = 1;
-	
+
 }
 
 DotMain::~DotMain()
 {
-	
-	
+
+
 	if(pattern) delete [] pattern;
 	if(sampx) delete [] sampx;
 	if(sampy) delete [] sampy;
@@ -107,7 +107,7 @@ void DotMain::make_pattern()
 	double p, q, r;
 	uint32_t *pat;
 
-	for(i = 0; i < config.dot_max(); i++) 
+	for(i = 0; i < config.dot_max(); i++)
 	{
 /* Generated pattern is a quadrant of a disk. */
 		pat = pattern + (i + 1) * dot_hsize * dot_hsize - 1;
@@ -118,21 +118,21 @@ void DotMain::make_pattern()
 		r *= 5;
 //printf("make_pattern %f\n", r);
 
-		for(y = 0; y < dot_hsize; y++) 
+		for(y = 0; y < dot_hsize; y++)
 		{
-			for(x = 0; x < dot_hsize; x++) 
+			for(x = 0; x < dot_hsize; x++)
 			{
 				c = 0;
-				for(u = 0; u < 4; u++) 
+				for(u = 0; u < 4; u++)
 				{
 					p = (double)u / 4.0 + y;
 					p = p * p;
 
-					for(v = 0; v < 4; v++) 
+					for(v = 0; v < 4; v++)
 					{
 						q = (double)v / 4.0 + x;
 
-						if(p + q * q < r) 
+						if(p + q * q < r)
 						{
 							c++;
 						}
@@ -156,13 +156,13 @@ void DotMain::init_sampxy_table()
 
 // Need aspect ratio
 	j = dot_hsize;
-	for(i = 0; i < dots_width; i++) 
+	for(i = 0; i < dots_width; i++)
 	{
 		sampx[i] = j;
 		j += dot_size;
 	}
 	j = dot_hsize;
-	for(i = 0; i < dots_height; i++) 
+	for(i = 0; i < dots_height; i++)
 	{
 		sampy[i] = j;
 		j += dot_size;
@@ -183,17 +183,17 @@ void DotMain::reconfigure()
 	dot_hsize = dot_size / 2;
 	dots_width = input_ptr->get_w() / dot_size;
 	dots_height = input_ptr->get_h() / dot_size;
-	pattern = new uint32_t[config.dot_max() * 
-		dot_hsize * 
+	pattern = new uint32_t[config.dot_max() *
+		dot_hsize *
 		dot_hsize];
 	sampx = new int[input_ptr->get_w()];
 	sampy = new int[input_ptr->get_h()];
-	
+
 	make_pattern();
-	
+
 	init_sampxy_table();
-	
-	
+
+
 	need_reconfigure = 0;
 }
 
@@ -221,7 +221,7 @@ DotServer::DotServer(DotMain *plugin, int total_clients, int total_packages)
 }
 
 
-LoadClient* DotServer::new_client() 
+LoadClient* DotServer::new_client()
 {
 	return new DotClient(this);
 }
@@ -229,9 +229,9 @@ LoadClient* DotServer::new_client()
 
 
 
-LoadPackage* DotServer::new_package() 
-{ 
-	return new DotPackage; 
+LoadPackage* DotServer::new_package()
+{
+	return new DotPackage;
 }
 
 
@@ -357,9 +357,9 @@ DotClient::DotClient(DotServer *server)
 	} \
 }
 
-void DotClient::draw_dot(int xx, 
-	int yy, 
-	unsigned char c, 
+void DotClient::draw_dot(int xx,
+	int yy,
+	unsigned char c,
 	unsigned char **output_rows,
 	int color_model)
 {
@@ -497,12 +497,12 @@ void DotClient::process_package(LoadPackage *package)
 		{
 			sx = plugin->sampx[x];
 
-//printf("DotClient::process_package %d\n", 
-//					RGBtoY(&input_rows[sy][sx * plugin->input_ptr->get_bytes_per_pixel()], 
+//printf("DotClient::process_package %d\n",
+//					RGBtoY(&input_rows[sy][sx * plugin->input_ptr->get_bytes_per_pixel()],
 //					plugin->input_ptr->get_color_model()));
-			draw_dot(x, 
+			draw_dot(x,
 				y,
-				RGBtoY(&input_rows[sy][sx * plugin->input_ptr->get_bytes_per_pixel()], 
+				RGBtoY(&input_rows[sy][sx * plugin->input_ptr->get_bytes_per_pixel()],
 					plugin->input_ptr->get_color_model()),
 				output_rows,
 				plugin->input_ptr->get_color_model());

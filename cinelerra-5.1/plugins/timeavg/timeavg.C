@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -90,7 +90,7 @@ int TimeAvgConfig::equivalent(TimeAvgConfig *src)
 TimeAvgMain::TimeAvgMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	accumulation = 0;
 	history = 0;
 	history_size = 0;
@@ -102,7 +102,7 @@ TimeAvgMain::TimeAvgMain(PluginServer *server)
 
 TimeAvgMain::~TimeAvgMain()
 {
-	
+
 
 	if(accumulation) delete [] accumulation;
 	if(history)
@@ -166,8 +166,8 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 // Allocate accumulation
 	if(!accumulation || reset)
 	{
-		if(!accumulation) accumulation = new unsigned char[w * 
-			h * 
+		if(!accumulation) accumulation = new unsigned char[w *
+			h *
 			BC_CModels::components(color_model) *
 			MAX(sizeof(float), sizeof(int))];
 		reset_accum(w, h, color_model);
@@ -263,7 +263,7 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 				for(int j = 0; j < history_size; j++)
 				{
 // Old frame is equal to a new frame
-					if(history_frame[i] == new_history_frames[j]) 
+					if(history_frame[i] == new_history_frames[j])
 					{
 						got_it = 1;
 						break;
@@ -371,7 +371,7 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			reset_accum(w, h, color_model);
 		}
 
-// printf("TimeAvgMain::process_buffer %d prev_frame=%jd start_position=%jd\n", 
+// printf("TimeAvgMain::process_buffer %d prev_frame=%jd start_position=%jd\n",
 //   __LINE__, prev_frame, start_position);
 		for(int64_t i = prev_frame; i <= start_position; i++)
 		{
@@ -381,7 +381,7 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 				frame_rate,
 				0);
 			add_accum(frame);
-printf("TimeAvgMain::process_buffer %d prev_frame=%jd start_position=%jd i=%jd\n", 
+printf("TimeAvgMain::process_buffer %d prev_frame=%jd start_position=%jd i=%jd\n",
   __LINE__, prev_frame, start_position, i);
 		}
 
@@ -1064,7 +1064,7 @@ void TimeAvgMain::read_data(KeyFrame *keyframe)
 
 void TimeAvgMain::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		if(load_configuration())
 		{

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -84,7 +84,7 @@ public:
 // 	FieldFrame *plugin;
 // 	FieldFrameWindow *gui;
 // };
-// 
+//
 // class FieldFrameSecond : public BC_Radial
 // {
 // public:
@@ -164,11 +164,11 @@ int FieldFrameConfig::equivalent(FieldFrameConfig &src)
 
 
 FieldFrameWindow::FieldFrameWindow(FieldFrame *plugin)
- : PluginClientWindow(plugin, 
-	230, 
-	100, 
-	230, 
-	100, 
+ : PluginClientWindow(plugin,
+	230,
+	100,
+	230,
+	100,
 	0)
 {
 	this->plugin = plugin;
@@ -201,12 +201,12 @@ void FieldFrameWindow::create_objects()
 
 
 
-FieldFrameTop::FieldFrameTop(FieldFrame *plugin, 
-	FieldFrameWindow *gui, 
-	int x, 
+FieldFrameTop::FieldFrameTop(FieldFrame *plugin,
+	FieldFrameWindow *gui,
+	int x,
 	int y)
- : BC_Radial(x, 
-	y, 
+ : BC_Radial(x,
+	y,
 	plugin->config.field_dominance == TOP_FIELD_FIRST,
 	_("Top field first"))
 {
@@ -226,12 +226,12 @@ int FieldFrameTop::handle_event()
 
 
 
-FieldFrameBottom::FieldFrameBottom(FieldFrame *plugin, 
-	FieldFrameWindow *gui, 
-	int x, 
+FieldFrameBottom::FieldFrameBottom(FieldFrame *plugin,
+	FieldFrameWindow *gui,
+	int x,
 	int y)
- : BC_Radial(x, 
-	y, 
+ : BC_Radial(x,
+	y,
 	plugin->config.field_dominance == BOTTOM_FIELD_FIRST,
 	_("Bottom field first"))
 {
@@ -251,19 +251,19 @@ int FieldFrameBottom::handle_event()
 
 
 
-// FieldFrameFirst::FieldFrameFirst(FieldFrame *plugin, 
-// 	FieldFrameWindow *gui, 
-// 	int x, 
+// FieldFrameFirst::FieldFrameFirst(FieldFrame *plugin,
+// 	FieldFrameWindow *gui,
+// 	int x,
 // 	int y)
-//  : BC_Radial(x, 
-// 	y, 
+//  : BC_Radial(x,
+// 	y,
 // 	plugin->config.first_frame == 0,
 // 	_("First frame is first field"))
 // {
 // 	this->plugin = plugin;
 // 	this->gui = gui;
 // }
-// 
+//
 // int FieldFrameFirst::handle_event()
 // {
 // 	plugin->config.first_frame = 0;
@@ -271,23 +271,23 @@ int FieldFrameBottom::handle_event()
 // 	plugin->send_configure_change();
 // 	return 1;
 // }
-// 
-// 
-// 
-// 
-// FieldFrameSecond::FieldFrameSecond(FieldFrame *plugin, 
-// 	FieldFrameWindow *gui, 
-// 	int x, 
+//
+//
+//
+//
+// FieldFrameSecond::FieldFrameSecond(FieldFrame *plugin,
+// 	FieldFrameWindow *gui,
+// 	int x,
 // 	int y)
-//  : BC_Radial(x, 
-// 	y, 
+//  : BC_Radial(x,
+// 	y,
 // 	plugin->config.first_frame == 1,
 // 	_("Second frame is first field"))
 // {
 // 	this->plugin = plugin;
 // 	this->gui = gui;
 // }
-// 
+//
 // int FieldFrameSecond::handle_event()
 // {
 // 	plugin->config.first_frame = 1;
@@ -320,14 +320,14 @@ int FieldFrameBottom::handle_event()
 FieldFrame::FieldFrame(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	input = 0;
 }
 
 
 FieldFrame::~FieldFrame()
 {
-	
+
 
 	if(input) delete input;
 }
@@ -416,10 +416,10 @@ int FieldFrame::process_buffer(VFrame *frame,
 
 	if(!input)
 	{
-		input = new VFrame(0, 
+		input = new VFrame(0,
 			-1,
-			frame->get_w(), 
-			frame->get_h(), 
+			frame->get_w(),
+			frame->get_h(),
 			frame->get_color_model(),
 			-1);
 	}
@@ -435,25 +435,25 @@ int FieldFrame::process_buffer(VFrame *frame,
 	}
 
 
-// printf("FieldFrame::process_buffer %d %lld %lld\n", 
-// config.field_dominance, 
-// field1_position, 
+// printf("FieldFrame::process_buffer %d %lld %lld\n",
+// config.field_dominance,
+// field1_position,
 // field2_position);
-	read_frame(input, 
-		0, 
+	read_frame(input,
+		0,
 		field1_position,
 		frame_rate * 2,
 		0);
-	apply_field(frame, 
-		input, 
+	apply_field(frame,
+		input,
 		config.field_dominance == TOP_FIELD_FIRST ? 0 : 1);
-	read_frame(input, 
-		0, 
+	read_frame(input,
+		0,
 		field2_position,
 		frame_rate * 2,
 		0);
-	apply_field(frame, 
-		input, 
+	apply_field(frame,
+		input,
 		config.field_dominance == TOP_FIELD_FIRST ? 1 : 0);
 
 

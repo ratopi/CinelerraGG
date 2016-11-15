@@ -157,7 +157,7 @@ public:
 	void create_objects();
 	int list_update();
 	int start_edit(ShBtnPref *pref);
-	
+
 	ShBtnEditWindow(ShBtnEditDialog *shbtn_edit, int x, int y);
 	~ShBtnEditWindow();
 

@@ -17,11 +17,11 @@ class TimelinePane
 {
 public:
 // coordinates are relative to the main window
-	TimelinePane(MWindow *mwindow, 
+	TimelinePane(MWindow *mwindow,
 		int number,
 		int x,
 		int y,
-		int w, 
+		int w,
 		int h);
 	~TimelinePane();
 	void create_objects();

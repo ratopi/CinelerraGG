@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -58,10 +58,10 @@ void TimeStretchRTConfig::copy_from(TimeStretchRTConfig &src)
 	this->size = src.size;
 }
 
-void TimeStretchRTConfig::interpolate(TimeStretchRTConfig &prev, 
-	TimeStretchRTConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void TimeStretchRTConfig::interpolate(TimeStretchRTConfig &prev,
+	TimeStretchRTConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	this->scale = prev.scale;
@@ -81,11 +81,11 @@ void TimeStretchRTConfig::boundaries()
 
 
 TimeStretchRTWindow::TimeStretchRTWindow(TimeStretchRT *plugin)
- : PluginClientWindow(plugin, 
-	210, 
-	160, 
-	200, 
-	160, 
+ : PluginClientWindow(plugin,
+	210,
+	160,
+	200,
+	160,
 	0)
 {
 	this->plugin = plugin;
@@ -103,17 +103,17 @@ void TimeStretchRTWindow::create_objects()
 	add_subwindow(title = new BC_Title(x, y, _("Fraction of original speed:")));
 	y += title->get_h() + plugin->get_theme()->widget_border;
 	scale = new TimeStretchRTScale(this,
-		plugin, 
-		x, 
+		plugin,
+		x,
 		y);
 	scale->create_objects();
-	
+
 	y += scale->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(title = new BC_Title(x, y, _("Window size (ms):")));
 	y += title->get_h() + plugin->get_theme()->widget_border;
 	size = new TimeStretchRTSize(this,
-		plugin, 
-		x, 
+		plugin,
+		x,
 		y);
 	size->create_objects();
 
@@ -126,15 +126,15 @@ void TimeStretchRTWindow::create_objects()
 
 
 TimeStretchRTScale::TimeStretchRTScale(TimeStretchRTWindow *window,
-	TimeStretchRT *plugin, 
-	int x, 
+	TimeStretchRT *plugin,
+	int x,
 	int y)
  : BC_TumbleTextBox(window,
  	(float)(1.0 / plugin->config.scale),
 	(float)0.0001,
 	(float)1000,
- 	x, 
-	y, 
+ 	x,
+	y,
 	100)
 {
 	this->plugin = plugin;
@@ -152,15 +152,15 @@ int TimeStretchRTScale::handle_event()
 
 
 TimeStretchRTSize::TimeStretchRTSize(TimeStretchRTWindow *window,
-	TimeStretchRT *plugin, 
-	int x, 
+	TimeStretchRT *plugin,
+	int x,
 	int y)
  : BC_TumbleTextBox(window,
  	plugin->config.size,
 	10,
 	1000,
- 	x, 
-	y, 
+ 	x,
+	y,
 	100)
 {
 	this->plugin = plugin;
@@ -206,14 +206,14 @@ NEW_WINDOW_MACRO(TimeStretchRT, TimeStretchRTWindow)
 LOAD_CONFIGURATION_MACRO(TimeStretchRT, TimeStretchRTConfig)
 
 
-int TimeStretchRT::process_buffer(int64_t size, 
+int TimeStretchRT::process_buffer(int64_t size,
 	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
 {
 	need_reconfigure = load_configuration();
 
-	if(!engine) engine = new TimeStretchEngine(config.scale, 
+	if(!engine) engine = new TimeStretchEngine(config.scale,
 		sample_rate,
 		config.size);
 
@@ -234,14 +234,14 @@ int TimeStretchRT::process_buffer(int64_t size,
 			prev_position = get_source_start();
 		}
 
-		source_start = (int64_t)((start_position - prev_position) / 
+		source_start = (int64_t)((start_position - prev_position) /
 			config.scale) + prev_position;
 
 		engine->reset();
 		engine->update(config.scale, sample_rate, config.size);
 		need_reconfigure = 0;
 //printf("TimeStretchRT::process_buffer %d start_position=" _LD
-//	 " prev_position=%jd scale=%f source_start=%jd\n", 
+//	 " prev_position=%jd scale=%f source_start=%jd\n",
 //	__LINE__, start_position, prev_position, config.scale, source_start);
 	}
 
@@ -250,7 +250,7 @@ int TimeStretchRT::process_buffer(int64_t size,
 	while(!error && engine->get_output_size() < size)
 	{
 
-// printf("TimeStretchRT::process_buffer %d buffer=%p size=%lld source_start=%lld\n", 
+// printf("TimeStretchRT::process_buffer %d buffer=%p size=%lld source_start=%lld\n",
 // __LINE__,
 // buffer,
 // size,
@@ -260,13 +260,13 @@ int TimeStretchRT::process_buffer(int64_t size,
 			sample_rate,
 			source_start,
 			size);
-		
+
 
 		if(get_direction() == PLAY_FORWARD)
 			source_start += size;
 		else
 			source_start -= size;
-			
+
 //printf("TimeStretchRT::process_buffer %d size=%d\n", __LINE__, size);
 		engine->process(buffer, size);
 //printf("TimeStretchRT::process_buffer %d\n", __LINE__);
@@ -328,7 +328,7 @@ void TimeStretchRT::update_gui()
 	{
 		if(load_configuration())
 		{
-		
+
 			thread->window->lock_window("TimeStretchRT::update_gui");
 			((TimeStretchRTWindow*)thread->window)->scale->update((float)(1.0 / config.scale));
 			((TimeStretchRTWindow*)thread->window)->size->update((int64_t)config.size);

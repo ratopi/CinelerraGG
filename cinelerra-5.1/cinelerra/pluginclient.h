@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef PLUGINCLIENT_H
@@ -142,13 +142,13 @@ int plugin_class::load_configuration() \
 class PluginClientWindow : public BC_Window
 {
 public:
-	PluginClientWindow(PluginClient *client, 
+	PluginClientWindow(PluginClient *client,
 		int w,
 		int h,
 		int min_w,
 		int min_h,
 		int allow_resize);
-	PluginClientWindow(const char *title, 
+	PluginClientWindow(const char *title,
 		int x,
 		int y,
 		int w,
@@ -157,10 +157,10 @@ public:
 		int min_h,
 		int allow_resize);
 	virtual ~PluginClientWindow();
-	
+
 	virtual int translation_event();
 	virtual int close_event();
-	
+
 	PluginClient *client;
 };
 
@@ -173,7 +173,7 @@ public:
 	PluginClientThread(PluginClient *client);
 	~PluginClientThread();
 	void run();
-	
+
 	friend class PluginClient;
 
 	BC_WindowBase* get_window();
@@ -211,7 +211,7 @@ public:
 
 	friend class PluginClientThread;
 	friend class PluginClientWindow;
-	
+
 // Queries for the plugin server.
 	virtual int is_realtime();
 	virtual int is_audio();
@@ -295,7 +295,7 @@ public:
 	virtual int plugin_process_loop(VFrame **buffers, int64_t &write_length) { return 1; };
 	virtual int plugin_process_loop(Samples **buffers, int64_t &write_length) { return 1; };
 // get parameters depending on video or audio
-	virtual int init_realtime_parameters();     
+	virtual int init_realtime_parameters();
 // release objects which are required after playback stops
 	virtual void render_stop() {};
 	int get_gui_status();
@@ -307,11 +307,11 @@ public:
 // Get the directory for plugins
 	char* get_plugin_dir();
 
-// Return keyframe objects.  The position in the resulting object 
+// Return keyframe objects.  The position in the resulting object
 // is relative to the EDL rate.  This is the only way to avoid copying the
 // data for every frame.
 // If the result is the default keyframe, the keyframe's position is 0.
-// position - relative to EDL rate or local rate to allow simple 
+// position - relative to EDL rate or local rate to allow simple
 //     passing of get_source_position.
 //     If -1 the tracking position in the edl is used.
 // is_local - if 1, the position is converted to the EDL rate.
@@ -323,7 +323,7 @@ public:
 // When this plugin is adjusted, propogate parameters back to EDL and virtual
 // console.  This gets a keyframe from the EDL, with the position set to the
 // EDL tracking position.
-	int send_configure_change();                            
+	int send_configure_change();
 
 
 // Called from process_buffer
@@ -343,7 +343,7 @@ public:
 // rate.  For others it's the start of the EDL selection in the EDL rate.
 	int64_t get_source_start();
 
-// Convert the position relative to the requested rate to the position 
+// Convert the position relative to the requested rate to the position
 // relative to the EDL rate.  If the argument is < 0, it is not changed.
 // Used for interpreting keyframes.
 	virtual int64_t local_to_edl(int64_t position);
@@ -403,9 +403,9 @@ public:
 
 
 // Non realtime operations for signal processors.
-	virtual int plugin_start_loop(int64_t start, 
-		int64_t end, 
-		int64_t buffer_size, 
+	virtual int plugin_start_loop(int64_t start,
+		int64_t end,
+		int64_t buffer_size,
 		int total_buffers);
 	int plugin_stop_loop();
 	int plugin_process_loop();
@@ -430,7 +430,7 @@ public:
 // Extension of plugin_run for derived plugins
 	virtual int plugin_command_derived(int plugin_command) { return 0; };
 	int plugin_get_range();
-	int plugin_init_realtime(int realtime_priority, 
+	int plugin_init_realtime(int realtime_priority,
 		int total_in_buffers,
 		int buffer_size);
 
@@ -468,7 +468,7 @@ public:
 
 
 // communication convenience routines for the base class
-	int stop_gui_client();     
+	int stop_gui_client();
 	int save_data_client();
 	int load_data_client();
 	int set_string_client(char *string);                // set the string identifying the plugin
@@ -477,7 +477,7 @@ public:
 // ================================= Buffers ===============================
 
 // number of double buffers for each channel
-	ArrayList<int> double_buffers_in;    
+	ArrayList<int> double_buffers_in;
 	ArrayList<int> double_buffers_out;
 // When arming buffers need to know the offsets in all the buffers and which
 // double buffers for each channel before rendering.
@@ -500,7 +500,7 @@ public:
 
 	int show_initially;             // set to show a realtime plugin initially
 // range in project for processing
-	int64_t start, end;                
+	int64_t start, end;
 	int interactive;                // for the progress bar plugin
 	int success;
 	int total_out_buffers;          // total send buffers allocated by the server
@@ -509,9 +509,9 @@ public:
 
 // These give the largest fragment the plugin is expected to handle.
 // size of a send buffer to the server
-	int64_t out_buffer_size;  
+	int64_t out_buffer_size;
 // size of a recieve buffer from the server
-	int64_t in_buffer_size;   
+	int64_t in_buffer_size;
 
 
 
@@ -532,7 +532,7 @@ public:
 // it's the transition length.  Relative to the requested rate.
 	int64_t total_len;
 // Total number of processors available - 1
-	int smp;  
+	int smp;
 	PluginServer *server;
 	BC_Hash *defaults;
 	PluginClientThread *thread;

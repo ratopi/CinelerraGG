@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -61,12 +61,12 @@ int ResampleFraction::handle_event()
 
 
 ResampleWindow::ResampleWindow(ResampleEffect *plugin, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Resample"), 
+ : BC_Window(_(PROGRAM_NAME ": Resample"),
  				x - 160,
 				y - 75,
- 				320, 
-				150, 
-				320, 
+ 				320,
+				150,
+				320,
 				150,
 				0,
 				0,
@@ -104,9 +104,9 @@ int ResampleResample::read_samples(Samples *buffer, int64_t start, int64_t len)
 {
 //printf("ResampleResample::read_samples %d %lld\n", __LINE__, len);
 
-	return plugin->read_samples(buffer, 
-		0, 
-		start + plugin->get_source_start(), 
+	return plugin->read_samples(buffer,
+		0,
+		start + plugin->get_source_start(),
 		len);
 }
 
@@ -139,7 +139,7 @@ int ResampleEffect::get_parameters()
 	ResampleWindow window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y());
 	window.create_objects();
 	int result = window.run_window();
-	
+
 	return result;
 }
 
@@ -175,7 +175,7 @@ int ResampleEffect::start_loop()
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, "%s...", plugin_title());
-		progress = start_progress(string, 
+		progress = start_progress(string,
 			(int64_t)((double)(PluginClient::end - PluginClient::start) / scale));
 	}
 
@@ -206,14 +206,14 @@ int ResampleEffect::process_loop(Samples *buffer, int64_t &write_length)
 	int64_t predicted_total = (int64_t)((double)(PluginClient::end - PluginClient::start) / scale + 0.5);
 
 //	Samples *input = new Samples(size);
-	
+
 //	read_samples(input, 0, current_position, size);
 //	current_position += size;
 
 	resample->resample(buffer,
 		PluginAClient::out_buffer_size,
-		1000000, 
-		(int)(1000000.0 / scale), 
+		1000000,
+		(int)(1000000.0 / scale),
 		total_written,
 		PLAY_FORWARD);
 
@@ -226,31 +226,31 @@ int ResampleEffect::process_loop(Samples *buffer, int64_t &write_length)
 	total_written += write_length;
 //printf("ResampleEffect::process_loop %d %lld %f\n", __LINE__, write_length, scale);
 
-// 	resample->resample_chunk(input, 
-// 		size, 
-// 		1000000, 
-// 		(int)(1000000.0 / scale), 
+// 	resample->resample_chunk(input,
+// 		size,
+// 		1000000,
+// 		(int)(1000000.0 / scale),
 // 		0);
-// 
-// // 
+//
+// //
 // 	if(resample->get_output_size(0))
 // 	{
 // 		int64_t output_size = resample->get_output_size(0);
-// 
+//
 // // 		if(output_size)
 // 		{
 // 			total_written += output_size;
 // 		}
-// 
+//
 // // // Trim output to predicted length of stretched selection.
 // 		if(total_written > predicted_total)
 // 		{
 // 			output_size -= total_written - predicted_total;
 // 			result = 1;
 // 		}
-// 
+//
 // // 		resample->read_output(buffer, 0, output_size);
-// 
+//
 // // 		write_length = output_size;
 // 	}
 

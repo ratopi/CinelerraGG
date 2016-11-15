@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -43,10 +43,10 @@ public:
 
 	void copy_from(YUVConfig &src);
 	int equivalent(YUVConfig &src);
-	void interpolate(YUVConfig &prev, 
-		YUVConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(YUVConfig &prev,
+		YUVConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 
 	float y, u, v;
@@ -118,10 +118,10 @@ int YUVConfig::equivalent(YUVConfig &src)
 	return EQUIV(y, src.y) && EQUIV(u, src.u) && EQUIV(v, src.v);
 }
 
-void YUVConfig::interpolate(YUVConfig &prev, 
-	YUVConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void YUVConfig::interpolate(YUVConfig &prev,
+	YUVConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -140,13 +140,13 @@ void YUVConfig::interpolate(YUVConfig &prev,
 #define MAXVALUE 100
 
 YUVLevel::YUVLevel(YUVEffect *plugin, float *output, int x, int y)
- : BC_FSlider(x, 
+ : BC_FSlider(x,
 			y,
 			0,
-			200, 
-			200, 
-			-MAXVALUE, 
-			MAXVALUE, 
+			200,
+			200,
+			-MAXVALUE,
+			MAXVALUE,
 			*output)
 {
 	this->plugin = plugin;
@@ -162,11 +162,11 @@ int YUVLevel::handle_event()
 
 
 YUVWindow::YUVWindow(YUVEffect *plugin)
- : PluginClientWindow(plugin, 
-	260, 
-	100, 
-	260, 
-	100, 
+ : PluginClientWindow(plugin,
+	260,
+	100,
+	260,
+	100,
 	0)
 {
 	this->plugin = plugin;
@@ -199,15 +199,15 @@ void YUVWindow::create_objects()
 YUVEffect::YUVEffect(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 }
 YUVEffect::~YUVEffect()
 {
-	
+
 }
 
 const char* YUVEffect::plugin_title() { return _("YUV"); }
-int YUVEffect::is_realtime() { return 1; } 
+int YUVEffect::is_realtime() { return 1; }
 
 
 NEW_WINDOW_MACRO(YUVEffect, YUVWindow)
@@ -334,7 +334,7 @@ static YUV yuv_static;
 int YUVEffect::process_realtime(VFrame *input, VFrame *output)
 {
 	load_configuration();
-	
+
 	if(EQUIV(config.y, 0) && EQUIV(config.u, 0) && EQUIV(config.v, 0))
 	{
 		if(input->get_rows()[0] != output->get_rows()[0])

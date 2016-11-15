@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <math.h>
@@ -49,7 +49,7 @@ REGISTER_PLUGIN(HistogramMain)
 HistogramMain::HistogramMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
@@ -67,7 +67,7 @@ HistogramMain::HistogramMain(PluginServer *server)
 
 HistogramMain::~HistogramMain()
 {
-	
+
 	for(int i = 0; i < HISTOGRAM_MODES;i++)
 	{
 		delete [] lookup[i];
@@ -113,7 +113,7 @@ void HistogramMain::update_gui()
 	{
 		thread->window->lock_window("HistogramMain::update_gui");
 		int reconfigure = load_configuration();
-		if(reconfigure) 
+		if(reconfigure)
 		{
 			HistogramWindow *window = (HistogramWindow *)thread->window;
 			window->update(0);
@@ -235,7 +235,7 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 				if(current_input_mode < HISTOGRAM_MODES)
 				{
 					HistogramPoints *points = &config.points[current_input_mode];
-					while(points->last) 
+					while(points->last)
 						delete points->last;
 					while(!result)
 					{
@@ -252,9 +252,9 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 								points->insert(
 									input.tag.get_property("X", 0.0),
 									input.tag.get_property("Y", 0.0));
-								points->last->gradient = 
+								points->last->gradient =
 									input.tag.get_property("GRADIENT", 1.0);
-								points->last->xoffset_left = 
+								points->last->xoffset_left =
 									input.tag.get_property("XOFFSET_LEFT", -0.02);
 								points->last->xoffset_right =
 									input.tag.get_property("XOFFSET_RIGHT", 0.02);
@@ -272,7 +272,7 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 
 }
 
-float HistogramMain::calculate_linear(float input, 
+float HistogramMain::calculate_linear(float input,
 	int subscript,
 	int use_value)
 {
@@ -332,7 +332,7 @@ float HistogramMain::calculate_linear(float input,
 
 
 		if(!EQUIV(x2 - x1, 0))
-		{	
+		{
 		  if (config.smoothMode == HISTOGRAM_LINEAR)
 			output = (input - x1) * (y2 - y1) / (x2 - x1) + y1;
 		  else if (config.smoothMode == HISTOGRAM_POLYNOMINAL)
@@ -554,13 +554,13 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 			case BC_RGB888:
 			case BC_RGBA8888:
 				for(i = 0; i < 0x100; i++)
-					lookup[subscript][i] = 
+					lookup[subscript][i] =
 						(int)(calculate_smooth((float)i / 0xff, subscript) * 0xff);
 				break;
 // All other integer colormodels are converted to 16 bit RGB
 			default:
 				for(i = 0; i < 0x10000; i++)
-					lookup[subscript][i] = 
+					lookup[subscript][i] =
 						(int)(calculate_smooth((float)i / 0xffff, subscript) * 0xffff);
 				break;
 		}
@@ -572,7 +572,7 @@ HistogramPackage::HistogramPackage()
 {
 }
 
-HistogramUnit::HistogramUnit(HistogramEngine *server, 
+HistogramUnit::HistogramUnit(HistogramEngine *server,
 	HistogramMain *plugin)
  : LoadClient(server)
 {
@@ -859,8 +859,8 @@ void HistogramUnit::process_package(LoadPackage *package)
 
 
 
-HistogramEngine::HistogramEngine(HistogramMain *plugin, 
-	int total_clients, 
+HistogramEngine::HistogramEngine(HistogramMain *plugin,
+	int total_clients,
 	int total_packages)
  : LoadServer(total_clients, total_packages)
 {

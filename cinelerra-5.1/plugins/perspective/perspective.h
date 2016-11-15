@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <math.h>
@@ -45,10 +45,10 @@ public:
 
 	int equivalent(PerspectiveConfig &that);
 	void copy_from(PerspectiveConfig &that);
-	void interpolate(PerspectiveConfig &prev, 
-		PerspectiveConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(PerspectiveConfig &prev,
+		PerspectiveConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 
 	float x1, y1, x2, y2, x3, y3, x4, y4;
@@ -63,9 +63,9 @@ public:
 class PerspectiveCanvas : public BC_SubWindow
 {
 public:
-	PerspectiveCanvas(PerspectiveMain *plugin, 
-		int x, 
-		int y, 
+	PerspectiveCanvas(PerspectiveMain *plugin,
+		int x,
+		int y,
 		int w,
 		int h);
 	int button_press_event();
@@ -93,8 +93,8 @@ class PerspectiveCoord : public BC_TumbleTextBox
 {
 public:
 	PerspectiveCoord(PerspectiveWindow *gui,
-		PerspectiveMain *plugin, 
-		int x, 
+		PerspectiveMain *plugin,
+		int x,
 		int y,
 		float value,
 		int is_x);
@@ -106,8 +106,8 @@ public:
 class PerspectiveReset : public BC_GenericButton
 {
 public:
-	PerspectiveReset(PerspectiveMain *plugin, 
-		int x, 
+	PerspectiveReset(PerspectiveMain *plugin,
+		int x,
 		int y);
 	int handle_event();
 	PerspectiveMain *plugin;
@@ -116,8 +116,8 @@ public:
 class PerspectiveMode : public BC_Radial
 {
 public:
-	PerspectiveMode(PerspectiveMain *plugin, 
-		int x, 
+	PerspectiveMode(PerspectiveMain *plugin,
+		int x,
 		int y,
 		int value,
 		char *text);
@@ -129,8 +129,8 @@ public:
 class PerspectiveDirection : public BC_Radial
 {
 public:
-	PerspectiveDirection(PerspectiveMain *plugin, 
-		int x, 
+	PerspectiveDirection(PerspectiveMain *plugin,
+		int x,
 		int y,
 		int value,
 		char *text);
@@ -150,13 +150,13 @@ public:
 	void update_canvas();
 	void update_mode();
 	void update_coord();
-	void calculate_canvas_coords(int &x1, 
-		int &y1, 
-		int &x2, 
-		int &y2, 
-		int &x3, 
-		int &y3, 
-		int &x4, 
+	void calculate_canvas_coords(int &x1,
+		int &y1,
+		int &x2,
+		int &y2,
+		int &x3,
+		int &y3,
+		int &x4,
 		int &y4);
 
 	PerspectiveCanvas *canvas;

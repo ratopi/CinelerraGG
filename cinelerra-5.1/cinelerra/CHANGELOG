@@ -18,7 +18,7 @@ Translation in screencapture recording implemented.
 
 AVI parameter editing box.
 
-Drag and drop of assets during an index build doesn't lock up. 
+Drag and drop of assets during an index build doesn't lock up.
 Dragging mixtures of audio and video works better.  Better handling of
 shared effects which are off.
 
@@ -72,7 +72,7 @@ B&W.
 
 12/16/01
 
-Moved all OpenDivx support to the encore50 derivative of the encoder. 
+Moved all OpenDivx support to the encore50 derivative of the encoder.
 This appears to do everything that the encore2 derivative could do at
 equal or lesser reliability.
 
@@ -170,9 +170,9 @@ control memory corruption.
 1/4/02
 
 Credit for official Microsoft software even though there isn't any
-official Microsoft software. 
+official Microsoft software.
 
-Records to DV again but not under kernels after 2.4.7.  
+Records to DV again but not under kernels after 2.4.7.
 
 New audio effects:
 Tone generator
@@ -195,7 +195,7 @@ Swap channels
 
 New audio effects:
 Denoise
-Parametric EQ using fast fourier transform.  This isn't standard but 
+Parametric EQ using fast fourier transform.  This isn't standard but
 it gives real gaussian curves.
 Spectrogram
 Time stretch
@@ -275,10 +275,10 @@ Invert audio
 Progress windows really cancel instead of just letting you press the
 button.
 Status bar shows how long something took when it finishes.
-Removed Send and Recieve options from effects.  It was never needed and it 
+Removed Send and Recieve options from effects.  It was never needed and it
 complicated the use of variable track sizes.
 
-First stage of making width and height specific to tracks and renamed 
+First stage of making width and height specific to tracks and renamed
 projector size to canvas size.
 More interpolation for effects.
 Second stage of titler.
@@ -334,7 +334,7 @@ lightened but mind you, the heroine background is a permanent feature.
 Latest seeking issue fixed in libmpeg3.  Looking for ways to shift
 audio based on the pts.
 Compositor window tumblers work better.
-More verbose overlays for camera, projector, and output regions, making 
+More verbose overlays for camera, projector, and output regions, making
 it easier to visualize the compositing pipeline.
 Easier to use magnifying glass.
 Middle mouse button dragging in CWindow works.
@@ -447,7 +447,7 @@ Moving out guicast images.  Implementing defaulttheme and microtheme.
 
 Consolidated audio and video settings into a format dialog.
 Made XVideo a separate driver.
-Continued improvements of defaulttheme.  
+Continued improvements of defaulttheme.
 Draws MWindow BG and copies top background instead of several MWindow drawing calls.
 
 
@@ -541,7 +541,7 @@ Synthesizer locks up less.
 Libmpeg3 needs only 1 include path instead of 5000.
 MPEG audio decoding 75% reimplemented for use in Quicktime.
 AC3 reimplemented using liba52.
-The mpeg3_layer_t structure handles mp2 and mp3 decoding separate 
+The mpeg3_layer_t structure handles mp2 and mp3 decoding separate
 from libmpeg3 on a frame basis.
 The mpeg3_ac3_t structure handles ac3 decoding on a frame basis.
 The mpeg3_pcm_t handles pcm decoding.  PCM is repacketized by the demuxer.
@@ -555,7 +555,7 @@ Zoombar clamps more selection values.
 
 5/3/02
 
-Microsoft MPEG-4 and MP3 encoding in Quicktime, AVI edition.  
+Microsoft MPEG-4 and MP3 encoding in Quicktime, AVI edition.
 	100% Readable by Cinelerra and Xine but not by Microsoft.
 	Either audio or video plays back in Windows but not both.
 Several Quicktime frame rates changed to double.
@@ -666,7 +666,7 @@ Create clip with just in or out point creates something of positive length.
 Create clip with no in or out point takes the entire length in VWindow.
 Labels enabled in VWindow.
 Overwrite doesn't shift effects or labels.
-Overwrite overwrites the region between in and out of in and out are different 
+Overwrite overwrites the region between in and out of in and out are different
 but overwrites its own length if in and out are identical.
 
 Shifting out point in doesn't delete transitions.
@@ -1029,7 +1029,7 @@ Change asset path updates brender and index file status.
 Transition drop on CWindow.
 Changing video play patch doesn't freeze brender permanently.
 Swap channels generates correct output.
-Shared synthesis effects cause the sharing tracks to 
+Shared synthesis effects cause the sharing tracks to
 play back instead of just the owning track.
 Quicktime recovery utility improved.
 Memory leaks in FileVorbis::check_sig and AssetPicon::create_objects removed.
@@ -1194,7 +1194,7 @@ have no effect.
 static variables in BC_WindowBase prevent different windows in the same
 application from having different fonts.
 
-Deletion of pointers in AWindow, CWindow, VWindow, MWindow requires too 
+Deletion of pointers in AWindow, CWindow, VWindow, MWindow requires too
 much maintenance.
 
 Buttons in AWindow may be used in the future and should not be deleted.
@@ -1336,12 +1336,12 @@ titler-stroke2.diff applied but disabled due to SMP crash. (crush)
 quicktime_leak.diff applied
 small-clean2.diff file may be closed and reopened without calling destructor.
 
-patchbay_free.diff applied but the real problem was PatchBay::update() 
+patchbay_free.diff applied but the real problem was PatchBay::update()
 	dereferenced non-existent tracks to get the ID.
 
 
 perspective_alpha_stretch.diff applied
-virtualconsole_leak.diff applied but the default destructors seem to be 
+virtualconsole_leak.diff applied but the default destructors seem to be
 	getting called.
 dvlib_bug_workaround.diff applied
 debian_new_dvlib_compile.diff applied
@@ -1354,7 +1354,7 @@ paste-outpoints.diff needs testing
 
 paste-outpoints.diff rejected.  Broke other paste behavior.  The paste
 behavior is not a uniform case but the result of trying behaviors on a
-case by case basis and deciding which behavior is the most convenient. 
+case by case basis and deciding which behavior is the most convenient.
 Most of the time what's convenient is not the most scientific.
 
 

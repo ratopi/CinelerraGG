@@ -135,7 +135,7 @@ enum {
   BLURAY_AUDIO_FORMAT_MONO = 1,
   BLURAY_AUDIO_FORMAT_STEREO = 3,
   BLURAY_AUDIO_FORMAT_MULTI_CHAN = 6,
-  BLURAY_AUDIO_FORMAT_COMBO = 12,   // Stereo ac3/dts, 
+  BLURAY_AUDIO_FORMAT_COMBO = 12,   // Stereo ac3/dts,
 
   BLURAY_AUDIO_RATE_48 = 1,
   BLURAY_AUDIO_RATE_96 = 4,
@@ -1345,7 +1345,7 @@ pb_obj::set_bdj(char *nm, int pt)
   bdj_name = cstrdup(nm);
 }
 
-void 
+void
 pb_obj::write_hdmv_obj(int id_ref)
 {
   bs.write(pb_typ, 2);
@@ -2453,7 +2453,7 @@ static int bd_aspect_ratio(int w, int h, double ratio)
   double aspect = (w * ratio) / h;
   if( fabs(aspect-1.333) < 0.01 ) return BLURAY_ASPECT_RATIO_4_3;
   if( fabs(aspect-1.777) < 0.01 ) return BLURAY_ASPECT_RATIO_16_9;
-  return w == 720 ? BLURAY_ASPECT_RATIO_4_3 : BLURAY_ASPECT_RATIO_16_9; 
+  return w == 720 ? BLURAY_ASPECT_RATIO_4_3 : BLURAY_ASPECT_RATIO_16_9;
   fprintf(stderr, "unknown bluray aspect ratio %5.3f\n",aspect);
   exit(1);
 }
@@ -2676,7 +2676,7 @@ Media::compose()
   mp->cmds.append(cmd);
   mov.movies.append(mp); // BREAK
 
-  
+
   for( int ii=0; ii<size(); ++ii ) {
     mp = new movie_obj();
     mp->resume_intention_flag = 1;

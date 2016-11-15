@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef PHOTOSCALE_H
@@ -41,10 +41,10 @@ class PhotoScaleWindow;
 class PhotoScaleSizeText : public BC_TextBox
 {
 public:
-	PhotoScaleSizeText(PhotoScaleMain *plugin, 
-		PhotoScaleWindow *gui, 
-		int x, 
-		int y, 
+	PhotoScaleSizeText(PhotoScaleMain *plugin,
+		PhotoScaleWindow *gui,
+		int x,
+		int y,
 		int w,
 		int *output);
 	~PhotoScaleSizeText();
@@ -57,9 +57,9 @@ public:
 class PhotoScaleFile : public BC_Radial
 {
 public:
-	PhotoScaleFile(PhotoScaleMain *plugin, 
-		PhotoScaleWindow *gui, 
-		int x, 
+	PhotoScaleFile(PhotoScaleMain *plugin,
+		PhotoScaleWindow *gui,
+		int x,
 		int y);
 	int handle_event();
 	PhotoScaleMain *plugin;
@@ -69,9 +69,9 @@ public:
 class PhotoScaleScan : public BC_Radial
 {
 public:
-	PhotoScaleScan(PhotoScaleMain *plugin, 
-		PhotoScaleWindow *gui, 
-		int x, 
+	PhotoScaleScan(PhotoScaleMain *plugin,
+		PhotoScaleWindow *gui,
+		int x,
 		int y);
 	int handle_event();
 	PhotoScaleMain *plugin;
@@ -83,7 +83,7 @@ class PhotoScaleWindow : public PluginClientWindow
 public:
 	PhotoScaleWindow(PhotoScaleMain *plugin);
 	~PhotoScaleWindow();
-	
+
 	void create_objects();
 
 	PhotoScaleMain *plugin;
@@ -100,9 +100,9 @@ public:
 class PhotoScaleSwapExtents : public BC_Button
 {
 public:
-	PhotoScaleSwapExtents(PhotoScaleMain *plugin, 
-		PhotoScaleWindow *gui, 
-		int x, 
+	PhotoScaleSwapExtents(PhotoScaleMain *plugin,
+		PhotoScaleWindow *gui,
+		int x,
 		int y);
 	int handle_event();
 	PhotoScaleMain *plugin;
@@ -122,10 +122,10 @@ public:
 
 	int equivalent(PhotoScaleConfig &that);
 	void copy_from(PhotoScaleConfig &that);
-	void interpolate(PhotoScaleConfig &prev, 
-		PhotoScaleConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(PhotoScaleConfig &prev,
+		PhotoScaleConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 
 // Output size
@@ -144,12 +144,12 @@ class PhotoScaleEngine : public LoadServer
 public:
 	PhotoScaleEngine(PhotoScaleMain *plugin, int cpus);
 	~PhotoScaleEngine();
-	
+
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
 	PhotoScaleMain *plugin;
-	
+
 	int top_border;
 	int bottom_border;
 	int left_border;

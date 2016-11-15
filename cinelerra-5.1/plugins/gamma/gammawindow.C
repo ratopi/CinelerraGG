@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -34,32 +34,32 @@
 
 GammaWindow::GammaWindow(GammaMain *client)
  : PluginClientWindow(client,
-	400, 
-	380, 
-	400, 
-	380, 
+	400,
+	380,
+	400,
+	380,
 	0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 void GammaWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(histogram = new BC_SubWindow(x, 
-		y, 
-		get_w() - x * 2, 
-		get_h() - 180, 
+	add_subwindow(histogram = new BC_SubWindow(x,
+		y,
+		get_w() - x * 2,
+		get_h() - 180,
 		WHITE));
 	y += histogram->get_h() + 10;
 
 	BC_Title *title;
 	add_tool(title = new BC_Title(x, y, _("Maximum:")));
 	x += title->get_w() + 10;
-	add_tool(max_slider = new MaxSlider(client, 
-		this, 
-		x, 
-		y, 
+	add_tool(max_slider = new MaxSlider(client,
+		this,
+		x,
+		y,
 		190));
 	x += max_slider->get_w() + 10;
 	add_tool(max_text = new MaxText(client,
@@ -74,10 +74,10 @@ void GammaWindow::create_objects()
 	y += automatic->get_h() + 10;
 	add_tool(title = new BC_Title(x, y, _("Gamma:")));
 	x += title->get_w() + 10;
-	add_tool(gamma_slider = new GammaSlider(client, 
-		this, 
-		x, 
-		y, 
+	add_tool(gamma_slider = new GammaSlider(client,
+		this,
+		x,
+		y,
 		190));
 	x += gamma_slider->get_w() + 10;
 	add_tool(gamma_text = new GammaText(client,
@@ -139,9 +139,9 @@ void GammaWindow::update_histogram()
 			}
 
 			int h = (int)(log(accum) / log(max) * histogram->get_h());
-			histogram->draw_line(i, 
-				histogram->get_h(), 
-				i, 
+			histogram->draw_line(i,
+				histogram->get_h(),
+				i,
 				histogram->get_h() - h);
 		}
 	}
@@ -165,18 +165,18 @@ void GammaWindow::update_histogram()
 
 
 
-MaxSlider::MaxSlider(GammaMain *client, 
-	GammaWindow *gui, 
-	int x, 
+MaxSlider::MaxSlider(GammaMain *client,
+	GammaWindow *gui,
+	int x,
 	int y,
 	int w)
- : BC_FSlider(x, 
- 	y, 
-	0, 
-	w, 
+ : BC_FSlider(x,
+ 	y,
+	0,
 	w,
-	0.0, 
-	1.0, 
+	w,
+	0.0,
+	1.0,
 	client->config.max)
 {
 	this->client = client;
@@ -212,18 +212,18 @@ int MaxText::handle_event()
 	return 1;
 }
 
-GammaSlider::GammaSlider(GammaMain *client, 
-	GammaWindow *gui, 
-	int x, 
+GammaSlider::GammaSlider(GammaMain *client,
+	GammaWindow *gui,
+	int x,
 	int y,
 	int w)
- : BC_FSlider(x, 
- 	y, 
-	0, 
-	w, 
+ : BC_FSlider(x,
+ 	y,
+	0,
 	w,
-	0.0, 
-	1.0, 
+	w,
+	0.0,
+	1.0,
 	client->config.gamma)
 {
 	this->client = client;
@@ -260,9 +260,9 @@ int GammaText::handle_event()
 }
 
 GammaAuto::GammaAuto(GammaMain *client, int x, int y)
- : BC_CheckBox(x, 
- 	y, 
-	client->config.automatic, 
+ : BC_CheckBox(x,
+ 	y,
+	client->config.automatic,
 	_("Automatic"))
 {
 	this->plugin = client;
@@ -289,9 +289,9 @@ int GammaPlot::handle_event()
 }
 
 
-GammaColorPicker::GammaColorPicker(GammaMain *plugin, 
-	GammaWindow *gui, 
-	int x, 
+GammaColorPicker::GammaColorPicker(GammaMain *plugin,
+	GammaWindow *gui,
+	int x,
 	int y)
  : BC_GenericButton(x, y, _("Use Color Picker"))
 {
@@ -311,7 +311,7 @@ int GammaColorPicker::handle_event()
 	gui->max_text->update(plugin->config.max);
 	gui->max_slider->update(plugin->config.max);
 	plugin->send_configure_change();
-	return 1;	
+	return 1;
 }
 
 

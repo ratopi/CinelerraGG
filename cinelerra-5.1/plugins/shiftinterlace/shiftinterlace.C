@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -49,10 +49,10 @@ public:
 
 	int equivalent(ShiftInterlaceConfig &that);
 	void copy_from(ShiftInterlaceConfig &that);
-	void interpolate(ShiftInterlaceConfig &prev, 
-		ShiftInterlaceConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(ShiftInterlaceConfig &prev,
+		ShiftInterlaceConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 
 
@@ -109,7 +109,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 
 
-	void shift_row(VFrame *input_frame, 
+	void shift_row(VFrame *input_frame,
 		VFrame *output_frame,
 		int offset,
 		int row);
@@ -147,10 +147,10 @@ void ShiftInterlaceConfig::copy_from(ShiftInterlaceConfig &that)
 	even_offset = that.even_offset;
 }
 
-void ShiftInterlaceConfig::interpolate(ShiftInterlaceConfig &prev, 
-		ShiftInterlaceConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+void ShiftInterlaceConfig::interpolate(ShiftInterlaceConfig &prev,
+		ShiftInterlaceConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -167,16 +167,16 @@ void ShiftInterlaceConfig::interpolate(ShiftInterlaceConfig &prev,
 
 ShiftInterlaceWindow::ShiftInterlaceWindow(ShiftInterlaceMain *plugin)
  : PluginClientWindow(plugin,
-	310, 
-	100, 
-	310, 
-	100, 
+	310,
+	100,
+	310,
+	100,
 	0)
 {
 	this->plugin = plugin;
 }
 
-	
+
 void ShiftInterlaceWindow::create_objects()
 {
 	int x = 10, y = 10;
@@ -250,12 +250,12 @@ int ShiftInterlaceEven::handle_event()
 ShiftInterlaceMain::ShiftInterlaceMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 }
 
 ShiftInterlaceMain::~ShiftInterlaceMain()
 {
-	
+
 }
 
 
@@ -314,7 +314,7 @@ void ShiftInterlaceMain::read_data(KeyFrame *keyframe)
 
 void ShiftInterlaceMain::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		load_configuration();
 		thread->window->lock_window();
@@ -376,7 +376,7 @@ void ShiftInterlaceMain::update_gui()
 }
 
 
-void ShiftInterlaceMain::shift_row(VFrame *input_frame, 
+void ShiftInterlaceMain::shift_row(VFrame *input_frame,
 	VFrame *output_frame,
 	int offset,
 	int row)

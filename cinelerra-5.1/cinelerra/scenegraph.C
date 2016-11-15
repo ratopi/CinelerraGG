@@ -1,21 +1,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 
@@ -110,8 +110,8 @@ int SceneNode::get_memory_usage()
 void SceneNode::render(VFrame *frame, int do_camera)
 {
 	const int debug = 0;
-	if(debug) printf("SceneNode::render %d this=%p title=%s image=%p x=%f y=%f frame=%p do_camera=%d\n", 
-		__LINE__, 
+	if(debug) printf("SceneNode::render %d this=%p title=%s image=%p x=%f y=%f frame=%p do_camera=%d\n",
+		__LINE__,
 		this,
 		title,
 		image,
@@ -129,25 +129,25 @@ void SceneNode::render(VFrame *frame, int do_camera)
 		float sx = this->sx;
 		float sy = this->sy;
 		float ry = this->ry;
-		if(parent) 
+		if(parent)
 			parent->transform_coord(&x, &y, &sx, &sy, &ry);
 
-		if(do_camera) scene->transform_camera(frame, 
-			&x, 
-			&y, 
-			&sx, 
-			&sy, 
+		if(do_camera) scene->transform_camera(frame,
+			&x,
+			&y,
+			&sx,
+			&sy,
 			get_flip());
 
-		if(debug) printf("SceneNode::render %d at_y=%f\n", 
-			__LINE__, 
+		if(debug) printf("SceneNode::render %d at_y=%f\n",
+			__LINE__,
 			((SceneCamera*)scene->cameras.get(0))->at_y);
 
 // Render everything into a temporary, then overlay the temporary
 // 		if(!EQUIV(ry, 0) || get_flip())
 // 		{
-		temp = new VFrame(image->get_w(), 
-			image->get_h(), 
+		temp = new VFrame(image->get_w(),
+			image->get_h(),
 			image->get_color_model());
 //		}
 		if(debug) printf("SceneNode::render %d\n", __LINE__);
@@ -169,10 +169,10 @@ void SceneNode::render(VFrame *frame, int do_camera)
 		VFrame *src = temp;
 		if(!EQUIV(ry, 0))
 		{
-			src = temp2 = new VFrame(image->get_w(), 
-				image->get_h(), 
+			src = temp2 = new VFrame(image->get_w(),
+				image->get_h(),
 				image->get_color_model());
-			if(!scene->affine) scene->affine = 
+			if(!scene->affine) scene->affine =
 				new AffineEngine(scene->cpus, scene->cpus);
 			scene->affine->rotate(temp2,
 				temp,
@@ -184,8 +184,8 @@ void SceneNode::render(VFrame *frame, int do_camera)
 		if(get_flip())
 			src->flip_horiz();
 
-		if(debug) printf("SceneNode::render %d src=%p x=%f y=%f sx=%f sy=%f\n", 
-			__LINE__, 
+		if(debug) printf("SceneNode::render %d src=%p x=%f y=%f sx=%f sy=%f\n",
+			__LINE__,
 			src,
 			x,
 			y,
@@ -197,37 +197,37 @@ void SceneNode::render(VFrame *frame, int do_camera)
 
 		if(get_flip())
 		{
-			scene->overlayer->overlay(frame, 
-				src, 
-				0, 
-				0, 
-				image->get_w(), 
-				image->get_h(), 
-				frame->get_w() - x - image->get_w() * sx, 
-				y, 
-				frame->get_w() - x, 
-				y + image->get_h() * sy, 
+			scene->overlayer->overlay(frame,
+				src,
+				0,
+				0,
+				image->get_w(),
+				image->get_h(),
+				frame->get_w() - x - image->get_w() * sx,
+				y,
+				frame->get_w() - x,
+				y + image->get_h() * sy,
 				1,
 				TRANSFER_NORMAL,
 				NEAREST_NEIGHBOR);
 		}
 		else
 		{
-			if(debug) printf("SceneNode::render %d image=%p src=%p frame=%p\n", 
-				__LINE__, 
+			if(debug) printf("SceneNode::render %d image=%p src=%p frame=%p\n",
+				__LINE__,
 				image,
 				src,
 				frame);
-			scene->overlayer->overlay(frame, 
-				src, 
-				0, 
-				0, 
-				image->get_w(), 
-				image->get_h(), 
-				x, 
-				y, 
-				x + image->get_w() * sx, 
-				y + image->get_h() * sy, 
+			scene->overlayer->overlay(frame,
+				src,
+				0,
+				0,
+				image->get_w(),
+				image->get_h(),
+				x,
+				y,
+				x + image->get_w() * sx,
+				y + image->get_h() * sy,
 				1,
 				TRANSFER_NORMAL,
 				NEAREST_NEIGHBOR);
@@ -257,10 +257,10 @@ int SceneNode::get_flip()
 
 
 void SceneNode::transform_coord(
-	float *x, 
-	float *y, 
-	float *sx, 
-	float *sy, 
+	float *x,
+	float *y,
+	float *sx,
+	float *sy,
 	float *ry)
 {
 // Rotate it
@@ -273,7 +273,7 @@ void SceneNode::transform_coord(
 // 			pivot_x = image->get_w() / 2;
 // 			pivot_y = image->get_h() / 2;
 // 		}
-// 
+//
 // 		float rel_x = *x - pivot_x;
 // 		float rel_y = *y - pivot_y;
 // 		float angle = atan2(rel_y, rel_x);
@@ -371,7 +371,7 @@ void SceneGraph::render(VFrame *frame, int cpus)
 	const int debug = 0;
 	if(debug) printf("SceneGraph::render %d\n", __LINE__);
 	if(debug) dump();
-	
+
 	this->cpus = cpus;
 
 	for(int i = 0; i < nodes.size(); i++)
@@ -380,11 +380,11 @@ void SceneGraph::render(VFrame *frame, int cpus)
 	}
 }
 
-void SceneGraph::transform_camera(VFrame *frame, 
-	float *x, 
-	float *y, 
-	float *sx, 
-	float *sy, 
+void SceneGraph::transform_camera(VFrame *frame,
+	float *x,
+	float *y,
+	float *sx,
+	float *sy,
 	int flip)
 {
 	if(cameras.size())
@@ -468,7 +468,7 @@ void SceneCamera::dump(int indent)
 	PRINT_INDENT
 	printf("SceneCamera::dump %d this=%p\n", __LINE__, this);
 	PRINT_INDENT
-	printf("  at_x=%f at_y=%f at_z=%f scale=%f\n", 
+	printf("  at_x=%f at_y=%f at_z=%f scale=%f\n",
 		at_x,
 		at_y,
 		at_z,

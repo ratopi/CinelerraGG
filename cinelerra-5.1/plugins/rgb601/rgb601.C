@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -43,12 +43,12 @@ RGB601Config::RGB601Config()
 RGB601Main::RGB601Main(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 }
 
 RGB601Main::~RGB601Main()
 {
-	
+
 }
 
 const char* RGB601Main::plugin_title() { return _("RGB - 601"); }
@@ -118,7 +118,7 @@ void RGB601Main::read_data(KeyFrame *keyframe)
 		}
 	}
 
-	if(thread) 
+	if(thread)
 	{
 		((RGB601Window*)thread->window)->update();
 	}
@@ -208,7 +208,7 @@ void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
 {
 	int w = input_ptr->get_w();
 	int h = input_ptr->get_h();
-	
+
 	if(config.direction == 1)
 		switch(input_ptr->get_color_model())
 		{
@@ -289,9 +289,9 @@ int RGB601Main::process_buffer(VFrame *frame,
 // Set parameters for aggregation with previous or next effect.
 	frame->get_params()->update("RGB601_DIRECTION", config.direction);
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
 
@@ -308,7 +308,7 @@ int RGB601Main::process_buffer(VFrame *frame,
 		run_opengl();
 		return 0;
 	}
-	
+
 
 	create_table(frame);
 
@@ -324,28 +324,28 @@ int RGB601Main::process_buffer(VFrame *frame,
 int RGB601Main::handle_opengl()
 {
 #ifdef HAVE_GL
-	static const char *yuv_fwd_frag = 
+	static const char *yuv_fwd_frag =
 		"uniform sampler2D tex;\n"
 		"void main()\n"
 		"{\n"
 		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
 		"	gl_FragColor.r = gl_FragColor.r * 0.8588 + 0.0627;\n"
 		"}\n";
-	static const char *yuv_rev_frag = 
+	static const char *yuv_rev_frag =
 		"uniform sampler2D tex;\n"
 		"void main()\n"
 		"{\n"
 		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
 		"	gl_FragColor.r = gl_FragColor.r * 1.1644 - 0.0627;\n"
 		"}\n";
-	static const char *rgb_fwd_frag = 
+	static const char *rgb_fwd_frag =
 		"uniform sampler2D tex;\n"
 		"void main()\n"
 		"{\n"
 		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
 		"	gl_FragColor.rgb = gl_FragColor.rgb * vec3(0.8588, 0.8588, 0.8588) + vec3(0.0627, 0.0627, 0.0627);\n"
 		"}\n";
-	static const char *rgb_rev_frag = 
+	static const char *rgb_rev_frag =
 		"uniform sampler2D tex;\n"
 		"void main()\n"
 		"{\n"

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "affine.h"
@@ -154,10 +154,10 @@ void MotionConfig::copy_from(MotionConfig &that)
 	vertical_only = that.vertical_only;
 }
 
-void MotionConfig::interpolate(MotionConfig &prev, 
-	MotionConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void MotionConfig::interpolate(MotionConfig &prev,
+	MotionConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -275,7 +275,7 @@ void MotionMain::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("MotionMain::update_gui");
-			
+
 			char string[BCTEXTLEN];
 			sprintf(string, "%d", config.global_positions);
 			((MotionWindow*)thread->window)->global_search_positions->set_text(string);
@@ -427,7 +427,7 @@ void MotionMain::read_data(KeyFrame *keyframe)
 
 void MotionMain::allocate_temp(int w, int h, int color_model)
 {
-	if(temp_frame && 
+	if(temp_frame &&
 		(temp_frame->get_w() != w ||
 		temp_frame->get_h() != h))
 	{
@@ -446,7 +446,7 @@ void MotionMain::process_global()
 		PluginClient::get_project_smp() + 1);
 
 // Determine if frames changed
-	engine->scan_frame(current_global_ref, 
+	engine->scan_frame(current_global_ref,
 		prev_global_ref,
 		config.global_range_w,
 		config.global_range_h,
@@ -476,7 +476,7 @@ void MotionMain::process_global()
 		total_dy = (int64_t)total_dy * (100 - config.return_speed) / 100;
 		total_dx += engine->dx_result;
 		total_dy += engine->dy_result;
-// printf("MotionMain::process_global total_dx=%d engine->dx_result=%d\n", 
+// printf("MotionMain::process_global total_dx=%d engine->dx_result=%d\n",
 // total_dx,
 // engine->dx_result);
 	}
@@ -490,32 +490,32 @@ void MotionMain::process_global()
 // Clamp accumulation vector
 	if(config.magnitude < 100)
 	{
-		int block_w = (int64_t)config.global_block_w * 
+		int block_w = (int64_t)config.global_block_w *
 				current_global_ref->get_w() / 100;
-		int block_h = (int64_t)config.global_block_h * 
+		int block_h = (int64_t)config.global_block_h *
 				current_global_ref->get_h() / 100;
-		int block_x_orig = (int64_t)(config.block_x * 
-			current_global_ref->get_w() / 
+		int block_x_orig = (int64_t)(config.block_x *
+			current_global_ref->get_w() /
 			100);
 		int block_y_orig = (int64_t)(config.block_y *
-			current_global_ref->get_h() / 
+			current_global_ref->get_h() /
 			100);
 
 		int max_block_x = (int64_t)(current_global_ref->get_w() - block_x_orig) *
-			OVERSAMPLE * 
-			config.magnitude / 
+			OVERSAMPLE *
+			config.magnitude /
 			100;
 		int max_block_y = (int64_t)(current_global_ref->get_h() - block_y_orig) *
 			OVERSAMPLE *
-			config.magnitude / 
+			config.magnitude /
 			100;
-		int min_block_x = (int64_t)-block_x_orig * 
-			OVERSAMPLE * 
-			config.magnitude / 
+		int min_block_x = (int64_t)-block_x_orig *
+			OVERSAMPLE *
+			config.magnitude /
 			100;
-		int min_block_y = (int64_t)-block_y_orig * 
-			OVERSAMPLE * 
-			config.magnitude / 
+		int min_block_y = (int64_t)-block_y_orig *
+			OVERSAMPLE *
+			config.magnitude /
 			100;
 
 		CLAMP(total_dx, min_block_x, max_block_x);
@@ -523,7 +523,7 @@ void MotionMain::process_global()
 	}
 
 #ifdef DEBUG
-printf("MotionMain::process_global 2 total_dx=%.02f total_dy=%.02f\n", 
+printf("MotionMain::process_global 2 total_dx=%.02f total_dy=%.02f\n",
 (float)total_dx / OVERSAMPLE,
 (float)total_dy / OVERSAMPLE);
 #endif
@@ -571,7 +571,7 @@ printf("MotionMain::process_global 2 total_dx=%.02f total_dy=%.02f\n",
 
 	if(config.action_type != MotionScan::NOTHING)
 	{
-		if(!overlayer) 
+		if(!overlayer)
 			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
 		global_target_dst->clear_frame();
 		overlayer->overlay(global_target_dst,
@@ -601,7 +601,7 @@ void MotionMain::process_rotation()
 // Convert global target destination into rotation target source.
 	if(config.global)
 	{
-		if(!overlayer) 
+		if(!overlayer)
 			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
 		float dx;
 		float dy;
@@ -631,15 +631,15 @@ void MotionMain::process_rotation()
 			TRANSFER_REPLACE,
 			CUBIC_LINEAR);
 // Pivot is destination global position
-		block_x = (int)(prev_rotate_ref->get_w() * 
-			config.block_x / 
+		block_x = (int)(prev_rotate_ref->get_w() *
+			config.block_x /
 			100 +
-			(float)total_dx / 
+			(float)total_dx /
 			OVERSAMPLE);
-		block_y = (int)(prev_rotate_ref->get_h() * 
-			config.block_y / 
+		block_y = (int)(prev_rotate_ref->get_h() *
+			config.block_y /
 			100 +
-			(float)total_dy / 
+			(float)total_dy /
 			OVERSAMPLE);
 // Use the global target output as the rotation target input
 		rotate_target_src->copy_from(global_target_dst);
@@ -653,11 +653,11 @@ void MotionMain::process_rotation()
 	else
 	{
 // Pivot is fixed
-		block_x = (int)(prev_rotate_ref->get_w() * 
-			config.block_x / 
+		block_x = (int)(prev_rotate_ref->get_w() *
+			config.block_x /
 			100);
-		block_y = (int)(prev_rotate_ref->get_h() * 
-			config.block_y / 
+		block_y = (int)(prev_rotate_ref->get_h() *
+			config.block_y /
 			100);
 	}
 
@@ -665,11 +665,11 @@ void MotionMain::process_rotation()
 
 // Get rotation
 	if(!motion_rotate)
-		motion_rotate = new RotateScan(this, 
-			get_project_smp() + 1, 
+		motion_rotate = new RotateScan(this,
+			get_project_smp() + 1,
 			get_project_smp() + 1);
 
-	current_angle = motion_rotate->scan_frame(prev_rotate_ref, 
+	current_angle = motion_rotate->scan_frame(prev_rotate_ref,
 		current_rotate_ref,
 		block_x,
 		block_y);
@@ -751,25 +751,25 @@ printf("MotionMain::process_rotation total_angle=%f\n", total_angle);
 				if(config.global)
 				{
 // Use origin of global stabilize operation
-// 					rotate_engine->set_pivot((int)(rotate_target_dst->get_w() * 
-// 							config.block_x / 
+// 					rotate_engine->set_pivot((int)(rotate_target_dst->get_w() *
+// 							config.block_x /
 // 							100),
-// 						(int)(rotate_target_dst->get_h() * 
-// 							config.block_y / 
+// 						(int)(rotate_target_dst->get_h() *
+// 							config.block_y /
 // 							100));
-					rotate_engine->set_in_pivot((int)(rotate_target_dst->get_w() * 
-							config.block_x / 
+					rotate_engine->set_in_pivot((int)(rotate_target_dst->get_w() *
+							config.block_x /
 							100),
-						(int)(rotate_target_dst->get_h() * 
-							config.block_y / 
+						(int)(rotate_target_dst->get_h() *
+							config.block_y /
 							100));
-					rotate_engine->set_out_pivot((int)(rotate_target_dst->get_w() * 
-							config.block_x / 
+					rotate_engine->set_out_pivot((int)(rotate_target_dst->get_w() *
+							config.block_x /
 							100),
-						(int)(rotate_target_dst->get_h() * 
-							config.block_y / 
+						(int)(rotate_target_dst->get_h() *
+							config.block_y /
 							100));
-				
+
 				}
 				else
 				{
@@ -832,7 +832,7 @@ int MotionMain::process_buffer(VFrame **frame,
 	int color_model = frame[0]->get_color_model();
 	w = frame[0]->get_w();
 	h = frame[0]->get_h();
-	
+
 
 #ifdef DEBUG
 printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_position);
@@ -898,7 +898,7 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 		}
 
 // Only count motion since last keyframe
-		
+
 
 	}
 
@@ -908,12 +908,12 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 
 
 
-// printf("process_realtime %d %lld %lld\n", 
-// skip_current, 
-// previous_frame_number, 
+// printf("process_realtime %d %lld %lld\n",
+// skip_current,
+// previous_frame_number,
 // actual_previous_number);
 // Load match frame and reset vectors
-	int need_reload = !skip_current && 
+	int need_reload = !skip_current &&
 		(previous_frame_number != actual_previous_number ||
 		need_reconfigure);
 	if(need_reload)
@@ -950,7 +950,7 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 		if(!current_global_ref)
 			current_global_ref = new VFrame(w, h, color_model);
 
-// Global loads the current target frame into the src and 
+// Global loads the current target frame into the src and
 // writes it to the dst frame with desired translation.
 		if(!global_target_src)
 			global_target_src = new VFrame(w, h, color_model);
@@ -961,15 +961,15 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 // Load the global frames
 		if(need_reload)
 		{
-			read_frame(prev_global_ref, 
-				reference_layer, 
-				previous_frame_number, 
+			read_frame(prev_global_ref,
+				reference_layer,
+				previous_frame_number,
 				frame_rate);
 		}
 
-		read_frame(current_global_ref, 
-			reference_layer, 
-			start_position, 
+		read_frame(current_global_ref,
+			reference_layer,
+			start_position,
 			frame_rate);
 		read_frame(global_target_src,
 			target_layer,
@@ -994,7 +994,7 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 
 // The global target destination is copied to the rotation target source
 // then written to the rotation output with rotation.
-// The pivot for the rotation is the center of the search area 
+// The pivot for the rotation is the center of the search area
 // if we're tracking.
 // The pivot is fixed to the user position if we're compensating.
 			if(!rotate_target_src)
@@ -1007,7 +1007,7 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 // Rotation only
 	if(config.rotate)
 	{
-// Rotation reads the previous reference frame and compares it with current 
+// Rotation reads the previous reference frame and compares it with current
 // reference frame.
 		if(!prev_rotate_ref)
 			prev_rotate_ref = new VFrame(w, h, color_model);
@@ -1025,14 +1025,14 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 // Load the rotate frames
 		if(need_reload)
 		{
-			read_frame(prev_rotate_ref, 
-				reference_layer, 
-				previous_frame_number, 
+			read_frame(prev_rotate_ref,
+				reference_layer,
+				previous_frame_number,
 				frame_rate);
 		}
-		read_frame(current_rotate_ref, 
-			reference_layer, 
-			start_position, 
+		read_frame(current_rotate_ref,
+			reference_layer,
+			start_position,
 			frame_rate);
 		read_frame(rotate_target_src,
 			target_layer,
@@ -1124,11 +1124,11 @@ void MotionMain::draw_vectors(VFrame *frame)
 // End of vector is total accumulation.
 		if(config.tracking_object == MotionScan::TRACK_SINGLE)
 		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
+			global_x1 = (int64_t)(config.block_x *
+				w /
 				100);
 			global_y1 = (int64_t)(config.block_y *
-				h / 
+				h /
 				100);
 			global_x2 = global_x1 + total_dx / OVERSAMPLE;
 			global_y2 = global_y1 + total_dy / OVERSAMPLE;
@@ -1139,34 +1139,34 @@ void MotionMain::draw_vectors(VFrame *frame)
 // End of vector is current change.
 		if(config.tracking_object == MotionScan::PREVIOUS_SAME_BLOCK)
 		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
+			global_x1 = (int64_t)(config.block_x *
+				w /
 				100);
 			global_y1 = (int64_t)(config.block_y *
-				h / 
+				h /
 				100);
 			global_x2 = global_x1 + current_dx / OVERSAMPLE;
 			global_y2 = global_y1 + current_dy / OVERSAMPLE;
 		}
 		else
 		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
-				100 + 
-				(total_dx - current_dx) / 
+			global_x1 = (int64_t)(config.block_x *
+				w /
+				100 +
+				(total_dx - current_dx) /
 				OVERSAMPLE);
 			global_y1 = (int64_t)(config.block_y *
-				h / 
+				h /
 				100 +
 				(total_dy - current_dy) /
 				OVERSAMPLE);
-			global_x2 = (int64_t)(config.block_x * 
-				w / 
-				100 + 
-				total_dx / 
+			global_x2 = (int64_t)(config.block_x *
+				w /
+				100 +
+				total_dx /
 				OVERSAMPLE);
 			global_y2 = (int64_t)(config.block_y *
-				h / 
+				h /
 				100 +
 				total_dy /
 				OVERSAMPLE);
@@ -1201,8 +1201,8 @@ void MotionMain::draw_vectors(VFrame *frame)
 // search_x2,
 // search_y2);
 
-		MotionScan::clamp_scan(w, 
-			h, 
+		MotionScan::clamp_scan(w,
+			h,
 			&block_x1,
 			&block_y1,
 			&block_x2,
@@ -1487,15 +1487,15 @@ void RotateScanUnit::process_package(LoadPackage *package)
 
 
 // Rotate original block size
-// 		rotater->set_viewport(server->block_x1, 
+// 		rotater->set_viewport(server->block_x1,
 // 			server->block_y1,
 // 			server->block_x2 - server->block_x1,
 // 			server->block_y2 - server->block_y1);
-		rotater->set_in_viewport(server->block_x1, 
+		rotater->set_in_viewport(server->block_x1,
 			server->block_y1,
 			server->block_x2 - server->block_x1,
 			server->block_y2 - server->block_y1);
-		rotater->set_out_viewport(server->block_x1, 
+		rotater->set_out_viewport(server->block_x1,
 			server->block_y1,
 			server->block_x2 - server->block_x1,
 			server->block_y2 - server->block_y1);
@@ -1510,7 +1510,7 @@ void RotateScanUnit::process_package(LoadPackage *package)
 // Scan reduced block size
 //plugin->output_frame->copy_from(server->current_frame);
 //plugin->output_frame->copy_from(temp);
-// printf("RotateScanUnit::process_package %d %d %d %d %d\n", 
+// printf("RotateScanUnit::process_package %d %d %d %d %d\n",
 // __LINE__,
 // server->scan_x,
 // server->scan_y,
@@ -1541,14 +1541,14 @@ void RotateScanUnit::process_package(LoadPackage *package)
 			server->put_cache(pkg->angle, pkg->difference);
 		}
 
-// printf("RotateScanUnit::process_package 10 x=%d y=%d w=%d h=%d block_x=%d block_y=%d angle=%f scan_w=%d scan_h=%d diff=%lld\n", 
-// server->block_x1, 
+// printf("RotateScanUnit::process_package 10 x=%d y=%d w=%d h=%d block_x=%d block_y=%d angle=%f scan_w=%d scan_h=%d diff=%lld\n",
+// server->block_x1,
 // server->block_y1,
 // server->block_x2 - server->block_x1,
 // server->block_y2 - server->block_y1,
 // server->block_x,
 // server->block_y,
-// pkg->angle, 
+// pkg->angle,
 // server->scan_w,
 // server->scan_h,
 // pkg->difference);
@@ -1576,12 +1576,12 @@ void RotateScanUnit::process_package(LoadPackage *package)
 
 
 
-RotateScan::RotateScan(MotionMain *plugin, 
-	int total_clients, 
+RotateScan::RotateScan(MotionMain *plugin,
+	int total_clients,
 	int total_packages)
  : LoadServer(
-//1, 1 
-total_clients, total_packages 
+//1, 1
+total_clients, total_packages
 )
 {
 	this->plugin = plugin;
@@ -1599,9 +1599,9 @@ void RotateScan::init_packages()
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		RotateScanPackage *pkg = (RotateScanPackage*)get_package(i);
-		pkg->angle = i * 
-			(scan_angle2 - scan_angle1) / 
-			(total_steps - 1) + 
+		pkg->angle = i *
+			(scan_angle2 - scan_angle1) /
+			(total_steps - 1) +
 			scan_angle1;
 	}
 }
@@ -1743,7 +1743,7 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	scan_h = (int)(fabs(max_y - center_y) * 2);
 	scan_x = (int)(center_x - scan_w / 2);
 	scan_y = (int)(center_y - scan_h / 2);
-// printf("RotateScan::scan_frame center=%d,%d scan=%d,%d %dx%d\n", 
+// printf("RotateScan::scan_frame center=%d,%d scan=%d,%d %dx%d\n",
 // this->block_x, this->block_y, scan_x, scan_y, scan_w, scan_h);
 // printf("    angle_range=%f block= %d,%d,%d,%d\n", max_angle, block_x1, block_y1, block_x2, block_y2);
 
@@ -1756,7 +1756,7 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 //printf("RotateScan::scan_frame %d min_angle=%f\n", __LINE__, min_angle * 360 / 2 / M_PI);
 
 	cache.remove_all_objects();
-	
+
 
 	if(!skip)
 	{
@@ -1809,9 +1809,9 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	if(!skip && plugin->config.tracking_type == MotionScan::SAVE)
 	{
 		char string[BCTEXTLEN];
-		sprintf(string, 
-			"%s%06d", 
-			ROTATION_FILE, 
+		sprintf(string,
+			"%s%06d",
+			ROTATION_FILE,
 			plugin->get_source_position());
 		FILE *output = fopen(string, "w");
 		if(output)
@@ -1826,7 +1826,7 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	}
 
 //printf("RotateScan::scan_frame %d angle=%f\n", __LINE__, result);
-	
+
 
 
 	return result;

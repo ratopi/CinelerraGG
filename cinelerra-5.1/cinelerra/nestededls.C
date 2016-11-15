@@ -80,8 +80,8 @@ void NestedEDLs::update_index(EDL *nested_edl)
 		EDL *current = nested_edls.get(i);
 		if(!strcmp(current->path, nested_edl->path))
 		{
-// printf("NestedEDLs::update_index %d %p %d\n", 
-// __LINE__, 
+// printf("NestedEDLs::update_index %d %p %d\n",
+// __LINE__,
 // current->index_state,
 // nested_edl->index_state->index_status);
 			current->update_index(nested_edl);

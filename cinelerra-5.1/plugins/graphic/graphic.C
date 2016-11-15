@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -111,14 +111,14 @@ void GraphicConfig::copy_from(GraphicConfig &that)
 		point->freq = that.points.get(i)->freq;
 		point->value = that.points.get(i)->value;
 	}
-	
+
 	window_size = that.window_size;
 }
 
-void GraphicConfig::interpolate(GraphicConfig &prev, 
-	GraphicConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void GraphicConfig::interpolate(GraphicConfig &prev,
+	GraphicConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -126,7 +126,7 @@ void GraphicConfig::interpolate(GraphicConfig &prev,
 
 // Get current set of points from previous configuration
 	copy_from(prev);
-	
+
 
 // Interpolate between current set of points and next set
 	for(int i = 0; i < MIN(next.points.size(), points.size()); i++)
@@ -154,11 +154,11 @@ void GraphicConfig::delete_point(int number)
 
 
 
-GraphicCanvas::GraphicCanvas(GraphicEQ *plugin, 
+GraphicCanvas::GraphicCanvas(GraphicEQ *plugin,
 	GraphicGUI *gui,
-	int x, 
-	int y, 
-	int w, 
+	int x,
+	int y,
+	int w,
 	int h)
  : BC_SubWindow(x,
  	y,
@@ -181,7 +181,7 @@ int GraphicCanvas::button_press_event()
 	process(1, 0, 0);
 	if(state == GraphicCanvas::DRAG_POINT)
 		return 1;
-	else 
+	else
 		return 0;
 }
 
@@ -238,7 +238,7 @@ int GraphicCanvas::freq_to_y(int freq,
 	double magnitude_db = DB::todb(magnitude);
 	if(magnitude_db < -MAXMAGNITUDE) magnitude_db = -MAXMAGNITUDE;
 	int y = (int)(center_y - magnitude_db * center_y / MAXMAGNITUDE);
-//printf("GraphicCanvas::freq_to_y magnitude=%f magnitude_db=%f y=%d\n", 
+//printf("GraphicCanvas::freq_to_y magnitude=%f magnitude_db=%f y=%d\n",
 //magnitude, magnitude_db, y);
 	return y;
 }
@@ -254,7 +254,7 @@ void GraphicCanvas::new_temps()
 		*point = *plugin->config.points.get(i);
 		temp_points.append(point);
 	}
-	
+
 	plugin->calculate_envelope(&temp_points, temp_envelope);
 }
 
@@ -350,12 +350,12 @@ void GraphicCanvas::process(int buttonpress, int motion, int draw)
 				int index = (int64_t)freq * (int64_t)frame->window_size / 2 / niquist;
 				if(index < frame->window_size / 2)
 				{
-					double magnitude = frame->data[index] / 
-						frame->freq_max * 
+					double magnitude = frame->data[index] /
+						frame->freq_max *
 						frame->time_max;
-					y2 = (int)(get_h() - 
+					y2 = (int)(get_h() -
 						(DB::todb(magnitude) - INFINITYGAIN) *
-						get_h() / 
+						get_h() /
 						-INFINITYGAIN);
 					CLAMP(y2, 0, get_h() - 1);
 					if(i > 0)
@@ -416,7 +416,7 @@ void GraphicCanvas::process(int buttonpress, int motion, int draw)
 			int point_y = get_cursor_y() + y_diff;
 			CLAMP(point_x, 0, get_w());
 			CLAMP(point_y, 0, get_h());
-			
+
 			int frequency = Freq::tofreq(point_x * TOTALFREQS / get_w());
 			double magnitude_db = (double)(center_y - point_y) * MAXMAGNITUDE / center_y;
 			int minfreq = Freq::tofreq(0);
@@ -468,7 +468,7 @@ void GraphicCanvas::process(int buttonpress, int motion, int draw)
 		{
 			y1 = y;
 // Draw point under cursor if out of order
-			if(i == plugin->active_point && out_of_order) 
+			if(i == plugin->active_point && out_of_order)
 				y1 = get_cursor_y() + y_diff;
 
 			if(i == plugin->active_point)
@@ -477,9 +477,9 @@ void GraphicCanvas::process(int buttonpress, int motion, int draw)
 				draw_rectangle(x - BOX_SIZE / 2, y1 - BOX_SIZE / 2, BOX_SIZE, BOX_SIZE);
 		}
 
-		if(motion && 
+		if(motion &&
 			state == GraphicCanvas::NONE &&
-			is_event_win() && 
+			is_event_win() &&
 			cursor_inside())
 		{
 			if(get_cursor_x() >= x - BOX_SIZE / 2 &&
@@ -490,10 +490,10 @@ void GraphicCanvas::process(int buttonpress, int motion, int draw)
 				new_cursor = UPRIGHT_ARROW_CURSOR;
 			}
 		}
-		
+
 		if(buttonpress &&
 			state == GraphicCanvas::NONE &&
-			is_event_win() && 
+			is_event_win() &&
 			cursor_inside() &&
 			!got_button)
 		{
@@ -529,8 +529,8 @@ void GraphicCanvas::process(int buttonpress, int motion, int draw)
 	set_line_width(2);
 	for(int i = 0; i < get_w(); i++)
 	{
-		int y = freq_to_y(Freq::tofreq(i * TOTALFREQS / get_w()), 
-			points, 
+		int y = freq_to_y(Freq::tofreq(i * TOTALFREQS / get_w()),
+			points,
 			envelope);
 
 		if(draw)
@@ -548,11 +548,11 @@ void GraphicCanvas::process(int buttonpress, int motion, int draw)
 		if(is_event_win() && cursor_inside())
 		{
 			GraphicPoint *new_point = new GraphicPoint;
-			new_point->freq = Freq::tofreq(get_cursor_x() * 
-				TOTALFREQS / 
+			new_point->freq = Freq::tofreq(get_cursor_x() *
+				TOTALFREQS /
 				get_w());
-			new_point->value = (double)(center_y - get_cursor_y()) * 
-				MAXMAGNITUDE / 
+			new_point->value = (double)(center_y - get_cursor_y()) *
+				MAXMAGNITUDE /
 				center_y;
 			state = GraphicCanvas::DRAG_POINT;
 			new_temps();
@@ -573,7 +573,7 @@ void GraphicCanvas::process(int buttonpress, int motion, int draw)
 	}
 
 
-	if(draw) 
+	if(draw)
 	{
 		flash();
 	}
@@ -737,15 +737,15 @@ void GraphicSize::update(int size)
 
 
 
-// 
-// 
+//
+//
 // GraphicWetness::GraphicWetness(GraphicGUI *window, GraphicEQ *plugin, int x, int y)
 //  : BC_FPot(x, y, plugin->config.wetness, INFINITYGAIN, 0)
 // {
 // 	this->plugin = plugin;
 // 	this->window = window;
 // }
-// 
+//
 // int GraphicWetness::handle_event()
 // {
 // 	plugin->config.wetness = get_value();
@@ -753,9 +753,9 @@ void GraphicSize::update(int size)
 // 	window->update_canvas();
 // 	return 1;
 // }
-// 
-// 
-// 
+//
+//
+//
 
 
 
@@ -763,10 +763,10 @@ void GraphicSize::update(int size)
 
 
 GraphicGUI::GraphicGUI(GraphicEQ *plugin)
- : PluginClientWindow(plugin, 
-	plugin->w, 
-	plugin->h, 
-	320, 
+ : PluginClientWindow(plugin,
+	plugin->w,
+	plugin->h,
+	320,
 	200,
 	1)
 {
@@ -787,14 +787,14 @@ void GraphicGUI::create_objects()
 
 	add_subwindow(canvas = new GraphicCanvas(plugin,
 		this,
-		x, 
-		y, 
-		get_w() - x - margin, 
-		get_h() - 
-//			BC_Pot::calculate_h() - 
+		x,
+		y,
+		get_w() - x - margin,
+		get_h() -
+//			BC_Pot::calculate_h() -
 			BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1) -
-			margin * 3 - 
-			y - 
+			margin * 3 -
+			y -
 			freq_h));
 	y += canvas->get_h() + freq_h + margin;
 
@@ -812,7 +812,7 @@ void GraphicGUI::create_objects()
 
 	add_subwindow(reset = new GraphicReset(plugin, this, x, y));
 	x += reset->get_w() + margin;
-	
+
 
 //	x = x1;
 //	y += value_text->get_h() + margin;
@@ -826,8 +826,8 @@ void GraphicGUI::create_objects()
 
 //	add_subwindow(title = new BC_Title(x, y, "Wetness:"));
 //	x += title->get_w() + margin;
-// 	add_subwindow(wetness = new GraphicWetness(this, plugin, 
-// 		x, 
+// 	add_subwindow(wetness = new GraphicWetness(this, plugin,
+// 		x,
 // 		y));
 
 	draw_ticks();
@@ -841,7 +841,7 @@ int GraphicGUI::resize_event(int w, int h)
 	int difference = h - get_h();
 	int canvas_xdiff = get_w() - canvas->get_w();
 	int canvas_ydiff = get_h() - canvas->get_h();
-	
+
 	canvas->reposition_window(canvas->get_x(),
 		canvas->get_y(),
 		w - canvas_xdiff,
@@ -892,7 +892,7 @@ int GraphicGUI::keypress_event()
 					break;
 				}
 			}
-			
+
 			if(point_number >= 0)
 			{
 				plugin->config.delete_point(point_number);
@@ -965,15 +965,15 @@ void GraphicGUI::draw_ticks()
 		int y2 = canvas->get_y() + canvas->get_h() + LINE_W2 - 1;
 		int y3 = canvas->get_y() + canvas->get_h() + LINE_W3 - 1;
 		int y4 = canvas->get_y() + canvas->get_h() + get_text_height(SMALLFONT) + LINE_W4 - 1;
-		
+
 		set_color(BLACK);
 		draw_text(x2 + 1, y4 + 1, string);
 		draw_line(x1 + 1, y3 + 1, x1 + 1, y1 + 1);
-		
+
 		set_color(RED);
 		draw_text(x2, y4, string);
 		draw_line(x1, y3, x1, y1);
-		
+
 		if(i < MAJOR_DIVISIONS)
 		{
 			for(int j = 0; j < MINOR_DIVISIONS; j++)
@@ -1027,7 +1027,7 @@ void GraphicGUI::update_textboxes()
 GraphicEQ::GraphicEQ(PluginServer *server)
  : PluginAClient(server)
 {
-	last_frame = 0;	
+	last_frame = 0;
 	fft = 0;
 	need_reconfigure = 1;
 	active_point = -1;
@@ -1037,7 +1037,7 @@ GraphicEQ::GraphicEQ(PluginServer *server)
 
 GraphicEQ::~GraphicEQ()
 {
-	
+
 	delete last_frame;
 	if(fft) delete fft;
 }
@@ -1122,7 +1122,7 @@ void GraphicEQ::save_data(KeyFrame *keyframe)
 		output.append_tag();
 		output.append_newline();
 	}
-	
+
 	output.terminate_string();
 }
 
@@ -1131,7 +1131,7 @@ void GraphicEQ::update_gui()
 {
 	if(thread)
 	{
-		if(load_configuration() && 
+		if(load_configuration() &&
 			((GraphicGUI*)thread->window)->canvas->state != GraphicCanvas::DRAG_POINT)
 		{
 			((GraphicGUI*)thread->window)->lock_window("GraphicEQ::update_gui");
@@ -1160,7 +1160,7 @@ void GraphicEQ::reconfigure()
 		delete fft;
 		fft = 0;
 	}
-	
+
 	if(!fft)
 	{
 		fft = new GraphicFFT(this);
@@ -1168,7 +1168,7 @@ void GraphicEQ::reconfigure()
 	}
 
 	calculate_envelope(&config.points, envelope);
-	
+
 	for(int i = 0; i < config.window_size / 2; i++)
 	{
 		if(envelope[i] < 0) envelope[i] = 0;
@@ -1177,14 +1177,14 @@ void GraphicEQ::reconfigure()
 	need_reconfigure = 0;
 }
 
-int GraphicEQ::process_buffer(int64_t size, 
-	Samples *buffer, 
+int GraphicEQ::process_buffer(int64_t size,
+	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
 {
 	need_reconfigure |= load_configuration();
 	if(need_reconfigure) reconfigure();
-	
+
 	fft->process_buffer(start_position, size, buffer, get_direction());
 
 
@@ -1230,7 +1230,7 @@ void GraphicEQ::calculate_envelope(ArrayList<GraphicPoint*> *points,
 	for(int i = 0; i < temp_points.size(); i++)
 	{
 		GraphicPoint *point = temp_points.get(i);
-		if(i == active_point) 
+		if(i == active_point)
 		{
 			GraphicPoint *prev_point = 0;
 			GraphicPoint *next_point = 0;
@@ -1271,15 +1271,15 @@ void GraphicEQ::calculate_envelope(ArrayList<GraphicPoint*> *points,
 						break;
 					}
 				}
-				
+
 				if(point2->freq != point1->freq)
 				{
 					int freqslot1 = Freq::fromfreq(point1->freq);
 					int freqslot2 = Freq::fromfreq(point2->freq);
 					int freqslot = Freq::fromfreq(freq);
-				
+
 					envelope[i] = (double)(freqslot - freqslot1) *
-						(point2->value - point1->value) / 
+						(point2->value - point1->value) /
 						(freqslot2 - freqslot1) +
 						point1->value;
 				}
@@ -1288,7 +1288,7 @@ void GraphicEQ::calculate_envelope(ArrayList<GraphicPoint*> *points,
 			}
 
 
-			if(envelope[i] < MIN_DB + 0.01) 
+			if(envelope[i] < MIN_DB + 0.01)
 				envelope[i] = 0;
 			else
 				envelope[i] = DB::fromdb(envelope[i]);
@@ -1339,7 +1339,7 @@ GraphicFFT::~GraphicFFT()
 int GraphicFFT::signal_process()
 {
 // Create new frame for updating GUI
-	frame = new GraphicGUIFrame(window_size, 
+	frame = new GraphicGUIFrame(window_size,
 		plugin->PluginAClient::project_sample_rate);
 	plugin->add_gui_frame(frame);
 
@@ -1373,8 +1373,8 @@ int GraphicFFT::post_process()
 
 
 
-int GraphicFFT::read_samples(int64_t output_sample, 
-	int samples, 
+int GraphicFFT::read_samples(int64_t output_sample,
+	int samples,
 	Samples *buffer)
 {
 	return plugin->read_samples(buffer,

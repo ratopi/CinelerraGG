@@ -26,7 +26,7 @@ class List {
 public:
 	TYPE *first, *last;
 	void remove(TYPE *item) { if(item) delete item; }
-	void remove_pointer(ListItem<TYPE> *item);  
+	void remove_pointer(ListItem<TYPE> *item);
 	TYPE *append(TYPE *new_item);
 	TYPE *append() { return append(new TYPE()); }
 	TYPE *insert_before(TYPE *here, TYPE *item);

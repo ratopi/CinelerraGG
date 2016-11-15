@@ -5,7 +5,7 @@
 
 // Bootstrap for themes.
 
-// By default, concatenates all the resources and a table of contents 
+// By default, concatenates all the resources and a table of contents
 // into an object file with objcopy.
 
 // Run nm <object> to get the symbols created by bootstrap.
@@ -38,22 +38,22 @@ void append_contents(char *path,
 	char string[1024];
 	int i, j = 0;
 
-	for(i = strlen(path) - 1; 
+	for(i = strlen(path) - 1;
 		i > 0 && path[i] && path[i] != '/';
-		i--) 
+		i--)
 		;
 
 	if(path[i] == '/') i++;
-	
+
 	for(j = 0; path[i] != 0; i++, j++)
 		string[j] = path[i];
 
 	string[j] = 0;
-	
+
 	strcpy(buffer + *buffer_size, string);
 
 	*buffer_size += strlen(string) + 1;
-	
+
 	*(int*)(buffer + *buffer_size) = data_offset;
 	*buffer_size += sizeof(int);
 }
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 // Leave space for offset to data
 	contents_size = sizeof(int);
 
-// Read through all the resources, concatenate to dest file, 
+// Read through all the resources, concatenate to dest file,
 // and record the contents.
 	while(current_arg < argc)
 	{
@@ -173,9 +173,9 @@ int main(int argc, char *argv[])
 			if(!binary_mode && !string_mode)
 			{
 // Create contents
-				append_contents(path, 
-					data_offset, 
-					contents_buffer, 
+				append_contents(path,
+					data_offset,
+					contents_buffer,
 					&contents_size);
 			}
 		}

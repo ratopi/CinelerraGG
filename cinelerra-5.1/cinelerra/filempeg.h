@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef FILEMPEG_H
@@ -62,8 +62,8 @@ public:
 
 	friend class FileMPEGVideo;
 
-	static void get_parameters(BC_WindowBase *parent_window, 
-		Asset *asset, 
+	static void get_parameters(BC_WindowBase *parent_window,
+		Asset *asset,
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options);
@@ -79,7 +79,7 @@ public:
 
 	int set_video_position(int64_t x);
 	int set_audio_position(int64_t x);
-	int write_samples(double **buffer, 
+	int write_samples(double **buffer,
 			int64_t len);
 	int write_frames(VFrame ***frames, int len);
 
@@ -109,7 +109,7 @@ public:
 	static int bc_colormodel(int cmdl);
         static const char *zmpeg3_cmdl_name(int cmdl);
 // This file can copy frames directly from the asset
-	int can_copy_from(Asset *asset, int64_t position); 
+	int can_copy_from(Asset *asset, int64_t position);
 
 private:
 	void to_streamchannel(int channel, int &stream_out, int &channel_out);
@@ -128,15 +128,15 @@ private:
 	int record_fd() { return recd_fd; }
 
 // MJPEGtools encoder
-	FILE *mjpeg_out;	
+	FILE *mjpeg_out;
 	int mjpeg_error;
 	Condition *next_frame_lock;
 	Condition *next_frame_done;
 	int mjpeg_eof;
 	int wrote_header;
-	unsigned char *mjpeg_y;	
-	unsigned char *mjpeg_u;	
-	unsigned char *mjpeg_v;	
+	unsigned char *mjpeg_y;
+	unsigned char *mjpeg_u;
+	unsigned char *mjpeg_v;
 	char mjpeg_command[BCTEXTLEN];
 
 // skimmer
@@ -208,7 +208,7 @@ public:
 	int handle_event();
 	static int string_to_layer(char *string);
 	static char* layer_to_string(int derivative);
-	
+
 	MPEGConfigAudio *gui;
 };
 
@@ -223,7 +223,7 @@ public:
 	int handle_event();
 	static int string_to_bitrate(char *string);
 	static char* bitrate_to_string(char *string, int bitrate);
-	
+
 	MPEGConfigAudio *gui;
 };
 
@@ -252,7 +252,7 @@ public:
 	int handle_event();
 	static int string_to_cmodel(char *string);
 	static char* cmodel_to_string(int cmodel);
-	
+
 	MPEGConfigVideo *gui;
 };
 
@@ -265,7 +265,7 @@ public:
 	int handle_event();
 	static int string_to_derivative(char *string);
 	static char* derivative_to_string(int derivative);
-	
+
 	MPEGConfigVideo *gui;
 };
 
@@ -331,7 +331,7 @@ public:
 class MPEGConfigVideo : public BC_Window
 {
 public:
-	MPEGConfigVideo(BC_WindowBase *parent_window, 
+	MPEGConfigVideo(BC_WindowBase *parent_window,
 		Asset *asset);
 	~MPEGConfigVideo();
 

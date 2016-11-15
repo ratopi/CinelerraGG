@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -35,13 +35,13 @@
 
 ColorBalanceWindow::ColorBalanceWindow(ColorBalanceMain *client)
  : PluginClientWindow(client,
-	330, 
-	250, 
-	330, 
-	250, 
+	330,
+	250,
+	330,
+	250,
 	0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 ColorBalanceWindow::~ColorBalanceWindow()
@@ -85,15 +85,15 @@ void ColorBalanceWindow::update()
 }
 
 
-ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client, 
+ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client,
 	float *output, int x, int y)
- : BC_ISlider(x, 
- 	y, 
-	0, 
-	200, 
+ : BC_ISlider(x,
+ 	y,
+	0,
 	200,
-	-1000, 
-	1000, 
+	200,
+	-1000,
+	1000,
 	(int)*output)
 {
 	this->client = client;
@@ -125,9 +125,9 @@ char* ColorBalanceSlider::get_caption()
 
 
 ColorBalancePreserve::ColorBalancePreserve(ColorBalanceMain *client, int x, int y)
- : BC_CheckBox(x, 
- 	y, 
-	client->config.preserve, 
+ : BC_CheckBox(x,
+ 	y,
+	client->config.preserve,
 	_("Preserve luminosity"))
 {
 	this->client = client;
@@ -144,9 +144,9 @@ int ColorBalancePreserve::handle_event()
 }
 
 ColorBalanceLock::ColorBalanceLock(ColorBalanceMain *client, int x, int y)
- : BC_CheckBox(x, 
- 	y, 
-	client->config.lock_params, 
+ : BC_CheckBox(x,
+ 	y,
+	client->config.lock_params,
 	_("Lock parameters"))
 {
 	this->client = client;
@@ -163,9 +163,9 @@ int ColorBalanceLock::handle_event()
 }
 
 
-ColorBalanceWhite::ColorBalanceWhite(ColorBalanceMain *plugin, 
+ColorBalanceWhite::ColorBalanceWhite(ColorBalanceMain *plugin,
 	ColorBalanceWindow *gui,
-	int x, 
+	int x,
 	int y)
  : BC_GenericButton(x, y, _("White balance"))
 {
@@ -209,9 +209,9 @@ int ColorBalanceWhite::handle_event()
 }
 
 
-ColorBalanceReset::ColorBalanceReset(ColorBalanceMain *plugin, 
-	ColorBalanceWindow *gui, 
-	int x, 
+ColorBalanceReset::ColorBalanceReset(ColorBalanceMain *plugin,
+	ColorBalanceWindow *gui,
+	int x,
 	int y)
  : BC_GenericButton(x, y, _("Reset"))
 {

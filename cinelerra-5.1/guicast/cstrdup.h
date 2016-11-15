@@ -8,7 +8,7 @@ static inline char *cstrcat(int n, ...) {
   int len = 0;  va_list va;  va_start(va,n);
   for(int i=0; i<n; ++i) len += strlen(va_arg(va,char*));
   va_end(va);  char *cp = new char[len+1], *bp = cp;  va_start(va,n);
-  for(int i=0; i<n; ++i) for(char*ap=va_arg(va,char*); *ap; *bp++=*ap++); 
+  for(int i=0; i<n; ++i) for(char*ap=va_arg(va,char*); *ap; *bp++=*ap++);
   va_end(va);  *bp = 0;
   return cp;
 }

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2007 Hermann Vosseler
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -72,7 +72,7 @@ class RerouteOperation : public BC_PopupMenu
 {
 public:
 	RerouteOperation(Reroute *plugin,
-		int x, 
+		int x,
 		int y);
 	void create_objects();
 	int handle_event();
@@ -83,7 +83,7 @@ class RerouteOutput : public BC_PopupMenu
 {
 public:
 	RerouteOutput(Reroute *plugin,
-		int x, 
+		int x,
 		int y);
 	void create_objects();
 	int handle_event();
@@ -191,17 +191,17 @@ void RerouteWindow::create_objects()
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Target track:")));
-	
+
 	int col2 = title->get_w() + 5;
-	add_subwindow(output = new RerouteOutput(plugin, 
-		x + col2, 
+	add_subwindow(output = new RerouteOutput(plugin,
+		x + col2,
 		y));
 	output->create_objects();
 
 	y += 30;
 	add_subwindow(title = new BC_Title(x, y, _("Operation:")));
-	add_subwindow(operation = new RerouteOperation(plugin, 
-		x + col2, 
+	add_subwindow(operation = new RerouteOperation(plugin,
+		x + col2,
 		y));
 	operation->create_objects();
 
@@ -217,7 +217,7 @@ void RerouteWindow::create_objects()
 
 
 RerouteOperation::RerouteOperation(Reroute *plugin,
-	int x, 
+	int x,
 	int y)
  : BC_PopupMenu(x,
  	y,
@@ -245,17 +245,17 @@ int RerouteOperation::handle_event()
 {
 	char *text = get_text();
 
-	if(!strcmp(text, 
+	if(!strcmp(text,
 		RerouteConfig::operation_to_text(
 			RerouteConfig::REPLACE)))
 		plugin->config.operation = RerouteConfig::REPLACE;
 	else
-	if(!strcmp(text, 
+	if(!strcmp(text,
 		RerouteConfig::operation_to_text(
 			RerouteConfig::REPLACE_COMPONENTS)))
 		plugin->config.operation = RerouteConfig::REPLACE_COMPONENTS;
 	else
-	if(!strcmp(text, 
+	if(!strcmp(text,
 		RerouteConfig::operation_to_text(
 			RerouteConfig::REPLACE_ALPHA)))
 		plugin->config.operation = RerouteConfig::REPLACE_ALPHA;
@@ -266,7 +266,7 @@ int RerouteOperation::handle_event()
 
 
 RerouteOutput::RerouteOutput(Reroute *plugin,
-	int x, 
+	int x,
 	int y)
  : BC_PopupMenu(x,
  	y,
@@ -291,12 +291,12 @@ int RerouteOutput::handle_event()
 {
 	char *text = get_text();
 
-	if(!strcmp(text, 
+	if(!strcmp(text,
 		RerouteConfig::output_to_text(
 			RerouteConfig::TOP)))
 		plugin->config.output_track = RerouteConfig::TOP;
 	else
-	if(!strcmp(text, 
+	if(!strcmp(text,
 		RerouteConfig::output_to_text(
 			RerouteConfig::BOTTOM)))
 		plugin->config.output_track = RerouteConfig::BOTTOM;
@@ -337,7 +337,7 @@ Reroute::~Reroute()
  *
  *****************************************/
 template<class TYPE, int COMPONENTS>
-struct px_type 
+struct px_type
 {
 	static inline
 	void transfer(VFrame*, VFrame*, bool, bool) ;
@@ -406,8 +406,8 @@ int Reroute::process_buffer(VFrame **frame,
 	VFrame *target = frame[output_track];
 
 	// input track always passed through unaltered
-	read_frame(source, 
-		input_track, 
+	read_frame(source,
+		input_track,
 		start_position,
 		frame_rate,
 		false );  // no OpenGL support
@@ -423,15 +423,15 @@ int Reroute::process_buffer(VFrame **frame,
 		return 0;
 	}
 
-	
+
 	// prepare data for output track
 	// (to be overidden partially)
-	read_frame(target, 
-		output_track, 
+	read_frame(target,
+		output_track,
 		start_position,
 		frame_rate,
 		0);
-	
+
 	switch(source->get_color_model())
 	{
 		case BC_RGB_FLOAT:

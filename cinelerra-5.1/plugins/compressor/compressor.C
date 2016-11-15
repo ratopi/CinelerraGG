@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -47,7 +47,7 @@ REGISTER_PLUGIN(CompressorEffect)
 
 
 // More potential compressor algorithms:
-// Use single reaction time parameter.  Negative reaction time uses 
+// Use single reaction time parameter.  Negative reaction time uses
 // readahead.  Positive reaction time uses slope.
 
 // Smooth input stage if readahead.
@@ -57,7 +57,7 @@ REGISTER_PLUGIN(CompressorEffect)
 // Use highest slope to determine smoothed value.
 
 // Smooth input stage if not readahead.
-// For every sample, calculate slope needed to reach current sample from 
+// For every sample, calculate slope needed to reach current sample from
 // current smoothed value in the reaction time.  If higher than current slope,
 // make it the current slope and count number of samples remaining until it is
 // reached.  If this count is met and no higher slopes are found, base slope
@@ -74,12 +74,12 @@ CompressorEffect::CompressorEffect(PluginServer *server)
  : PluginAClient(server)
 {
 	reset();
-	
+
 }
 
 CompressorEffect::~CompressorEffect()
 {
-	
+
 	delete_dsp();
 	levels.remove_all();
 }
@@ -207,14 +207,14 @@ NEW_WINDOW_MACRO(CompressorEffect, CompressorWindow)
 
 
 
-int CompressorEffect::process_buffer(int64_t size, 
+int CompressorEffect::process_buffer(int64_t size,
 		Samples **buffer,
 		int64_t start_position,
 		int sample_rate)
 {
 	load_configuration();
 
-// Calculate linear transfer from db 
+// Calculate linear transfer from db
 	levels.remove_all();
 	for(int i = 0; i < config.levels.total; i++)
 	{
@@ -251,7 +251,7 @@ int CompressorEffect::process_buffer(int64_t size,
 				size);
 		}
 
-		double current_slope = (next_target - previous_target) / 
+		double current_slope = (next_target - previous_target) /
 			reaction_samples;
 		double *trigger_buffer = buffer[trigger]->get_data();
 		for(int i = 0; i < size; i++)
@@ -276,7 +276,7 @@ int CompressorEffect::process_buffer(int64_t size,
 				case CompressorConfig::TRIGGER:
 					sample = fabs(trigger_buffer[i]);
 					break;
-				
+
 				case CompressorConfig::SUM:
 				{
 					double max = 0;
@@ -294,7 +294,7 @@ int CompressorEffect::process_buffer(int64_t size,
 				reaction_samples;
 
 // Slope greater than current slope
-			if(new_slope >= current_slope && 
+			if(new_slope >= current_slope &&
 				(current_slope >= 0 ||
 				new_slope >= 0))
 			{
@@ -324,7 +324,7 @@ int CompressorEffect::process_buffer(int64_t size,
 			}
 
 // Update current value and store gain
-			current_value = (next_target * target_current_sample + 
+			current_value = (next_target * target_current_sample +
 				previous_target * (target_samples - target_current_sample)) /
 				target_samples;
 
@@ -385,8 +385,8 @@ int CompressorEffect::process_buffer(int64_t size,
 				new_input_buffer[i] = new Samples(size + preview_samples);
 				if(input_buffer)
 				{
-					memcpy(new_input_buffer[i]->get_data(), 
-						input_buffer[i]->get_data(), 
+					memcpy(new_input_buffer[i]->get_data(),
+						input_buffer[i]->get_data(),
 						input_size * sizeof(double));
 					delete input_buffer[i];
 				}
@@ -434,8 +434,8 @@ int CompressorEffect::process_buffer(int64_t size,
 // Need new slope immediately
 			if(target_current_sample >= target_samples)
 				first_slope = 1;
-			for(int j = first_slope; 
-				j < preview_samples; 
+			for(int j = first_slope;
+				j < preview_samples;
 				j++)
 			{
 				double sample = 0.;
@@ -478,7 +478,7 @@ int CompressorEffect::process_buffer(int64_t size,
 				double new_slope = (sample - current_value) /
 					j;
 // Got equal or higher slope
-				if(new_slope >= current_slope && 
+				if(new_slope >= current_slope &&
 					(current_slope >= 0 ||
 					new_slope >= 0))
 				{
@@ -555,16 +555,16 @@ double CompressorEffect::calculate_output(double x)
 		{
 			if(i < levels.total - 1)
 			{
-				return levels.values[i].y + 
+				return levels.values[i].y +
 					(x - levels.values[i].x) *
-					(levels.values[i + 1].y - levels.values[i].y) / 
+					(levels.values[i + 1].y - levels.values[i].y) /
 					(levels.values[i + 1].x - levels.values[i].x);
 			}
 			else
 			{
 				return levels.values[i].y +
-					(x - levels.values[i].x) * 
-					(max_y - levels.values[i].y) / 
+					(x - levels.values[i].x) *
+					(max_y - levels.values[i].y) /
 					(max_x - levels.values[i].x);
 			}
 		}
@@ -572,9 +572,9 @@ double CompressorEffect::calculate_output(double x)
 
 	if(levels.total)
 	{
-		return min_y + 
-			(x - min_x) * 
-			(levels.values[0].y - min_y) / 
+		return min_y +
+			(x - min_x) *
+			(levels.values[0].y - min_y) /
 			(levels.values[0].x - min_x);
 	}
 	else
@@ -645,8 +645,8 @@ int CompressorConfig::equivalent(CompressorConfig &that)
 		this->smoothing_only != that.smoothing_only)
 		return 0;
 	if(this->levels.total != that.levels.total) return 0;
-	for(int i = 0; 
-		i < this->levels.total && i < that.levels.total; 
+	for(int i = 0;
+		i < this->levels.total && i < that.levels.total;
 		i++)
 	{
 		compressor_point_t *this_level = &this->levels.values[i];
@@ -658,10 +658,10 @@ int CompressorConfig::equivalent(CompressorConfig &that)
 	return 1;
 }
 
-void CompressorConfig::interpolate(CompressorConfig &prev, 
-	CompressorConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void CompressorConfig::interpolate(CompressorConfig &prev,
+	CompressorConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	copy_from(prev);
@@ -669,7 +669,7 @@ void CompressorConfig::interpolate(CompressorConfig &prev,
 
 int CompressorConfig::total_points()
 {
-	if(!levels.total) 
+	if(!levels.total)
 		return 1;
 	else
 		return levels.total;
@@ -687,7 +687,7 @@ void CompressorConfig::dump()
 
 double CompressorConfig::get_y(int number)
 {
-	if(!levels.total) 
+	if(!levels.total)
 		return 1.0;
 	else
 	if(number >= levels.total)
@@ -717,16 +717,16 @@ double CompressorConfig::calculate_db(double x)
 		{
 			if(i < levels.total - 1)
 			{
-				return levels.values[i].y + 
+				return levels.values[i].y +
 					(x - levels.values[i].x) *
-					(levels.values[i + 1].y - levels.values[i].y) / 
+					(levels.values[i + 1].y - levels.values[i].y) /
 					(levels.values[i + 1].x - levels.values[i].x);
 			}
 			else
 			{
 				return levels.values[i].y +
-					(x - levels.values[i].x) * 
-					(max_y - levels.values[i].y) / 
+					(x - levels.values[i].x) *
+					(max_y - levels.values[i].y) /
 					(max_x - levels.values[i].x);
 			}
 		}
@@ -734,9 +734,9 @@ double CompressorConfig::calculate_db(double x)
 
 	if(levels.total)
 	{
-		return min_y + 
-			(x - min_x) * 
-			(levels.values[0].y - min_y) / 
+		return min_y +
+			(x - min_x) *
+			(levels.values[0].y - min_y) /
 			(levels.values[0].x - min_x);
 	}
 	else
@@ -785,12 +785,12 @@ void CompressorConfig::remove_point(int number)
 void CompressorConfig::optimize()
 {
 	int done = 0;
-	
+
 	while(!done)
 	{
 		done = 1;
-		
-		
+
+
 		for(int i = 0; i < levels.total - 1; i++)
 		{
 			if(levels.values[i].x >= levels.values[i + 1].x)
@@ -803,7 +803,7 @@ void CompressorConfig::optimize()
 				levels.remove();
 			}
 		}
-		
+
 	}
 }
 
@@ -835,9 +835,9 @@ void CompressorConfig::optimize()
 
 CompressorWindow::CompressorWindow(CompressorEffect *plugin)
  : PluginClientWindow(plugin,
-	650, 
-	480, 
-	650, 
+	650,
+	480,
+	650,
 	480,
 	0)
 {
@@ -849,10 +849,10 @@ void CompressorWindow::create_objects()
 	int x = 35, y = 10;
 	int control_margin = 130;
 
-	add_subwindow(canvas = new CompressorCanvas(plugin, 
-		x, 
-		y, 
-		get_w() - x - control_margin - 10, 
+	add_subwindow(canvas = new CompressorCanvas(plugin,
+		x,
+		y,
+		get_w() - x - control_margin - 10,
 		get_h() - y - 70));
 	canvas->set_cursor(CROSS_CURSOR, 0, 0);
 	x = get_w() - control_margin;
@@ -894,13 +894,13 @@ void CompressorWindow::create_objects()
 
 void CompressorWindow::draw_scales()
 {
-	draw_3d_border(canvas->get_x() - 2, 
-		canvas->get_y() - 2, 
-		canvas->get_w() + 4, 
-		canvas->get_h() + 4, 
+	draw_3d_border(canvas->get_x() - 2,
+		canvas->get_y() - 2,
+		canvas->get_w() + 4,
+		canvas->get_h() + 4,
 		get_bg_color(),
 		BLACK,
-		MDGREY, 
+		MDGREY,
 		get_bg_color());
 
 
@@ -913,10 +913,10 @@ void CompressorWindow::draw_scales()
 		int y = canvas->get_y() + 10 + canvas->get_h() / DIVISIONS * i;
 		int x = canvas->get_x() - 30;
 		char string[BCTEXTLEN];
-		
+
 		sprintf(string, "%.0f", (float)i / DIVISIONS * plugin->config.min_db);
 		draw_text(x, y, string);
-		
+
 		int y1 = canvas->get_y() + canvas->get_h() / DIVISIONS * i;
 		int y2 = canvas->get_y() + canvas->get_h() / DIVISIONS * (i + 1);
 		for(int j = 0; j < 10; j++)
@@ -1003,12 +1003,12 @@ void CompressorWindow::update_canvas()
 	canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
 	canvas->set_line_dashes(1);
 	canvas->set_color(GREEN);
-	
+
 	for(int i = 1; i < DIVISIONS; i++)
 	{
 		int y = canvas->get_h() * i / DIVISIONS;
 		canvas->draw_line(0, y, canvas->get_w(), y);
-		
+
 		int x = canvas->get_w() * i / DIVISIONS;
 		canvas->draw_line(x, 0, x, canvas->get_h());
 	}
@@ -1016,11 +1016,11 @@ void CompressorWindow::update_canvas()
 
 
 	canvas->set_font(MEDIUMFONT);
-	canvas->draw_text(plugin->get_theme()->widget_border, 
-		canvas->get_h() / 2, 
+	canvas->draw_text(plugin->get_theme()->widget_border,
+		canvas->get_h() / 2,
 		_("Output"));
-	canvas->draw_text(canvas->get_w() / 2 - canvas->get_text_width(MEDIUMFONT, _("Input")) / 2, 
-		canvas->get_h() - plugin->get_theme()->widget_border, 
+	canvas->draw_text(canvas->get_w() / 2 - canvas->get_text_width(MEDIUMFONT, _("Input")) / 2,
+		canvas->get_h() - plugin->get_theme()->widget_border,
 		_("Input"));
 
 
@@ -1049,10 +1049,10 @@ void CompressorWindow::update_canvas()
 
 		int x = (int)((1. - x_db / plugin->config.min_db) * canvas->get_w());
 		int y = (int)(y_db / plugin->config.min_db * canvas->get_h());
-		
+
 		canvas->draw_box(x - POINT_W / 2, y - POINT_W / 2, POINT_W, POINT_W);
 	}
-	
+
 	canvas->flash();
 }
 
@@ -1068,7 +1068,7 @@ int CompressorWindow::resize_event(int w, int h)
 
 
 
-CompressorCanvas::CompressorCanvas(CompressorEffect *plugin, int x, int y, int w, int h) 
+CompressorCanvas::CompressorCanvas(CompressorEffect *plugin, int x, int y, int w, int h)
  : BC_SubWindow(x, y, w, h, BLACK)
 {
 	this->plugin = plugin;
@@ -1192,7 +1192,7 @@ int CompressorCanvas::cursor_motion_event()
 
 
 
-CompressorReaction::CompressorReaction(CompressorEffect *plugin, int x, int y) 
+CompressorReaction::CompressorReaction(CompressorEffect *plugin, int x, int y)
  : BC_TextBox(x, y, 100, 1, (float)plugin->config.reaction_len)
 {
 	this->plugin = plugin;
@@ -1226,7 +1226,7 @@ int CompressorReaction::button_press_event()
 	return 0;
 }
 
-CompressorDecay::CompressorDecay(CompressorEffect *plugin, int x, int y) 
+CompressorDecay::CompressorDecay(CompressorEffect *plugin, int x, int y)
  : BC_TextBox(x, y, 100, 1, (float)plugin->config.decay_len)
 {
 	this->plugin = plugin;
@@ -1261,7 +1261,7 @@ int CompressorDecay::button_press_event()
 
 
 
-CompressorX::CompressorX(CompressorEffect *plugin, int x, int y) 
+CompressorX::CompressorX(CompressorEffect *plugin, int x, int y)
  : BC_TextBox(x, y, 100, 1, "")
 {
 	this->plugin = plugin;
@@ -1280,7 +1280,7 @@ int CompressorX::handle_event()
 
 
 
-CompressorY::CompressorY(CompressorEffect *plugin, int x, int y) 
+CompressorY::CompressorY(CompressorEffect *plugin, int x, int y)
  : BC_TextBox(x, y, 100, 1, "")
 {
 	this->plugin = plugin;
@@ -1301,7 +1301,7 @@ int CompressorY::handle_event()
 
 
 
-CompressorTrigger::CompressorTrigger(CompressorEffect *plugin, int x, int y) 
+CompressorTrigger::CompressorTrigger(CompressorEffect *plugin, int x, int y)
  : BC_TextBox(x, y, (int64_t)100, (int64_t)1, (int64_t)plugin->config.trigger)
 {
 	this->plugin = plugin;
@@ -1338,11 +1338,11 @@ int CompressorTrigger::button_press_event()
 
 
 
-CompressorInput::CompressorInput(CompressorEffect *plugin, int x, int y) 
- : BC_PopupMenu(x, 
-	y, 
-	100, 
-	CompressorInput::value_to_text(plugin->config.input), 
+CompressorInput::CompressorInput(CompressorEffect *plugin, int x, int y)
+ : BC_PopupMenu(x,
+	y,
+	100,
+	CompressorInput::value_to_text(plugin->config.input),
 	1)
 {
 	this->plugin = plugin;
@@ -1390,7 +1390,7 @@ int CompressorInput::text_to_value(char *text)
 
 
 
-CompressorClear::CompressorClear(CompressorEffect *plugin, int x, int y) 
+CompressorClear::CompressorClear(CompressorEffect *plugin, int x, int y)
  : BC_GenericButton(x, y, _("Clear"))
 {
 	this->plugin = plugin;
@@ -1407,7 +1407,7 @@ int CompressorClear::handle_event()
 
 
 
-CompressorSmooth::CompressorSmooth(CompressorEffect *plugin, int x, int y) 
+CompressorSmooth::CompressorSmooth(CompressorEffect *plugin, int x, int y)
  : BC_CheckBox(x, y, plugin->config.smoothing_only, _("Smooth only"))
 {
 	this->plugin = plugin;

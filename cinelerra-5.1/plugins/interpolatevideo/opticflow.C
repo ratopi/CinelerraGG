@@ -1,12 +1,12 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
- 
- 
+
+
 
 
 
@@ -149,11 +149,11 @@ void OpticFlowUnit::process_package(LoadPackage *package)
 
 
 OpticFlow::OpticFlow(InterpolateVideo *plugin,
-	int total_clients, 
+	int total_clients,
 	int total_packages)
-// : LoadServer(1, 
+// : LoadServer(1,
 //	total_packages)
- : LoadServer(total_clients, 
+ : LoadServer(total_clients,
 	total_packages)
 {
 	this->plugin = plugin;
@@ -286,10 +286,10 @@ void WarpUnit::process_package(LoadPackage *package)
 
 			int x_macroblock2 = x_macroblock + 1;
 			int y_macroblock2 = y_macroblock + 1;
-			
+
 			x_macroblock2 = MIN(x_macroblock2, plugin->x_macroblocks - 1);
 			y_macroblock2 = MIN(y_macroblock2, plugin->y_macroblocks - 1);
-			
+
 			float x_fraction = (float)(j - x_macroblock * macroblock_size) / macroblock_size;
 			float y_fraction = (float)(i - y_macroblock * macroblock_size) / macroblock_size;
 
@@ -383,9 +383,9 @@ void WarpUnit::process_package(LoadPackage *package)
 
 
 Warp::Warp(InterpolateVideo *plugin,
-	int total_clients, 
+	int total_clients,
 	int total_packages)
- : LoadServer(total_clients, 
+ : LoadServer(total_clients,
 	total_packages)
 {
 	this->plugin = plugin;
@@ -467,9 +467,9 @@ void BlendMacroblockUnit::process_package(LoadPackage *package)
 
 
 BlendMacroblock::BlendMacroblock(InterpolateVideo *plugin,
-	int total_clients, 
+	int total_clients,
 	int total_packages)
- : LoadServer(total_clients, 
+ : LoadServer(total_clients,
 	total_packages)
 {
 	this->plugin = plugin;

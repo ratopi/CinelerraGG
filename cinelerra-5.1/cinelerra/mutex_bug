@@ -17,5 +17,5 @@ VEdit::render done
 but ATrack::render has locked check_out at this point.
 			VEdit::draw checking in
 			Cache::check_in 1
-but Cache::age_type has locked check_in and check_out can't be unlocked until 
+but Cache::age_type has locked check_in and check_out can't be unlocked until
 VEdit completes

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <string.h>
@@ -40,7 +40,7 @@ Messages::Messages(int input_flag, int output_flag, int id)
 		this->msgid = id;
 		client = 1;
 	}
-	
+
 	this->input_flag = input_flag;
 	this->output_flag = output_flag;
 	bc_enter_msg_id(msgid);
@@ -79,7 +79,7 @@ int Messages::read_message(char *text)
 long Messages::read_message()
 {
 	buffer.mtype = input_flag;
-	
+
 	if((msgrcv(msgid, (struct msgbuf*)&buffer, MESSAGESIZE, input_flag, 0)) < 0)
 	{
 		printf(_("recieve message failed\n"));
@@ -100,7 +100,7 @@ float Messages::read_message_f()
 char* Messages::read_message_raw()
 {
 	buffer.mtype = input_flag;
-	
+
 	if((msgrcv(msgid, (struct msgbuf*)&buffer, MESSAGESIZE, input_flag, 0)) < 0)
 	{
 		printf(_("recieve message failed\n"));
@@ -156,7 +156,7 @@ int Messages::read_message_f(float *value1, float *value2, float *value3, float 
 int Messages::read_message(int *command, char *text)
 {
 	int i, j;
-	
+
 	char *data = read_message_raw();
 	sscanf(data, "%d", command);
 // find the start of the text
@@ -190,7 +190,7 @@ int Messages::write_message_flagged(int output_flag, int command)
 {
 	buffer.mtype = output_flag;
 	sprintf(buffer.text, "%d", command);
-	
+
 	if((msgsnd(msgid, (struct msgbuf*)&buffer, strlen(buffer.text) + 1, 0)) < 0) printf(_("send message failed\n"));
 	return 0;
 }

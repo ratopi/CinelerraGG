@@ -1,21 +1,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009-2013 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "asset.h"
@@ -738,8 +738,8 @@ Channel *Record::get_editing_channel()
 	return batch ? batch->channel : 0;
 }
 
-ArrayList<Channel*>* Record::get_video_inputs() 
-{ 
+ArrayList<Channel*>* Record::get_video_inputs()
+{
 	return default_asset->video_data && vdevice ? vdevice->get_inputs() : 0;
 }
 
@@ -965,11 +965,11 @@ void Record::open_audio_input()
 	if( adevice ) {
 		int sw_pos = SESSION->record_positioning == RECORD_POS_SOFTWARE;
 		adevice->set_software_positioning(sw_pos);
-		adevice->open_input(SESSION->aconfig_in, SESSION->vconfig_in, 
+		adevice->open_input(SESSION->aconfig_in, SESSION->vconfig_in,
 			default_asset->sample_rate, get_fragment_samples(),
 			default_asset->channels, SESSION->real_time_record);
 		adevice->start_recording();
-		adevice->open_monitor(SESSION->playback_config->aconfig,monitor_audio); 
+		adevice->open_monitor(SESSION->playback_config->aconfig,monitor_audio);
 		adevice->set_vdevice(vdevice);
 		if( vdevice ) vdevice->set_adevice(adevice);
 	}
@@ -1068,7 +1068,7 @@ int Record::start_toc()
 	Asset *asset = batch->asset;
 	char source_filename[BCTEXTLEN], toc_path[BCTEXTLEN];
 	IndexFile::get_index_filename(source_filename,
-		mwindow->preferences->index_directory, 
+		mwindow->preferences->index_directory,
 		toc_path, asset->path,".toc");
 	if( default_asset->video_data )
 		return vdevice->start_toc(asset->path, toc_path);
@@ -1524,7 +1524,7 @@ display_cut_icon(int x, int y)
 #ifdef HAVE_DVB
 DeviceDVBInput *Record::
 dvb_device()
-{ 
+{
 	DeviceDVBInput *dvb_dev = !vdevice ? 0 :
 		(DeviceDVBInput *)vdevice->mpeg_device();
 	if( !dvb_dev ) dvb_dev = !adevice ? 0 :

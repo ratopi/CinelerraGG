@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "samples.h"
@@ -60,7 +60,7 @@ void TimeStretchEngine::update(double scale, int sample_rate, int window_time)
 	this->scale = scale;
 	this->sample_rate = sample_rate;
 	this->window_time = window_time;
-	
+
 	window_size = (int64_t)sample_rate * (int64_t)window_time / (int64_t)1000;
 	window_skirt = window_size / 2;
 //printf("TimeStretchEngine::update %d %d\n", __LINE__, window_size);
@@ -100,7 +100,7 @@ void TimeStretchEngine::overlay(double *out, double *in, int size, int skirt)
 
 int TimeStretchEngine::process(Samples *in_buffer, int in_size)
 {
-// printf("TimeStretchEngine::process %d in_buffer=%p in_size=%d\n", 
+// printf("TimeStretchEngine::process %d in_buffer=%p in_size=%d\n",
 // __LINE__,
 // in_buffer,
 // in_size);
@@ -118,7 +118,7 @@ int TimeStretchEngine::process(Samples *in_buffer, int in_size)
 		input_allocation = new_input_allocation;
 	}
 
-// printf("TimeStretchEngine::process %d input=%p input_size=%d input_allocation=%d\n", 
+// printf("TimeStretchEngine::process %d input=%p input_size=%d input_allocation=%d\n",
 // __LINE__,
 // input,
 // input_size,
@@ -141,9 +141,9 @@ int TimeStretchEngine::process(Samples *in_buffer, int in_size)
 // in the next iteration.
 
 
-// printf("TimeStretchEngine::process %d %lld %d\n", 
+// printf("TimeStretchEngine::process %d %lld %d\n",
 // __LINE__,
-// current_in_sample - input_sample, 
+// current_in_sample - input_sample,
 // input_size);
 
 			if(current_in_sample - input_sample < input_size)
@@ -169,13 +169,13 @@ int TimeStretchEngine::process(Samples *in_buffer, int in_size)
 				bzero(new_output, new_allocation * sizeof(double));
 				if(output)
 				{
-					memcpy(new_output, 
-						output, 
+					memcpy(new_output,
+						output,
 						(output_size + window_skirt) * sizeof(double));
-// printf("TimeStretchEngine::process %d this=%p output=%p new_allocation=%d\n", 
-// __LINE__, 
+// printf("TimeStretchEngine::process %d this=%p output=%p new_allocation=%d\n",
+// __LINE__,
 // this,
-// output, 
+// output,
 // new_allocation);
 					delete [] output;
 //printf("TimeStretchEngine::process %d\n", __LINE__);
@@ -185,7 +185,7 @@ int TimeStretchEngine::process(Samples *in_buffer, int in_size)
 			}
 
 // Overlay new window
-			overlay(output + output_size, 
+			overlay(output + output_size,
 				input + current_in_sample - input_sample,
 				window_size,
 				window_skirt);

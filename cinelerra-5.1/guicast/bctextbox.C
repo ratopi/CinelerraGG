@@ -1975,15 +1975,15 @@ int BC_TextBox::get_cursor_letter(int cursor_x, int cursor_y)
 			first_visible_row = 1;
 			got_visible_row = 1;
 		}
-		
-		if( (k+text_height >= get_h() - bottom_margin || 
-			(row_end >= wtext_len && k < get_h() - bottom_margin && 
+
+		if( (k+text_height >= get_h() - bottom_margin ||
+			(row_end >= wtext_len && k < get_h() - bottom_margin &&
 				k + text_height > 0)) )
 			last_visible_row = 1;
 
 // Cursor is inside vertical range of row
-		if((cursor_y >= top_margin && 
-			cursor_y < get_h() - bottom_margin && 
+		if((cursor_y >= top_margin &&
+			cursor_y < get_h() - bottom_margin &&
 			cursor_y >= k && cursor_y < k + text_height) ||
 // Cursor is above 1st row
 			(cursor_y < k + text_height && first_visible_row) ||
@@ -1996,7 +1996,7 @@ int BC_TextBox::get_cursor_letter(int cursor_x, int cursor_y)
 				if((column2 + column1) / 2 >= cursor_x) {
 					result = j - 1;
 					done = 1;
-// printf("BC_TextBox::get_cursor_letter %d %d %d %d\n", 
+// printf("BC_TextBox::get_cursor_letter %d %d %d %d\n",
 // __LINE__, result, first_visible_row, last_visible_row);
 				}
 				column1 = column2;
@@ -2020,7 +2020,7 @@ int BC_TextBox::get_cursor_letter(int cursor_x, int cursor_y)
 	}
 
 
-// printf("BC_TextBox::get_cursor_letter %d cursor_y=%d k=%d h=%d %d %d\n", 
+// printf("BC_TextBox::get_cursor_letter %d cursor_y=%d k=%d h=%d %d %d\n",
 //  __LINE__, cursor_y, k, get_h(), first_visible_row, last_visible_row);
 	if(result < 0) result = 0;
 	if(result > wtext_len) {
@@ -2065,7 +2065,7 @@ int BC_TextBox::get_cursor_letter2(int cursor_x, int cursor_y)
 			}
 		}
 		if(wtext[i] == '\n') i++;
-		
+
 		if(i >= wtext_len && !done) {
 			result = wtext_len;
 		}
@@ -2247,8 +2247,8 @@ int BC_TextBoxSuggestions::handle_event()
 
 
 //printf("BC_TextBoxSuggestions::handle_event %d\n", __LINE__);
-	text_box->highlight_letter1 = 
-		text_box->highlight_letter2 = 
+	text_box->highlight_letter1 =
+		text_box->highlight_letter2 =
 		text_box->ibeam_letter = text_box->tstrlen();
 	text_box->wtext_update();
 	text_box->draw(1);

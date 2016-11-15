@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef TIMEENTRY_H
@@ -43,11 +43,11 @@ class TimeTextBox;
 class TimeEntry
 {
 public:
-	TimeEntry(BC_WindowBase *gui, int x, int y, 
+	TimeEntry(BC_WindowBase *gui, int x, int y,
 		int *output_day, double *output_time, int time_format,
 		int time_w=DEFAULT_TIMEW);
 	virtual ~TimeEntry();
-	
+
 	void create_objects();
 	void time_to_hours(char *result, double time);
 	void time_to_minutes(char *result, double time);
@@ -84,7 +84,7 @@ public:
 	DayText(TimeEntry *timeentry, int x, int y, int w,
 		const char **table, int table_items, const char *text);
 	int handle_event();
-	
+
 	const char **table;
 	TimeEntry *timeentry;
 	int table_items;
@@ -98,7 +98,7 @@ public:
 
 	int handle_up_event();
 	int handle_down_event();
-	
+
 	TimeEntry *timeentry;
 	DayText *text;
 };
@@ -133,7 +133,7 @@ public:
 
 	int handle_up_event();
 	int handle_down_event();
-	
+
 	TimeEntryTumbler *timetumbler;
 };
 
@@ -141,7 +141,7 @@ public:
 class TimeTextBox : public BC_TextBox
 {
 public:
-	TimeTextBox(TimeEntry *timeentry, 
+	TimeTextBox(TimeEntry *timeentry,
 		int x, int y, int w, char *default_text);
 	int handle_event();
 	TimeEntry *timeentry;

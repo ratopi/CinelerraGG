@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -53,10 +53,10 @@ HistogramPoints::HistogramPoints()
 	first->xoffset_left = 0.0;
 	first->xoffset_right = 0.05;
 	insert(1.0,1.0);
-	last->gradient = 1.0;  
+	last->gradient = 1.0;
 	last->xoffset_left = -0.05;
 	last->xoffset_right = 0.0;
-	
+
 }
 
 HistogramPoints::~HistogramPoints()
@@ -137,7 +137,7 @@ void HistogramPoints::copy_from(HistogramPoints *src)
 	}
 }
 
-void HistogramPoints::interpolate(HistogramPoints *prev, 
+void HistogramPoints::interpolate(HistogramPoints *prev,
 	HistogramPoints *next,
 	double prev_scale,
 	double next_scale)
@@ -180,14 +180,14 @@ void HistogramConfig::reset(int do_mode)
 {
 	reset_points();
 
-	
+
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
 		output_min[i] = 0.0;
 		output_max[i] = 1.0;
 	}
 
-	if(do_mode) 
+	if(do_mode)
 	{
 		automatic = 0;
 		threshold = 0.1;
@@ -252,10 +252,10 @@ void HistogramConfig::copy_from(HistogramConfig &that)
 	smoothMode = that.smoothMode;
 }
 
-void HistogramConfig::interpolate(HistogramConfig &prev, 
-	HistogramConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void HistogramConfig::interpolate(HistogramConfig &prev,
+	HistogramConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bchash.h"
@@ -40,11 +40,11 @@ REGISTER_PLUGIN(ZoomMain)
 #define MAX_MAGNIFICATION 100.0
 
 
-ZoomLimit::ZoomLimit(ZoomMain *plugin, 
-	ZoomWindow *window, 
-	float *output, 
-	int x, 
-	int y, 
+ZoomLimit::ZoomLimit(ZoomMain *plugin,
+	ZoomWindow *window,
+	float *output,
+	int x,
+	int y,
 	int w)
  : BC_TumbleTextBox(window,
  	*output,
@@ -73,9 +73,9 @@ int ZoomLimit::handle_event()
 
 
 ZoomWindow::ZoomWindow(ZoomMain *plugin)
- : PluginClientWindow(plugin, 
-	250, 
-	125, 
+ : PluginClientWindow(plugin,
+	250,
+	125,
 	250,
 	125,
 	0)
@@ -99,21 +99,21 @@ void ZoomWindow::create_objects()
 
 	add_subwindow(title = new BC_Title(x, y, _("X Magnification:")));
 	y += title->get_h() + widget_border;
-	limit_x = new ZoomLimit(plugin, 
-		this, 
-		&plugin->max_magnification_x,  
-		x, 
-		y, 
+	limit_x = new ZoomLimit(plugin,
+		this,
+		&plugin->max_magnification_x,
+		x,
+		y,
 		get_w() - window_border * 2 - widget_border - BC_Tumbler::calculate_w());
 	limit_x->create_objects();
 	y += limit_x->get_h() + widget_border;
 	add_subwindow(title = new BC_Title(x, y, _("Y Magnification:")));
 	y += title->get_h() + widget_border;
-	limit_y = new ZoomLimit(plugin, 
-		this, 
-		&plugin->max_magnification_y,  
-		x, 
-		y, 
+	limit_y = new ZoomLimit(plugin,
+		this,
+		&plugin->max_magnification_y,
+		x,
+		y,
 		get_w() - window_border * 2 - widget_border - BC_Tumbler::calculate_w());
 	limit_y->create_objects();
 
@@ -213,11 +213,11 @@ int ZoomMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	if(fraction > 0)
 	{
-		in_w = (float)w / ((float)fraction * 
+		in_w = (float)w / ((float)fraction *
 			(max_magnification_x - min_magnification_x) +
 			min_magnification_x);
 		in_x = (float)w / 2 - in_w / 2;
-		in_h = (float)h / ((float)fraction * 
+		in_h = (float)h / ((float)fraction *
 			(max_magnification_y - min_magnification_y) +
 			min_magnification_y);
 		in_y = (float)h / 2 - in_h / 2;
@@ -230,14 +230,14 @@ int ZoomMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		in_y = 0;
 	}
 
-// printf("ZoomMain::process_realtime %f %f %f %f\n", 
+// printf("ZoomMain::process_realtime %f %f %f %f\n",
 // fraction,
-// ((float)fraction * 
+// ((float)fraction *
 // (max_magnification_x - min_magnification_x) +
 // min_magnification_x),
-// in_x, 
-// in_y, 
-// in_x + in_w, 
+// in_x,
+// in_y,
+// in_x + in_w,
 // in_y + in_h);
 
 
@@ -257,10 +257,10 @@ int ZoomMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			outgoing->get_h(),
 			outgoing->get_color_model());
 		temp->clear_frame();
-		overlayer->overlay(temp, 
-			outgoing, 
-			in_x, 
-			in_y, 
+		overlayer->overlay(temp,
+			outgoing,
+			in_x,
+			in_y,
 			in_x + in_w,
 			in_y + in_h,
 			0,
@@ -275,10 +275,10 @@ int ZoomMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	else
 	{
 		outgoing->clear_frame();
-		overlayer->overlay(outgoing, 
-			incoming, 
-			in_x, 
-			in_y, 
+		overlayer->overlay(outgoing,
+			incoming,
+			in_x,
+			in_y,
 			in_x + in_w,
 			in_y + in_h,
 			0,

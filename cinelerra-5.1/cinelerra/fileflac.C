@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <errno.h>
@@ -54,8 +54,8 @@ FileFLAC::~FileFLAC()
 	close_file();
 }
 
-void FileFLAC::get_parameters(BC_WindowBase *parent_window, 
-	Asset *asset, 
+void FileFLAC::get_parameters(BC_WindowBase *parent_window,
+	Asset *asset,
 	BC_WindowBase* &format_window,
 	int audio_options,
 	int video_options)
@@ -102,9 +102,9 @@ int FileFLAC::reset_parameters_derived()
 
 
 static FLAC__StreamDecoderWriteStatus write_callback(
-	const FLAC__StreamDecoder *decoder, 
-	const FLAC__Frame *frame, 
-	const FLAC__int32 * const buffer[], 
+	const FLAC__StreamDecoder *decoder,
+	const FLAC__Frame *frame,
+	const FLAC__int32 * const buffer[],
 	void *client_data)
 {
 	FileFLAC *ptr = (FileFLAC*)client_data;
@@ -172,15 +172,15 @@ static FLAC__StreamDecoderWriteStatus write_callback(
 }
 
 
-static void metadata_callback(const FLAC__StreamDecoder *decoder, 
-	const FLAC__StreamMetadata *metadata, 
+static void metadata_callback(const FLAC__StreamDecoder *decoder,
+	const FLAC__StreamMetadata *metadata,
 	void *client_data)
 {
 //	printf("metadata_callback\n");
 }
 
-static void error_callback(const FLAC__StreamDecoder *decoder, 
-	FLAC__StreamDecoderErrorStatus status, 
+static void error_callback(const FLAC__StreamDecoder *decoder,
+	FLAC__StreamDecoderErrorStatus status,
 	void *client_data)
 {
 //	printf("error_callback\n");
@@ -211,7 +211,7 @@ int FileFLAC::open_file(int rd, int wr)
 			if(!FLAC__stream_decoder_process_single(flac_decode)) break;
 		}
 
-		if(!initialized) 
+		if(!initialized)
 			result = 1;
 		else
 		{
@@ -225,9 +225,9 @@ int FileFLAC::open_file(int rd, int wr)
 		FLAC__stream_encoder_set_channels(flac_encode, asset->channels);
 		FLAC__stream_encoder_set_bits_per_sample(flac_encode, asset->bits);
 		FLAC__stream_encoder_set_sample_rate(flac_encode, asset->sample_rate);
-		FLAC__stream_encoder_init_file(flac_encode, 
-			asset->path, 
-			0, 
+		FLAC__stream_encoder_init_file(flac_encode,
+			asset->path,
+			0,
 			0);
 	}
 
@@ -242,7 +242,7 @@ int FileFLAC::close_file_derived()
 		FLAC__stream_decoder_finish(flac_decode);
 		FLAC__stream_decoder_delete(flac_decode);
 	}
-	
+
 	if(flac_encode)
 	{
 		FLAC__stream_encoder_finish(flac_encode);
@@ -302,9 +302,9 @@ int FileFLAC::write_samples(double **buffer, int64_t len)
 			*dst++ = (int32_t)sample;
 		}
 	}
-	
-	int result = FLAC__stream_encoder_process(flac_encode, 
-		temp_buffer, 
+
+	int result = FLAC__stream_encoder_process(flac_encode,
+		temp_buffer,
 		len);
 
 	return !result;
@@ -314,7 +314,7 @@ int FileFLAC::read_samples(double *buffer, int64_t len)
 {
 	int result = 0;
 	update_pcm_history(len);
-	
+
 	if(decode_end != decode_start)
 	{
 		FLAC__stream_decoder_seek_absolute(flac_decode, decode_start);
@@ -339,8 +339,8 @@ int FileFLAC::read_samples(double *buffer, int64_t len)
 
 	if(!result)
 	{
-		read_history(buffer, 
-			file->current_sample, 
+		read_history(buffer,
+			file->current_sample,
 			file->current_channel,
 			len);
 	}
@@ -358,7 +358,7 @@ int FileFLAC::read_samples(double *buffer, int64_t len)
 
 
 
-FLACConfigAudio::FLACConfigAudio(BC_WindowBase *parent_window, 
+FLACConfigAudio::FLACConfigAudio(BC_WindowBase *parent_window,
 	Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Audio Compression"),
  	parent_window->get_abs_cursor_x(1),

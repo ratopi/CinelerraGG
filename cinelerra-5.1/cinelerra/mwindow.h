@@ -672,7 +672,7 @@ public:
 	void init_commercials();
 	static void add_plugins(ArrayList<PluginServer*> &plugins);
 	static void delete_plugins();
-// 
+//
 	void clean_indexes();
 //	TimeBomb timebomb;
 	SigHandler *sighandler;

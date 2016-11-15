@@ -216,7 +216,7 @@ void BC_WindowBase::draw_utf8_text(int x, int y,
 	}
 }
 
-void BC_WindowBase::draw_xft_text(int x, int y, 
+void BC_WindowBase::draw_xft_text(int x, int y,
 	const char *text, int length, BC_Pixmap *pixmap, int is_utf8)
 {
 	int l = length + 1;

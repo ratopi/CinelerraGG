@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 
@@ -91,7 +91,7 @@ void FindObjectConfig::boundaries()
 
 int FindObjectConfig::equivalent(FindObjectConfig &that)
 {
-	int result = 
+	int result =
 		global_range_w == that.global_range_w &&
 		global_range_h == that.global_range_h &&
 		draw_keypoints == that.draw_keypoints &&
@@ -135,10 +135,10 @@ void FindObjectConfig::copy_from(FindObjectConfig &that)
 	blend = that.blend;
 }
 
-void FindObjectConfig::interpolate(FindObjectConfig &prev, 
-	FindObjectConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void FindObjectConfig::interpolate(FindObjectConfig &prev,
+	FindObjectConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	copy_from(prev);
@@ -186,14 +186,14 @@ FindObjectMain::~FindObjectMain()
 	delete affine;
 	delete temp;
 	delete overlayer;
-	
+
     if(blob_param.pBT) cvReleaseBlobTracker(&blob_param.pBT);
     if(blob_param.pBD) cvReleaseBlobDetector(&blob_param.pBD);
     if(blob_param.pBTGen) cvReleaseBlobTrackGen(&blob_param.pBTGen);
     if(blob_param.pBTA) cvReleaseBlobTrackAnalysis(&blob_param.pBTA);
     if(blob_param.pFG) cvReleaseFGDetector(&blob_param.pFG);
     if(blob_pTracker) cvReleaseBlobTrackerAuto(&blob_pTracker);
-	
+
 }
 
 const char* FindObjectMain::plugin_title() { return _("Find Object"); }
@@ -214,7 +214,7 @@ void FindObjectMain::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("FindObjectMain::update_gui");
-			
+
 			char string[BCTEXTLEN];
 
 			((FindObjectWindow*)thread->window)->global_range_w->update(config.global_range_w);
@@ -253,8 +253,8 @@ void FindObjectMain::update_gui()
 			((FindObjectWindow*)thread->window)->flush();
 			thread->window->unlock_window();
 		}
-// printf("FindObjectMain::update_gui %d %d %d %d\n", 
-// __LINE__, 
+// printf("FindObjectMain::update_gui %d %d %d %d\n",
+// __LINE__,
 // config.mode1,
 // config.mode2,
 // config.mode3);
@@ -465,9 +465,9 @@ void FindObjectMain::draw_rect(VFrame *frame, int x1, int y1, int x2, int y2)
 
 
 // Convert to greyscale & crop
-void FindObjectMain::grey_crop(unsigned char *dst, 
-	VFrame *src, 
-	int x1, 
+void FindObjectMain::grey_crop(unsigned char *dst,
+	VFrame *src,
+	int x1,
 	int y1,
 	int x2,
 	int y2,
@@ -561,18 +561,18 @@ void FindObjectMain::process_surf()
 	if(!object_image)
 	{
 // Only does greyscale
-		object_image = cvCreateImage( 
-			cvSize(object_image_w, object_image_h), 
-			8, 
+		object_image = cvCreateImage(
+			cvSize(object_image_w, object_image_h),
+			8,
 			1);
 	}
 
 	if(!scene_image)
 	{
 // Only does greyscale
-		scene_image = cvCreateImage( 
-			cvSize(scene_image_w, scene_image_h), 
-			8, 
+		scene_image = cvCreateImage(
+			cvSize(scene_image_w, scene_image_h),
+			8,
 			1);
 	}
 
@@ -583,21 +583,21 @@ void FindObjectMain::process_surf()
 
 	if(!prev_object) prev_object = new unsigned char[object_image_w * object_image_h];
 	memcpy(prev_object, object_image->imageData, object_image_w * object_image_h);
-	grey_crop((unsigned char*)scene_image->imageData, 
-		get_input(scene_layer), 
-		scene_x1, 
-		scene_y1, 
-		scene_x2, 
+	grey_crop((unsigned char*)scene_image->imageData,
+		get_input(scene_layer),
+		scene_x1,
+		scene_y1,
+		scene_x2,
 		scene_y2,
 		scene_image_w,
 		scene_image_h);
 
 
-	grey_crop((unsigned char*)object_image->imageData, 
-		get_input(object_layer), 
-		object_x1, 
-		object_y1, 
-		object_x2, 
+	grey_crop((unsigned char*)object_image->imageData,
+		get_input(object_layer),
+		object_x1,
+		object_y1,
+		object_x2,
 		object_y2,
 		object_image_w,
 		object_image_h);
@@ -614,11 +614,11 @@ void FindObjectMain::process_surf()
 	{
 		if(object_keypoints) cvClearSeq(object_keypoints);
 		if(object_descriptors) cvClearSeq(object_descriptors);
-		cvExtractSURF(object_image, 
-			0, 
-			&object_keypoints, 
-			&object_descriptors, 
-			storage, 
+		cvExtractSURF(object_image,
+			0,
+			&object_keypoints,
+			&object_descriptors,
+			storage,
 			params,
 			0);
 	}
@@ -629,10 +629,10 @@ void FindObjectMain::process_surf()
 // 		{
 //         	CvSURFPoint* r1 = (CvSURFPoint*)cvGetSeqElem( object_keypoints, i );
 // 			int size = r1->size / 4;
-// 			draw_rect(frame[object_layer], 
-//   				r1->pt.x + object_x1 - size, 
-//   				r1->pt.y + object_y1 - size, 
-//   				r1->pt.x + object_x1 + size, 
+// 			draw_rect(frame[object_layer],
+//   				r1->pt.x + object_x1 - size,
+//   				r1->pt.y + object_y1 - size,
+//   				r1->pt.x + object_x1 + size,
 //  				r1->pt.y + object_y1 + size);
 // 		}
 
@@ -642,11 +642,11 @@ void FindObjectMain::process_surf()
 // TODO: make the surf data persistent & check for image changes instead
 	if(scene_keypoints) cvClearSeq(scene_keypoints);
 	if(scene_descriptors) cvClearSeq(scene_descriptors);
-	cvExtractSURF(scene_image, 
-		0, 
-		&scene_keypoints, 
-		&scene_descriptors, 
-		storage, 
+	cvExtractSURF(scene_image,
+		0,
+		&scene_keypoints,
+		&scene_descriptors,
+		storage,
 		params,
 		0);
 
@@ -655,30 +655,30 @@ void FindObjectMain::process_surf()
 // 		{
 //         	CvSURFPoint* r1 = (CvSURFPoint*)cvGetSeqElem( scene_keypoints, i );
 // 			int size = r1->size / 4;
-// 			draw_rect(frame[scene_layer], 
-//   				r1->pt.x + scene_x1 - size, 
-//   				r1->pt.y + scene_y1 - size, 
-//   				r1->pt.x + scene_x1 + size, 
+// 			draw_rect(frame[scene_layer],
+//   				r1->pt.x + scene_x1 - size,
+//   				r1->pt.y + scene_y1 - size,
+//   				r1->pt.x + scene_x1 + size,
 //  				r1->pt.y + scene_y1 + size);
 // 		}
 
-// printf("FindObjectMain::process_surf %d %d %d scene keypoints=%d\n", 
-// __LINE__, 
+// printf("FindObjectMain::process_surf %d %d %d scene keypoints=%d\n",
+// __LINE__,
 // scene_w,
 // scene_h,
 // scene_keypoints->total);
 
 	int *point_pairs = 0;
 	int total_pairs = 0;
-	CvPoint src_corners[4] = 
+	CvPoint src_corners[4] =
 	{
-		{ 0, 0 }, 
-		{ object_w, 0 }, 
-		{ object_w, object_h }, 
+		{ 0, 0 },
+		{ object_w, 0 },
+		{ object_w, object_h },
 		{ 0, object_h }
 	};
 
-	CvPoint dst_corners[4] = 
+	CvPoint dst_corners[4] =
 	{
 		{ 0, 0 },
 		{ 0, 0 },
@@ -689,11 +689,11 @@ void FindObjectMain::process_surf()
 //printf("FindObjectMain::process_surf %d\n", __LINE__);
 	if(scene_keypoints->total &&
 		object_keypoints->total &&
-			locatePlanarObject(object_keypoints, 
-			object_descriptors, 
-			scene_keypoints, 
-			scene_descriptors, 
-			src_corners, 
+			locatePlanarObject(object_keypoints,
+			object_descriptors,
+			scene_keypoints,
+			scene_descriptors,
+			src_corners,
 			dst_corners,
 			&point_pairs,
 			&total_pairs))
@@ -714,15 +714,15 @@ void FindObjectMain::process_surf()
 
 
 				int size = r2->size * 1.2 / 9 * 2;
-				draw_rect(get_input(scene_layer), 
-  					r2->pt.x + scene_x1 - size, 
-  					r2->pt.y + scene_y1 - size, 
-  					r2->pt.x + scene_x1 + size, 
+				draw_rect(get_input(scene_layer),
+  					r2->pt.x + scene_x1 - size,
+  					r2->pt.y + scene_y1 - size,
+  					r2->pt.x + scene_x1 + size,
  					r2->pt.y + scene_y1 + size);
-				draw_rect(get_input(object_layer), 
-  					r1->pt.x + object_x1 - size, 
-  					r1->pt.y + object_y1 - size, 
-  					r1->pt.x + object_x1 + size, 
+				draw_rect(get_input(object_layer),
+  					r1->pt.x + object_x1 - size,
+  					r1->pt.y + object_y1 - size,
+  					r1->pt.x + object_x1 + size,
  					r1->pt.y + object_y1 + size);
 			}
 		}
@@ -741,7 +741,7 @@ void FindObjectMain::process_surf()
 //printf("FindObjectMain::process_surf %d\n", __LINE__);
 
 
-		
+
 	}
 //printf("FindObjectMain::process_surf %d\n", __LINE__);
 
@@ -780,17 +780,17 @@ void FindObjectMain::process_camshift()
 // Create aligned, RGB images
 	if(!object_image)
 	{
-		object_image = cvCreateImage( 
-			cvSize(object_image_w, object_image_h), 
-			8, 
+		object_image = cvCreateImage(
+			cvSize(object_image_w, object_image_h),
+			8,
 			3);
 	}
 
 	if(!scene_image)
 	{
-		scene_image = cvCreateImage( 
-			cvSize(scene_image_w, scene_image_h), 
-			8, 
+		scene_image = cvCreateImage(
+			cvSize(scene_image_w, scene_image_h),
+			8,
 			3);
 	}
 
@@ -858,9 +858,9 @@ void FindObjectMain::process_camshift()
 	delete [] scene_rows;
 
 // from camshiftdemo.cpp
-// Compute new object	
-	if(memcmp(prev_object, 
-		object_image->imageData, 
+// Compute new object
+	if(memcmp(prev_object,
+		object_image->imageData,
 		object_image_w * object_image_h * 3) ||
 		!hist.dims)
 	{
@@ -870,9 +870,9 @@ void FindObjectMain::process_camshift()
     	int _vmin = vmin, _vmax = vmax;
 //printf("FindObjectMain::process_camshift %d\n", __LINE__);
 
-    	inRange(hsv, 
+    	inRange(hsv,
 			Scalar(0, smin, MIN(_vmin,_vmax)),
-        	Scalar(180, 256, MAX(_vmin, _vmax)), 
+        	Scalar(180, 256, MAX(_vmin, _vmax)),
 			mask);
     	int ch[] = { 0, 0 };
     	hue.create(hsv.size(), hsv.depth());
@@ -893,26 +893,26 @@ void FindObjectMain::process_camshift()
 	cvtColor(image, hsv, CV_RGB2HSV);
     int _vmin = vmin, _vmax = vmax;
 
-    inRange(hsv, 
+    inRange(hsv,
 		Scalar(0, smin, MIN(_vmin,_vmax)),
-        Scalar(180, 256, MAX(_vmin, _vmax)), 
+        Scalar(180, 256, MAX(_vmin, _vmax)),
 		mask);
     int ch[] = {0, 0};
     hue.create(hsv.size(), hsv.depth());
     mixChannels(&hsv, 1, &hue, 1, ch, 1);
-	
+
 //printf("FindObjectMain::process_camshift %d %d %d\n", __LINE__, hist.dims, hist.size[1]);
 	RotatedRect trackBox = RotatedRect(
-		Point2f((object_x1 + object_x2) / 2, (object_y1 + object_y2) / 2), 
-		Size2f(object_w, object_h), 
+		Point2f((object_x1 + object_x2) / 2, (object_y1 + object_y2) / 2),
+		Size2f(object_w, object_h),
 		0);
-	trackWindow = Rect(0, 
+	trackWindow = Rect(0,
 		0,
-        scene_w, 
+        scene_w,
 		scene_h);
 	if(hist.dims > 0)
 	{
-		
+
 
 		calcBackProject(&hue, 1, 0, hist, backproj, &phranges);
 		backproj &= mask;
@@ -924,7 +924,7 @@ void FindObjectMain::process_camshift()
 // 			trackWindow.height = object_h;
 // 		}
 
-		trackBox = CamShift(backproj, 
+		trackBox = CamShift(backproj,
 			trackWindow,
         	TermCriteria( CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1 ));
 //printf("FindObjectMain::process_camshift %d\n", __LINE__);
@@ -940,7 +940,7 @@ void FindObjectMain::process_camshift()
 //                     	  Rect(0, 0, cols, rows);
 //     	}
 	}
-// printf("FindObjectMain::process_camshift %d %d %d %d %d\n", 
+// printf("FindObjectMain::process_camshift %d %d %d %d %d\n",
 // __LINE__,
 // trackWindow.x,
 // trackWindow.y,
@@ -974,7 +974,7 @@ void FindObjectMain::process_camshift()
 	}
 
 // Get object outline in the scene layer
-// printf("FindObjectMain::process_camshift %d %d %d %d %d %d\n", 
+// printf("FindObjectMain::process_camshift %d %d %d %d %d %d\n",
 // __LINE__,
 // (int)trackBox.center.x,
 // (int)trackBox.center.y,
@@ -1034,7 +1034,7 @@ void FindObjectMain::process_blob()
 	if(!blob_initialized)
 	{
 		blob_initialized = 1;
-		
+
 		blob_param.FGTrainFrames = 5;
 
 
@@ -1046,7 +1046,7 @@ void FindObjectMain::process_blob()
         blob_param.pBT = cvCreateBlobTrackerCCMSPF();
 /* Create whole pipline: */
         blob_pTracker = cvCreateBlobTrackerAuto1(&blob_param);
-		
+
 	}
 
 
@@ -1056,9 +1056,9 @@ void FindObjectMain::process_blob()
 // Create aligned, RGB images
 	if(!scene_image)
 	{
-		scene_image = cvCreateImage( 
-			cvSize(scene_image_w, scene_image_h), 
-			8, 
+		scene_image = cvCreateImage(
+			cvSize(scene_image_w, scene_image_h),
+			8,
 			3);
 	}
 
@@ -1102,7 +1102,7 @@ printf("FindObjectMain::process_blob %d %jd %d\n", __LINE__, get_source_position
 	{
 		IplImage* pFG = blob_pTracker->GetFGMask();
 printf("FindObjectMain::process_blob %d %ld\n", __LINE__, get_source_position());
-		
+
 // Temporary row pointers
 		unsigned char **mask_rows = new unsigned char*[scene_image_h];
 		for(int i = 0; i < scene_image_h; i++)
@@ -1137,10 +1137,10 @@ printf("FindObjectMain::process_blob %d %ld\n", __LINE__, get_source_position())
 
 		delete [] mask_rows;
 
-		
+
 	}
 #endif
-	
+
 
 }
 
@@ -1176,14 +1176,14 @@ int FindObjectMain::process_buffer(VFrame **frame,
 	scene_layer = MIN(scene_layer, PluginClient::get_total_buffers() - 1);
 	replace_layer = MIN(replace_layer, PluginClient::get_total_buffers() - 1);
 
-// printf("FindObjectMain::process_buffer %d %d %d %d %d %d\n", 
+// printf("FindObjectMain::process_buffer %d %d %d %d %d %d\n",
 // __LINE__,
 // PluginClient::get_total_buffers(),
 // config.object_layer,
 // config.scene_layer,
 // object_layer,
 // scene_layer);
-// 
+//
 // Create cropped images
 // TODO: use oblique corners & affine transform
 	object_w = (int)(config.global_block_w * w / 100);
@@ -1224,7 +1224,7 @@ int FindObjectMain::process_buffer(VFrame **frame,
 	if(scene_w % QUANTIZE) scene_image_w += QUANTIZE - (scene_w % QUANTIZE);
 	if(scene_h % QUANTIZE) scene_image_h += QUANTIZE - (scene_h % QUANTIZE);
 
-	if(object_image && 
+	if(object_image &&
 		(object_image_w != this->object_image_w ||
 		object_image_h != this->object_image_h ||
 		prev_algorithm != config.algorithm))
@@ -1237,7 +1237,7 @@ int FindObjectMain::process_buffer(VFrame **frame,
 	this->object_image_w = object_image_w;
 	this->object_image_h = object_image_h;
 
-	if(scene_image && 
+	if(scene_image &&
 		(scene_image_w != this->scene_image_w ||
 		scene_image_h != this->scene_image_h ||
 		prev_algorithm != config.algorithm))
@@ -1258,9 +1258,9 @@ int FindObjectMain::process_buffer(VFrame **frame,
 // Read in the input frames
 	for(int i = 0; i < PluginClient::get_total_buffers(); i++)
 	{
-		read_frame(frame[i], 
-			i, 
-			start_position, 
+		read_frame(frame[i],
+			i,
+			start_position,
 			frame_rate);
 	}
 
@@ -1280,11 +1280,11 @@ int FindObjectMain::process_buffer(VFrame **frame,
 				process_surf();
 				break;
 #endif
-			
+
 			case ALGORITHM_CAMSHIFT:
 				process_camshift();
 				break;
-				
+
 			case ALGORITHM_BLOB:
 				process_blob();
 				break;
@@ -1305,21 +1305,21 @@ int FindObjectMain::process_buffer(VFrame **frame,
 		}
 		else
 		{
-			border_x1_accum = (float)border_x1 * config.blend / 100 + 
+			border_x1_accum = (float)border_x1 * config.blend / 100 +
 				border_x1_accum * (100 - config.blend) / 100;
-			border_y1_accum = (float)border_y1 * config.blend / 100 + 
+			border_y1_accum = (float)border_y1 * config.blend / 100 +
 				border_y1_accum * (100 - config.blend) / 100;
-			border_x2_accum = (float)border_x2 * config.blend / 100 + 
+			border_x2_accum = (float)border_x2 * config.blend / 100 +
 				border_x2_accum * (100 - config.blend) / 100;
-			border_y2_accum = (float)border_y2 * config.blend / 100 + 
+			border_y2_accum = (float)border_y2 * config.blend / 100 +
 				border_y2_accum * (100 - config.blend) / 100;
-			border_x3_accum = (float)border_x3 * config.blend / 100 + 
+			border_x3_accum = (float)border_x3 * config.blend / 100 +
 				border_x3_accum * (100 - config.blend) / 100;
-			border_y3_accum = (float)border_y3 * config.blend / 100 + 
+			border_y3_accum = (float)border_y3 * config.blend / 100 +
 				border_y3_accum * (100 - config.blend) / 100;
-			border_x4_accum = (float)border_x4 * config.blend / 100 + 
+			border_x4_accum = (float)border_x4 * config.blend / 100 +
 				border_x4_accum * (100 - config.blend) / 100;
-			border_y4_accum = (float)border_y4 * config.blend / 100 + 
+			border_y4_accum = (float)border_y4 * config.blend / 100 +
 				border_y4_accum * (100 - config.blend) / 100;
 		}
 
@@ -1333,8 +1333,8 @@ int FindObjectMain::process_buffer(VFrame **frame,
 
 //printf("FindObjectMain::process_surf %d replace_layer=%d\n", __LINE__, replace_layer);
 			if(!temp)
-				temp = new VFrame(w, 
-					h, 
+				temp = new VFrame(w,
+					h,
 					get_input(scene_layer)->get_color_model());
 			if(!overlayer)
 				overlayer = new OverlayFrame(get_project_smp() + 1);
@@ -1342,7 +1342,7 @@ int FindObjectMain::process_buffer(VFrame **frame,
 			temp->clear_frame();
 			affine->process(temp,
 				get_input(replace_layer),
-				0, 
+				0,
 				AffineEngine::PERSPECTIVE,
 				border_x1_accum * 100 / w,
 				border_y1_accum * 100 / h,
@@ -1354,16 +1354,16 @@ int FindObjectMain::process_buffer(VFrame **frame,
 				border_y4_accum * 100 / h,
 				1);
 
-			overlayer->overlay(get_input(scene_layer), 
-				temp, 
-				0, 
-				0, 
-				w, 
-				h, 
-				0, 
-				0, 
-				w, 
-				h, 
+			overlayer->overlay(get_input(scene_layer),
+				temp,
+				0,
+				0,
+				w,
+				h,
+				0,
+				0,
+				w,
+				h,
 				1,        // 0 - 1
 				TRANSFER_NORMAL,
 				NEAREST_NEIGHBOR);
@@ -1372,25 +1372,25 @@ int FindObjectMain::process_buffer(VFrame **frame,
 
 		if(config.draw_border)
 		{
-			draw_line(get_input(scene_layer), 
-				border_x1_accum, 
-				border_y1_accum, 
-				border_x2_accum, 
+			draw_line(get_input(scene_layer),
+				border_x1_accum,
+				border_y1_accum,
+				border_x2_accum,
 				border_y2_accum);
-			draw_line(get_input(scene_layer), 
-				border_x2_accum, 
-				border_y2_accum, 
-				border_x3_accum, 
+			draw_line(get_input(scene_layer),
+				border_x2_accum,
+				border_y2_accum,
+				border_x3_accum,
 				border_y3_accum);
-			draw_line(get_input(scene_layer), 
-				border_x3_accum, 
-				border_y3_accum, 
-				border_x4_accum, 
+			draw_line(get_input(scene_layer),
+				border_x3_accum,
+				border_y3_accum,
+				border_x4_accum,
 				border_y4_accum);
-			draw_line(get_input(scene_layer), 
-				border_x4_accum, 
-				border_y4_accum, 
-				border_x1_accum, 
+			draw_line(get_input(scene_layer),
+				border_x4_accum,
+				border_y4_accum,
+				border_x1_accum,
 				border_y1_accum);
 		}
 

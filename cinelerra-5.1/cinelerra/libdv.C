@@ -74,9 +74,9 @@ int dv_delete(dv_t *dv)
 
 
 
-int dv_read_video(dv_t *dv, 
-		unsigned char **output_rows, 
-		unsigned char *data, 
+int dv_read_video(dv_t *dv,
+		unsigned char **output_rows,
+		unsigned char *data,
 		long bytes,
 		int color_model)
 {
@@ -112,10 +112,10 @@ int dv_read_video(dv_t *dv,
 	{
 //printf("dv_read_video 1\n");
 		pixels[0] = output_rows[0];
-		dv_decode_full_frame(dv->decoder, 
-			data, 
-			e_dv_color_yuv, 
-			output_rows, 
+		dv_decode_full_frame(dv->decoder,
+			data,
+			e_dv_color_yuv,
+			output_rows,
 			pitches);
 //printf("dv_read_video 2\n");
 	}
@@ -132,14 +132,14 @@ int dv_read_video(dv_t *dv,
 
 		pixels[0] = dv->temp_video;
 //printf("dv_read_video 3 %p\n", data);
-		dv_decode_full_frame(dv->decoder, 
-			data, 
-			e_dv_color_yuv, 
-			pixels, 
+		dv_decode_full_frame(dv->decoder,
+			data,
+			e_dv_color_yuv,
+			pixels,
 			pitches);
 //printf("dv_read_video 4\n");
 
-		BC_CModels::transfer(output_rows, 
+		BC_CModels::transfer(output_rows,
 			temp_rows,
 			output_rows[0],
 			output_rows[1],
@@ -147,15 +147,15 @@ int dv_read_video(dv_t *dv,
 			0,
 			0,
 			0,
-			0, 
-			0, 
-			DV_WIDTH, 
+			0,
+			0,
+			DV_WIDTH,
 			dv->decoder->height,
-			0, 
-			0, 
-			DV_WIDTH, 
+			0,
+			0,
+			DV_WIDTH,
 			dv->decoder->height,
-			BC_YUV422, 
+			BC_YUV422,
 			color_model,
 			0,
 			DV_WIDTH,
@@ -171,7 +171,7 @@ int dv_read_video(dv_t *dv,
 
 
 
-int dv_read_audio(dv_t *dv, 
+int dv_read_audio(dv_t *dv,
 		unsigned char *samples,
 		unsigned char *data,
 		long size,
@@ -237,7 +237,7 @@ void dv_write_video(dv_t *dv,
 
 	if(!dv->encoder)
 	{
-		dv->encoder = dv_encoder_new( 
+		dv->encoder = dv_encoder_new(
 			0,
 			0,
 			0);
@@ -260,10 +260,10 @@ void dv_write_video(dv_t *dv,
 	dv->encoder->static_qno = 0;
 	dv->encoder->force_dct = DV_DCT_AUTO;
 	dv->encoder->isPAL = (norm == DV_PAL);
-	
+
 	dv_encode_full_frame( dv->encoder,
-		input_rows, 
-		(dv_color_space_t)encode_dv_colormodel, 
+		input_rows,
+		(dv_color_space_t)encode_dv_colormodel,
 		data );
 }
 
@@ -282,7 +282,7 @@ int dv_write_audio(dv_t *dv,
 
 	if(!dv->encoder)
 	{
-		dv->encoder = dv_encoder_new( 
+		dv->encoder = dv_encoder_new(
 			0,
 			0,
 			0 );
@@ -311,10 +311,10 @@ int dv_write_audio(dv_t *dv,
 	}
 
 
-	dv_encode_full_audio(dv->encoder, 
+	dv_encode_full_audio(dv->encoder,
 		dv->temp_audio,
-		channels, 
-		rate, 
+		channels,
+		rate,
 		data);
 	return samples;
 }

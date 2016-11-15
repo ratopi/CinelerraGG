@@ -68,7 +68,7 @@ void PluginFClientConfig::copy_from(PluginFClientConfig &that)
 	}
 }
 
-void PluginFClientConfig::interpolate(PluginFClientConfig &prev, PluginFClientConfig &next, 
+void PluginFClientConfig::interpolate(PluginFClientConfig &prev, PluginFClientConfig &next,
 	int64_t prev_frame, int64_t next_frame, int64_t current_frame)
 {
 	copy_from(prev);
@@ -398,7 +398,7 @@ int PluginFClient_Opt::units(ArrayList<const AVOption *> &opts)
 			if( strlen(opts[i]->name) < strlen(opt->name) ) opts[i] = opt;
 			break;
 		}
-		if( i < 0 ) 
+		if( i < 0 )
 			opts.append(opt);
 	}
 	return opts.size();
@@ -910,7 +910,7 @@ int PluginFVClient::process_buffer(VFrame **frames, int64_t position, double fra
 		color_model_to_pix_fmt(colormodel);
 	if( pix_fmt <= AV_PIX_FMT_NONE || pix_fmt >= AV_PIX_FMT_NB )
 		pix_fmt = AV_PIX_FMT_RGBA;
-		
+
 	AVFrame *frame = 0;
 	if( ret >= 0 && !(frame = av_frame_alloc()) ) {
 		fprintf(stderr, "PluginFVClient::process_buffer: av_frame_alloc failed\n");

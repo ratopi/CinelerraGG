@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -61,8 +61,8 @@ void SelTempAvgConfig::copy_from(SelTempAvgConfig *src)
 	this->offset_restartmarker_keyframe = src->offset_restartmarker_keyframe;
 	this->offset_fixed_value = src->offset_fixed_value;
 	this->gain = src->gain;
-	this->avg_threshold_RY = src->avg_threshold_RY; this->avg_threshold_GU = src->avg_threshold_GU; 
-	this->avg_threshold_BV = src->avg_threshold_BV; this->std_threshold_RY = src->std_threshold_RY; 
+	this->avg_threshold_RY = src->avg_threshold_RY; this->avg_threshold_GU = src->avg_threshold_GU;
+	this->avg_threshold_BV = src->avg_threshold_BV; this->std_threshold_RY = src->std_threshold_RY;
 	this->std_threshold_GU = src->std_threshold_GU; this->std_threshold_BV = src->std_threshold_BV;
 
 	this->mask_BV = src->mask_BV; this->mask_RY = src->mask_RY; this->mask_GU = src->mask_GU;
@@ -88,7 +88,7 @@ int SelTempAvgConfig::equivalent(SelTempAvgConfig *src)
 SelTempAvgMain::SelTempAvgMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	accumulation = 0;
 	history = 0;
 	history_size = 0;
@@ -100,9 +100,9 @@ SelTempAvgMain::SelTempAvgMain(PluginServer *server)
 
 SelTempAvgMain::~SelTempAvgMain()
 {
-	
 
-	if(accumulation) 
+
+	if(accumulation)
 	{
 		delete [] accumulation;
 		delete [] accumulation_sq;
@@ -135,12 +135,12 @@ int SelTempAvgMain::process_buffer(VFrame *frame,
 // Allocate accumulation
 	if(!accumulation)
 	{
-		accumulation = new unsigned char[w * 
-						 h * 
+		accumulation = new unsigned char[w *
+						 h *
 						 BC_CModels::components(color_model) *
 						 sizeof(float)];
 
-		accumulation_sq = new unsigned char[w * 
+		accumulation_sq = new unsigned char[w *
 						    h *
 						    3 *
 						    sizeof(float)];
@@ -237,7 +237,7 @@ int SelTempAvgMain::process_buffer(VFrame *frame,
 				for(int j = 0; j < history_size; j++)
 				{
 // Old frame is equal to a new frame
-					if(history_frame[i] == new_history_frames[j]) 
+					if(history_frame[i] == new_history_frames[j])
 					{
 						got_it = 1;
 						break;
@@ -411,7 +411,7 @@ void SelTempAvgMain::clear_accum(int w, int h, int color_model)
 			break;
 	}
 }
-#define C2_IS(frame_row,chroma,max)  (float)(frame_row)/max 
+#define C2_IS(frame_row,chroma,max)  (float)(frame_row)/max
 
 
 #define SUBTRACT_ACCUM(type, \
@@ -736,49 +736,49 @@ int SelTempAvgMain::load_configuration()
 	prev_keyframe = get_prev_keyframe(curpos);
 	read_data(prev_keyframe);
 
-	if (curpos == prev_keyframe->position) 
-		onakeyframe = 1; 
-	else 
+	if (curpos == prev_keyframe->position)
+		onakeyframe = 1;
+	else
 		onakeyframe = 0;
 
 	int64_t next_restart_keyframe     = curpos + config.frames;
 	int64_t prev_restart_keyframe     = curpos - config.frames;
 
-	for (int i = curpos; i < curpos + config.frames; i++) 
+	for (int i = curpos; i < curpos + config.frames; i++)
 	{
 		temp_keyframe = get_next_keyframe(i);
-		if ( 
-			(temp_keyframe->position < curpos + config.frames/2) && 
+		if (
+			(temp_keyframe->position < curpos + config.frames/2) &&
 			(temp_keyframe->position > curpos) &&
-			nextkeyframeisoffsetrestart(temp_keyframe) 
-			) 
+			nextkeyframeisoffsetrestart(temp_keyframe)
+			)
 		{
-			next_restart_keyframe = temp_keyframe->position; 
+			next_restart_keyframe = temp_keyframe->position;
 			i = curpos + config.frames;
 		} else if (temp_keyframe->position > i)
 			i = temp_keyframe->position;
 	}
-	
-	for (int i = curpos; i > curpos - config.frames; i--) 
+
+	for (int i = curpos; i > curpos - config.frames; i--)
 	{
 		temp_keyframe = get_prev_keyframe(i);
-		if ( 
-			(temp_keyframe->position > curpos - config.frames/2) && 
-			(temp_keyframe->position < curpos) && 
-			nextkeyframeisoffsetrestart(temp_keyframe) 
-			) 
+		if (
+			(temp_keyframe->position > curpos - config.frames/2) &&
+			(temp_keyframe->position < curpos) &&
+			nextkeyframeisoffsetrestart(temp_keyframe)
+			)
 		{
-			prev_restart_keyframe = temp_keyframe->position; 
+			prev_restart_keyframe = temp_keyframe->position;
 			i = curpos - config.frames;
 		} else if (temp_keyframe->position < i)
 			i = temp_keyframe->position;
 	}
 
 	restartoffset = -config.frames/2;
-	
+
 	if (onakeyframe && config.offset_restartmarker_keyframe)
 		restartoffset = 0;
-	else if ((curpos - prev_restart_keyframe) < config.frames/2) 
+	else if ((curpos - prev_restart_keyframe) < config.frames/2)
 		restartoffset = prev_restart_keyframe - curpos;
 	else if ((next_restart_keyframe - curpos) < config.frames/2) {
 		restartoffset = (next_restart_keyframe - curpos) - config.frames;
@@ -805,15 +805,15 @@ void SelTempAvgMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("GAIN", config.gain);
 
 
-	output.tag.set_property("AVG_THRESHOLD_RY", config.avg_threshold_RY); 
-	output.tag.set_property("AVG_THRESHOLD_GU", config.avg_threshold_GU); 
-	output.tag.set_property("AVG_THRESHOLD_BV", config.avg_threshold_BV); 
-	output.tag.set_property("STD_THRESHOLD_RY", config.std_threshold_RY); 
-	output.tag.set_property("STD_THRESHOLD_GU", config.std_threshold_GU); 
+	output.tag.set_property("AVG_THRESHOLD_RY", config.avg_threshold_RY);
+	output.tag.set_property("AVG_THRESHOLD_GU", config.avg_threshold_GU);
+	output.tag.set_property("AVG_THRESHOLD_BV", config.avg_threshold_BV);
+	output.tag.set_property("STD_THRESHOLD_RY", config.std_threshold_RY);
+	output.tag.set_property("STD_THRESHOLD_GU", config.std_threshold_GU);
 	output.tag.set_property("STD_THRESHOLD_BV", config.std_threshold_BV);
 
-	output.tag.set_property("MASK_RY", config.mask_RY); 
-	output.tag.set_property("MASK_GU", config.mask_GU); 
+	output.tag.set_property("MASK_RY", config.mask_RY);
+	output.tag.set_property("MASK_GU", config.mask_GU);
 	output.tag.set_property("MASK_BV", config.mask_BV);
 
 	output.append_tag();
@@ -842,15 +842,15 @@ void SelTempAvgMain::read_data(KeyFrame *keyframe)
 			config.offset_fixed_value = input.tag.get_property("OFFSETMODE_FIXED_VALUE", config.offset_fixed_value);
 			config.gain = input.tag.get_property("gain", config.gain);
 
-			config.avg_threshold_RY = input.tag.get_property("AVG_THRESHOLD_RY", config.avg_threshold_RY); 
-			config.avg_threshold_GU = input.tag.get_property("AVG_THRESHOLD_GU", config.avg_threshold_GU); 
-			config.avg_threshold_BV = input.tag.get_property("AVG_THRESHOLD_BV", config.avg_threshold_BV); 
-			config.std_threshold_RY = input.tag.get_property("STD_THRESHOLD_RY", config.std_threshold_RY); 
-			config.std_threshold_GU = input.tag.get_property("STD_THRESHOLD_GU", config.std_threshold_GU); 
+			config.avg_threshold_RY = input.tag.get_property("AVG_THRESHOLD_RY", config.avg_threshold_RY);
+			config.avg_threshold_GU = input.tag.get_property("AVG_THRESHOLD_GU", config.avg_threshold_GU);
+			config.avg_threshold_BV = input.tag.get_property("AVG_THRESHOLD_BV", config.avg_threshold_BV);
+			config.std_threshold_RY = input.tag.get_property("STD_THRESHOLD_RY", config.std_threshold_RY);
+			config.std_threshold_GU = input.tag.get_property("STD_THRESHOLD_GU", config.std_threshold_GU);
 			config.std_threshold_BV = input.tag.get_property("STD_THRESHOLD_BV", config.std_threshold_BV);
 
-			config.mask_RY = input.tag.get_property("MASK_RY", config.mask_RY); 
-			config.mask_GU = input.tag.get_property("MASK_GU", config.mask_GU); 
+			config.mask_RY = input.tag.get_property("MASK_RY", config.mask_RY);
+			config.mask_GU = input.tag.get_property("MASK_GU", config.mask_GU);
 			config.mask_BV = input.tag.get_property("MASK_BV", config.mask_BV);
 
 		}
@@ -879,7 +879,7 @@ int SelTempAvgMain::nextkeyframeisoffsetrestart(KeyFrame *keyframe)
 
 void SelTempAvgMain::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		if(load_configuration())
 		{

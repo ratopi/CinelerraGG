@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef VTRACK_H
@@ -57,31 +57,31 @@ public:
 	double to_doubleunits(double position);
 	double from_units(int64_t position);
 
-	void calculate_input_transfer(int asset_w, 
-		int asset_h, 
-		int64_t position, 
-		int direction, 
-		float &in_x, 
-		float &in_y, 
-		float &in_w, 
+	void calculate_input_transfer(int asset_w,
+		int asset_h,
+		int64_t position,
+		int direction,
+		float &in_x,
+		float &in_y,
+		float &in_w,
 		float &in_h,
-		float &out_x, 
-		float &out_y, 
-		float &out_w, 
+		float &out_x,
+		float &out_y,
+		float &out_w,
 		float &out_h);
 
-	void calculate_output_transfer(int64_t position, int direction, 
+	void calculate_output_transfer(int64_t position, int direction,
 		float &in_x, float &in_y, float &in_w, float &in_h,
 		float &out_x, float &out_y, float &out_w, float &out_h);
 
 	int vertical_span(Theme *theme);
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
 // ====================================== initialization
 	VTrack() {};
 	int create_derived_objs(int flash);
@@ -89,17 +89,17 @@ public:
 
 // ===================================== rendering
 
-	int get_projection(float &in_x1, 
-		float &in_y1, 
-		float &in_x2, 
-		float &in_y2, 
-		float &out_x1, 
-		float &out_y1, 
-		float &out_x2, 
-		float &out_y2, 
-		int frame_w, 
-		int frame_h, 
-		int64_t real_position, 
+	int get_projection(float &in_x1,
+		float &in_y1,
+		float &in_x2,
+		float &in_y2,
+		float &out_x1,
+		float &out_y1,
+		float &out_x2,
+		float &out_y2,
+		int frame_w,
+		int frame_h,
+		int64_t real_position,
 		int direction);
 // Give whether compressed data can be copied directly from the track to the output file
 	int direct_copy_possible(int64_t current_frame, int direction, int use_nudge);
@@ -127,8 +127,8 @@ public:
 // rounds up to integer frames for editing
 	int identical(int64_t sample1, int64_t sample2);
 // no rounding for drawing
-//	int get_dimensions(double &view_start, 
-//		double &view_units, 
+//	int get_dimensions(double &view_start,
+//		double &view_units,
 //		double &zoom_units);
 
 private:

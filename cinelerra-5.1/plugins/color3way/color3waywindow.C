@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcsignals.h"
@@ -38,13 +38,13 @@
 
 Color3WayWindow::Color3WayWindow(Color3WayMain *plugin)
  : PluginClientWindow(plugin,
-	plugin->w, 
-	plugin->h, 
-	500, 
-	370, 
+	plugin->w,
+	plugin->h,
+	500,
+	370,
 	1)
-{ 
-	this->plugin = plugin; 
+{
+	this->plugin = plugin;
 }
 
 Color3WayWindow::~Color3WayWindow()
@@ -59,7 +59,7 @@ void Color3WayWindow::create_objects()
 
 	for(int i = 0; i < SECTIONS; i++)
 	{
-		sections[i] = new Color3WaySection(plugin, 
+		sections[i] = new Color3WaySection(plugin,
 			this,
 			x,
 			y,
@@ -108,7 +108,7 @@ void Color3WayWindow::update()
 
 
 
-Color3WaySection::Color3WaySection(Color3WayMain *plugin, 
+Color3WaySection::Color3WaySection(Color3WayMain *plugin,
 		Color3WayWindow *gui,
 		int x,
 		int y,
@@ -131,35 +131,35 @@ void Color3WaySection::create_objects()
 	int margin = plugin->get_theme()->widget_border;
 	int x = this->x;
 	int y = this->y;
-	const char *titles[] = 
+	const char *titles[] =
 	{
 		_("Shadows"),
 		_("Midtones"),
 		_("Highlights")
 	};
-	
-	
-	gui->add_tool(title = new BC_Title(x + w / 2 - 
+
+
+	gui->add_tool(title = new BC_Title(x + w / 2 -
 		gui->get_text_width(MEDIUMFONT, titles[section]) / 2,
 		y,
 		titles[section]));
 	y += title->get_h() + margin;
-	gui->add_tool(point = new Color3WayPoint(plugin, 
+	gui->add_tool(point = new Color3WayPoint(plugin,
 		gui,
-		&plugin->config.hue_x[section], 
+		&plugin->config.hue_x[section],
 		&plugin->config.hue_y[section],
-		x, 
+		x,
 		y,
 		w / 2,
 		section));
 	y += point->get_h() + margin;
-	
+
 	gui->add_tool(value_title = new BC_Title(x, y, _("Value:")));
 	y += value_title->get_h() + margin;
-	gui->add_tool(value = new Color3WaySlider(plugin, 
+	gui->add_tool(value = new Color3WaySlider(plugin,
 		gui,
-		&plugin->config.value[section], 
-		x, 
+		&plugin->config.value[section],
+		x,
 		y,
 		w,
 		section));
@@ -167,32 +167,32 @@ void Color3WaySection::create_objects()
 
 	gui->add_tool(sat_title = new BC_Title(x, y, _("Saturation:")));
 	y += sat_title->get_h() + margin;
-	gui->add_tool(saturation = new Color3WaySlider(plugin, 
+	gui->add_tool(saturation = new Color3WaySlider(plugin,
 		gui,
-		&plugin->config.saturation[section], 
-		x, 
+		&plugin->config.saturation[section],
+		x,
 		y,
 		w,
 		section));
 	y += saturation->get_h() + margin;
 
-	gui->add_tool(reset = new Color3WayResetSection(plugin, 
-		gui, 
-		x, 
+	gui->add_tool(reset = new Color3WayResetSection(plugin,
+		gui,
+		x,
 		y,
 		section));
 
 	y += reset->get_h() + margin;
-	gui->add_tool(balance = new Color3WayBalanceSection(plugin, 
-		gui, 
-		x, 
+	gui->add_tool(balance = new Color3WayBalanceSection(plugin,
+		gui,
+		x,
 		y,
 		section));
 
 	y += balance->get_h() + margin;
-	gui->add_tool(copy = new Color3WayCopySection(plugin, 
-		gui, 
-		x, 
+	gui->add_tool(copy = new Color3WayCopySection(plugin,
+		gui,
+		x,
 		y,
 		section));
 }
@@ -215,7 +215,7 @@ int Color3WaySection::reposition_window(int x, int y, int w, int h)
 	value->reposition_window(x, y, w, value->get_h());
 	value->set_pointer_motion_range(w);
 	y += value->get_h() + margin;
-	
+
 	sat_title->reposition_window(x, y);
 	y += sat_title->get_h() + margin;
 	saturation->reposition_window(x, y, w, saturation->get_h());
@@ -241,16 +241,16 @@ void Color3WaySection::update()
 
 
 
-Color3WayPoint::Color3WayPoint(Color3WayMain *plugin, 
+Color3WayPoint::Color3WayPoint(Color3WayMain *plugin,
 	Color3WayWindow *gui,
-	float *x_output, 
+	float *x_output,
 	float *y_output,
-	int x, 
+	int x,
 	int y,
 	int radius,
 	int section)
- : BC_SubWindow(x, 
- 	y, 
+ : BC_SubWindow(x,
+ 	y,
 	radius * 2,
 	radius * 2)
 {
@@ -271,7 +271,7 @@ Color3WayPoint::~Color3WayPoint()
 {
 	for(int i = 0; i < COLOR_IMAGES; i++)
 		if(fg_images[i]) delete fg_images[i];
-		
+
 	delete bg_image;
 }
 
@@ -297,7 +297,7 @@ int Color3WayPoint::reposition_window(int x, int y, int radius)
 {
 	this->radius = radius;
 	BC_SubWindow::reposition_window(x, y, radius * 2, radius * 2);
-	
+
 	delete bg_image;
 	bg_image = 0;
 	draw_face(1, 0);
@@ -321,10 +321,10 @@ void Color3WayPoint::draw_face(int flash, int flush)
 				if(point_radius < radius - 1)
 				{
 					float r_f, g_f, b_f;
-					float angle = atan2((float)(j - radius) / radius, 
+					float angle = atan2((float)(j - radius) / radius,
 						(float)(i - radius) / radius) *
 						360 /
-						2 / 
+						2 /
 						M_PI;
 					angle -= 180;
 					while(angle < 0)
@@ -367,21 +367,21 @@ void Color3WayPoint::draw_face(int flash, int flush)
 	}
 
 	draw_pixmap(bg_image);
-	
+
 // 	set_color(BLACK);
 // 	draw_arc(0, 0, radius * 2, radius * 2, 45, 180);
-// 	
+// 
 // 	set_color(MEGREY);
 // 	draw_arc(0, 0, radius * 2, radius * 2, 45, -180);
 
 
-	fg_x = (int)(*x_output * (radius - fg_images[0]->get_w() / 2) + radius) - 
+	fg_x = (int)(*x_output * (radius - fg_images[0]->get_w() / 2) + radius) -
 		fg_images[0]->get_w() / 2;
-	fg_y = (int)(*y_output * (radius - fg_images[0]->get_h() / 2) + radius) - 
+	fg_y = (int)(*y_output * (radius - fg_images[0]->get_h() / 2) + radius) -
 		fg_images[0]->get_h() / 2;
-	
+
 	draw_pixmap(fg_images[status], fg_x, fg_y);
-	
+
 // Text
 	if(active)
 	{
@@ -391,12 +391,12 @@ void Color3WayPoint::draw_face(int flash, int flush)
 		char string[BCTEXTLEN];
 
 		sprintf(string, "%.3f", *y_output);
-		draw_text(radius - get_text_width(MEDIUMFONT, string) / 2, 
+		draw_text(radius - get_text_width(MEDIUMFONT, string) / 2,
 			get_text_ascent(MEDIUMFONT) + margin,
 			string);
 
 		sprintf(string, "%.3f", *x_output);
-		draw_text(margin, 
+		draw_text(margin,
 			radius + get_text_ascent(MEDIUMFONT) / 2,
 			string);
 
@@ -405,24 +405,24 @@ void Color3WayPoint::draw_face(int flash, int flush)
 // 		float g_factor;
 // 		float b_factor;
 // 		plugin->calculate_factors(&r_factor, &g_factor, &b_factor, section);
-// 
+//
 // 		sprintf(string, "%.3f", r_factor);
-// 		draw_text(radius - get_text_width(MEDIUMFONT, string) / 2, 
+// 		draw_text(radius - get_text_width(MEDIUMFONT, string) / 2,
 // 			get_text_ascent(MEDIUMFONT) + margin,
 // 			string);
-// 
+//
 // 		sprintf(string, "%.3f", g_factor);
-// 		draw_text(margin + radius - radius * 1.0 / ROOT_2, 
+// 		draw_text(margin + radius - radius * 1.0 / ROOT_2,
 // 			radius + radius * 1.0 / ROOT_2 - margin,
 // 			string);
-// 
+//
 // 		sprintf(string, "%.3f", b_factor);
-// 		draw_text(radius + radius * 1.0 / ROOT_2 - margin - get_text_width(MEDIUMFONT, string), 
+// 		draw_text(radius + radius * 1.0 / ROOT_2 - margin - get_text_width(MEDIUMFONT, string),
 // 			radius + radius * 1.0 / ROOT_2 - margin,
 // 			string);
 		set_font(MEDIUMFONT);
 	}
-	
+
 	if(flash) this->flash(0);
 	if(flush) this->flush();
 }
@@ -492,9 +492,9 @@ int Color3WayPoint::cursor_motion_event()
 		int new_x = starting_x + cursor_x - offset_x;
 		int new_y = starting_y + cursor_y - offset_y;
 
-		*x_output = (float)(new_x + fg_images[0]->get_w() / 2 - radius) / 
+		*x_output = (float)(new_x + fg_images[0]->get_w() / 2 - radius) /
 			(radius - fg_images[0]->get_w() / 2);
-		*y_output = (float)(new_y + fg_images[0]->get_h() / 2 - radius) / 
+		*y_output = (float)(new_y + fg_images[0]->get_h() / 2 - radius) /
 			(radius - fg_images[0]->get_h() / 2);
 
 		plugin->config.boundaries();
@@ -504,7 +504,7 @@ int Color3WayPoint::cursor_motion_event()
 
 		gui->update();
 
-		
+
 		handle_event();
 
 
@@ -583,20 +583,20 @@ int Color3WayPoint::keypress_event()
 
 
 
-Color3WaySlider::Color3WaySlider(Color3WayMain *plugin, 
-	Color3WayWindow *gui, 
-	float *output, 
-	int x, 
+Color3WaySlider::Color3WaySlider(Color3WayMain *plugin,
+	Color3WayWindow *gui,
+	float *output,
+	int x,
 	int y,
 	int w,
 	int section)
- : BC_FSlider(x, 
- 	y, 
-	0, 
-	w, 
+ : BC_FSlider(x,
+ 	y,
+	0,
 	w,
-	-1.0, 
-	1.0, 
+	w,
+	-1.0,
+	1.0,
 	*output)
 {
 	this->gui = gui;
@@ -630,9 +630,9 @@ char* Color3WaySlider::get_caption()
 
 
 
-Color3WayResetSection::Color3WayResetSection(Color3WayMain *plugin, 
-	Color3WayWindow *gui, 
-	int x, 
+Color3WayResetSection::Color3WayResetSection(Color3WayMain *plugin,
+	Color3WayWindow *gui,
+	int x,
 	int y,
 	int section)
  : BC_GenericButton(x, y, _("Reset"))
@@ -659,9 +659,9 @@ int Color3WayResetSection::handle_event()
 
 
 
-Color3WayCopySection::Color3WayCopySection(Color3WayMain *plugin, 
-	Color3WayWindow *gui, 
-	int x, 
+Color3WayCopySection::Color3WayCopySection(Color3WayMain *plugin,
+	Color3WayWindow *gui,
+	int x,
 	int y,
 	int section)
  : BC_CheckBox(x, y, plugin->copy_to_all[section], _("Copy to all"))
@@ -684,9 +684,9 @@ int Color3WayCopySection::handle_event()
 
 
 
-Color3WayBalanceSection::Color3WayBalanceSection(Color3WayMain *plugin, 
+Color3WayBalanceSection::Color3WayBalanceSection(Color3WayMain *plugin,
 	Color3WayWindow *gui,
-	int x, 
+	int x,
 	int y,
 	int section)
  : BC_GenericButton(x, y, _("White balance"))
@@ -711,7 +711,7 @@ int Color3WayBalanceSection::handle_event()
 	float best_diff = 255;
 	float new_x = 0;
 	float new_y = 0;
-	
+
 	while(step >= 0.001)
 	{
 		for(float x = center_x - range; x < center_x + range; x += step)
@@ -724,8 +724,8 @@ int Color3WayBalanceSection::handle_event()
 				plugin->process_pixel(&new_r,
 					&new_g,
 					&new_b,
-					r, 
-					g, 
+					r,
+					g,
 					b,
 					x,
 					y);
@@ -734,7 +734,7 @@ int Color3WayBalanceSection::handle_event()
 				float max = MAX(new_r, new_g);
 				max = MAX(max, new_b);
 				float diff = max - min;
-				
+
 				if(diff < best_diff)
 				{
 					best_diff = diff;
@@ -759,7 +759,7 @@ int Color3WayBalanceSection::handle_event()
 	if(plugin->copy_to_all[section]) plugin->config.copy_to_all(section);
 	plugin->send_configure_change();
 
-	
+
 	gui->update();
 
 	return 1;

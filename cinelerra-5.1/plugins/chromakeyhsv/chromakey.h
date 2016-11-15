@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef CHROMAKEY_H
@@ -48,10 +48,10 @@ public:
 
 	void copy_from(ChromaKeyConfig &src);
 	int equivalent(ChromaKeyConfig &src);
-	void interpolate(ChromaKeyConfig &prev, 
-		ChromaKeyConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(ChromaKeyConfig &prev,
+		ChromaKeyConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 	int get_color();
 
@@ -79,9 +79,9 @@ public:
 class ChromaKeyColor : public BC_GenericButton
 {
 public:
-	ChromaKeyColor(ChromaKeyHSV *plugin, 
-		ChromaKeyWindow *gui, 
-		int x, 
+	ChromaKeyColor(ChromaKeyHSV *plugin,
+		ChromaKeyWindow *gui,
+		int x,
 		int y);
 
 	int handle_event();
@@ -271,7 +271,7 @@ class ChromaKeyHSV : public PluginVClient
 public:
 	ChromaKeyHSV(PluginServer *server);
 	~ChromaKeyHSV();
-	
+
 	PLUGIN_CLASS_MEMBERS(ChromaKeyConfig);
 	int process_buffer(VFrame *frame,
 		int64_t start_position,

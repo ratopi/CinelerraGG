@@ -19,12 +19,12 @@ class yuv411Window : public PluginClientWindow
 public:
 	yuv411Window(yuv411Main *client);
 	~yuv411Window();
-	
+
 	void create_objects();
 	int close_event();
 	void update_enables();
 	void show_warning(int warn);
-	
+
 	yuv411Main *client;
 	yuv411Toggle *avg_vertical;
 	yuv411Toggle *int_horizontal;

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bchash.h"
@@ -34,12 +34,12 @@
 
 Scale::Scale(MWindow *mwindow)
  : BC_MenuItem(_("Resize..."))
-{ 
-	this->mwindow = mwindow; 
+{
+	this->mwindow = mwindow;
 	thread = new ScaleThread(mwindow);
 }
 
-Scale::~Scale() 
+Scale::~Scale()
 {
 	delete thread;
 }
@@ -51,8 +51,8 @@ int Scale::handle_event()
 
 ScaleThread::ScaleThread(MWindow *mwindow)
  : Thread()
-{ 
-	this->mwindow = mwindow; 
+{
+	this->mwindow = mwindow;
 	already_running = 0;
 }
 
@@ -173,7 +173,7 @@ int ScaleThread::update_window(int offset_updated)
 //		window->offsets[2]->update(offsets[2]);
 //		window->offsets[3]->update(offsets[3]);
 //	}
-	
+
 	update_aspect(window);
 	return 0;
 }
@@ -289,20 +289,20 @@ void ScaleWindow::create_objects()
 //	ScalePosition *position;
 //	x = 60;
 //	y += 25;
-//	add_subwindow(position1 = new ScalePosition(x, y, thread, this, 
+//	add_subwindow(position1 = new ScalePosition(x, y, thread, this,
 //		&(thread->orig_dimension[0]), &(thread->dimension[0]), &(thread->offsets[0])));
 //	position1->draw();
 
 //	x += 200;
-//	add_subwindow(position2 = new ScalePosition(x, y, thread, this, 
+//	add_subwindow(position2 = new ScalePosition(x, y, thread, this,
 //		&(thread->orig_dimension[2]), &(thread->dimension[2]), &(thread->offsets[2])));
 //	position2->draw();
 
 //	y += 110;
 	x = 10;
-	add_subwindow(new ScaleConstrain(x, y, thread));	
+	add_subwindow(new ScaleConstrain(x, y, thread));
 	x += 200;
-	add_subwindow(new ScaleData(x, y, thread));	
+	add_subwindow(new ScaleData(x, y, thread));
 
 	y += 30;
 	x = 50;
@@ -313,9 +313,9 @@ void ScaleWindow::create_objects()
 
 ScaleSizeText::ScaleSizeText(int x, int y, ScaleThread *thread, int *output)
  : BC_TextBox(x, y, 100, 1, *output)
-{ 
-	this->thread = thread; 
-	this->output = output; 
+{
+	this->thread = thread;
+	this->output = output;
 }
 ScaleSizeText::~ScaleSizeText() {}
 int ScaleSizeText::handle_event()

@@ -104,7 +104,7 @@ void LoadFileThread::handle_done_event(int result)
 {
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
- 
+
 // Collect all selected files
 	if(!result)
 	{

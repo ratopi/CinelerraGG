@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -62,10 +62,10 @@ void RemoveGapsConfig::copy_from(RemoveGapsConfig &src)
 	this->duration = src.duration;
 }
 
-void RemoveGapsConfig::interpolate(RemoveGapsConfig &prev, 
-	RemoveGapsConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void RemoveGapsConfig::interpolate(RemoveGapsConfig &prev,
+	RemoveGapsConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	this->threshold = prev.threshold;
@@ -83,11 +83,11 @@ void RemoveGapsConfig::boundaries()
 
 
 RemoveGapsWindow::RemoveGapsWindow(RemoveGaps *plugin)
- : PluginClientWindow(plugin, 
-	320, 
-	160, 
-	320, 
-	160, 
+ : PluginClientWindow(plugin,
+	320,
+	160,
+	320,
+	160,
 	0)
 {
 	this->plugin = plugin;
@@ -101,18 +101,18 @@ void RemoveGapsWindow::create_objects()
 {
 	int x = 10, y = 10;
 	BC_Title *title;
-	
+
 	add_subwindow(title = new BC_Title(x, y, _("Threshold of gap (DB):")));
-	
+
 	add_subwindow(threshold = new RemoveGapsThreshold(this,
-		plugin, 
-		x + title->get_w() + plugin->get_theme()->widget_border, 
+		plugin,
+		x + title->get_w() + plugin->get_theme()->widget_border,
 		y));
 	y += threshold->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(title = new BC_Title(x, y, _("Max duration of gap (Seconds):")));
 	add_subwindow(duration = new RemoveGapsDuration(this,
-		plugin, 
-		x + title->get_w() + plugin->get_theme()->widget_border, 
+		plugin,
+		x + title->get_w() + plugin->get_theme()->widget_border,
 		y));
 	show_window(1);
 }
@@ -123,8 +123,8 @@ void RemoveGapsWindow::create_objects()
 
 
 RemoveGapsThreshold::RemoveGapsThreshold(RemoveGapsWindow *window,
-	RemoveGaps *plugin, 
-	int x, 
+	RemoveGaps *plugin,
+	int x,
 	int y)
  : BC_FPot(x,
  	y,
@@ -151,8 +151,8 @@ int RemoveGapsThreshold::handle_event()
 
 
 RemoveGapsDuration::RemoveGapsDuration(RemoveGapsWindow *window,
-	RemoveGaps *plugin, 
-	int x, 
+	RemoveGaps *plugin,
+	int x,
 	int y)
  : BC_FPot(x,
  	y,
@@ -202,21 +202,21 @@ NEW_WINDOW_MACRO(RemoveGaps, RemoveGapsWindow)
 LOAD_CONFIGURATION_MACRO(RemoveGaps, RemoveGapsConfig)
 
 
-int RemoveGaps::process_buffer(int64_t size, 
+int RemoveGaps::process_buffer(int64_t size,
 	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
 {
 	need_reconfigure |= load_configuration();
-	
-	
-	if(need_reconfigure || start_position != dest_start) 
+
+
+	if(need_reconfigure || start_position != dest_start)
 	{
 		source_start = start_position;
 		temp_position = 0;
 		need_reconfigure = 0;
 	}
-	
+
 	dest_start = start_position;
 	double *buffer_samples = buffer->get_data();
 	double *temp_samples = !temp ? 0 : temp->get_data();
@@ -236,17 +236,17 @@ int RemoveGaps::process_buffer(int64_t size,
 			temp_position = 0;
 
 // Fill new temp buffer
-			read_samples(temp, 
+			read_samples(temp,
 				0,
 				sample_rate,
-				source_start, 
+				source_start,
 				get_buffer_size());
 			if(get_direction() == PLAY_FORWARD)
 				source_start += size;
 			else
 				source_start -= size;
 		}
-		
+
 		double sample = temp_samples[temp_position];
 		if(fabs(sample) < threshold)
 		{
@@ -313,7 +313,7 @@ void RemoveGaps::read_data(KeyFrame *keyframe)
 			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
 		}
 	}
-	
+
 }
 
 void RemoveGaps::update_gui()

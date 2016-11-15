@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef BRENDER_H
@@ -24,38 +24,38 @@
 
 
 
-// The master node of the background renderer needs a separate memory space 
+// The master node of the background renderer needs a separate memory space
 // because few of the codecs are reentrant.
 
-// To solve the problem, the master node forks itself and treats the forked 
+// To solve the problem, the master node forks itself and treats the forked
 // master node as the first node of a renderfarm.  There is no real master node
 // of the renderfarm.  The BRender object is a thread in order to
 // join the forked master node.
 
 // If renderfarm is enabled, the extra renderfarm nodes are treated normally.
 // Unfortunately because of the codec problem, only one copy of Cinelerra
-// can be running on a single renderfarm.  This means either background 
+// can be running on a single renderfarm.  This means either background
 // rendering or foreground rendering can be happening but not both.
 
-// A BRenderThread client runs in the background and a BRender object 
+// A BRenderThread client runs in the background and a BRender object
 // interfaces the main window.  The BRender client recieves commands to
-// restart, start, and stop background rendering on its own time to avoid 
+// restart, start, and stop background rendering on its own time to avoid
 // interrupting the main window.
 
 // Whenever a change happens to the timeline, we calculate the last position
-// which hasn't changed and the end of the contiguous renderfarm output.  
+// which hasn't changed and the end of the contiguous renderfarm output.
 // Then we restart the background renderfarm at the
-// lesser of the positions.  You can't conditionally restart only 
+// lesser of the positions.  You can't conditionally restart only
 // if one of the current jobs was after the position because you need a new EDL.
 
 // The two problems to emerge are which job is the last job in the contiguous
-// set of finished jobs and if position of change is before the last job, 
+// set of finished jobs and if position of change is before the last job,
 // how to truncate and restart the output file.
 
-// It's easy to use image sequences as the output file to solve the 
+// It's easy to use image sequences as the output file to solve the
 // file truncation problem.
 // Figuring out the end of the contiguous output means recording the
-// state of every output file and constructing a kind of EDL for the 
+// state of every output file and constructing a kind of EDL for the
 // background output as certain output files cluster together.
 // This is needed anyway for playback.
 
@@ -88,7 +88,7 @@ public:
 // We copy the EDL and restart rendering at the lesser of position and
 // our position.
 	void restart(EDL *edl);
-// Stop background rendering for a foreground render.  This blocks until 
+// Stop background rendering for a foreground render.  This blocks until
 // it really stops.
 	void stop();
 

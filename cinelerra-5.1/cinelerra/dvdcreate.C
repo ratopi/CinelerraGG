@@ -83,7 +83,7 @@ const double CreateDVD_Thread::DVD_KAUDIO_RATE = 224;
 CreateDVD_MenuItem::CreateDVD_MenuItem(MWindow *mwindow)
  : BC_MenuItem(_("DVD Render..."), _("Shift-D"), 'D')
 {
-	set_shift(1); 
+	set_shift(1);
 	this->mwindow = mwindow;
 }
 
@@ -339,7 +339,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 		jobs->append(job);
 		strcpy(&job->edl_path[0], xml_filename);
 		asset = job->asset;
-		
+
 		sprintf(&asset->path[0],"%s/dvd.ac3", asset_dir);
 		asset->audio_data = 1;
 		asset->format = FILE_AC3;
@@ -491,7 +491,7 @@ BC_Window* CreateDVD_Thread::new_gui()
 			if( output_h != dvd_norms[norm].h ) continue;
 			int aspect = dvd_formats[i].aspect;
 			double dvd_aspect_ratio =
-				(double)dvd_aspects[aspect].w / dvd_aspects[aspect].h; 
+				(double)dvd_aspects[aspect].w / dvd_aspects[aspect].h;
 			if( !EQUIV(aspect_ratio, dvd_aspect_ratio) ) continue;
 			has_standard = i;  break;
 		}

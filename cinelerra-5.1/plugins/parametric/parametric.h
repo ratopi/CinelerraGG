@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef PARAMETRIC_H
@@ -61,9 +61,9 @@ public:
 
 	int equivalent(ParametricBand &that);
 	void copy_from(ParametricBand &that);
-	void interpolate(ParametricBand &prev, 
-		ParametricBand &next, 
-		double prev_scale, 
+	void interpolate(ParametricBand &prev,
+		ParametricBand &next,
+		double prev_scale,
 		double next_scale);
 
 	enum
@@ -73,7 +73,7 @@ public:
 		HIGHPASS,
 		BANDPASS
 	};
-	
+
 	int freq;
 	float quality;
 	float magnitude;
@@ -88,10 +88,10 @@ public:
 
 	int equivalent(ParametricConfig &that);
 	void copy_from(ParametricConfig &that);
-	void interpolate(ParametricConfig &prev, 
-		ParametricConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(ParametricConfig &prev,
+		ParametricConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 
 	ParametricBand band[BANDS];
@@ -107,9 +107,9 @@ class ParametricFreq : public BC_QPot
 {
 public:
 	ParametricFreq(ParametricEQ *plugin, int x, int y, int band);
-	
+
 	int handle_event();
-	
+
 	int band;
 	ParametricEQ *plugin;
 };
@@ -119,9 +119,9 @@ class ParametricQuality : public BC_FPot
 {
 public:
 	ParametricQuality(ParametricEQ *plugin, int x, int y, int band);
-	
+
 	int handle_event();
-	
+
 	int band;
 	ParametricEQ *plugin;
 };
@@ -131,9 +131,9 @@ class ParametricMagnitude : public BC_FPot
 {
 public:
 	ParametricMagnitude(ParametricEQ *plugin, int x, int y, int band);
-	
+
 	int handle_event();
-	
+
 	int band;
 	ParametricEQ *plugin;
 };
@@ -145,7 +145,7 @@ class ParametricMode : public BC_PopupMenu
 {
 public:
 	ParametricMode(ParametricEQ *plugin, int x, int y, int band);
-	
+
 	void create_objects();
 	int handle_event();
 	static int text_to_mode(char *text);
@@ -162,16 +162,16 @@ public:
 class ParametricBandGUI
 {
 public:
-	ParametricBandGUI(ParametricEQ *plugin, 
-		ParametricWindow *window, 
-		int x, 
-		int y, 
+	ParametricBandGUI(ParametricEQ *plugin,
+		ParametricWindow *window,
+		int x,
+		int y,
 		int band);
 	~ParametricBandGUI();
-	
+
 	void create_objects();
 	void update_gui();
-	
+
 	int band;
 	int x, y;
 	ParametricEQ *plugin;
@@ -217,7 +217,7 @@ public:
 	void create_objects();
 	void update_gui();
 	void update_canvas();
-	
+
 	BC_SubWindow *canvas;
 	ParametricEQ *plugin;
 	ParametricBandGUI* bands[BANDS];
@@ -245,11 +245,11 @@ class ParametricFFT : public CrossfadeFFT
 public:
 	ParametricFFT(ParametricEQ *plugin);
 	~ParametricFFT();
-	
+
 	int signal_process();
 	int post_process();
-	int read_samples(int64_t output_sample, 
-		int samples, 
+	int read_samples(int64_t output_sample,
+		int samples,
 		Samples *buffer);
 
 	ParametricEQ *plugin;
@@ -267,8 +267,8 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int64_t size, 
-		Samples *buffer, 
+	int process_buffer(int64_t size,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
 

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcsignals.h"
@@ -89,7 +89,7 @@ int VAttachmentPoint::get_buffer_size()
 	return 1;
 }
 
-void VAttachmentPoint::render(VFrame *output, 
+void VAttachmentPoint::render(VFrame *output,
 	int buffer_number,
 	int64_t start_position,
 	double frame_rate,
@@ -101,7 +101,7 @@ void VAttachmentPoint::render(VFrame *output,
 	if(!plugin_server || !plugin->on) return;
 
 	if(debug_render)
-		printf("    VAttachmentPoint::render \"%s\" multi=%d opengl=%d\n", 
+		printf("    VAttachmentPoint::render \"%s\" multi=%d opengl=%d\n",
 			plugin_server->title,
 			plugin_server->multichannel,
 			use_opengl);
@@ -116,7 +116,7 @@ void VAttachmentPoint::render(VFrame *output,
 			this->frame_rate = frame_rate;
 
 // Allocate buffer vector for subsequent render calls
-			new_buffer_vector(output->get_w(), output->get_h(), 
+			new_buffer_vector(output->get_w(), output->get_h(),
 				output->get_color_model());
 // Process plugin
 //printf("VAttachmentPoint::render 1 %d\n", buffer_number);
@@ -125,7 +125,7 @@ void VAttachmentPoint::render(VFrame *output,
 					renderengine->video);
 			plugin_servers.values[0]->process_buffer(buffer_vector,
 				start_position, frame_rate,
-				(int64_t)Units::round(plugin->length * frame_rate / 
+				(int64_t)Units::round(plugin->length * frame_rate /
 					renderengine->get_edl()->session->frame_rate),
 				renderengine->command->get_direction());
 		}
@@ -137,7 +137,7 @@ void VAttachmentPoint::render(VFrame *output,
 		}
 		else if(renderengine && renderengine->video) {
 // Need to copy PBuffer to texture
-// printf("VAttachmentPoint::render temp=%p output=%p\n", 
+// printf("VAttachmentPoint::render temp=%p output=%p\n",
 // buffer_vector[buffer_number],
 // output);
 			VDeviceX11 *x11_device = (VDeviceX11*)renderengine->video->get_output_base();
@@ -155,8 +155,8 @@ void VAttachmentPoint::render(VFrame *output,
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
 			start_position,
 			frame_rate,
-			(int64_t)Units::round(plugin->length * 
-				frame_rate / 
+			(int64_t)Units::round(plugin->length *
+				frame_rate /
 				renderengine->get_edl()->session->frame_rate),
 			renderengine->command->get_direction());
 	}

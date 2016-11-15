@@ -2817,7 +2817,7 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 	if(get_resources()->use_fontset && top_level->get_fontset(font))
 		return XmbTextEscapement(top_level->get_fontset(font), text, length);
 	else
-	if(get_font_struct(font)) 
+	if(get_font_struct(font))
 		return XTextWidth(get_font_struct(font), text, length);
 	else
 	{
@@ -3290,9 +3290,9 @@ void BC_WindowBase::set_done(int return_value)
 		ptr->message_type = SetDoneXAtom;
 		ptr->format = 32;
 		this->return_value = return_value;
-// May lock up here because XSendEvent doesn't work too well 
+// May lock up here because XSendEvent doesn't work too well
 // asynchronous with XNextEvent.
-// This causes BC_WindowEvents to forward a copy of the event to run_window where 
+// This causes BC_WindowEvents to forward a copy of the event to run_window where
 // it is deleted.
 // Deletion of event_thread is done at the end of BC_WindowBase::run_window() - by calling the destructor
 		put_event(event);

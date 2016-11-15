@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <math.h>
@@ -48,10 +48,10 @@ public:
 
 	int equivalent(DownSampleConfig &that);
 	void copy_from(DownSampleConfig &that);
-	void interpolate(DownSampleConfig &prev, 
-		DownSampleConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(DownSampleConfig &prev,
+		DownSampleConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 
 	int horizontal_x;
@@ -68,10 +68,10 @@ public:
 class DownSampleToggle : public BC_CheckBox
 {
 public:
-	DownSampleToggle(DownSampleMain *plugin, 
-		int x, 
-		int y, 
-		int *output, 
+	DownSampleToggle(DownSampleMain *plugin,
+		int x,
+		int y,
+		int *output,
 		char *string);
 	int handle_event();
 	DownSampleMain *plugin;
@@ -81,9 +81,9 @@ public:
 class DownSampleSize : public BC_ISlider
 {
 public:
-	DownSampleSize(DownSampleMain *plugin, 
-		int x, 
-		int y, 
+	DownSampleSize(DownSampleMain *plugin,
+		int x,
+		int y,
 		int *output,
 		int min,
 		int max);
@@ -97,7 +97,7 @@ class DownSampleWindow : public PluginClientWindow
 public:
 	DownSampleWindow(DownSampleMain *plugin);
 	~DownSampleWindow();
-	
+
 	void create_objects();
 
 	DownSampleToggle *r, *g, *b, *a;
@@ -162,7 +162,7 @@ DownSampleConfig::DownSampleConfig()
 
 int DownSampleConfig::equivalent(DownSampleConfig &that)
 {
-	return 
+	return
 		horizontal == that.horizontal &&
 		vertical == that.vertical &&
 		horizontal_x == that.horizontal_x &&
@@ -185,10 +185,10 @@ void DownSampleConfig::copy_from(DownSampleConfig &that)
 	a = that.a;
 }
 
-void DownSampleConfig::interpolate(DownSampleConfig &prev, 
-	DownSampleConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void DownSampleConfig::interpolate(DownSampleConfig &prev,
+	DownSampleConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -216,13 +216,13 @@ void DownSampleConfig::interpolate(DownSampleConfig &prev,
 
 DownSampleWindow::DownSampleWindow(DownSampleMain *plugin)
  : PluginClientWindow(plugin,
-	230, 
-	380, 
-	230, 
-	380, 
+	230,
+	380,
+	230,
+	380,
 	0)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
 }
 
 DownSampleWindow::~DownSampleWindow()
@@ -235,62 +235,62 @@ void DownSampleWindow::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Horizontal")));
 	y += 30;
-	add_subwindow(h = new DownSampleSize(plugin, 
-		x, 
-		y, 
+	add_subwindow(h = new DownSampleSize(plugin,
+		x,
+		y,
 		&plugin->config.horizontal,
 		1,
 		100));
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Horizontal offset")));
 	y += 30;
-	add_subwindow(h_x = new DownSampleSize(plugin, 
-		x, 
-		y, 
+	add_subwindow(h_x = new DownSampleSize(plugin,
+		x,
+		y,
 		&plugin->config.horizontal_x,
 		0,
 		100));
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Vertical")));
 	y += 30;
-	add_subwindow(v = new DownSampleSize(plugin, 
-		x, 
-		y, 
+	add_subwindow(v = new DownSampleSize(plugin,
+		x,
+		y,
 		&plugin->config.vertical,
 		1,
 		100));
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Vertical offset")));
 	y += 30;
-	add_subwindow(v_y = new DownSampleSize(plugin, 
-		x, 
-		y, 
+	add_subwindow(v_y = new DownSampleSize(plugin,
+		x,
+		y,
 		&plugin->config.vertical_y,
 		0,
 		100));
 	y += 30;
-	add_subwindow(r = new DownSampleToggle(plugin, 
-		x, 
-		y, 
-		&plugin->config.r, 
+	add_subwindow(r = new DownSampleToggle(plugin,
+		x,
+		y,
+		&plugin->config.r,
 		_("Red")));
 	y += 30;
-	add_subwindow(g = new DownSampleToggle(plugin, 
-		x, 
-		y, 
-		&plugin->config.g, 
+	add_subwindow(g = new DownSampleToggle(plugin,
+		x,
+		y,
+		&plugin->config.g,
 		_("Green")));
 	y += 30;
-	add_subwindow(b = new DownSampleToggle(plugin, 
-		x, 
-		y, 
-		&plugin->config.b, 
+	add_subwindow(b = new DownSampleToggle(plugin,
+		x,
+		y,
+		&plugin->config.b,
 		_("Blue")));
 	y += 30;
-	add_subwindow(a = new DownSampleToggle(plugin, 
-		x, 
-		y, 
-		&plugin->config.a, 
+	add_subwindow(a = new DownSampleToggle(plugin,
+		x,
+		y,
+		&plugin->config.a,
 		_("Alpha")));
 	y += 30;
 
@@ -308,10 +308,10 @@ void DownSampleWindow::create_objects()
 
 
 
-DownSampleToggle::DownSampleToggle(DownSampleMain *plugin, 
-	int x, 
-	int y, 
-	int *output, 
+DownSampleToggle::DownSampleToggle(DownSampleMain *plugin,
+	int x,
+	int y,
+	int *output,
 	char *string)
  : BC_CheckBox(x, y, *output, string)
 {
@@ -332,9 +332,9 @@ int DownSampleToggle::handle_event()
 
 
 
-DownSampleSize::DownSampleSize(DownSampleMain *plugin, 
-	int x, 
-	int y, 
+DownSampleSize::DownSampleSize(DownSampleMain *plugin,
+	int x,
+	int y,
 	int *output,
 	int min,
 	int max)
@@ -362,13 +362,13 @@ int DownSampleSize::handle_event()
 DownSampleMain::DownSampleMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 }
 
 DownSampleMain::~DownSampleMain()
 {
-	
+
 
 	if(engine) delete engine;
 }
@@ -406,7 +406,7 @@ int DownSampleMain::process_buffer(VFrame *frame,
 // Process in destination
 	if(!engine) engine = new DownSampleServer(get_project_smp() + 1,
 		get_project_smp() + 1);
-	engine->process_frame(output, output, 
+	engine->process_frame(output, output,
 		config.r, config.g, config.b, config.a,
 		config.vertical, config.horizontal,
 		config.vertical_y, config.horizontal_x);
@@ -486,7 +486,7 @@ void DownSampleMain::read_data(KeyFrame *keyframe)
 int DownSampleMain::handle_opengl()
 {
 #ifdef HAVE_GL
-	static const char *downsample_frag = 
+	static const char *downsample_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float w;\n"
 		"uniform float h;\n"

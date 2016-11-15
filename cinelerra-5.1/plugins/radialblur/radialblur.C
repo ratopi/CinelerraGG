@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <math.h>
@@ -50,10 +50,10 @@ public:
 
 	int equivalent(RadialBlurConfig &that);
 	void copy_from(RadialBlurConfig &that);
-	void interpolate(RadialBlurConfig &prev, 
-		RadialBlurConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(RadialBlurConfig &prev,
+		RadialBlurConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 
 	int x;
@@ -71,9 +71,9 @@ public:
 class RadialBlurSize : public BC_ISlider
 {
 public:
-	RadialBlurSize(RadialBlurMain *plugin, 
-		int x, 
-		int y, 
+	RadialBlurSize(RadialBlurMain *plugin,
+		int x,
+		int y,
 		int *output,
 		int min,
 		int max);
@@ -85,9 +85,9 @@ public:
 class RadialBlurToggle : public BC_CheckBox
 {
 public:
-	RadialBlurToggle(RadialBlurMain *plugin, 
-		int x, 
-		int y, 
+	RadialBlurToggle(RadialBlurMain *plugin,
+		int x,
+		int y,
 		int *output,
 		char *string);
 	int handle_event();
@@ -156,8 +156,8 @@ public:
 class RadialBlurEngine : public LoadServer
 {
 public:
-	RadialBlurEngine(RadialBlurMain *plugin, 
-		int total_clients, 
+	RadialBlurEngine(RadialBlurMain *plugin,
+		int total_clients,
 		int total_packages);
 	void init_packages();
 	LoadClient* new_client();
@@ -201,7 +201,7 @@ RadialBlurConfig::RadialBlurConfig()
 
 int RadialBlurConfig::equivalent(RadialBlurConfig &that)
 {
-	return 
+	return
 		angle == that.angle &&
 		x == that.x &&
 		y == that.y &&
@@ -224,10 +224,10 @@ void RadialBlurConfig::copy_from(RadialBlurConfig &that)
 	a = that.a;
 }
 
-void RadialBlurConfig::interpolate(RadialBlurConfig &prev, 
-	RadialBlurConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void RadialBlurConfig::interpolate(RadialBlurConfig &prev,
+	RadialBlurConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -256,13 +256,13 @@ void RadialBlurConfig::interpolate(RadialBlurConfig &prev,
 
 RadialBlurWindow::RadialBlurWindow(RadialBlurMain *plugin)
  : PluginClientWindow(plugin,
-	230, 
-	340, 
-	230, 
-	340, 
+	230,
+	340,
+	230,
+	340,
 	0)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
 }
 
 RadialBlurWindow::~RadialBlurWindow()
@@ -312,10 +312,10 @@ void RadialBlurWindow::create_objects()
 
 
 
-RadialBlurToggle::RadialBlurToggle(RadialBlurMain *plugin, 
-	int x, 
-	int y, 
-	int *output, 
+RadialBlurToggle::RadialBlurToggle(RadialBlurMain *plugin,
+	int x,
+	int y,
+	int *output,
 	char *string)
  : BC_CheckBox(x, y, *output, string)
 {
@@ -336,9 +336,9 @@ int RadialBlurToggle::handle_event()
 
 
 
-RadialBlurSize::RadialBlurSize(RadialBlurMain *plugin, 
-	int x, 
-	int y, 
+RadialBlurSize::RadialBlurSize(RadialBlurMain *plugin,
+	int x,
+	int y,
 	int *output,
 	int min,
 	int max)
@@ -366,7 +366,7 @@ int RadialBlurSize::handle_event()
 RadialBlurMain::RadialBlurMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 	temp = 0;
 	rotate = 0;
@@ -374,7 +374,7 @@ RadialBlurMain::RadialBlurMain(PluginServer *server)
 
 RadialBlurMain::~RadialBlurMain()
 {
-	
+
 	if(engine) delete engine;
 	if(temp) delete temp;
 	delete rotate;
@@ -519,9 +519,9 @@ int RadialBlurMain::handle_opengl()
 	glDrawBuffer(GL_BACK);
 	if(!config.r || !config.g || !config.b || !config.a)
 	{
-		glColor4f(config.r ? 0 : 1, 
-			config.g ? 0 : 1, 
-			config.b ? 0 : 1, 
+		glColor4f(config.r ? 0 : 1,
+			config.g ? 0 : 1,
+			config.b ? 0 : 1,
 			config.a ? 0 : 1);
 		get_output()->draw_texture();
 	}
@@ -534,9 +534,9 @@ int RadialBlurMain::handle_opengl()
 	{
 		get_output()->set_opengl_state(VFrame::TEXTURE);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glColor4f(config.r ? 1 : 0, 
-			config.g ? 1 : 0, 
-			config.b ? 1 : 0, 
+		glColor4f(config.r ? 1 : 0,
+			config.g ? 1 : 0,
+			config.b ? 1 : 0,
 			config.a ? 1 : 0);
 
 		float w = get_output()->get_w();
@@ -545,11 +545,11 @@ int RadialBlurMain::handle_opengl()
 
 
 		double current_angle = (double)config.angle *
-			i / 
-			config.steps - 
+			i /
+			config.steps -
 			(double)config.angle / 2;
 
-		if(!rotate) rotate = new AffineEngine(PluginClient::smp + 1, 
+		if(!rotate) rotate = new AffineEngine(PluginClient::smp + 1,
 			PluginClient::smp + 1);
 		rotate->set_in_pivot((int)(config.x * w / 100),
 			(int)(config.y * h / 100));
@@ -562,9 +562,9 @@ int RadialBlurMain::handle_opengl()
 
 		glAccum(GL_ACCUM, fraction);
 		glEnable(GL_TEXTURE_2D);
-		glColor4f(config.r ? 1 : 0, 
-			config.g ? 1 : 0, 
-			config.b ? 1 : 0, 
+		glColor4f(config.r ? 1 : 0,
+			config.g ? 1 : 0,
+			config.b ? 1 : 0,
 			config.a ? 1 : 0);
 	}
 
@@ -596,7 +596,7 @@ RadialBlurPackage::RadialBlurPackage()
 }
 
 
-RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server, 
+RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server,
 	RadialBlurMain *plugin)
  : LoadClient(server)
 {
@@ -780,8 +780,8 @@ void RadialBlurUnit::process_package(LoadPackage *package)
 
 
 
-RadialBlurEngine::RadialBlurEngine(RadialBlurMain *plugin, 
-	int total_clients, 
+RadialBlurEngine::RadialBlurEngine(RadialBlurMain *plugin,
+	int total_clients,
 	int total_packages)
  : LoadServer(total_clients, total_packages)
 // : LoadServer(1, 1)

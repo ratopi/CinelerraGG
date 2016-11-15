@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifdef HAVE_FIREWIRE
@@ -228,15 +228,15 @@ int IEC61883Input::write_frame(unsigned char *data, int len, int complete)
 // Extract the audio
 	if(audio_samples < INPUT_SAMPLES - 2048)
 	{
-		int audio_result = dv_read_audio(decoder, 
-			(unsigned char*)audio_buffer + 
+		int audio_result = dv_read_audio(decoder,
+			(unsigned char*)audio_buffer +
 				audio_samples * 2 * 2,
 			(unsigned char*)src,
 			len,
  			channels,
 			bits);
 		int real_freq = decoder->decoder->audio->frequency;
- 		if (real_freq == 32000) 
+ 		if (real_freq == 32000)
  		{
 // do in-place _FAST_ && _SIMPLE_ upsampling to 48khz
 // i also think user should get a warning that his material is effectively 32khz
@@ -245,7 +245,7 @@ int IEC61883Input::write_frame(unsigned char *data, int len, int complete)
  			int from = audio_result - 1;
  			int new_result = audio_result * 48000 / real_freq;
  			for (int to = new_result - 1; to >=0; to--)
- 			{	
+ 			{
  				if ((to % 3) == 0 || (to % 3) == 1) from --;
  				twosample[to] = twosample[from];
  			}
@@ -338,7 +338,7 @@ int IEC61883Input::read_audio(char *data, int samples)
 	if(audio_samples >= samples)
 	{
 		memcpy(data, audio_buffer, samples * bits * channels / 8);
-		memcpy(audio_buffer, 
+		memcpy(audio_buffer,
 			audio_buffer + samples * bits * channels / 8,
 			(audio_samples - samples) * bits * channels / 8);
 		audio_samples -= samples;

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "autos.h"
@@ -40,13 +40,13 @@ FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
 	control_out_position = 0;
 	pos_valid = -1; //"dirty"
 	curve_mode = FREE;
-//  note: in most cases the curve_mode value is set   
+//  note: in most cases the curve_mode value is set
 //        by the method interpolate_from() rsp. copy_from()
 }
 
 FloatAuto::~FloatAuto()
 {
-	// as we are going away, the neighbouring float auto nodes 
+	// as we are going away, the neighbouring float auto nodes
 	// need to re-adjust their ctrl point positions and curves
 	if (next)
 		((FloatAuto*)next)->curve_dirty();
@@ -74,9 +74,9 @@ int FloatAuto::identical(FloatAuto *src)
 		// curve_mode is ignored, no recalculations
 }
 
-/* Note: the following is essentially display-code and has been moved to: 
+/* Note: the following is essentially display-code and has been moved to:
  *  TrackCanvas::value_to_percentage(float auto_value, int autogrouptype)
- * 
+ *
 float FloatAuto::value_to_percentage()
 {
 }
@@ -103,7 +103,7 @@ void FloatAuto::copy_from(FloatAuto *that)
 	this->control_in_position = that->control_in_position;
 	this->control_out_position = that->control_out_position;
 	this->curve_mode = that->curve_mode;
-// note: literate copy, no recalculations    
+// note: literate copy, no recalculations
 }
 
 inline
@@ -112,7 +112,7 @@ void FloatAuto::handle_automatic_curve_after_copy()
 // of the left neighbour used as a template for interpolation.
 // Rather, we (re)set to automatically smoothed curves. Note
 // auto generated nodes (while tweaking values) indeed are
-// inserted by using this "interpolation" approach, thus making 
+// inserted by using this "interpolation" approach, thus making
 // this defaulting to auto-smooth curves very important.
 {
 	if(curve_mode == FREE || curve_mode == TFREE)
@@ -127,7 +127,7 @@ int FloatAuto::interpolate_from(Auto *a1, Auto *a2, int64_t pos, Auto *templ)
 // between the positions of a1 and a2. If a1 or a2 are omitted, they default
 // to this->previous and this->next. If this FloatAuto has automatic curves,
 // this may trigger re-adjusting of this and its neighbours in this->autos.
-// Note while a1 and a2 need not be members of this->autos, automatic 
+// Note while a1 and a2 need not be members of this->autos, automatic
 // readjustments are always done to the neighbours in this->autos.
 // If the template is given, it will be used to fill out this
 // objects fields prior to interpolating.
@@ -177,11 +177,11 @@ void FloatAuto::toggle_curve_mode()
 
 void FloatAuto::set_value(float newvalue)
 {
-	this->value=newvalue; 
+	this->value=newvalue;
 	this->adjust_curves();
 	if(previous) ((FloatAuto*)previous)->adjust_curves();
 	if(next)     ((FloatAuto*)next)->adjust_curves();
-} 
+}
 
 void FloatAuto::set_control_in_value(float newvalue)
 {
@@ -216,7 +216,7 @@ inline float weighted_mean(float v1, float v2, float w1, float w2){
 
 
 void FloatAuto::adjust_curves()
-// recalculates curves if current mode 
+// recalculates curves if current mode
 // implies automatic adjustment of curves
 {
 	if(!autos) return;
@@ -226,7 +226,7 @@ void FloatAuto::adjust_curves()
 		// but this could cause the curve to overshot extremal automation nodes.
 		// (e.g when setting a fade node at zero, the curve could go negative)
 		// we can interpret the slope of chord as a weighted mean value, where
-		// the length of the interval is used as weight; we just use other 
+		// the length of the interval is used as weight; we just use other
 		// weights: intervall length /and/ reciprocal of slope. So, if the
 		// connection to one of the neighbours has very low slope this will
 		// dominate the calculated curve slope at this automation node.
@@ -236,7 +236,7 @@ void FloatAuto::adjust_curves()
 		float s, dxl, dxr, sl, sr;
 		calculate_slope((FloatAuto*) previous, this, sl, dxl);
 		calculate_slope(this, (FloatAuto*) next, sr, dxr);
-		
+
 		if(0 < sgn(sl) * sgn(sr))
 		{
 			float wl = fabs(dxl) * (fabs(1.0/sl) + 1);
@@ -244,11 +244,11 @@ void FloatAuto::adjust_curves()
 			s = weighted_mean(sl, sr, wl, wr);
 		}
 		else s = 0; // fixed hoizontal curve
-		
+
 		control_in_value = s * control_in_position;
 		control_out_value = s * control_out_position;
 	}
-	
+
 	else if(curve_mode == LINEAR) {
 		float g, dx;
 		if(previous)
@@ -261,14 +261,14 @@ void FloatAuto::adjust_curves()
 			calculate_slope(this, (FloatAuto*)next, g, dx);
 			control_out_value = g * dx / 3;
 	}	}
-	
+
 	else if(curve_mode == TFREE && control_in_position && control_out_position) {
 		float gl = control_in_value / control_in_position;
 		float gr = control_out_value / control_out_position;
 		float wl = fabs(control_in_value);
 		float wr = fabs(control_out_value);
 		float g = weighted_mean(gl, gr, wl, wr);
-		
+
 		control_in_value = g * control_in_position;
 		control_out_value = g * control_out_position;
 	}
@@ -291,33 +291,33 @@ void FloatAuto::adjust_ctrl_positions(FloatAuto *prev, FloatAuto *next)
 // next neighbours. The reason is: for this special
 // distance the bézier function yields x(t) = t, i.e.
 // we can use the y(t) as if it was a simple function y(x).
-   
-// This adjustment is done only on demand and involves 
+
+// This adjustment is done only on demand and involves
 // updating neighbours and adjust_curves() as well.
-{ 
+{
 	if(!prev && !next)
 	{	// use current siblings
 		prev = (FloatAuto*)this->previous;
 		next = (FloatAuto*)this->next;
-	}	
-	
+	}
+
 	if(prev)
 	{	set_ctrl_positions(prev, this);
 		prev->adjust_curves();
 	}
 	else // disable curve on left side
 		control_in_position = 0;
-	
-	if(next) 
+
+	if(next)
 	{	set_ctrl_positions(this, next);
 		next->adjust_curves();
 	}
 	else // disable right curve
 		control_out_position = 0;
-	
+
 	this->adjust_curves();
 	pos_valid = position;
-// curves up-to-date	
+// curves up-to-date
 }
 
 
@@ -352,7 +352,7 @@ void FloatAuto::adjust_to_new_coordinates(int64_t position, float value)
 int FloatAuto::value_to_str(char *string, float value)
 {
 	int j = 0, i = 0;
-	if(value > 0) 
+	if(value > 0)
 		sprintf(string, "+%.2f", value);
 	else
 		sprintf(string, "%.2f", value);
@@ -364,17 +364,17 @@ int FloatAuto::value_to_str(char *string, float value)
 		string[1] = 0;
 	}
 	else
-	if(value < 1 && value > -1) 
+	if(value < 1 && value > -1)
 	{
 		j = 1;
 		string[j] = string[0];
 	}
-	else 
+	else
 	{
 		j = 0;
 		string[3] = 0;
 	}
-	
+
 	while(string[j] != 0) string[i++] = string[j++];
 	string[i] = 0;
 
@@ -404,7 +404,7 @@ void FloatAuto::load(FileXML *file)
 	control_in_value = file->tag.get_property("CONTROL_IN_VALUE", control_in_value);
 	control_out_value = file->tag.get_property("CONTROL_OUT_VALUE", control_out_value);
 	curve_mode = (t_mode)file->tag.get_property("TANGENT_MODE", (int)FREE);
-	
+
 	// Compatibility to old session data format:
 	// Versions previous to the bezier auto patch (Jun 2006) applied a factor 2
 	// to the y-coordinates of ctrl points while calculating the bezier function.

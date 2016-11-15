@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -43,10 +43,10 @@ public:
 
 	void copy_from(RGBShiftConfig &src);
 	int equivalent(RGBShiftConfig &src);
-	void interpolate(RGBShiftConfig &prev, 
-		RGBShiftConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(RGBShiftConfig &prev,
+		RGBShiftConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 
 	int r_dx, r_dy, g_dx, g_dy, b_dx, b_dy;
@@ -120,10 +120,10 @@ int RGBShiftConfig::equivalent(RGBShiftConfig &src)
 		EQUIV(r_dy, src.r_dy) && EQUIV(g_dy, src.g_dy) && EQUIV(b_dy, src.b_dy);
 }
 
-void RGBShiftConfig::interpolate(RGBShiftConfig &prev, 
-	RGBShiftConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void RGBShiftConfig::interpolate(RGBShiftConfig &prev,
+	RGBShiftConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -209,7 +209,7 @@ RGBShiftEffect::~RGBShiftEffect()
 }
 
 const char* RGBShiftEffect::plugin_title() { return _("RGBShift"); }
-int RGBShiftEffect::is_realtime() { return 1; } 
+int RGBShiftEffect::is_realtime() { return 1; }
 
 
 NEW_WINDOW_MACRO(RGBShiftEffect, RGBShiftWindow)

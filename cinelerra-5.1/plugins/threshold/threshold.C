@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <string>
@@ -71,13 +71,13 @@ T interpolate(const T & prev, const double & prev_scale, const T & next, const d
 
 void ThresholdConfig::interpolate(ThresholdConfig &prev,
 	ThresholdConfig &next,
-	int64_t prev_frame, 
-	int64_t next_frame, 
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
-	double next_scale = (double)(current_frame - prev_frame) / 
+	double next_scale = (double)(current_frame - prev_frame) /
 		(next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / 
+	double prev_scale = (double)(next_frame - current_frame) /
 		(next_frame - prev_frame);
 
 	min = ::interpolate(prev.min, prev_scale, next.min, next_scale);
@@ -162,7 +162,7 @@ int ThresholdMain::process_buffer(VFrame *frame,
 	if(!threshold_engine)
 		threshold_engine = new ThresholdEngine(this);
 	threshold_engine->process_packages(frame);
-	
+
 	return 0;
 }
 
@@ -252,7 +252,7 @@ void ThresholdMain::calculate_histogram(VFrame *frame)
 int ThresholdMain::handle_opengl()
 {
 #ifdef HAVE_GL
-	static const char *rgb_shader = 
+	static const char *rgb_shader =
 		"uniform sampler2D tex;\n"
 		"uniform float min;\n"
 		"uniform float max;\n"
@@ -272,7 +272,7 @@ int ThresholdMain::handle_opengl()
 		"	gl_FragColor = pixel;\n"
 		"}\n";
 
-	static const char *yuv_shader = 
+	static const char *yuv_shader =
 		"uniform sampler2D tex;\n"
 		"uniform float min;\n"
 		"uniform float max;\n"
@@ -487,17 +487,17 @@ void ThresholdUnit::render_data(LoadPackage *package)
 	const int max = (int)(config->max * 0xffff);
 	const int w = data->get_w();
 	//const int h = data->get_h();
-	
+
 	const TYPE r_low = scale_to_range<TYPE>(config->low_color.r);
 	const TYPE g_low = scale_to_range<TYPE>(config->low_color.g);
 	const TYPE b_low = scale_to_range<TYPE>(config->low_color.b);
 	const TYPE a_low = scale_to_range<TYPE>(config->low_color.a);
-	
+
 	const TYPE r_mid = scale_to_range<TYPE>(config->mid_color.r);
 	const TYPE g_mid = scale_to_range<TYPE>(config->mid_color.g);
 	const TYPE b_mid = scale_to_range<TYPE>(config->mid_color.b);
 	const TYPE a_mid = scale_to_range<TYPE>(config->mid_color.a);
-	
+
 	const TYPE r_high = scale_to_range<TYPE>(config->high_color.r);
 	const TYPE g_high = scale_to_range<TYPE>(config->high_color.g);
 	const TYPE b_high = scale_to_range<TYPE>(config->high_color.b);

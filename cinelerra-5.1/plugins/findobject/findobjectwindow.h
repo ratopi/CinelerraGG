@@ -2,23 +2,23 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
- 
+
 
 #ifndef FINDOBJECTWINDOW_H
 #define FINDOBJECTWINDOW_H
@@ -29,9 +29,9 @@
 class FindObjectLayer : public BC_TumbleTextBox
 {
 public:
-	FindObjectLayer(FindObjectMain *plugin, 
-		FindObjectWindow *gui, 
-		int x, 
+	FindObjectLayer(FindObjectMain *plugin,
+		FindObjectWindow *gui,
+		int x,
 		int y,
 		int *value);
 	int handle_event();
@@ -44,8 +44,8 @@ public:
 class FindObjectGlobalRange : public BC_IPot
 {
 public:
-	FindObjectGlobalRange(FindObjectMain *plugin, 
-		int x, 
+	FindObjectGlobalRange(FindObjectMain *plugin,
+		int x,
 		int y,
 		int *value);
 	int handle_event();
@@ -56,8 +56,8 @@ public:
 class FindObjectBlockSize : public BC_FPot
 {
 public:
-	FindObjectBlockSize(FindObjectMain *plugin, 
-		int x, 
+	FindObjectBlockSize(FindObjectMain *plugin,
+		int x,
 		int y,
 		float *value);
 	int handle_event();
@@ -70,9 +70,9 @@ class FindObjectBlockCenterText;
 class FindObjectBlockCenter : public BC_FPot
 {
 public:
-	FindObjectBlockCenter(FindObjectMain *plugin, 
+	FindObjectBlockCenter(FindObjectMain *plugin,
 		FindObjectWindow *gui,
-		int x, 
+		int x,
 		int y,
 		float *value);
 	int handle_event();
@@ -85,9 +85,9 @@ public:
 class FindObjectBlockCenterText : public BC_TextBox
 {
 public:
-	FindObjectBlockCenterText(FindObjectMain *plugin, 
+	FindObjectBlockCenterText(FindObjectMain *plugin,
 		FindObjectWindow *gui,
-		int x, 
+		int x,
 		int y,
 		float *value);
 	int handle_event();
@@ -102,9 +102,9 @@ public:
 class FindObjectDrawBorder : public BC_CheckBox
 {
 public:
-	FindObjectDrawBorder(FindObjectMain *plugin, 
+	FindObjectDrawBorder(FindObjectMain *plugin,
 		FindObjectWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	FindObjectMain *plugin;
@@ -114,9 +114,9 @@ public:
 class FindObjectDrawKeypoints : public BC_CheckBox
 {
 public:
-	FindObjectDrawKeypoints(FindObjectMain *plugin, 
+	FindObjectDrawKeypoints(FindObjectMain *plugin,
 		FindObjectWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	FindObjectMain *plugin;
@@ -126,9 +126,9 @@ public:
 class FindObjectReplace : public BC_CheckBox
 {
 public:
-	FindObjectReplace(FindObjectMain *plugin, 
+	FindObjectReplace(FindObjectMain *plugin,
 		FindObjectWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	FindObjectMain *plugin;
@@ -139,9 +139,9 @@ public:
 class FindObjectDrawObjectBorder : public BC_CheckBox
 {
 public:
-	FindObjectDrawObjectBorder(FindObjectMain *plugin, 
+	FindObjectDrawObjectBorder(FindObjectMain *plugin,
 		FindObjectWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	FindObjectMain *plugin;
@@ -154,9 +154,9 @@ public:
 class FindObjectAlgorithm : public BC_PopupMenu
 {
 public:
-	FindObjectAlgorithm(FindObjectMain *plugin, 
-		FindObjectWindow *gui, 
-		int x, 
+	FindObjectAlgorithm(FindObjectMain *plugin,
+		FindObjectWindow *gui,
+		int x,
 		int y);
 	int handle_event();
 	void create_objects();
@@ -171,8 +171,8 @@ public:
 class FindObjectCamParam : public BC_IPot
 {
 public:
-	FindObjectCamParam(FindObjectMain *plugin, 
-		int x, 
+	FindObjectCamParam(FindObjectMain *plugin,
+		int x,
 		int y,
 		int *value);
 	int handle_event();
@@ -184,8 +184,8 @@ public:
 class FindObjectBlend : public BC_IPot
 {
 public:
-	FindObjectBlend(FindObjectMain *plugin, 
-		int x, 
+	FindObjectBlend(FindObjectMain *plugin,
+		int x,
 		int y,
 		int *value);
 	int handle_event();

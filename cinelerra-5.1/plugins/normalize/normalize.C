@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -61,7 +61,7 @@ int NormalizeMain::load_defaults()
 
 // set the default directory
 	sprintf(directory, "%s/normalize.rc", File::get_config_path());
-	
+
 // load the defaults
 
 	defaults = new BC_Hash(directory);
@@ -128,9 +128,9 @@ int NormalizeMain::process_loop(Samples **buffer, int64_t &write_length)
 //printf("NormalizeMain::process_loop 1 %d %f\n", current_position, scale[0]);
 		current_position += fragment_len;
 		write_length = fragment_len;
-		result = progress->update(PluginClient::end - 
-			PluginClient::start + 
-			current_position - 
+		result = progress->update(PluginClient::end -
+			PluginClient::start +
+			current_position -
 			PluginClient::start);
 		if(current_position >= PluginClient::end) result = 1;
 	}
@@ -138,8 +138,8 @@ int NormalizeMain::process_loop(Samples **buffer, int64_t &write_length)
 	{
 // Get peak
 //printf("NormalizeMain::process_loop 4\n");
-		for(int i = PluginClient::start; 
-			i < PluginClient::end && !result; 
+		for(int i = PluginClient::start;
+			i < PluginClient::end && !result;
 			i += fragment_len)
 		{
 			fragment_len = PluginClient::in_buffer_size;
@@ -152,11 +152,11 @@ int NormalizeMain::process_loop(Samples **buffer, int64_t &write_length)
 				read_samples(buffer[j], j, i, fragment_len);
 //printf("NormalizeMain::process_loop 7\n");
 				double *buffer_samples = buffer[j]->get_data();
-				
+
 				for(int k = 0; k < fragment_len; k++)
 				{
 					double sample = fabs(buffer_samples[k]);
-					if(peak[j] < sample) 
+					if(peak[j] < sample)
 						peak[j] = sample;
 				}
 			}

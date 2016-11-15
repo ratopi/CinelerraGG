@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "720to480.h"
@@ -52,18 +52,18 @@ _720to480Config::_720to480Config()
 
 
 _720to480Window::_720to480Window(_720to480Main *client, int x, int y)
- : BC_Window(client->gui_string, 
- 	x, 
-	y, 
-	230, 
-	150, 
-	230, 
-	150, 
-	0, 
+ : BC_Window(client->gui_string,
+ 	x,
+	y,
+	230,
+	150,
+	230,
+	150,
+	0,
 	0,
 	1)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 
@@ -83,7 +83,7 @@ void _720to480Window::create_objects()
 // 	add_tool(forward = new _720to480Direction(client, this, FORWARD, x, y, _("Downsample")));
 // 	y += 25;
 // 	add_tool(reverse = new _720to480Direction(client, this, REVERSE, x, y, _("Upsample")));
-// 
+//
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 
@@ -116,15 +116,15 @@ void _720to480Window::set_direction(int direction)
 
 
 
-_720to480Order::_720to480Order(_720to480Main *client, 
-		_720to480Window *window, 
-		int output, 
-		int x, 
-		int y, 
+_720to480Order::_720to480Order(_720to480Main *client,
+		_720to480Window *window,
+		int output,
+		int x,
+		int y,
 		char *text)
- : BC_Radial(x, 
- 	y, 
-	client->config.first_field == output, 
+ : BC_Radial(x,
+ 	y,
+	client->config.first_field == output,
 	text)
 {
 	this->client = client;
@@ -142,15 +142,15 @@ int _720to480Order::handle_event()
 
 
 
-_720to480Direction::_720to480Direction(_720to480Main *client, 
-		_720to480Window *window, 
-		int output, 
-		int x, 
-		int y, 
+_720to480Direction::_720to480Direction(_720to480Main *client,
+		_720to480Window *window,
+		int output,
+		int x,
+		int y,
 		char *text)
- : BC_Radial(x, 
- 	y, 
-	client->config.direction == output, 
+ : BC_Radial(x,
+ 	y,
+	client->config.direction == output,
 	text)
 {
 	this->client = client;
@@ -205,7 +205,7 @@ int _720to480Main::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%s/720to480.rc", File::get_config_path());
-	
+
 	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.first_field = defaults->get("FIRST_FIELD", config.first_field);
@@ -225,8 +225,8 @@ int _720to480Main::save_defaults()
 int _720to480Main::get_parameters()
 {
 	BC_DisplayInfo info;
-	_720to480Window window(this, 
-		info.get_abs_cursor_x(), 
+	_720to480Window window(this,
+		info.get_abs_cursor_x(),
 		info.get_abs_cursor_y());
 	window.create_objects();
 	int result = window.run_window();
@@ -239,7 +239,7 @@ int _720to480Main::start_loop()
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, "%s...", plugin_title());
-		progress = start_progress(string, 
+		progress = start_progress(string,
 			PluginClient::end - PluginClient::start);
 	}
 
@@ -349,7 +349,7 @@ int _720to480Main::process_loop(VFrame *output)
 		input_position++;
 	}
 
-	if(PluginClient::interactive) 
+	if(PluginClient::interactive)
 		result = progress->update(input_position - PluginClient::start);
 
 	if(input_position >= PluginClient::end) result = 1;

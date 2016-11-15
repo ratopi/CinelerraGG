@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef PIANO_H
@@ -67,11 +67,11 @@ public:
 class PianoCanvas : public BC_SubWindow
 {
 public:
-	PianoCanvas(Piano *plugin, 
-		PianoWindow *window, 
-		int x, 
-		int y, 
-		int w, 
+	PianoCanvas(Piano *plugin,
+		PianoWindow *window,
+		int x,
+		int y,
+		int w,
 		int h);
 	~PianoCanvas();
 
@@ -101,16 +101,16 @@ class PianoConfig
 public:
 	PianoConfig();
 	~PianoConfig();
-	
+
 	int equivalent(PianoConfig &that);
 	void copy_from(PianoConfig &that);
-	void interpolate(PianoConfig &prev, 
-		PianoConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(PianoConfig &prev,
+		PianoConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 	void reset();
-	
+
 };
 
 
@@ -142,12 +142,12 @@ public:
 	void add_oscillator();
 	void delete_oscillator();
 	double get_total_power();
-	double get_oscillator_point(float x, 
-		double normalize_constant, 
+	double get_oscillator_point(float x,
+		double normalize_constant,
 		int oscillator);
-	double solve_eqn(double *output, 
-		double x1, 
-		double x2, 
+	double solve_eqn(double *output,
+		double x1,
+		double x2,
 		double normalize_constant,
 		int oscillator);
 	double get_point(float x, double normalize_constant);

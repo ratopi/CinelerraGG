@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef DEVICEMPEGINPUT_H
@@ -41,7 +41,7 @@
 #include "thread.h"
 #include "libzmpeg3.h"
 
-#define INPUT_SAMPLES 131072 
+#define INPUT_SAMPLES 131072
 #define BUFFER_TIMEOUT 500000
 
 
@@ -174,10 +174,10 @@ public:
                 unsigned char *&thumbnail, int &ww, int &hh);
         int set_skimming(int track, int skim, skim_fn fn, void *vp);
 
-	static DeviceMPEGInput* get_mpeg_video(VideoDevice *video_device, 
+	static DeviceMPEGInput* get_mpeg_video(VideoDevice *video_device,
        		DeviceMPEGInput* (*new_device)(const char *name, int no),
 	        const char *name, int no);
-	static DeviceMPEGInput* get_mpeg_audio(AudioDevice *audio_device, 
+	static DeviceMPEGInput* get_mpeg_audio(AudioDevice *audio_device,
        		DeviceMPEGInput* (*new_device)(const char *name, int no),
 	        const char *name, int no);
 

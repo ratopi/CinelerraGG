@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef VDEVICEX11_H
@@ -67,13 +67,13 @@ public:
 // Called by VModule::import_frame
 	void do_camera(VFrame *output,
 		VFrame *input,
-		float in_x1, 
-		float in_y1, 
-		float in_x2, 
-		float in_y2, 
-		float out_x1, 
-		float out_y1, 
-		float out_x2, 
+		float in_x1,
+		float in_y1,
+		float in_x2,
+		float in_y2,
+		float out_x1,
+		float out_y1,
+		float out_x2,
 		float out_y2);
 
 // Called by VModule::import_frame for cases with no media.
@@ -83,8 +83,8 @@ public:
 
 // Hardware version of MaskEngine
 	bool can_mask(int64_t start_position_project, MaskAutos *keyframe_set);
-	void do_mask(VFrame *output, 
-		int64_t start_position_project, MaskAutos *keyframe_set, 
+	void do_mask(VFrame *output,
+		int64_t start_position_project, MaskAutos *keyframe_set,
 		MaskAuto *keyframe, MaskAuto *default_auto);
 	void convert_cmodel(VFrame *output, int dst_cmodel);
 
@@ -100,15 +100,15 @@ public:
 // It requires recompositing the previous frame in software every time playback was
 // stops, a complicated operation.
 	void overlay(VFrame *output_frame,
-		VFrame *input, 
-		float in_x1, 
-		float in_y1, 
-		float in_x2, 
-		float in_y2, 
-		float out_x1, 
-		float out_y1, 
-		float out_x2, 
-		float out_y2, 
+		VFrame *input,
+		float in_x1,
+		float in_y1,
+		float in_x2,
+		float in_y2,
+		float out_x1,
+		float out_y1,
+		float out_x2,
+		float out_y2,
 		float alpha,        // 0 - 1
 		int mode,
 		EDL *edl,
@@ -119,7 +119,7 @@ public:
 // pluginclient function.
 	void run_plugin(PluginClient *client);
 
-// For multichannel plugins, copy from the temporary pbuffer to 
+// For multichannel plugins, copy from the temporary pbuffer to
 // the plugin output texture.
 // Set the output OpenGL state to TEXTURE.
 	void copy_frame(VFrame *dst, VFrame *src);
@@ -133,13 +133,13 @@ private:
 	int get_best_colormodel(int colormodel);
 
 // Bitmap to be written to device
-	BC_Bitmap *bitmap;        
+	BC_Bitmap *bitmap;
 // Wrapper for bitmap or intermediate buffer for user to write to
-	VFrame *output_frame;     
+	VFrame *output_frame;
 // Type of output_frame
-	int bitmap_type;           
+	int bitmap_type;
 // dimensions of buffers written to window
-	int bitmap_w, bitmap_h;   
+	int bitmap_w, bitmap_h;
 	ArrayList<int> render_strategies;
 // Canvas for output
 	Canvas *output;
@@ -150,7 +150,7 @@ private:
 	int texture_h;
 	int color_model;
 	int color_model_selected;
-// Transfer coordinates from the output frame to the canvas 
+// Transfer coordinates from the output frame to the canvas
 // for last frame rendered.
 // These stick the last frame to the display.
 // Must be floats to support OpenGL

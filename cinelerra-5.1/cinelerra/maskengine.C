@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcsignals.h"
@@ -63,7 +63,7 @@ MaskUnit::~MaskUnit()
 
 #define OVERSAMPLE 8
 
-void MaskUnit::draw_line_clamped(VFrame *frame, 
+void MaskUnit::draw_line_clamped(VFrame *frame,
 	int x1, int y1, int x2, int y2, unsigned char k)
 {
 	int draw_x1, draw_y1;
@@ -100,10 +100,10 @@ void MaskUnit::draw_line_clamped(VFrame *frame,
 	}
 }
 
-void MaskUnit::blur_strip(double *val_p, 
-	double *val_m, 
-	double *dst, 
-	double *src, 
+void MaskUnit::blur_strip(double *val_p,
+	double *val_m,
+	double *dst,
+	double *src,
 	int size,
 	int max)
 {
@@ -145,11 +145,11 @@ void MaskUnit::blur_strip(double *val_p,
 }
 
 void MaskUnit::do_feather(VFrame *output,
-	VFrame *input, 
-	double feather, 
-	int start_y, 
-	int end_y, 
-	int start_x, 
+	VFrame *input,
+	double feather,
+	int start_y,
+	int end_y,
+	int start_x,
 	int end_x)
 {
 //printf("MaskUnit::do_feather %f\n", feather);
@@ -176,18 +176,18 @@ void MaskUnit::do_feather(VFrame *output,
 				(2 * constants[6] + constants[4]) * cos(constants[2]));
 
 	n_p[2] = 2 * exp(constants[0] + constants[1]) *
-				((constants[4] + constants[6]) * cos(constants[3]) * 
-				cos(constants[2]) - constants[5] * 
+				((constants[4] + constants[6]) * cos(constants[3]) *
+				cos(constants[2]) - constants[5] *
 				cos(constants[3]) * sin(constants[2]) -
 				constants[7] * cos(constants[2]) * sin(constants[3])) +
 				constants[6] * exp(2 * constants[0]) +
 				constants[4] * exp(2 * constants[1]);
 
 	n_p[3] = exp(constants[1] + 2 * constants[0]) *
-				(constants[7] * sin(constants[3]) - 
+				(constants[7] * sin(constants[3]) -
 				constants[6] * cos(constants[3])) +
 				exp(constants[0] + 2 * constants[1]) *
-				(constants[5] * sin(constants[2]) - constants[4] * 
+				(constants[5] * sin(constants[2]) - constants[4] *
 				cos(constants[2]));
 	n_p[4] = 0.0;
 
@@ -195,7 +195,7 @@ void MaskUnit::do_feather(VFrame *output,
 	d_p[1] = -2 * exp(constants[1]) * cos(constants[3]) -
 				2 * exp(constants[0]) * cos(constants[2]);
 
-	d_p[2] = 4 * cos(constants[3]) * cos(constants[2]) * 
+	d_p[2] = 4 * cos(constants[3]) * cos(constants[2]) *
 				exp(constants[0] + constants[1]) +
 				exp(2 * constants[1]) + exp (2 * constants[0]);
 
@@ -331,11 +331,11 @@ void MaskUnit::do_feather(VFrame *output,
 		case BC_A8:
 			DO_FEATHER(unsigned char, 0xff);
 			break;
-		
+
 		case BC_A16:
 			DO_FEATHER(uint16_t, 0xffff);
 			break;
-		
+
 		case BC_A_FLOAT:
 			DO_FEATHER(float, 1);
 			break;
@@ -350,11 +350,11 @@ void MaskUnit::process_package(LoadPackage *package)
 {
 	MaskPackage *ptr = (MaskPackage*)package;
 
-	if(engine->recalculate && 
+	if(engine->recalculate &&
 		engine->step == DO_MASK)
 	{
 		VFrame *mask;
-		if(engine->feather > 0) 
+		if(engine->feather > 0)
 			mask = engine->temp_mask;
 		else
 			mask = engine->mask;
@@ -368,7 +368,7 @@ SET_TRACE
 //printf("MaskUnit::process_package 1\n");
 
 SET_TRACE
-		if(temp && 
+		if(temp &&
 			(temp->get_w() != oversampled_package_w ||
 			temp->get_h() != oversampled_package_h))
 		{
@@ -380,9 +380,9 @@ SET_TRACE
 SET_TRACE
 		if(!temp)
 		{
-			temp = new VFrame(0, 
+			temp = new VFrame(0,
 				-1,
-				oversampled_package_w, 
+				oversampled_package_w,
 				oversampled_package_h,
 				BC_A8,
 				-1);
@@ -406,8 +406,8 @@ SET_TRACE
 			for(int i = 0; i < points->total; i++)
 			{
 				MaskPoint *point1 = points->values[i];
-				MaskPoint *point2 = (i >= points->total - 1) ? 
-					points->values[0] : 
+				MaskPoint *point2 = (i >= points->total - 1) ?
+					points->values[0] :
 					points->values[i + 1];
 
 				float x, y;
@@ -437,11 +437,11 @@ SET_TRACE
 
 					x = (        invtpow3 * x0
 						+ 3 * t     * invtpow2 * x1
-						+ 3 * tpow2 * invt     * x2 
+						+ 3 * tpow2 * invt     * x2
 						+     tpow3            * x3);
-					y = (        invtpow3 * y0 
+					y = (        invtpow3 * y0
 						+ 3 * t     * invtpow2 * y1
-						+ 3 * tpow2 * invt     * y2 
+						+ 3 * tpow2 * invt     * y2
 						+     tpow3            * y3);
 
 					y -= ptr->start_y;
@@ -573,10 +573,10 @@ SET_TRACE
 		if(engine->recalculate)
 		{
 // Feather polygon
-			if(engine->feather > 0) do_feather(engine->mask, 
-				engine->temp_mask, 
-				engine->feather, 
-				ptr->start_y, 
+			if(engine->feather > 0) do_feather(engine->mask,
+				engine->temp_mask,
+				engine->feather,
+				ptr->start_y,
 				ptr->end_y,
 				0,
 				0);
@@ -589,10 +589,10 @@ SET_TRACE
 		if(engine->recalculate)
 		{
 // Feather polygon
-			if(engine->feather > 0) do_feather(engine->mask, 
-				engine->temp_mask, 
-				engine->feather, 
-				0, 
+			if(engine->feather > 0) do_feather(engine->mask,
+				engine->temp_mask,
+				engine->feather,
+				0,
 				0,
 				ptr->start_x,
 				ptr->end_x);
@@ -758,7 +758,7 @@ MaskEngine::MaskEngine(int cpus)
 
 MaskEngine::~MaskEngine()
 {
-	if(mask) 
+	if(mask)
 	{
 		delete mask;
 		delete temp_mask;
@@ -772,23 +772,23 @@ MaskEngine::~MaskEngine()
 	point_sets.remove_all_objects();
 }
 
-int MaskEngine::points_equivalent(ArrayList<MaskPoint*> *new_points, 
+int MaskEngine::points_equivalent(ArrayList<MaskPoint*> *new_points,
 	ArrayList<MaskPoint*> *points)
 {
 //printf("MaskEngine::points_equivalent %d %d\n", new_points->total, points->total);
 	if(new_points->total != points->total) return 0;
-	
+
 	for(int i = 0; i < new_points->total; i++)
 	{
 		if(!(*new_points->values[i] == *points->values[i])) return 0;
 	}
-	
+
 	return 1;
 }
 
-void MaskEngine::do_mask(VFrame *output, 
+void MaskEngine::do_mask(VFrame *output,
 	int64_t start_position_project,
-	MaskAutos *keyframe_set, 
+	MaskAutos *keyframe_set,
 	MaskAuto *keyframe,
 	MaskAuto *default_auto)
 {
@@ -820,7 +820,7 @@ void MaskEngine::do_mask(VFrame *output,
 // Determine if recalculation is needed
 SET_TRACE
 
-	if(mask && 
+	if(mask &&
 		(mask->get_w() != output->get_w() ||
 		mask->get_h() != output->get_h() ||
 		mask->get_color_model() != new_color_model))
@@ -833,22 +833,22 @@ SET_TRACE
 
 	if(!recalculate)
 	{
-		if(point_sets.total != keyframe_set->total_submasks(start_position_project, 
+		if(point_sets.total != keyframe_set->total_submasks(start_position_project,
 			PLAY_FORWARD))
 			recalculate = 1;
 	}
 
 	if(!recalculate)
 	{
-		for(int i = 0; 
-			i < keyframe_set->total_submasks(start_position_project, 
-				PLAY_FORWARD) && !recalculate; 
+		for(int i = 0;
+			i < keyframe_set->total_submasks(start_position_project,
+				PLAY_FORWARD) && !recalculate;
 			i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
-			keyframe_set->get_points(new_points, 
-				i, 
-				start_position_project, 
+			keyframe_set->get_points(new_points,
+				i,
+				start_position_project,
 				PLAY_FORWARD);
 			if(!points_equivalent(new_points, point_sets.values[i])) recalculate = 1;
 			new_points->remove_all_objects();
@@ -856,9 +856,9 @@ SET_TRACE
 		}
 	}
 
-	int new_value = keyframe_set->get_value(start_position_project, 
+	int new_value = keyframe_set->get_value(start_position_project,
 		PLAY_FORWARD);
-	float new_feather = keyframe_set->get_feather(start_position_project, 
+	float new_feather = keyframe_set->get_feather(start_position_project,
 		PLAY_FORWARD);
 
 	if(recalculate ||
@@ -866,17 +866,17 @@ SET_TRACE
 		!EQUIV(new_value, value))
 	{
 		recalculate = 1;
-		if(!mask) 
+		if(!mask)
 		{
-			mask = new VFrame(0, 
+			mask = new VFrame(0,
 					-1,
-					output->get_w(), 
+					output->get_w(),
 					output->get_h(),
 					new_color_model,
 					-1);
-			temp_mask = new VFrame(0, 
+			temp_mask = new VFrame(0,
 					-1,
-					output->get_w(), 
+					output->get_w(),
 					output->get_h(),
 					new_color_model,
 					-1);
@@ -893,15 +893,15 @@ SET_TRACE
 		}
 		point_sets.remove_all_objects();
 
-		for(int i = 0; 
-			i < keyframe_set->total_submasks(start_position_project, 
-				PLAY_FORWARD); 
+		for(int i = 0;
+			i < keyframe_set->total_submasks(start_position_project,
+				PLAY_FORWARD);
 			i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
-			keyframe_set->get_points(new_points, 
-				i, 
-				start_position_project, 
+			keyframe_set->get_points(new_points,
+				i,
+				start_position_project,
 				PLAY_FORWARD);
 			point_sets.append(new_points);
 		}

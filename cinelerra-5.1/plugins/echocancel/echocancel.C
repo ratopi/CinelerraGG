@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -90,10 +90,10 @@ void EchoCancelConfig::copy_from(EchoCancelConfig &that)
 	CLAMP(cutoff, MIN_CUTOFF, MAX_CUTOFF);
 }
 
-void EchoCancelConfig::interpolate(EchoCancelConfig &prev, 
-	EchoCancelConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void EchoCancelConfig::interpolate(EchoCancelConfig &prev,
+	EchoCancelConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	copy_from(prev);
@@ -175,7 +175,7 @@ int EchoCancelMode::to_mode(const char *text)
 
 
 EchoCancelHistory::EchoCancelHistory(EchoCancel *plugin,
-	int x, 
+	int x,
 	int y)
  : BC_IPot(x, y, plugin->config.history_size, MIN_HISTORY, MAX_HISTORY)
 {
@@ -381,7 +381,7 @@ void EchoCancelCanvas::calculate_point(int do_overlay)
 	int y = get_cursor_y();
 	CLAMP(x, 0, get_w() - 1);
 	CLAMP(y, 0, get_h() - 1);
-	
+
 	EchoCancelWindow *window = (EchoCancelWindow *)plugin->thread->window;
 	window->calculate_frequency(x, y, do_overlay);
 }
@@ -423,7 +423,7 @@ EchoCancelWindow::~EchoCancelWindow()
 void EchoCancelWindow::create_objects()
 {
 	int pad = plugin->get_theme()->widget_border;
-	add_subwindow(canvas = new EchoCancelCanvas(plugin, 0, 0, 
+	add_subwindow(canvas = new EchoCancelCanvas(plugin, 0, 0,
 		get_w(), get_h() - 2*BC_Pot::calculate_h() - 3*pad));
 	canvas->set_cursor(CROSS_CURSOR, 0, 0);
 
@@ -462,7 +462,7 @@ void EchoCancelWindow::create_objects()
 	add_subwindow(window_size = new EchoCancelWindowSize(plugin, x, y, wsp));
 	x += window_size->get_w();
 	add_subwindow(window_size_tumbler = new EchoCancelWindowSizeTumbler(plugin, x, y));
-	
+
 	window_size->add_item(new BC_MenuItem(EchoCancelWindowSize::to_text(0)));
 	for( int i=MIN_WINDOW; i<=MAX_WINDOW; i*=2 ) {
 		window_size->add_item(new BC_MenuItem(EchoCancelWindowSize::to_text(i)));

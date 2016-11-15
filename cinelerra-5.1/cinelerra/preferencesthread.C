@@ -232,7 +232,7 @@ int PreferencesThread::apply_settings()
 	mwindow->gui->ffmpeg_toggle->set_tooltip( mwindow->preferences->ffmpeg_early_probe ?
 		_("Try FFMpeg first") : _("Try FFMpeg last") );
 	mwindow->gui->mainshbtns->load(mwindow->preferences);
-	double tc_position = 
+	double tc_position =
 		mwindow->edl->session->get_frame_offset() / mwindow->edl->session->frame_rate;
 	mwindow->gui->mainclock->set_position_offset(tc_position);
 

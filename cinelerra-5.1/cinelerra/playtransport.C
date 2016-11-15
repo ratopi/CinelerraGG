@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "edl.h"
@@ -34,9 +34,9 @@
 
 
 
-PlayTransport::PlayTransport(MWindow *mwindow, 
-	BC_WindowBase *subwindow, 
-	int x, 
+PlayTransport::PlayTransport(MWindow *mwindow,
+	BC_WindowBase *subwindow,
+	int x,
 	int y)
 {
 	this->subwindow = subwindow;
@@ -78,21 +78,21 @@ void PlayTransport::create_objects()
 	int x = this->x, y = this->y;
 	subwindow->add_subwindow(rewind_button = new RewindButton(mwindow, this, x, y));
 	x += rewind_button->get_w();
-	subwindow->add_subwindow(fast_reverse = new FastReverseButton(mwindow, this, x, y)); 
+	subwindow->add_subwindow(fast_reverse = new FastReverseButton(mwindow, this, x, y));
 	x += fast_reverse->get_w();
-	subwindow->add_subwindow(reverse_play = new ReverseButton(mwindow, this, x, y)); 
+	subwindow->add_subwindow(reverse_play = new ReverseButton(mwindow, this, x, y));
 	x += reverse_play->get_w();
-	subwindow->add_subwindow(frame_reverse_play = new FrameReverseButton(mwindow, this, x, y)); 
+	subwindow->add_subwindow(frame_reverse_play = new FrameReverseButton(mwindow, this, x, y));
 	x += frame_reverse_play->get_w();
-	subwindow->add_subwindow(stop_button = new StopButton(mwindow, this, x, y)); 
+	subwindow->add_subwindow(stop_button = new StopButton(mwindow, this, x, y));
 	x += stop_button->get_w();
-	subwindow->add_subwindow(frame_forward_play = new FramePlayButton(mwindow, this, x, y)); 
+	subwindow->add_subwindow(frame_forward_play = new FramePlayButton(mwindow, this, x, y));
 	x += frame_forward_play->get_w();
-	subwindow->add_subwindow(forward_play = new PlayButton(mwindow, this, x, y)); 
+	subwindow->add_subwindow(forward_play = new PlayButton(mwindow, this, x, y));
 	x += forward_play->get_w();
-	subwindow->add_subwindow(fast_play = new FastPlayButton(mwindow, this, x, y)); 
+	subwindow->add_subwindow(fast_play = new FastPlayButton(mwindow, this, x, y));
 	x += fast_play->get_w();
-	subwindow->add_subwindow(end_button = new EndButton(mwindow, this, x, y)); 
+	subwindow->add_subwindow(end_button = new EndButton(mwindow, this, x, y));
 	x += end_button->get_w();
 
 	reverse = 0;
@@ -133,44 +133,44 @@ int PlayTransport::flip_vertical(int vertical, int &x, int &y)
 {
 	if(vertical)
 	{
-		rewind_button->reposition_window(x, y); 
+		rewind_button->reposition_window(x, y);
 		y += rewind_button->get_h();
-		fast_reverse->reposition_window(x, y); 
+		fast_reverse->reposition_window(x, y);
 		y += fast_reverse->get_h();
-		reverse_play->reposition_window(x, y); 
+		reverse_play->reposition_window(x, y);
 		y += reverse_play->get_h();
-		frame_reverse_play->reposition_window(x, y); 
+		frame_reverse_play->reposition_window(x, y);
 		y += frame_reverse_play->get_h();
-		stop_button->reposition_window(x, y); 
+		stop_button->reposition_window(x, y);
 		y += stop_button->get_h();
-		frame_forward_play->reposition_window(x, y); 
+		frame_forward_play->reposition_window(x, y);
 		y += frame_forward_play->get_h();
-		forward_play->reposition_window(x, y); 
+		forward_play->reposition_window(x, y);
 		y += forward_play->get_h();
-		fast_play->reposition_window(x, y); 
+		fast_play->reposition_window(x, y);
 		y += fast_play->get_h();
-		end_button->reposition_window(x, y); 
+		end_button->reposition_window(x, y);
 		y += end_button->get_h();
 	}
 	else
 	{
-		rewind_button->reposition_window(x, y - 2); 
+		rewind_button->reposition_window(x, y - 2);
 		x += rewind_button->get_w();
-		fast_reverse->reposition_window(x, y - 2); 
+		fast_reverse->reposition_window(x, y - 2);
 		x += fast_reverse->get_w();
-		reverse_play->reposition_window(x, y - 2); 
+		reverse_play->reposition_window(x, y - 2);
 		x += reverse_play->get_w();
-		frame_reverse_play->reposition_window(x, y - 2); 
+		frame_reverse_play->reposition_window(x, y - 2);
 		x += frame_reverse_play->get_w();
-		stop_button->reposition_window(x, y - 2); 
+		stop_button->reposition_window(x, y - 2);
 		x += stop_button->get_w();
-		frame_forward_play->reposition_window(x, y - 2); 
+		frame_forward_play->reposition_window(x, y - 2);
 		x += frame_forward_play->get_w();
-		forward_play->reposition_window(x, y - 2); 
+		forward_play->reposition_window(x, y - 2);
 		x += forward_play->get_w();
-		fast_play->reposition_window(x, y - 2); 
+		fast_play->reposition_window(x, y - 2);
 		x += fast_play->get_w();
-		end_button->reposition_window(x, y - 2); 
+		end_button->reposition_window(x, y - 2);
 		x += end_button->get_w();
 	}
 
@@ -186,12 +186,12 @@ int PlayTransport::keypress_event()
 		{
 			case END:
 				subwindow->lock_window("PlayTransport::keypress_event 1");
-				goto_end();                                   
+				goto_end();
 				subwindow->unlock_window();
 				break;
 			case HOME:
 				subwindow->lock_window("PlayTransport::keypress_event 2");
-				goto_start();                                 
+				goto_start();
 				subwindow->unlock_window();
 				break;
 			default:
@@ -233,16 +233,16 @@ int PlayTransport::keypress_event()
 		case 'k':	handle_transport(STOP, 0, use_inout);			break;
 		case END:
 			subwindow->lock_window("PlayTransport::keypress_event 3");
-			goto_end();                                   
+			goto_end();
 			subwindow->unlock_window();
 			break;
 		case HOME:
 			subwindow->lock_window("PlayTransport::keypress_event 4");
-			goto_start();                                 
+			goto_start();
 			subwindow->unlock_window();
 			break;
 		default:
-			result = 0; 
+			result = 0;
 			break;
 	}
 
@@ -264,7 +264,7 @@ void PlayTransport::goto_end()
 
 
 
-void PlayTransport::handle_transport(int command, 
+void PlayTransport::handle_transport(int command,
 	int wait_tracking,
 	int use_inout,
 	int update_refresh)
@@ -291,7 +291,7 @@ void PlayTransport::handle_transport(int command,
 		case NORMAL_FWD:
 		case FAST_FWD:
 // Same direction pressed twice.  Stop
-			if(prev_command == command && 
+			if(prev_command == command &&
 				!prev_single_frame)
 			{
 				do_stop = 1;
@@ -304,14 +304,14 @@ void PlayTransport::handle_transport(int command,
 				prev_command != SINGLE_FRAME_REWIND)
 			{
 				engine->que->send_command(STOP,
-					CHANGE_NONE, 
+					CHANGE_NONE,
 					0,
 					0,
 					0,
 					0);
 				engine->interrupt_playback(wait_tracking);
 				engine->que->send_command(command,
-					CHANGE_NONE, 
+					CHANGE_NONE,
 					get_edl(),
 					1,
 					1,
@@ -321,7 +321,7 @@ void PlayTransport::handle_transport(int command,
 // Start from scratch
 			{
 				engine->que->send_command(command,
-					CHANGE_NONE, 
+					CHANGE_NONE,
 					get_edl(),
 					1,
 					0,
@@ -337,7 +337,7 @@ void PlayTransport::handle_transport(int command,
 		case REWIND:
 		case GOTO_END:
 			engine->que->send_command(STOP,
-				CHANGE_NONE, 
+				CHANGE_NONE,
 				0,
 				0,
 				0,
@@ -349,23 +349,23 @@ void PlayTransport::handle_transport(int command,
 	if(do_stop)
 	{
 		engine->que->send_command(STOP,
-			CHANGE_NONE, 
+			CHANGE_NONE,
 			0,
 			0,
 			0,
 			0);
 		engine->interrupt_playback(wait_tracking);
 // This is necessary to get an OpenGL output buffer
-// printf("PlayTransport::handle_transport 2 update_refresh=%d prev_command=%d prev_direction=%d\n", 
+// printf("PlayTransport::handle_transport 2 update_refresh=%d prev_command=%d prev_direction=%d\n",
 // update_refresh, prev_command, prev_direction);
-		if(!prev_single_frame && 
+		if(!prev_single_frame &&
 			update_refresh &&
 			prev_command != STOP &&
 			prev_command != COMMAND_NONE)
 		{
 			engine->que->send_command(
 				(prev_direction == PLAY_FORWARD) ? SINGLE_FRAME_REWIND : SINGLE_FRAME_FWD,
-				CHANGE_NONE, 
+				CHANGE_NONE,
 				get_edl(),
 				1,
 				0,
@@ -429,11 +429,11 @@ int RewindButton::handle_event()
 }
 
 FastReverseButton::FastReverseButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("fastrev")) 
+ : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("fastrev"))
 {
 	set_tooltip(_("Fast reverse ( + )"));
 }
-int FastReverseButton::handle_event() 
+int FastReverseButton::handle_event()
 {
 	unlock_window();
 	transport->handle_transport(FAST_REWIND, 0, ctrl_down());
@@ -444,7 +444,7 @@ int FastReverseButton::handle_event()
 // Reverse playback normal speed
 
 ReverseButton::ReverseButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("reverse")) 
+ : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("reverse"))
 {
 	set_tooltip(_("Normal reverse ( 6 )"));
 }
@@ -474,7 +474,7 @@ int FrameReverseButton::handle_event()
 // forward playback normal speed
 
 PlayButton::PlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("play")) 
+ : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("play"))
 {
 	set_tooltip(_("Normal forward ( 3 )"));
 }
@@ -491,7 +491,7 @@ int PlayButton::handle_event()
 // forward playback one frame
 
 FramePlayButton::FramePlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("framefwd")) 
+ : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("framefwd"))
 {
 	set_tooltip(_("Frame forward ( 1 )"));
 }
@@ -506,11 +506,11 @@ int FramePlayButton::handle_event()
 
 
 FastPlayButton::FastPlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("fastfwd")) 
+ : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("fastfwd"))
 {
 	set_tooltip(_("Fast forward ( Enter )"));
 }
-int FastPlayButton::handle_event() 
+int FastPlayButton::handle_event()
 {
 	unlock_window();
 	transport->handle_transport(FAST_FWD, 0, ctrl_down());
@@ -519,12 +519,12 @@ int FastPlayButton::handle_event()
 }
 
 EndButton::EndButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("end")) 
+ : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("end"))
 {
 	set_tooltip(_("Jump to end ( End )"));
 }
 int EndButton::handle_event()
-{	
+{
 //	unlock_window();
 	transport->goto_end();
 //	lock_window();
@@ -532,7 +532,7 @@ int EndButton::handle_event()
 }
 
 StopButton::StopButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("stop")) 
+ : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("stop"))
 {
 	set_tooltip(_("Stop ( 0 )"));
 }

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -50,10 +50,10 @@ public:
 
 	int equivalent(FreeverbConfig &that);
 	void copy_from(FreeverbConfig &that);
-	void interpolate(FreeverbConfig &prev, 
-		FreeverbConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(FreeverbConfig &prev,
+		FreeverbConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 
 
@@ -132,7 +132,7 @@ public:
 	void create_objects();
 
 	FreeverbEffect *plugin;
-	
+
 	FreeverbGain *gain;
 	FreeverbRoomsize *roomsize;
 	FreeverbDamp *damp;
@@ -293,10 +293,10 @@ int FreeverbMode::handle_event()
 
 
 FreeverbWindow::FreeverbWindow(FreeverbEffect *plugin)
- : PluginClientWindow(plugin, 
-	180, 
-	250, 
-	180, 
+ : PluginClientWindow(plugin,
+	180,
+	250,
+	180,
 	250,
 	0)
 {
@@ -381,10 +381,10 @@ void FreeverbConfig::copy_from(FreeverbConfig &that)
 	mode = that.mode;
 }
 
-void FreeverbConfig::interpolate(FreeverbConfig &prev, 
-	FreeverbConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void FreeverbConfig::interpolate(FreeverbConfig &prev,
+	FreeverbConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -434,7 +434,7 @@ FreeverbEffect::FreeverbEffect(PluginServer *server)
 	temp = 0;
 	temp_out = 0;
 	temp_allocated = 0;
-	
+
 }
 
 FreeverbEffect::~FreeverbEffect()
@@ -450,7 +450,7 @@ FreeverbEffect::~FreeverbEffect()
 		delete [] temp;
 		delete [] temp_out;
 	}
-	
+
 }
 
 NEW_WINDOW_MACRO(FreeverbEffect, FreeverbWindow)
@@ -528,8 +528,8 @@ void FreeverbEffect::update_gui()
 	}
 }
 
-int FreeverbEffect::process_realtime(int64_t size, 
-	Samples **input_ptr, 
+int FreeverbEffect::process_realtime(int64_t size,
+	Samples **input_ptr,
 	Samples **output_ptr)
 {
 	load_configuration();
@@ -593,21 +593,21 @@ int FreeverbEffect::process_realtime(int64_t size,
 
 	if(total_in_buffers < 2)
 	{
-		engine->processreplace(temp[0], 
-			temp[0], 
-			temp_out[0], 
-			temp_out[0], 
-			size, 
+		engine->processreplace(temp[0],
+			temp[0],
+			temp_out[0],
+			temp_out[0],
+			size,
 			1);
 	}
 	else
 	{
 // 2 channels max
-		engine->processreplace(temp[0], 
-			temp[1], 
-			temp_out[0], 
-			temp_out[1], 
-			size, 
+		engine->processreplace(temp[0],
+			temp[1],
+			temp_out[0],
+			temp_out[1],
+			size,
 			1);
 	}
 

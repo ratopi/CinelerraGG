@@ -89,7 +89,7 @@ int BC_MenuPopup::initialize(BC_WindowBase *top_level,
 	{
 		window_bg = new BC_Pixmap(top_level, resources->menu_popup_bg);
 	}
-	
+
 	if(resources->menu_item_bg)
 	{
 		item_bg[0] = new BC_Pixmap(top_level, resources->menu_item_bg[0], PIXMAP_ALPHA);

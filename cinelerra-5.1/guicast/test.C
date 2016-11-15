@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcsignals.h"
@@ -87,9 +87,9 @@ void thread_fork()
 
 	pipe(filedes);
 	stdin_fd = fdopen(filedes[1], "w");
-	
+
 	int new_pid = fork();
-	
+
 	if(new_pid == 0)
 	{
 		dup2(filedes[0], fileno(stdin));
@@ -109,20 +109,20 @@ void thread_fork()
 		fclose(stdin_fd);
 		printf("Finished.\n");
 	}
-	
-	
-	
-	
+
+
+
+
 }
 
 
 class TestWindow : public BC_Window
 {
 public:
-	TestWindow() : BC_Window("test", 
+	TestWindow() : BC_Window("test",
 				0,
 				0,
-				320, 
+				320,
 				240,
 				-1,
 				-1,
@@ -148,7 +148,7 @@ public:
 				current_cursor += 1;
 				if(current_cursor >= XC_num_glyphs) current_cursor = 0;
 				break;
-			
+
 			case DOWN:
 				current_cursor -= 1;
 				if(current_cursor <= 0) current_cursor = XC_num_glyphs - 1;
@@ -158,7 +158,7 @@ public:
 		set_cursor(current_cursor, 0, 1);
 //set_cursor(TRANSPARENT_CURSOR);
 	}
-	
+
 	int current_cursor;
 };
 
@@ -169,13 +169,13 @@ int main(int argc, char *argv[])
 	int angles[] = { 180, 0 };
 	float values[] = { 1, 0 };
 
-	window.add_tool(new BC_Pan(10, 
-		120, 
-		100, 
-		1, 
-		2, 
-		angles, 
-		-1, 
+	window.add_tool(new BC_Pan(10,
+		120,
+		100,
+		1,
+		2,
+		angles,
+		-1,
 		-1,
 		values));
 	window.add_tool(new BC_TextBox(10, 10, 200, 5, _("Mary Egbert\nhad a little lamb.")));

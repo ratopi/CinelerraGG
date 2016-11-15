@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "condition.h"
@@ -37,15 +37,15 @@
 
 
 BC_Rename::BC_Rename(BC_RenameThread *thread, int x, int y, BC_FileBox *filebox)
- : BC_Window(filebox->get_rename_title(), 
- 	x, 
-	y, 
-	320, 
-	120, 
-	0, 
-	0, 
-	0, 
-	0, 
+ : BC_Window(filebox->get_rename_title(),
+ 	x,
+	y,
+	320,
+	120,
+	0,
+	0,
+	0,
+	0,
 	1)
 {
 	this->thread = thread;
@@ -86,7 +86,7 @@ BC_RenameThread::BC_RenameThread(BC_FileBox *filebox)
 	completion_lock = new Condition(1, "BC_RenameThread::completion_lock");
 }
 
-BC_RenameThread::~BC_RenameThread() 
+BC_RenameThread::~BC_RenameThread()
 {
  	interrupt();
 	delete change_lock;
@@ -99,7 +99,7 @@ void BC_RenameThread::run()
 	int y = filebox->get_abs_cursor_y(1);
 	change_lock->lock("BC_RenameThread::run 1");
 	window = new BC_Rename(this,
-		x, 
+		x,
 		y,
 		filebox);
 	window->create_objects();
@@ -117,7 +117,7 @@ void BC_RenameThread::run()
 
 //printf("BC_RenameThread::run %d %s -> %s\n", __LINE__, old_name, new_name);
 		rename(old_name, new_name);
-		
+
 
 		filebox->lock_window("BC_RenameThread::run");
 		filebox->refresh();

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -75,7 +75,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 	int is_realtime();
-	int process_buffer(int64_t size, 
+	int process_buffer(int64_t size,
 		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
@@ -117,8 +117,8 @@ void ReverseAudioWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(enabled = new ReverseAudioEnabled(plugin, 
-		x, 
+	add_subwindow(enabled = new ReverseAudioEnabled(plugin,
+		x,
 		y));
 	show_window();
 	flush();
@@ -129,11 +129,11 @@ void ReverseAudioWindow::create_objects()
 
 
 
-ReverseAudioEnabled::ReverseAudioEnabled(ReverseAudio *plugin, 
-	int x, 
+ReverseAudioEnabled::ReverseAudioEnabled(ReverseAudio *plugin,
+	int x,
 	int y)
- : BC_CheckBox(x, 
-	y, 
+ : BC_CheckBox(x,
+	y,
 	plugin->config.enabled,
 	_("Enabled"))
 {
@@ -158,13 +158,13 @@ int ReverseAudioEnabled::handle_event()
 ReverseAudio::ReverseAudio(PluginServer *server)
  : PluginAClient(server)
 {
-	
+
 }
 
 
 ReverseAudio::~ReverseAudio()
 {
-	
+
 }
 
 const char* ReverseAudio::plugin_title() { return _("Reverse audio"); }
@@ -174,7 +174,7 @@ int ReverseAudio::is_realtime() { return 1; }
 NEW_WINDOW_MACRO(ReverseAudio, ReverseAudioWindow)
 
 
-int ReverseAudio::process_buffer(int64_t size, 
+int ReverseAudio::process_buffer(int64_t size,
 	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
@@ -196,7 +196,7 @@ int ReverseAudio::process_buffer(int64_t size,
 			double *buffer_samples = buffer->get_data();
 
 			for(int start = i, end = i + fragment_size - 1;
-				end > start; 
+				end > start;
 				start++, end--)
 			{
 				double temp = buffer_samples[start];
@@ -221,7 +221,7 @@ int ReverseAudio::process_buffer(int64_t size,
 		else
 			start_position -= fragment_size;
 	}
-	
+
 
 	return 0;
 }
@@ -241,10 +241,10 @@ int ReverseAudio::load_configuration()
 	int64_t prev_position = edl_to_local(prev_keyframe->position);
 	int64_t next_position = edl_to_local(next_keyframe->position);
 
-// printf("ReverseAudio::load_configuration 1 %lld %lld %lld %lld\n", 
+// printf("ReverseAudio::load_configuration 1 %lld %lld %lld %lld\n",
 // prev_position,
 // next_position,
-// prev_keyframe->position, 
+// prev_keyframe->position,
 // next_keyframe->position);
 // Defeat default keyframe
 	if(prev_position == 0 && next_position == 0)
@@ -295,9 +295,9 @@ int ReverseAudio::load_configuration()
 		input_position = range_end - get_source_position();
 		input_position = range_start + input_position + fragment_size;
 	}
-// printf("ReverseAudio::load_configuration 20 start=%lld end=%lld current=%lld input=%lld\n", 
-// range_start, 
-// range_end, 
+// printf("ReverseAudio::load_configuration 20 start=%lld end=%lld current=%lld input=%lld\n",
+// range_start,
+// range_end,
 // get_source_position(),
 // input_position);
 

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <math.h>
@@ -68,7 +68,7 @@ int TimeFrontConfig::equivalent(TimeFrontConfig &that)
 		shape == that.shape &&
 		rate == that.rate &&
 		EQUIV(center_x, that.center_x) &&
-		EQUIV(center_y, that.center_y) && 
+		EQUIV(center_y, that.center_y) &&
 		invert == that.invert &&
 		show_grayscale == that.show_grayscale);
 }
@@ -88,10 +88,10 @@ void TimeFrontConfig::copy_from(TimeFrontConfig &that)
 	show_grayscale = that.show_grayscale;
 }
 
-void TimeFrontConfig::interpolate(TimeFrontConfig &prev, 
-	TimeFrontConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void TimeFrontConfig::interpolate(TimeFrontConfig &prev,
+	TimeFrontConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -120,10 +120,10 @@ void TimeFrontConfig::interpolate(TimeFrontConfig &prev,
 
 TimeFrontWindow::TimeFrontWindow(TimeFrontMain *plugin)
  : PluginClientWindow(plugin,
-	350, 
-	290, 
-	350, 
-	290, 
+	350,
+	290,
+	350,
+	290,
 	0)
 {
 	this->plugin = plugin;
@@ -141,7 +141,7 @@ TimeFrontWindow::TimeFrontWindow(TimeFrontMain *plugin)
 	out_radius = 0;
 	track_usage_title = 0;
 	track_usage = 0;
-	
+
 }
 
 TimeFrontWindow::~TimeFrontWindow()
@@ -154,9 +154,9 @@ void TimeFrontWindow::create_objects()
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x, y, _("Type:")));
-	add_subwindow(shape = new TimeFrontShape(plugin, 
-		this, 
-		x + title->get_w() + 10, 
+	add_subwindow(shape = new TimeFrontShape(plugin,
+		this,
+		x + title->get_w() + 10,
 		y));
 	shape->create_objects();
 	y += 40;
@@ -169,7 +169,7 @@ void TimeFrontWindow::create_objects()
 	frame_range_y = y;
 	y += 35;
 	update_shape();
-	
+
 	add_subwindow(invert = new TimeFrontInvert(plugin, x, y));
 	add_subwindow(show_grayscale = new TimeFrontShowGrayscale(plugin, x+ 100, y));
 
@@ -203,7 +203,7 @@ void TimeFrontWindow::update_shape()
 		}
 		if(!rate){
 			y = shape_y + 40;
-	
+
 			add_subwindow(rate_title = new BC_Title(x, y, _("Rate:")));
 			add_subwindow(rate = new TimeFrontRate(plugin,
 				x + rate_title->get_w() + 10,
@@ -241,8 +241,8 @@ void TimeFrontWindow::update_shape()
 				x + center_y_title->get_w() + 10,
 				y));
 		}
-		
-		
+
+
 		if(!rate)
 		{
 			y = shape_y + 40;
@@ -345,9 +345,9 @@ void TimeFrontWindow::update_shape()
 
 
 
-TimeFrontShape::TimeFrontShape(TimeFrontMain *plugin, 
-	TimeFrontWindow *gui, 
-	int x, 
+TimeFrontShape::TimeFrontShape(TimeFrontMain *plugin,
+	TimeFrontWindow *gui,
+	int x,
 	int y)
  : BC_PopupMenu(x, y, 230, to_text(plugin->config.shape), 1)
 {
@@ -377,11 +377,11 @@ char* TimeFrontShape::to_text(int shape)
 }
 int TimeFrontShape::from_text(char *text)
 {
-	if(!strcmp(text, to_text(TimeFrontConfig::LINEAR))) 
+	if(!strcmp(text, to_text(TimeFrontConfig::LINEAR)))
 		return TimeFrontConfig::LINEAR;
-	if(!strcmp(text, to_text(TimeFrontConfig::OTHERTRACK))) 
+	if(!strcmp(text, to_text(TimeFrontConfig::OTHERTRACK)))
 		return TimeFrontConfig::OTHERTRACK;
-	if(!strcmp(text, to_text(TimeFrontConfig::ALPHA))) 
+	if(!strcmp(text, to_text(TimeFrontConfig::ALPHA)))
 		return TimeFrontConfig::ALPHA;
 	return TimeFrontConfig::RADIAL;
 }
@@ -395,7 +395,7 @@ int TimeFrontShape::handle_event()
 }
 
 
-TimeFrontTrackUsage::TimeFrontTrackUsage(TimeFrontMain *plugin, 
+TimeFrontTrackUsage::TimeFrontTrackUsage(TimeFrontMain *plugin,
 	TimeFrontWindow *gui, int x, int y)
  : BC_PopupMenu(x, y, 140, to_text(plugin->config.track_usage), 1)
 {
@@ -421,9 +421,9 @@ char* TimeFrontTrackUsage::to_text(int track_usage)
 }
 int TimeFrontTrackUsage::from_text(char *text)
 {
-	if(!strcmp(text, to_text(TimeFrontConfig::OTHERTRACK_INTENSITY))) 
+	if(!strcmp(text, to_text(TimeFrontConfig::OTHERTRACK_INTENSITY)))
 		return TimeFrontConfig::OTHERTRACK_INTENSITY;
-	if(!strcmp(text, to_text(TimeFrontConfig::OTHERTRACK_ALPHA))) 
+	if(!strcmp(text, to_text(TimeFrontConfig::OTHERTRACK_ALPHA)))
 		return TimeFrontConfig::OTHERTRACK_ALPHA;
 
 	return TimeFrontConfig::OTHERTRACK_INTENSITY;
@@ -517,7 +517,7 @@ char* TimeFrontRate::to_text(int shape)
 }
 int TimeFrontRate::from_text(char *text)
 {
-	if(!strcmp(text, to_text(TimeFrontConfig::LINEAR))) 
+	if(!strcmp(text, to_text(TimeFrontConfig::LINEAR)))
 		return TimeFrontConfig::LINEAR;
 	if(!strcmp(text, to_text(TimeFrontConfig::LOG)))
 		return TimeFrontConfig::LOG;
@@ -595,9 +595,9 @@ int TimeFrontFrameRange::handle_event()
 
 
 TimeFrontInvert::TimeFrontInvert(TimeFrontMain *client, int x, int y)
- : BC_CheckBox(x, 
- 	y, 
-	client->config.invert, 
+ : BC_CheckBox(x,
+ 	y,
+	client->config.invert,
 	_("Inversion"))
 {
 	this->plugin = client;
@@ -611,9 +611,9 @@ int TimeFrontInvert::handle_event()
 }
 
 TimeFrontShowGrayscale::TimeFrontShowGrayscale(TimeFrontMain *client, int x, int y)
- : BC_CheckBox(x, 
- 	y, 
-	client->config.show_grayscale, 
+ : BC_CheckBox(x,
+ 	y,
+	client->config.show_grayscale,
 	_("Show grayscale (for tuning"))
 {
 	this->plugin = client;
@@ -631,7 +631,7 @@ int TimeFrontShowGrayscale::handle_event()
 TimeFrontMain::TimeFrontMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	need_reconfigure = 1;
 	gradient = 0;
 	engine = 0;
@@ -640,7 +640,7 @@ TimeFrontMain::TimeFrontMain(PluginServer *server)
 
 TimeFrontMain::~TimeFrontMain()
 {
-	
+
 
 	if(gradient) delete gradient;
 	if(engine) delete engine;
@@ -678,7 +678,7 @@ int TimeFrontMain::is_synthesis()
 				grad_row[j] = (unsigned char) (CLIP((float)config.frame_range * tmp * in_row[j * components + 3] / maxval / maxval / 3, 0.0F, config.frame_range)); \
 		} \
 	}
-	
+
 #define GRADIENTFROMCHANNEL(type, components, max, channel) \
 	for(int i = 0; i < tfframe->get_h(); i++) \
 	{ \
@@ -719,7 +719,7 @@ int TimeFrontMain::is_synthesis()
 			grad_row ++; \
 		} \
 	}
-	
+
 #define GRADIENTTOYUVPICTURE(type, inttype, components, max, invertion) \
 	for(int i = 0; i < height; i++) \
 	{ \
@@ -780,7 +780,7 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 	if (config.shape == TimeFrontConfig::OTHERTRACK)
 	{
 //		this->output = frame[1];
-		if (get_total_buffers() != 2) 
+		if (get_total_buffers() != 2)
 		{
 			// FIXME, maybe this should go to some other notification area?
 			printf(_("ERROR: TimeFront plugin - If you are using another track for timefront, you have to have it under shared effects\n"));
@@ -803,7 +803,7 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 			outframes[0]->get_h(),
 			BC_A8);
 
-			
+
 		if (config.shape != TimeFrontConfig::OTHERTRACK &&
 		    config.shape != TimeFrontConfig::ALPHA)
 		{
@@ -812,7 +812,7 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 				get_project_smp() + 1);
 			engine->process_packages();
 		}
-		
+
 	}
 	if (config.shape == TimeFrontConfig::ALPHA)
 	{
@@ -832,7 +832,7 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 			case BC_RGBA_FLOAT:
 				GRADIENTFROMCHANNEL(float, 4, 1.0f, 3);
 				break;
-			
+
 			default:
 				{
 					printf(_("TimeFront plugin error: ALPHA used, but project color model does not have alpha\n"));
@@ -893,7 +893,7 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 				case BC_RGBA_FLOAT:
 					GRADIENTFROMCHANNEL(float, 4, 1.0f, 3);
 					break;
-				
+
 				default:
 					{
 						printf(_("TimeFront plugin error: ALPHA track used, but project color model does not have alpha\n"));
@@ -906,15 +906,15 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 			printf(_("TimeFront plugin error: unsupported track_usage parameter\n"));
 			return 1;
 		}
-	}	
+	}
 
 	if (!config.show_grayscale)
 	{
-		for (int i = 1; i <= config.frame_range; i++) 
+		for (int i = 1; i <= config.frame_range; i++)
 		{
 			framelist[i] = new VFrame (
-				outframes[0]->get_w(), 
-				outframes[0]->get_h(), 
+				outframes[0]->get_w(),
+				outframes[0]->get_h(),
 				outframes[0]->get_color_model());
 
 			read_frame(framelist[i],
@@ -924,7 +924,7 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 				0);
 		}
 	}
-	
+
 
 	int width = outframes[0]->get_w();
 	int height = outframes[0]->get_h();
@@ -981,7 +981,7 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 					break;
 			}
 		}
-	} else 
+	} else
 	if (!config.invert)
 	{
 		switch (outframes[0]->get_color_model())
@@ -1047,7 +1047,7 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 			case BC_RGBA_FLOAT:
 				SETALPHA(float, 1.0f);
 				break;
-				
+
 			default:
 				break;
 		}
@@ -1056,7 +1056,7 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 	delete framelist[0];
 	if (!config.show_grayscale)
 	{
-		for (int i = 1; i <= config.frame_range; i++) 
+		for (int i = 1; i <= config.frame_range; i++)
 			delete framelist[i];
 	}
 	return 0;
@@ -1089,7 +1089,7 @@ void TimeFrontMain::update_gui()
 				((TimeFrontWindow*)thread->window)->center_x->update(config.center_x);
 			if(((TimeFrontWindow*)thread->window)->center_y)
 				((TimeFrontWindow*)thread->window)->center_y->update(config.center_y);
-			
+
 			((TimeFrontWindow*)thread->window)->update_shape();
 			thread->window->unlock_window();
 		}
@@ -1301,8 +1301,8 @@ void TimeFrontUnit::process_package(LoadPackage *package)
 
 
 
-TimeFrontServer::TimeFrontServer(TimeFrontMain *plugin, 
-	int total_clients, 
+TimeFrontServer::TimeFrontServer(TimeFrontMain *plugin,
+	int total_clients,
 	int total_packages)
  : LoadServer(total_clients, total_packages)
 {
@@ -1314,10 +1314,10 @@ void TimeFrontServer::init_packages()
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		TimeFrontPackage *package = (TimeFrontPackage*)get_package(i);
-		package->y1 = plugin->input->get_h() * 
-			i / 
+		package->y1 = plugin->input->get_h() *
+			i /
 			get_total_packages();
-		package->y2 = plugin->input->get_h() * 
+		package->y2 = plugin->input->get_h() *
 			(i + 1) /
 			get_total_packages();
 	}

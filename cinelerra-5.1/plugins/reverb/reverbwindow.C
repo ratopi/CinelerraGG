@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -32,14 +32,14 @@
 
 
 ReverbWindow::ReverbWindow(Reverb *reverb)
- : PluginClientWindow(reverb, 
-	250, 
-	230, 
-	250, 
-	230, 
+ : PluginClientWindow(reverb,
+	250,
+	230,
+	250,
+	230,
 	0)
-{ 
-	this->reverb = reverb; 
+{
+	this->reverb = reverb;
 }
 
 ReverbWindow::~ReverbWindow()
@@ -75,15 +75,15 @@ void ReverbWindow::create_objects()
 
 
 ReverbLevelInit::ReverbLevelInit(Reverb *reverb, int x, int y)
- : BC_FPot(x, 
- 	y, 
-	reverb->config.level_init, 
-	INFINITYGAIN, 
+ : BC_FPot(x,
+ 	y,
+	reverb->config.level_init,
+	INFINITYGAIN,
 	0)
 {
 	this->reverb = reverb;
 }
-ReverbLevelInit::~ReverbLevelInit() 
+ReverbLevelInit::~ReverbLevelInit()
 {
 }
 int ReverbLevelInit::handle_event()
@@ -97,15 +97,15 @@ int ReverbLevelInit::handle_event()
 }
 
 ReverbDelayInit::ReverbDelayInit(Reverb *reverb, int x, int y)
- : BC_IPot(x, 
- 	y, 
-	reverb->config.delay_init, 
-	0, 
+ : BC_IPot(x,
+ 	y,
+	reverb->config.delay_init,
+	0,
 	MAX_DELAY_INIT)
 {
 	this->reverb = reverb;
 }
-ReverbDelayInit::~ReverbDelayInit() 
+ReverbDelayInit::~ReverbDelayInit()
 {
 }
 int ReverbDelayInit::handle_event()
@@ -116,10 +116,10 @@ int ReverbDelayInit::handle_event()
 }
 
 ReverbRefLevel1::ReverbRefLevel1(Reverb *reverb, int x, int y)
- : BC_FPot(x, 
- 	y, 
-	reverb->config.ref_level1, 
-	INFINITYGAIN, 
+ : BC_FPot(x,
+ 	y,
+	reverb->config.ref_level1,
+	INFINITYGAIN,
 	0)
 {
 	this->reverb = reverb;
@@ -134,10 +134,10 @@ int ReverbRefLevel1::handle_event()
 
 
 ReverbRefLevel2::ReverbRefLevel2(Reverb *reverb, int x, int y)
- : BC_FPot(x, 
- 	y, 
-	reverb->config.ref_level2, 
-	INFINITYGAIN, 
+ : BC_FPot(x,
+ 	y,
+	reverb->config.ref_level2,
+	INFINITYGAIN,
 	0)
 {
 	this->reverb = reverb;
@@ -151,10 +151,10 @@ int ReverbRefLevel2::handle_event()
 }
 
 ReverbRefTotal::ReverbRefTotal(Reverb *reverb, int x, int y)
- : BC_IPot(x, 
- 	y, 
-	reverb->config.ref_total, 
-	MIN_REFLECTIONS, 
+ : BC_IPot(x,
+ 	y,
+	reverb->config.ref_total,
+	MIN_REFLECTIONS,
 	MAX_REFLECTIONS)
 {
 	this->reverb = reverb;
@@ -169,10 +169,10 @@ int ReverbRefTotal::handle_event()
 
 
 ReverbRefLength::ReverbRefLength(Reverb *reverb, int x, int y)
- : BC_IPot(x, 
- 	y, 
-	reverb->config.ref_length, 
-	0, 
+ : BC_IPot(x,
+ 	y,
+	reverb->config.ref_length,
+	0,
 	MAX_REFLENGTH)
 {
 	this->reverb = reverb;
@@ -186,8 +186,8 @@ int ReverbRefLength::handle_event()
 }
 
 ReverbLowPass1::ReverbLowPass1(Reverb *reverb, int x, int y)
- : BC_QPot(x, 
- 	y, 
+ : BC_QPot(x,
+ 	y,
 	reverb->config.lowpass1)
 {
 	this->reverb = reverb;
@@ -201,8 +201,8 @@ int ReverbLowPass1::handle_event()
 }
 
 ReverbLowPass2::ReverbLowPass2(Reverb *reverb, int x, int y)
- : BC_QPot(x, 
- 	y, 
+ : BC_QPot(x,
+ 	y,
 	reverb->config.lowpass2)
 {
 	this->reverb = reverb;
@@ -252,7 +252,7 @@ int ReverbMenu::load_defaults(BC_Hash *defaults)
 	{
 		filemenu->add_item(new BC_MenuItem("-"));
 		char string[1024], path[1024], filename[1024];
-	
+
 		for(int i = 0; i < total_loads; i++)
 		{
 			sprintf(string, "LOADPREVIOUS%d", i);
@@ -271,7 +271,7 @@ int ReverbMenu::save_defaults(BC_Hash *defaults)
 	{
 		defaults->update("TOTAL_LOADS",  total_loads);
 		char string[1024];
-		
+
 		for(int i = 0; i < total_loads; i++)
 		{
 			sprintf(string, "LOADPREVIOUS%d", i);
@@ -287,13 +287,13 @@ int ReverbMenu::add_load(char *path)
 	{
 		filemenu->add_item(new BC_MenuItem("-"));
 	}
-	
+
 // test for existing copy
 	FileSystem fs;
 	char text[1024], new_path[1024];      // get text and path
 	fs.extract_name(text, path);
 	strcpy(new_path, path);
-	
+
 	for(int i = 0; i < total_loads; i++)
 	{
 		if(!strcmp(prev_load[i]->get_text(), text))     // already exists
@@ -308,17 +308,17 @@ int ReverbMenu::add_load(char *path)
 			return 1;
 		}
 	}
-	
+
 // add another load
 	if(total_loads < TOTAL_LOADS)
 	{
 		filemenu->add_item(prev_load[total_loads] = new ReverbLoadPrev(reverb, this));
 		total_loads++;
 	}
-	
+
 // cycle loads down
 	for(int i = total_loads - 1; i > 0; i--)
-	{         
+	{
 	// set menu item text
 		prev_load[i]->set_text(prev_load[i - 1]->get_text());
 	// set filename
@@ -418,7 +418,7 @@ void ReverbSaveThread::run()
 		result = dialog.run_window();
 //		if(!result) strcpy(reverb->config_directory, dialog.get_path());
 	}
-	if(!result) 
+	if(!result)
 	{
 		result = reverb->save_to_file(reverb->config_directory);
 		menu->add_load(reverb->config_directory);
@@ -427,9 +427,9 @@ void ReverbSaveThread::run()
 
 ReverbSaveDialog::ReverbSaveDialog(Reverb *reverb)
  : BC_FileBox(0,
- 			0, 
- 			reverb->config_directory, 
- 			_("Save reverb"), 
+ 			0,
+ 			reverb->config_directory,
+ 			_("Save reverb"),
  			_("Select the reverb file to save as"), 0, 0)
 {
 	this->reverb = reverb;
@@ -468,7 +468,7 @@ void ReverbLoadThread::run()
 		result = dialog.run_window();
 //		if(!result) strcpy(reverb->config_directory, dialog.get_path());
 	}
-	if(!result) 
+	if(!result)
 	{
 		result = reverb->load_from_file(reverb->config_directory);
 		if(!result)
@@ -510,9 +510,9 @@ int ReverbLoadPrevThread::set_path(char *path)
 
 ReverbLoadDialog::ReverbLoadDialog(Reverb *reverb)
  : BC_FileBox(0,
- 			0, 
- 			reverb->config_directory, 
- 			_("Load reverb"), 
+ 			0,
+ 			reverb->config_directory,
+ 			_("Load reverb"),
  			_("Select the reverb file to load from"), 0, 0)
 {
 	this->reverb = reverb;

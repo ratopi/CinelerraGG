@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -99,11 +99,11 @@ LoopVideoConfig::LoopVideoConfig()
 
 
 LoopVideoWindow::LoopVideoWindow(LoopVideo *plugin)
- : PluginClientWindow(plugin, 
-	210, 
-	160, 
-	200, 
-	160, 
+ : PluginClientWindow(plugin,
+	210,
+	160,
+	200,
+	160,
 	0)
 {
 	this->plugin = plugin;
@@ -119,8 +119,8 @@ void LoopVideoWindow::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Frames to loop:")));
 	y += 20;
-	add_subwindow(frames = new LoopVideoFrames(plugin, 
-		x, 
+	add_subwindow(frames = new LoopVideoFrames(plugin,
+		x,
 		y));
 	show_window();
 	flush();
@@ -136,11 +136,11 @@ void LoopVideoWindow::create_objects()
 
 
 
-LoopVideoFrames::LoopVideoFrames(LoopVideo *plugin, 
-	int x, 
+LoopVideoFrames::LoopVideoFrames(LoopVideo *plugin,
+	int x,
 	int y)
- : BC_TextBox(x, 
-	y, 
+ : BC_TextBox(x,
+	y,
 	100,
 	1,
 	plugin->config.frames)
@@ -167,13 +167,13 @@ int LoopVideoFrames::handle_event()
 LoopVideo::LoopVideo(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 }
 
 
 LoopVideo::~LoopVideo()
 {
-	
+
 }
 
 const char* LoopVideo::plugin_title() { return _("Loop video"); }
@@ -203,7 +203,7 @@ int LoopVideo::process_buffer(VFrame *frame,
 
 // Get start of fragment in current loop
 		current_loop_position = prev_position +
-			((start_position - prev_position) % 
+			((start_position - prev_position) %
 				config.frames);
 		while(current_loop_position < prev_position) current_loop_position += config.frames;
 		while(current_loop_position >= prev_position + config.frames) current_loop_position -= config.frames;
@@ -216,7 +216,7 @@ int LoopVideo::process_buffer(VFrame *frame,
 			prev_position = get_source_start() + get_total_len();
 		read_data(prev_keyframe);
 
-		current_loop_position = prev_position - 
+		current_loop_position = prev_position -
 			((prev_position - start_position) %
 				  config.frames);
 		while(current_loop_position <= prev_position - config.frames) current_loop_position += config.frames;
@@ -224,7 +224,7 @@ int LoopVideo::process_buffer(VFrame *frame,
 	}
 
 
-// printf("LoopVideo::process_buffer 100 %lld %lld %lld %d\n", 
+// printf("LoopVideo::process_buffer 100 %lld %lld %lld %d\n",
 // current_position, current_loop_position, current_loop_end, fragment_size);
 	read_frame(frame,
 		0,

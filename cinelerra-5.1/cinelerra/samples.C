@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 
@@ -98,24 +98,24 @@ void Samples::share(int shmid)
 
 void Samples::allocate(int samples, int use_shm)
 {
-	if(data && 
-		this->allocated >= samples && 
+	if(data &&
+		this->allocated >= samples &&
 		this->use_shm == use_shm) return;
 
-	if(data) 
+	if(data)
 	{
 		if(this->use_shm)
 			shmdt(data);
 		else
 			delete [] data;
 	}
-	
+
 	this->use_shm = use_shm;
 
 	if(use_shm)
 	{
-		shmid = shmget(IPC_PRIVATE, 
-			(samples + 1) * sizeof(double), 
+		shmid = shmget(IPC_PRIVATE,
+			(samples + 1) * sizeof(double),
 			IPC_CREAT | 0777);
 		data = (double*)shmat(shmid, NULL, 0);
 	// This causes it to automatically delete when the program exits.
@@ -126,13 +126,13 @@ void Samples::allocate(int samples, int use_shm)
 		shmid = -1;
 		data = new double[samples];
 	}
-	
-	
+
+
 	this->allocated = samples;
 
 
 
-	
+
 }
 
 // Get the buffer

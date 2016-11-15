@@ -14,8 +14,8 @@ Key bindings for AVC transport.
 Realtime effect rendering debugged.
 Interpolate audio in realtime.
 Time based interpolate of video in realtime.
-	
-Shift dragging floatautos snaps to closest neighboring value if adjoined 
+
+Shift dragging floatautos snaps to closest neighboring value if adjoined
 by other autos.
 
 Quad CPU's debugged.  FileThread now limits the ring buffer count to 2

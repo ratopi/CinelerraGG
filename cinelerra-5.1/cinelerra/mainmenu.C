@@ -1277,16 +1277,16 @@ int LabelsFollowEdits::handle_event()
 
 
 PluginsFollowEdits::PluginsFollowEdits(MWindow *mwindow)
- : BC_MenuItem(_("Edit effects")) 
-{ 
-	this->mwindow = mwindow; 
+ : BC_MenuItem(_("Edit effects"))
+{
+	this->mwindow = mwindow;
 	set_checked(mwindow->edl->session->plugins_follow_edits);
 }
 
 int PluginsFollowEdits::handle_event()
 {
 	set_checked(get_checked() ^ 1);
-	mwindow->edl->session->plugins_follow_edits = get_checked(); 
+	mwindow->edl->session->plugins_follow_edits = get_checked();
 	return 1;
 }
 
@@ -1294,45 +1294,45 @@ int PluginsFollowEdits::handle_event()
 
 
 KeyframesFollowEdits::KeyframesFollowEdits(MWindow *mwindow)
- : BC_MenuItem(_("Keyframes follow edits")) 
-{ 
-	this->mwindow = mwindow; 
+ : BC_MenuItem(_("Keyframes follow edits"))
+{
+	this->mwindow = mwindow;
 	set_checked(mwindow->edl->session->autos_follow_edits);
 }
 
 int KeyframesFollowEdits::handle_event()
-{ 
-	mwindow->edl->session->autos_follow_edits ^= 1; 
+{
+	mwindow->edl->session->autos_follow_edits ^= 1;
 	set_checked(!get_checked());
 	return 1;
 }
 
 
 CursorOnFrames::CursorOnFrames(MWindow *mwindow)
- : BC_MenuItem(_("Align cursor on frames")) 
-{ 
-	this->mwindow = mwindow; 
+ : BC_MenuItem(_("Align cursor on frames"))
+{
+	this->mwindow = mwindow;
 	set_checked(mwindow->edl->session->cursor_on_frames);
 }
 
 int CursorOnFrames::handle_event()
 {
-	mwindow->edl->session->cursor_on_frames = !mwindow->edl->session->cursor_on_frames; 
+	mwindow->edl->session->cursor_on_frames = !mwindow->edl->session->cursor_on_frames;
 	set_checked(mwindow->edl->session->cursor_on_frames);
 	return 1;
 }
 
 
 TypelessKeyframes::TypelessKeyframes(MWindow *mwindow)
- : BC_MenuItem(_("Typeless keyframes")) 
-{ 
-	this->mwindow = mwindow; 
+ : BC_MenuItem(_("Typeless keyframes"))
+{
+	this->mwindow = mwindow;
 	set_checked(mwindow->edl->session->typeless_keyframes);
 }
 
 int TypelessKeyframes::handle_event()
 {
-	mwindow->edl->session->typeless_keyframes = !mwindow->edl->session->typeless_keyframes; 
+	mwindow->edl->session->typeless_keyframes = !mwindow->edl->session->typeless_keyframes;
 	set_checked(mwindow->edl->session->typeless_keyframes);
 	return 1;
 }
@@ -1358,9 +1358,9 @@ int ScrubSpeed::handle_event()
 	return 1;
 }
 
-SaveSettingsNow::SaveSettingsNow(MWindow *mwindow) : BC_MenuItem(_("Save settings now")) 
-{ 
-	this->mwindow = mwindow; 
+SaveSettingsNow::SaveSettingsNow(MWindow *mwindow) : BC_MenuItem(_("Save settings now"))
+{
+	this->mwindow = mwindow;
 }
 
 int SaveSettingsNow::handle_event()

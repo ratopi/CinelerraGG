@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -38,13 +38,13 @@
 
 MotionWindow::MotionWindow(MotionMain2 *plugin)
  : PluginClientWindow(plugin,
-	600, 
-	640, 
+	600,
+	640,
 	600,
 	640,
 	0)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
 }
 
 MotionWindow::~MotionWindow()
@@ -61,7 +61,7 @@ void MotionWindow::create_objects()
 	for(int i = 0; i < TOTAL_POINTS; i++)
 	{
 		y = y1;
-		char *global_title[] = 
+		char *global_title[] =
 		{
 			_("Track Point 1"),
 			_("Track Point 2"),
@@ -74,17 +74,17 @@ void MotionWindow::create_objects()
 			global_title[i]));
 		y += 50;
 
-		add_subwindow(title = new BC_Title(x1[i], 
-			y, 
+		add_subwindow(title = new BC_Title(x1[i],
+			y,
 			_("Translation search radius:\n(W/H Percent of image)")));
-		add_subwindow(global_range_w[i] = new MotionPot(plugin, 
-			x1[i] + title->get_w() + 10, 
+		add_subwindow(global_range_w[i] = new MotionPot(plugin,
+			x1[i] + title->get_w() + 10,
 			y,
 			&plugin->config.global_range_w[i],
 			MIN_RADIUS,
 			MAX_RADIUS));
-		add_subwindow(global_range_h[i] = new MotionPot(plugin, 
-			x1[i] + title->get_w() + 10 + global_range_w[i]->get_w(), 
+		add_subwindow(global_range_h[i] = new MotionPot(plugin,
+			x1[i] + title->get_w() + 10 + global_range_w[i]->get_w(),
 			y,
 			&plugin->config.global_range_h[i],
 			MIN_RADIUS,
@@ -92,34 +92,34 @@ void MotionWindow::create_objects()
 
 		y += 50;
 
-		add_subwindow(title = new BC_Title(x1[i], 
-			y, 
+		add_subwindow(title = new BC_Title(x1[i],
+			y,
 			_("Translation search offset:\n(X/Y Percent of image)")));
-		add_subwindow(global_origin_x[i] = new MotionPot(plugin, 
-			x1[i] + title->get_w() + 10, 
+		add_subwindow(global_origin_x[i] = new MotionPot(plugin,
+			x1[i] + title->get_w() + 10,
 			y,
 			&plugin->config.global_origin_x[i],
 			MIN_ORIGIN,
 			MAX_ORIGIN));
-		add_subwindow(global_origin_y[i] = new MotionPot(plugin, 
-			x1[i] + title->get_w() + 10 + global_origin_x[i]->get_w(), 
+		add_subwindow(global_origin_y[i] = new MotionPot(plugin,
+			x1[i] + title->get_w() + 10 + global_origin_x[i]->get_w(),
 			y,
 			&plugin->config.global_origin_y[i],
 			MIN_ORIGIN,
 			MAX_ORIGIN));
 
 		y += 50;
-		add_subwindow(title = new BC_Title(x1[i], 
-			y, 
+		add_subwindow(title = new BC_Title(x1[i],
+			y,
 			_("Translation block size:\n(W/H Percent of image)")));
-		add_subwindow(global_block_w[i] = new MotionPot(plugin, 
-			x1[i] + title->get_w() + 10, 
+		add_subwindow(global_block_w[i] = new MotionPot(plugin,
+			x1[i] + title->get_w() + 10,
 			y,
 			&plugin->config.global_block_w[i],
 			MIN_BLOCK,
 			MAX_BLOCK));
-		add_subwindow(global_block_h[i] = new MotionPot(plugin, 
-			x1[i] + title->get_w() + 10 + global_block_w[i]->get_w(), 
+		add_subwindow(global_block_h[i] = new MotionPot(plugin,
+			x1[i] + title->get_w() + 10 + global_block_w[i]->get_w(),
 			y,
 			&plugin->config.global_block_h[i],
 			MIN_BLOCK,
@@ -128,27 +128,27 @@ void MotionWindow::create_objects()
 
 		y += 40;
 		add_subwindow(title = new BC_Title(x1[i], y + 10, _("Block X:")));
-		add_subwindow(block_x[i] = new MotionBlockX(plugin, 
-			this, 
-			x1[i] + title->get_w() + 10, 
+		add_subwindow(block_x[i] = new MotionBlockX(plugin,
+			this,
+			x1[i] + title->get_w() + 10,
 			y,
 			i));
-		add_subwindow(block_x_text[i] = new MotionBlockXText(plugin, 
-			this, 
-			x1[i] + title->get_w() + 10 + block_x[i]->get_w() + 10, 
+		add_subwindow(block_x_text[i] = new MotionBlockXText(plugin,
+			this,
+			x1[i] + title->get_w() + 10 + block_x[i]->get_w() + 10,
 			y + 10,
 			i));
 
 		y += 40;
 		add_subwindow(title = new BC_Title(x1[i], y + 10, _("Block Y:")));
-		add_subwindow(block_y[i] = new MotionBlockY(plugin, 
-			this, 
-			x1[i] + title->get_w() + 10, 
+		add_subwindow(block_y[i] = new MotionBlockY(plugin,
+			this,
+			x1[i] + title->get_w() + 10,
 			y,
 			i));
-		add_subwindow(block_y_text[i] = new MotionBlockYText(plugin, 
-			this, 
-			x1[i] + title->get_w() + 10 + block_y[i]->get_w() + 10, 
+		add_subwindow(block_y_text[i] = new MotionBlockYText(plugin,
+			this,
+			x1[i] + title->get_w() + 10 + block_y[i]->get_w() + 10,
 			y + 10,
 			i));
 
@@ -166,73 +166,73 @@ void MotionWindow::create_objects()
 	add_subwindow(new BC_Bar(x, y, get_w() - x * 2));
 	y += 10;
 	add_subwindow(title = new BC_Title(x, y, _("Search steps:")));
-	add_subwindow(global_search_positions = new GlobalSearchPositions(plugin, 
-		x + title->get_w() + 10, 
-		y, 
+	add_subwindow(global_search_positions = new GlobalSearchPositions(plugin,
+		x + title->get_w() + 10,
+		y,
 		80));
 	global_search_positions->create_objects();
 
 	y += 30;
 	add_subwindow(title = new BC_Title(x, y, _("Search directions:")));
-	add_subwindow(tracking_direction = new TrackingDirection(plugin, 
-		this, 
-		x + title->get_w() + 10, 
+	add_subwindow(tracking_direction = new TrackingDirection(plugin,
+		this,
+		x + title->get_w() + 10,
 		y));
 	tracking_direction->create_objects();
 
 	y += 30;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Maximum absolute offset:")));
-	add_subwindow(magnitude = new MotionMagnitude(plugin, 
-		x + title->get_w() + 10, 
+	add_subwindow(magnitude = new MotionMagnitude(plugin,
+		x + title->get_w() + 10,
 		y));
 
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Settling speed:")));
 	add_subwindow(return_speed = new MotionReturnSpeed(plugin,
-		x + title->get_w() + 10, 
+		x + title->get_w() + 10,
 		y));
 
 
 	y += 40;
-	add_subwindow(track_single = new TrackSingleFrame(plugin, 
+	add_subwindow(track_single = new TrackSingleFrame(plugin,
 		this,
-		x, 
+		x,
 		y));
-	add_subwindow(title = new BC_Title(x + track_single->get_w() + 20, 
-		y, 
+	add_subwindow(title = new BC_Title(x + track_single->get_w() + 20,
+		y,
 		_("Frame number:")));
-	add_subwindow(track_frame_number = new TrackFrameNumber(plugin, 
+	add_subwindow(track_frame_number = new TrackFrameNumber(plugin,
 		this,
-		x + track_single->get_w() + title->get_w() + 20, 
+		x + track_single->get_w() + title->get_w() + 20,
 		y));
 
 	y += 20;
-	add_subwindow(track_previous = new TrackPreviousFrame(plugin, 
+	add_subwindow(track_previous = new TrackPreviousFrame(plugin,
 		this,
-		x, 
+		x,
 		y));
 
 	y += 20;
-	add_subwindow(previous_same = new PreviousFrameSameBlock(plugin, 
+	add_subwindow(previous_same = new PreviousFrameSameBlock(plugin,
 		this,
-		x, 
+		x,
 		y));
 
 	y += 40;
 	y1 = y;
 	add_subwindow(title = new BC_Title(x, y, _("Master layer:")));
-	add_subwindow(master_layer = new MasterLayer(plugin, 
+	add_subwindow(master_layer = new MasterLayer(plugin,
 		this,
-		x + title->get_w() + 10, 
+		x + title->get_w() + 10,
 		y));
 	master_layer->create_objects();
 	y += 30;
 
 
 	add_subwindow(title = new BC_Title(x, y, _("Action:")));
-	add_subwindow(action = new Action(plugin, 
+	add_subwindow(action = new Action(plugin,
 		this,
-		x + title->get_w() + 10, 
+		x + title->get_w() + 10,
 		y));
 	action->create_objects();
 	y += 30;
@@ -241,9 +241,9 @@ void MotionWindow::create_objects()
 
 
 	add_subwindow(title = new BC_Title(x, y, _("Calculation:")));
-	add_subwindow(calculation = new Calculation(plugin, 
-		this, 
-		x + title->get_w() + 10, 
+	add_subwindow(calculation = new Calculation(plugin,
+		this,
+		x + title->get_w() + 10,
 		y));
 	calculation->create_objects();
 
@@ -280,14 +280,14 @@ void MotionWindow::update_mode()
 
 
 
-MotionGlobal::MotionGlobal(MotionMain2 *plugin, 
+MotionGlobal::MotionGlobal(MotionMain2 *plugin,
 	MotionWindow *gui,
-	int x, 
+	int x,
 	int y,
 	int *value,
 	char *text)
- : BC_CheckBox(x, 
- 	y, 
+ : BC_CheckBox(x,
+ 	y,
 	*value,
 	text)
 {
@@ -304,14 +304,14 @@ int MotionGlobal::handle_event()
 }
 
 
-MotionPot::MotionPot(MotionMain2 *plugin, 
-	int x, 
+MotionPot::MotionPot(MotionMain2 *plugin,
+	int x,
 	int y,
 	int *value,
 	int min,
 	int max)
- : BC_IPot(x, 
-		y, 
+ : BC_IPot(x,
+		y,
 		(int64_t)*value,
 		(int64_t)min,
 		(int64_t)max)
@@ -339,8 +339,8 @@ int MotionPot::handle_event()
 
 
 
-GlobalSearchPositions::GlobalSearchPositions(MotionMain2 *plugin, 
-	int x, 
+GlobalSearchPositions::GlobalSearchPositions(MotionMain2 *plugin,
+	int x,
 	int y,
 	int w)
  : BC_PopupMenu(x,
@@ -390,11 +390,11 @@ int GlobalSearchPositions::handle_event()
 
 
 
-MotionMagnitude::MotionMagnitude(MotionMain2 *plugin, 
-	int x, 
+MotionMagnitude::MotionMagnitude(MotionMain2 *plugin,
+	int x,
 	int y)
- : BC_IPot(x, 
-		y, 
+ : BC_IPot(x,
+		y,
 		(int64_t)plugin->config.magnitude,
 		(int64_t)0,
 		(int64_t)100)
@@ -410,11 +410,11 @@ int MotionMagnitude::handle_event()
 }
 
 
-MotionReturnSpeed::MotionReturnSpeed(MotionMain2 *plugin, 
-	int x, 
+MotionReturnSpeed::MotionReturnSpeed(MotionMain2 *plugin,
+	int x,
 	int y)
- : BC_IPot(x, 
-		y, 
+ : BC_IPot(x,
+		y,
 		(int64_t)plugin->config.return_speed,
 		(int64_t)0,
 		(int64_t)100)
@@ -433,15 +433,15 @@ int MotionReturnSpeed::handle_event()
 
 
 
-MotionBlockX::MotionBlockX(MotionMain2 *plugin, 
+MotionBlockX::MotionBlockX(MotionMain2 *plugin,
 	MotionWindow *gui,
-	int x, 
+	int x,
 	int y,
 	int number)
  : BC_FPot(x,
  	y,
 	(float)plugin->config.block_x[number],
-	(float)0, 
+	(float)0,
 	(float)100)
 {
 	this->plugin = plugin;
@@ -460,15 +460,15 @@ int MotionBlockX::handle_event()
 
 
 
-MotionBlockY::MotionBlockY(MotionMain2 *plugin, 
+MotionBlockY::MotionBlockY(MotionMain2 *plugin,
 	MotionWindow *gui,
-	int x, 
+	int x,
 	int y,
 	int number)
  : BC_FPot(x,
  	y,
 	(float)plugin->config.block_y[number],
-	(float)0, 
+	(float)0,
 	(float)100)
 {
 	this->plugin = plugin;
@@ -484,9 +484,9 @@ int MotionBlockY::handle_event()
 	return 1;
 }
 
-MotionBlockXText::MotionBlockXText(MotionMain2 *plugin, 
+MotionBlockXText::MotionBlockXText(MotionMain2 *plugin,
 	MotionWindow *gui,
-	int x, 
+	int x,
 	int y,
 	int number)
  : BC_TextBox(x,
@@ -512,9 +512,9 @@ int MotionBlockXText::handle_event()
 
 
 
-MotionBlockYText::MotionBlockYText(MotionMain2 *plugin, 
+MotionBlockYText::MotionBlockYText(MotionMain2 *plugin,
 	MotionWindow *gui,
-	int x, 
+	int x,
 	int y,
 	int number)
  : BC_TextBox(x,
@@ -552,13 +552,13 @@ int MotionBlockYText::handle_event()
 
 
 
-MotionDrawVectors::MotionDrawVectors(MotionMain2 *plugin, 
+MotionDrawVectors::MotionDrawVectors(MotionMain2 *plugin,
 	MotionWindow *gui,
-	int x, 
+	int x,
 	int y,
 	int number)
  : BC_CheckBox(x,
- 	y, 
+ 	y,
 	plugin->config.draw_vectors[number],
 	_("Draw vectors"))
 {
@@ -581,13 +581,13 @@ int MotionDrawVectors::handle_event()
 
 
 
-TrackSingleFrame::TrackSingleFrame(MotionMain2 *plugin, 
+TrackSingleFrame::TrackSingleFrame(MotionMain2 *plugin,
 	MotionWindow *gui,
-	int x, 
+	int x,
 	int y)
- : BC_Radial(x, 
- 	y, 
-	plugin->config.tracking_object == MotionScan::TRACK_SINGLE, 
+ : BC_Radial(x,
+ 	y,
+	plugin->config.tracking_object == MotionScan::TRACK_SINGLE,
  	_("Track single frame"))
 {
 	this->plugin = plugin;
@@ -611,9 +611,9 @@ int TrackSingleFrame::handle_event()
 
 
 
-TrackFrameNumber::TrackFrameNumber(MotionMain2 *plugin, 
+TrackFrameNumber::TrackFrameNumber(MotionMain2 *plugin,
 	MotionWindow *gui,
-	int x, 
+	int x,
 	int y)
  : BC_TextBox(x, y, 100, 1, plugin->config.track_frame)
 {
@@ -635,13 +635,13 @@ int TrackFrameNumber::handle_event()
 
 
 
-TrackPreviousFrame::TrackPreviousFrame(MotionMain2 *plugin, 
+TrackPreviousFrame::TrackPreviousFrame(MotionMain2 *plugin,
 	MotionWindow *gui,
-	int x, 
+	int x,
 	int y)
- : BC_Radial(x, 
- 	y, 
-	plugin->config.tracking_object == MotionScan::TRACK_PREVIOUS, 
+ : BC_Radial(x,
+ 	y,
+	plugin->config.tracking_object == MotionScan::TRACK_PREVIOUS,
 	_("Track previous frame"))
 {
 	this->plugin = plugin;
@@ -664,13 +664,13 @@ int TrackPreviousFrame::handle_event()
 
 
 
-PreviousFrameSameBlock::PreviousFrameSameBlock(MotionMain2 *plugin, 
+PreviousFrameSameBlock::PreviousFrameSameBlock(MotionMain2 *plugin,
 	MotionWindow *gui,
-	int x, 
+	int x,
 	int y)
- : BC_Radial(x, 
- 	y, 
-	plugin->config.tracking_object == MotionScan::PREVIOUS_SAME_BLOCK, 
+ : BC_Radial(x,
+ 	y,
+	plugin->config.tracking_object == MotionScan::PREVIOUS_SAME_BLOCK,
 	_("Previous frame same block"))
 {
 	this->plugin = plugin;
@@ -694,8 +694,8 @@ int PreviousFrameSameBlock::handle_event()
 
 
 MasterLayer::MasterLayer(MotionMain2 *plugin, MotionWindow *gui, int x, int y)
- : BC_PopupMenu(x, 
- 	y, 
+ : BC_PopupMenu(x,
+ 	y,
 	calculate_w(gui),
 	to_text(plugin->config.bottom_is_master))
 {
@@ -743,8 +743,8 @@ int MasterLayer::calculate_w(MotionWindow *gui)
 
 
 Action::Action(MotionMain2 *plugin, MotionWindow *gui, int x, int y)
- : BC_PopupMenu(x, 
- 	y, 
+ : BC_PopupMenu(x,
+ 	y,
 	calculate_w(gui),
 	to_text(plugin->config.action))
 {
@@ -819,8 +819,8 @@ int Action::calculate_w(MotionWindow *gui)
 
 
 Calculation::Calculation(MotionMain2 *plugin, MotionWindow *gui, int x, int y)
- : BC_PopupMenu(x, 
- 	y, 
+ : BC_PopupMenu(x,
+ 	y,
 	calculate_w(gui),
 	to_text(plugin->config.calculation))
 {
@@ -894,8 +894,8 @@ int Calculation::calculate_w(MotionWindow *gui)
 
 
 TrackingDirection::TrackingDirection(MotionMain2 *plugin, MotionWindow *gui, int x, int y)
- : BC_PopupMenu(x, 
- 	y, 
+ : BC_PopupMenu(x,
+ 	y,
 	calculate_w(gui),
 	to_text(plugin->config.horizontal_only, plugin->config.vertical_only))
 {

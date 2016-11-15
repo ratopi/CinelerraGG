@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -63,13 +63,13 @@ AgingConfig::AgingConfig()
 AgingMain::AgingMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	aging_server = 0;
 }
 
 AgingMain::~AgingMain()
 {
-	
+
 	if(aging_server) delete aging_server;
 }
 
@@ -111,8 +111,8 @@ int AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	this->input_ptr = input_ptr;
 	this->output_ptr = output_ptr;
 
-	if(!aging_server) aging_server = new AgingServer(this, 
-		PluginClient::smp + 1, 
+	if(!aging_server) aging_server = new AgingServer(this,
+		PluginClient::smp + 1,
 		PluginClient::smp + 1);
 	aging_server->process_packages();
 //printf("AgingMain::process_realtime 2\n");
@@ -129,7 +129,7 @@ AgingServer::AgingServer(AgingMain *plugin, int total_clients, int total_package
 }
 
 
-LoadClient* AgingServer::new_client() 
+LoadClient* AgingServer::new_client()
 {
 	return new AgingClient(this);
 }
@@ -137,9 +137,9 @@ LoadClient* AgingServer::new_client()
 
 
 
-LoadPackage* AgingServer::new_package() 
-{ 
-	return new AgingPackage; 
+LoadPackage* AgingServer::new_package()
+{
+	return new AgingPackage;
 }
 
 
@@ -218,7 +218,7 @@ AgingClient::AgingClient(AgingServer *server)
 	} \
 }
 
-void AgingClient::coloraging(unsigned char **output_rows, 
+void AgingClient::coloraging(unsigned char **output_rows,
 	unsigned char **input_rows,
 	int color_model,
 	int w,
@@ -230,25 +230,25 @@ void AgingClient::coloraging(unsigned char **output_rows,
 		case BC_YUV888:
 			COLORAGE(uint8_t, 3);
 			break;
-		
+
 		case BC_RGB_FLOAT:
 			COLORAGE(float, 3);
 			break;
-			
+
 		case BC_RGBA_FLOAT:
 			COLORAGE(float, 4);
 			break;
-			
+
 		case BC_RGBA8888:
 		case BC_YUVA8888:
 			COLORAGE(uint8_t, 4);
 			break;
-		
+
 		case BC_RGB161616:
 		case BC_YUV161616:
 			COLORAGE(uint16_t, 3);
 			break;
-		
+
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
 			COLORAGE(uint16_t, 4);
@@ -376,7 +376,7 @@ void AgingClient::scratching(unsigned char **output_rows,
 		case BC_YUV888:
 			SCRATCHES(uint8_t, 3, 0x80);
 			break;
-		
+
 		case BC_RGBA_FLOAT:
 			SCRATCHES(float, 4, 0);
 			break;
@@ -388,7 +388,7 @@ void AgingClient::scratching(unsigned char **output_rows,
 		case BC_YUVA8888:
 			SCRATCHES(uint8_t, 4, 0x80);
 			break;
-		
+
 		case BC_RGB161616:
 			SCRATCHES(uint16_t, 3, 0);
 			break;
@@ -396,7 +396,7 @@ void AgingClient::scratching(unsigned char **output_rows,
 		case BC_YUV161616:
 			SCRATCHES(uint16_t, 3, 0x8000);
 			break;
-		
+
 		case BC_RGBA16161616:
 			SCRATCHES(uint16_t, 4, 0);
 			break;
@@ -481,7 +481,7 @@ void AgingClient::pits(unsigned char **output_rows,
 		case BC_YUV888:
 			PITS(uint8_t, 3, 0xc0, 0x80);
 			break;
-		
+
 		case BC_RGBA_FLOAT:
 			PITS(float, 4, (float)0xc0 / 0xff, 0);
 			break;
@@ -491,14 +491,14 @@ void AgingClient::pits(unsigned char **output_rows,
 		case BC_YUVA8888:
 			PITS(uint8_t, 4, 0xc0, 0x80);
 			break;
-		
+
 		case BC_RGB161616:
 			PITS(uint16_t, 3, 0xc000, 0);
 			break;
 		case BC_YUV161616:
 			PITS(uint16_t, 3, 0xc000, 0x8000);
 			break;
-		
+
 		case BC_RGBA16161616:
 			PITS(uint16_t, 4, 0xc000, 0);
 			break;
@@ -583,7 +583,7 @@ void AgingClient::dusts(unsigned char **output_rows,
 		case BC_YUV888:
 			DUSTS(uint8_t, 3, 0x10, 0x80);
 			break;
-		
+
 		case BC_RGBA_FLOAT:
 			DUSTS(float, 4, (float)0x10 / 0xff, 0);
 			break;
@@ -595,7 +595,7 @@ void AgingClient::dusts(unsigned char **output_rows,
 		case BC_YUVA8888:
 			DUSTS(uint8_t, 4, 0x10, 0x80);
 			break;
-		
+
 		case BC_RGB161616:
 			DUSTS(uint16_t, 3, 0x1000, 0);
 			break;
@@ -603,7 +603,7 @@ void AgingClient::dusts(unsigned char **output_rows,
 		case BC_YUV161616:
 			DUSTS(uint16_t, 3, 0x1000, 0x8000);
 			break;
-		
+
 		case BC_RGBA16161616:
 			DUSTS(uint16_t, 4, 0x1000, 0);
 			break;
@@ -625,28 +625,28 @@ void AgingClient::process_package(LoadPackage *package)
 
 //printf("AgingClient::process_package 1\n");
 	if(plugin->config.colorage)
-		coloraging(output_rows, 
-			input_rows, 
-			plugin->input_ptr->get_color_model(), 
-			plugin->input_ptr->get_w(), 
+		coloraging(output_rows,
+			input_rows,
+			plugin->input_ptr->get_color_model(),
+			plugin->input_ptr->get_w(),
 			local_package->row2 - local_package->row1);
 //printf("AgingClient::process_package 2\n");
 	if(plugin->config.scratch)
-		scratching(output_rows, 
-			plugin->input_ptr->get_color_model(), 
-			plugin->input_ptr->get_w(), 
+		scratching(output_rows,
+			plugin->input_ptr->get_color_model(),
+			plugin->input_ptr->get_w(),
 			local_package->row2 - local_package->row1);
 //printf("AgingClient::process_package 3\n");
 	if(plugin->config.pits)
-		pits(output_rows, 
-			plugin->input_ptr->get_color_model(), 
-			plugin->input_ptr->get_w(), 
+		pits(output_rows,
+			plugin->input_ptr->get_color_model(),
+			plugin->input_ptr->get_w(),
 			local_package->row2 - local_package->row1);
 //printf("AgingClient::process_package 4 %d\n", plugin->config.dust);
 	if(plugin->config.dust)
-		dusts(output_rows, 
-			plugin->input_ptr->get_color_model(), 
-			plugin->input_ptr->get_w(), 
+		dusts(output_rows,
+			plugin->input_ptr->get_color_model(),
+			plugin->input_ptr->get_w(),
 			local_package->row2 - local_package->row1);
 //printf("AgingClient::process_package 5\n");
 }

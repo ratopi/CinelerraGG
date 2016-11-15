@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -135,14 +135,14 @@ void BlurZoomMain::make_palette()
 
 #define DELTA (255 / (COLORS / 2 - 1))
 
-	for(i = 0; i < COLORS / 2; i++) 
+	for(i = 0; i < COLORS / 2; i++)
 	{
 		palette_r[i] = i * DELTA;
 		palette_g[i] = i * DELTA;
 		palette_b[i] = i * DELTA;
 	}
 
-	for(i = 0; i < COLORS / 2; i++) 
+	for(i = 0; i < COLORS / 2; i++)
 	{
 		palette_r[i + COLORS / 2] = (i * DELTA);
 		palette_g[i + COLORS / 2] = (i * DELTA);
@@ -182,14 +182,14 @@ int BlurZoomMain::start_realtime()
 
 	set_table();
 	make_palette();
-	
+
 	bzero(blurzoombuf, buf_area * 2);
-	
-	
+
+
 	background = new uint16_t[project_frame_w * project_frame_h];
 	diff = new unsigned char[project_frame_w * project_frame_h];
 	image_set_threshold_y(MAGIC_THRESHOLD);
-	
+
 	blurzoom_server = new BlurZoomServer(this, 1, 1);
 	return 0;
 }
@@ -242,7 +242,7 @@ BlurZoomServer::BlurZoomServer(BlurZoomMain *plugin, int total_clients, total_pa
 }
 
 
-LoadClient* BlurZoomServer::new_client() 
+LoadClient* BlurZoomServer::new_client()
 {
 	return new BlurZoomClient(this);
 }
@@ -250,9 +250,9 @@ LoadClient* BlurZoomServer::new_client()
 
 
 
-LoadPackage* BlurZoomServer::new_package() 
-{ 
-	return new BlurZoomPackage; 
+LoadPackage* BlurZoomServer::new_package()
+{
+	return new BlurZoomPackage;
 }
 
 
@@ -343,10 +343,10 @@ BlurZoomClient::BlurZoomClient(BlurZoomServer *server)
 
 #define BLURZOOM_FINAL(type, components)
 {
-	for(y = 0; y < h; y++) 
+	for(y = 0; y < h; y++)
 	{
-		memcpy(output_rows[y], 
-			input_rows[y], 
+		memcpy(output_rows[y],
+			input_rows[y],
 			buf_margin_left * plugin->input_ptr->get_bytes_per_pixel());
 
 
@@ -362,8 +362,8 @@ BlurZoomClient::BlurZoomClient(BlurZoomServer *server)
 			}
 		}
 
-		memcpy(output_rows[y] + project_frame_w - buf_margin_right, 
-			input_rows[y] + project_frame_w - buf_margin_right, 
+		memcpy(output_rows[y] + project_frame_w - buf_margin_right,
+			input_rows[y] + project_frame_w - buf_margin_right,
 			buf_margin_right * plugin->input_ptr->get_bytes_per_pixel());
 	}
 }
@@ -385,30 +385,30 @@ void BlurZoomClient::process_package(LoadPackage *package)
 	{
 		case BC_RGB888:
 		case BC_YUV888:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint8_t, 
+			IMAGE_BGSUBTRACT_UPDATE_Y(diff,
+				input_rows,
+				uint8_t,
 				3);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint8_t, 
+			IMAGE_BGSUBTRACT_UPDATE_Y(diff,
+				input_rows,
+				uint8_t,
 				4);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint16_t, 
+			IMAGE_BGSUBTRACT_UPDATE_Y(diff,
+				input_rows,
+				uint16_t,
 				3);
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint16_t, 
+			IMAGE_BGSUBTRACT_UPDATE_Y(diff,
+				input_rows,
+				uint16_t,
 				4);
 			break;
 	}

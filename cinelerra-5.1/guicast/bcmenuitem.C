@@ -404,14 +404,14 @@ int BC_MenuItem::draw()
 		{
 //			menu_popup->get_popup()->draw_check(10 + offset, y + 2 + offset);
 			menu_popup->get_popup()->draw_pixmap(menu_popup->check,
-				offset, 
+				offset,
 				y + (this->h - menu_popup->check->get_h()) / 2 + offset);
 			menu_popup->get_popup()->set_font(MEDIUMFONT);
-			menu_popup->get_popup()->draw_text(menu_popup->check->get_w() + offset, 
-				y + h - text_line - 2 + offset, 
+			menu_popup->get_popup()->draw_text(menu_popup->check->get_w() + offset,
+				y + h - text_line - 2 + offset,
 				text);
-			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset, 
-				y + h - text_line - 2 + offset, 
+			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset,
+				y + h - text_line - 2 + offset,
 				hotkey_text);
 		}
 		else

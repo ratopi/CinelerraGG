@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef RESIZETRACKTHREAD_H
@@ -62,7 +62,7 @@ class ResizeVTrackWindow;
 class ResizeVTrackWidth : public BC_TextBox
 {
 public:
-	ResizeVTrackWidth(ResizeVTrackWindow *gui, 
+	ResizeVTrackWidth(ResizeVTrackWindow *gui,
 		ResizeVTrackThread *thread,
 		int x,
 		int y);
@@ -74,9 +74,9 @@ public:
 class ResizeVTrackSwap : public BC_Button
 {
 public:
-	ResizeVTrackSwap(ResizeVTrackWindow *gui, 
-		ResizeVTrackThread *thread, 
-		int x, 
+	ResizeVTrackSwap(ResizeVTrackWindow *gui,
+		ResizeVTrackThread *thread,
+		int x,
 		int y);
 	int handle_event();
 	ResizeVTrackWindow *gui;
@@ -86,7 +86,7 @@ public:
 class ResizeVTrackHeight : public BC_TextBox
 {
 public:
-	ResizeVTrackHeight(ResizeVTrackWindow *gui, 
+	ResizeVTrackHeight(ResizeVTrackWindow *gui,
 		ResizeVTrackThread *thread,
 		int x,
 		int y);
@@ -99,7 +99,7 @@ public:
 class ResizeVTrackScaleW : public BC_TextBox
 {
 public:
-	ResizeVTrackScaleW(ResizeVTrackWindow *gui, 
+	ResizeVTrackScaleW(ResizeVTrackWindow *gui,
 		ResizeVTrackThread *thread,
 		int x,
 		int y);
@@ -111,7 +111,7 @@ public:
 class ResizeVTrackScaleH : public BC_TextBox
 {
 public:
-	ResizeVTrackScaleH(ResizeVTrackWindow *gui, 
+	ResizeVTrackScaleH(ResizeVTrackWindow *gui,
 		ResizeVTrackThread *thread,
 		int x,
 		int y);
@@ -124,17 +124,17 @@ public:
 class ResizeVTrackWindow : public BC_Window
 {
 public:
-	ResizeVTrackWindow(MWindow *mwindow, 
+	ResizeVTrackWindow(MWindow *mwindow,
 		ResizeVTrackThread *thread,
 		int x,
 		int y);
 	~ResizeVTrackWindow();
-	
+
 	void create_objects();
-	void update(int changed_scale, 
-		int changed_size, 
+	void update(int changed_scale,
+		int changed_size,
 		int changed_all);
-	
+
 	MWindow *mwindow;
 	ResizeVTrackThread *thread;
 	ResizeVTrackWidth *w;

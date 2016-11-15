@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -31,14 +31,14 @@
 
 
 AgingWindow::AgingWindow(AgingMain *client)
- : PluginClientWindow(client, 
-	300, 
-	170, 
-	300, 
-	170, 
+ : PluginClientWindow(client,
+	300,
+	170,
+	300,
+	170,
 	0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 AgingWindow::~AgingWindow()
@@ -48,22 +48,22 @@ AgingWindow::~AgingWindow()
 void AgingWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, 
+	add_subwindow(new BC_Title(x, y,
 		"Film aging from EffectTV\n"
 		"Copyright (C) 2001 FUKUCHI Kentarou")
 	);
-// 	
+// 
 // 	y += 50;
-// 	add_subwindow(color = new AgingColor(x, y, client));	
-// 	
+// 	add_subwindow(color = new AgingColor(x, y, client));
+// 
 // 	y += 25;
 // 	add_subwindow(scratches = new AgingScratches(x, y, client));
 // 	add_subwindow(scratch_count = new AgingScratchCount(x + 100, y + 10, client));
-// 	
+// 
 // 	y += 25;
 // 	add_subwindow(pits = new AgingPits(x, y, client));
 // 	add_subwindow(pit_count = new AgingPitCount(x + 100, y + 10, client));
-// 	
+// 
 // 	y += 25;
 // 	add_subwindow(dust = new AgingDust(x, y, client));
 // 	add_subwindow(dust_count = new AgingDustCount(x + 100, y + 10, client));
@@ -114,13 +114,13 @@ int AgingScratches::handle_event()
 
 
 AgingScratchCount::AgingScratchCount(int x, int y, AgingMain *plugin)
- : BC_ISlider(x, 
+ : BC_ISlider(x,
 			y,
 			0,
-			180, 
-			180, 
-			0, 
-			SCRATCH_MAX, 
+			180,
+			180,
+			0,
+			SCRATCH_MAX,
 			plugin->config.scratch_lines)
 {
 	this->plugin = plugin;
@@ -153,13 +153,13 @@ int AgingPits::handle_event()
 
 
 AgingPitCount::AgingPitCount(int x, int y, AgingMain *plugin)
- : BC_ISlider(x, 
+ : BC_ISlider(x,
 			y,
 			0,
-			180, 
-			180, 
-			0, 
-			100, 
+			180,
+			180,
+			0,
+			100,
 			plugin->config.pit_count)
 {
 	this->plugin = plugin;
@@ -194,13 +194,13 @@ int AgingDust::handle_event()
 
 
 AgingDustCount::AgingDustCount(int x, int y, AgingMain *plugin)
- : BC_ISlider(x, 
+ : BC_ISlider(x,
 			y,
 			0,
-			180, 
-			180, 
-			0, 
-			100, 
+			180,
+			180,
+			0,
+			100,
 			plugin->config.dust_count)
 {
 	this->plugin = plugin;

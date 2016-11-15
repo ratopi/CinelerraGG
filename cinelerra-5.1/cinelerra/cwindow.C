@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "autos.h"
@@ -144,7 +144,7 @@ Track* CWindow::calculate_affected_track()
 	return affected_track;
 }
 
-Auto* CWindow::calculate_affected_auto(Autos *autos, 
+Auto* CWindow::calculate_affected_auto(Autos *autos,
 	int create,
 	int *created,
 	int redraw)
@@ -224,16 +224,16 @@ void CWindow::run()
 	gui->run_window();
 }
 
-void CWindow::update(int position, 
-	int overlays, 
-	int tool_window, 
+void CWindow::update(int position,
+	int overlays,
+	int tool_window,
 	int operation,
 	int timebar)
 {
 
 	if(position)
 	{
-		playback_engine->que->send_command(CURRENT_FRAME, 
+		playback_engine->que->send_command(CURRENT_FRAME,
 			CHANGE_NONE,
 			mwindow->edl,
 			1);
@@ -273,9 +273,9 @@ void CWindow::update(int position,
 		gui->zoom_panel->update(mwindow->edl->session->cwindow_zoom);
 
 	gui->canvas->update_zoom(mwindow->edl->session->cwindow_xscroll,
-			mwindow->edl->session->cwindow_yscroll, 
+			mwindow->edl->session->cwindow_yscroll,
 			mwindow->edl->session->cwindow_zoom);
-	gui->canvas->reposition_window(mwindow->edl, 
+	gui->canvas->reposition_window(mwindow->edl,
 			mwindow->theme->ccanvas_x,
 			mwindow->theme->ccanvas_y,
 			mwindow->theme->ccanvas_w,
@@ -296,7 +296,7 @@ int CWindow::update_position(double position)
 	gui->unlock_window();
 
 	playback_engine->interrupt_playback(1);
-	
+
 	position = mwindow->edl->align_to_frame(position, 0);
 	position = MAX(0, position);
 
@@ -326,7 +326,7 @@ CWindowRemoteHandler::
 int CWindowRemoteHandler::remote_process_key(RemoteControl *remote_control, int key)
 {
 	MWindowGUI *mwindow_gui = remote_control->mwindow_gui;
-	EDL *edl = mwindow_gui->mwindow->edl; 
+	EDL *edl = mwindow_gui->mwindow->edl;
 	if( !edl ) return 0;
 	PlayTransport *transport = mwindow_gui->mbuttons->transport;
 	if( !transport->get_edl() ) return 0;

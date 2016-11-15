@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "cicolors.h"
@@ -39,7 +39,7 @@ int HSV::rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v)
 	float min, max, delta;
 	min = ((r < g) ? r : g) < b ? ((r < g) ? r : g) : b;
 	max = ((r > g) ? r : g) > b ? ((r > g) ? r : g) : b;
-	v = max; 
+	v = max;
 
 	delta = max - min;
 
@@ -49,7 +49,7 @@ int HSV::rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v)
 
 		if(r == max)
         	h = (g - b) / delta;         // between yellow & magenta
-		else 
+		else
 		if(g == max)
         	h = 2 + (b - r) / delta;     // between cyan & yellow
 		else
@@ -59,13 +59,13 @@ int HSV::rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v)
 		if(h < 0)
         	h += 360;
 	}
-	else 
+	else
 	{
         // r = g = b = 0                // s = 0, v is undefined
         s = 0;
         h = -1;
 	}
-	
+
 	return 0;
 }
 
@@ -73,7 +73,7 @@ int HSV::hsv_to_rgb(float &r, float &g, float &b, float h, float s, float v)
 {
     int i;
 	float f, p, q, t;
-    if(s == 0) 
+    if(s == 0)
 	{
         // achromatic (grey)
         r = g = b = v;
@@ -87,7 +87,7 @@ int HSV::hsv_to_rgb(float &r, float &g, float &b, float h, float s, float v)
     q = v * (1 - s * f);
     t = v * (1 - s * (1 - f));
 
-    switch(i) 
+    switch(i)
 	{
         case 0:
             r = v;

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "apatchgui.inc"
@@ -45,7 +45,7 @@ ZoomBar::ZoomBar(MWindow *mwindow, MWindowGUI *gui)
  : BC_SubWindow(mwindow->theme->mzoom_x,
  	mwindow->theme->mzoom_y,
 	mwindow->theme->mzoom_w,
-	mwindow->theme->mzoom_h) 
+	mwindow->theme->mzoom_h)
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -62,7 +62,7 @@ ZoomBar::~ZoomBar()
 void ZoomBar::create_objects()
 {
 	int x = 3;
-	int y = get_h() / 2 - 
+	int y = get_h() / 2 -
 		mwindow->theme->get_image_set("zoombar_menu", 0)[0]->get_h() / 2;
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
@@ -100,9 +100,9 @@ void ZoomBar::create_objects()
 	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y, 0));
 	x += auto_zoom->get_w();
 	add_subwindow(auto_zoom_text = new ZoomTextBox(
-		mwindow, 
-		this, 
-		x, 
+		mwindow,
+		this,
+		x,
 		y,
 		DEFAULT_TEXT));
 	x += auto_zoom_text->get_w() + 5;
@@ -180,19 +180,19 @@ void ZoomBar::update_autozoom()
 	switch( autogroup_type ) {
 	case AUTOGROUPTYPE_AUDIO_FADE:
 	case AUTOGROUPTYPE_VIDEO_FADE:
-		sprintf(string, "%0.01f to %0.01f\n", 
+		sprintf(string, "%0.01f to %0.01f\n",
 			mwindow->edl->local_session->automation_mins[autogroup_type],
 			mwindow->edl->local_session->automation_maxs[autogroup_type]);
 		break;
 	case AUTOGROUPTYPE_ZOOM:
 	case AUTOGROUPTYPE_SPEED:
-		sprintf(string, "%0.03f to %0.03f\n", 
+		sprintf(string, "%0.03f to %0.03f\n",
 			mwindow->edl->local_session->automation_mins[autogroup_type],
 			mwindow->edl->local_session->automation_maxs[autogroup_type]);
 		break;
 	case AUTOGROUPTYPE_X:
 	case AUTOGROUPTYPE_Y:
-		sprintf(string, "%0.0f to %.0f\n", 
+		sprintf(string, "%0.0f to %.0f\n",
 			mwindow->edl->local_session->automation_mins[autogroup_type],
 			mwindow->edl->local_session->automation_maxs[autogroup_type]);
 		break;
@@ -215,7 +215,7 @@ int ZoomBar::update()
 int ZoomBar::update_clocks()
 {
 	from_value->update_position(mwindow->edl->local_session->get_selectionstart(1));
-	length_value->update_position(mwindow->edl->local_session->get_selectionend(1) - 
+	length_value->update_position(mwindow->edl->local_session->get_selectionend(1) -
 		mwindow->edl->local_session->get_selectionstart(1));
 	to_value->update_position(mwindow->edl->local_session->get_selectionend(1));
 	return 0;
@@ -225,10 +225,10 @@ int ZoomBar::update_playback(int64_t new_position)
 {
 	if(new_position != old_position)
 	{
-		Units::totext(string, 
-				new_position, 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->time_format, 
+		Units::totext(string,
+				new_position,
+				mwindow->edl->session->sample_rate,
+				mwindow->edl->session->time_format,
 				mwindow->edl->session->frame_rate,
 				mwindow->edl->session->frames_per_foot);
 		playback_value->update(string);
@@ -262,14 +262,14 @@ int ZoomBar::set_selection(int which_one)
 	switch(which_one)
 	{
 		case SET_LENGTH:
-			start_position = Units::text_to_seconds(from_value->get_text(), 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->time_format, 
+			start_position = Units::text_to_seconds(from_value->get_text(),
+				mwindow->edl->session->sample_rate,
+				mwindow->edl->session->time_format,
 				mwindow->edl->session->frame_rate,
 				mwindow->edl->session->frames_per_foot);
-			length = Units::text_to_seconds(length_value->get_text(), 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->time_format, 
+			length = Units::text_to_seconds(length_value->get_text(),
+				mwindow->edl->session->sample_rate,
+				mwindow->edl->session->time_format,
 				mwindow->edl->session->frame_rate,
 				mwindow->edl->session->frames_per_foot);
 			end_position = start_position + length;
@@ -283,14 +283,14 @@ int ZoomBar::set_selection(int which_one)
 			break;
 
 		case SET_FROM:
-			start_position = Units::text_to_seconds(from_value->get_text(), 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->time_format, 
+			start_position = Units::text_to_seconds(from_value->get_text(),
+				mwindow->edl->session->sample_rate,
+				mwindow->edl->session->time_format,
 				mwindow->edl->session->frame_rate,
 				mwindow->edl->session->frames_per_foot);
-			end_position = Units::text_to_seconds(to_value->get_text(), 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->time_format, 
+			end_position = Units::text_to_seconds(to_value->get_text(),
+				mwindow->edl->session->sample_rate,
+				mwindow->edl->session->time_format,
 				mwindow->edl->session->frame_rate,
 				mwindow->edl->session->frames_per_foot);
 
@@ -303,14 +303,14 @@ int ZoomBar::set_selection(int which_one)
 			break;
 
 		case SET_TO:
-			start_position = Units::text_to_seconds(from_value->get_text(), 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->time_format, 
+			start_position = Units::text_to_seconds(from_value->get_text(),
+				mwindow->edl->session->sample_rate,
+				mwindow->edl->session->time_format,
 				mwindow->edl->session->frame_rate,
 				mwindow->edl->session->frames_per_foot);
-			end_position = Units::text_to_seconds(to_value->get_text(), 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->time_format, 
+			end_position = Units::text_to_seconds(to_value->get_text(),
+				mwindow->edl->session->sample_rate,
+				mwindow->edl->session->time_format,
 				mwindow->edl->session->frame_rate,
 				mwindow->edl->session->frames_per_foot);
 
@@ -350,18 +350,18 @@ int ZoomBar::set_selection(int which_one)
 
 
 
-SampleZoomPanel::SampleZoomPanel(MWindow *mwindow, 
-	ZoomBar *zoombar, 
-	int x, 
+SampleZoomPanel::SampleZoomPanel(MWindow *mwindow,
+	ZoomBar *zoombar,
+	int x,
 	int y)
- : ZoomPanel(mwindow, 
- 	zoombar, 
-	mwindow->edl->local_session->zoom_sample, 
-	x, 
-	y, 
-	110, 
-	MIN_ZOOM_TIME, 
-	MAX_ZOOM_TIME, 
+ : ZoomPanel(mwindow,
+ 	zoombar,
+	mwindow->edl->local_session->zoom_sample,
+	x,
+	y,
+	110,
+	MIN_ZOOM_TIME,
+	MAX_ZOOM_TIME,
 	ZOOM_TIME)
 {
 	this->mwindow = mwindow;
@@ -375,14 +375,14 @@ int SampleZoomPanel::handle_event()
 
 
 AmpZoomPanel::AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
- : ZoomPanel(mwindow, 
- 	zoombar, 
-	mwindow->edl->local_session->zoom_y, 
-	x, 
-	y, 
+ : ZoomPanel(mwindow,
+ 	zoombar,
+	mwindow->edl->local_session->zoom_y,
+	x,
+	y,
 	80,
-	MIN_AMP_ZOOM, 
-	MAX_AMP_ZOOM, 
+	MIN_AMP_ZOOM,
+	MAX_AMP_ZOOM,
 	ZOOM_LONG)
 {
 	this->mwindow = mwindow;
@@ -395,14 +395,14 @@ int AmpZoomPanel::handle_event()
 }
 
 TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
- : ZoomPanel(mwindow, 
- 	zoombar, 
-	mwindow->edl->local_session->zoom_track, 
-	x, 
-	y, 
+ : ZoomPanel(mwindow,
+ 	zoombar,
+	mwindow->edl->local_session->zoom_track,
+	x,
+	y,
 	70,
-	MIN_TRACK_ZOOM, 
-	MAX_TRACK_ZOOM, 
+	MIN_TRACK_ZOOM,
+	MAX_TRACK_ZOOM,
 	ZOOM_LONG)
 {
 	this->mwindow = mwindow;
@@ -548,7 +548,7 @@ int ZoomTextBox::handle_event()
 	{
 		AUTOMATIONVIEWCLAMPS(min, mwindow->edl->local_session->zoombar_showautotype);
 		AUTOMATIONVIEWCLAMPS(max, mwindow->edl->local_session->zoombar_showautotype);
-		if (max > min) 
+		if (max > min)
 		{
 			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype] = min;
 			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype] = max;
@@ -586,12 +586,12 @@ int FromTextBox::handle_event()
 
 int FromTextBox::update_position(double new_position)
 {
-	new_position += mwindow->edl->session->get_frame_offset() / 
+	new_position += mwindow->edl->session->get_frame_offset() /
 						 mwindow->edl->session->frame_rate;;
-	Units::totext(string, 
-		new_position, 
-		mwindow->edl->session->time_format, 
-		mwindow->edl->session->sample_rate, 
+	Units::totext(string,
+		new_position,
+		mwindow->edl->session->time_format,
+		mwindow->edl->session->sample_rate,
 		mwindow->edl->session->frame_rate,
 		mwindow->edl->session->frames_per_foot);
 //printf("FromTextBox::update_position %f %s\n", new_position, string);
@@ -624,10 +624,10 @@ int LengthTextBox::handle_event()
 
 int LengthTextBox::update_position(double new_position)
 {
-	Units::totext(string, 
-		new_position, 
-		mwindow->edl->session->time_format, 
-		mwindow->edl->session->sample_rate, 
+	Units::totext(string,
+		new_position,
+		mwindow->edl->session->time_format,
+		mwindow->edl->session->sample_rate,
 		mwindow->edl->session->frame_rate,
 		mwindow->edl->session->frames_per_foot);
 	update(string);
@@ -660,10 +660,10 @@ int ToTextBox::update_position(double new_position)
 {
 	new_position += mwindow->edl->session->get_frame_offset() /
 						 mwindow->edl->session->frame_rate;
-	Units::totext(string, 
-		new_position, 
-		mwindow->edl->session->time_format, 
-		mwindow->edl->session->sample_rate, 
+	Units::totext(string,
+		new_position,
+		mwindow->edl->session->time_format,
+		mwindow->edl->session->sample_rate,
 		mwindow->edl->session->frame_rate,
 		mwindow->edl->session->frames_per_foot);
 	update(string);

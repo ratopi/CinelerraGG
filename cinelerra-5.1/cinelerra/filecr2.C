@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "asset.h"
@@ -72,7 +72,7 @@ int FileCR2::check_sig(Asset *asset)
 		(void)fread(test, 10, 1, stream);
 		fclose(stream);
 
-		if(test[0] == 'C' && test[1] == 'R' && test[2] == '2' && 
+		if(test[0] == 'C' && test[1] == 'R' && test[2] == '2' &&
 			test[3] == 'L' && test[4] == 'I' && test[5] == 'S' && test[6] == 'T')
 		{
 //printf("FileCR2::check_sig %d\n", __LINE__);
@@ -105,19 +105,19 @@ int FileCR2::check_sig(Asset *asset)
 
 // int FileCR2::open_file(int rd, int wr)
 // {
-// 
+//
 // 	int argc = 3;
-// 	const char *argv[4] = 
+// 	const char *argv[4] =
 // 	{
 // 		"dcraw",
 // 		"-i",
 // 		asset->path,
 // 		0
 // 	};
-// 
+//
 // 	int result = dcraw_main(argc, argv);
 // 	if(!result) format_to_asset();
-// 
+//
 // 	return result;
 // }
 
@@ -125,7 +125,7 @@ int FileCR2::read_frame_header(char *path)
 {
 	int argc = 3;
 printf("FileCR2::read_frame_header %d\n", __LINE__);
-	const char *argv[4] = 
+	const char *argv[4] =
 	{
 		"dcraw",
 		"-i",
@@ -147,7 +147,7 @@ printf("FileCR2::read_frame_header %d %d\n", __LINE__, result);
 // {
 // 	return 0;
 // }
-// 
+//
 void FileCR2::format_to_asset()
 {
 	asset->video_data = 1;
@@ -186,12 +186,12 @@ int FileCR2::read_frame(VFrame *frame, char *path)
 // no rotation
 	argv[argc++] = (char*)"-j";
 
-// printf("FileCR2::read_frame %d interpolate=%d white_balance=%d\n", 
+// printf("FileCR2::read_frame %d interpolate=%d white_balance=%d\n",
 // __LINE__,
 // file->interpolate_raw,
 // file->white_balance_raw);
 
-// Use camera white balance.  
+// Use camera white balance.
 // Before 2006, DCraw had no Canon white balance.
 // In 2006 DCraw seems to support Canon white balance.
 // Still no gamma support.
@@ -218,12 +218,12 @@ printf("FileCR2::read_frame %d %s\n", __LINE__, path);
 
 // This was only used by the bayer interpolate plugin, which itself created
 // too much complexity to use effectively.
-// It required bypassing the cache any time a plugin parameter changed 
+// It required bypassing the cache any time a plugin parameter changed
 // to store the color matrix from dcraw in the frame stack along with the new
 // plugin parameters.  The cache couldn't know if a parameter in the stack came
 // from dcraw or a plugin & replace it.
 	char string[BCTEXTLEN];
-	sprintf(string, 
+	sprintf(string,
 		"%f %f %f %f %f %f %f %f %f\n",
 		dcraw_matrix[0],
 		dcraw_matrix[1],

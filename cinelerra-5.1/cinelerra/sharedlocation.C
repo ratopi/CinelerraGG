@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "edl.h"
@@ -95,7 +95,7 @@ int SharedLocation::equivalent(SharedLocation *that)
 	) return 1;
 	else
 	return 0;
-	
+
 }
 
 SharedLocation& SharedLocation::operator=(const SharedLocation &that)
@@ -113,9 +113,9 @@ void SharedLocation::copy_from(SharedLocation *that)
 }
 
 
-void SharedLocation::calculate_title(char *string, 
-	EDL *edl, 
-	double position, 
+void SharedLocation::calculate_title(char *string,
+	EDL *edl,
+	double position,
 	int convert_units,
 	int plugin_type,
 	int use_nudge)
@@ -128,8 +128,8 @@ void SharedLocation::calculate_title(char *string,
 		track = edl->tracks->get_item_number(module);
 		if(track && this->plugin >= 0)
 		{
-			plugin = track->get_current_plugin(position, 
-				this->plugin, 
+			plugin = track->get_current_plugin(position,
+				this->plugin,
 				PLAY_FORWARD,
 				convert_units,
 				use_nudge);

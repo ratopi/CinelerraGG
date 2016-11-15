@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "assets.h"
@@ -40,17 +40,17 @@
 
 
 Quit::Quit(MWindow *mwindow)
- : BC_MenuItem(_("Quit"), "q", 'q'), Thread() 
-{ 
-	this->mwindow = mwindow; 
+ : BC_MenuItem(_("Quit"), "q", 'q'), Thread()
+{
+	this->mwindow = mwindow;
 }
 
 void Quit::create_objects(Save *save)
-{ 
-	this->save = save; 
+{
+	this->save = save;
 }
 
-int Quit::handle_event() 
+int Quit::handle_event()
 {
 
 //printf("Quit::handle_event 1 %d\n", mwindow->session->changes_made);
@@ -59,7 +59,7 @@ int Quit::handle_event()
 		record->capturing || record->recording || record->writing_file ) {
 		start();
 	}
-	else 
+	else
 	{        // quit
 		mwindow->quit();
 	}
@@ -73,8 +73,8 @@ void Quit::run()
 // Test execution conditions
 	Record *record = mwindow->gui->record;
 	if( record->capturing || record->recording || record->writing_file ) {
-		ErrorBox error(_(PROGRAM_NAME ": Error"), 
-			mwindow->gui->get_abs_cursor_x(1), 
+		ErrorBox error(_(PROGRAM_NAME ": Error"),
+			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 		error.create_objects(_("Can't quit while a recording is in progress."));
 		error.run_window();
@@ -83,8 +83,8 @@ void Quit::run()
 	else
 	if(mwindow->render->thread->running())
 	{
-		ErrorBox error(_(PROGRAM_NAME ": Error"), 
-			mwindow->gui->get_abs_cursor_x(1), 
+		ErrorBox error(_(PROGRAM_NAME ": Error"),
+			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 		error.create_objects(_("Can't quit while a render is in progress."));
 		error.run_window();
@@ -105,7 +105,7 @@ void Quit::run()
 		break;
 
 	case 2:		// save
-		save->save_before_quit(); 
+		save->save_before_quit();
 		break;
 	}
 }

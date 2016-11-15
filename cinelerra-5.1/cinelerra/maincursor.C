@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcsignals.h"
@@ -117,16 +117,16 @@ void MainCursor::draw(int do_plugintoggles)
 		zoom_sample = mwindow->edl->local_session->zoom_sample;
 //printf("MainCursor::draw %f %f\n", selectionstart, selectionend);
 
-		pixel1 = Units::to_int64((selectionstart * 
-			mwindow->edl->session->sample_rate / 
-			zoom_sample - 
+		pixel1 = Units::to_int64((selectionstart *
+			mwindow->edl->session->sample_rate /
+			zoom_sample -
 			view_start));
 		pixel2 = Units::to_int64((selectionend *
-			mwindow->edl->session->sample_rate / 
-			zoom_sample - 
+			mwindow->edl->session->sample_rate /
+			zoom_sample -
 			view_start));
 		if(pixel1 < -10) pixel1 = -10;
-		if(pixel2 > pane->canvas->get_w() + 10) 
+		if(pixel2 > pane->canvas->get_w() + 10)
 			pixel2 = pane->canvas->get_w() + 10;
 		if(pixel2 < pixel1) pixel2 = pixel1;
 //printf("MainCursor::draw 2\n");
@@ -153,9 +153,9 @@ void MainCursor::update()
 
 	show(1);
 	if(old_pixel1 != pixel1 || old_pixel2 != pixel2)
-		pane->canvas->flash(old_pixel1, 
-			0, 
-			old_pixel2 - old_pixel1 + 1, 
+		pane->canvas->flash(old_pixel1,
+			0,
+			old_pixel2 - old_pixel1 + 1,
 			pane->canvas->get_h());
 	flash();
 }

@@ -110,16 +110,16 @@ void MotionWindow::create_objects()
 
 // 	y += 50;
 // 	add_subwindow(title = new BC_Title(x1, y, _("Translation search steps:")));
-// 	add_subwindow(global_search_positions = new GlobalSearchPositions(plugin, 
-// 		x1 + title->get_w() + 10, 
-// 		y, 
+// 	add_subwindow(global_search_positions = new GlobalSearchPositions(plugin,
+// 		x1 + title->get_w() + 10,
+// 		y,
 // 		80));
 // 	global_search_positions->create_objects();
-// 
+//
 // 	add_subwindow(title = new BC_Title(x2, y, _("Rotation search steps:")));
-// 	add_subwindow(rotation_search_positions = new RotationSearchPositions(plugin, 
-// 		x2 + title->get_w() + 10, 
-// 		y, 
+// 	add_subwindow(rotation_search_positions = new RotationSearchPositions(plugin,
+// 		x2 + title->get_w() + 10,
+// 		y,
 // 		80));
 // 	rotation_search_positions->create_objects();
 
@@ -391,8 +391,8 @@ int BlockSize::handle_event()
 
 
 
-// GlobalSearchPositions::GlobalSearchPositions(MotionMain *plugin, 
-// 	int x, 
+// GlobalSearchPositions::GlobalSearchPositions(MotionMain *plugin,
+// 	int x,
 // 	int y,
 // 	int w)
 //  : BC_PopupMenu(x,
@@ -423,22 +423,22 @@ int BlockSize::handle_event()
 // 	sprintf(string, "%d", plugin->config.global_positions);
 // 	set_text(string);
 // }
-// 
+//
 // int GlobalSearchPositions::handle_event()
 // {
 // 	plugin->config.global_positions = atoi(get_text());
 // 	plugin->send_configure_change();
 // 	return 1;
 // }
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// RotationSearchPositions::RotationSearchPositions(MotionMain *plugin, 
-// 	int x, 
+//
+//
+//
+//
+//
+//
+//
+// RotationSearchPositions::RotationSearchPositions(MotionMain *plugin,
+// 	int x,
 // 	int y,
 // 	int w)
 //  : BC_PopupMenu(x,
@@ -459,7 +459,7 @@ int BlockSize::handle_event()
 // 	sprintf(string, "%d", plugin->config.rotate_positions);
 // 	set_text(string);
 // }
-// 
+//
 // int RotationSearchPositions::handle_event()
 // {
 // 	plugin->config.rotate_positions = atoi(get_text());
@@ -559,19 +559,19 @@ int MotionRReturnSpeed::handle_event()
 
 
 
-// MotionGlobal::MotionGlobal(MotionMain *plugin, 
+// MotionGlobal::MotionGlobal(MotionMain *plugin,
 // 	MotionWindow *gui,
-// 	int x, 
+// 	int x,
 // 	int y)
-//  : BC_CheckBox(x, 
-//  	y, 
+//  : BC_CheckBox(x,
+//  	y,
 // 	plugin->config.global,
 // 	_("Track translation"))
 // {
 // 	this->plugin = plugin;
 // 	this->gui = gui;
 // }
-// 
+//
 // int MotionGlobal::handle_event()
 // {
 // 	plugin->config.global = get_value();

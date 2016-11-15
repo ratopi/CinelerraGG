@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -29,13 +29,13 @@
 
 FindObjectWindow::FindObjectWindow(FindObjectMain *plugin)
  : PluginClientWindow(plugin,
- 	300, 
-	550, 
+ 	300,
+	550,
 	300,
 	550,
 	0)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
 }
 
 FindObjectWindow::~FindObjectWindow()
@@ -49,52 +49,52 @@ void FindObjectWindow::create_objects()
 	BC_Title *title;
 
 
-	add_subwindow(title = new BC_Title(x1, 
-		y, 
+	add_subwindow(title = new BC_Title(x1,
+		y,
 		_("Algorithm:")));
-	add_subwindow(algorithm = new FindObjectAlgorithm(plugin, 
+	add_subwindow(algorithm = new FindObjectAlgorithm(plugin,
 		this,
-		x1 + title->get_w() + 10, 
+		x1 + title->get_w() + 10,
 		y));
 	algorithm->create_objects();
 	y += algorithm->get_h() + plugin->get_theme()->widget_border;
 
 
-	add_subwindow(title = new BC_Title(x1, 
-		y, 
+	add_subwindow(title = new BC_Title(x1,
+		y,
 		_("Search radius:\n(W/H Percent of image)")));
-	add_subwindow(global_range_w = new FindObjectGlobalRange(plugin, 
-		x1 + title->get_w() + 10, 
+	add_subwindow(global_range_w = new FindObjectGlobalRange(plugin,
+		x1 + title->get_w() + 10,
 		y,
 		&plugin->config.global_range_w));
-	add_subwindow(global_range_h = new FindObjectGlobalRange(plugin, 
-		x1 + title->get_w() + 10 + global_range_w->get_w(), 
+	add_subwindow(global_range_h = new FindObjectGlobalRange(plugin,
+		x1 + title->get_w() + 10 + global_range_w->get_w(),
 		y,
 		&plugin->config.global_range_h));
 
 	y += 50;
-	add_subwindow(title = new BC_Title(x1, 
-		y, 
+	add_subwindow(title = new BC_Title(x1,
+		y,
 		_("Object size:\n(W/H Percent of image)")));
-	add_subwindow(global_block_w = new FindObjectBlockSize(plugin, 
-		x1 + title->get_w() + 10, 
+	add_subwindow(global_block_w = new FindObjectBlockSize(plugin,
+		x1 + title->get_w() + 10,
 		y,
 		&plugin->config.global_block_w));
-	add_subwindow(global_block_h = new FindObjectBlockSize(plugin, 
-		x1 + title->get_w() + 10 + global_block_w->get_w(), 
+	add_subwindow(global_block_h = new FindObjectBlockSize(plugin,
+		x1 + title->get_w() + 10 + global_block_w->get_w(),
 		y,
 		&plugin->config.global_block_h));
 
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block X:")));
-	add_subwindow(block_x = new FindObjectBlockCenter(plugin, 
-		this, 
-		x + title->get_w() + 10, 
+	add_subwindow(block_x = new FindObjectBlockCenter(plugin,
+		this,
+		x + title->get_w() + 10,
 		y,
 		&plugin->config.block_x));
-	add_subwindow(block_x_text = new FindObjectBlockCenterText(plugin, 
-		this, 
-		x + title->get_w() + 10 + block_x->get_w() + 10, 
+	add_subwindow(block_x_text = new FindObjectBlockCenterText(plugin,
+		this,
+		x + title->get_w() + 10 + block_x->get_w() + 10,
 		y + 10,
 		&plugin->config.block_x));
 	block_x->center_text = block_x_text;
@@ -102,14 +102,14 @@ void FindObjectWindow::create_objects()
 
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block Y:")));
-	add_subwindow(block_y = new FindObjectBlockCenter(plugin, 
-		this, 
-		x + title->get_w() + 10, 
+	add_subwindow(block_y = new FindObjectBlockCenter(plugin,
+		this,
+		x + title->get_w() + 10,
 		y,
 		&plugin->config.block_y));
-	add_subwindow(block_y_text = new FindObjectBlockCenterText(plugin, 
-		this, 
-		x + title->get_w() + 10 + block_y->get_w() + 10, 
+	add_subwindow(block_y_text = new FindObjectBlockCenterText(plugin,
+		this,
+		x + title->get_w() + 10 + block_y->get_w() + 10,
 		y + 10,
 		&plugin->config.block_y));
 	block_y->center_text = block_y_text;
@@ -143,27 +143,27 @@ void FindObjectWindow::create_objects()
 
 	y += draw_keypoints->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(title = new BC_Title(x, y, _("Object layer:")));
-	object_layer = new FindObjectLayer(plugin, 
+	object_layer = new FindObjectLayer(plugin,
 		this,
-		x + title->get_w() + 10, 
+		x + title->get_w() + 10,
 		y,
 		&plugin->config.object_layer);
 	object_layer->create_objects();
 	y += object_layer->get_h() + plugin->get_theme()->widget_border;
 
 	add_subwindow(title = new BC_Title(x, y, _("Replacement object layer:")));
-	replace_layer = new FindObjectLayer(plugin, 
+	replace_layer = new FindObjectLayer(plugin,
 		this,
-		x + title->get_w() + 10, 
+		x + title->get_w() + 10,
 		y,
 		&plugin->config.replace_layer);
 	replace_layer->create_objects();
 	y += replace_layer->get_h() + plugin->get_theme()->widget_border;
 
 	add_subwindow(title = new BC_Title(x, y, _("Output/scene layer:")));
-	scene_layer = new FindObjectLayer(plugin, 
+	scene_layer = new FindObjectLayer(plugin,
 		this,
-		x + title->get_w() + 10, 
+		x + title->get_w() + 10,
 		y,
 		&plugin->config.scene_layer);
 	scene_layer->create_objects();
@@ -171,30 +171,30 @@ void FindObjectWindow::create_objects()
 
 
 	add_subwindow(title = new BC_Title(x, y + 10, _("Object blend amount:")));
-	add_subwindow(blend = new FindObjectBlend(plugin, 
-		x + title->get_w() + plugin->get_theme()->widget_border, 
+	add_subwindow(blend = new FindObjectBlend(plugin,
+		x + title->get_w() + plugin->get_theme()->widget_border,
 		y,
 		&plugin->config.blend));
 	y += blend->get_h();
 
 
 	add_subwindow(title = new BC_Title(x, y + 10, _("Camshift VMIN:")));
-	add_subwindow(vmin = new FindObjectCamParam(plugin, 
-		x + title->get_w() + plugin->get_theme()->widget_border, 
+	add_subwindow(vmin = new FindObjectCamParam(plugin,
+		x + title->get_w() + plugin->get_theme()->widget_border,
 		y,
 		&plugin->config.vmin));
 	y += vmin->get_h() * 2 / 3;
 
 	add_subwindow(title = new BC_Title(x, y + 10, _("Camshift VMAX:")));
-	add_subwindow(vmax = new FindObjectCamParam(plugin, 
-		x + title->get_w() + vmin->get_w() + plugin->get_theme()->widget_border, 
+	add_subwindow(vmax = new FindObjectCamParam(plugin,
+		x + title->get_w() + vmin->get_w() + plugin->get_theme()->widget_border,
 		y,
 		&plugin->config.vmax));
 	y += vmin->get_h() * 2 / 3;
 
 	add_subwindow(title = new BC_Title(x, y + 10, _("Camshift SMIN:")));
-	add_subwindow(smin = new FindObjectCamParam(plugin, 
-		x + title->get_w() + plugin->get_theme()->widget_border, 
+	add_subwindow(smin = new FindObjectCamParam(plugin,
+		x + title->get_w() + plugin->get_theme()->widget_border,
 		y,
 		&plugin->config.smin));
 	y += vmin->get_h();
@@ -210,12 +210,12 @@ void FindObjectWindow::create_objects()
 
 
 
-FindObjectGlobalRange::FindObjectGlobalRange(FindObjectMain *plugin, 
-	int x, 
+FindObjectGlobalRange::FindObjectGlobalRange(FindObjectMain *plugin,
+	int x,
 	int y,
 	int *value)
- : BC_IPot(x, 
-		y, 
+ : BC_IPot(x,
+		y,
 		(int64_t)*value,
 		(int64_t)MIN_RADIUS,
 		(int64_t)MAX_RADIUS)
@@ -236,12 +236,12 @@ int FindObjectGlobalRange::handle_event()
 
 
 
-FindObjectBlockSize::FindObjectBlockSize(FindObjectMain *plugin, 
-	int x, 
+FindObjectBlockSize::FindObjectBlockSize(FindObjectMain *plugin,
+	int x,
 	int y,
 	float *value)
- : BC_FPot(x, 
-		y, 
+ : BC_FPot(x,
+		y,
 		(float)*value,
 		(float)MIN_BLOCK,
 		(float)MAX_BLOCK)
@@ -266,15 +266,15 @@ int FindObjectBlockSize::handle_event()
 
 
 
-FindObjectBlockCenter::FindObjectBlockCenter(FindObjectMain *plugin, 
+FindObjectBlockCenter::FindObjectBlockCenter(FindObjectMain *plugin,
 	FindObjectWindow *gui,
-	int x, 
+	int x,
 	int y,
 	float *value)
  : BC_FPot(x,
  	y,
 	*value,
-	(float)0, 
+	(float)0,
 	(float)100)
 {
 	this->plugin = plugin;
@@ -296,9 +296,9 @@ int FindObjectBlockCenter::handle_event()
 
 
 
-FindObjectBlockCenterText::FindObjectBlockCenterText(FindObjectMain *plugin, 
+FindObjectBlockCenterText::FindObjectBlockCenterText(FindObjectMain *plugin,
 	FindObjectWindow *gui,
-	int x, 
+	int x,
 	int y,
 	float *value)
  : BC_TextBox(x,
@@ -327,12 +327,12 @@ int FindObjectBlockCenterText::handle_event()
 
 
 
-FindObjectDrawBorder::FindObjectDrawBorder(FindObjectMain *plugin, 
+FindObjectDrawBorder::FindObjectDrawBorder(FindObjectMain *plugin,
 	FindObjectWindow *gui,
-	int x, 
+	int x,
 	int y)
  : BC_CheckBox(x,
- 	y, 
+ 	y,
 	plugin->config.draw_border,
 	_("Draw border"))
 {
@@ -352,12 +352,12 @@ int FindObjectDrawBorder::handle_event()
 
 
 
-FindObjectDrawKeypoints::FindObjectDrawKeypoints(FindObjectMain *plugin, 
+FindObjectDrawKeypoints::FindObjectDrawKeypoints(FindObjectMain *plugin,
 	FindObjectWindow *gui,
-	int x, 
+	int x,
 	int y)
  : BC_CheckBox(x,
- 	y, 
+ 	y,
 	plugin->config.draw_keypoints,
 	_("Draw keypoints"))
 {
@@ -375,12 +375,12 @@ int FindObjectDrawKeypoints::handle_event()
 
 
 
-FindObjectReplace::FindObjectReplace(FindObjectMain *plugin, 
+FindObjectReplace::FindObjectReplace(FindObjectMain *plugin,
 	FindObjectWindow *gui,
-	int x, 
+	int x,
 	int y)
  : BC_CheckBox(x,
- 	y, 
+ 	y,
 	plugin->config.replace_object,
 	_("Replace object"))
 {
@@ -400,12 +400,12 @@ int FindObjectReplace::handle_event()
 
 
 
-FindObjectDrawObjectBorder::FindObjectDrawObjectBorder(FindObjectMain *plugin, 
+FindObjectDrawObjectBorder::FindObjectDrawObjectBorder(FindObjectMain *plugin,
 	FindObjectWindow *gui,
-	int x, 
+	int x,
 	int y)
  : BC_CheckBox(x,
- 	y, 
+ 	y,
 	plugin->config.draw_object_border,
 	_("Draw object border"))
 {
@@ -425,17 +425,17 @@ int FindObjectDrawObjectBorder::handle_event()
 
 
 
-FindObjectLayer::FindObjectLayer(FindObjectMain *plugin, 
-	FindObjectWindow *gui, 
-	int x, 
+FindObjectLayer::FindObjectLayer(FindObjectMain *plugin,
+	FindObjectWindow *gui,
+	int x,
 	int y,
 	int *value)
  : BC_TumbleTextBox(gui,
  	*value,
 	MIN_LAYER,
 	MAX_LAYER,
- 	x, 
- 	y, 
+ 	x,
+ 	y,
 	calculate_w(gui))
 {
 	this->plugin = plugin;
@@ -465,8 +465,8 @@ int FindObjectLayer::calculate_w(FindObjectWindow *gui)
 
 
 FindObjectAlgorithm::FindObjectAlgorithm(FindObjectMain *plugin, FindObjectWindow *gui, int x, int y)
- : BC_PopupMenu(x, 
- 	y, 
+ : BC_PopupMenu(x,
+ 	y,
 	calculate_w(gui),
 	to_text(plugin->config.algorithm))
 {
@@ -539,12 +539,12 @@ int FindObjectAlgorithm::calculate_w(FindObjectWindow *gui)
 
 
 
-FindObjectCamParam::FindObjectCamParam(FindObjectMain *plugin, 
-	int x, 
+FindObjectCamParam::FindObjectCamParam(FindObjectMain *plugin,
+	int x,
 	int y,
 	int *value)
- : BC_IPot(x, 
-		y, 
+ : BC_IPot(x,
+		y,
 		(int64_t)*value,
 		(int64_t)MIN_CAMSHIFT,
 		(int64_t)MAX_CAMSHIFT)
@@ -568,12 +568,12 @@ int FindObjectCamParam::handle_event()
 
 
 
-FindObjectBlend::FindObjectBlend(FindObjectMain *plugin, 
-	int x, 
+FindObjectBlend::FindObjectBlend(FindObjectMain *plugin,
+	int x,
 	int y,
 	int *value)
- : BC_IPot(x, 
-		y, 
+ : BC_IPot(x,
+		y,
 		(int64_t)*value,
 		(int64_t)MIN_BLEND,
 		(int64_t)MAX_BLEND)

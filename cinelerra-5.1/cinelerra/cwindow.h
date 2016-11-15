@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef CWINDOW_H
@@ -38,12 +38,12 @@ class CWindow : public Thread
 public:
 	CWindow(MWindow *mwindow);
 	~CWindow();
-	
+
     void create_objects();
 // Position is inclusive of the other 2
-	void update(int position, 
-		int overlays, 
-		int tool_window, 
+	void update(int position,
+		int overlays,
+		int tool_window,
 		int operation = 0,
 		int timebar = 0);
 	void run();
@@ -53,7 +53,7 @@ public:
 //          if 1 uses automatic creation option to create
 // created - set to 1 if an auto was created
 // redraw - redraw MWindow overlays if 1
-	Auto* calculate_affected_auto(Autos *autos, 
+	Auto* calculate_affected_auto(Autos *autos,
 		int create = 1,
 		int *created = 0,
 		int redraw = 1);
@@ -73,7 +73,7 @@ public:
 	int destination;
 	MWindow *mwindow;
 	CWindowGUI *gui;
-	
+
 	CTracking *playback_cursor;
 	CPlayback *playback_engine;
 };

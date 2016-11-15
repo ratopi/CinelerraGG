@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2004 Richard Baverstock
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifdef HAVE_DV
@@ -85,14 +85,14 @@ FileDV::~FileDV()
 	if(decoder) dv_decoder_free(decoder);
 	if(encoder) dv_encoder_free(encoder);
 	if(audio_encoder) dv_encoder_free(audio_encoder);
-	
+
 	delete stream_lock;
 	delete decoder_lock;
 	delete video_position_lock;
-	
+
 	delete[] video_buffer;
 	delete[] audio_buffer;
-	
+
 	if(audio_sample_buffer)
 	{
 		for(int i = 0; i < asset->channels; i++)
@@ -142,17 +142,17 @@ TRACE("FileDV::reset_parameters_derived: 20")
 	delete[] audio_buffer;
 	delete[] video_buffer;
 TRACE("FileDV::reset_parameters_derived: 30")
-	
+
 	audio_buffer = 0;
 	video_buffer = 0;
-	
+
 	if(stream) fclose(stream);
-	
+
 	stream = 0;
-	
+
 	audio_position = 0;
 	video_position = 0;
-	
+
 	if(audio_sample_buffer)
 	{
 		for(int i = 0; i < asset->channels; i++)
@@ -164,12 +164,12 @@ TRACE("FileDV::reset_parameters_derived: 30")
 	audio_sample_buffer_len = 0;
 	audio_sample_buffer_end = 0;
 	audio_sample_buffer_maxsize = 0;
-	
+
 	audio_frames_written = 0;
 // output_size gets set in open_file, once we know if the frames are PAL or NTSC
 // output and input are allocated at the same point.
 	output_size = 0;
-	
+
 UNTRACE
 	return 0;
 }
@@ -184,7 +184,7 @@ TRACE("FileDV::open_file 10")
 
 TRACE("FileDV::open_file 20")
 
-		
+
 		if (!(asset->height == 576 && asset->width == 720 && asset->frame_rate == 25) &&
 		    !(asset->height == 480 && asset->width == 720 && (asset->frame_rate >= 29.96 && asset->frame_rate <= 29.98)))
 		{
@@ -193,39 +193,39 @@ TRACE("FileDV::open_file 20")
 			{
 				eprintf(_("Suggestion: Proper frame rate for NTSC DV is 29.97 fps, not 30 fps\n"));
 			}
-			return 1;	
-		}   
+			return 1;
+		}
 		if (!(asset->channels == 2 && (asset->sample_rate == 48000 || asset->sample_rate == 44100)) &&
 		    !((asset->channels == 4 || asset->channels == 2) && asset->sample_rate == 32000))
 		{
 			eprintf(_("Raw DV format does not support following audio configuration : %i channels at sample rate: %iHz\n"), asset->channels, asset->sample_rate);
 			return 1;
-		}   
-		  
+		}
+
 
 		if((stream = fopen(asset->path, "w+b")) == 0)
 		{
 			eprintf(_("Error while opening \"%s\" for writing. \n%m\n"), asset->path);
 			return 1;
 		}
-		
+
 		// Create a new encoder
 		if(encoder) dv_encoder_free(encoder);
 		encoder = dv_encoder_new(0,0,0);
 		encoder->vlc_encode_passes = 3;
 		encoder->static_qno = 0;
 		encoder->force_dct = DV_DCT_AUTO;
-	
+
 		if(audio_encoder) dv_encoder_free(audio_encoder);
 		audio_encoder = dv_encoder_new(0, 0, 0);
 		audio_encoder->vlc_encode_passes = 3;
 		audio_encoder->static_qno = 0;
 		audio_encoder->force_dct = DV_DCT_AUTO;
-	
+
 		if(decoder) dv_decoder_free(decoder);
 		decoder = dv_decoder_new(0,0,0);
 		decoder->quality = DV_QUALITY_BEST;
-	
+
 
 		isPAL = (asset->height == 576 ? 1 : 0);
 		encoder->isPAL = isPAL;
@@ -257,7 +257,7 @@ TRACE("FileDV::open_file 40")
 
 		// need file size info to get length.
 		stat(asset->path, &info);
-		
+
 TRACE("FileDV::open_file 50")
 
 		// read the first frame so we can get the stream info from it
@@ -271,7 +271,7 @@ TRACE("FileDV::open_file 60")
 		if(decoder) dv_decoder_free(decoder);
 		decoder = dv_decoder_new(0,0,0);
 		decoder->quality = DV_QUALITY_BEST;
-	
+
 
 		if(dv_parse_header(decoder, temp) > -1 )
 		{
@@ -296,10 +296,10 @@ TRACE("FileDV::open_file 60")
 				asset->interlace_mode = ILACE_MODE_BOTTOM_FIRST;
 
 			isPAL = dv_is_PAL(decoder);
-			
+
 			output_size = (isPAL ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE);
 			asset->video_length = info.st_size / output_size;
-			
+
 			if(!asset->frame_rate)
 				asset->frame_rate = (isPAL ? 25 : 29.97);
 			strncpy(asset->vcodec, "dvc ", 4);
@@ -333,7 +333,7 @@ TRACE("FileDV::open_file 80")
 	// allocate space for audio and video
 	video_buffer = new unsigned char[output_size + 4];
 	audio_buffer = new unsigned char[output_size + 4];
-			
+
 UNTRACE
 	return 0;
 }
@@ -346,7 +346,7 @@ int FileDV::check_sig(Asset *asset)
 	fread(&temp, 3, 1, t_stream);
 
 	fclose(t_stream);
-	
+
 	if(temp[0] == 0x1f &&
 			temp[1] == 0x07 &&
 			temp[2] == 0x00)
@@ -396,7 +396,7 @@ int FileDV::audio_samples_copy(double **buffer, int64_t len)
 			fprintf(stderr, _("ERROR: Unable to allocate memory for audio_sample_buffer.\n"));
 			return 1;
 		}
-		
+
 		for(int i = 0; i < asset->channels; i++)
 		{
 			audio_sample_buffer[i] = new int16_t[len * 2];
@@ -450,7 +450,7 @@ int FileDV::audio_samples_copy(double **buffer, int64_t len)
 			// copy buffer into audio_sample_buffer, straight out (no loop around)
 			for(int a = 0; a < len; a++)
 			{
-				audio_sample_buffer[i][audio_sample_buffer_end + a] = 
+				audio_sample_buffer[i][audio_sample_buffer_end + a] =
 					(buffer[i][a] * 32767);
 			}
 			if(i == (asset->channels - 1))
@@ -467,14 +467,14 @@ int FileDV::audio_samples_copy(double **buffer, int64_t len)
 
 			for(int a = 0; a < len - copy_size; a++)
 				audio_sample_buffer[i][a] = (buffer[i][a + copy_size] * 32767);
-			
+
 			if(i == (asset->channels - 1))
 				audio_sample_buffer_end = len - copy_size;
 		}
 	}
-	
+
 	audio_sample_buffer_len += len;
-	
+
 	return 0;
 }
 
@@ -483,7 +483,7 @@ int FileDV::write_samples(double **buffer, int64_t len)
 	if(audio_samples_copy(buffer, len) != 0)
 	{
 		eprintf(_("Unable to store sample"));
-		return 1;	
+		return 1;
 	}
 	video_position_lock->lock("FileDV::write_samples");
 
@@ -497,7 +497,7 @@ TRACE("FileDV::write_samples 200")
 	video_position_lock->unlock();
 
 TRACE("FileDV::write_samples 220")
-	
+
 	for(int i = 0; i < nFrames; i++)
 	{
 		stream_lock->lock("FileDV::write_samples 10");
@@ -508,14 +508,14 @@ TRACE("FileDV::write_samples 220")
 			stream_lock->unlock();
 			return 1;
 		}
-		
+
 		if(fread(audio_buffer, output_size, 1, stream) != 1)
 		{
 			eprintf(_("Unable to read from audio buffer file\n"));
 			stream_lock->unlock();
 			return 1;
 		}
-		
+
 		stream_lock->unlock();
 
 
@@ -534,7 +534,7 @@ TRACE("FileDV::write_samples 210")
 
 TRACE("FileDV::write_samples 240")
 			int copy_size = audio_sample_buffer_maxsize - audio_sample_buffer_start - 1;
-			
+
 			for(int a = 0; a < asset->channels; a++)
 			{
 				memcpy(tmp_buf[a], audio_sample_buffer[a] + audio_sample_buffer_start,
@@ -564,11 +564,11 @@ TRACE("FileDV::write_samples 260")
 				asset->channels, asset->sample_rate, audio_buffer) < 0)
 			{
 				eprintf(_("ERROR: unable to encode audio frame %d\n"), audio_frames_written);
-				
+
 			}
 			delete[] tmp_buf2;
-		}		
-		
+		}
+
 TRACE("FileDV::write_samples 270")
 
 		stream_lock->lock("FileDV::write_samples 20");
@@ -578,7 +578,7 @@ TRACE("FileDV::write_samples 270")
 			stream_lock->unlock();
 			return 1;
 		}
-		
+
 		if(fwrite(audio_buffer, output_size, 1, stream) != 1)
 		{
 			eprintf(_("Unable to write audio to audio buffer\n"));
@@ -587,7 +587,7 @@ TRACE("FileDV::write_samples 270")
 		}
 
 		stream_lock->unlock();
-		
+
 		audio_frames_written++;
 		audio_sample_buffer_len -= samples;
 		audio_sample_buffer_start += samples;
@@ -634,7 +634,7 @@ int FileDV::write_frames(VFrame ***frames, int len)
 					unsigned char **row_pointers = temp_frame->get_rows();
 					for(int i = 0; i < asset->height; i++)
 						cmodel_buf[i] = data + asset->width * 2 * i;
-					
+
 					BC_CModels::transfer(cmodel_buf,
 						row_pointers,
 						cmodel_buf[0],
@@ -678,12 +678,12 @@ int FileDV::write_frames(VFrame ***frames, int len)
 			eprintf(_("Unable to write video data to video buffer"));
 		}
 		stream_lock->unlock();
-		
+
 		video_position_lock->lock();
 		video_position++;
 		video_position_lock->unlock();
 	}
-	
+
 	return 0;
 }
 
@@ -700,7 +700,7 @@ int FileDV::read_compressed_frame(VFrame *buffer)
 	video_position++;
 
 	buffer->set_compressed_size(result);
-	
+
 	return result != 0;
 }
 
@@ -729,7 +729,7 @@ int FileDV::read_samples(double *buffer, int64_t len)
 	int result = 0;
 	int frame_count = get_audio_frame(audio_position);
 	int offset = get_audio_offset(audio_position);
-	
+
 	stream_lock->lock("FileDV::read_samples");
 	if(stream == 0)
 	{
@@ -752,14 +752,14 @@ int FileDV::read_samples(double *buffer, int64_t len)
 	while(count < len)
 	{
 		stream_lock->lock();
-		
+
 		if(fseeko(stream, (off_t) frame_count * output_size, SEEK_SET) != 0)
 		{
 			stream_lock->unlock();
 			result = 1;
 			break;
 		}
-		
+
 		if(fread(audio_buffer, output_size, 1, stream) < 1)
 		{
 			stream_lock->unlock();
@@ -768,11 +768,11 @@ int FileDV::read_samples(double *buffer, int64_t len)
 		}
 
 		stream_lock->unlock();
-		
+
 		frame_count++;
-		
+
 		decoder_lock->lock("FileDV::read_samples");
-		
+
 		if(dv_decode_full_audio(decoder, audio_buffer, out_buffer) < 0)
 		{
 			eprintf(_("Error decoding audio frame %d\n"), frame_count - 1);
@@ -789,13 +789,13 @@ int FileDV::read_samples(double *buffer, int64_t len)
 
 		offset = 0;
 	}
-	
+
 	for(int i = 0; i < channels; i++)
 		delete[] out_buffer[i];
 	delete[] out_buffer;
 
 	audio_position += len;
-	
+
 	return result;
 }
 
@@ -821,7 +821,7 @@ TRACE("FileDV::read_frame 10")
 	fread(video_buffer, output_size, 1, stream);
 	stream_lock->unlock();
 	video_position++;
-	
+
 
 TRACE("FileDV::read_frame 20")
 
@@ -859,8 +859,8 @@ TRACE("FileDV::read_frame 50")
 
 			for(int i = 0; i < asset->height; i++)
 				temp_pointers[i] = data + asset->width * 2 * i;
-				
-			
+
+
 TRACE("FileDV::read_frame 69")
 
 			decoder_lock->lock("FileDV::read_frame 30");
@@ -891,13 +891,13 @@ TRACE("FileDV::read_frame 70")
 				0,
 				asset->width,
 				asset->width);
-			
+
 			//for(int i = 0; i < asset->height; i++)
 			//	delete[] temp_pointers[i];
 			delete[] temp_pointers;
 			delete[] data;
 
-			
+
 			break;
 	}
 
@@ -905,7 +905,7 @@ TRACE("FileDV::read_frame 80")
 
 UNTRACE
 
-	return 0;	
+	return 0;
 }
 
 int FileDV::colormodel_supported(int colormodel)
@@ -955,7 +955,7 @@ int FileDV::get_audio_frame(int64_t pos)
 int FileDV::get_audio_offset(int64_t pos)
 {
 	int frame = get_audio_frame(pos);
-		
+
 	// Samples needed from last frame
 	return  pos - frame * asset->sample_rate / asset->frame_rate;
 }

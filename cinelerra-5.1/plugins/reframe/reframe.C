@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -85,7 +85,7 @@ int ReFrame::get_parameters()
 	ReFrameWindow window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y());
 	window.create_objects();
 	int result = window.run_window();
-	
+
 	return result;
 }
 
@@ -96,7 +96,7 @@ int ReFrame::start_loop()
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, "%s...", plugin_title());
-		progress = start_progress(string, 
+		progress = start_progress(string,
 			(PluginClient::end - PluginClient::start));
 	}
 
@@ -118,19 +118,19 @@ int ReFrame::stop_loop()
 int ReFrame::process_loop(VFrame *buffer)
 {
 	int result = 0;
-	
-	int64_t input_offset = Units::to_int64((double)current_position * 
-		scale + 
+
+	int64_t input_offset = Units::to_int64((double)current_position *
+		scale +
 		PluginClient::start);
 
 	read_frame(buffer, input_offset);
 
 	current_position++;
-	input_offset = Units::to_int64((double)current_position * 
-		scale + 
+	input_offset = Units::to_int64((double)current_position *
+		scale +
 		PluginClient::start);
 
-	if(PluginClient::interactive) 
+	if(PluginClient::interactive)
 		result = progress->update(input_offset - PluginClient::start);
 
 	if(input_offset >= PluginClient::end) result = 1;
@@ -164,14 +164,14 @@ int ReFrameOutput::handle_event()
 
 
 ReFrameWindow::ReFrameWindow(ReFrame *plugin, int x, int y)
- : BC_Window(plugin->plugin_title(), 
- 	x, 
-	y, 
-	230, 
-	160, 
-	230, 
-	160, 
-	0, 
+ : BC_Window(plugin->plugin_title(),
+ 	x,
+	y,
+	230,
+	160,
+	230,
+	160,
+	0,
 	0,
 	1)
 {

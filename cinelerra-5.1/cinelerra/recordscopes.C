@@ -1,21 +1,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 
@@ -50,7 +50,7 @@ void RecordScopeThread::handle_done_event(int result)
 	gui_lock->lock("RecordScopeThread::handle_done_event");
 	scope_gui = 0;
 	gui_lock->unlock();
-	
+
 	record_monitor->window->lock_window("RecordScopeThread::handle_done_event");
 	record_monitor->window->scope_toggle->update(0);
 	record_monitor->window->unlock_window();
@@ -89,12 +89,12 @@ void RecordScopeThread::process(VFrame *output_frame)
 
 
 
-RecordScopeGUI::RecordScopeGUI(MWindow *mwindow, 
+RecordScopeGUI::RecordScopeGUI(MWindow *mwindow,
 	RecordMonitor *record_monitor)
- : ScopeGUI(mwindow->theme, 
- 	mwindow->session->scope_x, 
-	mwindow->session->scope_y, 
-	mwindow->session->scope_w, 
+ : ScopeGUI(mwindow->theme,
+ 	mwindow->session->scope_x,
+	mwindow->session->scope_y,
+	mwindow->session->scope_w,
 	mwindow->session->scope_h,
 	mwindow->preferences->processors)
 {
@@ -147,8 +147,8 @@ int RecordScopeGUI::resize_event(int w, int h)
 
 
 ScopeEnable::ScopeEnable(MWindow *mwindow, RecordMonitor *record_monitor, int x, int y)
- : BC_Toggle(x, 
- 	y, 
+ : BC_Toggle(x,
+ 	y,
 	mwindow->theme ? mwindow->theme->get_image_set("scope_toggle") : 0,
 	mwindow->session->record_scope)
 {

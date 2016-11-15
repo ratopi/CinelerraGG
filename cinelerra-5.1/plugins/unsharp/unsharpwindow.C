@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -36,7 +36,7 @@
 UnsharpWindow::UnsharpWindow(UnsharpMain *plugin)
  : PluginClientWindow(plugin, 285, 160, 285, 160, 0)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
 }
 
 UnsharpWindow::~UnsharpWindow()
@@ -49,20 +49,20 @@ void UnsharpWindow::create_objects()
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x, y + 10, _("Radius:")));
-	add_subwindow(radius = new UnsharpRadius(plugin, 
-		x + title->get_w() + 10, 
+	add_subwindow(radius = new UnsharpRadius(plugin,
+		x + title->get_w() + 10,
 		y));
 
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Amount:")));
-	add_subwindow(amount = new UnsharpAmount(plugin, 
-		x + title->get_w() + 10, 
+	add_subwindow(amount = new UnsharpAmount(plugin,
+		x + title->get_w() + 10,
 		y));
 
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Threshold:")));
-	add_subwindow(threshold = new UnsharpThreshold(plugin, 
-		x + title->get_w() + 10, 
+	add_subwindow(threshold = new UnsharpThreshold(plugin,
+		x + title->get_w() + 10,
 		y));
 
 	show_window();

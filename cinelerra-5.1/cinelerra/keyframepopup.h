@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef KEYFRAMEPOPUP_H
@@ -31,11 +31,11 @@
 #include "plugindialog.inc"
 #include "keyframe.inc"
 #include "keyframepopup.inc"
-#include "automation.h" 
+#include "automation.h"
 #include "floatauto.h"
 
 
- 
+
 class KeyframePopup : public BC_PopupMenu
 {
 public:
@@ -49,14 +49,14 @@ public:
 	MWindow *mwindow;
 	MWindowGUI *gui;
 // Acquired through the update command as the plugin currently being operated on
-	
+
 	Plugin *keyframe_plugin;
 	Autos *keyframe_autos;
 	Automation *keyframe_automation;
 	Auto *keyframe_auto;
 	BC_MenuItem *key_mbar;
 
-private:	
+private:
 	KeyframePopupDelete *key_delete;
 	KeyframePopupHide *key_hide;
 	KeyframePopupShow *key_show;
@@ -89,7 +89,7 @@ public:
 	KeyframePopupHide(MWindow *mwindow, KeyframePopup *popup);
 	~KeyframePopupHide();
 	int handle_event();
-	
+
 	MWindow *mwindow;
 	KeyframePopup *popup;
 };
@@ -101,7 +101,7 @@ public:
 	~KeyframePopupShow();
 	PatchGUI *get_patchgui(Track *track);
 	int handle_event();
-	
+
 	MWindow *mwindow;
 	KeyframePopup *popup;
 };
@@ -112,7 +112,7 @@ public:
 	KeyframePopupCopy(MWindow *mwindow, KeyframePopup *popup);
 	~KeyframePopupCopy();
 	int handle_event();
-	
+
 	MWindow *mwindow;
 	KeyframePopup *popup;
 };
@@ -130,11 +130,11 @@ private:
 	int curve_mode;
 	const char* get_labeltext(int);
 	void toggle_mode(FloatAuto*);
-    
+
 friend class KeyframePopup;
 };
 
- 
+
 class KeyframePopupEdit : public BC_MenuItem
 {
 public:

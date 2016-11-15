@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef SHARPEN_H
@@ -41,17 +41,17 @@ class SharpenConfig
 {
 public:
 	SharpenConfig();
-	
+
 	void copy_from(SharpenConfig &that);
 	int equivalent(SharpenConfig &that);
-	void interpolate(SharpenConfig &prev, 
-		SharpenConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(SharpenConfig &prev,
+		SharpenConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 
-	
-	
+
+
 	int horizontal;
 	int interlace;
 	int luminance;
@@ -65,7 +65,7 @@ public:
 	~SharpenMain();
 
 // required for all realtime plugins
-	PLUGIN_CLASS_MEMBERS(SharpenConfig) 
+	PLUGIN_CLASS_MEMBERS(SharpenConfig)
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	void update_gui();
@@ -97,60 +97,60 @@ public:
 
 	void filter(int components,
 		int vmax,
-		int w, 
-		unsigned char *src, 
+		int w,
+		unsigned char *src,
 		unsigned char *dst,
-		int *neg0, 
-		int *neg1, 
+		int *neg0,
+		int *neg1,
 		int *neg2);
 	void filter(int components,
 		int vmax,
-		int w, 
-		u_int16_t *src, 
+		int w,
+		u_int16_t *src,
 		u_int16_t *dst,
-		int *neg0, 
-		int *neg1, 
+		int *neg0,
+		int *neg1,
 		int *neg2);
 	void filter(int components,
 		int vmax,
-		int w, 
-		float *src, 
+		int w,
+		float *src,
 		float *dst,
-		float *neg0, 
-		float *neg1, 
+		float *neg0,
+		float *neg1,
 		float *neg2);
 
 
-	void filter_888(int w, 
-		unsigned char *src, 
+	void filter_888(int w,
+		unsigned char *src,
 		unsigned char *dst,
-		int *neg0, 
-		int *neg1, 
+		int *neg0,
+		int *neg1,
 		int *neg2);
-	void filter_8888(int w, 
-		unsigned char *src, 
+	void filter_8888(int w,
+		unsigned char *src,
 		unsigned char *dst,
-		int *neg0, 
-		int *neg1, 
+		int *neg0,
+		int *neg1,
 		int *neg2);
-	void filter_161616(int w, 
-		u_int16_t *src, 
+	void filter_161616(int w,
+		u_int16_t *src,
 		u_int16_t *dst,
-		int *neg0, 
-		int *neg1, 
+		int *neg0,
+		int *neg1,
 		int *neg2);
-	void filter_16161616(int w, 
-		u_int16_t *src, 
+	void filter_16161616(int w,
+		u_int16_t *src,
 		u_int16_t *dst,
-		int *neg0, 
-		int *neg1, 
+		int *neg0,
+		int *neg1,
 		int *neg2);
 
-	int filter(int w, 
-		unsigned char *src, 
-		unsigned char *dst, 
-		int *neg0, 
-		int *neg1, 
+	int filter(int w,
+		unsigned char *src,
+		unsigned char *dst,
+		int *neg0,
+		int *neg1,
 		int *neg2);
 
 	float calculate_pos(float value);

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "confirmquit.h"
@@ -30,10 +30,10 @@
 
 
 ConfirmQuitWindow::ConfirmQuitWindow(MWindow *mwindow)
- : BC_Window(_(PROGRAM_NAME ": Confirm Quit"), 
- 	mwindow->gui->get_abs_cursor_x(1), 
-	mwindow->gui->get_abs_cursor_y(1), 
-	375, 
+ : BC_Window(_(PROGRAM_NAME ": Confirm Quit"),
+ 	mwindow->gui->get_abs_cursor_x(1),
+	mwindow->gui->get_abs_cursor_y(1),
+	375,
 	160)
 {
 	this->mwindow = mwindow;
@@ -60,10 +60,10 @@ void ConfirmQuitWindow::create_objects(char *string)
 	unlock_window();
 }
 
-ConfirmQuitYesButton::ConfirmQuitYesButton(MWindow *mwindow, 
+ConfirmQuitYesButton::ConfirmQuitYesButton(MWindow *mwindow,
 	ConfirmQuitWindow *gui)
- : BC_GenericButton(10, 
- 	gui->get_h() - BC_GenericButton::calculate_h() - 10, 
+ : BC_GenericButton(10,
+ 	gui->get_h() - BC_GenericButton::calculate_h() - 10,
 	_("Yes"))
 {
 	set_underline(0);
@@ -81,10 +81,10 @@ int ConfirmQuitYesButton::keypress_event()
 	return 0;
 }
 
-ConfirmQuitNoButton::ConfirmQuitNoButton(MWindow *mwindow, 
+ConfirmQuitNoButton::ConfirmQuitNoButton(MWindow *mwindow,
 	ConfirmQuitWindow *gui)
- : BC_GenericButton(gui->get_w() / 2 - BC_GenericButton::calculate_w(gui, _("No")) / 2, 
- 	gui->get_h() - BC_GenericButton::calculate_h() - 10, 
+ : BC_GenericButton(gui->get_w() / 2 - BC_GenericButton::calculate_w(gui, _("No")) / 2,
+ 	gui->get_h() - BC_GenericButton::calculate_h() - 10,
 	_("No"))
 {
 	set_underline(0);
@@ -98,14 +98,14 @@ int ConfirmQuitNoButton::handle_event()
 
 int ConfirmQuitNoButton::keypress_event()
 {
-	if(get_keypress() == 'n') return handle_event(); 
+	if(get_keypress() == 'n') return handle_event();
 	return 0;
 }
 
-ConfirmQuitCancelButton::ConfirmQuitCancelButton(MWindow *mwindow, 
+ConfirmQuitCancelButton::ConfirmQuitCancelButton(MWindow *mwindow,
 	ConfirmQuitWindow *gui)
- : BC_GenericButton(gui->get_w() - BC_GenericButton::calculate_w(gui, _("Cancel")) - 10, 
- 	gui->get_h() - BC_GenericButton::calculate_h() - 10, 
+ : BC_GenericButton(gui->get_w() - BC_GenericButton::calculate_w(gui, _("Cancel")) - 10,
+ 	gui->get_h() - BC_GenericButton::calculate_h() - 10,
 	_("Cancel"))
 {
 }

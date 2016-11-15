@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -35,14 +35,14 @@
 
 
 HistogramWindow::HistogramWindow(HistogramMain *plugin)
- : PluginClientWindow(plugin, 
-	plugin->w, 
-	plugin->h, 
-	440, 
-	500, 
+ : PluginClientWindow(plugin,
+	plugin->w,
+	plugin->h,
+	440,
+	500,
 	1)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
 	active_value = 0;
 }
 
@@ -56,49 +56,49 @@ void HistogramWindow::create_objects()
 	int margin = plugin->get_theme()->widget_border;
 	int x = margin, y = margin, x1 = margin;
 
-	add_subwindow(mode_v = new HistogramMode(plugin, 
-		x, 
+	add_subwindow(mode_v = new HistogramMode(plugin,
+		x,
 		y,
 		HISTOGRAM_VALUE,
 		_("Value")));
 	x += mode_v->get_w() + margin;
-	add_subwindow(mode_r = new HistogramMode(plugin, 
-		x, 
+	add_subwindow(mode_r = new HistogramMode(plugin,
+		x,
 		y,
 		HISTOGRAM_RED,
 		_("Red")));
 	x += mode_r->get_w() + margin;
-	add_subwindow(mode_g = new HistogramMode(plugin, 
-		x, 
+	add_subwindow(mode_g = new HistogramMode(plugin,
+		x,
 		y,
 		HISTOGRAM_GREEN,
 		_("Green")));
 	x += mode_g->get_w() + margin;
-	add_subwindow(mode_b = new HistogramMode(plugin, 
-		x, 
+	add_subwindow(mode_b = new HistogramMode(plugin,
+		x,
 		y,
 		HISTOGRAM_BLUE,
 		_("Blue")));
 
 
 	x = get_w() - margin - plugin->get_theme()->get_image_set("histogram_rgb_toggle")[0]->get_w();
-	add_subwindow(parade_on = new HistogramParade(plugin, 
+	add_subwindow(parade_on = new HistogramParade(plugin,
 		this,
-		x, 
+		x,
 		y,
 		1));
-	x -= parade_on->get_w() + margin; 
-	add_subwindow(parade_off = new HistogramParade(plugin, 
+	x -= parade_on->get_w() + margin;
+	add_subwindow(parade_off = new HistogramParade(plugin,
 		this,
-		x, 
+		x,
 		y,
 		0));
 
 
 	x = x1;
 	y += parade_on->get_h() + margin;
-	add_subwindow(canvas_title1 = new BC_Title(margin, 
-		y, 
+	add_subwindow(canvas_title1 = new BC_Title(margin,
+		y,
 		"-10%"));
 	add_subwindow(canvas_title2 = new BC_Title(get_w() - get_text_width(MEDIUMFONT, "110%") - margin,
 		y,
@@ -128,19 +128,19 @@ void HistogramWindow::create_objects()
 
 	add_subwindow(canvas = new HistogramCanvas(plugin,
 		this,
-		x, 
-		y, 
-		canvas_w, 
+		x,
+		y,
+		canvas_w,
 		canvas_h));
 
 // Canvas border
-	draw_3d_border(x - 2, 
-		y - 2, 
-		canvas_w + 4, 
-		canvas_h + 4, 
+	draw_3d_border(x - 2,
+		y - 2,
+		canvas_w + 4,
+		canvas_h + 4,
 		get_bg_color(),
 		BLACK,
-		MDGREY, 
+		MDGREY,
 		get_bg_color());
 
 // Calculate output curve with no value function
@@ -151,15 +151,15 @@ void HistogramWindow::create_objects()
 
 	add_subwindow(gamma_carrot = new HistogramCarrot(plugin,
 		this,
-		canvas->get_x() + 
-			canvas->get_w() / 2 - 
+		canvas->get_x() +
+			canvas->get_w() / 2 -
 			low_input_carrot->get_w() / 2 ,
 		y));
 
 	add_subwindow(high_input_carrot = new HistogramCarrot(plugin,
 		this,
-		canvas->get_x() + 
-			canvas->get_w() - 
+		canvas->get_x() +
+			canvas->get_w() -
 			low_input_carrot->get_w() / 2,
 		y));
 	y += low_input_carrot->get_h() + margin;
@@ -194,23 +194,23 @@ void HistogramWindow::create_objects()
 
 
 
-	add_subwindow(output = new HistogramSlider(plugin, 
+	add_subwindow(output = new HistogramSlider(plugin,
 		this,
-		canvas->get_x(), 
-		y, 
+		canvas->get_x(),
+		y,
 		canvas->get_w(),
 		20,
 		0));
 	output->update();
 
 // Output border
-	draw_3d_border(output->get_x() - 2, 
-		output->get_y() - 2, 
-		output->get_w() + 4, 
-		output->get_h() + 4, 
+	draw_3d_border(output->get_x() - 2,
+		output->get_y() - 2,
+		output->get_w() + 4,
+		output->get_h() + 4,
 		get_bg_color(),
 		BLACK,
-		MDGREY, 
+		MDGREY,
 		get_bg_color());
 
 
@@ -225,8 +225,8 @@ void HistogramWindow::create_objects()
 
 	add_subwindow(high_output_carrot = new HistogramCarrot(plugin,
 		this,
-		canvas->get_x() + 
-			canvas->get_w() - 
+		canvas->get_x() +
+			canvas->get_w() -
 			low_output_carrot->get_w() / 2,
 		y));
 	y += high_output_carrot->get_h() + margin;
@@ -251,8 +251,8 @@ void HistogramWindow::create_objects()
 	add_subwindow(bar = new BC_Bar(x, y, get_w() - margin * 2));
 	y += bar->get_h() + margin;
 
-	add_subwindow(automatic = new HistogramAuto(plugin, 
-		x, 
+	add_subwindow(automatic = new HistogramAuto(plugin,
+		x,
 		y));
 
 	//int y1 = y;
@@ -266,23 +266,23 @@ void HistogramWindow::create_objects()
 	threshold->create_objects();
 
 	x = get_w() / 2;
-	add_subwindow(reset = new HistogramReset(plugin, 
-		x, 
+	add_subwindow(reset = new HistogramReset(plugin,
+		x,
 		y + threshold->get_h() + margin));
 
 	x = x1;
 	y += automatic->get_h() + margin;
-	add_subwindow(plot = new HistogramPlot(plugin, 
-		x, 
+	add_subwindow(plot = new HistogramPlot(plugin,
+		x,
 		y));
 
 	y += plot->get_h() + 5;
-	add_subwindow(split = new HistogramSplit(plugin, 
-		x, 
+	add_subwindow(split = new HistogramSplit(plugin,
+		x,
 		y));
 
 	update(1, 1, 1, 1);
-	
+
 	flash(0);
 	show_window();
 }
@@ -310,13 +310,13 @@ int HistogramWindow::resize_event(int w, int h)
 		canvas_h);
 
 // Canvas border
-	draw_3d_border(canvas->get_x() - 2, 
-		canvas->get_y() - 2, 
-		canvas_w + 4, 
-		canvas_h + 4, 
+	draw_3d_border(canvas->get_x() - 2,
+		canvas->get_y() - 2,
+		canvas_w + 4,
+		canvas_h + 4,
 		get_bg_color(),
 		BLACK,
-		MDGREY, 
+		MDGREY,
 		get_bg_color());
 
 	low_input_carrot->reposition_window(low_input_carrot->get_x(),
@@ -338,15 +338,15 @@ int HistogramWindow::resize_event(int w, int h)
 		output->get_w() + xdiff,
 		output->get_h());
 	output->update();
-	
+
 // Output border
-	draw_3d_border(output->get_x() - 2, 
-		output->get_y() - 2, 
-		output->get_w() + 4, 
-		output->get_h() + 4, 
+	draw_3d_border(output->get_x() - 2,
+		output->get_y() - 2,
+		output->get_w() + 4,
+		output->get_h() + 4,
 		get_bg_color(),
 		BLACK,
-		MDGREY, 
+		MDGREY,
 		get_bg_color());
 
 	low_output_carrot->reposition_window(low_output_carrot->get_x(),
@@ -362,7 +362,7 @@ int HistogramWindow::resize_event(int w, int h)
 	bar->reposition_window(bar->get_x(),
 		bar->get_y() + ydiff,
 		bar->get_w() + xdiff);
-	
+
 	automatic->reposition_window(automatic->get_x(),
 		automatic->get_y() + ydiff);
 	threshold_title->reposition_window(threshold_title->get_x(),
@@ -371,12 +371,12 @@ int HistogramWindow::resize_event(int w, int h)
 		threshold->get_y() + ydiff);
 	reset->reposition_window(reset->get_x(),
 		reset->get_y() + ydiff);
-	
+
 	plot->reposition_window(plot->get_x(),
 		plot->get_y() + ydiff);
 	split->reposition_window(split->get_x(),
 		split->get_y() + ydiff);
-	
+
 	update(1, 1, 1, 1);
 
 	plugin->w = w;
@@ -418,7 +418,7 @@ int HistogramWindow::keypress_event()
 			return 1;
 		}
 	}
-	
+
 	return result;
 }
 
@@ -445,7 +445,7 @@ void HistogramWindow::update(int do_canvases,
 	{
 		update_canvas();
 	}
-	
+
 	if(do_carrots)
 	{
 		low_input_carrot->update();
@@ -454,7 +454,7 @@ void HistogramWindow::update(int do_canvases,
 		low_output_carrot->update();
 		high_output_carrot->update();
 	}
-	
+
 	if(do_text)
 	{
 		low_input->update();
@@ -465,7 +465,7 @@ void HistogramWindow::update(int do_canvases,
 		threshold->update();
 	}
 
-	
+
 }
 
 
@@ -520,12 +520,12 @@ void HistogramWindow::draw_canvas_mode(int mode, int color, int y, int h)
 // Draw output line
 	for(int i = 0; i < canvas_w; i++)
 	{
-		float input = (float)i / 
-				canvas_w * 
-				FLOAT_RANGE + 
+		float input = (float)i /
+				canvas_w *
+				FLOAT_RANGE +
 				HIST_MIN_INPUT;
-		float output = plugin->calculate_level(input, 
-			mode, 
+		float output = plugin->calculate_level(input,
+			mode,
 			0);
 
 		int y2 = h - (int)(output * h);
@@ -558,14 +558,14 @@ void HistogramWindow::update_canvas()
 // Draw 0 and 100% lines.
 	canvas->set_color(RED);
 	int x = (int)(canvas_w * -HIST_MIN_INPUT / FLOAT_RANGE);
-	canvas->draw_line(x, 
-		0, 
-		x, 
+	canvas->draw_line(x,
+		0,
+		x,
 		canvas_h);
 	x = (int)(canvas_w * (1.0 - HIST_MIN_INPUT) / FLOAT_RANGE);
-	canvas->draw_line(x, 
-		0, 
-		x, 
+	canvas->draw_line(x,
+		0,
+		x,
 		canvas_h);
 	canvas->flash();
 }
@@ -573,13 +573,13 @@ void HistogramWindow::update_canvas()
 
 
 
-HistogramParade::HistogramParade(HistogramMain *plugin, 
+HistogramParade::HistogramParade(HistogramMain *plugin,
 	HistogramWindow *gui,
-	int x, 
+	int x,
 	int y,
 	int value)
- : BC_Toggle(x, 
- 	y, 
+ : BC_Toggle(x,
+ 	y,
 	value ? plugin->get_theme()->get_image_set("histogram_rgb_toggle") :
 		plugin->get_theme()->get_image_set("histogram_toggle"),
 	0)
@@ -631,7 +631,7 @@ int HistogramCanvas::button_press_event()
 	int result = 0;
 	if(is_event_win() && cursor_inside())
 	{
-		if(!plugin->dragging_point && 
+		if(!plugin->dragging_point &&
 			(!plugin->config.automatic || plugin->mode == HISTOGRAM_VALUE))
 		{
 			gui->deactivate();
@@ -666,7 +666,7 @@ int HistogramCanvas::button_release_event()
 
 
 
-HistogramReset::HistogramReset(HistogramMain *plugin, 
+HistogramReset::HistogramReset(HistogramMain *plugin,
 	int x,
 	int y)
  : BC_GenericButton(x, y, _("Reset"))
@@ -687,12 +687,12 @@ int HistogramReset::handle_event()
 
 
 
-HistogramCarrot::HistogramCarrot(HistogramMain *plugin, 
+HistogramCarrot::HistogramCarrot(HistogramMain *plugin,
 	HistogramWindow *gui,
-	int x, 
+	int x,
 	int y)
- : BC_Toggle(x, 
- 	y, 
+ : BC_Toggle(x,
+ 	y,
 	plugin->get_theme()->get_image_set("histogram_carrot"),
 	0)
 {
@@ -740,7 +740,7 @@ void HistogramCarrot::update()
 	float *value = get_value();
 
 	if(this != gui->gamma_carrot)
-	{	
+	{
 		new_x = (int)(gui->canvas->get_x() +
 			(*value - HIST_MIN_INPUT) *
 			gui->canvas->get_w() /
@@ -761,7 +761,7 @@ void HistogramCarrot::update()
 			new_x = gui->canvas->get_x() -
 				get_w() / 2 +
 				(int)(gui->canvas->get_w() *
-				(tmp - HIST_MIN_INPUT) / 
+				(tmp - HIST_MIN_INPUT) /
 				(HIST_MAX_INPUT - HIST_MIN_INPUT));
 	}
 
@@ -823,7 +823,7 @@ int HistogramCarrot::cursor_motion_event()
  			if(delta >= 0.5)
  			{
  				float mid = min + delta;
-				float tmp = (float)(new_x - mid) / 
+				float tmp = (float)(new_x - mid) /
 					delta;
  				tmp = 1.0 / pow(10, tmp);
 				CLAMP(tmp, MIN_GAMMA, MAX_GAMMA);
@@ -836,15 +836,15 @@ int HistogramCarrot::cursor_motion_event()
 			int min_x = gui->canvas->get_x() - get_w() / 2;
 			int max_x = gui->canvas->get_x() + gui->canvas->get_w() - get_w() / 2;
 			CLAMP(new_x, min_x, max_x);
-			*value = HIST_MIN_INPUT + 
-				(HIST_MAX_INPUT - HIST_MIN_INPUT) * 
-				(new_x - min_x) / 
+			*value = HIST_MIN_INPUT +
+				(HIST_MAX_INPUT - HIST_MIN_INPUT) *
+				(new_x - min_x) /
 				(max_x - min_x);
 		}
 
 		reposition_window(new_x, get_y());
 		flush();
-	
+
 		gui->update(1,
 			(this == gui->low_input_carrot || this == gui->high_input_carrot),
 			1,
@@ -863,10 +863,10 @@ int HistogramCarrot::cursor_motion_event()
 
 
 
-HistogramSlider::HistogramSlider(HistogramMain *plugin, 
+HistogramSlider::HistogramSlider(HistogramMain *plugin,
 	HistogramWindow *gui,
-	int x, 
-	int y, 
+	int x,
+	int y,
 	int w,
 	int h,
 	int is_input)
@@ -912,8 +912,8 @@ void HistogramSlider::update()
 	for(int i = 0; i < w; i++)
 	{
 		int color = (int)(i * 0xff / w);
-		set_color(((r * color / 0xff) << 16) | 
-			((g * color / 0xff) << 8) | 
+		set_color(((r * color / 0xff) << 16) |
+			((g * color / 0xff) << 8) |
 			(b * color / 0xff));
 
 		draw_line(i, 0, i, h);
@@ -931,8 +931,8 @@ void HistogramSlider::update()
 
 
 
-HistogramAuto::HistogramAuto(HistogramMain *plugin, 
-	int x, 
+HistogramAuto::HistogramAuto(HistogramMain *plugin,
+	int x,
 	int y)
  : BC_CheckBox(x, y, plugin->config.automatic, _("Automatic"))
 {
@@ -949,8 +949,8 @@ int HistogramAuto::handle_event()
 
 
 
-HistogramPlot::HistogramPlot(HistogramMain *plugin, 
-	int x, 
+HistogramPlot::HistogramPlot(HistogramMain *plugin,
+	int x,
 	int y)
  : BC_CheckBox(x, y, plugin->config.plot, _("Plot histogram"))
 {
@@ -967,8 +967,8 @@ int HistogramPlot::handle_event()
 
 
 
-HistogramSplit::HistogramSplit(HistogramMain *plugin, 
-	int x, 
+HistogramSplit::HistogramSplit(HistogramMain *plugin,
+	int x,
 	int y)
  : BC_CheckBox(x, y, plugin->config.split, _("Split output"))
 {
@@ -984,8 +984,8 @@ int HistogramSplit::handle_event()
 
 
 
-HistogramMode::HistogramMode(HistogramMain *plugin, 
-	int x, 
+HistogramMode::HistogramMode(HistogramMain *plugin,
+	int x,
 	int y,
 	int value,
 	char *text)
@@ -1023,12 +1023,12 @@ HistogramText::HistogramText(HistogramMain *plugin,
 	HistogramWindow *gui,
 	int x,
 	int y)
- : BC_TumbleTextBox(gui, 
+ : BC_TumbleTextBox(gui,
 		0.0,
 		(float)HIST_MIN_INPUT,
 		(float)HIST_MAX_INPUT,
-		x, 
-		y, 
+		x,
+		y,
 		70)
 {
 	this->plugin = plugin;
@@ -1068,7 +1068,7 @@ float* HistogramText::get_value()
 	{
 		return &plugin->config.threshold;
 	}
-	
+
 	return 0;
 }
 

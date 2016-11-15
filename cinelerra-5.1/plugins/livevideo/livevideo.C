@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "asset.h"
@@ -56,10 +56,10 @@ public:
 	LiveVideoConfig();
 	void copy_from(LiveVideoConfig &src);
 	int equivalent(LiveVideoConfig &src);
-	void interpolate(LiveVideoConfig &prev, 
-		LiveVideoConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(LiveVideoConfig &prev,
+		LiveVideoConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 	int channel;
 };
@@ -71,9 +71,9 @@ public:
 class LiveChannelList : public BC_ListBox
 {
 public:
-	LiveChannelList(LiveVideo *plugin, 
-		LiveVideoWindow *gui, 
-		int x, 
+	LiveChannelList(LiveVideo *plugin,
+		LiveVideoWindow *gui,
+		int x,
 		int y,
 		int w,
 		int h);
@@ -85,9 +85,9 @@ public:
 class LiveChannelSelect : public BC_Button
 {
 public:
-	LiveChannelSelect(LiveVideo *plugin, 
-		LiveVideoWindow *gui, 
-		int x, 
+	LiveChannelSelect(LiveVideo *plugin,
+		LiveVideoWindow *gui,
+		int x,
 		int y);
 	int handle_event();
 	LiveVideo *plugin;
@@ -179,10 +179,10 @@ int LiveVideoConfig::equivalent(LiveVideoConfig &src)
 	return (this->channel == src.channel);
 }
 
-void LiveVideoConfig::interpolate(LiveVideoConfig &prev, 
-	LiveVideoConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void LiveVideoConfig::interpolate(LiveVideoConfig &prev,
+	LiveVideoConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	this->channel = prev.channel;
@@ -193,11 +193,11 @@ void LiveVideoConfig::interpolate(LiveVideoConfig &prev,
 
 
 LiveVideoWindow::LiveVideoWindow(LiveVideo *plugin)
- : PluginClientWindow(plugin, 
-	plugin->w, 
-	plugin->h, 
-	100, 
-	100, 
+ : PluginClientWindow(plugin,
+	plugin->w,
+	plugin->h,
+	100,
+	100,
 	1)
 {
 	this->plugin = plugin;
@@ -218,23 +218,23 @@ void LiveVideoWindow::create_objects()
 	for(int i = 0; i < plugin->channeldb->size(); i++)
 	{
 		BC_ListBoxItem *current;
-		channel_list.append(current = 
+		channel_list.append(current =
 			new BC_ListBoxItem(plugin->channeldb->get(i)->title));
 		if(i == plugin->config.channel) current->set_selected(1);
 	}
 
 	add_subwindow(title = new BC_Title(x, y, _("Channels:")));
 	y += title->get_h() + 5;
-	add_subwindow(list = new LiveChannelList(plugin, 
-		this, 
-		x, 
+	add_subwindow(list = new LiveChannelList(plugin,
+		this,
+		x,
 		y,
 		get_w() - x - 10,
 		get_h() - y - BC_OKButton::calculate_h() - 10 - 10));
 	y += list->get_h() + 10;
-	add_subwindow(select = new LiveChannelSelect(plugin, 
-		this, 
-		x, 
+	add_subwindow(select = new LiveChannelSelect(plugin,
+		this,
+		x,
 		y));
 	show_window();
 }
@@ -263,15 +263,15 @@ int LiveVideoWindow::resize_event(int w, int h)
 
 
 
-LiveChannelList::LiveChannelList(LiveVideo *plugin, 
-	LiveVideoWindow *gui, 
-	int x, 
+LiveChannelList::LiveChannelList(LiveVideo *plugin,
+	LiveVideoWindow *gui,
+	int x,
 	int y,
 	int w,
 	int h)
- : BC_ListBox(x, 
-	y, 
-	w, 
+ : BC_ListBox(x,
+	y,
+	w,
 	h,
 	LISTBOX_TEXT,                   // Display text list or icons
 	&gui->channel_list) // Each column has an ArrayList of BC_ListBoxItems.
@@ -288,11 +288,11 @@ int LiveChannelList::handle_event()
 }
 
 
-LiveChannelSelect::LiveChannelSelect(LiveVideo *plugin, 
-	LiveVideoWindow *gui, 
-	int x, 
+LiveChannelSelect::LiveChannelSelect(LiveVideo *plugin,
+	LiveVideoWindow *gui,
+	int x,
 	int y)
- :  BC_Button(x, y, 
+ :  BC_Button(x, y,
  	BC_WindowBase::get_resources()->ok_images)
 {
 	this->plugin = plugin;
@@ -351,13 +351,13 @@ LiveVideo::LiveVideo(PluginServer *server)
 	mjpeg = 0;
 	picture = 0;
 	this->server = server;
-	
+
 }
 
 
 LiveVideo::~LiveVideo()
 {
-	
+
 	if(vdevice)
 	{
 		vdevice->interrupt_crash();
@@ -379,7 +379,7 @@ int LiveVideo::process_buffer(VFrame *frame,
 	double frame_rate)
 {
 	load_configuration();
-//printf("LiveVideo::process_buffer 10 start_position=%lld buffer_size=%d size=%d\n", 
+//printf("LiveVideo::process_buffer 10 start_position=%lld buffer_size=%d size=%d\n",
 //start_position, get_buffer_size(), size);
 
 	EDLSession *session = PluginClient::get_edlsession();
@@ -388,8 +388,8 @@ int LiveVideo::process_buffer(VFrame *frame,
 		if(session)
 		{
 			vdevice = new VideoDevice(server ? server->mwindow : 0);
-			vdevice->open_input(session->vconfig_in, 
-				0, 
+			vdevice->open_input(session->vconfig_in,
+				0,
 				0,
 				1.0,
 				frame_rate);
@@ -445,7 +445,7 @@ int LiveVideo::process_buffer(VFrame *frame,
 			vdevice->set_channel(channeldb->get(config.channel));
 		}
 
-	
+
 		(void)vdevice->config_updated();
 		VFrame *input = frame;
 		if(input_cmodel != frame->get_color_model() ||
@@ -454,7 +454,7 @@ int LiveVideo::process_buffer(VFrame *frame,
 		{
 			if(!temp)
 			{
-				temp = new VFrame(0, 
+				temp = new VFrame(0,
 					-1,
 					session->vconfig_in->w,
 					session->vconfig_in->h,
@@ -481,14 +481,14 @@ int LiveVideo::process_buffer(VFrame *frame,
 					input->get_u(),
 					input->get_v(),
 					0,        /* Dimensions to capture from input frame */
-					0, 
-					w, 
+					0,
+					w,
 					h,
 					0,       /* Dimensions to project on output frame */
-					0, 
-					w, 
+					0,
+					w,
 					h,
-					input->get_color_model(), 
+					input->get_color_model(),
 					frame->get_color_model(),
 					0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
 					input->get_bytes_per_line(),       /* For planar use the luma rowspan */
@@ -505,9 +505,9 @@ int LiveVideo::process_buffer(VFrame *frame,
 // Decompress a DV frame from the driver
 						if(!dv)
 							dv = dv_new();
-						dv_read_video(((dv_t*)dv), 
-							frame->get_rows(), 
-							input->get_data(), 
+						dv_read_video(((dv_t*)dv),
+							frame->get_rows(),
+							input->get_data(),
 							input->get_compressed_size(),
 							frame->get_color_model());
 						frame->set_opengl_state(VFrame::RAM);
@@ -515,37 +515,37 @@ int LiveVideo::process_buffer(VFrame *frame,
 
 					case VIDEO4LINUX2JPEG:
 						if(!mjpeg)
-							mjpeg = mjpeg_new(frame->get_w(), 
-								frame->get_h(), 
+							mjpeg = mjpeg_new(frame->get_w(),
+								frame->get_h(),
 								2);  // fields
-						mjpeg_decompress(mjpeg, 
-							input->get_data(), 
-							input->get_compressed_size(), 
-							input->get_field2_offset(), 
-							frame->get_rows(), 
-							frame->get_y(), 
-							frame->get_u(), 
+						mjpeg_decompress(mjpeg,
+							input->get_data(),
+							input->get_compressed_size(),
+							input->get_field2_offset(),
+							frame->get_rows(),
+							frame->get_y(),
+							frame->get_u(),
 							frame->get_v(),
 							frame->get_color_model(),
 							get_project_smp() + 1);
 						break;
-					
+
 					case CAPTURE_JPEG_WEBCAM:
 						if(!mjpeg)
-							mjpeg = mjpeg_new(frame->get_w(), 
-								frame->get_h(), 
+							mjpeg = mjpeg_new(frame->get_w(),
+								frame->get_h(),
 								1);  // fields
-// printf("LiveVideo::process_buffer %d %p %d\n", 
-// __LINE__, 
-// input->get_data(), 
+// printf("LiveVideo::process_buffer %d %p %d\n",
+// __LINE__,
+// input->get_data(),
 // input->get_compressed_size());
-						mjpeg_decompress(mjpeg, 
-							input->get_data(), 
-							input->get_compressed_size(), 
-							0, 
-							frame->get_rows(), 
-							frame->get_y(), 
-							frame->get_u(), 
+						mjpeg_decompress(mjpeg,
+							input->get_data(),
+							input->get_compressed_size(),
+							0,
+							frame->get_rows(),
+							frame->get_y(),
+							frame->get_u(),
 							frame->get_v(),
 							frame->get_color_model(),
 							get_project_smp() + 1);
@@ -632,8 +632,8 @@ void LiveVideo::update_gui()
 		{
 			thread->window->lock_window("LiveVideo::update_gui");
 			((LiveVideoWindow*)thread->window)->list->set_selected(
-				&((LiveVideoWindow*)thread->window)->channel_list, 
-				config.channel, 
+				&((LiveVideoWindow*)thread->window)->channel_list,
+				config.channel,
 				1);
 			((LiveVideoWindow*)thread->window)->list->draw_items(1);
 			thread->window->unlock_window();

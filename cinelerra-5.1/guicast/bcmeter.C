@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcbutton.h"
@@ -44,13 +44,13 @@
 #define METER_RIGHT 3
 
 
-BC_Meter::BC_Meter(int x, 
-	int y, 
-	int orientation, 
-	int pixels, 
-	int min, 
+BC_Meter::BC_Meter(int x,
+	int y,
+	int orientation,
+	int pixels,
+	int min,
 	int max,
-	int mode, 
+	int mode,
 	int use_titles,
 	int span,
 	int downmix)
@@ -110,12 +110,12 @@ int BC_Meter::initialize()
 	{
 		set_images(get_resources()->ymeter_images);
 		h = pixels;
-		if(span < 0) 
+		if(span < 0)
 		{
 			w = images[0]->get_w();
 			if(use_titles) w += get_title_w();
 		}
-		else 
+		else
 			w = span;
 	}
 	else
@@ -139,7 +139,7 @@ int BC_Meter::initialize()
 void BC_Meter::set_images(VFrame **data)
 {
 	for(int i = 0; i < TOTAL_METER_IMAGES; i++) delete images[i];
-	for(int i = 0; i < TOTAL_METER_IMAGES; i++) 
+	for(int i = 0; i < TOTAL_METER_IMAGES; i++)
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
 }
 
@@ -149,9 +149,9 @@ int BC_Meter::reposition_window(int x, int y, int span, int pixels)
 	this->span = span;
 	this->pixels = pixels;
 	if(orientation == METER_VERT)
-		BC_SubWindow::reposition_window(x, 
-			y, 
-			this->span < 0 ? w : span, 
+		BC_SubWindow::reposition_window(x,
+			y,
+			this->span < 0 ? w : span,
 			pixels);
 	else
 		BC_SubWindow::reposition_window(x, y, pixels, get_h());
@@ -161,7 +161,7 @@ int BC_Meter::reposition_window(int x, int y, int span, int pixels)
 
 //set_color(WHITE);
 //draw_box(0, 0, w, h);
-//flash();	
+//flash();
 //return 0;
 	draw_titles(0);
 	draw_face(0);
@@ -212,8 +212,8 @@ int BC_Meter::level_to_pixel(float level)
 	int result;
 	if(mode == METER_DB)
 	{
-		result = (int)(pixels * 
-			(level - min) / 
+		result = (int)(pixels *
+			(level - min) /
 			(max - min));
 		if(level <= min) result = 0;
 	}
@@ -222,7 +222,7 @@ int BC_Meter::level_to_pixel(float level)
 // Not implemented anymore
 		result = 0;
 	}
-	
+
 	return result;
 }
 
@@ -248,19 +248,19 @@ void BC_Meter::get_divisions()
 		if(orientation == METER_VERT)
 		{
 // Create tick mark
-			current_pixel = (pixels - METER_MARGIN * 2 - 2) * 
+			current_pixel = (pixels - METER_MARGIN * 2 - 2) *
 				(current - min) /
 				(max - min) + 2;
 			tick_pixels.append(current_pixel);
 
 // Create titles in selected positions
-			if(current == min || 
+			if(current == min ||
 				current == max ||
 				current == 0 ||
 				(current - min > 4 && max - current > 4 && !(current % 5)))
 			{
-				int title_pixel = (pixels - 
-					METER_MARGIN * 2) * 
+				int title_pixel = (pixels -
+					METER_MARGIN * 2) *
 					(current - min) /
 					(max - min);
 				sprintf(string, "%ld", labs(current));
@@ -325,9 +325,9 @@ void BC_Meter::draw_titles(int flush)
 // Titles
 		for(int i = 0; i < db_titles.total; i++)
 		{
-			int title_y = pixels - 
+			int title_y = pixels -
 				title_pixels.values[i];
-			if(i == 0) 
+			if(i == 0)
 				title_y -= get_text_descent(SMALLFONT_3D);
 			else
 			if(i == db_titles.total - 1)
@@ -336,7 +336,7 @@ void BC_Meter::draw_titles(int flush)
 				title_y += get_text_ascent(SMALLFONT_3D) / 2;
 
 			set_color(get_resources()->meter_font_color);
-			draw_text(0, 
+			draw_text(0,
 				title_y,
 				db_titles.values[i]);
 		}
@@ -363,7 +363,7 @@ int BC_Meter::region_pixel(int region)
 	VFrame **reference_images = get_resources()->xmeter_images;
 	int result;
 
-	if(region == METER_RIGHT) 
+	if(region == METER_RIGHT)
 		result = region * reference_images[0]->get_w() / 4;
 	else
 		result = region * reference_images[0]->get_w() / 4;
@@ -377,12 +377,12 @@ int BC_Meter::region_pixels(int region)
 	int x2;
 	int result;
 	VFrame **reference_images = get_resources()->xmeter_images;
-	
+
 	x1 = region * reference_images[0]->get_w() / 4;
 	x2 = (region + 1) * reference_images[0]->get_w() / 4;
-	if(region == METER_MID) 
+	if(region == METER_MID)
 		result = (x2 - x1) * 2;
-	else 
+	else
 		result = x2 - x1;
 	return result;
 }
@@ -402,12 +402,12 @@ void BC_Meter::draw_face(int flush)
 
 	draw_top_background(parent_window, x, 0, w, h);
 
-// printf("BC_Meter::draw_face %d span=%d this->w=%d get_title_w()=%d %d %d\n", 
-// __LINE__, 
-// span, 
+// printf("BC_Meter::draw_face %d span=%d this->w=%d get_title_w()=%d %d %d\n",
+// __LINE__,
+// span,
 // this->w,
 // get_title_w(),
-// w, 
+// w,
 // h);
 
 	while(pixel < pixels)
@@ -463,7 +463,7 @@ void BC_Meter::draw_face(int flush)
 			if(pixel < peak_pixel1 && pixel + in_span > peak_pixel1)
 				in_span = peak_pixel1 - pixel;
 			else
-			if(pixel < peak_pixel2 && pixel + in_span > peak_pixel2) 
+			if(pixel < peak_pixel2 && pixel + in_span > peak_pixel2)
 				in_span = peak_pixel2 - pixel;
 
 // Clip length to color changes
@@ -487,12 +487,12 @@ void BC_Meter::draw_face(int flush)
 //printf("BC_Meter::draw_face %d %d %d %d\n", orientation, region, images[image_number]->get_h() - in_start - in_span);
 			if(orientation == METER_HORIZ)
 			{
-				draw_pixmap(images[image_number], 
-					pixel, 
-					x, 
-					in_span + 1, 
-					get_h(), 
-					in_start, 
+				draw_pixmap(images[image_number],
+					pixel,
+					x,
+					in_span + 1,
+					get_h(),
+					in_start,
 					0);
 			}
 			else
@@ -521,7 +521,7 @@ void BC_Meter::draw_face(int flush)
 						if(x1 >= third) in_x = third;
 						if(x1 >= total_w - third)
 						{
-							in_x = images[image_number]->get_w() - 
+							in_x = images[image_number]->get_w() -
 								(total_w - x1);
 							in_w = total_w - x1;
 						}
@@ -564,8 +564,8 @@ void BC_Meter::draw_face(int flush)
 	if(over_timer)
 	{
 		if(orientation == METER_HORIZ)
-			draw_pixmap(images[METER_OVER], 
-				20, 
+			draw_pixmap(images[METER_OVER],
+				20,
 				2);
 		else
 			draw_pixmap(images[METER_OVER],
@@ -587,7 +587,7 @@ int BC_Meter::update(float new_value, int over, int dmix)
 
 	if(mode == METER_DB)
 	{
-		if(new_value == 0) 
+		if(new_value == 0)
 			level = min;
 		else
 			level = db.todb(new_value);        // db value

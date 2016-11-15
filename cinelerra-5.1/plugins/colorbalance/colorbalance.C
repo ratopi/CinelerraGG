@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "filexml.h"
@@ -51,10 +51,10 @@ ColorBalanceConfig::ColorBalanceConfig()
 
 int ColorBalanceConfig::equivalent(ColorBalanceConfig &that)
 {
-	return (cyan == that.cyan && 
-		magenta == that.magenta && 
-		yellow == that.yellow && 
-		lock_params == that.lock_params && 
+	return (cyan == that.cyan &&
+		magenta == that.magenta &&
+		yellow == that.yellow &&
+		lock_params == that.lock_params &&
     	preserve == that.preserve);
 }
 
@@ -67,10 +67,10 @@ void ColorBalanceConfig::copy_from(ColorBalanceConfig &that)
     preserve = that.preserve;
 }
 
-void ColorBalanceConfig::interpolate(ColorBalanceConfig &prev, 
-	ColorBalanceConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void ColorBalanceConfig::interpolate(ColorBalanceConfig &prev,
+	ColorBalanceConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -259,8 +259,8 @@ printf("PROCESS_F %f\n", cyan_f); \
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
-				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8, 
-					r_lookup_8, g_lookup_8, b_lookup_8, 
+				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8,
+					r_lookup_8, g_lookup_8, b_lookup_8,
 					unsigned char, 0xff, 3, 0);
 				break;
 
@@ -269,42 +269,42 @@ printf("PROCESS_F %f\n", cyan_f); \
 				break;
 
 			case BC_YUV888:
-				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8, 
-					r_lookup_8, g_lookup_8, b_lookup_8, 
+				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8,
+					r_lookup_8, g_lookup_8, b_lookup_8,
 					unsigned char, 0xff, 3, 1);
 				break;
-			
+
 			case BC_RGBA_FLOAT:
 				PROCESS_F(4);
 				break;
 
 			case BC_RGBA8888:
-				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8, 
-					r_lookup_8, g_lookup_8, b_lookup_8, 
+				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8,
+					r_lookup_8, g_lookup_8, b_lookup_8,
 					unsigned char, 0xff, 4, 0);
 				break;
 
 			case BC_YUVA8888:
-				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8, 
-					r_lookup_8, g_lookup_8, b_lookup_8, 
+				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8,
+					r_lookup_8, g_lookup_8, b_lookup_8,
 					unsigned char, 0xff, 4, 1);
 				break;
-			
+
 			case BC_YUV161616:
-				PROCESS(yuv.yuv_to_rgb_16, yuv.rgb_to_yuv_16, 
-					r_lookup_16, g_lookup_16, b_lookup_16, 
+				PROCESS(yuv.yuv_to_rgb_16, yuv.rgb_to_yuv_16,
+					r_lookup_16, g_lookup_16, b_lookup_16,
 					u_int16_t, 0xffff, 3, 1);
 				break;
 
 			case BC_YUVA16161616:
-				PROCESS(yuv.yuv_to_rgb_16, yuv.rgb_to_yuv_16, 
-					r_lookup_16, g_lookup_16, b_lookup_16, 
+				PROCESS(yuv.yuv_to_rgb_16, yuv.rgb_to_yuv_16,
+					r_lookup_16, g_lookup_16, b_lookup_16,
 					u_int16_t, 0xffff, 4, 1);
 				break;
 		}
 
-		
-		
+
+
 		output_lock.unlock();
 	}
 }
@@ -317,12 +317,12 @@ ColorBalanceMain::ColorBalanceMain(PluginServer *server)
 {
 	need_reconfigure = 1;
 	engine = 0;
-	
+
 }
 
 ColorBalanceMain::~ColorBalanceMain()
 {
-	
+
 
 
 	if(engine)
@@ -355,7 +355,7 @@ int ColorBalanceMain::reconfigure()
 
 	RECONFIGURE(r_lookup_8, g_lookup_8, b_lookup_8, 0xff);
 	RECONFIGURE(r_lookup_16, g_lookup_16, b_lookup_16, 0xffff);
-	
+
 	return 0;
 }
 
@@ -479,8 +479,8 @@ int ColorBalanceMain::process_buffer(VFrame *frame,
 	get_aggregation(&aggregate_interpolate,
 		&aggregate_gamma);
 
-	if(!EQUIV(config.cyan, 0) || 
-		!EQUIV(config.magenta, 0) || 
+	if(!EQUIV(config.cyan, 0) ||
+		!EQUIV(config.magenta, 0) ||
 		!EQUIV(config.yellow, 0) ||
 		(get_use_opengl() &&
 			(aggregate_interpolate ||
@@ -493,12 +493,12 @@ int ColorBalanceMain::process_buffer(VFrame *frame,
 			if(next_effect_is(_("Histogram"))) return 0;
 			return run_opengl();
 		}
-	
+
 		for(int i = 0; i < total_engines; i++)
 		{
-			engine[i]->start_process_frame(frame, 
-				frame, 
-				frame->get_h() * i / total_engines, 
+			engine[i]->start_process_frame(frame,
+				frame,
+				frame->get_h() * i / total_engines,
 				frame->get_h() * (i + 1) / total_engines);
 		}
 
@@ -620,19 +620,19 @@ int ColorBalanceMain::handle_opengl()
 	if(aggregate_gamma)
 		GAMMA_COMPILE(shader_stack, current_shader, aggregate_interpolate)
 
-	COLORBALANCE_COMPILE(shader_stack, 
-		current_shader, 
+	COLORBALANCE_COMPILE(shader_stack,
+		current_shader,
 		aggregate_gamma || aggregate_interpolate)
 
-	shader = VFrame::make_shader(0, 
-		shader_stack[0], 
-		shader_stack[1], 
-		shader_stack[2], 
-		shader_stack[3], 
-		shader_stack[4], 
-		shader_stack[5], 
-		shader_stack[6], 
-		shader_stack[7], 
+	shader = VFrame::make_shader(0,
+		shader_stack[0],
+		shader_stack[1],
+		shader_stack[2],
+		shader_stack[3],
+		shader_stack[4],
+		shader_stack[5],
+		shader_stack[6],
+		shader_stack[7],
 		0);
 
 	if(shader > 0)

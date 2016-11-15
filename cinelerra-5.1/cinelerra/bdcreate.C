@@ -75,7 +75,7 @@ const double CreateBD_Thread::BD_KAUDIO_RATE = 224;
 CreateBD_MenuItem::CreateBD_MenuItem(MWindow *mwindow)
  : BC_MenuItem(_("BD Render..."), _("Ctrl-d"), 'd')
 {
-	set_ctrl(1); 
+	set_ctrl(1);
 	this->mwindow = mwindow;
 }
 

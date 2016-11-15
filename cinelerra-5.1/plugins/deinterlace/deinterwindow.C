@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -31,14 +31,14 @@
 
 
 DeInterlaceWindow::DeInterlaceWindow(DeInterlaceMain *client)
- : PluginClientWindow(client, 
-	200, 
-	250, 
-	200, 
-	250, 
+ : PluginClientWindow(client,
+	200,
+	250,
+	200,
+	250,
 	0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 DeInterlaceWindow::~DeInterlaceWindow()
@@ -98,18 +98,18 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 	avg_odd->update(mode == DEINTERLACE_AVG_ODD);
 
 	client->config.mode = mode;
-	
+
 	if(!recursive)
 		client->send_configure_change();
 	return 0;
 }
 
 
-DeInterlaceOption::DeInterlaceOption(DeInterlaceMain *client, 
-		DeInterlaceWindow *window, 
-		int output, 
-		int x, 
-		int y, 
+DeInterlaceOption::DeInterlaceOption(DeInterlaceMain *client,
+		DeInterlaceWindow *window,
+		int output,
+		int x,
+		int y,
 		char *text)
  : BC_Radial(x, y, client->config.mode == output, text)
 {
@@ -139,9 +139,9 @@ int DeInterlaceOption::handle_event()
 // 	client->send_configure_change();
 // 	return 1;
 // }
-// 
-// 
-// 
+//
+//
+//
 // DeInterlaceThreshold::DeInterlaceThreshold(DeInterlaceMain *client, int x, int y)
 //  : BC_IPot(x, y, client->config.threshold, 0, 100)
 // {
@@ -153,7 +153,7 @@ int DeInterlaceOption::handle_event()
 // 	client->send_configure_change();
 // 	return 1;
 // }
-// 
+//
 
 
 

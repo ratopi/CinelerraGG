@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "asset.h"
@@ -59,8 +59,8 @@
 
 
 RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
- : BC_Window(_(PROGRAM_NAME ": Recording"), 
- 	mwindow->session->rwindow_x, mwindow->session->rwindow_y, 
+ : BC_Window(_(PROGRAM_NAME ": Recording"),
+ 	mwindow->session->rwindow_x, mwindow->session->rwindow_y,
 	mwindow->session->rwindow_w, mwindow->session->rwindow_h,
 	10, 10, 1, 0, 1)
 {
@@ -148,7 +148,7 @@ void RecordGUI::create_objects()
 	int y = 10;
 	int x1 = 0;
 	BC_Title *title;
-	int pad = max(BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1), 
+	int pad = max(BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1),
 		BC_Title::calculate_h(this, "X")) + 5;
 	int button_y = 0;
 
@@ -180,10 +180,10 @@ void RecordGUI::create_objects()
 	y = 10;
 	x = x1 + 20;
 	add_subwindow(batch_path = new RecordPath(this, x, y));
-	add_subwindow(batch_browse = new BrowseButton(mwindow->theme, 
-		this, 
-		batch_path, 
-		batch_path->get_x() + batch_path->get_w(), 
+	add_subwindow(batch_browse = new BrowseButton(mwindow->theme,
+		this,
+		batch_path,
+		batch_path->get_x() + batch_path->get_w(),
 		y,
 		asset->path,
 		_(PROGRAM_NAME ": Record path"),
@@ -207,7 +207,7 @@ void RecordGUI::create_objects()
 	batch_mode->create_objects();
 	x2 = max(x2, batch_mode->get_w());
 	y += pad;
-	record_transport = new RecordTransport(mwindow, 
+	record_transport = new RecordTransport(mwindow,
 		record, this, x, y);
 	record_transport->create_objects();
 	x2 = max(x2, record_transport->get_w());
@@ -264,62 +264,62 @@ void RecordGUI::create_objects()
 	y = 10;
 	x = x3 + x2 + x1 + 40;
 
-	add_subwindow(new BC_Title(x, y, 
-		File::formattostr(mwindow->plugindb, asset->format), 
-		MEDIUMFONT, 
+	add_subwindow(new BC_Title(x, y,
+		File::formattostr(mwindow->plugindb, asset->format),
+		MEDIUMFONT,
 		mwindow->theme->recordgui_fixed_color));
 	y += pad;
 
 	if(asset->audio_data) {
-		add_subwindow(new BC_Title(x, y, 
-			File::bitstostr(asset->bits), 
-			MEDIUMFONT, 
+		add_subwindow(new BC_Title(x, y,
+			File::bitstostr(asset->bits),
+			MEDIUMFONT,
 			mwindow->theme->recordgui_fixed_color));
 
 		y += pad;
 		sprintf(string, "%d", asset->sample_rate);
-		add_subwindow(new BC_Title(x, y, 
-			string, MEDIUMFONT, 
+		add_subwindow(new BC_Title(x, y,
+			string, MEDIUMFONT,
 			mwindow->theme->recordgui_fixed_color));
 
 		y += pad;
-		add_subwindow(samples_clipped = new BC_Title(x, y, 
-			"0", MEDIUMFONT, 
+		add_subwindow(samples_clipped = new BC_Title(x, y,
+			"0", MEDIUMFONT,
 			mwindow->theme->recordgui_variable_color));
 		y += pad;
 	}
 
 	if(asset->video_data) {
-		add_subwindow(new BC_Title(x, y, 
+		add_subwindow(new BC_Title(x, y,
 			asset->format == FILE_MPEG ? _("File Capture") :
 				File::compressiontostr(asset->vcodec),
-			MEDIUMFONT, 
+			MEDIUMFONT,
 			mwindow->theme->recordgui_fixed_color));
-	
+
 		y += pad;
 		sprintf(string, "%0.2f", asset->frame_rate);
-		add_subwindow(framerate = new BC_Title(x, y, 
-			string, MEDIUMFONT, 
+		add_subwindow(framerate = new BC_Title(x, y,
+			string, MEDIUMFONT,
 			mwindow->theme->recordgui_fixed_color));
-	
+
 		y += pad;
-		add_subwindow(frames_dropped = new BC_Title(x, y, 
-			"0", MEDIUMFONT, 
+		add_subwindow(frames_dropped = new BC_Title(x, y,
+			"0", MEDIUMFONT,
 			mwindow->theme->recordgui_variable_color));
 		y += pad;
-		add_subwindow(frames_behind = new BC_Title(x, y, 
-			"0", MEDIUMFONT, 
+		add_subwindow(frames_behind = new BC_Title(x, y,
+			"0", MEDIUMFONT,
 			mwindow->theme->recordgui_variable_color));
 		y += pad;
 	}
 
-	add_subwindow(position_title = new BC_Title(x, y, 
-		"", MEDIUMFONT, 
+	add_subwindow(position_title = new BC_Title(x, y,
+		"", MEDIUMFONT,
 		mwindow->theme->recordgui_variable_color));
 
 	y += pad;
-	add_subwindow(prev_label_title = new BC_Title(x, y, 
-		_("None"), MEDIUMFONT, 
+	add_subwindow(prev_label_title = new BC_Title(x, y,
+		_("None"), MEDIUMFONT,
 		mwindow->theme->recordgui_variable_color));
 
 	y += pad + 10;
@@ -393,7 +393,7 @@ void RecordGUI::create_objects()
 	else if( monitor_audio )
 		y += monitor_audio->get_h();
 
-	int bottom_margin = max(BC_OKButton::calculate_h(), 
+	int bottom_margin = max(BC_OKButton::calculate_h(),
 		LoadMode::calculate_h(this, mwindow->theme)) + 5;
 
 
@@ -405,7 +405,7 @@ void RecordGUI::create_objects()
 
 // Controls
 	int loadmode_w = LoadMode::calculate_w(this, mwindow->theme);
-	load_mode = new LoadMode(mwindow, this, get_w() / 2 - loadmode_w / 2, y, 
+	load_mode = new LoadMode(mwindow, this, get_w() / 2 - loadmode_w / 2, y,
 		&record->load_mode, 1);
 	load_mode->create_objects();
 	y += load_mode->get_h() + 5;
@@ -465,8 +465,8 @@ int RecordGUI::translation_event()
 int RecordGUI::resize_event(int w, int h)
 {
 // Recompute batch list based on previous extents
-	int bottom_margin = mwindow->session->rwindow_h - 
-		batch_bay->get_y() - 
+	int bottom_margin = mwindow->session->rwindow_h -
+		batch_bay->get_y() -
 		batch_bay->get_h();
 	int mode_margin = mwindow->session->rwindow_h - load_mode->get_y();
 	mwindow->session->rwindow_x = get_x();
@@ -478,12 +478,12 @@ int RecordGUI::resize_event(int w, int h)
 
 	int new_h = mwindow->session->rwindow_h - bottom_margin - batch_bay->get_y();
 	if(new_h < 10) new_h = 10;
-	batch_bay->reposition_window(batch_bay->get_x(), 
+	batch_bay->reposition_window(batch_bay->get_x(),
 		batch_bay->get_y(),
 		mwindow->session->rwindow_w - 20,
 		mwindow->session->rwindow_h - bottom_margin - batch_bay->get_y());
 
-	load_mode->reposition_window(mwindow->session->rwindow_w / 2 - 
+	load_mode->reposition_window(mwindow->session->rwindow_w / 2 -
 			mwindow->theme->loadmode_w / 2,
 		mwindow->session->rwindow_h - mode_margin);
 
@@ -559,8 +559,8 @@ int RecordGUIBatches::selection_changed()
 
 
 RecordGUISave::RecordGUISave(RecordGUI *gui)
- : BC_Button(10, 
-	gui->get_h() - BC_WindowBase::get_resources()->ok_images[0]->get_h() - 10, 
+ : BC_Button(10,
+	gui->get_h() - BC_WindowBase::get_resources()->ok_images[0]->get_h() - 10,
 	BC_WindowBase::get_resources()->ok_images)
 {
 	set_tooltip(_("Save the recording and quit."));
@@ -987,7 +987,7 @@ int RecordGUIActivateBatch::handle_event()
 
 RecordGUILabel::RecordGUILabel(RecordGUI *gui, int x, int y)
  : BC_GenericButton(x, y, _("Label"))
-{ 
+{
 	this->gui = gui;
 	set_underline(0);
 }
@@ -1015,7 +1015,7 @@ int RecordGUILabel::keypress_event()
 
 RecordGUIClearLabels::RecordGUIClearLabels(RecordGUI *gui, int x, int y)
  : BC_GenericButton(x, y, _("ClrLbls"))
-{ 
+{
 	this->gui = gui;
 }
 
@@ -1052,7 +1052,7 @@ void EndRecordThread::start(int is_ok)
 {
 	this->is_ok = is_ok;
 	if( gui->record->writing_file ) {
-		if(!running())		
+		if(!running())
 			Thread::start();
 	}
 	else {
@@ -1121,8 +1121,8 @@ void RecordGUI::update_frames_behind(long value)
 	status_thread->update_frames_behind(value);
 }
 
-void RecordGUI::update_position(double value) 
-{ 
+void RecordGUI::update_position(double value)
+{
 	status_thread->update_position(value);
 }
 
@@ -1199,14 +1199,14 @@ void RecordGUI::update_labels(double new_position)
 {
 	RecordLabel *prev, *next;
 
-	for(prev = record->get_current_batch()->labels->last; 
-		prev; 
+	for(prev = record->get_current_batch()->labels->last;
+		prev;
 		prev = prev->previous) {
 		if(prev->position <= new_position) break;
 	}
 
-	for(next = record->get_current_batch()->labels->first; 
-		next; 
+	for(next = record->get_current_batch()->labels->first;
+		next;
 		next = next->next)
 	{
 		if(next->position > new_position) break;
@@ -1224,27 +1224,27 @@ void RecordGUI::update_labels(double new_position)
 }
 
 
-int RecordGUI::update_prev_label(long new_position) 
-{ 
+int RecordGUI::update_prev_label(long new_position)
+{
 	update_title(prev_label_title, new_position);
 	return 0;
 }
 
-// int RecordGUI::update_next_label(long new_position) 
-// { 
-// 	update_title(next_label_title, new_position); 
+// int RecordGUI::update_next_label(long new_position)
+// {
+// 	update_title(next_label_title, new_position);
 // }
-// 
+//
 int RecordGUI::update_title(BC_Title *title, double position)
 {
 	static char string[256];
 
 	if(position >= 0) {
-		Units::totext(string, 
-				position, 
-				mwindow->edl->session->time_format, 
-				record->default_asset->sample_rate, 
-				record->default_asset->frame_rate, 
+		Units::totext(string,
+				position,
+				mwindow->edl->session->time_format,
+				record->default_asset->sample_rate,
+				record->default_asset->frame_rate,
 				mwindow->edl->session->frames_per_foot);
 	}
 	else {
@@ -1570,14 +1570,14 @@ int RecordGUIDCOffset::keypress_event() { return 0; }
 
 RecordGUIDCOffsetText::RecordGUIDCOffsetText(char *text, int y, int number)
  : BC_TextBox(30, y+1, 67, 1, text, 0)
-{ 
-	this->number = number; 
+{
+	this->number = number;
 }
 
 RecordGUIDCOffsetText::~RecordGUIDCOffsetText()
 {
 }
-	
+
 int RecordGUIDCOffsetText::handle_event()
 {
 	return 1;
@@ -1587,7 +1587,7 @@ RecordGUIReset::RecordGUIReset(MWindow *mwindow, RecordGUI *gui, int y)
  : BC_Button(400, y, mwindow->theme->over_button)
 { this->gui = gui; }
 
-RecordGUIReset::~RecordGUIReset() 
+RecordGUIReset::~RecordGUIReset()
 {
 }
 
@@ -1602,7 +1602,7 @@ RecordGUIResetTranslation::RecordGUIResetTranslation(MWindow *mwindow, RecordGUI
 	this->gui = gui;
 }
 
-RecordGUIResetTranslation::~RecordGUIResetTranslation() 
+RecordGUIResetTranslation::~RecordGUIResetTranslation()
 {
 }
 

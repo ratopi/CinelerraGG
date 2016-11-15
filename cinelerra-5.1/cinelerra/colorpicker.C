@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -120,10 +120,10 @@ void ColorWindow::create_objects()
 
 	x += 180;  add_tool(wheel_value = new PaletteWheelValue(this, x, y));
 	wheel_value->create_objects();
-	x = x0; 
+	x = x0;
 	y += 180;  add_tool(output = new PaletteOutput(this, x, y));
 	output->create_objects();
-	
+
 	x += 240;
 	y = y0;    add_tool(new BC_Title(x, y, _("Hue"), SMALLFONT));
 	y += 15;   add_tool(hue = new PaletteHue(this, x, y));
@@ -190,7 +190,7 @@ void ColorWindow::update_display()
 	if(a < 0) a = 0;
 	if(a > 1) a = 1;
 
-	wheel->draw(wheel->oldhue, 
+	wheel->draw(wheel->oldhue,
 				wheel->oldsaturation);
 	wheel->oldhue = h;
 	wheel->oldsaturation = s;
@@ -240,7 +240,7 @@ PaletteWheel::~PaletteWheel()
 int PaletteWheel::button_press_event()
 {
 	if(get_cursor_x() >= 0 && get_cursor_x() < get_w() &&
-		get_cursor_y() >= 0 && get_cursor_y() < get_h() && 
+		get_cursor_y() >= 0 && get_cursor_y() < get_h() &&
 		is_event_win())
 	{
 		button_down = 1;
@@ -255,9 +255,9 @@ int PaletteWheel::cursor_motion_event()
 	int x1, y1, distance;
 	if(button_down && is_event_win())
 	{
-		window->h = get_angle(get_w() / 2, 
-			get_h() / 2, 
-			get_cursor_x(), 
+		window->h = get_angle(get_w() / 2,
+			get_h() / 2,
+			get_cursor_x(),
 			get_cursor_y());
 		x1 = get_w() / 2 - get_cursor_x();
 		y1 = get_h() / 2 - get_cursor_y();
@@ -353,15 +353,15 @@ void PaletteWheel::create_objects()
 	}
 //printf("PaletteWheel::create_objects 1\n");
 
-	draw_vframe(&frame, 
-		0, 
-		0, 
-		get_w(), 
-		get_h(), 
-		0, 
-		0, 
-		get_w(), 
-		get_h(), 
+	draw_vframe(&frame,
+		0,
+		0,
+		get_w(),
+		get_h(),
+		0,
+		0,
+		get_w(),
+		get_h(),
 		0);
 //printf("PaletteWheel::create_objects 1\n");
 
@@ -410,7 +410,7 @@ int PaletteWheel::draw(float hue, float saturation)
 		y = (int)(h - w * sin(torads(hue - 270)) * saturation);
 	}
 	else
-	if(hue == 0) 
+	if(hue == 0)
 	{
 		x = w;
 		y = (int)(h - h * saturation);
@@ -471,7 +471,7 @@ int PaletteWheelValue::button_press_event()
 {
 //printf("PaletteWheelValue::button_press 1 %d\n", is_event_win());
 	if(get_cursor_x() >= 0 && get_cursor_x() < get_w() &&
-		get_cursor_y() >= 0 && get_cursor_y() < get_h() && 
+		get_cursor_y() >= 0 && get_cursor_y() < get_h() &&
 		is_event_win())
 	{
 //printf("PaletteWheelValue::button_press 2\n");
@@ -514,7 +514,7 @@ int PaletteWheelValue::draw(float hue, float saturation, float value)
 	for(i = get_h() - 3; i >= 2; i--)
 	{
 		unsigned char *row = (unsigned char*)frame->get_rows()[i];
-		HSV::hsv_to_rgb(r_f, g_f, b_f, hue, saturation, 
+		HSV::hsv_to_rgb(r_f, g_f, b_f, hue, saturation,
 			1.0 - (float)(i - 2) / (get_h() - 4));
 		r = (int)(r_f * 255);
 		g = (int)(g_f * 255);
@@ -528,10 +528,10 @@ int PaletteWheelValue::draw(float hue, float saturation, float value)
 	}
 
 	draw_3d_border(0, 0, get_w(), get_h(), 1);
-	draw_vframe(frame, 2, 2, get_w() - 4, get_h() - 4, 
+	draw_vframe(frame, 2, 2, get_w() - 4, get_h() - 4,
 		2, 2, get_w() - 4, get_h() - 4, 0);
 	set_color(BLACK);
-	draw_line(2, get_h() - 3 - (int)(value * (get_h() - 5)), 
+	draw_line(2, get_h() - 3 - (int)(value * (get_h() - 5)),
 		  get_w() - 3, get_h() - 3 - (int)(value * (get_h() - 5)));
 //printf("PaletteWheelValue::draw %d %f\n", __LINE__, value);
 
@@ -562,7 +562,7 @@ int PaletteOutput::handle_event()
 int PaletteOutput::draw()
 {
 	float r_f, g_f, b_f;
-	
+
 	HSV::hsv_to_rgb(r_f, g_f, b_f, window->h, window->s, window->v);
 	set_color(((int)(r_f * 255) << 16) | ((int)(g_f * 255) << 8) | ((int)(b_f * 255)));
 	draw_box(2, 2, get_w() - 4, get_h() - 4);

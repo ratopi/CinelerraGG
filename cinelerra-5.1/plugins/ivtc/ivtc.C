@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -31,7 +31,7 @@
 
 
 #if 0
-static const char *pattern_text[] = 
+static const char *pattern_text[] =
 {
 	N_("A  B  BC  CD  D"),
 	N_("AB  BC  CD  DE  EF"),
@@ -53,7 +53,7 @@ IVTCConfig::IVTCConfig()
 IVTCMain::IVTCMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 	previous_min = 0x4000000000000000LL;
 	previous_strategy = 0;
@@ -61,7 +61,7 @@ IVTCMain::IVTCMain(PluginServer *server)
 
 IVTCMain::~IVTCMain()
 {
-	
+
 
 	if(engine)
 	{
@@ -157,7 +157,7 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	{
 		temp_frame[0] = 0;
 		temp_frame[1] = 0;
-	
+
 		engine = new IVTCEngine(this, smp + 1);
 	}
 
@@ -244,7 +244,7 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	else
 	if(config.pattern == IVTCConfig::AUTOMATIC)
 	{
-// Compare averaged rows with original rows and 
+// Compare averaged rows with original rows and
 // with previous rows.
 // Take rows which are most similar to the averaged rows.
 // Process frame.
@@ -273,7 +273,7 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 
 // First strategy.
-// Even lines from previous frame are more similar to 
+// Even lines from previous frame are more similar to
 // averaged even lines in current frame.
 // Take even lines from previous frame
 		min = even_vs_prev;
@@ -585,7 +585,7 @@ void IVTCUnit::process_package(LoadPackage *package)
 			IVTC_MACRO(uint16_t, int, 4, 1);
 			break;
 	}
-	
+
 }
 
 

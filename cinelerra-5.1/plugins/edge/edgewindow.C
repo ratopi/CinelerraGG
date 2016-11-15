@@ -1,21 +1,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2014 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -27,13 +27,13 @@
 
 EdgeWindow::EdgeWindow(Edge *plugin)
  : PluginClientWindow(plugin,
- 	320, 
-	120, 
+ 	320,
+	120,
 	320,
 	120,
 	0)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
 }
 
 EdgeWindow::~EdgeWindow()
@@ -68,11 +68,11 @@ void EdgeWindow::create_objects()
 
 
 EdgeAmount::EdgeAmount(EdgeWindow *gui,
-	int x, 
+	int x,
 	int y,
 	int w)
- : BC_ISlider(x, 
- 	y, 
+ : BC_ISlider(x,
+ 	y,
 	0,
 	w,
 	w,

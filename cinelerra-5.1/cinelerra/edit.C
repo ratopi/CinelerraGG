@@ -690,11 +690,11 @@ int Edit::shift_end_out(int edit_mode,
 
 // Effects are shifted in length extension
 		if(edit_plugins)
-			edits->shift_effects_recursive(oldposition /* startproject */, 
+			edits->shift_effects_recursive(oldposition /* startproject */,
 				cut_length,
 				edit_autos);
 		if(edit_autos)
-			edits->shift_keyframes_recursive(oldposition /* startproject */, 
+			edits->shift_keyframes_recursive(oldposition /* startproject */,
 				cut_length);
 
 		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)
@@ -798,7 +798,7 @@ int Edit::select_handle(float view_start, float zoom_units, int cursor_x, int cu
 	pixel2 = right;
 	pixel1 = pixel2 - 10;
 
-// test right edit	
+// test right edit
 	if(cursor_x >= pixel1 && cursor_x <= pixel2)
 	{
 		selection = right_unit;

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef TIMEFRONT_H
@@ -46,10 +46,10 @@ public:
 
 	int equivalent(TimeFrontConfig &that);
 	void copy_from(TimeFrontConfig &that);
-	void interpolate(TimeFrontConfig &prev, 
-		TimeFrontConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(TimeFrontConfig &prev,
+		TimeFrontConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 // Int to hex triplet conversion
 	int get_in_color();
@@ -77,7 +77,7 @@ public:
 	double out_radius;
 	int frame_range;
 	int track_usage;
-	enum 
+	enum
 	{
 		OTHERTRACK_INTENSITY,
 		OTHERTRACK_ALPHA,
@@ -90,9 +90,9 @@ public:
 class TimeFrontShape : public BC_PopupMenu
 {
 public:
-	TimeFrontShape(TimeFrontMain *plugin, 
+	TimeFrontShape(TimeFrontMain *plugin,
 		TimeFrontWindow *gui,
-		int x, 
+		int x,
 		int y);
 	void create_objects();
 	static char* to_text(int shape);
@@ -105,9 +105,9 @@ public:
 class TimeFrontTrackUsage : public BC_PopupMenu
 {
 public:
-	TimeFrontTrackUsage(TimeFrontMain *plugin, 
+	TimeFrontTrackUsage(TimeFrontMain *plugin,
 		TimeFrontWindow *gui,
-		int x, 
+		int x,
 		int y);
 	void create_objects();
 	static char* to_text(int track_usage);
@@ -121,8 +121,8 @@ public:
 class TimeFrontRate : public BC_PopupMenu
 {
 public:
-	TimeFrontRate(TimeFrontMain *plugin, 
-		int x, 
+	TimeFrontRate(TimeFrontMain *plugin,
+		int x,
 		int y);
 	void create_objects();
 	static char* to_text(int shape);
@@ -203,7 +203,7 @@ class TimeFrontWindow : public PluginClientWindow
 public:
 	TimeFrontWindow(TimeFrontMain *plugin);
 	~TimeFrontWindow();
-	
+
 	void create_objects();
 	void update_shape();
 

@@ -3,19 +3,19 @@
  * under the terms of the GNU Lesser General Public License as published
  * by the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
  */
- 
- 
+
+
 #ifndef BCCMODELS_H
 #define BCCMODELS_H
 
@@ -102,14 +102,14 @@ public:
 		unsigned char *in_u_plane,
 		unsigned char *in_v_plane,
 		int in_x,        /* Dimensions to capture from input frame */
-		int in_y, 
-		int in_w, 
+		int in_y,
+		int in_w,
 		int in_h,
 		int out_x,       /* Dimensions to project on output frame */
-		int out_y, 
-		int out_w, 
+		int out_y,
+		int out_w,
 		int out_h,
-		int in_colormodel, 
+		int in_colormodel,
 		int out_colormodel,
 		int bg_color,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
 		int in_rowspan,       /* For planar use the luma rowspan */

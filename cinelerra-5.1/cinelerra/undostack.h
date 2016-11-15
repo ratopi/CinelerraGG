@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef UNDOSTACK_H
@@ -60,7 +60,7 @@ public:
 	int get_size();
 	int is_key();
 	uint64_t get_flags();
-	
+
 
 // Get pointer to incremental data for use in an apply_difference command.
 	char* get_incremental_data();
@@ -78,7 +78,7 @@ private:
 
 // type of modification
 	uint64_t load_flags;
-	
+
 // data after the modification for redos
 	char *data;
 	int data_size;
@@ -94,7 +94,7 @@ class UndoStack : public List<UndoStackItem>
 public:
 	UndoStack();
 	~UndoStack();
-	
+
 // Create a new undo entry and put on the stack.
 // The current pointer points to the new entry.
 // delete future undos if in the middle
@@ -109,7 +109,7 @@ public:
 	UndoStackItem* pull_next();
 
 	void dump(FILE *fp=stdout);
-	
+
 	UndoStackItem* current;
 };
 

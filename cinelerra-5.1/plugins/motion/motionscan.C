@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2016 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "affine.h"
@@ -72,15 +72,15 @@ void MotionScanUnit::single_pixel(MotionScanPackage *pkg)
 	int pixel_size = BC_CModels::calculate_pixelsize(color_model);
 	int row_bytes = server->current_frame->get_bytes_per_line();
 
-// printf("MotionScanUnit::process_package %d search_x=%d search_y=%d scan_x1=%d scan_y1=%d scan_x2=%d scan_y2=%d x_steps=%d y_steps=%d\n", 
-// __LINE__, 
-// pkg->search_x, 
-// pkg->search_y, 
-// pkg->scan_x1, 
-// pkg->scan_y1, 
-// pkg->scan_x2, 
-// pkg->scan_y2, 
-// server->x_steps, 
+// printf("MotionScanUnit::process_package %d search_x=%d search_y=%d scan_x1=%d scan_y1=%d scan_x2=%d scan_y2=%d x_steps=%d y_steps=%d\n",
+// __LINE__,
+// pkg->search_x,
+// pkg->search_y,
+// pkg->scan_x1,
+// pkg->scan_y1,
+// pkg->scan_x2,
+// pkg->scan_y2,
+// server->x_steps,
 // server->y_steps);
 
 // Pointers to first pixel in each block
@@ -92,7 +92,7 @@ void MotionScanUnit::single_pixel(MotionScanPackage *pkg)
 	if(server->do_rotate)
 	{
 		current_ptr = server->rotated_current[pkg->angle_step]->get_rows()[
-			pkg->block_y1] + 
+			pkg->block_y1] +
 			pkg->block_x1 * pixel_size;
 	}
 	else
@@ -110,8 +110,8 @@ void MotionScanUnit::single_pixel(MotionScanPackage *pkg)
 		pkg->block_y2 - pkg->block_y1,
 		color_model);
 
-// printf("MotionScanUnit::process_package %d angle_step=%d diff=%d\n", 
-// __LINE__, 
+// printf("MotionScanUnit::process_package %d angle_step=%d diff=%d\n",
+// __LINE__,
 // pkg->angle_step,
 // pkg->difference1);
 // printf("MotionScanUnit::process_package %d search_x=%d search_y=%d diff=%lld\n",
@@ -203,8 +203,8 @@ MotionScan::MotionScan(int total_clients,
 	int total_packages)
  : LoadServer(
 // DEBUG
-//1, 1 
-total_clients, total_packages 
+//1, 1
+total_clients, total_packages
 )
 {
 	test_match = 1;
@@ -224,7 +224,7 @@ MotionScan::~MotionScan()
 		{
 			delete rotated_current[i];
 		}
-		
+
 		delete [] rotated_current;
 	}
 	delete rotater;
@@ -246,8 +246,8 @@ void MotionScan::init_packages()
 
 
 //printf("MotionScan::init_packages %d %d\n", __LINE__, get_total_packages());
-// printf("MotionScan::init_packages %d current_downsample=%d scan_x1=%d scan_x2=%d block_x1=%d block_x2=%d\n", 
-// __LINE__, 
+// printf("MotionScan::init_packages %d current_downsample=%d scan_x1=%d scan_x2=%d block_x1=%d block_x2=%d\n",
+// __LINE__,
 // current_downsample,
 // downsampled_scan_x1,
 // downsampled_scan_x2,
@@ -273,7 +273,7 @@ void MotionScan::init_packages()
 		pkg->dy = 0;
 		pkg->valid = 1;
 		pkg->angle_step = 0;
-		
+
 		if(!subpixel)
 		{
 			if(rotation_pass)
@@ -294,7 +294,7 @@ void MotionScan::init_packages()
 					(scan_x2 - scan_x1) / current_downsample / x_steps;
 				pkg->search_y = downsampled_scan_y1 + current_y_step *
 					(scan_y2 - scan_y1) / current_downsample / y_steps;
-				
+
 				if(do_rotate)
 				{
 					pkg->angle_step = angle_steps / 2;
@@ -317,7 +317,7 @@ void MotionScan::init_packages()
 // 			{
 // 				pkg->sub_y = 0;
 // 			}
-// 
+//
 // 			if(vertical_only)
 // 			{
 // 				pkg->sub_x = 0;
@@ -330,7 +330,7 @@ void MotionScan::init_packages()
 
 
 
-// printf("MotionScan::init_packages %d i=%d search_x=%d search_y=%d sub_x=%d sub_y=%d\n", 
+// printf("MotionScan::init_packages %d i=%d search_x=%d search_y=%d sub_x=%d sub_y=%d\n",
 // __LINE__,
 // i,
 // pkg->search_x,
@@ -434,8 +434,8 @@ void MotionScan::set_test_match(int value)
 
 
 
-void MotionScan::downsample_frame(VFrame *dst, 
-	VFrame *src, 
+void MotionScan::downsample_frame(VFrame *dst,
+	VFrame *src,
 	int downsample)
 {
 	int h = src->get_h();
@@ -504,7 +504,7 @@ void MotionScan::pixel_search(int &x_result, int &y_result, double &r_result)
 // reduce level of detail until enough steps
 	while(current_downsample > 1 &&
 		((block_x2 - block_x1) / current_downsample < MIN_DOWNSAMPLED_SIZE ||
-		(block_y2 - block_y1) / current_downsample < MIN_DOWNSAMPLED_SIZE 
+		(block_y2 - block_y1) / current_downsample < MIN_DOWNSAMPLED_SIZE
 		||
 		 (scan_x2 - scan_x1) / current_downsample < MIN_DOWNSAMPLED_SCAN ||
 		(scan_y2 - scan_y1) / current_downsample < MIN_DOWNSAMPLED_SCAN
@@ -515,7 +515,7 @@ void MotionScan::pixel_search(int &x_result, int &y_result, double &r_result)
 
 
 
-// create downsampled images.  
+// create downsampled images.
 // Need to keep entire frame to search for rotation.
 	int downsampled_prev_w = previous_frame_arg->get_w() / current_downsample;
 	int downsampled_prev_h = previous_frame_arg->get_h() / current_downsample;
@@ -538,8 +538,8 @@ void MotionScan::pixel_search(int &x_result, int &y_result, double &r_result)
 // in deg
 	angle_step = 360.0f * fabs(test_angle1 - test_angle2) / 2 / M_PI;
 
-// printf("MotionScan::pixel_search %d test_angle1=%f test_angle2=%f angle_step=%f\n", 
-// __LINE__, 
+// printf("MotionScan::pixel_search %d test_angle1=%f test_angle2=%f angle_step=%f\n",
+// __LINE__,
 // 360.0f * test_angle1 / 2 / M_PI,
 // 360.0f * test_angle2 / 2 / M_PI,
 // angle_step);
@@ -564,14 +564,14 @@ void MotionScan::pixel_search(int &x_result, int &y_result, double &r_result)
 			delete downsampled_previous;
 			downsampled_previous = new VFrame();
 			downsampled_previous->set_use_shm(0);
-			downsampled_previous->reallocate(0, 
+			downsampled_previous->reallocate(0,
 				-1,
 				0,
 				0,
 				0,
-				downsampled_prev_w + 1, 
-				downsampled_prev_h + 1, 
-				previous_frame_arg->get_color_model(), 
+				downsampled_prev_w + 1,
+				downsampled_prev_h + 1,
+				previous_frame_arg->get_color_model(),
 				-1);
 		}
 
@@ -582,23 +582,23 @@ void MotionScan::pixel_search(int &x_result, int &y_result, double &r_result)
 			delete downsampled_current;
 			downsampled_current = new VFrame();
 			downsampled_current->set_use_shm(0);
-			downsampled_current->reallocate(0, 
+			downsampled_current->reallocate(0,
 				-1,
 				0,
 				0,
 				0,
-				downsampled_current_w + 1, 
-				downsampled_current_h + 1, 
-				current_frame_arg->get_color_model(), 
+				downsampled_current_w + 1,
+				downsampled_current_h + 1,
+				current_frame_arg->get_color_model(),
 				-1);
 		}
 
 
-		downsample_frame(downsampled_previous, 
-			previous_frame_arg, 
+		downsample_frame(downsampled_previous,
+			previous_frame_arg,
 			current_downsample);
-		downsample_frame(downsampled_current, 
-			current_frame_arg, 
+		downsample_frame(downsampled_current,
+			current_frame_arg,
 			current_downsample);
 		previous_frame = downsampled_previous;
 		current_frame = downsampled_current;
@@ -612,8 +612,8 @@ void MotionScan::pixel_search(int &x_result, int &y_result, double &r_result)
 
 
 
-// printf("MotionScan::pixel_search %d x_steps=%d y_steps=%d angle_steps=%d total_steps=%d\n", 
-// __LINE__, 
+// printf("MotionScan::pixel_search %d x_steps=%d y_steps=%d angle_steps=%d total_steps=%d\n",
+// __LINE__,
 // x_steps,
 // y_steps,
 // angle_steps,
@@ -628,11 +628,11 @@ void MotionScan::pixel_search(int &x_result, int &y_result, double &r_result)
 	int block_w = block_x2 - block_x1;
 	int block_h = block_y2 - block_y1;
 
-	unsigned char *current_ptr = 
-		current_frame->get_rows()[block_y1 / current_downsample] + 
+	unsigned char *current_ptr =
+		current_frame->get_rows()[block_y1 / current_downsample] +
 		(block_x1 / current_downsample) * pixel_size;
-	unsigned char *previous_ptr = 
-		previous_frame->get_rows()[scan_y1 / current_downsample] + 
+	unsigned char *previous_ptr =
+		previous_frame->get_rows()[scan_y1 / current_downsample] +
 		(scan_x1 / current_downsample) * pixel_size;
 
 
@@ -675,7 +675,7 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 		{
 			delete rotated_current[i];
 		}
-		
+
 		delete [] rotated_current;
 		rotated_current = 0;
 		total_rotated = 0;
@@ -684,15 +684,15 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 	if(do_rotate)
 	{
 		total_rotated = angle_steps;
-		
-		
+
+
 		if(!rotated_current)
 		{
 			rotated_current = new VFrame*[total_rotated];
 			bzero(rotated_current, sizeof(VFrame*) * total_rotated);
 		}
 
-// printf("MotionScan::pixel_search %d total_rotated=%d w=%d h=%d block_w=%d block_h=%d\n", 
+// printf("MotionScan::pixel_search %d total_rotated=%d w=%d h=%d block_w=%d block_h=%d\n",
 // __LINE__,
 // total_rotated,
 // downsampled_current_w,
@@ -702,7 +702,7 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 		for(int i = 0; i < angle_steps; i++)
 		{
 
-// printf("MotionScan::pixel_search %d w=%d h=%d x=%d y=%d angle=%f\n", 
+// printf("MotionScan::pixel_search %d w=%d h=%d x=%d y=%d angle=%f\n",
 // __LINE__,
 // downsampled_current_w,
 // downsampled_current_h,
@@ -710,7 +710,7 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 // (block_y1 + block_y2) / 2 / current_downsample,
 // step_to_angle(i, r_result));
 
-// printf("MotionScan::pixel_search %d i=%d rotated_current[i]=%p\n", 
+// printf("MotionScan::pixel_search %d i=%d rotated_current[i]=%p\n",
 // __LINE__,
 // i,
 // rotated_current[i]);
@@ -718,14 +718,14 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 			{
 				rotated_current[i] = new VFrame();
 				rotated_current[i]->set_use_shm(0);
-				rotated_current[i]->reallocate(0, 
+				rotated_current[i]->reallocate(0,
 					-1,
 					0,
 					0,
 					0,
-					downsampled_current_w + 1, 
-					downsampled_current_h + 1, 
-					current_frame_arg->get_color_model(), 
+					downsampled_current_w + 1,
+					downsampled_current_h + 1,
+					current_frame_arg->get_color_model(),
 					-1);
 //printf("MotionScan::pixel_search %d\n", __LINE__);
 			}
@@ -740,9 +740,9 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 // get smallest viewport size required for the angle
 			double diag = hypot((block_x2 - block_x1) / current_downsample,
 				(block_y2 - block_y1) / current_downsample);
-			double angle1 = atan2(block_y2 - block_y1, block_x2 - block_x1) + 
+			double angle1 = atan2(block_y2 - block_y1, block_x2 - block_x1) +
 				TO_RAD(step_to_angle(i, r_result));
-			double angle2 = -atan2(block_y2 - block_y1, block_x2 - block_x1) + 
+			double angle2 = -atan2(block_y2 - block_y1, block_x2 - block_x1) +
 				TO_RAD(step_to_angle(i, r_result));
 			double max_horiz = MAX(abs(diag * cos(angle1)), abs(diag * cos(angle2)));
 			double max_vert = MAX(abs(diag * sin(angle1)), abs(diag * sin(angle2)));
@@ -757,22 +757,22 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 			CLAMP(x2, 0, downsampled_current_w - 1);
 			CLAMP(y2, 0, downsampled_current_h - 1);
 
-//printf("MotionScan::pixel_search %d %f %f %d %d\n", 
+//printf("MotionScan::pixel_search %d %f %f %d %d\n",
 //__LINE__, TO_DEG(angle1), TO_DEG(angle2), (int)max_horiz, (int)max_vert);
-			rotater->set_in_viewport(x1, 
+			rotater->set_in_viewport(x1,
 				y1,
 				x2 - x1,
 				y2 - y1);
-			rotater->set_out_viewport(x1, 
+			rotater->set_out_viewport(x1,
 				y1,
 				x2 - x1,
 				y2 - y1);
 
-// 			rotater->set_in_viewport(0, 
+// 			rotater->set_in_viewport(0,
 // 				0,
 // 				downsampled_current_w,
 // 				downsampled_current_h);
-// 			rotater->set_out_viewport(0, 
+// 			rotater->set_out_viewport(0,
 // 				0,
 // 				downsampled_current_w,
 // 				downsampled_current_h);
@@ -801,8 +801,8 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 
 
 
-// printf("MotionScan::pixel_search %d block x=%d y=%d w=%d h=%d\n", 
-// __LINE__, 
+// printf("MotionScan::pixel_search %d block x=%d y=%d w=%d h=%d\n",
+// __LINE__,
 // block_x1 / current_downsample,
 // block_y1 / current_downsample,
 // block_w / current_downsample,
@@ -820,7 +820,7 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 	total_steps = x_steps * y_steps;
 	set_package_count(total_steps);
 	process_packages();
-	
+
 
 
 
@@ -836,19 +836,19 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 		MotionScanPackage *pkg = (MotionScanPackage*)get_package(i);
 
 #ifdef STDDEV_TEST
-		double stddev = sqrt(pkg->difference1) / 
-			(block_w / current_downsample) / 
-			(block_h / current_downsample) / 
+		double stddev = sqrt(pkg->difference1) /
+			(block_w / current_downsample) /
+			(block_h / current_downsample) /
 			3;
-// printf("MotionScan::pixel_search %d current_downsample=%d search_x=%d search_y=%d diff1=%f\n", 
-// __LINE__, 
+// printf("MotionScan::pixel_search %d current_downsample=%d search_x=%d search_y=%d diff1=%f\n",
+// __LINE__,
 // current_downsample,
-// pkg->search_x, 
-// pkg->search_y, 
+// pkg->search_x,
+// pkg->search_y,
 // sqrt(pkg->difference1) / block_w / current_downsample / block_h / 3 /* / variance */);
 
-// printf("MotionScan::pixel_search %d range1=%f stddev=%f\n", 
-// __LINE__, 
+// printf("MotionScan::pixel_search %d range1=%f stddev=%f\n",
+// __LINE__,
 // range1,
 // stddev);
 
@@ -861,10 +861,10 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 			x_result = pkg->search_x * current_downsample * OVERSAMPLE;
 			y_result = pkg->search_y * current_downsample * OVERSAMPLE;
 
-// printf("MotionScan::pixel_search %d x_result=%d y_result=%d angle_step=%d diff=%lld\n", 
-// __LINE__, 
-// block_x1 * OVERSAMPLE - x_result, 
-// block_y1 * OVERSAMPLE - y_result, 
+// printf("MotionScan::pixel_search %d x_result=%d y_result=%d angle_step=%d diff=%lld\n",
+// __LINE__,
+// block_x1 * OVERSAMPLE - x_result,
+// block_y1 * OVERSAMPLE - y_result,
 // pkg->angle_step,
 // pkg->difference1);
 
@@ -879,9 +879,9 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 // reject motion vector if not similar enough
 // 	if(stddev_table[0] > 0.2)
 // 	{
-// if(debug) 
+// if(debug)
 // {
-// printf("MotionScan::pixel_search %d stddev fail min_stddev=%f\n", 
+// printf("MotionScan::pixel_search %d stddev fail min_stddev=%f\n",
 // __LINE__,
 // stddev_table[0]);
 // }
@@ -889,7 +889,7 @@ printf("MotionScan::pixel_search %d range fail range2=%f\n", __LINE__, range2);
 // 		return;
 // 	}
 
-if(debug) 
+if(debug)
 {
 	printf("MotionScan::pixel_search %d\n", __LINE__);
 	for(int i = 0; i < get_total_packages(); i++)
@@ -912,14 +912,14 @@ if(debug)
 	}
 
 
-// 	if(curve[0] < (curve[1] * 1.01) || 
-// 		curve[2] < (curve[1] * 1.01) || 
+// 	if(curve[0] < (curve[1] * 1.01) ||
+// 		curve[2] < (curve[1] * 1.01) ||
 // 		curve[0] < (curve[2] * 0.75))
 // 	if(curve[0] < curve[1])
 // 	{
-// if(debug) 
+// if(debug)
 // {
-// printf("MotionScan::pixel_search %d curve fail %f %f\n", 
+// printf("MotionScan::pixel_search %d curve fail %f %f\n",
 // __LINE__,
 // curve[0],
 // curve[1]);
@@ -928,9 +928,9 @@ if(debug)
 // 		return;
 // 	}
 
-if(debug) 
+if(debug)
 {
-printf("MotionScan::pixel_search %d curve=%f %f ranges=%f %f min_stddev=%f\n", 
+printf("MotionScan::pixel_search %d curve=%f %f ranges=%f %f min_stddev=%f\n",
 __LINE__,
 curve[0],
 curve[1],
@@ -952,33 +952,33 @@ stddev_table[0]);
 		scan_y1 = y_result / OVERSAMPLE;
 		set_package_count(total_steps);
 		process_packages();
-		
-		
-		
+
+
+
 		min_difference = -1;
 		double prev_r_result = r_result;
 		for(int i = 0; i < get_total_packages(); i++)
 		{
 			MotionScanPackage *pkg = (MotionScanPackage*)get_package(i);
 
-// printf("MotionScan::pixel_search %d search_x=%d search_y=%d angle_step=%d sub_x=%d sub_y=%d diff1=%lld diff2=%lld\n", 
-// __LINE__, 
-// pkg->search_x, 
-// pkg->search_y, 
-// pkg->search_angle_step, 
-// pkg->sub_x, 
-// pkg->sub_y, 
-// pkg->difference1, 
+// printf("MotionScan::pixel_search %d search_x=%d search_y=%d angle_step=%d sub_x=%d sub_y=%d diff1=%lld diff2=%lld\n",
+// __LINE__,
+// pkg->search_x,
+// pkg->search_y,
+// pkg->search_angle_step,
+// pkg->sub_x,
+// pkg->sub_y,
+// pkg->difference1,
 // pkg->difference2);
 			if(pkg->difference1 < min_difference || i == 0)
 			{
 				min_difference = pkg->difference1;
 				r_result = step_to_angle(i, prev_r_result);
 
-	// printf("MotionScan::pixel_search %d x_result=%d y_result=%d angle_step=%d diff=%lld\n", 
-	// __LINE__, 
-	// block_x1 * OVERSAMPLE - x_result, 
-	// block_y1 * OVERSAMPLE - y_result, 
+	// printf("MotionScan::pixel_search %d x_result=%d y_result=%d angle_step=%d diff=%lld\n",
+	// __LINE__,
+	// block_x1 * OVERSAMPLE - x_result,
+	// block_y1 * OVERSAMPLE - y_result,
 	// pkg->angle_step,
 	// pkg->difference1);
 			}
@@ -986,7 +986,7 @@ stddev_table[0]);
 	}
 
 
-// printf("MotionScan::scan_frame %d current_downsample=%d x_result=%f y_result=%f r_result=%f\n", 
+// printf("MotionScan::scan_frame %d current_downsample=%d x_result=%f y_result=%f r_result=%f\n",
 // __LINE__,
 // current_downsample,
 // (float)x_result / OVERSAMPLE,
@@ -1020,7 +1020,7 @@ void MotionScan::subpixel_search(int &x_result, int &y_result)
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		MotionScanPackage *pkg = (MotionScanPackage*)get_package(i);
-//printf("MotionScan::scan_frame %d search_x=%d search_y=%d sub_x=%d sub_y=%d diff1=%lld diff2=%lld\n", 
+//printf("MotionScan::scan_frame %d search_x=%d search_y=%d sub_x=%d sub_y=%d diff1=%lld diff2=%lld\n",
 //__LINE__, pkg->search_x, pkg->search_y, pkg->sub_x, pkg->sub_y, pkg->difference1, pkg->difference2);
 		if(pkg->difference1 < min_difference || min_difference == -1)
 		{
@@ -1034,7 +1034,7 @@ void MotionScan::subpixel_search(int &x_result, int &y_result)
 // Fill in results
 			dx_result = block_x1 * OVERSAMPLE - x_result;
 			dy_result = block_y1 * OVERSAMPLE - y_result;
-//printf("MotionScan::scan_frame %d dx_result=%d dy_result=%d diff=%lld\n", 
+//printf("MotionScan::scan_frame %d dx_result=%d dy_result=%d diff=%lld\n",
 //__LINE__, dx_result, dy_result, min_difference);
 		}
 
@@ -1047,7 +1047,7 @@ void MotionScan::subpixel_search(int &x_result, int &y_result)
 
 			dx_result = block_x1 * OVERSAMPLE - x_result;
 			dy_result = block_y1 * OVERSAMPLE - y_result;
-//printf("MotionScan::scan_frame %d dx_result=%d dy_result=%d diff=%lld\n", 
+//printf("MotionScan::scan_frame %d dx_result=%d dy_result=%d diff=%lld\n",
 //__LINE__, dx_result, dy_result, min_difference);
 		}
 	}
@@ -1114,13 +1114,13 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 	int block_w = global_block_w;
 	int block_h = global_block_h;
 
-// printf("MotionScan::scan_frame %d %d %d %d %d %d %d %d %d\n", 
-// __LINE__, 
-// global_range_w, 
-// global_range_h, 
-// global_block_w, 
-// global_block_h, 
-// scan_w, 
+// printf("MotionScan::scan_frame %d %d %d %d %d %d %d %d %d\n",
+// __LINE__,
+// global_range_w,
+// global_range_h,
+// global_block_w,
+// global_block_h,
+// scan_w,
 // scan_h,
 // block_w,
 // block_h);
@@ -1161,15 +1161,15 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 			skip = 1;
 			if(do_motion)
 			{
-				sprintf(string, "%s%06d", 
-					MOTION_FILE, 
+				sprintf(string, "%s%06d",
+					MOTION_FILE,
 					source_position);
 //printf("MotionScan::scan_frame %d %s\n", __LINE__, string);
 				FILE *input = fopen(string, "r");
 				if(input)
 				{
-					int temp = fscanf(input, 
-						"%d %d", 
+					int temp = fscanf(input,
+						"%d %d",
 						&dx_result,
 						&dy_result);
 					if( temp != 2 )
@@ -1188,9 +1188,9 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 
 			if(do_rotate)
 			{
-				sprintf(string, 
-					"%s%06d", 
-					ROTATION_FILE, 
+				sprintf(string,
+					"%s%06d",
+					ROTATION_FILE,
 					source_position);
 				FILE *input = fopen(string, "r");
 				if(input)
@@ -1259,7 +1259,7 @@ printf("MotionScan::scan_frame: data matches. skipping.\n");
 			scan_y2 = y_result + scan_h / 2;
 			scan_angle1 = r_result - rotation_range;
 			scan_angle2 = r_result + rotation_range;
-			
+
 
 
 // Zero out requested values
@@ -1275,7 +1275,7 @@ printf("MotionScan::scan_frame: data matches. skipping.\n");
 // 			}
 
 // printf("MotionScan::scan_frame %d block_x1=%d block_y1=%d block_x2=%d block_y2=%d scan_x1=%d scan_y1=%d scan_x2=%d scan_y2=%d\n",
-// __LINE__, 
+// __LINE__,
 // block_x1,
 // block_y1,
 // block_x2,
@@ -1287,8 +1287,8 @@ printf("MotionScan::scan_frame: data matches. skipping.\n");
 
 
 // Clamp the block coords before the scan so we get useful scan coords.
-			clamp_scan(w, 
-				h, 
+			clamp_scan(w,
+				h,
 				&block_x1,
 				&block_y1,
 				&block_x2,
@@ -1300,17 +1300,17 @@ printf("MotionScan::scan_frame: data matches. skipping.\n");
 				0);
 
 
-// printf("MotionScan::scan_frame %d block_x1=%d block_y1=%d block_x2=%d block_y2=%d scan_x1=%d scan_y1=%d scan_x2=%d scan_y2=%d x_result=%d y_result=%d\n", 
+// printf("MotionScan::scan_frame %d block_x1=%d block_y1=%d block_x2=%d block_y2=%d scan_x1=%d scan_y1=%d scan_x2=%d scan_y2=%d x_result=%d y_result=%d\n",
 // __LINE__,
 // block_x1,
 // block_y1,
 // block_x2,
 // block_y2,
-// scan_x1, 
-// scan_y1, 
-// scan_x2, 
-// scan_y2, 
-// x_result, 
+// scan_x1,
+// scan_y1,
+// scan_x2,
+// scan_y2,
+// x_result,
 // y_result);
 //if(y_result == 88) exit(0);
 
@@ -1329,9 +1329,9 @@ printf("MotionScan::scan_frame: data matches. skipping.\n");
 			{
 
 				subpixel_search(x_result, y_result);
-// printf("MotionScan::scan_frame %d x_result=%d y_result=%d\n", 
-// __LINE__, 
-// x_result / OVERSAMPLE, 
+// printf("MotionScan::scan_frame %d x_result=%d y_result=%d\n",
+// __LINE__,
+// x_result / OVERSAMPLE,
 // y_result / OVERSAMPLE);
 
 				break;
@@ -1341,7 +1341,7 @@ printf("MotionScan::scan_frame: data matches. skipping.\n");
 			{
 				pixel_search(x_result, y_result, r_result);
 //printf("MotionScan::scan_frame %d x_result=%d y_result=%d\n", __LINE__, x_result / OVERSAMPLE, y_result / OVERSAMPLE);
-				
+
 				if(failed)
 				{
 					dr_result = 0;
@@ -1410,10 +1410,10 @@ printf("MotionScan::scan_frame: data matches. skipping.\n");
 		dy_result *= -1;
 		dr_result *= -1;
 	}
-// printf("MotionScan::scan_frame %d dx=%f dy=%f dr=%f\n", 
-// __LINE__, 
-// (float)dx_result / OVERSAMPLE, 
-// (float)dy_result / OVERSAMPLE, 
+// printf("MotionScan::scan_frame %d dx=%f dy=%f dr=%f\n",
+// __LINE__,
+// (float)dx_result / OVERSAMPLE,
+// (float)dy_result / OVERSAMPLE,
 // dr_result);
 
 
@@ -1423,18 +1423,18 @@ printf("MotionScan::scan_frame: data matches. skipping.\n");
 	if(!skip && tracking_type == MotionScan::SAVE)
 	{
 		char string[BCTEXTLEN];
-		
-		
+
+
 		if(do_motion)
 		{
-			sprintf(string, 
-				"%s%06d", 
-				MOTION_FILE, 
+			sprintf(string,
+				"%s%06d",
+				MOTION_FILE,
 				source_position);
 			FILE *output = fopen(string, "w");
 			if(output)
 			{
-				fprintf(output, 
+				fprintf(output,
 					"%d %d\n",
 					dx_result,
 					dy_result);
@@ -1445,12 +1445,12 @@ printf("MotionScan::scan_frame: data matches. skipping.\n");
 				printf("MotionScan::scan_frame %d: save motion failed\n", __LINE__);
 			}
 		}
-		
+
 		if(do_rotate)
 		{
-			sprintf(string, 
-				"%s%06d", 
-				ROTATION_FILE, 
+			sprintf(string,
+				"%s%06d",
+				ROTATION_FILE,
 				source_position);
 			FILE *output = fopen(string, "w");
 			if(output)
@@ -1469,7 +1469,7 @@ printf("MotionScan::scan_frame: data matches. skipping.\n");
 	if(vertical_only) dx_result = 0;
 	if(horizontal_only) dy_result = 0;
 
-// printf("MotionScan::scan_frame %d dx=%d dy=%d\n", 
+// printf("MotionScan::scan_frame %d dx=%d dy=%d\n",
 // __LINE__,
 // this->dx_result,
 // this->dy_result);
@@ -1792,8 +1792,8 @@ double MotionScan::calculate_range(unsigned char *current_ptr,
 //#define CLAMP_BLOCK
 
 // this truncates the scan area but not the macroblock unless the macro is defined
-void MotionScan::clamp_scan(int w, 
-	int h, 
+void MotionScan::clamp_scan(int w,
+	int h,
 	int *block_x1,
 	int *block_y1,
 	int *block_x2,

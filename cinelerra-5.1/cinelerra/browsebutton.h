@@ -32,14 +32,14 @@ class BrowseButtonWindow;
 class BrowseButton : public BC_Button, public Thread
 {
 public:
-	BrowseButton(Theme *theme, 
-		BC_WindowBase *parent_window, 
-		BC_TextBox *textbox, 
-		int x, 
-		int y, 
-		const char *init_directory, 
-		const char *title, 
-		const char *caption, 
+	BrowseButton(Theme *theme,
+		BC_WindowBase *parent_window,
+		BC_TextBox *textbox,
+		int x,
+		int y,
+		const char *init_directory,
+		const char *title,
+		const char *caption,
 		int want_directory = 0);
 	~BrowseButton();
 

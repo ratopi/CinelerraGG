@@ -1,21 +1,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2015 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "affine.h"
@@ -49,10 +49,10 @@ void EdgeConfig::copy_from(EdgeConfig &that)
 }
 
 void EdgeConfig::interpolate(
-	EdgeConfig &prev, 
-	EdgeConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+	EdgeConfig &prev,
+	EdgeConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	copy_from(next);
@@ -117,7 +117,7 @@ void Edge::read_data(KeyFrame *keyframe)
 			{
 				config.amount = input.tag.get_property("AMOUNT", config.amount);
 				config.limits();
-			
+
 			}
 			else
 			if(input.tag.title_is("/EDGE"))
@@ -162,19 +162,19 @@ int Edge::process_buffer(VFrame *frame,
 		engine = new EdgeEngine(this,
 			PluginClient::get_project_smp() + 1,
 			PluginClient::get_project_smp() + 1);
-		
+
 		temp = new VFrame(0,
 			-1,
 			w,
 			h,
 			color_model,
 			-1);
-		
+
 	}
-	
-	read_frame(frame, 
-		0, 
-		start_position, 
+
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		0);
 	engine->process(temp, frame);
@@ -196,7 +196,7 @@ EdgeUnit::EdgeUnit(EdgeEngine *server) : LoadClient(server)
 	this->server = server;
 }
 
-EdgeUnit::~EdgeUnit() 
+EdgeUnit::~EdgeUnit()
 {
 }
 
@@ -309,7 +309,7 @@ void EdgeUnit::process_package(LoadPackage *package)
 	int w = server->src->get_w();
 	int h = server->src->get_h();
 	float kernel[9];
-	
+
 	switch(server->src->get_color_model())
 	{
 		case BC_RGB_FLOAT:
@@ -335,7 +335,7 @@ void EdgeUnit::process_package(LoadPackage *package)
 
 
 EdgeEngine::EdgeEngine(Edge *plugin,
-	int total_clients, 
+	int total_clients,
 	int total_packages)
  : LoadServer(total_clients, total_packages)
 {

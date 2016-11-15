@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2006 Pierre Dumuid
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "awindow.h"
@@ -79,7 +79,7 @@ LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
  : BC_Window(_(PROGRAM_NAME ": Label Info"),
  	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
 	mwindow->gui->get_abs_cursor_y(1) - 350 / 2,
-	400, 
+	400,
 	350,
 	400,
 	430,
@@ -95,7 +95,7 @@ LabelEditWindow::~LabelEditWindow()
 {
 }
 
-	
+
 void LabelEditWindow::create_objects()
 {
 	this->label = thread->label;
@@ -107,10 +107,10 @@ void LabelEditWindow::create_objects()
 
 	add_subwindow(title = new BC_Title(x1, y, _("Label Text:")));
 	y += title->get_h() + 5;
-	add_subwindow(textbox = new LabelEditComments(this, 
-		x1, 
-		y, 
-		get_w() - x1 * 2, 
+	add_subwindow(textbox = new LabelEditComments(this,
+		x1,
+		y,
+		get_w() - x1 * 2,
 		BC_TextBox::pixels_to_rows(this, MEDIUMFONT, get_h() - 10 - 40 - y)));
 
 

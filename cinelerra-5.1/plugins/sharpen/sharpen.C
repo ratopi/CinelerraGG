@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -62,10 +62,10 @@ int SharpenConfig::equivalent(SharpenConfig &that)
 		luminance == that.luminance;
 }
 
-void SharpenConfig::interpolate(SharpenConfig &prev, 
-	SharpenConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void SharpenConfig::interpolate(SharpenConfig &prev,
+	SharpenConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -89,13 +89,13 @@ void SharpenConfig::interpolate(SharpenConfig &prev,
 SharpenMain::SharpenMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 }
 
 SharpenMain::~SharpenMain()
 {
-	
+
 
 	if(engine)
 	{
@@ -242,7 +242,7 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 		}
 	}
 
-	if(config.sharpness > MAXSHARPNESS) 
+	if(config.sharpness > MAXSHARPNESS)
 		config.sharpness = MAXSHARPNESS;
 	else
 		if(config.sharpness < 0) config.sharpness = 0;
@@ -260,8 +260,8 @@ SharpenEngine::SharpenEngine(SharpenMain *plugin)
 	last_frame = 0;
 	for(int i = 0; i < 4; i++)
 	{
-		neg_rows[i] = new unsigned char[plugin->input->get_w() * 
-			4 * 
+		neg_rows[i] = new unsigned char[plugin->input->get_w() *
+			4 *
 			MAX(sizeof(float), sizeof(int))];
 	}
 }
@@ -291,7 +291,7 @@ int SharpenEngine::start_process_frame(VFrame *output, VFrame *input, int field)
 	if(plugin->config.horizontal) sharpness_coef /= 2;
 	if(sharpness_coef < 1) sharpness_coef = 1;
 	sharpness_coef = 800.0 / sharpness_coef;
-	
+
 	input_lock->unlock();
 	return 0;
 }
@@ -390,11 +390,11 @@ float SharpenEngine::calculate_neg(float value)
 
 void SharpenEngine::filter(int components,
 	int vmax,
-	int w, 
-	u_int16_t *src, 
+	int w,
+	u_int16_t *src,
 	u_int16_t *dst,
-	int *neg0, 
-	int *neg1, 
+	int *neg0,
+	int *neg1,
 	int *neg2)
 {
 	FILTER(components, vmax);
@@ -402,11 +402,11 @@ void SharpenEngine::filter(int components,
 
 void SharpenEngine::filter(int components,
 	int vmax,
-	int w, 
-	unsigned char *src, 
+	int w,
+	unsigned char *src,
 	unsigned char *dst,
-	int *neg0, 
-	int *neg1, 
+	int *neg0,
+	int *neg1,
 	int *neg2)
 {
 	FILTER(components, vmax);
@@ -414,11 +414,11 @@ void SharpenEngine::filter(int components,
 
 void SharpenEngine::filter(int components,
 	int vmax,
-	int w, 
-	float *src, 
+	int w,
+	float *src,
 	float *dst,
-	float *neg0, 
-	float *neg1, 
+	float *neg0,
+	float *neg1,
 	float *neg2)
 {
 	const int wordsize = sizeof(float);
@@ -433,7 +433,7 @@ void SharpenEngine::filter(int components,
 		float pixel;
 		pixel = calculate_pos(src[0]) -
 			neg0[-components] -
-			neg0[0] - 
+			neg0[0] -
 			neg0[components] -
 			neg1[-components] -
 			neg1[components] -
@@ -445,7 +445,7 @@ void SharpenEngine::filter(int components,
 
 		pixel = calculate_pos(src[1]) -
 			neg0[-components + 1] -
-			neg0[1] - 
+			neg0[1] -
 			neg0[components + 1] -
 			neg1[-components + 1] -
 			neg1[components + 1] -
@@ -457,7 +457,7 @@ void SharpenEngine::filter(int components,
 
 		pixel = calculate_pos(src[2]) -
 			neg0[-components + 2] -
-			neg0[2] - 
+			neg0[2] -
 			neg0[components + 2] -
 			neg1[-components + 2] -
 			neg1[components + 2] -
@@ -615,7 +615,7 @@ void SharpenEngine::run()
 			case BC_YUV888:
 				SHARPEN(3, unsigned char, int, 0xff);
 				break;
-			
+
 			case BC_RGBA_FLOAT:
 				SHARPEN(4, float, float, 1);
 				break;
@@ -624,12 +624,12 @@ void SharpenEngine::run()
 			case BC_YUVA8888:
 				SHARPEN(4, unsigned char, int, 0xff);
 				break;
-			
+
 			case BC_RGB161616:
 			case BC_YUV161616:
 				SHARPEN(3, u_int16_t, int, 0xffff);
 				break;
-			
+
 			case BC_RGBA16161616:
 			case BC_YUVA16161616:
 				SHARPEN(4, u_int16_t, int, 0xffff);

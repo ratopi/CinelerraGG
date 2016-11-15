@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "affine.h"
@@ -53,7 +53,7 @@ PerspectiveConfig::PerspectiveConfig()
 
 int PerspectiveConfig::equivalent(PerspectiveConfig &that)
 {
-	return 
+	return
 		EQUIV(x1, that.x1) &&
 		EQUIV(y1, that.y1) &&
 		EQUIV(x2, that.x2) &&
@@ -83,10 +83,10 @@ void PerspectiveConfig::copy_from(PerspectiveConfig &that)
 	forward = that.forward;
 }
 
-void PerspectiveConfig::interpolate(PerspectiveConfig &prev, 
-	PerspectiveConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void PerspectiveConfig::interpolate(PerspectiveConfig &prev,
+	PerspectiveConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -117,14 +117,14 @@ void PerspectiveConfig::interpolate(PerspectiveConfig &prev,
 
 PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin)
  : PluginClientWindow(plugin,
-	plugin->config.window_w, 
-	plugin->config.window_h, 
+	plugin->config.window_w,
+	plugin->config.window_h,
 	plugin->config.window_w,
 	plugin->config.window_h,
 	0)
 {
 //printf("PerspectiveWindow::PerspectiveWindow 1 %d %d\n", plugin->config.window_w, plugin->config.window_h);
-	this->plugin = plugin; 
+	this->plugin = plugin;
 }
 
 PerspectiveWindow::~PerspectiveWindow()
@@ -135,29 +135,29 @@ void PerspectiveWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(canvas = new PerspectiveCanvas(plugin, 
-		x, 
-		y, 
-		get_w() - 20, 
+	add_subwindow(canvas = new PerspectiveCanvas(plugin,
+		x,
+		y,
+		get_w() - 20,
 		get_h() - 140));
 	canvas->set_cursor(CROSS_CURSOR, 0, 0);
 	y += canvas->get_h() + 10;
 	add_subwindow(new BC_Title(x, y, _("Current X:")));
 	x += 80;
-	this->x = new PerspectiveCoord(this, 
-		plugin, 
-		x, 
-		y, 
+	this->x = new PerspectiveCoord(this,
+		plugin,
+		x,
+		y,
 		plugin->get_current_x(),
 		1);
 	this->x->create_objects();
 	x += 140;
 	add_subwindow(new BC_Title(x, y, _("Y:")));
 	x += 20;
-	this->y = new PerspectiveCoord(this, 
-		plugin, 
-		x, 
-		y, 
+	this->y = new PerspectiveCoord(this,
+		plugin,
+		x,
+		y,
 		plugin->get_current_y(),
 		0);
 	this->y->create_objects();
@@ -165,22 +165,22 @@ void PerspectiveWindow::create_objects()
 	x = 10;
 	add_subwindow(new PerspectiveReset(plugin, x, y));
 	x += 100;
-	add_subwindow(mode_perspective = new PerspectiveMode(plugin, 
-		x, 
-		y, 
+	add_subwindow(mode_perspective = new PerspectiveMode(plugin,
+		x,
+		y,
 		AffineEngine::PERSPECTIVE,
 		_("Perspective")));
 	x += 120;
-	add_subwindow(mode_sheer = new PerspectiveMode(plugin, 
-		x, 
-		y, 
+	add_subwindow(mode_sheer = new PerspectiveMode(plugin,
+		x,
+		y,
 		AffineEngine::SHEER,
 		_("Sheer")));
 	x = 110;
 	y += 30;
-	add_subwindow(mode_stretch = new PerspectiveMode(plugin, 
-		x, 
-		y, 
+	add_subwindow(mode_stretch = new PerspectiveMode(plugin,
+		x,
+		y,
 		AffineEngine::STRETCH,
 		_("Stretch")));
 	update_canvas();
@@ -188,15 +188,15 @@ void PerspectiveWindow::create_objects()
 	x = 10;
 	add_subwindow(new BC_Title(x, y, _("Perspective direction:")));
 	x += 170;
-	add_subwindow(forward = new PerspectiveDirection(plugin, 
-		x, 
-		y, 
+	add_subwindow(forward = new PerspectiveDirection(plugin,
+		x,
+		y,
 		1,
 		_("Forward")));
 	x += 100;
-	add_subwindow(reverse = new PerspectiveDirection(plugin, 
-		x, 
-		y, 
+	add_subwindow(reverse = new PerspectiveDirection(plugin,
+		x,
+		y,
 		0,
 		_("Reverse")));
 
@@ -285,13 +285,13 @@ void PerspectiveWindow::update_coord()
 	y->update(plugin->get_current_y());
 }
 
-void PerspectiveWindow::calculate_canvas_coords(int &x1, 
-	int &y1, 
-	int &x2, 
-	int &y2, 
-	int &x3, 
-	int &y3, 
-	int &x4, 
+void PerspectiveWindow::calculate_canvas_coords(int &x1,
+	int &y1,
+	int &x2,
+	int &y2,
+	int &x3,
+	int &y3,
+	int &x4,
 	int &y4)
 {
 	int w = canvas->get_w() - 1;
@@ -324,9 +324,9 @@ void PerspectiveWindow::calculate_canvas_coords(int &x1,
 
 
 
-PerspectiveCanvas::PerspectiveCanvas(PerspectiveMain *plugin, 
-	int x, 
-	int y, 
+PerspectiveCanvas::PerspectiveCanvas(PerspectiveMain *plugin,
+	int x,
+	int y,
 	int w,
 	int h)
  : BC_SubWindow(x, y, w, h, BLACK)
@@ -352,7 +352,7 @@ int PerspectiveCanvas::button_press_event()
 		float distance2 = DISTANCE(cursor_x, cursor_y, x2, y2);
 		float distance3 = DISTANCE(cursor_x, cursor_y, x3, y3);
 		float distance4 = DISTANCE(cursor_x, cursor_y, x4, y4);
-// printf("PerspectiveCanvas::button_press_event %f %d %d %d %d\n", 
+// printf("PerspectiveCanvas::button_press_event %f %d %d %d %d\n",
 // distance3,
 // cursor_x,
 // cursor_y,
@@ -489,8 +489,8 @@ int PerspectiveCanvas::cursor_motion_event()
 
 
 PerspectiveCoord::PerspectiveCoord(PerspectiveWindow *gui,
-	PerspectiveMain *plugin, 
-	int x, 
+	PerspectiveMain *plugin,
+	int x,
 	int y,
 	float value,
 	int is_x)
@@ -518,8 +518,8 @@ int PerspectiveCoord::handle_event()
 
 
 
-PerspectiveReset::PerspectiveReset(PerspectiveMain *plugin, 
-	int x, 
+PerspectiveReset::PerspectiveReset(PerspectiveMain *plugin,
+	int x,
 	int y)
  : BC_GenericButton(x, y, _("Reset"))
 {
@@ -551,8 +551,8 @@ int PerspectiveReset::handle_event()
 
 
 
-PerspectiveMode::PerspectiveMode(PerspectiveMain *plugin, 
-	int x, 
+PerspectiveMode::PerspectiveMode(PerspectiveMain *plugin,
+	int x,
 	int y,
 	int value,
 	char *text)
@@ -573,8 +573,8 @@ int PerspectiveMode::handle_event()
 
 
 
-PerspectiveDirection::PerspectiveDirection(PerspectiveMain *plugin, 
-	int x, 
+PerspectiveDirection::PerspectiveDirection(PerspectiveMain *plugin,
+	int x,
 	int y,
 	int value,
 	char *text)
@@ -605,14 +605,14 @@ int PerspectiveDirection::handle_event()
 PerspectiveMain::PerspectiveMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 	temp = 0;
 }
 
 PerspectiveMain::~PerspectiveMain()
 {
-	
+
 	if(engine) delete engine;
 	if(temp) delete temp;
 }
@@ -802,9 +802,9 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 		EQUIV(config.x3, 100) && EQUIV(config.y3, 100) &&
 		EQUIV(config.x4, 0)   && EQUIV(config.y4, 100))
 	{
-		read_frame(frame, 
-			0, 
-			start_position, 
+		read_frame(frame,
+			0,
+			start_position,
 			frame_rate,
 			get_use_opengl());
 		return 1;
@@ -812,11 +812,11 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 
 // Opengl does some funny business with stretching.
 	int use_opengl = get_use_opengl() &&
-		(config.mode == AffineEngine::PERSPECTIVE || 
+		(config.mode == AffineEngine::PERSPECTIVE ||
 		config.mode == AffineEngine::SHEER);
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		use_opengl);
 
@@ -835,7 +835,7 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 	int h = frame->get_h();
 	int color_model = frame->get_color_model();
 
-	if(temp && 
+	if(temp &&
 		config.mode == AffineEngine::STRETCH &&
 		(temp->get_w() != w * AFFINE_OVERSAMPLE ||
 			temp->get_h() != h * AFFINE_OVERSAMPLE))
@@ -873,7 +873,7 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 	{
 		if(frame->get_rows()[0] == frame->get_rows()[0])
 		{
-			if(!temp) 
+			if(!temp)
 			{
 				temp = new VFrame(0,
 					-1,
@@ -891,7 +891,7 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 
 	engine->process(output,
 		input,
-		temp, 
+		temp,
 		config.mode,
 		config.x1,
 		config.y1,
@@ -1006,7 +1006,7 @@ int PerspectiveMain::handle_opengl()
 	engine->set_opengl(1);
 	engine->process(get_output(),
 		get_output(),
-		get_output(), 
+		get_output(),
 		config.mode,
 		config.x1,
 		config.y1,

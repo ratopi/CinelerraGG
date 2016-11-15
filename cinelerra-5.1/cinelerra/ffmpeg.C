@@ -526,7 +526,7 @@ int FFAudioStream::get_samples(float *&samples, uint8_t **data, int len)
 {
 	samples = *(float **)data;
 	if( resample_context ) {
-		if( len > aud_bfr_sz ) {	
+		if( len > aud_bfr_sz ) {
 			delete [] aud_bfr;
 			aud_bfr = 0;
 		}
@@ -832,7 +832,7 @@ int FFVideoStream::encode_frame(AVPacket *pkt, AVFrame *frame, int &got_packet)
 
 AVPixelFormat FFVideoConvert::color_model_to_pix_fmt(int color_model)
 {
-	switch( color_model ) { 
+	switch( color_model ) {
 	case BC_YUV422:		return AV_PIX_FMT_YUYV422;
 	case BC_RGB888:		return AV_PIX_FMT_RGB24;
 	case BC_RGBA8888:	return AV_PIX_FMT_RGBA;
@@ -856,7 +856,7 @@ AVPixelFormat FFVideoConvert::color_model_to_pix_fmt(int color_model)
 
 int FFVideoConvert::pix_fmt_to_color_model(AVPixelFormat pix_fmt)
 {
-	switch (pix_fmt) { 
+	switch (pix_fmt) {
 	case AV_PIX_FMT_YUYV422:	return BC_YUV422;
 	case AV_PIX_FMT_RGB24:		return BC_RGB888;
 	case AV_PIX_FMT_RGBA:		return BC_RGBA8888;
@@ -1414,7 +1414,7 @@ double FFMPEG::to_secs(int64_t time, AVRational time_base)
 {
 	double base_time = time == AV_NOPTS_VALUE ? 0 :
 		av_rescale_q(time, time_base, AV_TIME_BASE_Q);
-	return base_time / AV_TIME_BASE; 
+	return base_time / AV_TIME_BASE;
 }
 
 int FFMPEG::info(char *text, int len)
@@ -1705,7 +1705,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			eprintf(_("cant create stream %s:%s\n"), codec_name, filename);
 			ret = 1;
 		}
-	} 
+	}
 	if( !ret ) {
 		AVCodecContext *ctx = st->codec;
 		switch( codec_desc->type ) {

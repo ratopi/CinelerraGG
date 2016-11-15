@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -43,9 +43,9 @@ ScaleRatioConfig::ScaleRatioConfig()
 
 int ScaleRatioConfig::equivalent(ScaleRatioConfig &that)
 {
-	return EQUIV(src_x, that.src_x) && EQUIV(src_y, that.src_y) && 
+	return EQUIV(src_x, that.src_x) && EQUIV(src_y, that.src_y) &&
 		EQUIV(src_w, that.src_w) && EQUIV(src_h, that.src_h) &&
-		EQUIV(dst_x, that.dst_x) && EQUIV(dst_y, that.dst_y) && 
+		EQUIV(dst_x, that.dst_x) && EQUIV(dst_y, that.dst_y) &&
 		EQUIV(dst_w, that.dst_w) && EQUIV(dst_h, that.dst_h);
 }
 
@@ -59,7 +59,7 @@ void ScaleRatioConfig::copy_from(ScaleRatioConfig &that)
 	dst_w = that.dst_w;  dst_h = that.dst_h;
 }
 
-void ScaleRatioConfig::interpolate(ScaleRatioConfig &prev, ScaleRatioConfig &next, 
+void ScaleRatioConfig::interpolate(ScaleRatioConfig &prev, ScaleRatioConfig &next,
 	int64_t prev_frame, int64_t next_frame, int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -85,7 +85,7 @@ ScaleRatioMain::ScaleRatioMain(PluginServer *server)
 
 ScaleRatioMain::~ScaleRatioMain()
 {
-	
+
 
 	if(temp_frame) delete temp_frame;
 	temp_frame = 0;
@@ -180,7 +180,7 @@ int ScaleRatioMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			delete temp_frame;
 			temp_frame = 0;
 		}
-		if(!temp_frame) 
+		if(!temp_frame)
 			temp_frame = new VFrame(0, -1,
 				input_ptr->get_w(), input_ptr->get_h(),
 				input->get_color_model(), -1);

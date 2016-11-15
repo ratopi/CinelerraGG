@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -58,7 +58,7 @@ DenoiseVideoConfig::DenoiseVideoConfig()
 
 int DenoiseVideoConfig::equivalent(DenoiseVideoConfig &that)
 {
-	return frames == that.frames && 
+	return frames == that.frames &&
 		EQUIV(threshold, that.threshold) &&
 		do_r == that.do_r &&
 		do_g == that.do_g &&
@@ -78,10 +78,10 @@ void DenoiseVideoConfig::copy_from(DenoiseVideoConfig &that)
 	do_a = that.do_a;
 }
 
-void DenoiseVideoConfig::interpolate(DenoiseVideoConfig &prev, 
-	DenoiseVideoConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void DenoiseVideoConfig::interpolate(DenoiseVideoConfig &prev,
+	DenoiseVideoConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -102,13 +102,13 @@ void DenoiseVideoConfig::interpolate(DenoiseVideoConfig &prev,
 
 
 DenoiseVideoFrames::DenoiseVideoFrames(DenoiseVideo *plugin, int x, int y)
- : BC_ISlider(x, 
- 	y, 
+ : BC_ISlider(x,
+ 	y,
 	0,
-	190, 
-	200, 
-	1, 
-	256, 
+	190,
+	200,
+	1,
+	256,
 	plugin->config.frames)
 {
 	this->plugin = plugin;
@@ -131,14 +131,14 @@ int DenoiseVideoFrames::handle_event()
 
 DenoiseVideoThreshold::DenoiseVideoThreshold(DenoiseVideo *plugin,
 	DenoiseVideoWindow *gui,
-	int x, 
+	int x,
 	int y)
  : BC_TumbleTextBox(gui,
  	plugin->config.threshold,
 	(float)0,
 	(float)1,
- 	x, 
- 	y, 
+ 	x,
+ 	y,
 	100)
 {
 	this->plugin = plugin;
@@ -157,10 +157,10 @@ int DenoiseVideoThreshold::handle_event()
 
 
 
-DenoiseVideoToggle::DenoiseVideoToggle(DenoiseVideo *plugin, 
-	DenoiseVideoWindow *gui, 
-	int x, 
-	int y, 
+DenoiseVideoToggle::DenoiseVideoToggle(DenoiseVideo *plugin,
+	DenoiseVideoWindow *gui,
+	int x,
+	int y,
 	int *output,
 	char *text)
  : BC_CheckBox(x, y, *output, text)
@@ -177,13 +177,13 @@ int DenoiseVideoToggle::handle_event()
 }
 
 
-DenoiseVideoCountChanged::DenoiseVideoCountChanged(DenoiseVideo *plugin, 
-	DenoiseVideoWindow *gui, 
-	int x, 
+DenoiseVideoCountChanged::DenoiseVideoCountChanged(DenoiseVideo *plugin,
+	DenoiseVideoWindow *gui,
+	int x,
 	int y)
- : BC_Radial(x, 
-	y, 
-	plugin->config.count_changed, 
+ : BC_Radial(x,
+	y,
+	plugin->config.count_changed,
 	_("Average changing pixels"))
 {
 	this->plugin = plugin;
@@ -202,13 +202,13 @@ int DenoiseVideoCountChanged::handle_event()
 
 
 
-DenoiseVideoCountSame::DenoiseVideoCountSame(DenoiseVideo *plugin, 
-	DenoiseVideoWindow *gui, 
-	int x, 
+DenoiseVideoCountSame::DenoiseVideoCountSame(DenoiseVideo *plugin,
+	DenoiseVideoWindow *gui,
+	int x,
 	int y)
- : BC_Radial(x, 
-	y, 
-	!plugin->config.count_changed, 
+ : BC_Radial(x,
+	y,
+	!plugin->config.count_changed,
 	_("Average similar pixels"))
 {
 	this->plugin = plugin;
@@ -233,11 +233,11 @@ int DenoiseVideoCountSame::handle_event()
 
 
 DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin)
- : PluginClientWindow(plugin, 
-	250, 
-	300, 
-	250, 
-	300, 
+ : PluginClientWindow(plugin,
+	250,
+	300,
+	250,
+	300,
 	0)
 {
 	this->plugin = plugin;
@@ -260,14 +260,14 @@ void DenoiseVideoWindow::create_objects()
 	y += threshold->get_h() + 5;
 	add_subwindow(bar = new BC_Bar(x, y, get_w() - x * 2));
 	y += bar->get_h() + 5;
-	add_subwindow(count_changed = new DenoiseVideoCountChanged(plugin, 
-		this, 
-		x, 
+	add_subwindow(count_changed = new DenoiseVideoCountChanged(plugin,
+		this,
+		x,
 		y));
 	y += count_changed->get_h() + 5;
-	add_subwindow(count_same = new DenoiseVideoCountSame(plugin, 
-		this, 
-		x, 
+	add_subwindow(count_same = new DenoiseVideoCountSame(plugin,
+		this,
+		x,
 		y));
 	y += count_same->get_h() + 5;
 	add_subwindow(bar = new BC_Bar(x, y, get_w() - x * 2));
@@ -300,14 +300,14 @@ void DenoiseVideoWindow::create_objects()
 DenoiseVideo::DenoiseVideo(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	accumulation = 0;
 }
 
 
 DenoiseVideo::~DenoiseVideo()
 {
-	
+
 
 	if(accumulation) delete [] accumulation;
 }
@@ -329,7 +329,7 @@ int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 	float *accumulation_ptr = accumulation;
 	float opacity = (float)1.0 / config.frames;
 	float transparency = 1 - opacity;
-	float threshold = (float)config.threshold * 
+	float threshold = (float)config.threshold *
 		BC_CModels::calculate_max(color_model);
 	int do_it[4] = { config.do_r, config.do_g, config.do_b, config.do_a };
 

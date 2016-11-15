@@ -142,7 +142,7 @@ int ChanSearchMatchCase::handle_event()
 
 
 ChanSearchText::ChanSearchText(ChanSearchGUI *gui, int x, int y, int w)
- : BC_TextBox(x, y, w, 1, "") 
+ : BC_TextBox(x, y, w, 1, "")
 {
 	this->gui = gui;
 }
@@ -346,7 +346,7 @@ ChanSearchGUI::ChanSearchGUI(ChanSearch *cswindow)
 
 ChanSearchGUI::~ChanSearchGUI()
 {
-	
+
 	ChannelEvent *item = highlighted_event;
 	if( item ) {
 		panel->lock_window("ChanSearchGUI::~ChanSearchGUI");
@@ -1061,7 +1061,7 @@ ChannelThread::ChannelThread(ChannelInfoGUI *gui)
 	this->gui = gui;
 	this->iwindow = gui->iwindow;
 	this->panel = gui->panel;
-	
+
 	fd = 0;
 	done = 0;
 }

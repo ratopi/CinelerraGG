@@ -772,15 +772,15 @@ void BatchRenderGUI::create_objects()
 	format_tools = new BatchFormat(mwindow, this, thread->get_current_asset());
 	format_tools->set_w(get_w() / 2);
 	format_tools->create_objects(x1, y1, 1, 1, 1, 1, 0, 1, 0, 0,
-			&thread->get_current_job()->strategy, 0); 
+			&thread->get_current_job()->strategy, 0);
 
 // input EDL
 	add_subwindow(edl_path_title = new BC_Title(x2, y2, _("EDL Path:")));
 	y2 += edl_path_title->get_h() + mwindow->theme->widget_border;
-	
+
 	x = x2;  y = y2;
 	add_subwindow(edl_path_text = new BatchRenderEDLPath( thread,
-		x, y, get_w()-x - 40, thread->get_current_edl())); 
+		x, y, get_w()-x - 40, thread->get_current_edl()));
 	x =  x2 + edl_path_text->get_w();
 	add_subwindow(edl_path_browse = new BrowseButton(
 		mwindow->theme, this, edl_path_text, x, y, thread->get_current_edl(),

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 
@@ -154,10 +154,10 @@ void VocoderConfig::copy_from(VocoderConfig &that)
 	CLAMP(bands, 1, MAX_BANDS);
 }
 
-void VocoderConfig::interpolate(VocoderConfig &prev, 
-		VocoderConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+void VocoderConfig::interpolate(VocoderConfig &prev,
+		VocoderConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -218,15 +218,15 @@ int VocoderLevel::handle_event()
 
 
 
-VocoderCarrier::VocoderCarrier(Vocoder *plugin, 
-	VocoderWindow *window, 
-	int x, 
+VocoderCarrier::VocoderCarrier(Vocoder *plugin,
+	VocoderWindow *window,
+	int x,
 	int y)
  : BC_TumbleTextBox(window,
- 	plugin->config.carrier_track, 
+ 	plugin->config.carrier_track,
 	0,
 	256,
-	x, 
+	x,
 	y,
 	100)
 {
@@ -242,15 +242,15 @@ int VocoderCarrier::handle_event()
 
 
 
-VocoderBands::VocoderBands(Vocoder *plugin, 
-	VocoderWindow *window, 
-	int x, 
+VocoderBands::VocoderBands(Vocoder *plugin,
+	VocoderWindow *window,
+	int x,
 	int y)
  : BC_TumbleTextBox(window,
- 	plugin->config.bands, 
+ 	plugin->config.bands,
 	1,
 	MAX_BANDS,
-	x, 
+	x,
 	y,
 	100)
 {
@@ -269,10 +269,10 @@ int VocoderBands::handle_event()
 
 
 VocoderWindow::VocoderWindow(Vocoder *plugin)
- : PluginClientWindow(plugin, 
-	320, 
-	150, 
-	320, 
+ : PluginClientWindow(plugin,
+	320,
+	150,
+	320,
 	150,
 	0)
 {
@@ -306,17 +306,17 @@ void VocoderWindow::create_objects()
 
 	x = x1;
 	add_subwindow(title = new BC_Title(x, y, _("Carrier Track:")));
-	output = new VocoderCarrier(plugin, 
-		this, 
-		x + title->get_w() + plugin->get_theme()->widget_border, 
+	output = new VocoderCarrier(plugin,
+		this,
+		x + title->get_w() + plugin->get_theme()->widget_border,
 		y);
 	output->create_objects();
 	y += output->get_h() + plugin->get_theme()->widget_border;
 
 	add_subwindow(title = new BC_Title(x, y, _("Bands:")));
-	bands = new VocoderBands(plugin, 
-		this, 
-		x + title->get_w() + plugin->get_theme()->widget_border, 
+	bands = new VocoderBands(plugin,
+		this,
+		x + title->get_w() + plugin->get_theme()->widget_border,
 		y);
 	bands->create_objects();
 	y += bands->get_h() + plugin->get_theme()->widget_border;
@@ -407,7 +407,7 @@ void Vocoder::save_data(KeyFrame *keyframe)
 void Vocoder::reconfigure()
 {
 	need_reconfigure = 0;
-	
+
 	if(current_bands != config.bands)
 	{
 		current_bands = config.bands;
@@ -444,7 +444,7 @@ void Vocoder::do_bandpasses(VocoderBand *bands, double sample)
       	bands[i].mid1 += bands[i].high1 * bands[i].c;
       	bands[i].low1 += bands[i].mid1;
 
-      	bands[i].high2 = bands[i].low1 - bands[i].f * bands[i].mid2 - 
+      	bands[i].high2 = bands[i].low1 - bands[i].f * bands[i].mid2 -
 			bands[i].low2;
       	bands[i].mid2 += bands[i].high2 * bands[i].c;
       	bands[i].low2 += bands[i].mid2;
@@ -453,8 +453,8 @@ void Vocoder::do_bandpasses(VocoderBand *bands, double sample)
 }
 
 
-int Vocoder::process_buffer(int64_t size, 
-	Samples **buffer, 
+int Vocoder::process_buffer(int64_t size,
+	Samples **buffer,
 	int64_t start_position,
 	int sample_rate)
 {
@@ -475,7 +475,7 @@ int Vocoder::process_buffer(int64_t size,
 		output_bands[i].level = 1.0;
 	}
 
-	
+
 	for(int i = 0; i < get_total_buffers(); i++)
 	{
 		read_samples(buffer[i],
@@ -494,14 +494,14 @@ int Vocoder::process_buffer(int64_t size,
 	{
 		do_bandpasses(carrier_bands, carrier_samples[i]);
 		do_bandpasses(formant_bands, formant_samples[i]);
-		
+
 		output[i] *= wetness;
 		double accum = 0;
 		for(int j = 0; j < current_bands; j++)
 		{
 			output_bands[j].oldval = output_bands[j].oldval +
-	    	  	(fabs (formant_bands[j].y) - 
-		    		output_bands[j].oldval) * 
+	    	  	(fabs (formant_bands[j].y) -
+		    		output_bands[j].oldval) *
 	    	 	output_bands[j].decay;
 			double x = carrier_bands[j].y * output_bands[j].oldval;
 			accum += x * output_bands[j].level;

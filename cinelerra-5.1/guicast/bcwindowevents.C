@@ -87,7 +87,7 @@ void BC_WindowEvents::run()
 		XNextEvent(display->display, event);
 #else
 // This came from a linuxquestions post.
-// We can get a file descriptor for the X display & use select instead of XNextEvent.  
+// We can get a file descriptor for the X display & use select instead of XNextEvent.
 // The newest X11 library requires locking the display to use XNextEvent.
 		fd_set x_fds;
 		FD_ZERO(&x_fds);

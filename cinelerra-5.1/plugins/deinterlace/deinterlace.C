@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -67,10 +67,10 @@ void DeInterlaceConfig::copy_from(DeInterlaceConfig &that)
 //	threshold = that.threshold;
 }
 
-void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev, 
-	DeInterlaceConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev,
+	DeInterlaceConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	copy_from(prev);
@@ -82,13 +82,13 @@ void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev,
 DeInterlaceMain::DeInterlaceMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 //	temp = 0;
 }
 
 DeInterlaceMain::~DeInterlaceMain()
 {
-	
+
 //	if(temp) delete temp;
 }
 
@@ -366,9 +366,9 @@ int DeInterlaceMain::process_buffer(VFrame *frame,
 	load_configuration();
 
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
 	if(get_use_opengl()) return run_opengl();
@@ -417,7 +417,7 @@ int DeInterlaceMain::process_buffer(VFrame *frame,
 int DeInterlaceMain::handle_opengl()
 {
 #ifdef HAVE_GL
-	static const char *head_frag = 
+	static const char *head_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float double_line_h;\n"
 		"uniform float line_h;\n"
@@ -426,24 +426,24 @@ int DeInterlaceMain::handle_opengl()
 		"{\n"
 		"	vec2 coord = gl_TexCoord[0].st;\n";
 
-	static const char *line_double_frag = 
+	static const char *line_double_frag =
 		"	float line1 = floor((coord.y - y_offset) / double_line_h) * double_line_h + y_offset;\n"
 		"	gl_FragColor =  texture2D(tex, vec2(coord.x, line1));\n";
 
-	static const char *line_avg_frag = 
+	static const char *line_avg_frag =
 		"	float line1 = floor((coord.y - 0.0) / double_line_h) * double_line_h + 0.0;\n"
 		"	float line2 = line1 + line_h;\n"
 		"	gl_FragColor = (texture2D(tex, vec2(coord.x, line1)) + \n"
 		"		texture2D(tex, vec2(coord.x, line2))) / 2.0;\n";
 
-	static const char *field_avg_frag = 
+	static const char *field_avg_frag =
 		"	float line1 = floor((coord.y - y_offset) / double_line_h) * double_line_h + y_offset;\n"
 		"	float line2 = line1 + double_line_h;\n"
 		"	float frac = (line2 - coord.y) / double_line_h;\n"
 		"	gl_FragColor = mix(texture2D(tex, vec2(coord.x, line2)),\n"
 		"		texture2D(tex, vec2(coord.x, line1)),frac);\n";
 
-	static const char *line_swap_frag = 
+	static const char *line_swap_frag =
 		"	float line1 = floor((coord.y - y_offset) / double_line_h) * double_line_h + y_offset;\n"
 // This is the input line for line2, not the denominator of the fraction
 		"	float line2 = line1 + line_h;\n"
@@ -451,7 +451,7 @@ int DeInterlaceMain::handle_opengl()
 		"	gl_FragColor = mix(texture2D(tex, vec2(coord.x, line2)),\n"
 		"		texture2D(tex, vec2(coord.x, line1)), frac);\n";
 
-	static const char *tail_frag = 
+	static const char *tail_frag =
 		"}\n";
 
 	get_output()->to_texture();
@@ -503,9 +503,9 @@ int DeInterlaceMain::handle_opengl()
 
 	if(config.mode != DEINTERLACE_NONE)
 	{
-		unsigned int frag = VFrame::make_shader(0, 
-			shader_stack[0], 
-			shader_stack[1], 
+		unsigned int frag = VFrame::make_shader(0,
+			shader_stack[0],
+			shader_stack[1],
 			shader_stack[2],
 			0);
 		if(frag)
@@ -527,7 +527,7 @@ int DeInterlaceMain::handle_opengl()
 	get_output()->set_opengl_state(VFrame::SCREEN);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	
+
 #endif
 	return 0;
 }
@@ -584,7 +584,7 @@ void DeInterlaceMain::read_data(KeyFrame *keyframe)
 
 void DeInterlaceMain::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		load_configuration();
 		((DeInterlaceWindow*)thread->window)->lock_window();

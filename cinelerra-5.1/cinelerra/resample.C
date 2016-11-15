@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcsignals.h"
@@ -91,9 +91,9 @@ S.D. Stearns and R.A. David, Prentice-Hall, 1992
 	if(x > l) x = l;
 
 	bkwn = 0.42 - 0.5 * cos((x * 2) * M_PI /l) + 0.08 * cos((x * 4) * M_PI /l);
-	if(fabs(x - dly) < 1e-9) 
+	if(fabs(x - dly) < 1e-9)
   		return wcn / M_PI;
-    else 
+    else
     	return (sin((wcn * (x - dly))) / (M_PI * (x - dly)) * bkwn);
 }
 
@@ -126,7 +126,7 @@ void Resample::resample_chunk(Samples *input_buffer,
 	int num_used;
 	int i, j, k;
 	double *input = input_buffer->get_data();
-//printf("Resample::resample_chunk %d in_len=" _LD " input_size=%d\n", 
+//printf("Resample::resample_chunk %d in_len=" _LD " input_size=%d\n",
 //__LINE__,
 //in_len,
 //input_size);
@@ -134,14 +134,14 @@ void Resample::resample_chunk(Samples *input_buffer,
   	intratio = (fabs(resample_ratio - floor(.5 + resample_ratio)) < .0001);
 	fcn = .90 / resample_ratio;
 	if(fcn > .90) fcn = .90;
-	filter_l = BLACKSIZE - 6;  
+	filter_l = BLACKSIZE - 6;
 /* must be odd */
-	if(0 == filter_l % 2 ) --filter_l;  
+	if(0 == filter_l % 2 ) --filter_l;
 
 /* if resample_ratio = int, filter_l should be even */
   	filter_l += (int)intratio;
 
-// Blackman filter initialization must be called whenever there is a 
+// Blackman filter initialization must be called whenever there is a
 // sampling ratio change
 	if(!resample_init || last_ratio != resample_ratio)
 	{
@@ -150,7 +150,7 @@ void Resample::resample_chunk(Samples *input_buffer,
 		bzero(old, sizeof(double) * BLACKSIZE);
 
 // precompute blackman filter coefficients
-    	for (j = 0; j <= 2 * BPC; ++j) 
+    	for (j = 0; j <= 2 * BPC; ++j)
 		{
 			for(j = 0; j <= 2 * BPC; j++)
 			{
@@ -169,7 +169,7 @@ void Resample::resample_chunk(Samples *input_buffer,
 	{
 		double time0;
 		int joff;
-		
+
 		time0 = k * resample_ratio;
 		j = (int)floor(time0 - itime);
 
@@ -220,7 +220,7 @@ void Resample::resample_chunk(Samples *input_buffer,
 
 }
 
-int Resample::read_chunk(Samples *input, 
+int Resample::read_chunk(Samples *input,
 	int64_t len)
 {
 	int fragment = len;
@@ -242,11 +242,11 @@ int Resample::read_chunk(Samples *input,
 // Mute unused part of buffer
 		if(fragment < len)
 		{
-			bzero(input->get_data() + fragment, 
+			bzero(input->get_data() + fragment,
 				(len - fragment) * sizeof(double));
 		}
 	}
-	
+
 	return result;
 }
 
@@ -263,7 +263,7 @@ void Resample::reverse_buffer(double *buffer, int64_t len)
 }
 
 
-int Resample::resample(Samples *output, 
+int Resample::resample(Samples *output,
 	int64_t out_len,
 	int in_rate,
 	int out_rate,
@@ -273,8 +273,8 @@ int Resample::resample(Samples *output,
 	int result = 0;
 
 
-// printf("Resample::resample 1 output_position=" _LD " out_position=" _LD " out_len=" _LD "\n", 
-// output_position, 
+// printf("Resample::resample 1 output_position=" _LD " out_position=" _LD " out_len=" _LD "\n",
+// output_position,
 // out_position,
 // out_len);
 // Changed position

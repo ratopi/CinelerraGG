@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008-2013 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef AMODULE_H
@@ -55,7 +55,7 @@ public:
 
 // All positions are in source sample rate
 	int read_samples(Samples *buffer, int64_t start, int64_t len);
-	
+
 	AModule *module;
 // output for nested EDL if resampled
 	Samples *nested_output[MAX_CHANNELS];
@@ -66,8 +66,8 @@ public:
 class AModule : public Module
 {
 public:
-	AModule(RenderEngine *renderengine, 
-		CommonRender *commonrender, 
+	AModule(RenderEngine *renderengine,
+		CommonRender *commonrender,
 		PluginArray *plugin_array,
 	Track *track);
 	virtual ~AModule();
@@ -75,7 +75,7 @@ public:
 	void create_objects();
 	CICache* get_cache();
 
-	int import_samples(AEdit *playable_edit, 
+	int import_samples(AEdit *playable_edit,
 		int64_t start_project,
 		int64_t edit_startproject,
 		int64_t edit_startsource,
@@ -85,7 +85,7 @@ public:
 		int64_t fragment_len);
 
 
-	int render(Samples *buffer, 
+	int render(Samples *buffer,
 		int64_t input_len,
 		int64_t input_position,
 		int direction,
@@ -124,9 +124,9 @@ public:
 	File *file;
 
 // Temporary buffer for rendering a nested audio EDL.
-// Sharing nested output between modules wouldn't work because if the 
-// segment was cut inside input_len, the shared channels would have to 
-// initialize their EDL's at different starting points and botch their 
+// Sharing nested output between modules wouldn't work because if the
+// segment was cut inside input_len, the shared channels would have to
+// initialize their EDL's at different starting points and botch their
 // starting states.
 	Samples *nested_output[MAX_CHANNELS];
 // number of samples allocated

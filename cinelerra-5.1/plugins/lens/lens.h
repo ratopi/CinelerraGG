@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef LENS_H
@@ -41,12 +41,12 @@ class LensText;
 class LensSlider : public BC_FSlider
 {
 public:
-	LensSlider(LensMain *client, 
+	LensSlider(LensMain *client,
 		LensGUI *gui,
 		LensText *text,
-		float *output, 
-		int x, 
-		int y, 
+		float *output,
+		int x,
+		int y,
 		float min,
 		float max);
 	int handle_event();
@@ -60,11 +60,11 @@ public:
 class LensText : public BC_TextBox
 {
 public:
-	LensText(LensMain *client, 
+	LensText(LensMain *client,
 		LensGUI *gui,
 		LensSlider *slider,
-		float *output, 
-		int x, 
+		float *output,
+		int x,
 		int y);
 	int handle_event();
 
@@ -78,9 +78,9 @@ public:
 class LensToggle : public BC_CheckBox
 {
 public:
-	LensToggle(LensMain *client, 
-		int *output, 
-		int x, 
+	LensToggle(LensMain *client,
+		int *output,
+		int x,
 		int y,
 		const char *text);
 	int handle_event();
@@ -93,7 +93,7 @@ public:
 class LensMode : public BC_PopupMenu
 {
 public:
-	LensMode(LensMain *plugin,  
+	LensMode(LensMain *plugin,
 		LensGUI *gui,
 		int x,
 		int y);
@@ -111,7 +111,7 @@ public:
 class LensPresets : public BC_PopupMenu
 {
 public:
-	LensPresets(LensMain *plugin,  
+	LensPresets(LensMain *plugin,
 		LensGUI *gui,
 		int x,
 		int y,
@@ -128,7 +128,7 @@ public:
 class LensSavePreset : public BC_GenericButton
 {
 public:
-	LensSavePreset(LensMain *plugin,  
+	LensSavePreset(LensMain *plugin,
 		LensGUI *gui,
 		int x,
 		int y);
@@ -140,7 +140,7 @@ public:
 class LensDeletePreset : public BC_GenericButton
 {
 public:
-	LensDeletePreset(LensMain *plugin,  
+	LensDeletePreset(LensMain *plugin,
 		LensGUI *gui,
 		int x,
 		int y);
@@ -152,7 +152,7 @@ public:
 class LensPresetText : public BC_TextBox
 {
 public:
-	LensPresetText(LensMain *plugin,  
+	LensPresetText(LensMain *plugin,
 		LensGUI *gui,
 		int x,
 		int y,
@@ -167,7 +167,7 @@ class LensGUI : public PluginClientWindow
 public:
 	LensGUI(LensMain *client);
 	~LensGUI();
-	
+
 	void create_objects();
 
 	LensMain *client;
@@ -196,10 +196,10 @@ public:
 	LensConfig();
 	int equivalent(LensConfig &that);
 	void copy_from(LensConfig &that);
-	void interpolate(LensConfig &prev, 
-		LensConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(LensConfig &prev,
+		LensConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 	void boundaries();
 	float fov[FOV_CHANNELS];
@@ -260,11 +260,11 @@ class LensEngine : public LoadServer
 public:
 	LensEngine(LensMain *plugin);
 	~LensEngine();
-	
+
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
-	
+
 	LensMain *plugin;
 };
 
@@ -285,7 +285,7 @@ public:
 //	void load_presets();
 //	void save_presets();
 	int handle_opengl();
-	
+
 	LensEngine *engine;
 	int lock;
 	int current_preset;

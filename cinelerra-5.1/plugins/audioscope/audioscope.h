@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef SPECTROGRAM_H
@@ -64,7 +64,7 @@ class AudioScopeHistory : public BC_IPot
 {
 public:
 	AudioScopeHistory(AudioScope *plugin,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	AudioScope *plugin;
@@ -74,7 +74,7 @@ class AudioScopeWindowSize : public BC_PopupMenu
 {
 public:
 	AudioScopeWindowSize(AudioScope *plugin,
-		int x, 
+		int x,
 		int y,
 		char *text);
 	int handle_event();
@@ -93,8 +93,8 @@ public:
 class AudioScopeFragmentSize : public BC_PopupMenu
 {
 public:
-	AudioScopeFragmentSize(AudioScope *plugin, 
-		int x, 
+	AudioScopeFragmentSize(AudioScope *plugin,
+		int x,
 		int y,
 		char *text);
 	int handle_event();
@@ -115,7 +115,7 @@ class AudioScopeMode : public BC_PopupMenu
 {
 public:
 	AudioScopeMode(AudioScope *plugin,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	static const char* mode_to_text(int mode);
@@ -137,10 +137,10 @@ public:
 class AudioScopeCanvas : public BC_SubWindow
 {
 public:
-	AudioScopeCanvas(AudioScope *plugin, 
-		int x, 
-		int y, 
-		int w, 
+	AudioScopeCanvas(AudioScope *plugin,
+		int x,
+		int y,
+		int w,
 		int h);
 	int button_press_event();
 	int button_release_event();
@@ -207,10 +207,10 @@ public:
 	AudioScopeConfig();
 	int equivalent(AudioScopeConfig &that);
 	void copy_from(AudioScopeConfig &that);
-	void interpolate(AudioScopeConfig &prev, 
-		AudioScopeConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(AudioScopeConfig &prev,
+		AudioScopeConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 	int window_size;
 	int history_size;
@@ -250,20 +250,20 @@ class AudioScope : public PluginAClient
 public:
 	AudioScope(PluginServer *server);
 	~AudioScope();
-	
+
 	PLUGIN_CLASS_MEMBERS2(AudioScopeConfig)
 	int is_realtime();
 	int is_multichannel();
-	int process_buffer(int64_t size, 
+	int process_buffer(int64_t size,
 		Samples **buffer,
 		int64_t start_position,
 		int sample_rate);
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void update_gui();
-	void render_gui(void *data, int size);	
+	void render_gui(void *data, int size);
 	void render_stop();
-	
+
 	void reset();
 
 	int need_reconfigure;

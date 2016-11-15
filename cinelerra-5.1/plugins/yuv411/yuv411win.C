@@ -4,8 +4,8 @@
 
 yuv411Window::yuv411Window(yuv411Main *client)
  : PluginClientWindow(client, 250, 220, 250, 220, 0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 yuv411Window::~yuv411Window()
@@ -15,22 +15,22 @@ yuv411Window::~yuv411Window()
 void yuv411Window::create_objects()
 {
 	int x = 10, y = 10, x1=90;
-	add_tool(avg_vertical = new yuv411Toggle(client, 
-		&(client->config.avg_vertical), 
+	add_tool(avg_vertical = new yuv411Toggle(client,
+		&(client->config.avg_vertical),
 		_("Vertical average"),
-		x, 
+		x,
 		y));
 	y += 30;
-	add_tool(int_horizontal = new yuv411Toggle(client, 
-		&(client->config.int_horizontal), 
+	add_tool(int_horizontal = new yuv411Toggle(client,
+		&(client->config.int_horizontal),
 		_("Horizontal interpolate"),
-		x, 
+		x,
 		y));
 	y += 30;
-	add_tool(inpainting = new yuv411Toggle(client, 
-		&(client->config.inpainting), 
+	add_tool(inpainting = new yuv411Toggle(client,
+		&(client->config.inpainting),
 		_("Inpainting method"),
-		x, 
+		x,
 		y));
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Offset:")));

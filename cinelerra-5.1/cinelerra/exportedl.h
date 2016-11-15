@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2006 Andraz Tori
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef EXPORTEDL_H
@@ -42,7 +42,7 @@ class ExportEDLPathText;
 class ExportEDLWindowTrackList;
 class ExportEDLWindow;
 
-class ExportEDLAsset 
+class ExportEDLAsset
 {
 public:
 	ExportEDLAsset(MWindow *mwindow, EDL *edl);
@@ -53,20 +53,20 @@ public:
 	char path[BCTEXTLEN];
 	// type of EDL
 	int edl_type;
-	
+
 	// We are currently exporting a track at once
 	int track_number;
-	
-	
+
+
 	void export_it();
 	MWindow *mwindow;
-	
+
 	int load_defaults();
 	int save_defaults();
 private:
 	int edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sourceoutpoint, char *destinpoint, char *destoutpoint, char *reel_name);
 	void double_to_CMX3600(double seconds, double frame_rate, char *str);
-	
+
 };
 
 class ExportEDLItem : public BC_MenuItem
@@ -135,18 +135,18 @@ public:
 	ExportEDLPathText(int x, int y, ExportEDLWindow *window);
 	~ExportEDLPathText();
 	int handle_event();
-	
+
 	ExportEDLWindow *window;
 };
 
 class ExportEDLWindowTrackList : public BC_ListBox
 {
 public:
-	ExportEDLWindowTrackList(ExportEDLWindow *window, 
-		int x, 
-		int y, 
-		int w, 
-		int h, 
+	ExportEDLWindowTrackList(ExportEDLWindow *window,
+		int x,
+		int y,
+		int w,
+		int h,
 		ArrayList<BC_ListBoxItem*> *track_list);
 
 	int handle_event();

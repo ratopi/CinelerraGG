@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -43,7 +43,7 @@ BrightnessConfig::BrightnessConfig()
 
 int BrightnessConfig::equivalent(BrightnessConfig &that)
 {
-	return (brightness == that.brightness && 
+	return (brightness == that.brightness &&
 		contrast == that.contrast &&
 		luma == that.luma);
 }
@@ -55,10 +55,10 @@ void BrightnessConfig::copy_from(BrightnessConfig &that)
 	luma = that.luma;
 }
 
-void BrightnessConfig::interpolate(BrightnessConfig &prev, 
-	BrightnessConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void BrightnessConfig::interpolate(BrightnessConfig &prev,
+	BrightnessConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -84,19 +84,19 @@ BrightnessMain::BrightnessMain(PluginServer *server)
 {
     redo_buffers = 1;
 	engine = 0;
-	
+
 }
 
 BrightnessMain::~BrightnessMain()
 {
-	
+
 	if(engine) delete engine;
 }
 
 const char* BrightnessMain::plugin_title() { return _("Brightness/Contrast"); }
 int BrightnessMain::is_realtime() { return 1; }
 
-NEW_WINDOW_MACRO(BrightnessMain, BrightnessWindow)	
+NEW_WINDOW_MACRO(BrightnessMain, BrightnessWindow)
 LOAD_CONFIGURATION_MACRO(BrightnessMain, BrightnessConfig)
 
 int BrightnessMain::process_buffer(VFrame *frame,
@@ -105,9 +105,9 @@ int BrightnessMain::process_buffer(VFrame *frame,
 {
 	load_configuration();
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
 
@@ -138,7 +138,7 @@ int BrightnessMain::process_buffer(VFrame *frame,
 int BrightnessMain::handle_opengl()
 {
 #ifdef HAVE_GL
-	static const char *brightness_yuvluma_frag = 
+	static const char *brightness_yuvluma_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float brightness;\n"
 		"uniform float contrast;\n"
@@ -151,7 +151,7 @@ int BrightnessMain::handle_opengl()
 		"	gl_FragColor = yuva;\n"
 		"}\n";
 
-	static const char *brightness_yuv_frag = 
+	static const char *brightness_yuv_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float brightness;\n"
 		"uniform float contrast;\n"
@@ -232,13 +232,13 @@ int BrightnessMain::handle_opengl()
 	}
 
 
-	if(shader_id > 0) 
+	if(shader_id > 0)
 	{
 		glUseProgram(shader_id);
 		glUniform1i(glGetUniformLocation(shader_id, "tex"), 0);
 		glUniform1f(glGetUniformLocation(shader_id, "brightness"), config.brightness / 100);
-		float contrast = (config.contrast < 0) ? 
-			(config.contrast + 100) / 100 : 
+		float contrast = (config.contrast < 0) ?
+			(config.contrast + 100) / 100 :
 			(config.contrast + 25) / 25;
 		glUniform1f(glGetUniformLocation(shader_id, "contrast"), contrast);
 		float offset = 0.5 - contrast / 2;
@@ -248,7 +248,7 @@ int BrightnessMain::handle_opengl()
 	get_output()->init_screen();
 	get_output()->bind_texture(0);
 
-	
+
 
 	get_output()->draw_texture();
 	glUseProgram(0);
@@ -274,7 +274,7 @@ void BrightnessMain::update_gui()
 	}
 }
 
- 
+
 void BrightnessMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
@@ -345,7 +345,7 @@ BrightnessUnit::BrightnessUnit(BrightnessEngine *server, BrightnessMain *plugin)
 BrightnessUnit::~BrightnessUnit()
 {
 }
-	
+
 void BrightnessUnit::process_package(LoadPackage *package)
 {
 	BrightnessPackage *pkg = (BrightnessPackage*)package;
@@ -353,7 +353,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 
 	VFrame *output = plugin->output;
 	VFrame *input = plugin->input;
-	
+
 
 
 

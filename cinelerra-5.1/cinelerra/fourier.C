@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <math.h>
@@ -341,14 +341,14 @@ int CrossfadeFFT::reconfigure()
 {
 	delete_fft();
 	fix_window_size();
-	
-	
-	
+
+
+
 	return 0;
 }
 
-// int CrossfadeFFT::process_fifo(long size, 
-// 	double *input_ptr, 
+// int CrossfadeFFT::process_fifo(long size,
+// 	double *input_ptr,
 // 	double *output_ptr)
 // {
 // // Load next input buffer
@@ -363,18 +363,18 @@ int CrossfadeFFT::reconfigure()
 // 		input_buffer = new_input;
 // 		input_allocation = input_size + size;
 // 	}
-// 
-// 	memcpy(input_buffer + input_size, 
-// 		input_ptr, 
+//
+// 	memcpy(input_buffer + input_size,
+// 		input_ptr,
 // 		size * sizeof(double));
 // 	input_size += size;
-// 
-// 
-// 
-// 
-// 
-// 
-// 
+//
+//
+//
+//
+//
+//
+//
 // // Have enough to do some windows
 // 	while(input_size >= window_size)
 // 	{
@@ -382,18 +382,18 @@ int CrossfadeFFT::reconfigure()
 // 		if(!freq_imag) freq_imag = new double[window_size];
 // 		if(!output_real) output_real = new double[window_size];
 // 		if(!output_imag) output_imag = new double[window_size];
-// 	
-// 	
-// 	
+//
+//
+//
 // 		do_fft(window_size,  // must be a power of 2
 //	 		0,		 // 0 = forward FFT, 1 = inverse
 //	 		input_buffer,	 // array of input's real samples
 //	 		0,	 // array of input's imag samples
 //	 		freq_real,	// array of output's reals
 //	 		freq_imag);
-// 
+//
 // 		int result = signal_process();
-// 
+//
 // 		if(!result)
 // 		{
 // 			do_fft(window_size,  // must be a power of 2
@@ -403,14 +403,14 @@ int CrossfadeFFT::reconfigure()
 //	 			output_real,	 // array of output's reals
 //	 			output_imag);
 // 		}
-// 
-// 
+//
+//
 // // Crossfade into the output buffer
 // 		long new_allocation = output_size + window_size;
 // 		if(new_allocation > output_allocation)
 // 		{
 // 			double *new_output = new double[new_allocation];
-// 
+//
 // 			if(output_buffer)
 // 			{
 // 				memcpy(new_output, output_buffer, sizeof(double) * output_size);
@@ -419,44 +419,44 @@ int CrossfadeFFT::reconfigure()
 // 			output_buffer = new_output;
 // 			output_allocation = new_allocation;
 // 		}
-// 
+//
 // 		if(output_size >= HALF_WINDOW)
 // 		{
-// 			for(int i = 0, j = output_size - HALF_WINDOW; 
-// 				i < HALF_WINDOW; 
+// 			for(int i = 0, j = output_size - HALF_WINDOW;
+// 				i < HALF_WINDOW;
 // 				i++, j++)
 // 			{
 // 				double src_level = (double)i / HALF_WINDOW;
 // 				double dst_level = (double)(HALF_WINDOW - i) / HALF_WINDOW;
 // 				output_buffer[j] = output_buffer[j] * dst_level + output_real[i] * src_level;
 // 			}
-// 
-// 			memcpy(output_buffer + output_size, 
-// 				output_real + HALF_WINDOW, 
+//
+// 			memcpy(output_buffer + output_size,
+// 				output_real + HALF_WINDOW,
 // 				sizeof(double) * (window_size - HALF_WINDOW));
 // 			output_size += window_size - HALF_WINDOW;
 // 		}
 // 		else
 // 		{
 // // First buffer has no crossfade
-// 			memcpy(output_buffer + output_size, 
-// 				output_real, 
+// 			memcpy(output_buffer + output_size,
+// 				output_real,
 // 				sizeof(double) * window_size);
 // 			output_size += window_size;
 // 		}
-// 
-// 
+//
+//
 // // Shift input buffer forward
-// 		for(int i = window_size - HALF_WINDOW, j = 0; 
-// 			i < input_size; 
+// 		for(int i = window_size - HALF_WINDOW, j = 0;
+// 			i < input_size;
 // 			i++, j++)
 // 			input_buffer[j] = input_buffer[i];
 // 		input_size -= window_size - HALF_WINDOW;
 // 	}
-// 
-// 
-// 
-// 
+//
+//
+//
+//
 // // Have enough to send to output
 // 	int samples_rendered = 0;
 // 	if(output_size - HALF_WINDOW >= size)
@@ -471,14 +471,14 @@ int CrossfadeFFT::reconfigure()
 // 	{
 // 		bzero(output_ptr, sizeof(double) * size);
 // 	}
-// 
+//
 // 	return samples_rendered;
 // }
 
 
 
-int CrossfadeFFT::process_buffer(int64_t output_sample, 
-	long size, 
+int CrossfadeFFT::process_buffer(int64_t output_sample,
+	long size,
 	Samples *output_ptr,
 	int direction)
 {
@@ -512,8 +512,8 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 		else
 		{
 			input_buffer->set_offset(HALF_WINDOW);
-// printf("CrossfadeFFT::process_buffer %d %lld %lld\n", 
-// __LINE__, 
+// printf("CrossfadeFFT::process_buffer %d %lld %lld\n",
+// __LINE__,
 // this->input_sample + step * HALF_WINDOW,
 // this->input_sample + step * HALF_WINDOW + HALF_WINDOW);
 			result = read_samples(this->input_sample + step * HALF_WINDOW,
@@ -552,8 +552,8 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 			double *new_output = new double[new_allocation];
 			if(output_buffer)
 			{
-				memcpy(new_output, 
-					output_buffer, 
+				memcpy(new_output,
+					output_buffer,
 					sizeof(double) * (output_size + HALF_WINDOW));
 				delete [] output_buffer;
 			}
@@ -578,7 +578,7 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 				output_buffer[j] = output_buffer[j] * dst_level +
 					output_real[i] * src_level;
 			}
-			
+
 //output_buffer[output_size] = 100.0;
 //output_buffer[output_size + HALF_WINDOW] = -100.0;
 
@@ -620,8 +620,8 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 }
 
 
-int CrossfadeFFT::read_samples(int64_t output_sample, 
-		int samples, 
+int CrossfadeFFT::read_samples(int64_t output_sample,
+		int samples,
 		Samples *buffer)
 {
 	return 1;

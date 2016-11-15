@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2012 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -149,11 +149,11 @@ ChromaKeyConfig::get_color ()
 
 
 ChromaKeyWindow::ChromaKeyWindow (ChromaKeyHSV * plugin)
- : PluginClientWindow(plugin, 
-	   400, 
-	   450, 
-	   400, 
-	   450, 
+ : PluginClientWindow(plugin,
+	   400,
+	   450,
+	   400,
+	   450,
 	   0)
 {
   this->plugin = plugin;
@@ -643,12 +643,12 @@ ChromaKeyUnit::ChromaKeyUnit (ChromaKeyHSV * plugin, ChromaKeyServer * server):L
 		value_key);
 
 
-template <typename component_type> 
-void ChromaKeyUnit::process_chromakey(int components, 
-	component_type max, 
-	bool use_yuv, 
-	ChromaKeyPackage *pkg) 
-{ 	
+template <typename component_type>
+void ChromaKeyUnit::process_chromakey(int components,
+	component_type max,
+	bool use_yuv,
+	ChromaKeyPackage *pkg)
+{ 
 	OUTER_VARIABLES
 
 	int w = plugin->input->get_w();
@@ -693,17 +693,17 @@ void ChromaKeyUnit::process_chromakey(int components,
 
 			if (tolerance == 0)
 	    	    ah = 1.0;
-			else 
+			else
 			if (ABS (h - hue_key) < tolerance_in * 180)
 	    	    ah = 0;
-			else 
+			else
 			if ((out_slope != 0) && (ABS (h - hue_key) < tolerance * 180))
 /* we scale alpha between 0 and 1/2 */
-	    	    ah = ABS (h - hue_key) / tolerance / 360;	
-			else 
+	    	    ah = ABS (h - hue_key) / tolerance / 360;
+			else
 			if (ABS (h - hue_key) < tolerance_out * 180)
 /* we scale alpha between 1/2 and 1 */
-	    	    ah = ABS (h - hue_key) / tolerance_out / 360;	
+	    	    ah = ABS (h - hue_key) / tolerance_out / 360;
 			else
 	    	    has_match = false;
 
@@ -756,7 +756,7 @@ void ChromaKeyUnit::process_chromakey(int components,
 	  if (has_match)
 	    a = MAX (MAX (ah, av), MAX (as, avm));
 
-	  // Spill light processing       
+	  // Spill light processing
 	  if ((ABS (h - hue_key) < spill_threshold * 180) ||
 	      ((ABS (h - hue_key) > 360)
 	       && (ABS (h - hue_key) - 360 < spill_threshold * 180)))
@@ -885,13 +885,13 @@ REGISTER_PLUGIN(ChromaKeyHSV)
 ChromaKeyHSV::ChromaKeyHSV(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 }
 
 ChromaKeyHSV::~ChromaKeyHSV()
 {
-	
+
 	if(engine) delete engine;
 }
 
@@ -905,9 +905,9 @@ int ChromaKeyHSV::process_buffer(VFrame *frame,
 	this->output = frame;
 
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
 	if(get_use_opengl()) return run_opengl();
@@ -1025,7 +1025,7 @@ int ChromaKeyHSV::handle_opengl()
 	ChromaKeyHSV *plugin = this;
 	OUTER_VARIABLES
 
-	static const char *yuv_shader = 
+	static const char *yuv_shader =
 		"const vec3 black = vec3(0.0, 0.5, 0.5);\n"
 		"\n"
 		"vec4 yuv_to_rgb(vec4 color)\n"
@@ -1040,7 +1040,7 @@ int ChromaKeyHSV::handle_opengl()
 		"	return color;\n"
 		"}\n";
 
-	static const char *rgb_shader = 
+	static const char *rgb_shader =
 		"const vec3 black = vec3(0.0, 0.0, 0.0);\n"
 		"\n"
 		"vec4 yuv_to_rgb(vec4 color)\n"
@@ -1052,7 +1052,7 @@ int ChromaKeyHSV::handle_opengl()
 		"	return color;\n"
 		"}\n";
 
-	static const char *hsv_shader = 
+	static const char *hsv_shader =
 		"vec4 rgb_to_hsv(vec4 color)\n"
 		"{\n"
 			RGB_TO_HSV_FRAG("color")
@@ -1066,19 +1066,19 @@ int ChromaKeyHSV::handle_opengl()
 		"}\n"
 		"\n";
 
-	static const char *show_rgbmask_shader = 
+	static const char *show_rgbmask_shader =
 		"vec4 show_mask(vec4 color, vec4 color2)\n"
 		"{\n"
 		"	return vec4(1.0, 1.0, 1.0, min(color.a, color2.a));"
 		"}\n";
 
-	static const char *show_yuvmask_shader = 
+	static const char *show_yuvmask_shader =
 		"vec4 show_mask(vec4 color, vec4 color2)\n"
 		"{\n"
 		"	return vec4(1.0, 0.5, 0.5, min(color.a, color2.a));"
 		"}\n";
 
-	static const char *nomask_shader = 
+	static const char *nomask_shader =
 		"vec4 show_mask(vec4 color, vec4 color2)\n"
 		"{\n"
 		"	return vec4(color.rgb, min(color.a, color2.a));"
@@ -1099,7 +1099,7 @@ int ChromaKeyHSV::handle_opengl()
 		case BC_YUVA8888:
 			shader_stack[0] = yuv_shader;
 			shader_stack[1] = hsv_shader;
-			if(config.show_mask) 
+			if(config.show_mask)
 				shader_stack[2] = show_yuvmask_shader;
 			else
 				shader_stack[2] = nomask_shader;
@@ -1109,7 +1109,7 @@ int ChromaKeyHSV::handle_opengl()
 		default:
 			shader_stack[0] = rgb_shader;
 			shader_stack[1] = hsv_shader;
-			if(config.show_mask) 
+			if(config.show_mask)
 				shader_stack[2] = show_rgbmask_shader;
 			else
 				shader_stack[2] = nomask_shader;
@@ -1118,11 +1118,11 @@ int ChromaKeyHSV::handle_opengl()
 	}
 
 
-	unsigned int frag = VFrame::make_shader(0, 
-		shader_stack[0], 
-		shader_stack[1], 
-		shader_stack[2], 
-		shader_stack[3], 
+	unsigned int frag = VFrame::make_shader(0,
+		shader_stack[0],
+		shader_stack[1],
+		shader_stack[2],
+		shader_stack[3],
 		0);
 
 	if(frag)

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -38,9 +38,9 @@ REGISTER_PLUGIN(InterpolatePixelsMain)
 
 
 
-InterpolatePixelsOffset::InterpolatePixelsOffset(InterpolatePixelsWindow *window, 
-	int x, 
-	int y, 
+InterpolatePixelsOffset::InterpolatePixelsOffset(InterpolatePixelsWindow *window,
+	int x,
+	int y,
 	int *output)
  : BC_ISlider(x,
  	y,
@@ -74,13 +74,13 @@ int InterpolatePixelsOffset::handle_event()
 
 InterpolatePixelsWindow::InterpolatePixelsWindow(InterpolatePixelsMain *client)
  : PluginClientWindow(client,
-	200, 
-	100, 
-	200, 
-	100, 
+	200,
+	100,
+	200,
+	100,
 	0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 InterpolatePixelsWindow::~InterpolatePixelsWindow()
@@ -90,18 +90,18 @@ InterpolatePixelsWindow::~InterpolatePixelsWindow()
 void InterpolatePixelsWindow::create_objects()
 {
 	int x = 10, y = 10;
-	
+
 	BC_Title *title;
 	add_tool(title = new BC_Title(x, y, _("X Offset:")));
-	add_tool(x_offset = new InterpolatePixelsOffset(this, 
+	add_tool(x_offset = new InterpolatePixelsOffset(this,
 		x + title->get_w() + 5,
-		y, 
+		y,
 		&client->config.x));
 	y += MAX(x_offset->get_h(), title->get_h()) + 5;
 	add_tool(title = new BC_Title(x, y, _("Y Offset:")));
-	add_tool(y_offset = new InterpolatePixelsOffset(this, 
+	add_tool(y_offset = new InterpolatePixelsOffset(this,
 		x + title->get_w() + 5,
-		y, 
+		y,
 		&client->config.y));
 	y += MAX(y_offset->get_h(), title->get_h()) + 5;
 
@@ -242,9 +242,9 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 	frame->get_params()->update("INTERPOLATEPIXELS_X", config.x);
 	frame->get_params()->update("INTERPOLATEPIXELS_Y", config.y);
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
 //frame->dump_params();
@@ -345,7 +345,7 @@ int InterpolatePixelsMain::handle_opengl()
 	get_output()->bind_texture(0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	
+
 
 	get_output()->draw_texture();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -372,7 +372,7 @@ int InterpolatePixelsMain::handle_opengl()
 InterpolatePixelsPackage::InterpolatePixelsPackage()
  : LoadPackage()
 {
-	
+
 }
 
 
@@ -440,7 +440,7 @@ void InterpolatePixelsUnit::process_package(LoadPackage *package)
 				else
 // Top right pixel
 				{
-					r = (prev_row[-components + RED] + 
+					r = (prev_row[-components + RED] +
 						prev_row[components + RED] +
 						next_row[-components + RED] +
 						next_row[components + RED]) / 4;
@@ -473,7 +473,7 @@ void InterpolatePixelsUnit::process_package(LoadPackage *package)
 						prev_row[GREEN] +
 						current_row[components + GREEN] +
 						next_row[GREEN]) / 4;
-					b = (prev_row[-components + BLUE] + 
+					b = (prev_row[-components + BLUE] +
 						prev_row[components + BLUE] +
 						next_row[-components + BLUE] +
 						next_row[components + BLUE]) / 4;
@@ -514,8 +514,8 @@ void InterpolatePixelsEngine::init_packages()
 	char string[BCTEXTLEN];
 	string[0] = 0;
 	plugin->get_output()->get_params()->get("DCRAW_MATRIX", string);
-	sscanf(string, 
-		"%f %f %f %f %f %f %f %f %f", 
+	sscanf(string,
+		"%f %f %f %f %f %f %f %f %f",
 		&color_matrix[0],
 		&color_matrix[1],
 		&color_matrix[2],

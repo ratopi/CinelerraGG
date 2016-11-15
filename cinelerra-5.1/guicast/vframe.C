@@ -1082,7 +1082,7 @@ int VFrame::transfer_from(VFrame *that, int bg_color, int in_x, int in_y, int in
 		inp = in_ptrs;
 	}
 	else
-		inp = that->get_rows();	
+		inp = that->get_rows();
 	if( BC_CModels::is_planar(this->get_color_model()) ) {
 		out_ptrs[0] = this->get_y();
 		out_ptrs[1] = this->get_u();
@@ -1091,7 +1091,7 @@ int VFrame::transfer_from(VFrame *that, int bg_color, int in_x, int in_y, int in
 		outp = out_ptrs;
 	}
 	else
-		outp = this->get_rows();	
+		outp = this->get_rows();
 	BC_CModels::transfer(outp, this->get_color_model(),
 			0, 0, this->get_w(), this->get_h(),
 			this->get_bytes_per_line(),

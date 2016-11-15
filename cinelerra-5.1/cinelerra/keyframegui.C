@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bchash.h"
@@ -101,7 +101,7 @@ void KeyFrameThread::update_values()
 		BC_Hash hash;
 		char *text = 0, *extra = 0;
 		keyframe->get_contents(&hash, &text, &extra);
-		
+
 		for(int i = 0; i < hash.size(); i++)
 		{
 			keyframe_data[0].append(new BC_ListBoxItem(hash.get_key(i)));
@@ -109,7 +109,7 @@ void KeyFrameThread::update_values()
 		}
 		keyframe_data[0].append(new BC_ListBoxItem((char*)_("TEXT")));
 		keyframe_data[1].append(new BC_ListBoxItem(text));
-		
+
 		delete [] text;
 		delete [] extra;
 	}
@@ -146,13 +146,13 @@ void KeyFrameThread::start_window(Plugin *plugin, KeyFrame *keyframe)
 BC_Window* KeyFrameThread::new_gui()
 {
 	mwindow->gui->lock_window("KeyFrameThread::new_gui");
-	
-	int x = mwindow->gui->get_abs_cursor_x(0) - 
+
+	int x = mwindow->gui->get_abs_cursor_x(0) -
 		mwindow->session->plugindialog_w / 2;
-	int y = mwindow->gui->get_abs_cursor_y(0) - 
+	int y = mwindow->gui->get_abs_cursor_y(0) -
 		mwindow->session->plugindialog_h / 2;
 
-	KeyFrameWindow *window = new KeyFrameWindow(mwindow, 
+	KeyFrameWindow *window = new KeyFrameWindow(mwindow,
 		this, x, y, window_title);
 	window->create_objects();
 
@@ -212,7 +212,7 @@ void KeyFrameThread::apply_value()
 	int selection = window->keyframe_list->get_selection_number(0, 0);
 //printf("KeyFrameThread::apply_value %d %d\n", __LINE__, selection);
 	if(selection < 0) return;
-	
+
 	if(selection == keyframe_data[0].size() - 1)
 		text = window->value_text->get_text();
 	else {
@@ -258,7 +258,7 @@ printf("KeyFrameThread::apply_value %d: plugin doesn't exist\n", __LINE__);
 	}
 
 	mwindow->save_backup();
-	mwindow->undo->update_undo_after(_("edit keyframe"), LOAD_AUTOMATION); 
+	mwindow->undo->update_undo_after(_("edit keyframe"), LOAD_AUTOMATION);
 
 	mwindow->update_plugin_guis(0);
 	mwindow->gui->draw_overlays(1);
@@ -277,8 +277,8 @@ printf("KeyFrameThread::apply_value %d: plugin doesn't exist\n", __LINE__);
 KeyFrameWindow::KeyFrameWindow(MWindow *mwindow,
 	KeyFrameThread *thread, int x, int y, char *title_string)
  : BC_Window(title_string, x, y,
-	mwindow->session->keyframedialog_w, 
-	mwindow->session->keyframedialog_h, 
+	mwindow->session->keyframedialog_w,
+	mwindow->session->keyframedialog_h,
 	320, 240, 1, 0, 1)
 {
 	this->mwindow = mwindow;
@@ -295,8 +295,8 @@ void KeyFrameWindow::create_objects()
 	lock_window("KeyFrameWindow::create_objects");
 
 	add_subwindow(title1 = new BC_Title(theme->keyframe_list_x,
-		theme->keyframe_list_y - 
-			BC_Title::calculate_h(this, (char*)"Py", LARGEFONT) - 
+		theme->keyframe_list_y -
+			BC_Title::calculate_h(this, (char*)"Py", LARGEFONT) -
 			theme->widget_border,
 		_("Keyframe parameters:"), LARGEFONT));
 	add_subwindow(keyframe_list = new KeyFrameList(thread,
@@ -385,7 +385,7 @@ int KeyFrameValue::handle_event()
 
 KeyFrameAll::KeyFrameAll(KeyFrameThread *thread,
 	KeyFrameWindow *window, int x, int y)
- : BC_CheckBox(x, y, thread->mwindow->session->keyframedialog_all, 
+ : BC_CheckBox(x, y, thread->mwindow->session->keyframedialog_all,
 	_("Apply to all selected keyframes"))
 {
 	this->thread = thread;

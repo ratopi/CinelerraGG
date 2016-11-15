@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008-2015 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcmenu.h"
@@ -79,7 +79,7 @@ int BC_MenuBar::initialize()
 // Create the subwindow
 	BC_SubWindow::initialize();
 
-	if(resources->menu_bg) 
+	if(resources->menu_bg)
 		set_background(resources->menu_bg);
 	draw_face(0, 0);
 	show_window(0);
@@ -109,14 +109,14 @@ int BC_MenuBar::add_menu(BC_Menu* menu)
 	if(menu_titles.total == 0)
 		x = 2;
 	else
-		x = menu_titles.values[menu_titles.total - 1]->x + 
+		x = menu_titles.values[menu_titles.total - 1]->x +
 			menu_titles.values[menu_titles.total - 1]->w;
 
 	w = get_text_width(MEDIUMFONT, menu->text) + 20;
 // get pointer
 	menu_titles.append(menu);
 // initialize and draw
-	menu->initialize(top_level, this, x, 2, w, get_h() - 4); 
+	menu->initialize(top_level, this, x, 2, w, get_h() - 4);
 	return 0;
 }
 
@@ -262,9 +262,9 @@ int BC_MenuBar::draw_face(int flash, int flush)
 {
 	if(menu_bar_bg)
 	{
-		draw_3segmenth(0, 
-			0, 
-			get_w(), 
+		draw_3segmenth(0,
+			0,
+			get_w(),
 			menu_bar_bg);
 // 9 segment doesn't draw properly
 //		draw_9segment(0, 0, get_w(), get_h(), menu_bar_bg);
@@ -275,7 +275,7 @@ int BC_MenuBar::draw_face(int flash, int flush)
 		int h, w;
 		h = get_h();
 		w = get_w();
-		h--; 
+		h--;
 		w--;
 
 		lx = 1;  ly = 1;

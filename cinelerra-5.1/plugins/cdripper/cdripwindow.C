@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "cdripwindow.h"
@@ -26,10 +26,10 @@
 #include <string.h>
 
 CDRipWindow::CDRipWindow(CDRipMain *cdripper, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": CD Ripper"), 
+ : BC_Window(_(PROGRAM_NAME ": CD Ripper"),
  	x, y, 450, 230, 450, 230, 0, 0, 1)
-{ 
-	this->cdripper = cdripper; 
+{
+	this->cdripper = cdripper;
 }
 
 CDRipWindow::~CDRipWindow()
@@ -47,7 +47,7 @@ void CDRipWindow::create_objects()
 	add_tool(new BC_Title(x, y, _("Track"))); x += 70;
 	add_tool(new BC_Title(x, y, _("Min."))); x += 70;
 	add_tool(new BC_Title(x, y, _("Sec."))); x += 100;
-	
+
 	x = 10;  y += 25;
 	add_tool(track1 = new CDRipTextValue(this, &(cdripper->track1), x, y, 50));
 	x += 70;
@@ -55,7 +55,7 @@ void CDRipWindow::create_objects()
 	x += 70;
 	add_tool(sec1 = new CDRipTextValue(this, &(cdripper->sec1), x, y, 50));
 	x += 100;
-	
+
 	add_tool(track2 = new CDRipTextValue(this, &(cdripper->track2), x, y, 50));
 	x += 70;
 	add_tool(min2 = new CDRipTextValue(this, &(cdripper->min2), x, y, 50));
@@ -97,7 +97,7 @@ CDRipTextValue::CDRipTextValue(CDRipWindow *window, int *output, int x, int y, i
 CDRipTextValue::~CDRipTextValue()
 {
 }
-	
+
 int CDRipTextValue::handle_event()
 {
 	*output = atol(get_text());

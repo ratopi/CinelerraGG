@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef TIMESTRETCH_H
@@ -89,8 +89,8 @@ public:
 	~PitchEngine();
 
 
-	int read_samples(int64_t output_sample, 
-		int samples, 
+	int read_samples(int64_t output_sample,
+		int samples,
 		Samples *buffer);
 	int signal_process();
 
@@ -108,7 +108,7 @@ public:
 	TimeStretchResample(TimeStretch *plugin);
 
 	int read_samples(Samples *buffer, int64_t start, int64_t len);
-	
+
 	TimeStretch *plugin;
 };
 
@@ -119,19 +119,19 @@ class TimeStretch : public PluginAClient
 public:
 	TimeStretch(PluginServer *server);
 	~TimeStretch();
-	
-	
+
+
 	const char* plugin_title();
 	int get_parameters();
 	int start_loop();
 	int process_loop(Samples *buffer, int64_t &write_length);
 	int stop_loop();
-	
+
 	int load_defaults();
 	int save_defaults();
-	
-	
-	
+
+
+
 
 	PitchEngine *pitch;
 	TimeStretchResample *resample;

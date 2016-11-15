@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "aedit.h"
@@ -63,15 +63,15 @@ VirtualAConsole::~VirtualAConsole()
 void VirtualAConsole::get_playable_tracks()
 {
 	if(!playable_tracks)
-		playable_tracks = new PlayableTracks(renderengine->get_edl(), 
-			commonrender->current_position, 
+		playable_tracks = new PlayableTracks(renderengine->get_edl(),
+			commonrender->current_position,
 			renderengine->command->get_direction(),
 			TRACK_AUDIO,
 			1);
 }
 
 
-VirtualNode* VirtualAConsole::new_entry_node(Track *track, 
+VirtualNode* VirtualAConsole::new_entry_node(Track *track,
 	Module *module,
 	int track_number)
 {
@@ -87,15 +87,15 @@ int VirtualAConsole::process_buffer(int64_t len,
 {
 	int result = 0;
 	const int debug = 0;
-if(debug) printf("VirtualAConsole::process_buffer %d this=%p len=%jd\n", 
+if(debug) printf("VirtualAConsole::process_buffer %d this=%p len=%jd\n",
   __LINE__, this, len);
 
 
 // clear output buffers
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
-// if(debug) printf("VirtualAConsole::process_buffer 2 %d %p %jd\n", 
-// i, 
+// if(debug) printf("VirtualAConsole::process_buffer 2 %d %p %jd\n",
+// i,
 // arender->audio_out[i],
 // len);
 
@@ -133,7 +133,7 @@ if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
 		VirtualANode *node = (VirtualANode*)exit_nodes.values[i];
 		Track *track = node->track;
 
-		result |= node->render(output_temp, 
+		result |= node->render(output_temp,
 			len,
 			start_position + track->nudge,
 			renderengine->get_edl()->session->sample_rate);
@@ -159,7 +159,7 @@ if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
 				else
 					meter_render_end = len;
 
-				if(meter_render_end > len) 
+				if(meter_render_end > len)
 					meter_render_end =  len;
 
 				double peak = 0;
@@ -181,9 +181,9 @@ if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
  				if(renderengine->command->realtime)
  				{
 					arender->level_history[i][arender->current_level[i]] = peak;
-					arender->level_samples[arender->current_level[i]] = 
-						renderengine->command->get_direction() == PLAY_REVERSE ? 
-						start_position - j : 
+					arender->level_samples[arender->current_level[i]] =
+						renderengine->command->get_direction() == PLAY_REVERSE ?
+						start_position - j :
 						start_position + j;
  					arender->current_level[i] = arender->get_next_peak(arender->current_level[i]);
  				}
@@ -199,7 +199,7 @@ if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
 
 // Pack channels, fix speed and send to device.
 	if(!renderengine->is_nested &&
-		renderengine->command->realtime && 
+		renderengine->command->realtime &&
 		!interrupt)
 	{
 // speed parameters
@@ -211,14 +211,14 @@ if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
 		double *audio_out_packed[MAX_CHANNELS];
 		int audio_channels = renderengine->get_edl()->session->audio_channels;
 
-		for(int i = 0, j = 0; 
-			i < audio_channels; 
+		for(int i = 0, j = 0;
+			i < audio_channels;
 			i++)
 		{
 			audio_out_packed[j++] = arender->audio_out[i]->get_data();
 		}
-		for(int i = 0; 
-			i < audio_channels; 
+		for(int i = 0;
+			i < audio_channels;
 			i++)
 		{
 			int in, out;

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -138,7 +138,7 @@ void Piano::save_data(KeyFrame *keyframe)
 int Piano::show_gui()
 {
 	load_configuration();
-	
+
 	thread = new PianoThread(this);
 	thread->start();
 	return 0;
@@ -204,9 +204,9 @@ double Piano::get_total_power()
 }
 
 
-double Piano::solve_eqn(double *output, 
-	double x1, 
-	double x2, 
+double Piano::solve_eqn(double *output,
+	double x1,
+	double x2,
 	double normalize_constant,
 	int oscillator)
 {
@@ -278,8 +278,8 @@ double Piano::get_point(float x, double normalize_constant)
 	return result;
 }
 
-double Piano::get_oscillator_point(float x, 
-		double normalize_constant, 
+double Piano::get_oscillator_point(float x,
+		double normalize_constant,
 		int oscillator)
 {
 	PianoOscillatorConfig *config = this->config.oscillator_config.values[oscillator];
@@ -362,14 +362,14 @@ int Piano::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 		fragment_len = overlay_synth(i, fragment_len, input_ptr, output_ptr);
 //printf("Piano::process_realtime 2\n");
 	}
-	
-	
+
+
 	return 0;
 }
 
 int Piano::overlay_synth(int64_t start, int64_t length, double *input, double *output)
 {
-	if(waveform_sample + length > waveform_length) 
+	if(waveform_sample + length > waveform_length)
 		length = waveform_length - waveform_sample;
 
 //printf("Piano::overlay_synth 1 %d %d\n", length, waveform_length);
@@ -380,16 +380,16 @@ int Piano::overlay_synth(int64_t start, int64_t length, double *input, double *o
 	{
 		int64_t start = waveform_sample, end = waveform_sample + length;
 		for(int i = start; i < end; i++) dsp_buffer[i] = 0;
-		
+
 		double normalize_constant = 1 / get_total_power();
 		for(int i = 0; i < config.oscillator_config.total; i++)
-			solve_eqn(dsp_buffer, 
-				start, 
-				end, 
+			solve_eqn(dsp_buffer,
+				start,
+				end,
 				normalize_constant,
 				i);
 
-		
+
 		samples_rendered = end;
 	}
 //printf("Piano::overlay_synth 2\n");
@@ -463,8 +463,8 @@ PianoThread::~PianoThread()
 void PianoThread::run()
 {
 	BC_DisplayInfo info;
-	window = new PianoWindow(synth, 
-		info.get_abs_cursor_x() - 125, 
+	window = new PianoWindow(synth,
+		info.get_abs_cursor_x() - 125,
 		info.get_abs_cursor_y() - 115);
 	window->create_objects();
 	int result = window->run_window();
@@ -484,18 +484,18 @@ void PianoThread::run()
 
 
 PianoWindow::PianoWindow(Piano *synth, int x, int y)
- : BC_Window(synth->gui_string, 
- 	x, 
-	y, 
-	380, 
-	synth->h, 
-	380, 
-	10, 
-	1, 
+ : BC_Window(synth->gui_string,
+ 	x,
+	y,
+	380,
+	synth->h,
+	380,
+	10,
+	1,
 	0,
 	1)
 {
-	this->synth = synth; 
+	this->synth = synth;
 }
 
 PianoWindow::~PianoWindow()
@@ -564,11 +564,11 @@ int PianoWindow::create_objects()
 	add_subwindow(new PianoClear(synth, x, y));
 
 
-	x = 50;  
+	x = 50;
 	y = 220;
-	add_subwindow(new BC_Title(x, y, _("Level"))); 
+	add_subwindow(new BC_Title(x, y, _("Level")));
 	x += 75;
-	add_subwindow(new BC_Title(x, y, _("Phase"))); 
+	add_subwindow(new BC_Title(x, y, _("Phase")));
 	x += 75;
 	add_subwindow(new BC_Title(x, y, _("Harmonic")));
 
@@ -603,13 +603,13 @@ int PianoWindow::close_event()
 int PianoWindow::resize_event(int w, int h)
 {
 	clear_box(0, 0, w, h);
-	subwindow->reposition_window(subwindow->get_x(), 
-		subwindow->get_y(), 
-		subwindow->get_w(), 
+	subwindow->reposition_window(subwindow->get_x(),
+		subwindow->get_y(),
+		subwindow->get_w(),
 		h - subwindow->get_y());
 	subwindow->clear_box(0, 0, subwindow->get_w(), subwindow->get_h());
-	scroll->reposition_window(scroll->get_x(), 
-		scroll->get_y(), 
+	scroll->reposition_window(scroll->get_x(),
+		scroll->get_y(),
 		h - scroll->get_y());
 	update_scrollbar();
 	update_oscillators();
@@ -626,7 +626,7 @@ void PianoWindow::update_gui()
 	wetness->update(synth->config.wetness);
 	waveform_to_text(string, synth->config.wavefunction);
 	waveform->set_text(string);
-	
+
 	update_scrollbar();
 	update_oscillators();
 	canvas->update();
@@ -634,8 +634,8 @@ void PianoWindow::update_gui()
 
 void PianoWindow::update_scrollbar()
 {
-	scroll->update_length(synth->config.oscillator_config.total * OSCILLATORHEIGHT, 
-		scroll->get_position(), 
+	scroll->update_length(synth->config.oscillator_config.total * OSCILLATORHEIGHT,
+		scroll->get_position(),
 		subwindow->get_h());
 }
 
@@ -646,8 +646,8 @@ void PianoWindow::update_oscillators()
 
 
 // Add new oscillators
-	for(i = 0; 
-		i < synth->config.oscillator_config.total; 
+	for(i = 0;
+		i < synth->config.oscillator_config.total;
 		i++)
 	{
 		PianoOscGUI *gui;
@@ -677,7 +677,7 @@ void PianoWindow::update_oscillators()
 	}
 
 // Delete old oscillators
-	for( ; 
+	for( ;
 		i < oscillators.total;
 		i++)
 		oscillators.remove_object();
@@ -735,10 +735,10 @@ int PianoOscGUI::create_objects(int y)
 
 
 PianoOscGUILevel::PianoOscGUILevel(Piano *synth, PianoOscGUI *gui, int y)
- : BC_FPot(50, 
- 	y, 
-	synth->config.oscillator_config.values[gui->number]->level, 
-	INFINITYGAIN, 
+ : BC_FPot(50,
+ 	y,
+	synth->config.oscillator_config.values[gui->number]->level,
+	INFINITYGAIN,
 	0)
 {
 	this->synth = synth;
@@ -761,10 +761,10 @@ int PianoOscGUILevel::handle_event()
 
 
 PianoOscGUIPhase::PianoOscGUIPhase(Piano *synth, PianoOscGUI *gui, int y)
- : BC_IPot(125, 
- 	y, 
-	(int64_t)(synth->config.oscillator_config.values[gui->number]->phase * 360), 
-	0, 
+ : BC_IPot(125,
+ 	y,
+	(int64_t)(synth->config.oscillator_config.values[gui->number]->phase * 360),
+	0,
 	360)
 {
 	this->synth = synth;
@@ -787,10 +787,10 @@ int PianoOscGUIPhase::handle_event()
 
 
 PianoOscGUIFreq::PianoOscGUIFreq(Piano *synth, PianoOscGUI *gui, int y)
- : BC_IPot(200, 
- 	y, 
-	(int64_t)(synth->config.oscillator_config.values[gui->number]->freq_factor), 
-	1, 
+ : BC_IPot(200,
+ 	y,
+	(int64_t)(synth->config.oscillator_config.values[gui->number]->freq_factor),
+	1,
 	100)
 {
 	this->synth = synth;
@@ -857,17 +857,17 @@ int PianoDelOsc::handle_event()
 }
 
 
-PianoScroll::PianoScroll(Piano *synth, 
-	PianoWindow *window, 
-	int x, 
-	int y, 
+PianoScroll::PianoScroll(Piano *synth,
+	PianoWindow *window,
+	int x,
+	int y,
 	int h)
- : BC_ScrollBar(x, 
- 	y, 
+ : BC_ScrollBar(x,
+ 	y,
 	SCROLL_VERT,
-	h, 
-	synth->config.oscillator_config.total * OSCILLATORHEIGHT, 
-	0, 
+	h,
+	synth->config.oscillator_config.total * OSCILLATORHEIGHT,
+	0,
 	window->subwindow->get_h())
 {
 	this->synth = synth;
@@ -972,10 +972,10 @@ int PianoWaveFormItem::handle_event()
 
 
 PianoWetness::PianoWetness(Piano *synth, int x, int y)
- : BC_FPot(x, 
-		y, 
-		synth->config.wetness, 
-		INFINITYGAIN, 
+ : BC_FPot(x,
+		y,
+		synth->config.wetness,
+		INFINITYGAIN,
 		0)
 {
 	this->synth = synth;
@@ -1022,7 +1022,7 @@ PianoBaseFreq::~PianoBaseFreq()
 int PianoBaseFreq::handle_event()
 {
 	int new_value = atol(get_text());
-	
+
 	if(new_value > 0 && new_value < 30000)
 	{
 		synth->config.base_freq = new_value;
@@ -1036,16 +1036,16 @@ int PianoBaseFreq::handle_event()
 
 
 
-PianoCanvas::PianoCanvas(Piano *synth, 
-	PianoWindow *window, 
-	int x, 
-	int y, 
-	int w, 
+PianoCanvas::PianoCanvas(Piano *synth,
+	PianoWindow *window,
+	int x,
+	int y,
+	int w,
 	int h)
- : BC_SubWindow(x, 
- 	y, 
-	w, 
-	h, 
+ : BC_SubWindow(x,
+ 	y,
+	w,
+	h,
 	BLACK)
 {
 	this->synth = synth;
@@ -1059,7 +1059,7 @@ PianoCanvas::~PianoCanvas()
 int PianoCanvas::update()
 {
 	int y1, y2, y = 0;
-	
+
 	clear_box(0, 0, get_w(), get_h());
 	set_color(RED);
 
@@ -1069,7 +1069,7 @@ int PianoCanvas::update()
 
 	double normalize_constant = (double)1 / synth->get_total_power();
 	y1 = (int)(synth->get_point((float)0, normalize_constant) * get_h() / 2);
-	
+
 	for(int i = 1; i < get_w(); i++)
 	{
 		y2 = (int)(synth->get_point((float)i / get_w(), normalize_constant) * get_h() / 2);
@@ -1090,11 +1090,11 @@ int PianoCanvas::update()
 // ======================= level calculations
 PianoLevelZero::PianoLevelZero(Piano *synth)
  : BC_MenuItem(_("Zero"))
-{ 
-	this->synth = synth; 
+{
+	this->synth = synth;
 }
 
-PianoLevelZero::~PianoLevelZero() 
+PianoLevelZero::~PianoLevelZero()
 {
 }
 
@@ -1111,8 +1111,8 @@ int PianoLevelZero::handle_event()
 
 PianoLevelMax::PianoLevelMax(Piano *synth)
  : BC_MenuItem(_("Maximum"))
-{ 
-	this->synth = synth; 
+{
+	this->synth = synth;
 }
 
 PianoLevelMax::~PianoLevelMax()
@@ -1157,7 +1157,7 @@ int PianoLevelNormalize::handle_event()
 		new_value = synth->db.fromdb(synth->config.oscillator_config.values[i]->level);
 		new_value *= scale;
 		new_value = synth->db.todb(new_value);
-		
+
 		synth->config.oscillator_config.values[i]->level = new_value;
 	}
 
@@ -1178,7 +1178,7 @@ PianoLevelSlope::~PianoLevelSlope()
 int PianoLevelSlope::handle_event()
 {
 	float slope = (float)INFINITYGAIN / synth->config.oscillator_config.total;
-	
+
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
 		synth->config.oscillator_config.values[i]->level = i * slope;
@@ -1190,8 +1190,8 @@ int PianoLevelSlope::handle_event()
 
 PianoLevelRandom::PianoLevelRandom(Piano *synth)
  : BC_MenuItem(_("Random"))
-{ 
-	this->synth = synth; 
+{
+	this->synth = synth;
 }
 PianoLevelRandom::~PianoLevelRandom()
 {
@@ -1222,7 +1222,7 @@ int PianoLevelInvert::handle_event()
 {
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
-		synth->config.oscillator_config.values[i]->level = 
+		synth->config.oscillator_config.values[i]->level =
 			INFINITYGAIN - synth->config.oscillator_config.values[i]->level;
 	}
 
@@ -1269,7 +1269,7 @@ int PianoPhaseInvert::handle_event()
 {
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
-		synth->config.oscillator_config.values[i]->phase = 
+		synth->config.oscillator_config.values[i]->phase =
 			1 - synth->config.oscillator_config.values[i]->phase;
 	}
 
@@ -1334,7 +1334,7 @@ int PianoPhaseRandom::handle_event()
 	srand(time(0));
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
-		synth->config.oscillator_config.values[i]->phase = 
+		synth->config.oscillator_config.values[i]->phase =
 			(float)(rand() % 360) / 360;
 	}
 
@@ -1429,8 +1429,8 @@ int PianoFreqOdd::handle_event()
 
 PianoFreqFibonacci::PianoFreqFibonacci(Piano *synth)
  : BC_MenuItem(_("Fibonnacci"))
-{ 
-	this->synth = synth; 
+{
+	this->synth = synth;
 }
 PianoFreqFibonacci::~PianoFreqFibonacci()
 {
@@ -1453,8 +1453,8 @@ int PianoFreqFibonacci::handle_event()
 
 PianoFreqPrime::PianoFreqPrime(Piano *synth)
  : BC_MenuItem(_("Prime"))
-{ 
-	this->synth = synth; 
+{
+	this->synth = synth;
 }
 PianoFreqPrime::~PianoFreqPrime()
 {
@@ -1476,18 +1476,18 @@ int PianoFreqPrime::handle_event()
 float PianoFreqPrime::get_next_prime(float number)
 {
 	int result = 1;
-	
+
 	while(result)
 	{
 		result = 0;
 		number++;
-		
+
 		for(float i = number - 1; i > 1 && !result; i--)
 		{
 			if((number / i) - (int)(number / i) == 0) result = 1;
 		}
 	}
-	
+
 	return number;
 }
 
@@ -1536,7 +1536,7 @@ void PianoOscillatorConfig::save_data(FileXML *file)
 
 int PianoOscillatorConfig::equivalent(PianoOscillatorConfig &that)
 {
-	if(EQUIV(level, that.level) && 
+	if(EQUIV(level, that.level) &&
 		EQUIV(phase, that.phase) &&
 		EQUIV(freq_factor, that.freq_factor))
 		return 1;
@@ -1606,7 +1606,7 @@ void PianoConfig::copy_from(PianoConfig& that)
 	wavefunction = that.wavefunction;
 
 	int i;
-	for(i = 0; 
+	for(i = 0;
 		i < oscillator_config.total && i < that.oscillator_config.total;
 		i++)
 	{
@@ -1629,10 +1629,10 @@ void PianoConfig::copy_from(PianoConfig& that)
 	}
 }
 
-void PianoConfig::interpolate(PianoConfig &prev, 
-	PianoConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void PianoConfig::interpolate(PianoConfig &prev,
+	PianoConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);

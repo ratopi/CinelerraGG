@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcsignals.h"
@@ -107,9 +107,9 @@ BlondCVTheme::~BlondCVTheme()
 void BlondCVTheme::initialize()
 {
 	BC_Resources *resources = BC_WindowBase::get_resources();
-	resources->generic_button_images = new_image_set(3, 
-			"generic_up.png", 
-			"generic_hi.png", 
+	resources->generic_button_images = new_image_set(3,
+			"generic_up.png",
+			"generic_hi.png",
 			"generic_dn.png");
 	resources->horizontal_slider_data = new_image_set(6,
 			"hslider_fg_up.png",
@@ -136,12 +136,12 @@ void BlondCVTheme::initialize()
 		"listbox_column_hi.png",
 		"listbox_column_dn.png");
 	resources->pan_data = new_image_set(7,
-			"pan_up.png", 
-			"pan_hi.png", 
-			"pan_popup.png", 
-			"pan_channel.png", 
-			"pan_stick.png", 
-			"pan_channel_small.png", 
+			"pan_up.png",
+			"pan_hi.png",
+			"pan_popup.png",
+			"pan_channel.png",
+			"pan_stick.png",
+			"pan_channel_small.png",
 			"pan_stick_small.png");
 	resources->pan_text_color = WHITE;
 
@@ -181,7 +181,7 @@ void BlondCVTheme::initialize()
 	resources->pot_offset = 1;
 	resources->progress_text = resources->text_default;
 	resources->meter_font_color = RED;
-	resources->xmeter_images = new_image_set(7, 
+	resources->xmeter_images = new_image_set(7,
 		"xmeter_normal.png",
 		"xmeter_green.png",
 		"xmeter_red.png",
@@ -189,7 +189,7 @@ void BlondCVTheme::initialize()
 		"xmeter_white.png",
 		"xmeter_over.png",
 		"downmix51_2.png");
-	resources->ymeter_images = new_image_set(7, 
+	resources->ymeter_images = new_image_set(7,
 		"ymeter_normal.png",
 		"ymeter_green.png",
 		"ymeter_red.png",
@@ -240,7 +240,7 @@ void BlondCVTheme::initialize()
 	resources->listbox_inactive = 0xffffffff; // (background)
 	resources->listbox_bg = new_image("list_bg.png");
 	resources->listbox_text = 0x000000;
-	resources->ok_images = new_button("ok.png", 
+	resources->ok_images = new_button("ok.png",
 			"generic_up.png",
 			"generic_hi.png",
 			"generic_dn.png");
@@ -249,13 +249,13 @@ void BlondCVTheme::initialize()
 	resources->filebox_margin = 101;
 	resources->file_color = 0x000000;
 	resources->directory_color = 0x0000ff;
-	resources->cancel_images = new_button("cancel.png", 
+	resources->cancel_images = new_button("cancel.png",
 			"generic_up.png",
 			"generic_hi.png",
 			"generic_dn.png");
 
 
-	
+
 // Record windows
 	rgui_batch = new_image("recordgui_batch.png");
 	rgui_controls = new_image("recordgui_controls.png");
@@ -295,30 +295,30 @@ void BlondCVTheme::initialize()
 
 
 	resources->filebox_descend_images = new_button("openfolder.png",
-		"generic_up.png", 
-		"generic_hi.png", 
+		"generic_up.png",
+		"generic_hi.png",
 		"generic_dn.png");
 
-	resources->usethis_button_images = 
+	resources->usethis_button_images =
 		resources->ok_images = new_button("ok.png",
-		"generic_up.png", 
-		"generic_hi.png", 
+		"generic_up.png",
+		"generic_hi.png",
 		"generic_dn.png");
 
 	new_button("ok.png",
-		"generic_up.png", 
-		"generic_hi.png", 
+		"generic_up.png",
+		"generic_hi.png",
 		"generic_dn.png",
 		"new_ok_images");
 
 	resources->cancel_images = new_button("cancel.png",
-		"generic_up.png", 
-		"generic_hi.png", 
+		"generic_up.png",
+		"generic_hi.png",
 		"generic_dn.png");
 
 	new_button("cancel.png",
-		"generic_up.png", 
-		"generic_hi.png", 
+		"generic_up.png",
+		"generic_hi.png",
 		"generic_dn.png",
 		"new_cancel_images");
 
@@ -485,20 +485,20 @@ void BlondCVTheme::initialize()
 	new_bg = new_image("new_bg.png");
 	setformat_bg = new_image("setformat_bg2.png");
 
-	new_toggle("plugin_on.png", 
-		"pluginbutton_hi.png", 
-		"pluginbutton_hi.png", 
-		"pluginbutton_select.png", 
-		"pluginbutton_dn.png", 
-		"pluginbutton_selecthi.png", 
+	new_toggle("plugin_on.png",
+		"pluginbutton_hi.png",
+		"pluginbutton_hi.png",
+		"pluginbutton_select.png",
+		"pluginbutton_dn.png",
+		"pluginbutton_selecthi.png",
 		"plugin_on");
 
-	new_toggle("plugin_show.png", 
-		"plugin_show.png", 
-		"pluginbutton_hi.png", 
-		"pluginbutton_select.png", 
-		"pluginbutton_dn.png", 
-		"pluginbutton_selecthi.png", 
+	new_toggle("plugin_show.png",
+		"plugin_show.png",
+		"pluginbutton_hi.png",
+		"pluginbutton_select.png",
+		"pluginbutton_dn.png",
+		"pluginbutton_selecthi.png",
 		"plugin_show");
 	new_image("cpanel_bg", "cpanel_bg.png");
 	new_image("cbuttons_left", "cbuttons_left.png");
@@ -534,7 +534,7 @@ void BlondCVTheme::initialize()
 	browse_pad = 20;
 
 
-	new_image_set("playpatch_data", 
+	new_image_set("playpatch_data",
 		5,
 		"playpatch_up.png",
 		"playpatch_hi.png",
@@ -542,7 +542,7 @@ void BlondCVTheme::initialize()
 		"playpatch_dn.png",
 		"playpatch_checkedhi.png");
 
-	new_image_set("recordpatch_data", 
+	new_image_set("recordpatch_data",
 		5,
 		"recordpatch_up.png",
 		"recordpatch_hi.png",
@@ -550,7 +550,7 @@ void BlondCVTheme::initialize()
 		"recordpatch_dn.png",
 		"recordpatch_checkedhi.png");
 
-	new_image_set("gangpatch_data", 
+	new_image_set("gangpatch_data",
 		5,
 		"gangpatch_up.png",
 		"gangpatch_hi.png",
@@ -558,7 +558,7 @@ void BlondCVTheme::initialize()
 		"gangpatch_dn.png",
 		"gangpatch_checkedhi.png");
 
-	new_image_set("drawpatch_data", 
+	new_image_set("drawpatch_data",
 		5,
 		"drawpatch_up.png",
 		"drawpatch_hi.png",
@@ -567,7 +567,7 @@ void BlondCVTheme::initialize()
 		"drawpatch_checkedhi.png");
 
 
-	new_image_set("mutepatch_data", 
+	new_image_set("mutepatch_data",
 		5,
 		"mutepatch_up.png",
 		"mutepatch_hi.png",
@@ -577,7 +577,7 @@ void BlondCVTheme::initialize()
 	build_icons();
 	build_bg_data();
 
-	new_image_set("expandpatch_data", 
+	new_image_set("expandpatch_data",
 		5,
 		"expandpatch_up.png",
 		"expandpatch_hi.png",
@@ -598,30 +598,30 @@ void BlondCVTheme::initialize()
 
 
 	out_point = new_image_set(5,
-		"out_up.png", 
-		"out_hi.png", 
-		"out_checked.png", 
-		"out_dn.png", 
+		"out_up.png",
+		"out_hi.png",
+		"out_checked.png",
+		"out_dn.png",
 		"out_checkedhi.png");
 	in_point = new_image_set(5,
-		"in_up.png", 
-		"in_hi.png", 
-		"in_checked.png", 
-		"in_dn.png", 
+		"in_up.png",
+		"in_hi.png",
+		"in_checked.png",
+		"in_dn.png",
 		"in_checkedhi.png");
 
 	label_toggle = new_image_set(5,
-		"labeltoggle_up.png", 
-		"labeltoggle_uphi.png", 
-		"label_checked.png", 
-		"labeltoggle_dn.png", 
+		"labeltoggle_up.png",
+		"labeltoggle_uphi.png",
+		"label_checked.png",
+		"labeltoggle_dn.png",
 		"label_checkedhi.png");
 
 	ffmpeg_toggle = new_image_set(5,
-		"ff_up.png", 
-		"ff_hi.png", 
-		"ff_checked.png", 
-		"ff_down.png", 
+		"ff_up.png",
+		"ff_hi.png",
+		"ff_checked.png",
+		"ff_down.png",
 		"ff_checkedhi.png");
 
 	shbtn_data = new_image_set(3,
@@ -733,12 +733,12 @@ void BlondCVTheme::initialize()
 	//show_meters = new_toggle("show_meters.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
 	//titlesafe_data = new_toggle("titlesafe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
 	//tool_data = new_toggle("toolwindow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	new_toggle("eyedrop.png", 
-		editpanel_up, 
-		editpanel_hi, 
-		editpanel_checked, 
-		editpanel_dn, 
-		editpanel_checkedhi, 
+	new_toggle("eyedrop.png",
+		editpanel_up,
+		editpanel_hi,
+		editpanel_checked,
+		editpanel_dn,
+		editpanel_checkedhi,
 		"cwindow_eyedrop");
 
 	new_image_set("category_button_checked",
@@ -753,8 +753,8 @@ void BlondCVTheme::initialize()
 
 
 	static VFrame **transport_bg = new_image_set(3,
-		"transportup.png", 
-		"transporthi.png", 
+		"transportup.png",
+		"transporthi.png",
 		"transportdn.png");
 	new_toggle("show_meters.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "meters");
 	build_transport((char*)"end", get_image_data("end.png"), transport_bg, 2);
@@ -792,7 +792,7 @@ void BlondCVTheme::initialize()
 
 	flush_images();
 
-	new_toggle("blank30x30.png", 
+	new_toggle("blank30x30.png",
 		   new_image("locklabels_locked.png"),
 		   new_image("locklabels_lockedhi.png"),
 		   new_image("locklabels_unlocked.png"),
@@ -818,10 +818,10 @@ void BlondCVTheme::initialize()
 
 	//labels
  	resources->label_images = new_image_set(5,
-  		"radial_up.png", 
-  		"radial_hi.png", 
-  		"radial_checked.png", 
-  		"radial_dn.png", 
+  		"radial_up.png",
+  		"radial_hi.png",
+  		"radial_checked.png",
+  		"radial_dn.png",
   		"radial_checkedhi.png");
 
 	/*	resources->type_to_icon = new_image_set(5,
@@ -829,7 +829,7 @@ void BlondCVTheme::initialize()
 	        "file_unknown.png",
           	"file_film.png",
 	        "file_sound.png",
-	        "file_column.png"); 
+	        "file_column.png");
    */
 }
 
@@ -902,7 +902,7 @@ void BlondCVTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		cstatus_y = mwindow->session->cwindow_h - 40;
 		if(mwindow->edl->session->cwindow_meter)
 		{
-			cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(this,mwindow->edl->session->audio_channels, 
+			cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(this,mwindow->edl->session->audio_channels,
 				mwindow->edl->session->cwindow_meter);
 			ccanvas_w = cmeter_x - ccanvas_x - 5;
 		}
@@ -962,7 +962,7 @@ SET_TRACE
 
 void BlondCVTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 {
-	
+
 	recordgui_status_x = 10;
 	recordgui_status_y = 10;
 	recordgui_status_x2 = 160;
@@ -990,7 +990,7 @@ void BlondCVTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 	recordgui_controls_y = h - 40;
 }
 /*
-void BlondCVTheme::get_rmonitor_sizes(int do_audio, 
+void BlondCVTheme::get_rmonitor_sizes(int do_audio,
 	int do_video,
 	int do_channel,
 	int do_interlace,
@@ -1023,10 +1023,10 @@ void BlondCVTheme::get_vwindow_sizes(VWindowGUI *gui)
 	{
 		rmonitor_meter_y -= 30;
 		rmonitor_meter_h += 30;
-		vmeter_x = mwindow->session->vwindow_w - 
-			VWINDOW_METER_MARGIN - 
+		vmeter_x = mwindow->session->vwindow_w -
+			VWINDOW_METER_MARGIN -
 			MeterPanel::get_meters_width(this,
-				mwindow->edl->session->audio_channels, 
+				mwindow->edl->session->audio_channels,
 				mwindow->edl->session->vwindow_meter);
 		vcanvas_w = vmeter_x - vcanvas_x - VWINDOW_METER_MARGIN;
 	}
@@ -1047,7 +1047,7 @@ void BlondCVTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vedit_x = 10;
 	vedit_y = vslider_y + BC_Slider::get_span(0);
 	vtransport_x = 10;
-	vtransport_y = mwindow->session->vwindow_h - 
+	vtransport_y = mwindow->session->vwindow_h -
 		get_image_set("autokeyframe")[0]->get_h();
 	vtime_x = 380;
 	vtime_y = vedit_y + 10;
@@ -1137,9 +1137,9 @@ void BlondCVTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 // 	int x = rmonitor_meter_x - margin;
 // 	int w = mwindow->session->rmonitor_w - x;
 // 	if(w < rmonitor_meters->get_w()) w = rmonitor_meters->get_w();
-// 	gui->clear_box(0, 
-// 		0, 
-// 		mwindow->session->rmonitor_w, 
+// 	gui->clear_box(0,
+// 		0,
+// 		mwindow->session->rmonitor_w,
 // 		mwindow->session->rmonitor_h);
 // 	gui->draw_9segment(x,
 // 		0,
@@ -1156,62 +1156,62 @@ void BlondCVTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 void BlondCVTheme::draw_mwindow_bg(MWindowGUI *gui)
 {
 // Button bar
-	gui->draw_3segmenth(mbuttons_x, 
-		mbuttons_y, 
-		750, 
+	gui->draw_3segmenth(mbuttons_x,
+		mbuttons_y,
+		750,
 		mbutton_left);
-	gui->draw_3segmenth(mbuttons_x + 750, 
-		mbuttons_y, 
-		mbuttons_w - 500, 
+	gui->draw_3segmenth(mbuttons_x + 750,
+		mbuttons_y,
+		mbuttons_w - 500,
 		mbutton_right);
 
 // Clock
-	gui->draw_3segmenth(0, 
+	gui->draw_3segmenth(0,
 		mbuttons_y + mbutton_left->get_h(),
-		get_image("patchbay_bg")->get_w(), 
+		get_image("patchbay_bg")->get_w(),
 		get_image("clock_bg"));
 
 // Patchbay
-	gui->draw_3segmentv(patchbay_x, 
-		patchbay_y, 
-		patchbay_h + 20, 
+	gui->draw_3segmentv(patchbay_x,
+		patchbay_y,
+		patchbay_h + 20,
 		get_image("patchbay_bg"));
 
 // Track canvas
-	gui->draw_9segment(mcanvas_x, 
-		mcanvas_y, 
-		mcanvas_w, 
-		patchbay_h + 20, 
+	gui->draw_9segment(mcanvas_x,
+		mcanvas_y,
+		mcanvas_w,
+		patchbay_h + 20,
 		tracks_bg);
 
 // Timebar
-	gui->draw_3segmenth(mtimebar_x, 
-		mtimebar_y, 
-		mtimebar_w, 
+	gui->draw_3segmenth(mtimebar_x,
+		mtimebar_y,
+		mtimebar_w,
 		get_image("timebar_bg"));
 
 // Zoombar
 	int zoombar_center = 710;
-	gui->draw_3segmenth(mzoom_x, 
+	gui->draw_3segmenth(mzoom_x,
 		mzoom_y,
-		zoombar_center, 
+		zoombar_center,
 		zoombar_left);
 	if(mzoom_w > zoombar_center)
-		gui->draw_3segmenth(mzoom_x + zoombar_center, 
-			mzoom_y, 
-			mzoom_w - zoombar_center, 
+		gui->draw_3segmenth(mzoom_x + zoombar_center,
+			mzoom_y,
+			mzoom_w - zoombar_center,
 			zoombar_right);
 
 // Status
-	gui->draw_3segmenth(mstatus_x, 
+	gui->draw_3segmenth(mstatus_x,
 		mstatus_y,
-		zoombar_center, 
+		zoombar_center,
 		statusbar_left);
 
 	if(mstatus_w > zoombar_center)
-		gui->draw_3segmenth(mstatus_x + zoombar_center, 
+		gui->draw_3segmenth(mstatus_x + zoombar_center,
 			mstatus_y,
-			mstatus_w - zoombar_center, 
+			mstatus_w - zoombar_center,
 			statusbar_right);
 }
 
@@ -1222,21 +1222,21 @@ void BlondCVTheme::draw_cwindow_bg(CWindowGUI *gui)
 	gui->draw_3segmenth(0, ccomposite_h, button_division, get_image("cbuttons_left"));
 	if(mwindow->edl->session->cwindow_meter)
 	{
-		gui->draw_3segmenth(button_division, 
-			ccomposite_h, 
-			cmeter_x - CWINDOW_METER_MARGIN - button_division, 
+		gui->draw_3segmenth(button_division,
+			ccomposite_h,
+			cmeter_x - CWINDOW_METER_MARGIN - button_division,
 			get_image("cbuttons_right"));
-		gui->draw_9segment(cmeter_x - CWINDOW_METER_MARGIN, 
-			0, 
-			mwindow->session->cwindow_w - cmeter_x + CWINDOW_METER_MARGIN, 
-			mwindow->session->cwindow_h, 
+		gui->draw_9segment(cmeter_x - CWINDOW_METER_MARGIN,
+			0,
+			mwindow->session->cwindow_w - cmeter_x + CWINDOW_METER_MARGIN,
+			mwindow->session->cwindow_h,
 			get_image("cmeter_bg"));
 	}
 	else
 	{
-		gui->draw_3segmenth(button_division, 
-			ccomposite_h, 
-			cmeter_x - CWINDOW_METER_MARGIN - button_division + 100, 
+		gui->draw_3segmenth(button_division,
+			ccomposite_h,
+			cmeter_x - CWINDOW_METER_MARGIN - button_division + 100,
 			get_image("cbuttons_right"));
 	}
 }
@@ -1244,27 +1244,27 @@ void BlondCVTheme::draw_cwindow_bg(CWindowGUI *gui)
 void BlondCVTheme::draw_vwindow_bg(VWindowGUI *gui)
 {
 	const int button_division = 400;
-	gui->draw_3segmenth(0, 
-		vcanvas_h, 
-		button_division, 
+	gui->draw_3segmenth(0,
+		vcanvas_h,
+		button_division,
 		get_image("vbuttons_left"));
 	if(mwindow->edl->session->vwindow_meter)
 	{
-		gui->draw_3segmenth(button_division, 
-			vcanvas_h, 
-			vmeter_x - VWINDOW_METER_MARGIN - button_division, 
+		gui->draw_3segmenth(button_division,
+			vcanvas_h,
+			vmeter_x - VWINDOW_METER_MARGIN - button_division,
 			get_image("cbuttons_right"));
 		gui->draw_9segment(vmeter_x - VWINDOW_METER_MARGIN,
 			0,
-			mwindow->session->vwindow_w - vmeter_x + VWINDOW_METER_MARGIN, 
-			mwindow->session->vwindow_h, 
+			mwindow->session->vwindow_w - vmeter_x + VWINDOW_METER_MARGIN,
+			mwindow->session->vwindow_h,
 			get_image("cmeter_bg"));
 	}
 	else
 	{
-		gui->draw_3segmenth(button_division, 
-			vcanvas_h, 
-			vmeter_x - VWINDOW_METER_MARGIN - button_division + 100, 
+		gui->draw_3segmenth(button_division,
+			vcanvas_h,
+			vmeter_x - VWINDOW_METER_MARGIN - button_division + 100,
 			get_image("cbuttons_right"));
 	}
 }

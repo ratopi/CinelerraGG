@@ -1,5 +1,5 @@
 // Originally developed by Heroine Virtual Ltd.
-// Support for multiple encodings, outline (stroke) by 
+// Support for multiple encodings, outline (stroke) by
 // Andraz Tori <Andraz.tori1@guest.arnes.si>
 
 
@@ -70,7 +70,7 @@ int TitleConfig::equivalent(TitleConfig &that)
 		color == that.color &&
 		color_stroke == that.color_stroke &&
 		stroke_width == that.stroke_width &&
-		timecode == that.timecode && 
+		timecode == that.timecode &&
 		hjustification == that.hjustification &&
 		vjustification == that.vjustification &&
 		EQUIV(pixels_per_second, that.pixels_per_second) &&
@@ -102,10 +102,10 @@ void TitleConfig::copy_from(TitleConfig &that)
 	strcpy(encoding, that.encoding);
 }
 
-void TitleConfig::interpolate(TitleConfig &prev, 
-	TitleConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void TitleConfig::interpolate(TitleConfig &prev,
+	TitleConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	strcpy(font, prev.font);
@@ -277,10 +277,10 @@ void GlyphUnit::process_package(LoadPackage *package)
 
 //printf("GlyphUnit::process_package 1 %c\n", glyph->char_code);
 // Char not found
-		if (gindex == 0) 
+		if (gindex == 0)
 		{
 // carrige return
-			if (glyph->char_code != 10)  
+			if (glyph->char_code != 10)
 				printf(_("GlyphUnit::process_package FT_Load_Char failed - char: %i.\n"),
 					glyph->char_code);
 // Prevent a crash here
@@ -302,7 +302,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 
 
 // create outline glyph
-			if (plugin->config.stroke_width >= ZERO && 
+			if (plugin->config.stroke_width >= ZERO &&
 				(plugin->config.style & FONT_OUTLINE))
 			{
 				glyph->data_stroke = new VFrame(0,
@@ -319,7 +319,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 		else
 // char found and no outline desired
 		if (plugin->config.stroke_width < ZERO ||
-			!(plugin->config.style & FONT_OUTLINE)) 
+			!(plugin->config.style & FONT_OUTLINE))
 		{
 			FT_Glyph glyph_image;
 			FT_BBox bbox;
@@ -343,9 +343,9 @@ void GlyphUnit::process_package(LoadPackage *package)
 			glyph->top = (bbox.yMax + 31) >> 6;
 			glyph->freetype_index = gindex;
 			glyph->advance_w = ((freetype_face->glyph->advance.x + 31) >> 6);
-//printf("GlyphUnit::process_package 1 width=%d height=%d pitch=%d left=%d top=%d advance_w=%d freetype_index=%d\n", 
+//printf("GlyphUnit::process_package 1 width=%d height=%d pitch=%d left=%d top=%d advance_w=%d freetype_index=%d\n",
 //glyph->width, glyph->height, glyph->pitch, glyph->left, glyph->top, glyph->advance_w, glyph->freetype_index);
-	
+
 			glyph->data = new VFrame(0,
 				glyph->width,
 				glyph->height,
@@ -358,7 +358,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 				&bm);
 			FT_Done_Glyph(glyph_image);
 		}
-		else 
+		else
 // Outline desired and glyph found
 		{
 			FT_Glyph glyph_image;
@@ -367,11 +367,11 @@ void GlyphUnit::process_package(LoadPackage *package)
 			FT_Outline outline;
 			FT_Bitmap bm;
 			FT_BBox bbox;
-			FT_UInt npoints, ncontours;	
+			FT_UInt npoints, ncontours;
 
-			typedef struct  FT_LibraryRec_ 
-			{    
-				FT_Memory memory; 
+			typedef struct  FT_LibraryRec_
+			{
+				FT_Memory memory;
 			} FT_LibraryRec;
 
 			FT_Load_Glyph(freetype_face, gindex, FT_LOAD_DEFAULT);
@@ -388,7 +388,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 				glyph->height=0;
 				glyph->top=0;
 				glyph->left=0;
-				glyph->advance_w =((int)(freetype_face->glyph->advance.x + 
+				glyph->advance_w =((int)(freetype_face->glyph->advance.x +
 					plugin->config.stroke_width * 64)) >> 6;
 				return;
 			}
@@ -396,7 +396,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 			FT_Stroker_Set(stroker, (int)(plugin->config.stroke_width * 64), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
 			FT_Stroker_ParseOutline(stroker, &((FT_OutlineGlyph) glyph_image)->outline,1);
 			FT_Stroker_GetCounts(stroker,&npoints, &ncontours);
-			if (npoints ==0 && ncontours == 0) 
+			if (npoints ==0 && ncontours == 0)
 			{
 // this never happens, but FreeType has a bug regarding Linotype's Palatino font
 				FT_Stroker_Done(stroker);
@@ -407,7 +407,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 				glyph->height=0;
 				glyph->top=0;
 				glyph->left=0;
-				glyph->advance_w =((int)(freetype_face->glyph->advance.x + 
+				glyph->advance_w =((int)(freetype_face->glyph->advance.x +
 					plugin->config.stroke_width * 64)) >> 6;
 				return;
 			};
@@ -417,18 +417,18 @@ void GlyphUnit::process_package(LoadPackage *package)
 			outline.n_contours=0;
 			FT_Stroker_Export (stroker, &outline);
 			FT_Outline_Get_BBox(&outline, &bbox);
-		
+
 			FT_Outline_Translate(&outline,
 					- bbox.xMin,
 					- bbox.yMin);
-		
+
 			FT_Outline_Translate(&((FT_OutlineGlyph) glyph_image)->outline,
 					- bbox.xMin,
 					- bbox.yMin + (int)(plugin->config.stroke_width*32));
 //			printf("Stroke: Xmin: %ld, Xmax: %ld, Ymin: %ld, yMax: %ld\nFill	Xmin: %ld, Xmax: %ld, Ymin: %ld, yMax: %ld\n",
 //					bbox.xMin,bbox.xMax, bbox.yMin, bbox.yMax,
 //					bbox_fill.xMin,bbox_fill.xMax, bbox_fill.yMin, bbox_fill.yMax);
-	
+
 			glyph->width = bm.width = ((bbox.xMax - bbox.xMin) >> 6)+1;
 			glyph->height = bm.rows = ((bbox.yMax - bbox.yMin) >> 6) +1;
 			glyph->pitch = bm.pitch = bm.width;
@@ -438,12 +438,12 @@ void GlyphUnit::process_package(LoadPackage *package)
 			if (glyph->left < 0) glyph->left = 0;
 			glyph->top = (bbox.yMax + 31) >> 6;
 			glyph->freetype_index = gindex;
-			int real_advance = ((int)ceil((float)freetype_face->glyph->advance.x + 
+			int real_advance = ((int)ceil((float)freetype_face->glyph->advance.x +
 				plugin->config.stroke_width * 64) >> 6);
 			glyph->advance_w = glyph->width + glyph->left;
-			if (real_advance > glyph->advance_w) 
+			if (real_advance > glyph->advance_w)
 				glyph->advance_w = real_advance;
-//printf("GlyphUnit::process_package 1 width=%d height=%d pitch=%d left=%d top=%d advance_w=%d freetype_index=%d\n", 
+//printf("GlyphUnit::process_package 1 width=%d height=%d pitch=%d left=%d top=%d advance_w=%d freetype_index=%d\n",
 //glyph->width, glyph->height, glyph->pitch, glyph->left, glyph->top, glyph->advance_w, glyph->freetype_index);
 
 
@@ -464,7 +464,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 			bm.buffer=glyph->data->get_data();
 			FT_Outline_Get_Bitmap( freetype_library,
 				&((FT_OutlineGlyph) glyph_image)->outline,
-				&bm);	
+				&bm);
 			bm.buffer=glyph->data_stroke->get_data();
 			FT_Outline_Get_Bitmap( freetype_library,
            		&outline,
@@ -567,7 +567,7 @@ void TitleUnit::draw_glyph(VFrame *output, TitleGlyph *glyph, int x, int y)
 void TitleUnit::process_package(LoadPackage *package)
 {
 	TitlePackage *pkg = (TitlePackage*)package;
-	
+
 	if(pkg->c != 0xa)
 	{
 		for(int i = 0; i < plugin->glyphs.total; i++)
@@ -577,7 +577,7 @@ void TitleUnit::process_package(LoadPackage *package)
 			{
 				draw_glyph(plugin->text_mask, glyph, pkg->x, pkg->y);
 				if(plugin->config.stroke_width >= ZERO &&
-					(plugin->config.style & FONT_OUTLINE)) 
+					(plugin->config.style & FONT_OUTLINE))
 				{
 					VFrame *tmp = glyph->data;
 					glyph->data = glyph->data_stroke;
@@ -827,29 +827,29 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 		{
 			uint16_t y, u, v;
 			yuv.rgb_to_yuv_16(
-				(r_in << 8) | r_in, 
-				(g_in << 8) | g_in, 
-				(b_in << 8) | b_in, 
-				y, 
-				u, 
+				(r_in << 8) | r_in,
+				(g_in << 8) | g_in,
+				(b_in << 8) | b_in,
+				y,
+				u,
 				v);
 			TRANSLATE(uint16_t, 0xffff, 3, y, u, v);
 			break;
 		}
 		case BC_RGBA8888:
-		{	
+		{
 			TRANSLATE(unsigned char, 0xff, 4, r_in, g_in, b_in);
 			break;
 		}
 		case BC_YUVA8888:
-		{	
+		{
 			unsigned char y, u, v;
 			yuv.rgb_to_yuv_8(r_in, g_in, b_in, y, u, v);
 			TRANSLATE(unsigned char, 0xff, 4, y, u, v);
 			break;
 		}
 		case BC_RGBA16161616:
-		{	
+		{
 			uint16_t r, g, b;
 			r = (r_in << 8) | r_in;
 			g = (g_in << 8) | g_in;
@@ -858,14 +858,14 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 			break;
 		}
 		case BC_YUVA16161616:
-		{	
+		{
 			uint16_t y, u, v;
 			yuv.rgb_to_yuv_16(
-				(r_in << 8) | r_in, 
-				(g_in << 8) | g_in, 
-				(b_in << 8) | b_in, 
-				y, 
-				u, 
+				(r_in << 8) | r_in,
+				(g_in << 8) | g_in,
+				(b_in << 8) | b_in,
+				y,
+				u,
 				v);
 			TRANSLATE(uint16_t, 0xffff, 4, y, u, v);
 			break;
@@ -904,37 +904,37 @@ void TitleTranslate::init_packages()
 //printf("TitleTranslate::init_packages 1 %f %d\n", plugin->text_x1, plugin->text_w);
 
 
-	TranslateUnit::translation_array_f(x_table, 
-		plugin->text_x1, 
+	TranslateUnit::translation_array_f(x_table,
+		plugin->text_x1,
 		plugin->text_x1 + plugin->text_w,
 		0,
 		plugin->text_w,
-		plugin->text_w, 
-		output_w, 
+		plugin->text_w,
+		output_w,
 		out_x1_int,
 		out_x2_int);
 //printf("TitleTranslate::init_packages 1 %f %f\n", plugin->mask_y1, plugin->mask_y2);
 
-	TranslateUnit::translation_array_f(y_table, 
-		plugin->mask_y1, 
+	TranslateUnit::translation_array_f(y_table,
+		plugin->mask_y1,
 		plugin->mask_y1 + plugin->text_mask->get_h(),
 		0,
 		plugin->text_mask->get_h(),
-		plugin->text_mask->get_h(), 
-		output_h, 
+		plugin->text_mask->get_h(),
+		output_h,
 		out_y1_int,
 		out_y2_int);
 
 //printf("TitleTranslate::init_packages 1\n");
 
-	
+
 	out_y1 = out_y1_int;
 	out_y2 = out_y2_int;
 	out_x1 = out_x1_int;
 	out_x2 = out_x2_int;
 	int increment = (out_y2 - out_y1) / get_total_packages() + 1;
 
-//printf("TitleTranslate::init_packages 1 %d %d %d %d\n", 
+//printf("TitleTranslate::init_packages 1 %d %d %d %d\n",
 //	out_y1, out_y2, out_y1_int, out_y2_int);
 	for(int i = 0; i < get_total_packages(); i++)
 	{
@@ -1026,8 +1026,8 @@ void TitleMain::build_fonts()
 		strcpy(ptr + 1, FONT_SEARCHPATH);
 		char command_line[BCTEXTLEN];
 
-		sprintf(command_line, 
-			"find %s -name 'fonts.dir' -print -exec cat {} \\;", 
+		sprintf(command_line,
+			"find %s -name 'fonts.dir' -print -exec cat {} \\;",
 			search_path);
 //printf("TitleMain::build_fonts %s\n", command_line);
 
@@ -1255,7 +1255,7 @@ void TitleMain::build_fonts()
 				{
 //printf("TitleMain::build_fonts 1 %s\n", entry->path);
 // This takes a real long time to do.  Instead just take all fonts
-// 					if(!load_freetype_face(freetype_library, 
+// 					if(!load_freetype_face(freetype_library,
 // 						freetype_face,
 // 						entry->path))
 //					if(1)
@@ -1267,10 +1267,10 @@ void TitleMain::build_fonts()
 						strcpy(entry->fixed_title, string);
 
 						if(!strcasecmp(entry->weight, "demibold") ||
-							!strcasecmp(entry->weight, "bold")) 
+							!strcasecmp(entry->weight, "bold"))
 							entry->fixed_style |= FONT_BOLD;
 						if(!strcasecmp(entry->slant, "i") ||
-							!strcasecmp(entry->slant, "o")) 
+							!strcasecmp(entry->slant, "o"))
 							entry->fixed_style |= FONT_ITALIC;
 						fonts->append(entry);
 //						printf("TitleMain::build_fonts %s: success\n",
@@ -1314,8 +1314,8 @@ int TitleMain::load_freetype_face(FT_Library &freetype_library,
 //printf("TitleMain::load_freetype_face 2\n");
 
 // Use freetype's internal function for loading font
-	if(FT_New_Face(freetype_library, 
-		path, 
+	if(FT_New_Face(freetype_library,
+		path,
 		0,
 		&freetype_face))
 	{
@@ -1355,7 +1355,7 @@ FontEntry* TitleMain::get_font_entry(char *title,
 			if(entry->fixed_style == style)
 				result = entry;
 
-			if(entry->fixed_style == style && entry->pointsize == size) 
+			if(entry->fixed_style == style && entry->pointsize == size)
 				result = entry;
 
 		}
@@ -1417,7 +1417,7 @@ int TitleMain::get_char_advance(int current, int next)
 
 //printf("TitleMain::get_char_advance 1 %c %c %p %p\n", current, next, current_glyph, next_glyph);
 	if(next_glyph)
-		FT_Get_Kerning(freetype_face, 
+		FT_Get_Kerning(freetype_face,
 				current_glyph->freetype_index,
 				next_glyph->freetype_index,
 				ft_kerning_default,
@@ -1425,7 +1425,7 @@ int TitleMain::get_char_advance(int current, int next)
 	else
 		kerning.x = 0;
 //printf("TitleMain::get_char_advance 2 %d %d\n", result, kerning.x);
-	
+
 	return result + (kerning.x >> 6);
 }
 
@@ -1447,7 +1447,7 @@ void TitleMain::draw_glyphs()
 
 	for(int i = 0; i < text_len; i++)
 	{
-		FT_ULong char_code;	
+		FT_ULong char_code;
 		int c = config.text[i];
 		int exists = 0;
 
@@ -1462,14 +1462,14 @@ void TitleMain::draw_glyphs()
 			inbuf = (char)c;
 			inbytes = 1;
 			outbytes = 4;
-	
+
 			iconv (cd, &inp, &inbytes, &outp, &outbytes);
 #if     __BYTE_ORDER == __LITTLE_ENDIAN
 			char_code = bswap_32(char_code);
 #endif                          /* Big endian.  */
 
 		}
-		else 
+		else
 		{
 			char_code = c;
 		}
@@ -1512,7 +1512,7 @@ void TitleMain::get_total_extents()
 	int row_start = 0;
 	text_len = strlen(config.text);
 	if(!char_positions) char_positions = new title_char_position_t[text_len];
-	
+
 	text_rows = 0;
 	text_w = 0;
 	ascent = 0;
@@ -1551,10 +1551,10 @@ void TitleMain::get_total_extents()
 		if (current_bottom < rows_bottom[text_rows])
 			rows_bottom[text_rows] = current_bottom ;
 
-// printf("TitleMain::get_total_extents 1 %c %d %d %d\n", 
-// 	config.text[i], 
-// 	char_positions[i].x, 
-// 	char_positions[i].y, 
+// printf("TitleMain::get_total_extents 1 %c %d %d %d\n",
+// 	config.text[i],
+// 	char_positions[i].x,
+// 	char_positions[i].y,
 // 	char_positions[i].w);
 		current_w += char_positions[i].w;
 
@@ -1585,15 +1585,15 @@ void TitleMain::get_total_extents()
 						break;
 
 					case JUSTIFY_MID:
-						char_positions[j].x += (text_w - 
-								char_positions[i].x - 
+						char_positions[j].x += (text_w -
+								char_positions[i].x -
 								char_positions[i].w) /
 							2;
 						break;
 
 					case JUSTIFY_RIGHT:
-						char_positions[j].x += (text_w - 
-							char_positions[i].x - 
+						char_positions[j].x += (text_w -
+							char_positions[i].x -
 							char_positions[i].w);
 						break;
 				}
@@ -1615,14 +1615,14 @@ int TitleMain::draw_mask()
 // Determine y of visible text
 	if(config.motion_strategy == BOTTOM_TO_TOP)
 	{
-// printf("TitleMain::draw_mask 1 %d %d %d %d\n", 
+// printf("TitleMain::draw_mask 1 %d %d %d %d\n",
 // 	config.motion_strategy,
-// 	get_source_position(), 
+// 	get_source_position(),
 // 	get_source_start(),
 // 	config.prev_keyframe_position);
-		float magnitude = config.pixels_per_second * 
-			((get_source_position() - get_source_start()) - 
-				(config.prev_keyframe_position - get_source_start())) / 
+		float magnitude = config.pixels_per_second *
+			((get_source_position() - get_source_start()) -
+				(config.prev_keyframe_position - get_source_start())) /
 			PluginVClient::project_frame_rate;
 		if(config.loop)
 		{
@@ -1634,10 +1634,10 @@ int TitleMain::draw_mask()
 	else
 	if(config.motion_strategy == TOP_TO_BOTTOM)
 	{
-		float magnitude = config.pixels_per_second * 
-			(get_source_position() - 
+		float magnitude = config.pixels_per_second *
+			(get_source_position() -
 				get_source_start() -
-				config.prev_keyframe_position) / 
+				config.prev_keyframe_position) /
 			PluginVClient::project_frame_rate;
 		if(config.loop)
 		{
@@ -1668,10 +1668,10 @@ int TitleMain::draw_mask()
 // Determine x of visible text
 	if(config.motion_strategy == RIGHT_TO_LEFT)
 	{
-		float magnitude = config.pixels_per_second * 
-			(get_source_position() - 
-				get_source_start() - 
-				config.prev_keyframe_position) / 
+		float magnitude = config.pixels_per_second *
+			(get_source_position() -
+				get_source_start() -
+				config.prev_keyframe_position) /
 			PluginVClient::project_frame_rate;
 		if(config.loop)
 		{
@@ -1683,10 +1683,10 @@ int TitleMain::draw_mask()
 	else
 	if(config.motion_strategy == LEFT_TO_RIGHT)
 	{
-		float magnitude = config.pixels_per_second * 
-			(get_source_position() - 
-				get_source_start() - 
-				config.prev_keyframe_position) / 
+		float magnitude = config.pixels_per_second *
+			(get_source_position() -
+				get_source_start() -
+				config.prev_keyframe_position) /
 			PluginVClient::project_frame_rate;
 		if(config.loop)
 		{
@@ -1739,7 +1739,7 @@ int TitleMain::draw_mask()
 		int char_row = char_position->y / get_char_height();
 		if(char_row >= visible_row1 &&
 			char_row < visible_row2)
-		
+
 		{
 			if(!got_char1)
 			{
@@ -1805,21 +1805,21 @@ void TitleMain::overlay_mask()
 {
 
 	alpha = 0x100;
-// printf("TitleMain::overlay_mask %lld %lld %lld\n", 
-// get_source_position(), 
+// printf("TitleMain::overlay_mask %lld %lld %lld\n",
+// get_source_position(),
 // config.prev_keyframe_position,
 // config.next_keyframe_position);
 	if(!EQUIV(config.fade_in, 0))
 	{
 		int fade_len = (int)(config.fade_in * PluginVClient::project_frame_rate);
-		int fade_position = get_source_position() - 
+		int fade_position = get_source_position() -
 /*			get_source_start() -   */
 			config.prev_keyframe_position;
 
 
 		if(fade_position >= 0 && fade_position < fade_len)
 		{
-			alpha = (int)((float)0x100 * 
+			alpha = (int)((float)0x100 *
 				fade_position /
 				fade_len + 0.5);
 		}
@@ -1827,9 +1827,9 @@ void TitleMain::overlay_mask()
 
 	if(!EQUIV(config.fade_out, 0))
 	{
-		int fade_len = (int)(config.fade_out * 
+		int fade_len = (int)(config.fade_out *
 			PluginVClient::project_frame_rate);
-		int fade_position = config.next_keyframe_position - 
+		int fade_position = config.next_keyframe_position -
 			get_source_position();
 
 
@@ -1869,7 +1869,7 @@ void TitleMain::overlay_mask()
 		if(!translate) translate = new TitleTranslate(this, PluginClient::smp + 1);
 		translate->process_packages();
 		if (config.stroke_width >= ZERO &&
-			(config.style & FONT_OUTLINE)) 
+			(config.style & FONT_OUTLINE))
 		{
 			int temp_color = config.color;
 			VFrame *tmp_text_mask = this->text_mask;
@@ -1929,18 +1929,18 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // Always synthesize text and redraw it for timecode
 	if(config.timecode)
 	{
-		Units::totext(config.text, 
-				(double)get_source_position() / PluginVClient::project_frame_rate, 
-				TIME_HMSF, 
+		Units::totext(config.text,
+				(double)get_source_position() / PluginVClient::project_frame_rate,
+				TIME_HMSF,
 				0,
-				PluginVClient::project_frame_rate, 
+				PluginVClient::project_frame_rate,
 				0);
 		need_reconfigure = 1;
 	}
 
 // Check boundaries
 	if(config.size <= 0 || config.size >= 2048) config.size = 72;
-	if(config.stroke_width < 0 || 
+	if(config.stroke_width < 0 ||
 		config.stroke_width >= 512) config.stroke_width = 0.0;
 	if(!strlen(config.text)) return 0;
 	if(!strlen(config.encoding)) strcpy(config.encoding, DEFAULT_ENCODING);
@@ -1973,7 +1973,7 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		visible_row2 = 0;
 		ascent = 0;
 
-		if(!freetype_library) 
+		if(!freetype_library)
 			FT_Init_FreeType(&freetype_library);
 
 //printf("TitleMain::process_realtime 2\n");
@@ -2183,8 +2183,8 @@ int TitleMain::load_configuration()
 
 
 
-	config.interpolate(prev_config, 
-		next_config, 
+	config.interpolate(prev_config,
+		next_config,
 		(next_position == prev_position) ?
 			get_source_position() :
 			prev_position,
@@ -2237,7 +2237,7 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("TIMECODE", config.timecode);
 	output.append_tag();
 	output.append_newline();
-	
+
 	output.append_text(config.text);
 
 	output.tag.set_title("/TITLE");

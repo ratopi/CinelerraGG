@@ -183,7 +183,7 @@ class SkimDbThread : public Thread
 	SdbPacketQueue active_packets;
 	Condition *input_lock;
 	friend class SdbSkimFrame;
-public: 
+public:
 	int done;
 	SdbPacketQueue skim_frames;
 	Commercials *commercials;

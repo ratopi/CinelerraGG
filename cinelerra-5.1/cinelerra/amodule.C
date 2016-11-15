@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009-2013 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "aattachmentpoint.h"
@@ -76,7 +76,7 @@ int AModuleResample::read_samples(Samples *buffer, int64_t start, int64_t len)
 {
 	int result = 0;
 
-	
+
 	if(module->asset)
 	{
 // Files only read going forward.
@@ -97,7 +97,7 @@ int AModuleResample::read_samples(Samples *buffer, int64_t start, int64_t len)
 	else
 	if(module->nested_edl)
 	{
-		
+
 
 // Nested EDL generates reversed buffer.
 		for(int i = 0; i < module->nested_edl->session->audio_channels; i++)
@@ -116,7 +116,7 @@ int AModuleResample::read_samples(Samples *buffer, int64_t start, int64_t len)
 
 
 		result = module->nested_renderengine->arender->process_buffer(
-			nested_output, 
+			nested_output,
 			len,
 			start);
 // printf("AModuleResample::read_samples buffer=%p module=%p len=%d\n",
@@ -141,8 +141,8 @@ int AModuleResample::read_samples(Samples *buffer, int64_t start, int64_t len)
 
 
 
-AModule::AModule(RenderEngine *renderengine, 
-	CommonRender *commonrender, 
+AModule::AModule(RenderEngine *renderengine,
+	CommonRender *commonrender,
 	PluginArray *plugin_array,
 	Track *track)
  : Module(renderengine, commonrender, plugin_array, track)
@@ -173,7 +173,7 @@ AModule::~AModule()
 		delete [] level_history;
 		delete [] level_samples;
 	}
-	
+
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
 		if(nested_output[i])
@@ -181,7 +181,7 @@ AModule::~AModule()
 			delete nested_output[i];
 		}
 	}
-	
+
 	delete resample;
 }
 
@@ -227,7 +227,7 @@ CICache* AModule::get_cache()
 }
 
 
-int AModule::import_samples(AEdit *edit, 
+int AModule::import_samples(AEdit *edit,
 	int64_t start_project,
 	int64_t edit_startproject,
 	int64_t edit_startsource,
@@ -238,8 +238,8 @@ int AModule::import_samples(AEdit *edit,
 {
 	int result = 0;
 // start in EDL samplerate
-	int64_t start_source = start_project - 
-		edit_startproject + 
+	int64_t start_source = start_project -
+		edit_startproject +
 		edit_startsource;
 // fragment size adjusted for speed curve
 	int64_t speed_fragment_len = fragment_len;
@@ -259,7 +259,7 @@ int AModule::import_samples(AEdit *edit,
 	Samples *speed_buffer = buffer;
 	const int debug = 0;
 
-if(debug) printf("AModule::import_samples %d edit=%p nested_edl=%p\n", 
+if(debug) printf("AModule::import_samples %d edit=%p nested_edl=%p\n",
 __LINE__,
 edit,
 nested_edl);
@@ -268,7 +268,7 @@ nested_edl);
 if(debug) printf("AModule::import_samples %d\n", __LINE__);
 
 	this->channel = edit->channel;
-if(debug) printf("AModule::import_samples %d speed_fragment_len=%jd\n", 
+if(debug) printf("AModule::import_samples %d speed_fragment_len=%jd\n",
 __LINE__,
 speed_fragment_len);
 
@@ -284,7 +284,7 @@ speed_fragment_len);
 		FloatAutos *speed_autos = (FloatAutos*)track->automation->autos[AUTOMATION_SPEED];
 		for(int64_t i = edit_startproject; i < start_project; i++)
 		{
-			double speed = speed_autos->get_value(i, 
+			double speed = speed_autos->get_value(i,
 				PLAY_FORWARD,
 				previous,
 				next);
@@ -299,7 +299,7 @@ speed_fragment_len);
 		min_position = speed_position;
 		for(int64_t i = start_project; i < start_project + fragment_len; i++)
 		{
-			double speed = speed_autos->get_value(i, 
+			double speed = speed_autos->get_value(i,
 				PLAY_FORWARD,
 				previous,
 				next);
@@ -321,7 +321,7 @@ speed_fragment_len);
 			speed_fragment_len = (int64_t)(max_position - min_position);
 		}
 
-//printf("AModule::import_samples %d %f %f %f %f\n", 
+//printf("AModule::import_samples %d %f %f %f %f\n",
 // __LINE__, min_position, max_position, speed_position1, speed_position2);
 
 // new start of source to read from file
@@ -336,12 +336,12 @@ speed_fragment_len);
 			delete speed_temp;
 			speed_temp = 0;
 		}
-		
+
 		if(!speed_temp)
 		{
 			speed_temp = new Samples(speed_fragment_len);
 		}
-		
+
 		speed_buffer = speed_temp;
 	}
 
@@ -357,7 +357,7 @@ speed_fragment_len);
 	{
 		int command;
 		asset = 0;
-		
+
 		if(direction == PLAY_REVERSE)
 			command = NORMAL_REWIND;
 		else
@@ -388,7 +388,7 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 				nested_renderengine = new RenderEngine(0, get_preferences(), 0, 1);
 				nested_renderengine->set_acache(get_cache());
 // Must use a private cache for the audio
-// 				if(!cache) 
+// 				if(!cache)
 // 				{
 // 					cache = new CICache(get_preferences());
 // 					private_cache = 1;
@@ -435,7 +435,7 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 				resample = new AModuleResample(this);
 			}
 
-if(debug) printf("AModule::import_samples %d %d %d\n", 
+if(debug) printf("AModule::import_samples %d %d %d\n",
 __LINE__,
 (int)sample_rate,
 (int)nested_edl->session->sample_rate);
@@ -453,7 +453,7 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 // Render without resampling
 if(debug) printf("AModule::import_samples %d\n", __LINE__);
 			result = nested_renderengine->arender->process_buffer(
-				nested_output, 
+				nested_output,
 				speed_fragment_len,
 				start_source);
 if(debug) printf("AModule::import_samples %d\n", __LINE__);
@@ -512,7 +512,7 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 					resample = new AModuleResample(this);
 				}
 
-if(debug) printf("AModule::import_samples %d %d %d\n", 
+if(debug) printf("AModule::import_samples %d %d %d\n",
 __LINE__,
 sample_rate,
 asset->sample_rate);
@@ -533,10 +533,10 @@ printf("AModule::import_samples %d channel=%d start_source=%jd len=%d\n", __LINE
 				file->set_channel(edit->channel);
 				result = file->read_samples(speed_buffer, speed_fragment_len);
 // Reverse fragment so ::render can apply transitions going forward.
-if(debug) printf("AModule::import_samples %d speed_buffer=%p data=%p speed_fragment_len=%d\n", 
-__LINE__, 
+if(debug) printf("AModule::import_samples %d speed_buffer=%p data=%p speed_fragment_len=%d\n",
+__LINE__,
 (void*)speed_buffer,
-(void*)speed_buffer->get_data(), 
+(void*)speed_buffer->get_data(),
 (int)speed_fragment_len);
 				if(direction == PLAY_REVERSE)
 				{
@@ -609,7 +609,7 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 					int in_offset = (int64_t)(speed_fragment_len - 1 - speed_position);
 					CLAMP(in_offset, 0, speed_fragment_len - 1);
 					buffer_samples[out_offset++] = speed_samples[in_offset];
-					double speed = speed_autos->get_value(i, 
+					double speed = speed_autos->get_value(i,
 						PLAY_REVERSE,
 						previous,
 						next);
@@ -626,7 +626,7 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 //printf("AModule::import_samples %d %f\n", __LINE__, speed_position);
 				for(int64_t i = start_project; i < start_project + fragment_len; i++)
 				{
-					double speed = speed_autos->get_value(i, 
+					double speed = speed_autos->get_value(i,
 						PLAY_FORWARD,
 						previous,
 						next);
@@ -653,9 +653,9 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 
 
 // if(in_offset < 0 || in_offset >= speed_fragment_len)
-// printf("AModule::import_samples %d %d %d\n", 
-// __LINE__, 
-// in_offset, 
+// printf("AModule::import_samples %d %d %d\n",
+// __LINE__,
+// in_offset,
 // speed_fragment_len);
 
 						int in_offset1 = in_offset;
@@ -674,7 +674,7 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 
 						CLAMP(in_offset1, -SPEED_OVERLAP, speed_fragment_len - 1 + SPEED_OVERLAP);
 						CLAMP(in_offset2, -SPEED_OVERLAP, speed_fragment_len - 1 + SPEED_OVERLAP);
-						
+
 						double value1 = 0;
 						if(in_offset1 >= speed_fragment_len)
 						{
@@ -682,7 +682,7 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 						}
 						else
 						if(in_offset1 >= 0)
-						{ 
+						{
 							value1 = speed_samples[in_offset1];
 						}
 						else
@@ -707,7 +707,7 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 						}
 
 						double fraction = speed_position - floor(speed_position);
-						buffer_samples[out_offset++] = 
+						buffer_samples[out_offset++] =
 							value1 * (1.0 - fraction) +
 							value2 * fraction;
 #endif
@@ -719,10 +719,10 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 					speed_position = next_speed_position;
 				}
 			}
-			
+
 			for(int i = 0; i < SPEED_OVERLAP; i++)
 			{
-				int offset = speed_fragment_len - 
+				int offset = speed_fragment_len -
 					SPEED_OVERLAP +
 					i;
 				CLAMP(offset, 0, speed_fragment_len - 1);
@@ -734,17 +734,17 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 			}
 		}
 	}
-	
-	
-	
- 
+
+
+
+
 
 	return result;
 }
 
 
 
-int AModule::render(Samples *buffer, 
+int AModule::render(Samples *buffer,
 	int64_t input_len,
 	int64_t start_position,
 	int direction,
@@ -756,8 +756,8 @@ int AModule::render(Samples *buffer,
 
 if(debug) printf("AModule::render %d\n", __LINE__);
 
-	if(use_nudge) 
-		start_position += track->nudge * 
+	if(use_nudge)
+		start_position += track->nudge *
 			sample_rate /
 			edl_rate;
 	AEdit *playable_edit;
@@ -781,8 +781,8 @@ if(debug) printf("AModule::render %d\n", __LINE__);
 // Clear buffer
 	bzero(buffer->get_data(), input_len * sizeof(double));
 
-// The EDL is normalized to the requested sample rate because 
-// the requested rate may be the project sample rate and a sample rate 
+// The EDL is normalized to the requested sample rate because
+// the requested rate may be the project sample rate and a sample rate
 // might as well be directly from the source rate to the requested rate.
 // Get first edit containing the range
 	if(direction == PLAY_FORWARD)
@@ -842,9 +842,9 @@ if(debug) printf("AModule::render %d %jd %jd\n", __LINE__, start_position, end_p
 if(debug) printf("AModule::render %d %jd\n", __LINE__, fragment_len);
 
 // Normalize position here since update_transition is a boolean operation.
-		update_transition(start_position * 
-				edl_rate / 
-				sample_rate, 
+		update_transition(start_position *
+				edl_rate /
+				sample_rate,
 			PLAY_FORWARD);
 
 		if(playable_edit)
@@ -876,31 +876,31 @@ if(debug) printf("AModule::render %d %jd\n", __LINE__, fragment_len);
 
 // Clamp to end of transition
 			int64_t transition_len = 0;
-			
+
 			if(transition &&
 				previous_edit)
 			{
-				transition_len = transition->length * 
-					sample_rate / 
+				transition_len = transition->length *
+					sample_rate /
 					edl_rate;
 				if(direction == PLAY_FORWARD &&
 					start_position < edit_startproject + transition_len &&
 					start_position + fragment_len > edit_startproject + transition_len)
 					fragment_len = edit_startproject + transition_len - start_position;
 				else
-				if(direction == PLAY_REVERSE && 
+				if(direction == PLAY_REVERSE &&
 					start_position > edit_startproject + transition_len &&
 					start_position - fragment_len < edit_startproject + transition_len)
 					fragment_len = start_position - edit_startproject - transition_len;
 			}
-if(debug) printf("AModule::render %d buffer_offset=%d fragment_len=%jd\n", 
-__LINE__, 
+if(debug) printf("AModule::render %d buffer_offset=%d fragment_len=%jd\n",
+__LINE__,
 buffer_offset,
 fragment_len);
 
 			Samples output(buffer);
 			output.set_offset(output.get_offset() + buffer_offset);
-			if(import_samples(playable_edit, 
+			if(import_samples(playable_edit,
 				start_position,
 				edit_startproject,
 				edit_startsource,
@@ -931,7 +931,7 @@ if(debug) printf("AModule::render %d\n", __LINE__);
 
 // Read into temp buffers
 // Temp + master or temp + temp ? temp + master
-				if(transition_temp && 
+				if(transition_temp &&
 					transition_temp->get_allocated() < fragment_len)
 				{
 					delete transition_temp;
@@ -948,7 +948,7 @@ if(debug) printf("AModule::render %d %jd\n", __LINE__, fragment_len);
 				if(transition_fragment_len > 0)
 				{
 // Previous_edit is always the outgoing segment, regardless of direction
-					import_samples(previous_edit, 
+					import_samples(previous_edit,
 						start_position,
 						previous_startproject,
 						previous_startsource,
@@ -963,7 +963,7 @@ if(debug) printf("AModule::render %d %jd\n", __LINE__, fragment_len);
 					{
 						Resample::reverse_buffer(output.get_data(), transition_fragment_len);
 						Resample::reverse_buffer(transition_temp->get_data(), transition_fragment_len);
-						current_position = start_position - 
+						current_position = start_position -
 							transition_fragment_len -
 							edit_startproject;
 					}
@@ -981,12 +981,12 @@ if(debug) printf("AModule::render %d %jd\n", __LINE__, fragment_len);
 
 // Reverse output buffer here so transitions always render forward.
 					if(direction == PLAY_REVERSE)
-						Resample::reverse_buffer(output.get_data(), 
+						Resample::reverse_buffer(output.get_data(),
 							transition_fragment_len);
 				}
 			}
-if(debug) printf("AModule::render %d start_position=%jd end_position=%jd fragment_len=%jd\n", 
-__LINE__, 
+if(debug) printf("AModule::render %d start_position=%jd end_position=%jd fragment_len=%jd\n",
+__LINE__,
 start_position,
 end_position,
 fragment_len);

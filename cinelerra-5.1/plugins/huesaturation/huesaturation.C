@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -53,13 +53,13 @@ class HueConfig
 {
 public:
 	HueConfig();
-	
+
 	void copy_from(HueConfig &src);
 	int equivalent(HueConfig &src);
-	void interpolate(HueConfig &prev, 
-		HueConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(HueConfig &prev,
+		HueConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 	float hue, saturation, value;
 };
@@ -136,8 +136,8 @@ class HueEffect : public PluginVClient
 public:
 	HueEffect(PluginServer *server);
 	~HueEffect();
-	
-	
+
+
 	PLUGIN_CLASS_MEMBERS(HueConfig);
 	int process_buffer(VFrame *frame,
 		int64_t start_position,
@@ -175,7 +175,7 @@ HueConfig::HueConfig()
 {
 	hue = saturation = value = 0;
 }
-	
+
 void HueConfig::copy_from(HueConfig &src)
 {
 	hue = src.hue;
@@ -184,14 +184,14 @@ void HueConfig::copy_from(HueConfig &src)
 }
 int HueConfig::equivalent(HueConfig &src)
 {
-	return EQUIV(hue, src.hue) && 
-		EQUIV(saturation, src.saturation) && 
+	return EQUIV(hue, src.hue) &&
+		EQUIV(saturation, src.saturation) &&
 		EQUIV(value, src.value);
 }
-void HueConfig::interpolate(HueConfig &prev, 
-	HueConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void HueConfig::interpolate(HueConfig &prev,
+	HueConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -210,13 +210,13 @@ void HueConfig::interpolate(HueConfig &prev,
 
 
 HueSlider::HueSlider(HueEffect *plugin, int x, int y, int w)
- : BC_FSlider(x, 
+ : BC_FSlider(x,
 			y,
 			0,
-			w, 
-			w, 
-			(float)MINHUE, 
-			(float)MAXHUE, 
+			w,
+			w,
+			(float)MINHUE,
+			(float)MAXHUE,
 			plugin->config.hue)
 {
 	this->plugin = plugin;
@@ -235,13 +235,13 @@ int HueSlider::handle_event()
 
 
 SaturationSlider::SaturationSlider(HueEffect *plugin, int x, int y, int w)
- : BC_FSlider(x, 
+ : BC_FSlider(x,
 			y,
 			0,
-			w, 
-			w, 
-			(float)MINSATURATION, 
-			(float)MAXSATURATION, 
+			w,
+			w,
+			(float)MINSATURATION,
+			(float)MAXSATURATION,
 			plugin->config.saturation)
 {
 	this->plugin = plugin;
@@ -255,7 +255,7 @@ int SaturationSlider::handle_event()
 
 char* SaturationSlider::get_caption()
 {
-	float fraction = ((float)plugin->config.saturation - MINSATURATION) / 
+	float fraction = ((float)plugin->config.saturation - MINSATURATION) /
 		MAXSATURATION;;
 	sprintf(string, "%0.4f", fraction);
 	return string;
@@ -268,13 +268,13 @@ char* SaturationSlider::get_caption()
 
 
 ValueSlider::ValueSlider(HueEffect *plugin, int x, int y, int w)
- : BC_FSlider(x, 
+ : BC_FSlider(x,
 			y,
 			0,
-			w, 
-			w, 
-			(float)MINVALUE, 
-			(float)MAXVALUE, 
+			w,
+			w,
+			(float)MINVALUE,
+			(float)MAXVALUE,
 			plugin->config.value)
 {
 	this->plugin = plugin;
@@ -526,11 +526,11 @@ HueEffect::HueEffect(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	
+
 }
 HueEffect::~HueEffect()
 {
-	
+
 	if(engine) delete engine;
 }
 
@@ -540,12 +540,12 @@ int HueEffect::process_buffer(VFrame *frame,
 {
 	load_configuration();
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
-	
+
 
 	this->input = frame;
 	this->output = frame;
@@ -562,7 +562,7 @@ int HueEffect::process_buffer(VFrame *frame,
 		}
 
 		if(!engine) engine = new HueEngine(this, PluginClient::smp + 1);
-		
+
 		engine->process_packages();
 	}
 	return 0;
@@ -619,7 +619,7 @@ void HueEffect::update_gui()
 int HueEffect::handle_opengl()
 {
 #ifdef HAVE_GL
-	const char *yuv_saturation_frag = 
+	const char *yuv_saturation_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float s_offset;\n"
 		"uniform float v_offset;\n"
@@ -635,7 +635,7 @@ int HueEffect::handle_opengl()
 		"}\n";
 
 
-	const char *yuv_frag = 
+	const char *yuv_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float h_offset;\n"
 		"uniform float s_offset;\n"
@@ -655,7 +655,7 @@ int HueEffect::handle_opengl()
 		"	gl_FragColor = pixel;\n"
 		"}\n";
 
-	const char *rgb_frag = 
+	const char *rgb_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float h_offset;\n"
 		"uniform float s_offset;\n"
@@ -700,14 +700,14 @@ int HueEffect::handle_opengl()
 	}
 
 
-	if(frag_shader > 0) 
+	if(frag_shader > 0)
 	{
 		glUseProgram(frag_shader);
 		glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
 		glUniform1f(glGetUniformLocation(frag_shader, "h_offset"), config.hue);
-		glUniform1f(glGetUniformLocation(frag_shader, "s_offset"), 
+		glUniform1f(glGetUniformLocation(frag_shader, "s_offset"),
 			((float)config.saturation - MINSATURATION) / MAXSATURATION);
-		glUniform1f(glGetUniformLocation(frag_shader, "v_offset"), 
+		glUniform1f(glGetUniformLocation(frag_shader, "v_offset"),
 			((float)config.value - MINVALUE) / MAXVALUE);
 	}
 

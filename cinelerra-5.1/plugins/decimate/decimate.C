@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -61,9 +61,9 @@ public:
 class DecimateRate : public BC_TextBox
 {
 public:
-	DecimateRate(Decimate *plugin, 
-		DecimateWindow *gui, 
-		int x, 
+	DecimateRate(Decimate *plugin,
+		DecimateWindow *gui,
+		int x,
 		int y);
 	int handle_event();
 	Decimate *plugin;
@@ -73,9 +73,9 @@ public:
 class DecimateRateMenu : public BC_ListBox
 {
 public:
-	DecimateRateMenu(Decimate *plugin, 
-		DecimateWindow *gui, 
-		int x, 
+	DecimateRateMenu(Decimate *plugin,
+		DecimateWindow *gui,
+		int x,
 		int y);
 	int handle_event();
 	Decimate *plugin;
@@ -86,7 +86,7 @@ class DecimateDifference : public BC_CheckBox
 {
 public:
 	DecimateDifference(Decimate *plugin,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	Decimate *plugin;
@@ -96,7 +96,7 @@ class DecimateAvgDifference : public BC_CheckBox
 {
 public:
 	DecimateAvgDifference(Decimate *plugin,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	Decimate *plugin;
@@ -153,7 +153,7 @@ public:
 	double c[8][8];
 	int fdct_ready;
 
-// each difference is the difference between the previous frame and the 
+// each difference is the difference between the previous frame and the
 // subscripted frame
 	int64_t differences[TOTAL_FRAMES];
 
@@ -209,11 +209,11 @@ int DecimateConfig::equivalent(DecimateConfig *config)
 
 
 DecimateWindow::DecimateWindow(Decimate *plugin)
- : PluginClientWindow(plugin, 
-	210, 
-	160, 
-	200, 
-	160, 
+ : PluginClientWindow(plugin,
+	210,
+	160,
+	200,
+	160,
 	0)
 {
 	this->plugin = plugin;
@@ -245,13 +245,13 @@ void DecimateWindow::create_objects()
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Input frames per second:")));
 	y += 30;
-	add_subwindow(rate = new DecimateRate(plugin, 
-		this, 
-		x, 
+	add_subwindow(rate = new DecimateRate(plugin,
+		this,
+		x,
 		y));
-	add_subwindow(rate_menu = new DecimateRateMenu(plugin, 
-		this, 
-		x + rate->get_w() + 5, 
+	add_subwindow(rate_menu = new DecimateRateMenu(plugin,
+		this,
+		x + rate->get_w() + 5,
 		y));
 	y += 30;
 	add_subwindow(title = new BC_Title(x, y, _("Last frame dropped: ")));
@@ -259,11 +259,11 @@ void DecimateWindow::create_objects()
 
 // 	y += 30;
 // 	add_subwindow(difference = new DecimateDifference(plugin,
-// 		x, 
+// 		x,
 // 		y));
 // 	y += 30;
 // 	add_subwindow(avg_difference = new DecimateAvgDifference(plugin,
-// 		x, 
+// 		x,
 // 		y));
 	show_window();
 	flush();
@@ -281,12 +281,12 @@ void DecimateWindow::create_objects()
 
 
 
-DecimateRate::DecimateRate(Decimate *plugin, 
-	DecimateWindow *gui, 
-	int x, 
+DecimateRate::DecimateRate(Decimate *plugin,
+	DecimateWindow *gui,
+	int x,
 	int y)
- : BC_TextBox(x, 
-	y, 
+ : BC_TextBox(x,
+	y,
 	90,
 	1,
 	(float)plugin->config.input_rate)
@@ -305,7 +305,7 @@ int DecimateRate::handle_event()
 
 
 // DecimateDifference::DecimateDifference(Decimate *plugin,
-// 	int x, 
+// 	int x,
 // 	int y)
 //  : BC_CheckBox(x, y, plugin->config.least_difference, "Drop least difference")
 // {
@@ -317,31 +317,31 @@ int DecimateRate::handle_event()
 // 	plugin->send_configure_change();
 // 	return 1;
 // }
-// 
-// 
-// 
-// 
+//
+//
+//
+//
 // DecimateAvgDifference::DecimateAvgDifference(Decimate *plugin,
-// 	int x, 
+// 	int x,
 // 	int y)
 //  : BC_CheckBox(x, y, plugin->config.averaged_frames, "Drop averaged frames")
 // {
 // 	this->plugin = plugin;
 // }
-// 
+//
 // int DecimateAvgDifference::handle_event()
 // {
 // 	plugin->config.averaged_frames = get_value();
 // 	plugin->send_configure_change();
 // 	return 1;
 // }
-// 
+//
 
 
 
-DecimateRateMenu::DecimateRateMenu(Decimate *plugin, 
-	DecimateWindow *gui, 
-	int x, 
+DecimateRateMenu::DecimateRateMenu(Decimate *plugin,
+	DecimateWindow *gui,
+	int x,
 	int y)
  : BC_ListBox(x,
  	y,
@@ -398,7 +398,7 @@ REGISTER_PLUGIN(Decimate)
 Decimate::Decimate(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	bzero(frames, sizeof(VFrame*) * TOTAL_FRAMES);
 	for(int i = 0; i < TOTAL_FRAMES; i++)
 		differences[i] = -1;
@@ -411,7 +411,7 @@ Decimate::Decimate(PluginServer *server)
 
 Decimate::~Decimate()
 {
-	
+
 	if(frames[0])
 	{
 		for(int i = 0; i < TOTAL_FRAMES; i++)
@@ -613,7 +613,7 @@ void Decimate::decimate_frame()
 	for(int i = 0; i < lookahead_size; i++)
 	{
 // Drop least different frame from sequence
-		if(config.least_difference && 
+		if(config.least_difference &&
 			differences[i] >= 0 &&
 			differences[i] < min_difference)
 		{
@@ -661,23 +661,23 @@ void Decimate::fill_lookahead(double frame_rate,
 // Normalize requested position to input rate
 	if(!lookahead_size)
 	{
-		lookahead_end = (int64_t)((double)start_position * 
-			config.input_rate / 
+		lookahead_end = (int64_t)((double)start_position *
+			config.input_rate /
 			frame_rate);
 	}
 
 	while(lookahead_size < TOTAL_FRAMES)
 	{
 // Import frame into next lookahead slot
-		read_frame(frames[lookahead_size], 
-			0, 
-			lookahead_end, 
+		read_frame(frames[lookahead_size],
+			0,
+			lookahead_end,
 			config.input_rate,
 			0);
 // Fill difference buffer
 		if(lookahead_size > 0)
-			differences[lookahead_size] = 
-				calculate_difference(frames[lookahead_size - 1], 
+			differences[lookahead_size] =
+				calculate_difference(frames[lookahead_size - 1],
 					frames[lookahead_size]);
 
 // Increase counters relative to input rate
@@ -687,7 +687,7 @@ void Decimate::fill_lookahead(double frame_rate,
 // Decimate one if last frame in buffer and lookahead_end is behind predicted
 // end.
 		int64_t decimated_end = (int64_t)((double)(start_position + TOTAL_FRAMES) *
-			config.input_rate / 
+			config.input_rate /
 			frame_rate);
 		if(lookahead_size >= TOTAL_FRAMES &&
 			lookahead_end < decimated_end)

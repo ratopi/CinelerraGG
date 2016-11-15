@@ -91,9 +91,9 @@ public:
 	LoadPrevious(MWindow *mwindow, Load *loadfile);
 	int handle_event();
 	void run();
-	
+
 	int set_path(char *path);
-	
+
 	MWindow *mwindow;
 	Load *loadfile;
 	char path[1024];

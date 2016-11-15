@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -30,8 +30,8 @@
 
 TimeAvgWindow::TimeAvgWindow(TimeAvgMain *client)
  : PluginClientWindow(client, 250, 400, 250, 400, 0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 TimeAvgWindow::~TimeAvgWindow()
@@ -43,7 +43,7 @@ void TimeAvgWindow::create_objects()
 	int x = 10, y = 10;
 	BC_Bar *bar;
 	BC_Title *title;
-	
+
 	add_tool(title = new BC_Title(x, y, _("Frame count:")));
 	y += title->get_h() + 5;
 	add_tool(total_frames = new TimeAvgSlider(client, x, y));
@@ -56,7 +56,7 @@ void TimeAvgWindow::create_objects()
 	y += bar->get_h() + 5;
 
 
-	
+
 	add_tool(avg = new TimeAvgAvg(client, this, x, y));
 	y += 30;
 	add_tool(accum = new TimeAvgAccum(client, this, x, y));
@@ -125,13 +125,13 @@ void TimeAvgWindow::update_toggles()
 
 
 TimeAvgSlider::TimeAvgSlider(TimeAvgMain *client, int x, int y)
- : BC_ISlider(x, 
- 	y, 
+ : BC_ISlider(x,
+ 	y,
 	0,
-	190, 
-	200, 
-	1, 
-	MAX_FRAMES, 
+	190,
+	200,
+	1,
+	MAX_FRAMES,
 	client->config.frames)
 {
 	this->client = client;
@@ -151,13 +151,13 @@ int TimeAvgSlider::handle_event()
 
 
 TimeThresholdSlider::TimeThresholdSlider(TimeAvgMain *client, int x, int y)
- : BC_ISlider(x, 
- 	y, 
+ : BC_ISlider(x,
+ 	y,
 	0,
-	190, 
-	200, 
-	1, 
-	255, 
+	190,
+	200,
+	1,
+	255,
 	client->config.threshold)
 {
 	this->client = client;
@@ -176,13 +176,13 @@ int TimeThresholdSlider::handle_event()
 
 
 TimeBorderSlider::TimeBorderSlider(TimeAvgMain *client, int x, int y)
- : BC_ISlider(x, 
- 	y, 
+ : BC_ISlider(x,
+ 	y,
 	0,
-	190, 
-	200, 
-	0, 
-	8, 
+	190,
+	200,
+	0,
+	8,
 	client->config.border)
 {
 	this->client = client;
@@ -203,7 +203,7 @@ int TimeBorderSlider::handle_event()
 
 
 TimeAvgAvg::TimeAvgAvg(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y)
- : BC_Radial(x, y, 
+ : BC_Radial(x, y,
 	client->config.mode == TimeAvgConfig::AVERAGE,
 	_("Average"))
 {
@@ -223,7 +223,7 @@ int TimeAvgAvg::handle_event()
 
 
 TimeAvgAccum::TimeAvgAccum(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y)
- : BC_Radial(x, y, 
+ : BC_Radial(x, y,
 	client->config.mode == TimeAvgConfig::ACCUMULATE,
 	_("Accumulate"))
 {
@@ -242,7 +242,7 @@ int TimeAvgAccum::handle_event()
 
 
 TimeAvgReplace::TimeAvgReplace(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y)
- : BC_Radial(x, y, 
+ : BC_Radial(x, y,
 	client->config.mode == TimeAvgConfig::REPLACE,
 	_("Replace"))
 {
@@ -260,7 +260,7 @@ int TimeAvgReplace::handle_event()
 
 
 TimeAvgGreater::TimeAvgGreater(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y)
- : BC_Radial(x, y, 
+ : BC_Radial(x, y,
 	client->config.mode == TimeAvgConfig::GREATER,
 	_("Greater"))
 {
@@ -278,7 +278,7 @@ int TimeAvgGreater::handle_event()
 
 
 TimeAvgLess::TimeAvgLess(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y)
- : BC_Radial(x, y, 
+ : BC_Radial(x, y,
 	client->config.mode == TimeAvgConfig::LESS,
 	_("Less"))
 {
@@ -297,7 +297,7 @@ int TimeAvgLess::handle_event()
 
 
 TimeAvgParanoid::TimeAvgParanoid(TimeAvgMain *client, int x, int y)
- : BC_CheckBox(x, y, 
+ : BC_CheckBox(x, y,
 	client->config.paranoid,
 	_("Restart for every frame"))
 {
@@ -316,7 +316,7 @@ int TimeAvgParanoid::handle_event()
 
 
 TimeAvgNoSubtract::TimeAvgNoSubtract(TimeAvgMain *client, int x, int y)
- : BC_CheckBox(x, y, 
+ : BC_CheckBox(x, y,
 	client->config.nosubtract,
 	_("Don't buffer frames"))
 {

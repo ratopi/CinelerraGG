@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "asset.h"
@@ -80,7 +80,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(LiveAudioConfig);
 
-	int process_buffer(int64_t size, 
+	int process_buffer(int64_t size,
 		Samples **buffer,
 		int64_t start_position,
 		int sample_rate);
@@ -126,11 +126,11 @@ LiveAudioConfig::LiveAudioConfig()
 
 
 LiveAudioWindow::LiveAudioWindow(LiveAudio *plugin)
- : PluginClientWindow(plugin, 
-	300, 
-	160, 
-	300, 
-	160, 
+ : PluginClientWindow(plugin,
+	300,
+	160,
+	300,
+	160,
 	0)
 {
 	this->plugin = plugin;
@@ -210,14 +210,14 @@ LiveAudio::~LiveAudio()
 
 
 
-int LiveAudio::process_buffer(int64_t size, 
+int LiveAudio::process_buffer(int64_t size,
 	Samples **buffer,
 	int64_t start_position,
 	int sample_rate)
 {
 	load_configuration();
 
-// printf("LiveAudio::process_buffer 10 size=%lld buffer_size=%d channels=%d size=%d\n", 
+// printf("LiveAudio::process_buffer 10 size=%lld buffer_size=%d channels=%d size=%d\n",
 // size, get_buffer_size(), get_total_buffers(), size);
 
 	int first_buffer = 0;
@@ -229,12 +229,12 @@ int LiveAudio::process_buffer(int64_t size,
 		{
 			fragment_size = session->record_fragment_size;
 			history_channels = session->aconfig_in->channels;
-		
+
 			adevice = new AudioDevice(server ? server->mwindow : 0);
 // Take fragment size & channels from the recording config
-			adevice->open_input(session->aconfig_in, 
-				session->vconfig_in, 
-				get_project_samplerate(), 
+			adevice->open_input(session->aconfig_in,
+				session->vconfig_in,
+				get_project_samplerate(),
 				fragment_size,
 				session->aconfig_in->channels,
 				session->real_time_record);
@@ -252,7 +252,7 @@ int LiveAudio::process_buffer(int64_t size,
 			new_history_size += fragment_size;
 
 
-		if(!history) 
+		if(!history)
 		{
 			history = new Samples*[history_channels];
 			for(int i = 0; i < history_channels; i++)
@@ -279,8 +279,8 @@ int LiveAudio::process_buffer(int64_t size,
 
 // Extend history buffer
 		int64_t end_position = start_position + size;
-// printf("LiveAudio::process_buffer %lld %lld %lld\n", 
-// end_position, 
+// printf("LiveAudio::process_buffer %lld %lld %lld\n",
+// end_position,
 // history_position,
 // end_position - history_position);
 		if(end_position > history_position)
@@ -304,11 +304,11 @@ int LiveAudio::process_buffer(int64_t size,
 				{
 					int over[history_channels];
 					double max[history_channels];
-					int result = adevice->read_buffer(history, 
+					int result = adevice->read_buffer(history,
 						history_channels,
-						fragment_size, 
-						over, 
-						max, 
+						fragment_size,
+						over,
+						max,
 						history_ptr);
 					if( result && adevice->config_updated() )
 						adevice->config_update();
@@ -341,7 +341,7 @@ int LiveAudio::process_buffer(int64_t size,
 // Clamp channel to total history channels
 				if(input_channel >= history_channels)
 					input_channel = history_channels - 1;
-				memcpy(buffer[i]->get_data() + buffer_position, 
+				memcpy(buffer[i]->get_data() + buffer_position,
 					history[input_channel]->get_data() + history_buffer_ptr,
 					sizeof(double) * fragment);
 			}

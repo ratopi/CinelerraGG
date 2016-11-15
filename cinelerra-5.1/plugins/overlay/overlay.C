@@ -423,7 +423,7 @@ int Overlay::process_buffer(VFrame **frame,
 
 			if(!overlayer)
 				overlayer = new OverlayFrame(get_project_smp() + 1);
-			
+
 			overlayer->overlay(output, temp,
 				0, 0, output->get_w(), output->get_h(),
 				0, 0, output->get_w(), output->get_h(),

@@ -56,7 +56,7 @@ public:
 // Helper: just calc the bezier function without doing any lookup of nodes
  	static float calculate_bezier(FloatAuto *previous, FloatAuto *next, int64_t position);
  	static float calculate_bezier_derivation(FloatAuto *previous, FloatAuto *next, int64_t position);
-	void get_extents(float *min, 
+	void get_extents(float *min,
 		float *max,
 		int *coords_undefined,
 		int64_t unit_start,

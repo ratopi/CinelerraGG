@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "condition.h"
@@ -69,9 +69,9 @@ RotateFrame::~RotateFrame()
 }
 
 
-void RotateFrame::rotate(VFrame *output, 
-	VFrame *input, 
-	double angle, 
+void RotateFrame::rotate(VFrame *output,
+	VFrame *input,
+	double angle,
 	int interpolate)
 {
 	this->angle = angle;
@@ -82,13 +82,13 @@ void RotateFrame::rotate(VFrame *output,
 	if(angle != 0)
 	{
         if(angle == 90 || angle == 180 || angle == 270)
-            rotate_rightangle(input, 
-				output, 
+            rotate_rightangle(input,
+				output,
 				(int)angle);
 		else
 		{
-			rotate_obliqueangle(input, 
-				output, 
+			rotate_obliqueangle(input,
+				output,
 				angle,
 				interpolate);
 		}
@@ -101,15 +101,15 @@ void RotateFrame::rotate(VFrame *output,
 	this->last_angle = angle;
 }
 
-int RotateFrame::get_rightdimensions(VFrame *frame, 
-	int &diameter, 
-	int &in_x1, 
-	int &in_y1, 
-	int &in_x2, 
-	int &in_y2, 
-	int &out_x1, 
-	int &out_y1, 
-	int &out_x2, 
+int RotateFrame::get_rightdimensions(VFrame *frame,
+	int &diameter,
+	int &in_x1,
+	int &in_y1,
+	int &in_x2,
+	int &in_y2,
+	int &out_x1,
+	int &out_y1,
+	int &out_x2,
 	int &out_y2)
 {
     diameter = frame->get_w() < frame->get_h() ? frame->get_w() : frame->get_h();
@@ -220,8 +220,8 @@ int RotateFrame::get_rightdimensions(VFrame *frame,
 }
 
 
-int RotateFrame::rotate_rightangle(VFrame *input, 
-	VFrame *output, 
+int RotateFrame::rotate_rightangle(VFrame *input,
+	VFrame *output,
 	int angle)
 {
 	int in_x1 = 0;
@@ -268,8 +268,8 @@ int RotateFrame::rotate_rightangle(VFrame *input,
 	return 0;
 }
 
-int RotateFrame::rotate_obliqueangle(VFrame *input, 
-	VFrame *output, 
+int RotateFrame::rotate_obliqueangle(VFrame *input,
+	VFrame *output,
 	double angle,
 	int interpolate)
 {
@@ -280,8 +280,8 @@ int RotateFrame::rotate_obliqueangle(VFrame *input,
 	center_x = input->get_w() / 2;
 	center_y = input->get_h() / 2;
 
-	if(last_angle != angle || 
-		(interpolate && !float_matrix) || 
+	if(last_angle != angle ||
+		(interpolate && !float_matrix) ||
 		(!interpolate && !int_matrix))
 	{
 		if(interpolate && !float_matrix)
@@ -422,8 +422,8 @@ int RotateEngine::generate_matrix(int interpolate)
 	return 0;
 }
 
-int RotateEngine::perform_rotation(VFrame *input, 
-	VFrame *output, 
+int RotateEngine::perform_rotation(VFrame *input,
+	VFrame *output,
 	int interpolate)
 {
 	this->input = input;
@@ -502,8 +502,8 @@ int RotateEngine::create_matrix()
 			float_row = plugin->float_rows[i];
 
 //printf("RotateEngine::create_matrix 2 %d %f\n", i, l);
-		for(j = 0, k = -plugin->input->get_w() / 2; 
-			j < plugin->input->get_w(); 
+		for(j = 0, k = -plugin->input->get_w() / 2;
+			j < plugin->input->get_w();
 			j++, k++)
 		{
 // Add offsets to input

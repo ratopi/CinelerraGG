@@ -329,7 +329,7 @@ public:
 	Condition *mux_lock;
 	Condition *flow_lock;
 	int done, flow;
-	
+
 	void start_muxer();
 	void stop_muxer();
 	void flow_off();

@@ -49,7 +49,7 @@ class TitleWindow : public BC_Window
 public:
 	TitleWindow(TitleMain *client, int x, int y);
 	~TitleWindow();
-	
+
 	void create_objects();
 	int close_event();
 	int resize_event(int w, int h);
@@ -122,10 +122,10 @@ class TitleFontTumble : public BC_Tumbler
 {
 public:
 	TitleFontTumble(TitleMain *client, TitleWindow *window, int x, int y);
-	
+
 	int handle_up_event();
 	int handle_down_event();
-	
+
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -236,11 +236,11 @@ public:
 class TitleText : public BC_ScrollTextBox
 {
 public:
-	TitleText(TitleMain *client, 
-		TitleWindow *window, 
-		int x, 
-		int y, 
-		int w, 
+	TitleText(TitleMain *client,
+		TitleWindow *window,
+		int x,
+		int y,
+		int w,
 		int h);
 	int handle_event();
 	TitleMain *client;

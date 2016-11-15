@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -61,7 +61,7 @@ int DCOffset::is_realtime() { return 1; }
 
 
 
-int DCOffset::process_buffer(int64_t size, 
+int DCOffset::process_buffer(int64_t size,
 	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
@@ -69,7 +69,7 @@ int DCOffset::process_buffer(int64_t size,
 	load_configuration();
 	double *buffer_samples = buffer->get_data();
 	double *reference_samples = !reference ? 0 : reference->get_data();
-	
+
 	if(need_collection)
 	{
 		if(!reference) {

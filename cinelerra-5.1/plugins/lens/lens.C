@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -75,10 +75,10 @@ void LensConfig::copy_from(LensConfig &that)
 	draw_guides = that.draw_guides;
 }
 
-void LensConfig::interpolate(LensConfig &prev, 
-	LensConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void LensConfig::interpolate(LensConfig &prev,
+	LensConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -109,12 +109,12 @@ void LensConfig::boundaries()
 
 
 
-LensSlider::LensSlider(LensMain *client, 
+LensSlider::LensSlider(LensMain *client,
 	LensGUI *gui,
 	LensText *text,
-	float *output, 
-	int x, 
-	int y, 
+	float *output,
+	int x,
+	int y,
 	float min,
 	float max)
  : BC_FSlider(x, y, 0, 200, 200, min, max, *output)
@@ -167,11 +167,11 @@ int LensSlider::handle_event()
 
 
 
-LensText::LensText(LensMain *client, 
+LensText::LensText(LensMain *client,
 	LensGUI *gui,
 	LensSlider *slider,
-	float *output, 
-	int x, 
+	float *output,
+	int x,
 	int y)
  : BC_TextBox(x, y, 100, 1, *output)
 {
@@ -222,9 +222,9 @@ int LensText::handle_event()
 
 
 
-LensToggle::LensToggle(LensMain *client, 
-	int *output, 
-	int x, 
+LensToggle::LensToggle(LensMain *client,
+	int *output,
+	int x,
 	int y,
 	const char *text)
  : BC_CheckBox(x, y, *output, text)
@@ -249,7 +249,7 @@ int LensToggle::handle_event()
 
 
 
-LensMode::LensMode(LensMain *plugin,  
+LensMode::LensMode(LensMain *plugin,
 	LensGUI *gui,
 	int x,
 	int y)
@@ -333,7 +333,7 @@ const char* LensMode::to_text(int mode)
 
 
 
-// LensPresets::LensPresets(LensMain *plugin,  
+// LensPresets::LensPresets(LensMain *plugin,
 // 	LensGUI *gui,
 // 	int x,
 // 	int y,
@@ -347,12 +347,12 @@ const char* LensMode::to_text(int mode)
 // 	this->plugin = plugin;
 // 	this->gui = gui;
 // }
-// 
+//
 // int LensPresets::handle_event()
 // {
 // 	return 1;
 // }
-// 
+//
 // void LensPresets::create_objects()
 // {
 // // Remove existing items
@@ -361,14 +361,14 @@ const char* LensMode::to_text(int mode)
 // 	{
 // 		del_item();
 // 	}
-// 
+//
 // // Create current items
 // 	plugin->load_presets();
 // 	for(int i = 0; i < plugin->presets.total; i++)
 // 	{
 // 		add_item(new BC_MenuItem(plugin->presets.values[i]->title));
 // 	}
-// 
+//
 // // Update text
 // 	if(plugin->current_preset >= 0 &&
 // 		plugin->current_preset < plugin->presets.total)
@@ -380,25 +380,25 @@ const char* LensMode::to_text(int mode)
 // 		set_text("None");
 // 	}
 // }
-// 
+//
 // int LensPresets::from_text(LensMain *plugin, char *text)
 // {
 // }
-// 
+//
 // char* LensPresets::to_text(LensMain *plugin, int preset)
 // {
 // }
-// 
+//
 // void LensPresets::update(int preset)
 // {
 // }
-// 
-// 
-// 
-// 
-// 
-// 
-// LensSavePreset::LensSavePreset(LensMain *plugin,  
+//
+//
+//
+//
+//
+//
+// LensSavePreset::LensSavePreset(LensMain *plugin,
 // 	LensGUI *gui,
 // 	int x,
 // 	int y)
@@ -407,36 +407,36 @@ const char* LensMode::to_text(int mode)
 // 	this->plugin = plugin;
 // 	this->gui = gui;
 // }
-// 
+//
 // int LensSavePreset::handle_event()
 // {
 // }
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// LensDeletePreset::LensDeletePreset(LensMain *plugin,  
+//
+//
+//
+//
+//
+//
+//
+// LensDeletePreset::LensDeletePreset(LensMain *plugin,
 // 	LensGUI *gui,
 // 	int x,
 // 	int y)
 //  : BC_GenericButton(x, y, "Delete Preset")
 // {
 // }
-// 
+//
 // int LensDeletePreset::handle_event()
 // {
 // }
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// LensPresetText::LensPresetText(LensMain *plugin,  
+//
+//
+//
+//
+//
+//
+//
+// LensPresetText::LensPresetText(LensMain *plugin,
 // 	LensGUI *gui,
 // 	int x,
 // 	int y,
@@ -446,7 +446,7 @@ const char* LensMode::to_text(int mode)
 // 	this->plugin = plugin;
 // 	this->gui = gui;
 // }
-// 
+//
 // int LensPresetText::handle_event()
 // {
 // }
@@ -465,10 +465,10 @@ const char* LensMode::to_text(int mode)
 
 LensGUI::LensGUI(LensMain *client)
  : PluginClientWindow(client,
-	350, 
-	510, 
-	350, 
-	510, 
+	350,
+	510,
+	350,
+	510,
 	0)
 {
 	this->client = client;
@@ -486,7 +486,7 @@ void LensGUI::create_objects()
 	int x1;
 	BC_Title *title = 0;
 	LensToggle *toggle;
-	
+
 	for(int i = 0; i < FOV_CHANNELS; i++)
 	{
 		switch(i)
@@ -498,52 +498,52 @@ void LensGUI::create_objects()
 		}
 
 		y += title->get_h() + 5;
-		add_tool(fov_slider[i] = new LensSlider(client, 
+		add_tool(fov_slider[i] = new LensSlider(client,
 			this,
 			0,
-			&client->config.fov[i], 
-			x, 
-			y, 
+			&client->config.fov[i],
+			x,
+			y,
 			0.0001,
 			1.0));
 		x1 = x + fov_slider[i]->get_w() + 5;
-		add_tool(fov_text[i] = new LensText(client, 
+		add_tool(fov_text[i] = new LensText(client,
 			this,
 			fov_slider[i],
-			&client->config.fov[i], 
-			x1, 
+			&client->config.fov[i],
+			x1,
 			y));
 		fov_slider[i]->text = fov_text[i];
 		y += fov_text[i]->get_h() + 5;
 	}
 
-	add_tool(toggle = new LensToggle(client, 
-		&client->lock, 
-		x, 
+	add_tool(toggle = new LensToggle(client,
+		&client->lock,
+		x,
 		y,
 		_("Lock")));
 	y += toggle->get_h() + 10;
-	
+
 	BC_Bar *bar;
 	add_tool(bar = new BC_Bar(x, y, get_w() - x * 2));
 	y += bar->get_h() + 5;
 
 	add_tool(title = new BC_Title(x, y, _("Aspect Ratio:")));
 	y += title->get_h() + 5;
-	add_tool(aspect_slider = new LensSlider(client, 
+	add_tool(aspect_slider = new LensSlider(client,
 		this,
 		0,
-		&client->config.aspect, 
-		x, 
-		y, 
+		&client->config.aspect,
+		x,
+		y,
 		0.333,
 		3.0));
 	x1 = x + aspect_slider->get_w() + 5;
-	add_tool(aspect_text = new LensText(client, 
+	add_tool(aspect_text = new LensText(client,
 		this,
 		aspect_slider,
-		&client->config.aspect, 
-		x1, 
+		&client->config.aspect,
+		x1,
 		y));
 	aspect_slider->text = aspect_text;
 	y += aspect_text->get_h() + 5;
@@ -551,20 +551,20 @@ void LensGUI::create_objects()
 
 	add_tool(title = new BC_Title(x, y, _("Radius:")));
 	y += title->get_h() + 5;
-	add_tool(radius_slider = new LensSlider(client, 
+	add_tool(radius_slider = new LensSlider(client,
 		this,
 		0,
-		&client->config.radius, 
-		x, 
-		y, 
+		&client->config.radius,
+		x,
+		y,
 		0.333,
 		3.0));
 	x1 = x + radius_slider->get_w() + 5;
-	add_tool(radius_text = new LensText(client, 
+	add_tool(radius_text = new LensText(client,
 		this,
 		radius_slider,
-		&client->config.radius, 
-		x1, 
+		&client->config.radius,
+		x1,
 		y));
 	radius_slider->text = radius_text;
 	y += radius_text->get_h() + 5;
@@ -572,20 +572,20 @@ void LensGUI::create_objects()
 
 	add_tool(title = new BC_Title(x, y, _("Center X:")));
 	y += title->get_h() + 5;
-	add_tool(centerx_slider = new LensSlider(client, 
+	add_tool(centerx_slider = new LensSlider(client,
 		this,
 		0,
-		&client->config.center_x, 
-		x, 
-		y, 
+		&client->config.center_x,
+		x,
+		y,
 		0.0,
 		99.0));
 	x1 = x + centerx_slider->get_w() + 5;
-	add_tool(centerx_text = new LensText(client, 
+	add_tool(centerx_text = new LensText(client,
 		this,
 		centerx_slider,
-		&client->config.center_x, 
-		x1, 
+		&client->config.center_x,
+		x1,
 		y));
 	centerx_slider->text = centerx_text;
 	centerx_slider->set_precision(1.0);
@@ -594,20 +594,20 @@ void LensGUI::create_objects()
 
 	add_tool(title = new BC_Title(x, y, _("Center Y:")));
 	y += title->get_h() + 5;
-	add_tool(centery_slider = new LensSlider(client, 
+	add_tool(centery_slider = new LensSlider(client,
 		this,
 		0,
-		&client->config.center_y, 
-		x, 
-		y, 
+		&client->config.center_y,
+		x,
+		y,
 		0.0,
 		99.0));
 	x1 = x + centery_slider->get_w() + 5;
-	add_tool(centery_text = new LensText(client, 
+	add_tool(centery_text = new LensText(client,
 		this,
 		centery_slider,
-		&client->config.center_y, 
-		x1, 
+		&client->config.center_y,
+		x1,
 		y));
 	centery_slider->text = centery_text;
 	centery_slider->set_precision(1.0);
@@ -617,42 +617,42 @@ void LensGUI::create_objects()
 	y += bar->get_h() + 5;
 
 
-// 	add_tool(reverse = new LensToggle(client, 
-// 		&client->config.reverse, 
-// 		x, 
+// 	add_tool(reverse = new LensToggle(client,
+// 		&client->config.reverse,
+// 		x,
 // 		y,
 // 		_("Reverse")));
 // 	y += reverse->get_h() + 5;
 
-	add_tool(draw_guides = new LensToggle(client, 
-		&client->config.draw_guides, 
-		x, 
+	add_tool(draw_guides = new LensToggle(client,
+		&client->config.draw_guides,
+		x,
 		y,
 		_("Draw center")));
 	y += draw_guides->get_h() + 5;
 
-	
+
 	add_tool(title = new BC_Title(x, y, _("Mode:")));
-	add_tool(mode = new LensMode(client, 
-		this, 
-		x + title->get_w() + 5, 
+	add_tool(mode = new LensMode(client,
+		this,
+		x + title->get_w() + 5,
 		y));
 	mode->create_objects();
 	y += mode->get_h() + 5;
 
 
 // 	add_tool(title = new BC_Title(x, y, _("Preset:")));
-// 	add_tool(presets = new LensPresets(client, 
-// 		this, 
-// 		x + title->get_w() + 5, 
+// 	add_tool(presets = new LensPresets(client,
+// 		this,
+// 		x + title->get_w() + 5,
 // 		y,
 // 		get_w() - x - title->get_w() - 50));
 // 	presets->create_objects();
 // 	y += presets->get_h() + 5;
-// 
+//
 // 	add_tool(save_preset = new LensSavePreset(client,
 // 		this,
-// 		x, 
+// 		x,
 // 		y));
 // 	add_tool(preset_text = new LensPresetText(client,
 // 		this,
@@ -678,7 +678,7 @@ void LensGUI::create_objects()
 LensMain::LensMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 	lock = 0;
 	current_preset = -1;
@@ -686,7 +686,7 @@ LensMain::LensMain(PluginServer *server)
 
 LensMain::~LensMain()
 {
-	
+
 	delete engine;
 	presets.remove_all_objects();
 }
@@ -750,7 +750,7 @@ void LensMain::update_gui()
 //		sprintf(string, "MODE_%d", i);
 //		defaults->update(string, preset->mode);
 //	}
-//	
+//
 //	defaults->save();
 //	delete defaults;
 //}
@@ -828,7 +828,7 @@ int LensMain::process_buffer(VFrame *frame,
 {
 	VFrame *input;
 	load_configuration();
-	
+
 	if(get_use_opengl())
 	{
 		input = frame;
@@ -837,10 +837,10 @@ int LensMain::process_buffer(VFrame *frame,
 	{
 		input = new_temp(frame->get_w(), frame->get_h(), frame->get_color_model());
 	}
-	
-	read_frame(input, 
-		0, 
-		start_position, 
+
+	read_frame(input,
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
 
@@ -922,7 +922,7 @@ int LensMain::process_buffer(VFrame *frame,
 int LensMain::handle_opengl()
 {
 #ifdef HAVE_GL
-	static const char *shrink_frag = 
+	static const char *shrink_frag =
 		"uniform sampler2D tex;\n"
 		"uniform vec2 texture_extents;\n"
 		"uniform vec2 image_extents;\n"
@@ -969,7 +969,7 @@ int LensMain::handle_opengl()
 		"	}\n"
 		"}\n";
 
-	static const char *stretch_frag = 
+	static const char *stretch_frag =
 		"uniform sampler2D tex;\n"
 		"uniform vec2 texture_extents;\n"
 		"uniform vec2 image_extents;\n"
@@ -1018,7 +1018,7 @@ int LensMain::handle_opengl()
 		"}\n";
 
 
-	static const char *rectilinear_stretch_frag = 
+	static const char *rectilinear_stretch_frag =
 		"uniform sampler2D tex;\n"
 		"uniform vec2 texture_extents;\n"
 		"uniform vec2 image_extents;\n"
@@ -1069,7 +1069,7 @@ int LensMain::handle_opengl()
 		"		gl_FragColor.a = texture2D(tex, vec2(in_x.a, in_y.a) / texture_extents).a;\n"
 		"}\n";
 
-	static const char *rectilinear_shrink_frag = 
+	static const char *rectilinear_shrink_frag =
 		"uniform sampler2D tex;\n"
 		"uniform vec2 texture_extents;\n"
 		"uniform vec2 image_extents;\n"
@@ -1156,16 +1156,16 @@ int LensMain::handle_opengl()
 
 		glUseProgram(frag_shader);
 		glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
-		glUniform2f(glGetUniformLocation(frag_shader, "aspect"), 
-			x_factor, 
+		glUniform2f(glGetUniformLocation(frag_shader, "aspect"),
+			x_factor,
 			y_factor);
-		glUniform2f(glGetUniformLocation(frag_shader, "center_coord"), 
+		glUniform2f(glGetUniformLocation(frag_shader, "center_coord"),
 				(GLfloat)get_input()->get_w() * config.center_x / 100.0,
 				(GLfloat)get_input()->get_h() * config.center_y / 100.0);
-		glUniform2f(glGetUniformLocation(frag_shader, "texture_extents"), 
+		glUniform2f(glGetUniformLocation(frag_shader, "texture_extents"),
 				(GLfloat)get_input()->get_texture_w(),
 				(GLfloat)get_input()->get_texture_h());
-		glUniform2f(glGetUniformLocation(frag_shader, "image_extents"), 
+		glUniform2f(glGetUniformLocation(frag_shader, "image_extents"),
 				(GLfloat)get_input()->get_w(),
 				(GLfloat)get_input()->get_h());
 
@@ -1179,15 +1179,15 @@ int LensMain::handle_opengl()
 			case LensConfig::SHRINK:
 				dim = MAX(width, height) * config.radius;
 				max_z = dim * sqrt(2.0) / 2;
-				glUniform4fv(glGetUniformLocation(frag_shader, "border_color"), 
+				glUniform4fv(glGetUniformLocation(frag_shader, "border_color"),
 						1,
 						(GLfloat*)border_color);
-				glUniform4f(glGetUniformLocation(frag_shader, "max_z"), 
+				glUniform4f(glGetUniformLocation(frag_shader, "max_z"),
 					max_z / fov[0],
 					max_z / fov[1],
 					max_z / fov[2],
 					max_z / fov[3]);
-				glUniform4f(glGetUniformLocation(frag_shader, "r"), 
+				glUniform4f(glGetUniformLocation(frag_shader, "r"),
 					(max_z / fov[0]) * 2 / M_PI,
 					(max_z / fov[1]) * 2 / M_PI,
 					(max_z / fov[2]) * 2 / M_PI,
@@ -1197,7 +1197,7 @@ int LensMain::handle_opengl()
 			case LensConfig::STRETCH:
 				dim = MAX(width, height) * config.radius;
 				max_z = dim * sqrt(2.0) / 2;
-				glUniform4f(glGetUniformLocation(frag_shader, "r"), 
+				glUniform4f(glGetUniformLocation(frag_shader, "r"),
 					max_z / M_PI / (fov[0] / 2.0),
 					max_z / M_PI / (fov[1] / 2.0),
 					max_z / M_PI / (fov[2] / 2.0),
@@ -1206,23 +1206,23 @@ int LensMain::handle_opengl()
 
 			case LensConfig::RECTILINEAR_STRETCH:
 				max_z = sqrt(SQR(width) + SQR(height)) / 2;
-				glUniform4f(glGetUniformLocation(frag_shader, "r"), 
+				glUniform4f(glGetUniformLocation(frag_shader, "r"),
 					max_z / M_PI / (fov[0] / 2.0),
 					max_z / M_PI / (fov[1] / 2.0),
 					max_z / M_PI / (fov[2] / 2.0),
 					max_z / M_PI / (fov[3] / 2.0));
-				glUniform1f(glGetUniformLocation(frag_shader, "radius"), 
+				glUniform1f(glGetUniformLocation(frag_shader, "radius"),
 					config.radius);
 				break;
 
 			case LensConfig::RECTILINEAR_SHRINK:
 				max_z = sqrt(SQR(width) + SQR(height)) / 2;
-				glUniform4f(glGetUniformLocation(frag_shader, "r"), 
+				glUniform4f(glGetUniformLocation(frag_shader, "r"),
 					max_z / M_PI / (fov[0] / 2.0),
 					max_z / M_PI / (fov[1] / 2.0),
 					max_z / M_PI / (fov[2] / 2.0),
 					max_z / M_PI / (fov[3] / 2.0));
-				glUniform1f(glGetUniformLocation(frag_shader, "radius"), 
+				glUniform1f(glGetUniformLocation(frag_shader, "radius"),
 					config.radius);
 				break;
 		}
@@ -1266,7 +1266,7 @@ int LensMain::handle_opengl()
 		}
 		get_output()->set_opengl_state(VFrame::SCREEN);
 	}
-	
+
 #endif
 	return 0;
 }

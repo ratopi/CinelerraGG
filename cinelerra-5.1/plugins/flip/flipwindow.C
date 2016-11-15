@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -31,8 +31,8 @@
 
 FlipWindow::FlipWindow(FlipMain *client)
  : PluginClientWindow(client, 250, 100, 250, 100, 0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 FlipWindow::~FlipWindow()
@@ -42,16 +42,16 @@ FlipWindow::~FlipWindow()
 void FlipWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(flip_vertical = new FlipToggle(client, 
-		&(client->config.flip_vertical), 
+	add_tool(flip_vertical = new FlipToggle(client,
+		&(client->config.flip_vertical),
 		_("Vertical"),
-		x, 
+		x,
 		y));
 	y += 30;
-	add_tool(flip_horizontal = new FlipToggle(client, 
-		&(client->config.flip_horizontal), 
+	add_tool(flip_horizontal = new FlipToggle(client,
+		&(client->config.flip_horizontal),
 		_("Horizontal"),
-		x, 
+		x,
 		y));
 	show_window();
 	flush();

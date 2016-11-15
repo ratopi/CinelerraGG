@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "assets.h"
@@ -54,8 +54,8 @@ char* FileJPEGList::extension()
 	return ".jpg";
 }
 
-void FileJPEGList::get_parameters(BC_WindowBase *parent_window, 
-	Asset *asset, 
+void FileJPEGList::get_parameters(BC_WindowBase *parent_window,
+	Asset *asset,
 	BC_WindowBase* &format_window,
 	int audio_options,
 	int video_options)
@@ -102,16 +102,16 @@ int FileJPEGList::read_frame(VFrame *frame, VFrame *data)
 {
 	PRINT_TRACE
 
-	mjpeg_t *mjpeg = mjpeg_new(asset->width, 
-		asset->height, 
+	mjpeg_t *mjpeg = mjpeg_new(asset->width,
+		asset->height,
 		1);
-	mjpeg_decompress(mjpeg, 
-		data->get_data(), 
+	mjpeg_decompress(mjpeg,
+		data->get_data(),
 		data->get_compressed_size(),
-		0,  
-		frame->get_rows(), 
-		frame->get_y(), 
-		frame->get_u(), 
+		0,
+		frame->get_rows(),
+		frame->get_y(),
+		frame->get_u(),
 		frame->get_v(),
 		frame->get_color_model(),
 		file->cpus);
@@ -122,13 +122,13 @@ int FileJPEGList::read_frame(VFrame *frame, VFrame *data)
 
 int FileJPEGList::write_frame(VFrame *frame, VFrame *data)
 {
-	mjpeg_t *mjpeg = mjpeg_new(asset->width, 
-		asset->height, 
+	mjpeg_t *mjpeg = mjpeg_new(asset->width,
+		asset->height,
 		1);
-	mjpeg_compress(mjpeg, 
-		frame->get_rows(), 
-		frame->get_y(), 
-		frame->get_u(), 
+	mjpeg_compress(mjpeg,
+		frame->get_rows(),
+		frame->get_y(),
+		frame->get_u(),
 		frame->get_v(),
 		frame->get_color_model(),
 		file->cpus);
@@ -168,7 +168,7 @@ void JPEGConfigVideo::create_objects()
 	int x = 10, y = 10;
 	lock_window("JPEGConfigVideo::create_objects");
 	add_subwindow(new BC_Title(x, y, _("Quality:")));
-	add_subwindow(new BC_ISlider(x + 80, 
+	add_subwindow(new BC_ISlider(x + 80,
 		y,
 		0,
 		200,

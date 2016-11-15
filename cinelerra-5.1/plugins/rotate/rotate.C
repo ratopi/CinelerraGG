@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "affine.h"
@@ -49,10 +49,10 @@ public:
 
 	int equivalent(RotateConfig &that);
 	void copy_from(RotateConfig &that);
-	void interpolate(RotateConfig &prev, 
-		RotateConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(RotateConfig &prev,
+		RotateConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 
 	float angle;
@@ -65,12 +65,12 @@ public:
 class RotateToggle : public BC_Radial
 {
 public:
-	RotateToggle(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int init_value, 
-		int x, 
-		int y, 
-		int value, 
+	RotateToggle(RotateWindow *window,
+		RotateEffect *plugin,
+		int init_value,
+		int x,
+		int y,
+		int value,
 		const char *string);
 	int handle_event();
 
@@ -82,9 +82,9 @@ public:
 class RotateDrawPivot : public BC_CheckBox
 {
 public:
-	RotateDrawPivot(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int x, 
+	RotateDrawPivot(RotateWindow *window,
+		RotateEffect *plugin,
+		int x,
 		int y);
 	int handle_event();
 	RotateEffect *plugin;
@@ -103,9 +103,9 @@ public:
 class RotateFine : public BC_FPot
 {
 public:
-	RotateFine(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int x, 
+	RotateFine(RotateWindow *window,
+		RotateEffect *plugin,
+		int x,
 		int y);
 	int handle_event();
 
@@ -116,9 +116,9 @@ public:
 class RotateX : public BC_FPot
 {
 public:
-	RotateX(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int x, 
+	RotateX(RotateWindow *window,
+		RotateEffect *plugin,
+		int x,
 		int y);
 	int handle_event();
 	RotateEffect *plugin;
@@ -128,9 +128,9 @@ public:
 class RotateY : public BC_FPot
 {
 public:
-	RotateY(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int x, 
+	RotateY(RotateWindow *window,
+		RotateEffect *plugin,
+		int x,
 		int y);
 	int handle_event();
 	RotateEffect *plugin;
@@ -141,9 +141,9 @@ public:
 class RotateText : public BC_TextBox
 {
 public:
-	RotateText(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int x, 
+	RotateText(RotateWindow *window,
+		RotateEffect *plugin,
+		int x,
 		int y);
 	int handle_event();
 
@@ -184,7 +184,7 @@ class RotateEffect : public PluginVClient
 public:
 	RotateEffect(PluginServer *server);
 	~RotateEffect();
-	
+
 	PLUGIN_CLASS_MEMBERS(RotateConfig)
 	int process_buffer(VFrame *frame,
 		int64_t start_position,
@@ -249,10 +249,10 @@ void RotateConfig::copy_from(RotateConfig &that)
 //	bilinear = that.bilinear;
 }
 
-void RotateConfig::interpolate(RotateConfig &prev, 
-		RotateConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+void RotateConfig::interpolate(RotateConfig &prev,
+		RotateConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -275,12 +275,12 @@ void RotateConfig::interpolate(RotateConfig &prev,
 
 
 
-RotateToggle::RotateToggle(RotateWindow *window, 
-	RotateEffect *plugin, 
-	int init_value, 
-	int x, 
-	int y, 
-	int value, 
+RotateToggle::RotateToggle(RotateWindow *window,
+	RotateEffect *plugin,
+	int init_value,
+	int x,
+	int y,
+	int value,
 	const char *string)
  : BC_Radial(x, y, init_value, string)
 {
@@ -303,9 +303,9 @@ int RotateToggle::handle_event()
 
 
 
-RotateDrawPivot::RotateDrawPivot(RotateWindow *window, 
-	RotateEffect *plugin, 
-	int x, 
+RotateDrawPivot::RotateDrawPivot(RotateWindow *window,
+	RotateEffect *plugin,
+	int x,
 	int y)
  : BC_CheckBox(x, y, plugin->config.draw_pivot, _("Draw pivot"))
 {
@@ -335,15 +335,15 @@ int RotateDrawPivot::handle_event()
 // 	plugin->send_configure_change();
 // 	return 1;
 // }
-// 
+//
 
 
 
 RotateFine::RotateFine(RotateWindow *window, RotateEffect *plugin, int x, int y)
- : BC_FPot(x, 
- 	y, 
-	(float)plugin->config.angle, 
-	(float)-360, 
+ : BC_FPot(x,
+ 	y,
+	(float)plugin->config.angle,
+	(float)-360,
 	(float)360)
 {
 	this->window = window;
@@ -363,12 +363,12 @@ int RotateFine::handle_event()
 
 
 
-RotateText::RotateText(RotateWindow *window, 
-	RotateEffect *plugin, 
-	int x, 
+RotateText::RotateText(RotateWindow *window,
+	RotateEffect *plugin,
+	int x,
 	int y)
- : BC_TextBox(x, 
- 	y, 
+ : BC_TextBox(x,
+ 	y,
 	100,
 	1,
 	(float)plugin->config.angle)
@@ -390,10 +390,10 @@ int RotateText::handle_event()
 
 
 RotateX::RotateX(RotateWindow *window, RotateEffect *plugin, int x, int y)
- : BC_FPot(x, 
- 	y, 
-	(float)plugin->config.pivot_x, 
-	(float)0, 
+ : BC_FPot(x,
+ 	y,
+	(float)plugin->config.pivot_x,
+	(float)0,
 	(float)100)
 {
 	this->window = window;
@@ -410,10 +410,10 @@ int RotateX::handle_event()
 }
 
 RotateY::RotateY(RotateWindow *window, RotateEffect *plugin, int x, int y)
- : BC_FPot(x, 
- 	y, 
-	(float)plugin->config.pivot_y, 
-	(float)0, 
+ : BC_FPot(x,
+ 	y,
+	(float)plugin->config.pivot_y,
+	(float)0,
 	(float)100)
 {
 	this->window = window;
@@ -438,10 +438,10 @@ int RotateY::handle_event()
 
 RotateWindow::RotateWindow(RotateEffect *plugin)
  : PluginClientWindow(plugin,
-	250, 
-	230, 
-	250, 
-	230, 
+	250,
+	230,
+	250,
+	230,
 	0)
 {
 	this->plugin = plugin;
@@ -459,39 +459,39 @@ void RotateWindow::create_objects()
 	add_tool(new BC_Title(x, y, _("Rotate")));
 	x += 50;
 	y += 20;
-	add_tool(toggle0 = new RotateToggle(this, 
-		plugin, 
-		plugin->config.angle == 0, 
-		x, 
-		y, 
-		0, 
+	add_tool(toggle0 = new RotateToggle(this,
+		plugin,
+		plugin->config.angle == 0,
+		x,
+		y,
+		0,
 		"0"));
     x += RADIUS;
     y += RADIUS;
-	add_tool(toggle90 = new RotateToggle(this, 
-		plugin, 
-		plugin->config.angle == 90, 
-		x, 
-		y, 
-		90, 
+	add_tool(toggle90 = new RotateToggle(this,
+		plugin,
+		plugin->config.angle == 90,
+		x,
+		y,
+		90,
 		"90"));
     x -= RADIUS;
     y += RADIUS;
-	add_tool(toggle180 = new RotateToggle(this, 
-		plugin, 
-		plugin->config.angle == 180, 
-		x, 
-		y, 
-		180, 
+	add_tool(toggle180 = new RotateToggle(this,
+		plugin,
+		plugin->config.angle == 180,
+		x,
+		y,
+		180,
 		"180"));
     x -= RADIUS;
     y -= RADIUS;
-	add_tool(toggle270 = new RotateToggle(this, 
-		plugin, 
-		plugin->config.angle == 270, 
-		x, 
-		y, 
-		270, 
+	add_tool(toggle270 = new RotateToggle(this,
+		plugin,
+		plugin->config.angle == 270,
+		x,
+		y,
+		270,
 		"270"));
 //	add_subwindow(bilinear = new RotateInterpolate(plugin, 10, y + 60));
 	x += 120;
@@ -501,7 +501,7 @@ void RotateWindow::create_objects()
 	add_tool(text = new RotateText(this, plugin, x, y));
 	y += 30;
 	add_tool(new BC_Title(x, y, _("Degrees")));
-	
+
 
 
 
@@ -596,12 +596,12 @@ RotateEffect::RotateEffect(PluginServer *server)
 {
 	engine = 0;
 	need_reconfigure = 1;
-	
+
 }
 
 RotateEffect::~RotateEffect()
 {
-	
+
 	if(engine) delete engine;
 }
 
@@ -688,16 +688,16 @@ int RotateEffect::process_buffer(VFrame *frame,
 
 	if(config.angle == 0)
 	{
-		read_frame(frame, 
-			0, 
-			start_position, 
+		read_frame(frame,
+			0,
+			start_position,
 			frame_rate,
 			get_use_opengl());
 		return 1;
 	}
 //printf("RotateEffect::process_buffer %d\n", __LINE__);
 
-	if(!engine) engine = new AffineEngine(PluginClient::smp + 1, 
+	if(!engine) engine = new AffineEngine(PluginClient::smp + 1,
 		PluginClient::smp + 1);
 	int pivot_x = (int)(config.pivot_x * get_input()->get_w() / 100);
 	int pivot_y = (int)(config.pivot_y * get_input()->get_h() / 100);
@@ -711,9 +711,9 @@ int RotateEffect::process_buffer(VFrame *frame,
 
 	if(get_use_opengl())
 	{
-		read_frame(frame, 
-			0, 
-			start_position, 
+		read_frame(frame,
+			0,
+			start_position,
 			frame_rate,
 			get_use_opengl());
 		return run_opengl();
@@ -721,9 +721,9 @@ int RotateEffect::process_buffer(VFrame *frame,
 //printf("RotateEffect::process_buffer %d\n", __LINE__);
 
 
-// engine->set_viewport(50, 
-// 50, 
-// 100, 
+// engine->set_viewport(50,
+// 50,
+// 100,
 // 100);
 // engine->set_pivot(100, 100);
 
@@ -731,14 +731,14 @@ int RotateEffect::process_buffer(VFrame *frame,
 	VFrame *temp_frame = PluginVClient::new_temp(get_input()->get_w(),
 		get_input()->get_h(),
 		get_input()->get_color_model());
-	read_frame(temp_frame, 
-		0, 
-		start_position, 
+	read_frame(temp_frame,
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
 	frame->clear_frame();
-	engine->rotate(frame, 
-		temp_frame, 
+	engine->rotate(frame,
+		temp_frame,
 		config.angle);
 
 //printf("RotateEffect::process_buffer %d draw_pivot=%d\n", __LINE__, config.draw_pivot);
@@ -821,8 +821,8 @@ int RotateEffect::handle_opengl()
 {
 #ifdef HAVE_GL
 	engine->set_opengl(1);
-	engine->rotate(get_output(), 
-		get_output(), 
+	engine->rotate(get_output(),
+		get_output(),
 		config.angle);
 	engine->set_opengl(0);
 
@@ -832,7 +832,7 @@ int RotateEffect::handle_opengl()
 		int h = get_output()->get_h();
 		int center_x = (int)(config.pivot_x * w / 100);
 		int center_y = (int)(config.pivot_y * h / 100);
-		
+
 		glDisable(GL_TEXTURE_2D);
 		glColor4f(0.0, 0.0, 0.0, 1.0);
 		glBegin(GL_LINES);

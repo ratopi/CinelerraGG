@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -58,10 +58,10 @@ void DelayVideoConfig::copy_from(DelayVideoConfig &that)
 	length = that.length;
 }
 
-void DelayVideoConfig::interpolate(DelayVideoConfig &prev, 
-		DelayVideoConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+void DelayVideoConfig::interpolate(DelayVideoConfig &prev,
+		DelayVideoConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame)
 {
 	this->length = prev.length;
@@ -70,11 +70,11 @@ void DelayVideoConfig::interpolate(DelayVideoConfig &prev,
 
 
 DelayVideoWindow::DelayVideoWindow(DelayVideo *plugin)
- : PluginClientWindow(plugin, 
-	210, 
-	120, 
-	210, 
-	120, 
+ : PluginClientWindow(plugin,
+	210,
+	120,
+	210,
+	120,
 	0)
 {
 	this->plugin = plugin;
@@ -84,11 +84,11 @@ DelayVideoWindow::~DelayVideoWindow()
 {
 }
 
-	
+
 void DelayVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
-	
+
 	add_subwindow(new BC_Title(x, y, _("Delay seconds:")));
 	y += 20;
 	slider = new DelayVideoSlider(this, plugin, x, y);
@@ -116,15 +116,15 @@ void DelayVideoWindow::update_gui()
 
 
 DelayVideoSlider::DelayVideoSlider(DelayVideoWindow *window,
-	DelayVideo *plugin, 
-	int x, 
+	DelayVideo *plugin,
+	int x,
 	int y)
  : BC_TumbleTextBox(window,
  	(float)plugin->config.length,
 	(float)0,
 	(float)10,
-	x, 
-	y, 
+	x,
+	y,
 	150)
 {
 	this->plugin = plugin;
@@ -168,7 +168,7 @@ DelayVideo::~DelayVideo()
 		for(int i = 0; i < allocation; i++)
 			delete buffer[i];
 //printf("DelayVideo::~DelayVideo 1\n");
-	
+
 		delete [] buffer;
 //printf("DelayVideo::~DelayVideo 1\n");
 	}
@@ -195,7 +195,7 @@ void DelayVideo::reconfigure()
 
 	for(int i = reuse; i < new_allocation; i++)
 	{
-		new_buffer[i] = new VFrame(0, 
+		new_buffer[i] = new VFrame(0,
 			-1,
 			input->get_w(),
 			input->get_h(),
@@ -209,11 +209,11 @@ void DelayVideo::reconfigure()
 	}
 
 	if(buffer) delete [] buffer;
-	
-	
+
+
 	buffer = new_buffer;
 	allocation = new_allocation;
-	
+
 	need_reconfigure = 0;
 }
 
@@ -231,7 +231,7 @@ int DelayVideo::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	buffer[allocation - 1]->copy_from(input_ptr);
 	output_ptr->copy_from(buffer[0]);
-	
+
 	VFrame *temp = buffer[0];
 	for(int i = 0; i < allocation - 1; i++)
 	{
@@ -240,8 +240,8 @@ int DelayVideo::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	buffer[allocation - 1] = temp;
 //printf("DelayVideo::process_realtime 4\n");
-	
-	
+
+
 	return 0;
 }
 
@@ -292,7 +292,7 @@ void DelayVideo::read_data(KeyFrame *keyframe)
 
 void DelayVideo::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		load_configuration();
 		((DelayVideoWindow*)thread->window)->lock_window();

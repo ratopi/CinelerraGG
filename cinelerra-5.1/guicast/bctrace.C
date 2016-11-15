@@ -19,7 +19,7 @@ BC_Trace::~BC_Trace()
 bc_trace_mutex execution_table;
 bc_trace_mutex memory_table;
 bc_trace_mutex lock_table;
-bc_trace_list lock_free;
+bc_trace_list  lock_free;
 bc_trace_mutex file_table;
 
 // incase lock set after task ends
@@ -28,7 +28,7 @@ static const char *last_lock_title = 0;
 static const char *last_lock_location = 0;
 
 trace_item::trace_item(bc_trace_t &t) : table(t) { ++table.size; }
-trace_item::~trace_item() { --table.size; } 
+trace_item::~trace_item() { --table.size; }
 
 extern "C" void dump()
 {

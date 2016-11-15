@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -51,12 +51,12 @@ public:
 
 	void copy_from(PolarConfig &src);
 	int equivalent(PolarConfig &src);
-	void interpolate(PolarConfig &prev, 
-		PolarConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(PolarConfig &prev,
+		PolarConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
-	
+
 	int polar_to_rectangular;
 	float depth;
 	float angle;
@@ -170,10 +170,10 @@ int PolarConfig::equivalent(PolarConfig &src)
 	return EQUIV(this->angle, src.angle) && EQUIV(this->depth, src.depth);
 }
 
-void PolarConfig::interpolate(PolarConfig &prev, 
-		PolarConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+void PolarConfig::interpolate(PolarConfig &prev,
+		PolarConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -189,11 +189,11 @@ void PolarConfig::interpolate(PolarConfig &prev,
 
 
 PolarWindow::PolarWindow(PolarEffect *plugin)
- : PluginClientWindow(plugin, 
-	270, 
-	100, 
-	270, 
-	100, 
+ : PluginClientWindow(plugin,
+	270,
+	100,
+	270,
+	100,
 	0)
 {
 	this->plugin = plugin;
@@ -219,12 +219,12 @@ void PolarWindow::create_objects()
 
 
 PolarDepth::PolarDepth(PolarEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-	   	y, 
+ : BC_FSlider(x,
+	   	y,
 		0,
 		200,
-		200, 
-		(float)1, 
+		200,
+		(float)1,
 		(float)100,
 		plugin->config.depth)
 {
@@ -242,13 +242,13 @@ int PolarDepth::handle_event()
 
 
 PolarAngle::PolarAngle(PolarEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-	   	y, 
+ : BC_FSlider(x,
+	   	y,
 		0,
 		200,
-		200, 
-		(float)1, 
-		(float)360, 
+		200,
+		(float)1,
+		(float)360,
 		plugin->config.angle)
 {
 	this->plugin = plugin;
@@ -270,12 +270,12 @@ PolarEffect::PolarEffect(PluginServer *server)
 	need_reconfigure = 1;
 	temp_frame = 0;
 	engine = 0;
-	
+
 }
 
 PolarEffect::~PolarEffect()
 {
-	
+
 	if(temp_frame) delete temp_frame;
 	if(engine) delete engine;
 }
@@ -363,8 +363,8 @@ int PolarEffect::process_realtime(VFrame *input, VFrame *output)
 			temp_frame->copy_from(input);
 			this->input = temp_frame;
 		}
-		
-		
+
+
 		if(!engine) engine = new PolarEngine(this, PluginClient::smp + 1);
 
 		engine->process_packages();
@@ -440,18 +440,18 @@ static int calc_undistorted_coords(int wx,
 		{
 	  		if(wy > cen_y)
 	    	{
-	      		phi = M_PI - 
-					atan(((double)(wx - cen_x)) / 
+	      		phi = M_PI -
+					atan(((double)(wx - cen_x)) /
 					((double)(wy - cen_y)));
-	      		r   = sqrt(SQR(wx - cen_x) + 
+	      		r   = sqrt(SQR(wx - cen_x) +
 					SQR(wy - cen_y));
 	    	}
-	  		else 
+	  		else
 			if(wy < cen_y)
 	    	{
-	    		phi = atan(((double)(wx - cen_x)) / 
+	    		phi = atan(((double)(wx - cen_x)) /
 					((double)(cen_y - wy)));
-	    		r   = sqrt(SQR(wx - cen_x) + 
+	    		r   = sqrt(SQR(wx - cen_x) +
 					SQR(cen_y - wy));
 	    	}
 			else
@@ -460,24 +460,24 @@ static int calc_undistorted_coords(int wx,
 	    		r   = wx - cen_x;
 	    	}
 		}
-      	else 
+      	else
 		if(wx < cen_x)
 		{
 			if(wy < cen_y)
 	    	{
-	    		phi = 2 * M_PI - 
+	    		phi = 2 * M_PI -
 					atan(((double)(cen_x -wx)) /
 				    ((double)(cen_y - wy)));
-	    		r   = sqrt(SQR(cen_x - wx) + 
+	    		r   = sqrt(SQR(cen_x - wx) +
 					SQR(cen_y - wy));
 	    	}
-			else 
+			else
 			if(wy > cen_y)
 	    	{
-	    		phi = M_PI + 
-					atan(((double)(cen_x - wx)) / 
+	    		phi = M_PI +
+					atan(((double)(cen_x - wx)) /
 					((double)(wy - cen_y)));
-	    		r   = sqrt(SQR(cen_x - wx) + 
+	    		r   = sqrt(SQR(cen_x - wx) +
 					SQR(wy - cen_y));
 	    	}
 			else
@@ -488,15 +488,15 @@ static int calc_undistorted_coords(int wx,
 		}
       	if (wx != cen_x)
 		{
-			m = fabs(((double)(wy - cen_y)) / 
+			m = fabs(((double)(wy - cen_y)) /
 				((double)(wx - cen_x)));
 		}
     	else
 		{
 		    m = 0;
 		}
-    
-    	if(m <= ((double)(y2 - y1) / 
+
+    	if(m <= ((double)(y2 - y1) /
 			(double)(x2 - x1)))
 		{
 			if(wx == cen_x)
@@ -515,7 +515,7 @@ static int calc_undistorted_coords(int wx,
 			ymax = cen_y - y1;
 			xmax = ymax / m;
 		}
-    
+
     	rmax = sqrt((double)(SQR(xmax) + SQR(ymax)));
 
     	t = ((cen_y - y1) < (cen_x - x1)) ? (cen_y - y1) : (cen_x - x1);
@@ -535,7 +535,7 @@ static int calc_undistorted_coords(int wx,
 
     	xi = (int)(x_calc + 0.5);
     	yi = (int)(y_calc + 0.5);
-    
+
     	if(WITHIN(0, xi, w - 1) && WITHIN(0, yi, h - 1))
 		{
 			x = x_calc;
@@ -556,7 +556,7 @@ static int calc_undistorted_coords(int wx,
 			phi = (2 * M_PI) * (wx - x1) / xdiff;
 
     	phi = fmod (phi + angl, 2 * M_PI);
-    
+
     	if(phi >= 1.5 * M_PI)
 			phi2 = 2 * M_PI - phi;
     	else
@@ -573,7 +573,7 @@ static int calc_undistorted_coords(int wx,
 			m = (double)1.0 / xx;
     	else
 			m = 0;
-    
+
     	if(m <= ((double)(ydiff) / (double)(xdiff)))
 		{
 			if(phi2 == 0)
@@ -592,9 +592,9 @@ static int calc_undistorted_coords(int wx,
 			ymax = ym - y1;
 			xmax = ymax / m;
 		}
-    
+
     	rmax = sqrt((double)(SQR(xmax) + SQR(ymax)));
-    
+
     	t = ((ym - y1) < (xm - x1)) ? (ym - y1) : (xm - x1);
 
     	rmax = (rmax - t) / 100.0 * (100 - circle) + t;
@@ -603,7 +603,7 @@ static int calc_undistorted_coords(int wx,
 			r = rmax * (double)((wy - y1) / (double)(ydiff));
     	else
 			r = rmax * (double)((y2 - wy) / (double)(ydiff));
-    
+
     	xx = r * sin (phi2);
     	yy = r * cos (phi2);
 
@@ -632,9 +632,9 @@ static int calc_undistorted_coords(int wx,
 
     	xi = (int)(x_calc + 0.5);
     	yi = (int)(y_calc + 0.5);
-  
-    	if(WITHIN(0, xi, w - 1) && 
-			WITHIN(0, yi, h - 1)) 
+
+    	if(WITHIN(0, xi, w - 1) &&
+			WITHIN(0, yi, h - 1))
 		{
 			x = x_calc;
 			y = y_calc;
@@ -747,7 +747,7 @@ void PolarUnit::process_package(LoadPackage *package)
 	double cy;
 	double cen_x = (double)(w - 1) / 2.0;
 	double cen_y = (double)(h - 1) / 2.0;
-	
+
 	switch(plugin->input->get_color_model())
 	{
 		case BC_RGB_FLOAT:

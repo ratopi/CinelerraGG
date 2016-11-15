@@ -428,7 +428,7 @@ void FFMPEGConfigAudio::create_objects()
 	audio_options->create_objects();
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
-	
+
 	show_window(1);
 	bitrate->handle_event();
 	unlock_window();

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -42,13 +42,13 @@ REGISTER_PLUGIN(Despike)
 Despike::Despike(PluginServer *server)
  : PluginAClient(server)
 {
-	
+
 	last_sample = 0;
 }
 
 Despike::~Despike()
 {
-	
+
 }
 
 const char* Despike::plugin_title() { return _("Despike"); }
@@ -71,8 +71,8 @@ int Despike::process_realtime(int64_t size, Samples *input_ptr, Samples *output_
 	double *input_samples = input_ptr->get_data();
 	for(int64_t i = 0; i < size; i++)
 	{
-		if(fabs(input_samples[i]) > threshold || 
-			fabs(input_samples[i]) - fabs(last_sample) > change) 
+		if(fabs(input_samples[i]) > threshold ||
+			fabs(input_samples[i]) - fabs(last_sample) > change)
 		{
 			output_samples[i] = last_sample;
 		}
@@ -160,7 +160,7 @@ DespikeConfig::DespikeConfig()
 
 int DespikeConfig::equivalent(DespikeConfig &that)
 {
-	return EQUIV(level, that.level) && 
+	return EQUIV(level, that.level) &&
 		EQUIV(slope, that.slope);
 }
 
@@ -170,10 +170,10 @@ void DespikeConfig::copy_from(DespikeConfig &that)
 	slope = that.slope;
 }
 
-void DespikeConfig::interpolate(DespikeConfig &prev, 
-		DespikeConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+void DespikeConfig::interpolate(DespikeConfig &prev,
+		DespikeConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);

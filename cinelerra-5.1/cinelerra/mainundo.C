@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "asset.h"
@@ -35,7 +35,7 @@
 #include "undostack.h"
 
 MainUndo::MainUndo(MWindow *mwindow)
-{ 
+{
 	this->mwindow = mwindow;
 	undo_stack = new UndoStack;
 	last_update = new Timer;
@@ -48,14 +48,14 @@ MainUndo::~MainUndo()
 }
 
 
-void MainUndo::update_undo_entry(const char *description, 
+void MainUndo::update_undo_entry(const char *description,
 	uint32_t load_flags,
-	void *creator, 
+	void *creator,
 	int changes_made)
 {
 	FileXML file;
 
-	mwindow->edl->save_xml(&file, 
+	mwindow->edl->save_xml(&file,
 		"",
 		0,
 		0);
@@ -133,7 +133,7 @@ void MainUndo::update_undo_before(const char *description, void *creator)
 	update_undo_entry("", 0, creator, 0);
 }
 
-void MainUndo::update_undo_after(const char *description, 
+void MainUndo::update_undo_after(const char *description,
 	uint32_t load_flags,
 	int changes_made)
 {
@@ -193,7 +193,7 @@ int MainUndo::undo()
 	{
 		undo_stack->current = current;
 // Set the redo text to the current description
-		if(mwindow->gui) 
+		if(mwindow->gui)
 			mwindow->gui->mainmenu->redo->update_caption(
 				after_description);
 
@@ -208,7 +208,7 @@ int MainUndo::undo()
 			delete [] current_data;
 
 // move current entry back one step
-			undo_stack->pull();    
+			undo_stack->pull();
 
 
 			if(mwindow->gui)
@@ -271,7 +271,7 @@ int MainUndo::redo()
 				mwindow->gui->mainmenu->undo->update_caption(current->get_description());
 
 // Get next after entry
-				current = NEXT;			
+				current = NEXT;
 				if(current)
 					current = NEXT;
 
@@ -288,7 +288,7 @@ int MainUndo::redo()
 }
 
 
-// Here the master EDL loads 
+// Here the master EDL loads
 int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 {
 	mwindow->edl->load_xml(file, load_flags);
@@ -298,7 +298,7 @@ int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 	{
 		mwindow->mainindexes->add_next_asset(0, asset);
 	}
-	
+
 	for(int i = 0; i < mwindow->edl->nested_edls->size(); i++)
 	{
 		EDL *nested_edl = mwindow->edl->nested_edls->get(i);

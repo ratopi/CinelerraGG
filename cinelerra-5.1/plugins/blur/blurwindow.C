@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -30,14 +30,14 @@
 
 
 BlurWindow::BlurWindow(BlurMain *client)
- : PluginClientWindow(client, 
-	200, 
-	330, 
-	200, 
-	330, 
+ : PluginClientWindow(client,
+	200,
+	330,
+	200,
+	330,
 	0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 BlurWindow::~BlurWindow()
@@ -70,16 +70,16 @@ void BlurWindow::create_objects()
 	add_subwindow(g = new BlurG(client, x, y));
 	y += 30;
 	add_subwindow(b = new BlurB(client, x, y));
-	
+
 	show_window();
 	flush();
 }
 
 BlurRadius::BlurRadius(BlurMain *client, BlurWindow *gui, int x, int y)
- : BC_IPot(x, 
- 	y, 
-	client->config.radius, 
-	0, 
+ : BC_IPot(x,
+ 	y,
+	client->config.radius,
+	0,
 	MAXRADIUS)
 {
 	this->client = client;
@@ -100,10 +100,10 @@ int BlurRadius::handle_event()
 
 
 BlurRadiusText::BlurRadiusText(BlurMain *client, BlurWindow *gui, int x, int y, int w)
- : BC_TextBox(x, 
-	y, 
-	w, 
-	1, 
+ : BC_TextBox(x,
+	y,
+	w,
+	1,
 	client->config.radius)
 {
 	this->client = client;
@@ -122,9 +122,9 @@ int BlurRadiusText::handle_event()
 
 
 BlurVertical::BlurVertical(BlurMain *client, BlurWindow *window, int x, int y)
- : BC_CheckBox(x, 
- 	y, 
-	client->config.vertical, 
+ : BC_CheckBox(x,
+ 	y,
+	client->config.vertical,
 	_("Vertical"))
 {
 	this->client = client;
@@ -141,9 +141,9 @@ int BlurVertical::handle_event()
 }
 
 BlurHorizontal::BlurHorizontal(BlurMain *client, BlurWindow *window, int x, int y)
- : BC_CheckBox(x, 
- 	y, 
-	client->config.horizontal, 
+ : BC_CheckBox(x,
+ 	y,
+	client->config.horizontal,
 	_("Horizontal"))
 {
 	this->client = client;

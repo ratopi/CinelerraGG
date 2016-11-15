@@ -357,7 +357,7 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 		if( !((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->can_mask(
 				start_position_project, keyframe_set) )
 			use_opengl = 0;
-			
+
 	}
 	if(use_opengl) {
 		((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->do_mask(
@@ -372,7 +372,7 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 }
 
 
-// Start of input fragment in project if forward.  
+// Start of input fragment in project if forward.
 // End of input fragment if reverse.
 int VirtualVNode::render_projector(VFrame *input, VFrame *output,
 			int64_t start_position, double frame_rate,
@@ -381,12 +381,12 @@ int VirtualVNode::render_projector(VFrame *input, VFrame *output,
 	float in_x1, in_y1, in_x2, in_y2;
 	float out_x1, out_y1, out_x2, out_y2;
 	double edl_rate = renderengine->get_edl()->session->frame_rate;
-	int64_t start_position_project = (int64_t)(start_position * 
+	int64_t start_position_project = (int64_t)(start_position *
 		edl_rate /
 		frame_rate);
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
-	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::render_projector input=%p output=%p cmodel=%d title=%s\n", 
+	if(vconsole->debug_tree)
+		printf("  VirtualVNode::render_projector input=%p output=%p cmodel=%d title=%s\n",
 			input, output, output->get_color_model(), track->title);
 
 	if(output)
@@ -402,8 +402,8 @@ int VirtualVNode::render_projector(VFrame *input, VFrame *output,
 
 //for(int j = 0; j < input->get_w() * 3 * 5; j++)
 //	input->get_rows()[0][j] = 255;
-// 
-		if(out_x2 > out_x1 && out_y2 > out_y1 && 
+//
+		if(out_x2 > out_x1 && out_y2 > out_y1 &&
 			in_x2 > in_x1 && in_y2 > in_y1)
 		{
 			Auto *auto_keyframe = 0;
@@ -432,8 +432,8 @@ int VirtualVNode::render_projector(VFrame *input, VFrame *output,
 				((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->overlay(
 					output, input,
 					in_x1, in_y1, in_x2, in_y2,
-					out_x1, out_y1, out_x2, out_y2, 
-					alpha, mode, 
+					out_x1, out_y1, out_x2, out_y2,
+					alpha, mode,
 					renderengine->get_edl(),
 					is_nested);
 			}
@@ -441,8 +441,8 @@ int VirtualVNode::render_projector(VFrame *input, VFrame *output,
 			{
 				vrender->overlayer->overlay(output, input,
 					in_x1, in_y1, in_x2, in_y2,
-					out_x1, out_y1, out_x2, out_y2, 
-					alpha, mode, 
+					out_x1, out_y1, out_x2, out_y2,
+					alpha, mode,
 					renderengine->get_edl()->session->interpolation_type);
 			}
 		}

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "datatype.h"
@@ -77,9 +77,9 @@ void TransitionDialogThread::start()
 			mwindow->edl->session->default_atransition :
 			mwindow->edl->session->default_vtransition);
 
-// Construct listbox names	
+// Construct listbox names
 		ArrayList<PluginServer*> plugindb;
-		mwindow->search_plugindb(data_type == TRACK_AUDIO, 
+		mwindow->search_plugindb(data_type == TRACK_AUDIO,
 			data_type == TRACK_VIDEO, 0, 1, 0, plugindb);
 		for(int i = 0; i < plugindb.total; i++) {
 			const char *title = _(plugindb.values[i]->title);
@@ -118,11 +118,11 @@ void TransitionDialogThread::handle_close_event(int result)
 
 
 
-TransitionDialog::TransitionDialog(MWindow *mwindow, 
+TransitionDialog::TransitionDialog(MWindow *mwindow,
 	TransitionDialogThread *thread, int x, int y)
  : BC_Window(_("Attach Transition"), x, y,
 	mwindow->session->transitiondialog_w,
-	mwindow->session->transitiondialog_h, 
+	mwindow->session->transitiondialog_h,
 	320, 240, 1, 0, 1)
 {
 	this->mwindow = mwindow;
@@ -133,13 +133,13 @@ void TransitionDialog::create_objects()
 {
 	int x = 10;
 	int y = 10;
-	
+
 	lock_window("TransitionDialog::create_objects");
 	add_subwindow(name_title = new BC_Title(x, y, _("Select transition from list")));
 	y += name_title->get_h() + 5;
-	add_subwindow(name_list = new TransitionDialogName(thread, 
-		&thread->transition_names, 
-		x, 
+	add_subwindow(name_list = new TransitionDialogName(thread,
+		&thread->transition_names,
+		x,
 		y,
 		get_w() - x - x,
 		get_h() - y - BC_OKButton::calculate_h() - 10));
@@ -161,7 +161,7 @@ int TransitionDialog::resize_event(int w, int h)
 
 	name_title->reposition_window(x, y);
 	y += name_title->get_h() + 5;
-	name_list->reposition_window(x, 
+	name_list->reposition_window(x,
 		y,
 		w - x - x,
 		h - y - BC_OKButton::calculate_h() - 10);
@@ -171,12 +171,12 @@ int TransitionDialog::resize_event(int w, int h)
 
 
 
-TransitionDialogName::TransitionDialogName(TransitionDialogThread *thread, 
+TransitionDialogName::TransitionDialogName(TransitionDialogThread *thread,
 	ArrayList<BC_ListBoxItem*> *standalone_data, int x, int y, int w, int h)
- : BC_ListBox(x, 
- 	y, 
-	w, 
-	h, 
+ : BC_ListBox(x,
+ 	y,
+	w,
+	h,
 	LISTBOX_TEXT,
 	standalone_data)
 {
@@ -192,7 +192,7 @@ int TransitionDialogName::handle_event()
 int TransitionDialogName::selection_changed()
 {
 	thread->number = get_selection_number(0, 0);
-	strcpy(thread->transition_title, 
+	strcpy(thread->transition_title,
 		thread->transition_names.values[thread->number]->get_text());
 	return 1;
 }

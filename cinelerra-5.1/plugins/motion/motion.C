@@ -473,7 +473,7 @@ void MotionMain::process_global()
 		config.rotate, // do_rotate
 		config.rotation_center,
 		config.rotation_range);
-		
+
 	current_dx = engine->dx_result;
 	current_dy = engine->dy_result;
 
@@ -485,7 +485,7 @@ void MotionMain::process_global()
 		total_dy = (int64_t)total_dy * (100 - config.return_speed) / 100;
 		total_dx += engine->dx_result;
 		total_dy += engine->dy_result;
-// printf("MotionMain::process_global %d total_dy=%d engine->dy_result=%d\n", 
+// printf("MotionMain::process_global %d total_dy=%d engine->dy_result=%d\n",
 //  __LINE__, total_dy, engine->dy_result);
 	}
 	else
@@ -517,7 +517,7 @@ void MotionMain::process_global()
 		CLAMP(total_dy, min_block_y, max_block_y);
 	}
 
-// printf("MotionMain::process_global %d total_dx=%d total_dy=%d\n", 
+// printf("MotionMain::process_global %d total_dx=%d total_dy=%d\n",
 //  __LINE__, total_dx, total_dy);
 
 	if(config.tracking_object != MotionScan::TRACK_SINGLE && !config.rotate)
@@ -658,11 +658,11 @@ void MotionMain::process_rotation()
 
 // Get rotation
 // 	if(!motion_rotate)
-// 		motion_rotate = new RotateScan(this, 
-// 			get_project_smp() + 1, 
+// 		motion_rotate = new RotateScan(this,
+// 			get_project_smp() + 1,
 // 			get_project_smp() + 1);
-// 
-// 	current_angle = motion_rotate->scan_frame(prev_rotate_ref, 
+//
+// 	current_angle = motion_rotate->scan_frame(prev_rotate_ref,
 // 		current_rotate_ref,
 // 		block_x,
 // 		block_y);
@@ -1128,11 +1128,11 @@ void MotionMain::draw_vectors(VFrame *frame)
 // End of vector is total accumulation.
 		if(config.tracking_object == MotionScan::TRACK_SINGLE)
 		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
+			global_x1 = (int64_t)(config.block_x *
+				w /
 				100);
 			global_y1 = (int64_t)(config.block_y *
-				h / 
+				h /
 				100);
 			global_x2 = global_x1 + total_dx / OVERSAMPLE;
 			global_y2 = global_y1 + total_dy / OVERSAMPLE;
@@ -1143,34 +1143,34 @@ void MotionMain::draw_vectors(VFrame *frame)
 // End of vector is current change.
 		if(config.tracking_object == MotionScan::PREVIOUS_SAME_BLOCK)
 		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
+			global_x1 = (int64_t)(config.block_x *
+				w /
 				100);
 			global_y1 = (int64_t)(config.block_y *
-				h / 
+				h /
 				100);
 			global_x2 = global_x1 + current_dx / OVERSAMPLE;
 			global_y2 = global_y1 + current_dy / OVERSAMPLE;
 		}
 		else
 		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
-				100 + 
-				(total_dx - current_dx) / 
+			global_x1 = (int64_t)(config.block_x *
+				w /
+				100 +
+				(total_dx - current_dx) /
 				OVERSAMPLE);
 			global_y1 = (int64_t)(config.block_y *
-				h / 
+				h /
 				100 +
 				(total_dy - current_dy) /
 				OVERSAMPLE);
-			global_x2 = (int64_t)(config.block_x * 
-				w / 
-				100 + 
-				total_dx / 
+			global_x2 = (int64_t)(config.block_x *
+				w /
+				100 +
+				total_dx /
 				OVERSAMPLE);
 			global_y2 = (int64_t)(config.block_y *
-				h / 
+				h /
 				100 +
 				total_dy /
 				OVERSAMPLE);
@@ -1205,8 +1205,8 @@ void MotionMain::draw_vectors(VFrame *frame)
 // search_x2,
 // search_y2);
 
-		MotionScan::clamp_scan(w, 
-			h, 
+		MotionScan::clamp_scan(w,
+			h,
 			&block_x1,
 			&block_y1,
 			&block_x2,

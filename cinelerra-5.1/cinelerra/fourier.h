@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef FOURIER_H
@@ -73,23 +73,23 @@ public:
 // output_ptr - if nonzero, output is put here
 // direction - PLAY_FORWARD or PLAY_REVERSE
 	int process_buffer(int64_t output_sample,
-		long size, 
+		long size,
 		Samples *output_ptr,
 		int direction);
 
 // Called by process_buffer to read samples from input.
 // Returns 1 on error or 0 on success.
-	virtual int read_samples(int64_t output_sample, 
-		int samples, 
+	virtual int read_samples(int64_t output_sample,
+		int samples,
 		Samples *buffer);
 
 // Process a window in the frequency domain
-	virtual int signal_process();        
+	virtual int signal_process();
 // Process a window in the time domain after the frequency domain
 	virtual int post_process();
 
 // Size of a window.  Automatically fixed to a power of 2
-	long window_size;   
+	long window_size;
 
 // Frequency domain output of FFT
 	double *freq_real;

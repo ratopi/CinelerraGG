@@ -1,21 +1,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 
@@ -107,10 +107,10 @@ if(!strncmp(command, title, strlen(title))) \
 
 static int read_parameter(char *string,
 	int *i,
-	const char *title, 
-	char *dst_string, 
-	float *dst_float0, 
-	float *dst_float1, 
+	const char *title,
+	char *dst_string,
+	float *dst_float0,
+	float *dst_float1,
 	float *dst_float2)
 {
 	char *command = string + *i;
@@ -138,11 +138,11 @@ static int read_parameter(char *string,
 			}
  		}
 
-// printf("read_parameter %d %s %s %s %s\n", 
-// __LINE__, 
-// title, 
-// arg_text[0], 
-// arg_text[1], 
+// printf("read_parameter %d %s %s %s %s\n",
+// __LINE__,
+// title,
+// arg_text[0],
+// arg_text[1],
 // arg_text[2]);
 
 		if(arg_text[0])
@@ -215,7 +215,7 @@ int FileScene::open_file(int rd, int wr)
 {
 // Load the script to get character count
 	read_script();
-	
+
 
 
 // Set asset format
@@ -282,13 +282,13 @@ int FileScene::read_frame(VFrame *frame)
 {
 // Everything is timed based on speech, so render the audio for this frame.
 	const int debug = 0;
-	
-	
+
+
 	frame->clear_frame();
-	int64_t audio_position1 = (int64_t)(file->current_frame * 
+	int64_t audio_position1 = (int64_t)(file->current_frame *
 		asset->sample_rate /
 		asset->frame_rate);
-	int64_t audio_position2 = (int64_t)(audio_position1 + 
+	int64_t audio_position2 = (int64_t)(audio_position1 +
 		asset->sample_rate /
 		asset->frame_rate);
 
@@ -299,7 +299,7 @@ int FileScene::read_frame(VFrame *frame)
 		asset->sample_rate, audio_position1,
 		audio_position2);
 
-	render_chunks(audio_position1, 
+	render_chunks(audio_position1,
 		audio_position2 - audio_position1,
 		1);
 	if(!script) return 1;
@@ -331,15 +331,15 @@ int FileScene::read_frame(VFrame *frame)
 	SceneChar *speeking_character = 0;
 // Sample relative to start of chunk
 	int64_t chunk_sample = 0;
-	for(int i = 0; 
-		i < script->total_chunks() && current_sample < audio_position2; 
+	for(int i = 0;
+		i < script->total_chunks() && current_sample < audio_position2;
 		i++)
 	{
 		SceneChunk *chunk = script->get_chunk(i);
 		int samples = chunk->audio_size / 2;
 
 
-		if(audio_position1 >= current_sample && 
+		if(audio_position1 >= current_sample &&
 			audio_position1 < current_sample + samples)
 		{
 			speeking_character = chunk->character;
@@ -360,7 +360,7 @@ int FileScene::read_frame(VFrame *frame)
 
 
 	if(debug) printf("FileScene::read_frame %d\n", __LINE__);
-	
+
 // Render the scene.
 // Store component placement in a scene graph.
 	SceneGraph scene;
@@ -400,8 +400,8 @@ int FileScene::read_frame(VFrame *frame)
 		if(debug) printf("FileScene::read_frame %d\n", __LINE__);
 		for(int j = 0; j < 2; j++)
 		{
-			if(debug) printf("FileScene::read_frame %d j=%d head_order=%d body_order=%d\n", 
-				__LINE__, 
+			if(debug) printf("FileScene::read_frame %d j=%d head_order=%d body_order=%d\n",
+				__LINE__,
 				j,
 				character->head_order,
 				character->body_order);
@@ -430,9 +430,9 @@ int FileScene::read_frame(VFrame *frame)
 					camera->at_x = asset->width / 4;
 				}
 
-				character_node->x = (int)(asset->width / 2 - 
+				character_node->x = (int)(asset->width / 2 -
 					character->w * character->scale / 2);
-				character_node->y = (int)(asset->height - 
+				character_node->y = (int)(asset->height -
 					character->h * character->scale);
 				break;
 
@@ -440,15 +440,15 @@ int FileScene::read_frame(VFrame *frame)
 				if(i == 0)
 				{
 					character_node->x = 0;
-					character_node->y = (int)(asset->height - 
+					character_node->y = (int)(asset->height -
 						character->h * character->scale);
 
 					if(speeking_character == character &&
 						speeking_character->current_camera == SceneChar::CAMERA_CU)
 					{
 						camera->at_y = character_node->y;
-						camera->at_x = character_node->x + 
-							(character->head->x + character->head->image->get_w() / 2) * character->scale - 
+						camera->at_x = character_node->x +
+							(character->head->x + character->head->image->get_w() / 2) * character->scale -
 							asset->width / 4;
 						CLAMP(camera->at_x, 0, asset->width / 2);
 						CLAMP(camera->at_y, 0, asset->height);
@@ -458,28 +458,28 @@ int FileScene::read_frame(VFrame *frame)
 					if(character->faces_left)
 					{
 						character_node->flip = 1;
-						character_node->x = asset->width - 
+						character_node->x = asset->width -
 							character->w * character->scale;
 					}
 				}
 				else
 				{
 
-					character_node->x = (int)(asset->width - 
+					character_node->x = (int)(asset->width -
 						character->w * character->scale);
-					character_node->y = (int)(asset->height - 
+					character_node->y = (int)(asset->height -
 						character->h * character->scale);
 
 					if(speeking_character == character &&
 						speeking_character->current_camera == SceneChar::CAMERA_CU)
 					{
-						camera->at_x = character_node->x + 
-							character->head->x * character->scale - 
+						camera->at_x = character_node->x +
+							character->head->x * character->scale -
 							asset->width / 4;
 						CLAMP(camera->at_x, 0, asset->width / 2);
 					}
 
-					if(!character->faces_left) 
+					if(!character->faces_left)
 					{
 						character_node->flip = 1;
 						character_node->x = 0;
@@ -491,7 +491,7 @@ int FileScene::read_frame(VFrame *frame)
 				if(i == 0)
 				{
 					character_node->x = 0;
-					character_node->y = (int)(asset->height - 
+					character_node->y = (int)(asset->height -
 						character->h * character->scale);
 					if(character->faces_left)
 					{
@@ -506,9 +506,9 @@ int FileScene::read_frame(VFrame *frame)
 					{
 						camera->at_x = asset->width / 4;
 					}
-					character_node->x = (int)(asset->width / 2 - 
+					character_node->x = (int)(asset->width / 2 -
 						character->w * character->scale / 2);
-					character_node->y = (int)(asset->height - 
+					character_node->y = (int)(asset->height -
 						character->h * character->scale);
 					if(character->faces_left)
 					{
@@ -522,9 +522,9 @@ int FileScene::read_frame(VFrame *frame)
 					{
 						camera->at_x = asset->width / 2;
 					}
-					character_node->x = (int)(asset->width - 
+					character_node->x = (int)(asset->width -
 						character->w * character->scale);
-					character_node->y = (int)(asset->height - 
+					character_node->y = (int)(asset->height -
 						character->h * character->scale);
 					if(!character->faces_left)
 					{
@@ -546,7 +546,7 @@ int FileScene::read_frame(VFrame *frame)
 		if(speeking_character == character)
 		{
 			//speeking_node = character_node;
-		
+
 			int head_time = (chunk_sample / asset->sample_rate / 2) % 2;
 
 			if(head_time > 0)
@@ -554,8 +554,8 @@ int FileScene::read_frame(VFrame *frame)
 				double temp;
 				double anim_position = modf((double)chunk_sample / asset->sample_rate / 2, &temp);
 				double anim_length = 0.1;
-// printf("FileScene::read_frame %d %d %f\n", 
-// __LINE__, 
+// printf("FileScene::read_frame %d %d %f\n",
+// __LINE__,
 // head_time,
 // anim_position);
 
@@ -575,7 +575,7 @@ int FileScene::read_frame(VFrame *frame)
 		double intpart;
 		if(character->eyes.size())
 		{
-			if(modf((file->current_frame / asset->frame_rate + script->get_char_number(character)) / 5, &intpart) <= 
+			if(modf((file->current_frame / asset->frame_rate + script->get_char_number(character)) / 5, &intpart) <=
 				0.1 / 5 &&
 				file->current_frame / asset->frame_rate > 1)
 			{
@@ -619,9 +619,9 @@ int FileScene::read_frame(VFrame *frame)
 
 // Render scene graph
 	scene.render(frame, file->cpus);
-		
-		
-		
+
+
+
 	if(debug) printf("FileScene::read_frame %d\n", __LINE__);
 
 
@@ -655,7 +655,7 @@ int64_t FileScene::get_memory_usage()
 	if(script)
 	{
 		total += script->get_memory_usage();
-		
+
 	}
 //PRINT_TRACE
 	return total;
@@ -693,8 +693,8 @@ int FileScene::reset_parameters_derived()
 
 
 
-void FileScene::render_chunks(int64_t start_position, 
-	int64_t len, 
+void FileScene::render_chunks(int64_t start_position,
+	int64_t len,
 	int all_channels)
 {
 	int64_t end_position = start_position + len;
@@ -790,13 +790,13 @@ void FileScene::render_chunks(int64_t start_position,
 				src_offset, dst_offset, src_len);
 
 // Transfer if right channel
-			if(all_channels || 
+			if(all_channels ||
 				file->current_channel == script->get_char_number(chunk->character))
 			{
 				for(int j = 0; j < src_len; j++)
 				{
-					audio_temp[dst_offset + j] = 
-						chunk->audio[(src_offset + j) * 2] | 
+					audio_temp[dst_offset + j] =
+						chunk->audio[(src_offset + j) * 2] |
 						(chunk->audio[(src_offset + j) * 2 + 1] << 8);
 				}
 			}
@@ -822,8 +822,8 @@ void FileScene::render_chunks(int64_t start_position,
 		}
 	}
 	if(debug) printf("FileScene::render_chunks %d\n", __LINE__);
-	
-	
+
+
 }
 
 
@@ -903,7 +903,7 @@ SceneChar::~SceneChar()
 void SceneChar::increment_camera()
 {
 	current_camera++;
-	if(current_camera >= CAMERA_TOTAL) 
+	if(current_camera >= CAMERA_TOTAL)
 		current_camera = 0;
 }
 
@@ -923,7 +923,7 @@ int SceneChar::read_model()
 
 	script->convert_path(path, model);
 	FILE *fd = fopen(path, "r");
-	
+
 
 // Read assets
 	if(fd)
@@ -935,49 +935,49 @@ int SceneChar::read_model()
 		while(!feof(fd))
 		{
 			char *result = fgets(string, BCTEXTLEN, fd);
-			
+
 			if(result)
 			{
 				int len = strlen(string);
 
 				STRIP_LINE(string);
 
-				if(debug) printf("SceneChar::read_model %d: %s\n", 
-					__LINE__, 
+				if(debug) printf("SceneChar::read_model %d: %s\n",
+					__LINE__,
 					string);
-			
+
 				for(i = 0; i < len; i++)
 				{
 					if(isalnum(string[i]))
 					{
 						string2[0] = 0;
-						
+
 						if(read_parameter(string,
 							&i,
-							"width:", 
-							0, 
-							&w, 
-							0, 
+							"width:",
+							0,
+							&w,
+							0,
 							0))
 						{
 						}
 						else
 						if(read_parameter(string,
 							&i,
-							"height:", 
-							0, 
-							&h, 
-							0, 
+							"height:",
+							0,
+							&h,
+							0,
 							0))
 						{
 						}
 						else
 						if(read_parameter(string,
 							&i,
-							"body:", 
-							string2, 
-							0, 
-							&x, 
+							"body:",
+							string2,
+							0,
+							&x,
 							&y))
 						{
 // Load image
@@ -987,10 +987,10 @@ int SceneChar::read_model()
 						else
 						if(read_parameter(string,
 							&i,
-							"head:", 
-							string2, 
-							0, 
-							&x, 
+							"head:",
+							string2,
+							0,
+							&x,
 							&y))
 						{
 // Load image
@@ -1000,10 +1000,10 @@ int SceneChar::read_model()
 						else
 						if(read_parameter(string,
 							&i,
-							"mouth:", 
-							string2, 
-							0, 
-							&x, 
+							"mouth:",
+							string2,
+							0,
+							&x,
 							&y))
 						{
 // Load image
@@ -1019,10 +1019,10 @@ int SceneChar::read_model()
 						else
 						if(read_parameter(string,
 							&i,
-							"eyes:", 
-							string2, 
-							0, 
-							&x, 
+							"eyes:",
+							string2,
+							0,
+							&x,
 							&y))
 						{
 // Load image
@@ -1038,10 +1038,10 @@ int SceneChar::read_model()
 						else
 						if(read_parameter(string,
 							&i,
-							"faces_left", 
-							0, 
-							0, 
-							0, 
+							"faces_left",
+							0,
+							0,
+							0,
 							0))
 						{
 							faces_left = 1;
@@ -1049,27 +1049,27 @@ int SceneChar::read_model()
 						else
 						if(read_parameter(string,
 							&i,
-							"scale:", 
-							0, 
-							&scale, 
-							0, 
+							"scale:",
+							0,
+							&scale,
+							0,
 							0))
 						{
 						}
-						
+
 						i = len;
 					}
 				}
 			}
-			
+
 			current_line++;
 		}
-		
+
 		fclose(fd);
 		if(debug) dump();
 		return 0;
 	}
-	
+
 	printf("SceneChar::read_model %d: %s %s\n", __LINE__, path, strerror(errno));
 	return 1;
 }
@@ -1086,11 +1086,11 @@ int SceneChar::get_memory_usage()
 
 void SceneChar::dump()
 {
-	printf("SceneChar::dump %d: %p name=%s voice=%s model=%s body=%p eyes=%d mouths=%d\n", 
-		__LINE__, 
+	printf("SceneChar::dump %d: %p name=%s voice=%s model=%s body=%p eyes=%d mouths=%d\n",
+		__LINE__,
 		this,
-		name, 
-		voice, 
+		name,
+		voice,
 		model,
 		body,
 		eyes.size(),
@@ -1142,8 +1142,8 @@ SceneChunk::~SceneChunk()
 
 void SceneChunk::dump()
 {
-	printf("SceneChunk::dump %d: character=%s command=%d text=%s\n", 
-		__LINE__, 
+	printf("SceneChunk::dump %d: character=%s command=%d text=%s\n",
+		__LINE__,
 		character->name,
 		command,
 		text);
@@ -1183,7 +1183,7 @@ void SceneChunk::append_text(char *new_text)
 			*ptr++ = new_text[i];
 	}
 	*ptr++ = 0;
-	
+
 	int len2 = strlen(string);
 	if(text)
 	{
@@ -1226,7 +1226,7 @@ void SceneChunk::render()
 	char command_line[BCTEXTLEN];
 	char string2[MAX_CHARS];
 	char script_path[BCTEXTLEN];
-	
+
 	//int total_args = 0;
 	if(text) len = strlen(text);
 	char *text_end = text + len;
@@ -1238,7 +1238,7 @@ void SceneChunk::render()
 	{
 		printf("SceneChunk::render %d: no character defined.\n", __LINE__);
 	}
-	
+
 	if(len > MAX_CHARS)
 	{
 		printf("SceneChunk::render %d: text '%s' exceeds festival's maximum line length of %d chars.\n",
@@ -1276,8 +1276,8 @@ void SceneChunk::render()
 		{
 			ptr--;
 			text_ptr--;
-			while(*text_ptr != ' ' && 
-				*text_ptr != '\n' && 
+			while(*text_ptr != ' ' &&
+				*text_ptr != '\n' &&
 				text_ptr > text)
 			{
 				text_ptr--;
@@ -1302,7 +1302,7 @@ void SceneChunk::render()
 		FILE *script_fd = fopen(script_path, "w");
 
 #ifdef HAVE_FESTIVAL_BUILTIN
-		sprintf(command_line, "%s%s --libdir %s%s -b %s", 
+		sprintf(command_line, "%s%s --libdir %s%s -b %s",
 			script->file->exec_path, FESTIVAL_PATH,
 			script->file->exec_path, FESTIVAL_LIB_PATH,
 			script_path);
@@ -1313,7 +1313,7 @@ void SceneChunk::render()
 // Create script.
 // The maximum text length is limited with the command line
 
-		fprintf(script_fd, 
+		fprintf(script_fd,
 			"(voice_%s)\n"
 			"(set! text (Utterance Text \"%s\"))\n"
 			"(utt.synth text)"
@@ -1325,10 +1325,10 @@ void SceneChunk::render()
 
 		if(debug)
 		{
-			printf("SceneChunk::render %d %s\n", 
+			printf("SceneChunk::render %d %s\n",
 				__LINE__,
 				command_line);
-			
+
 			FILE *script_fd = fopen(script_path, "r");
 			while(!feof(script_fd))
 				fputc(fgetc(script_fd), stdout);
@@ -1344,12 +1344,12 @@ void SceneChunk::render()
 		{
 			int audio_start = audio_size;
 
-		
-			if(debug) printf("SceneChunk::render %d\n", 
+
+			if(debug) printf("SceneChunk::render %d\n",
 				__LINE__);
 			while(!feof(fd))
 			{
-				if(debug) printf("SceneChunk::render %d\n", 
+				if(debug) printf("SceneChunk::render %d\n",
 					__LINE__);
 				if(audio_size + FREAD_SIZE > audio_allocated)
 				{
@@ -1358,13 +1358,13 @@ void SceneChunk::render()
 				}
 
 
-				if(debug) printf("SceneChunk::render %d audio=%p audio_size=%d\n", 
+				if(debug) printf("SceneChunk::render %d audio=%p audio_size=%d\n",
 					__LINE__,
 					audio,
 					audio_size);
 
 				int bytes_read = fread(audio + audio_size, 1, FREAD_SIZE, fd);
-				if(debug) printf("SceneChunk::render %d bytes_read=%d\n", 
+				if(debug) printf("SceneChunk::render %d bytes_read=%d\n",
 					__LINE__,
 					bytes_read);
 				audio_size += bytes_read;
@@ -1377,7 +1377,7 @@ void SceneChunk::render()
 
 			pclose(fd);
 
-			if(debug) printf("SceneChunk::render %d audio=%p audio_size=%d audio_allocated=%d\n", 
+			if(debug) printf("SceneChunk::render %d audio=%p audio_size=%d audio_allocated=%d\n",
 				__LINE__,
 				audio,
 				audio_size,
@@ -1407,15 +1407,15 @@ void SceneChunk::render()
 					}
 				}
 
-				memcpy(audio + audio_start, 
-					audio + audio_start + header_size, 
+				memcpy(audio + audio_start,
+					audio + audio_start + header_size,
 					audio_size - audio_start - header_size);
 				audio_size -= header_size;
 				if(debug) printf("SceneChunk::render %d: audio_size=%d\n",
 					__LINE__,
 					audio_size);
 			}
-			
+
 			advance_samples = audio_size / 2;
 		}
 		else
@@ -1427,7 +1427,7 @@ void SceneChunk::render()
 		}
 
 		remove(script_path);
-		if(debug) printf("SceneChunk::render %d max=%f\n", 
+		if(debug) printf("SceneChunk::render %d max=%f\n",
 			__LINE__,
 			max);
 	}
@@ -1438,7 +1438,7 @@ void SceneChunk::render()
 
 // Truncate if ...
 		text_ptr = text + len - 1;
-		while(text_ptr > text && 
+		while(text_ptr > text &&
 			(*text_ptr == ' ' ||
 			*text_ptr == '\n'))
 			text_ptr--;
@@ -1507,7 +1507,7 @@ SceneChar* SceneTokens::get_character(char *name)
 	if(debug) printf("SceneTokens::get_character %d %d\n",
 		__LINE__,
 		characters.size());
-	
+
 	SceneChar *result = new SceneChar(this);
 	if(debug) printf("SceneTokens::get_character %d %d this=%p\n",
 		__LINE__,
@@ -1594,8 +1594,8 @@ int SceneTokens::read_script(char *path)
 				int len = strlen(string);
 				STRIP_LINE(string)
 
-				if(debug) printf("SceneTokens::read_script %d: %s\n", 
-					__LINE__, 
+				if(debug) printf("SceneTokens::read_script %d: %s\n",
+					__LINE__,
 					string);
 
 // Skip the file ID & empty lines
@@ -1630,14 +1630,14 @@ int SceneTokens::read_script(char *path)
 				{
 					strcpy(char_name, string);
 
-					if(debug) printf("SceneTokens::read_script %d: char_name=%s\n", 
-						__LINE__, 
+					if(debug) printf("SceneTokens::read_script %d: char_name=%s\n",
+						__LINE__,
 						char_name);
 
 					current_char = get_character(char_name);
 
-					if(debug) printf("SceneTokens::read_script %d current_char=%p\n", 
-						__LINE__, 
+					if(debug) printf("SceneTokens::read_script %d current_char=%p\n",
+						__LINE__,
 						current_char);
 
 // Reset the current chunk pointer
@@ -1664,7 +1664,7 @@ int SceneTokens::read_script(char *path)
 						{
 							if(!current_char)
 							{
-								printf("SceneTokens::read_script %d Line %d: dialogue text but no current character\n", 
+								printf("SceneTokens::read_script %d Line %d: dialogue text but no current character\n",
 									__LINE__,
 									current_line);
 							}
@@ -1679,19 +1679,19 @@ int SceneTokens::read_script(char *path)
 // Append dialogue to current chunk
 								current_chunk->append_text(string + i);
 							}
-							
+
 							i = len;
 						}
 					}
 				}
 			}
 		}
-		
-		
-		
+
+
+
 		fclose(fd);
 
-		if(debug) printf("SceneTokens::read_script %d total_chunks=%d\n", 
+		if(debug) printf("SceneTokens::read_script %d total_chunks=%d\n",
 			__LINE__,
 			total_chunks());
 // Parse commands in dialogue
@@ -1716,7 +1716,7 @@ int SceneTokens::read_script(char *path)
 							SceneChunk *new_chunk = new SceneChunk(this);
 							new_chunk->character = chunk->character;
 							chunks.insert(new_chunk, i + 1);
-							
+
 // Move text from start of command to new chunk.
 							new_chunk->append_text(ptr);
 // Truncate current chunk
@@ -1730,18 +1730,18 @@ int SceneTokens::read_script(char *path)
 						if(debug) printf("SceneTokens::read_script %d\n", __LINE__);
 
 // Read command
-						while(ptr < end && 
-							(*ptr == '[' || *ptr == ' ' || *ptr == '\n')) 
+						while(ptr < end &&
+							(*ptr == '[' || *ptr == ' ' || *ptr == '\n'))
 							ptr++;
 
 						if(debug) printf("SceneTokens::read_script %d\n", __LINE__);
 
 						char *ptr2 = string;
 						char *string_end = string + BCTEXTLEN;
-						while(*ptr != ']' && 
+						while(*ptr != ']' &&
 							*ptr != ' ' &&
 							*ptr != '\n' &&
-							ptr < end && 
+							ptr < end &&
 							ptr2 < string_end - 1)
 						{
 							*ptr2++ = *ptr++;
@@ -1757,15 +1757,15 @@ int SceneTokens::read_script(char *path)
 						else
 						{
 // TODO: line numbers
-							printf("SceneTokens::read_script %d: Unknown command '%s'\n", 
-								__LINE__, 
+							printf("SceneTokens::read_script %d: Unknown command '%s'\n",
+								__LINE__,
 								string);
 						}
 						if(debug) printf("SceneTokens::read_script %d\n", __LINE__);
 
 // Search for more text
-						while(ptr < end && 
-							(*ptr == ']' || *ptr == ' ' || *ptr == '\n')) 
+						while(ptr < end &&
+							(*ptr == ']' || *ptr == ' ' || *ptr == '\n'))
 							ptr++;
 
 // Create new chunk for rest of text
@@ -1797,8 +1797,8 @@ int SceneTokens::read_script(char *path)
 				}
 			}
 		}
-		
-		
+
+
 		if(debug) dump();
 		return 0;
 	}
@@ -1821,7 +1821,7 @@ void SceneTokens::convert_path(char *dst, char *src)
 		FileSystem fs;
 		fs.extract_dir(dst, path);
 		strcat(dst, src);
-		
+
 		struct stat ostat;
 		if(stat(dst, &ostat))
 		{
@@ -1861,7 +1861,7 @@ VFrame* SceneTokens::load_image(char *path)
 
 
 	if(!BC_CModels::has_alpha(result->get_color_model()) )
-		printf("SceneTokens::load_image %d: image %s has no alpha channel\n", 
+		printf("SceneTokens::load_image %d: image %s has no alpha channel\n",
 			__LINE__,
 			path);
 	return result;
@@ -1874,7 +1874,7 @@ void SceneTokens::render_background(SceneGraph *scene)
 	{
 		background_image = load_image(background);
 	}
-	
+
 	if(background_image)
 	{
 		SceneNode *node = new SceneNode("background");
@@ -1911,7 +1911,7 @@ void SceneTokens::dump()
 		characters.get(i)->dump();
 	}
 
-	
+
 	for(int i = 0; i < chunks.size(); i++)
 	{
 		chunks.get(i)->dump();

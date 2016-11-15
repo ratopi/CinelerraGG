@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include <math.h>
@@ -50,10 +50,10 @@ public:
 
 	int equivalent(ZoomBlurConfig &that);
 	void copy_from(ZoomBlurConfig &that);
-	void interpolate(ZoomBlurConfig &prev, 
-		ZoomBlurConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(ZoomBlurConfig &prev,
+		ZoomBlurConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 
 	int x;
@@ -71,9 +71,9 @@ public:
 class ZoomBlurSize : public BC_ISlider
 {
 public:
-	ZoomBlurSize(ZoomBlurMain *plugin, 
-		int x, 
-		int y, 
+	ZoomBlurSize(ZoomBlurMain *plugin,
+		int x,
+		int y,
 		int *output,
 		int min,
 		int max);
@@ -85,9 +85,9 @@ public:
 class ZoomBlurToggle : public BC_CheckBox
 {
 public:
-	ZoomBlurToggle(ZoomBlurMain *plugin, 
-		int x, 
-		int y, 
+	ZoomBlurToggle(ZoomBlurMain *plugin,
+		int x,
+		int y,
 		int *output,
 		char *string);
 	int handle_event();
@@ -169,8 +169,8 @@ public:
 class ZoomBlurEngine : public LoadServer
 {
 public:
-	ZoomBlurEngine(ZoomBlurMain *plugin, 
-		int total_clients, 
+	ZoomBlurEngine(ZoomBlurMain *plugin,
+		int total_clients,
 		int total_packages);
 	void init_packages();
 	LoadClient* new_client();
@@ -214,7 +214,7 @@ ZoomBlurConfig::ZoomBlurConfig()
 
 int ZoomBlurConfig::equivalent(ZoomBlurConfig &that)
 {
-	return 
+	return
 		x == that.x &&
 		y == that.y &&
 		radius == that.radius &&
@@ -237,10 +237,10 @@ void ZoomBlurConfig::copy_from(ZoomBlurConfig &that)
 	a = that.a;
 }
 
-void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev, 
-	ZoomBlurConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev,
+	ZoomBlurConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -268,13 +268,13 @@ void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev,
 
 ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin)
  : PluginClientWindow(plugin,
-	230, 
-	340, 
-	230, 
-	340, 
+	230,
+	340,
+	230,
+	340,
 	0)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
 }
 
 ZoomBlurWindow::~ZoomBlurWindow()
@@ -325,10 +325,10 @@ void ZoomBlurWindow::create_objects()
 
 
 
-ZoomBlurToggle::ZoomBlurToggle(ZoomBlurMain *plugin, 
-	int x, 
-	int y, 
-	int *output, 
+ZoomBlurToggle::ZoomBlurToggle(ZoomBlurMain *plugin,
+	int x,
+	int y,
+	int *output,
 	char *string)
  : BC_CheckBox(x, y, *output, string)
 {
@@ -349,9 +349,9 @@ int ZoomBlurToggle::handle_event()
 
 
 
-ZoomBlurSize::ZoomBlurSize(ZoomBlurMain *plugin, 
-	int x, 
-	int y, 
+ZoomBlurSize::ZoomBlurSize(ZoomBlurMain *plugin,
+	int x,
+	int y,
 	int *output,
 	int min,
 	int max)
@@ -379,7 +379,7 @@ int ZoomBlurSize::handle_event()
 ZoomBlurMain::ZoomBlurMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 	scale_x_table = 0;
 	scale_y_table = 0;
@@ -392,7 +392,7 @@ ZoomBlurMain::ZoomBlurMain(PluginServer *server)
 
 ZoomBlurMain::~ZoomBlurMain()
 {
-	
+
 	if(engine) delete engine;
 	delete_tables();
 	if(accum) delete [] accum;
@@ -469,10 +469,10 @@ SET_TRACE
 		float max_y1;
 		float max_x2;
 		float max_y2;
-		
+
 SET_TRACE
 
-// printf("ZoomBlurMain::process_realtime 1 %d %d\n", 
+// printf("ZoomBlurMain::process_realtime 1 %d %d\n",
 // config.x,
 // config.y);
 
@@ -492,7 +492,7 @@ SET_TRACE
 		max_y2 = h;
 
 SET_TRACE
-// printf("ZoomBlurMain::process_realtime 2 w=%f radius=%f center_x=%f\n", 
+// printf("ZoomBlurMain::process_realtime 2 w=%f radius=%f center_x=%f\n",
 // w,
 // radius,
 // center_x);
@@ -557,7 +557,7 @@ SET_TRACE
 	if(!engine) engine = new ZoomBlurEngine(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
-	if(!accum) accum = new unsigned char[frame->get_w() * 
+	if(!accum) accum = new unsigned char[frame->get_w() *
 		frame->get_h() *
 		BC_CModels::components(frame->get_color_model()) *
 		MAX(sizeof(int), sizeof(float))];
@@ -575,8 +575,8 @@ SET_TRACE
 	temp->copy_from(frame);
 	this->input = temp;
 
-	bzero(accum, 
-		frame->get_w() * 
+	bzero(accum,
+		frame->get_w() *
 		frame->get_h() *
 		BC_CModels::components(frame->get_color_model()) *
 		MAX(sizeof(int), sizeof(float)));
@@ -690,9 +690,9 @@ int ZoomBlurMain::handle_opengl()
 
 	if(!config.r || !config.g || !config.b || !config.a)
 	{
-		glColor4f(config.r ? 0 : 1, 
-			config.g ? 0 : 1, 
-			config.b ? 0 : 1, 
+		glColor4f(config.r ? 0 : 1,
+			config.g ? 0 : 1,
+			config.b ? 0 : 1,
 			config.a ? 0 : 1);
 		get_output()->draw_texture();
 	}
@@ -703,9 +703,9 @@ int ZoomBlurMain::handle_opengl()
 	for(int i = 0; i < config.steps; i++)
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
-		glColor4f(config.r ? 1 : 0, 
-			config.g ? 1 : 0, 
-			config.b ? 1 : 0, 
+		glColor4f(config.r ? 1 : 0,
+			config.g ? 1 : 0,
+			config.b ? 1 : 0,
 			config.a ? 1 : 0);
 
 		get_output()->draw_texture(0,
@@ -722,9 +722,9 @@ int ZoomBlurMain::handle_opengl()
 		glDisable(GL_TEXTURE_2D);
 		if(BC_CModels::is_yuv(get_output()->get_color_model()))
 		{
-			glColor4f(config.r ? 0.0 : 0, 
-				config.g ? 0.5 : 0, 
-				config.b ? 0.5 : 0, 
+			glColor4f(config.r ? 0.0 : 0,
+				config.g ? 0.5 : 0,
+				config.b ? 0.5 : 0,
 				config.a ? 1.0 : 0);
 			float center_x1 = 0.0;
 			float center_x2 = get_output()->get_w();
@@ -740,16 +740,16 @@ int ZoomBlurMain::handle_opengl()
 			}
 			if(layer_table[i].y1 > 0)
 			{
-				draw_box(center_x1, 
-					-get_output()->get_h(), 
-					center_x2, 
+				draw_box(center_x1,
+					-get_output()->get_h(),
+					center_x2,
 					-get_output()->get_h() + layer_table[i].y1);
 			}
 			if(layer_table[i].y2 < get_output()->get_h())
 			{
-				draw_box(center_x1, 
-					-get_output()->get_h() + layer_table[i].y2, 
-					center_x2, 
+				draw_box(center_x1,
+					-get_output()->get_h() + layer_table[i].y2,
+					center_x2,
 					0);
 			}
 		}
@@ -757,9 +757,9 @@ int ZoomBlurMain::handle_opengl()
 
 		glAccum(GL_ACCUM, fraction);
 		glEnable(GL_TEXTURE_2D);
-		glColor4f(config.r ? 1 : 0, 
-			config.g ? 1 : 0, 
-			config.b ? 1 : 0, 
+		glColor4f(config.r ? 1 : 0,
+			config.g ? 1 : 0,
+			config.b ? 1 : 0,
 			config.a ? 1 : 0);
 	}
 
@@ -795,7 +795,7 @@ ZoomBlurPackage::ZoomBlurPackage()
 
 
 
-ZoomBlurUnit::ZoomBlurUnit(ZoomBlurEngine *server, 
+ZoomBlurUnit::ZoomBlurUnit(ZoomBlurEngine *server,
 	ZoomBlurMain *plugin)
  : LoadClient(server)
 {
@@ -1013,8 +1013,8 @@ void ZoomBlurUnit::process_package(LoadPackage *package)
 
 
 
-ZoomBlurEngine::ZoomBlurEngine(ZoomBlurMain *plugin, 
-	int total_clients, 
+ZoomBlurEngine::ZoomBlurEngine(ZoomBlurMain *plugin,
+	int total_clients,
 	int total_packages)
  : LoadServer(total_clients, total_packages)
 {

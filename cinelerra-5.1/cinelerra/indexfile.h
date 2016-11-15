@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef INDEXFILE_H
@@ -58,7 +58,7 @@ public:
 	int open_index();
 	int create_index(MainProgressBar *progress);
 	int interrupt_index();
-	static void delete_index(Preferences *preferences, 
+	static void delete_index(Preferences *preferences,
 		Indexable *indexable, const char *suffix=0);
 	static int get_index_filename(char *source_filename,
 		char *index_directory,
@@ -68,9 +68,9 @@ public:
 	void update_edl_asset();
 	int redraw_edits(int force);
 	int draw_index(TrackCanvas *canvas,
-		ResourcePixmap *pixmap, 
-		Edit *edit, 
-		int x, 
+		ResourcePixmap *pixmap,
+		Edit *edit,
+		int x,
 		int w);
 	int close_index();
 	int remove_index();

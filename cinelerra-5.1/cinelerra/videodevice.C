@@ -730,7 +730,7 @@ int VideoDevice::set_cloexec_flag(int desc, int value)
 {
 	int oldflags = fcntl(desc, F_GETFD, 0);
 	if( oldflags < 0 ) return oldflags;
-	if( value != 0 ) 
+	if( value != 0 )
 		oldflags |= FD_CLOEXEC;
 	else
 		oldflags &= ~FD_CLOEXEC;

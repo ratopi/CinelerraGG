@@ -259,30 +259,30 @@ void BrightTheme::initialize()
 
 
 	resources->filebox_descend_images = new_button("openfolder.png",
-		"bigbutton_up.png", 
-		"bigbutton_hi.png", 
+		"bigbutton_up.png",
+		"bigbutton_hi.png",
 		"bigbutton_dn.png");
 
 	resources->usethis_button_images =
 		resources->ok_images = new_button("ok.png",
-		"bigbutton_up.png", 
-		"bigbutton_hi.png", 
+		"bigbutton_up.png",
+		"bigbutton_hi.png",
 		"bigbutton_dn.png");
 
 	new_button("ok.png",
-		"bigbutton_up.png", 
-		"bigbutton_hi.png", 
+		"bigbutton_up.png",
+		"bigbutton_hi.png",
 		"bigbutton_dn.png",
 		"new_ok_images");
 
 	resources->cancel_images = new_button("cancel.png",
-		"bigbutton_up.png", 
-		"bigbutton_hi.png", 
+		"bigbutton_up.png",
+		"bigbutton_hi.png",
 		"bigbutton_dn.png");
 
 	new_button("cancel.png",
-		"bigbutton_up.png", 
-		"bigbutton_hi.png", 
+		"bigbutton_up.png",
+		"bigbutton_hi.png",
 		"bigbutton_dn.png",
 		"new_cancel_images");
 
@@ -603,10 +603,10 @@ void BrightTheme::initialize()
 		"label_checkedhi.png");
 
 	ffmpeg_toggle = new_image_set(5,
-		"ff_up.png", 
-		"ff_hi.png", 
-		"ff_checked.png", 
-		"ff_down.png", 
+		"ff_up.png",
+		"ff_hi.png",
+		"ff_checked.png",
+		"ff_down.png",
 		"ff_checkedhi.png");
 
 	shbtn_data = new_image_set(3,
@@ -914,9 +914,9 @@ void BrightTheme::draw_mwindow_bg(MWindowGUI *gui)
 
 // Track canvas
 	int patchbay_w = get_image("patchbay_bg")->get_w();
-	gui->clear_box(mcanvas_x + patchbay_w, 
+	gui->clear_box(mcanvas_x + patchbay_w,
 		mcanvas_y + mtimebar_h,
-		mcanvas_w - BC_ScrollBar::get_span(SCROLL_VERT) - patchbay_w, 
+		mcanvas_w - BC_ScrollBar::get_span(SCROLL_VERT) - patchbay_w,
 		patchbay_h - BC_ScrollBar::get_span(SCROLL_HORIZ) - mtimebar_h);
 
 // Timebar
@@ -927,7 +927,7 @@ void BrightTheme::draw_mwindow_bg(MWindowGUI *gui)
 
 // Zoombar
 // 	gui->set_color(0x373737);
-// 	gui->draw_box(mzoom_x, 
+// 	gui->draw_box(mzoom_x,
 // 		mzoom_y,
 // 		mwindow->session->mwindow_w,
 // 		25);

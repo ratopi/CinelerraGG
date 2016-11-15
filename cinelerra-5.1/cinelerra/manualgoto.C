@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2004 Andraz Tori
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -63,7 +63,7 @@ void ManualGoto::handle_done_event(int result)
 	case '+':  new_position = current_position + new_position;  break;
 	case '-':  new_position = current_position - new_position;  break;
 	default: break;
-	}		
+	}
 	panel->set_position(new_position);
 }
 
@@ -93,7 +93,7 @@ double ManualGotoWindow::get_new_position()
 	int mm = atoi(minutes->get_text());
 	int ss = atoi(seconds->get_text());
 	int ms = atoi(msecs->get_text());
-	
+
 	double seconds = ((((hh * 60) + mm) * 60) + ss) + (1.0 * ms) / 1000;
 	return seconds;
 }
@@ -106,7 +106,7 @@ void ManualGotoWindow::update_position(double position)
 	int minute = (pos / 60 - hour * 60);
 	int second = pos - hour * 3600 - minute * 60;
 	int thousandths = ((int64_t)(position * 1000)) % 1000;
-  		
+
 	hours->update((int)hour);
 	minutes->update(minute);
 	seconds->update(second);
@@ -171,7 +171,7 @@ int ManualGotoNumber::keypress_event()
 		window->cycle_textboxes(1);
 		return 1;
 	}
- 
+
 	int chars = 1, m = max;
 	while( (m /= 10) > 0 ) ++chars;
 	int in_textlen = strlen(get_text());
@@ -179,7 +179,7 @@ int ManualGotoNumber::keypress_event()
 		BC_TextBox::update("");
 	int result = BC_TextBox::keypress_event();
 	int out_textlen = strlen(get_text());
-	if( out_textlen >= chars && get_ibeam_letter() >= chars ) 
+	if( out_textlen >= chars && get_ibeam_letter() >= chars )
 		window->cycle_textboxes(1);
 	return result;
 }

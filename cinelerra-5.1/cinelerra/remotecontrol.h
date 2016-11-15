@@ -58,7 +58,7 @@ public:
 	RemoteGUI *gui;
 	RemoteHandler *handler;
 	Mutex *active_lock;
-	
+
 	void run();
 	void set_color(int color);
 	void fill_color(int color);

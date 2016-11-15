@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -58,10 +58,10 @@ void UnsharpConfig::copy_from(UnsharpConfig &that)
 	threshold = that.threshold;
 }
 
-void UnsharpConfig::interpolate(UnsharpConfig &prev, 
-	UnsharpConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void UnsharpConfig::interpolate(UnsharpConfig &prev,
+	UnsharpConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -92,13 +92,13 @@ void UnsharpConfig::interpolate(UnsharpConfig &prev,
 UnsharpMain::UnsharpMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
+
 	engine = 0;
 }
 
 UnsharpMain::~UnsharpMain()
 {
-	
+
 	delete engine;
 }
 
@@ -182,7 +182,7 @@ int UnsharpMain::process_buffer(VFrame *frame,
 {
 	/*int need_reconfigure =*/ load_configuration();
 
-	if(!engine) engine = new UnsharpEngine(this, 
+	if(!engine) engine = new UnsharpEngine(this,
 		get_project_smp() + 1, get_project_smp() + 1);
 	read_frame(frame, 0, get_source_position(), get_framerate(), 0);
 	engine->do_unsharp(frame);
@@ -210,7 +210,7 @@ UnsharpPackage::UnsharpPackage()
 
 
 
-UnsharpUnit::UnsharpUnit(UnsharpEngine *server, 
+UnsharpUnit::UnsharpUnit(UnsharpEngine *server,
 	UnsharpMain *plugin)
  : LoadClient(server)
 {
@@ -253,7 +253,7 @@ static int calculate_convolution_matrix(double radius, double **cmatrix)
 		{
 			if(base_x + 0.02 * j <= radius)
 			{
-				sum += exp(-(base_x + 0.02 * j) * 
+				sum += exp(-(base_x + 0.02 * j) *
 					(base_x + 0.02 * j) /
 					(2 * std_dev * std_dev));
 			}
@@ -294,7 +294,7 @@ static double get_convolution(double *cmatrix,
 	return cmatrix[index] * input;
 }
 
-static void blur_pixels(double *cmatrix, 
+static void blur_pixels(double *cmatrix,
 	int cmatrix_length,
 	float *input,
 	float *output,
@@ -364,8 +364,8 @@ static void blur_pixels(double *cmatrix,
 				float *input_ptr2 = input_ptr;
 				for(int j = cmatrix_length; j > 0; j--)
 				{
-					sum += get_convolution(cmatrix, 
-						*input_ptr2, 
+					sum += get_convolution(cmatrix,
+						*input_ptr2,
 						cmatrix_length - j);
 					input_ptr2 += components;
 				}
@@ -468,7 +468,7 @@ void UnsharpUnit::process_package(LoadPackage *package)
 	int padded_y2 = pkg->y2;
 
 	cmatrix_length = calculate_convolution_matrix(
-		plugin->config.radius, 
+		plugin->config.radius,
 		&cmatrix);
 
 
@@ -513,16 +513,16 @@ void UnsharpUnit::process_package(LoadPackage *package)
 	for(int i = padded_y1; i < padded_y2; i++)
 	{
 		get_row(temp_in, server->src, i);
-		blur_pixels(cmatrix, 
+		blur_pixels(cmatrix,
 			cmatrix_length,
 			temp_in,
 			temp_out,
 			temp->get_w(),
 			components);
-// printf("UnsharpUnit::process_package %d %p %p %p %d %d\n", 
-// __LINE__, 
-// temp, 
-// temp->get_rows()[0], 
+// printf("UnsharpUnit::process_package %d %p %p %p %d %d\n",
+// __LINE__,
+// temp,
+// temp->get_rows()[0],
 // temp_out,
 // i - padded_y1,
 // temp->get_bytes_per_line());
@@ -614,12 +614,12 @@ void UnsharpUnit::process_package(LoadPackage *package)
 
 
 
-UnsharpEngine::UnsharpEngine(UnsharpMain *plugin, 
+UnsharpEngine::UnsharpEngine(UnsharpMain *plugin,
 	int total_clients,
 	int total_packages)
  : LoadServer(
-//1, 1 
-total_clients, total_packages 
+//1, 1
+total_clients, total_packages
 )
 {
 	this->plugin = plugin;

@@ -151,7 +151,7 @@ public:
 	long get_compressed_allocated() { return compressed_allocated; }
 	long get_compressed_size() { return compressed_size; }
 	void set_compressed_size(long size) { compressed_size = size; }
-	double get_timestamp() { return timestamp; } 
+	double get_timestamp() { return timestamp; }
 	void set_timestamp(double time) { timestamp = time; }
 
 // return an array of pointers to rows

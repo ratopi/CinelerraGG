@@ -925,7 +925,7 @@ void BlueDotTheme::draw_mwindow_bg(MWindowGUI *gui)
 
 // Zoombar
 	gui->set_color(0x1a1447);
-	gui->draw_box(mzoom_x, 
+	gui->draw_box(mzoom_x,
 		mzoom_y,
 		mwindow->session->mwindow_w,
 		25);

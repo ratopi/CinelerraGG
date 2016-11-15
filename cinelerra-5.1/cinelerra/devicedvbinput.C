@@ -7,21 +7,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifdef HAVE_DVB
@@ -237,7 +237,7 @@ int DeviceDVBInput::dvb_open()
 		ret = 1;
 	}
 	if( !ret && ioctl(frontend_fd, FE_GET_INFO, &fe_info) < 0 ) {
-		fprintf(stderr, 
+		fprintf(stderr,
 			"DeviceDVBInput::dvb_open FE_GET_INFO: %s\n",
 			strerror(errno));
 		ret = 1;
@@ -277,7 +277,7 @@ int DeviceDVBInput::dvb_open()
 		}
 
 		if( !ret && ioctl(frontend_fd, FE_SET_FRONTEND, &frontend_param) < 0 ) {
-			fprintf(stderr, 
+			fprintf(stderr,
 				"DeviceDVBInput::dvb_open FE_SET_FRONTEND frequency=%d: %s\n",
 				frontend_param.frequency, strerror(errno));
 			ret = 1;
@@ -291,7 +291,7 @@ int DeviceDVBInput::dvb_open()
 		}
 
 		if( !ret && ioctl(frontend_fd, FE_GET_FRONTEND, &frontend_param) ) {
-			fprintf(stderr, 
+			fprintf(stderr,
 				"DeviceDVBInput::dvb_open FE_GET_FRONTEND: %s\n",
 				strerror(errno));
 			ret = 1;
@@ -337,7 +337,7 @@ int DeviceDVBInput::dvb_open()
 		pesfilter.pes_type = DMX_PES_OTHER;
 		pesfilter.flags = DMX_IMMEDIATE_START;
 		if( ioctl(demux_fd, DMX_SET_PES_FILTER, &pesfilter) < 0 ) {
-			fprintf(stderr, 
+			fprintf(stderr,
 		"DeviceDVBInput::dvb_open DMX_SET_PES_FILTER for raw: %s\n",
 				strerror(errno));
 			ret = 1;
@@ -429,7 +429,7 @@ int DeviceDVBInput::open_dev(int color_model)
 	{
 		ret = dvb_open();
 		if( ret ) {
-			printf("DeviceDVBInput::open_dev: adaptor %s open failed\n", 
+			printf("DeviceDVBInput::open_dev: adaptor %s open failed\n",
 				dev_name);
 		}
 	}

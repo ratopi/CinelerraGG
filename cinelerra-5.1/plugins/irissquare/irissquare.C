@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -39,13 +39,13 @@ REGISTER_PLUGIN(IrisSquareMain)
 
 
 
-IrisSquareIn::IrisSquareIn(IrisSquareMain *plugin, 
+IrisSquareIn::IrisSquareIn(IrisSquareMain *plugin,
 	IrisSquareWindow *window,
 	int x,
 	int y)
- : BC_Radial(x, 
-		y, 
-		plugin->direction == 0, 
+ : BC_Radial(x,
+		y,
+		plugin->direction == 0,
 		_("In"))
 {
 	this->plugin = plugin;
@@ -61,13 +61,13 @@ int IrisSquareIn::handle_event()
 	return 0;
 }
 
-IrisSquareOut::IrisSquareOut(IrisSquareMain *plugin, 
+IrisSquareOut::IrisSquareOut(IrisSquareMain *plugin,
 	IrisSquareWindow *window,
 	int x,
 	int y)
- : BC_Radial(x, 
-		y, 
-		plugin->direction == 1, 
+ : BC_Radial(x,
+		y,
+		plugin->direction == 1,
 		_("Out"))
 {
 	this->plugin = plugin;
@@ -91,11 +91,11 @@ int IrisSquareOut::handle_event()
 
 
 IrisSquareWindow::IrisSquareWindow(IrisSquareMain *plugin)
- : PluginClientWindow(plugin, 
-	320, 
-	50, 
-	320, 
-	50, 
+ : PluginClientWindow(plugin,
+	320,
+	50,
+	320,
+	50,
 	0)
 {
 	this->plugin = plugin;
@@ -107,12 +107,12 @@ void IrisSquareWindow::create_objects()
 	int x = 10, y = 10;
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
-	add_subwindow(in = new IrisSquareIn(plugin, 
+	add_subwindow(in = new IrisSquareIn(plugin,
 		this,
 		x,
 		y));
 	x += 100;
-	add_subwindow(out = new IrisSquareOut(plugin, 
+	add_subwindow(out = new IrisSquareOut(plugin,
 		this,
 		x,
 		y));
@@ -133,12 +133,12 @@ IrisSquareMain::IrisSquareMain(PluginServer *server)
  : PluginVClient(server)
 {
 	direction = 0;
-	
+
 }
 
 IrisSquareMain::~IrisSquareMain()
 {
-	
+
 }
 
 const char* IrisSquareMain::plugin_title() { return _("IrisSquare"); }

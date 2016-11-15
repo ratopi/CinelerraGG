@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "edit.h"
@@ -35,10 +35,10 @@
 #include <string.h>
 
 EditPopup::EditPopup(MWindow *mwindow, MWindowGUI *gui)
- : BC_PopupMenu(0, 
-		0, 
-		0, 
-		"", 
+ : BC_PopupMenu(0,
+		0,
+		0,
+		"",
 		0)
 {
 	this->mwindow = mwindow;
@@ -103,7 +103,7 @@ EditAttachEffect::~EditAttachEffect()
 int EditAttachEffect::handle_event()
 {
 	dialog_thread->start_window(popup->track,
-		0, 
+		0,
 		_(PROGRAM_NAME ": Attach Effect"),
 		0,
 		popup->track->data_type);
@@ -326,7 +326,7 @@ void EditPopupTitleWindow::create_objects()
 }
 
 
-EditPopupTitleText::EditPopupTitleText (EditPopupTitleWindow *window, 
+EditPopupTitleText::EditPopupTitleText (EditPopupTitleWindow *window,
 	MWindow *mwindow, int x, int y)
  : BC_TextBox(x, y, 250, 1, (char*)(window->edt ? window->edt->user_title : ""))
 {
@@ -334,10 +334,10 @@ EditPopupTitleText::EditPopupTitleText (EditPopupTitleWindow *window,
 	this->mwindow = mwindow;
 }
 
-EditPopupTitleText::~EditPopupTitleText() 
-{ 
+EditPopupTitleText::~EditPopupTitleText()
+{
 }
- 
+
 int EditPopupTitleText::handle_event()
 {
 	return 1;

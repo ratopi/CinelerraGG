@@ -16,11 +16,11 @@
 
 
 // coordinates are relative to the main window
-TimelinePane::TimelinePane(MWindow *mwindow, 
+TimelinePane::TimelinePane(MWindow *mwindow,
 	int number,
 	int x,
 	int y,
-	int w, 
+	int w,
 	int h)
 {
 // printf("TimelinePane::TimelinePane %d number=%d %d %d %d %d\n",
@@ -59,27 +59,27 @@ void TimelinePane::create_objects()
 	mwindow->theme->get_pane_sizes(gui,
 		&view_x,
 		&view_y,
-		&view_w, 
-		&view_h, 
+		&view_w,
+		&view_h,
 		number,
 		x,
 		y,
-		w, 
+		w,
 		h);
 	cursor = new MainCursor(mwindow, this);
 	cursor->create_objects();
-// printf("TimelinePane::create_objects %d number=%d x=%d y=%d w=%d h=%d view_x=%d view_w=%d\n", 
-// __LINE__, 
+// printf("TimelinePane::create_objects %d number=%d x=%d y=%d w=%d h=%d view_x=%d view_w=%d\n",
+// __LINE__,
 // number,
-// x, 
-// y, 
+// x,
+// y,
 // w,
 // h,
 // view_x,
 // view_w);
 
 
-	gui->add_subwindow(canvas = new TrackCanvas(mwindow, 
+	gui->add_subwindow(canvas = new TrackCanvas(mwindow,
 		this,
 		view_x,
 		view_y,
@@ -92,23 +92,23 @@ void TimelinePane::create_objects()
 	{
 		int patchbay_y = y;
 		int patchbay_h = h;
-		
+
 		if(number == TOP_LEFT_PANE)
 		{
 			patchbay_y += mwindow->theme->mtimebar_h;
 			patchbay_h -= mwindow->theme->mtimebar_h;
 		}
-		
-		gui->add_subwindow(patchbay = new PatchBay(mwindow, 
+
+		gui->add_subwindow(patchbay = new PatchBay(mwindow,
 			this,
-			x, 
+			x,
 			patchbay_y,
 			mwindow->theme->patchbay_w,
 			patchbay_h));
 		patchbay->create_objects();
 	}
-	
-	if(number == TOP_LEFT_PANE || 
+
+	if(number == TOP_LEFT_PANE ||
 		number == TOP_RIGHT_PANE)
 	{
 		int timebar_w = view_w;
@@ -117,7 +117,7 @@ void TimelinePane::create_objects()
 			number == TOP_RIGHT_PANE)
 			timebar_w += BC_ScrollBar::get_span(SCROLL_VERT);
 
-		gui->add_subwindow(timebar = new MTimeBar(mwindow, 
+		gui->add_subwindow(timebar = new MTimeBar(mwindow,
 			this,
 			view_x,
  			y,
@@ -125,7 +125,7 @@ void TimelinePane::create_objects()
 			mwindow->theme->mtimebar_h));
 		timebar->create_objects();
 	}
-	
+
 	create_sample_scroll(view_x, view_y, view_w, view_h);
 
 	create_track_scroll(view_x, view_y, view_w, view_h);
@@ -143,12 +143,12 @@ void TimelinePane::resize_event(int x, int y, int w, int h)
 		gui,
 		&view_x,
 		&view_y,
-		&view_w, 
-		&view_h, 
+		&view_w,
+		&view_h,
 		number,
 		x,
 		y,
-		w, 
+		w,
 		h);
 // printf("TimelinePane::resize_event %d number=%d x=%d y=%d w=%d h=%d view_x=%d view_y=%d view_w=%d view_h=%d\n",
 // __LINE__,
@@ -167,23 +167,23 @@ void TimelinePane::resize_event(int x, int y, int w, int h)
 		int timebar_w = view_w;
 // Overlap right scrollbar
 		if(gui->total_panes() == 1 ||
-			(gui->total_panes() == 2 && 
+			(gui->total_panes() == 2 &&
 			(number == TOP_LEFT_PANE ||
 			number == BOTTOM_LEFT_PANE)) ||
 			number == TOP_RIGHT_PANE ||
 			number == BOTTOM_RIGHT_PANE)
 			timebar_w += BC_ScrollBar::get_span(SCROLL_VERT);
-		timebar->resize_event(view_x, 
-			y, 
-			timebar_w, 
+		timebar->resize_event(view_x,
+			y,
+			timebar_w,
 			mwindow->theme->mtimebar_h);
 	}
-	
+
 	if(patchbay)
 	{
 		int patchbay_y = y;
 		int patchbay_h = h;
-		
+
 		if(number == TOP_LEFT_PANE)
 		{
 			patchbay_y += mwindow->theme->mtimebar_h;
@@ -192,13 +192,13 @@ void TimelinePane::resize_event(int x, int y, int w, int h)
 		else
 		{
 		}
-		
+
 		patchbay->resize_event(x,
 			patchbay_y,
 			mwindow->theme->patchbay_w,
 			patchbay_h);
 	}
-	
+
 	if(samplescroll)
 	{
 		if(gui->pane[TOP_LEFT_PANE] &&
@@ -211,7 +211,7 @@ void TimelinePane::resize_event(int x, int y, int w, int h)
 		}
 		else
 		{
-			samplescroll->resize_event(view_x, 
+			samplescroll->resize_event(view_x,
 				view_y + view_h,
 				view_w);
 			samplescroll->set_position();
@@ -219,11 +219,11 @@ void TimelinePane::resize_event(int x, int y, int w, int h)
 	}
 	else
 		create_sample_scroll(view_x, view_y, view_w, view_h);
-	
-	if(trackscroll) 
+
+	if(trackscroll)
 	{
 		if(gui->pane[TOP_LEFT_PANE] &&
-			gui->pane[TOP_RIGHT_PANE] && 
+			gui->pane[TOP_RIGHT_PANE] &&
 			(number == TOP_LEFT_PANE ||
 			number == BOTTOM_LEFT_PANE))
 		{
@@ -250,16 +250,16 @@ void TimelinePane::create_sample_scroll(int view_x, int view_y, int view_w, int 
 //printf("TimelinePane::create_sample_scroll %d %d\n", __LINE__, number);
 	if(number == BOTTOM_LEFT_PANE ||
 		number == BOTTOM_RIGHT_PANE ||
-		(gui->total_panes() == 2 && 
+		(gui->total_panes() == 2 &&
 			gui->pane[TOP_LEFT_PANE] &&
 			gui->pane[TOP_RIGHT_PANE]) ||
 		gui->total_panes() == 1)
 	{
 //printf("TimelinePane::create_sample_scroll %d %d %d\n", __LINE__, y, h);
-		gui->add_subwindow(samplescroll = new SampleScroll(mwindow, 
-			this, 
-			view_x, 
-			y + h - BC_ScrollBar::get_span(SCROLL_VERT), 
+		gui->add_subwindow(samplescroll = new SampleScroll(mwindow,
+			this,
+			view_x,
+			y + h - BC_ScrollBar::get_span(SCROLL_VERT),
 			view_w));
 		samplescroll->set_position();
 	}
@@ -272,7 +272,7 @@ void TimelinePane::create_track_scroll(int view_x, int view_y, int view_w, int v
 		gui->vertical_panes() ||
 		gui->total_panes() == 1)
 	{
-		gui->add_subwindow(trackscroll = new TrackScroll(mwindow, 
+		gui->add_subwindow(trackscroll = new TrackScroll(mwindow,
 			this,
 			view_x + view_w,
 			view_y,
@@ -288,7 +288,7 @@ void TimelinePane::update(int scrollbars,
 	int patchbay)
 {
 	if(timebar && this->timebar) this->timebar->update(0);
-	if(scrollbars) 
+	if(scrollbars)
 	{
 		if(samplescroll && this->samplescroll) samplescroll->set_position();
 		if(trackscroll && this->trackscroll) trackscroll->set_position();
@@ -320,7 +320,7 @@ Track *TimelinePane::over_track()
 	if( canvas_y < 0 || canvas_y >= canvas->get_h() ) return 0;
 	int pane_y = canvas_y + mwindow->edl->local_session->track_start[number];
 	for( Track *track=mwindow->edl->tracks->first; track; track=track->next ) {
-		int track_y = track->y_pixel; 
+		int track_y = track->y_pixel;
 		if( pane_y < track_y ) continue;
 		track_y += track->vertical_span(mwindow->theme);
 		if( pane_y < track_y )
@@ -341,7 +341,7 @@ Track *TimelinePane::over_patchbay()
 	int canvas_y = patch_y + patchbay->get_y() - canvas->get_y();
 	int pane_y = canvas_y + mwindow->edl->local_session->track_start[number];
 	for( Track *track=mwindow->edl->tracks->first; track; track=track->next ) {
-		int track_y = track->y_pixel; 
+		int track_y = track->y_pixel;
 		if( pane_y < track_y ) continue;
 		track_y += track->vertical_span(mwindow->theme);
 		if( pane_y < track_y )

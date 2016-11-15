@@ -6,7 +6,7 @@ DIRS := $(OBJDIR)/Components
 FREEVERBOBJS := \
 	$(OBJDIR)/Components/allpass.o \
 	$(OBJDIR)/Components/comb.o \
-	$(OBJDIR)/Components/revmodel.o	
+	$(OBJDIR)/Components/revmodel.o
 
 CFLAGS += -IComponents
 LFLAGS += $(FREEVERBOBJS)

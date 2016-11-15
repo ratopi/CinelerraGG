@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef SCALE_H
@@ -50,10 +50,10 @@ public:
 
 	void copy_from(ScaleConfig &src);
 	int equivalent(ScaleConfig &src);
-	void interpolate(ScaleConfig &prev, 
-		ScaleConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(ScaleConfig &prev,
+		ScaleConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 
 	int type;
@@ -176,13 +176,13 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	void calculate_transfer(VFrame *frame,
-		float &in_x1, 
-		float &in_x2, 
-		float &in_y1, 
-		float &in_y2, 
-		float &out_x1, 
-		float &out_x2, 
-		float &out_y1, 
+		float &in_x1,
+		float &in_x2,
+		float &in_y1,
+		float &in_y2,
+		float &out_x1,
+		float &out_x2,
+		float &out_y1,
 		float &out_y2);
 	int handle_opengl();
 	int is_realtime();

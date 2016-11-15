@@ -82,7 +82,7 @@ Digital TV
  - dialog adds new subchannels as they're detected
  - user selects PID's for audio and video in the channel edit dialog
  - filters PID's because of image format differences
- - software preview of video and audio.  
+ - software preview of video and audio.
  - Maybe audio decoded in the record driver with playback on the playback device.
 
 

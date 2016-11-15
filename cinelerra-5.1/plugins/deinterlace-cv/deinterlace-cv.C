@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -69,10 +69,10 @@ void DeInterlaceConfig::copy_from(DeInterlaceConfig &that)
 	threshold = that.threshold;
 }
 
-void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev, 
-	DeInterlaceConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev,
+	DeInterlaceConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	copy_from(prev);
@@ -278,8 +278,8 @@ int DeInterlaceMain::is_realtime() { return 1; }
 
 /* Bob & Weave deinterlacer:
 
-For each pixel, 
-	if it's similar to the previous frame 
+For each pixel,
+	if it's similar to the previous frame
 	then keep it
 	else average with line above and below
 
@@ -301,7 +301,7 @@ static inline double FABS(double v) { return v<0 ? -v : v; }
 
 #define SQ(a) ((a)*(a))
 // threshold < 100 -> a-b/a+b <
- 
+
 
 #define DEINTERLACE_BOBWEAVE_MACRO(type, temp_type, components, dominance, threshold, noise_threshold) \
 { \
@@ -567,17 +567,17 @@ int DeInterlaceMain::process_buffer(VFrame *frame,
 		case DEINTERLACE_BOBWEAVE:
 			if (get_source_position()==0)
 				read_frame(temp_prevframe,0, get_source_position(), get_framerate(), 0);
-			else 
+			else
 				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate(), 0);
 			deinterlace_bobweave(frame, temp_prevframe, frame, config.dominance);
 			break;
 		case DEINTERLACE_TEMPORALSWAP:
 			if (get_source_position()==0)
 				read_frame(temp_prevframe,0, get_source_position(), get_framerate(), 0);
-			else 
+			else
 				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate(), 0);
 			deinterlace_temporalswap(frame, temp_prevframe, frame, config.dominance);
-			break; 
+			break;
 	}
 	send_render_gui(&changed_rows);
 	return 0;
@@ -638,7 +638,7 @@ void DeInterlaceMain::read_data(KeyFrame *keyframe)
 
 void DeInterlaceMain::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		load_configuration();
 		DeInterlaceWindow *window = (DeInterlaceWindow *)thread->window;

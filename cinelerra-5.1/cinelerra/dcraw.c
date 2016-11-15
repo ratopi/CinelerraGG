@@ -5604,7 +5604,7 @@ void CLASS apply_tiff()
     }
   if (!dng_version)
     if ( (tiff_samples == 3 && tiff_ifd[raw].bytes &&
-	  tiff_bps != 14 && tiff_bps != 2048 && 
+	  tiff_bps != 14 && tiff_bps != 2048 &&
 	  tiff_compress != 32769 && tiff_compress != 32770)
       || (tiff_bps == 8 && !strstr(make,"KODAK") && !strstr(make,"Kodak") &&
 	  !strstr(model2,"DEBUG RAW")))
@@ -8750,7 +8750,7 @@ notraw:
 
 
 // CINELERRA
-  if (flip & 4) 
+  if (flip & 4)
  	sprintf(dcraw_info, "%d %d", height, width);
   else
 	sprintf(dcraw_info, "%d %d", width, height);
@@ -8916,7 +8916,7 @@ void CLASS convert_to_rgb()
 
 
 // CINELERRA
-// Export color matrix to Cinelerra.  
+// Export color matrix to Cinelerra.
 // It can't be applied before interpolation.
 k = 0;
 for(i = 0; i < 3; i++)
@@ -9207,13 +9207,13 @@ void CLASS write_cinelerra (FILE *ofp)
  	int row, col;
 	float *output;
 
-  	for (row = 0; row < height; row++) 
+  	for (row = 0; row < height; row++)
   	{
 		output = dcraw_data[row];
 
 		if(document_mode)
 		{
-    		for (col = 0; col < width; col++) 
+    		for (col = 0; col < width; col++)
 			{
 				ushort *pixel = image[row * width + col];
 
@@ -9226,7 +9226,7 @@ void CLASS write_cinelerra (FILE *ofp)
 		}
 		else
 		{
-    		for (col = 0; col < width; col++) 
+    		for (col = 0; col < width; col++)
 			{
 				ushort *pixel = image[row * width + col];
 
@@ -9237,7 +9237,7 @@ void CLASS write_cinelerra (FILE *ofp)
 				if(dcraw_alpha) *output++ = 1.0;
 			}
 		}
-   } 
+   }
 }
 
 
@@ -9455,15 +9455,15 @@ int CLASS dcraw_main (int argc, const char **argv)
       goto next;
     }
     write_fun = &CLASS write_ppm_tiff;
-	
-	
-	
+
+
+
 // CINELERRA
 	write_fun = write_cinelerra;
 
 
-	
-	
+
+
     if (thumbnail_only) {
       if ((status = !thumb_offset)) {
 	fprintf (stderr,_("%s has no thumbnail.\n"), ifname);

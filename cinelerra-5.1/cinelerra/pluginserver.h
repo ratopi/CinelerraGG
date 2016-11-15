@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef PLUGINSERVER_H
@@ -87,7 +87,7 @@ class PluginServer
 
 // Base class created by client
 	PluginClient *client;
-// If no path, this is going to be set to a function which 
+// If no path, this is going to be set to a function which
 // instantiates the plugin.
 	PluginClient* (*new_plugin)(PluginServer*);
 
@@ -124,7 +124,7 @@ public:
 	int open_plugin(int master, Preferences *preferences,
 			EDL *edl, Plugin *plugin);
 // close the plugin
-	int close_plugin();    
+	int close_plugin();
 	int get_theme_png_path(char *png_path, const char *theme_dir);
 	int get_theme_png_path(char *png_path, Theme *theme);
 	int get_plugin_png_path(char *png_path);
@@ -173,7 +173,7 @@ public:
 	PluginClient *new_ffmpeg_plugin();
 // =============================== for realtime plugins
 // save configuration of plugin
-	void save_data(KeyFrame *keyframe);          
+	void save_data(KeyFrame *keyframe);
 // Update EDL and playback engines to reflect changes
 	void sync_parameters();
 // set for realtime processor usage
@@ -183,7 +183,7 @@ public:
 	void raise_window();
 // cause the plugin to show the GUI
 // Called by MWindow::show_plugin
-	void show_gui();          
+	void show_gui();
 	void hide_gui();
 // Update GUI with keyframe settings
 	void update_gui();
@@ -207,20 +207,20 @@ public:
 // give the buffers and sizes and prepare processing realtime data
 	int init_realtime(int realtime_sched,
 		int total_in_buffers,
-		int buffer_size);   
+		int buffer_size);
 // process the data in the buffers
 // input - the current edit's data
 // output - the previous edit's data and the destination of the transition output
-// current_position - Position from start of the transition and 
+// current_position - Position from start of the transition and
 //     relative to the transition.
 // total_len - total len for transition
-	void process_transition(VFrame *input, 
-		VFrame *output, 
+	void process_transition(VFrame *input,
+		VFrame *output,
 		int64_t current_position,
-		int64_t total_len);  
-	void process_transition(Samples *input, 
+		int64_t total_len);
+	void process_transition(Samples *input,
 		Samples *output,
-		int64_t current_position, 
+		int64_t current_position,
 		int64_t fragment_size,
 		int64_t total_len);
 
@@ -233,7 +233,7 @@ public:
 // total_len - length of plugin in track units relative to the EDL rate
 // Units are kept relative to the EDL rate so plugins don't need to convert rates
 // to get the keyframes.
-	void process_buffer(VFrame **frame, 
+	void process_buffer(VFrame **frame,
 		int64_t current_position,
 		double frame_rate,
 		int64_t total_len,
@@ -258,8 +258,8 @@ public:
 
 
 // set the fragment position of a buffer before rendering
-	int arm_buffer(int buffer_number, 
-				int64_t in_fragment_position, 
+	int arm_buffer(int buffer_number,
+				int64_t in_fragment_position,
 				int64_t out_fragment_position,
 				int double_buffer_in,
 				int double_buffer_out);
@@ -279,20 +279,20 @@ public:
 
 
 // Called by client to read data in non-realtime effect
-	int read_frame(VFrame *buffer, 
-		int channel, 
+	int read_frame(VFrame *buffer,
+		int channel,
 		int64_t start_position);
-	int read_samples(Samples *buffer, 
-		int channel, 
+	int read_samples(Samples *buffer,
+		int channel,
 		int64_t start_position,
 		int64_t len);
 
 
-// Called by client to read data in realtime effect.  
+// Called by client to read data in realtime effect.
 // Returns -1 if error or 0 if success.
-	int read_frame(VFrame *buffer, 
-		int channel, 
-		int64_t start_position, 
+	int read_frame(VFrame *buffer,
+		int channel,
+		int64_t start_position,
 		double frame_rate,
 // Set to 1 if the reader can use OpenGL objects.
 		int use_opengl = 0);
@@ -347,7 +347,7 @@ public:
 	int total_out_buffers;
 
 // number of double buffers for each channel
-	ArrayList<int> ring_buffers_in;    
+	ArrayList<int> ring_buffers_in;
 	ArrayList<int> ring_buffers_out;
 // Parameters for automation.  Setting autos to 0 disables automation.
 	FloatAuto **start_auto, **end_auto;
@@ -373,7 +373,7 @@ public:
 
 	int plugin_open;                 // Whether or not the plugin is open.
 // Specifies what type of plugin.
-	int realtime, multichannel, fileio;  
+	int realtime, multichannel, fileio;
 // Plugin generates media
 	int synthesis;
 // What data types the plugin can handle.  One of these is set.

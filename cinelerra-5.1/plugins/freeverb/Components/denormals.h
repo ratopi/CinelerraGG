@@ -17,7 +17,7 @@ static inline void undenormalise(float &sample) {
   union { float f; unsigned int u; } v;  v.f = sample;
   if( !(v.u & 0x7f800000) ) sample=0.f;
 }
- 
+
 #endif//_denormals_
 
 //ends

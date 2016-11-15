@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -41,10 +41,10 @@ public:
 	OverlayAudioConfig();
 	int equivalent(OverlayAudioConfig &that);
 	void copy_from(OverlayAudioConfig &that);
-	void interpolate(OverlayAudioConfig &prev, 
-		OverlayAudioConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
+	void interpolate(OverlayAudioConfig &prev,
+		OverlayAudioConfig &next,
+		int64_t prev_frame,
+		int64_t next_frame,
 		int64_t current_frame);
 	static const char* output_to_text(int output_layer);
 	static const char* mode_to_text(int mode);
@@ -78,7 +78,7 @@ class OverlayMode : public BC_PopupMenu
 {
 public:
 	OverlayMode(OverlayAudio *plugin,
-		int x, 
+		int x,
 		int y);
 	void create_objects();
 	int handle_event();
@@ -110,7 +110,7 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int64_t size, 
+	int process_buffer(int64_t size,
 		Samples **buffer,
 		int64_t start_position,
 		int sample_rate);
@@ -146,10 +146,10 @@ void OverlayAudioConfig::copy_from(OverlayAudioConfig &that)
 	mode = that.mode;
 }
 
-void OverlayAudioConfig::interpolate(OverlayAudioConfig &prev, 
-	OverlayAudioConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void OverlayAudioConfig::interpolate(OverlayAudioConfig &prev,
+	OverlayAudioConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	output_track = prev.output_track;
@@ -184,11 +184,11 @@ const char* OverlayAudioConfig::mode_to_text(int mode)
 
 
 OverlayAudioWindow::OverlayAudioWindow(OverlayAudio *plugin)
- : PluginClientWindow(plugin, 
-	400, 
-	100, 
-	400, 
-	100, 
+ : PluginClientWindow(plugin,
+	400,
+	100,
+	400,
+	100,
 	0)
 {
 	this->plugin = plugin;
@@ -210,8 +210,8 @@ void OverlayAudioWindow::create_objects()
 	x += title->get_w() + plugin->get_theme()->widget_border;
 	add_subwindow(mode = new OverlayMode(plugin, x, y));
 	mode->create_objects();
-	
-	
+
+
 	show_window();
 }
 
@@ -221,8 +221,8 @@ void OverlayAudioWindow::create_objects()
 
 
 OutputTrack::OutputTrack(OverlayAudio *plugin, int x , int y)
- : BC_PopupMenu(x, 
- 	y, 
+ : BC_PopupMenu(x,
+ 	y,
 	100,
 	OverlayAudioConfig::output_to_text(plugin->config.output_track),
 	1)
@@ -244,12 +244,12 @@ int OutputTrack::handle_event()
 {
 	char *text = get_text();
 
-	if(!strcmp(text, 
+	if(!strcmp(text,
 		OverlayAudioConfig::output_to_text(
 			OverlayAudioConfig::TOP)))
 		plugin->config.output_track = OverlayAudioConfig::TOP;
 	else
-	if(!strcmp(text, 
+	if(!strcmp(text,
 		OverlayAudioConfig::output_to_text(
 			OverlayAudioConfig::BOTTOM)))
 		plugin->config.output_track = OverlayAudioConfig::BOTTOM;
@@ -270,7 +270,7 @@ int OutputTrack::handle_event()
 
 
 OverlayMode::OverlayMode(OverlayAudio *plugin,
-	int x, 
+	int x,
 	int y)
  : BC_PopupMenu(x,
  	y,
@@ -320,12 +320,12 @@ REGISTER_PLUGIN(OverlayAudio)
 OverlayAudio::OverlayAudio(PluginServer *server)
  : PluginAClient(server)
 {
-	
+
 }
 
 OverlayAudio::~OverlayAudio()
 {
-	
+
 }
 
 const char* OverlayAudio::plugin_title() { return _("Overlay"); }
@@ -392,7 +392,7 @@ NEW_WINDOW_MACRO(OverlayAudio, OverlayAudioWindow)
 LOAD_CONFIGURATION_MACRO(OverlayAudio, OverlayAudioConfig)
 
 
-int OverlayAudio::process_buffer(int64_t size, 
+int OverlayAudio::process_buffer(int64_t size,
 	Samples **buffer,
 	int64_t start_position,
 	int sample_rate)
@@ -425,7 +425,7 @@ int OverlayAudio::process_buffer(int64_t size,
 				start_position,
 				size);
 			double *input_samples = input_buffer->get_data();
-			
+
 			switch(config.mode)
 			{
 				case OverlayAudioConfig::ADD:
@@ -434,8 +434,8 @@ int OverlayAudio::process_buffer(int64_t size,
 						output_samples[j] += input_samples[j];
 					}
 					break;
-					
-					
+
+
 				case OverlayAudioConfig::MULTIPLY:
 					for(int j = 0; j < size; j++)
 					{

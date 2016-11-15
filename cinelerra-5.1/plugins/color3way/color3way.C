@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 
@@ -72,10 +72,10 @@ void Color3WayConfig::copy_from(Color3WayConfig &that)
 	}
 }
 
-void Color3WayConfig::interpolate(Color3WayConfig &prev, 
-	Color3WayConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void Color3WayConfig::interpolate(Color3WayConfig &prev,
+	Color3WayConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -98,7 +98,7 @@ void Color3WayConfig::boundaries()
 		float point_radius = sqrt(SQR(hue_x[i]) + SQR(hue_y[i]));
 		if(point_radius > 1)
 		{
-			float angle = atan2(hue_x[i], 
+			float angle = atan2(hue_x[i],
 		 				hue_y[i]);
 			hue_x[i] = sin(angle);
 			hue_y[i] = cos(angle);
@@ -141,7 +141,7 @@ Color3WayPackage::Color3WayPackage()
 
 
 
-Color3WayUnit::Color3WayUnit(Color3WayMain *plugin, 
+Color3WayUnit::Color3WayUnit(Color3WayMain *plugin,
 	Color3WayEngine *server)
  : LoadClient(server)
 {
@@ -268,16 +268,16 @@ void Color3WayUnit::process_package(LoadPackage *package)
 	for(int i = 0; i < SECTIONS; i++)
 	{
 		plugin->calculate_factors(&r_factor[i], &g_factor[i], &b_factor[i], i);
-		CALCULATE_FACTORS(s_factor[i], 
-			v_factor[i], 
-			plugin->config.saturation[i], 
+		CALCULATE_FACTORS(s_factor[i],
+			v_factor[i],
+			plugin->config.saturation[i],
 			plugin->config.value[i])
-// printf("Color3WayUnit::process_package %d %f %f %f %f %f\n", 
-// __LINE__, 
-// r_factor[i], 
-// g_factor[i], 
-// b_factor[i], 
-// s_factor[i], 
+// printf("Color3WayUnit::process_package %d %f %f %f %f %f\n",
+// __LINE__,
+// r_factor[i],
+// g_factor[i],
+// b_factor[i],
+// s_factor[i],
 // v_factor[i]);
 	}
 
@@ -331,9 +331,9 @@ void Color3WayEngine::init_packages()
 printf("Color3WayEngine::init_packages %d\n", __LINE__);
 for(int i = 0; i <= 255; i++)
 {
-	printf("%f\t%f\t%f\n", 
-		SHADOW_CURVE((float)i / 255), 
-		MIDTONE_CURVE((float)i / 255), 
+	printf("%f\t%f\t%f\n",
+		SHADOW_CURVE((float)i / 255),
+		MIDTONE_CURVE((float)i / 255),
 		HIGHLIGHT_CURVE((float)i / 255));
 }
 #endif
@@ -378,7 +378,7 @@ Color3WayMain::Color3WayMain(PluginServer *server)
 
 Color3WayMain::~Color3WayMain()
 {
-	
+
 	delete engine;
 }
 
@@ -388,15 +388,15 @@ int Color3WayMain::is_realtime() { return 1; }
 
 int Color3WayMain::reconfigure()
 {
-	
+
 	return 0;
 }
 
 void Color3WayMain::process_pixel(float *r,
 	float *g,
 	float *b,
-	float r_in, 
-	float g_in, 
+	float r_in,
+	float g_in,
 	float b_in,
 	float x,
 	float y)
@@ -408,24 +408,24 @@ void Color3WayMain::process_pixel(float *r,
 	float v_factor[SECTIONS];
 	for(int i = 0; i < SECTIONS; i++)
 	{
-		calculate_factors(r_factor + i, 
-			g_factor + i, 
-			b_factor + i, 
-			x, 
+		calculate_factors(r_factor + i,
+			g_factor + i,
+			b_factor + i,
+			x,
 			y);
 		CALCULATE_FACTORS(s_factor[i], v_factor[i], 0, 0)
 	}
-	
+
 	PROCESS_PIXEL(r_in, g_in, b_in);
 	*r = r_in;
 	*g = g_in;
 	*b = b_in;
 }
 
-void Color3WayMain::calculate_factors(float *r, 
-	float *g, 
-	float *b, 
-	float x, 
+void Color3WayMain::calculate_factors(float *r,
+	float *g,
+	float *b,
+	float x,
 	float y)
 {
 //	float h = atan2(-x, -y) * 360 / 2 / M_PI + 180;
@@ -470,7 +470,7 @@ int Color3WayMain::process_buffer(VFrame *frame,
 {
 	need_reconfigure |= load_configuration();
 
-	if(!engine) engine = new Color3WayEngine(this, 
+	if(!engine) engine = new Color3WayEngine(this,
 //		1);
 		PluginClient::smp + 1);
 
@@ -548,7 +548,7 @@ void Color3WayMain::save_data(KeyFrame *keyframe)
 		output.tag.set_property("W",  w);
 		output.tag.set_property("H",  h);
 	}
-	
+
 	output.append_tag();
 	output.tag.set_title("/COLOR3WAY");
 	output.append_tag();
@@ -583,7 +583,7 @@ void Color3WayMain::read_data(KeyFrame *keyframe)
 					config.value[i] = input.tag.get_property(string, config.value[i]);
 					sprintf(string, "SATURATION_%d", i);
 					config.saturation[i] = input.tag.get_property(string, config.saturation[i]);
-					
+
 					if(is_defaults())
 					{
 						sprintf(string, "COPY_TO_ALL_%d", i);
@@ -645,19 +645,19 @@ printf("Color3WayMain::handle_opengl %d %d\n", aggregate_interpolate, aggregate_
 	if(aggregate_gamma)
 		GAMMA_COMPILE(shader_stack, current_shader, aggregate_interpolate)
 
-	COLORBALANCE_COMPILE(shader_stack, 
-		current_shader, 
+	COLORBALANCE_COMPILE(shader_stack,
+		current_shader,
 		aggregate_gamma || aggregate_interpolate)
 
-	shader = VFrame::make_shader(0, 
-		shader_stack[0], 
-		shader_stack[1], 
-		shader_stack[2], 
-		shader_stack[3], 
-		shader_stack[4], 
-		shader_stack[5], 
-		shader_stack[6], 
-		shader_stack[7], 
+	shader = VFrame::make_shader(0,
+		shader_stack[0],
+		shader_stack[1],
+		shader_stack[2],
+		shader_stack[3],
+		shader_stack[4],
+		shader_stack[5],
+		shader_stack[6],
+		shader_stack[7],
 		0);
 
 	if(shader > 0)

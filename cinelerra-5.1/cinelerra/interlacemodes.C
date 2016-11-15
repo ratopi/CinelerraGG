@@ -3,15 +3,15 @@
  * under the terms of the GNU Lesser General Public License as published
  * by the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
  */
 
@@ -111,7 +111,7 @@ int ilacefixmethod_from_text(const char *text, int thedefault)
 	if(!strcasecmp(text, _(ILACE_FIXMETHOD_NONE_T)))   	return ILACE_FIXMETHOD_NONE;
 	if(!strcasecmp(text, _(ILACE_FIXMETHOD_UPONE_T)))  	return ILACE_FIXMETHOD_UPONE;
 	if(!strcasecmp(text, _(ILACE_FIXMETHOD_DOWNONE_T)))	return ILACE_FIXMETHOD_DOWNONE;
-	return thedefault; 
+	return thedefault;
 }
 
 void ilacefixmethod_to_xmltext(char *string, int fixmethod)
@@ -129,10 +129,10 @@ int ilacefixmethod_from_xmltext(const char *text, int thedefault)
 	if(!strcasecmp(text, ILACE_FIXMETHOD_NONE_XMLT))   	return ILACE_FIXMETHOD_NONE;
 	if(!strcasecmp(text, ILACE_FIXMETHOD_UPONE_XMLT))  	return ILACE_FIXMETHOD_UPONE;
 	if(!strcasecmp(text, ILACE_FIXMETHOD_DOWNONE_XMLT))	return ILACE_FIXMETHOD_DOWNONE;
-	return thedefault; 
+	return thedefault;
 }
 
-int  ilaceautofixmethod(int projectmode, int assetmode) 
+int  ilaceautofixmethod(int projectmode, int assetmode)
 {
 	if (projectmode == assetmode)
 		return ILACE_FIXMETHOD_NONE;

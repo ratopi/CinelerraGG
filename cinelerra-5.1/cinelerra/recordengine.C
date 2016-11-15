@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "assets.h"
@@ -56,16 +56,16 @@ RecordEngine::RecordEngine(MWindow *mwindow, Record *record)
 
 
 
-RecordEngine::RecordEngine(MWindow *mwindow, 
-			Record *record, 
-			File *file, 
-			Asset *asset, 
+RecordEngine::RecordEngine(MWindow *mwindow,
+			Record *record,
+			File *file,
+			Asset *asset,
 			RecordLabels *labels)
 {
 	this->mwindow = mwindow;
-	this->record = record; 
-	this->file = file; 
-	this->labels = labels; 
+	this->record = record;
+	this->file = file;
+	this->labels = labels;
 	this->asset = asset;
 	is_saving = 0;
 	is_previewing = 0;
@@ -75,13 +75,13 @@ RecordEngine::RecordEngine(MWindow *mwindow,
 	next_label = -1;
 
 	if(record->do_audio)
-		adevice = new AudioDevice; 
-	else 
+		adevice = new AudioDevice;
+	else
 		adevice = 0;
 
 	if(record->do_video)
-		vdevice = new VideoDevice(mwindow); 
-	else 
+		vdevice = new VideoDevice(mwindow);
+	else
 		vdevice = 0;
 }
 
@@ -98,7 +98,7 @@ int RecordEngine::initialize()
 {
 //	monitor_thread = new RecordThread(mwindow, record, this);
 	monitor_thread->create_objects();
-	
+
 //	record_thread = new RecordThread(mwindow, record, this);
 	record_thread->create_objects();
 
@@ -237,7 +237,7 @@ int RecordEngine::open_input_devices(int duplex)
 // Initialize audio
 	if(record->do_audio)
 	{
-		if(record->get_software_positioning()) 
+		if(record->get_software_positioning())
 			adevice->set_software_positioning();
 
 		for(int i = 0; i < asset->channels; i++)
@@ -249,7 +249,7 @@ int RecordEngine::open_input_devices(int duplex)
 
 // Duplex is only needed if the timeline and the recording have audio
 	if(duplex &&
-		record->do_audio && 
+		record->do_audio &&
 		mwindow->patches->total_playable_atracks())
 	{
 // duplex device is identical to input device
@@ -258,35 +258,35 @@ int RecordEngine::open_input_devices(int duplex)
 			aconfig->oss_in_bits == aconfig->oss_duplex_bits &&
 			aconfig->oss_in_channels == aconfig->oss_duplex_channels)
 		{
-// 			adevice->open_duplex(mwindow->preferences->aconfig, 
-// 						record->get_samplerate(), 
+// 			adevice->open_duplex(mwindow->preferences->aconfig,
+// 						record->get_samplerate(),
 // 						get_in_length());
 			audio_opened = 1;
 		}
 		else
 // two separate devices
 		{
-// 			adevice->open_output(mwindow->preferences->aconfig, 
-// 					record->get_samplerate(), 
+// 			adevice->open_output(mwindow->preferences->aconfig,
+// 					record->get_samplerate(),
 // 					record->get_out_length());
 		}
 	}
 
 	if(record->do_audio && !audio_opened)
 	{
-// 		adevice->open_input(mwindow->preferences->aconfig, 
-// 				record->get_samplerate(), 
+// 		adevice->open_input(mwindow->preferences->aconfig,
+// 				record->get_samplerate(),
 // 				get_in_length());
 	}
 
 // Initialize video
 	if(record->do_video)
 	{
-// 		vdevice->open_input(mwindow->preferences->vconfig, 
-// 			record->frame_w, 
+// 		vdevice->open_input(mwindow->preferences->vconfig,
+// 			record->frame_w,
 // 			record->frame_h,
-// 			record->video_x, 
-// 			record->video_y, 
+// 			record->video_x,
+// 			record->video_y,
 // 			record->video_zoom,
 // 			get_frame_rate());
 // 		vdevice->set_field_order(record->reverse_interlace);
@@ -401,7 +401,7 @@ int RecordEngine::stop_saving(int no_monitor)
 	if(is_saving)
 	{
 // automatically stops duplex here and resumes monitor
-		record_thread->stop_recording(no_monitor); 
+		record_thread->stop_recording(no_monitor);
 	}
 	return 0;
 }
@@ -455,7 +455,7 @@ int RecordEngine::stop_operation(int no_monitor)
 
 int RecordEngine::set_video_picture()
 {
-	if(record->do_video && vdevice) 
+	if(record->do_video && vdevice)
 		vdevice->set_picture(record->video_brightness,
 			record->video_hue,
 			record->video_color,
@@ -468,8 +468,8 @@ int RecordEngine::open_output_devices()
 {
 	if(record->do_audio)
 	{
-// 		adevice->open_output(mwindow->preferences->aconfig, 
-// 				record->get_samplerate(), 
+// 		adevice->open_output(mwindow->preferences->aconfig,
+// 				record->get_samplerate(),
 // 				record->get_out_length());
 		if(record->get_software_positioning()) adevice->set_software_positioning();
 	}
@@ -502,21 +502,21 @@ int RecordEngine::update_position(long new_position)
 {
 	if(new_position < 0) new_position = 0;      // fread error in filepcm
 	current_position = new_position;
-	
+
 	gui->update_position(new_position);
 
-	if(new_position > total_length) 
+	if(new_position > total_length)
 	{
 		total_length = new_position;
 //		gui->update_total_length(new_position);
 	}
-	
+
 	if(prev_label != labels->get_prev_label(new_position))
 	{
 		prev_label = labels->get_prev_label(new_position);
 		gui->update_prev_label(prev_label);
 	}
-	
+
 	if(next_label != labels->get_next_label(new_position))
 	{
 		next_label = labels->get_next_label(new_position);
@@ -627,15 +627,15 @@ int RecordEngine::start_over()
 
 int RecordEngine::change_channel(Channel *channel)
 {
-	if(record->do_video && vdevice) 
+	if(record->do_video && vdevice)
 		return vdevice->set_channel(channel);
 	else
 		return 0;
 }
 
-ArrayList<char*>* RecordEngine::get_video_inputs() 
-{ 
-	if(record->do_video && vdevice) 
+ArrayList<char*>* RecordEngine::get_video_inputs()
+{
+	if(record->do_video && vdevice)
 		return vdevice->get_inputs();
 	else
 		return 0;
@@ -647,7 +647,7 @@ int RecordEngine::get_input_channels() { return asset->channels; }
 int RecordEngine::get_format(char *string)
 {
 	File file;
-	strcpy(string, file.formattostr(mwindow->plugindb, asset->format)); 
+	strcpy(string, file.formattostr(mwindow->plugindb, asset->format));
 }
 int RecordEngine::get_samplerate() { return asset->rate; }
 int RecordEngine::get_bits() { return asset->bits; }
@@ -720,15 +720,15 @@ int RecordEngine::reset_current_delay()
 	current_jump_jump = current_jump_jumps[current_jump_delay];
 }
 
-int RecordEngine::set_loop_duration() 
+int RecordEngine::set_loop_duration()
 {
-	record->set_loop_duration((long)record->get_samplerate() * (atol(gui->loop_sec->get_text()) + atol(gui->loop_min->get_text()) * 60 + atol(gui->loop_hr->get_text()) * 3600)); 
+	record->set_loop_duration((long)record->get_samplerate() * (atol(gui->loop_sec->get_text()) + atol(gui->loop_min->get_text()) * 60 + atol(gui->loop_hr->get_text()) * 3600));
 }
 
 
 // Remember to change meters if you change this.
 // Return the size of the fragments to read from the audio device.
-int RecordEngine::get_in_length() 
+int RecordEngine::get_in_length()
 {
 	long fragment_size = 1;
 	while(fragment_size < asset->rate / record->get_meter_speed()) fragment_size *= 2;

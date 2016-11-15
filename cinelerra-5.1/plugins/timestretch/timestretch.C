@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -64,9 +64,9 @@ int TimeStretchFraction::handle_event()
 
 
 
-TimeStretchFreq::TimeStretchFreq(TimeStretch *plugin, 
-	TimeStretchWindow *gui, 
-	int x, 
+TimeStretchFreq::TimeStretchFreq(TimeStretch *plugin,
+	TimeStretchWindow *gui,
+	int x,
 	int y)
  : BC_Radial(x, y, plugin->use_fft, _("Use fast fourier transform"))
 {
@@ -87,9 +87,9 @@ int TimeStretchFreq::handle_event()
 
 
 
-TimeStretchTime::TimeStretchTime(TimeStretch *plugin, 
-	TimeStretchWindow *gui, 
-	int x, 
+TimeStretchTime::TimeStretchTime(TimeStretch *plugin,
+	TimeStretchWindow *gui,
+	int x,
 	int y)
  : BC_Radial(x, y, !plugin->use_fft, _("Use overlapping windows"))
 {
@@ -117,12 +117,12 @@ int TimeStretchTime::handle_event()
 
 
 TimeStretchWindow::TimeStretchWindow(TimeStretch *plugin, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Time stretch"), 
+ : BC_Window(_(PROGRAM_NAME ": Time stretch"),
  				x - 160,
 				y - 75,
- 				320, 
-				200, 
-				320, 
+ 				320,
+				200,
+				320,
 				200,
 				0,
 				0,
@@ -143,7 +143,7 @@ void TimeStretchWindow::create_objects()
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Fraction of original speed:")));
 	y += title->get_h() + plugin->get_theme()->widget_border;
-	
+
 	TimeStretchFraction *fraction;
 	add_subwindow(fraction = new TimeStretchFraction(plugin, x, y));
 
@@ -187,8 +187,8 @@ PitchEngine::~PitchEngine()
 	if(temp) delete [] temp;
 }
 
-int PitchEngine::read_samples(int64_t output_sample, 
-	int samples, 
+int PitchEngine::read_samples(int64_t output_sample,
+	int samples,
 	Samples *buffer)
 {
 	plugin->resample->resample(buffer,
@@ -201,21 +201,21 @@ int PitchEngine::read_samples(int64_t output_sample,
 // 	while(input_size < samples)
 // 	{
 // 		if(!temp) temp = new double[INPUT_SIZE];
-// 
-// 		plugin->read_samples(temp, 
-// 			0, 
-// 			plugin->get_source_start() + current_position, 
+//
+// 		plugin->read_samples(temp,
+// 			0,
+// 			plugin->get_source_start() + current_position,
 // 			INPUT_SIZE);
 // 		current_position += INPUT_SIZE;
-// 
+//
 // 		plugin->resample->resample(buffer,
 // 			INPUT_SIZE,
 // 			1000000,
 // 			(int)(1000000 * plugin->scale),
 // 			0);
-// 
+//
 // 		int fragment_size = plugin->resample->get_output_size(0);
-// 
+//
 // 		if(input_size + fragment_size > input_allocated)
 // 		{
 // 			int new_allocated = input_size + fragment_size;
@@ -228,16 +228,16 @@ int PitchEngine::read_samples(int64_t output_sample,
 // 			input_buffer = new_buffer;
 // 			input_allocated = new_allocated;
 // 		}
-// 
-// 
+//
+//
 // 		plugin->resample->read_output(input_buffer + input_size,
 // 			0,
 // 			fragment_size);
 // 		input_size += fragment_size;
 // 	}
 // 	memcpy(buffer, input_buffer, samples * sizeof(int64_t));
-// 	memcpy(input_buffer, 
-// 		input_buffer + samples, 
+// 	memcpy(input_buffer,
+// 		input_buffer + samples,
 // 		sizeof(int64_t) * (input_size - samples));
 // 	input_size -= samples;
 	return 0;
@@ -246,11 +246,11 @@ int PitchEngine::read_samples(int64_t output_sample,
 int PitchEngine::signal_process()
 {
 
-	int min_freq = 
-		1 + (int)(20.0 / 
-				((double)plugin->PluginAClient::project_sample_rate / 
-					window_size * 
-					2) + 
+	int min_freq =
+		1 + (int)(20.0 /
+				((double)plugin->PluginAClient::project_sample_rate /
+					window_size *
+					2) +
 				0.5);
 
 	if(plugin->scale < 1)
@@ -308,13 +308,13 @@ TimeStretchResample::TimeStretchResample(TimeStretch *plugin)
 }
 
 
-int TimeStretchResample::read_samples(Samples *buffer, 
-	int64_t start, 
+int TimeStretchResample::read_samples(Samples *buffer,
+	int64_t start,
 	int64_t len)
 {
-	return plugin->read_samples(buffer, 
-		0, 
-		start + plugin->get_source_start(), 
+	return plugin->read_samples(buffer,
+		0,
+		start + plugin->get_source_start(),
 		len);
 }
 
@@ -349,8 +349,8 @@ TimeStretch::~TimeStretch()
 	if(stretch) delete stretch;
 }
 
-	
-	
+
+
 const char* TimeStretch::plugin_title() { return _("Time stretch"); }
 
 int TimeStretch::get_parameters()
@@ -359,7 +359,7 @@ int TimeStretch::get_parameters()
 	TimeStretchWindow window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y());
 	window.create_objects();
 	int result = window.run_window();
-	
+
 	return result;
 }
 
@@ -390,14 +390,14 @@ int TimeStretch::start_loop()
 // The windowing case
 	{
 // Must be short enough to mask beating but long enough to mask humming.
-		stretch = new TimeStretchEngine(scale, 
+		stretch = new TimeStretchEngine(scale,
 			PluginAClient::project_sample_rate,
 			WINDOW_TIME);
 	}
 
 
 
-	
+
 	return 0;
 }
 
@@ -434,8 +434,8 @@ int TimeStretch::process_loop(Samples *buffer, int64_t &write_length)
 	{
 		samples_rendered = get_buffer_size();
 		pitch->process_buffer(total_written,
-					samples_rendered, 
-					buffer, 
+					samples_rendered,
+					buffer,
 					PLAY_FORWARD);
 	}
 	else

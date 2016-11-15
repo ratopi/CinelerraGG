@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2007 Andraz Tori
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -45,9 +45,9 @@ RenderProfileItem::RenderProfileItem(const char *text, int value)
 
 
 RenderProfile::RenderProfile(MWindow *mwindow,
-	RenderWindow *rwindow, 
-	int x, 
-	int y, 
+	RenderWindow *rwindow,
+	int x,
+	int y,
 	int use_nothing)
 {
 	this->mwindow = mwindow;
@@ -63,7 +63,7 @@ RenderProfile::RenderProfile(MWindow *mwindow,
 		mwindow->defaults->get(string_name, name);
 		if (strlen(name) != 0)
 			profiles.append(new RenderProfileItem(name, i));
-					
+
 	}
 }
 
@@ -87,30 +87,30 @@ int RenderProfile::create_objects()
 {
 	int x = this->x, y = this->y;
 	const char *default_text = "";
-	rwindow->add_subwindow(new BC_Title(x, 
-		y, 
+	rwindow->add_subwindow(new BC_Title(x,
+		y,
 			_("RenderProfile:")));
 
 
 	int old_y = y;
 	rwindow->add_subwindow(title = new BC_Title(x, y, _("Render profile:")));
 	y += 25;
-	rwindow->add_subwindow(textbox = new BC_TextBox(x, 
-		y, 
-		LISTWIDTH, 
-		1, 
+	rwindow->add_subwindow(textbox = new BC_TextBox(x,
+		y,
+		LISTWIDTH,
+		1,
 		default_text));
 	x += textbox->get_w();
 	rwindow->add_subwindow(listbox = new RenderProfileListBox(rwindow, this, x, y));
 
 	y = old_y;
 	x += listbox->get_w() + 10;
-	rwindow->add_subwindow(saveprofile = new SaveRenderProfileButton(this, 
-		x, 
+	rwindow->add_subwindow(saveprofile = new SaveRenderProfileButton(this,
+		x,
 		y));
 	y += 25;
-	rwindow->add_subwindow(deleteprofile = new DeleteRenderProfileButton(this, 
-		x, 
+	rwindow->add_subwindow(deleteprofile = new DeleteRenderProfileButton(this,
+		x,
 		y));
 
 
@@ -144,16 +144,16 @@ int RenderProfile::reposition_window(int x, int y)
 	y += 20;
 	textbox->reposition_window(x, y);
 	x += textbox->get_w();
-	listbox->reposition_window(x, 
-		y, 
+	listbox->reposition_window(x,
+		y,
 		LISTWIDTH);
 	return 0;
 }
 
 
-RenderProfileListBox::RenderProfileListBox(BC_WindowBase *window, 
-	RenderProfile *renderprofile, 
-	int x, 
+RenderProfileListBox::RenderProfileListBox(BC_WindowBase *window,
+	RenderProfile *renderprofile,
+	int x,
 	int y)
  : BC_ListBox(x,
  	y,
@@ -192,7 +192,7 @@ int RenderProfile::get_profile_slot_by_name(const char *profile_name)
 		char string_name[100];
 		char name[100] = "";
 		sprintf(string_name, "RENDER_%i_PROFILE_NAME", i);
-		
+
 		mwindow->defaults->get(string_name, name);
 		if (strcmp(name, profile_name) == 0)
 			return i;
@@ -230,7 +230,7 @@ int RenderProfile::save_to_slot(int profile_slot, const char *profile_name)
 	mwindow->defaults->update(string_name, rwindow->render->range_type);
 
 	sprintf(string_name, "RENDER_%i_", profile_slot);
-	rwindow->asset->save_defaults(mwindow->defaults, 
+	rwindow->asset->save_defaults(mwindow->defaults,
 		string_name,
 		1,
 		1,
@@ -251,7 +251,7 @@ SaveRenderProfileButton::SaveRenderProfileButton(RenderProfile *profile, int x, 
 }
 int SaveRenderProfileButton::handle_event()
 {
-	
+
 	const char *profile_name = profile->textbox->get_text();
 	if (strlen(profile_name) == 0)     // Don't save when name not defined
 		return 1;
@@ -269,12 +269,12 @@ int SaveRenderProfileButton::handle_event()
 			error_box.run_window();
 			return 1;
 		}
-		
+
 		profile->profiles.append(new RenderProfileItem(profile_name, slot));
 		profile->listbox->update((ArrayList<BC_ListBoxItem *>*)&(profile->profiles), 0, 0, 1);
-	
+
 	}
-	
+
 	if (slot >= 0)
 	{
 		profile->save_to_slot(slot, profile_name);

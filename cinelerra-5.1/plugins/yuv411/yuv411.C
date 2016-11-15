@@ -42,10 +42,10 @@ int yuv411Config::equivalent(yuv411Config &that)
 		bias == that.bias;
 }
 
-void yuv411Config::interpolate(yuv411Config &prev, 
-	yuv411Config &next, 
-	long prev_frame, 
-	long next_frame, 
+void yuv411Config::interpolate(yuv411Config &prev,
+	yuv411Config &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	this->int_horizontal = prev.int_horizontal;
@@ -72,7 +72,7 @@ yuv411Main::~yuv411Main()
 
 const char *yuv411Main::plugin_title() { return _("YUV411"); }
 int yuv411Main::is_realtime() { return 1; }
-	
+
 #define YUV411_MACRO(type, components) \
 { \
     type **input_rows = ((type**)input_ptr->get_rows()), **in_rows = input_rows; \
@@ -218,7 +218,7 @@ void yuv411Main::render_gui(void *data)
 	if(thread) {
 		thread->window->lock_window();
 		yuv411Window *window = (yuv411Window *)thread->window;
-		yuv411Main *client = (yuv411Main *)data; 
+		yuv411Main *client = (yuv411Main *)data;
 		switch( client->colormodel ) {
 		case BC_YUV888:
 		case BC_YUVA8888:
@@ -250,13 +250,13 @@ void yuv411Main::save_data(KeyFrame *keyframe)
 		output.tag.set_title("/VERTICAL");
 		output.append_tag();
 	}
-	if(config.int_horizontal) {	
+	if(config.int_horizontal) {
 		output.tag.set_title("HORIZONTAL");
 		output.append_tag();
 		output.tag.set_title("/HORIZONTAL");
 		output.append_tag();
 	}
-	if(config.inpainting ) {	
+	if(config.inpainting ) {
 		output.tag.set_title("INPAINTING");
 		output.append_tag();
 		output.tag.set_title("/INPAINTING");

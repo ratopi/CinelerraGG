@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 
@@ -223,7 +223,7 @@ int DeviceV4L2Base::get_sources()
 		struct v4l2_input arg;
 		memset(&arg, 0, sizeof(arg));
 		arg.index = i;
-			
+
 		if(ioctl(vfd, VIDIOC_ENUMINPUT, &arg) < 0) break;
 		Channel *channel = video_device->new_input_source((char*)arg.name);
 		channel->device_index = i;
@@ -294,7 +294,7 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 // if( (cap.capabilities & V4L2_CAP_READWRITE)     ) printf("READWRITE ");
 // if( (cap.capabilities & V4L2_CAP_ASYNCIO)       ) printf("ASYNCIO ");
 // if( (cap.capabilities & V4L2_CAP_STREAMING)     ) printf("STREAMING ");
-// printf("\n"); 
+// printf("\n");
 
 	int config_width = video_device->in_config->w;
 	int config_height = video_device->in_config->h;
@@ -416,8 +416,8 @@ int DeviceV4L2Base::v4l2_open(int color_model)
 	{
 		v4l2_parm.parm.capture.capturemode |= V4L2_CAP_TIMEPERFRAME;
 		v4l2_parm.parm.capture.timeperframe.numerator = 1;
-		v4l2_parm.parm.capture.timeperframe.denominator = 
-			(unsigned long)((float)1 / 
+		v4l2_parm.parm.capture.timeperframe.denominator =
+			(unsigned long)((float)1 /
 			video_device->frame_rate * 10000000);
 		if(vioctl(VIDIOC_S_PARM, &v4l2_parm) < 0)
 			perror("DeviceV4L2Base::v4l2_open VIDIOC_S_PARM");

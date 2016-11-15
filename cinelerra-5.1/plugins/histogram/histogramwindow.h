@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef HISTOGRAMWINDOW_H
@@ -33,10 +33,10 @@
 class HistogramSlider : public BC_SubWindow
 {
 public:
-	HistogramSlider(HistogramMain *plugin, 
+	HistogramSlider(HistogramMain *plugin,
 		HistogramWindow *gui,
-		int x, 
-		int y, 
+		int x,
+		int y,
 		int w,
 		int h,
 		int is_input);
@@ -60,9 +60,9 @@ public:
 class HistogramParade : public BC_Toggle
 {
 public:
-	HistogramParade(HistogramMain *plugin, 
+	HistogramParade(HistogramMain *plugin,
 		HistogramWindow *gui,
-		int x, 
+		int x,
 		int y,
 		int value);
 	int handle_event();
@@ -74,9 +74,9 @@ public:
 class HistogramCarrot : public BC_Toggle
 {
 public:
-	HistogramCarrot(HistogramMain *plugin, 
+	HistogramCarrot(HistogramMain *plugin,
 		HistogramWindow *gui,
-		int x, 
+		int x,
 		int y);
 	virtual ~HistogramCarrot();
 
@@ -88,7 +88,7 @@ public:
 
 	int starting_x;
 	int offset_x;
-	int offset_y;	
+	int offset_y;
 	int drag_operation;
 	HistogramMain *plugin;
 	HistogramWindow *gui;
@@ -98,8 +98,8 @@ public:
 class HistogramAuto : public BC_CheckBox
 {
 public:
-	HistogramAuto(HistogramMain *plugin, 
-		int x, 
+	HistogramAuto(HistogramMain *plugin,
+		int x,
 		int y);
 	int handle_event();
 	HistogramMain *plugin;
@@ -108,8 +108,8 @@ public:
 class HistogramPlot : public BC_CheckBox
 {
 public:
-	HistogramPlot(HistogramMain *plugin, 
-		int x, 
+	HistogramPlot(HistogramMain *plugin,
+		int x,
 		int y);
 	int handle_event();
 	HistogramMain *plugin;
@@ -118,8 +118,8 @@ public:
 class HistogramSplit : public BC_CheckBox
 {
 public:
-	HistogramSplit(HistogramMain *plugin, 
-		int x, 
+	HistogramSplit(HistogramMain *plugin,
+		int x,
 		int y);
 	int handle_event();
 	HistogramMain *plugin;
@@ -128,8 +128,8 @@ public:
 class HistogramMode : public BC_Radial
 {
 public:
-	HistogramMode(HistogramMain *plugin, 
-		int x, 
+	HistogramMode(HistogramMain *plugin,
+		int x,
 		int y,
 		int value,
 		char *text);
@@ -141,7 +141,7 @@ public:
 class HistogramReset : public BC_GenericButton
 {
 public:
-	HistogramReset(HistogramMain *plugin, 
+	HistogramReset(HistogramMain *plugin,
 		int x,
 		int y);
 	int handle_event();
@@ -197,9 +197,9 @@ public:
 	int resize_event(int w, int h);
 
 	void get_point_extents(HistogramPoint *current,
-		int *x1, 
-		int *y1, 
-		int *x2, 
+		int *x1,
+		int *y1,
+		int *x2,
 		int *y2,
 		int *x,
 		int *y);

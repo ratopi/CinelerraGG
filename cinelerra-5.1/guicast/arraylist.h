@@ -54,7 +54,7 @@ public:
 	}
 	void remove_object(TYPE value) { remove(value);  del(value); }
 	void remove_object_number(int i) {
-		if( i < total ) { del_value(i);  remove_number(i); }   
+		if( i < total ) { del_value(i);  remove_number(i); }
 		else fprintf(stderr, "ArrayList<TYPE>::remove_object_number:"
 			 " number %d out of range %d.\n", i, total);
 	}

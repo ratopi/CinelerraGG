@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -52,10 +52,10 @@ public:
 	WaveConfig();
 	void copy_from(WaveConfig &src);
 	int equivalent(WaveConfig &src);
-	void interpolate(WaveConfig &prev, 
-		WaveConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(WaveConfig &prev,
+		WaveConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 	int mode;
 	int reflective;
@@ -228,7 +228,7 @@ void WaveConfig::copy_from(WaveConfig &src)
 
 int WaveConfig::equivalent(WaveConfig &src)
 {
-	return 
+	return
 		(this->mode == src.mode) &&
 		EQUIV(this->reflective, src.reflective) &&
 		EQUIV(this->amplitude, src.amplitude) &&
@@ -236,10 +236,10 @@ int WaveConfig::equivalent(WaveConfig &src)
 		EQUIV(this->wavelength, src.wavelength);
 }
 
-void WaveConfig::interpolate(WaveConfig &prev, 
-		WaveConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+void WaveConfig::interpolate(WaveConfig &prev,
+		WaveConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -309,13 +309,13 @@ int WaveReflective::handle_event()
 
 
 WaveAmplitude::WaveAmplitude(WaveEffect *plugin, int x, int y)
- : BC_FSlider(x, 
+ : BC_FSlider(x,
 			y,
 			0,
-			200, 
-			200, 
-			(float)0, 
-			(float)100, 
+			200,
+			200,
+			(float)0,
+			(float)100,
 			plugin->config.amplitude)
 {
 	this->plugin = plugin;
@@ -330,13 +330,13 @@ int WaveAmplitude::handle_event()
 
 
 WavePhase::WavePhase(WaveEffect *plugin, int x, int y)
- : BC_FSlider(x, 
+ : BC_FSlider(x,
 			y,
 			0,
-			200, 
-			200, 
-			(float)0, 
-			(float)360, 
+			200,
+			200,
+			(float)0,
+			(float)360,
 			plugin->config.phase)
 {
 	this->plugin = plugin;
@@ -349,13 +349,13 @@ int WavePhase::handle_event()
 }
 
 WaveLength::WaveLength(WaveEffect *plugin, int x, int y)
- : BC_FSlider(x, 
+ : BC_FSlider(x,
 			y,
 			0,
-			200, 
-			200, 
-			(float)0, 
-			(float)50, 
+			200,
+			200,
+			(float)0,
+			(float)50,
 			plugin->config.wavelength)
 {
 	this->plugin = plugin;
@@ -431,12 +431,12 @@ WaveEffect::WaveEffect(PluginServer *server)
 {
 	temp_frame = 0;
 	engine = 0;
-	
+
 }
 
 WaveEffect::~WaveEffect()
 {
-	
+
 
 	if(temp_frame) delete temp_frame;
 	if(engine) delete engine;
@@ -535,18 +535,18 @@ int WaveEffect::process_realtime(VFrame *input, VFrame *output)
 			temp_frame->copy_from(input);
 			this->input = temp_frame;
 		}
-		
-		
+
+
 		if(!engine)
 		{
 			engine = new WaveServer(this, (PluginClient::smp + 1));
 		}
-		
+
 		engine->process_packages();
 	}
-	
-	
-	
+
+
+
 	return 0;
 }
 
@@ -613,8 +613,8 @@ void WaveUnit::process_package(LoadPackage *package)
 	int x1, y1, x2, y2;
 	int x1_in, y1_in, x2_in, y2_in;
 	double phase = plugin->config.phase * M_PI / 180;
-	
-	
+
+
 	x1 = y1 = 0;
 	x2 = w;
 	y2 = h;

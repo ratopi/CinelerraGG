@@ -15,18 +15,18 @@ extern "C"
 #include "opencv2/core/core_c.h"
 
 
-int locatePlanarObject(const CvSeq* objectKeypoints, 
+int locatePlanarObject(const CvSeq* objectKeypoints,
 	const CvSeq* objectDescriptors,
-    const CvSeq* imageKeypoints, 
+    const CvSeq* imageKeypoints,
 	const CvSeq* imageDescriptors,
-    const CvPoint src_corners[4], 
+    const CvPoint src_corners[4],
 	CvPoint dst_corners[4],
 	int *(*point_pairs),
 	int (*total_pairs));
 
-void locate_points(const CvSeq* objectKeypoints, 
+void locate_points(const CvSeq* objectKeypoints,
 	const CvSeq* objectDescriptors,
-    const CvSeq* imageKeypoints, 
+    const CvSeq* imageKeypoints,
 	const CvSeq* imageDescriptors,
 	int *(*points),
 	int *(*sizes),

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcbutton.h"
@@ -34,8 +34,8 @@
 #include <unistd.h>
 
 
-BC_Button::BC_Button(int x, 
-	int y, 
+BC_Button::BC_Button(int x,
+	int y,
 	VFrame **data)
  : BC_SubWindow(x, y, 0, 0, -1)
 {
@@ -48,9 +48,9 @@ BC_Button::BC_Button(int x,
 	enabled = 1;
 }
 
-BC_Button::BC_Button(int x, 
-	int y, 
-	int w, 
+BC_Button::BC_Button(int x,
+	int y,
+	int w,
 	VFrame **data)
  : BC_SubWindow(x, y, 0, 0, -1)
 {
@@ -140,8 +140,8 @@ int BC_Button::set_images(VFrame **data)
 int BC_Button::draw_face(int flush)
 {
 	draw_top_background(parent_window, 0, 0, w, h);
-	pixmap->draw_pixmap(images[status], 
-			0, 
+	pixmap->draw_pixmap(images[status],
+			0,
 			0,
 			w,
 			h,
@@ -211,7 +211,7 @@ int BC_Button::button_release_event()
 	if(is_event_win())
 	{
 		hide_tooltip();
-		if(status == BUTTON_DOWNHI) 
+		if(status == BUTTON_DOWNHI)
 		{
 			status = BUTTON_UPHI;
 			draw_face();
@@ -228,9 +228,9 @@ int BC_Button::button_release_event()
 
 int BC_Button::cursor_motion_event()
 {
-	if(top_level->button_down && 
-		is_event_win() && 
-		status == BUTTON_DOWNHI && 
+	if(top_level->button_down &&
+		is_event_win() &&
+		status == BUTTON_DOWNHI &&
 		!cursor_inside())
 	{
 		status = BUTTON_UP;
@@ -255,22 +255,22 @@ int BC_Button::get_status()
 
 
 BC_OKButton::BC_OKButton(int x, int y)
- : BC_Button(x, y, 
+ : BC_Button(x, y,
  	BC_WindowBase::get_resources()->ok_images)
 {
 }
 
 BC_OKButton::BC_OKButton(BC_WindowBase *parent_window, VFrame **images)
- : BC_Button(10, 
- 	parent_window->get_h() - images[0]->get_h() - 10, 
+ : BC_Button(10,
+ 	parent_window->get_h() - images[0]->get_h() - 10,
  	images)
 {
 	set_tooltip(_("OK"));
 }
 
 BC_OKButton::BC_OKButton(BC_WindowBase *parent_window)
- : BC_Button(10, 
- 	parent_window->get_h() - BC_WindowBase::get_resources()->ok_images[0]->get_h() - 10, 
+ : BC_Button(10,
+ 	parent_window->get_h() - BC_WindowBase::get_resources()->ok_images[0]->get_h() - 10,
  	BC_WindowBase::get_resources()->ok_images)
 {
 	set_tooltip(_("OK"));
@@ -318,23 +318,23 @@ int BC_OKButton::calculate_w()
 
 
 BC_CancelButton::BC_CancelButton(int x, int y)
- : BC_Button(x, y, 
+ : BC_Button(x, y,
  	BC_WindowBase::get_resources()->cancel_images)
 {
 	set_tooltip(_("Cancel"));
 }
 
 BC_CancelButton::BC_CancelButton(BC_WindowBase *parent_window)
- : BC_Button(parent_window->get_w() - BC_WindowBase::get_resources()->cancel_images[0]->get_w() - 10, 
- 	parent_window->get_h() - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - 10, 
+ : BC_Button(parent_window->get_w() - BC_WindowBase::get_resources()->cancel_images[0]->get_w() - 10,
+ 	parent_window->get_h() - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - 10,
  	BC_WindowBase::get_resources()->cancel_images)
 {
 	set_tooltip(_("Cancel"));
 }
 
 BC_CancelButton::BC_CancelButton(BC_WindowBase *parent_window, VFrame **images)
- : BC_Button(parent_window->get_w() - images[0]->get_w() - 10, 
- 	parent_window->get_h() - images[0]->get_h() - 10, 
+ : BC_Button(parent_window->get_w() - images[0]->get_w() - 10,
+ 	parent_window->get_h() - images[0]->get_h() - 10,
  	images)
 {
 	set_tooltip(_("Cancel"));
@@ -348,7 +348,7 @@ int BC_CancelButton::handle_event()
 
 int BC_CancelButton::resize_event(int w,int h)
 {
-	reposition_window(w - BC_WindowBase::get_resources()->cancel_images[0]->get_w() - 10, 
+	reposition_window(w - BC_WindowBase::get_resources()->cancel_images[0]->get_w() - 10,
 	 	h - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - 10);
 	return 1;
 }
@@ -390,7 +390,7 @@ int BC_CancelButton::calculate_w()
 
 BC_GenericButton::BC_GenericButton(int x, int y,
 		const char *text, VFrame **data, int color)
- : BC_Button(x, y, 
+ : BC_Button(x, y,
 	data ? data : BC_WindowBase::get_resources()->generic_button_images)
 {
 	strcpy(this->text, text);
@@ -418,7 +418,7 @@ int BC_GenericButton::set_images(VFrame **data)
 	if(w_argument)
 		w = w_argument;
 	else
-		w = get_text_width(MEDIUMFONT, text) + 
+		w = get_text_width(MEDIUMFONT, text) +
 				resources->generic_button_margin * 2;
 
 
@@ -434,7 +434,7 @@ void BC_GenericButton::text_color(int color)
 int BC_GenericButton::calculate_w(BC_WindowBase *gui, const char *text)
 {
 	BC_Resources *resources = gui->get_resources();
-	return gui->get_text_width(MEDIUMFONT, text) + 
+	return gui->get_text_width(MEDIUMFONT, text) +
 				resources->generic_button_margin * 2;
 }
 
@@ -460,7 +460,7 @@ int BC_GenericButton::draw_face(int flush)
 
 	int x, y, w;
 	y = (int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2);
-	w = get_text_width(current_font, text, strlen(text)) + 
+	w = get_text_width(current_font, text, strlen(text)) +
 		resources->generic_button_margin * 2;
 	x = get_w() / 2 - w / 2 + resources->generic_button_margin;
 	if(status == BUTTON_DOWNHI) { x++; y++; }
@@ -469,9 +469,9 @@ int BC_GenericButton::draw_face(int flush)
 	if(underline_number >= 0)
 	{
 		y++;
-		int x1 = get_text_width(current_font, text, underline_number) + 
+		int x1 = get_text_width(current_font, text, underline_number) +
 			x;
-		int x2 = get_text_width(current_font, text, underline_number + 1) + 
+		int x2 = get_text_width(current_font, text, underline_number + 1) +
 			x;
 
 		draw_line(x1, y, x2, y);

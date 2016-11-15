@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 
@@ -31,9 +31,9 @@
 
 
 StatusBar::StatusBar(MWindow *mwindow, MWindowGUI *gui)
- : BC_SubWindow(mwindow->theme->mstatus_x, 
- 	mwindow->theme->mstatus_y, 
-	mwindow->theme->mstatus_w, 
+ : BC_SubWindow(mwindow->theme->mstatus_x,
+ 	mwindow->theme->mstatus_y,
+	mwindow->theme->mstatus_w,
 	mwindow->theme->mstatus_h)
 {
 	this->mwindow = mwindow;
@@ -52,24 +52,24 @@ void StatusBar::create_objects()
 	int x = 10; //int y = 5;
 //printf("StatusBar::create_objects 1\n");
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-	add_subwindow(status_text = new BC_Title(mwindow->theme->mstatus_message_x, 
-		mwindow->theme->mstatus_message_y, 
+	add_subwindow(status_text = new BC_Title(mwindow->theme->mstatus_message_x,
+		mwindow->theme->mstatus_message_y,
 		"",
 		MEDIUMFONT,
 		mwindow->theme->message_normal));
 	x = get_w() - 290;
-// printf("StatusBar::create_objects %d: 0x%08x\n", 
+// printf("StatusBar::create_objects %d: 0x%08x\n",
 // __LINE__, mwindow->theme->message_normal);
-	add_subwindow(main_progress = 
-		new BC_ProgressBar(mwindow->theme->mstatus_progress_x, 
-			mwindow->theme->mstatus_progress_y, 
-			mwindow->theme->mstatus_progress_w, 
+	add_subwindow(main_progress =
+		new BC_ProgressBar(mwindow->theme->mstatus_progress_x,
+			mwindow->theme->mstatus_progress_y,
+			mwindow->theme->mstatus_progress_w,
 			mwindow->theme->mstatus_progress_w));
 	x += main_progress->get_w() + 5;
 //printf("StatusBar::create_objects 1\n");
-	add_subwindow(main_progress_cancel = 
-		new StatusBarCancel(mwindow, 
-			mwindow->theme->mstatus_cancel_x, 
+	add_subwindow(main_progress_cancel =
+		new StatusBarCancel(mwindow,
+			mwindow->theme->mstatus_cancel_x,
 			mwindow->theme->mstatus_cancel_y));
 //printf("StatusBar::create_objects 1\n");
 	default_message();
@@ -89,15 +89,15 @@ void StatusBar::resize_event()
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 
 
-	status_text->reposition_window(mwindow->theme->mstatus_message_x, 
+	status_text->reposition_window(mwindow->theme->mstatus_message_x,
 		mwindow->theme->mstatus_message_y);
 
 	x = get_w() - 290;
-	main_progress->reposition_window(mwindow->theme->mstatus_progress_x, 
+	main_progress->reposition_window(mwindow->theme->mstatus_progress_x,
 		mwindow->theme->mstatus_progress_y);
 
 	x += main_progress->get_w() + 5;
-	main_progress_cancel->reposition_window(mwindow->theme->mstatus_cancel_x, 
+	main_progress_cancel->reposition_window(mwindow->theme->mstatus_cancel_x,
 		mwindow->theme->mstatus_cancel_y);
 
 	flash(0);

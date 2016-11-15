@@ -78,7 +78,7 @@ void VTracking::update_tracker(double position)
 
 int VTracking::start_playback(double new_position)
 {
-	
+
 	return Tracking::start_playback(new_position);
 }
 

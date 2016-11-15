@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -53,10 +53,10 @@ public:
 	OilConfig();
 	void copy_from(OilConfig &src);
 	int equivalent(OilConfig &src);
-	void interpolate(OilConfig &prev, 
-		OilConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(OilConfig &prev,
+		OilConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 	float radius;
 	int use_intensity;
@@ -135,7 +135,7 @@ class OilEffect : public PluginVClient
 public:
 	OilEffect(PluginServer *server);
 	~OilEffect();
-	
+
 	PLUGIN_CLASS_MEMBERS(OilConfig);
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
@@ -179,17 +179,17 @@ int OilConfig::equivalent(OilConfig &src)
 		this->use_intensity == src.use_intensity);
 }
 
-void OilConfig::interpolate(OilConfig &prev, 
-		OilConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+void OilConfig::interpolate(OilConfig &prev,
+		OilConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 	this->radius = prev.radius * prev_scale + next.radius * next_scale;
 	this->use_intensity = prev.use_intensity;
-// printf("OilConfig::interpolate prev_frame=%ld current_frame=%ld next_frame=%ld prev.radius=%f this->radius=%f next.radius=%f\n", 
+// printf("OilConfig::interpolate prev_frame=%ld current_frame=%ld next_frame=%ld prev.radius=%f this->radius=%f next.radius=%f\n",
 // 	prev_frame, current_frame, next_frame, prev.radius, this->radius, next.radius);
 }
 
@@ -205,12 +205,12 @@ void OilConfig::interpolate(OilConfig &prev,
 
 
 OilRadius::OilRadius(OilEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-	   	y, 
+ : BC_FSlider(x,
+	   	y,
 		0,
 		200,
-		200, 
-		(float)0, 
+		200,
+		(float)0,
 		(float)30,
 		plugin->config.radius)
 {
@@ -248,11 +248,11 @@ int OilIntensity::handle_event()
 
 
 OilWindow::OilWindow(OilEffect *plugin)
- : PluginClientWindow(plugin, 
-	300, 
-	160, 
-	300, 
-	160, 
+ : PluginClientWindow(plugin,
+	300,
+	160,
+	300,
+	160,
 	0)
 {
 	this->plugin = plugin;
@@ -269,7 +269,7 @@ void OilWindow::create_objects()
 	add_subwindow(radius = new OilRadius(plugin, x + 70, y));
 	y += 40;
 	add_subwindow(intensity = new OilIntensity(plugin, x, y));
-	
+
 	show_window();
 	flush();
 }
@@ -294,12 +294,12 @@ OilEffect::OilEffect(PluginServer *server)
 	temp_frame = 0;
 	need_reconfigure = 1;
 	engine = 0;
-	
+
 }
 
 OilEffect::~OilEffect()
 {
-	
+
 
 	if(temp_frame) delete temp_frame;
 	if(engine) delete engine;
@@ -392,18 +392,18 @@ int OilEffect::process_realtime(VFrame *input, VFrame *output)
 			temp_frame->copy_from(input);
 			this->input = temp_frame;
 		}
-		
-		
+
+
 		if(!engine)
 		{
 			engine = new OilServer(this, (PluginClient::smp + 1));
 		}
-		
+
 		engine->process_packages();
 	}
-	
-	
-	
+
+
+
 	return 0;
 }
 

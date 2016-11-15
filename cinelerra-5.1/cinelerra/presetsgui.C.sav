@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #if 0
@@ -103,14 +103,14 @@ void PresetsThread::start_window(Plugin *plugin)
 BC_Window* PresetsThread::new_gui()
 {
 	mwindow->gui->lock_window("PresetsThread::new_gui");
-	int x = mwindow->gui->get_abs_cursor_x(0) - 
+	int x = mwindow->gui->get_abs_cursor_x(0) -
 		mwindow->session->plugindialog_w / 2;
-	int y = mwindow->gui->get_abs_cursor_y(0) - 
+	int y = mwindow->gui->get_abs_cursor_y(0) -
 		mwindow->session->plugindialog_h / 2;
 
-	PresetsWindow *window = new PresetsWindow(mwindow, 
-		this, 
-		x, 
+	PresetsWindow *window = new PresetsWindow(mwindow,
+		this,
+		x,
 		y,
 		window_title);
 
@@ -137,7 +137,7 @@ void PresetsThread::save_preset(char *title)
 {
 	get_gui()->unlock_window();
 	mwindow->gui->lock_window("PresetsThread::save_preset");
-	
+
 // Test EDL for plugin existence
 	if(!mwindow->edl->tracks->plugin_exists(plugin))
 	{
@@ -151,7 +151,7 @@ void PresetsThread::save_preset(char *title)
 	EDL *edl = mwindow->edl;
 	Track *track = plugin->track;
 	KeyFrame *keyframe = plugin->get_prev_keyframe(
-			track->to_units(edl->local_session->get_selectionstart(1), 0), 
+			track->to_units(edl->local_session->get_selectionstart(1), 0),
 			PLAY_FORWARD);
 
 // Send to database
@@ -173,7 +173,7 @@ void PresetsThread::delete_preset(char *title)
 {
 	get_gui()->unlock_window();
 	mwindow->gui->lock_window("PresetsThread::save_preset");
-	
+
 // Test EDL for plugin existence
 	if(!mwindow->edl->tracks->plugin_exists(plugin))
 	{
@@ -183,7 +183,7 @@ void PresetsThread::delete_preset(char *title)
 	}
 
 	presets_db->delete_preset(plugin_title, title);
-	
+
 	mwindow->gui->unlock_window();
 	get_gui()->lock_window("PresetsThread::delete_preset 2");
 
@@ -216,7 +216,7 @@ void PresetsThread::apply_preset(char *title)
 		KeyFrame *keyframe = plugin->get_keyframe();
 		presets_db->load_preset(plugin_title, title, keyframe);
 		mwindow->save_backup();
-		mwindow->undo->update_undo_after(_("apply preset"), LOAD_AUTOMATION); 
+		mwindow->undo->update_undo_after(_("apply preset"), LOAD_AUTOMATION);
 
 		mwindow->update_plugin_guis();
 		mwindow->gui->canvas->draw_overlays();
@@ -236,11 +236,11 @@ PresetsList::PresetsList(PresetsThread *thread,
 	PresetsWindow *window,
 	int x,
 	int y,
-	int w, 
+	int w,
 	int h)
- : BC_ListBox(x, 
-		y, 
-		w, 
+ : BC_ListBox(x,
+		y,
+		w,
 		h,
 		LISTBOX_TEXT,
 		thread->data)
@@ -276,10 +276,10 @@ PresetsText::PresetsText(PresetsThread *thread,
 	int x,
 	int y,
 	int w)
- : BC_TextBox(x, 
-	y, 
-	w, 
-	1, 
+ : BC_TextBox(x,
+	y,
+	w,
+	1,
 	"")
 {
 	this->thread = thread;
@@ -383,7 +383,7 @@ int PresetsOK::keypress_event()
 	if(get_keypress() == RETURN)
 	{
 printf("PresetsOK::keypress_event %d\n", __LINE__);
-		if(thread->presets_db->preset_exists(thread->plugin_title, 
+		if(thread->presets_db->preset_exists(thread->plugin_title,
 			window->title_text->get_text()))
 		{
 printf("PresetsOK::keypress_event %d\n", __LINE__);
@@ -414,12 +414,12 @@ PresetsWindow::PresetsWindow(MWindow *mwindow,
 	int x,
 	int y,
 	char *title_string)
- : BC_Window(title_string, 
+ : BC_Window(title_string,
  	x,
 	y,
-	mwindow->session->presetdialog_w, 
-	mwindow->session->presetdialog_h, 
-	320, 
+	mwindow->session->presetdialog_w,
+	mwindow->session->presetdialog_h,
+	320,
 	240,
 	1,
 	0,
@@ -435,7 +435,7 @@ void PresetsWindow::create_objects()
 
 	lock_window("PresetsWindow::create_objects");
 	theme->get_presetdialog_sizes(this);
-	
+
 	add_subwindow(title1 = new BC_Title(theme->presets_list_x,
 		theme->presets_list_y - BC_Title::calculate_h(this, "P") - theme->widget_border,
 		_("Saved presets:")));
@@ -443,7 +443,7 @@ void PresetsWindow::create_objects()
 		this,
 		theme->presets_list_x,
 		theme->presets_list_y,
-		theme->presets_list_w, 
+		theme->presets_list_w,
 		theme->presets_list_h));
 	add_subwindow(title2 = new BC_Title(theme->presets_text_x,
 		theme->presets_text_y - BC_Title::calculate_h(this, "P") - theme->widget_border,
@@ -486,7 +486,7 @@ int PresetsWindow::resize_event(int w, int h)
 		theme->presets_text_y - BC_Title::calculate_h(this, "P") - theme->widget_border);
 	list->reposition_window(theme->presets_list_x,
 		theme->presets_list_y,
-		theme->presets_list_w, 
+		theme->presets_list_w,
 		theme->presets_list_h);
 	title_text->reposition_window(theme->presets_text_x,
 		theme->presets_text_y,

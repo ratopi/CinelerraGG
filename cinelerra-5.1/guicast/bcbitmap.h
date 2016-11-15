@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef __BCBITMAP_H__
@@ -196,7 +196,7 @@ public:
 
 // Shared memory is a problem in X because it's asynchronous and there's
 // no easy way to join with the blitting process.
-	BC_Bitmap(BC_WindowBase *parent_window, int w, int h, 
+	BC_Bitmap(BC_WindowBase *parent_window, int w, int h,
 		int color_model, int use_shm = 1);
 	virtual ~BC_Bitmap();
 
@@ -205,7 +205,7 @@ public:
 		int in_x, int in_y, int in_w, int in_h,
 		int out_x, int out_y, int out_w, int out_h);
 // x1, y1, x2, y2 dimensions of output area
-	int read_frame(VFrame *frame, 
+	int read_frame(VFrame *frame,
 		int x1, int y1, int x2, int y2);
 // Reset bitmap to match the new parameters
 	int match_params(int w, int h, int color_model, int use_shm);
@@ -216,10 +216,10 @@ public:
 // For YUV bitmaps, the image is scaled to fill dest_x ... w * dest_y ... h
 	int write_drawable(Drawable &pixmap, GC &gc,
 			int source_x, int source_y, int source_w, int source_h,
-			int dest_x, int dest_y, int dest_w, int dest_h, 
+			int dest_x, int dest_y, int dest_w, int dest_h,
 			int dont_wait);
 	int write_drawable(Drawable &pixmap, GC &gc,
-			int dest_x, int dest_y, int source_x, int source_y, 
+			int dest_x, int dest_y, int source_x, int source_y,
 			int dest_w, int dest_h, int dont_wait);
 // the bitmap must be wholly contained in the source during a GetImage
 	int read_drawable(Drawable &pixmap, int source_x, int source_y, VFrame *frame=0);
@@ -244,8 +244,8 @@ public:
 	int get_color_model() { return color_model; }
 	int hardware_scaling() {
 		return xv_portid < 0 ? 0 :
-			(get_color_model() == BC_YUV420P || 
-			get_color_model() == BC_YUV422P || 
+			(get_color_model() == BC_YUV420P ||
+			get_color_model() == BC_YUV422P ||
 			get_color_model() == BC_YUV422) ? 1 : 0;
 	}
 	int get_w() { return w; }

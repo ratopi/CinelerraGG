@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "../../guicast/bcwindowbase.inc"
@@ -134,9 +134,9 @@ int DVBTune::open_tuner()
 
 
 
-	if((frontend_fd = ::open(frontend_path, O_RDWR)) < 0) 
+	if((frontend_fd = ::open(frontend_path, O_RDWR)) < 0)
 	{
-		fprintf(stderr, 
+		fprintf(stderr,
 			"DVBTune::open_tuner %s: %s\n",
 			frontend_path,
 			strerror(errno));
@@ -147,7 +147,7 @@ int DVBTune::open_tuner()
 // Open transport stream for reading
 	if((dvr_fd = ::open(dvr_path, O_RDONLY)) < 0)
 	{
-		fprintf(stderr, 
+		fprintf(stderr,
 			"DVBTune::open_tuner %s: %s\n",
 			dvr_path,
 			strerror(errno));
@@ -175,7 +175,7 @@ int DVBTune::open_tuner()
 
 	if(ioctl(frontend_fd, FE_SET_FRONTEND, &frontend_param) < 0)
 	{
-		fprintf(stderr, 
+		fprintf(stderr,
 			"DVBTune::open_tuner FE_SET_FRONTEND frequency=%d: %s",
 			frontend_param.frequency,
 			strerror(errno));
@@ -204,8 +204,8 @@ int DVBTune::open_tuner()
 		pesfilter.flags = DMX_IMMEDIATE_START;
 		if(ioctl(video_fd, DMX_SET_PES_FILTER, &pesfilter) < 0)
 		{
-			fprintf(stderr, 
-				"DVBTune::open_tuner DMX_SET_PES_FILTER for raw: %s\n",	
+			fprintf(stderr,
+				"DVBTune::open_tuner DMX_SET_PES_FILTER for raw: %s\n",
 				strerror(errno));
 			return 1;
 		}
@@ -223,8 +223,8 @@ int DVBTune::open_tuner()
     	pesfilter.flags = DMX_IMMEDIATE_START;
 		if(ioctl(video_fd, DMX_SET_PES_FILTER, &pesfilter) < 0)
 		{
-			fprintf(stderr, 
-				"DVBTune::open_tuner DMX_SET_PES_FILTER for video: %s\n",	
+			fprintf(stderr,
+				"DVBTune::open_tuner DMX_SET_PES_FILTER for video: %s\n",
 				strerror(errno));
 			return 1;
 		}
@@ -248,8 +248,8 @@ int DVBTune::open_tuner()
     	pesfilter.flags = DMX_IMMEDIATE_START;
 		if(ioctl(audio_fd, DMX_SET_PES_FILTER, &pesfilter) < 0)
 		{
-			fprintf(stderr, 
-				"DVBTune::open_tuner DMX_SET_PES_FILTER for audio: %s\n",	
+			fprintf(stderr,
+				"DVBTune::open_tuner DMX_SET_PES_FILTER for audio: %s\n",
 				strerror(errno));
 			return 1;
 		}
@@ -287,7 +287,7 @@ int DVBTune::close_tuner()
 	if(video_fd >= 0) close(video_fd);
 	if(dvr_fd >= 0) close(dvr_fd);
 	reset();
-	
+
 	return 0;
 }
 
@@ -305,7 +305,7 @@ int DVBTune::get_signal_strength(int *current_power, int *current_lock)
 		*current_power = 0;
 		*current_lock = 0;
 	}
-	
+
 
 	return 0;
 }
@@ -394,7 +394,7 @@ void DVBTuneThread::run()
 // Store in server buffer.
 		{
 			server->buffer_lock->lock("DVBTuneThread::run");
-			if(!server->buffer || 
+			if(!server->buffer ||
 				server->buffer_allocated < server->buffer_size + result)
 			{
 				int new_allocation = server->buffer_size + result;

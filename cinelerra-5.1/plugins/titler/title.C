@@ -313,7 +313,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 
 		if (gindex == 0) {
 // carrige return
-			if (glyph->char_code != 10)  
+			if (glyph->char_code != 10)
 				printf(_("GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"),
 					glyph->char_code);
 // Prevent a crash here
@@ -327,7 +327,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 			glyph->data_stroke = 0;
 
 // create outline glyph
-			if (plugin->config.stroke_width >= ZERO && 
+			if (plugin->config.stroke_width >= ZERO &&
 				(plugin->config.style & BC_FONT_OUTLINE)) {
 				glyph->data_stroke = new VFrame(glyph->width, glyph->height, BC_A8, glyph->pitch);
 				glyph->data_stroke->clear_frame();
@@ -356,9 +356,9 @@ void GlyphUnit::process_package(LoadPackage *package)
 			glyph->bottom = (bbox.yMin + 31) >> 6;
 			glyph->freetype_index = gindex;
 			glyph->advance_x = ((freetype_face->glyph->advance.x + 31) >> 6);
-//printf("GlyphUnit::process_package 1 width=%d height=%d pitch=%d left=%d top=%d advance_x=%d freetype_index=%d\n", 
+//printf("GlyphUnit::process_package 1 width=%d height=%d pitch=%d left=%d top=%d advance_x=%d freetype_index=%d\n",
 //glyph->width, glyph->height, glyph->pitch, glyph->left, glyph->top, glyph->advance_x, glyph->freetype_index);
-	
+
 			glyph->data = new VFrame(glyph->width, glyph->height, BC_A8, glyph->pitch);
 			glyph->data->clear_frame();
 			bm.buffer = glyph->data->get_data();
@@ -376,7 +376,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 			FT_Outline outline;
 			FT_Bitmap bm;
 			FT_BBox bbox;
-			FT_UInt npoints, ncontours;	
+			FT_UInt npoints, ncontours;
 
 			FT_Load_Glyph(freetype_face, gindex, FT_LOAD_DEFAULT);
 			FT_Get_Glyph(freetype_face->glyph, &glyph_image);
@@ -394,7 +394,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 					new VFrame(glyph->width, glyph->height, BC_A8, glyph->pitch);
 				glyph->data_stroke =
 					new VFrame(glyph->width, glyph->height, BC_A8, glyph->pitch);
-				glyph->advance_x =((int)(freetype_face->glyph->advance.x + 
+				glyph->advance_x =((int)(freetype_face->glyph->advance.x +
 					plugin->config.stroke_width * 64)) >> 6;
 				return;
 			}
@@ -419,7 +419,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 					new VFrame(glyph->width, glyph->height, BC_A8, glyph->pitch);
 				glyph->data_stroke =
 					new VFrame(glyph->width, glyph->height, BC_A8, glyph->pitch);
-				glyph->advance_x =((int)(freetype_face->glyph->advance.x + 
+				glyph->advance_x =((int)(freetype_face->glyph->advance.x +
 					plugin->config.stroke_width * 64)) >> 6;
 				return;
 			};
@@ -437,7 +437,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 //					"Fill	Xmin: %ld, Xmax: %ld, Ymin: %ld, yMax: %ld\n",
 //					bbox.xMin,bbox.xMax, bbox.yMin, bbox.yMax,
 //					bbox_fill.xMin,bbox_fill.xMax, bbox_fill.yMin, bbox_fill.yMax);
-	
+
 			glyph->width = bm.width = ((bbox.xMax - bbox.xMin) >> 6)+1;
 			glyph->height = bm.rows = ((bbox.yMax - bbox.yMin) >> 6) +1;
 			glyph->pitch = bm.pitch = bm.width;
@@ -448,13 +448,13 @@ void GlyphUnit::process_package(LoadPackage *package)
 			glyph->right = (bbox.xMax + 31) >> 6;
 			glyph->bottom = (bbox.yMin + 31) >> 6;
 			glyph->freetype_index = gindex;
-			int real_advance = ((int)ceil((float)freetype_face->glyph->advance.x + 
+			int real_advance = ((int)ceil((float)freetype_face->glyph->advance.x +
 				plugin->config.stroke_width * 64) >> 6);
 			glyph->advance_x = glyph->width + glyph->left;
-			if (real_advance > glyph->advance_x) 
+			if (real_advance > glyph->advance_x)
 				glyph->advance_x = real_advance;
 //printf("GlyphUnit::process_package 1 width=%d height=%d "
-// "pitch=%d left=%d top=%d advance_x=%d freetype_index=%d\n", 
+// "pitch=%d left=%d top=%d advance_x=%d freetype_index=%d\n",
 // glyph->width, glyph->height, glyph->pitch, glyph->left,
 // glyph->top, glyph->advance_x, glyph->freetype_index);
 
@@ -468,7 +468,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 			bm.buffer=glyph->data->get_data();
 			FT_Outline_Get_Bitmap( freetype_library,
 				&((FT_OutlineGlyph) glyph_image)->outline,
-				&bm);	
+				&bm);
 			bm.buffer=glyph->data_stroke->get_data();
 			FT_Outline_Get_Bitmap( freetype_library,
            		&outline,
@@ -790,7 +790,7 @@ TitleOutlineEngine::TitleOutlineEngine(TitleMain *plugin, int cpus)
 void TitleOutlineEngine::init_packages()
 {
 	int mask_h = plugin->text_mask->get_h();
-	if( !mask_h ) return;	
+	if( !mask_h ) return;
 	int py1 = 0, py2 = 0;
 	int pkgs = get_total_packages();
 	for( int i=0; i<pkgs; py1=py2 ) {
@@ -799,7 +799,7 @@ void TitleOutlineEngine::init_packages()
 		pkg->y1 = py1;  pkg->y2 = py2;
 	}
 }
-		
+
 void TitleOutlineEngine::do_outline()
 {
 	pass = 0;  process_packages();
@@ -1393,7 +1393,7 @@ BC_FontEntry* TitleMain::get_font()
 		FL_WEIGHT_EXTRABOLD| FL_WEIGHT_BLACK | FL_WEIGHT_EXTRABLACK :
 		FL_WEIGHT_BOOK | FL_WEIGHT_NORMAL | FL_WEIGHT_MEDIUM |
 		FL_WEIGHT_LIGHT | FL_WEIGHT_EXTRALIGHT | FL_WEIGHT_THIN;
- 
+
 	pref = style & (FL_SLANT_ITALIC | FL_WEIGHT_BOLD | FL_WEIGHT_NORMAL);
 
 	mask = FL_WEIGHT_MASK | FL_SLANT_MASK;
@@ -2082,14 +2082,14 @@ int TitleMain::load_configuration()
 	// if no previous keyframe exists, it should be start of the plugin, not start of the track
 	if(config.next_keyframe_position == config.prev_keyframe_position)
 		config.next_keyframe_position = get_source_start() + get_total_len();
-	if (config.prev_keyframe_position == 0) 
+	if (config.prev_keyframe_position == 0)
 		config.prev_keyframe_position = get_source_start();
-// printf("TitleMain::load_configuration 10 %d %d\n", 
+// printf("TitleMain::load_configuration 10 %d %d\n",
 // config.prev_keyframe_position,
 // config.next_keyframe_position);
 
-	config.interpolate(prev_config, 
-		next_config, 
+	config.interpolate(prev_config,
+		next_config,
 		(next_keyframe->position == prev_keyframe->position) ?
 			get_source_position() :
 			prev_keyframe->position,

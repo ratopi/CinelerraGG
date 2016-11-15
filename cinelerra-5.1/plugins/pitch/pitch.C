@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -49,13 +49,13 @@ REGISTER_PLUGIN(PitchEffect);
 PitchEffect::PitchEffect(PluginServer *server)
  : PluginAClient(server)
 {
-	
+
 	reset();
 }
 
 PitchEffect::~PitchEffect()
 {
-	
+
 
 	if(fft) delete fft;
 }
@@ -129,7 +129,7 @@ void PitchEffect::update_gui()
 
 
 
-int PitchEffect::process_buffer(int64_t size, 
+int PitchEffect::process_buffer(int64_t size,
 		Samples *buffer,
 		int64_t start_position,
 		int sample_rate)
@@ -150,7 +150,7 @@ int PitchEffect::process_buffer(int64_t size,
 	}
 
 	fft->process_buffer(start_position,
-		size, 
+		size,
 		buffer,
 		get_direction());
 
@@ -208,13 +208,13 @@ int PitchFFT::signal_process()
 
 	memset(new_freq, 0, window_size * sizeof(double));
 	memset(new_magn, 0, window_size * sizeof(double));
-	
+
 // expected phase difference between windows
-	double expected_phase_diff = 2.0 * M_PI / oversample; 
+	double expected_phase_diff = 2.0 * M_PI / oversample;
 // frequency per bin
 	double freq_per_bin = (double)plugin->PluginAClient::project_sample_rate / window_size;
 
-	for (int i = 0; i < window_size / 2; i++) 
+	for (int i = 0; i < window_size / 2; i++)
 	{
 // Convert to magnitude and phase
 		double magn = sqrt(freq_real[i] * freq_real[i] + freq_imag[i] * freq_imag[i]);
@@ -230,13 +230,13 @@ int PitchFFT::signal_process()
 
 // wrap temp into -/+ PI ...  good trick!
 		int qpd = (int)(temp/M_PI);
-		if (qpd >= 0) 
+		if (qpd >= 0)
 			qpd += qpd & 1;
-		else 
+		else
 			qpd -= qpd & 1;
-		temp -= M_PI * (double)qpd;	
+		temp -= M_PI * (double)qpd;
 
-// Deviation from bin frequency	
+// Deviation from bin frequency
 		temp = oversample * temp / (2.0 * M_PI);
 
 		temp = (double)(temp + i) * freq_per_bin;
@@ -254,8 +254,8 @@ int PitchFFT::signal_process()
 
 
 
-// Synthesize back the fft window 
-	for (int i = 0; i < window_size / 2; i++) 
+// Synthesize back the fft window
+	for (int i = 0; i < window_size / 2; i++)
 	{
 		double magn = new_magn[i];
 		double temp = new_freq[i];
@@ -265,7 +265,7 @@ int PitchFFT::signal_process()
 // get bin deviation from freq deviation
 		temp /= freq_per_bin;
 
-// oversample 
+// oversample
 		temp = 2.0 * M_PI * temp / oversample;
 
 // add back the expected phase difference (that we substracted in analysis)
@@ -289,8 +289,8 @@ int PitchFFT::signal_process()
 
 
 #if 1
-	int min_freq = 
-		1 + (int)(20.0 / ((double)plugin->PluginAClient::project_sample_rate / 
+	int min_freq =
+		1 + (int)(20.0 / ((double)plugin->PluginAClient::project_sample_rate /
 			window_size * 2) + 0.5);
 	if(plugin->config.scale < 1)
 	{
@@ -337,8 +337,8 @@ int PitchFFT::signal_process()
 	return 0;
 }
 
-int PitchFFT::read_samples(int64_t output_sample, 
-	int samples, 
+int PitchFFT::read_samples(int64_t output_sample,
+	int samples,
 	Samples *buffer)
 {
 	return plugin->read_samples(buffer,
@@ -371,10 +371,10 @@ void PitchConfig::copy_from(PitchConfig &that)
 	size = that.size;
 }
 
-void PitchConfig::interpolate(PitchConfig &prev, 
-	PitchConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
+void PitchConfig::interpolate(PitchConfig &prev,
+	PitchConfig &next,
+	int64_t prev_frame,
+	int64_t next_frame,
 	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -400,10 +400,10 @@ void PitchConfig::interpolate(PitchConfig &prev,
 
 
 PitchWindow::PitchWindow(PitchEffect *plugin)
- : PluginClientWindow(plugin, 
-	150, 
-	100, 
-	150, 
+ : PluginClientWindow(plugin,
+	150,
+	100,
+	150,
 	100,
 	0)
 {
@@ -413,7 +413,7 @@ PitchWindow::PitchWindow(PitchEffect *plugin)
 void PitchWindow::create_objects()
 {
 	int x1 = 10, x = 10, y = 10;
-	
+
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Scale:")));
 	x += title->get_w() + plugin->get_theme()->widget_border;

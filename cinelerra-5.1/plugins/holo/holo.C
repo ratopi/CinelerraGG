@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -61,12 +61,12 @@ HoloMain::HoloMain(PluginServer *server)
 	bgimage = 0;
 	do_reconfigure = 1;
 	yuv = new YUV;
-	
+
 }
 
 HoloMain::~HoloMain()
 {
-	
+
 
 
 	if(effecttv)
@@ -195,8 +195,8 @@ total = 0;
 	{
 		case 0:
 /* step 1: grab frame-1 to buffer-1 */
-// 			tmp = new VFrame(0, 
-// 				input_ptr->get_w(), 
+// 			tmp = new VFrame(0,
+// 				input_ptr->get_w(),
 // 				input_ptr->get_h(),
 // 				project_color_model);
 			bgimage->copy_from(input_ptr);
@@ -247,10 +247,10 @@ int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		if(!effecttv)
 		{
 			effecttv = new EffectTV(input_ptr->get_w(), input_ptr->get_h());
-			bgimage = new VFrame(0, 
+			bgimage = new VFrame(0,
 				-1,
-				input_ptr->get_w(), 
-				input_ptr->get_h(), 
+				input_ptr->get_w(),
+				input_ptr->get_h(),
 				input_ptr->get_color_model(),
 				-1);
 
@@ -266,9 +266,9 @@ int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 
 	set_background();
-	
+
 	holo_server->process_packages();
-	
+
 	total++;
 	if(total >= config.recycle * project_frame_rate)
 		total = 0;
@@ -287,7 +287,7 @@ HoloServer::HoloServer(HoloMain *plugin, int total_clients, int total_packages)
 }
 
 
-LoadClient* HoloServer::new_client() 
+LoadClient* HoloServer::new_client()
 {
 	return new HoloClient(this);
 }
@@ -295,9 +295,9 @@ LoadClient* HoloServer::new_client()
 
 
 
-LoadPackage* HoloServer::new_package() 
-{ 
-	return new HoloPackage; 
+LoadPackage* HoloServer::new_package()
+{
+	return new HoloPackage;
 }
 
 
@@ -339,7 +339,7 @@ void HoloClient::process_package(LoadPackage *package)
 	uint32_t s, t;
 	int r, g, b;
 
-	diff = plugin->effecttv->image_diff_filter(plugin->effecttv->image_bgsubtract_y(input_rows, 
+	diff = plugin->effecttv->image_diff_filter(plugin->effecttv->image_bgsubtract_y(input_rows,
 		plugin->input_ptr->get_color_model()));
 
 	diff += width;

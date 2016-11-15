@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef DENOISEVIDEO_H
@@ -39,10 +39,10 @@ public:
 
 	int equivalent(DenoiseVideoConfig &that);
 	void copy_from(DenoiseVideoConfig &that);
-	void interpolate(DenoiseVideoConfig &prev, 
-		DenoiseVideoConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(DenoiseVideoConfig &prev,
+		DenoiseVideoConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
 
 	int frames;
@@ -66,9 +66,9 @@ public:
 class DenoiseVideoThreshold : public BC_TumbleTextBox
 {
 public:
-	DenoiseVideoThreshold(DenoiseVideo *plugin, 
+	DenoiseVideoThreshold(DenoiseVideo *plugin,
 		DenoiseVideoWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	DenoiseVideo *plugin;
@@ -77,10 +77,10 @@ public:
 class DenoiseVideoToggle : public BC_CheckBox
 {
 public:
-	DenoiseVideoToggle(DenoiseVideo *plugin, 
-		DenoiseVideoWindow *gui, 
-		int x, 
-		int y, 
+	DenoiseVideoToggle(DenoiseVideo *plugin,
+		DenoiseVideoWindow *gui,
+		int x,
+		int y,
 		int *output,
 		char *text);
 	int handle_event();
@@ -91,9 +91,9 @@ public:
 class DenoiseVideoCountChanged : public BC_Radial
 {
 public:
-	DenoiseVideoCountChanged(DenoiseVideo *plugin, 
-		DenoiseVideoWindow *gui, 
-		int x, 
+	DenoiseVideoCountChanged(DenoiseVideo *plugin,
+		DenoiseVideoWindow *gui,
+		int x,
 		int y);
 	int handle_event();
 	DenoiseVideo *plugin;
@@ -103,9 +103,9 @@ public:
 class DenoiseVideoCountSame : public BC_Radial
 {
 public:
-	DenoiseVideoCountSame(DenoiseVideo *plugin, 
-		DenoiseVideoWindow *gui, 
-		int x, 
+	DenoiseVideoCountSame(DenoiseVideo *plugin,
+		DenoiseVideoWindow *gui,
+		int x,
 		int y);
 	int handle_event();
 	DenoiseVideo *plugin;

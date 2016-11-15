@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "asset.h"
@@ -69,8 +69,8 @@ void ResizeVTrackThread::start_window(int w, int h, int w1, int h1)
 
 void ResizeVTrackThread::run()
 {
-	ResizeVTrackWindow *window = this->window = 
-		new ResizeVTrackWindow(mwindow, 
+	ResizeVTrackWindow *window = this->window =
+		new ResizeVTrackWindow(mwindow,
 			this,
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
@@ -85,8 +85,8 @@ void ResizeVTrackThread::run()
 		update();
 	}
 
-	if(((w % 4) || 
-		(h % 4)) && 
+	if(((w % 4) ||
+		(h % 4)) &&
 		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
 	{
 		MainError::show_error(
@@ -98,11 +98,11 @@ void ResizeVTrackThread::run()
 
 
 
-ResizeVTrackWindow::ResizeVTrackWindow(MWindow *mwindow, 
+ResizeVTrackWindow::ResizeVTrackWindow(MWindow *mwindow,
 	ResizeVTrackThread *thread,
 	int x,
 	int y)
- : BC_Window(_(PROGRAM_NAME ": Resize Track"), 
+ : BC_Window(_(PROGRAM_NAME ": Resize Track"),
 				x - 320 / 2, y - get_resources()->ok_images[0]->get_h() + 100 / 2,
 				400, get_resources()->ok_images[0]->get_h() + 100,
 				400, get_resources()->ok_images[0]->get_h() + 100,
@@ -154,8 +154,8 @@ void ResizeVTrackWindow::create_objects()
 	unlock_window();
 }
 
-void ResizeVTrackWindow::update(int changed_scale, 
-	int changed_size, 
+void ResizeVTrackWindow::update(int changed_scale,
+	int changed_size,
 	int changed_all)
 {
 //printf("ResizeVTrackWindow::update %d %d %d\n", changed_scale, changed_size, changed_all);
@@ -181,9 +181,9 @@ void ResizeVTrackWindow::update(int changed_scale,
 
 
 
-ResizeVTrackSwap::ResizeVTrackSwap(ResizeVTrackWindow *gui, 
-	ResizeVTrackThread *thread, 
-	int x, 
+ResizeVTrackSwap::ResizeVTrackSwap(ResizeVTrackWindow *gui,
+	ResizeVTrackThread *thread,
+	int x,
 	int y)
  : BC_Button(x, y, thread->mwindow->theme->get_image_set("swap_extents"))
 {
@@ -209,7 +209,7 @@ int ResizeVTrackSwap::handle_event()
 
 
 
-ResizeVTrackWidth::ResizeVTrackWidth(ResizeVTrackWindow *gui, 
+ResizeVTrackWidth::ResizeVTrackWidth(ResizeVTrackWindow *gui,
 	ResizeVTrackThread *thread,
 	int x,
 	int y)
@@ -225,7 +225,7 @@ int ResizeVTrackWidth::handle_event()
 	return 1;
 }
 
-ResizeVTrackHeight::ResizeVTrackHeight(ResizeVTrackWindow *gui, 
+ResizeVTrackHeight::ResizeVTrackHeight(ResizeVTrackWindow *gui,
 	ResizeVTrackThread *thread,
 	int x,
 	int y)
@@ -242,7 +242,7 @@ int ResizeVTrackHeight::handle_event()
 }
 
 
-ResizeVTrackScaleW::ResizeVTrackScaleW(ResizeVTrackWindow *gui, 
+ResizeVTrackScaleW::ResizeVTrackScaleW(ResizeVTrackWindow *gui,
 	ResizeVTrackThread *thread,
 	int x,
 	int y)
@@ -258,7 +258,7 @@ int ResizeVTrackScaleW::handle_event()
 	return 1;
 }
 
-ResizeVTrackScaleH::ResizeVTrackScaleH(ResizeVTrackWindow *gui, 
+ResizeVTrackScaleH::ResizeVTrackScaleH(ResizeVTrackWindow *gui,
 	ResizeVTrackThread *thread,
 	int x,
 	int y)

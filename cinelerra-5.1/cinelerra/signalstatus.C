@@ -16,12 +16,12 @@ SignalStatus::SignalStatus(BC_WindowBase *wdw, int x, int y)
 	dvb_input = 0;
 
 	channel_title = 0;
-	lck_x = lck_y = 0;  
-	crr_x = crr_y = 0;  
-	pwr_x = pwr_y = 0;  
-	snr_x = snr_y = 0;  
-	ber_x = ber_y = 0;  
-	unc_x = unc_y = 0;  
+	lck_x = lck_y = 0;
+	crr_x = crr_y = 0;
+	pwr_x = pwr_y = 0;
+	snr_x = snr_y = 0;
+	ber_x = ber_y = 0;
+	unc_x = unc_y = 0;
 }
 
 SignalStatus::~SignalStatus()

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "edl.h"
@@ -34,7 +34,7 @@ PluginAClient::PluginAClient(PluginServer *server)
 	sample_rate = 0;
 	if(server &&
 		server->edl &&
-		server->edl->session) 
+		server->edl->session)
 	{
 		project_sample_rate = server->edl->session->sample_rate;
 		sample_rate = project_sample_rate;
@@ -84,44 +84,44 @@ int PluginAClient::init_realtime_parameters()
 	return 0;
 }
 
-int PluginAClient::process_realtime(int64_t size, 
-	Samples **input_ptr, 
+int PluginAClient::process_realtime(int64_t size,
+	Samples **input_ptr,
 	Samples **output_ptr)
 {
 	return 0;
 }
 
-int PluginAClient::process_realtime(int64_t size, 
-	Samples *input_ptr, 
+int PluginAClient::process_realtime(int64_t size,
+	Samples *input_ptr,
 	Samples *output_ptr)
 {
 	return 0;
 }
 
-int PluginAClient::process_buffer(int64_t size, 
+int PluginAClient::process_buffer(int64_t size,
 	Samples **buffer,
 	int64_t start_position,
 	int sample_rate)
 {
 	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		read_samples(buffer[i], 
-			i, 
-			sample_rate, 
-			source_position, 
+		read_samples(buffer[i],
+			i,
+			sample_rate,
+			source_position,
 			size);
 	process_realtime(size, buffer, buffer);
 	return 0;
 }
 
-int PluginAClient::process_buffer(int64_t size, 
+int PluginAClient::process_buffer(int64_t size,
 	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
 {
-	read_samples(buffer, 
-		0, 
-		sample_rate, 
-		source_position, 
+	read_samples(buffer,
+		0,
+		sample_rate,
+		source_position,
 		size);
 	process_realtime(size, buffer, buffer);
 	return 0;
@@ -130,15 +130,15 @@ int PluginAClient::process_buffer(int64_t size,
 
 
 
-int PluginAClient::plugin_start_loop(int64_t start, 
-	int64_t end, 
-	int64_t buffer_size, 
+int PluginAClient::plugin_start_loop(int64_t start,
+	int64_t end,
+	int64_t buffer_size,
 	int total_buffers)
 {
 	sample_rate = get_project_samplerate();
-	return PluginClient::plugin_start_loop(start, 
-		end, 
-		buffer_size, 
+	return PluginClient::plugin_start_loop(start,
+		end,
+		buffer_size,
 		total_buffers);
 }
 
@@ -177,24 +177,24 @@ int PluginAClient::plugin_process_loop(Samples **buffers, int64_t &write_length)
 		return process_loop(buffers[0], write_length);
 }
 
-int PluginAClient::read_samples(Samples *buffer, 
-	int channel, 
-	int64_t start_position, 
+int PluginAClient::read_samples(Samples *buffer,
+	int channel,
+	int64_t start_position,
 	int64_t total_samples)
 {
-	return server->read_samples(buffer, 
-		channel, 
-		start_position, 
+	return server->read_samples(buffer,
+		channel,
+		start_position,
 		total_samples);
 }
 
-int PluginAClient::read_samples(Samples *buffer, 
-	int64_t start_position, 
+int PluginAClient::read_samples(Samples *buffer,
+	int64_t start_position,
 	int64_t total_samples)
 {
-	return server->read_samples(buffer, 
-		0, 
-		start_position, 
+	return server->read_samples(buffer,
+		0,
+		start_position,
 		total_samples);
 }
 

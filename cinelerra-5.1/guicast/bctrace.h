@@ -131,7 +131,7 @@ public:
 		this->loc = loc;  this->is_owner = 0;
 		this->id = table_id++;  this->tid = pthread_self();
 	}
-	void clear() { 
+	void clear() {
 		this->info = 0;  this->title = 0; this->loc = 0;
 		this->is_owner = 0;  this->id = -1;  this->tid = 0;
 	}

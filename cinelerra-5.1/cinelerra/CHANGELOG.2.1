@@ -34,8 +34,8 @@ instead of just size. Motion tracking takes the previous keyframe's x
 and y instead of interpolating them.
 
 Channel mapping for the AC3/A52 decoder is fixed for 5.1 channels.
-Liba52 outputs LFE, FL, C, FR, BL, BR but every other library expects 
-C, FL, FR, BL, BR, LFE, which caused errors when the BR channel from 
+Liba52 outputs LFE, FL, C, FR, BL, BR but every other library expects
+C, FL, FR, BL, BR, LFE, which caused errors when the BR channel from
 liba52 was encoded straight through as LFE.
 
 2 presets for audio mixing positions.  Map each track to a different
@@ -67,7 +67,7 @@ curve keyframe is in the highlighted area.
 
 W and H may be swapped by a single button in the project settings.
 
-Entire GOP's from compressed MPEG-4, H.264, and MPEG-2 video are 
+Entire GOP's from compressed MPEG-4, H.264, and MPEG-2 video are
 cached during seeking, allowing faster reverse playback.
 
 Plugin dialog has a single OK button instead of 3 attach buttons.
@@ -90,10 +90,10 @@ Limited DVD subtitle support.  Requires starting playback before the
 subtitle appears.  The number of subtitle tracks are given in the asset
 info dialog for MPEG video files.
 
-Full OpenGL support during playback for compositing and effects. 
+Full OpenGL support during playback for compositing and effects.
  - Some effects can't be useful and software isn't catching up to hardware.
  - Requires OpenGL 2.0 drivers which only NVidia supports currently.
- - Selected effects have been OpenGL enabled but most have not.  
+ - Selected effects have been OpenGL enabled but most have not.
  - OpenGL allows higher video resolution than Xv can handle.
  - OpenGL enabled effects must be placed after software-only effects to get the hardware
 acceleration.
@@ -108,7 +108,7 @@ and fix that.
  	- Interpolate Pixels->Linearize->Color Balance->Histogram
 	- Frames to Fields->RGB601
  - Multichannel effects should set discarded outputs to TEXTURE.
- - PBuffers are unreliable.  It may take advancing 2 frames or restarting for 
+ - PBuffers are unreliable.  It may take advancing 2 frames or restarting for
  	an OpenGL operation to take effect.
 
 The following effects support OpenGL:

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -80,10 +80,10 @@ void SwapConfig::copy_from(SwapConfig &that)
 
 SwapWindow::SwapWindow(SwapMain *plugin)
  : PluginClientWindow(plugin,
-	250, 
-	170, 
-	250, 
-	170, 
+	250,
+	170,
+	250,
+	170,
 	0)
 {
 	this->plugin = plugin;
@@ -93,7 +93,7 @@ SwapWindow::~SwapWindow()
 {
 }
 
-	
+
 void SwapWindow::create_objects()
 {
 	int x = 10, y = 10;
@@ -192,13 +192,13 @@ SwapMain::SwapMain(PluginServer *server)
  : PluginVClient(server)
 {
 	reset();
-	
+
 }
 
 SwapMain::~SwapMain()
 {
-	
-	
+
+
 //	if(temp) delete temp;
 }
 
@@ -261,7 +261,7 @@ void SwapMain::read_data(KeyFrame *keyframe)
 
 void SwapMain::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		load_configuration();
 		thread->window->lock_window();
@@ -278,7 +278,7 @@ int SwapMain::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 	prev_keyframe = get_prev_keyframe(get_source_position());
-	
+
  	read_data(prev_keyframe);
 	return 1;
 }
@@ -371,9 +371,9 @@ int SwapMain::process_buffer(VFrame *frame,
 {
 	load_configuration();
 
-	read_frame(frame, 
-		0, 
-		start_position, 
+	read_frame(frame,
+		0,
+		start_position,
 		frame_rate,
 		get_use_opengl());
 
@@ -386,8 +386,8 @@ int SwapMain::process_buffer(VFrame *frame,
 	}
 
 
-	temp = new_temp(frame->get_w(), 
-		frame->get_h(), 
+	temp = new_temp(frame->get_w(),
+		frame->get_h(),
 		frame->get_color_model());
 
 	switch(frame->get_color_model())
@@ -411,8 +411,8 @@ int SwapMain::process_buffer(VFrame *frame,
 			SWAP_CHANNELS(unsigned char, 0x80, 0xff, 4);
 			break;
 	}
-	
-	
+
+
 	return 0;
 }
 
@@ -461,7 +461,7 @@ int SwapMain::handle_opengl()
 #ifdef HAVE_GL
 
 	char output_frag[BCTEXTLEN];
-	sprintf(output_frag, 
+	sprintf(output_frag,
 		"uniform sampler2D tex;\n"
 		"uniform float chroma_offset;\n"
 		"void main()\n"
@@ -487,7 +487,7 @@ int SwapMain::handle_opengl()
 	COLOR_SWITCH(config.blue, "b");
 	COLOR_SWITCH(config.alpha, "a");
 
-	strcat(output_frag, 
+	strcat(output_frag,
 		"	gl_FragColor = out_color;\n"
 		"}\n");
 
@@ -502,7 +502,7 @@ int SwapMain::handle_opengl()
 		0);
 	glUseProgram(shader_id);
 	glUniform1i(glGetUniformLocation(shader_id, "tex"), 0);
-	glUniform1f(glGetUniformLocation(shader_id, "chroma_offset"), 
+	glUniform1f(glGetUniformLocation(shader_id, "chroma_offset"),
 		BC_CModels::is_yuv(get_output()->get_color_model()) ? 0.5 : 0.0);
 
 	get_output()->draw_texture();

@@ -214,9 +214,9 @@ VFrame** BC_Theme::get_image_set(const char *title, int use_default)
 
 
 
-VFrame** BC_Theme::new_button(const char *overlay_path, 
-	const char *up_path, 
-	const char *hi_path, 
+VFrame** BC_Theme::new_button(const char *overlay_path,
+	const char *up_path,
+	const char *hi_path,
 	const char *dn_path,
 	const char *title)
 {
@@ -235,9 +235,9 @@ VFrame** BC_Theme::new_button(const char *overlay_path,
 }
 
 
-VFrame** BC_Theme::new_button4(const char *overlay_path, 
-	const char *up_path, 
-	const char *hi_path, 
+VFrame** BC_Theme::new_button4(const char *overlay_path,
+	const char *up_path,
+	const char *hi_path,
 	const char *dn_path,
 	const char *disabled_path,
 	const char *title)
@@ -258,7 +258,7 @@ VFrame** BC_Theme::new_button4(const char *overlay_path,
 }
 
 
-VFrame** BC_Theme::new_button(const char *overlay_path, 
+VFrame** BC_Theme::new_button(const char *overlay_path,
 	VFrame *up,
 	VFrame *hi,
 	VFrame *dn,
@@ -277,7 +277,7 @@ VFrame** BC_Theme::new_button(const char *overlay_path,
 }
 
 
-VFrame** BC_Theme::new_toggle(const char *overlay_path, 
+VFrame** BC_Theme::new_toggle(const char *overlay_path,
 	const char *up_path,
 	const char *hi_path,
 	const char *checked_path,
@@ -299,7 +299,7 @@ VFrame** BC_Theme::new_toggle(const char *overlay_path,
 	return result->data;
 }
 
-VFrame** BC_Theme::new_toggle(const char *overlay_path, 
+VFrame** BC_Theme::new_toggle(const char *overlay_path,
 	VFrame *up,
 	VFrame *hi,
 	VFrame *checked,

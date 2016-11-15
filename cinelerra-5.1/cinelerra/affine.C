@@ -875,7 +875,7 @@ void AffineUnit::process_package(LoadPackage *package)
 
 	for(int y = ty1; y < ty2; y++)
 	{
-//printf("AffineUnit::process_package %d y=%d tx1=%d tx2=%d ty1=%d ty2=%d\n", 
+//printf("AffineUnit::process_package %d y=%d tx1=%d tx2=%d ty1=%d ty2=%d\n",
 //__LINE__, y, tx1, tx2, ty1, ty2);
 		unsigned char *out_row = (unsigned char*)server->output->get_rows()[y];
 

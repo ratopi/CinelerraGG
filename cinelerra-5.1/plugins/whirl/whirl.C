@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -51,15 +51,15 @@ class WhirlConfig
 {
 public:
 	WhirlConfig();
-	
+
 	void copy_from(WhirlConfig &src);
 	int equivalent(WhirlConfig &src);
-	void interpolate(WhirlConfig &prev, 
-		WhirlConfig &next, 
-		long prev_frame, 
-		long next_frame, 
+	void interpolate(WhirlConfig &prev,
+		WhirlConfig &next,
+		long prev_frame,
+		long next_frame,
 		long current_frame);
-	
+
 	float angle;
 	float pinch;
 	float radius;
@@ -123,7 +123,7 @@ public:
 	void process_package(LoadPackage *package);
 	WhirlEngine *server;
 	WhirlEffect *plugin;
-	
+
 };
 
 
@@ -201,10 +201,10 @@ int WhirlConfig::equivalent(WhirlConfig &src)
 		EQUIV(this->radius, src.radius);
 }
 
-void WhirlConfig::interpolate(WhirlConfig &prev, 
-	WhirlConfig &next, 
-	long prev_frame, 
-	long next_frame, 
+void WhirlConfig::interpolate(WhirlConfig &prev,
+	WhirlConfig &next,
+	long prev_frame,
+	long next_frame,
 	long current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -225,11 +225,11 @@ void WhirlConfig::interpolate(WhirlConfig &prev,
 
 
 WhirlWindow::WhirlWindow(WhirlEffect *plugin)
- : PluginClientWindow(plugin, 
-	220, 
-	200, 
-	220, 
-	200, 
+ : PluginClientWindow(plugin,
+	220,
+	200,
+	220,
+	200,
 	0)
 {
 	this->plugin = plugin;
@@ -270,12 +270,12 @@ void WhirlWindow::create_objects()
 
 
 WhirlAngle::WhirlAngle(WhirlEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-	   	y, 
+ : BC_FSlider(x,
+	   	y,
 		0,
 		200,
-		200, 
-		(float)0, 
+		200,
+		(float)0,
 		(float)360,
 		plugin->config.angle)
 {
@@ -292,13 +292,13 @@ int WhirlAngle::handle_event()
 
 
 WhirlPinch::WhirlPinch(WhirlEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-	   	y, 
+ : BC_FSlider(x,
+	   	y,
 		0,
 		200,
-		200, 
-		(float)0, 
-		(float)MAXPINCH, 
+		200,
+		(float)0,
+		(float)MAXPINCH,
 		plugin->config.pinch)
 {
 	this->plugin = plugin;
@@ -314,13 +314,13 @@ int WhirlPinch::handle_event()
 
 
 WhirlRadius::WhirlRadius(WhirlEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-	   	y, 
+ : BC_FSlider(x,
+	   	y,
 		0,
 		200,
-		200, 
-		(float)0, 
-		(float)MAXRADIUS, 
+		200,
+		(float)0,
+		(float)MAXRADIUS,
 		plugin->config.radius)
 {
 	this->plugin = plugin;
@@ -348,12 +348,12 @@ WhirlEffect::WhirlEffect(PluginServer *server)
 	need_reconfigure = 1;
 	engine = 0;
 	temp_frame = 0;
-	
+
 }
 
 WhirlEffect::~WhirlEffect()
 {
-	
+
 	if(engine) delete engine;
 	if(temp_frame) delete temp_frame;
 }
@@ -438,7 +438,7 @@ int WhirlEffect::process_realtime(VFrame *input, VFrame *output)
 	this->input = input;
 	this->output = output;
 
-	if(EQUIV(config.angle, 0) || 
+	if(EQUIV(config.angle, 0) ||
 		(EQUIV(config.radius, 0) && EQUIV(config.pinch, 0)))
 	{
 		if(input->get_rows()[0] != output->get_rows()[0])
@@ -751,7 +751,7 @@ void WhirlUnit::process_package(LoadPackage *package)
 	double scale_y;
 
 
-//printf("WhirlUnit::process_package 1 %f %f %f\n", 
+//printf("WhirlUnit::process_package 1 %f %f %f\n",
 //	plugin->config.angle, plugin->config.pinch, plugin->config.radius);
 	if(w < h)
 	{
@@ -796,7 +796,7 @@ void WhirlUnit::process_package(LoadPackage *package)
 		case BC_YUVA16161616:
 			WHIRL_MACRO(uint16_t, 0xffff, 4);
 			break;
-		
+
 	}
 }
 
@@ -820,7 +820,7 @@ void WhirlEngine::init_packages()
 		pkg->row1 = plugin->input->get_h() * i / LoadServer::get_total_packages();
 		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::get_total_packages();
 	}
-	
+
 }
 
 LoadClient* WhirlEngine::new_client()

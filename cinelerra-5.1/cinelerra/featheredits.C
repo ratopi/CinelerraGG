@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "featheredits.h"
@@ -33,10 +33,10 @@
 
 FeatherEdits::FeatherEdits(MWindow *mwindow, int audio, int video)
  : BC_MenuItem(_("Feather Edits...")), Thread()
-{ 
-	this->mwindow = mwindow; 
-	this->audio = audio; 
-	this->video = video; 
+{
+	this->mwindow = mwindow;
+	this->audio = audio;
+	this->video = video;
 }
 
 int FeatherEdits::handle_event()
@@ -65,7 +65,7 @@ void FeatherEdits::run()
 	{
 		mwindow->gui->lock_window();
 //		mwindow->undo->update_undo_edits(_("Feather"), 0);
-		
+
 		mwindow->feather_edits(feather_samples, audio, video);
 
 //		mwindow->undo->update_undo_edits();
@@ -75,10 +75,10 @@ void FeatherEdits::run()
 
 
 FeatherEditsWindow::FeatherEditsWindow(MWindow *mwindow, long feather_samples)
- : BC_Window(_(PROGRAM_NAME ": Feather Edits"), 
- 	mwindow->gui->get_abs_cursor_x(), 
-	mwindow->gui->get_abs_cursor_y(), 
-	340, 
+ : BC_Window(_(PROGRAM_NAME ": Feather Edits"),
+ 	mwindow->gui->get_abs_cursor_x(),
+	mwindow->gui->get_abs_cursor_y(),
+	340,
 	140)
 {
 	this->feather_samples = feather_samples;

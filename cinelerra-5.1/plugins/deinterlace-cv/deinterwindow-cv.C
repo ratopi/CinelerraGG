@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -27,13 +27,13 @@
 
 DeInterlaceWindow::DeInterlaceWindow(DeInterlaceMain *client)
  : PluginClientWindow(client,
-	400, 
-	200, 
-	400, 
-	200, 
+	400,
+	200,
+	400,
+	200,
 	0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 	adaptive=0; dominance_top=0; dominance_bottom=0; threshold=0;
 
 }
@@ -70,7 +70,7 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 {
 	int x,y;
 	client->config.mode = mode;
-	
+
 /* Restore position of controls */
 	x=optional_controls_x;
 	y=optional_controls_y;
@@ -80,7 +80,7 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 	if (dominance_bottom) { delete dominance_bottom; dominance_bottom=0; }
 
 /* Display Dominance controls */
-	switch (mode) 
+	switch (mode)
 	{
 		case DEINTERLACE_KEEP:
 		case DEINTERLACE_BOBWEAVE:
@@ -89,7 +89,7 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 			add_subwindow(dominance_bottom = new DeInterlaceDominanceBottom(client, this, x, y, _("Keep bottom field")));
 			y+=25;
 			break;
-		case DEINTERLACE_AVG_1F: 
+		case DEINTERLACE_AVG_1F:
 			add_subwindow(dominance_top = new DeInterlaceDominanceTop(client, this, x, y, _("Average top fields")));
 			y+=25;
 			add_subwindow(dominance_bottom = new DeInterlaceDominanceBottom(client, this, x, y,_("Average bottom fields")));
@@ -117,7 +117,7 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 		dominance_top->update(client->config.dominance?0:BC_Toggle::TOGGLE_CHECKED);
 		dominance_bottom->update(client->config.dominance?BC_Toggle::TOGGLE_CHECKED:0);
 	}
-	
+
 /* Display Threshold and adaptive controls */
 	switch (mode) {
 		case  DEINTERLACE_AVG_1F:
@@ -139,7 +139,7 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 		default:
 
 		break;
-	}	
+	}
 
 
 	if(!recursive)
@@ -148,11 +148,11 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 }
 
 
-DeInterlaceOption::DeInterlaceOption(DeInterlaceMain *client, 
-		DeInterlaceWindow *window, 
-		int output, 
-		int x, 
-		int y, 
+DeInterlaceOption::DeInterlaceOption(DeInterlaceMain *client,
+		DeInterlaceWindow *window,
+		int output,
+		int x,
+		int y,
 		char *text)
  : BC_Radial(x, y, client->config.mode == output, text)
 {
@@ -233,9 +233,9 @@ DeInterlaceThreshold::~DeInterlaceThreshold()
   if (title_caption) delete title_caption;
 }
 
-DeInterlaceMode::DeInterlaceMode(DeInterlaceMain*plugin, 
-	DeInterlaceWindow *gui, 
-	int x, 
+DeInterlaceMode::DeInterlaceMode(DeInterlaceMain*plugin,
+	DeInterlaceWindow *gui,
+	int x,
 	int y)
  : BC_PopupMenu(x, y, 200, to_text(plugin->config.mode), 1)
 {
@@ -275,17 +275,17 @@ char* DeInterlaceMode::to_text(int mode)
 }
 int DeInterlaceMode::from_text(char *text)
 {
-	if(!strcmp(text, to_text(DEINTERLACE_KEEP))) 
+	if(!strcmp(text, to_text(DEINTERLACE_KEEP)))
 		return DEINTERLACE_KEEP;
-	if(!strcmp(text, to_text(DEINTERLACE_AVG))) 
+	if(!strcmp(text, to_text(DEINTERLACE_AVG)))
 		return DEINTERLACE_AVG;
-	if(!strcmp(text, to_text(DEINTERLACE_AVG_1F))) 
+	if(!strcmp(text, to_text(DEINTERLACE_AVG_1F)))
 		return DEINTERLACE_AVG_1F;
-	if(!strcmp(text, to_text(DEINTERLACE_BOBWEAVE))) 
+	if(!strcmp(text, to_text(DEINTERLACE_BOBWEAVE)))
 		return DEINTERLACE_BOBWEAVE;
-	if(!strcmp(text, to_text(DEINTERLACE_SWAP))) 
+	if(!strcmp(text, to_text(DEINTERLACE_SWAP)))
 		return DEINTERLACE_SWAP;
-	if(!strcmp(text, to_text(DEINTERLACE_TEMPORALSWAP))) 
+	if(!strcmp(text, to_text(DEINTERLACE_TEMPORALSWAP)))
 		return DEINTERLACE_TEMPORALSWAP;
 	return DEINTERLACE_NONE;
 }

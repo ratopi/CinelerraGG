@@ -1,21 +1,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef SCOPEWINDOW_H
@@ -31,7 +31,7 @@
 #include "theme.inc"
 
 
-// Number of divisions in histogram.  
+// Number of divisions in histogram.
 // 65536 + min and max range to speed up the tabulation
 #define TOTAL_BINS 0x13333
 #define HIST_SECTIONS 4
@@ -63,11 +63,11 @@ class ScopeUnit : public LoadClient
 {
 public:
 	ScopeUnit(ScopeGUI *gui, ScopeEngine *server);
-	void draw_point(unsigned char **rows, 
-		int x, 
-		int y, 
-		int r, 
-		int g, 
+	void draw_point(unsigned char **rows,
+		int x,
+		int y,
+		int r,
+		int g,
 		int b);
 	void process_package(LoadPackage *package);
 	int bins[HIST_SECTIONS][TOTAL_BINS];
@@ -89,8 +89,8 @@ public:
 class ScopePanel : public BC_SubWindow
 {
 public:
-	ScopePanel(ScopeGUI *gui, 
-		int x, 
+	ScopePanel(ScopeGUI *gui,
+		int x,
 		int y,
 		int w,
 		int h);
@@ -108,8 +108,8 @@ public:
 class ScopeWaveform : public ScopePanel
 {
 public:
-	ScopeWaveform(ScopeGUI *gui, 
-		int x, 
+	ScopeWaveform(ScopeGUI *gui,
+		int x,
 		int y,
 		int w,
 		int h);
@@ -124,8 +124,8 @@ public:
 class ScopeVectorscope : public ScopePanel
 {
 public:
-	ScopeVectorscope(ScopeGUI *gui, 
-		int x, 
+	ScopeVectorscope(ScopeGUI *gui,
+		int x,
 		int y,
 		int w,
 		int h);
@@ -139,8 +139,8 @@ public:
 class ScopeHistogram : public ScopePanel
 {
 public:
-	ScopeHistogram(ScopeGUI *gui, 
-		int x, 
+	ScopeHistogram(ScopeGUI *gui,
+		int x,
 		int y,
 		int w,
 		int h);
@@ -156,7 +156,7 @@ class ScopeToggle : public BC_Toggle
 {
 public:
 	ScopeToggle(ScopeGUI *gui,
-		int x, 
+		int x,
 		int y,
 		int *value);
 	static VFrame** get_image_set(ScopeGUI *gui, int *value);
@@ -175,7 +175,7 @@ public:
 		int w,
 		int h,
 		int cpus);
-	ScopeGUI(PluginClient *plugin, 
+	ScopeGUI(PluginClient *plugin,
 		int w,
 		int h);
 	virtual ~ScopeGUI();
@@ -222,7 +222,7 @@ public:
 	int cpus;
 	int use_hist, use_wave, use_vector;
 	int use_hist_parade, use_wave_parade;
-	
+
 	int bins[HIST_SECTIONS][TOTAL_BINS];
 	int frame_w;
 };

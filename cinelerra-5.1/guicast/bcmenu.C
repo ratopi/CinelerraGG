@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcmenu.h"
@@ -45,16 +45,16 @@ BC_Menu::~BC_Menu()
 	delete menu_popup;
 }
 
-int BC_Menu::initialize(BC_WindowBase *top_level, 
-		BC_MenuBar *menu_bar, 
-		int x, 
-		int y, 
-		int w, 
+int BC_Menu::initialize(BC_WindowBase *top_level,
+		BC_MenuBar *menu_bar,
+		int x,
+		int y,
+		int w,
 		int h)
 {
-	this->x = x; 
-	this->y = y; 
-	this->w = w; 
+	this->x = x;
+	this->y = y;
+	this->w = w;
 	this->h = h;
 	this->menu_bar = menu_bar;
 	this->top_level = top_level;
@@ -151,7 +151,7 @@ int BC_Menu::dispatch_motion_event()
 
 	if(!result && top_level->match_window(top_level->event_win))
 	{
-		top_level->translate_coordinates(top_level->event_win, 
+		top_level->translate_coordinates(top_level->event_win,
 			menu_bar->win,
 			top_level->cursor_x,
 			top_level->cursor_y,
@@ -220,13 +220,13 @@ int BC_Menu::activate_menu()
 	int new_x, new_y;
 	if(menu_bar)
 	{
-		XTranslateCoordinates(top_level->display, 
-			menu_bar->win, 
-			top_level->rootwin, 
-			x, 
-			y, 
-			&new_x, 
-			&new_y, 
+		XTranslateCoordinates(top_level->display,
+			menu_bar->win,
+			top_level->rootwin,
+			x,
+			y,
+			&new_x,
+			&new_y,
 			&tempwin);
 		menu_popup->activate_menu(new_x, new_y, w, h, 0, 1);
 	}
@@ -266,9 +266,9 @@ int BC_Menu::draw_title(int flash, int flush)
 		}
 		else
 		{
-			menu_bar->draw_3d_box(x, y, w, h, 
-				resources->menu_shadow, 
-				BLACK, 
+			menu_bar->draw_3d_box(x, y, w, h,
+				resources->menu_shadow,
+				BLACK,
 				resources->menu_down,
 				resources->menu_down,
 				resources->menu_light);
@@ -309,8 +309,8 @@ int BC_Menu::draw_title(int flash, int flush)
 
 	menu_bar->set_color(resources->menu_title_text);
 	menu_bar->set_font(MEDIUMFONT);
-	menu_bar->draw_text(x + 10 + text_offset, 
-		h / 2 + menu_bar->get_text_ascent(MEDIUMFONT) / 2 + 1 + text_offset, 
+	menu_bar->draw_text(x + 10 + text_offset,
+		h / 2 + menu_bar->get_text_ascent(MEDIUMFONT) / 2 + 1 + text_offset,
 		text);
 	if(flash) menu_bar->flash(flush);
 

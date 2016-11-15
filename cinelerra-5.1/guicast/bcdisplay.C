@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcclipboard.h"
@@ -53,7 +53,7 @@ BC_Display::BC_Display(const char *display_name)
 	if(display_name && display_name[0] == 0) display_name = NULL;
 	if((display = XOpenDisplay(display_name)) == NULL)
 	{
-  		printf("BC_Display::BC_Display: cannot connect to X server %s\n", 
+  		printf("BC_Display::BC_Display: cannot connect to X server %s\n",
 			display_name);
   		if(getenv("DISPLAY") == NULL)
     	{
@@ -80,7 +80,7 @@ BC_Display::BC_Display(const char *display_name)
 
 // Start event handling
 	event_thread = new BC_WindowEvents(this);
-	event_thread->start();	
+	event_thread->start();
 
 
 	event_lock = new Mutex("BC_Display::event_lock", 1);
@@ -116,8 +116,8 @@ void BC_Display::dump_windows()
 {
 	for(int i = 0; i < windows.size(); i++)
 	{
-		printf("BC_Display::dump_windows %d window=%p window->win=%p\n", 
-			i, 
+		printf("BC_Display::dump_windows %d window=%p window->win=%p\n",
+			i,
 			windows.get(i),
 			windows.get(i)->win);
 	}
@@ -198,13 +198,13 @@ if(debug) printf("BC_Display::loop %d\n", __LINE__);
 			for(int i = 0; i < windows.size(); i++)
 			{
 				BC_WindowBase *window = windows.get(i);
-if(debug) printf("BC_Display::loop %d %d %d %d\n", 
-__LINE__, 
-window->resize_events, 
-window->motion_events, 
+if(debug) printf("BC_Display::loop %d %d %d %d\n",
+__LINE__,
+window->resize_events,
+window->motion_events,
 window->translation_events);
 				if(window->resize_events)
-					window->dispatch_resize_event(window->last_resize_w, 
+					window->dispatch_resize_event(window->last_resize_w,
 						window->last_resize_h);
 				if(window->motion_events)
 					window->dispatch_motion_event();
@@ -227,8 +227,8 @@ void BC_Display::handle_event()
 {
 const int debug = 0;
 	XEvent *event = get_event();
-if(debug)  printf("BC_Display::handle_event %d type=%d\n", 
-__LINE__, 
+if(debug)  printf("BC_Display::handle_event %d type=%d\n",
+__LINE__,
 event->type);
 
 	lock_display("BC_Display::handle_event");
@@ -247,7 +247,7 @@ if(debug) printf("BC_Display::handle_event %d\n", __LINE__);
 if(debug) printf("BC_Display::handle_event %d\n", __LINE__);
 	unlock_display();
 if(debug) printf("BC_Display::handle_event %d\n", __LINE__);
-	
+
 	delete event;
 if(debug) printf("BC_Display::handle_event %d\n", __LINE__);
 }

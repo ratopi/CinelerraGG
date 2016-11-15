@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef FRAMECACHE_H
@@ -58,13 +58,13 @@ public:
 	~FrameCache();
 
 // Returns 1 if frame exists in cache and copies it to the frame argument.
-	int get_frame(VFrame *frame, 
+	int get_frame(VFrame *frame,
 		int64_t position,
 		int layer,
 		double frame_rate,
 		int source_id = -1);
 // Returns pointer to cache entry if frame exists or 0.
-// If a frame is found, the frame cache is left in the locked state until 
+// If a frame is found, the frame cache is left in the locked state until
 // unlock is called.  If nothing is found, the frame cache is unlocked before
 // returning.  This keeps the item from being deleted.
 // asset - supplied by user if the cache is not part of a file.
@@ -79,7 +79,7 @@ public:
 // use_copy - if 1 a copy of the frame is made.  if 0 the argument is stored.
 // The copy of the frame is deleted by FrameCache in a future delete_oldest.
 // asset - supplied by user if the cache is not part of a file.
-	void put_frame(VFrame *frame, 
+	void put_frame(VFrame *frame,
 		int64_t position,
 		int layer,
 		double frame_rate,
@@ -101,7 +101,7 @@ private:
 		double frame_rate,
 		FrameCacheItem **item_return,
 		int source_id);
-	int frame_exists(int64_t position, 
+	int frame_exists(int64_t position,
 		int layer,
 		double frame_rate,
 		int color_model,

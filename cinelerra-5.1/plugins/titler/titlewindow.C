@@ -245,19 +245,19 @@ void TitleWindow::create_objects()
 	add_tool(italic = new TitleItalic(client, this, x, y + 20));
 	int w1 = italic->get_w();
 	add_tool(bold = new TitleBold(client, this, x, y + 50));
-	if( bold->get_w() > w1 ) w1 = bold->get_w();  
+	if( bold->get_w() > w1 ) w1 = bold->get_w();
 #ifdef USE_OUTLINE
 	add_tool(stroke = new TitleStroke(client, this, x, y + 80));
-	if( stroke->get_w() > w1 ) w1 = stroke->get_w();  
+	if( stroke->get_w() > w1 ) w1 = stroke->get_w();
 #endif
 	x += w1 + 10;
 	add_tool(justify_title = new BC_Title(x, y, _("Justify:")));
 	add_tool(left = new TitleLeft(client, this, x, y + 20));
 	w1 = left->get_w();
 	add_tool(center = new TitleCenter(client, this, x, y + 50));
-	if( center->get_w() > w1 ) w1 = center->get_w();  
+	if( center->get_w() > w1 ) w1 = center->get_w();
 	add_tool(right = new TitleRight(client, this, x, y + 80));
-	if( right->get_w() > w1 ) w1 = right->get_w();  
+	if( right->get_w() > w1 ) w1 = right->get_w();
 
 	x += w1 + 10;
 	add_tool(top = new TitleTop(client, this, x, y + 20));

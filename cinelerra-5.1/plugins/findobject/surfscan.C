@@ -100,10 +100,10 @@ findPairs( const CvSeq* objectKeypoints, const CvSeq* objectDescriptors,
 
 
 void
-flannFindPairs( const CvSeq*, 
+flannFindPairs( const CvSeq*,
 	const CvSeq* objectDescriptors,
-    const CvSeq*, 
-	const CvSeq* imageDescriptors, 
+    const CvSeq*,
+	const CvSeq* imageDescriptors,
 	vector<int>& ptpairs )
 {
 	int length = (int)(objectDescriptors->elem_size/sizeof(float));
@@ -143,10 +143,10 @@ flannFindPairs( const CvSeq*,
     int* indices_ptr = m_indices.ptr<int>(0);
     float* dists_ptr = m_dists.ptr<float>(0);
 //printf("flannFindPairs %d m_indices.rows=%d\n", __LINE__, m_indices.rows);
-    for (int i = 0; i < m_indices.rows; ++i) 
+    for (int i = 0; i < m_indices.rows; ++i)
 	{
 //printf("flannFindPairs %d dists=%f %f\n", __LINE__, dists_ptr[2 * i], 0.6 * dists_ptr[2 * i + 1]);
-    	if (dists_ptr[2 * i] < 0.6 * dists_ptr[2 * i + 1]) 
+    	if (dists_ptr[2 * i] < 0.6 * dists_ptr[2 * i + 1])
 		{
 //printf("flannFindPairs %d pairs=%d\n", __LINE__, ptpairs.size());
     		ptpairs.push_back(i);
@@ -158,11 +158,11 @@ flannFindPairs( const CvSeq*,
 
 /* a rough implementation for object location */
 int
-locatePlanarObject(const CvSeq* objectKeypoints, 
+locatePlanarObject(const CvSeq* objectKeypoints,
 	const CvSeq* objectDescriptors,
-    const CvSeq* imageKeypoints, 
+    const CvSeq* imageKeypoints,
 	const CvSeq* imageDescriptors,
-    const CvPoint src_corners[4], 
+    const CvPoint src_corners[4],
 	CvPoint dst_corners[4],
 	int *(*point_pairs),
 	int (*total_pairs))
@@ -173,7 +173,7 @@ locatePlanarObject(const CvSeq* objectKeypoints,
     vector<CvPoint2D32f> pt1, pt2;
     CvMat _pt1, _pt2;
     int i, n;
-	
+
 	(*point_pairs) = 0;
 	(*total_pairs) = 0;
 
@@ -187,8 +187,8 @@ locatePlanarObject(const CvSeq* objectKeypoints,
 // Store keypoints
 	(*point_pairs) = (int*)calloc(ptpairs.size(), sizeof(int));
 	(*total_pairs) = ptpairs.size() / 2;
-	
-	
+
+
     for(int i = 0; i < (int)ptpairs.size(); i++)
     {
 		(*point_pairs)[i] = ptpairs[i];
@@ -226,16 +226,16 @@ locatePlanarObject(const CvSeq* objectKeypoints,
 }
 
 
-void locate_points(const CvSeq* objectKeypoints, 
+void locate_points(const CvSeq* objectKeypoints,
 	const CvSeq* objectDescriptors,
-    const CvSeq* imageKeypoints, 
+    const CvSeq* imageKeypoints,
 	const CvSeq* imageDescriptors,
 	int *(*points),
 	int *(*sizes),
 	int (*total_points))
 {
 	vector<int> ptpairs;
-	
+
 #ifdef USE_FLANN
     flannFindPairs( objectKeypoints, objectDescriptors, imageKeypoints, imageDescriptors, ptpairs );
 #else
@@ -245,14 +245,14 @@ void locate_points(const CvSeq* objectKeypoints,
 	(*points) = (int*)calloc(ptpairs.size(), sizeof(int) * 2);
 	(*sizes) = (int*)calloc(ptpairs.size(), sizeof(int));
 	(*total_points) = ptpairs.size();
-	
-	
+
+
     for(int i = 0; i < (int)ptpairs.size(); i += 2 )
     {
         CvSURFPoint* r1 = (CvSURFPoint*)cvGetSeqElem( objectKeypoints, ptpairs[i] );
         CvSURFPoint* r2 = (CvSURFPoint*)cvGetSeqElem( imageKeypoints, ptpairs[i+1] );
-        
-		
+
+
 		(*points)[i * 2] = r2->pt.x;
 		(*points)[i * 2 + 1] = r2->pt.y;
 		(*sizes)[i] = r2->size;

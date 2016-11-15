@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcclipboard.h"
@@ -31,7 +31,7 @@
 BC_Clipboard::BC_Clipboard(const char *display_name)
  : Thread(1, 0, 0)
 {
-	if(display_name) 
+	if(display_name)
 		strcpy(this->display_name, display_name);
 	else
 		this->display_name[0] = 0;
@@ -51,11 +51,11 @@ BC_Clipboard::BC_Clipboard(const char *display_name)
 		strtype_atom = XInternAtom(out_display, "UTF8_STRING", False);
 	else
 		strtype_atom = XA_STRING;
-	in_win = XCreateSimpleWindow(in_display, 
-				DefaultRootWindow(in_display), 
+	in_win = XCreateSimpleWindow(in_display,
+				DefaultRootWindow(in_display),
 				0, 0, 1, 1, 0, 0, 0);
-	out_win = XCreateSimpleWindow(out_display, 
-				DefaultRootWindow(out_display), 
+	out_win = XCreateSimpleWindow(out_display,
+				DefaultRootWindow(out_display),
 				0, 0, 1, 1, 0, 0, 0);
 	data[0] = 0;
 	data[1] = 0;
@@ -129,9 +129,9 @@ void BC_Clipboard::run()
 		while(XPending(out_display))
 		{
 #endif
-//printf("BC_Clipboard::run 1\n");					
+//printf("BC_Clipboard::run 1\n");
 			XNextEvent(out_display, &event);
-//printf("BC_Clipboard::run 2 %d\n", event.type);					
+//printf("BC_Clipboard::run 2 %d\n", event.type);
 
 #ifdef SINGLE_THREAD
 			BC_Display::lock_display("BC_Clipboard::run");
@@ -152,7 +152,7 @@ void BC_Clipboard::run()
 			case SelectionRequest:
 				handle_selectionrequest((XSelectionRequestEvent*)&event);
 				break;
-			
+
 			case SelectionClear:
 				if(data[0]) data[0][0] = 0;
 				if(data[1]) data[1][0] = 0;
@@ -184,7 +184,7 @@ void BC_Clipboard::handle_selectionrequest(XSelectionRequestEvent *request)
 	reply.xselection.selection = request->selection;
 	reply.xselection.target    = request->target;
 	reply.xselection.time      = request->time;
-					
+
 
 	XSendEvent(out_display, request->requestor, 0, 0, &reply);
 	XFlush(out_display);
@@ -257,17 +257,17 @@ int BC_Clipboard::to_clipboard(const char *data, long len, int clipboard_num)
 
 	if(clipboard_num == PRIMARY_SELECTION)
 	{
-		XSetSelectionOwner(out_display, 
-			primary, 
-			out_win, 
+		XSetSelectionOwner(out_display,
+			primary,
+			out_win,
 			CurrentTime);
 	}
 	else
 	if(clipboard_num == SECONDARY_SELECTION)
 	{
-		XSetSelectionOwner(out_display, 
-			secondary, 
-			out_win, 
+		XSetSelectionOwner(out_display,
+			secondary,
+			out_win,
 			CurrentTime);
 	}
 
@@ -299,8 +299,8 @@ int BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
 		data[i] = 0;
 
 		XFree(data2);
-		
-		
+
+
 		return 0;
 	}
 
@@ -318,16 +318,16 @@ int BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
 	unsigned long nitems, size, new_size;
 	char *temp_data = 0;
 
-	pty = (clipboard_num == PRIMARY_SELECTION) ? primary : secondary; 
+	pty = (clipboard_num == PRIMARY_SELECTION) ? primary : secondary;
 						/* a property of our window
 						   for apps to put their
 						   selection into */
 
-	XConvertSelection(in_display, 
-		clipboard_num == PRIMARY_SELECTION ? primary : secondary, 
+	XConvertSelection(in_display,
+		clipboard_num == PRIMARY_SELECTION ? primary : secondary,
 		strtype_atom,
 		pty,
-		in_win, 
+		in_win,
 		CurrentTime);
 
 	data[0] = 0;
@@ -405,12 +405,12 @@ long BC_Clipboard::clipboard_len(int clipboard_num)
 	char *temp_data = 0;
 	int result = 0;
 
-	pty = (clipboard_num == PRIMARY_SELECTION) ? primary : secondary; 
+	pty = (clipboard_num == PRIMARY_SELECTION) ? primary : secondary;
 						/* a property of our window
 						   for apps to put their
 						   selection into */
-	XConvertSelection(in_display, 
-		(clipboard_num == PRIMARY_SELECTION) ? primary : secondary, 
+	XConvertSelection(in_display,
+		(clipboard_num == PRIMARY_SELECTION) ? primary : secondary,
 		strtype_atom, pty, in_win, CurrentTime);
 
 	do

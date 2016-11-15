@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdisplayinfo.h"
@@ -32,14 +32,14 @@
 
 
 BrightnessWindow::BrightnessWindow(BrightnessMain *client)
- : PluginClientWindow(client, 
-	330, 
-	160, 
-	330, 
-	160, 
+ : PluginClientWindow(client,
+	330,
+	160,
+	330,
+	160,
 	0)
-{ 
-	this->client = client; 
+{
+	this->client = client;
 }
 
 BrightnessWindow::~BrightnessWindow()
@@ -52,39 +52,39 @@ void BrightnessWindow::create_objects()
 	add_tool(new BC_Title(x, y, _("Brightness/Contrast")));
 	y += 25;
 	add_tool(new BC_Title(x, y,_("Brightness:")));
-	add_tool(brightness = new BrightnessSlider(client, 
-		&(client->config.brightness), 
-		x + 80, 
+	add_tool(brightness = new BrightnessSlider(client,
+		&(client->config.brightness),
+		x + 80,
 		y,
 		1));
 	y += 25;
 	add_tool(new BC_Title(x, y, _("Contrast:")));
-	add_tool(contrast = new BrightnessSlider(client, 
-		&(client->config.contrast), 
-		x + 80, 
+	add_tool(contrast = new BrightnessSlider(client,
+		&(client->config.contrast),
+		x + 80,
 		y,
 		0));
 	y += 30;
-	add_tool(luma = new BrightnessLuma(client, 
-		x, 
+	add_tool(luma = new BrightnessLuma(client,
+		x,
 		y));
 	show_window();
 	flush();
 }
 
 
-BrightnessSlider::BrightnessSlider(BrightnessMain *client, 
-	float *output, 
-	int x, 
+BrightnessSlider::BrightnessSlider(BrightnessMain *client,
+	float *output,
+	int x,
 	int y,
 	int is_brightness)
- : BC_FSlider(x, 
- 	y, 
-	0, 
-	200, 
+ : BC_FSlider(x,
+ 	y,
+	0,
 	200,
-	-100, 
-	100, 
+	200,
+	-100,
+	100,
 	(int)*output)
 {
 	this->client = client;
@@ -110,8 +110,8 @@ char* BrightnessSlider::get_caption()
 	}
 	else
 	{
-		fraction = (*output < 0) ? 
-			(*output + 100) / 100 : 
+		fraction = (*output < 0) ?
+			(*output + 100) / 100 :
 			(*output + 25) / 25;
 	}
 	sprintf(string, "%0.4f", fraction);
@@ -119,11 +119,11 @@ char* BrightnessSlider::get_caption()
 }
 
 
-BrightnessLuma::BrightnessLuma(BrightnessMain *client, 
-	int x, 
+BrightnessLuma::BrightnessLuma(BrightnessMain *client,
+	int x,
 	int y)
- : BC_CheckBox(x, 
- 	y, 
+ : BC_CheckBox(x,
+ 	y,
 	client->config.luma,
 	_("Boost luminance only"))
 {

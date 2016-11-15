@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "bcdelete.h"
@@ -29,15 +29,15 @@
 
 
 BC_DeleteFile::BC_DeleteFile(BC_FileBox *filebox, int x, int y)
- : BC_Window(filebox->get_delete_title(), 
- 	x, 
-	y, 
-	320, 
-	480, 
-	0, 
-	0, 
-	0, 
-	0, 
+ : BC_Window(filebox->get_delete_title(),
+ 	x,
+	y,
+	320,
+	480,
+	0,
+	0,
+	0,
+	0,
 	1)
 {
 	this->filebox = filebox;
@@ -64,15 +64,15 @@ void BC_DeleteFile::create_objects()
 		data->append(new BC_ListBoxItem(path));
 		i++;
 	}
-		
+
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Really delete the following files?")));
 	y += title->get_h() + 5;
 	BC_DeleteList *list;
-	add_subwindow(list = new BC_DeleteList(filebox, 
-		x, 
-		y, 
-		get_w() - x * 2, 
+	add_subwindow(list = new BC_DeleteList(filebox,
+		x,
+		y,
+		get_w() - x * 2,
 		get_h() - y - BC_OKButton::calculate_h() - 20,
 		data));
 	y += list->get_h() + 5;
@@ -86,16 +86,16 @@ void BC_DeleteFile::create_objects()
 
 
 
-BC_DeleteList::BC_DeleteList(BC_FileBox *filebox, 
-	int x, 
-	int y, 
-	int w, 
+BC_DeleteList::BC_DeleteList(BC_FileBox *filebox,
+	int x,
+	int y,
+	int w,
 	int h,
 	ArrayList<BC_ListBoxItem*> *data)
- : BC_ListBox(x, 
- 	y, 
-	w, 
-	h, 
+ : BC_ListBox(x,
+ 	y,
+	w,
+	h,
 	LISTBOX_TEXT,
 	data)
 {

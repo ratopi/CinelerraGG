@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "atrack.h"
@@ -67,9 +67,9 @@ PluginServer* PluginArray::scan_plugindb(char *title)
 	return mwindow->scan_plugindb(title, data_type);
 }
 
-int PluginArray::start_plugins(MWindow *mwindow, 
-	EDL *edl, 
-	PluginServer *plugin_server, 
+int PluginArray::start_plugins(MWindow *mwindow,
+	EDL *edl,
+	PluginServer *plugin_server,
 	KeyFrame *keyframe,
 	int64_t start,
 	int64_t end,
@@ -104,9 +104,9 @@ int PluginArray::start_plugins(MWindow *mwindow,
 				plugin->set_mwindow(mwindow);
 				plugin->set_keyframe(keyframe);
 				plugin->append_module(modules[i]);
-				plugin->open_plugin(0, 
-					mwindow->preferences, 
-					mwindow->edl, 
+				plugin->open_plugin(0,
+					mwindow->preferences,
+					mwindow->edl,
 					0);
 				if(i == 0) plugin->set_interactive();
 				plugin->start_loop(start, end, buffer_size, 1);
@@ -121,9 +121,9 @@ int PluginArray::start_plugins(MWindow *mwindow,
 			plugin->set_keyframe(keyframe);
 			for(i = 0; i < total_tracks(); i++)
 				plugin->append_module(modules[i]);
-			plugin->open_plugin(0, 
-				mwindow->preferences, 
-				mwindow->edl, 
+			plugin->open_plugin(0,
+				mwindow->preferences,
+				mwindow->edl,
 				0);
 // set one plugin for progress bars
 			plugin->set_interactive();
@@ -147,9 +147,9 @@ int PluginArray::start_plugins(MWindow *mwindow,
 				plugin->set_mwindow(mwindow);
 				plugin->set_keyframe(keyframe);
 				plugin->append_module(modules[i]);
-				plugin->open_plugin(0, 
-					mwindow->preferences, 
-					mwindow->edl, 
+				plugin->open_plugin(0,
+					mwindow->preferences,
+					mwindow->edl,
 					0);
 				plugin->get_parameters(start, end, 1);
 				plugin->init_realtime(0, 1, get_bufsize());
@@ -164,9 +164,9 @@ int PluginArray::start_plugins(MWindow *mwindow,
 			plugin->set_keyframe(keyframe);
 			for(i = 0; i < total_tracks(); i++)
 				plugin->append_module(modules[i]);
-			plugin->open_plugin(0, 
+			plugin->open_plugin(0,
 				mwindow->preferences,
-				mwindow->edl, 
+				mwindow->edl,
 				0);
 			plugin->get_parameters(start, end, total_tracks());
 			plugin->init_realtime(0, total_tracks(), get_bufsize());
@@ -196,7 +196,7 @@ int PluginArray::run_plugins()
 		sprintf(string, "%s...", plugin_server->title);
 		progress = mwindow->mainprogress->start_progress(string, end - start);
 
-		for(int64_t current_position = start; 
+		for(int64_t current_position = start;
 			current_position < end && !done && !error;
 			current_position += len)
 		{

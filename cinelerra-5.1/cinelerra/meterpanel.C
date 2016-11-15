@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -31,7 +31,7 @@
 
 
 
-MeterPanel::MeterPanel(MWindow *mwindow, BC_WindowBase *subwindow, 
+MeterPanel::MeterPanel(MWindow *mwindow, BC_WindowBase *subwindow,
 	int x, int y, int w, int h, int meter_count,
 	int visible, int use_headroom, int use_titles)
 {
@@ -70,7 +70,7 @@ int MeterPanel::set_meters(int meter_count, int visible)
 			meter_titles.remove_all_objects();
 			meter_peaks.remove_all();
 		}
-		
+
 		this->meter_count = meter_count;
 		this->visible = visible;
 //		if(!visible) this->meter_count = 0;
@@ -85,12 +85,12 @@ int MeterPanel::set_meters(int meter_count, int visible)
 			{
 //printf("MeterPanel::set_meters %d %d %d %d\n", __LINE__, i, x1, get_meter_w(i));
 				y1 = this->y;
-				
+
 				if(use_titles)
 				{
 					BC_Title *new_title;
 					subwindow->add_subwindow(new_title = new BC_Title(
-						get_title_x(i, "0"), 
+						get_title_x(i, "0"),
 						y1,
 						"0",
 						SMALLFONT));
@@ -101,14 +101,14 @@ int MeterPanel::set_meters(int meter_count, int visible)
 				MeterMeter *new_meter;
 				subwindow->add_subwindow(new_meter = new MeterMeter(mwindow,
 					this,
-					x1, 
-					y1, 
+					x1,
+					y1,
 					this->w > 0 ? get_meter_w(i) : -1,
-					h1, 
+					h1,
 					(i == 0)));
 				meters.append(new_meter);
         		x1 += get_meter_w(i) + border;
-				
+
 				meter_peaks.append(0);
 			}
 		}
@@ -137,9 +137,9 @@ void MeterPanel::reposition_window(int x, int y, int w, int h)
 				meter_titles.get(i)->get_y());
 		}
 //printf("MeterPanel::reposition_window %d %d %d %d\n", __LINE__, i, x1, get_meter_w(i));
-		meters.get(i)->reposition_window(x1, 
+		meters.get(i)->reposition_window(x1,
 			meters.get(i)->get_y(),
-			get_meter_w(i), 
+			get_meter_w(i),
 			get_meter_h());
 		x1 += get_meter_w(i) + border;
 	}
@@ -153,8 +153,8 @@ int MeterPanel::change_status_event(int new_status)
 
 int MeterPanel::get_reset_x()
 {
-	return x + 
-		get_meters_width(mwindow->theme, meter_count, visible) - 
+	return x +
+		get_meters_width(mwindow->theme, meter_count, visible) -
 		mwindow->theme->over_button[0]->get_w();
 }
 
@@ -174,18 +174,18 @@ int MeterPanel::get_title_x(int number, const char *text)
 		{
 			int text_w = subwindow->get_text_width(SMALLFONT, text);
 			int title_x = x1;
-			int meter_w = (i == 0) ? 
-				get_meter_w(i) - BC_Meter::get_title_w() : 
+			int meter_w = (i == 0) ?
+				get_meter_w(i) - BC_Meter::get_title_w() :
 				get_meter_w(i);
 			title_x += (i == 0) ? BC_Meter::get_title_w() : 0;
-			title_x += meter_w / 2 - 
+			title_x += meter_w / 2 -
 				text_w / 2;
 			title_x = MAX(title_x, x1);
 			if(i == 0) title_x = MAX(title_x, x1 + BC_Meter::get_title_w());
 			return title_x;
 		}
-		
-		
+
+
 		x1 += get_meter_w(i) + border;
 	}
 	return -1;
@@ -194,11 +194,11 @@ int MeterPanel::get_title_x(int number, const char *text)
 int MeterPanel::get_meters_width(Theme *theme, int meter_count, int visible)
 {
 //printf("MeterPanel::get_meters_width %d %d\n", BC_Meter::get_title_w(), BC_Meter::get_meter_w());
-	return visible ? 
-		(BC_Meter::get_title_w() + 
-			theme->widget_border + 
+	return visible ?
+		(BC_Meter::get_title_w() +
+			theme->widget_border +
 			BC_Meter::get_meter_w() * meter_count +
-			theme->widget_border * (meter_count - 1)) : 
+			theme->widget_border * (meter_count - 1)) :
 		0;
 }
 
@@ -208,7 +208,7 @@ int MeterPanel::get_meter_w(int number)
 	int border = mwindow->theme->widget_border;
 	int meter_w;
 	if( w > 0 ) {
-		meter_w = (w - BC_Meter::get_title_w() - 
+		meter_w = (w - BC_Meter::get_title_w() -
 				(meter_count - 1) * border) / meter_count;
 		if( meter_w < 3 ) meter_w = 3;
 	}
@@ -262,7 +262,7 @@ void MeterPanel::update_peak(int number, float value)
 	if(use_titles && number < meter_count)
 	{
 		meter_peaks.set(number, value);
-		
+
 		float db_value = DB::todb(value);
 		char string[BCTEXTLEN] = { 0 };
 		if(db_value <= mwindow->edl->session->min_meter_db)
@@ -272,17 +272,17 @@ void MeterPanel::update_peak(int number, float value)
 		else
 		if(db_value > 0)
 		{
-			sprintf(string, "+%.1f", 
+			sprintf(string, "+%.1f",
 				db_value);
 		}
 		else
 		{
-			sprintf(string, "%.1f", 
+			sprintf(string, "%.1f",
 				db_value);
 		}
 
 		meter_titles.get(number)->update(string);
-		meter_titles.get(number)->reposition_window(get_title_x(number, string), 
+		meter_titles.get(number)->reposition_window(get_title_x(number, string),
 			meter_titles.get(number)->get_y());
 	}
 }
@@ -339,7 +339,7 @@ MeterReset::MeterReset(MWindow *mwindow, MeterPanel *panel, int x, int y)
 MeterReset::~MeterReset()
 {
 }
-	
+
 int MeterReset::handle_event()
 {
 	for(int i = 0; i < panel->meters.total; i++)
@@ -351,10 +351,10 @@ int MeterReset::handle_event()
 
 
 
-MeterMeter::MeterMeter(MWindow *mwindow, 
+MeterMeter::MeterMeter(MWindow *mwindow,
 	MeterPanel *panel, int x, int y, int w, int h, int titles)
- : BC_Meter(x, y, METER_VERT, h, mwindow->edl->session->min_meter_db, 
-	panel->use_headroom ? 0 : mwindow->edl->session->max_meter_db, 
+ : BC_Meter(x, y, METER_VERT, h, mwindow->edl->session->min_meter_db,
+	panel->use_headroom ? 0 : mwindow->edl->session->max_meter_db,
 	mwindow->edl->session->meter_format, titles, w)
 {
 	this->mwindow = mwindow;
@@ -384,9 +384,9 @@ int MeterMeter::button_press_event()
 
 
 MeterShow::MeterShow(MWindow *mwindow, MeterPanel *panel, int x, int y)
- : BC_Toggle(x, 
- 		y, 
-		mwindow->theme->get_image_set("meters"), 
+ : BC_Toggle(x,
+ 		y,
+		mwindow->theme->get_image_set("meters"),
 		panel->visible)
 {
 	this->mwindow = mwindow;

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "clip.h"
@@ -53,13 +53,13 @@ void ScaleConfig::copy_from(ScaleConfig &src)
 }
 int ScaleConfig::equivalent(ScaleConfig &src)
 {
-	return type != src.type ? 0 : type == FIXED_SCALE ? 
+	return type != src.type ? 0 : type == FIXED_SCALE ?
 		EQUIV(x_factor, src.x_factor) && EQUIV(y_factor, src.y_factor) &&
 			constrain == src.constrain :
 		width == src.width && height == src.height;
 }
 
-void ScaleConfig::interpolate(ScaleConfig &prev, ScaleConfig &next, 
+void ScaleConfig::interpolate(ScaleConfig &prev, ScaleConfig &next,
 	int64_t prev_frame, int64_t next_frame, int64_t current_frame)
 {
 	double u = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -202,24 +202,24 @@ int ScaleMain::process_buffer(VFrame *frame,
 // Perform scaling
 	float in_x1, in_x2, in_y1, in_y2, out_x1, out_x2, out_y1, out_y2;
 	calculate_transfer(output,
-		in_x1, in_x2, in_y1, in_y2, 
+		in_x1, in_x2, in_y1, in_y2,
 		out_x1, out_x2, out_y1, out_y2);
 	output->clear_frame();
 
 // printf("ScaleMain::process_realtime 3 output=%p input=%p config.x_factor=%f config.y_factor=%f"
-// 	" config.width=%d config.height=%d config.type=%d   %f %f %f %f -> %f %f %f %f\n", 
+// 	" config.width=%d config.height=%d config.type=%d   %f %f %f %f -> %f %f %f %f\n",
 // 	output, input, config.x_factor, config.y_factor, config.width, config.height, config.type,
 // 	in_x1, in_y1, in_x2, in_y2, out_x1, out_y1, out_x2, out_y2);
 	overlayer->overlay(output, input,
 		in_x1, in_y1, in_x2, in_y2,
-		out_x1, out_y1, out_x2, out_y2, 
+		out_x1, out_y1, out_x2, out_y2,
 		1, TRANSFER_REPLACE, get_interpolation_type());
 
 	return 0;
 }
 
 void ScaleMain::calculate_transfer(VFrame *frame,
-	float &in_x1, float &in_x2, float &in_y1, float &in_y2, 
+	float &in_x1, float &in_x2, float &in_y1, float &in_y2,
 	float &out_x1, float &out_x2, float &out_y1, float &out_y2)
 {
 	float fw = (float)frame->get_w();
@@ -265,7 +265,7 @@ int ScaleMain::handle_opengl()
 #ifdef HAVE_GL
 	float in_x1, in_x2, in_y1, in_y2, out_x1, out_x2, out_y1, out_y2;
 	calculate_transfer(get_output(),
-		in_x1, in_x2, in_y1, in_y2, 
+		in_x1, in_x2, in_y1, in_y2,
 		out_x1, out_x2, out_y1, out_y2);
 
 	get_output()->to_texture();
@@ -274,7 +274,7 @@ int ScaleMain::handle_opengl()
 	get_output()->clear_pbuffer();
 	get_output()->bind_texture(0);
 	get_output()->draw_texture(
-		in_x1, in_y1, in_x2, in_y2, 
+		in_x1, in_y1, in_x2, in_y2,
 		out_x1, out_y1, out_x2, out_y2);
 	get_output()->set_opengl_state(VFrame::SCREEN);
 #endif
@@ -287,7 +287,7 @@ NEW_WINDOW_MACRO(ScaleMain, ScaleWin)
 
 void ScaleMain::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		load_configuration();
 		thread->window->lock_window();
