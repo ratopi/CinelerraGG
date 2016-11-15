@@ -24,8 +24,9 @@
 
 
 #include <semaphore.h>
+#include "bctrace.inc"
 
-class Sema
+class Sema : public trace_info
 {
 public:
 	Sema(int init_value = 1, const char *title = 0);
@@ -40,11 +41,6 @@ public:
 	const char *title;
 	int init_value;
 };
-
-
-
-
-
 
 
 
@@ -81,9 +77,5 @@ public:
 };
 
 #endif
-
-
-
-
 
 #endif

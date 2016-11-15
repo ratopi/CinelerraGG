@@ -188,7 +188,7 @@ void FormatTools::create_objects(int &init_x,
 		path_recent->load_items(File::formattostr(asset->format));
 		px += path_recent->get_w() + 8;
 		window->add_subwindow(path_button = new BrowseButton(
-			mwindow, window, path_textbox, px, y, asset->path,
+			mwindow->theme, window, path_textbox, px, y, asset->path,
 			_("Output to file"), _("Select a file to write to:"), 0));
 
 // Set w for user.

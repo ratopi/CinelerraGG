@@ -186,7 +186,7 @@ PluginClient::PluginClient(PluginServer *server)
 {
 	reset();
 	this->server = server;
-	smp = server->preferences->processors;
+	smp = server->preferences->project_smp;
 	defaults = 0;
 	update_timer = new Timer;
 // Virtual functions don't work here.

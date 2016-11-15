@@ -482,6 +482,7 @@ int VFrame::allocate_data(unsigned char *data, int shmid,
 		}
 		else {
 // Have to use malloc for libpng
+//printf("==vframe %d from %p\n", size, __builtin_return_address(0));
 			this->data = (unsigned char *)malloc(size);
 		}
 

@@ -57,6 +57,7 @@ OBJS = \
 	$(OBJDIR)/bctheme.o \
 	$(OBJDIR)/bctitle.o \
 	$(OBJDIR)/bctoggle.o \
+	$(OBJDIR)/bctrace.o \
 	$(OBJDIR)/bctumble.o \
 	$(OBJDIR)/bcwindow.o \
 	$(OBJDIR)/bcwindow3d.o \
@@ -69,7 +70,6 @@ OBJS = \
 	$(OBJDIR)/filesystem.o \
 	$(OBJDIR)/mutex.o \
 	$(OBJDIR)/rotateframe.o \
-	$(OBJDIR)/sema.o \
 	$(OBJDIR)/thread.o \
 	$(OBJDIR)/testobject.o \
 	$(OBJDIR)/bctimer.o \

@@ -212,7 +212,7 @@ void MainMenu::create_objects()
 	settingsmenu->add_item(new BC_MenuItem("-"));
 	settingsmenu->add_item(new SaveSettingsNow(mwindow));
 	settingsmenu->add_item(loop_playback = new LoopPlayback(mwindow));
-	settingsmenu->add_item(new SetBRenderStart(mwindow));
+	settingsmenu->add_item(new SetBRenderRange(mwindow));
 // set scrubbing speed
 //	ScrubSpeed *scrub_speed;
 //	settingsmenu->add_item(scrub_speed = new ScrubSpeed(mwindow));
@@ -1241,15 +1241,15 @@ int PasteSubttl::handle_event()
 
 
 
-SetBRenderStart::SetBRenderStart(MWindow *mwindow)
- : BC_MenuItem(_("Set background render"))
+SetBRenderRange::SetBRenderRange(MWindow *mwindow)
+ : BC_MenuItem(_("Set background rendering"))
 {
 	this->mwindow = mwindow;
 }
 
-int SetBRenderStart::handle_event()
+int SetBRenderRange::handle_event()
 {
-	mwindow->set_brender_start();
+	mwindow->set_brender_range();
 	return 1;
 }
 

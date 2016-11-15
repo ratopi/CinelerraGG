@@ -24,7 +24,7 @@
 
 #include "guicast.h"
 #include "mutex.inc"
-#include "mwindow.inc"
+#include "theme.inc"
 #include "thread.h"
 
 class BrowseButtonWindow;
@@ -32,14 +32,14 @@ class BrowseButtonWindow;
 class BrowseButton : public BC_Button, public Thread
 {
 public:
-	BrowseButton(MWindow *mwindow,
-		BC_WindowBase *parent_window,
-		BC_TextBox *textbox,
-		int x,
-		int y,
-		const char *init_directory,
-		const char *title,
-		const char *caption,
+	BrowseButton(Theme *theme, 
+		BC_WindowBase *parent_window, 
+		BC_TextBox *textbox, 
+		int x, 
+		int y, 
+		const char *init_directory, 
+		const char *title, 
+		const char *caption, 
 		int want_directory = 0);
 	~BrowseButton();
 
@@ -51,7 +51,7 @@ public:
 	const char *caption;
 	const char *init_directory;
 	BC_TextBox *textbox;
-	MWindow *mwindow;
+	Theme *theme;
 	BC_WindowBase *parent_window;
 	BrowseButtonWindow *gui;
 	Mutex *startup_lock;
@@ -61,7 +61,7 @@ public:
 class BrowseButtonWindow : public BC_FileBox
 {
 public:
-	BrowseButtonWindow(MWindow *mwindow,
+	BrowseButtonWindow(Theme *theme,
 		BrowseButton *button,
 		BC_WindowBase *parent_window,
 		const char *init_directory,

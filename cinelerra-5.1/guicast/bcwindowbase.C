@@ -250,6 +250,7 @@ int BC_WindowBase::initialize()
 	done = 0;
 	done_set = 0;
 	window_running = 0;
+	display_lock_owner = 0;
 	test_keypress = 0;
 	keys_return[0] = 0;
 	is_deleting = 0;

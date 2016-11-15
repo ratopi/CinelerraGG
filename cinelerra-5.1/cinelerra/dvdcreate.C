@@ -771,7 +771,7 @@ void CreateDVD_GUI::create_objects()
 	tmp_x = x + title->get_w();  tmp_y = y;
 	tmp_path = new CreateDVD_TmpPath(this, tmp_x, tmp_y,  get_w()-tmp_x-35);
 	add_subwindow(tmp_path);
-	btmp_path = new BrowseButton(thread->mwindow, this, tmp_path,
+	btmp_path = new BrowseButton(thread->mwindow->theme, this, tmp_path,
 		tmp_x+tmp_path->get_w(), tmp_y, "/tmp",
 		_("Work path"), _("Select a Work directory:"), 1);
 	add_subwindow(btmp_path);

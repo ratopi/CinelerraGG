@@ -19,91 +19,16 @@
  * 
  */
 
-#ifndef NO_GUICAST
 #include "bcsignals.h"
-#endif
 #include <sys/wait.h>
 #include <sched.h>
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <typeinfo>
 #include "thread.h"
 
-// track unjoined threads at termination
-#ifndef NO_GUICAST
-#include "arraylist.h"
-#include "mutex.h"
-#include <typeinfo>
-
-class MLocker {
-	static Mutex the_lock;
-public:
-	MLocker() { the_lock.lock(); }
-	~MLocker() { the_lock.unlock(); }
-};
-Mutex MLocker::the_lock;
-
-class the_dbg {
-public:
-	pthread_t tid, owner;  const char *name;
-	the_dbg(pthread_t t, pthread_t o, const char *nm) { tid = t; owner = o; name = nm; }
-	~the_dbg() {}
-};
-
-
-static class the_list : public ArrayList<the_dbg*> {
-public:
-	static void dump_threads(FILE *fp);
-	 the_list() {}
-	~the_list() {
-		MLocker mlkr;
-		remove_all_objects();
-	}
-} thread_list;
-
-static void dbg_add(pthread_t tid, pthread_t owner, const char *nm)
-{
-	MLocker mlkr;
-	int i = thread_list.size();
-	while( --i >= 0 && thread_list[i]->tid != tid );
-	if( i >= 0 ) {
-		printf("dbg_add, dup %016lx %s %s\n",
-			(unsigned long)tid, nm, thread_list[i]->name);
-		return;
-	}
-	thread_list.append(new the_dbg(tid, owner, nm));
-}
-
-static void dbg_del(pthread_t tid)
-{
-	MLocker mlkr;
-	int i = thread_list.size();
-	while( --i >= 0 && thread_list[i]->tid != tid );
-	if( i < 0 ) {
-		printf("dbg_del, mis %016lx\n",(unsigned long)tid);
-		return;
-	}
-	thread_list.remove_object_number(i);
-}
-
-static class the_chkr {
-public:
-	the_chkr() {}
-	~the_chkr() {
-		int i = thread_list.size();
-		if( !i ) return;
-		printf("unjoined tids / owner %d\n", i);
-		while( --i >= 0 ) printf("  %016lx / %016lx %s\n",
-			(unsigned long)thread_list[i]->tid,
-			(unsigned long)thread_list[i]->owner,
-			thread_list[i]->name);
-	}
-} the_chk;
-#else
-#define dbg_add(t, nm) do {} while(0)
-#define dbg_del(t) do {} while(0)
-#endif
 
 Thread::Thread(int synchronous, int realtime, int autodelete)
 {
@@ -140,7 +65,7 @@ void* Thread::entrypoint(void *parameters)
 	thread->run();
 	thread->finished = true;
 	if( !thread->synchronous ) {
-		if( !thread->cancelled ) dbg_del(thread->tid);
+		if( !thread->cancelled ) TheList::dbg_del(thread->tid);
 		if( thread->autodelete ) delete thread;
 		else thread->tid = ((pthread_t)-1);
 	}
@@ -183,7 +108,7 @@ void Thread::start()
 
 	pthread_create(&tid, &attr, Thread::entrypoint, this);
 
-	dbg_add(tid, owner, typeid(*this).name());
+	TheList::dbg_add(tid, owner, typeid(*this).name());
 }
 
 int Thread::cancel()
@@ -192,7 +117,7 @@ int Thread::cancel()
 		LOCK_LOCKS("Thread::cancel");
 		pthread_cancel(tid);
 		cancelled = true;
-		if( !synchronous ) dbg_del(tid);
+		if( !synchronous ) TheList::dbg_del(tid);
 		UNLOCK_LOCKS;
 	}
 	return 0;
@@ -206,7 +131,7 @@ int Thread::join()   // join this thread
 		int ret = pthread_join(tid, 0);
 		if( ret ) strerror(ret);
 		CLEAR_LOCKS_TID(tid);
-		dbg_del(tid);
+		TheList::dbg_del(tid);
 		tid = ((pthread_t)-1);
 // Don't execute anything after this.
 		if( autodelete ) delete this;
@@ -310,15 +235,5 @@ int Thread::get_realtime()
 unsigned long Thread::get_tid()
 {
 	return tid;
-}
-
-void Thread::dump_threads(FILE *fp)
-{
-	int i = thread_list.size();
-	while( --i >= 0 ) {
-		fprintf(fp, "thread 0x%012lx, owner 0x%012lx, %s\n",
-			(unsigned long)thread_list[i]->tid, (unsigned long)thread_list[i]->owner,
-			thread_list[i]->name);
-	}
 }
 

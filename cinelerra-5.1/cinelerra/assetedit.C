@@ -953,7 +953,7 @@ int AssetEditPathText::handle_event()
 AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow,
 	BC_TextBox *textbox, int y, const char *text,
 	const char *window_title, const char *window_caption)
- : BrowseButton(mwindow, fwindow, textbox, 310, y, text,
+ : BrowseButton(mwindow->theme, fwindow, textbox, 310, y, text,
 	window_title, window_caption, 0)
 {
 	this->fwindow = fwindow;

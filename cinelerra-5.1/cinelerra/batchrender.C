@@ -783,7 +783,7 @@ void BatchRenderGUI::create_objects()
 		x, y, get_w()-x - 40, thread->get_current_edl())); 
 	x =  x2 + edl_path_text->get_w();
 	add_subwindow(edl_path_browse = new BrowseButton(
-		mwindow, this, edl_path_text, x, y, thread->get_current_edl(),
+		mwindow->theme, this, edl_path_text, x, y, thread->get_current_edl(),
 		_("Input EDL"), _("Select an EDL to load:"), 0));
 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
 

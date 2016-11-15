@@ -100,15 +100,22 @@ void PerformancePrefs::create_objects()
 		maxw,
 		ybx[1]);
 	preroll->create_objects();
+	int x1 = preroll->get_x() + preroll->get_w() + 20;
+	BC_Title *smp_title = new BC_Title(x1, y + 5, _("Project SMP cpus:"));
+	add_subwindow(smp_title);
+	int x2 = x1 + smp_title->get_w() + 5;
+	PrefsProjectSMP *proj_smp = new PrefsProjectSMP(pwindow, this, x2, y);
+	proj_smp->create_objects();
+	
 	y += 30;
 	PrefsForceUniprocessor *force_1cpu = new PrefsForceUniprocessor(pwindow, x, y);
 	add_subwindow(force_1cpu);
 
-	int x1 = force_1cpu->get_x() + force_1cpu->get_w() + 100;
+	x1 = force_1cpu->get_x() + force_1cpu->get_w() + 120;
 
 	PrefsTrapSigSEGV *trap_segv = new PrefsTrapSigSEGV(this, x1, y);
 	add_subwindow(trap_segv);
-	int x2 = x1 + trap_segv->get_w() + 10;
+	x2 = x1 + trap_segv->get_w() + 10;
 	add_subwindow(new BC_Title(x2, y, _("(must be root)"), MEDIUMFONT, RED));
 	y += 30;
 
@@ -858,6 +865,25 @@ int PrefsRenderFarmReset::handle_event()
 }
 
 
+
+
+
+PrefsProjectSMP::PrefsProjectSMP(PreferencesWindow *pwindow,
+		PerformancePrefs *subwindow, int x, int y)
+ : BC_TumbleTextBox(subwindow,
+	(int64_t)pwindow->thread->preferences->project_smp,
+	(int64_t)1, (int64_t)100, x, y, 100)
+{
+	this->pwindow = pwindow;
+}
+PrefsProjectSMP::~PrefsProjectSMP()
+{
+}
+int PrefsProjectSMP::handle_event()
+{
+	pwindow->thread->preferences->project_smp = atol(get_text());
+	return 1;
+}
 
 
 

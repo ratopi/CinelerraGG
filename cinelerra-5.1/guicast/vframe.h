@@ -244,8 +244,6 @@ public:
 
 
 
-
-
 // ================================ OpenGL functions ===========================
 // Defined in vframe3d.C
 // Location of working image if OpenGL playback

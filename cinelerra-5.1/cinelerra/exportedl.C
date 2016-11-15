@@ -406,15 +406,8 @@ void ExportEDLWindow::create_objects()
 
 	x += 24;
 	add_subwindow(path_button = new BrowseButton(
-		mwindow,
-		this,
-		path_textbox, 
-		x, 
-		y - 4, 
-		exportasset->path,
-		_("Output to file"),
-		_("Select a file to write to:"),
-		0));
+		mwindow->theme, this, path_textbox, x, y - 4, exportasset->path,
+		_("Output to file"), _("Select a file to write to:"), 0));
 	
 	y += 34;
 	x = 5;

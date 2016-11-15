@@ -93,6 +93,7 @@ public:
 	double render_preroll;
 	int brender_preroll;
 	int force_uniprocessor;
+	int project_smp;
 // The number of cpus to use when rendering.
 // Determined by /proc/cpuinfo and force_uniprocessor
 	int processors;

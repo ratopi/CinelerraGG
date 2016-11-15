@@ -74,11 +74,7 @@ public:
 		double out_x4,
 		double out_y4,
 		AffineMatrix *result);
-	float transform_cubic(float dx,
-    	float jm1,
-    	float j,
-    	float jp1,
-    	float jp2);
+//	float transform_cubic(float dx, float jm1, float j, float jp1, float jp2);
 	AffineEngine *server;
 };
 

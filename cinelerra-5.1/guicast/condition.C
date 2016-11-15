@@ -19,9 +19,7 @@
  * 
  */
 
-#ifndef NO_GUICAST
 #include "bcsignals.h"
-#endif
 #include "condition.h"
 
 #include <errno.h>
@@ -34,6 +32,7 @@ Condition::Condition(int init_value, const char *title, int is_binary)
 {
 	this->is_binary = is_binary;
 	this->title = title;
+	this->trace = 0;
 	pthread_mutex_init(&mutex, 0);
 	pthread_cond_init(&cond, NULL);
 	this->value = this->init_value = init_value;
@@ -43,9 +42,7 @@ Condition:: ~Condition()
 {
 	pthread_cond_destroy(&cond);
 	pthread_mutex_destroy(&mutex);
-#ifndef NO_GUICAST
 	UNSET_ALL_LOCKS(this);
-#endif
 }
 
 void Condition::reset()
@@ -54,19 +51,17 @@ void Condition::reset()
 	pthread_mutex_destroy(&mutex);
 	pthread_mutex_init(&mutex, 0);
 	pthread_cond_init(&cond, NULL);
+	UNSET_ALL_LOCKS(this);
 	value = init_value;
+	trace = 0;
 }
 
 void Condition::lock(const char *location)
 {
-#ifndef NO_GUICAST
 	SET_LOCK(this, title, location);
-#endif
 	pthread_mutex_lock(&mutex);
 	while(value <= 0) pthread_cond_wait(&cond, &mutex);
-#ifndef NO_GUICAST
 	UNSET_LOCK2
-#endif
 	if(is_binary)
 		value = 0;
 	else
@@ -77,9 +72,7 @@ void Condition::lock(const char *location)
 void Condition::unlock()
 {
 // The lock trace is created and removed by the acquirer
-//#ifndef NO_GUICAST
 //	UNSET_LOCK(this);
-//#endif
 	pthread_mutex_lock(&mutex);
 	if(is_binary)
 		value = 1;
@@ -93,9 +86,7 @@ int Condition::timed_lock(int microseconds, const char *location)
 {
 	int result = 0;
 
-#ifndef NO_GUICAST
 	SET_LOCK(this, title, location);
-#endif
 	pthread_mutex_lock(&mutex);
 
 	struct timeval now;
@@ -131,9 +122,7 @@ int Condition::timed_lock(int microseconds, const char *location)
 	}
 #endif
 
-#ifndef NO_GUICAST
 	UNSET_LOCK2
-#endif
 //printf("Condition::timed_lock 2 %d %s %s\n", result, title, location);
 	if( !result ) {
 		if(is_binary)

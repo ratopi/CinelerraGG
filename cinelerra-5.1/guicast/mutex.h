@@ -24,8 +24,9 @@
 
 #include <pthread.h>
 #include <stdio.h>
+#include "bctrace.inc"
 
-class Mutex
+class Mutex : public trace_info
 {
 public:
 	Mutex(const char *title = 0, int recursive = 0);
@@ -60,6 +61,5 @@ public:
 	mLock(Mutex *m) : mutex(*m) { mutex.lock(); }
 	~mLock() { mutex.unlock(); }
 };
-
 
 #endif

@@ -180,7 +180,7 @@ void RecordGUI::create_objects()
 	y = 10;
 	x = x1 + 20;
 	add_subwindow(batch_path = new RecordPath(this, x, y));
-	add_subwindow(batch_browse = new BrowseButton(mwindow, 
+	add_subwindow(batch_browse = new BrowseButton(mwindow->theme, 
 		this, 
 		batch_path, 
 		batch_path->get_x() + batch_path->get_w(), 

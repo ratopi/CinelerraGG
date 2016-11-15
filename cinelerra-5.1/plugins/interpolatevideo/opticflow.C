@@ -106,12 +106,12 @@ void OpticFlowUnit::process_package(LoadPackage *package)
 		motion->scan_frame(plugin->frames[0],
 // Frame after motion
 			plugin->frames[1],
-			100 * plugin->config.search_radius / w,
-			100 * plugin->config.search_radius / h,
-			100 * plugin->config.macroblock_size / w,
-			100 * plugin->config.macroblock_size / h,
-			100 * mb->x / w,
-			100 * mb->y / h,
+			plugin->config.search_radius,
+			plugin->config.search_radius,
+			plugin->config.macroblock_size,
+			plugin->config.macroblock_size,
+			mb->x,
+			mb->y,
 			MotionScan::TRACK_PREVIOUS,
 			MotionScan::CALCULATE,
 // Get it to do the subpixel step
@@ -119,18 +119,14 @@ void OpticFlowUnit::process_package(LoadPackage *package)
 			0,
 			0,
 			0,
-			MIN(MAX_SEARCH_STEPS, plugin->config.search_radius * plugin->config.search_radius),
 			0,
+			0,
+			0,
+			0,
+			1,
 			0,
 			0,
 			0);
-// Degrees from center to maximum angle
-//			0, 
-// Accumulated angle from previous frames
-//			0,
-// Total number of angles to test in each pass
-//			0,
-//			0);
 
 
 		mb->dx = motion->dx_result;

@@ -22,15 +22,14 @@
 #include <stdio.h>
 #include <errno.h>
 
-#ifndef NO_GUICAST
 #include "bcsignals.h"
-#endif
 #include "mutex.h"
 
 
 Mutex::Mutex(const char *title, int recursive)
 {
 	this->title = title;
+	this->trace = 0;
 	pthread_mutexattr_t attr;
 	pthread_mutexattr_init(&attr);
 	pthread_mutex_init(&mutex, &attr);
@@ -45,9 +44,7 @@ Mutex::~Mutex()
 {
 	pthread_mutex_destroy(&mutex);
 	pthread_mutex_destroy(&recursive_lock);
-#ifndef NO_GUICAST
 	UNSET_ALL_LOCKS(this);
-#endif
 }
 
 int Mutex::lock(const char *location)
@@ -66,9 +63,7 @@ int Mutex::lock(const char *location)
 	}
 
 
-#ifndef NO_GUICAST
 	SET_LOCK(this, title, location);
-#endif
 	if(pthread_mutex_lock(&mutex)) perror("Mutex::lock");
 
 
@@ -88,9 +83,7 @@ int Mutex::lock(const char *location)
 	}
 
 
-#ifndef NO_GUICAST
 	SET_LOCK2
-#endif
 	return 0;
 }
 
@@ -120,9 +113,7 @@ int Mutex::unlock()
 		count = 0;
 
 
-#ifndef NO_GUICAST
 	UNSET_LOCK(this);
-#endif
 
 	if(pthread_mutex_unlock(&mutex)) perror("Mutex::unlock");
 	return 0;
@@ -145,10 +136,8 @@ int Mutex::trylock(const char *location)
 	else
 		count = 1;
 
-#ifndef NO_GUICAST
 	SET_LOCK(this, title, location);
 	SET_LOCK2
-#endif
 	return 0;
 }
 
@@ -163,11 +152,10 @@ int Mutex::reset()
 	pthread_mutexattr_t attr;
 	pthread_mutexattr_init(&attr);
 	pthread_mutex_init(&mutex, &attr);
+	UNSET_ALL_LOCKS(this)
+	trace = 0;
 	count = 0;
 	thread_id = 0;
 	thread_id_valid = 0;
-#ifndef NO_GUICAST
-	UNSET_ALL_LOCKS(this)
-#endif
 	return 0;
 }

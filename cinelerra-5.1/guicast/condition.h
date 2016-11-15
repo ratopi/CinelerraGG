@@ -23,8 +23,9 @@
 #define CONDITION_H
 
 #include <pthread.h>
+#include "bctrace.inc"
 
-class Condition
+class Condition : public trace_info
 {
 public:
 	Condition(int init_value = 0, const char *title = 0, int is_binary = 0);

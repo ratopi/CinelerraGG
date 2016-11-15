@@ -29,6 +29,7 @@
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "bctimer.h"
+#include "bctrace.h"
 #include "bdcreate.h"
 #include "brender.h"
 #include "cache.h"
@@ -788,6 +789,12 @@ void MWindow::init_preferences()
 	BC_Signals::set_trap_hook(trap_hook, this);
 	BC_Signals::set_catch_segv(preferences->trap_sigsegv);
 	BC_Signals::set_catch_intr(preferences->trap_sigintr);
+	if( preferences->trap_sigsegv || preferences->trap_sigintr ) {
+		BC_Trace::enable_locks();
+	}
+	else {
+		BC_Trace::disable_locks();
+	}
 	BC_WindowBase::get_resources()->popupmenu_btnup = preferences->popupmenu_btnup;
 }
 
@@ -1164,9 +1171,16 @@ int MWindow::brender_available(int position)
 	return result;
 }
 
-void MWindow::set_brender_start()
+void MWindow::set_brender_range()
 {
 	edl->session->brender_start = edl->local_session->get_selectionstart(1);
+	edl->session->brender_end = edl->local_session->get_selectionend(1);
+
+	if(EQUIV(edl->session->brender_end, edl->session->brender_start))
+	{
+		edl->session->brender_end = edl->tracks->total_video_length();
+	}
+
 	restart_brender();
 	gui->draw_overlays(1);
 }

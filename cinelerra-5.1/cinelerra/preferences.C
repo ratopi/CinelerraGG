@@ -75,7 +75,7 @@ Preferences::Preferences()
 	renderfarm_mountpoint[0] = 0;
 	renderfarm_vfs = 0;
 	renderfarm_job_count = 20;
-	processors = calculate_processors(0);
+	project_smp = processors = calculate_processors(0);
 	real_processors = calculate_processors(1);
 	ffmpeg_early_probe = 0;
 	ffmpeg_marker_indexes = 1;
@@ -179,6 +179,7 @@ void Preferences::copy_from(Preferences *that)
 	for( int i=0; i<that->shbtn_prefs.size(); ++i )
 		this->shbtn_prefs.append(new ShBtnPref(*that->shbtn_prefs[i]));
 	cache_size = that->cache_size;
+	project_smp = that->project_smp;
 	force_uniprocessor = that->force_uniprocessor;
 	trap_sigsegv = that->trap_sigsegv;
 	trap_sigintr = that->trap_sigintr;
@@ -332,6 +333,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 
 
 
+	project_smp = defaults->get("PROJECT_SMP", project_smp);
 	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", force_uniprocessor);
 	ffmpeg_early_probe = defaults->get("FFMPEG_EARLY_PROBE", ffmpeg_early_probe);
 	ffmpeg_marker_indexes = defaults->get("FFMPEG_MARKER_INDEXES", ffmpeg_marker_indexes);
@@ -435,6 +437,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 		defaults->update(string, string2);
 	}
 
+	defaults->update("PROJECT_SMP", project_smp);
 	defaults->update("FORCE_UNIPROCESSOR", force_uniprocessor);
 	defaults->update("FFMPEG_EARLY_PROBE", ffmpeg_early_probe);
 	defaults->update("FFMPEG_MARKER_INDEXES", ffmpeg_marker_indexes);

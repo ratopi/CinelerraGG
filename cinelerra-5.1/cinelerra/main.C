@@ -41,6 +41,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if 0
+#define STRC printf("==new %jd from %p\n", n, __builtin_return_address(0));
+void *operator new(size_t n) { STRC void *vp = malloc(n); bzero(vp,n); return vp; }
+void operator delete(void *t) { free(t); }
+void operator delete(void *t,size_t n) { free(t); }
+void *operator new[](size_t n) { STRC void *vp = malloc(n); bzero(vp,n); return vp; }
+void operator delete[](void *t) { free(t); }
+void operator delete[](void *t,size_t n) { free(t); }
+#endif
+
 enum
 {
 	DO_GUI,

@@ -65,6 +65,7 @@
 #include "bctimer.inc"
 #include "bctitle.inc"
 #include "bctoggle.inc"
+#include "bctrace.inc"
 #include "bctumble.inc"
 #include "bcwindow.inc"
 #include "bcwindowbase.inc"
@@ -124,7 +125,7 @@ public:
 
 
 // Windows, subwindows, popupwindows inherit from this
-class BC_WindowBase
+class BC_WindowBase : public trace_info
 {
 public:
 	BC_WindowBase(int opts=0);

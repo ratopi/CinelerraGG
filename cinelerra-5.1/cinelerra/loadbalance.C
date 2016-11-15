@@ -46,7 +46,6 @@ LoadPackage::~LoadPackage()
 LoadClient::LoadClient(LoadServer *server)
  : Thread(1, 0, 0)
 {
-	Thread::set_synchronous(1);
 	this->server = server;
 	done = 0;
 	package_number = 0;
@@ -57,7 +56,6 @@ LoadClient::LoadClient(LoadServer *server)
 LoadClient::LoadClient()
  : Thread(1, 0, 0)
 {
-	Thread::set_synchronous(1);
 	server = 0;
 	done = 0;
 	package_number = 0;

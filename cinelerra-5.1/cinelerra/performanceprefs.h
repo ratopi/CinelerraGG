@@ -209,6 +209,17 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class PrefsProjectSMP : public BC_TumbleTextBox
+{
+public:
+	PrefsProjectSMP(PreferencesWindow *pwindow, 
+		PerformancePrefs *subwindow, int x, int y);
+	~PrefsProjectSMP();
+	
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 class PrefsRenderFarmJobs : public BC_TumbleTextBox
 {
 public:
