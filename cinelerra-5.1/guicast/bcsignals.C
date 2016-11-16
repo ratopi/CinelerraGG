@@ -266,10 +266,11 @@ int BC_Signals::x_error_handler(Display *display, XErrorEvent *event)
 }
 
 
-void BC_Signals::initialize()
+void BC_Signals::initialize(const char *trap_path)
 {
 	BC_Signals::global_signals = this;
 	BC_Trace::global_trace = this;
+	set_trap_path(trap_path);
 	handler_lock = (pthread_mutex_t*)calloc(1, sizeof(pthread_mutex_t));
 	pthread_mutex_init(handler_lock, 0);
 	old_err_handler = XSetErrorHandler(x_error_handler);

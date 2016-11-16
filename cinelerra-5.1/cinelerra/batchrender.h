@@ -118,6 +118,7 @@ public:
 	void update_active(int number);
 	void update_done(int number, int create_list, double elapsed_time);
 	void move_batch(int src, int dst);
+	static void trap_hook(FILE *fp, void *vp);
 
 	MWindow *mwindow;
 	double current_start;

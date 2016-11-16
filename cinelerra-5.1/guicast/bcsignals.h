@@ -43,7 +43,7 @@ class BC_Signals : public BC_Trace
 public:
 	BC_Signals();
 	~BC_Signals();
-	void initialize();
+	void initialize(const char *trap_path=0);
 	void initialize2();
 	void terminate();
 

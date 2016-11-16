@@ -46,13 +46,8 @@ public:
 
 	void main_loop();
 
-
-
-
 // After a socket times out, kill the render node.
 	void kill_client();
-
-//	RenderFarmClientThread *thread;
 
 	int port;
 	char *deamon_path;
@@ -61,7 +56,6 @@ public:
 // The plugin paths must be known before any threads are started
 	BC_Hash *boot_defaults;
 	Preferences *boot_preferences;
-	ArrayList<PluginServer*> *plugindb;
 };
 
 class RenderFarmClientThread : public Thread
@@ -86,20 +80,16 @@ public:
 // Lock access to the socket during complete transactions
 	void lock(const char *location);
 	void unlock();
-
-
+	static void trap_hook(FILE *fp, void *vp);
 
 	void do_tuner(int socket_fd);
 	void do_packages(int socket_fd);
-
 
 	void get_command(int socket_fd, int *command);
 	void read_preferences(int socket_fd,
 		Preferences *preferences);
 	void read_asset(int socket_fd, Asset *asset);
-	void read_edl(int socket_fd,
-		EDL *edl,
-		Preferences *preferences);
+	void read_edl(int socket_fd, EDL *edl, Preferences *preferences);
 	int read_package(int socket_fd, RenderPackage *package);
 	int send_completion(int socket_fd);
 	void ping_server();
@@ -108,6 +98,7 @@ public:
 	void main_loop(int socket_fd);
 	void run();
 
+	EDL *edl;
 // Everything must be contained in run()
 	int socket_fd;
 // Read only

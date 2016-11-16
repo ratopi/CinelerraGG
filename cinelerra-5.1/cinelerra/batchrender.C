@@ -595,11 +595,21 @@ void BatchRenderThread::start_rendering(char *config_path,
 	// XXX the above stuff is leaked,
 //PRINT_TRACE
 // Initialize stuff which MWindow does.
-	signals->initialize();
+	signals->initialize("/tmp/cinelerra_batch%d.dmp");
 	MWindow::init_defaults(boot_defaults, config_path);
 	load_defaults(boot_defaults);
 	preferences = new Preferences;
 	preferences->load_defaults(boot_defaults);
+	BC_Signals::set_trap_hook(trap_hook, this);
+	BC_Signals::set_catch_segv(preferences->trap_sigsegv);
+	BC_Signals::set_catch_intr(0);
+	if( preferences->trap_sigsegv ) {
+		BC_Trace::enable_locks();
+	}
+	else {
+		BC_Trace::disable_locks();
+	}
+
 	MWindow::init_plugins(0, preferences);
 	char font_path[BCTEXTLEN];
 	strcpy(font_path, preferences->plugin_dir);
@@ -731,7 +741,16 @@ void BatchRenderThread::move_batch(int src, int dst)
 	}
 }
 
-
+void BatchRenderThread::trap_hook(FILE *fp, void *vp)
+{
+	MWindow *mwindow = ((BatchRenderThread *)vp)->mwindow;
+	fprintf(fp, "\nEDL:\n");
+	mwindow->dump_edl(fp);
+	fprintf(fp, "\nUNDO:\n");
+	mwindow->dump_undo(fp);
+	fprintf(fp, "\nEXE:\n");
+	mwindow->dump_exe(fp);
+}
 
 
 
@@ -1126,16 +1145,10 @@ void BatchRenderSaveList::run()
 {
 	char default_path[BCTEXTLEN];
 	sprintf(default_path, "~");
-	BC_FileBox filewindow(100,
-			      100,
-			      this->thread->mwindow->defaults->get("DEFAULT_BATCHLOADPATH", default_path),
-			      _("Save Batch Render List"),
-			      _("Enter a Batch Render filename to save as:"),
-			      0,
-			      0,
-			      0,
-			      0);
-
+	BC_FileBox filewindow(100, 100,
+			this->thread->mwindow->defaults->get("DEFAULT_BATCHLOADPATH", default_path),
+			_("Save Batch Render List"), _("Enter a Batch Render filename to save as:"),
+			0, 0, 0, 0);
 	gui = &filewindow;
 
 	startup_lock->unlock();

@@ -65,7 +65,7 @@ RenderFarmClient::RenderFarmClient(int port,
 	this->port = port;
 	this->deamon_path = deamon_path;
 	SigHandler *signals = new SigHandler;
-	signals->initialize();
+	signals->initialize("/tmp/cinelerra_farm%d.dmp");
 
 	this_pid = getpid();
 	(void)nice(nice_value);
@@ -75,6 +75,14 @@ RenderFarmClient::RenderFarmClient(int port,
 	boot_preferences = new Preferences;
 	boot_preferences->load_defaults(boot_defaults);
 	MWindow::init_plugins(0, boot_preferences);
+	BC_Signals::set_catch_segv(boot_preferences->trap_sigsegv);
+	BC_Signals::set_catch_intr(0);
+        if( boot_preferences->trap_sigsegv ) {
+                BC_Trace::enable_locks();
+        }
+        else {
+                BC_Trace::disable_locks();
+        }
 
 	strcpy(string, boot_preferences->plugin_dir);
 	strcat(string, "/" FONT_SEARCHPATH);
@@ -86,11 +94,8 @@ RenderFarmClient::RenderFarmClient(int port,
 
 RenderFarmClient::~RenderFarmClient()
 {
-//	delete thread;
 	delete boot_defaults;
 	delete boot_preferences;
-	plugindb->remove_all_objects();
-	delete plugindb;
 }
 
 
@@ -157,53 +162,40 @@ void RenderFarmClient::main_loop()
 	printf("RenderFarmClient::main_loop: client started\n");
 	while(1)
 	{
-		if(listen(socket_fd, 256) < 0)
-    	{
-    		perror(_("RenderFarmClient::main_loop: listen"));
-    		return;
-    	}
+		if(listen(socket_fd, 256) < 0) {
+			perror(_("RenderFarmClient::main_loop: listen"));
+			return;
+		}
 
 		int new_socket_fd;
-
-
 
 		if(!deamon_path)
 		{
 			struct sockaddr_in clientname;
 			socklen_t size = sizeof(clientname);
-    		if((new_socket_fd = accept(socket_fd,
-                		(struct sockaddr*)&clientname,
-						&size)) < 0)
-    		{
-        		perror(_("RenderFarmClient::main_loop: accept"));
-        		return;
-    		}
-			else
-			{
-printf("RenderFarmClient::main_loop: Session started from %s\n", inet_ntoa(clientname.sin_addr));
-				RenderFarmClientThread *thread =
-					new RenderFarmClientThread(this);
-				thread->main_loop(new_socket_fd);
+			if( (new_socket_fd = accept(socket_fd,
+				(struct sockaddr*)&clientname, &size) ) < 0 ) {
+				perror(_("RenderFarmClient::main_loop: accept"));
+				return;
 			}
+printf("RenderFarmClient::main_loop: Session started from %s\n", inet_ntoa(clientname.sin_addr));
+			RenderFarmClientThread *thread =
+				new RenderFarmClientThread(this);
+			thread->main_loop(new_socket_fd);
 		}
 		else
 		{
 			struct sockaddr_un clientname;
 			socklen_t size = sizeof(clientname);
-    		if((new_socket_fd = accept(socket_fd,
-                		(struct sockaddr*)&clientname,
-						&size)) < 0)
-    		{
-        		perror(_("RenderFarmClient::main_loop: accept"));
-        		return;
-    		}
-			else
-			{
-printf("RenderFarmClient::main_loop: Session started from %s\n", clientname.sun_path);
-				RenderFarmClientThread *thread =
-					new RenderFarmClientThread(this);
-				thread->main_loop(new_socket_fd);
+			if( (new_socket_fd = accept(socket_fd,
+					(struct sockaddr*)&clientname, &size)) < 0 ) {
+				perror(_("RenderFarmClient::main_loop: accept"));
+				return;
 			}
+printf("RenderFarmClient::main_loop: Session started from %s\n", clientname.sun_path);
+			RenderFarmClientThread *thread =
+				new RenderFarmClientThread(this);
+			thread->main_loop(new_socket_fd);
 		}
 	}
 }
@@ -228,6 +220,7 @@ RenderFarmClientThread::RenderFarmClientThread(RenderFarmClient *client)
  : Thread(0, 0, 1)
 {
 	this->client = client;
+	this->edl = 0;
 	frames_per_second = 0;
 	Thread::set_synchronous(0);
 //	fs_client = 0;
@@ -447,32 +440,19 @@ void RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 }
 
 void RenderFarmClientThread::read_edl(int socket_fd,
-	EDL *edl,
-	Preferences *preferences)
+		EDL *edl, Preferences *preferences)
 {
 	lock("RenderFarmClientThread::read_edl");
-	send_request_header(RENDERFARM_EDL,
-		0);
+	send_request_header(RENDERFARM_EDL, 0);
 
 	char *string;
 	read_string(string);
-
 
 	FileXML file;
 	file.read_from_string((char*)string);
 	delete [] string;
 
-
-
-
-
-
-
-
-	edl->load_xml(&file,
-		LOAD_ALL);
-
-
+	edl->load_xml(&file, LOAD_ALL);
 	unlock();
 }
 
@@ -571,8 +551,7 @@ void RenderFarmClientThread::run()
 
 // Get the pid of the fork if inside the fork
 	pid = getpid();
-
-
+	BC_Signals::set_trap_hook(trap_hook, this);
 
 	int socket_fd = this->socket_fd;
 
@@ -621,8 +600,6 @@ void RenderFarmClientThread::do_tuner(int socket_fd)
 
 void RenderFarmClientThread::do_packages(int socket_fd)
 {
-
-	EDL *edl;
 	RenderPackage *package;
 	Asset *default_asset;
 	Preferences *preferences;
@@ -642,11 +619,6 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	edl = new EDL;
 	edl->create_objects();
 
-
-
-
-
-
 //printf("RenderFarmClientThread::run 3\n");
 	read_preferences(socket_fd, preferences);
 //printf("RenderFarmClientThread::run 4\n");
@@ -656,17 +628,7 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 //edl->dump();
 //printf("RenderFarmClientThread::run 6\n");
 
-
-
-
-
-
-
-
-	package_renderer.initialize(0,
-			edl,
-			preferences,
-			default_asset);
+	package_renderer.initialize(0, edl, preferences, default_asset);
 
 // Read packages
 	while(1)
@@ -712,16 +674,18 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	default_asset->Garbage::remove_user();
 //printf("RenderFarmClientThread::run 10\n");
 	edl->Garbage::remove_user();
+	edl = 0;
 //printf("RenderFarmClientThread::run 11\n");
 	delete preferences;
 printf(_("RenderFarmClientThread::run: Session finished.\n"));
 }
 
-
-
-
-
-
+void RenderFarmClientThread::trap_hook(FILE *fp, void *vp)
+{
+	RenderFarmClientThread *thread = (RenderFarmClientThread*)vp;
+	fprintf(fp, "\nEDL:\n");
+	if( thread->edl ) thread->edl->dump(fp);
+}
 
 
 
@@ -758,19 +722,6 @@ void RenderFarmKeepalive::run()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 FarmPackageRenderer::FarmPackageRenderer(RenderFarmClientThread *thread,
 		int socket_fd)
  : PackageRenderer()
@@ -778,7 +729,6 @@ FarmPackageRenderer::FarmPackageRenderer(RenderFarmClientThread *thread,
 	this->thread = thread;
 	this->socket_fd = socket_fd;
 }
-
 
 
 FarmPackageRenderer::~FarmPackageRenderer()
@@ -855,13 +805,5 @@ int FarmPackageRenderer::set_video_map(int64_t position, int value)
 	thread->unlock();
 	return result;
 }
-
-
-
-
-
-
-
-
 
 
