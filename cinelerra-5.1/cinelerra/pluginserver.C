@@ -1208,7 +1208,7 @@ int PluginServer::get_theme_png_path(char *png_path, const char *theme_dir)
 	char *bp = strrchr(path, '/');
 	if( !bp ) bp = path; else ++bp;
 	char *sp = strrchr(bp,'.');
-	if( !sp || ( strcmp(sp, ".plugin") && strcmp(sp,".so") ) ) return 0;
+	if( !sp ) sp = bp + strlen(bp);
 	char *cp = png_path, *dp = bp;
 	cp += sprintf(cp,"%s/%s/", mwindow->preferences->plugin_dir, theme_dir);
 	while( dp < sp ) *cp++ = *dp++;
