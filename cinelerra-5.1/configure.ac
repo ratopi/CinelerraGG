@@ -97,7 +97,7 @@ PKG_3RD([a52dec],[yes],
 
 PKG_3RD([djbfft],[yes],
   [djbfft-0.76],
-  [ djbfft.a ],
+  [ libdjbfft.a ],
   [ . ])
 
 PKG_3RD([audiofile],[no],

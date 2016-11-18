@@ -1,14 +1,16 @@
 #!/bin/bash -x
 # cd cincv;  cfg_cv.sh /path/cin5
 cin="$1"
+THIRDPARTY=`pwd`/thirdparty
 
 rm -rf thirdparty; cp -a $cin/thirdparty .
 for f in configure.ac Makefile.am autogen.sh; do mv $f $f.cv; cp -a $cin/$f .; done
 mv m4 m4.cv
-mkdir libzmpeg3 db
+rm -rf ./libzmpeg3 ./db
+mkdir libzmpeg3 db db/utils
 
 ./autogen.sh
-./configure --disable-static \
+./configure --disable-static-build --without-ladspa-build \
   --enable-faac=yes --enable-faad2=yes --enable-a52dec=yes \
   --enable-mjpegtools=yes --enable-lame=yes --enable-x264=yes \
   --enable-libogg=auto --enable-libtheora=auto --enable-libvorbis=auto \
@@ -17,7 +19,7 @@ mkdir libzmpeg3 db
   --disable-audiofile --disable-encore --disable-esound --disable-fdk \
   --disable-ffmpeg --disable-fftw --disable-flac --disable-giflib --disable-ilmbase \
   --disable-libavc1394 --disable-libraw1394 --disable-libiec61883 --disable-libvpx \
-  --disable-openjpeg --disable-ladspa --disable-twolame --disable-x265
+  --disable-openjpeg --disable-twolame --disable-x265
 
 export CFG_VARS='CFLAGS+=" -fPIC"'; \
 export MAK_VARS='CFLAGS+=" -fPIC"'; \
@@ -41,7 +43,7 @@ sort -u | while read d; do
  echo -n " -L$d";
 done`
 
-export LIBS=`for f in $static_libs; do
+export LIBS=-lpthread `for f in $static_libs; do
   if [ ! -f "$f" ]; then continue; fi;
   ls $f
 done | sed -e 's;.*/;;' -e 's;lib\(.*\)\.a$;\1;' | \
@@ -68,7 +70,7 @@ export LIBX264_CFLAGS="-I$THIRDPARTY/x264-20151229/."
 export LIBX264_LIBS="-L$THIRDPARTY/x264-20151229/. -lx264"
 
 for f in $MJPEG_LIBS $LIBX264_LIBS; do
-  LIBS=`echo "$LIBS" | sed -e "s/[ ]*\<$f\>[ ]*/ /"`
+  LIBS=`echo "$LIBS" | sed -e "s;[ ]*\<$f\>[ ]*; ;"`
 done
 
 echo LDFLAGS=$LDFLAGS

@@ -159,7 +159,9 @@ cmake_config=echo "exec cmake \$$$$@ $(1)" > ./configure; chmod +x ./configure;
 a52dec.mak_params?= ; cd $(call bld_path,a52dec,include); ln -sf . a52dec
 a52dec.cfg_vars?= CFLAGS+=" -U__FreeBSD__ $(call inc_path,djbfft)" LIBS+=" $(call ld_path,djbfft)"
 a52dec.cfg_params?=--enable-djbfft
-djbfft.cfg_vars?=echo "$(call bld_path,djbfft)" > conf-home; echo "$(CC) $(CFLAGS)" > conf-cc; echo > ./configure; chmod +x ./configure;
+djbfft.cfg_vars?=echo "$(call bld_path,djbfft)" > conf-home; \
+ (CFLAGS="$(CFLAGS)"; $(CFG_VARS); echo "$(CC) $$$$CFLAGS") > conf-cc; \
+ echo > ./configure; chmod +x ./configure;
 djbfft.mak_params?=; cd $(call bld_path,djbfft); ln -sf djbfft.a libdjbfft.a
 audiofile.cfg_params?=--enable-shared=no
 audiofile.mak_params?=LIBS="-lm -lstdc++"
