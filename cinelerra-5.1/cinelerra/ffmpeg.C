@@ -1949,7 +1949,7 @@ int FFMPEG::encode_activate()
 		    (ret=avio_open(&fmt_ctx->pb, fmt_ctx->filename, AVIO_FLAG_WRITE)) < 0 ) {
 			ff_err(ret, "FFMPEG::encode_activate: err opening : %s\n",
 				fmt_ctx->filename);
-			return 1;
+			return -1;
 		}
 
 		AVDictionary *fopts = 0;
@@ -1961,7 +1961,7 @@ int FFMPEG::encode_activate()
 		if( ret < 0 ) {
 			ff_err(ret, "FFMPEG::encode_activate: write header failed %s\n",
 				fmt_ctx->filename);
-			return 1;
+			return -1;
 		}
 		encoding = 1;
 	}

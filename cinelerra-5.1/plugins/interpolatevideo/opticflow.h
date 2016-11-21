@@ -24,7 +24,7 @@
 
 #include "interpolatevideo.inc"
 #include "loadbalance.h"
-#include "motionscan.inc"
+#include "motionscan-hv.inc"
 #include "opticflow.inc"
 
 // Need a 2nd table if a large number of packages

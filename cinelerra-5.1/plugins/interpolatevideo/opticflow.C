@@ -24,7 +24,7 @@
 
 #include "clip.h"
 #include "interpolatevideo.h"
-#include "motionscan.h"
+#include "motionscan-hv.h"
 #include "opticflow.h"
 
 #include <sys/time.h>

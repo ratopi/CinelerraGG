@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2016 Adam Williams <broadcast at earthling dot net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,27 +23,28 @@
 #define MOTIONSCAN_H
 
 
-#include "arraylist.h"
-//#include "../downsample/downsampleengine.inc"
+#include "affine.inc"
 #include "loadbalance.h"
 #include "vframe.inc"
 #include <stdint.h>
 
-class MotionScan;
+class MotionHVScan;
 
 #define OVERSAMPLE 4
-#define MOTION_FILE "/tmp/motion"
+#define MOTION_FILE "/tmp/m"
+#define ROTATION_FILE "/tmp/r"
 
-class MotionScanPackage : public LoadPackage
+class MotionHVScanPackage : public LoadPackage
 {
 public:
-	MotionScanPackage();
+	MotionHVScanPackage();
 
 // For multiple blocks
-// Position of stationary block
+// Position of stationary block after downsampling
 	int block_x1, block_y1, block_x2, block_y2;
-// Range of positions to scan
-	int scan_x1, scan_y1, scan_x2, scan_y2;
+// index of rotated frame
+	int angle_step;
+
 	int dx;
 	int dy;
 	int64_t max_difference;
@@ -51,11 +52,9 @@ public:
 	int64_t min_pixel;
 	int is_border;
 	int valid;
-// For single block
-	int step;
 	int64_t difference1;
 	int64_t difference2;
-// Search position to nearest pixel
+// Search position of current package to nearest pixel with downsampling
 	int search_x;
 	int search_y;
 // Subpixel of search position
@@ -63,38 +62,27 @@ public:
 	int sub_y;
 };
 
-class MotionScanCache
+class MotionHVScanUnit : public LoadClient
 {
 public:
-	MotionScanCache(int x, int y, int64_t difference);
-	int x, y;
-	int64_t difference;
-};
-
-class MotionScanUnit : public LoadClient
-{
-public:
-	MotionScanUnit(MotionScan *server);
-	~MotionScanUnit();
+	MotionHVScanUnit(MotionHVScan *server);
+	~MotionHVScanUnit();
 
 	void process_package(LoadPackage *package);
-	int64_t get_cache(int x, int y);
-	void put_cache(int x, int y, int64_t difference);
+	void subpixel(MotionHVScanPackage *pkg);
+	void single_pixel(MotionHVScanPackage *pkg);
 
-	MotionScan *server;
-
-	ArrayList<MotionScanCache*> cache;
-	Mutex *cache_lock;
+	MotionHVScan *server;
 };
 
-class MotionScan : public LoadServer
+class MotionHVScan : public LoadServer
 {
 public:
-	MotionScan(int total_clients,
+	MotionHVScan(int total_clients,
 		int total_packages);
-	~MotionScan();
+	~MotionHVScan();
 
-	friend class MotionScanUnit;
+	friend class MotionHVScanUnit;
 
 	void init_packages();
 	LoadClient* new_client();
@@ -105,27 +93,27 @@ public:
 // Invoke the motion engine for a search
 // Frame before motion
 	void scan_frame(VFrame *previous_frame,
-// Frame after motion
 		VFrame *current_frame,
-		int global_range_w,
+		int global_range_w, // in pixels
 		int global_range_h,
-		int global_block_w,
+		int global_block_w, // in pixels
 		int global_block_h,
-		double block_x,
-		double block_y,
+		int block_x, // in pixels
+		int block_y,
 		int frame_type,
 		int tracking_type,
 		int action_type,
 		int horizontal_only,
 		int vertical_only,
 		int source_position,
-		int total_steps,
-		int total_dx,
+		int total_dx, // in pixels * OVERSAMPLE
 		int total_dy,
-		int global_origin_x,
-		int global_origin_y);
-	int64_t get_cache(int x, int y);
-	void put_cache(int x, int y, int64_t difference);
+		int global_origin_x, // in pixels
+		int global_origin_y,
+		int do_motion,
+		int do_rotate,
+		double rotation_center, // in deg
+		double rotation_range);
 
 	static int64_t abs_diff(unsigned char *prev_ptr,
 		unsigned char *current_ptr,
@@ -159,6 +147,7 @@ public:
 // OVERSAMPLE
 	int dx_result;
 	int dy_result;
+	float dr_result;
 
 	enum
 	{
@@ -188,6 +177,27 @@ public:
 	};
 
 private:
+	void downsample_frame(VFrame *dst,
+		VFrame *src,
+		int downsample);
+	void pixel_search(int &x_result, int &y_result, double &r_result);
+	void subpixel_search(int &x_result, int &y_result);
+	double step_to_angle(int step, double center);
+
+// 	double calculate_variance(unsigned char *current_ptr,
+// 		int row_bytes,
+// 		int w,
+// 		int h,
+// 		int color_model);
+	double calculate_range(unsigned char *current_ptr,
+		int row_bytes,
+		int w,
+		int h,
+		int color_model);
+
+
+
+	AffineEngine *rotater;
 // Pointer to downsampled frame before motion
 	VFrame *previous_frame;
 // Pointer to downsampled frame after motion
@@ -198,33 +208,49 @@ private:
 // Downsampled frames
 	VFrame *downsampled_previous;
 	VFrame *downsampled_current;
+// rotated versions of current_frame
+	VFrame **rotated_current;
+// allocation of rotated_current array, a copy of angle_steps
+	int total_rotated;
 // Test for identical frames before processing
 // Faster to skip it if the frames are usually different
 	int test_match;
 	int skip;
+// macroblocks didn't have enough data
+	int failed;
 // For single block
 	int block_x1;
 	int block_x2;
 	int block_y1;
 	int block_y2;
+	int scan_w;
+	int scan_h;
 	int scan_x1;
 	int scan_y1;
 	int scan_x2;
 	int scan_y2;
-	int total_pixels;
-	int total_steps;
-	int edge_steps;
+	double scan_angle1, scan_angle2;
 	int y_steps;
 	int x_steps;
+	int angle_steps;
+// in deg
+	double angle_step;
 	int subpixel;
 	int horizontal_only;
 	int vertical_only;
 	int global_origin_x;
 	int global_origin_y;
-
-	ArrayList<MotionScanCache*> cache;
-	Mutex *cache_lock;
-//	DownSampleServer *downsample;
+	int action_type;
+	int current_downsample;
+	int downsampled_w;
+	int downsampled_h;
+	int total_steps;
+	int do_motion;
+	int do_rotate;
+	int rotation_pass;
+// in deg
+	double rotation_center;
+	double rotation_range;
 };
 
 

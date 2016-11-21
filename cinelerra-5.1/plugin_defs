@@ -37,9 +37,9 @@ plugin_dirs += video_tools
 video_tools := blur decimate delayvideo denoisemjpeg denoisevideo downsample \
 	fieldframe flash framefield freezeframe greycstoration interpolatepixels \
 	interpolatevideo invertvideo linearblur loopvideo motion2 motionblur \
-	motion overlay radialblur reframe reframert reroute reversevideo \
-	seltempavg sharpen spectrogram svg titler timeavg timefront unsharp \
-	videoscope wave zoomblur
+	motion motion-cv motion-hv overlay radialblur reframe reframert reroute \
+	reversevideo seltempavg sharpen spectrogram svg titler timeavg timefront \
+	unsharp videoscope wave zoomblur
 
 plugin_dirs += blending
 blending := chromakeyhsv chromakey diffkey

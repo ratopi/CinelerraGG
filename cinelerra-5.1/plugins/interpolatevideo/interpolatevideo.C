@@ -24,7 +24,7 @@
 #include "interpolatevideo.h"
 #include "interpolatewindow.h"
 #include "language.h"
-#include "motionscan.h"
+#include "motionscan-hv.h"
 #include "opticflow.h"
 #include "transportque.inc"
 #include <unistd.h>

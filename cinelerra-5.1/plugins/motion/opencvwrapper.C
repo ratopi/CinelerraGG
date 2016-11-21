@@ -1,21 +1,21 @@
 /*
  * CINELERRA
  * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
- *
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * 
  */
 
 
@@ -128,10 +128,10 @@ findPairs( const CvSeq* objectKeypoints, const CvSeq* objectDescriptors,
 
 
 void
-flannFindPairs( const CvSeq*,
+flannFindPairs( const CvSeq*, 
 	const CvSeq* objectDescriptors,
-    const CvSeq*,
-	const CvSeq* imageDescriptors,
+    const CvSeq*, 
+	const CvSeq* imageDescriptors, 
 	vector<int>& ptpairs )
 {
 	int length = (int)(objectDescriptors->elem_size/sizeof(float));
@@ -171,10 +171,10 @@ flannFindPairs( const CvSeq*,
     int* indices_ptr = m_indices.ptr<int>(0);
     float* dists_ptr = m_dists.ptr<float>(0);
 //printf("flannFindPairs %d m_indices.rows=%d\n", __LINE__, m_indices.rows);
-    for (int i = 0; i < m_indices.rows; ++i)
+    for (int i = 0; i < m_indices.rows; ++i) 
 	{
 //printf("flannFindPairs %d dists=%f %f\n", __LINE__, dists_ptr[2 * i], 0.6 * dists_ptr[2 * i + 1]);
-    	if (dists_ptr[2 * i] < 0.6 * dists_ptr[2 * i + 1])
+    	if (dists_ptr[2 * i] < 0.6 * dists_ptr[2 * i + 1]) 
 		{
 //printf("flannFindPairs %d pairs=%d\n", __LINE__, ptpairs.size());
     		ptpairs.push_back(i);
@@ -185,11 +185,11 @@ flannFindPairs( const CvSeq*,
 
 
 /* a rough implementation for object location */
-int OpenCVWrapper::locatePlanarObject(const CvSeq* objectKeypoints,
+int OpenCVWrapper::locatePlanarObject(const CvSeq* objectKeypoints, 
 	const CvSeq* objectDescriptors,
-    const CvSeq* imageKeypoints,
+    const CvSeq* imageKeypoints, 
 	const CvSeq* imageDescriptors,
-    const CvPoint src_corners[4],
+    const CvPoint src_corners[4], 
 	int *(*point_pairs),
 	int (*total_pairs))
 {
@@ -199,7 +199,7 @@ int OpenCVWrapper::locatePlanarObject(const CvSeq* objectKeypoints,
     vector<CvPoint2D32f> pt1, pt2;
     CvMat _pt1, _pt2;
     int i, n;
-
+	
 	(*point_pairs) = 0;
 	(*total_pairs) = 0;
 
@@ -213,8 +213,8 @@ int OpenCVWrapper::locatePlanarObject(const CvSeq* objectKeypoints,
 // Store keypoints
 	(*point_pairs) = (int*)calloc(ptpairs.size(), sizeof(int));
 	(*total_pairs) = ptpairs.size() / 2;
-
-
+	
+	
     for(int i = 0; i < (int)ptpairs.size(); i++)
     {
 		(*point_pairs)[i] = ptpairs[i];
@@ -292,7 +292,7 @@ OpenCVWrapper::~OpenCVWrapper()
 
 int OpenCVWrapper::scan(VFrame *object_frame,
 	VFrame *scene_frame,
-	int object_x1,
+	int object_x1, 
 	int object_y1,
 	int object_x2,
 	int object_y2,
@@ -321,7 +321,7 @@ int OpenCVWrapper::scan(VFrame *object_frame,
 	if(scene_w % QUANTIZE) scene_image_w += QUANTIZE - (scene_w % QUANTIZE);
 	if(scene_h % QUANTIZE) scene_image_h += QUANTIZE - (scene_h % QUANTIZE);
 
-	if(object_image &&
+	if(object_image && 
 		(object_image_w != this->object_image_w ||
 		object_image_h != this->object_image_h))
 	{
@@ -331,7 +331,7 @@ int OpenCVWrapper::scan(VFrame *object_frame,
 	this->object_image_w = object_image_w;
 	this->object_image_h = object_image_h;
 
-	if(scene_image &&
+	if(scene_image && 
 		(scene_image_w != this->scene_image_w ||
 		scene_image_h != this->scene_image_h))
 	{
@@ -345,18 +345,18 @@ int OpenCVWrapper::scan(VFrame *object_frame,
 	if(!object_image)
 	{
 // Only does greyscale
-		object_image = cvCreateImage(
-			cvSize(object_image_w, object_image_h),
-			8,
+		object_image = cvCreateImage( 
+			cvSize(object_image_w, object_image_h), 
+			8, 
 			1);
 	}
 
 	if(!scene_image)
 	{
 // Only does greyscale
-		scene_image = cvCreateImage(
-			cvSize(scene_image_w, scene_image_h),
-			8,
+		scene_image = cvCreateImage( 
+			cvSize(scene_image_w, scene_image_h), 
+			8, 
 			1);
 	}
 
@@ -365,19 +365,19 @@ int OpenCVWrapper::scan(VFrame *object_frame,
 	cvSetImageROI( object_image, cvRect( 0, 0, object_w, object_h ) );
 	cvSetImageROI( scene_image, cvRect( 0, 0, scene_w, scene_h ) );
 
-	grey_crop((unsigned char*)scene_image->imageData,
-		scene_frame,
-		scene_x1,
-		scene_y1,
-		scene_x2,
+	grey_crop((unsigned char*)scene_image->imageData, 
+		scene_frame, 
+		scene_x1, 
+		scene_y1, 
+		scene_x2, 
 		scene_y2,
 		scene_image_w,
 		scene_image_h);
-	grey_crop((unsigned char*)object_image->imageData,
-		object_frame,
-		object_x1,
-		object_y1,
-		object_x2,
+	grey_crop((unsigned char*)object_image->imageData, 
+		object_frame, 
+		object_x1, 
+		object_y1, 
+		object_x2, 
 		object_y2,
 		object_image_w,
 		object_image_h);
@@ -404,11 +404,11 @@ int OpenCVWrapper::scan(VFrame *object_frame,
 	point_pairs = 0;
 
 
-	cvExtractSURF(object_image,
-		0,
-		&object_keypoints,
-		&object_descriptors,
-		storage,
+	cvExtractSURF(object_image, 
+		0, 
+		&object_keypoints, 
+		&object_descriptors, 
+		storage, 
 		params,
 		0);
 
@@ -418,21 +418,21 @@ int OpenCVWrapper::scan(VFrame *object_frame,
 // 		{
 //         	CvSURFPoint* r1 = (CvSURFPoint*)cvGetSeqElem( object_keypoints, i );
 // 			int size = r1->size / 4;
-// 			draw_rect(frame[object_layer],
-//   				r1->pt.x + object_x1 - size,
-//   				r1->pt.y + object_y1 - size,
-//   				r1->pt.x + object_x1 + size,
+// 			draw_rect(frame[object_layer], 
+//   				r1->pt.x + object_x1 - size, 
+//   				r1->pt.y + object_y1 - size, 
+//   				r1->pt.x + object_x1 + size, 
 //  				r1->pt.y + object_y1 + size);
 // 		}
 
 
 //printf("OpenCVWrapper::process_buffer %d\n", __LINE__);
 
-	cvExtractSURF(scene_image,
-		0,
-		&scene_keypoints,
-		&scene_descriptors,
-		storage,
+	cvExtractSURF(scene_image, 
+		0, 
+		&scene_keypoints, 
+		&scene_descriptors, 
+		storage, 
 		params,
 		0);
 
@@ -441,24 +441,24 @@ int OpenCVWrapper::scan(VFrame *object_frame,
 // 		{
 //         	CvSURFPoint* r1 = (CvSURFPoint*)cvGetSeqElem( scene_keypoints, i );
 // 			int size = r1->size / 4;
-// 			draw_rect(frame[scene_layer],
-//   				r1->pt.x + scene_x1 - size,
-//   				r1->pt.y + scene_y1 - size,
-//   				r1->pt.x + scene_x1 + size,
+// 			draw_rect(frame[scene_layer], 
+//   				r1->pt.x + scene_x1 - size, 
+//   				r1->pt.y + scene_y1 - size, 
+//   				r1->pt.x + scene_x1 + size, 
 //  				r1->pt.y + scene_y1 + size);
 // 		}
 
-// printf("OpenCVWrapper::scan %d %d %d scene keypoints=%d\n",
-// __LINE__,
+// printf("OpenCVWrapper::scan %d %d %d scene keypoints=%d\n", 
+// __LINE__, 
 // scene_w,
 // scene_h,
 // scene_keypoints->total);
 
-	CvPoint src_corners[4] =
+	CvPoint src_corners[4] = 
 	{
-		{ 0, 0 },
-		{ object_w, 0 },
-		{ object_w, object_h },
+		{ 0, 0 }, 
+		{ object_w, 0 }, 
+		{ object_w, object_h }, 
 		{ 0, object_h }
 	};
 
@@ -472,11 +472,11 @@ int OpenCVWrapper::scan(VFrame *object_frame,
 //printf("OpenCVWrapper::process_buffer %d\n", __LINE__);
 	if(scene_keypoints->total &&
 		object_keypoints->total &&
-		locatePlanarObject(object_keypoints,
-			object_descriptors,
-			scene_keypoints,
-			scene_descriptors,
-			src_corners,
+		locatePlanarObject(object_keypoints, 
+			object_descriptors, 
+			scene_keypoints, 
+			scene_descriptors, 
+			src_corners, 
 			&point_pairs,
 			&total_pairs))
 	{
@@ -493,9 +493,9 @@ int OpenCVWrapper::scan(VFrame *object_frame,
 
 
 // Convert to greyscale & crop
-void OpenCVWrapper::grey_crop(unsigned char *dst,
-	VFrame *src,
-	int x1,
+void OpenCVWrapper::grey_crop(unsigned char *dst, 
+	VFrame *src, 
+	int x1, 
 	int y1,
 	int x2,
 	int y2,

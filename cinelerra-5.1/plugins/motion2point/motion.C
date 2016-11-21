@@ -20,7 +20,7 @@
  */
 
 #include "affine.h"
-#include "../motion/motionscan.h"
+#include "../motion-hv/motionscan-hv.h"
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "clip.h"

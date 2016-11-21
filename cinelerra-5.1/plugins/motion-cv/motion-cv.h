@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- *
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * 
  */
 
 #ifndef MOTION_H
@@ -31,23 +31,23 @@
 #include "filexml.inc"
 #include "keyframe.inc"
 #include "loadbalance.h"
-#include "motionscan.inc"
-#include "motionwindow.inc"
 #include "overlayframe.inc"
 #include "pluginvclient.h"
 #include "rotateframe.inc"
 #include "vframe.inc"
 
-class MotionMain;
-class MotionWindow;
-class RotateScan;
+class MotionCVMain;
+class MotionCVWindow;
+class MotionCVScan;
+class RotateCVScan;
 
 
+#define OVERSAMPLE 4
 
 
 // Limits of global range in percent
 #define MIN_RADIUS 1
-#define MAX_RADIUS 100
+#define MAX_RADIUS 50
 
 // Limits of rotation range in degrees
 #define MIN_ROTATION 1
@@ -64,33 +64,25 @@ class RotateScan;
 // Precision of rotation
 #define MIN_ANGLE 0.0001
 
-#define ROTATION_FILE "/tmp/rotate"
+#define TRACKING_FILE "/tmp/motion"
 
-class MotionConfig
+class MotionCVConfig
 {
 public:
-	MotionConfig();
+	MotionCVConfig();
 
-	int equivalent(MotionConfig &that);
-	void copy_from(MotionConfig &that);
-	void interpolate(MotionConfig &prev,
-		MotionConfig &next,
-		int64_t prev_frame,
-		int64_t next_frame,
-		int64_t current_frame);
+	int equivalent(MotionCVConfig &that);
+	void copy_from(MotionCVConfig &that);
+	void interpolate(MotionCVConfig &prev, MotionCVConfig &next, 
+		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 	void boundaries();
 
 	int block_count;
 	int global_range_w;
 	int global_range_h;
-// Range of angles above and below center rotation angle to search
 	int rotation_range;
-// Center angle of rotation search
-	int rotation_center;
 	int magnitude;
-	int rotate_magnitude;
 	int return_speed;
-	int rotate_return_speed;
 	int draw_vectors;
 // Percent of image size
 	int global_block_w;
@@ -108,17 +100,17 @@ public:
 	int vertical_only;
 	int global;
 	int rotate;
+	int addtrackedframeoffset;
+	char tracking_file[BCTEXTLEN];
 // Track or stabilize, single pixel, scan only, or nothing
-	int action_type;
+	int mode1;
 // Recalculate, no calculate, save, or load coordinates from disk
-	int tracking_type;
+	int mode2;
 // Track a single frame, previous frame, or previous frame same block
-	int tracking_object;
-
-#if 0
+	int mode3;
 	enum
 	{
-// action_type
+// mode1
 		TRACK,
 		STABILIZE,
 		TRACK_PIXEL,
@@ -129,14 +121,11 @@ public:
 		SAVE,
 		LOAD,
 		NO_CALCULATE,
-// tracking_object
+// mode3
 		TRACK_SINGLE,
 		TRACK_PREVIOUS,
 		PREVIOUS_SAME_BLOCK
 	};
-#endif
-
-
 // Number of single frame to track relative to timeline start
 	int64_t track_frame;
 // Master layer
@@ -146,11 +135,11 @@ public:
 
 
 
-class MotionMain : public PluginVClient
+class MotionCVMain : public PluginVClient
 {
 public:
-	MotionMain(PluginServer *server);
-	~MotionMain();
+	MotionCVMain(PluginServer *server);
+	~MotionCVMain();
 
 	int process_buffer(VFrame **frame,
 		int64_t start_position,
@@ -167,9 +156,35 @@ public:
 	void calculate_pointers(VFrame **frame, VFrame **src, VFrame **dst);
 	void allocate_temp(int w, int h, int color_model);
 
-	PLUGIN_CLASS_MEMBERS2(MotionConfig)
+	PLUGIN_CLASS_MEMBERS2(MotionCVConfig)
 
 
+	int64_t abs_diff(unsigned char *prev_ptr,
+		unsigned char *current_ptr,
+		int row_bytes,
+		int w,
+		int h,
+		int color_model);
+	int64_t abs_diff_sub(unsigned char *prev_ptr,
+		unsigned char *current_ptr,
+		int row_bytes,
+		int w,
+		int h,
+		int color_model,
+		int sub_x,
+		int sub_y);
+
+	static void clamp_scan(int w, 
+		int h, 
+		int *block_x1,
+		int *block_y1,
+		int *block_x2,
+		int *block_y2,
+		int *scan_x1,
+		int *scan_y1,
+		int *scan_x2,
+		int *scan_y2,
+		int use_absolute);
 	static void draw_pixel(VFrame *frame, int x, int y);
 	static void draw_line(VFrame *frame, int x1, int y1, int x2, int y2);
 	void draw_arrow(VFrame *frame, int x1, int y1, int x2, int y2);
@@ -179,8 +194,8 @@ public:
 // The frame compared with the previous frame to get the motion.
 // It is moved to compensate for motion and copied to the previous_frame.
 	VFrame *temp_frame;
-	MotionScan *engine;
-	RotateScan *motion_rotate;
+	MotionCVScan *engine;
+	RotateCVScan *motion_rotate;
 	OverlayFrame *overlayer;
 	AffineEngine *rotate_engine;
 
@@ -197,7 +212,16 @@ public:
 	int current_dy;
 	float current_angle;
 
-
+	FILE *active_fp;
+	char active_file[BCTEXTLEN];
+	int get_line_key(const char *filename, int64_t key, char *line, int len);
+// add constant frame offset values
+	int dx_offset, dy_offset;
+	int64_t tracking_frame;
+// save/load result values
+	int save_dx, load_dx;
+	int save_dy, load_dy;
+	float save_dt, load_dt;
 
 // Oversampled current frame for motion estimation
 	int32_t *search_area;
@@ -259,45 +283,156 @@ public:
 
 
 
-class RotateScanPackage : public LoadPackage
+
+class MotionCVScanPackage : public LoadPackage
 {
 public:
-	RotateScanPackage();
+	MotionCVScanPackage();
+
+// For multiple blocks
+	int block_x1, block_y1, block_x2, block_y2;
+	int scan_x1, scan_y1, scan_x2, scan_y2;
+	int dx;
+	int dy;
+	int64_t max_difference;
+	int64_t min_difference;
+	int64_t min_pixel;
+	int is_border;
+	int valid;
+// For single block
+	int pixel;
+	int64_t difference1;
+	int64_t difference2;
+};
+
+class MotionCVScanCache
+{
+public:
+	MotionCVScanCache(int x, int y, int64_t difference);
+	int x, y;
+	int64_t difference;
+};
+
+class MotionCVScanUnit : public LoadClient
+{
+public:
+	MotionCVScanUnit(MotionCVScan *server, MotionCVMain *plugin);
+	~MotionCVScanUnit();
+
+	void process_package(LoadPackage *package);
+	int64_t get_cache(int x, int y);
+	void put_cache(int x, int y, int64_t difference);
+
+	MotionCVScan *server;
+	MotionCVMain *plugin;
+
+	ArrayList<MotionCVScanCache*> cache;
+	Mutex *cache_lock;
+};
+
+class MotionCVScan : public LoadServer
+{
+public:
+	MotionCVScan(MotionCVMain *plugin, 
+		int total_clients, 
+		int total_packages);
+	~MotionCVScan();
+
+	friend class MotionCVScanUnit;
+
+	void init_packages();
+	LoadClient* new_client();
+	LoadPackage* new_package();
+
+// Invoke the motion engine for a search
+// Frame before motion
+	void scan_frame(VFrame *previous_frame,
+// Frame after motion
+		VFrame *current_frame);
+	int64_t get_cache(int x, int y);
+	void put_cache(int x, int y, int64_t difference);
+
+// Change between previous frame and current frame multiplied by 
+// OVERSAMPLE
+	int dx_result;
+	int dy_result;
+
+private:
+	VFrame *previous_frame;
+// Frame after motion
+	VFrame *current_frame;
+	MotionCVMain *plugin;
+
+	int skip;
+// For single block
+	int block_x1;
+	int block_x2;
+	int block_y1;
+	int block_y2;
+	int scan_x1;
+	int scan_y1;
+	int scan_x2;
+	int scan_y2;
+	int total_pixels;
+	int total_steps;
+	int subpixel;
+
+
+	ArrayList<MotionCVScanCache*> cache;
+	Mutex *cache_lock;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+class RotateCVScanPackage : public LoadPackage
+{
+public:
+	RotateCVScanPackage();
 	float angle;
 	int64_t difference;
 };
 
-class RotateScanCache
+class RotateCVScanCache
 {
 public:
-	RotateScanCache(float angle, int64_t difference);
+	RotateCVScanCache(float angle, int64_t difference);
 	float angle;
 	int64_t difference;
 };
 
-class RotateScanUnit : public LoadClient
+class RotateCVScanUnit : public LoadClient
 {
 public:
-	RotateScanUnit(RotateScan *server, MotionMain *plugin);
-	~RotateScanUnit();
+	RotateCVScanUnit(RotateCVScan *server, MotionCVMain *plugin);
+	~RotateCVScanUnit();
 
 	void process_package(LoadPackage *package);
 
-	RotateScan *server;
-	MotionMain *plugin;
+	RotateCVScan *server;
+	MotionCVMain *plugin;
 	AffineEngine *rotater;
 	VFrame *temp;
 };
 
-class RotateScan : public LoadServer
+class RotateCVScan : public LoadServer
 {
 public:
-	RotateScan(MotionMain *plugin,
-		int total_clients,
+	RotateCVScan(MotionCVMain *plugin, 
+		int total_clients, 
 		int total_packages);
-	~RotateScan();
+	~RotateCVScan();
 
-	friend class RotateScanUnit;
+	friend class RotateCVScanUnit;
 
 	void init_packages();
 	LoadClient* new_client();
@@ -323,7 +458,7 @@ private:
 // Frame after motion
 	VFrame *current_frame;
 
-	MotionMain *plugin;
+	MotionCVMain *plugin;
 	int skip;
 
 // Pivot
@@ -343,7 +478,7 @@ private:
 	float scan_angle1, scan_angle2;
 	int total_steps;
 
-	ArrayList<RotateScanCache*> cache;
+	ArrayList<RotateCVScanCache*> cache;
 	Mutex *cache_lock;
 };
 

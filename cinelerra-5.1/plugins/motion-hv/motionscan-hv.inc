@@ -19,12 +19,17 @@
  *
  */
 
-#ifndef MOTION_INC
-#define MOTION_INC
+#ifndef MOTIONSCANHV_INC
+#define MOTIONSCANHV_INC
 
 
-class MotionConfig;
-class MotionMain;
+
+
+class MotionHVScan;
+
 
 
 #endif
+
+
+

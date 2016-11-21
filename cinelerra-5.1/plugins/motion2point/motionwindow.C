@@ -24,7 +24,7 @@
 #include "clip.h"
 #include "language.h"
 #include "motion.h"
-#include "motionscan.h"
+#include "motionscan-hv.h"
 #include "motionwindow.h"
 
 

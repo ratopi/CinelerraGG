@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include "affine.inc"
-#include "motionscan.inc"
+#include "motionscan-hv.inc"
 #include "bchash.inc"
 #include "filexml.inc"
 #include "keyframe.inc"

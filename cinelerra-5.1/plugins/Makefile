@@ -78,6 +78,8 @@ DIRS = \
 	loopaudio \
 	loopvideo \
 	motion \
+	motion-cv \
+	motion-hv \
 	motion2point \
 	motionblur \
 	normalize \

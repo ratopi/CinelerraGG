@@ -19,10 +19,12 @@
  *
  */
 
-#ifndef MOTIONWINDOW_INC
-#define MOTIONWINDOW_INC
+#ifndef MOTIONHV_INC
+#define MOTIONHV_INC
 
-class MotionWindow;
-class MotionThread;
+
+class MotionHVConfig;
+class MotionHVMain;
+
 
 #endif
