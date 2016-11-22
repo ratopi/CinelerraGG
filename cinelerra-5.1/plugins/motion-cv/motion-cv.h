@@ -219,10 +219,10 @@ public:
 	int dx_offset, dy_offset;
 	int64_t tracking_frame;
 // save/load result values
+	int load_ok;
 	int save_dx, load_dx;
 	int save_dy, load_dy;
 	float save_dt, load_dt;
-
 // Oversampled current frame for motion estimation
 	int32_t *search_area;
 	int search_size;

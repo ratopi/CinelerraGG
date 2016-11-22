@@ -178,6 +178,7 @@ MotionCVMain::MotionCVMain(PluginServer *server)
 	active_file[0] = 0;
 	tracking_frame = -1;
 	dx_offset = dy_offset = 0;
+	load_ok = 0;
 	save_dx = load_dx = 0;
 	save_dy = load_dy = 0;
 	save_dt = load_dt = 0;
@@ -975,13 +976,15 @@ printf("MotionCVMain::process_buffer 2 remove tracking file: %s\n", config.track
 #ifdef DEBUG
 					printf("MotionCVMain::process_buffer: no offset data frame %jd\n", frame_no);
 #endif
+					dx_offset = 0;  dy_offset = 0;
 				}
 			}
 // Load result from disk
+			load_ok= 0;
 			frame_no = get_source_position();
 			if( !get_line_key(config.tracking_file, frame_no, line, sizeof(line)) &&
 			    sscanf(line, "%jd %d %d %f", &frame_no, &dx, &dy, &dt) == 4 ) {
-				load_dx = dx;  load_dy = dy;  load_dt = dt;
+				load_ok= 1;  load_dx = dx;  load_dy = dy;  load_dt = dt;
 			}
 			else {
 #ifdef DEBUG
@@ -1970,9 +1973,11 @@ void MotionCVScan::scan_frame(VFrame *previous_frame,
 
 		case MotionCVConfig::LOAD:
 		{
-			dx_result = plugin->load_dx;
-			dy_result = plugin->load_dy;
-			skip = 1;
+			if( plugin->load_ok ) {
+				dx_result = plugin->load_dx;
+				dy_result = plugin->load_dy;
+				skip = 1;
+			}
 			break;
 		}
 
@@ -2460,8 +2465,10 @@ float RotateCVScan::scan_frame(VFrame *previous_frame,
 
 		case MotionCVConfig::LOAD:
 		{
-			result = plugin->load_dt;
-			skip = 1;
+			if( plugin->load_ok ) {
+				result = plugin->load_dt;
+				skip = 1;
+			}
 			break;
 		}
 	}
