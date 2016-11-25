@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #ifndef MOTION_H
@@ -64,7 +64,7 @@ class RotateCVScan;
 // Precision of rotation
 #define MIN_ANGLE 0.0001
 
-#define TRACKING_FILE "/tmp/motion"
+#define TRACKING_FILE "/tmp/motion-cv"
 
 class MotionCVConfig
 {
@@ -73,7 +73,7 @@ public:
 
 	int equivalent(MotionCVConfig &that);
 	void copy_from(MotionCVConfig &that);
-	void interpolate(MotionCVConfig &prev, MotionCVConfig &next, 
+	void interpolate(MotionCVConfig &prev, MotionCVConfig &next,
 		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 	void boundaries();
 
@@ -174,8 +174,8 @@ public:
 		int sub_x,
 		int sub_y);
 
-	static void clamp_scan(int w, 
-		int h, 
+	static void clamp_scan(int w,
+		int h,
 		int *block_x1,
 		int *block_y1,
 		int *block_x2,
@@ -212,9 +212,17 @@ public:
 	int current_dy;
 	float current_angle;
 
-	FILE *active_fp;
-	char active_file[BCTEXTLEN];
-	int get_line_key(const char *filename, int64_t key, char *line, int len);
+	char cache_file[BCTEXTLEN];
+	FILE *cache_fp, *active_fp;
+	void reset_cache_file();
+	int open_cache_file();
+	void close_cache_file();
+	int load_cache_line();
+	int locate_cache_line(int64_t key);
+	int get_cache_line(int64_t key);
+	int put_cache_line(const char *line);
+	char cache_line[BCSTRLEN];
+	int64_t cache_key, active_key;
 // add constant frame offset values
 	int dx_offset, dy_offset;
 	int64_t tracking_frame;
@@ -333,8 +341,8 @@ public:
 class MotionCVScan : public LoadServer
 {
 public:
-	MotionCVScan(MotionCVMain *plugin, 
-		int total_clients, 
+	MotionCVScan(MotionCVMain *plugin,
+		int total_clients,
 		int total_packages);
 	~MotionCVScan();
 
@@ -352,7 +360,7 @@ public:
 	int64_t get_cache(int x, int y);
 	void put_cache(int x, int y, int64_t difference);
 
-// Change between previous frame and current frame multiplied by 
+// Change between previous frame and current frame multiplied by
 // OVERSAMPLE
 	int dx_result;
 	int dy_result;
@@ -427,8 +435,8 @@ public:
 class RotateCVScan : public LoadServer
 {
 public:
-	RotateCVScan(MotionCVMain *plugin, 
-		int total_clients, 
+	RotateCVScan(MotionCVMain *plugin,
+		int total_clients,
 		int total_packages);
 	~RotateCVScan();
 

@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "affine.h"
@@ -27,6 +27,7 @@
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
+#include "mainerror.h"
 #include "motion-cv.h"
 #include "motionwindow-cv.h"
 #include "mutex.h"
@@ -34,43 +35,36 @@
 #include "rotateframe.h"
 #include "transportque.h"
 
-
 #include <errno.h>
 #include <unistd.h>
 
 REGISTER_PLUGIN(MotionCVMain)
-
 //#undef DEBUG
-
-#ifndef DEBUG
-#define DEBUG
-#endif
-
 
 MotionCVConfig::MotionCVConfig()
 {
-	global_range_w = 5;
-	global_range_h = 5;
-	rotation_range = 5;
+	global_range_w = 25; //5;
+	global_range_h = 25; //5;
+	rotation_range = 8; //5;
 	block_count = 1;
-	global_block_w = MIN_BLOCK;
-	global_block_h = MIN_BLOCK;
-	rotation_block_w = MIN_BLOCK;
-	rotation_block_h = MIN_BLOCK;
+	global_block_w = 33; //MIN_BLOCK;
+	global_block_h = 33; //MIN_BLOCK;
+	rotation_block_w = 16; //MIN_BLOCK;
+	rotation_block_h = 16; //MIN_BLOCK;
 	block_x = 50;
 	block_y = 50;
 	global_positions = 256;
-	rotate_positions = 4;
+	rotate_positions = 8; // 4;
 	magnitude = 100;
-	return_speed = 0;
+	return_speed = 5; //0;
 	mode1 = STABILIZE;
 	global = 1;
 	rotate = 1;
 	addtrackedframeoffset = 0;
 	strcpy(tracking_file, TRACKING_FILE);
-	mode2 = RECALCULATE;
+	mode2 = SAVE; //NO_CALCULATE;
+	mode3 = TRACK_PREVIOUS; //TRACK_SINGLE;
 	draw_vectors = 1;
-	mode3 = MotionCVConfig::TRACK_SINGLE;
 	track_frame = 0;
 	bottom_is_master = 1;
 	horizontal_only = 0;
@@ -95,8 +89,7 @@ int MotionCVConfig::equivalent(MotionCVConfig &that)
 		global_range_h == that.global_range_h &&
 		rotation_range == that.rotation_range &&
 		mode1 == that.mode1 &&
-		global == that.global &&
-		rotate == that.rotate &&
+		global == that.global && rotate == that.rotate &&
 		addtrackedframeoffset == that.addtrackedframeoffset &&
 		!strcmp(tracking_file, that.tracking_file) &&
 		draw_vectors == that.draw_vectors &&
@@ -148,8 +141,8 @@ void MotionCVConfig::copy_from(MotionCVConfig &that)
 	vertical_only = that.vertical_only;
 }
 
-void MotionCVConfig::interpolate(MotionCVConfig &prev, MotionCVConfig &next, 
-		int64_t prev_frame, int64_t next_frame, int64_t current_frame)
+void MotionCVConfig::interpolate(MotionCVConfig &prev, MotionCVConfig &next,
+	int64_t prev_frame, int64_t next_frame, int64_t current_frame)
 {
 	copy_from(prev);
 }
@@ -174,14 +167,16 @@ MotionCVMain::MotionCVMain(PluginServer *server)
 	global_target_src = 0;
 	global_target_dst = 0;
 
-	active_fp = 0;
-	active_file[0] = 0;
-	tracking_frame = -1;
+	cache_file[0] = 0;
+	cache_fp = active_fp = 0;
+	cache_line[0] = 0;
+	cache_key = active_key = -1;
 	dx_offset = dy_offset = 0;
 	load_ok = 0;
 	save_dx = load_dx = 0;
 	save_dy = load_dy = 0;
 	save_dt = load_dt = 0;
+	tracking_frame = -1;
 
 	prev_rotate_ref = 0;
 	current_rotate_ref = 0;
@@ -191,10 +186,9 @@ MotionCVMain::MotionCVMain(PluginServer *server)
 
 MotionCVMain::~MotionCVMain()
 {
-
 	delete engine;
 	delete overlayer;
-	delete [] search_area;
+	delete[]search_area;
 	delete temp_frame;
 	delete rotate_engine;
 	delete motion_rotate;
@@ -204,7 +198,7 @@ MotionCVMain::~MotionCVMain()
 	delete global_target_src;
 	delete global_target_dst;
 
-	if( active_fp ) fclose(active_fp); 
+	reset_cache_file();
 
 	delete prev_rotate_ref;
 	delete current_rotate_ref;
@@ -212,71 +206,54 @@ MotionCVMain::~MotionCVMain()
 	delete rotate_target_dst;
 }
 
-const char* MotionCVMain::plugin_title() { return _("MotionCV"); }
+const char *MotionCVMain::plugin_title() { return _("MotionCV"); }
 int MotionCVMain::is_realtime() { return 1; }
 int MotionCVMain::is_multichannel() { return 1; }
-
 
 NEW_WINDOW_MACRO(MotionCVMain, MotionCVWindow)
 
 LOAD_CONFIGURATION_MACRO(MotionCVMain, MotionCVConfig)
 
-
-
 void MotionCVMain::update_gui()
 {
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("MotionCVMain::update_gui");
-			MotionCVWindow *window = (MotionCVWindow *)thread->window;
-			
-			char string[BCTEXTLEN];
-			sprintf(string, "%d", config.global_positions);
-			window->global_search_positions->set_text(string);
-			sprintf(string, "%d", config.rotate_positions);
-			window->rotation_search_positions->set_text(string);
+	if( thread ) return;
+	if( !load_configuration() ) return;
+	thread->window->lock_window("MotionCVMain::update_gui");
+	MotionCVWindow *window = (MotionCVWindow *) thread->window;
 
-			window->global_block_w->update(config.global_block_w);
-			window->global_block_h->update(config.global_block_h);
-			window->rotation_block_w->update(config.rotation_block_w);
-			window->rotation_block_h->update(config.rotation_block_h);
-			window->block_x->update(config.block_x);
-			window->block_y->update(config.block_y);
-			window->block_x_text->update((float)config.block_x);
-			window->block_y_text->update((float)config.block_y);
-			window->magnitude->update(config.magnitude);
-			window->return_speed->update(config.return_speed);
+	char string[BCTEXTLEN];
+	sprintf(string, "%d", config.global_positions);
+	window->global_search_positions->set_text(string);
+	sprintf(string, "%d", config.rotate_positions);
+	window->rotation_search_positions->set_text(string);
 
+	window->global_block_w->update(config.global_block_w);
+	window->global_block_h->update(config.global_block_h);
+	window->rotation_block_w->update(config.rotation_block_w);
+	window->rotation_block_h->update(config.rotation_block_h);
+	window->block_x->update(config.block_x);
+	window->block_y->update(config.block_y);
+	window->block_x_text->update((float)config.block_x);
+	window->block_y_text->update((float)config.block_y);
+	window->magnitude->update(config.magnitude);
+	window->return_speed->update(config.return_speed);
 
-			window->track_single->update(config.mode3 == MotionCVConfig::TRACK_SINGLE);
-			window->track_frame_number->update(config.track_frame);
-			window->track_previous->update(config.mode3 == MotionCVConfig::TRACK_PREVIOUS);
-			window->previous_same->update(config.mode3 == MotionCVConfig::PREVIOUS_SAME_BLOCK);
-			if(config.mode3 != MotionCVConfig::TRACK_SINGLE)
-				window->track_frame_number->disable();
-			else
-				window->track_frame_number->enable();
+	window->track_single->update(config.mode3 == MotionCVConfig::TRACK_SINGLE);
+	window->track_frame_number->update(config.track_frame);
+	window->track_previous->update(config.mode3 == MotionCVConfig::TRACK_PREVIOUS);
+	window->previous_same->update(config.mode3 == MotionCVConfig::PREVIOUS_SAME_BLOCK);
+	if( config.mode3 != MotionCVConfig::TRACK_SINGLE )
+		window->track_frame_number->disable();
+	else
+		window->track_frame_number->enable();
 
-			window->mode1->set_text(
-				Mode1::to_text(config.mode1));
-			window->mode2->set_text(
-				Mode2::to_text(config.mode2));
-			window->mode3->set_text(
-				Mode3::to_text(config.horizontal_only, config.vertical_only));
-			window->master_layer->set_text(
-				MasterLayer::to_text(config.bottom_is_master));
-
-
-			window->update_mode();
-			window->unlock_window();
-		}
-	}
+	window->mode1->set_text(Mode1::to_text(config.mode1));
+	window->mode2->set_text(Mode2::to_text(config.mode2));
+	window->mode3->set_text(Mode3::to_text(config.horizontal_only, config.vertical_only));
+	window->master_layer->set_text(MasterLayer::to_text(config.bottom_is_master));
+	window->update_mode();
+	window->unlock_window();
 }
-
-
-
 
 void MotionCVMain::save_data(KeyFrame *keyframe)
 {
@@ -321,307 +298,223 @@ void MotionCVMain::save_data(KeyFrame *keyframe)
 void MotionCVMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-
 	input.set_shared_input(keyframe->get_data(), strlen(keyframe->get_data()));
-
 	int result = 0;
 
-	while(!result)
-	{
-		result = input.read_tag();
-
-		if(!result)
-		{
-			if(input.tag.title_is("MOTION"))
-			{
-				config.block_count = input.tag.get_property("BLOCK_COUNT", config.block_count);
-				config.global_positions = input.tag.get_property("GLOBAL_POSITIONS", config.global_positions);
-				config.rotate_positions = input.tag.get_property("ROTATE_POSITIONS", config.rotate_positions);
-				config.global_block_w = input.tag.get_property("GLOBAL_BLOCK_W", config.global_block_w);
-				config.global_block_h = input.tag.get_property("GLOBAL_BLOCK_H", config.global_block_h);
-				config.rotation_block_w = input.tag.get_property("ROTATION_BLOCK_W", config.rotation_block_w);
-				config.rotation_block_h = input.tag.get_property("ROTATION_BLOCK_H", config.rotation_block_h);
-				config.block_x = input.tag.get_property("BLOCK_X", config.block_x);
-				config.block_y = input.tag.get_property("BLOCK_Y", config.block_y);
-				config.global_range_w = input.tag.get_property("GLOBAL_RANGE_W", config.global_range_w);
-				config.global_range_h = input.tag.get_property("GLOBAL_RANGE_H", config.global_range_h);
-				config.rotation_range = input.tag.get_property("ROTATION_RANGE", config.rotation_range);
-				config.magnitude = input.tag.get_property("MAGNITUDE", config.magnitude);
-				config.return_speed = input.tag.get_property("RETURN_SPEED", config.return_speed);
-				config.mode1 = input.tag.get_property("MODE1", config.mode1);
-				config.global = input.tag.get_property("GLOBAL", config.global);
-				config.rotate = input.tag.get_property("ROTATE", config.rotate);
-				config.addtrackedframeoffset = input.tag.get_property("ADDTRACKEDFRAMEOFFSET", config.addtrackedframeoffset);
-				input.tag.get_property("TRACKING_FILE", config.tracking_file);
-				config.mode2 = input.tag.get_property("MODE2", config.mode2);
-				config.draw_vectors = input.tag.get_property("DRAW_VECTORS", config.draw_vectors);
-				config.mode3 = input.tag.get_property("MODE3", config.mode3);
-				config.track_frame = input.tag.get_property("TRACK_FRAME", config.track_frame);
-				config.bottom_is_master = input.tag.get_property("BOTTOM_IS_MASTER", config.bottom_is_master);
-				config.horizontal_only = input.tag.get_property("HORIZONTAL_ONLY", config.horizontal_only);
-				config.vertical_only = input.tag.get_property("VERTICAL_ONLY", config.vertical_only);
-			}
+	while( !(result = input.read_tag()) ) {
+		if( input.tag.title_is("MOTION") ) {
+			config.block_count = input.tag.get_property("BLOCK_COUNT", config.block_count);
+			config.global_positions = input.tag.get_property("GLOBAL_POSITIONS", config.global_positions);
+			config.rotate_positions = input.tag.get_property("ROTATE_POSITIONS", config.rotate_positions);
+			config.global_block_w = input.tag.get_property("GLOBAL_BLOCK_W", config.global_block_w);
+			config.global_block_h = input.tag.get_property("GLOBAL_BLOCK_H", config.global_block_h);
+			config.rotation_block_w = input.tag.get_property("ROTATION_BLOCK_W", config.rotation_block_w);
+			config.rotation_block_h = input.tag.get_property("ROTATION_BLOCK_H", config.rotation_block_h);
+			config.block_x = input.tag.get_property("BLOCK_X", config.block_x);
+			config.block_y = input.tag.get_property("BLOCK_Y", config.block_y);
+			config.global_range_w = input.tag.get_property("GLOBAL_RANGE_W", config.global_range_w);
+			config.global_range_h = input.tag.get_property("GLOBAL_RANGE_H", config.global_range_h);
+			config.rotation_range = input.tag.get_property("ROTATION_RANGE", config.rotation_range);
+			config.magnitude = input.tag.get_property("MAGNITUDE", config.magnitude);
+			config.return_speed = input.tag.get_property("RETURN_SPEED", config.return_speed);
+			config.mode1 = input.tag.get_property("MODE1", config.mode1);
+			config.global = input.tag.get_property("GLOBAL", config.global);
+			config.rotate = input.tag.get_property("ROTATE", config.rotate);
+			config.addtrackedframeoffset = input.tag.get_property("ADDTRACKEDFRAMEOFFSET", config.addtrackedframeoffset);
+			input.tag.get_property("TRACKING_FILE", config.tracking_file);
+			config.mode2 = input.tag.get_property("MODE2", config.mode2);
+			config.draw_vectors = input.tag.get_property("DRAW_VECTORS", config.draw_vectors);
+			config.mode3 = input.tag.get_property("MODE3", config.mode3);
+			config.track_frame = input.tag.get_property("TRACK_FRAME", config.track_frame);
+			config.bottom_is_master = input.tag.get_property("BOTTOM_IS_MASTER", config.bottom_is_master);
+			config.horizontal_only = input.tag.get_property("HORIZONTAL_ONLY", config.horizontal_only);
+			config.vertical_only = input.tag.get_property("VERTICAL_ONLY", config.vertical_only);
 		}
 	}
 	config.boundaries();
 }
 
-
-
-
-
-
-
-
-
 void MotionCVMain::allocate_temp(int w, int h, int color_model)
 {
-	if(temp_frame && 
-		(temp_frame->get_w() != w ||
-		temp_frame->get_h() != h))
-	{
+	if( temp_frame &&
+	    ( temp_frame->get_w() != w || temp_frame->get_h() != h ) ) {
 		delete temp_frame;
 		temp_frame = 0;
 	}
-	if(!temp_frame)
+	if( !temp_frame )
 		temp_frame = new VFrame(w, h, color_model);
 }
 
-
-
 void MotionCVMain::process_global()
 {
-	if(!engine) engine = new MotionCVScan(this,
-		PluginClient::get_project_smp() + 1,
-		PluginClient::get_project_smp() + 1);
+	if( !engine )
+		engine = new MotionCVScan(this,
+				  PluginClient::get_project_smp() + 1,
+				  PluginClient::get_project_smp() + 1);
 
 // Get the current motion vector between the previous and current frame
 	engine->scan_frame(current_global_ref, prev_global_ref);
-	current_dx = engine->dx_result;
-	current_dy = engine->dy_result;
+	current_dx = (engine->dx_result += dx_offset);
+	current_dy = (engine->dy_result += dy_offset);
+
+// Write results
+	if( config.mode2 == MotionCVConfig::SAVE ) {
+		save_dx = engine->dx_result;
+		save_dy = engine->dy_result;
+	}
 
 // Add current motion vector to accumulation vector.
-	if(config.mode3 != MotionCVConfig::TRACK_SINGLE)
-	{
+	if( config.mode3 != MotionCVConfig::TRACK_SINGLE ) {
 // Retract over time
-		total_dx = (int64_t)total_dx * (100 - config.return_speed) / 100;
-		total_dy = (int64_t)total_dy * (100 - config.return_speed) / 100;
+		total_dx = (int64_t) total_dx *(100 - config.return_speed) / 100;
+		total_dy = (int64_t) total_dy *(100 - config.return_speed) / 100;
 		total_dx += engine->dx_result;
 		total_dy += engine->dy_result;
 	}
-	else
 // Make accumulation vector current
-	{
+	else {
 		total_dx = engine->dx_result;
 		total_dy = engine->dy_result;
 	}
 
 // Clamp accumulation vector
-	if(config.magnitude < 100)
-	{
-		//int block_w = (int64_t)config.global_block_w * 
-		//		current_global_ref->get_w() / 100;
-		//int block_h = (int64_t)config.global_block_h * 
-		//		current_global_ref->get_h() / 100;
-		int block_x_orig = (int64_t)(config.block_x * 
-			current_global_ref->get_w() / 
-			100);
-		int block_y_orig = (int64_t)(config.block_y *
-			current_global_ref->get_h() / 
-			100);
+	if( config.magnitude < 100 ) {
+		int block_x_orig = (int64_t)(config.block_x * current_global_ref->get_w() / 100);
+		int block_y_orig = (int64_t)(config.block_y * current_global_ref->get_h() / 100);
 
-		int max_block_x = (int64_t)(current_global_ref->get_w() - block_x_orig) *
-			OVERSAMPLE * 
-			config.magnitude / 
-			100;
-		int max_block_y = (int64_t)(current_global_ref->get_h() - block_y_orig) *
-			OVERSAMPLE *
-			config.magnitude / 
-			100;
-		int min_block_x = (int64_t)-block_x_orig * 
-			OVERSAMPLE * 
-			config.magnitude / 
-			100;
-		int min_block_y = (int64_t)-block_y_orig * 
-			OVERSAMPLE * 
-			config.magnitude / 
-			100;
+		int max_block_x = (int64_t) (current_global_ref->get_w() - block_x_orig)
+			* OVERSAMPLE * config.magnitude / 100;
+		int max_block_y = (int64_t) (current_global_ref->get_h() - block_y_orig)
+			* OVERSAMPLE * config.magnitude / 100;
+		int min_block_x = (int64_t)
+			-block_x_orig * OVERSAMPLE * config.magnitude / 100;
+		int min_block_y = (int64_t)
+			-block_y_orig * OVERSAMPLE * config.magnitude / 100;
 
 		CLAMP(total_dx, min_block_x, max_block_x);
 		CLAMP(total_dy, min_block_y, max_block_y);
 	}
-
 #ifdef DEBUG
-printf("MotionCVMain::process_global 2 total_dx=%.02f total_dy=%.02f\n", 
-(float)total_dx / OVERSAMPLE,
-(float)total_dy / OVERSAMPLE);
+printf("MotionCVMain::process_global 2 total_dx=%.02f total_dy=%.02f\n",
+ (float)total_dx / OVERSAMPLE, (float)total_dy / OVERSAMPLE);
 #endif
 
-	if(config.mode3 != MotionCVConfig::TRACK_SINGLE && !config.rotate)
-	{
+	if( config.mode3 != MotionCVConfig::TRACK_SINGLE && !config.rotate ) {
 // Transfer current reference frame to previous reference frame and update
 // counter.  Must wait for rotate to compare.
 		prev_global_ref->copy_from(current_global_ref);
 		previous_frame_number = get_source_position();
 	}
-
 // Decide what to do with target based on requested operation
 	int interpolation = NEAREST_NEIGHBOR;
-	float dx = 0;
-	float dy = 0;
-	switch(config.mode1)
-	{
-		case MotionCVConfig::NOTHING:
-			global_target_dst->copy_from(global_target_src);
-			break;
-		case MotionCVConfig::TRACK_PIXEL:
-			interpolation = NEAREST_NEIGHBOR;
-			dx = (int)(total_dx / OVERSAMPLE);
-			dy = (int)(total_dy / OVERSAMPLE);
-			break;
-		case MotionCVConfig::STABILIZE_PIXEL:
-			interpolation = NEAREST_NEIGHBOR;
-			dx = -(int)(total_dx / OVERSAMPLE);
-			dy = -(int)(total_dy / OVERSAMPLE);
-			break;
-			break;
-		case MotionCVConfig::TRACK:
-			interpolation = CUBIC_LINEAR;
-			dx = (float)total_dx / OVERSAMPLE;
-			dy = (float)total_dy / OVERSAMPLE;
-			break;
-		case MotionCVConfig::STABILIZE:
-			interpolation = CUBIC_LINEAR;
-			dx = -(float)total_dx / OVERSAMPLE;
-			dy = -(float)total_dy / OVERSAMPLE;
-			break;
+	float dx = 0, dy = 0;
+	switch( config.mode1 ) {
+	case MotionCVConfig::NOTHING:
+		global_target_dst->copy_from(global_target_src);
+		break;
+	case MotionCVConfig::TRACK_PIXEL:
+		interpolation = NEAREST_NEIGHBOR;
+		dx = (int)(total_dx / OVERSAMPLE);
+		dy = (int)(total_dy / OVERSAMPLE);
+		break;
+	case MotionCVConfig::STABILIZE_PIXEL:
+		interpolation = NEAREST_NEIGHBOR;
+		dx = -(int)(total_dx / OVERSAMPLE);
+		dy = -(int)(total_dy / OVERSAMPLE);
+		break;
+		break;
+	case MotionCVConfig::TRACK:
+		interpolation = CUBIC_LINEAR;
+		dx = (float)total_dx / OVERSAMPLE;
+		dy = (float)total_dy / OVERSAMPLE;
+		break;
+	case MotionCVConfig::STABILIZE:
+		interpolation = CUBIC_LINEAR;
+		dx = -(float)total_dx / OVERSAMPLE;
+		dy = -(float)total_dy / OVERSAMPLE;
+		break;
 	}
 
-
-	if(config.mode1 != MotionCVConfig::NOTHING)
-	{
-		if(!overlayer) 
+	if( config.mode1 != MotionCVConfig::NOTHING ) {
+		if( !overlayer )
 			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
 		global_target_dst->clear_frame();
-		overlayer->overlay(global_target_dst,
-			global_target_src,
-			0,
-			0,
-			global_target_src->get_w(),
-			global_target_src->get_h(),
-			dx,
-			dy,
-			(float)global_target_src->get_w() + dx,
-			(float)global_target_src->get_h() + dy,
-			1,
-			TRANSFER_REPLACE,
-			interpolation);
+		overlayer->overlay(global_target_dst, global_target_src, 0, 0,
+				   global_target_src->get_w(), global_target_src->get_h(),
+				   dx, dy,
+				   (float)global_target_src->get_w() + dx,
+				   (float)global_target_src->get_h() + dy,
+				   1, TRANSFER_REPLACE, interpolation);
 	}
 }
 
-
-
 void MotionCVMain::process_rotation()
 {
-	int block_x;
-	int block_y;
+	int block_x, block_y;
 
 // Convert the previous global reference into the previous rotation reference.
 // Convert global target destination into rotation target source.
-	if(config.global)
-	{
-		if(!overlayer) 
+	if( config.global ) {
+		if( !overlayer )
 			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
-		float dx;
-		float dy;
-		if(config.mode3 == MotionCVConfig::TRACK_SINGLE)
-		{
+		float dx, dy;
+		if( config.mode3 == MotionCVConfig::TRACK_SINGLE ) {
 			dx = (float)total_dx / OVERSAMPLE;
 			dy = (float)total_dy / OVERSAMPLE;
 		}
-		else
-		{
+		else {
 			dx = (float)current_dx / OVERSAMPLE;
 			dy = (float)current_dy / OVERSAMPLE;
 		}
 
 		prev_rotate_ref->clear_frame();
-		overlayer->overlay(prev_rotate_ref,
-			prev_global_ref,
-			0,
-			0,
-			prev_global_ref->get_w(),
-			prev_global_ref->get_h(),
-			dx,
-			dy,
+		overlayer->overlay(prev_rotate_ref, prev_global_ref,
+			0, 0, prev_global_ref->get_w(), prev_global_ref->get_h(),
+			dx, dy,
 			(float)prev_global_ref->get_w() + dx,
 			(float)prev_global_ref->get_h() + dy,
-			1,
-			TRANSFER_REPLACE,
-			CUBIC_LINEAR);
+			1, TRANSFER_REPLACE, CUBIC_LINEAR);
 // Pivot is destination global position
-		block_x = (int)(prev_rotate_ref->get_w() * 
-			config.block_x / 
-			100 +
-			(float)total_dx / 
-			OVERSAMPLE);
-		block_y = (int)(prev_rotate_ref->get_h() * 
-			config.block_y / 
-			100 +
-			(float)total_dy / 
-			OVERSAMPLE);
+		block_x = (int)(prev_rotate_ref->get_w() *
+				config.block_x / 100 + (float)total_dx / OVERSAMPLE);
+		block_y = (int)(prev_rotate_ref->get_h() *
+				config.block_y / 100 + (float)total_dy / OVERSAMPLE);
 // Use the global target output as the rotation target input
 		rotate_target_src->copy_from(global_target_dst);
 // Transfer current reference frame to previous reference frame for global.
-		if(config.mode3 != MotionCVConfig::TRACK_SINGLE)
-		{
+		if( config.mode3 != MotionCVConfig::TRACK_SINGLE ) {
 			prev_global_ref->copy_from(current_global_ref);
 			previous_frame_number = get_source_position();
 		}
 	}
-	else
-	{
 // Pivot is fixed
-		block_x = (int)(prev_rotate_ref->get_w() * 
-			config.block_x / 
-			100);
-		block_y = (int)(prev_rotate_ref->get_h() * 
-			config.block_y / 
-			100);
+	else {
+		block_x = (int)(prev_rotate_ref->get_w() * config.block_x / 100);
+		block_y = (int)(prev_rotate_ref->get_h() * config.block_y / 100);
 	}
 
-
-
 // Get rotation
-	if(!motion_rotate)
-		motion_rotate = new RotateCVScan(this, 
-			get_project_smp() + 1, 
-			get_project_smp() + 1);
+	if( !motion_rotate )
+		motion_rotate = new RotateCVScan(this,
+			 get_project_smp() + 1, get_project_smp() + 1);
 
-	current_angle = motion_rotate->scan_frame(prev_rotate_ref, 
-		current_rotate_ref,
-		block_x,
-		block_y);
-
-
+	current_angle = motion_rotate->scan_frame(prev_rotate_ref, current_rotate_ref,
+		  block_x, block_y);
 
 // Add current rotation to accumulation
-	if(config.mode3 != MotionCVConfig::TRACK_SINGLE)
-	{
+	if( config.mode3 != MotionCVConfig::TRACK_SINGLE ) {
 // Retract over time
 		total_angle = total_angle * (100 - config.return_speed) / 100;
 		total_angle += current_angle;
 
-		if(!config.global)
-		{
+		if( !config.global ) {
 // Transfer current reference frame to previous reference frame and update
 // counter.
 			prev_rotate_ref->copy_from(current_rotate_ref);
 			previous_frame_number = get_source_position();
 		}
 	}
-	else
-	{
+	else {
 		total_angle = current_angle;
 	}
 
@@ -629,477 +522,350 @@ void MotionCVMain::process_rotation()
 printf("MotionCVMain::process_rotation total_angle=%f\n", total_angle);
 #endif
 
-
 // Calculate rotation parameters based on requested operation
 	float angle = 0;
-	switch(config.mode1)
-	{
-		case MotionCVConfig::NOTHING:
-			rotate_target_dst->copy_from(rotate_target_src);
-			break;
-		case MotionCVConfig::TRACK:
-		case MotionCVConfig::TRACK_PIXEL:
-			angle = total_angle;
-			break;
-		case MotionCVConfig::STABILIZE:
-		case MotionCVConfig::STABILIZE_PIXEL:
-			angle = -total_angle;
-			break;
+	switch( config.mode1 ) {
+	case MotionCVConfig::NOTHING:
+		rotate_target_dst->copy_from(rotate_target_src);
+		break;
+	case MotionCVConfig::TRACK:
+	case MotionCVConfig::TRACK_PIXEL:
+		angle = total_angle;
+		break;
+	case MotionCVConfig::STABILIZE:
+	case MotionCVConfig::STABILIZE_PIXEL:
+		angle = -total_angle;
+		break;
 	}
 
-
-
-	if(config.mode1 != MotionCVConfig::NOTHING)
-	{
-		if(!rotate_engine)
-			rotate_engine = new AffineEngine(PluginClient::get_project_smp() + 1,
+	if( config.mode1 != MotionCVConfig::NOTHING ) {
+		if( !rotate_engine )
+			rotate_engine = new AffineEngine(
+				PluginClient::get_project_smp() + 1,
 				PluginClient::get_project_smp() + 1);
 
 		rotate_target_dst->clear_frame();
 
 // Determine pivot based on a number of factors.
-		switch(config.mode1)
-		{
-			case MotionCVConfig::TRACK:
-			case MotionCVConfig::TRACK_PIXEL:
+		switch( config.mode1 ) {
+		case MotionCVConfig::TRACK:
+		case MotionCVConfig::TRACK_PIXEL:
 // Use destination of global tracking.
-				rotate_engine->set_pivot(block_x, block_y);
-				break;
+			rotate_engine->set_pivot(block_x, block_y);
+			break;
 
-			case MotionCVConfig::STABILIZE:
-			case MotionCVConfig::STABILIZE_PIXEL:
-				if(config.global)
-				{
+		case MotionCVConfig::STABILIZE:
+		case MotionCVConfig::STABILIZE_PIXEL:
+			if( config.global ) {
 // Use origin of global stabilize operation
-					rotate_engine->set_pivot((int)(rotate_target_dst->get_w() * 
-							config.block_x / 
-							100),
-						(int)(rotate_target_dst->get_h() * 
-							config.block_y / 
-							100));
-				
-				}
-				else
-				{
+				rotate_engine->set_pivot(
+					(int)(rotate_target_dst->get_w() * config.block_x / 100),
+					(int)(rotate_target_dst->get_h() * config.block_y / 100));
+			}
 // Use origin
-					rotate_engine->set_pivot(block_x, block_y);
-				}
-				break;
+			else {
+				rotate_engine->set_pivot(block_x, block_y);
+			}
+			break;
 		}
 
-
 		rotate_engine->rotate(rotate_target_dst, rotate_target_src, angle);
-// overlayer->overlay(rotate_target_dst,
-// 	prev_rotate_ref,
-// 	0,
-// 	0,
-// 	prev_rotate_ref->get_w(),
-// 	prev_rotate_ref->get_h(),
-// 	0,
-// 	0,
-// 	prev_rotate_ref->get_w(),
-// 	prev_rotate_ref->get_h(),
-// 	1,
-// 	TRANSFER_NORMAL,
-// 	CUBIC_LINEAR);
-// overlayer->overlay(rotate_target_dst,
-// 	current_rotate_ref,
-// 	0,
-// 	0,
-// 	prev_rotate_ref->get_w(),
-// 	prev_rotate_ref->get_h(),
-// 	0,
-// 	0,
-// 	prev_rotate_ref->get_w(),
-// 	prev_rotate_ref->get_h(),
-// 	1,
-// 	TRANSFER_NORMAL,
-// 	CUBIC_LINEAR);
-
-
+// overlayer->overlay(rotate_target_dst, prev_rotate_ref,
+//  0, 0, prev_rotate_ref->get_w(), prev_rotate_ref->get_h(),
+//  0, 0, prev_rotate_ref->get_w(), prev_rotate_ref->get_h(),
+//  1, TRANSFER_NORMAL, CUBIC_LINEAR);
+// overlayer->overlay(rotate_target_dst, current_rotate_ref,
+//  0, 0, prev_rotate_ref->get_w(), prev_rotate_ref->get_h(),
+//  0, 0, prev_rotate_ref->get_w(), prev_rotate_ref->get_h(),
+//  1, TRANSFER_NORMAL, CUBIC_LINEAR);
 	}
-
-
 }
 
-
-
-
-
-
-
-
-
-int MotionCVMain::process_buffer(VFrame **frame,
-	int64_t start_position,
-	double frame_rate)
+int MotionCVMain::process_buffer(VFrame ** frame,
+				 int64_t start_position, double frame_rate)
 {
 	int prev_config_mode2 = config.mode2;
 	int need_reconfigure = load_configuration();
 	int color_model = frame[0]->get_color_model();
 	w = frame[0]->get_w();
 	h = frame[0]->get_h();
-	
 
 #ifdef DEBUG
 printf("MotionCVMain::process_buffer 1 start_position=%jd\n", start_position);
 #endif
 
-
 // Calculate the source and destination pointers for each of the operations.
 // Get the layer to track motion in.
 	reference_layer = config.bottom_is_master ?
-		PluginClient::total_in_buffers - 1 :
-		0;
+	    PluginClient::total_in_buffers - 1 : 0;
 // Get the layer to apply motion in.
 	target_layer = config.bottom_is_master ?
-		0 :
-		PluginClient::total_in_buffers - 1;
-
+	    0 : PluginClient::total_in_buffers - 1;
 
 	output_frame = frame[target_layer];
-
 
 // Get the position of previous reference frame.
 	int64_t actual_previous_number;
 // Skip if match frame not available
 	int skip_current = 0;
 
-
-	if(config.mode3 == MotionCVConfig::TRACK_SINGLE)
-	{
+	if( config.mode3 == MotionCVConfig::TRACK_SINGLE ) {
 		actual_previous_number = config.track_frame;
-		if(get_direction() == PLAY_REVERSE)
+		if( get_direction() == PLAY_REVERSE )
 			actual_previous_number++;
-		if(actual_previous_number == start_position)
+		if( actual_previous_number == start_position )
 			skip_current = 1;
 	}
-	else
-	{
+	else {
 		actual_previous_number = start_position;
-		if(get_direction() == PLAY_FORWARD)
-		{
+		if( get_direction() == PLAY_FORWARD ) {
 			actual_previous_number--;
-			if(actual_previous_number < get_source_start())
+			if( actual_previous_number < get_source_start() )
 				skip_current = 1;
-			else
-			{
+			else {
 				KeyFrame *keyframe = get_prev_keyframe(start_position, 1);
-				if(keyframe->position > 0 &&
-					actual_previous_number < keyframe->position)
+				if( keyframe->position > 0 &&
+				    actual_previous_number < keyframe->position )
 					skip_current = 1;
 			}
 		}
-		else
-		{
+		else {
 			actual_previous_number++;
-			if(actual_previous_number >= get_source_start() + get_total_len())
+			if( actual_previous_number >= get_source_start() + get_total_len() )
 				skip_current = 1;
-			else
-			{
+			else {
 				KeyFrame *keyframe = get_next_keyframe(start_position, 1);
-				if(keyframe->position > 0 &&
-					actual_previous_number >= keyframe->position)
+				if( keyframe->position > 0 &&
+				    actual_previous_number >= keyframe->position )
 					skip_current = 1;
 			}
 		}
-
 // Only count motion since last keyframe
-		
-
 	}
 
+	if( !config.global &&!config.rotate )
+		skip_current = 1;
 
-	if(!config.global && !config.rotate) skip_current = 1;
-
-
-
-
-// printf("process_realtime %d %lld %lld\n", 
-// skip_current, 
-// previous_frame_number, 
-// actual_previous_number);
-// Load match frame and reset vectors
-	int need_reload = !skip_current && 
-		(previous_frame_number != actual_previous_number ||
-		need_reconfigure);
-	if(need_reload)
-	{
-		total_dx = 0;
-		total_dy = 0;
-		total_angle = 0;
-		previous_frame_number = actual_previous_number;
-	}
+//printf("process_realtime: %jd %d %jd %jd\n", start_position,
+// skip_current, previous_frame_number, actual_previous_number);
 	if( prev_config_mode2 != MotionCVConfig::SAVE &&
 	    config.mode2 == MotionCVConfig::SAVE ) {
+		reset_cache_file();
+		char save_file[BCTEXTLEN];
+		sprintf(save_file, "%s.sav", config.tracking_file);
 #ifdef DEBUG
-printf("MotionCVMain::process_buffer 2 remove tracking file: %s\n", config.tracking_file);
+printf("MotionCVMain::process_buffer 2 rename tracking file: %s to %s\n",
+ config.tracking_file, save_file);
 #endif
-		::remove(config.tracking_file);
+		::rename(config.tracking_file, save_file);
+	}
+	else if( !cache_file[0] || active_key > start_position )
+		reset_cache_file();
+
+// Load match frame and reset vectors
+	int need_reload = !skip_current &&
+	    (previous_frame_number != actual_previous_number ||
+	     need_reconfigure);
+	if( need_reload ) {
+		total_dx = total_dy = 0;  total_angle = 0;
+		previous_frame_number = actual_previous_number;
 	}
 
-
-	if(skip_current)
-	{
-		total_dx = 0;
-		total_dy = 0;
-		current_dx = 0;
-		current_dy = 0;
-		total_angle = 0;
-		current_angle = 0;
+	if( skip_current ) {
+		total_dx = total_dy = 0;
+		current_dx = current_dy = 0;
+		total_angle = current_angle = 0;
 	}
-
-
-
 
 // Get the global pointers.  Here we walk through the sequence of events.
-	if(config.global)
-	{
+	if( config.global ) {
 // Assume global only.  Global reads previous frame and compares
 // with current frame to get the current translation.
 // The center of the search area is fixed in compensate mode or
 // the user value + the accumulation vector in track mode.
-		if(!prev_global_ref)
+		if( !prev_global_ref )
 			prev_global_ref = new VFrame(w, h, color_model);
-		if(!current_global_ref)
+		if( !current_global_ref )
 			current_global_ref = new VFrame(w, h, color_model);
 
-// Global loads the current target frame into the src and 
+// Global loads the current target frame into the src and
 // writes it to the dst frame with desired translation.
-		if(!global_target_src)
+		if( !global_target_src )
 			global_target_src = new VFrame(w, h, color_model);
-		if(!global_target_dst)
+		if( !global_target_dst )
 			global_target_dst = new VFrame(w, h, color_model);
 
-
 // Load the global frames
-		if(need_reload)
-		{
-			read_frame(prev_global_ref, 
-				reference_layer, 
-				previous_frame_number, 
-				frame_rate,
-				0);
+		if( need_reload ) {
+			read_frame(prev_global_ref, reference_layer,
+				previous_frame_number, frame_rate, 0);
 		}
 
-		read_frame(current_global_ref, 
-			reference_layer, 
-			start_position, 
-			frame_rate,
-			0);
-		read_frame(global_target_src,
-			target_layer,
-			start_position,
-			frame_rate,
-			0);
-
-
+		read_frame(current_global_ref, reference_layer,
+				start_position, frame_rate, 0);
+		read_frame(global_target_src, target_layer,
+				start_position, frame_rate, 0);
 
 // Global followed by rotate
-		if(config.rotate)
-		{
+		if( config.rotate ) {
 // Must translate the previous global reference by the current global
 // accumulation vector to match the current global reference.
 // The center of the search area is always the user value + the accumulation
 // vector.
-			if(!prev_rotate_ref)
+			if( !prev_rotate_ref )
 				prev_rotate_ref = new VFrame(w, h, color_model);
 // The current global reference is the current rotation reference.
-			if(!current_rotate_ref)
+			if( !current_rotate_ref )
 				current_rotate_ref = new VFrame(w, h, color_model);
 			current_rotate_ref->copy_from(current_global_ref);
 
 // The global target destination is copied to the rotation target source
 // then written to the rotation output with rotation.
-// The pivot for the rotation is the center of the search area 
+// The pivot for the rotation is the center of the search area
 // if we're tracking.
 // The pivot is fixed to the user position if we're compensating.
-			if(!rotate_target_src)
+			if( !rotate_target_src )
 				rotate_target_src = new VFrame(w, h, color_model);
-			if(!rotate_target_dst)
-				rotate_target_dst = new VFrame(w,h , color_model);
+			if( !rotate_target_dst )
+				rotate_target_dst = new VFrame(w, h, color_model);
 		}
 	}
-	else
 // Rotation only
-	if(config.rotate)
-	{
-// Rotation reads the previous reference frame and compares it with current 
+	else if( config.rotate ) {
+// Rotation reads the previous reference frame and compares it with current
 // reference frame.
-		if(!prev_rotate_ref)
+		if( !prev_rotate_ref )
 			prev_rotate_ref = new VFrame(w, h, color_model);
-		if(!current_rotate_ref)
+		if( !current_rotate_ref )
 			current_rotate_ref = new VFrame(w, h, color_model);
 
 // Rotation loads target frame to temporary, rotates it, and writes it to the
 // target frame.  The pivot is always fixed.
-		if(!rotate_target_src)
+		if( !rotate_target_src )
 			rotate_target_src = new VFrame(w, h, color_model);
-		if(!rotate_target_dst)
-			rotate_target_dst = new VFrame(w,h , color_model);
-
+		if( !rotate_target_dst )
+			rotate_target_dst = new VFrame(w, h, color_model);
 
 // Load the rotate frames
-		if(need_reload)
-		{
-			read_frame(prev_rotate_ref, 
-				reference_layer, 
-				previous_frame_number, 
-				frame_rate,
-				0);
+		if( need_reload ) {
+			read_frame(prev_rotate_ref,
+				   reference_layer,
+				   previous_frame_number, frame_rate, 0);
 		}
-		read_frame(current_rotate_ref, 
-			reference_layer, 
-			start_position, 
-			frame_rate,
-			0);
+		read_frame(current_rotate_ref,
+			   reference_layer, start_position, frame_rate, 0);
 		read_frame(rotate_target_src,
-			target_layer,
-			start_position,
-			frame_rate,
-			0);
+			   target_layer, start_position, frame_rate, 0);
 	}
 
-	if(!skip_current)
-	{
-
-		if( config.mode2 == MotionCVConfig::LOAD ) {
-			char line[BCTEXTLEN];
-			int64_t frame_no, no;  int dx, dy;  float dt;
-			if( config.addtrackedframeoffset && config.track_frame != tracking_frame ) {
-				tracking_frame = frame_no = config.track_frame;
-				if( !get_line_key(config.tracking_file, frame_no, line, sizeof(line)) &&
-				    sscanf(line, "%jd %d %d %f", &no, &dx, &dy, &dt) == 4 ) {
-					dx_offset = dx;  dy_offset = dy;
+	dx_offset = 0; dy_offset = 0;
+	if( config.mode2 == MotionCVConfig::LOAD ) {
+		if( config.addtrackedframeoffset ) {
+			if( config.track_frame != tracking_frame ) {
+				tracking_frame = config.track_frame;
+				int64_t no;  int dx, dy;  float dt;
+				if( !get_cache_line(tracking_frame) &&
+				    sscanf(cache_line, "%jd %d %d %f", &no, &dx, &dy, &dt) == 4 ) {
+					dx_offset = dx; dy_offset = dy;
 				}
 				else {
-#ifdef DEBUG
-					printf("MotionCVMain::process_buffer: no offset data frame %jd\n", frame_no);
-#endif
-					dx_offset = 0;  dy_offset = 0;
+					eprintf("no offset data frame %jd\n", tracking_frame);
 				}
 			}
+		}
+		else
+			tracking_frame = -1;
+	}
+
+	if( !skip_current ) {
+		load_ok = 0;
+		if( config.mode2 == MotionCVConfig::LOAD ||
+		    config.mode2 == MotionCVConfig::SAVE ) {
+			int64_t no;  int dx, dy;  float dt;
+			int64_t frame_no = get_source_position();
 // Load result from disk
-			load_ok= 0;
-			frame_no = get_source_position();
-			if( !get_line_key(config.tracking_file, frame_no, line, sizeof(line)) &&
-			    sscanf(line, "%jd %d %d %f", &frame_no, &dx, &dy, &dt) == 4 ) {
-				load_ok= 1;  load_dx = dx;  load_dy = dy;  load_dt = dt;
+			if( !get_cache_line(frame_no) &&
+			    sscanf(cache_line, "%jd %d %d %f", &no, &dx, &dy, &dt) == 4 ) {
+				load_ok = 1; load_dx = dx; load_dy = dy; load_dt = dt;
 			}
 			else {
 #ifdef DEBUG
-				printf("MotionCVMain::process_buffer: no tracking data frame %jd\n", frame_no);
+printf("MotionCVMain::process_buffer: no tracking data frame %jd\n", frame_no);
 #endif
 			}
 		}
-
 // Get position change from previous frame to current frame
-		if(config.global) process_global();
+		if( config.global )
+			process_global();
 // Get rotation change from previous frame to current frame
-		if(config.rotate) process_rotation();
+		if( config.rotate )
+			process_rotation();
 //frame[target_layer]->copy_from(prev_rotate_ref);
 //frame[target_layer]->copy_from(current_rotate_ref);
 
 // write results to disk
 		if( config.mode2 == MotionCVConfig::SAVE ) {
-			FILE *output = fopen(config.tracking_file, "aw");
-			if( output ) {
-				int64_t frame_no = get_source_position();
-				fprintf(output, "%jd %d %d %f\n", frame_no, save_dx, save_dy, save_dt);
-				fclose(output);
-			}
-			else {
-				perror("MotionCVMain::process buffer save");
-			}
+			char line[BCSTRLEN];
+			int64_t frame_no = get_source_position();
+			snprintf(line, sizeof(line), "%jd %d %d %f\n",
+				 frame_no, save_dx, save_dy, save_dt);
+			put_cache_line(line);
 		}
-	}
-
 
 // Transfer the relevant target frame to the output
-	if(!skip_current)
-	{
-		if(config.rotate)
-		{
+		if( config.rotate ) {
 			frame[target_layer]->copy_from(rotate_target_dst);
 		}
-		else
-		{
+		else {
 			frame[target_layer]->copy_from(global_target_dst);
 		}
 	}
-	else
 // Read the target destination directly
-	{
+	else {
 		read_frame(frame[target_layer],
-			target_layer,
-			start_position,
-			frame_rate,
-			0);
+			   target_layer, start_position, frame_rate, 0);
 	}
 
-	if(config.draw_vectors)
-	{
+	if( config.draw_vectors ) {
 		draw_vectors(frame[target_layer]);
 	}
-
 #ifdef DEBUG
-printf("MotionCVMain::process_buffer 100\n");
+	printf("MotionCVMain::process_buffer 100\n");
 #endif
 	return 0;
 }
 
-
-void MotionCVMain::clamp_scan(int w, 
-	int h, 
-	int *block_x1,
-	int *block_y1,
-	int *block_x2,
-	int *block_y2,
-	int *scan_x1,
-	int *scan_y1,
-	int *scan_x2,
-	int *scan_y2,
-	int use_absolute)
+void MotionCVMain::clamp_scan(int w, int h,
+		int *block_x1, int *block_y1, int *block_x2, int *block_y2,
+		int *scan_x1, int *scan_y1, int *scan_x2, int *scan_y2,
+		int use_absolute)
 {
-// printf("MotionCVMain::clamp_scan 1 w=%d h=%d block=%d %d %d %d scan=%d %d %d %d absolute=%d\n",
-// w,
-// h,
-// *block_x1,
-// *block_y1,
-// *block_x2,
-// *block_y2,
-// *scan_x1,
-// *scan_y1,
-// *scan_x2,
-// *scan_y2,
-// use_absolute);
+// printf("MotionCVMain::clamp_scan 1 w=%d h=%d block=%d %d %d"
+// " %d scan=%d %d %d %d absolute=%d\n",
+// w, h, *block_x1, *block_y1, *block_x2, *block_y2,
+// *scan_x1, *scan_y1, *scan_x2, *scan_y2, use_absolute);
 
-	if(use_absolute)
-	{
+	if( use_absolute ) {
 // scan is always out of range before block.
-		if(*scan_x1 < 0)
-		{
+		if( *scan_x1 < 0 ) {
 			int difference = -*scan_x1;
 			*block_x1 += difference;
 			*scan_x1 = 0;
 		}
 
-		if(*scan_y1 < 0)
-		{
+		if( *scan_y1 < 0 ) {
 			int difference = -*scan_y1;
 			*block_y1 += difference;
 			*scan_y1 = 0;
 		}
 
-		if(*scan_x2 > w)
-		{
+		if( *scan_x2 > w ) {
 			int difference = *scan_x2 - w;
 			*block_x2 -= difference;
 			*scan_x2 -= difference;
 		}
 
-		if(*scan_y2 > h)
-		{
+		if( *scan_y2 > h ) {
 			int difference = *scan_y2 - h;
 			*block_y2 -= difference;
 			*scan_y2 -= difference;
@@ -1110,40 +876,34 @@ void MotionCVMain::clamp_scan(int w,
 		CLAMP(*scan_x2, 0, w);
 		CLAMP(*scan_y2, 0, h);
 	}
-	else
-	{
-		if(*scan_x1 < 0)
-		{
+	else {
+		if( *scan_x1 < 0 ) {
 			int difference = -*scan_x1;
 			*block_x1 += difference;
 			*scan_x2 += difference;
 			*scan_x1 = 0;
 		}
 
-		if(*scan_y1 < 0)
-		{
+		if( *scan_y1 < 0 ) {
 			int difference = -*scan_y1;
 			*block_y1 += difference;
 			*scan_y2 += difference;
 			*scan_y1 = 0;
 		}
 
-		if(*scan_x2 - *block_x1 + *block_x2 > w)
-		{
+		if( *scan_x2 - *block_x1 + *block_x2 > w ) {
 			int difference = *scan_x2 - *block_x1 + *block_x2 - w;
 			*block_x2 -= difference;
 		}
 
-		if(*scan_y2 - *block_y1 + *block_y2 > h)
-		{
+		if( *scan_y2 - *block_y1 + *block_y2 > h ) {
 			int difference = *scan_y2 - *block_y1 + *block_y2 - h;
 			*block_y2 -= difference;
 		}
-
-// 		CLAMP(*scan_x1, 0, w - (*block_x2 - *block_x1));
-// 		CLAMP(*scan_y1, 0, h - (*block_y2 - *block_y1));
-// 		CLAMP(*scan_x2, 0, w - (*block_x2 - *block_x1));
-// 		CLAMP(*scan_y2, 0, h - (*block_y2 - *block_y1));
+//              CLAMP(*scan_x1, 0, w - (*block_x2 - *block_x1));
+//              CLAMP(*scan_y1, 0, h - (*block_y2 - *block_y1));
+//              CLAMP(*scan_x2, 0, w - (*block_x2 - *block_x1));
+//              CLAMP(*scan_y2, 0, h - (*block_y2 - *block_y1));
 	}
 
 // Sanity checks which break the calculation but should never happen if the
@@ -1153,93 +913,51 @@ void MotionCVMain::clamp_scan(int w,
 	CLAMP(*block_y1, 0, h);
 	CLAMP(*block_y2, 0, h);
 
-// printf("MotionCVMain::clamp_scan 2 w=%d h=%d block=%d %d %d %d scan=%d %d %d %d absolute=%d\n",
-// w,
-// h,
-// *block_x1,
-// *block_y1,
-// *block_x2,
-// *block_y2,
-// *scan_x1,
-// *scan_y1,
-// *scan_x2,
-// *scan_y2,
-// use_absolute);
+// printf("MotionCVMain::clamp_scan 2 w=%d h=%d"
+// " block=%d %d %d %d scan=%d %d %d %d absolute=%d\n",
+// w, h, *block_x1, *block_y1, *block_x2, *block_y2,
+// *scan_x1, *scan_y1, *scan_x2, *scan_y2, use_absolute);
 }
-
-
 
 void MotionCVMain::draw_vectors(VFrame *frame)
 {
-	int w = frame->get_w();
-	int h = frame->get_h();
-	int global_x1, global_y1;
-	int global_x2, global_y2;
-	int block_x, block_y;
-	int block_w, block_h;
-	int block_x1, block_y1;
-	int block_x2, block_y2;
-	int block_x3, block_y3;
-	int block_x4, block_y4;
+	int w = frame->get_w(), h = frame->get_h();
+	int global_x1, global_y1, global_x2, global_y2;
+	int block_x, block_y, block_w, block_h;
+	int block_x1, block_y1, block_x2, block_y2;
+	int block_x3, block_y3, block_x4, block_y4;
+	int search_x1, search_y1, search_x2, search_y2;
 	int search_w, search_h;
-	int search_x1, search_y1;
-	int search_x2, search_y2;
-	//int search_x3, search_y3;
-	//int search_x4, search_y4;
 
-	if(config.global)
-	{
+	if( config.global ) {
 // Get vector
 // Start of vector is center of previous block.
 // End of vector is total accumulation.
-		if(config.mode3 == MotionCVConfig::TRACK_SINGLE)
-		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
-				100);
-			global_y1 = (int64_t)(config.block_y *
-				h / 
-				100);
+		if( config.mode3 == MotionCVConfig::TRACK_SINGLE ) {
+			global_x1 = (int64_t) (config.block_x * w / 100);
+			global_y1 = (int64_t) (config.block_y * h / 100);
 			global_x2 = global_x1 + total_dx / OVERSAMPLE;
 			global_y2 = global_y1 + total_dy / OVERSAMPLE;
-//printf("MotionCVMain::draw_vectors %d %d %d %d %d %d\n", total_dx, total_dy, global_x1, global_y1, global_x2, global_y2);
+//printf("MotionCVMain::draw_vectors %d %d %d %d %d %d\n",
+// total_dx, total_dy, global_x1, global_y1, global_x2, global_y2);
 		}
-		else
 // Start of vector is center of previous block.
 // End of vector is current change.
-		if(config.mode3 == MotionCVConfig::PREVIOUS_SAME_BLOCK)
-		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
-				100);
-			global_y1 = (int64_t)(config.block_y *
-				h / 
-				100);
+		else if( config.mode3 == MotionCVConfig::PREVIOUS_SAME_BLOCK ) {
+			global_x1 = (int64_t) (config.block_x * w / 100);
+			global_y1 = (int64_t) (config.block_y * h / 100);
 			global_x2 = global_x1 + current_dx / OVERSAMPLE;
 			global_y2 = global_y1 + current_dy / OVERSAMPLE;
 		}
-		else
-		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
-				100 + 
-				(total_dx - current_dx) / 
-				OVERSAMPLE);
-			global_y1 = (int64_t)(config.block_y *
-				h / 
-				100 +
-				(total_dy - current_dy) /
-				OVERSAMPLE);
-			global_x2 = (int64_t)(config.block_x * 
-				w / 
-				100 + 
-				total_dx / 
-				OVERSAMPLE);
-			global_y2 = (int64_t)(config.block_y *
-				h / 
-				100 +
-				total_dy /
-				OVERSAMPLE);
+		else {
+			global_x1 = (int64_t) (config.block_x * w / 100
+					+ (total_dx - current_dx) / OVERSAMPLE);
+			global_y1 = (int64_t) (config.block_y * h / 100
+					+ (total_dy - current_dy) / OVERSAMPLE);
+			global_x2 = (int64_t) (config.block_x * w / 100
+					+ total_dx / OVERSAMPLE);
+			global_y2 = (int64_t) (config.block_y * h / 100
+					+ total_dy / OVERSAMPLE);
 		}
 
 		block_x = global_x1;
@@ -1258,30 +976,11 @@ void MotionCVMain::draw_vectors(VFrame *frame)
 		search_y2 = block_y2 + search_h / 2;
 
 // printf("MotionCVMain::draw_vectors %d %d %d %d %d %d %d %d %d %d %d %d\n",
-// global_x1,
-// global_y1,
-// block_w,
-// block_h,
-// block_x1,
-// block_y1,
-// block_x2,
-// block_y2,
-// search_x1,
-// search_y1,
-// search_x2,
-// search_y2);
-
-		clamp_scan(w, 
-			h, 
-			&block_x1,
-			&block_y1,
-			&block_x2,
-			&block_y2,
-			&search_x1,
-			&search_y1,
-			&search_x2,
-			&search_y2,
-			1);
+// global_x1, global_y1, block_w, block_h, block_x1, block_y1, block_x2, block_y2,
+// search_x1, search_y1, search_x2, search_y2);
+		clamp_scan(w, h,
+			   &block_x1, &block_y1, &block_x2, &block_y2,
+			   &search_x1, &search_y1, &search_x2, &search_y2, 1);
 
 // Vector
 		draw_arrow(frame, global_x1, global_y1, global_x2, global_y2);
@@ -1292,7 +991,6 @@ void MotionCVMain::draw_vectors(VFrame *frame)
 		draw_line(frame, block_x2, block_y2, block_x1, block_y2);
 		draw_line(frame, block_x1, block_y2, block_x1, block_y1);
 
-
 // Search area
 		draw_line(frame, search_x1, search_y1, search_x2, search_y1);
 		draw_line(frame, search_x2, search_y1, search_x2, search_y2);
@@ -1300,22 +998,19 @@ void MotionCVMain::draw_vectors(VFrame *frame)
 		draw_line(frame, search_x1, search_y2, search_x1, search_y1);
 
 // Block should be endpoint of motion
-		if(config.rotate)
-		{
+		if( config.rotate ) {
 			block_x = global_x2;
 			block_y = global_y2;
 		}
 	}
-	else
-	{
-		block_x = (int64_t)(config.block_x * w / 100);
-		block_y = (int64_t)(config.block_y * h / 100);
+	else {
+		block_x = (int64_t) (config.block_x * w / 100);
+		block_y = (int64_t) (config.block_y * h / 100);
 	}
 
 	block_w = config.rotation_block_w * w / 100;
 	block_h = config.rotation_block_h * h / 100;
-	if(config.rotate)
-	{
+	if( config.rotate ) {
 		float angle = total_angle * 2 * M_PI / 360;
 		double base_angle1 = atan((float)block_h / block_w);
 		double base_angle2 = atan((float)block_w / block_h);
@@ -1336,76 +1031,48 @@ void MotionCVMain::draw_vectors(VFrame *frame)
 		draw_line(frame, block_x4, block_y4, block_x3, block_y3);
 		draw_line(frame, block_x3, block_y3, block_x1, block_y1);
 
-
 // Center
-		if(!config.global)
-		{
+		if( !config.global ) {
 			draw_line(frame, block_x, block_y - 5, block_x, block_y + 6);
 			draw_line(frame, block_x - 5, block_y, block_x + 6, block_y);
 		}
 	}
 }
 
-
-
 void MotionCVMain::draw_pixel(VFrame *frame, int x, int y)
 {
-	if(!(x >= 0 && y >= 0 && x < frame->get_w() && y < frame->get_h())) return;
+	if( !(x >= 0 && y >= 0 && x < frame->get_w() && y < frame->get_h()) )
+		return;
 
-#define DRAW_PIXEL(x, y, components, do_yuv, max, type) \
-{ \
+#define DRAW_PIXEL(model, x, y, components, do_yuv, max, type) \
+ case model: { \
 	type **rows = (type**)frame->get_rows(); \
 	rows[y][x * components] = max - rows[y][x * components]; \
-	if(!do_yuv) \
-	{ \
+	if( !do_yuv ) { \
 		rows[y][x * components + 1] = max - rows[y][x * components + 1]; \
 		rows[y][x * components + 2] = max - rows[y][x * components + 2]; \
 	} \
-	else \
-	{ \
+	else { \
 		rows[y][x * components + 1] = (max / 2 + 1) - rows[y][x * components + 1]; \
 		rows[y][x * components + 2] = (max / 2 + 1) - rows[y][x * components + 2]; \
 	} \
-	if(components == 4) \
+	if( components == 4 ) \
 		rows[y][x * components + 3] = max; \
-}
+} break
 
-
-	switch(frame->get_color_model())
-	{
-		case BC_RGB888:
-			DRAW_PIXEL(x, y, 3, 0, 0xff, unsigned char);
-			break;
-		case BC_RGBA8888:
-			DRAW_PIXEL(x, y, 4, 0, 0xff, unsigned char);
-			break;
-		case BC_RGB_FLOAT:
-			DRAW_PIXEL(x, y, 3, 0, 1.0, float);
-			break;
-		case BC_RGBA_FLOAT:
-			DRAW_PIXEL(x, y, 4, 0, 1.0, float);
-			break;
-		case BC_YUV888:
-			DRAW_PIXEL(x, y, 3, 1, 0xff, unsigned char);
-			break;
-		case BC_YUVA8888:
-			DRAW_PIXEL(x, y, 4, 1, 0xff, unsigned char);
-			break;
-		case BC_RGB161616:
-			DRAW_PIXEL(x, y, 3, 0, 0xffff, uint16_t);
-			break;
-		case BC_YUV161616:
-			DRAW_PIXEL(x, y, 3, 1, 0xffff, uint16_t);
-			break;
-		case BC_RGBA16161616:
-			DRAW_PIXEL(x, y, 4, 0, 0xffff, uint16_t);
-			break;
-		case BC_YUVA16161616:
-			DRAW_PIXEL(x, y, 4, 1, 0xffff, uint16_t);
-			break;
+	switch( frame->get_color_model() ) {
+	DRAW_PIXEL(BC_RGB888,x, y, 3, 0, 0xff, unsigned char);
+	DRAW_PIXEL(BC_RGBA8888,x, y, 4, 0, 0xff, unsigned char);
+	DRAW_PIXEL(BC_RGB_FLOAT,x, y, 3, 0, 1.0, float);
+	DRAW_PIXEL(BC_RGBA_FLOAT,x, y, 4, 0, 1.0, float);
+	DRAW_PIXEL(BC_YUV888,x, y, 3, 1, 0xff, unsigned char);
+	DRAW_PIXEL(BC_YUVA8888,x, y, 4, 1, 0xff, unsigned char);
+	DRAW_PIXEL(BC_RGB161616,x, y, 3, 0, 0xffff, uint16_t);
+	DRAW_PIXEL(BC_YUV161616,x, y, 3, 1, 0xffff, uint16_t);
+	DRAW_PIXEL(BC_RGBA16161616,x, y, 4, 0, 0xffff, uint16_t);
+	DRAW_PIXEL(BC_YUVA16161616,x, y, 4, 1, 0xffff, uint16_t);
 	}
 }
-
 
 void MotionCVMain::draw_line(VFrame *frame, int x1, int y1, int x2, int y2)
 {
@@ -1413,48 +1080,34 @@ void MotionCVMain::draw_line(VFrame *frame, int x1, int y1, int x2, int y2)
 	int h = labs(y2 - y1);
 //printf("MotionCVMain::draw_line 1 %d %d %d %d\n", x1, y1, x2, y2);
 
-	if(!w && !h)
-	{
+	if( !w && !h ) {
 		draw_pixel(frame, x1, y1);
 	}
-	else
-	if(w > h)
-	{
+	else if( w > h ) {
 // Flip coordinates so x1 < x2
-		if(x2 < x1)
-		{
-			y2 ^= y1;
-			y1 ^= y2;
-			y2 ^= y1;
-			x1 ^= x2;
-			x2 ^= x1;
-			x1 ^= x2;
+		if( x2 < x1 ) {
+			y2 ^= y1;  y1 ^= y2;  y2 ^= y1;
+			x1 ^= x2;  x2 ^= x1;  x1 ^= x2;
 		}
 		int numerator = y2 - y1;
 		int denominator = x2 - x1;
-		for(int i = x1; i < x2; i++)
-		{
-			int y = y1 + (int64_t)(i - x1) * (int64_t)numerator / (int64_t)denominator;
+		for( int i = x1; i < x2; i++ ) {
+			int y = y1 + (int64_t) (i - x1)
+			    * (int64_t) numerator / (int64_t) denominator;
 			draw_pixel(frame, i, y);
 		}
 	}
-	else
-	{
+	else {
 // Flip coordinates so y1 < y2
-		if(y2 < y1)
-		{
-			y2 ^= y1;
-			y1 ^= y2;
-			y2 ^= y1;
-			x1 ^= x2;
-			x2 ^= x1;
-			x1 ^= x2;
+		if( y2 < y1 ) {
+			y2 ^= y1;  y1 ^= y2;  y2 ^= y1;
+			x1 ^= x2;  x2 ^= x1;  x1 ^= x2;
 		}
 		int numerator = x2 - x1;
 		int denominator = y2 - y1;
-		for(int i = y1; i < y2; i++)
-		{
-			int x = x1 + (int64_t)(i - y1) * (int64_t)numerator / (int64_t)denominator;
+		for( int i = y1; i < y2; i++ ) {
+			int x = x1 + (int64_t) (i - y1)
+			    * (int64_t) numerator / (int64_t) denominator;
 			draw_pixel(frame, x, i);
 		}
 	}
@@ -1467,19 +1120,14 @@ void MotionCVMain::draw_arrow(VFrame *frame, int x1, int y1, int x2, int y2)
 	double angle = atan((float)(y2 - y1) / (float)(x2 - x1));
 	double angle1 = angle + (float)145 / 360 * 2 * 3.14159265;
 	double angle2 = angle - (float)145 / 360 * 2 * 3.14159265;
-	int x3;
-	int y3;
-	int x4;
-	int y4;
-	if(x2 < x1)
-	{
+	int x3, y3, x4, y4;
+	if( x2 < x1 ) {
 		x3 = x2 - (int)(ARROW_SIZE * cos(angle1));
 		y3 = y2 - (int)(ARROW_SIZE * sin(angle1));
 		x4 = x2 - (int)(ARROW_SIZE * cos(angle2));
 		y4 = y2 - (int)(ARROW_SIZE * sin(angle2));
 	}
-	else
-	{
+	else {
 		x3 = x2 + (int)(ARROW_SIZE * cos(angle1));
 		y3 = y2 + (int)(ARROW_SIZE * sin(angle1));
 		x4 = x2 + (int)(ARROW_SIZE * cos(angle2));
@@ -1488,39 +1136,34 @@ void MotionCVMain::draw_arrow(VFrame *frame, int x1, int y1, int x2, int y2)
 
 // Main vector
 	draw_line(frame, x1, y1, x2, y2);
-//	draw_line(frame, x1, y1 + 1, x2, y2 + 1);
+//      draw_line(frame, x1, y1 + 1, x2, y2 + 1);
 
 // Arrow line
-	if(abs(y2 - y1) || abs(x2 - x1)) draw_line(frame, x2, y2, x3, y3);
-//	draw_line(frame, x2, y2 + 1, x3, y3 + 1);
+	if( abs(y2 - y1) || abs(x2 - x1) )
+		draw_line(frame, x2, y2, x3, y3);
+//      draw_line(frame, x2, y2 + 1, x3, y3 + 1);
 // Arrow line
-	if(abs(y2 - y1) || abs(x2 - x1)) draw_line(frame, x2, y2, x4, y4);
-//	draw_line(frame, x2, y2 + 1, x4, y4 + 1);
+	if( abs(y2 - y1) || abs(x2 - x1) )
+		draw_line(frame, x2, y2, x4, y4);
+//      draw_line(frame, x2, y2 + 1, x4, y4 + 1);
 }
 
-
-
-
-#define ABS_DIFF(type, temp_type, multiplier, components) \
-{ \
+#define ABS_DIFF(model, type, temp_type, multiplier, components) \
+case model: { \
 	temp_type result_temp = 0; \
-	for(int i = 0; i < h; i++) \
-	{ \
+	for( int i = 0; i < h; i++ ) { \
 		type *prev_row = (type*)prev_ptr; \
 		type *current_row = (type*)current_ptr; \
-		for(int j = 0; j < w; j++) \
-		{ \
-			for(int k = 0; k < 3; k++) \
-			{ \
+		for( int j = 0; j < w; j++ ) { \
+			for( int k = 0; k < 3; k++ ) { \
 				temp_type difference; \
 				difference = *prev_row++ - *current_row++; \
-				if(difference < 0) \
+				if( difference < 0 ) \
 					result_temp -= difference; \
 				else \
 					result_temp += difference; \
 			} \
-			if(components == 4) \
-			{ \
+			if( components == 4 ) { \
 				prev_row++; \
 				current_row++; \
 			} \
@@ -1529,66 +1172,40 @@ void MotionCVMain::draw_arrow(VFrame *frame, int x1, int y1, int x2, int y2)
 		current_ptr += row_bytes; \
 	} \
 	result = (int64_t)(result_temp * multiplier); \
-}
+} break
 
-int64_t MotionCVMain::abs_diff(unsigned char *prev_ptr,
-	unsigned char *current_ptr,
-	int row_bytes,
-	int w,
-	int h,
-	int color_model)
+int64_t MotionCVMain::abs_diff(unsigned char *prev_ptr, unsigned char *current_ptr,
+	       int row_bytes, int w, int h, int color_model)
 {
 	int64_t result = 0;
-	switch(color_model)
-	{
-		case BC_RGB888:
-			ABS_DIFF(unsigned char, int64_t, 1, 3)
-			break;
-		case BC_RGBA8888:
-			ABS_DIFF(unsigned char, int64_t, 1, 4)
-			break;
-		case BC_RGB_FLOAT:
-			ABS_DIFF(float, double, 0x10000, 3)
-			break;
-		case BC_RGBA_FLOAT:
-			ABS_DIFF(float, double, 0x10000, 4)
-			break;
-		case BC_YUV888:
-			ABS_DIFF(unsigned char, int64_t, 1, 3)
-			break;
-		case BC_YUVA8888:
-			ABS_DIFF(unsigned char, int64_t, 1, 4)
-			break;
-		case BC_YUV161616:
-			ABS_DIFF(uint16_t, int64_t, 1, 3)
-			break;
-		case BC_YUVA16161616:
-			ABS_DIFF(uint16_t, int64_t, 1, 4)
-			break;
+	switch( color_model ) {
+	ABS_DIFF(BC_RGB888,unsigned char, int64_t, 1, 3);
+	ABS_DIFF(BC_RGBA8888,unsigned char, int64_t, 1, 4);
+	ABS_DIFF(BC_RGB_FLOAT,float, double, 0x10000, 3);
+	ABS_DIFF(BC_RGBA_FLOAT,float, double, 0x10000, 4);
+	ABS_DIFF(BC_YUV888,unsigned char, int64_t, 1, 3);
+	ABS_DIFF(BC_YUVA8888,unsigned char, int64_t, 1, 4);
+	ABS_DIFF(BC_YUV161616,uint16_t, int64_t, 1, 3);
+	ABS_DIFF(BC_YUVA16161616,uint16_t, int64_t, 1, 4);
 	}
 	return result;
 }
 
-
-
-#define ABS_DIFF_SUB(type, temp_type, multiplier, components) \
-{ \
+#define ABS_DIFF_SUB(model, type, temp_type, multiplier, components) \
+case model: { \
 	temp_type result_temp = 0; \
 	temp_type y2_fraction = sub_y * 0x100 / OVERSAMPLE; \
 	temp_type y1_fraction = 0x100 - y2_fraction; \
 	temp_type x2_fraction = sub_x * 0x100 / OVERSAMPLE; \
 	temp_type x1_fraction = 0x100 - x2_fraction; \
-	for(int i = 0; i < h_sub; i++) \
-	{ \
+	for( int i = 0; i < h_sub; i++ ) { \
 		type *prev_row1 = (type*)prev_ptr; \
 		type *prev_row2 = (type*)prev_ptr + components; \
 		type *prev_row3 = (type*)(prev_ptr + row_bytes); \
 		type *prev_row4 = (type*)(prev_ptr + row_bytes) + components; \
 		type *current_row = (type*)current_ptr; \
-		for(int j = 0; j < w_sub; j++) \
-		{ \
-			for(int k = 0; k < 3; k++) \
-			{ \
+		for( int j = 0; j < w_sub; j++ ) { \
+			for( int k = 0; k < 3; k++ ) { \
 				temp_type difference; \
 				temp_type prev_value = \
 					(*prev_row1++ * x1_fraction * y1_fraction + \
@@ -1598,18 +1215,15 @@ int64_t MotionCVMain::abs_diff(unsigned char *prev_ptr,
 					0x100 / 0x100; \
 				temp_type current_value = *current_row++; \
 				difference = prev_value - current_value; \
-				if(difference < 0) \
+				if( difference < 0 ) \
 					result_temp -= difference; \
 				else \
 					result_temp += difference; \
 			} \
  \
-			if(components == 4) \
-			{ \
-				prev_row1++; \
-				prev_row2++; \
-				prev_row3++; \
-				prev_row4++; \
+			if( components == 4 ) { \
+				prev_row1++; prev_row2++; \
+				prev_row3++; prev_row4++; \
 				current_row++; \
 			} \
 		} \
@@ -1617,91 +1231,135 @@ int64_t MotionCVMain::abs_diff(unsigned char *prev_ptr,
 		current_ptr += row_bytes; \
 	} \
 	result = (int64_t)(result_temp * multiplier); \
-}
+} break
 
-
-
-
-int64_t MotionCVMain::abs_diff_sub(unsigned char *prev_ptr,
-	unsigned char *current_ptr,
-	int row_bytes,
-	int w,
-	int h,
-	int color_model,
-	int sub_x,
-	int sub_y)
+int64_t MotionCVMain::abs_diff_sub(unsigned char *prev_ptr, unsigned char *current_ptr,
+	   int row_bytes, int w, int h, int color_model, int sub_x, int sub_y)
 {
 	int h_sub = h - 1;
 	int w_sub = w - 1;
 	int64_t result = 0;
 
-	switch(color_model)
-	{
-		case BC_RGB888:
-			ABS_DIFF_SUB(unsigned char, int64_t, 1, 3)
-			break;
-		case BC_RGBA8888:
-			ABS_DIFF_SUB(unsigned char, int64_t, 1, 4)
-			break;
-		case BC_RGB_FLOAT:
-			ABS_DIFF_SUB(float, double, 0x10000, 3)
-			break;
-		case BC_RGBA_FLOAT:
-			ABS_DIFF_SUB(float, double, 0x10000, 4)
-			break;
-		case BC_YUV888:
-			ABS_DIFF_SUB(unsigned char, int64_t, 1, 3)
-			break;
-		case BC_YUVA8888:
-			ABS_DIFF_SUB(unsigned char, int64_t, 1, 4)
-			break;
-		case BC_YUV161616:
-			ABS_DIFF_SUB(uint16_t, int64_t, 1, 3)
-			break;
-		case BC_YUVA16161616:
-			ABS_DIFF_SUB(uint16_t, int64_t, 1, 4)
-			break;
+	switch( color_model ) {
+	ABS_DIFF_SUB(BC_RGB888,unsigned char, int64_t, 1, 3);
+	ABS_DIFF_SUB(BC_RGBA8888,unsigned char, int64_t, 1, 4);
+	ABS_DIFF_SUB(BC_RGB_FLOAT,float, double, 0x10000, 3);
+	ABS_DIFF_SUB(BC_RGBA_FLOAT,float, double, 0x10000, 4);
+	ABS_DIFF_SUB(BC_YUV888,unsigned char, int64_t, 1, 3);
+	ABS_DIFF_SUB(BC_YUVA8888,unsigned char, int64_t, 1, 4);
+	ABS_DIFF_SUB(BC_YUV161616,uint16_t, int64_t, 1, 3);
+	ABS_DIFF_SUB(BC_YUVA16161616,uint16_t, int64_t, 1, 4);
 	}
 	return result;
 }
 
-int MotionCVMain::get_line_key(const char *filename, int64_t key, char *line, int len)
+
+int MotionCVMain::open_cache_file()
 {
-	if( active_fp && strcmp(active_file, filename) ) {
-		fclose(active_fp);  active_fp = 0;  active_file[0] = 0;
+	if( cache_fp ) return 0;
+	if( !cache_file[0] ) return 1;
+	if( !(cache_fp = fopen(cache_file, "r")) ) return 1;
+	return 0;
+}
+
+void MotionCVMain::close_cache_file()
+{
+	if( !cache_fp ) return;
+	fclose(cache_fp);
+	cache_fp = 0; cache_key = -1; tracking_frame = -1;
+}
+
+int MotionCVMain::load_cache_line()
+{
+	cache_key = -1;
+	if( open_cache_file() ) return 1;
+	if( !fgets(cache_line, sizeof(cache_line), cache_fp) ) return 1;
+	cache_key = strtol(cache_line, 0, 0);
+	return 0;
+}
+
+int MotionCVMain::get_cache_line(int64_t key)
+{
+	if( cache_key == key ) return 0;
+	if( open_cache_file() ) return 1;
+	if( cache_key >= 0 && key > cache_key ) {
+		if( load_cache_line() ) return 1;
+		if( cache_key == key ) return 0;
+		if( cache_key > key ) return 1;
 	}
-	if( !active_fp ) {
-		if( !(active_fp = fopen(filename, "r")) ) {
-			perror("open motion file");
-			fprintf(stderr,"err reading key %jd\n", key);
-			return -1;
-		}
-		strcpy(active_file, filename);
-		tracking_frame = -1;
-	}
-	int64_t recd = 0;
-	if( fgets(line, len, active_fp) && (recd=strtol(line,0,0)) == key )
-		return 0;
 // binary search file
-	fseek(active_fp, 0, SEEK_END);
-	int64_t l = -1, r = ftell(active_fp);
-	while( (r-l) > 1 ) {
-		int64_t m = (l+r) / 2;
-		fseek(active_fp, m, SEEK_SET);
-		if( m > 0 && !fgets(line, len, active_fp) ) {
-			fprintf(stderr,"err reading key %jd\n", key);
+	fseek(cache_fp, 0, SEEK_END);
+	int64_t l = -1, r = ftell(cache_fp);
+	while( (r - l) > 1 ) {
+		int64_t m = (l + r) / 2;
+		fseek(cache_fp, m, SEEK_SET);
+		if( m > 0 && !fgets(cache_line, sizeof(cache_line), cache_fp) )
 			return -1;
-		}
-		if( fgets(line, len, active_fp) ) {
-			recd = strtol(line,0,0);
-			if( recd == key ) return 0;
-			if( recd < key ) { l = m; continue; }
+		if( !load_cache_line() ) {
+			if( cache_key == key )
+				return 0;
+			if( cache_key < key ) { l = m; continue; }
 		}
 		r = m;
 	}
 	return 1;
 }
 
+int MotionCVMain::locate_cache_line(int64_t key)
+{
+	int ret = 1;
+	if( key < 0 || !(ret=get_cache_line(key)) ||
+	    ( cache_key >= 0 && cache_key < key ) )
+		ret = load_cache_line();
+	return ret;
+}
+
+int MotionCVMain::put_cache_line(const char *line)
+{
+	int64_t key = strtol(line, 0, 0);
+	if( key == active_key ) return 1;
+	if( !active_fp ) {
+		close_cache_file();
+		sprintf(cache_file, "%s.bak", config.tracking_file);
+		::rename(config.tracking_file, cache_file);
+		if( !(active_fp = fopen(config.tracking_file, "w")) ) {
+			perror(config.tracking_file);
+			fprintf(stderr, "err writing key %jd\n", key);
+			return -1;
+		}
+		active_key = -1;
+	}
+
+	if( active_key < key ) {
+		locate_cache_line(active_key);
+		while( cache_key >= 0 && key >= cache_key ) {
+			if( key > cache_key )
+				fputs(cache_line, active_fp);
+			load_cache_line();
+		}
+	}
+
+	active_key = key;
+	fputs(line, active_fp);
+	fflush(active_fp);
+	return 0;
+}
+
+void MotionCVMain::reset_cache_file()
+{
+	if( active_fp ) {
+		locate_cache_line(active_key);
+		while( cache_key >= 0 ) {
+			fputs(cache_line, active_fp);
+			load_cache_line();
+		}
+		close_cache_file();  ::remove(cache_file);
+		fclose(active_fp); active_fp = 0; active_key = -1;
+	}
+	else
+		close_cache_file();
+	strcpy(cache_file, config.tracking_file);
+}
 
 
 MotionCVScanPackage::MotionCVScanPackage()
@@ -1710,9 +1368,7 @@ MotionCVScanPackage::MotionCVScanPackage()
 	valid = 1;
 }
 
-
-MotionCVScanUnit::MotionCVScanUnit(MotionCVScan *server, 
-	MotionCVMain *plugin)
+MotionCVScanUnit::MotionCVScanUnit(MotionCVScan *server, MotionCVMain *plugin)
  : LoadClient(server)
 {
 	this->plugin = plugin;
@@ -1725,11 +1381,9 @@ MotionCVScanUnit::~MotionCVScanUnit()
 	delete cache_lock;
 }
 
-
-
 void MotionCVScanUnit::process_package(LoadPackage *package)
 {
-	MotionCVScanPackage *pkg = (MotionCVScanPackage*)package;
+	MotionCVScanPackage *pkg = (MotionCVScanPackage *) package;
 	//int w = server->current_frame->get_w();
 	//int h = server->current_frame->get_h();
 	int color_model = server->current_frame->get_color_model();
@@ -1737,114 +1391,73 @@ void MotionCVScanUnit::process_package(LoadPackage *package)
 	int row_bytes = server->current_frame->get_bytes_per_line();
 
 // Single pixel
-	if(!server->subpixel)
-	{
+	if( !server->subpixel ) {
 		int search_x = pkg->scan_x1 + (pkg->pixel % (pkg->scan_x2 - pkg->scan_x1));
 		int search_y = pkg->scan_y1 + (pkg->pixel / (pkg->scan_x2 - pkg->scan_x1));
 
 // Try cache
 		pkg->difference1 = server->get_cache(search_x, search_y);
-		if(pkg->difference1 < 0)
-		{
-//printf("MotionCVScanUnit::process_package 1 %d %d\n", 
-//search_x, search_y, pkg->block_x2 - pkg->block_x1, pkg->block_y2 - pkg->block_y1);
+		if( pkg->difference1 < 0 ) {
+//printf("MotionCVScanUnit::process_package 1 %d %d\n",
+// search_x, search_y, pkg->block_x2 - pkg->block_x1, pkg->block_y2 - pkg->block_y1);
 // Pointers to first pixel in each block
-			unsigned char *prev_ptr = server->previous_frame->get_rows()[
-				search_y] +	
-				search_x * pixel_size;
-			unsigned char *current_ptr = server->current_frame->get_rows()[
-				pkg->block_y1] +
-				pkg->block_x1 * pixel_size;
+			unsigned char *prev_ptr =
+			    server->previous_frame->get_rows()[search_y]
+				+ search_x * pixel_size;
+			unsigned char *current_ptr =
+			    server->current_frame->get_rows()[pkg->block_y1]
+				+ pkg->block_x1 * pixel_size;
 // Scan block
-			pkg->difference1 = plugin->abs_diff(prev_ptr,
-				current_ptr,
-				row_bytes,
-				pkg->block_x2 - pkg->block_x1,
-				pkg->block_y2 - pkg->block_y1,
-				color_model);
+			pkg->difference1 = plugin->abs_diff(prev_ptr, current_ptr, row_bytes,
+				    pkg->block_x2 - pkg->block_x1, pkg->block_y2 - pkg->block_y1,
+				    color_model);
 //printf("MotionCVScanUnit::process_package 2\n");
 			server->put_cache(search_x, search_y, pkg->difference1);
 		}
 	}
-	else
 // Sub pixel
-	{
+	else {
 		int sub_x = pkg->pixel % (OVERSAMPLE * 2 - 1) + 1;
 		int sub_y = pkg->pixel / (OVERSAMPLE * 2 - 1) + 1;
 
-		if(plugin->config.horizontal_only)
-		{
-			sub_y = 0;
-		}
-
-		if(plugin->config.vertical_only)
-		{
-			sub_x = 0;
-		}
+		if( plugin->config.horizontal_only ) sub_y = 0;
+		if( plugin->config.vertical_only ) sub_x = 0;
 
 		int search_x = pkg->scan_x1 + sub_x / OVERSAMPLE;
 		int search_y = pkg->scan_y1 + sub_y / OVERSAMPLE;
 		sub_x %= OVERSAMPLE;
 		sub_y %= OVERSAMPLE;
 
-
-		unsigned char *prev_ptr = server->previous_frame->get_rows()[
-			search_y] +
-			search_x * pixel_size;
-		unsigned char *current_ptr = server->current_frame->get_rows()[
-			pkg->block_y1] +
-			pkg->block_x1 * pixel_size;
+		unsigned char *prev_ptr =
+		    server->previous_frame->get_rows()[search_y]
+			+ search_x * pixel_size;
+		unsigned char *current_ptr =
+		    server->current_frame->get_rows()[pkg->block_y1]
+			+ pkg->block_x1 * pixel_size;
 
 // With subpixel, there are two ways to compare each position, one by shifting
 // the previous frame and two by shifting the current frame.
-		pkg->difference1 = plugin->abs_diff_sub(prev_ptr,
-			current_ptr,
-			row_bytes,
-			pkg->block_x2 - pkg->block_x1,
-			pkg->block_y2 - pkg->block_y1,
-			color_model,
-			sub_x,
-			sub_y);
-		pkg->difference2 = plugin->abs_diff_sub(current_ptr,
-			prev_ptr,
-			row_bytes,
-			pkg->block_x2 - pkg->block_x1,
-			pkg->block_y2 - pkg->block_y1,
-			color_model,
-			sub_x,
-			sub_y);
-// printf("MotionCVScanUnit::process_package sub_x=%d sub_y=%d search_x=%d search_y=%d diff1=%lld diff2=%lld\n",
-// sub_x,
-// sub_y,
-// search_x,
-// search_y,
-// pkg->difference1,
-// pkg->difference2);
+		pkg->difference1 = plugin->abs_diff_sub(prev_ptr, current_ptr, row_bytes,
+			pkg->block_x2 - pkg->block_x1, pkg->block_y2 - pkg->block_y1,
+			color_model, sub_x, sub_y);
+		pkg->difference2 =
+		    plugin->abs_diff_sub(current_ptr, prev_ptr, row_bytes,
+			 pkg->block_x2 - pkg->block_x1, pkg->block_y2 - pkg->block_y1,
+			 color_model, sub_x, sub_y);
+//printf("MotionCVScanUnit::process_package sub_x=%d sub_y=%d"
+// " search_x=%d search_y=%d diff1=%jd diff2=%jd\n",
+// sub_x, sub_y, search_x, search_y, pkg->difference1, pkg->difference2);
 	}
 
-
-
-
 }
-
-
-
-
-
-
-
-
-
 
 int64_t MotionCVScanUnit::get_cache(int x, int y)
 {
 	int64_t result = -1;
 	cache_lock->lock("MotionCVScanUnit::get_cache");
-	for(int i = 0; i < cache.total; i++)
-	{
+	for( int i = 0; i < cache.total; i++ ) {
 		MotionCVScanCache *ptr = cache.values[i];
-		if(ptr->x == x && ptr->y == y)
-		{
+		if( ptr->x == x && ptr->y == y ) {
 			result = ptr->difference;
 			break;
 		}
@@ -1861,23 +1474,10 @@ void MotionCVScanUnit::put_cache(int x, int y, int64_t difference)
 	cache_lock->unlock();
 }
 
-
-
-
-
-
-
-
-
-
-
-MotionCVScan::MotionCVScan(MotionCVMain *plugin, 
-	int total_clients,
-	int total_packages)
- : LoadServer(
-//1, 1 
-total_clients, total_packages 
-)
+MotionCVScan::MotionCVScan(MotionCVMain *plugin,
+		   int total_clients, int total_packages)
+:LoadServer( //1, 1
+	   total_clients, total_packages)
 {
 	this->plugin = plugin;
 	cache_lock = new Mutex("MotionCVScan::cache_lock");
@@ -1888,51 +1488,40 @@ MotionCVScan::~MotionCVScan()
 	delete cache_lock;
 }
 
-
 void MotionCVScan::init_packages()
 {
 // Set package coords
-	for(int i = 0; i < get_total_packages(); i++)
-	{
-		MotionCVScanPackage *pkg = (MotionCVScanPackage*)get_package(i);
+	for( int i = 0; i < get_total_packages(); i++ ) {
+		MotionCVScanPackage *pkg = (MotionCVScanPackage *) get_package(i);
 
-		pkg->block_x1 = block_x1;
-		pkg->block_x2 = block_x2;
-		pkg->block_y1 = block_y1;
-		pkg->block_y2 = block_y2;
-		pkg->scan_x1 = scan_x1;
-		pkg->scan_x2 = scan_x2;
-		pkg->scan_y1 = scan_y1;
-		pkg->scan_y2 = scan_y2;
-		pkg->pixel = (int64_t)i * (int64_t)total_pixels / (int64_t)total_steps;
-		pkg->difference1 = 0;
-		pkg->difference2 = 0;
-		pkg->dx = 0;
-		pkg->dy = 0;
+		pkg->block_x1 = block_x1; pkg->block_x2 = block_x2;
+		pkg->block_y1 = block_y1; pkg->block_y2 = block_y2;
+		pkg->scan_x1 = scan_x1;   pkg->scan_x2 = scan_x2;
+		pkg->scan_y1 = scan_y1;   pkg->scan_y2 = scan_y2;
+		pkg->pixel = (int64_t) i *(int64_t) total_pixels / (int64_t) total_steps;
+		pkg->difference1 = 0;     pkg->difference2 = 0;
+		pkg->dx = pkg->dy = 0;
 		pkg->valid = 1;
 	}
 }
 
-LoadClient* MotionCVScan::new_client()
+LoadClient *MotionCVScan::new_client()
 {
 	return new MotionCVScanUnit(this, plugin);
 }
 
-LoadPackage* MotionCVScan::new_package()
+LoadPackage *MotionCVScan::new_package()
 {
 	return new MotionCVScanPackage;
 }
 
-
-void MotionCVScan::scan_frame(VFrame *previous_frame,
-	VFrame *current_frame)
+void MotionCVScan::scan_frame(VFrame *previous_frame, VFrame *current_frame)
 {
 	this->previous_frame = previous_frame;
 	this->current_frame = current_frame;
 	subpixel = 0;
 
 	cache.remove_all_objects();
-
 
 // Single macroblock
 	int w = current_frame->get_w();
@@ -1952,8 +1541,7 @@ void MotionCVScan::scan_frame(VFrame *previous_frame,
 
 // Offset to location of previous block.  This offset needn't be very accurate
 // since it's the offset of the previous image and current image we want.
-	if(plugin->config.mode3 == MotionCVConfig::TRACK_PREVIOUS)
-	{
+	if( plugin->config.mode3 == MotionCVConfig::TRACK_PREVIOUS ) {
 		block_x1 += plugin->total_dx / OVERSAMPLE;
 		block_y1 += plugin->total_dy / OVERSAMPLE;
 		block_x2 += plugin->total_dx / OVERSAMPLE;
@@ -1962,170 +1550,124 @@ void MotionCVScan::scan_frame(VFrame *previous_frame,
 
 	skip = 0;
 
-	switch(plugin->config.mode2)
-	{
+	switch( plugin->config.mode2 ) {
 // Don't calculate
-		case MotionCVConfig::NO_CALCULATE:
-			dx_result = 0;
-			dy_result = 0;
-			skip = 1;
-			break;
+	case MotionCVConfig::NO_CALCULATE:
+		dx_result = dy_result = 0;
+		skip = 1;
+		break;
 
-		case MotionCVConfig::LOAD:
-		{
-			if( plugin->load_ok ) {
-				dx_result = plugin->load_dx;
-				dy_result = plugin->load_dy;
-				skip = 1;
-			}
-			break;
+	case MotionCVConfig::LOAD:
+	case MotionCVConfig::SAVE:
+		if( plugin->load_ok ) {
+			dx_result = plugin->load_dx;
+			dy_result = plugin->load_dy;
+			skip = 1;
 		}
+		break;
 
 // Scan from scratch
-		default:
-			skip = 0;
-			break;
+	default:
+		skip = 0;
+		break;
 	}
 
 // Perform scan
-	if(!skip)
-	{
+	if( !skip ) {
 // Location of block in current frame
 		int x_result = block_x1;
 		int y_result = block_y1;
 
-// printf("MotionCVScan::scan_frame 1 %d %d %d %d %d %d %d %d\n",
-// block_x1 + block_w / 2,
-// block_y1 + block_h / 2,
-// block_w,
-// block_h,
-// block_x1,
-// block_y1,
-// block_x2,
-// block_y2);
+//printf("MotionCVScan::scan_frame 1 %d %d %d %d %d %d %d %d\n",
+// block_x1 + block_w / 2, block_y1 + block_h / 2,
+// block_w, block_h, block_x1, block_y1, block_x2, block_y2);
 
-		while(1)
-		{
+		while( 1 ) {
 			scan_x1 = x_result - scan_w / 2;
 			scan_y1 = y_result - scan_h / 2;
 			scan_x2 = x_result + scan_w / 2;
 			scan_y2 = y_result + scan_h / 2;
 
-
-
 // Zero out requested values
-			if(plugin->config.horizontal_only)
-			{
+			if( plugin->config.horizontal_only ) {
 				scan_y1 = block_y1;
 				scan_y2 = block_y1 + 1;
 			}
-			if(plugin->config.vertical_only)
-			{
+			if( plugin->config.vertical_only ) {
 				scan_x1 = block_x1;
 				scan_x2 = block_x1 + 1;
 			}
-
 // printf("MotionCVScan::scan_frame 1 %d %d %d %d %d %d %d %d\n",
-// block_x1,
-// block_y1,
-// block_x2,
-// block_y2,
-// scan_x1,
-// scan_y1,
-// scan_x2,
-// scan_y2);
+// block_x1, block_y1, block_x2, block_y2, scan_x1, scan_y1, scan_x2, scan_y2);
 // Clamp the block coords before the scan so we get useful scan coords.
-			MotionCVMain::clamp_scan(w, 
-				h, 
-				&block_x1,
-				&block_y1,
-				&block_x2,
-				&block_y2,
-				&scan_x1,
-				&scan_y1,
-				&scan_x2,
-				&scan_y2,
-				0);
-// printf("MotionCVScan::scan_frame 1\n    block_x1=%d block_y1=%d block_x2=%d block_y2=%d\n    scan_x1=%d scan_y1=%d scan_x2=%d scan_y2=%d\n    x_result=%d y_result=%d\n", 
-// block_x1,
-// block_y1,
-// block_x2,
-// block_y2,
-// scan_x1, 
-// scan_y1, 
-// scan_x2, 
-// scan_y2, 
-// x_result, 
-// y_result);
-
+			MotionCVMain::clamp_scan(w, h,
+				&block_x1, &block_y1, &block_x2, &block_y2,
+				&scan_x1, &scan_y1, &scan_x2, &scan_y2, 0);
+//printf("MotionCVScan::scan_frame 1\n"
+// "    block_x1=%d block_y1=%d block_x2=%d block_y2=%d\n"
+// "    scan_x1=%d scan_y1=%d scan_x2=%d scan_y2=%d\n"
+// "    x_result=%d y_result=%d\n",
+// block_x1, block_y1, block_x2, block_y2,
+// scan_x1, scan_y1, scan_x2, scan_y2, x_result, y_result);
 
 // Give up if invalid coords.
-			if(scan_y2 <= scan_y1 ||
-				scan_x2 <= scan_x1 ||
-				block_x2 <= block_x1 ||
-				block_y2 <= block_y1)
+			if( scan_y2 <= scan_y1 || scan_x2 <= scan_x1 ||
+			    block_x2 <= block_x1 || block_y2 <= block_y1 )
 				break;
 
 // For subpixel, the top row and left column are skipped
-			if(subpixel)
-			{
-				if(plugin->config.horizontal_only ||
-					plugin->config.vertical_only)
-				{
-					total_pixels = 4 * OVERSAMPLE * OVERSAMPLE - 4 * OVERSAMPLE;
+			if( subpixel ) {
+				if( plugin->config.horizontal_only ||
+				    plugin->config.vertical_only ) {
+					total_pixels = 4 * OVERSAMPLE * OVERSAMPLE
+						- 4 * OVERSAMPLE;
 				}
-				else
-				{
+				else {
 					total_pixels = 4 * OVERSAMPLE;
 				}
 
 				total_steps = total_pixels;
-
 				set_package_count(total_steps);
 				process_packages();
 
 // Get least difference
 				int64_t min_difference = -1;
-				for(int i = 0; i < get_total_packages(); i++)
-				{
-					MotionCVScanPackage *pkg = (MotionCVScanPackage*)get_package(i);
-					if(pkg->difference1 < min_difference || min_difference == -1)
-					{
+				for(int i = 0; i < get_total_packages(); i++ ) {
+					MotionCVScanPackage *pkg = (MotionCVScanPackage *) get_package(i);
+					if( pkg->difference1 < min_difference || min_difference == -1 ) {
 						min_difference = pkg->difference1;
 
-						if(plugin->config.vertical_only)
+						if( plugin->config.  vertical_only )
 							x_result = scan_x1 * OVERSAMPLE;
 						else
-							x_result = scan_x1 * OVERSAMPLE + 
-								(pkg->pixel % (OVERSAMPLE * 2 - 1)) + 1;
-						
-						if(plugin->config.horizontal_only)
+							x_result = scan_x1 * OVERSAMPLE
+							    + (pkg->pixel % (OVERSAMPLE * 2 - 1)) + 1;
+
+						if( plugin->config.  horizontal_only )
 							y_result = scan_y1 * OVERSAMPLE;
 						else
-							y_result = scan_y1 * OVERSAMPLE + 
-								(pkg->pixel / (OVERSAMPLE * 2 - 1)) + 1;
-
+							y_result = scan_y1 * OVERSAMPLE
+							    + (pkg->pixel / (OVERSAMPLE * 2 - 1)) + 1;
 
 // Fill in results
 						dx_result = block_x1 * OVERSAMPLE - x_result;
 						dy_result = block_y1 * OVERSAMPLE - y_result;
 					}
 
-					if(pkg->difference2 < min_difference)
-					{
+					if( pkg->difference2 < min_difference ) {
 						min_difference = pkg->difference2;
 
-						if(plugin->config.vertical_only)
+						if( plugin->config.  vertical_only )
 							x_result = scan_x1 * OVERSAMPLE;
 						else
-							x_result = scan_x2 * OVERSAMPLE -
-								((pkg->pixel % (OVERSAMPLE * 2 - 1)) + 1);
+							x_result = scan_x2 * OVERSAMPLE
+							    - ((pkg->pixel % (OVERSAMPLE * 2 - 1)) + 1);
 
-						if(plugin->config.horizontal_only)
+						if( plugin->config.  horizontal_only )
 							y_result = scan_y1 * OVERSAMPLE;
 						else
-							y_result = scan_y2 * OVERSAMPLE -
-								((pkg->pixel / (OVERSAMPLE * 2 - 1)) + 1);
+							y_result = scan_y2 * OVERSAMPLE
+							    - ((pkg->pixel / (OVERSAMPLE * 2 - 1)) + 1);
 
 						dx_result = block_x1 * OVERSAMPLE - x_result;
 						dy_result = block_y1 * OVERSAMPLE - y_result;
@@ -2135,8 +1677,7 @@ void MotionCVScan::scan_frame(VFrame *previous_frame,
 //printf("MotionCVScan::scan_frame 1 %d %d %d %d\n", block_x1, block_y1, x_result, y_result);
 				break;
 			}
-			else
-			{
+			else {
 				total_pixels = (scan_x2 - scan_x1) * (scan_y2 - scan_y1);
 				total_steps = MIN(plugin->config.global_positions, total_pixels);
 
@@ -2145,11 +1686,9 @@ void MotionCVScan::scan_frame(VFrame *previous_frame,
 
 // Get least difference
 				int64_t min_difference = -1;
-				for(int i = 0; i < get_total_packages(); i++)
-				{
-					MotionCVScanPackage *pkg = (MotionCVScanPackage*)get_package(i);
-					if(pkg->difference1 < min_difference || min_difference == -1)
-					{
+				for( int i = 0; i < get_total_packages(); i++ ) {
+					MotionCVScanPackage *pkg = (MotionCVScanPackage *) get_package(i);
+					if( pkg->difference1 < min_difference || min_difference == -1 ) {
 						min_difference = pkg->difference1;
 						x_result = scan_x1 + (pkg->pixel % (scan_x2 - scan_x1));
 						y_result = scan_y1 + (pkg->pixel / (scan_x2 - scan_x1));
@@ -2158,53 +1697,35 @@ void MotionCVScan::scan_frame(VFrame *previous_frame,
 					}
 				}
 
-// printf("MotionCVScan::scan_frame 10 total_steps=%d total_pixels=%d subpixel=%d\n",
-// total_steps, 
-// total_pixels,
-// subpixel);
-// 
-// printf("	scan w=%d h=%d scan x1=%d y1=%d x2=%d y2=%d\n",
-// scan_w,
-// scan_h, 
-// scan_x1,
-// scan_y1,
-// scan_x2,
-// scan_y2);
-// 
-// printf("MotionCVScan::scan_frame 2 block x1=%d y1=%d x2=%d y2=%d result x=%.2f y=%.2f\n", 
-// block_x1, 
-// block_y1, 
-// block_x2,
-// block_y2,
-// (float)x_result / 4, 
-// (float)y_result / 4);
-
+//printf("MotionCVScan::scan_frame 10 total_steps=%d total_pixels=%d subpixel=%d\n",
+// total_steps, total_pixels, subpixel);
+//
+//printf("     scan w=%d h=%d scan x1=%d y1=%d x2=%d y2=%d\n",
+// scan_w, scan_h, scan_x1, scan_y1, scan_x2, scan_y2);
+//
+// printf("MotionCVScan::scan_frame 2 block x1=%d y1=%d x2=%d y2=%d result x=%.2f y=%.2f\n",
+// block_x1, block_y1, block_x2, block_y2, (float)x_result / 4, (float)y_result / 4);
 
 // If a new search is required, rescale results back to pixels.
-				if(total_steps >= total_pixels)
-				{
+				if( total_steps >= total_pixels ) {
 // Single pixel accuracy reached.  Now do exhaustive subpixel search.
-					if(plugin->config.mode1 == MotionCVConfig::STABILIZE ||
-						plugin->config.mode1 == MotionCVConfig::TRACK ||
-						plugin->config.mode1 == MotionCVConfig::NOTHING)
-					{
+					if( plugin->config.mode1 == MotionCVConfig::STABILIZE ||
+					    plugin->config.mode1 == MotionCVConfig::TRACK ||
+					    plugin->config.mode1 == MotionCVConfig::NOTHING ) {
 						x_result /= OVERSAMPLE;
 						y_result /= OVERSAMPLE;
-						scan_w = 2;
-						scan_h = 2;
+						scan_w = scan_h = 2;
 						subpixel = 1;
 					}
-					else
-					{
 // Fill in results and quit
+					else {
 						dx_result = block_x1 * OVERSAMPLE - x_result;
 						dy_result = block_y1 * OVERSAMPLE - y_result;
 						break;
 					}
 				}
-				else
 // Reduce scan area and try again
-				{
+				else {
 					scan_w = (scan_x2 - scan_x1) / 2;
 					scan_h = (scan_y2 - scan_y1) / 2;
 					x_result /= OVERSAMPLE;
@@ -2214,48 +1735,22 @@ void MotionCVScan::scan_frame(VFrame *previous_frame,
 		}
 
 		// Add offsets from the "tracked single frame"
-		dx_result = plugin->dx_offset - dx_result;
-		dy_result = plugin->dy_offset - dy_result;
-
-		if(plugin->config.mode2 == MotionCVConfig::SAVE)
-		{
-			plugin->save_dx = dx_result;
-			plugin->save_dy = dy_result;
-		}
+		dx_result = -dx_result;
+		dy_result = -dy_result;
 	}
-
 #ifdef DEBUG
-printf("MotionCVScan::scan_frame 10 dx=%.2f dy=%.2f\n", 
-(float)this->dx_result / OVERSAMPLE,
-(float)this->dy_result / OVERSAMPLE);
+printf("MotionCVScan::scan_frame 10 dx=%.2f dy=%.2f\n",
+ (float)this->dx_result / OVERSAMPLE, (float)this->dy_result / OVERSAMPLE);
 #endif
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 int64_t MotionCVScan::get_cache(int x, int y)
 {
 	int64_t result = -1;
 	cache_lock->lock("MotionCVScan::get_cache");
-	for(int i = 0; i < cache.total; i++)
-	{
+	for( int i = 0; i < cache.total; i++ ) {
 		MotionCVScanCache *ptr = cache.values[i];
-		if(ptr->x == x && ptr->y == y)
-		{
+		if( ptr->x == x && ptr->y == y ) {
 			result = ptr->difference;
 			break;
 		}
@@ -2272,34 +1767,15 @@ void MotionCVScan::put_cache(int x, int y, int64_t difference)
 	cache_lock->unlock();
 }
 
-
-
-
-
 MotionCVScanCache::MotionCVScanCache(int x, int y, int64_t difference)
 {
-	this->x = x;
-	this->y = y;
+	this->x = x;  this->y = y;
 	this->difference = difference;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 RotateCVScanPackage::RotateCVScanPackage()
 {
 }
-
 
 RotateCVScanUnit::RotateCVScanUnit(RotateCVScan *server, MotionCVMain *plugin)
  : LoadClient(server)
@@ -2318,34 +1794,30 @@ RotateCVScanUnit::~RotateCVScanUnit()
 
 void RotateCVScanUnit::process_package(LoadPackage *package)
 {
-	if(server->skip) return;
-	RotateCVScanPackage *pkg = (RotateCVScanPackage*)package;
+	if( server->skip )
+		return;
+	RotateCVScanPackage *pkg = (RotateCVScanPackage *) package;
 
-	if((pkg->difference = server->get_cache(pkg->angle)) < 0)
-	{
+	if( (pkg->difference = server->get_cache(pkg->angle)) < 0 ) {
 //printf("RotateCVScanUnit::process_package 1\n");
 		int color_model = server->previous_frame->get_color_model();
 		int pixel_size = BC_CModels::calculate_pixelsize(color_model);
 		int row_bytes = server->previous_frame->get_bytes_per_line();
 
-		if(!rotater)
+		if( !rotater )
 			rotater = new AffineEngine(1, 1);
-		if(!temp) temp = new VFrame(
-			server->previous_frame->get_w(),
-			server->previous_frame->get_h(),
-			color_model);
-
+		if( !temp )
+			temp = new VFrame(server->previous_frame->get_w(),
+					server->previous_frame->get_h(),
+					color_model);
 
 // RotateCV original block size
-		rotater->set_viewport(server->block_x1, 
-			server->block_y1,
+		rotater->set_viewport(server->block_x1, server->block_y1,
 			server->block_x2 - server->block_x1,
 			server->block_y2 - server->block_y1);
 		rotater->set_pivot(server->block_x, server->block_y);
 //pkg->angle = 2;
-		rotater->rotate(temp,
-			server->previous_frame,
-			pkg->angle);
+		rotater->rotate(temp, server->previous_frame, pkg->angle);
 // Clamp coordinates
 		int x1 = server->scan_x;
 		int y1 = server->scan_y;
@@ -2355,69 +1827,33 @@ void RotateCVScanUnit::process_package(LoadPackage *package)
 		y2 = MIN(temp->get_h(), y2);
 		x2 = MIN(server->current_frame->get_w(), x2);
 		y2 = MIN(server->current_frame->get_h(), y2);
-		x1 = MAX(0, x1);
-		y1 = MAX(0, y1);
+		x1 = MAX(0, x1);  y1 = MAX(0, y1);
 
-		if(x2 > x1 && y2 > y1)
-		{
+		if( x2 > x1 && y2 > y1 ) {
 			pkg->difference = plugin->abs_diff(
 				temp->get_rows()[y1] + x1 * pixel_size,
-				server->current_frame->get_rows()[y1] + x1 * pixel_size,
-				row_bytes,
-				x2 - x1,
-				y2 - y1,
-				color_model);
+				server->current_frame-> get_rows()[y1] + x1 * pixel_size,
+				row_bytes, x2 - x1, y2 - y1, color_model);
 //printf("RotateCVScanUnit::process_package %d\n", __LINE__);
 			server->put_cache(pkg->angle, pkg->difference);
-                }
-
-// printf("RotateCVScanUnit::process_package 10 x=%d y=%d w=%d h=%d block_x=%d block_y=%d angle=%f scan_w=%d scan_h=%d diff=%lld\n", 
-// server->block_x1, 
-// server->block_y1,
-// server->block_x2 - server->block_x1,
-// server->block_y2 - server->block_y1,
-// server->block_x,
-// server->block_y,
-// pkg->angle, 
-// server->scan_w,
-// server->scan_h,
+		}
+//printf("RotateCVScanUnit::process_package 10 x=%d y=%d w=%d h=%d"
+// " block_x=%d block_y=%d angle=%f scan_w=%d scan_h=%d diff=%lld\n",
+// server->block_x1, server->block_y1,
+// server->block_x2 - server->block_x1, server->block_y2 - server->block_y1,
+// server->block_x, server->block_y, pkg->angle, server->scan_w, server->scan_h,
 // pkg->difference);
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RotateCVScan::RotateCVScan(MotionCVMain *plugin, 
-	int total_clients, 
-	int total_packages)
- : LoadServer(
-//1, 1 
-total_clients, total_packages 
-)
+RotateCVScan::RotateCVScan(MotionCVMain *plugin,
+		int total_clients, int total_packages)
+:LoadServer( //1, 1
+		total_clients, total_packages)
 {
 	this->plugin = plugin;
 	cache_lock = new Mutex("RotateCVScan::cache_lock");
 }
-
 
 RotateCVScan::~RotateCVScan()
 {
@@ -2426,53 +1862,44 @@ RotateCVScan::~RotateCVScan()
 
 void RotateCVScan::init_packages()
 {
-	for(int i = 0; i < get_total_packages(); i++)
-	{
-		RotateCVScanPackage *pkg = (RotateCVScanPackage*)get_package(i);
-		pkg->angle = i * 
-			(scan_angle2 - scan_angle1) / 
-			(total_steps - 1) + 
-			scan_angle1;
+	for( int i = 0; i < get_total_packages(); i++ ) {
+		RotateCVScanPackage *pkg = (RotateCVScanPackage *) get_package(i);
+		pkg->angle = i * (scan_angle2 - scan_angle1) / (total_steps - 1)
+			+ scan_angle1;
 	}
 }
 
-LoadClient* RotateCVScan::new_client()
+LoadClient *RotateCVScan::new_client()
 {
 	return new RotateCVScanUnit(this, plugin);
 }
 
-LoadPackage* RotateCVScan::new_package()
+LoadPackage *RotateCVScan::new_package()
 {
 	return new RotateCVScanPackage;
 }
 
-
 float RotateCVScan::scan_frame(VFrame *previous_frame,
-	VFrame *current_frame,
-	int block_x,
-	int block_y)
+		VFrame *current_frame, int block_x, int block_y)
 {
 	skip = 0;
 	this->block_x = block_x;
 	this->block_y = block_y;
 
-	switch(plugin->config.mode2)
-	{
-		case MotionCVConfig::NO_CALCULATE:
-			result = 0;
+	switch( plugin->config.mode2 ) {
+	case MotionCVConfig::NO_CALCULATE:
+		result = 0;
+		skip = 1;
+		break;
+
+	case MotionCVConfig::LOAD:
+	case MotionCVConfig::SAVE:
+		if( plugin->load_ok ) {
+			result = plugin->load_dt;
 			skip = 1;
-			break;
-
-		case MotionCVConfig::LOAD:
-		{
-			if( plugin->load_ok ) {
-				result = plugin->load_dt;
-				skip = 1;
-			}
-			break;
 		}
+		break;
 	}
-
 
 	this->previous_frame = previous_frame;
 	this->current_frame = current_frame;
@@ -2481,16 +1908,15 @@ float RotateCVScan::scan_frame(VFrame *previous_frame,
 	int block_w = w * plugin->config.rotation_block_w / 100;
 	int block_h = h * plugin->config.rotation_block_h / 100;
 
-	if(this->block_x - block_w / 2 < 0) block_w = this->block_x * 2;
-	if(this->block_y - block_h / 2 < 0) block_h = this->block_y * 2;
-	if(this->block_x + block_w / 2 > w) block_w = (w - this->block_x) * 2;
-	if(this->block_y + block_h / 2 > h) block_h = (h - this->block_y) * 2;
+	if( this->block_x - block_w / 2 < 0 ) block_w = this->block_x * 2;
+	if( this->block_y - block_h / 2 < 0 ) block_h = this->block_y * 2;
+	if( this->block_x + block_w / 2 > w ) block_w = (w - this->block_x) * 2;
+	if( this->block_y + block_h / 2 > h ) block_h = (h - this->block_y) * 2;
 
 	block_x1 = this->block_x - block_w / 2;
 	block_x2 = this->block_x + block_w / 2;
 	block_y1 = this->block_y - block_h / 2;
 	block_y2 = this->block_y + block_h / 2;
-
 
 // Calculate the maximum area available to scan after rotation.
 // Must be calculated from the starting range because of cache.
@@ -2514,14 +1940,11 @@ float RotateCVScan::scan_frame(VFrame *previous_frame,
 	double max_area1 = 0;
 	//double max_x1 = 0;
 	double max_y1 = 0;
-	for(double x = x1; x < x2; x++)
-	{
+	for( double x = x1; x < x2; x++ ) {
 		double y = y1 + (y2 - y1) * (x - x1) / (x2 - x1);
-		if(x >= center_x && x < block_x2 && y >= block_y1 && y < center_y)
-		{
+		if( x >= center_x && x < block_x2 && y >= block_y1 && y < center_y ) {
 			double area = fabs(x - center_x) * fabs(y - center_y);
-			if(area > max_area1)
-			{
+			if( area > max_area1 ) {
 				max_area1 = area;
 				//max_x1 = x;
 				max_y1 = y;
@@ -2533,14 +1956,11 @@ float RotateCVScan::scan_frame(VFrame *previous_frame,
 	double max_area2 = 0;
 	double max_x2 = 0;
 	//double max_y2 = 0;
-	for(double y = y1; y < y3; y++)
-	{
+	for( double y = y1; y < y3; y++ ) {
 		double x = x1 + (x3 - x1) * (y - y1) / (y3 - y1);
-		if(x >= block_x1 && x < center_x && y >= block_y1 && y < center_y)
-		{
+		if( x >= block_x1 && x < center_x && y >= block_y1 && y < center_y ) {
 			double area = fabs(x - center_x) * fabs(y - center_y);
-			if(area > max_area2)
-			{
+			if( area > max_area2 ) {
 				max_area2 = area;
 				max_x2 = x;
 				//max_y2 = y;
@@ -2557,7 +1977,7 @@ float RotateCVScan::scan_frame(VFrame *previous_frame,
 	scan_h = (int)(fabs(max_y - center_y) * 2);
 	scan_x = (int)(center_x - scan_w / 2);
 	scan_y = (int)(center_y - scan_h / 2);
-// printf("RotateCVScan::scan_frame center=%d,%d scan=%d,%d %dx%d\n", 
+// printf("RotateCVScan::scan_frame center=%d,%d scan=%d,%d %dx%d\n",
 // this->block_x, this->block_y, scan_x, scan_y, scan_w, scan_h);
 // printf("    angle_range=%f block= %d,%d,%d,%d\n", max_angle, block_x1, block_y1, block_x2, block_y2);
 
@@ -2572,30 +1992,24 @@ printf("RotateCVScan::scan_frame min_angle=%f\n", min_angle * 360 / 2 / M_PI);
 #endif
 
 	cache.remove_all_objects();
-	if(!skip)
-	{
+	if( !skip ) {
 // Initial search range
 		float angle_range = (float)plugin->config.rotation_range;
 		result = 0;
 		total_steps = plugin->config.rotate_positions;
 
-
-		while(angle_range >= min_angle * total_steps)
-		{
+		while( angle_range >= min_angle * total_steps ) {
 			scan_angle1 = result - angle_range;
 			scan_angle2 = result + angle_range;
-
 
 			set_package_count(total_steps);
 //set_package_count(1);
 			process_packages();
 
 			int64_t min_difference = -1;
-			for(int i = 0; i < get_total_packages(); i++)
-			{
-				RotateCVScanPackage *pkg = (RotateCVScanPackage*)get_package(i);
-				if(pkg->difference < min_difference || min_difference == -1)
-				{
+			for( int i = 0; i < get_total_packages(); i++ ) {
+				RotateCVScanPackage *pkg = (RotateCVScanPackage *) get_package(i);
+				if( pkg->difference < min_difference || min_difference == -1 ) {
 					min_difference = pkg->difference;
 					result = pkg->angle;
 				}
@@ -2606,16 +2020,15 @@ printf("RotateCVScan::scan_frame min_angle=%f\n", min_angle * 360 / 2 / M_PI);
 
 //break;
 		}
+	}
 
-		if(plugin->config.mode2 == MotionCVConfig::SAVE) {
-			plugin->save_dt = result;
-		}
+	if( plugin->config.mode2 == MotionCVConfig::SAVE ) {
+		plugin->save_dt = result;
 	}
 
 #ifdef DEBUG
 printf("RotateCVScan::scan_frame 10 angle=%f\n", result);
 #endif
-
 	return result;
 }
 
@@ -2623,11 +2036,9 @@ int64_t RotateCVScan::get_cache(float angle)
 {
 	int64_t result = -1;
 	cache_lock->lock("RotateCVScan::get_cache");
-	for(int i = 0; i < cache.total; i++)
-	{
+	for( int i = 0; i < cache.total; i++ ) {
 		RotateCVScanCache *ptr = cache.values[i];
-		if(fabs(ptr->angle - angle) <= MIN_ANGLE)
-		{
+		if( fabs(ptr->angle - angle) <= MIN_ANGLE ) {
 			result = ptr->difference;
 			break;
 		}
@@ -2644,19 +2055,10 @@ void RotateCVScan::put_cache(float angle, int64_t difference)
 	cache_lock->unlock();
 }
 
-
-
-
-
-
-
-
-
 RotateCVScanCache::RotateCVScanCache(float angle, int64_t difference)
 {
 	this->angle = angle;
 	this->difference = difference;
 }
-
 
 

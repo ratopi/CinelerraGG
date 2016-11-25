@@ -43,8 +43,6 @@ class MotionWindow;
 class RotateScan;
 
 
-
-
 // Limits of global range in percent
 #define MIN_RADIUS 1
 #define MAX_RADIUS 100
@@ -64,7 +62,7 @@ class RotateScan;
 // Precision of rotation
 #define MIN_ANGLE 0.0001
 
-#define ROTATION_FILE "/tmp/r"
+#define TRACKING_FILE "/tmp/motion"
 
 class MotionConfig
 {
@@ -73,13 +71,9 @@ public:
 
 	int equivalent(MotionConfig &that);
 	void copy_from(MotionConfig &that);
-	void interpolate(MotionConfig &prev,
-		MotionConfig &next,
-		int64_t prev_frame,
-		int64_t next_frame,
-		int64_t current_frame);
+	void interpolate(MotionConfig &prev, MotionConfig &next,
+		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 	void boundaries();
-	void set_cpus(int cpus);
 
 	int block_count;
 	int global_range_w;
@@ -110,34 +104,13 @@ public:
 	int global;
 	int rotate;
 	int addtrackedframeoffset;
+	char tracking_file[BCTEXTLEN];
 // Track or stabilize, single pixel, scan only, or nothing
 	int action_type;
 // Recalculate, no calculate, save, or load coordinates from disk
 	int tracking_type;
 // Track a single frame, previous frame, or previous frame same block
 	int tracking_object;
-
-#if 0
-	enum
-	{
-// action_type
-		TRACK,
-		STABILIZE,
-		TRACK_PIXEL,
-		STABILIZE_PIXEL,
-		NOTHING,
-// mode2
-		RECALCULATE,
-		SAVE,
-		LOAD,
-		NO_CALCULATE,
-// tracking_object
-		TRACK_SINGLE,
-		TRACK_PREVIOUS,
-		PREVIOUS_SAME_BLOCK
-	};
-#endif
-
 
 // Number of single frame to track relative to timeline start
 	int64_t track_frame;
@@ -146,17 +119,13 @@ public:
 };
 
 
-
-
 class MotionMain : public PluginVClient
 {
 public:
 	MotionMain(PluginServer *server);
 	~MotionMain();
 
-	int process_buffer(VFrame **frame,
-		int64_t start_position,
-		double frame_rate);
+	int process_buffer(VFrame **frame, int64_t start_position, double frame_rate);
 	void process_global();
 	void process_rotation();
 	void draw_vectors(VFrame *frame);
@@ -170,7 +139,6 @@ public:
 	void allocate_temp(int w, int h, int color_model);
 
 	PLUGIN_CLASS_MEMBERS2(MotionConfig)
-
 
 	static void draw_pixel(VFrame *frame, int x, int y);
 	static void draw_line(VFrame *frame, int x1, int y1, int x2, int y2);
@@ -199,7 +167,25 @@ public:
 	int current_dy;
 	float current_angle;
 
-
+	char cache_file[BCTEXTLEN];
+	FILE *cache_fp, *active_fp;
+	void reset_cache_file();
+	int open_cache_file();
+	void close_cache_file();
+	int load_cache_line();
+	int locate_cache_line(int64_t key);
+	int get_cache_line(int64_t key);
+	int put_cache_line(const char *line);
+	char cache_line[BCSTRLEN];
+	int64_t cache_key, active_key;
+// add constant frame offset values
+	int dx_offset, dy_offset;
+	int64_t tracking_frame;
+// save/load result values
+	int load_ok;
+	int save_dx, load_dx;
+	int save_dy, load_dy;
+	float save_dt, load_dt;
 
 // Oversampled current frame for motion estimation
 	int32_t *search_area;
@@ -237,28 +223,6 @@ public:
 	int w;
 	int h;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class RotateScanPackage : public LoadPackage
@@ -349,13 +313,4 @@ private:
 	Mutex *cache_lock;
 };
 
-
-
-
 #endif
-
-
-
-
-
-

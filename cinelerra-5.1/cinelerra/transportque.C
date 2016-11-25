@@ -111,19 +111,17 @@ int TransportCommand::get_direction()
 		case SLOW_FWD:
 		case CURRENT_FRAME:
 			return PLAY_FORWARD;
-			break;
 
 		case SINGLE_FRAME_REWIND:
 		case NORMAL_REWIND:
 		case FAST_REWIND:
 		case SLOW_REWIND:
 			return PLAY_REVERSE;
-			break;
 
 		default:
-			return PLAY_FORWARD;
 			break;
 	}
+	return PLAY_FORWARD;
 }
 
 float TransportCommand::get_speed()

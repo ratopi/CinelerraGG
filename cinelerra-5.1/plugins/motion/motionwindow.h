@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "guicast.h"
@@ -78,10 +78,7 @@ public:
 class TrackSingleFrame : public BC_Radial
 {
 public:
-	TrackSingleFrame(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	TrackSingleFrame(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionMain *plugin;
 	MotionWindow *gui;
@@ -90,10 +87,7 @@ public:
 class TrackFrameNumber : public BC_TextBox
 {
 public:
-	TrackFrameNumber(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	TrackFrameNumber(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionMain *plugin;
 	MotionWindow *gui;
@@ -102,10 +96,7 @@ public:
 class TrackPreviousFrame : public BC_Radial
 {
 public:
-	TrackPreviousFrame(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	TrackPreviousFrame(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionMain *plugin;
 	MotionWindow *gui;
@@ -114,10 +105,7 @@ public:
 class PreviousFrameSameBlock : public BC_Radial
 {
 public:
-	PreviousFrameSameBlock(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	PreviousFrameSameBlock(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionMain *plugin;
 	MotionWindow *gui;
@@ -126,10 +114,7 @@ public:
 class GlobalRange : public BC_IPot
 {
 public:
-	GlobalRange(MotionMain *plugin, 
-		int x, 
-		int y,
-		int *value);
+	GlobalRange(MotionMain *plugin, int x, int y, int *value);
 	int handle_event();
 	MotionMain *plugin;
 	int *value;
@@ -138,9 +123,7 @@ public:
 class RotationRange : public BC_IPot
 {
 public:
-	RotationRange(MotionMain *plugin, 
-		int x, 
-		int y);
+	RotationRange(MotionMain *plugin, int x, int y);
 	int handle_event();
 	MotionMain *plugin;
 };
@@ -148,9 +131,7 @@ public:
 class RotationCenter : public BC_IPot
 {
 public:
-	RotationCenter(MotionMain *plugin, 
-		int x, 
-		int y);
+	RotationCenter(MotionMain *plugin, int x, int y);
 	int handle_event();
 	MotionMain *plugin;
 };
@@ -158,10 +139,7 @@ public:
 class BlockSize : public BC_IPot
 {
 public:
-	BlockSize(MotionMain *plugin, 
-		int x, 
-		int y,
-		int *value);
+	BlockSize(MotionMain *plugin, int x, int y, int *value);
 	int handle_event();
 	MotionMain *plugin;
 	int *value;
@@ -170,10 +148,7 @@ public:
 class MotionBlockX : public BC_FPot
 {
 public:
-	MotionBlockX(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	MotionBlockX(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionWindow *gui;
 	MotionMain *plugin;
@@ -182,10 +157,7 @@ public:
 class MotionBlockY : public BC_FPot
 {
 public:
-	MotionBlockY(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	MotionBlockY(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionWindow *gui;
 	MotionMain *plugin;
@@ -194,10 +166,7 @@ public:
 class MotionBlockXText : public BC_TextBox
 {
 public:
-	MotionBlockXText(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	MotionBlockXText(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionWindow *gui;
 	MotionMain *plugin;
@@ -206,10 +175,7 @@ public:
 class MotionBlockYText : public BC_TextBox
 {
 public:
-	MotionBlockYText(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	MotionBlockYText(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionWindow *gui;
 	MotionMain *plugin;
@@ -218,10 +184,7 @@ public:
 class GlobalSearchPositions : public BC_PopupMenu
 {
 public:
-	GlobalSearchPositions(MotionMain *plugin, 
-		int x, 
-		int y,
-		int w);
+	GlobalSearchPositions(MotionMain *plugin, int x, int y, int w);
 	void create_objects();
 	int handle_event();
 	MotionMain *plugin;
@@ -230,10 +193,7 @@ public:
 class RotationSearchPositions : public BC_PopupMenu
 {
 public:
-	RotationSearchPositions(MotionMain *plugin, 
-		int x, 
-		int y,
-		int w);
+	RotationSearchPositions(MotionMain *plugin, int x, int y, int w);
 	void create_objects();
 	int handle_event();
 	MotionMain *plugin;
@@ -242,9 +202,7 @@ public:
 class MotionMagnitude : public BC_IPot
 {
 public:
-	MotionMagnitude(MotionMain *plugin, 
-		int x, 
-		int y);
+	MotionMagnitude(MotionMain *plugin, int x, int y);
 	int handle_event();
 	MotionMain *plugin;
 };
@@ -252,9 +210,7 @@ public:
 class MotionRMagnitude : public BC_IPot
 {
 public:
-	MotionRMagnitude(MotionMain *plugin, 
-		int x, 
-		int y);
+	MotionRMagnitude(MotionMain *plugin, int x, int y);
 	int handle_event();
 	MotionMain *plugin;
 };
@@ -262,9 +218,7 @@ public:
 class MotionReturnSpeed : public BC_IPot
 {
 public:
-	MotionReturnSpeed(MotionMain *plugin, 
-		int x, 
-		int y);
+	MotionReturnSpeed(MotionMain *plugin, int x, int y);
 	int handle_event();
 	MotionMain *plugin;
 };
@@ -273,9 +227,7 @@ public:
 class MotionRReturnSpeed : public BC_IPot
 {
 public:
-	MotionRReturnSpeed(MotionMain *plugin, 
-		int x, 
-		int y);
+	MotionRReturnSpeed(MotionMain *plugin, int x, int y);
 	int handle_event();
 	MotionMain *plugin;
 };
@@ -284,10 +236,7 @@ public:
 class MotionDrawVectors : public BC_CheckBox
 {
 public:
-	MotionDrawVectors(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	MotionDrawVectors(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionMain *plugin;
 	MotionWindow *gui;
@@ -296,22 +245,26 @@ public:
 class AddTrackedFrameOffset : public BC_CheckBox
 {
 public:
-	AddTrackedFrameOffset(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	AddTrackedFrameOffset(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionWindow *gui;
 	MotionMain *plugin;
 };
 
+class MotionTrackingFile : public BC_TextBox
+{
+public:
+	MotionTrackingFile(MotionMain *plugin, const char *filename,
+		MotionWindow *gui, int x, int y);
+	int handle_event();
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
 class MotionGlobal : public BC_CheckBox
 {
 public:
-	MotionGlobal(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	MotionGlobal(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionWindow *gui;
 	MotionMain *plugin;
@@ -320,10 +273,7 @@ public:
 class MotionRotate : public BC_CheckBox
 {
 public:
-	MotionRotate(MotionMain *plugin, 
-		MotionWindow *gui,
-		int x, 
-		int y);
+	MotionRotate(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionWindow *gui;
 	MotionMain *plugin;
@@ -361,6 +311,7 @@ public:
 	MotionRReturnSpeed *rotate_return_speed;
 	ActionType *action_type;
 	MotionDrawVectors *vectors;
+	MotionTrackingFile *tracking_file;
 	MotionGlobal *global;
 	MotionRotate *rotate;
 	AddTrackedFrameOffset *addtrackedframeoffset;
@@ -371,15 +322,9 @@ public:
 	MasterLayer *master_layer;
 	TrackingType *tracking_type;
 	TrackDirection *track_direction;
+	BC_Title *pef_title;
 
 	MotionMain *plugin;
 };
-
-
-
-
-
-
-
 
 

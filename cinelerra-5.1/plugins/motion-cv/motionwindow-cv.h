@@ -2,21 +2,21 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 #include "guicast.h"
@@ -82,9 +82,9 @@ public:
 class TrackSingleFrame : public BC_Radial
 {
 public:
-	TrackSingleFrame(MotionCVMain *plugin, 
+	TrackSingleFrame(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVMain *plugin;
@@ -94,9 +94,9 @@ public:
 class TrackFrameNumber : public BC_TextBox
 {
 public:
-	TrackFrameNumber(MotionCVMain *plugin, 
+	TrackFrameNumber(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVMain *plugin;
@@ -106,9 +106,9 @@ public:
 class TrackPreviousFrame : public BC_Radial
 {
 public:
-	TrackPreviousFrame(MotionCVMain *plugin, 
+	TrackPreviousFrame(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVMain *plugin;
@@ -118,9 +118,9 @@ public:
 class PreviousFrameSameBlock : public BC_Radial
 {
 public:
-	PreviousFrameSameBlock(MotionCVMain *plugin, 
+	PreviousFrameSameBlock(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVMain *plugin;
@@ -130,8 +130,8 @@ public:
 class GlobalRange : public BC_IPot
 {
 public:
-	GlobalRange(MotionCVMain *plugin, 
-		int x, 
+	GlobalRange(MotionCVMain *plugin,
+		int x,
 		int y,
 		int *value);
 	int handle_event();
@@ -142,8 +142,8 @@ public:
 class RotationRange : public BC_IPot
 {
 public:
-	RotationRange(MotionCVMain *plugin, 
-		int x, 
+	RotationRange(MotionCVMain *plugin,
+		int x,
 		int y);
 	int handle_event();
 	MotionCVMain *plugin;
@@ -152,8 +152,8 @@ public:
 class BlockSize : public BC_IPot
 {
 public:
-	BlockSize(MotionCVMain *plugin, 
-		int x, 
+	BlockSize(MotionCVMain *plugin,
+		int x,
 		int y,
 		int *value);
 	int handle_event();
@@ -164,9 +164,9 @@ public:
 class MotionCVBlockX : public BC_FPot
 {
 public:
-	MotionCVBlockX(MotionCVMain *plugin, 
+	MotionCVBlockX(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVWindow *gui;
@@ -176,9 +176,9 @@ public:
 class MotionCVBlockY : public BC_FPot
 {
 public:
-	MotionCVBlockY(MotionCVMain *plugin, 
+	MotionCVBlockY(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVWindow *gui;
@@ -188,9 +188,9 @@ public:
 class MotionCVBlockXText : public BC_TextBox
 {
 public:
-	MotionCVBlockXText(MotionCVMain *plugin, 
+	MotionCVBlockXText(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVWindow *gui;
@@ -200,9 +200,9 @@ public:
 class MotionCVBlockYText : public BC_TextBox
 {
 public:
-	MotionCVBlockYText(MotionCVMain *plugin, 
+	MotionCVBlockYText(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVWindow *gui;
@@ -212,8 +212,8 @@ public:
 class GlobalSearchPositions : public BC_PopupMenu
 {
 public:
-	GlobalSearchPositions(MotionCVMain *plugin, 
-		int x, 
+	GlobalSearchPositions(MotionCVMain *plugin,
+		int x,
 		int y,
 		int w);
 	void create_objects();
@@ -224,8 +224,8 @@ public:
 class RotationSearchPositions : public BC_PopupMenu
 {
 public:
-	RotationSearchPositions(MotionCVMain *plugin, 
-		int x, 
+	RotationSearchPositions(MotionCVMain *plugin,
+		int x,
 		int y,
 		int w);
 	void create_objects();
@@ -236,8 +236,8 @@ public:
 class MotionCVMagnitude : public BC_IPot
 {
 public:
-	MotionCVMagnitude(MotionCVMain *plugin, 
-		int x, 
+	MotionCVMagnitude(MotionCVMain *plugin,
+		int x,
 		int y);
 	int handle_event();
 	MotionCVMain *plugin;
@@ -246,8 +246,8 @@ public:
 class MotionCVReturnSpeed : public BC_IPot
 {
 public:
-	MotionCVReturnSpeed(MotionCVMain *plugin, 
-		int x, 
+	MotionCVReturnSpeed(MotionCVMain *plugin,
+		int x,
 		int y);
 	int handle_event();
 	MotionCVMain *plugin;
@@ -258,9 +258,9 @@ public:
 class MotionCVDrawVectors : public BC_CheckBox
 {
 public:
-	MotionCVDrawVectors(MotionCVMain *plugin, 
+	MotionCVDrawVectors(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVMain *plugin;
@@ -270,9 +270,9 @@ public:
 class AddTrackedFrameOffset : public BC_CheckBox
 {
 public:
-	AddTrackedFrameOffset(MotionCVMain *plugin, 
+	AddTrackedFrameOffset(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVWindow *gui;
@@ -292,9 +292,9 @@ public:
 class MotionCVGlobal : public BC_CheckBox
 {
 public:
-	MotionCVGlobal(MotionCVMain *plugin, 
+	MotionCVGlobal(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVWindow *gui;
@@ -304,9 +304,9 @@ public:
 class MotionCVRotate : public BC_CheckBox
 {
 public:
-	MotionCVRotate(MotionCVMain *plugin, 
+	MotionCVRotate(MotionCVMain *plugin,
 		MotionCVWindow *gui,
-		int x, 
+		int x,
 		int y);
 	int handle_event();
 	MotionCVWindow *gui;
@@ -353,6 +353,7 @@ public:
 	MasterLayer *master_layer;
 	Mode2 *mode2;
 	Mode3 *mode3;
+	BC_Title *pef_title;
 
 	MotionCVMain *plugin;
 };

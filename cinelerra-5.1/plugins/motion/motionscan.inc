@@ -22,14 +22,6 @@
 #ifndef MOTIONSCAN_INC
 #define MOTIONSCAN_INC
 
-
-
-
 class MotionScan;
 
-
-
 #endif
-
-
-
