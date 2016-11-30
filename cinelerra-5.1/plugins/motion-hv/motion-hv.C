@@ -332,7 +332,7 @@ void MotionHVMain::save_data(KeyFrame *keyframe)
 
 // cause data to be stored directly in text
 	output.set_shared_output(keyframe->get_data(), MESSAGESIZE);
-	output.tag.set_title("MOTION");
+	output.tag.set_title("MOTIONHV");
 
 	output.tag.set_property("BLOCK_COUNT", config.block_count);
 //	output.tag.set_property("GLOBAL_POSITIONS", config.global_positions);
@@ -362,7 +362,7 @@ void MotionHVMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("HORIZONTAL_ONLY", config.horizontal_only);
 	output.tag.set_property("VERTICAL_ONLY", config.vertical_only);
 	output.append_tag();
-	output.tag.set_title("/MOTION");
+	output.tag.set_title("/MOTIONHV");
 	output.append_tag();
 	output.terminate_string();
 }
@@ -381,7 +381,7 @@ void MotionHVMain::read_data(KeyFrame *keyframe)
 
 		if(!result)
 		{
-			if(input.tag.title_is("MOTION"))
+			if(input.tag.title_is("MOTIONHV"))
 			{
 				config.block_count = input.tag.get_property("BLOCK_COUNT", config.block_count);
 //				config.global_positions = input.tag.get_property("GLOBAL_POSITIONS", config.global_positions);

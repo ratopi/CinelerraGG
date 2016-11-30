@@ -261,7 +261,7 @@ void MotionCVMain::save_data(KeyFrame *keyframe)
 
 // cause data to be stored directly in text
 	output.set_shared_output(keyframe->get_data(), MESSAGESIZE);
-	output.tag.set_title("MOTION");
+	output.tag.set_title("MOTIONCV");
 
 	output.tag.set_property("BLOCK_COUNT", config.block_count);
 	output.tag.set_property("GLOBAL_POSITIONS", config.global_positions);
@@ -290,7 +290,7 @@ void MotionCVMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("HORIZONTAL_ONLY", config.horizontal_only);
 	output.tag.set_property("VERTICAL_ONLY", config.vertical_only);
 	output.append_tag();
-	output.tag.set_title("/MOTION");
+	output.tag.set_title("/MOTIONCV");
 	output.append_tag();
 	output.terminate_string();
 }
@@ -302,7 +302,7 @@ void MotionCVMain::read_data(KeyFrame *keyframe)
 	int result = 0;
 
 	while( !(result = input.read_tag()) ) {
-		if( input.tag.title_is("MOTION") ) {
+		if( input.tag.title_is("MOTIONCV") ) {
 			config.block_count = input.tag.get_property("BLOCK_COUNT", config.block_count);
 			config.global_positions = input.tag.get_property("GLOBAL_POSITIONS", config.global_positions);
 			config.rotate_positions = input.tag.get_property("ROTATE_POSITIONS", config.rotate_positions);

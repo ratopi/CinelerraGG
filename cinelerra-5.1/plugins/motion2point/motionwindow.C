@@ -37,12 +37,7 @@
 
 
 MotionWindow::MotionWindow(MotionMain2 *plugin)
- : PluginClientWindow(plugin,
-	600,
-	640,
-	600,
-	640,
-	0)
+ : PluginClientWindow(plugin, 680, 660, 680, 660, 0)
 {
 	this->plugin = plugin;
 }
@@ -53,7 +48,7 @@ MotionWindow::~MotionWindow()
 
 void MotionWindow::create_objects()
 {
-	int x1[] = { 10, 310 };
+	int x1[] = { 10, get_w()/2 };
 	int x = 10, y = 10, y1 = 10;
 	BC_Title *title;
 

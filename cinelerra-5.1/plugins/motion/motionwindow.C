@@ -32,7 +32,7 @@
 #include "pluginserver.h"
 
 MotionWindow::MotionWindow(MotionMain *plugin)
- : PluginClientWindow(plugin, 600, 650, 600, 650, 0)
+ : PluginClientWindow(plugin, 800, 660, 800, 660, 0)
 {
 	this->plugin = plugin;
 }
@@ -43,8 +43,8 @@ MotionWindow::~MotionWindow()
 
 void MotionWindow::create_objects()
 {
-	int x1 = 10, x = 10, y = 10;
-	int x2 = 310;
+	int x = 10, y = 10;
+	int x1 = x, x2 = get_w() / 2;
 	BC_Title *title;
 
 	add_subwindow(global = new MotionGlobal(plugin, this, x1, y));
@@ -162,13 +162,13 @@ void MotionWindow::create_objects()
 	add_subwindow(track_single =
 		new TrackSingleFrame(plugin, this, x1, y1));
 	add_subwindow(title =
-		new BC_Title(x1 += track_single->get_w() + 20, y1, _("Frame number:")));
+		new BC_Title(x1=x2, y1, _("Frame number:")));
 	add_subwindow(track_frame_number =
 		new TrackFrameNumber(plugin, this, x1 += title->get_w(), y1));
 	add_subwindow(addtrackedframeoffset =
-		new AddTrackedFrameOffset(plugin, this, x1, y1+=track_frame_number->get_h()));
+		new AddTrackedFrameOffset(plugin, this, x1=x2, y1+=track_frame_number->get_h()));
 	int pef = client->server->mwindow->edl->session->video_every_frame;
-	add_subwindow(pef_title = new BC_Title(x1, y1+=addtrackedframeoffset->get_h() + 5,
+	add_subwindow(pef_title = new BC_Title(x1=x2, y1+=addtrackedframeoffset->get_h() + 5,
 		!pef ?	_("For best results\n"
 				" Set: Play every frame\n"
 				" Preferences-> Playback-> Video Out") :
