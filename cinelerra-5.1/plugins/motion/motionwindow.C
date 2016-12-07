@@ -107,6 +107,10 @@ void MotionWindow::create_objects()
 		y));
 	track_direction->create_objects();
 
+	add_subwindow(title = new BC_Title(x2, y, _("Tracking file:")));
+	add_subwindow(tracking_file = new MotionTrackingFile(plugin,
+		plugin->config.tracking_file, this, x2+title->get_w() + 20, y));
+
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block X:")));
 	add_subwindow(block_x =
@@ -129,9 +133,10 @@ void MotionWindow::create_objects()
 	add_subwindow(title = new BC_Title(x2, y + 10, _("Rotation settling speed:")));
 	add_subwindow(rotate_return_speed =
 		new MotionRReturnSpeed(plugin, x2 + title->get_w() + 10, y));
-
-	y = y1;
 	y += 40;
+	add_subwindow(vectors = new MotionDrawVectors(plugin, this, x2, y));
+
+	y = y1 + 60;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block Y:")));
 	add_subwindow(block_y =
 		new MotionBlockY(plugin, this, x + title->get_w() + 10, y));
@@ -151,16 +156,17 @@ void MotionWindow::create_objects()
 		new MotionReturnSpeed(plugin, x + title->get_w() + 10, y));
 
 	y += 40;
-	add_subwindow(vectors = new MotionDrawVectors(plugin, this, x, y));
-
-	add_subwindow(title = new BC_Title(x2, y, _("Tracking file:")));
-	add_subwindow(tracking_file = new MotionTrackingFile(plugin,
-		plugin->config.tracking_file, this, x2+title->get_w() + 20, y));
+	add_subwindow(track_single =
+		new TrackSingleFrame(plugin, this, x, y));
+	y += 20;
+	add_subwindow(track_previous =
+		new TrackPreviousFrame(plugin, this, x, y));
+	y += 20;
+	add_subwindow(previous_same =
+		new PreviousFrameSameBlock(plugin, this, x, y));
 
 	y += 40;
 	x1 = x;  y1 = y;
-	add_subwindow(track_single =
-		new TrackSingleFrame(plugin, this, x1, y1));
 	add_subwindow(title =
 		new BC_Title(x1=x2, y1, _("Frame number:")));
 	add_subwindow(track_frame_number =
@@ -175,16 +181,6 @@ void MotionWindow::create_objects()
 			_("Currently using: Play every frame"), MEDIUMFONT,
 		!pef ? RED : GREEN));
 
-	y += 20;
-	add_subwindow(track_previous =
-		new TrackPreviousFrame(plugin, this, x, y));
-
-	y += 20;
-	add_subwindow(previous_same =
-		new PreviousFrameSameBlock(plugin, this, x, y));
-
-	y += 40;
-	y1 = y;
 	add_subwindow(title = new BC_Title(x, y, _("Master layer:")));
 	add_subwindow(master_layer = new MasterLayer(plugin,
 		this, x + title->get_w() + 10, y));

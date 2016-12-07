@@ -883,6 +883,27 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame,
 {
 	// try bc_xfer methods
 	int imodel = pix_fmt_to_color_model(ifmt);
+	// if not compatible with xfer
+	switch( imodel ) {
+	case BC_YUV420P:
+	case BC_YUV420PI:
+	case BC_YUV422P:
+		if( ip->linesize[0] != ip->linesize[1]*2 ||
+		    ip->linesize[0] != ip->linesize[2]*2 )
+			imodel = -1;
+		break;
+	case BC_YUV410P:
+	case BC_YUV411P:
+		if( ip->linesize[0] != ip->linesize[1]*4 ||
+		    ip->linesize[0] != ip->linesize[2]*4 )
+			imodel = -1;
+		break;
+	case BC_YUV444P:
+		if( ip->linesize[0] != ip->linesize[1] ||
+		    ip->linesize[0] != ip->linesize[2] )
+			imodel = -1;
+		break;
+	}
 	if( imodel >= 0 ) {
 		long y_ofs = 0, u_ofs = 0, v_ofs = 0;
 		uint8_t *data = ip->data[0];
@@ -1562,8 +1583,8 @@ int FFMPEG::open_decoder()
 		printf("FFMPEG::open_decoder: some stream times estimated\n");
 
 	ff_lock("FFMPEG::open_decoder");
-	int bad_time = 0;
-	for( int i=0; i<(int)fmt_ctx->nb_streams; ++i ) {
+	int ret = 0, bad_time = 0;
+	for( int i=0; !ret && i<(int)fmt_ctx->nb_streams; ++i ) {
 		AVStream *st = fmt_ctx->streams[i];
 		if( st->duration == AV_NOPTS_VALUE ) bad_time = 1;
 		AVCodecContext *avctx = st->codec;
@@ -1588,7 +1609,7 @@ int FFMPEG::open_decoder()
 			vid->nudge = st->start_time;
 			vid->reading = -1;
 			if( opt_video_filter )
-				vid->create_filter(opt_video_filter, avctx,avctx);
+				ret = vid->create_filter(opt_video_filter, avctx,avctx);
 		}
 		else if( avctx->codec_type == AVMEDIA_TYPE_AUDIO ) {
 			if( avctx->channels < 1 ) continue;
@@ -1616,13 +1637,13 @@ int FFMPEG::open_decoder()
 			aud->nudge = st->start_time;
 			aud->reading = -1;
 			if( opt_audio_filter )
-				aud->create_filter(opt_audio_filter, avctx,avctx);
+				ret = aud->create_filter(opt_audio_filter, avctx,avctx);
 		}
 	}
 	if( bad_time )
 		printf("FFMPEG::open_decoder: some stream have bad times\n");
 	ff_unlock();
-	return 0;
+	return ret < 0 ? -1 : 0;
 }
 
 
@@ -2302,7 +2323,12 @@ int FFVideoStream::create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx)
 {
 	avfilter_register_all();
-	AVFilter *filter = avfilter_get_by_name(filter_spec);
+	const char *sp = filter_spec;
+	char filter_name[BCSTRLEN], *np = filter_name;
+	int i = sizeof(filter_name);
+	while( --i>=0 && *sp!=0 && !strchr(" \t:=",*sp) ) *np++ = *sp++;
+	*np = 0;
+	AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
 	if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_VIDEO ) {
 		ff_err(AVERROR(EINVAL), "FFVideoStream::create_filter: %s\n", filter_spec);
 		return -1;
@@ -2331,14 +2357,19 @@ int FFVideoStream::create_filter(const char *filter_spec,
 		ff_err(ret, "FFVideoStream::create_filter");
 	else
 		ret = FFStream::create_filter(filter_spec);
-	return ret >= 0 ? 0 : 1;
+	return ret >= 0 ? 0 : -1;
 }
 
 int FFAudioStream::create_filter(const char *filter_spec,
 		AVCodecContext *src_ctx, AVCodecContext *sink_ctx)
 {
 	avfilter_register_all();
-	AVFilter *filter = avfilter_get_by_name(filter_spec);
+	const char *sp = filter_spec;
+	char filter_name[BCSTRLEN], *np = filter_name;
+	int i = sizeof(filter_name);
+	while( --i>=0 && *sp!=0 && !strchr(" \t:=",*sp) ) *np++ = *sp++;
+	*np = 0;
+	AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
 	if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_AUDIO ) {
 		ff_err(AVERROR(EINVAL), "FFAudioStream::create_filter: %s\n", filter_spec);
 		return -1;
@@ -2373,7 +2404,7 @@ int FFAudioStream::create_filter(const char *filter_spec,
 		ff_err(ret, "FFAudioStream::create_filter");
 	else
 		ret = FFStream::create_filter(filter_spec);
-	return ret >= 0 ? 0 : 1;
+	return ret >= 0 ? 0 : -1;
 }
 
 int FFStream::create_filter(const char *filter_spec)
@@ -2398,8 +2429,11 @@ int FFStream::create_filter(const char *filter_spec)
 	if( ret >= 0 )
 		ret = avfilter_graph_config(filter_graph, NULL);
 
-	if( ret < 0 )
+	if( ret < 0 ) {
 		ff_err(ret, "FFStream::create_filter");
+		avfilter_graph_free(&filter_graph);
+		filter_graph = 0;
+	}
 	avfilter_inout_free(&inputs);
 	avfilter_inout_free(&outputs);
 	return ret;

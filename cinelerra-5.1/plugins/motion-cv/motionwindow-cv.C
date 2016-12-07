@@ -31,7 +31,7 @@
 #include "pluginserver.h"
 
 MotionCVWindow::MotionCVWindow(MotionCVMain *plugin)
- : PluginClientWindow(plugin, 815, 660, 815, 660, 0)
+ : PluginClientWindow(plugin, 815, 575, 815, 575, 0)
 {
 	this->plugin = plugin;
 }
@@ -100,7 +100,12 @@ void MotionCVWindow::create_objects()
 			this, x + title->get_w() + 10, y));
 	mode3->create_objects();
 
-	y += 40;
+	add_subwindow(title = new BC_Title(x2, y, _("Tracking file:")));
+	add_subwindow(tracking_file = new MotionCVTrackingFile(plugin,
+			plugin->config.  tracking_file, this,
+			x2 + title->get_w() + 20, y));
+
+	y += 40;  int y1 = y;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block X:")));
 	add_subwindow(block_x = new MotionCVBlockX(plugin, this,
 			x + title->get_w() + 10, y));
@@ -114,30 +119,34 @@ void MotionCVWindow::create_objects()
 	add_subwindow(block_y_text = new MotionCVBlockYText(plugin, this,
 			x + title->get_w() + 10 + block_y->get_w() + 10, y + 10));
 
-	y += 50;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Maximum absolute offset:")));
+	add_subwindow(title = new BC_Title(x2, y1 + 10, _("Maximum absolute offset:")));
 	add_subwindow(magnitude = new MotionCVMagnitude(plugin,
-			x + title->get_w() + 10, y));
+			x2 + title->get_w() + 10, y1));
 
-	y += 40;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Settling speed:")));
+	y1 += 40;
+	add_subwindow(title = new BC_Title(x2, y1 + 10, _("Settling speed:")));
 	add_subwindow(return_speed = new MotionCVReturnSpeed(plugin,
-			x + title->get_w() + 10, y));
+			x2 + title->get_w() + 10, y1));
 
-	y += 40;
-	add_subwindow(vectors = new MotionCVDrawVectors(plugin, this, x, y));
+	y1 += 40;
+	add_subwindow(vectors = new MotionCVDrawVectors(plugin, this, x2, y1));
+	y = y1 + vectors->get_h() + 10;
 
-	add_subwindow(title = new BC_Title(x2, y, _("Tracking file:")));
-	add_subwindow(tracking_file = new MotionCVTrackingFile(plugin,
-			plugin->config.  tracking_file, this,
-			x2 + title->get_w() + 20, y));
-
-	y += 40;
-	x1 = x;  int y1 = y;
+	x1 = x;  y1 = y;
  	add_subwindow(track_single =
 		new TrackSingleFrame(plugin, this, x1, y1));
+	y += 20;
+	add_subwindow(track_previous = new TrackPreviousFrame(plugin, this, x, y));
+	y += 20;
+	add_subwindow(previous_same = new PreviousFrameSameBlock(plugin, this, x, y));
+
+	y += 40;
+	add_subwindow(title = new BC_Title(x, y, _("Master layer:")));
+	add_subwindow(master_layer = new MasterLayer(plugin, this,
+			x + title->get_w() + 10, y));
+	master_layer->create_objects();
  	add_subwindow(title =
-		new BC_Title(x1=x2, y1, _("Frame number:")));
+		new BC_Title(x1=x2, y1=y, _("Frame number:")));
  	add_subwindow(track_frame_number =
 		new TrackFrameNumber(plugin, this, x1 += title->get_w(), y1));
  	add_subwindow(addtrackedframeoffset =
@@ -150,25 +159,13 @@ void MotionCVWindow::create_objects()
 			_("Currently using: Play every frame"), MEDIUMFONT,
 		!pef ? RED : GREEN));
 
-	y += 20;
-	add_subwindow(track_previous = new TrackPreviousFrame(plugin, this, x, y));
-	y += 20;
-	add_subwindow(previous_same = new PreviousFrameSameBlock(plugin, this, x, y));
-
-	y += 40;
-	//int y1 = y;
-	add_subwindow(title = new BC_Title(x, y, _("Master layer:")));
-	add_subwindow(master_layer = new MasterLayer(plugin, this,
-			x + title->get_w() + 10, y));
-	master_layer->create_objects();
 	y += 30;
-
 	add_subwindow(title = new BC_Title(x, y, _("Action:")));
 	add_subwindow(mode1 = new Mode1(plugin, this,
 			x + title->get_w() + 10, y));
 	mode1->create_objects();
-	y += 30;
 
+	y += 30;
 	add_subwindow(title = new BC_Title(x, y, _("Calculation:")));
 	add_subwindow(mode2 = new Mode2(plugin, this,
 			x + title->get_w() + 10, y));

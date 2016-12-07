@@ -430,7 +430,7 @@ install:
 	cp -a $(OBJDIR)/bdwrite $(BINDIR)/.
 
 tags:
-	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins
+	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-*
 
 
 $(OBJDIR)/%.o:		%.C
