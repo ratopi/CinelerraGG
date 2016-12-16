@@ -339,7 +339,7 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 			else
 			if(file->tag.title_is("TITLE"))
 			{
-				result = file->skip_tag();
+				file->read_text_until("/TITLE", title, BCTEXTLEN);
 			}
 			else
 			if(load_flags && automation->load(file)

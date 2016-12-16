@@ -2326,7 +2326,7 @@ int FFVideoStream::create_filter(const char *filter_spec,
 	const char *sp = filter_spec;
 	char filter_name[BCSTRLEN], *np = filter_name;
 	int i = sizeof(filter_name);
-	while( --i>=0 && *sp!=0 && !strchr(" \t:=",*sp) ) *np++ = *sp++;
+	while( --i>=0 && *sp!=0 && !strchr(" \t:=,",*sp) ) *np++ = *sp++;
 	*np = 0;
 	AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
 	if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_VIDEO ) {
