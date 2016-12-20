@@ -78,7 +78,7 @@ int New::handle_event()
 	mwindow->edl->save_defaults(mwindow->defaults);
 	create_new_edl();
 	create_new_project();
-//	thread->start();
+	thread->start();
 	mwindow->gui->lock_window("New::handle_event");
 
 	return 1;

@@ -209,18 +209,14 @@ public:
 	static AVPixelFormat color_model_to_pix_fmt(int color_model);
 	static int pix_fmt_to_color_model(AVPixelFormat pix_fmt);
 
-	int convert_picture_vframe(VFrame *frame,
-		AVFrame *ip, AVPixelFormat ifmt, int iw, int ih);
-	int convert_cmodel(VFrame *frame_out,
-		AVFrame *ip, AVPixelFormat ifmt, int iw, int ih);
-	int transfer_cmodel(VFrame *frame_in,  //defaults->metadata
-		AVFrame *ifp, AVPixelFormat ifmt, int iw, int ih);
-	int convert_vframe_picture(VFrame *frame,
-		AVFrame *op, AVPixelFormat ofmt, int ow, int oh);
-	int convert_pixfmt(VFrame *frame_in,
-		 AVFrame *op, AVPixelFormat ofmt, int ow, int oh);
-	int transfer_pixfmt(VFrame *frame_in,  //metadata->defaults
-		 AVFrame *ofp, AVPixelFormat ofmt, int ow, int oh);
+	int convert_picture_vframe(VFrame *frame, AVFrame *ip);
+	int convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *ipic);
+	int convert_cmodel(VFrame *frame_out, AVFrame *ip);
+	int transfer_cmodel(VFrame *frame_in, AVFrame *ifp);
+	int convert_vframe_picture(VFrame *frame, AVFrame *op);
+	int convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *opic);
+	int convert_pixfmt(VFrame *frame, AVFrame *op);
+	int transfer_pixfmt(VFrame *frame_in, AVFrame *ofp);
 };
 
 class FFVideoStream : public FFStream, public FFVideoConvert {

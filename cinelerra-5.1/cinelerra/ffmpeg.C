@@ -761,10 +761,10 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 		ret = read_frame(frame);
 		if( ret > 0 ) ++curr_pos;
 	}
+	if( frame->format == AV_PIX_FMT_NONE || frame->width <= 0 || frame->height <= 0 )
+		ret = -1;
 	if( ret >= 0 ) {
-		AVCodecContext *ctx = st->codec;
-		ret = convert_cmodel(vframe, frame,
-			ctx->pix_fmt, ctx->width, ctx->height);
+		ret = convert_cmodel(vframe, frame);
 	}
 	ret = ret > 0 ? 1 : ret < 0 ? -1 : 0;
 	return ret;
@@ -805,9 +805,7 @@ int FFVideoStream::encode(VFrame *vframe)
 	if( ret >= 0 ) {
 		AVFrame *frame = *picture;
 		frame->pts = curr_pos;
-		AVCodecContext *ctx = st->codec;
-		ret = convert_pixfmt(vframe, frame,
-			ctx->pix_fmt, ctx->width, ctx->height);
+		ret = convert_pixfmt(vframe, frame);
 	}
 	if( ret >= 0 ) {
 		picture->queue(curr_pos);
@@ -878,74 +876,54 @@ int FFVideoConvert::pix_fmt_to_color_model(AVPixelFormat pix_fmt)
 	return -1;
 }
 
-int FFVideoConvert::convert_picture_vframe(VFrame *frame,
-		AVFrame *ip, AVPixelFormat ifmt, int iw, int ih)
+int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip)
 {
-	// try bc_xfer methods
-	int imodel = pix_fmt_to_color_model(ifmt);
-	// if not compatible with xfer
-	switch( imodel ) {
-	case BC_YUV420P:
-	case BC_YUV420PI:
-	case BC_YUV422P:
-		if( ip->linesize[0] != ip->linesize[1]*2 ||
-		    ip->linesize[0] != ip->linesize[2]*2 )
-			imodel = -1;
-		break;
-	case BC_YUV410P:
-	case BC_YUV411P:
-		if( ip->linesize[0] != ip->linesize[1]*4 ||
-		    ip->linesize[0] != ip->linesize[2]*4 )
-			imodel = -1;
-		break;
-	case BC_YUV444P:
-		if( ip->linesize[0] != ip->linesize[1] ||
-		    ip->linesize[0] != ip->linesize[2] )
-			imodel = -1;
-		break;
-	}
-	if( imodel >= 0 ) {
-		long y_ofs = 0, u_ofs = 0, v_ofs = 0;
-		uint8_t *data = ip->data[0];
-		if( BC_CModels::is_yuv(imodel) ) {
-			u_ofs = ip->data[1] - data;
-			v_ofs = ip->data[2] - data;
-		}
-		VFrame iframe(data, -1, y_ofs, u_ofs, v_ofs, iw, ih, imodel, ip->linesize[0]);
-		frame->transfer_from(&iframe);
-		return 0;
-	}
-	// try sws methods
-	AVFrame opic;
+	AVFrame *ipic = av_frame_alloc();
+	int ret = convert_picture_vframe(frame, ip, ipic);
+	av_frame_free(&ipic);
+	return ret;
+}
+
+int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *ipic)
+{
 	int cmodel = frame->get_color_model();
 	AVPixelFormat ofmt = color_model_to_pix_fmt(cmodel);
 	if( ofmt == AV_PIX_FMT_NB ) return -1;
-	int size = av_image_fill_arrays(opic.data, opic.linesize,
+	int size = av_image_fill_arrays(ipic->data, ipic->linesize,
 		frame->get_data(), ofmt, frame->get_w(), frame->get_h(), 1);
 	if( size < 0 ) return -1;
 
-	// transfer line sizes must match also
-	int planar = BC_CModels::is_planar(cmodel);
-	int packed_width = !planar ? frame->get_bytes_per_line() :
-		 BC_CModels::calculate_pixelsize(cmodel) * frame->get_w();
-	if( packed_width != opic.linesize[0] )  return -1;
-
-	if( planar ) {
+	int bpp = BC_CModels::calculate_pixelsize(cmodel);
+	int ysz = bpp * frame->get_w(), usz = ysz;
+	switch( cmodel ) {
+	case BC_YUV410P:
+	case BC_YUV411P:
+		usz /= 2;
+	case BC_YUV420P:
+	case BC_YUV422P:
+		usz /= 2;
+	case BC_YUV444P:
 		// override av_image_fill_arrays() for planar types
-		opic.data[0] = frame->get_y();
-		opic.data[1] = frame->get_u();
-		opic.data[2] = frame->get_v();
+		ipic->data[0] = frame->get_y();  ipic->linesize[0] = ysz;
+		ipic->data[1] = frame->get_u();  ipic->linesize[1] = usz;
+		ipic->data[2] = frame->get_v();  ipic->linesize[2] = usz;
+		break;
+	default:
+		ipic->data[0] = frame->get_data();
+		ipic->linesize[0] = frame->get_bytes_per_line();
+		break;
 	}
 
-	convert_ctx = sws_getCachedContext(convert_ctx, iw, ih, ifmt,
+	AVPixelFormat pix_fmt = (AVPixelFormat)ip->format;
+	convert_ctx = sws_getCachedContext(convert_ctx, ip->width, ip->height, pix_fmt,
 		frame->get_w(), frame->get_h(), ofmt, SWS_BICUBIC, NULL, NULL, NULL);
 	if( !convert_ctx ) {
 		fprintf(stderr, "FFVideoConvert::convert_picture_frame:"
 				" sws_getCachedContext() failed\n");
 		return -1;
 	}
-	int ret = sws_scale(convert_ctx, ip->data, ip->linesize, 0, ih,
-	    opic.data, opic.linesize);
+	int ret = sws_scale(convert_ctx, ip->data, ip->linesize, 0, ip->height,
+	    ipic->data, ipic->linesize);
 	if( ret < 0 ) {
 		ff_err(ret, "FFVideoConvert::convert_picture_frame: sws_scale() failed\n");
 		return -1;
@@ -953,13 +931,13 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame,
 	return 0;
 }
 
-int FFVideoConvert::convert_cmodel(VFrame *frame,
-		 AVFrame *ip, AVPixelFormat ifmt, int iw, int ih)
+int FFVideoConvert::convert_cmodel(VFrame *frame, AVFrame *ip)
 {
 	// try direct transfer
-	if( !convert_picture_vframe(frame, ip, ifmt, iw, ih) ) return 1;
+	if( !convert_picture_vframe(frame, ip) ) return 1;
 	// use indirect transfer
-	const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(ifmt);
+	AVPixelFormat pix_fmt = (AVPixelFormat)ip->format;
+	const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
 	int max_bits = 0;
 	for( int i = 0; i <desc->nb_components; ++i ) {
 		int bits = desc->comp[i].depth;
@@ -971,16 +949,15 @@ int FFVideoConvert::convert_cmodel(VFrame *frame,
 	int icolor_model = pixdesc_has_alpha(desc) ?
 		(max_bits > 8 ? BC_RGBA16161616 : BC_RGBA8888) :
 		(max_bits > 8 ? BC_RGB161616 : BC_RGB888) ;
-	VFrame vframe(iw, ih, icolor_model);
-	if( convert_picture_vframe(&vframe, ip, ifmt, iw, ih) ) return -1;
+	VFrame vframe(ip->width, ip->height, icolor_model);
+	if( convert_picture_vframe(&vframe, ip) ) return -1;
 	frame->transfer_from(&vframe);
 	return 1;
 }
 
-int FFVideoConvert::transfer_cmodel(VFrame *frame,
-		 AVFrame *ifp, AVPixelFormat ifmt, int iw, int ih)
+int FFVideoConvert::transfer_cmodel(VFrame *frame, AVFrame *ifp)
 {
-	int ret = convert_cmodel(frame, ifp, ifmt, iw, ih);
+	int ret = convert_cmodel(frame, ifp);
 	if( ret > 0 ) {
 		const AVDictionary *src = av_frame_get_metadata(ifp);
 		AVDictionaryEntry *t = NULL;
@@ -992,38 +969,53 @@ int FFVideoConvert::transfer_cmodel(VFrame *frame,
 	return ret;
 }
 
-int FFVideoConvert::convert_vframe_picture(VFrame *frame,
-		AVFrame *op, AVPixelFormat ofmt, int ow, int oh)
+int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op)
 {
-	AVFrame opic;
+	AVFrame *opic = av_frame_alloc();
+	int ret = convert_vframe_picture(frame, op, opic);
+	av_frame_free(&opic);
+	return ret;
+}
+
+int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *opic)
+{
 	int cmodel = frame->get_color_model();
 	AVPixelFormat ifmt = color_model_to_pix_fmt(cmodel);
 	if( ifmt == AV_PIX_FMT_NB ) return -1;
-	int size = av_image_fill_arrays(opic.data, opic.linesize,
+	int size = av_image_fill_arrays(opic->data, opic->linesize,
 		 frame->get_data(), ifmt, frame->get_w(), frame->get_h(), 1);
 	if( size < 0 ) return -1;
 
-	// transfer line sizes must match also
-	int planar = BC_CModels::is_planar(cmodel);
-	int packed_width = !planar ? frame->get_bytes_per_line() :
-		 BC_CModels::calculate_pixelsize(cmodel) * frame->get_w();
-	if( packed_width != opic.linesize[0] )  return -1;
-
-	if( planar ) {
+	int bpp = BC_CModels::calculate_pixelsize(cmodel);
+	int ysz = bpp * frame->get_w(), usz = ysz;
+	switch( cmodel ) {
+	case BC_YUV410P:
+	case BC_YUV411P:
+		usz /= 2;
+	case BC_YUV420P:
+	case BC_YUV422P:
+		usz /= 2;
+	case BC_YUV444P:
 		// override av_image_fill_arrays() for planar types
-		opic.data[0] = frame->get_y();
-		opic.data[1] = frame->get_u();
-		opic.data[2] = frame->get_v();
+		opic->data[0] = frame->get_y();  opic->linesize[0] = ysz;
+		opic->data[1] = frame->get_u();  opic->linesize[1] = usz;
+		opic->data[2] = frame->get_v();  opic->linesize[2] = usz;
+		break;
+	default:
+		opic->data[0] = frame->get_data();
+		opic->linesize[0] = frame->get_bytes_per_line();
+		break;
 	}
 
-	convert_ctx = sws_getCachedContext(convert_ctx, frame->get_w(), frame->get_h(), ifmt,
-		ow, oh, ofmt, SWS_BICUBIC, NULL, NULL, NULL);
+	AVPixelFormat ofmt = (AVPixelFormat)op->format;
+	convert_ctx = sws_getCachedContext(convert_ctx, frame->get_w(), frame->get_h(),
+		ifmt, op->width, op->height, ofmt, SWS_BICUBIC, NULL, NULL, NULL);
 	if( !convert_ctx ) {
 		fprintf(stderr, "FFVideoConvert::convert_frame_picture:"
 				" sws_getCachedContext() failed\n");
 		return -1;
 	}
-	int ret = sws_scale(convert_ctx, opic.data, opic.linesize, 0, frame->get_h(),
+	int ret = sws_scale(convert_ctx, opic->data, opic->linesize, 0, frame->get_h(),
 			op->data, op->linesize);
 	if( ret < 0 ) {
 		ff_err(ret, "FFVideoConvert::convert_frame_picture: sws_scale() failed\n");
@@ -1032,11 +1024,10 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame,
 	return 0;
 }
 
-int FFVideoConvert::convert_pixfmt(VFrame *frame,
-		 AVFrame *op, AVPixelFormat ofmt, int ow, int oh)
+int FFVideoConvert::convert_pixfmt(VFrame *frame, AVFrame *op)
 {
 	// try direct transfer
-	if( !convert_vframe_picture(frame, op, ofmt, ow, oh) ) return 1;
+	if( !convert_vframe_picture(frame, op) ) return 1;
 	// use indirect transfer
 	int colormodel = frame->get_color_model();
 	int bits = BC_CModels::calculate_pixelsize(colormodel) * 8;
@@ -1046,14 +1037,13 @@ int FFVideoConvert::convert_pixfmt(VFrame *frame,
 		(bits > 8 ? BC_RGB161616: BC_RGB888) ;
 	VFrame vframe(frame->get_w(), frame->get_h(), icolor_model);
 	vframe.transfer_from(frame);
-	if( !convert_vframe_picture(&vframe, op, ofmt, ow, oh) ) return 1;
+	if( !convert_vframe_picture(&vframe, op) ) return 1;
 	return -1;
 }
 
-int FFVideoConvert::transfer_pixfmt(VFrame *frame,
-		 AVFrame *ofp, AVPixelFormat ofmt, int ow, int oh)
+int FFVideoConvert::transfer_pixfmt(VFrame *frame, AVFrame *ofp)
 {
-	int ret = convert_pixfmt(frame, ofp, ofmt, ow, oh);
+	int ret = convert_pixfmt(frame, ofp);
 	if( ret > 0 ) {
 		BC_Hash *hp = frame->get_params();
 		AVDictionary **dict = avpriv_frame_get_metadatap(ofp);
@@ -2367,7 +2357,7 @@ int FFAudioStream::create_filter(const char *filter_spec,
 	const char *sp = filter_spec;
 	char filter_name[BCSTRLEN], *np = filter_name;
 	int i = sizeof(filter_name);
-	while( --i>=0 && *sp!=0 && !strchr(" \t:=",*sp) ) *np++ = *sp++;
+	while( --i>=0 && *sp!=0 && !strchr(" \t:=,",*sp) ) *np++ = *sp++;
 	*np = 0;
 	AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
 	if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_AUDIO ) {

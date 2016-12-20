@@ -929,7 +929,7 @@ int PluginFVClient::process_buffer(VFrame **frames, int64_t position, double fra
 		frame->pts = local_to_edl(position);
 		ret = av_frame_get_buffer(frame, 32);
 		if( ret < 0 ) break;
-		ret = transfer_pixfmt(vframe, frame, pix_fmt, width, height);
+		ret = transfer_pixfmt(vframe, frame);
 		if( ret < 0 ) break;
 		ret = av_buffersrc_add_frame_flags(fsrc, frame, 0);
 	}
@@ -938,7 +938,7 @@ int PluginFVClient::process_buffer(VFrame **frames, int64_t position, double fra
 
 	if( ret >= 0 ) {
 		pix_fmt = (AVPixelFormat) frame->format;
-		ret = transfer_cmodel(vframe, frame, pix_fmt, width, height);
+		ret = transfer_cmodel(vframe, frame);
 	}
 	if( ret < 0 ) {
 		ff_err(ret, "PluginFVClient::process_buffer() %s\n", plugin_title());

@@ -2427,7 +2427,7 @@ static int bd_video_format(int w, int h, int ilace)
   if( w == 720 && h == 480 && ilace ) return BLURAY_VIDEO_FORMAT_480I;
   if( w == 720 && h == 576 && ilace ) return BLURAY_VIDEO_FORMAT_576I;
   if( w == 720 && h == 480 && !ilace ) return BLURAY_VIDEO_FORMAT_480P;
-  if( w == 1920 && h == 1080 && ilace ) return BLURAY_VIDEO_FORMAT_1080I;
+  if( w == 1440 && h == 1080 && ilace ) return BLURAY_VIDEO_FORMAT_1080I;
   if( w == 1280 && h == 720 && !ilace ) return BLURAY_VIDEO_FORMAT_720P;
   if( w == 1920 && h == 1080 && !ilace ) return BLURAY_VIDEO_FORMAT_1080P;
   if( w == 720 && h == 576 && !ilace ) return BLURAY_VIDEO_FORMAT_576P;
