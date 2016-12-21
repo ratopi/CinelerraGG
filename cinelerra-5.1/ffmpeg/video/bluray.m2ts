@@ -1,7 +1,8 @@
 mpegts libx264
 id=0x1011
-profile=baseline
+profile=high
 level=3.0
 preset=medium
 bluray-compat=1
+# must be last for bdcreate.C
 x264opts keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8

@@ -2424,13 +2424,14 @@ static int bd_audio_rate(int rate)
 
 static int bd_video_format(int w, int h, int ilace)
 {
-  if( w == 720 && h == 480 && ilace ) return BLURAY_VIDEO_FORMAT_480I;
-  if( w == 720 && h == 576 && ilace ) return BLURAY_VIDEO_FORMAT_576I;
-  if( w == 720 && h == 480 && !ilace ) return BLURAY_VIDEO_FORMAT_480P;
-  if( w == 1440 && h == 1080 && ilace ) return BLURAY_VIDEO_FORMAT_1080I;
-  if( w == 1280 && h == 720 && !ilace ) return BLURAY_VIDEO_FORMAT_720P;
-  if( w == 1920 && h == 1080 && !ilace ) return BLURAY_VIDEO_FORMAT_1080P;
-  if( w == 720 && h == 576 && !ilace ) return BLURAY_VIDEO_FORMAT_576P;
+  if( w ==  720 && h ==  480    &&  ilace   ) return BLURAY_VIDEO_FORMAT_480I;
+  if( w ==  720 && h ==  576    &&  ilace   ) return BLURAY_VIDEO_FORMAT_576I;
+  if( w ==  720 && h ==  480    && !ilace   ) return BLURAY_VIDEO_FORMAT_480P;
+  if( w ==  720 && h ==  576    && !ilace   ) return BLURAY_VIDEO_FORMAT_576P;
+// this seems to be overly restrictive
+  if( w == 1280 && h ==  720 /* && !ilace*/ ) return BLURAY_VIDEO_FORMAT_720P;
+  if( w == 1440 && h == 1080 /* &&  ilace*/ ) return BLURAY_VIDEO_FORMAT_1080I;
+  if( w == 1920 && h == 1080 /* && !ilace*/ ) return BLURAY_VIDEO_FORMAT_1080P;
   fprintf(stderr, "unknown bluray video format %dx%d %silace\n",
     w, h, !ilace ? "not " : "");
   exit(1);
@@ -2456,6 +2457,46 @@ static int bd_aspect_ratio(int w, int h, double ratio)
   return w == 720 ? BLURAY_ASPECT_RATIO_4_3 : BLURAY_ASPECT_RATIO_16_9;
   fprintf(stderr, "unknown bluray aspect ratio %5.3f\n",aspect);
   exit(1);
+}
+
+static int field_probe(AVFormatContext *fmt_ctx, AVStream *st)
+{
+  AVDictionary *copts = 0;
+  //av_dict_copy(&copts, opts, 0);
+  AVCodecID codec_id = st->codec->codec_id;
+  AVCodec *decoder = avcodec_find_decoder(codec_id);
+  if( avcodec_open2(st->codec, decoder, &copts) < 0 ) {
+    fprintf(stderr,"codec open failed\n");
+    return -1;
+  }
+  av_dict_free(&copts);
+
+  AVFrame *ipic = av_frame_alloc();
+  AVPacket ipkt;
+  av_init_packet(&ipkt);
+  int ilaced = -1;
+  for( int retrys=100; --retrys>=0 && ilaced<0; ) {
+    av_packet_unref(&ipkt);
+    int ret = av_read_frame(fmt_ctx, &ipkt);
+    if( ret == AVERROR_EOF ) break;
+    if( ret != 0 ) continue;
+    if( !ipkt.data ) continue;
+    if( ipkt.stream_index != st->index ) continue;
+    while( ipkt.size > 0 ) {
+      int got_frame = 0;
+      ret = avcodec_decode_video2(st->codec, ipic, &got_frame, &ipkt);
+      if( ret <= 0 ) break;
+      if( got_frame ) {
+        ilaced = ipic->interlaced_frame ? 1 : 0;
+        break;
+      }
+      ipkt.data += ret;
+      ipkt.size -= ret;
+    }
+  }
+  av_packet_unref(&ipkt);
+  av_frame_free(&ipic);
+  return ilaced;
 }
 
 int media_info::scan()
@@ -2492,8 +2533,12 @@ int media_info::scan()
     case AVMEDIA_TYPE_VIDEO: {
       if( ep_pid < 0 ) ep_pid = st->id;
       s->coding_type = bd_stream_type(codec_id);
-      s->format = bd_video_format(st->codec->width, st->codec->height,
-		st->codec->flags & CODEC_FLAG_INTERLACED_ME);
+      int ilace = field_probe(fmt_ctx, st);
+      if( ilace < 0 ) {
+        fprintf(stderr, "interlace probe failed\n");
+        exit(1);
+      }
+      s->format = bd_video_format(st->codec->width, st->codec->height, ilace);
       s->rate = bd_video_rate(!st->codec->framerate.den ? 0 :
 		(double)st->codec->framerate.num / st->codec->framerate.den);
       s->aspect = bd_aspect_ratio(st->codec->width, st->codec->height,

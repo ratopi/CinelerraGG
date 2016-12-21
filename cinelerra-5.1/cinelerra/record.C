@@ -163,7 +163,7 @@ Record::Record(MWindow *mwindow, RecordMenuItem *menu_item)
 Record::~Record()
 {
 	mwindow->gui->record = 0;
-	stop();  join();
+	stop();
 	delete blink_status;
 	delete cutads_status;
 	stop_skimming();
@@ -369,7 +369,7 @@ void Record::run()
 		if( channel )
 			video_stream = channel->video_stream;
 	}
-	stop();
+	stop(0);
 	edl->Garbage::remove_user();
 
 	if( mwindow->gui->remote_control->deactivate() )
@@ -433,9 +433,12 @@ void Record::run()
 	default_asset->Garbage::remove_user();
 }
 
-void Record::stop()
+void Record::stop(int wait)
 {
 	stop_operation();
+	if( wait && running() )
+		record_gui->set_done(1);
+	join();
 	window_lock->lock("Record::stop");
 	delete record_thread;   record_thread = 0;
 	delete record_monitor;  record_monitor = 0;
@@ -588,7 +591,6 @@ void Record::start()
 		window_lock->unlock();
 	}
 	else {
-		stop();  join();
 		init_lock->reset();
 		Thread::start();
 	}

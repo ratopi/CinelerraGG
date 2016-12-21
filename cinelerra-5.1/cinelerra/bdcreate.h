@@ -33,6 +33,7 @@ class CreateBD_Thread : public BC_DialogThread
 	static const double BD_WIDE_ASPECT_WIDTH, BD_WIDE_ASPECT_HEIGHT;
 	static const int BD_MAX_BITRATE, BD_CHANNELS, BD_WIDE_CHANNELS;
 	static const double BD_FRAMERATE, BD_SAMPLERATE, BD_KAUDIO_RATE;
+	static const int BD_INTERLACE_MODE;
 public:
 	CreateBD_Thread(MWindow *mwindow);
 	~CreateBD_Thread();
@@ -63,6 +64,7 @@ public:
 	int bd_samplerate;
 	int bd_max_bitrate;
 	double bd_kaudio_rate;
+	int bd_interlace_mode;
 	int max_w, max_h;
 };
 
@@ -203,6 +205,7 @@ public:
 	CreateBD_InverseTelecine *need_inverse_telecine;
 	CreateBD_ResizeTracks *need_resize_tracks;
 	CreateBD_Histogram *need_histogram;
+	BC_Title *non_standard;
 	CreateBD_WideAudio *need_wide_audio;
 	CreateBD_LabelChapters *need_label_chapters;
 	int ok_x, ok_y, ok_w, ok_h;

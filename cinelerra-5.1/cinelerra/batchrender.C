@@ -140,12 +140,7 @@ void BatchRenderJob::load(FileXML *file)
 			BC_Hash defaults;
 			defaults.load_string(file->read_text());
 			asset->load_defaults(&defaults,
-				"",
-				0,
-				1,
-				0,
-				0,
-				0);
+				"", 0, 1, 0, 0, 0);
 		}
 	}
 }
@@ -209,6 +204,7 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
 	warn = 1;
 	render = 0;
 	file_entries = 0;
+	batch_path[0] = 0;
 }
 
 BatchRenderThread::BatchRenderThread()
@@ -224,6 +220,7 @@ BatchRenderThread::BatchRenderThread()
 	warn = 1;
 	render = 0;
 	file_entries = 0;
+	batch_path[0] = 0;
 }
 
 BatchRenderThread::~BatchRenderThread()
@@ -238,9 +235,12 @@ BatchRenderThread::~BatchRenderThread()
 	}
 }
 
-void BatchRenderThread::reset(int warn)
+void BatchRenderThread::reset(const char *path)
 {
-	if( warn ) this->warn = 1;
+	if( path ) {
+		strcpy(batch_path, path);
+		warn = 1;
+	}
 	current_job = 0;
 	rendering_job = -1;
 	delete default_job;  default_job = 0;
@@ -254,9 +254,7 @@ void BatchRenderThread::reset(int warn)
 void BatchRenderThread::handle_close_event(int result)
 {
 // Save settings
-	char path[BCTEXTLEN];
-	path[0] = 0;
-	save_jobs(path);
+	save_jobs(batch_path);
 	save_defaults(mwindow->defaults);
 	reset();
 }
@@ -283,9 +281,7 @@ BC_Window* BatchRenderThread::new_gui()
 		}
 	}
 
-	char path[BCTEXTLEN];
-	path[0] = 0;
-	load_jobs(path, mwindow->preferences);
+	load_jobs(batch_path, mwindow->preferences);
 	load_defaults(mwindow->defaults);
 	this->gui = new BatchRenderGUI(mwindow,
 		this,
@@ -304,10 +300,9 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
 	int result = 0;
 
 	jobs.remove_all_objects();
-	if(path[0])
-		file.read_from_file(path);
-	else
-		file.read_from_file(create_path(path));
+	if( !path ) path = batch_path;
+	if( !path[0] ) create_path(path);
+	file.read_from_file(path);
 
 	while(!result)
 	{
@@ -344,10 +339,9 @@ void BatchRenderThread::save_jobs(char *path)
 	file.append_tag();
 	file.append_newline();
 
-	if(path[0])
-		file.write_to_file(path);
-	else
-		file.write_to_file(create_path(path));
+	if( !path ) path = batch_path;
+	if( !path[0] ) create_path(path);
+	file.write_to_file(path);
 }
 
 void BatchRenderThread::load_defaults(BC_Hash *defaults)
@@ -618,6 +612,7 @@ void BatchRenderThread::start_rendering(char *config_path,
 	BC_WindowBase::get_resources()->vframe_shm = 1;
 
 //PRINT_TRACE
+	strcpy(this->batch_path, batch_path);
 	load_jobs(batch_path, preferences);
 	save_jobs(batch_path);
 	save_defaults(boot_defaults);
@@ -651,11 +646,9 @@ void BatchRenderThread::start_rendering(char *config_path,
 void BatchRenderThread::start_rendering()
 {
 	if(is_rendering) return;
-
 	is_rendering = 1;
-	char path[BCTEXTLEN];
-	path[0] = 0;
-	save_jobs(path);
+
+	save_jobs(batch_path);
 	save_defaults(mwindow->defaults);
 	gui->button_disable();
 
@@ -759,7 +752,7 @@ void BatchRenderThread::trap_hook(FILE *fp, void *vp)
 BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 	BatchRenderThread *thread, int x, int y, int w, int h)
  : BC_Window(_(PROGRAM_NAME ": Batch Render"),
-	x, y, w, h, 50, 50, 1, 0, 1)
+	x, y, w, h, 730, 400, 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -816,6 +809,7 @@ void BatchRenderGUI::create_objects()
 	x += new_batch->get_w() + mwindow->theme->widget_border;
 	add_subwindow(delete_batch = new BatchRenderDelete(thread, x, y));
 	x = x2;  y += delete_batch->get_h() + mwindow->theme->widget_border;
+	y += mwindow->theme->widget_border;
 	add_subwindow(savelist_batch = new BatchRenderSaveList(thread, x, y));
 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
 	add_subwindow(loadlist_batch = new BatchRenderLoadList(thread, x, y));
@@ -826,6 +820,8 @@ void BatchRenderGUI::create_objects()
 	x = mwindow->theme->batchrender_x1, y = y1;
 
 	add_subwindow(list_title = new BC_Title(x, y, _("Batches to render:")));
+	x1 = x + list_title->get_w() + mwindow->theme->widget_border;;
+	add_subwindow(batch_path = new BC_Title(x1, y, thread->batch_path, MEDIUMFONT, YELLOW));
 	y += list_title->get_h() + mwindow->theme->widget_border;
 	y1 = get_h();
 	y1 -= 15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
@@ -899,6 +895,7 @@ int BatchRenderGUI::resize_event(int w, int h)
 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
 	loadlist_batch->reposition_window(x, y);
 	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
+	warning->reposition_window(x, y);
 
 	y1 = 15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
 	y2 = get_h() - y1 - batch_list->get_h();
@@ -1100,7 +1097,7 @@ int BatchRenderDelete::handle_event()
 BatchRenderSaveList::BatchRenderSaveList(BatchRenderThread *thread,
 	int x,
 	int y)
- : BC_GenericButton(x, y, _("Save List"))
+ : BC_GenericButton(x, y, _("Save Jobs"))
 {
 	this->thread = thread;
 	set_tooltip(_("Save a Batch Render List"));
@@ -1145,9 +1142,9 @@ void BatchRenderSaveList::run()
 {
 	char default_path[BCTEXTLEN];
 	sprintf(default_path, "~");
-	BC_FileBox filewindow(100, 100,
-			this->thread->mwindow->defaults->get("DEFAULT_BATCHLOADPATH", default_path),
-			_("Save Batch Render List"), _("Enter a Batch Render filename to save as:"),
+	thread->mwindow->defaults->get("DEFAULT_BATCHLOADPATH", default_path);
+	BC_FileBox filewindow(100, 100, default_path, _("Save Batch Render List"),
+			_("Enter a Batch Render filename to save as:"),
 			0, 0, 0, 0);
 	gui = &filewindow;
 
@@ -1155,11 +1152,11 @@ void BatchRenderSaveList::run()
 	filewindow.create_objects();
 
 	int result2 = filewindow.run_window();
-
-	if(!result2)
-	{
-		this->thread->save_jobs(filewindow.get_submitted_path());
-		this->thread->mwindow->defaults->update("DEFAULT_BATCHLOADPATH", filewindow.get_submitted_path());
+	if(!result2) {
+		strcpy(thread->batch_path, filewindow.get_submitted_path());
+		thread->gui->batch_path->update(thread->batch_path);
+		thread->mwindow->defaults->update("DEFAULT_BATCHLOADPATH", thread->batch_path);
+		thread->save_jobs(thread->batch_path);
 	}
 
 	this->thread->gui->flush();
@@ -1180,7 +1177,7 @@ int BatchRenderSaveList::keypress_event() {
 BatchRenderLoadList::BatchRenderLoadList(BatchRenderThread *thread,
 	int x,
 	int y)
-  : BC_GenericButton(x, y, _("Load List")),
+  : BC_GenericButton(x, y, _("Load Jobs")),
     Thread()
 {
 	this->thread = thread;
@@ -1192,8 +1189,7 @@ BatchRenderLoadList::BatchRenderLoadList(BatchRenderThread *thread,
 BatchRenderLoadList::~BatchRenderLoadList()
 {
 	startup_lock->lock("BatchRenderLoadList::~BrowseButton");
-	if(gui)
-	{
+	if(gui) {
 		gui->lock_window();
 		gui->set_done(1);
 		gui->unlock_window();
@@ -1205,10 +1201,8 @@ BatchRenderLoadList::~BatchRenderLoadList()
 
 int BatchRenderLoadList::handle_event()
 {
-	if(Thread::running())
-	{
-		if(gui)
-		{
+	if(Thread::running()) {
+		if(gui) {
 			gui->lock_window();
 			gui->raise_window();
 			gui->unlock_window();
@@ -1226,31 +1220,25 @@ void BatchRenderLoadList::run()
 {
 	char default_path[BCTEXTLEN];
 	sprintf(default_path, "~");
-	BC_FileBox filewindow(100,
-			      100,
-			      this->thread->mwindow->defaults->get("DEFAULT_BATCHLOADPATH", default_path),
-			      _("Load Batch Render List"),
-			      _("Enter a Batch Render filename to load from:"),
-			      0,
-			      0,
-			      0,
-			      0);
-
+	thread->mwindow->defaults->get("DEFAULT_BATCHLOADPATH", default_path);
+	BC_FileBox filewindow(100, 100, default_path, _("Load Batch Render List"),
+			_("Enter a Batch Render filename to load from:"),
+			0, 0, 0, 0);
 	gui = &filewindow;
 
 	startup_lock->unlock();
 	filewindow.create_objects();
 
 	int result2 = filewindow.run_window();
-
-	if(!result2)
-	{
-		this->thread->load_jobs(filewindow.get_submitted_path(),this->thread->mwindow->preferences);
-		this->thread->gui->create_list(1);
-		this->thread->mwindow->defaults->update("DEFAULT_BATCHLOADPATH", filewindow.get_submitted_path());
+	if(!result2) {
+		strcpy(thread->batch_path, filewindow.get_submitted_path());
+		thread->gui->batch_path->update(thread->batch_path);
+		thread->mwindow->defaults->update("DEFAULT_BATCHLOADPATH", thread->batch_path);
+		thread->load_jobs(thread->batch_path, thread->mwindow->preferences);
+		thread->gui->create_list(1);
 	}
 
-	this->thread->gui->flush();
+	thread->gui->flush();
 	startup_lock->lock("BatchRenderLoadList::run");
 	gui = 0;
 	startup_lock->unlock();

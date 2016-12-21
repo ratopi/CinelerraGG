@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bchash.h"
 #include "bdcreate.h"
 #include "clip.h"
 #include "edl.h"
@@ -7,6 +8,7 @@
 #include "edlsession.h"
 #include "file.h"
 #include "filexml.h"
+#include "interlacemodes.h"
 #include "keyframe.h"
 #include "labels.h"
 #include "mainerror.h"
@@ -27,34 +29,35 @@
 
 // BD Creation
 
+// selected by timezone
 #define BD_1920x1080_2997i	0
-#define BD_1920x1080_2500i	1
-#define BD_1920x1080_2400p	2
-#define BD_1920x1080_23976p	3
-#define BD_1280x720_5994p	4
-#define BD_1280x720_5000p	5
-#define BD_1280x720_23976p	6
-#define BD_1280x720_2400p	7
-#define BD_720x576_2500i	8
-#define BD_720x480_2997i	9
+#define BD_1920x1080_25i	3
 
 static struct bd_format {
 	const char *name;
 	int w, h;
 	double framerate;
-	int interlaced, wide;
+	int wide, interlaced;
 } bd_formats[] = {
-	{ "1920x1080 29.97i",	1920,1080, 29.97,  1, 1 },
-	{ "1920x1080 25i",	1920,1080, 25.,    1, 1 },
-	{ "1920x1080 24p",	1920,1080, 24.,    0, 1 },
-	{ "1920x1080 23.976p",	1920,1080, 23.976, 0, 1 },
-	{ "1440x1080 50i",	1920,1080, 50.,	   1, 0 },
-	{ "1280x720  59.94p",	1280,720,  59.94,  0, 1 },
-	{ "1280x720  50p",	1280,720,  50.,    0, 1 },
-	{ "1280x720  23.976p",	1280,720,  23.976, 0, 1 },
-	{ "1280x720  24p",	1280,720,  24.,    0, 1 },
-	{ "720x576   25i",	 720,576,  25.,    1, 0 },
-	{ "720x480   29.97i",	 720,480,  29.97,  1, 0 },
+// framerates are frames, not fields, per second, *=not standard
+	{ "1920x1080 29.97i",	1920,1080, 29.97,  1, ILACE_MODE_TOP_FIRST },
+	{ "1920x1080 29.97p*",	1920,1080, 29.97,  1, ILACE_MODE_NOTINTERLACED },
+	{ "1920x1080 24p",	1920,1080, 50.,    1, ILACE_MODE_NOTINTERLACED },
+	{ "1920x1080 25i",	1920,1080, 25.,    1, ILACE_MODE_TOP_FIRST },
+	{ "1920x1080 24p",	1920,1080, 24.,    1, ILACE_MODE_NOTINTERLACED },
+	{ "1920x1080 23.976p",	1920,1080, 23.976, 1, ILACE_MODE_NOTINTERLACED },
+	{ "1440x1080 29.97i",	1440,1080, 59.94,  0, ILACE_MODE_TOP_FIRST },
+	{ "1440x1080 25i",	1440,1080, 50.,	   0, ILACE_MODE_TOP_FIRST },
+	{ "1440x1080 24p",	1440,1080, 24.,	   0, ILACE_MODE_NOTINTERLACED },
+	{ "1440x1080 23.976p",	1440,1080, 23.976, 0, ILACE_MODE_NOTINTERLACED },
+	{ "1280x720  29.97p",	1280,720,  59.94,  1, ILACE_MODE_NOTINTERLACED },
+	{ "1280x720  50p",	1280,720,  50.,    1, ILACE_MODE_NOTINTERLACED },
+	{ "1280x720  23.976p",	1280,720,  23.976, 1, ILACE_MODE_NOTINTERLACED },
+	{ "1280x720  24p",	1280,720,  24.,    1, ILACE_MODE_NOTINTERLACED },
+	{ "720x576   25p*",	 720,576,  25.,    0, ILACE_MODE_NOTINTERLACED },
+	{ "720x576   25i",	 720,576,  25.,    0, ILACE_MODE_BOTTOM_FIRST },
+	{ "720x480   29.97p*",	 720,480,  29.97,  0, ILACE_MODE_NOTINTERLACED },
+	{ "720x480   29.97i",	 720,480,  29.97,  0, ILACE_MODE_BOTTOM_FIRST },
 };
 
 const int64_t CreateBD_Thread::BD_SIZE = 25000000000;
@@ -72,6 +75,7 @@ const int CreateBD_Thread::BD_CHANNELS = 2;
 const int CreateBD_Thread::BD_WIDE_CHANNELS = 6;
 const double CreateBD_Thread::BD_SAMPLERATE = 48000;
 const double CreateBD_Thread::BD_KAUDIO_RATE = 224;
+const int CreateBD_Thread::BD_INTERLACE_MODE = ILACE_MODE_NOTINTERLACED;
 
 CreateBD_MenuItem::CreateBD_MenuItem(MWindow *mwindow)
  : BC_MenuItem(_("BD Render..."), _("Ctrl-d"), 'd')
@@ -118,7 +122,7 @@ CreateBD_Thread::~CreateBD_Thread()
 }
 
 int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
-	const char *tmp_path, const char *asset_title)
+	const char *asset_dir, const char *asset_title)
 {
 	EDL *edl = mwindow->edl;
 	if( !edl || !edl->session ) {
@@ -136,9 +140,6 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 		MainError::show_error(msg);
 		return 1;
 	}
-
-	char asset_dir[BCTEXTLEN];
-	sprintf(asset_dir, "%s/%s", tmp_path, asset_title);
 
 	if( mkdir(asset_dir, 0777) ) {
 		char err[BCTEXTLEN], msg[BCTEXTLEN];
@@ -161,6 +162,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	session->sample_rate = bd_samplerate;
 	session->audio_channels = session->audio_tracks =
 		use_wide_audio ? BD_WIDE_CHANNELS : BD_CHANNELS;
+	session->interlace_mode = bd_interlace_mode;
 
 	char script_filename[BCTEXTLEN];
 	sprintf(script_filename, "%s/bd.sh", asset_dir);
@@ -242,6 +244,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 	asset->width = session->output_w;
 	asset->height = session->output_h;
 	asset->aspect_ratio = session->aspect_w / session->aspect_h;
+	asset->interlace_mode = session->interlace_mode;
 
 	char option_path[BCTEXTLEN];
 	sprintf(&asset->path[0],"%s/bd.m2ts", asset_dir);
@@ -250,6 +253,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 
 	asset->audio_data = 1;
 	strcpy(asset->acodec, "bluray.m2ts");
+	//mwindow->defaults->get("DEFAULT_BLURAY_ACODEC", asset->acodec);
 	FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
 	FFMPEG::load_options(option_path, asset->ff_audio_options,
 			 sizeof(asset->ff_audio_options));
@@ -257,9 +261,20 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 
 	asset->video_data = 1;
 	strcpy(asset->vcodec, "bluray.m2ts");
+	//mwindow->defaults->get("DEFAULT_BLURAY_VCODEC", asset->vcodec);
 	FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
 	FFMPEG::load_options(option_path, asset->ff_video_options,
 		 sizeof(asset->ff_video_options));
+	const char *opts = 0;
+	switch( asset->interlace_mode ) {
+	case ILACE_MODE_TOP_FIRST:    opts = ":tff\n";  break;
+	case ILACE_MODE_BOTTOM_FIRST: opts = ":bff\n";  break;
+	}
+	if( opts ) {
+		int len = strlen(asset->ff_video_options);
+		char *cp = asset->ff_video_options + len-1;
+		strncpy(cp, opts, sizeof(asset->ff_video_options)-len);
+	}
 	asset->ff_video_bitrate = vid_bitrate;
 	asset->ff_video_quality = 0;
 
@@ -275,6 +290,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
 void CreateBD_Thread::handle_close_event(int result)
 {
 	if( result ) return;
+	mwindow->defaults->update("WORK_DIRECTORY", tmp_path);
 	mwindow->batch_render->load_defaults(mwindow->defaults);
 	mwindow->undo->update_undo_before();
 	KeyFrame keyframe;  char data[BCTEXTLEN];
@@ -345,19 +361,23 @@ void CreateBD_Thread::handle_close_event(int result)
 		keyframe.set_data(data);
 		insert_video_plugin("Histogram", &keyframe);
 	}
-	mwindow->batch_render->reset(1);
-	create_bd_jobs(&mwindow->batch_render->jobs, tmp_path, asset_title);
-	mwindow->save_backup();
+
+	char asset_dir[BCTEXTLEN], jobs_path[BCTEXTLEN];
+	sprintf(asset_dir, "%s/%s", tmp_path, asset_title);
+	sprintf(jobs_path, "%s/bd.jobs", asset_dir);
+	mwindow->batch_render->reset(jobs_path);
+	int ret = create_bd_jobs(&mwindow->batch_render->jobs, asset_dir, asset_title);
 	mwindow->undo->update_undo_after(_("create bd"), LOAD_ALL);
 	mwindow->resync_guis();
-	mwindow->batch_render->handle_close_event(0);
+	if( ret ) return;
+	mwindow->batch_render->save_jobs();
 	mwindow->batch_render->start();
 }
 
 BC_Window* CreateBD_Thread::new_gui()
 {
-	memset(tmp_path,0,sizeof(tmp_path));
-	strcpy(tmp_path,"/tmp");
+	strcpy(tmp_path, "/tmp");
+	mwindow->defaults->get("WORK_DIRECTORY", tmp_path);
 	memset(asset_title,0,sizeof(asset_title));
 	time_t dt;	time(&dt);
 	struct tm dtm;	localtime_r(&dt, &dtm);
@@ -371,8 +391,8 @@ BC_Window* CreateBD_Thread::new_gui()
 	use_wide_audio = 0;
 	use_resize_tracks = 0;
 	use_label_chapters = 0;
-	use_standard = BD_1920x1080_2997i;
-
+	use_standard = !strcmp(mwindow->default_std(),"NTSC") ?
+		 BD_1920x1080_2997i : BD_1920x1080_25i;
 	bd_size = BD_SIZE;
 	bd_width = BD_WIDTH;
 	bd_height = BD_HEIGHT;
@@ -382,6 +402,7 @@ BC_Window* CreateBD_Thread::new_gui()
 	bd_samplerate = BD_SAMPLERATE;
 	bd_max_bitrate = BD_MAX_BITRATE;
 	bd_kaudio_rate = BD_KAUDIO_RATE;
+	bd_interlace_mode = BD_INTERLACE_MODE;
 	max_w = 0; max_h = 0;
 
 	int has_standard = -1;
@@ -625,6 +646,7 @@ CreateBD_GUI::CreateBD_GUI(CreateBD_Thread *thread, int x, int y, int w, int h)
 	need_inverse_telecine = 0;
 	need_resize_tracks = 0;
 	need_histogram = 0;
+	non_standard = 0;
 	need_wide_audio = 0;
 	need_label_chapters = 0;
 	ok = 0;
@@ -676,6 +698,7 @@ void CreateBD_GUI::create_objects()
 	standard = new CreateBD_Format(this, title->get_w() + padx, y);
 	add_subwindow(standard);
 	standard->create_objects();
+	standard->set_text(bd_formats[thread->use_standard].name);
 	x0 -= 30;
 	title = new BC_Title(x0, y, _("Scale:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
@@ -695,6 +718,8 @@ void CreateBD_GUI::create_objects()
 	need_wide_audio = new CreateBD_WideAudio(this, x1, y);
 	add_subwindow(need_wide_audio);
 	y += need_histogram->get_h() + pady/2;
+	non_standard = new BC_Title(x, y+5, "", MEDIUMFONT, RED);
+	add_subwindow(non_standard);
 	need_resize_tracks = new CreateBD_ResizeTracks(this, x1, y);
 	add_subwindow(need_resize_tracks);
 //	need_label_chapters = new CreateBD_LabelChapters(this, x2, y);
@@ -805,6 +830,7 @@ option_presets()
 		BD_WIDE_ASPECT_WIDTH : BD_ASPECT_WIDTH;
 	bd_aspect_height = bd_formats[use_standard].wide ?
 		BD_WIDE_ASPECT_HEIGHT : BD_ASPECT_HEIGHT;
+	bd_interlace_mode = bd_formats[use_standard].interlaced;
 	double bd_aspect = bd_aspect_width / bd_aspect_height;
 
 	Tracks *tracks = mwindow->edl->tracks;
@@ -884,8 +910,20 @@ CreateBD_FormatItem::~CreateBD_FormatItem()
 
 int CreateBD_FormatItem::handle_event()
 {
-	popup->set_text(get_text());
+	const char *text = get_text();
+	int standard = this->standard;
+	if( standard < 0 ) {
+		BC_SubMenu *submenu = get_submenu();
+		CreateBD_FormatItem *sub_item0 =
+			(CreateBD_FormatItem *)submenu->get_item(0);
+		standard = sub_item0->standard;
+		text = sub_item0->get_text();
+	}
 	popup->gui->thread->use_standard = standard;
+	popup->set_text(text);
+	int n = strlen(text)-1;
+	int not_standard = n >= 0 && text[n] == '*' ? 1 : 0;
+	popup->gui->non_standard->update(not_standard ? _("* non-standard format") : "", 0);
 	return popup->handle_event();
 }
 
@@ -902,8 +940,18 @@ CreateBD_Format::~CreateBD_Format()
 
 void CreateBD_Format::create_objects()
 {
+	BC_SubMenu *submenu = 0;
+	CreateBD_FormatItem *item = 0;
+	int ww = 0, hh = 0;
 	for( int i=0; i<(int)(sizeof(bd_formats)/sizeof(bd_formats[0])); ++i ) {
-		add_item(new CreateBD_FormatItem(this, i, bd_formats[i].name));
+		if( ww != bd_formats[i].w || hh != bd_formats[i].h ) {
+			ww = bd_formats[i].w;  hh = bd_formats[i].h;
+			char string[BCSTRLEN];
+			sprintf(string, "%dx%d", ww,hh);
+			add_item(item = new CreateBD_FormatItem(this, -1, string));
+			item->add_submenu(submenu = new BC_SubMenu());
+		}
+		submenu->add_submenuitem(new CreateBD_FormatItem(this, i, bd_formats[i].name));
 	}
 	set_value(gui->thread->use_standard);
 }

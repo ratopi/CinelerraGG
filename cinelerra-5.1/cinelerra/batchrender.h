@@ -92,11 +92,11 @@ public:
 	int test_edl_files();
 	void calculate_dest_paths(ArrayList<char*> *paths,
 		Preferences *preferences);
-	void reset(int warn=0);
+	void reset(const char *path=0);
 // Load batch rendering jobs
 	void load_jobs(char *path, Preferences *preferences);
 // Not applicable to western civilizations
-	void save_jobs(char *path);
+	void save_jobs(char *path=0);
 	void load_defaults(BC_Hash *defaults);
 	void save_defaults(BC_Hash *defaults);
 // Create path for persistent storage functions
@@ -121,6 +121,7 @@ public:
 	static void trap_hook(FILE *fp, void *vp);
 
 	MWindow *mwindow;
+	char batch_path[BCTEXTLEN];
 	double current_start;
 	double current_end;
 	BatchRenderJob *default_job;
@@ -308,6 +309,7 @@ public:
 //	BC_Title *status_text;
 //	BC_ProgressBar *progress_bar;
 	BC_Title *list_title;
+	BC_Title *batch_path;
 	BatchRenderNew *new_batch;
 	BatchRenderDelete *delete_batch;
 	BatchRenderSaveList *savelist_batch;

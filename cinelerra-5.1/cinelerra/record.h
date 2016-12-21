@@ -98,7 +98,7 @@ public:
 	~Record();
 
 	void run();
-	void stop();
+	void stop(int wait=1);
 	int load_defaults();
 	int save_defaults();
 	Batch* new_batch();

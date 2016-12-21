@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bchash.h"
 #include "clip.h"
 #include "dvdcreate.h"
 #include "edl.h"
@@ -126,7 +127,7 @@ CreateDVD_Thread::~CreateDVD_Thread()
 }
 
 int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
-	const char *tmp_path, const char *asset_title)
+	const char *asset_dir, const char *asset_title)
 {
 	EDL *edl = mwindow->edl;
 	if( !edl || !edl->session ) {
@@ -144,9 +145,6 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 		MainError::show_error(msg);
 		return 1;
 	}
-
-	char asset_dir[BCTEXTLEN];
-	sprintf(asset_dir, "%s/%s", tmp_path, asset_title);
 
 	if( mkdir(asset_dir, 0777) ) {
 		char err[BCTEXTLEN], msg[BCTEXTLEN];
@@ -365,6 +363,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
 void CreateDVD_Thread::handle_close_event(int result)
 {
 	if( result ) return;
+	mwindow->defaults->update("WORK_DIRECTORY", tmp_path);
 	mwindow->batch_render->load_defaults(mwindow->defaults);
 	mwindow->undo->update_undo_before();
 	KeyFrame keyframe;  char data[BCTEXTLEN];
@@ -436,19 +435,22 @@ void CreateDVD_Thread::handle_close_event(int result)
 		keyframe.set_data(data);
 		insert_video_plugin("Histogram", &keyframe);
 	}
-	mwindow->batch_render->reset(1);
-	create_dvd_jobs(&mwindow->batch_render->jobs, tmp_path, asset_title);
-	mwindow->save_backup();
+	char asset_dir[BCTEXTLEN], jobs_path[BCTEXTLEN];
+	sprintf(asset_dir, "%s/%s", tmp_path, asset_title);
+	sprintf(jobs_path, "%s/dvd.jobs", asset_dir);
+	mwindow->batch_render->reset(jobs_path);
+	int ret = create_dvd_jobs(&mwindow->batch_render->jobs, asset_dir, asset_title);
 	mwindow->undo->update_undo_after(_("create dvd"), LOAD_ALL);
 	mwindow->resync_guis();
-	mwindow->batch_render->handle_close_event(0);
+	if( ret ) return;
+	mwindow->batch_render->save_jobs();
 	mwindow->batch_render->start();
 }
 
 BC_Window* CreateDVD_Thread::new_gui()
 {
-	memset(tmp_path,0,sizeof(tmp_path));
 	strcpy(tmp_path,"/tmp");
+	mwindow->defaults->get("WORK_DIRECTORY", tmp_path);
 	memset(asset_title,0,sizeof(asset_title));
 	time_t dt;  time(&dt);
 	struct tm dtm;  localtime_r(&dt, &dtm);

@@ -185,7 +185,7 @@ void BC_Trace::unset_all_locks(trace_info *info)
 	while( p ) {
 		lock_item *lp = p;  p = (lock_item*)p->next;
 		if( lp->info != info ) continue;
-		lock_table.remove_pointer(p);  lock_free.append(p);
+		lock_table.remove_pointer(lp);  lock_free.append(lp);
 	}
 	lock_table.unlock();
 }
@@ -198,7 +198,7 @@ void BC_Trace::clear_locks_tid(pthread_t tid)
 	while( p ) {
 		lock_item *lp = p;  p = (lock_item*)p->next;
 		if( lp->tid != tid ) continue;
-		lock_table.remove_pointer(p);  lock_free.append(p);
+		lock_table.remove_pointer(lp);  lock_free.append(lp);
 	}
 	lock_table.unlock();
 }
