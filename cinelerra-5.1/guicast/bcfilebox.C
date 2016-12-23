@@ -580,10 +580,6 @@ void BC_FileBox::create_objects()
 	int directory_title_margin = MAX(20,
 		resources->filebox_text_images[0]->get_h());
 
-// Create recent dir list
-	create_history();
-	update_history();
-
 // Directories aren't filtered in FileSystem so skip this
 	if(!want_directory)
 	{
@@ -659,6 +655,10 @@ void BC_FileBox::create_objects()
 		fs->change_dir(directory, 0);
 		directory_title->update(fs->get_current_dir());
 	}
+
+// Create recent dir list
+	create_history();
+	update_history();
 
 	listbox = 0;
 	create_listbox(x, y, get_display_mode());

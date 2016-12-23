@@ -418,7 +418,7 @@ check_sig(char *path)
   if( !fs->open_file() ) { /* File found */
     char *ext = strrchr(path, '.');
     uint32_t bits = fs->read_uint32();
-    uint32_t bits2 = fs->read_uint32();
+//  uint32_t bits2 = fs->read_uint32();
  
     /* pre-approved suffixes */
     if( ext && !strncasecmp(ext, ".mp3", 4) ) {
