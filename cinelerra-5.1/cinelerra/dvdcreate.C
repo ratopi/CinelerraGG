@@ -126,8 +126,7 @@ CreateDVD_Thread::~CreateDVD_Thread()
 	close_window();
 }
 
-int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
-	const char *asset_dir, const char *asset_title)
+int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const char *asset_dir)
 {
 	EDL *edl = mwindow->edl;
 	if( !edl || !edl->session ) {
@@ -439,7 +438,7 @@ void CreateDVD_Thread::handle_close_event(int result)
 	sprintf(asset_dir, "%s/%s", tmp_path, asset_title);
 	sprintf(jobs_path, "%s/dvd.jobs", asset_dir);
 	mwindow->batch_render->reset(jobs_path);
-	int ret = create_dvd_jobs(&mwindow->batch_render->jobs, asset_dir, asset_title);
+	int ret = create_dvd_jobs(&mwindow->batch_render->jobs, asset_dir);
 	mwindow->undo->update_undo_after(_("create dvd"), LOAD_ALL);
 	mwindow->resync_guis();
 	if( ret ) return;
@@ -577,7 +576,7 @@ CreateDVD_DiskSpace::~CreateDVD_DiskSpace()
 
 int64_t CreateDVD_DiskSpace::tmp_path_space()
 {
-	const char *path = gui->tmp_path->get_text();
+	const char *path = gui->thread->tmp_path;
 	if( access(path,R_OK+W_OK) ) return 0;
 	struct statfs sfs;
 	if( statfs(path, &sfs) ) return 0;
@@ -619,19 +618,27 @@ CreateDVD_TmpPath::~CreateDVD_TmpPath()
 
 int CreateDVD_TmpPath::handle_event()
 {
+	get_text();
 	gui->disk_space->update();
 	return 1;
 }
 
 
 CreateDVD_AssetTitle::CreateDVD_AssetTitle(CreateDVD_GUI *gui, int x, int y, int w)
- : BC_TextBox(x, y, w, 1, 0, gui->thread->asset_title, 1, MEDIUMFONT)
+ : BC_TextBox(x, y, w, 1, -(int)sizeof(gui->thread->asset_title),
+		gui->thread->asset_title, 1, MEDIUMFONT)
 {
 	this->gui = gui;
 }
 
 CreateDVD_AssetTitle::~CreateDVD_AssetTitle()
 {
+}
+
+int CreateDVD_AssetTitle::handle_event()
+{
+	get_text();
+	return 1;
 }
 
 

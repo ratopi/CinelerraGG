@@ -31,7 +31,7 @@
 #include "pluginserver.h"
 
 MotionCVWindow::MotionCVWindow(MotionCVMain *plugin)
- : PluginClientWindow(plugin, 815, 575, 815, 575, 0)
+ : PluginClientWindow(plugin, 815, 600, 815, 600, 0)
 {
 	this->plugin = plugin;
 }
@@ -100,12 +100,13 @@ void MotionCVWindow::create_objects()
 			this, x + title->get_w() + 10, y));
 	mode3->create_objects();
 
+	y += 40;  int y1 = y;
 	add_subwindow(title = new BC_Title(x2, y, _("Tracking file:")));
 	add_subwindow(tracking_file = new MotionCVTrackingFile(plugin,
 			plugin->config.  tracking_file, this,
 			x2 + title->get_w() + 20, y));
+	y1 += tracking_file->get_h() + 10;
 
-	y += 40;  int y1 = y;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block X:")));
 	add_subwindow(block_x = new MotionCVBlockX(plugin, this,
 			x + title->get_w() + 10, y));
@@ -152,7 +153,7 @@ void MotionCVWindow::create_objects()
  	add_subwindow(addtrackedframeoffset =
 		new AddTrackedFrameOffset(plugin, this, x1=x2, y1+=track_frame_number->get_h()));
 	int pef = client->server->mwindow->edl->session->video_every_frame;
-	add_subwindow(pef_title = new BC_Title(x1=x2, y1+=addtrackedframeoffset->get_h() + 5,
+	add_subwindow(pef_title = new BC_Title(x1=x2+50, y1+=addtrackedframeoffset->get_h() + 5,
 		!pef ?	_("For best results\n"
 				" Set: Play every frame\n"
 				" Preferences-> Playback-> Video Out") :

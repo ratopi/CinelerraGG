@@ -42,15 +42,14 @@ static struct bd_format {
 // framerates are frames, not fields, per second, *=not standard
 	{ "1920x1080 29.97i",	1920,1080, 29.97,  1, ILACE_MODE_TOP_FIRST },
 	{ "1920x1080 29.97p*",	1920,1080, 29.97,  1, ILACE_MODE_NOTINTERLACED },
-	{ "1920x1080 24p",	1920,1080, 50.,    1, ILACE_MODE_NOTINTERLACED },
-	{ "1920x1080 25i",	1920,1080, 25.,    1, ILACE_MODE_TOP_FIRST },
 	{ "1920x1080 24p",	1920,1080, 24.,    1, ILACE_MODE_NOTINTERLACED },
+	{ "1920x1080 25i",	1920,1080, 25.,    1, ILACE_MODE_TOP_FIRST },
 	{ "1920x1080 23.976p",	1920,1080, 23.976, 1, ILACE_MODE_NOTINTERLACED },
-	{ "1440x1080 29.97i",	1440,1080, 59.94,  0, ILACE_MODE_TOP_FIRST },
-	{ "1440x1080 25i",	1440,1080, 50.,	   0, ILACE_MODE_TOP_FIRST },
+	{ "1440x1080 29.97i",	1440,1080, 29.97,  0, ILACE_MODE_TOP_FIRST },
+	{ "1440x1080 25i",	1440,1080, 25.,	   0, ILACE_MODE_TOP_FIRST },
 	{ "1440x1080 24p",	1440,1080, 24.,	   0, ILACE_MODE_NOTINTERLACED },
 	{ "1440x1080 23.976p",	1440,1080, 23.976, 0, ILACE_MODE_NOTINTERLACED },
-	{ "1280x720  29.97p",	1280,720,  59.94,  1, ILACE_MODE_NOTINTERLACED },
+	{ "1280x720  59.94p",	1280,720,  59.94,  1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  50p",	1280,720,  50.,    1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  23.976p",	1280,720,  23.976, 1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  24p",	1280,720,  24.,    1, ILACE_MODE_NOTINTERLACED },
@@ -121,8 +120,7 @@ CreateBD_Thread::~CreateBD_Thread()
 	close_window();
 }
 
-int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
-	const char *asset_dir, const char *asset_title)
+int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char *asset_dir)
 {
 	EDL *edl = mwindow->edl;
 	if( !edl || !edl->session ) {
@@ -366,7 +364,7 @@ void CreateBD_Thread::handle_close_event(int result)
 	sprintf(asset_dir, "%s/%s", tmp_path, asset_title);
 	sprintf(jobs_path, "%s/bd.jobs", asset_dir);
 	mwindow->batch_render->reset(jobs_path);
-	int ret = create_bd_jobs(&mwindow->batch_render->jobs, asset_dir, asset_title);
+	int ret = create_bd_jobs(&mwindow->batch_render->jobs, asset_dir);
 	mwindow->undo->update_undo_after(_("create bd"), LOAD_ALL);
 	mwindow->resync_guis();
 	if( ret ) return;
@@ -490,7 +488,7 @@ CreateBD_DiskSpace::~CreateBD_DiskSpace()
 
 int64_t CreateBD_DiskSpace::tmp_path_space()
 {
-	const char *path = gui->tmp_path->get_text();
+	const char *path = gui->thread->tmp_path;
 	if( access(path,R_OK+W_OK) ) return 0;
 	struct statfs sfs;
 	if( statfs(path, &sfs) ) return 0;
@@ -531,13 +529,15 @@ CreateBD_TmpPath::~CreateBD_TmpPath()
 
 int CreateBD_TmpPath::handle_event()
 {
+	get_text();
 	gui->disk_space->update();
 	return 1;
 }
 
 
 CreateBD_AssetTitle::CreateBD_AssetTitle(CreateBD_GUI *gui, int x, int y, int w)
- : BC_TextBox(x, y, w, 1, 0, gui->thread->asset_title, 1, MEDIUMFONT)
+ : BC_TextBox(x, y, w, 1, -(int)sizeof(gui->thread->asset_title),
+		gui->thread->asset_title, 1, MEDIUMFONT)
 {
 	this->gui = gui;
 }
@@ -546,6 +546,11 @@ CreateBD_AssetTitle::~CreateBD_AssetTitle()
 {
 }
 
+int CreateBD_AssetTitle::handle_event()
+{
+	get_text();
+	return 1;
+}
 
 CreateBD_Deinterlace::CreateBD_Deinterlace(CreateBD_GUI *gui, int x, int y)
  : BC_CheckBox(x, y, &gui->thread->use_deinterlace, _("Deinterlace"))
@@ -953,7 +958,6 @@ void CreateBD_Format::create_objects()
 		}
 		submenu->add_submenuitem(new CreateBD_FormatItem(this, i, bd_formats[i].name));
 	}
-	set_value(gui->thread->use_standard);
 }
 
 int CreateBD_Format::handle_event()

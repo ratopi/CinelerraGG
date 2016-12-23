@@ -330,7 +330,6 @@ BC_Window* Render::new_gui()
 	batch_cancelled = 0;
 	format_error = 0;
 	result = 0;
-	completion->reset();
 
 	if(mode == Render::INTERACTIVE) {
 // Fix the asset for rendering
@@ -529,6 +528,7 @@ void Render::start_render()
 	in_progress = 0;
 	elapsed_time = 0.0;
 	result = 0;
+	completion->reset();
 	thread->start();
 }
 
@@ -1011,7 +1011,6 @@ if(debug) printf("Render::render %d\n", __LINE__);
 
 	render->packages = 0;
 	render->in_progress = 0;
-	render->completion->unlock();
 if(debug) printf("Render::render %d\n", __LINE__);
 }
 
@@ -1096,6 +1095,7 @@ void RenderThread::run()
 			mwindow->batch_render->update_done(-1, 0, 0);
 		}
 	}
+	render->completion->unlock();
 }
 
 

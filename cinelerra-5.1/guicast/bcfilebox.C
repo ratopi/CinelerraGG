@@ -128,7 +128,7 @@ int BC_FileBoxListBox::sort_order_event()
 {
 	get_resources()->filebox_sortcolumn = filebox->sort_column = get_sort_column();
 	get_resources()->filebox_sortorder = filebox->sort_order = get_sort_order();
-	filebox->refresh();
+	filebox->refresh(-1);
 	return 1;
 }
 
@@ -582,20 +582,24 @@ void BC_FileBox::create_objects()
 
 // Create recent dir list
 	create_history();
+	update_history();
 
 // Directories aren't filtered in FileSystem so skip this
 	if(!want_directory)
 	{
 		filter_list.append(new BC_ListBoxItem("*"));
-		filter_list.append(new BC_ListBoxItem("[*.ifo][*.vob]"));
+		filter_list.append(new BC_ListBoxItem("[*.mkv]"));
+		filter_list.append(new BC_ListBoxItem("[*.mp4]"));
 		filter_list.append(new BC_ListBoxItem("[*.mp2][*.mp3][*.wav]"));
 		filter_list.append(new BC_ListBoxItem("[*.avi][*.mpg][*.m2v][*.m1v][*.mov]"));
-		filter_list.append(new BC_ListBoxItem("heroine*"));
 		filter_list.append(new BC_ListBoxItem("*.xml"));
 		fs->set_filter(get_resources()->filebox_filter);
 	}
 
-//	fs->update(directory);
+	fs->set_sort_order(sort_order);
+	fs->set_sort_field(column_type[sort_column]);
+	fs->update(directory);
+
 	create_icons();
 	create_tables();
 
@@ -807,8 +811,6 @@ int BC_FileBox::create_tables()
 	fs->set_sort_order(sort_order);
 	fs->set_sort_field(column_type[sort_column]);
 
-// Directory is entered before this from a random source
-	fs->update(0);
 	for(int i = 0; i < fs->total_files(); i++)
 	{
 		FileItem *file_item = fs->get_entry(i);
@@ -913,20 +915,11 @@ BC_Pixmap* BC_FileBox::get_icon(char *path, int is_dir)
 
 const char* BC_FileBox::columntype_to_text(int type)
 {
-	switch(type)
-	{
-		case FILEBOX_NAME:
-			return FILEBOX_NAME_TEXT;
-			break;
-		case FILEBOX_SIZE:
-			return FILEBOX_SIZE_TEXT;
-			break;
-		case FILEBOX_DATE:
-			return FILEBOX_DATE_TEXT;
-			break;
-		case FILEBOX_EXTENSION:
-			return FILEBOX_EXTENSION_TEXT;
-			break;
+	switch(type) {
+		case FILEBOX_NAME: return FILEBOX_NAME_TEXT;
+		case FILEBOX_SIZE: return FILEBOX_SIZE_TEXT;
+		case FILEBOX_DATE: return FILEBOX_DATE_TEXT;
+		case FILEBOX_EXTENSION: return FILEBOX_EXTENSION_TEXT;
 	}
 	return "";
 }
@@ -940,13 +933,19 @@ int BC_FileBox::column_of_type(int type)
 
 
 
-int BC_FileBox::refresh(int zscroll)
+int BC_FileBox::refresh(int reset)
 {
+	fs->set_sort_order(sort_order);
+	fs->set_sort_field(column_type[sort_column]);
+	if( reset >= 0 )
+		fs->update(0);
+	else
+		fs->update_sort();
 	create_tables();
 	listbox->set_master_column(column_of_type(FILEBOX_NAME), 0);
 	listbox->update(list_column, column_titles, column_width, columns,
-		!zscroll ? listbox->get_xposition() : 0,
-		!zscroll ? listbox->get_yposition() : 0,
+		reset>0 ? 0 : listbox->get_xposition(),
+		reset>0 ? 0 : listbox->get_yposition(),
 		-1, 1);
 	return 0;
 }
@@ -966,7 +965,6 @@ void BC_FileBox::move_column(int src, int dst)
 {
 	if(src != dst)
 	{
-
 		ArrayList<BC_ListBoxItem*> *new_columns =
 			new ArrayList<BC_ListBoxItem*>[columns];
 		int *new_types = new int[columns];

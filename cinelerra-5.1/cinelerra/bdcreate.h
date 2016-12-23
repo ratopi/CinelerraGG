@@ -40,8 +40,7 @@ public:
 	void handle_close_event(int result);
 	BC_Window* new_gui();
 	int option_presets();
-	int create_bd_jobs(ArrayList<BatchRenderJob*> *jobs,
-		const char *tmp_path, const char *asset_title);
+	int create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char *asset_dir);
 	int insert_video_plugin(const char *title, KeyFrame *default_keyframe);
 	int resize_tracks();
 
@@ -117,6 +116,7 @@ class CreateBD_AssetTitle : public BC_TextBox
 public:
 	CreateBD_AssetTitle(CreateBD_GUI *gui, int x, int y, int w);
 	~CreateBD_AssetTitle();
+	int handle_event();
 
 	CreateBD_GUI *gui;
 };

@@ -43,14 +43,9 @@ FileItem::FileItem()
 	reset();
 }
 
-FileItem::FileItem(char *path,
-	char *name,
-	int is_dir,
-	int64_t size,
-	int month,
-	int day,
-	int year,
-	int64_t calendar_time)
+FileItem::FileItem(char *path, char *name, int is_dir,
+	int64_t size, int month, int day, int year,
+	int64_t calendar_time, int item_no)
 {
 	this->path = new char[strlen(path)];
 	this->name = new char[strlen(name)];
@@ -62,6 +57,7 @@ FileItem::FileItem(char *path,
 	this->day = day;
 	this->year = year;
 	this->calendar_time = calendar_time;
+	this->item_no = item_no;
 }
 
 FileItem::~FileItem()
@@ -81,6 +77,7 @@ int FileItem::reset()
 	day = 0;
 	year = 0;
 	calendar_time = 0;
+	item_no = -1;
 	return 0;
 }
 
@@ -141,11 +138,7 @@ int FileSystem::reset_parameters()
 
 int FileSystem::delete_directory()
 {
-	for(int i = 0; i < dir_list.total; i++)
-	{
-		delete dir_list.values[i];
-	}
-	dir_list.remove_all();
+	dir_list.remove_all_objects();
 	return 0;
 }
 
@@ -190,14 +183,18 @@ int FileSystem::path_ascending(const void *ptr1, const void *ptr2)
 	FileItem *item1 = *(FileItem**)ptr1;
 	FileItem *item2 = *(FileItem**)ptr2;
 //printf("path_ascending %p %p\n", ptr1, ptr2);
-	return strcasecmp(item1->name, item2->name);
+	int ret = strcasecmp(item1->name, item2->name);
+	if( ret != 0 ) return ret;
+	return item1->item_no - item2->item_no;
 }
 
 int FileSystem::path_descending(const void *ptr1, const void *ptr2)
 {
 	FileItem *item1 = *(FileItem**)ptr1;
 	FileItem *item2 = *(FileItem**)ptr2;
-	return strcasecmp(item2->name, item1->name);
+	int ret = strcasecmp(item2->name, item1->name);
+	if( ret != 0 ) return ret;
+	return item2->item_no - item1->item_no;
 }
 
 
@@ -205,14 +202,18 @@ int FileSystem::size_ascending(const void *ptr1, const void *ptr2)
 {
 	FileItem *item1 = *(FileItem**)ptr1;
 	FileItem *item2 = *(FileItem**)ptr2;
-	return item1->size >= item2->size;
+	return item1->size == item2->size ?
+		item1->item_no - item2->item_no :
+		item1->size > item2->size;
 }
 
 int FileSystem::size_descending(const void *ptr1, const void *ptr2)
 {
 	FileItem *item1 = *(FileItem**)ptr1;
 	FileItem *item2 = *(FileItem**)ptr2;
-	return item1->size <= item2->size;
+	return item2->size == item1->size ?
+		item2->item_no - item1->item_no :
+		item2->size > item1->size;
 }
 
 
@@ -220,21 +221,33 @@ int FileSystem::date_ascending(const void *ptr1, const void *ptr2)
 {
 	FileItem *item1 = *(FileItem**)ptr1;
 	FileItem *item2 = *(FileItem**)ptr2;
-	return item1->calendar_time >= item2->calendar_time;
+	return item1->calendar_time == item2->calendar_time ?
+		item1->item_no - item2->item_no :
+		item1->calendar_time > item2->calendar_time;
 }
 
 int FileSystem::date_descending(const void *ptr1, const void *ptr2)
 {
 	FileItem *item1 = *(FileItem**)ptr1;
 	FileItem *item2 = *(FileItem**)ptr2;
-	return item1->calendar_time <= item2->calendar_time;
+	return item2->calendar_time == item1->calendar_time ?
+		item2->item_no - item1->item_no :
+		item2->calendar_time > item1->calendar_time;
 }
 
 int FileSystem::ext_ascending(const void *ptr1, const void *ptr2)
 {
-	char dotreversedname1[BCTEXTLEN], dotreversedname2[BCTEXTLEN];
 	FileItem *item1 = *(FileItem**)ptr1;
 	FileItem *item2 = *(FileItem**)ptr2;
+	char *ext1 = strrchr(item1->name,'.');
+	if( !ext1 ) ext1 = item1->name;
+	char *ext2 = strrchr(item2->name,'.');
+	if( !ext2 ) ext2 = item2->name;
+	int ret = strcasecmp(ext1, ext2);
+	if( ret ) return ret;
+	if( item1->item_no >= 0 && item2->item_no >= 0 )
+		return item1->item_no - item2->item_no;
+	char dotreversedname1[BCTEXTLEN], dotreversedname2[BCTEXTLEN];
 	dot_reverse_filename(dotreversedname1,item1->name);
 	dot_reverse_filename(dotreversedname2,item2->name);
 	return strcasecmp(dotreversedname1, dotreversedname2);
@@ -242,9 +255,17 @@ int FileSystem::ext_ascending(const void *ptr1, const void *ptr2)
 
 int FileSystem::ext_descending(const void *ptr1, const void *ptr2)
 {
-	char dotreversedname1[BCTEXTLEN], dotreversedname2[BCTEXTLEN];
 	FileItem *item1 = *(FileItem**)ptr1;
 	FileItem *item2 = *(FileItem**)ptr2;
+	char *ext1 = strrchr(item1->name,'.');
+	if( !ext1 ) ext1 = item1->name;
+	char *ext2 = strrchr(item2->name,'.');
+	if( !ext2 ) ext2 = item2->name;
+	int ret = strcasecmp(ext2, ext1);
+	if( ret ) return ret;
+	if( item2->item_no >= 0 && item1->item_no >= 0 )
+		return item2->item_no - item1->item_no;
+	char dotreversedname1[BCTEXTLEN], dotreversedname2[BCTEXTLEN];
 	dot_reverse_filename(dotreversedname1,item1->name);
 	dot_reverse_filename(dotreversedname2,item2->name);
 	return strcasecmp(dotreversedname2, dotreversedname1);
@@ -252,39 +273,17 @@ int FileSystem::ext_descending(const void *ptr1, const void *ptr2)
 
 int FileSystem::sort_table(ArrayList<FileItem*> *dir_list)
 {
-#define SORT_MACRO(compare) \
-	qsort(dir_list->values, dir_list->size(), sizeof(FileItem*), compare);
-
 	if(!dir_list || !dir_list->size()) return 0;
+	static int (*cmpr[][2])(const void *ptr1, const void *ptr2) = {
+		{ &path_ascending, &path_descending },
+		{ &size_ascending, &size_descending },
+		{ &date_ascending, &date_descending },
+		{ &ext_ascending,  &ext_descending  },
+	};
 
-//printf("FileSystem::sort_table %p\n", dir_list->values);
-	switch(sort_field)
-	{
-		case SORT_PATH:
-			if(sort_order == SORT_ASCENDING)
-				SORT_MACRO(path_ascending)
-			else
-				SORT_MACRO(path_descending)
-			break;
-		case SORT_SIZE:
-			if(sort_order == SORT_ASCENDING)
-				SORT_MACRO(size_ascending)
-			else
-				SORT_MACRO(size_descending)
-			break;
-		case SORT_DATE:
-			if(sort_order == SORT_ASCENDING)
-				SORT_MACRO(date_ascending)
-			else
-				SORT_MACRO(date_descending)
-			break;
-		case SORT_EXTENSION:
-			if(sort_order == SORT_ASCENDING)
-				SORT_MACRO(ext_ascending)
-			else
-				SORT_MACRO(ext_descending)
-			break;
-	}
+	qsort(dir_list->values,
+		dir_list->size(), sizeof(FileItem*),
+		cmpr[sort_field][sort_order]);
 
 	return 0;
 }
@@ -438,27 +437,17 @@ int FileSystem::test_filter(FileItem *file)
 }
 
 
-int FileSystem::update(const char *new_dir)
+int FileSystem::scan_directory(const char *new_dir)
 {
-	DIR *dirstream;
+	if( new_dir != 0 )
+		strcpy(current_dir, new_dir);
+	DIR *dirstream = opendir(current_dir);
+	if( !dirstream ) return 1;          // failed to open directory
+
 	struct dirent64 *new_filename;
-	struct stat ostat;
-	struct tm *mod_time;
-	int include_this;
-	FileItem *new_file;
-	char full_path[BCTEXTLEN], name_only[BCTEXTLEN];
-	ArrayList<FileItem*>directories;
-	ArrayList<FileItem*>files;
-	int result = 0;
-
-	delete_directory();
-	if(new_dir != 0) strcpy(current_dir, new_dir);
-	dirstream = opendir(current_dir);
-	if(!dirstream) return 1;          // failed to open directory
-
-	while( (new_filename = readdir64(dirstream)) != 0 )
-	{
-		include_this = 1;
+	while( (new_filename = readdir64(dirstream)) != 0 ) {
+		FileItem *new_file = 0;
+		int include_this = 1;
 
 // File is directory heirarchy
 		if(!strcmp(new_filename->d_name, ".") ||
@@ -473,6 +462,7 @@ int FileSystem::update(const char *new_dir)
   		if(include_this)
 		{
 			new_file = new FileItem;
+			char full_path[BCTEXTLEN], name_only[BCTEXTLEN];
 			sprintf(full_path, "%s", current_dir);
 			if(!is_root_dir(current_dir)) strcat(full_path, "/");
 			strcat(full_path, new_filename->d_name);
@@ -481,10 +471,11 @@ int FileSystem::update(const char *new_dir)
 			new_file->set_name(name_only);
 
 // Get information about the file.
+			struct stat ostat;
 			if(!stat(full_path, &ostat))
 			{
 				new_file->size = ostat.st_size;
-				mod_time = localtime(&(ostat.st_mtime));
+				struct tm *mod_time = localtime(&(ostat.st_mtime));
 				new_file->month = mod_time->tm_mon + 1;
 				new_file->day = mod_time->tm_mday;
 				new_file->year = mod_time->tm_year + 1900;
@@ -511,27 +502,37 @@ int FileSystem::update(const char *new_dir)
 
 // add to list
 			if(include_this)
-			{
-				if(new_file->is_dir) directories.append(new_file);
- 				else files.append(new_file);
-			}
+				dir_list.append(new_file);
 			else
 				delete new_file;
 		}
 	}
-//printf("FileSystem::update %d\n", __LINE__);
+	return 0;
+}
 
-	closedir(dirstream);
+int FileSystem::update(const char *new_dir)
+{
+	delete_directory();
+	int result = scan_directory(new_dir);
+// combine the directories and files in the master list
+	return !result ? update_sort() : result;
+}
+
+int FileSystem::update_sort()
+{
+	ArrayList<FileItem*> directories, files;
+	for( int i=0; i< dir_list.size(); ++i ) {
+		FileItem *item = dir_list[i];
+		item->item_no = i;
+		(item->is_dir ? &directories : &files)->append(item);
+	}
+	dir_list.remove_all();
 // combine the directories and files in the master list
 	combine(&directories, &files);
-// remove pointers
-	directories.remove_all();
-	files.remove_all();
-//printf("FileSystem::update %d\n", __LINE__);
-
-	return result;
+	return 0;
 // success
 }
+
 
 int FileSystem::set_filter(const char *new_filter)
 {

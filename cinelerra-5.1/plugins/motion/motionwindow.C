@@ -32,7 +32,7 @@
 #include "pluginserver.h"
 
 MotionWindow::MotionWindow(MotionMain *plugin)
- : PluginClientWindow(plugin, 800, 660, 800, 660, 0)
+ : PluginClientWindow(plugin, 800, 640, 800, 640, 0)
 {
 	this->plugin = plugin;
 }
@@ -107,11 +107,12 @@ void MotionWindow::create_objects()
 		y));
 	track_direction->create_objects();
 
+	y += 40;
 	add_subwindow(title = new BC_Title(x2, y, _("Tracking file:")));
 	add_subwindow(tracking_file = new MotionTrackingFile(plugin,
 		plugin->config.tracking_file, this, x2+title->get_w() + 20, y));
 
-	y += 40;
+	int y1 = y;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block X:")));
 	add_subwindow(block_x =
 		new MotionBlockX(plugin, this, x + title->get_w() + 10, y));
@@ -119,12 +120,12 @@ void MotionWindow::create_objects()
 		new MotionBlockXText(plugin, this,
 			x + title->get_w() + 10 + block_x->get_w() + 10, y + 10));
 
+	y += 40;
 	add_subwindow(title = new BC_Title(x2, y, _("Rotation center:")));
 	add_subwindow(rotation_center =
 		new RotationCenter(plugin, x2 + title->get_w() + 10, y));
 
-	int y1 = y;
-	y += 50;
+	y += 40;
 	add_subwindow(title = new BC_Title(x2, y + 10, _("Maximum angle offset:")));
 	add_subwindow(rotate_magnitude =
 		new MotionRMagnitude(plugin, x2 + title->get_w() + 10, y));
@@ -174,7 +175,7 @@ void MotionWindow::create_objects()
 	add_subwindow(addtrackedframeoffset =
 		new AddTrackedFrameOffset(plugin, this, x1=x2, y1+=track_frame_number->get_h()));
 	int pef = client->server->mwindow->edl->session->video_every_frame;
-	add_subwindow(pef_title = new BC_Title(x1=x2, y1+=addtrackedframeoffset->get_h() + 5,
+	add_subwindow(pef_title = new BC_Title(x1=x2+50, y1+=addtrackedframeoffset->get_h() + 5,
 		!pef ?	_("For best results\n"
 				" Set: Play every frame\n"
 				" Preferences-> Playback-> Video Out") :

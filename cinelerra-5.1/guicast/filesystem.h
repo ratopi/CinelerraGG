@@ -30,14 +30,9 @@ class FileItem
 {
 public:
 	FileItem();
-	FileItem(char *path,
-		char *name,
-		int is_dir,
-		int64_t size,
-		int month,
-		int day,
-		int year,
-		int64_t calendar_time);
+	FileItem(char *path, char *name, int is_dir,
+		int64_t size, int month, int day, int year,
+		int64_t calendar_time, int item_no=-1);
 	~FileItem();
 
 	int set_path(char *path);
@@ -55,6 +50,7 @@ public:
 	int day;
 	int year;
 	int64_t calendar_time;
+	int item_no;
 };
 
 class FileSystem
@@ -67,7 +63,9 @@ public:
 // Load the new directory and change current_dir to it.
 // This does not complete the dir path.
 // If any of the files failed to stat, it returns nonzero.
+	int scan_directory(const char*);
 	int update(const char *new_dir = 0);
+	int update_sort();
 
 // Complete the path in the string and change to the directory in the string.
 // Does not change new_dir

@@ -428,10 +428,11 @@ check_sig(char *path)
     else if( bits == TOC_PREFIX ) {
       result = 1;
     }
-    /* Blu-Ray or AVC-HD*/
-    else if( is_bd_(bits, bits2, ext) ) {
-      result = 1;
-    }
+/* don't use, does not work well at all */
+//    /* Blu-Ray or AVC-HD*/
+//    else if( is_bd_(bits, bits2, ext) ) {
+//      result = 1;
+//    }
     else if( (((bits >> 24) & 0xff) == zmpeg3_t::SYNC_BYTE ) ||
              (bits == zmpeg3_t::PACK_START_CODE) ||
              ((bits & 0xfff00000) == 0xfff00000) ||

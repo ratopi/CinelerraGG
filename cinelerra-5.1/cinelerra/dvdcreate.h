@@ -38,8 +38,7 @@ public:
 	void handle_close_event(int result);
 	BC_Window* new_gui();
 	int option_presets();
-	int create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs,
-		const char *tmp_path, const char *asset_title);
+	int create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const char *asset_path);
 	int insert_video_plugin(const char *title, KeyFrame *default_keyframe);
 	int resize_tracks();
 
@@ -114,6 +113,7 @@ class CreateDVD_AssetTitle : public BC_TextBox
 public:
 	CreateDVD_AssetTitle(CreateDVD_GUI *gui, int x, int y, int w);
 	~CreateDVD_AssetTitle();
+	int handle_event();
 
 	CreateDVD_GUI *gui;
 };
