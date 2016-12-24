@@ -45,8 +45,10 @@ int main(int ac, char **av)
       fprintf(fp,"P5\n%d %d\n255\n",w,h);
       uint8_t *ap = adat, *bp = bdat;
       for( int i=w*h; --i>=0; ++ap, ++bp ) {
-        int d = *ap-*bp;      m += d;
-        if( d < 0 ) d = -d;   n += d;
+        int d = *ap-*bp;
+        m += d;
+        if( d < 0 ) d = -d;
+        n += d;
         putc(clip(*ap-*bp+128), fp);
       }
       if( fp != stdout ) fclose(fp);
@@ -60,8 +62,10 @@ int main(int ac, char **av)
     uint8_t *ap = adat, *bp = bdat;
     int n = 0, m = 0;
     for( int i=w*h; --i>=0; ++ap, ++bp ) {
-      int d = *ap-*bp;      m += d;
-      if( d < 0 ) d = -d;   n += d;
+      int d = *ap-*bp;
+      m += d;
+      if( d < 0 ) d = -d;
+      n += d;
     }
   }
   fprintf(sfp, "%d %d\n",n,m);

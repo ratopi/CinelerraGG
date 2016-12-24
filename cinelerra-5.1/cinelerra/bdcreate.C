@@ -17,6 +17,7 @@
 #include "mwindowgui.h"
 #include "plugin.h"
 #include "pluginset.h"
+#include "preferences.h"
 #include "rescale.h"
 #include "track.h"
 #include "tracks.h"
@@ -426,6 +427,12 @@ BC_Window* CreateBD_Thread::new_gui()
 
 	gui = new CreateBD_GUI(this, x, y, w, h);
 	gui->create_objects();
+
+	if( getuid() != 0 ) {
+		mwindow->show_warning(
+			&mwindow->preferences->bd_warn_root,
+			_("Must be root to mount UDFS images\n"));
+	}
 	return gui;
 }
 

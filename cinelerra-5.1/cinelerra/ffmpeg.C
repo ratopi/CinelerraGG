@@ -427,6 +427,8 @@ int FFStream::write_packet(FFPacket &pkt)
 
 int FFStream::flush()
 {
+	if( writing < 0 )
+		return -1;
 	int ret = 0;
 	while( ret >= 0 ) {
 		FFPacket pkt;
@@ -1839,9 +1841,10 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			fst->add_bsfilter(bsfilter, !bsargs[0] ? 0 : bsargs);
 	}
 
-	ff_unlock();
 	if( !ret )
 		start_muxer();
+
+	ff_unlock();
 	av_dict_free(&sopts);
 	return ret;
 }

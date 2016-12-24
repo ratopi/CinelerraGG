@@ -87,8 +87,8 @@ void OpticFlowUnit::process_package(LoadPackage *package)
 {
 	OpticFlowPackage *pkg = (OpticFlowPackage*)package;
 	InterpolateVideo *plugin = server->plugin;
-	int w = plugin->frames[0]->get_w();
-	int h = plugin->frames[0]->get_h();
+	//int w = plugin->frames[0]->get_w();
+	//int h = plugin->frames[0]->get_h();
 	struct timeval start_time;
 	gettimeofday(&start_time, 0);
 

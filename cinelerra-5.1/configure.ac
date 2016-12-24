@@ -13,8 +13,8 @@ CFG_CFLAGS+=" -pthread -Wall -Wno-unused-result"
 CFG_CFLAGS+=" -D__STDC_CONSTANT_MACROS"
 CFG_CFLAGS+=" -D__STDC_LIMIT_MACROS"
 CFG_CFLAGS+=" -DPNG_SKIP_SETJMP_CHECK=1"
-CFG_CFLAGS+=" -I/usr/include/freetype2"
 CFG_CFLAGS+=" -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
+CFG_CFLAGS+=" -I/usr/include/freetype2"
 
 AC_DEFUN([CHECK_WITH], [
 AC_ARG_WITH([$1],
@@ -303,12 +303,12 @@ PKG_3RD([twolame],[auto],
   [ libtwolame/.libs/libtwolame.a ],
   [  libtwolame ])
 
-PKG_3RD([x264],[yes],
+PKG_3RD([x264],[auto],
   [x264-snapshot-20160220-2245-stable],
   [ libx264.a ],
   [ . ])
 
-PKG_3RD([x265],[yes],
+PKG_3RD([x265],[auto],
   [x265_2.1],
   [ libx265.a ],
   [ . source ])
@@ -437,6 +437,8 @@ CHECK_LIB([libvorbis], [vorbisfile], [ov_open])
 CHECK_HEADERS([libvorbis], [vorbis file headers], [vorbis/vorbisfile.h])
 CHECK_LIB([libvpx], [vpx], [vpx_codec_decode])
 CHECK_HEADERS([libvpx], [vpx headers], [vpx/vpx_decoder.h])
+CHECK_LIB([mjpegtools], [mjpegutils], [mjpeg_info])
+CHECK_HEADERS([mjpegtools], [mjpegtools headers], [mjpegtools/mjpeg_types.h])
 CHECK_LIB([tiff], [tiff], [TIFFOpen])
 CHECK_HEADERS([tiff], [tiff headers], [tiff.h tiffio.h])
 CHECK_LIB([twolame], [twolame], [twolame_encode_buffer_float32_interleaved])
@@ -458,6 +460,9 @@ CHECK_HEADERS([giflib], [gif lib headers], [gif_lib.h])
 CHECK_LIB([fdk], [fdk-aac], [faacDecInit])
 CHECK_HEADERS([fdk], [fdk headers], [fdk-aac/genericStds.h])
 
+#if test "x$HAVE_mjpegtools" = "xyes"; then
+#CFG_CFLAGS+=" -I/usr/include/mjpegtools"
+#fi
 
 AC_DEFUN([CHECK_WANT], [
 RESULT=yes
@@ -591,14 +596,13 @@ AC_DEFUN([PKG_FORCED],[PKG_STATIC([$1],[forced])])
 # order matters
 for dep in \
         ffmpeg/faac ffmpeg/faad2 ffmpeg/twolame ffmpeg/lame ffmpeg/openjpeg \
-        ffmpeg/libvorbis ffmpeg/libtheora ffmpeg/x264 ffmpeg/fdk \
+        ffmpeg/libvorbis ffmpeg/libtheora ffmpeg/x264 ffmpeg/x265 ffmpeg/fdk \
         libiec61883/libraw1394 libavc1394/librom1394 \
         openexr/ilmbase ilmbase/libogg \
         libtheora/libogg libtheora/libvorbis ; do
-  lib=`dirname $dep`
-  eval pkg_lib="\$PKG_$lib"; eval have_lib="\$HAVE_$lib";
-  if test "x$pkg_lib" != "xno" ; then
-    needs=`basename $dep`
+  lib=`dirname $dep`;  needs=`basename $dep`
+  eval pkg_lib="\$PKG_$lib"; eval needs_lib="\$HAVE_$needs";
+  if test "x$pkg_lib" != "xno" -a "x$needs_lib" != "xyes" ; then
     eval "PKG_$needs=yes"
   fi
 done

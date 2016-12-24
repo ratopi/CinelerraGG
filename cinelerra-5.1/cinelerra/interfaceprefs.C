@@ -140,6 +140,9 @@ void InterfacePrefs::create_objects()
 	UseWarnVersion *ver_win = new UseWarnVersion(pwindow, x1, y1);
 	add_subwindow(ver_win);
 	y1 += ver_win->get_h() + 5;
+	BD_WarnRoot *bdwr_win = new BD_WarnRoot(pwindow, x1, y1);
+	add_subwindow(bdwr_win);
+	y1 += bdwr_win->get_h() + 5;
 	PopupMenuBtnup *pop_win = new PopupMenuBtnup(pwindow, x1, y1);
 	add_subwindow(pop_win);
 	y1 += pop_win->get_h() + 25;
@@ -708,6 +711,19 @@ UseWarnVersion::UseWarnVersion(PreferencesWindow *pwindow, int x, int y)
 int UseWarnVersion::handle_event()
 {
 	pwindow->thread->preferences->warn_version = get_value();
+	return 1;
+}
+
+BD_WarnRoot::BD_WarnRoot(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->bd_warn_root,
+	_("Create Bluray warns if not root"))
+{
+	this->pwindow = pwindow;
+}
+
+int BD_WarnRoot::handle_event()
+{
+	pwindow->thread->preferences->bd_warn_root = get_value();
 	return 1;
 }
 

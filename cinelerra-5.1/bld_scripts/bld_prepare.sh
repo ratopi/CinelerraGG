@@ -24,7 +24,7 @@ case "$dir" in
     libavc1394 festival-devel libiec61883-devel flac-devel inkscape \
     libsndfile-devel libtheora-devel linux-firmware ivtv-firmware \
     libvorbis-devel texinfo xz-devel lzma-devel cmake udftools git \
-    autoconf automake
+    autoconf automake rpm-build
     yasm=yasm-1.2.0-7.fc21.x86_64.rpm
     release=http://archives.fedoraproject.org/pub/fedora/linux/releases/21
     url=$release/Everything/x86_64/os/Packages/y/$yasm
@@ -44,7 +44,7 @@ case "$dir" in
     festival-devel libdc1394-devel libiec61883-devel esound-devel \
     flac-devel libsndfile-devel libtheora-devel linux-firmware \
     ivtv-firmware libvorbis-devel texinfo xz-devel lzma-devel cmake git \
-    autoconf automake
+    autoconf automake rpm-build
 #   ctags patch gcc-c++ perl::XML_Parser libtiff-devel python dvdauthor
   ;;
 "suse" | "leap")
@@ -56,11 +56,13 @@ case "$dir" in
     libdvdnav-devel libdvdread-devel libiec61883-devel libuuid-devel \
     ilmbase-devel fftw3-devel libsndfile-devel libtheora-devel flac-devel \
     libtiff-devel inkscape cmake patch libnuma-devel lzma-devel udftools git \
-    autoconf automake
+    yasm autoconf automake rpm-build
     if [ ! -f /usr/lib64/libtermcap.so ]; then
       ln -s libtermcap.so.2 /usr/lib64/libtermcap.so
     fi
   ;;
+#"ub16-10")
+#  apt-get -y install libx264-dev libx265-dev libvpx-dev libmjpegtools-dev
 "ubuntu" | "mint" | "ub14" | "ub15" | "ub16" | "debian")
   apt-get -y install apt-file sox nasm yasm g++ build-essential libz-dev \
     texinfo libpng-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
@@ -69,7 +71,7 @@ case "$dir" in
     fonts-dejavu libopenexr-dev libavc1394-dev festival-dev fftw3-dev gdb \
     libdc1394-22-dev libiec61883-dev libesd0-dev libflac-dev inkscape \
     libsndfile1-dev libtheora-dev cmake udftools libxml2-utils git \
-    autoconf automake
+    autoconf automake debhelper
   ;;
  *)
   echo "unknown os: $dir"

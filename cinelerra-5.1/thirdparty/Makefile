@@ -105,7 +105,7 @@ esound.mak_vars+= CFLAGS=""
 esound.ldflags=" -lm -lstdc++"
 faac.cfg_params= --enable-shared=no --without-mp4v2
 faad2.cfg_params= --enable-shared=no
-fdk.cfg_vars= ./autogen.sh ;
+fdk.cfg_vars= ./autogen.sh ; CFLAGS+=" -Wno-narrowing" CXXFLAGS+=" -Wno-narrowing"
 fdk.cfg_params= --enable-shared=no
 fdk.mak_params= ; for f in $(call bld_path,fdk,/lib*/include); do ln -s . $$$$f/fdk-aac; done
 fftw.cfg_params= --disable-fortran --enable-shared=no
@@ -168,6 +168,7 @@ audiofile.mak_params?=LIBS="-lm -lstdc++"
 flac.cfg_params?= --enable-shared=no
 flac.cflags?="$(call inc_path,libogg,include) $(call ld_path,libogg,src/.libs)"
 giflib.cfg_params?=--enable-shared=no
+ilmbase.cfg_vars= CFLAGS+=" -Wno-narrowing" CXXFLAGS+=" -Wno-narrowing"
 ilmbase.cfg_params?=--prefix=$(call bld_path,ilmbase,usr)
 ilmbase.mak_params?=; $(MAKE) -C ilmbase* install; cd $(call bld_path,ilmbase); ln -sf lib64 usr/lib
 lame.cfg_vars?= CFLAGS+=" -O"
@@ -207,9 +208,10 @@ openexr.cfg_vars?=LD_LIBRARY_PATH=$(call bld_path,ilmbase,usr/lib)
 openexr.cfg_params?=--enable-shared=no --with-ilmbase-prefix=$(call bld_path,ilmbase,usr)
 speech_tools.mak_params?=-j1
 twolame.cfg_params?=--enable-shared=no
-x264.cfg_params?= --enable-static
+x264.cfg_params?= --enable-static --enable-pic
 x265.cfg_vars?=$(call cmake_config,source)
 x265.cfg_params?= -DENABLE_SHARED=no
+libvpx.cfg_params?= --enable-pic
 
 # compile flag vars
 $(foreach tgt,$(TARGETS), \

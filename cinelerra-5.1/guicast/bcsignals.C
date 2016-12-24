@@ -175,7 +175,7 @@ void BC_Signals::kill_subs()
 			if( fgetc(fd) == ' ' ) --sp;
 // Read in parent process
 		for( ptr=string; !feof(fd) && (*ptr=fgetc(fd))!=' '; ++ptr );
-			if( (*ptr=fgetc(fd)) == ' ' ) break;
+		if( (*ptr=fgetc(fd)) == ' ' ) break;
 		*ptr = 0;
 
 // printf("kill_subs %d process=%d getpid=%d parent_process=%d\n",

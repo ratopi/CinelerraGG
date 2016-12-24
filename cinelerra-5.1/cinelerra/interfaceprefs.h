@@ -303,6 +303,14 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class BD_WarnRoot : public BC_CheckBox
+{
+public:
+	BD_WarnRoot(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 class ScanCommercials : public BC_CheckBox
 {
 public:

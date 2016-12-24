@@ -54,7 +54,7 @@
 
 
 New::New(MWindow *mwindow)
- : BC_MenuItem(_("New"), "n", 'n')
+ : BC_MenuItem(_("New Project..."), "n", 'n')
 {
 	this->mwindow = mwindow;
 	script = 0;
@@ -136,7 +136,7 @@ int New::create_new_project()
 // Load file sequence
 	mwindow->update_project(LOADMODE_REPLACE);
 	mwindow->session->changes_made = 0;
-	mwindow->undo->update_undo_after(_("New"), LOAD_ALL);
+	mwindow->undo->update_undo_after(_("New Project"), LOAD_ALL);
 	mwindow->gui->unlock_window();
 	return 0;
 }
