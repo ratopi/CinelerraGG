@@ -44,8 +44,8 @@ case "$dir" in
     festival-devel libdc1394-devel libiec61883-devel esound-devel \
     flac-devel libsndfile-devel libtheora-devel linux-firmware \
     ivtv-firmware libvorbis-devel texinfo xz-devel lzma-devel cmake git \
-    autoconf automake rpm-build
-#   ctags patch gcc-c++ perl::XML_Parser libtiff-devel python dvdauthor
+    ctags patch gcc-c++ perl-XML-XPath libtiff-devel python dvdauthor \
+    autoconf automake rpm-build ccache
   ;;
 "suse" | "leap")
   zypper -n install nasm gcc gcc-c++ zlib-devel texinfo libpng16-devel \

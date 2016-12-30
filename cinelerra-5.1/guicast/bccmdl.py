@@ -439,6 +439,7 @@ add_cmodel(13, "bc_yuv888", "i8", "yuv888")
 add_cmodel(14, "bc_yuva8888", "i8", "yuv888", "a8")
 add_cmodel(15, "bc_yuv161616", "i16", "yuv161616")
 add_cmodel(16, "bc_yuva16161616", "i16", "yuv161616", "a16")
+add_cmodel(35, "bc_ayuv16161616", "i16", "a16", "yuv161616")
 
 add_cmodel(18, "bc_uvy422", "i8", "uyvy8888")
 add_cmodel(19, "bc_yuv422", "i8", "yuyv8888")
@@ -476,7 +477,7 @@ adata = {
 
 def has_alpha(nm):
   return nm in ["bc_rgba8888", "bc_argb8888", "bc_abgr8888", \
-    "bc_rgba16161616", "bc_yuva8888", "bc_yuva16161616", \
+    "bc_rgba16161616", "bc_yuva8888", "bc_yuva16161616", "bc_ayuv16161616", \
     "bc_uyva8888", "bc_rgba_float", "bc_rgba_floatp",]
 
 def has_bgcolor(fr_cmdl,to_cmdl):
@@ -497,7 +498,7 @@ def is_rgb(nm):
 
 def is_yuv(nm):
   return nm in [ "bc_yuv888", "bc_yuva8888", "bc_yuv161616", \
-    "bc_yuva16161616", "bc_yuv422", "bc_uvy422", "bc_yuv101010", \
+    "bc_yuva16161616", "bc_ayuv16161616", "bc_yuv422", "bc_uvy422", "bc_yuv101010", \
     "bc_vyu888", "bc_uyva8888", "bc_yuv420p", "bc_yuv420pi", "bc_yuv422p", \
     "bc_yuv444p", "bc_yuv411p", "bc_yuv410p", ]
 

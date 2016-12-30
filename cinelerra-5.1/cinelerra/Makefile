@@ -422,6 +422,10 @@ $(BDWRITE):	$(BDWOBJS) $(LIBRARIES)
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(BDWRITE) $(BDWRITE).debuginfo)
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(BDWRITE))
 
+ydiff:	ydiff.C $(LIBRARIES)
+	@echo g++ -o $@ ydiff.C
+	@g++ `pkg-config --cflags --libs gtk+-2.0` $(CFLAGS) ydiff.C -o $@ $(LIBS)
+
 clean:
 	rm -rf $(OBJDIR)
 

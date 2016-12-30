@@ -228,7 +228,7 @@ PKG_3RD([libjpeg],[auto],
     simd/.libs/libsimd.a ],
   [ . ])
 
-PKG_3RD([openjpeg],[yes],
+PKG_3RD([openjpeg],[auto],
   [openjpeg-2.1.0-20160221],
   [ bin/libopenjp2.a ],
   [ src/lib/openjp2 ])
@@ -423,7 +423,7 @@ CHECK_LIB([libjpeg], [jpeg], [jpeg_start_decompress])
 CHECK_HEADERS([libjpeg], [jpeg headers], [stdio.h jpeglib.h])
 CHECK_LIB([libogg], [ogg], [ogg_stream_init])
 CHECK_HEADERS([libogg], [ogg headers], [ogg/ogg.h])
-CHECK_LIB([openjpeg], [openjpeg], [opj_version])
+CHECK_LIB([openjpeg], [openjp2], [opj_version])
 CHECK_HEADERS([openjpeg], [openjpeg headers], [openjpeg.h])
 CHECK_LIB([libsndfile], [sndfile], [sf_open])
 CHECK_HEADERS([libsndfile], [sndfile headers], [sndfile.h])

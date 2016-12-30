@@ -821,7 +821,7 @@ void BatchRenderGUI::create_objects()
 
 	add_subwindow(list_title = new BC_Title(x, y, _("Batches to render:")));
 	x1 = x + list_title->get_w() + mwindow->theme->widget_border;;
-	add_subwindow(batch_path = new BC_Title(x1, y, thread->batch_path, MEDIUMFONT, YELLOW));
+	add_subwindow(batch_path = new BC_Title(x1, y, thread->batch_path, MEDIUMFONT));
 	y += list_title->get_h() + mwindow->theme->widget_border;
 	y1 = get_h();
 	y1 -= 15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;

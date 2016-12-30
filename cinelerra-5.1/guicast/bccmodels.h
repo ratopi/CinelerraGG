@@ -23,44 +23,47 @@
 // Must match colormodels.h in quicktime
 #ifndef BC_TRANSPARENCY
 
-
-#define BC_TRANSPARENCY 0
-#define BC_COMPRESSED   1
-#define BC_RGB8         2
-#define BC_RGB565       3
-#define BC_BGR565       4
-#define BC_BGR888       5
-#define BC_BGR8888      6
+enum BC_CModel {
+	BC_TRANSPARENCY = 0,
+	BC_COMPRESSED   = 1,
+	BC_RGB8         = 2,
+	BC_RGB565       = 3,
+	BC_BGR565       = 4,
+	BC_BGR888       = 5,
+	BC_BGR8888      = 6,
 // Working bitmaps are packed to simplify processing
-#define BC_RGB888       9
-#define BC_RGBA8888     10
-#define BC_ARGB8888     20
-#define BC_ABGR8888     21
-#define BC_RGB161616    11
-#define BC_RGBA16161616 12
-#define BC_YUV888       13
-#define BC_YUVA8888     14
-#define BC_YUV161616    15
-#define BC_YUVA16161616 16
-#define BC_UVY422       18
-#define BC_YUV422       19
-#define BC_A8           22
-#define BC_A16          23
-#define BC_A_FLOAT      31
-#define BC_YUV101010    24
-#define BC_VYU888       25
-#define BC_UYVA8888     26
-#define BC_RGB_FLOAT    29
-#define BC_RGBA_FLOAT   30
+	BC_RGB888       = 9,
+	BC_RGBA8888     = 10,
+	BC_ARGB8888     = 20,
+	BC_ABGR8888     = 21,
+	BC_RGB161616    = 11,
+	BC_RGBA16161616 = 12,
+	BC_YUV888       = 13,
+	BC_YUVA8888     = 14,
+	BC_YUV161616    = 15,
+	BC_YUVA16161616 = 16,
+	BC_UVY422       = 18,
+	BC_YUV422       = 19,
+	BC_A8           = 22,
+	BC_A16          = 23,
+	BC_A_FLOAT      = 31,
+	BC_YUV101010    = 24,
+	BC_VYU888       = 25,
+	BC_UYVA8888     = 26,
+	BC_RGB_FLOAT    = 29,
+	BC_RGBA_FLOAT   = 30,
 // Planar
-#define BC_YUV420P      7
-#define BC_YUV422P      8
-#define BC_YUV444P      27
-#define BC_YUV411P      17
-#define BC_YUV410P      28
-#define BC_RGB_FLOATP   32
-#define BC_RGBA_FLOATP  33
-#define BC_YUV420PI     34
+	BC_YUV420P      = 7,
+	BC_YUV422P      = 8,
+	BC_YUV444P      = 27,
+	BC_YUV411P      = 17,
+	BC_YUV410P      = 28,
+	BC_RGB_FLOATP   = 32,
+	BC_RGBA_FLOATP  = 33,
+	BC_YUV420PI     = 34,
+// only used in intermediate ffmpeg xfers
+	BC_AYUV16161616 = 35,
+};
 
 // Colormodels purely used by Quicktime are done in Quicktime.
 

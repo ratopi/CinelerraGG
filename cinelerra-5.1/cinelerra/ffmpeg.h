@@ -211,12 +211,12 @@ public:
 
 	int convert_picture_vframe(VFrame *frame, AVFrame *ip);
 	int convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *ipic);
-	int convert_cmodel(VFrame *frame_out, AVFrame *ip);
-	int transfer_cmodel(VFrame *frame_in, AVFrame *ifp);
+	int convert_cmodel(VFrame *frame, AVFrame *ip);
+	int transfer_cmodel(VFrame *frame, AVFrame *ifp);
 	int convert_vframe_picture(VFrame *frame, AVFrame *op);
 	int convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *opic);
 	int convert_pixfmt(VFrame *frame, AVFrame *op);
-	int transfer_pixfmt(VFrame *frame_in, AVFrame *ofp);
+	int transfer_pixfmt(VFrame *frame, AVFrame *ofp);
 };
 
 class FFVideoStream : public FFStream, public FFVideoConvert {

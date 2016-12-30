@@ -2647,7 +2647,18 @@ int media_info::scan(AVFormatContext *fmt_ctx)
   int ret = 0;
   AVPacket ipkt;
   av_init_packet(&ipkt);
-
+#if 0
+// zero pts at pos zero
+  for( int i=0; i<programs.size(); ++i ) {
+    program *p = programs[i];
+    for( int j=0; j<p->strm_idx.size(); ++j ) {
+      stream *sp = streams[p->strm_idx[j]];
+      sp->last_pts = 0;
+      AVStream *st = fmt_ctx->streams[sp->av_idx];
+      p->add_label(0, 0, 0, st->id);
+    }
+  }
+#endif
   for( int64_t count=0; ret>=0; ++count ) {
     av_packet_unref(&ipkt);
     ipkt.data = 0; ipkt.size = 0;

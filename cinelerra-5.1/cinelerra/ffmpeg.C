@@ -848,6 +848,7 @@ AVPixelFormat FFVideoConvert::color_model_to_pix_fmt(int color_model)
 	case BC_RGB565:		return AV_PIX_FMT_RGB565;
 	case BC_RGB161616:      return AV_PIX_FMT_RGB48LE;
 	case BC_RGBA16161616:   return AV_PIX_FMT_RGBA64LE;
+	case BC_AYUV16161616:	return AV_PIX_FMT_AYUV64LE;
 	default: break;
 	}
 
@@ -872,6 +873,7 @@ int FFVideoConvert::pix_fmt_to_color_model(AVPixelFormat pix_fmt)
 	case AV_PIX_FMT_RGB565:		return BC_RGB565;
 	case AV_PIX_FMT_RGB48LE:	return BC_RGB161616;
 	case AV_PIX_FMT_RGBA64LE:	return BC_RGBA16161616;
+	case AV_PIX_FMT_AYUV64LE:	return BC_AYUV16161616;
 	default: break;
 	}
 
@@ -918,7 +920,7 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
 
 	AVPixelFormat pix_fmt = (AVPixelFormat)ip->format;
 	convert_ctx = sws_getCachedContext(convert_ctx, ip->width, ip->height, pix_fmt,
-		frame->get_w(), frame->get_h(), ofmt, SWS_BICUBIC, NULL, NULL, NULL);
+		frame->get_w(), frame->get_h(), ofmt, SWS_POINT, NULL, NULL, NULL);
 	if( !convert_ctx ) {
 		fprintf(stderr, "FFVideoConvert::convert_picture_frame:"
 				" sws_getCachedContext() failed\n");
@@ -938,20 +940,25 @@ int FFVideoConvert::convert_cmodel(VFrame *frame, AVFrame *ip)
 	// try direct transfer
 	if( !convert_picture_vframe(frame, ip) ) return 1;
 	// use indirect transfer
-	AVPixelFormat pix_fmt = (AVPixelFormat)ip->format;
-	const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
+	AVPixelFormat ifmt = (AVPixelFormat)ip->format;
+	const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(ifmt);
 	int max_bits = 0;
 	for( int i = 0; i <desc->nb_components; ++i ) {
 		int bits = desc->comp[i].depth;
 		if( bits > max_bits ) max_bits = bits;
 	}
-// from libavcodec/pixdesc.c
-#define pixdesc_has_alpha(pixdesc) ((pixdesc)->nb_components == 2 || \
- (pixdesc)->nb_components == 4 || (pixdesc)->flags & AV_PIX_FMT_FLAG_PAL)
-	int icolor_model = pixdesc_has_alpha(desc) ?
-		(max_bits > 8 ? BC_RGBA16161616 : BC_RGBA8888) :
-		(max_bits > 8 ? BC_RGB161616 : BC_RGB888) ;
-	VFrame vframe(ip->width, ip->height, icolor_model);
+	int imodel = pix_fmt_to_color_model(ifmt);
+	if( imodel < 0 )  {
+		int cmodel = frame->get_color_model();
+		BC_CModels::is_yuv(cmodel) ?
+		    (BC_CModels::has_alpha(cmodel) ?
+			BC_AYUV16161616 :
+			(max_bits > 8 ? BC_AYUV16161616 : BC_YUV444P)) :
+		    (BC_CModels::has_alpha(cmodel) ?
+			(max_bits > 8 ? BC_RGBA16161616 : BC_RGBA8888) :
+			(max_bits > 8 ? BC_RGB161616 : BC_RGB888)) ;
+	}
+	VFrame vframe(ip->width, ip->height, imodel);
 	if( convert_picture_vframe(&vframe, ip) ) return -1;
 	frame->transfer_from(&vframe);
 	return 1;
@@ -1011,7 +1018,7 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *
 
 	AVPixelFormat ofmt = (AVPixelFormat)op->format;
 	convert_ctx = sws_getCachedContext(convert_ctx, frame->get_w(), frame->get_h(),
-		ifmt, op->width, op->height, ofmt, SWS_BICUBIC, NULL, NULL, NULL);
+		ifmt, op->width, op->height, ofmt, SWS_POINT, NULL, NULL, NULL);
 	if( !convert_ctx ) {
 		fprintf(stderr, "FFVideoConvert::convert_frame_picture:"
 				" sws_getCachedContext() failed\n");
@@ -1031,13 +1038,22 @@ int FFVideoConvert::convert_pixfmt(VFrame *frame, AVFrame *op)
 	// try direct transfer
 	if( !convert_vframe_picture(frame, op) ) return 1;
 	// use indirect transfer
-	int colormodel = frame->get_color_model();
-	int bits = BC_CModels::calculate_pixelsize(colormodel) * 8;
-	bits /= BC_CModels::components(colormodel);
-	int icolor_model =  BC_CModels::has_alpha(colormodel) ?
-		(bits > 8 ? BC_RGBA16161616 : BC_RGBA8888) :
-		(bits > 8 ? BC_RGB161616: BC_RGB888) ;
-	VFrame vframe(frame->get_w(), frame->get_h(), icolor_model);
+	int cmodel = frame->get_color_model();
+	int bits = BC_CModels::calculate_pixelsize(cmodel) * 8;
+	bits /= BC_CModels::components(cmodel);
+	AVPixelFormat ofmt = (AVPixelFormat)op->format;
+	int imodel = pix_fmt_to_color_model(ofmt);
+	if( imodel < 0 ) {
+		imodel =
+		    BC_CModels::is_yuv(cmodel) ?
+			(BC_CModels::has_alpha(cmodel) ?
+			BC_AYUV16161616 :
+			(bits > 8 ? BC_AYUV16161616 : BC_YUV444P)) :
+		    (BC_CModels::has_alpha(cmodel) ?
+			(bits > 8 ? BC_RGBA16161616 : BC_RGBA8888) :
+			(bits > 8 ? BC_RGB161616 : BC_RGB888)) ;
+	}
+	VFrame vframe(frame->get_w(), frame->get_h(), imodel);
 	vframe.transfer_from(frame);
 	if( !convert_vframe_picture(&vframe, op) ) return 1;
 	return -1;

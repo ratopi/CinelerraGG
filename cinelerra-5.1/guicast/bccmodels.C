@@ -51,6 +51,7 @@ int BC_CModels::components(int colormodel)
 	case BC_YUVA8888:     return 4;
 	case BC_YUV161616:    return 3;
 	case BC_YUVA16161616: return 4;
+	case BC_AYUV16161616: return 4;
 	case BC_YUV101010:    return 3;
 	case BC_RGB_FLOAT:    return 3;
 	case BC_RGBA_FLOAT:   return 4;
@@ -84,6 +85,7 @@ int BC_CModels::calculate_pixelsize(int colormodel)
 	case BC_YUVA8888:     return 4;
 	case BC_YUV161616:    return 6;
 	case BC_YUVA16161616: return 8;
+	case BC_AYUV16161616: return 8;
 	case BC_YUV101010:    return 4;
 	case BC_VYU888:       return 3;
 	case BC_UYVA8888:     return 4;
@@ -119,6 +121,7 @@ int BC_CModels::calculate_max(int colormodel)
 	case BC_YUVA8888:     return 0xff;
 	case BC_YUV161616:    return 0xffff;
 	case BC_YUVA16161616: return 0xffff;
+	case BC_AYUV16161616: return 0xffff;
 	case BC_RGB_FLOAT:    return 1;
 	case BC_RGBA_FLOAT:   return 1;
 	case BC_RGB_FLOATP:   return 1;
@@ -165,6 +168,7 @@ void BC_CModels::to_text(char *string, int cmodel)
 	case BC_YUVA8888:     strcpy(string, "YUVA-8 Bit");  break;
 	case BC_YUV161616:    strcpy(string, "YUV-16 Bit");  break;
 	case BC_YUVA16161616: strcpy(string, "YUVA-16 Bit"); break;
+	case BC_AYUV16161616: strcpy(string, "AYUV-16 Bit"); break;
 	case BC_RGB_FLOAT:    strcpy(string, "RGB-FLOAT");   break;
 	case BC_RGBA_FLOAT:   strcpy(string, "RGBA-FLOAT");  break;
 	case BC_RGB_FLOATP:   strcpy(string, "RGB-FLOATP");  break;
@@ -187,6 +191,7 @@ int BC_CModels::from_text(const char *text)
 	if(!strcasecmp(text, "YUVA-8 Bit"))  return BC_YUVA8888;
 	if(!strcasecmp(text, "YUV-16 Bit"))  return BC_YUV161616;
 	if(!strcasecmp(text, "YUVA-16 Bit")) return BC_YUVA16161616;
+	if(!strcasecmp(text, "AYUV-16 Bit")) return BC_AYUV16161616;
 	return BC_RGB888;
 }
 
@@ -228,6 +233,7 @@ int BC_CModels::is_yuv(int colormodel)
 	case BC_YUVA8888:
 	case BC_YUV161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 	case BC_YUV422:
 	case BC_UVY422:
 	case BC_YUV101010:
