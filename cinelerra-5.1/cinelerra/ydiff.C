@@ -142,8 +142,8 @@ void *gtk_window::run()
       gdk_draw_rgb_image(image->window,blk, 0,0,width,height,
          GDK_RGB_DITHER_NONE,bfr,linesize);
       gdk_flush();
-      uint64_t *fbfrs = (uint64_t *)&bfrs;  *fbfrs ^= flip_bfrs;
-      uint64_t *frows = (uint64_t *)&rows;  *frows ^= flip_rows;
+      unsigned long *fbfrs = (unsigned long *)&bfrs;  *fbfrs ^= flip_bfrs;
+      unsigned long *frows = (unsigned long *)&rows;  *frows ^= flip_rows;
       bfr = 0;
       draw_unlock();
     }
