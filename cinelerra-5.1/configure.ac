@@ -15,6 +15,7 @@ CFG_CFLAGS+=" -D__STDC_LIMIT_MACROS"
 CFG_CFLAGS+=" -DPNG_SKIP_SETJMP_CHECK=1"
 CFG_CFLAGS+=" -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
 CFG_CFLAGS+=" -I/usr/include/freetype2"
+CFG_CFLAGS+=" -I/usr/include/OpenEXR"
 
 AC_DEFUN([CHECK_WITH], [
 AC_ARG_WITH([$1],
@@ -602,7 +603,7 @@ for dep in \
         libtheora/libogg libtheora/libvorbis ; do
   lib=`dirname $dep`;  needs=`basename $dep`
   eval pkg_lib="\$PKG_$lib"; eval needs_lib="\$HAVE_$needs";
-  if test "x$pkg_lib" != "xno" -a "x$needs_lib" != "xyes" ; then
+  if test "x$pkg_lib" != "xno"; then
     eval "PKG_$needs=yes"
   fi
 done
@@ -704,10 +705,6 @@ AC_SUBST(EXTRA_LIBS)
 AC_SUBST(FFMPEG_EXTRA_CFG)
 AC_SUBST(WANT_X264_HIDEPTH)
 AC_SUBST(WANT_X265_HIDEPTH)
-
-if test "x$BUILD_openexr" = "x0"; then
-  CFG_CFLAGS+=" -I/usr/include/OpenEXR"
-fi
 
 AC_SUBST(CFG_CFLAGS)
 AC_SUBST(CFG_CXXFLAGS)

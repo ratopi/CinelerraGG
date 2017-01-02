@@ -360,10 +360,11 @@ CUTLIBS = \
 BDWRITE = $(OBJDIR)/bdwrite
 BDWOBJS = $(OBJDIR)/bdwrite.o
 
-CFLAGS += \
+CFLAGS := \
 	-I$(GUICAST) \
 	-I$(LIBZMPEG3) \
 	$(static_incs) \
+	$(CFLAGS)
 
 # Speed up linking with this linking sequence
 ifeq ($(OBJDIR), alpha)
