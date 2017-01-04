@@ -345,8 +345,8 @@ int VRender::get_colormodel(VEdit *playable_edit,
 				current_position,
 				renderengine->command->get_direction());
 		}
-
-		if(asset)
+// ffmpeg files are side effected by color_model, affects colorspace,color_range
+		if( asset && asset->format != FILE_FFMPEG )
 		{
 			file = renderengine->get_vcache()->check_out(asset,
 				renderengine->get_edl());

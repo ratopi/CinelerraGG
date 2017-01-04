@@ -948,9 +948,11 @@ int FFVideoConvert::convert_cmodel(VFrame *frame, AVFrame *ip)
 		if( bits > max_bits ) max_bits = bits;
 	}
 	int imodel = pix_fmt_to_color_model(ifmt);
-	if( imodel < 0 )  {
-		int cmodel = frame->get_color_model();
-		BC_CModels::is_yuv(cmodel) ?
+	int imodel_is_yuv = BC_CModels::is_yuv(imodel);
+	int cmodel = frame->get_color_model();
+	int cmodel_is_yuv = BC_CModels::is_yuv(cmodel);
+	if( imodel < 0 || imodel_is_yuv != cmodel_is_yuv ) {
+		imodel = cmodel_is_yuv ?
 		    (BC_CModels::has_alpha(cmodel) ?
 			BC_AYUV16161616 :
 			(max_bits > 8 ? BC_AYUV16161616 : BC_YUV444P)) :
@@ -1039,19 +1041,20 @@ int FFVideoConvert::convert_pixfmt(VFrame *frame, AVFrame *op)
 	if( !convert_vframe_picture(frame, op) ) return 1;
 	// use indirect transfer
 	int cmodel = frame->get_color_model();
-	int bits = BC_CModels::calculate_pixelsize(cmodel) * 8;
-	bits /= BC_CModels::components(cmodel);
+	int max_bits = BC_CModels::calculate_pixelsize(cmodel) * 8;
+	max_bits /= BC_CModels::components(cmodel);
 	AVPixelFormat ofmt = (AVPixelFormat)op->format;
 	int imodel = pix_fmt_to_color_model(ofmt);
-	if( imodel < 0 ) {
-		imodel =
-		    BC_CModels::is_yuv(cmodel) ?
-			(BC_CModels::has_alpha(cmodel) ?
-			BC_AYUV16161616 :
-			(bits > 8 ? BC_AYUV16161616 : BC_YUV444P)) :
+	int imodel_is_yuv = BC_CModels::is_yuv(imodel);
+	int cmodel_is_yuv = BC_CModels::is_yuv(cmodel);
+	if( imodel < 0 || imodel_is_yuv != cmodel_is_yuv ) {
+		imodel = cmodel_is_yuv ?
 		    (BC_CModels::has_alpha(cmodel) ?
-			(bits > 8 ? BC_RGBA16161616 : BC_RGBA8888) :
-			(bits > 8 ? BC_RGB161616 : BC_RGB888)) ;
+			BC_AYUV16161616 :
+			(max_bits > 8 ? BC_AYUV16161616 : BC_YUV444P)) :
+		    (BC_CModels::has_alpha(cmodel) ?
+			(max_bits > 8 ? BC_RGBA16161616 : BC_RGBA8888) :
+			(max_bits > 8 ? BC_RGB161616 : BC_RGB888)) ;
 	}
 	VFrame vframe(frame->get_w(), frame->get_h(), imodel);
 	vframe.transfer_from(frame);

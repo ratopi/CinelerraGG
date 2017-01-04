@@ -1130,8 +1130,8 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data,
 		int x, y, w, h;
 		BC_ListBoxItem *item = data[master_column].values[j];
 
-		if(display_format == LISTBOX_ICONS)
-		{
+		if( display_format == LISTBOX_ICONS ||
+		    display_format == LISTBOX_ICON_LIST ) {
 			get_icon_mask(item, x, y, w, h);
 			if(y + h + yposition > highest) highest = y + h + yposition;
 
@@ -1142,8 +1142,6 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data,
 		{
 			get_text_mask(item, x, y, w, h);
 			*result += h;
-
-
 // Descend into sublist
 			if(item->get_sublist() &&
 				item->get_expand())
@@ -1155,9 +1153,7 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data,
 		}
 	}
 
-	if((display_format == LISTBOX_TEXT ||
-		display_format == LISTBOX_ICON_LIST) &&
-		top_level)
+	if( display_format == LISTBOX_TEXT && top_level )
 	{
 		highest = LISTBOX_MARGIN + *result;
 	}
