@@ -96,6 +96,8 @@ public:
 
         int Oadj_active;
         float Oadj_val;
+        int Aadj_active;
+        float Aadj_val;
 
 };
 

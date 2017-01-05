@@ -38,6 +38,7 @@ public:
 		int &width, int &height, char *title=0);
 	int get_audio_for_video(int vstream, int astream, int64_t &channel_mask);
 	static void get_info(char *path,char *text,int len);
+	static int get_ff_option(const char *nm, const char *options, char *value);
 	int open_file(int rd,int wr);
 	int get_index(IndexFile *index_file, MainProgressBar *progress_bar);
 	int close_file(void);
@@ -60,6 +61,7 @@ public:
         ~FFMpegConfigNum();
 
         void create_objects();
+        int update_text(const char *text);
         int handle_event();
         int *output;
         BC_Window *window;

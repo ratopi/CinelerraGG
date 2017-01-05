@@ -47,6 +47,7 @@ class BluebananaRAActive;
 class BluebananaGAActive;
 class BluebananaBAActive;
 class BluebananaOAActive;
+class BluebananaAAActive;
 
 class BluebananaHSSlider;
 class BluebananaSSSlider;
@@ -59,6 +60,7 @@ class BluebananaRASlider;
 class BluebananaGASlider;
 class BluebananaBASlider;
 class BluebananaOASlider;
+class BluebananaAASlider;
 
 class BluebananaHSReadout0;
 class BluebananaHSReadout1;
@@ -90,6 +92,7 @@ class BluebananaBAReadout0;
 class BluebananaBAReadout1;
 class BluebananaBAReadout2;
 class BluebananaOAReadout;
+class BluebananaAAReadout;
 
 class BluebananaPreserve;
 
@@ -186,6 +189,7 @@ public:
         BluebananaGAActive *Gadj_active;
         BluebananaBAActive *Badj_active;
         BluebananaOAActive *Oadj_active;
+        BluebananaAAActive *Aadj_active;
 
         BluebananaHSSlider *Hsel_slider;
         BluebananaHSReadout0 *Hsel_readout0;
@@ -238,10 +242,12 @@ public:
 
         BluebananaOASlider *Oadj_slider;
         BluebananaOAReadout *Oadj_readout;
+        BluebananaAASlider *Aadj_slider;
+        BluebananaAAReadout *Aadj_readout;
 
         //BluebananaPreserve *preserve_luma;
 
-        BC_Title *slider_labels[11];
+        BC_Title *slider_labels[12];
         BC_Title *erode_label;
         int do_render;
 };

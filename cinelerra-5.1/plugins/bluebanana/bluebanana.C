@@ -186,6 +186,8 @@ void BluebananaMain::save_data(KeyFrame *keyframe){
 
   output.tag.set_property("OPACITY_ADJUST_ACTIVE", config.Oadj_active);
   output.tag.set_property("OPACITY_ADJUST", config.Oadj_val);
+  output.tag.set_property("ALPHA_ADJUST_ACTIVE", config.Aadj_active);
+  output.tag.set_property("ALPHA_ADJUST", config.Aadj_val);
 
   output.append_tag();
   output.append_newline();
@@ -326,6 +328,8 @@ void BluebananaMain::read_data(KeyFrame *keyframe){
 
       config.Oadj_active = input.tag.get_property("OPACITY_ADJUST_ACTIVE", config.Oadj_active);
       config.Oadj_val = input.tag.get_property("OPACITY_ADJUST", config.Oadj_val);
+      config.Aadj_active = input.tag.get_property("ALPHA_ADJUST_ACTIVE", config.Aadj_active);
+      config.Aadj_val = input.tag.get_property("ALPHA_ADJUST", config.Aadj_val);
 
     }
   }

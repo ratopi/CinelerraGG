@@ -96,7 +96,8 @@ void BluebananaUnit::process_package(LoadPackage *package){
   float Gas = plugin->green_adj_toe_slope;
   float Bas = plugin->blue_adj_toe_slope;
 
-  float Aal = plugin->config.Oadj_active ? plugin->config.Oadj_val*.01 : 1.f;
+  float Oal = plugin->config.Oadj_active ? plugin->config.Oadj_val*.01 : 1.f;
+  float Aal = plugin->config.Aadj_active ? plugin->config.Aadj_val*.01 : 1.f;
 
   float Vscale = (plugin->config.Vadj_hi-plugin->config.Vadj_lo) / 100.f;
   float Vshift = plugin->config.Vadj_lo / 100.f;
@@ -842,22 +843,22 @@ void BluebananaUnit::process_package(LoadPackage *package){
           /* layer back into pipeline color format; master fader applies here */
           switch(frame->get_color_model()) {
           case BC_RGB888:
-            RGB_to_rgb8(Rvec,Gvec,Bvec,have_selection?selection:0,Aal,row_fragment,todo,3);
+            RGB_to_rgb8(Rvec,Gvec,Bvec,have_selection?selection:0,Oal,row_fragment,todo,3);
             break;
           case BC_RGBA8888:
-            RGB_to_rgb8(Rvec,Gvec,Bvec,have_selection?selection:0,Aal,row_fragment,todo,4);
+            RGB_to_rgb8(Rvec,Gvec,Bvec,have_selection?selection:0,Oal,row_fragment,todo,4);
             break;
           case BC_RGB_FLOAT:
-            RGB_to_rgbF(Rvec,Gvec,Bvec,have_selection?selection:0,Aal,(float *)row_fragment,todo,3);
+            RGB_to_rgbF(Rvec,Gvec,Bvec,have_selection?selection:0,Oal,(float *)row_fragment,todo,3);
             break;
           case BC_RGBA_FLOAT:
-            RGB_to_rgbF(Rvec,Gvec,Bvec,have_selection?selection:0,Aal,(float *)row_fragment,todo,4);
+            RGB_to_rgbF(Rvec,Gvec,Bvec,have_selection?selection:0,Oal,(float *)row_fragment,todo,4);
             break;
           case BC_YUV888:
-            RGB_to_yuv8(Rvec,Gvec,Bvec,have_selection?selection:0,Aal,row_fragment,todo,3);
+            RGB_to_yuv8(Rvec,Gvec,Bvec,have_selection?selection:0,Oal,row_fragment,todo,3);
             break;
           case BC_YUVA8888:
-            RGB_to_yuv8(Rvec,Gvec,Bvec,have_selection?selection:0,Aal,row_fragment,todo,4);
+            RGB_to_yuv8(Rvec,Gvec,Bvec,have_selection?selection:0,Oal,row_fragment,todo,4);
             break;
           }
         }
@@ -921,13 +922,22 @@ void BluebananaUnit::process_package(LoadPackage *package){
           if(use_mask && capture_mask){
             switch(frame->get_color_model()) {
             case BC_RGBA8888:
-              unmask_rgba8(row_fragment,todo);
+              if( have_selection && Aal < 1.f )
+                Aal_to_alp8(selection,Aal,row_fragment,todo,4);
+              else
+                unmask_rgba8(row_fragment,todo);
               break;
             case BC_RGBA_FLOAT:
-              unmask_rgbaF((float *)row_fragment,todo);
+              if( have_selection && Aal < 1.f )
+                Aal_to_alpF(selection,Aal,(float *)row_fragment,todo,4);
+              else
+                unmask_rgbaF((float *)row_fragment,todo);
               break;
             case BC_YUVA8888:
-              unmask_yuva8(row_fragment,todo);
+              if( have_selection && Aal < 1.f )
+                Aal_to_alp8(selection,Aal,row_fragment,todo,4);
+              else
+                unmask_yuva8(row_fragment,todo);
               break;
             }
           }

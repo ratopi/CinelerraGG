@@ -40,6 +40,14 @@ class BC_ScrollTextBoxYScroll;
 
 class BC_TextBox : public BC_SubWindow
 {
+	static inline int nib(int ch) {
+		if( ch >= '0' && ch <= '9' ) ch -= '0';
+		else if( ch >= 'A' && ch <= 'F' ) ch -= 'A'-10;
+		else if( ch >= 'a' && ch <= 'f' ) ch -= 'a'-10;
+		else ch = -1;
+		return ch;
+	}
+
 	char *text;
 	wchar_t *wtext;
 public:
@@ -169,7 +177,7 @@ private:
 // Top left of cursor relative to text
 	int ibeam_x, ibeam_y;
 
-	int ibeam_letter;
+	int ibeam_letter, unicode_active;
 	int highlight_letter1, highlight_letter2;
 	int highlight_letter3, highlight_letter4;
 	int text_x1, text_start, text_end;

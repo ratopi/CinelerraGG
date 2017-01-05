@@ -83,6 +83,8 @@ BluebananaConfig::BluebananaConfig() {
 
   Oadj_active=0;
   Oadj_val=100;
+  Aadj_active=0;
+  Aadj_val=100;
 
 }
 
@@ -120,6 +122,8 @@ int BluebananaConfig::equivalent(BluebananaConfig &that) {
 
   if(Oadj_active != that.Oadj_active) return 0;
   if(Oadj_val != that.Oadj_val) return 0;
+  if(Aadj_active != that.Aadj_active) return 0;
+  if(Aadj_val != that.Aadj_val) return 0;
 
   if(Sadj_active != that.Sadj_active) return 0;
   if(Sadj_gamma != that.Sadj_gamma) return 0;

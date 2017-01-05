@@ -225,6 +225,16 @@ static inline void RGB_to_rgb8(float *R, float *G, float *B, float *S, float F, 
   }
 }
 
+static inline void Aal_to_alp8(float *S, float F, unsigned char *row, int w, int bpp){
+  F = 1.f - F;
+  while(w--){
+    float a = (1 - *S*F)*255.f +.5f;
+    row[3] = CLAMP(a,0,255);
+    row+=bpp;  ++S;
+  }
+}
+
+
 static inline void RGB_to_rgbF(float *R, float *G, float *B, float *S, float F, float *row, int w, int bpp){
   if(F>SELECT_THRESH){
     if(S){
@@ -263,6 +273,16 @@ static inline void RGB_to_rgbF(float *R, float *G, float *B, float *S, float F, 
     }
   }
 }
+
+static inline void Aal_to_alpF(float *S, float F, float *row, int w, int bpp){
+  F = 1.f - F;
+  while(w--){
+    float a = 1.f - *S*F;
+    row[3] = a;
+    row+=bpp;
+  }
+}
+
 
 static inline void unmask_rgba8(unsigned char *row,int w){
   while(w--){

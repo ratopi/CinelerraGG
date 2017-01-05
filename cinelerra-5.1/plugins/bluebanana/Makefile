@@ -14,7 +14,7 @@ include ../../plugin_config
 $(OBJDIR)/bluebanana.o:			bluebanana.C
 $(OBJDIR)/bluebananaconfig.o:		bluebananaconfig.C
 $(OBJDIR)/bluebananaslider.o:		bluebananaslider.C
-$(OBJDIR)/bluebananawindow.o:		bluebananawindow.C
+$(OBJDIR)/bluebananawindow.o:		bluebananawindow.C bluebananacolor.c
 $(OBJDIR)/bluebananalookups.o:		bluebananalookups.C
-$(OBJDIR)/bluebananaengine.o:		bluebananaengine.C
+$(OBJDIR)/bluebananaengine.o:		bluebananaengine.C bluebananacolor.c
 

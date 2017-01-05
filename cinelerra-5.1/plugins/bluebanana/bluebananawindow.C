@@ -1340,6 +1340,56 @@ int BluebananaOAReadout::value_event(){
   return 1;
 }
 
+// ---------------------------------- alpha slider ---------------------------------
+class BluebananaAAReadout : public BB_Tumble {
+ public:
+  BluebananaAAReadout(BluebananaMain *plugin, BluebananaWindow *gui, int w)
+    : BB_Tumble(plugin,gui,0.,0,100., 0,1,w){}
+  int value_event();
+};
+
+class BluebananaAASlider : public BluebananaSliderSingle {
+public:
+  int hidden;
+  BluebananaAASlider(BluebananaMain *plugin, BluebananaWindow *gui,
+                     int x, int y, int w, int h)
+    : BluebananaSliderSingle(plugin,gui,x,y,w,h,0,100) { hidden = 0; }
+  virtual int handle_event() {
+    plugin->config.Aadj_val = val;
+    return 1;
+  }
+  void reset(){
+    plugin->config.Aadj_val=100;
+    update();
+  }
+  void update(){
+    val = plugin->config.Aadj_val;
+    if( BC_CModels::has_alpha(plugin->colormodel) ) {
+      if( hidden ) { show_window();  hidden = 0; }
+    }else{
+      if( !hidden ) { hide_window();  hidden = 1; }
+    }
+    if( hidden ) return;
+    highlight = plugin->config.active && plugin->config.Aadj_active;
+    gui->Aadj_readout->update(plugin->config.Aadj_val);
+    gui->slider_labels[11]->set_color(highlight  && plugin->config.Aadj_val != 100 ?
+         get_resources()->default_text_color : dimtextcolor);
+    gui->enter_config_change();
+    gui->commit_config_change();
+  }
+  void trough_color(float hdel, float vdel, float &r, float &g, float &b, float &a){
+    r=g=b=.8;
+    a=1-cos(hdel*M_PI*.5);
+  }
+};
+
+int BluebananaAAReadout::value_event(){
+  float val = get_value();
+  plugin->config.Aadj_val = val;
+  gui->Aadj_slider->update();
+  return 1;
+}
+
 // ------------------------------------- picker buttons -----------------------------------------
 class BluebananaHPicker : public BC_GenericButton{
  public:
@@ -1422,6 +1472,14 @@ class BluebananaOAReset : public BC_GenericButton{
     this->gui = gui;
   }
   int handle_event() { gui->Oadj_slider->reset(); return 1;}
+  BluebananaWindow *gui;
+};
+class BluebananaAAReset : public BC_GenericButton{
+ public:
+  BluebananaAAReset(BluebananaWindow *gui, int w) : BC_GenericButton(-1, -1, w, _("Reset")){
+    this->gui = gui;
+  }
+  int handle_event() { gui->Aadj_slider->reset(); return 1;}
   BluebananaWindow *gui;
 };
 
@@ -1632,6 +1690,36 @@ public:
   BluebananaWindow *gui;
 };
 
+class BluebananaAAActive : public BC_CheckBox {
+public:
+  int hidden;
+
+  BluebananaAAActive(BluebananaMain *plugin, BluebananaWindow *gui)
+  : BC_CheckBox(-1, -1, &plugin->config.Aadj_active, ""){
+    this->plugin = plugin;
+    this->gui = gui;
+    hidden = 0;
+  }
+  virtual int handle_event(){
+    plugin->config.Aadj_active =
+      !BC_CModels::has_alpha(plugin->colormodel) ? 0 : get_value();
+    update();
+    return 1;
+  }
+  void update(){
+    this->BC_CheckBox::update(plugin->config.Aadj_active,1);
+    if( BC_CModels::has_alpha(plugin->colormodel) ) {
+      if( hidden ) { show_window();  hidden = 0; }
+    }else{
+      if( !hidden ) { hide_window();  hidden = 1; }
+    }
+    if( hidden ) return;
+    gui->Aadj_slider->update();
+  }
+  BluebananaMain *plugin;
+  BluebananaWindow *gui;
+};
+
 // -------------------------------------------- Erode --------------------------------------------
 class BluebananaErode : public BC_CheckBox {
 public:
@@ -1738,6 +1826,7 @@ public:
       gui->Gadj_slider->update();
       gui->Badj_slider->update();
       gui->Oadj_slider->update();
+      gui->Aadj_slider->update();
       gui->commit_config_change();
     }
   }
@@ -1948,6 +2037,7 @@ BluebananaWindow::BluebananaWindow(BluebananaMain *plugin)
   Gadj_slider=NULL;
   Badj_slider=NULL;
   Oadj_slider=NULL;
+  Aadj_slider=NULL;
 
   use_mask=0;
   capture_mask=0;
@@ -2002,8 +2092,8 @@ void BluebananaWindow::create_objects()
     y += l->get_h()*(row_padding+1.);
   }
 
-  const char *labels[11]={_("hue"),_("saturation"),_("value"),_("fill"),_("red"),_("green"),_("blue"),_("hue"),_("saturation"),_("value"),_("fade")};
-  for(i=0;i<11;i++){
+  const char *labels[12]={_("hue"),_("saturation"),_("value"),_("fill"),_("red"),_("green"),_("blue"),_("hue"),_("saturation"),_("value"),_("fade"),_("alpha")};
+  for(i=0;i<12;i++){
     add_subwindow(slider_labels[i] = new BC_Title(-1,-1,labels[i]));
     if(slider_labels[i]->get_w()>label_w)label_w=slider_labels[i]->get_w();
   }
@@ -2020,7 +2110,7 @@ void BluebananaWindow::create_objects()
   add_subwindow(erode_label);
   add_subwindow(erode);
 
-  for(i=0;i<11;i++){
+  for(i=0;i<12;i++){
     BC_GenericButton *p=NULL;
     BluebananaSlider *s=NULL;
     BB_Tumble *t0 = NULL, *t1=NULL, *t2=NULL;
@@ -2223,6 +2313,14 @@ void BluebananaWindow::create_objects()
       s = Oadj_slider = new BluebananaOASlider(plugin,this,slider_x,y,slider_w,row_h);
       break;
 
+    case 11:
+
+      add_subwindow(t0 = Aadj_readout = new BluebananaAAReadout(plugin,this,tumbler_text_ww));
+      add_subwindow(a = Aadj_active = new BluebananaAAActive(plugin,this));
+      add_subwindow(p = new BluebananaAAReset(this,tumbler_col2_w));
+      s = Aadj_slider = new BluebananaAASlider(plugin,this,slider_x,y,slider_w,row_h);
+      break;
+
     }
     add_subwindow(s);
 
@@ -2388,6 +2486,7 @@ void BluebananaWindow::update(){
   Gadj_slider->update();
   Badj_slider->update();
   Oadj_slider->update();
+  Aadj_slider->update();
 
   active->update();
   mark->update();
@@ -2407,6 +2506,7 @@ void BluebananaWindow::update(){
   Gadj_active->update();
   Badj_active->update();
   Oadj_active->update();
+  Aadj_active->update();
 
   // called to release configuration without pushing
   leave_config_change();
@@ -2425,6 +2525,7 @@ void BluebananaWindow::render(){
     Gadj_slider->render();
     Badj_slider->render();
     Oadj_slider->render();
+    Aadj_slider->render();
   }
 }
 
