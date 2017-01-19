@@ -1231,21 +1231,23 @@ int BC_TextBox::keypress_event()
 		int wlen =  -1;
 		switch( last_keypress ) {
 //unicode active acitons
-		case ESC: {
-			unicode_active = -1;
-			result = 1;
-			wlen = 0;
-			break; }
 		case RETURN: {
 			for( int i=highlight_letter1+1; i<highlight_letter2; ++i ) {
 				int ch = nib(wtext[i]);
 				if( ch < 0 ) return 1;
 				wch = (wch<<4) + ch;
 			}
+			if( wch ) {
+				dispatch_event = 1;
+				unicode_active = -1;
+				result = 1;
+				wlen = 1;
+				break;
+			} } // fall through
+		case ESC: {
 			unicode_active = -1;
-			dispatch_event = 1;
 			result = 1;
-			wlen = 1;
+			wlen = 0;
 			break; }
 		case BACKSPACE: {
 			if(ibeam_letter > 0) {

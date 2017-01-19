@@ -743,7 +743,7 @@ static inline void cx_product(int n, int sf, double *rp, double *ip,
 static inline void cj_product(int n, int sf, double *rp, double *ip,
 		double *arp, double *aip, double *brp, double *bip)
 {
-	int m = !sf ? n : n/2, i = 0;
+	int m = !sf ? n-1 : n/2, i = 0;
 	while( i <= m ) {
 		double ar = arp[i], ai = aip[i];
 		double br = brp[i], bi = -bip[i];

@@ -1371,58 +1371,282 @@ void VFrame::draw_pixel(int x, int y)
 }
 
 
+// Bresenham's
 void VFrame::draw_line(int x1, int y1, int x2, int y2)
 {
-	int w = labs(x2 - x1);
-	int h = labs(y2 - y1);
-//printf("FindObjectMain::draw_line 1 %d %d %d %d\n", x1, y1, x2, y2);
+	if( y1 > y2 ) {
+		int tx = x1;  x1 = x2;  x2 = tx;
+		int ty = y1;  y1 = y2;  y2 = ty;
+	}
 
-	if(!w && !h)
-	{
-		draw_pixel(x1, y1);
+	int x = x1, y = y1;
+	int dx = x2-x1, dy = y2-y1;
+	int dx2 = 2*dx, dy2 = 2*dy;
+	if( dx < 0 ) dx = -dx;
+	int r = dx > dy ? dx : dy, n = r;
+	int dir = 0;
+	if( dx2 < 0 ) dir += 1;
+	if( dy >= dx ) {
+		if( dx2 >= 0 ) do {	/* +Y, +X */
+			draw_pixel(x, y++);
+			if( (r -= dx2) < 0 ) { r += dy2;  ++x; }
+		} while( --n >= 0 );
+		else do {		/* +Y, -X */
+			draw_pixel(x, y++);
+			if( (r += dx2) < 0 ) { r += dy2;  --x; }
+		} while( --n >= 0 );
+	}
+	else {
+		if( dx2 >= 0 ) do {	/* +X, +Y */
+			draw_pixel(x++, y);
+			if( (r -= dy2) < 0 ) { r += dx2;  ++y; }
+		} while( --n >= 0 );
+		else do {		/* -X, +Y */
+			draw_pixel(x--, y);
+			if( (r -= dy2) < 0 ) { r -= dx2;  ++y; }
+		} while( --n >= 0 );
+	}
+}
+
+// g++ -dD -E - < /dev/null | grep DBL_EPSILON
+#ifndef __DBL_EPSILON__
+#define __DBL_EPSILON__ ((double)2.22044604925031308085e-16L)
+#endif
+// weakest fraction * graphics integer range
+#define RND_EPSILON (__DBL_EPSILON__*65536)
+
+class smooth_line {
+	int rnd(double v) { return round(v)+RND_EPSILON; }
+	VFrame *vframe;
+public:
+	int sx, sy, ex, ey;	/* current point, end point */
+	int xs, ys;		/* x/y quadrant sign -1/1 */
+	int64_t A, B, C; 	/* quadratic coefficients */
+	int64_t r, dx, dy;	/* residual, dr/dx and dr/dy */
+	int xmxx, xmxy;		/* x,y at apex */
+	int done;
+
+	void init0(int x1,int y1, int x2,int y2, int x3,int y3, int top);
+	void init1(int x1,int y1, int x2,int y2, int x3,int y3);
+	int64_t rx() { return r + xs*8*dx + 4*A; }
+	void moveX(int64_t r) {
+		dx += xs*A;   dy -= xs*B;
+		this->r = r;  sx += xs;
+	}
+	int64_t ry() { return r + 8*dy + 4*C; }
+	void moveY(int64_t r) {
+		dx -= B;      dy += C;
+		this->r = r;  ++sy;
+	}
+	void draw();
+
+	smooth_line(VFrame *vframe) { this->vframe = vframe; this->done = 0; }
+};
+
+
+void smooth_line::draw()
+{
+	if( done ) return;
+	if( abs(dy) >= abs(dx) ) {
+		if( xs*(sx-xmxx) >= 0 ) {
+			if( ys > 0 ) { done = 1;  return; }
+			if( dy < 0 || ry() < 0 ) { moveY(ry()); goto xit; }
+			xmxx = ex;  xmxy = ey;
+			ys = 1;  xs = -xs;
+		}
+		moveX(rx());
+		int64_t rr = ry();
+		if( abs(rr) < abs(r) )
+			moveY(rr);
+	}
+	else {
+		if( sy >= xmxy ) {
+			if( ys > 0 ) { done = 1;  return; }
+			xmxx = ex;  xmxy = ey;
+			ys = 1;  xs = -xs;
+		}
+		moveY(ry());
+		int64_t rr = rx();
+		if( abs(rr) < abs(r) )
+			moveX(rr);
+	}
+xit:	vframe->draw_pixel(sx, sy);
+}
+
+void VFrame::draw_smooth(int x1, int y1, int x2, int y2, int x3, int y3)
+{
+	if( (x1 == x2 && y1 == y2) || (x2 == x3 && y2 == y3) )
+		draw_line(x1,y1, x3,y3);
+	else if( x1 == x3 && y1 == y3 )
+		draw_line(x1,y1, x2,y2);
+	else if( (x2-x1) * (y2-y3) == (x2-x3) * (y2-y1) ) {
+		// co-linear, draw line from min to max
+		if( x1 < x3 ) {
+			if( x2 < x1 ) { x1 = x2;  y1 = y2; }
+			if( x2 > x3 ) { x3 = x2;  y3 = y2; }
+		}
+		else {
+			if( x2 > x1 ) { x1 = x2;  y1 = y2; }
+			if( x2 < x3 ) { x3 = x2;  y3 = y2; }
+		}
+		draw_line(x1,y1, x3,y3);
 	}
 	else
-	if(w > h)
-	{
-// Flip coordinates so x1 < x2
-		if(x2 < x1)
-		{
-			y2 ^= y1;
-			y1 ^= y2;
-			y2 ^= y1;
-			x1 ^= x2;
-			x2 ^= x1;
-			x1 ^= x2;
-		}
-		int numerator = y2 - y1;
-		int denominator = x2 - x1;
-		for(int i = x1; i <= x2; i++)
-		{
-			int y = y1 + (int64_t)(i - x1) * (int64_t)numerator / (int64_t)denominator;
-			draw_pixel(i, y);
+		smooth_draw(x1, y1, x2, y2, x3, y3);
+}
+
+/*
+  Non-Parametric Smooth Curve Generation. Don Kelly 1984
+
+     P+-----+Q'= virtual
+     /     /       origin
+    /     /
+  Q+-----+R
+
+   Let the starting point be P. the ending point R. and the tangent vertex Q.
+   A general point Z on the curve is then
+        Z = (P + R - Q) + (Q - P) sin t + (Q - R) cos t
+
+   Expanding the Cartesian coordinates around (P + R - Q) gives
+        [x y] = Z - (P + R - Q)
+        [a c] = Q - P
+        [b d] = Q - R
+        x = a*sin(t) + b*cos(t)
+        y = c*sin(t) + d*cos(t)
+
+   from which t can now be eliminated via
+        c*x - a*y = (c*b - a*d)*cos(t)
+        d*x - b*y = (a*d - c*b)*sin(t)
+
+   giving the Cartesian equation for the ellipse as
+        f(x, y) = (c*x - a*y)**2 + (d*x - b*y)**2 - (a*d - c*b)**2 = 0
+
+   or:  f(x, y) = A*x**2 - 2*B*x*y + C*y**2 + B**2 - A*C = 0
+   where: A = c**2 + d**2,  B = a*c + b*d,  C = a**2 + b**2
+
+   The maximum y extent of the ellipse may now be derived as follows:
+        let df/dx = 0,  2*A*x = 2*B*y,  x = y*B/A
+        f(x, y) == B**2 * y**2 / A - 2*B**2 * y**2 / A + C*y**2 + B**2 - A*C = 0
+           (A*C - B**2)*y = (A*C - B**2)*A
+           max x = sqrt(C), at y = B/sqrt(C)
+           max y = sqrt(A), at x = B/sqrt(A)
+
+ */
+
+
+/* x1,y1 = P, x2,y2 = Q, x3,y3=R,
+ *  draw from P to Q to R   if top=0
+ *    or from P to (x,ymax) if top>0
+ *    or from Q to (x,ymax) if top<0
+ */
+void smooth_line::init0(int x1,int y1, int x2,int y2, int x3,int y3, int top)
+{
+	int x0 = x1+x3-x2, y0 = y1+y3-y2; // Q'
+
+	int a = x2-x1,  c = y2-y1;
+	int b = x2-x3,  d = y2-y3;
+	A = c*c + d*d;  C = a*a + b*b;  B = a*c + b*d;
+
+	sx = top >= 0 ? x1 : x3;
+	sy = top >= 0 ? y1 : y3;
+	xs = x2 > sx || (x2==sx && (x1+x3-sx)>=x2) ? 1 : -1;
+	int64_t px = sx-x0, py = sy-y0;
+	dx = A*px - B*py;  dy = C*py - B*px;
+	r = 0;
+
+	if( top ) {
+		double ymy = sqrt(A), ymx = B/ymy;
+		ex = x0 + rnd(ymx);
+		ey = y0 + rnd(ymy);
+	}
+	else {
+		ex = x3;  ey = y3;
+	}
+
+	ys = a*b > 0 && (!top || top*xs*(b*c - a*d) > 0) ? -1 : 1;
+	if( ys < 0 ) {
+		double xmx = xs*sqrt(C), xmy = B/xmx;
+		xmxx = x0 + rnd(xmx);
+		xmxy = y0 + rnd(xmy);
+	}
+	else {
+		xmxx = ex; xmxy = ey;
+	}
+}
+
+/*  x1,y1 = P, x2,y2 = Q, x3,y3=R,
+ *  draw from (x,ymax) to P
+ */
+void smooth_line::init1(int x1,int y1, int x2,int y2, int x3,int y3)
+{
+	int x0 = x1+x3-x2, y0 = y1+y3-y2; // Q'
+
+	int a = x2-x1,  c = y2-y1;
+	int b = x2-x3,  d = y2-y3;
+	A = c*c + d*d;  C = a*a + b*b;  B = a*c + b*d;
+
+	double ymy = -sqrt(A), ymx = B/ymy;
+	int64_t px = rnd(ymx), py = rnd(ymy);
+	sx = x0 + px;  ex = x1;
+	sy = y0 + py;  ey = y1;
+	xs = x2 > x1 || (x2==x1 && x3>=x2) ? 1 : -1;
+	dx = A*px - B*py;  dy = C*py - B*px;
+	r = 4 * (A*px*px - 2*B*px*py + C*py*py + B*B - A*C);
+
+	ys = a*b > 0 && xs*(b*c - a*d) < 0 ? -1 : 1;
+	if( ys < 0 ) {
+		double xmx = xs*sqrt(C), xmy = B/xmx;
+		xmxx = x0 + rnd(xmx);
+		xmxy = y0 + rnd(xmy);
+	}
+	else {
+		xs = -xs;
+		xmxx = ex; xmxy = ey;
+	}
+	if( xs > 0 )
+		vframe->draw_pixel(sx, sy);
+	while( xs*(sx-xmxx) < 0 && (xs*dx < 0 || rx() < 0) ) {
+		moveX(rx());
+		vframe->draw_pixel(sx, sy);
+	}
+}
+
+
+void VFrame::smooth_draw(int x1, int y1, int x2, int y2, int x3, int y3)
+{
+//printf("p smooth_draw( %d,%d, %d,%d, %d,%d )\n", x1,y1,x2,y2,x3,y3);
+	if( y1 > y3 ) {		// make y3 >= y1
+		int xt = x1;  x1 = x3;  x3 = xt;
+		int yt = y1;  y1 = y3;  y3 = yt;
+	}
+	if( y1 > y2 && y3 > y2 ) {
+		smooth_line lt(this), rt(this);	// Q on bottom
+		lt.init1(x1, y1, x2, y2, x3, y3);
+		rt.init1(x3, y3, x2, y2, x1, y1);
+		while( !lt.done || !rt.done ) {
+			lt.draw();
+			rt.draw();
 		}
 	}
-	else
-	{
-// Flip coordinates so y1 < y2
-		if(y2 < y1)
-		{
-			y2 ^= y1;
-			y1 ^= y2;
-			y2 ^= y1;
-			x1 ^= x2;
-			x2 ^= x1;
-			x1 ^= x2;
-		}
-		int numerator = x2 - x1;
-		int denominator = y2 - y1;
-		for(int i = y1; i <= y2; i++)
-		{
-			int x = x1 + (int64_t)(i - y1) * (int64_t)numerator / (int64_t)denominator;
-			draw_pixel(x, i);
+	else if( y1 < y2 && y3 < y2 ) {
+		smooth_line lt(this), rt(this);	// Q on top
+		lt.init0(x1, y1, x2, y2, x3, y3, 1);
+		draw_pixel(lt.sx, lt.sy);
+		rt.init0(x1, y1, x2, y2, x3, y3, -1);
+		draw_pixel(rt.sx, rt.sy);
+		while( !lt.done || !rt.done ) {
+			lt.draw();
+			rt.draw();
 		}
 	}
-//printf("FindObjectMain::draw_line 2\n");
+	else {
+		smooth_line pt(this);		// Q in between
+		pt.init0(x1, y1, x2, y2, x3, y3, 0);
+		draw_pixel(pt.sx, pt.sy);
+		while( !pt.done ) {
+			pt.draw();
+		}
+	}
 }
 
 void VFrame::draw_rect(int x1, int y1, int x2, int y2)
@@ -1433,30 +1657,16 @@ void VFrame::draw_rect(int x1, int y1, int x2, int y2)
 	draw_line(x1, y2 - 1, x1, y1 + 1);
 }
 
-#define ARROW_SIZE 10
-void VFrame::draw_arrow(int x1, int y1, int x2, int y2)
+void VFrame::draw_arrow(int x1, int y1, int x2, int y2, int sz)
 {
 	double angle = atan((float)(y2 - y1) / (float)(x2 - x1));
-	double angle1 = angle + (float)145 / 360 * 2 * 3.14159265;
-	double angle2 = angle - (float)145 / 360 * 2 * 3.14159265;
-	int x3;
-	int y3;
-	int x4;
-	int y4;
-	if(x2 < x1)
-	{
-		x3 = x2 - (int)(ARROW_SIZE * cos(angle1));
-		y3 = y2 - (int)(ARROW_SIZE * sin(angle1));
-		x4 = x2 - (int)(ARROW_SIZE * cos(angle2));
-		y4 = y2 - (int)(ARROW_SIZE * sin(angle2));
-	}
-	else
-	{
-		x3 = x2 + (int)(ARROW_SIZE * cos(angle1));
-		y3 = y2 + (int)(ARROW_SIZE * sin(angle1));
-		x4 = x2 + (int)(ARROW_SIZE * cos(angle2));
-		y4 = y2 + (int)(ARROW_SIZE * sin(angle2));
-	}
+	double angle1 = angle + (float)145 / 360 * 2 * M_PI;
+	double angle2 = angle - (float)145 / 360 * 2 * M_PI;
+	int s = x2 < x1 ? -1 : 1;
+	int x3 = x2 + s * (int)(sz * cos(angle1));
+	int y3 = y2 + s * (int)(sz * sin(angle1));
+	int x4 = x2 + s * (int)(sz * cos(angle2));
+	int y4 = y2 + s * (int)(sz * sin(angle2));
 
 // Main vector
 	draw_line(x1, y1, x2, y2);
@@ -1468,6 +1678,15 @@ void VFrame::draw_arrow(int x1, int y1, int x2, int y2)
 	if(abs(y2 - y1) || abs(x2 - x1)) draw_line(x2, y2, x4, y4);
 }
 
-
+void VFrame::draw_x(int x, int y, int sz)
+{
+	draw_line(x-sz,y-sz, x+sz,y+sz);
+	draw_line(x+sz,y-sz, x-sz,y+sz);
+}
+void VFrame::draw_t(int x, int y, int sz)
+{
+	draw_line(x,y-sz, x,y+sz);
+	draw_line(x+sz,y, x-sz,y);
+}
 
 

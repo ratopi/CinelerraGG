@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef CLIP_H
-#define CLIP_H
+#ifndef __CLIP_H__
+#define __CLIP_H__
 
 // Math macros
 #undef SQR
@@ -42,5 +42,24 @@
 (sqrt(((x2) - (x1)) * ((x2) - (x1)) + ((y2) - (y1)) * ((y2) - (y1))))
 #define TO_RAD(x) ((x) * 2 * M_PI / 360)
 #define TO_DEG(x) ((x) * 360 / 2 / M_PI)
+
+static inline int bclip(int &iv, int imn, int imx) {
+        return iv < imn ? imn : iv > imx ? imx : iv;
+}
+static inline float bclip(float &fv, float fmn, float fmx) {
+        return fv < fmn ? fmn : fv > fmx ? fmx : fv;
+}
+static inline double bclip(double &dv, double dmn, double dmx) {
+        return dv < dmn ? dmn : dv > dmx ? dmx : dv;
+}
+static inline void bclamp(int &iv, int imn, int imx) {
+        if( iv < imn ) iv = imn; else if( iv > imx ) iv = imx;
+}
+static inline void bclamp(float &fv, float fmn, float fmx) {
+        if( fv < fmn ) fv = fmn; else if( fv > fmx ) fv = fmx;
+}
+static inline void bclamp(double &dv, double dmn, double dmx) {
+        if( dv < dmn ) dv = dmn; else if( dv > dmx ) dv = dmx;
+}
 
 #endif

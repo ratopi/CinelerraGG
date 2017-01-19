@@ -1525,6 +1525,7 @@ int File::supports_audio(int format)
 		case FILE_AIFF:
 		case FILE_SND:
 		case FILE_FFMPEG:
+		case FILE_RAWDV:
 			return 1;
 	}
 	return 0;

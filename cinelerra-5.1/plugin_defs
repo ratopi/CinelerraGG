@@ -36,8 +36,9 @@ audio_tools := audioscope cdripper compressor dcoffset delayaudio \
 plugin_dirs += video_tools
 video_tools := blur decimate delayvideo denoisemjpeg denoisevideo downsample \
 	fieldframe flash framefield freezeframe greycstoration interpolatepixels \
-	interpolatevideo invertvideo linearblur loopvideo motion2 motionblur \
-	motion motion-cv motion-hv overlay radialblur reframe reframert reroute \
+	interpolatevideo invertvideo linearblur loopvideo \
+	motion2 motionblur motion motion-cv motion-hv motion51 \
+	overlay radialblur reframe reframert reroute \
 	reversevideo seltempavg sharpen spectrogram svg titler timeavg timefront \
 	unsharp videoscope wave zoomblur
 

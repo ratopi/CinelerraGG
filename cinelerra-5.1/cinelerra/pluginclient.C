@@ -24,17 +24,22 @@
 #include "bcsignals.h"
 #include "clip.h"
 #include "condition.h"
+#include "edits.h"
+#include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
 #include "filesystem.h"
+#include "indexable.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
+#include "plugin.h"
 #include "pluginclient.h"
 #include "pluginserver.h"
 #include "preferences.h"
+#include "track.h"
 #include "transportque.inc"
 
 
@@ -681,6 +686,14 @@ int PluginClient::get_project_samplerate()
 double PluginClient::get_project_framerate()
 {
 	return server->get_project_framerate();
+}
+
+const char *PluginClient::get_source_path()
+{
+	int64_t source_position = server->plugin->startproject;
+	Edit *edit = server->plugin->track->edits->editof(source_position,PLAY_FORWARD,0);
+	Indexable *indexable = edit ? edit->get_source() : 0;
+	return indexable ? indexable->path : 0;
 }
 
 

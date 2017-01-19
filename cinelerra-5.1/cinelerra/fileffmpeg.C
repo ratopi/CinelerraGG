@@ -111,6 +111,14 @@ int FFMpegVideoQuality::handle_event()
 	return ret;
 }
 
+void FileFFMPEG::set_parameters(char *cp, int len, const char *bp)
+{
+	char *ep = cp + len-2, ch = 0;
+	while( cp < ep && *bp != 0 ) { ch = *bp++; *cp++ = ch; }
+	if( ch != '\n' ) *cp++ = '\n';
+	*cp = 0;
+}
+
 void FileFFMPEG::get_parameters(BC_WindowBase *parent_window,
 		Asset *asset, BC_WindowBase *&format_window,
 		int audio_options, int video_options)
@@ -120,7 +128,8 @@ void FileFFMPEG::get_parameters(BC_WindowBase *parent_window,
 		format_window = window;
 		window->create_objects();
 		if( !window->run_window() )
-			strcpy(asset->ff_audio_options, window->audio_options->get_text());
+			set_parameters(asset->ff_audio_options, sizeof(asset->ff_audio_options),
+				 window->audio_options->get_text());
 		delete window;
 	}
 	else if(video_options) {
@@ -128,7 +137,8 @@ void FileFFMPEG::get_parameters(BC_WindowBase *parent_window,
 		format_window = window;
 		window->create_objects();
 		if( !window->run_window() )
-			strcpy(asset->ff_video_options, window->video_options->get_text());
+			set_parameters(asset->ff_video_options, sizeof(asset->ff_video_options),
+				 window->video_options->get_text());
 		delete window;
 	}
 }
@@ -476,12 +486,6 @@ FFAudioOptions::FFAudioOptions(FFMPEGConfigAudio *audio_popup,
 	this->audio_popup = audio_popup;
 }
 
-int FFAudioOptions::handle_event()
-{
-	strcpy(audio_popup->asset->ff_audio_options, get_text());
-	return 1;
-}
-
 
 FFMPEGConfigAudioPopup::FFMPEGConfigAudioPopup(FFMPEGConfigAudio *popup, int x, int y)
  : BC_PopupTextBox(popup, &popup->presets, popup->asset->acodec, x, y, 300, 300)
@@ -641,12 +645,6 @@ FFVideoOptions::FFVideoOptions(FFMPEGConfigVideo *video_popup,
  : BC_ScrollTextBox(video_popup, x, y, w, rows, text, size)
 {
 	this->video_popup = video_popup;
-}
-
-int FFVideoOptions::handle_event()
-{
-	strcpy(video_popup->asset->ff_video_options, get_text());
-	return 1;
 }
 
 

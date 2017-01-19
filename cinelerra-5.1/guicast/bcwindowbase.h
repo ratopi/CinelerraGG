@@ -201,6 +201,7 @@ public:
 // Wait until event loop is running
 	void init_wait();
 	int is_running() { return window_running; }
+	int is_hidden() { return hidden; }
 // Check if a hardware accelerated colormodel is available and reserve it
 	int accel_available(int color_model, int lock_it);
 	void get_input_context();

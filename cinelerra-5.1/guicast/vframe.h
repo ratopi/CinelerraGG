@@ -344,10 +344,14 @@ public:
 // This clears the stacks and the param table
 	void clear_stacks();
 
-	void draw_rect(int x1, int y1, int x2, int y2);
-	void draw_line(int x1, int y1, int x2, int y2);
 	void draw_pixel(int x, int y);
-	void draw_arrow(int x1, int y1, int x2, int y2);
+	void draw_line(int x1, int y1, int x2, int y2);
+	void draw_smooth(int x1, int y1, int x2, int y2, int x3, int y3);
+	void smooth_draw(int x1, int y1, int x2, int y2, int x3, int y3);
+	void draw_rect(int x1, int y1, int x2, int y2);
+	void draw_arrow(int x1, int y1, int x2, int y2, int sz=10);
+	void draw_x(int x1, int y1, int sz=2);
+	void draw_t(int x1, int y1, int sz=2);
 
 // 3D scene graphs
 // Not integrated with shmem because that only affects codecs

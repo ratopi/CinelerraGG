@@ -372,6 +372,11 @@ void AffineUnit::process_package(LoadPackage *package)
 		server->use_opengl)
 	{
 #ifdef HAVE_GL
+		out_x1 -= pivot_offset_x;  out_y1 -= pivot_offset_y;
+		out_x2 -= pivot_offset_x;  out_y2 -= pivot_offset_y;
+		out_x3 -= pivot_offset_x;  out_y3 -= pivot_offset_y;
+		out_x4 -= pivot_offset_x;  out_y4 -= pivot_offset_y;
+
 		server->output->to_texture();
 		server->output->enable_opengl();
 		server->output->init_screen();

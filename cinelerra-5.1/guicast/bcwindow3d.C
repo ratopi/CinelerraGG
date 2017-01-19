@@ -72,7 +72,7 @@ GLXFBConfig *BC_WindowBase::glx_window_fb_configs()
 	if( !glx_fbcfgs_window ) {
 		int fb_attrs[] = {
 			GLX_CONFIG_CAVEAT,	GLX_SLOW_CONFIG,
-			GLX_DRAWABLE_TYPE,	GLX_WINDOW_BIT | GLX_PBUFFER | GLX_PIXMAP_BIT,
+			GLX_DRAWABLE_TYPE,	GLX_WINDOW_BIT | GLX_PBUFFER_BIT | GLX_PIXMAP_BIT,
 			GLX_DOUBLEBUFFER,	True,
 			GLX_RENDER_TYPE,	GLX_RGBA_BIT,
 			GLX_ACCUM_RED_SIZE,	1,
@@ -118,7 +118,7 @@ GLXFBConfig *BC_WindowBase::glx_pbuffer_fb_configs()
 	if( !glx_fbcfgs_pbuffer ) {
 		int fb_attrs[] = {
 			GLX_CONFIG_CAVEAT,	GLX_SLOW_CONFIG,
-			GLX_DRAWABLE_TYPE,	GLX_WINDOW_BIT | GLX_PBUFFER | GLX_PIXMAP_BIT,
+			GLX_DRAWABLE_TYPE,	GLX_WINDOW_BIT | GLX_PBUFFER_BIT | GLX_PIXMAP_BIT,
 			GLX_DOUBLEBUFFER,	True, //False,
 			GLX_RENDER_TYPE,	GLX_RGBA_BIT,
 			GLX_ACCUM_RED_SIZE,	1,
@@ -143,7 +143,7 @@ GLXFBConfig *BC_WindowBase::glx_pixmap_fb_configs()
 	if( !glx_fbcfgs_pixmap ) {
 		static int fb_attrs[] = {
 			GLX_CONFIG_CAVEAT,	GLX_SLOW_CONFIG,
-			GLX_DRAWABLE_TYPE,	GLX_PIXMAP_BIT | GLX_PBUFFER,
+			GLX_DRAWABLE_TYPE,	GLX_PIXMAP_BIT | GLX_PBUFFER_BIT,
 			GLX_DOUBLEBUFFER,	True, //False,
 			GLX_RENDER_TYPE,	GLX_RGBA_BIT,
 			GLX_RED_SIZE,		8,

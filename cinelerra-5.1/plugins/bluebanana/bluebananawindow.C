@@ -1350,10 +1350,9 @@ class BluebananaAAReadout : public BB_Tumble {
 
 class BluebananaAASlider : public BluebananaSliderSingle {
 public:
-  int hidden;
   BluebananaAASlider(BluebananaMain *plugin, BluebananaWindow *gui,
                      int x, int y, int w, int h)
-    : BluebananaSliderSingle(plugin,gui,x,y,w,h,0,100) { hidden = 0; }
+    : BluebananaSliderSingle(plugin,gui,x,y,w,h,0,100) {}
   virtual int handle_event() {
     plugin->config.Aadj_val = val;
     return 1;
@@ -1365,11 +1364,11 @@ public:
   void update(){
     val = plugin->config.Aadj_val;
     if( BC_CModels::has_alpha(plugin->colormodel) ) {
-      if( hidden ) { show_window();  hidden = 0; }
+      if( is_hidden() ) show_window();
     }else{
-      if( !hidden ) { hide_window();  hidden = 1; }
+      if( !is_hidden() ) hide_window();
     }
-    if( hidden ) return;
+    if( is_hidden() ) return;
     highlight = plugin->config.active && plugin->config.Aadj_active;
     gui->Aadj_readout->update(plugin->config.Aadj_val);
     gui->slider_labels[11]->set_color(highlight  && plugin->config.Aadj_val != 100 ?
@@ -1692,13 +1691,11 @@ public:
 
 class BluebananaAAActive : public BC_CheckBox {
 public:
-  int hidden;
 
   BluebananaAAActive(BluebananaMain *plugin, BluebananaWindow *gui)
   : BC_CheckBox(-1, -1, &plugin->config.Aadj_active, ""){
     this->plugin = plugin;
     this->gui = gui;
-    hidden = 0;
   }
   virtual int handle_event(){
     plugin->config.Aadj_active =
@@ -1709,11 +1706,11 @@ public:
   void update(){
     this->BC_CheckBox::update(plugin->config.Aadj_active,1);
     if( BC_CModels::has_alpha(plugin->colormodel) ) {
-      if( hidden ) { show_window();  hidden = 0; }
+      if( is_hidden() ) show_window();
     }else{
-      if( !hidden ) { hide_window();  hidden = 1; }
+      if( !is_hidden() ) hide_window();
     }
-    if( hidden ) return;
+    if( is_hidden() ) return;
     gui->Aadj_slider->update();
   }
   BluebananaMain *plugin;
@@ -1848,7 +1845,6 @@ public:
     this->y=-1;
     gui->add_subwindow(this->label);
     gui->add_subwindow(this);
-    hidden = -1;
   }
   virtual int handle_event(){
     plugin->config.capture_mask=get_value();
@@ -1887,23 +1883,21 @@ public:
       break;
     }
 
-    if(hideme && hidden!=1){
+    if(hideme && !is_hidden()){
       hide_window();
       label->hide_window();
       gui->set_color(get_resources()->get_bg_color());
       gui->draw_box(x,y,w,h);
       gui->set_color(get_resources()->default_text_color);
       gui->draw_line(x,y+h/2,x+w,y+h/2);
-      hidden=1;
       f=1;
     }
 
-    if(!hideme && hidden!=0){
+    if(!hideme && is_hidden()){
       gui->set_color(get_resources()->get_bg_color());
       gui->draw_box(x,y,w,h);
       show_window();
       label->show_window();
-      hidden=0;
       f=1;
     }
 
@@ -1915,7 +1909,7 @@ public:
   BluebananaMain *plugin;
   BluebananaWindow *gui;
   BC_Title *label;
-  int x,y,padx,hidden;
+  int x,y,padx;
 };
 
 // ------------------------------------------ Use mask ----------------------------------------
@@ -1931,7 +1925,6 @@ public:
     this->y=-1;
     gui->add_subwindow(this->label);
     gui->add_subwindow(this);
-    hidden = -1;
   }
   virtual int handle_event(){
     plugin->config.use_mask=get_value();
@@ -1969,14 +1962,13 @@ public:
     case BC_YUV888:
     case BC_RGB161616:
     case BC_YUV161616:
-      if(hidden!=1){
+      if(!is_hidden()){
         hide_window();
         label->hide_window();
         gui->set_color(get_resources()->get_bg_color());
         gui->draw_box(x,y,w,h);
         gui->set_color(get_resources()->default_text_color);
         gui->draw_line(x,y+h/2,x+w,y+h/2);
-        hidden=1;
         f=1;
       }
       break;
@@ -1985,12 +1977,11 @@ public:
     case BC_YUVA8888:
     case BC_RGBA16161616:
     case BC_YUVA16161616:
-      if(hidden!=0){
+      if(is_hidden()){
         gui->set_color(get_resources()->get_bg_color());
         gui->draw_box(x,y,w,h);
         show_window();
         label->show_window();
-        hidden=0;
         f=1;
       }
       break;
@@ -2009,7 +2000,7 @@ public:
   BluebananaMain *plugin;
   BluebananaWindow *gui;
   BC_Title *label;
-  int x,y,padx,hidden;
+  int x,y,padx;
 };
 
 // --------------------------------------- Main GUI window --------------------------------------

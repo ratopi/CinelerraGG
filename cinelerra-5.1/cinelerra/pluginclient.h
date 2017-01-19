@@ -414,6 +414,8 @@ public:
 	int get_project_samplerate();
 // get framerate of EDL
 	double get_project_framerate();
+// get asset path
+	const char *get_source_path();
 // Total number of processors - 1
 	int get_project_smp();
 	int get_aspect_ratio(float &aspect_w, float &aspect_h);

@@ -31,6 +31,7 @@ public:
 	static void ff_lock(const char *cp=0);
 	static void ff_unlock();
 
+	static void set_parameters(char *cp, int len, const char *bp);
 	static void get_parameters(BC_WindowBase *parent_window,Asset *asset,
 	   BC_WindowBase *&format_window,int audio_options,int video_options);
 	static int check_sig(Asset *asset);
@@ -135,7 +136,6 @@ class FFAudioOptions : public BC_ScrollTextBox
 public:
 	FFAudioOptions(FFMPEGConfigAudio *audio_popup,
 		int x, int y, int w, int rows, int size, char *text);
-	int handle_event();
 
 	FFMPEGConfigAudio *audio_popup;
 };
@@ -184,7 +184,6 @@ class FFVideoOptions : public BC_ScrollTextBox
 public:
 	FFVideoOptions(FFMPEGConfigVideo *video_popup,
 		int x, int y, int w, int rows, int size, char *text);
-	int handle_event();
 
 	FFMPEGConfigVideo *video_popup;
 };

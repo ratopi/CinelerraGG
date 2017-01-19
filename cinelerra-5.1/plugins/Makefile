@@ -78,6 +78,7 @@ DIRS = \
 	loopaudio \
 	loopvideo \
 	motion \
+	motion51 \
 	motion-cv \
 	motion-hv \
 	motion2point \
