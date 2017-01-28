@@ -281,6 +281,8 @@ public:
 // Get current position
 	int get_abs_cursor_x(int lock_window);
 	int get_abs_cursor_y(int lock_window);
+	int get_pop_cursor_x(int lock_window);
+	int get_pop_cursor_y(int lock_window);
 	int get_relative_cursor_x();
 	int get_relative_cursor_y();
 	void get_root_coordinates(int x, int y, int *abs_x, int *abs_y);

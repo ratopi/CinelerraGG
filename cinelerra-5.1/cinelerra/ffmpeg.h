@@ -243,9 +243,8 @@ public:
 	int64_t length;
 	float aspect_ratio;
 
-	uint8_t *pkt_bfr;
-	int pkt_bfr_sz;
-	int64_t start_pts;
+	int interlaced;
+	int top_field_first;
 };
 
 class FFMPEG : public Thread {
@@ -272,7 +271,7 @@ public:
 		char *format, char *codec, char *bsfilter, char *bsargs);
 	int get_encoder(FILE *fp,
 		char *format, char *codec, char *bsfilter, char *bsargs);
-	int read_options(const char *options, AVDictionary *&opts);
+	int read_options(const char *options, AVDictionary *&opts, int skip=0);
 	int scan_options(const char *options, AVDictionary *&opts, AVStream *st);
 	int read_options(FILE *fp, const char *options, AVDictionary *&opts);
 	int load_options(const char *options, AVDictionary *&opts);

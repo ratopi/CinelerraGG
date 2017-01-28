@@ -1,0 +1,7 @@
+mpegts
+mpegts_m2ts_mode=2
+mpegts_pmt_start_pid=256
+sdt_period=-1
+packetsize 2048
+muxrate 10080000
+preload 500000

@@ -21,6 +21,7 @@
 #include "file.h"
 #include "ffmpeg.h"
 #include "indexfile.h"
+#include "interlacemodes.h"
 #include "libdv.h"
 #include "libmjpeg.h"
 #include "mainerror.h"
@@ -725,6 +726,8 @@ FFVideoStream::FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx)
 	frame_rate = 0;
 	aspect_ratio = 0;
 	length = 0;
+	interlaced = 0;
+	top_field_first = 0;
 }
 
 FFVideoStream::~FFVideoStream()
@@ -822,6 +825,10 @@ int FFVideoStream::encode(VFrame *vframe)
 
 int FFVideoStream::encode_frame(AVPacket *pkt, AVFrame *frame, int &got_packet)
 {
+	if( frame ) {
+		frame->interlaced_frame = interlaced;
+		frame->top_field_first = top_field_first;
+	}
 	int ret = avcodec_encode_video2(st->codec, pkt, frame, &got_packet);
 	if( ret < 0 ) {
 		ff_err(ret, "FFVideoStream::encode_frame: encode video failed\n");
@@ -1172,7 +1179,7 @@ AVRational FFMPEG::to_sample_aspect_ratio(Asset *asset)
 	int width = 1000000, height = width * sample_aspect + 0.5;
 	float w, h;
 	MWindow::create_aspect_ratio(w, h, width, height);
-	return (AVRational){(int)h, (int)w};
+	return (AVRational){(int)w, (int)h};
 #else
 // square pixels
 	return (AVRational){1, 1};
@@ -1245,20 +1252,38 @@ int FFMPEG::get_codec(char *codec, const char *path, const char *spec)
 
 int FFMPEG::get_file_format()
 {
-	int ret = 0;
+	char audio_muxer[BCSTRLEN], video_muxer[BCSTRLEN];
 	char audio_format[BCSTRLEN], video_format[BCSTRLEN];
-	file_format[0] = audio_format[0] = video_format[0] = 0;
+	audio_muxer[0] = audio_format[0] = 0;
+	video_muxer[0] = video_format[0] = 0;
 	Asset *asset = file_base->asset;
-	if( !ret && asset->audio_data )
-		ret = get_format(audio_format, "audio", asset->acodec);
-	if( !ret && asset->video_data )
-		ret = get_format(video_format, "video", asset->vcodec);
-	if( !ret && !audio_format[0] && !video_format[0] )
+	int ret = asset ? 0 : 1;
+	if( !ret && asset->audio_data ) {
+		if( !(ret=get_format(audio_format, "audio", asset->acodec)) ) {
+			if( get_format(audio_muxer, "format", audio_format) ) {
+				strcpy(audio_muxer, audio_format);
+				audio_format[0] = 0;
+			}
+		}
+	}
+	if( !ret && asset->video_data ) {
+		if( !(ret=get_format(video_format, "video", asset->vcodec)) ) {
+			if( get_format(video_muxer, "format", video_format) ) {
+				strcpy(video_muxer, video_format);
+				video_format[0] = 0;
+			}
+		}
+	}
+	if( !ret && !audio_muxer[0] && !video_muxer[0] )
 		ret = 1;
+	if( !ret && audio_muxer[0] && video_muxer[0] &&
+	    strcmp(audio_muxer, video_muxer) ) ret = -1;
 	if( !ret && audio_format[0] && video_format[0] &&
 	    strcmp(audio_format, video_format) ) ret = -1;
 	if( !ret )
-		strcpy(file_format, audio_format[0] ? audio_format : video_format);
+		strcpy(file_format, !audio_format[0] && !video_format[0] ?
+			(audio_muxer[0] ? audio_muxer : video_muxer) :
+			(audio_format[0] ? audio_format : video_format));
 	return ret;
 }
 
@@ -1266,7 +1291,7 @@ int FFMPEG::scan_option_line(char *cp, char *tag, char *val)
 {
 	while( *cp == ' ' || *cp == '\t' ) ++cp;
 	char *bp = cp;
-	while( *cp && *cp != ' ' && *cp != '\t' && *cp != '=' ) ++cp;
+	while( *cp && *cp != ' ' && *cp != '\t' && *cp != '=' && *cp != '\n' ) ++cp;
 	int len = cp - bp;
 	if( !len || len > BCSTRLEN-1 ) return 1;
 	while( bp < cp ) *tag++ = *bp++;
@@ -1287,7 +1312,7 @@ int FFMPEG::load_defaults(const char *path, const char *type,
 		 char *codec, char *codec_options, int len)
 {
 	char default_file[BCTEXTLEN];
-	FFMPEG::set_option_path(default_file, "%s/%s.dfl", path, type);
+	set_option_path(default_file, "%s/%s.dfl", path, type);
 	FILE *fp = fopen(default_file,"r");
 	if( !fp ) return 1;
 	fgets(codec, BCSTRLEN, fp);
@@ -1299,14 +1324,15 @@ int FFMPEG::load_defaults(const char *path, const char *type,
 		codec_options += n;  len -= n;
 	}
 	fclose(fp);
-	FFMPEG::set_option_path(default_file, "%s/%s", path, codec);
-	return FFMPEG::load_options(default_file, codec_options, len);
+	set_option_path(default_file, "%s/%s", path, codec);
+	return load_options(default_file, codec_options, len);
 }
 
 void FFMPEG::set_asset_format(Asset *asset, const char *text)
 {
 	if( asset->format != FILE_FFMPEG ) return;
-	strcpy(asset->fformat, text);
+	if( text != asset->fformat )
+		strcpy(asset->fformat, text);
 	if( !asset->ff_audio_options[0] ) {
 		asset->audio_data = !load_defaults("audio", text, asset->acodec,
 			asset->ff_audio_options, sizeof(asset->ff_audio_options));
@@ -1347,11 +1373,18 @@ int FFMPEG::get_encoder(FILE *fp,
 	return 0;
 }
 
-int FFMPEG::read_options(const char *options, AVDictionary *&opts)
+int FFMPEG::read_options(const char *options, AVDictionary *&opts, int skip)
 {
 	FILE *fp = fopen(options,"r");
 	if( !fp ) return 1;
-	int ret = read_options(fp, options, opts);
+	int ret = 0;
+	while( !ret && --skip >= 0 ) {
+		int ch = getc(fp);
+		while( ch >= 0 && ch != '\n' ) ch = getc(fp);
+		if( ch < 0 ) ret = 1;
+	}
+	if( !ret )
+		ret = read_options(fp, options, opts);
 	fclose(fp);
 	return ret;
 }
@@ -1373,7 +1406,6 @@ int FFMPEG::read_options(FILE *fp, const char *options, AVDictionary *&opts)
 	char line[BCTEXTLEN];
 	while( !ret && fgets(line, sizeof(line), fp) ) {
 		line[sizeof(line)-1] = 0;
-		++no;
 		if( line[0] == '#' ) continue;
 		if( line[0] == '\n' ) continue;
 		char key[BCSTRLEN], val[BCTEXTLEN];
@@ -1678,7 +1710,10 @@ int FFMPEG::init_encoder(const char *filename)
 	}
 	ff_lock("FFMPEG::init_encoder");
 	av_register_all();
-	avformat_alloc_output_context2(&fmt_ctx, 0, file_format, filename);
+	char format[BCSTRLEN];
+	if( get_format(format, "format", file_format) )
+		strcpy(format, file_format);
+	avformat_alloc_output_context2(&fmt_ctx, 0, format, filename);
 	if( !fmt_ctx ) {
 		eprintf(_("failed: %s\n"), filename);
 		ret = 1;
@@ -1836,6 +1871,9 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			ctx->time_base = (AVRational) { frame_rate.den, frame_rate.num };
 			st->time_base = ctx->time_base;
 			vid->writing = -1;
+			vid->interlaced = asset->interlace_mode == ILACE_MODE_TOP_FIRST ||
+				asset->interlace_mode == ILACE_MODE_BOTTOM_FIRST ? 1 : 0;
+			vid->top_field_first = asset->interlace_mode == ILACE_MODE_TOP_FIRST ? 1 : 0;
 			break; }
 		default:
 			eprintf(_("not audio/video, %s:%s\n"), codec_name, filename);
@@ -1985,17 +2023,51 @@ int FFMPEG::encode_activate()
 			return -1;
 		}
 
+		int prog_id = 1;
+		AVProgram *prog = av_new_program(fmt_ctx, prog_id);
+		for( int i=0; i< ffvideo.size(); ++i )
+			av_program_add_stream_index(fmt_ctx, prog_id, ffvideo[i]->fidx);
+		for( int i=0; i< ffaudio.size(); ++i )
+			av_program_add_stream_index(fmt_ctx, prog_id, ffaudio[i]->fidx);
+		int pi = fmt_ctx->nb_programs;
+		while(  --pi >= 0 && fmt_ctx->programs[pi]->id != prog_id );
+		AVDictionary **meta = &prog->metadata;
+		av_dict_set(meta, "service_provider", "cin5", 0);
+		const char *path = fmt_ctx->filename, *bp = strrchr(path,'/');
+		if( bp ) path = bp + 1;
+		av_dict_set(meta, "title", path, 0);
+
+		if( ffaudio.size() ) {
+			const char *ep = getenv("CIN_AUDIO_LANG"), *lp = 0;
+			if( !ep && (lp=getenv("LANG")) ) { // some are guesses
+				static struct { const char lc[3], lng[4]; } lcode[] = {
+					{ "en", "eng" }, { "de", "ger" }, { "es", "spa" },
+					{ "eu", "bas" }, { "fr", "fre" }, { "el", "gre" },
+					{ "hi", "hin" }, { "it", "ita" }, { "ja", "jap" },
+					{ "ko", "kor" }, { "du", "dut" }, { "pl", "pol" },
+					{ "pt", "por" }, { "ru", "rus" }, { "sl", "slv" },
+					{ "uk", "ukr" }, { "vi", "vie" }, { "zh", "chi" },
+				};
+				for( int i=sizeof(lcode)/sizeof(lcode[0]); --i>=0 && !ep; )
+					if( !strncmp(lcode[i].lc,lp,2) ) ep = lcode[i].lng;
+			}
+			char lang[4];
+			strncpy(lang,ep,3);  lang[3] = 0;
+			AVStream *st = ffaudio[0]->st;
+			av_dict_set(&st->metadata,"language",lang,0);
+		}
+
 		AVDictionary *fopts = 0;
 		char option_path[BCTEXTLEN];
 		set_option_path(option_path, "format/%s", file_format);
-		read_options(option_path, fopts);
+		read_options(option_path, fopts, 1);
 		ret = avformat_write_header(fmt_ctx, &fopts);
-		av_dict_free(&fopts);
 		if( ret < 0 ) {
 			ff_err(ret, "FFMPEG::encode_activate: write header failed %s\n",
 				fmt_ctx->filename);
 			return -1;
 		}
+		av_dict_free(&fopts);
 		encoding = 1;
 	}
 	return encoding;

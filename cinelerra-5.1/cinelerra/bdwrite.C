@@ -54,6 +54,7 @@
 #define BCTEXTLEN 1024
 #define BLURAY_TS_PKTSZ 192L
 
+static const int bd_sig = 2;
 
 extern "C" {
 #include "libavfilter/buffersrc.h"
@@ -186,14 +187,18 @@ class bs_length {
   int64_t fpos, len;
 public:
   bs_length() { fpos = len = 0; }
+  int64_t bs_posb(bs_file &bs) { return bs.posb() - fpos; }
   void bs_len(bs_file &bs, int n) {
     bs.write(len, n);  fpos = bs.posb();
   }
   void bs_end(bs_file &bs) {
-    len = bs.posb() - fpos;
+    len = bs_posb(bs);
   }
   void bs_ofs(bs_file &bs, int n) {
     bs.write(fpos-n/8, n);
+  }
+  void bs_zofs(bs_file &bs, int n) {
+    bs.write(!len ? 0 : fpos-n/8, n);
   }
 };
 
@@ -580,6 +585,15 @@ public:
   ~clpi_cpi() { remove_all_objects(); }
 };
 
+class clpi_cmrk : public bs_length {
+public:
+  int write();
+
+  clpi_cmrk() {}
+  ~clpi_cmrk() {}
+};
+
+
 class bd_uo_mask {
 public:
   unsigned int menu_call : 1;
@@ -890,7 +904,7 @@ public:
   int write_pip_metadata_extension();
   int write();
 
-  mpls_pl() { sig = 1; }
+  mpls_pl() { sig = bd_sig; }
   ~mpls_pl() {
     play_item.remove_all_objects();
     sub_path.remove_all_objects();
@@ -922,6 +936,7 @@ public:
   clpi_extents extents;
   clpi_programs programs_ss;
   clpi_cpi cpi_ss;
+  clpi_cmrk cmrk;
 
   int write_header();
   int write();
@@ -929,7 +944,7 @@ public:
   int write_clpi_extension(int id1, int id2, void *handle);
   int write_mpls_extension(int id1, int id2, void *handle);
 
-  clpi_cl() { sig = 1; }
+  clpi_cl() { sig = bd_sig; }
   ~clpi_cl() {}
 };
 
@@ -983,7 +998,7 @@ public:
   int sig;
   ArrayList<movie_obj *> movies;
 
-  movie_file() { sig = 1; }
+  movie_file() { sig = bd_sig; }
   ~movie_file() {
     movies.remove_all_objects();
   }
@@ -1062,7 +1077,7 @@ public:
   int write();
 
   index_file() {
-    sig = 1;
+    sig = bd_sig;
     memset(user_data, 0, sizeof(user_data));
   }
   ~index_file() {
@@ -1086,7 +1101,7 @@ public:
   int sig;
   int write();
 
-  bdid() { sig = 1; }
+  bdid() { sig = bd_sig; }
   ~bdid() {}
 };
 
@@ -1200,6 +1215,7 @@ public:
   ArrayList<clpi_cl *> cl;
   ArrayList<mpls_pl *> pl;
 
+  void add_movie(uint32_t *ops, int n);
   int compose();
   int write(char *fn);
 
@@ -1402,7 +1418,7 @@ index_file::write()
   bs.writeb("INDX", 4);
   bs.writeb(sig == 1 ? "0100" : "0200", 4);
   bs_ofs(bs, 32);
-  exten.bs_ofs(bs, 32);
+  exten.bs_zofs(bs, 32);
   int appinfo_start = 0x28;
   bs.posb(appinfo_start);
   appinf.bs_len(bs, 32);
@@ -1530,6 +1546,7 @@ clpi_prog_stream::write()
     return 1;
   };
 
+  bs.padb(0x15 - bs_posb(bs));
   bs_end(bs);
   return 0;
 }
@@ -1735,6 +1752,14 @@ clpi_cpi::write()
 }
 
 int
+clpi_cmrk::write()
+{
+  bs_len(bs, 32);
+  bs_end(bs);
+  return 0;
+}
+
+int
 clpi_extents::write()
 {
   bs_len(bs, 32);
@@ -1787,6 +1812,8 @@ clpi_cl::write()
   if( programs.write() ) return 1;
   cpi_start_addr = bs.posb();
   if( cpi.write() ) return 1;
+  clip_mark_start_addr = bs.posb();
+  if( cmrk.write() ) return 1;
 //if( has_ext_data ) {
 //  ext_data_start_addr = bs.pos();
 //  bdmv_write_extension_data(write_clpi_extension, this);
@@ -1897,6 +1924,7 @@ write()
     fprintf(stderr, "unrecognized stream type %02x\n", stream_type);
     break;
   };
+  bs.padb(9 - strm.bs_posb(bs));
   strm.bs_end(bs);
 
   code.bs_len(bs, 8);
@@ -1940,6 +1968,7 @@ write()
     fprintf(stderr, "mpls_stream: unrecognized coding type %02x\n", coding_type);
     break;
   };
+  bs.padb(5 - code.bs_posb(bs));
   code.bs_end(bs);
   return 0;
 }
@@ -2303,14 +2332,20 @@ mkbdmv(char *path)
   char bdmv_path[BCTEXTLEN];
   sprintf(bdmv_path, "%s/BDMV", path);
   if( mk_bdmv_dir(bdmv_path) ) return 1;
+  char cert_path[BCTEXTLEN];
+  sprintf(cert_path, "%s/CERTIFICATE", path);
+  if( mk_bdmv_dir(cert_path) ) return 1;
+  char cert_backup[BCTEXTLEN];
+  sprintf(cert_backup, "%s/BACKUP", cert_path);
+  if( mk_bdmv_dir(cert_backup) ) return 1;
   char stream_path[BCTEXTLEN];
-  sprintf(stream_path, "%s/BDMV/STREAM", path);
+  sprintf(stream_path, "%s/STREAM", bdmv_path);
   if( mk_dir(stream_path) ) return 1;
   char auxdata_path[BCTEXTLEN];
-  sprintf(auxdata_path, "%s/BDMV/AUXDATA", path);
+  sprintf(auxdata_path, "%s/AUXDATA", bdmv_path);
   if( mk_dir(auxdata_path) ) return 1;
   char meta_path[BCTEXTLEN];
-  sprintf(meta_path, "%s/BDMV/META", path);
+  sprintf(meta_path, "%s/META", bdmv_path);
   if( mk_dir(meta_path) ) return 1;
   char backup_path[BCTEXTLEN];
   sprintf(backup_path, "%s/BACKUP", bdmv_path);
@@ -2334,15 +2369,15 @@ build_toc(clpi_ep_map_entry *map)
     uint32_t pkt = mp->pos / BLURAY_TS_PKTSZ;
     if( last_pkt >= pkt ) continue;
     last_pkt = pkt;
-    int64_t coarse_pts = (pts >> 18) & ~0x01;
+    int64_t coarse_pts = (pts >> 18); // & ~0x01;
     int64_t fine_pts = (pts & 0x7ffff) >> 8;
     uint32_t mpkt = pkt & ~0x1ffff;
-    if( !cp || cp->pts_ep != coarse_pts || cp->spn_ep != mpkt ) {
+    if( !cp || cp->pts_ep != coarse_pts || mpkt > cp->spn_ep ) {
       cp = new clpi_ep_coarse();
       map->coarse.append(cp);
       cp->ref_ep_fine_id = map->fine.size();
       cp->pts_ep = coarse_pts;
-      cp->spn_ep = mpkt;
+      cp->spn_ep = pkt;
     }
     clpi_ep_fine *fp = new clpi_ep_fine();
     map->fine.append(fp);
@@ -2362,6 +2397,8 @@ static int bd_stream_type(AVCodecID codec_id)
   int stream_type = 0;
   switch (codec_id) {
   case AV_CODEC_ID_MPEG1VIDEO:
+    stream_type = BLURAY_STREAM_TYPE_VIDEO_MPEG1;
+    break;
   case AV_CODEC_ID_MPEG2VIDEO:
     stream_type = BLURAY_STREAM_TYPE_VIDEO_MPEG2;
     break;
@@ -2369,17 +2406,25 @@ static int bd_stream_type(AVCodecID codec_id)
     stream_type = BLURAY_STREAM_TYPE_VIDEO_H264;
     break;
   case AV_CODEC_ID_MP2:
-  case AV_CODEC_ID_MP3:
     stream_type = BLURAY_STREAM_TYPE_AUDIO_MPEG1;
+    break;
+  case AV_CODEC_ID_MP3:
+    stream_type = BLURAY_STREAM_TYPE_AUDIO_MPEG2;
     break;
   case AV_CODEC_ID_AC3:
     stream_type = BLURAY_STREAM_TYPE_AUDIO_AC3;
+    break;
+  case AV_CODEC_ID_EAC3:
+    stream_type = BLURAY_STREAM_TYPE_AUDIO_AC3PLUS;
     break;
   case AV_CODEC_ID_DTS:
     stream_type = BLURAY_STREAM_TYPE_AUDIO_DTS;
     break;
   case AV_CODEC_ID_TRUEHD:
     stream_type = BLURAY_STREAM_TYPE_AUDIO_TRUHD;
+    break;
+  case AV_CODEC_ID_HDMV_PGS_SUBTITLE:
+    stream_type = BLURAY_STREAM_TYPE_SUB_PG;
     break;
   default:
     fprintf(stderr, "unknown bluray stream type %s\n", avcodec_get_name(codec_id));
@@ -2524,6 +2569,7 @@ int media_info::scan()
     switch( type ) {
     case AVMEDIA_TYPE_VIDEO: break;
     case AVMEDIA_TYPE_AUDIO: break;
+    case AVMEDIA_TYPE_SUBTITLE: break;
     default: continue;
     }
     stream *s = new stream(type, i);
@@ -2549,7 +2595,12 @@ int media_info::scan()
       s->coding_type = bd_stream_type(codec_id);
       s->format = bd_audio_format(st->codec->channels);
       s->rate = bd_audio_rate(st->codec->sample_rate);
-      strcpy((char*)s->lang, "und");
+      strcpy((char*)s->lang, "eng");
+      break; }
+    case AVMEDIA_TYPE_SUBTITLE: {
+      s->coding_type = bd_stream_type(codec_id);
+      AVDictionaryEntry *lang = av_dict_get(st->metadata, "language", 0, 0);
+      strncpy((char*)s->lang, lang ? lang->value : "und", sizeof(s->lang));
       break; }
     default:
       break;
@@ -2574,7 +2625,7 @@ int media_info::scan()
     program *pgm = new program(-1, 1);
     pgm->ep_pid = ep_pid;
     pgm->pmt_pid = 0x1000;
-    pgm->pcr_pid = 0x100;
+    pgm->pcr_pid = 0x1001;
     pgm->duration = 0;
     for( int jj=0; jj<streams.size(); ++jj ) {
       AVStream *st = fmt_ctx->streams[jj];
@@ -2609,6 +2660,7 @@ int media_info::scan()
         if( ep_pid < 0 ) ep_pid = st->id;
         break;
       case AVMEDIA_TYPE_AUDIO:
+      case AVMEDIA_TYPE_SUBTITLE:
         break;
       default:
         continue;
@@ -2647,7 +2699,7 @@ int media_info::scan(AVFormatContext *fmt_ctx)
   int ret = 0;
   AVPacket ipkt;
   av_init_packet(&ipkt);
-#if 0
+#if 1
 // zero pts at pos zero
   for( int i=0; i<programs.size(); ++i ) {
     program *p = programs[i];
@@ -2710,29 +2762,38 @@ int media_info::scan(AVFormatContext *fmt_ctx)
   return ret != AVERROR_EOF ? -1 : 0;
 }
 
+void
+Media::add_movie(uint32_t *ops, int n)
+{
+  movie_obj *mp = new movie_obj();
+  mp->resume_intention_flag = 1;
+  uint32_t *eop = ops + n/sizeof(*ops);
+  while( ops < eop ) {
+    command_obj *cmd = new command_obj();
+    cmd->cmd = htobe32(*ops++);
+    cmd->dst = *ops++;
+    cmd->src = *ops++;
+    mp->cmds.append(cmd);
+  }
+  mov.movies.append(mp);
+}
+
 int
 Media::compose()
 {
-// index
-  bs.init();
-  idx.sig = 1;
-  idx.first_play.set_hdmv(0, pb_typ_movie);
-  idx.top_menu.set_hdmv(0xffff, pb_typ_iactv);
-
 // movie
   bs.init();
-  mov.sig = 1;
+
+// top menu
+  int top_menu_obj = mov.movies.size();
   movie_obj *mp = new movie_obj();
   mp->resume_intention_flag = 1;
   command_obj *cmd = new command_obj();
   cmd->cmd = htobe32(0x21810000); cmd->dst = 1; cmd->src = 0;
   mp->cmds.append(cmd);  // JUMP_TITLE 1
-  cmd = new command_obj();
-  cmd->cmd = htobe32(0x00020000); cmd->dst = 0; cmd->src = 0;
-  mp->cmds.append(cmd);
-  mov.movies.append(mp); // BREAK
+  mov.movies.append(mp);
 
-
+// titles
   for( int ii=0; ii<size(); ++ii ) {
     mp = new movie_obj();
     mp->resume_intention_flag = 1;
@@ -2745,15 +2806,19 @@ Media::compose()
     mov.movies.append(mp); // BREAK
   }
 
+// first play
+  int first_play_obj = mov.movies.size();
   mp = new movie_obj();
   mp->resume_intention_flag = 1;
   cmd = new command_obj();
-  cmd->cmd = htobe32(0x21810000); cmd->dst = 1; cmd->src = 0;
-  mp->cmds.append(cmd);  // JUMP_TITLE 1
-  cmd = new command_obj();
-  cmd->cmd = htobe32(0x00020000); cmd->dst = 0; cmd->src = 0;
-  mp->cmds.append(cmd);
-  mov.movies.append(mp); // BREAK
+  cmd->cmd = htobe32(0x21810000); cmd->dst = 0; cmd->src = 0;
+  mp->cmds.append(cmd);  // JUMP_TITLE 0 ; top menu
+  mov.movies.append(mp);
+
+// index
+  bs.init();
+  idx.first_play.set_hdmv(first_play_obj, pb_typ_iactv);
+  idx.top_menu.set_hdmv(top_menu_obj, pb_typ_iactv);
 
   title_obj *tp = 0;
 // clips
@@ -2776,7 +2841,7 @@ Media::compose()
     cp->clip.clip_stream_type = 1;
     cp->clip.application_type = BLURAY_APP_TYPE_MAIN_MOVIE;
     cp->clip.ts_recording_rate = ip->bit_rate;
-    uint32_t ts_pkt_count = ip->file_size / BLURAY_TS_PKTSZ + 1;
+    uint32_t ts_pkt_count = ip->file_size / BLURAY_TS_PKTSZ;
     cp->clip.num_source_packets = ts_pkt_count;
     cp->clip.ts_type_info.validity = 0x80;
     strcpy(cp->clip.ts_type_info.format_id, "HDMV");
@@ -2801,6 +2866,7 @@ Media::compose()
           s->aspect = sp->aspect;
           break;
         case AVMEDIA_TYPE_AUDIO:
+        case AVMEDIA_TYPE_SUBTITLE:
           memcpy(s->lang,sp->lang,sizeof(s->lang));
           break;
         default:
@@ -2809,6 +2875,7 @@ Media::compose()
         p->streams.append(s);
       }
       clpi_ep_map_entry *map = new clpi_ep_map_entry(pgm->ep_pid);
+      map->ep_stream_type = 1;
       pgm->build_toc(map);
       cp->cpi.append(map);
       cp->programs.append(p);
@@ -2843,6 +2910,7 @@ Media::compose()
       pgm = ip->prog();
       mpls_pi *pi = new mpls_pi();
       pi->connection_condition = 1; // seamless
+//    pi->uo_mask.xxx = 1;
       pi->in_time = pgm->start_time;
       pi->out_time = pgm->end_time;
       if( ip->still )
@@ -2857,6 +2925,7 @@ Media::compose()
         switch( sp->type ) {
         case AVMEDIA_TYPE_VIDEO: break;
         case AVMEDIA_TYPE_AUDIO: break;
+        case AVMEDIA_TYPE_SUBTITLE: break;
         default: continue;
         }
         mpls_stream *ps = new mpls_stream();
@@ -2873,6 +2942,10 @@ Media::compose()
           memcpy(ps->lang, sp->lang, sizeof(ps->lang));
           pi->stn.audio.append(ps);
           break;
+        case AVMEDIA_TYPE_SUBTITLE:
+          memcpy(ps->lang, sp->lang, sizeof(ps->lang));
+          pi->stn.pg.append(ps);
+          break;
         default:
           break;
         }
@@ -2880,7 +2953,7 @@ Media::compose()
       pp->play_item.append(pi);
     }
 // chapter marks every ch_duration ticks
-    int64_t ch_duration = 45000 * 60*10;
+    int64_t ch_duration = 45000 * 60*5;
     int64_t mrktm = ch_duration;
     int64_t plytm = 0;
     int pmark = 0, pitem = 0;

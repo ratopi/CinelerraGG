@@ -46,10 +46,10 @@ static struct bd_format {
 	{ "1920x1080 24p",	1920,1080, 24.,    1, ILACE_MODE_NOTINTERLACED },
 	{ "1920x1080 25i",	1920,1080, 25.,    1, ILACE_MODE_TOP_FIRST },
 	{ "1920x1080 23.976p",	1920,1080, 23.976, 1, ILACE_MODE_NOTINTERLACED },
-	{ "1440x1080 29.97i",	1440,1080, 29.97,  1, ILACE_MODE_TOP_FIRST },
-	{ "1440x1080 25i",	1440,1080, 25.,	   1, ILACE_MODE_TOP_FIRST },
-	{ "1440x1080 24p",	1440,1080, 24.,	   1, ILACE_MODE_NOTINTERLACED },
-	{ "1440x1080 23.976p",	1440,1080, 23.976, 1, ILACE_MODE_NOTINTERLACED },
+	{ "1440x1080 29.97i",	1440,1080, 29.97, -1, ILACE_MODE_TOP_FIRST },
+	{ "1440x1080 25i",	1440,1080, 25.,	  -1, ILACE_MODE_TOP_FIRST },
+	{ "1440x1080 24p",	1440,1080, 24.,	  -1, ILACE_MODE_NOTINTERLACED },
+	{ "1440x1080 23.976p",	1440,1080, 23.976,-1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  59.94p",	1280,720,  59.94,  1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  50p",	1280,720,  50.,    1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  24p",	1280,720,  24.,    1, ILACE_MODE_NOTINTERLACED },
@@ -69,8 +69,8 @@ const double CreateBD_Thread::BD_WIDE_ASPECT_HEIGHT = 9.;
 const double CreateBD_Thread::BD_ASPECT_WIDTH = 4.;
 const double CreateBD_Thread::BD_ASPECT_HEIGHT = 3.;
 const double CreateBD_Thread::BD_FRAMERATE = 24000. / 1001.;
-const int CreateBD_Thread::BD_MAX_BITRATE = 40000000;
-//const int CreateBD_Thread::BD_MAX_BITRATE = 8000000;
+//const int CreateBD_Thread::BD_MAX_BITRATE = 40000000;
+const int CreateBD_Thread::BD_MAX_BITRATE = 10000000;
 const int CreateBD_Thread::BD_CHANNELS = 2;
 const int CreateBD_Thread::BD_WIDE_CHANNELS = 6;
 const double CreateBD_Thread::BD_SAMPLERATE = 48000;
@@ -334,6 +334,7 @@ void CreateBD_Thread::handle_close_event(int result)
 					edit->startproject, edit->length,
 					PLUGIN_STANDALONE, 0, &keyframe, 0);
 			}
+			vtrk->optimize();
 		}
 	}
 	if( use_resize_tracks )
@@ -803,6 +804,7 @@ insert_video_plugin(const char *title, KeyFrame *default_keyframe)
 				edit->startproject, edit->length,
 				PLUGIN_STANDALONE, 0, default_keyframe, 0);
 		}
+		vtrk->optimize();
 	}
 	return 0;
 }
@@ -838,10 +840,11 @@ option_presets()
 	bd_width = bd_formats[use_standard].w;
 	bd_height = bd_formats[use_standard].h;
 	bd_framerate = bd_formats[use_standard].framerate;
-	bd_aspect_width = bd_formats[use_standard].wide ?
-		BD_WIDE_ASPECT_WIDTH : BD_ASPECT_WIDTH;
-	bd_aspect_height = bd_formats[use_standard].wide ?
-		BD_WIDE_ASPECT_HEIGHT : BD_ASPECT_HEIGHT;
+	int wide = bd_formats[use_standard].wide;
+	bd_aspect_width  = wide < 0 ? 1. :
+		wide > 0 ? BD_WIDE_ASPECT_WIDTH  : BD_ASPECT_WIDTH;
+	bd_aspect_height = wide < 0 ? 1. :
+		wide > 0 ? BD_WIDE_ASPECT_HEIGHT : BD_ASPECT_HEIGHT;
 	bd_interlace_mode = bd_formats[use_standard].interlaced;
 	double bd_aspect = bd_aspect_width / bd_aspect_height;
 
@@ -865,7 +868,8 @@ option_presets()
 				float aw, ah;
 				MWindow::create_aspect_ratio(aw, ah, w, h);
 				double aspect = ah > 0 ? aw / ah : 1;
-				if( !EQUIV(aspect, bd_aspect) ) use_scale = Rescale::scaled;
+				if( wide >= 0 && !EQUIV(aspect, bd_aspect) )
+					use_scale = Rescale::scaled;
 			}
 			for( int i=0; i<trk->plugin_set.size(); ++i ) {
 				for(Plugin *plugin = (Plugin*)trk->plugin_set[i]->first;

@@ -502,6 +502,7 @@ int FFMPEGConfigAudioPopup::handle_event()
 	FFMPEG::load_options(option_path, asset->ff_audio_options,
 			 sizeof(asset->ff_audio_options));
 	popup->audio_options->update(asset->ff_audio_options);
+	popup->audio_options->set_text_row(0);
 
 	char value[BCTEXTLEN];
 	if( !FileFFMPEG::get_ff_option("cin_bitrate", asset->ff_audio_options, value) )
@@ -663,6 +664,7 @@ int FFMPEGConfigVideoPopup::handle_event()
 	FFMPEG::load_options(option_path, asset->ff_video_options,
 			 sizeof(asset->ff_video_options));
 	popup->video_options->update(asset->ff_video_options);
+	popup->video_options->set_text_row(0);
 
 	char value[BCTEXTLEN];
 	if( !FileFFMPEG::get_ff_option("cin_quality", asset->ff_video_options, value) ) {

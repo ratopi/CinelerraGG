@@ -766,6 +766,8 @@ void BC_TextBox::draw(int flush)
 				draw_wtext(text_x, k + text_ascent, wtext_row, len,
 					0, &positions[wtext_row - wtext]);
 			}
+			else
+				positions[wtext_row - wtext] = 0;
 
 // Get ibeam location
 			if(ibeam_letter >= row_begin && ibeam_letter <= row_end) {
@@ -778,14 +780,8 @@ void BC_TextBox::draw(int flush)
 
 //printf("BC_TextBox::draw 3 %d\n", ibeam_y);
 	if(need_ibeam) {
-		if( wtext_len == 0 ) {
-			ibeam_x = 0;
-			ibeam_y = 0;
-		}
-		else {
-			ibeam_x = -1;
-			ibeam_y = -1;
-		}
+//		ibeam_x = ibeam_y = !wtext_len ? 0 : -1;
+		ibeam_x = 0;  ibeam_y = k - text_y;
 	}
 
 //printf("BC_TextBox::draw 4 %d\n", ibeam_y);
@@ -1853,9 +1849,8 @@ void BC_TextBox::get_ibeam_position(int &x, int &y)
 {
 	int i, row_begin, row_end;
 	int wtext_len = wtext_update();
+	x = y = 0;
 
-	y = 0;
-	x = 0;
 	for( i=0; i<wtext_len; ) {
 		row_begin = i;
 		for(; i<wtext_len && wtext[i]!='\n'; i++);
@@ -2284,7 +2279,7 @@ void BC_ScrollTextBox::create_objects()
 	parent_window->add_subwindow(yscroll = new BC_ScrollTextBoxYScroll(this));
 	text->yscroll = yscroll;
 	yscroll->bound_to = text;
-
+	set_text_row(0);
 }
 
 int BC_ScrollTextBox::handle_event()

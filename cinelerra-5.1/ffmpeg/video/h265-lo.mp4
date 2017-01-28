@@ -1,0 +1,3 @@
+mp4 libx265
+# lossy but faster
+crf=25

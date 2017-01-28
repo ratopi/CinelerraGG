@@ -49,9 +49,8 @@
 #include <string.h>
 
 
-#define WIDTH 600
-#define HEIGHT 400
-
+#define WIDTH 640
+#define HEIGHT 425
 
 New::New(MWindow *mwindow)
  : BC_MenuItem(_("New Project..."), "n", 'n')
@@ -163,8 +162,8 @@ BC_Window* NewThread::new_gui()
 	load_defaults();
 
 	mwindow->gui->lock_window("NewThread::new_gui");
-	int x = mwindow->gui->get_abs_cursor_x(0) - WIDTH / 2;
-	int y = mwindow->gui->get_abs_cursor_y(0) - HEIGHT / 2;
+	int x = mwindow->gui->get_pop_cursor_x(0);
+	int y = mwindow->gui->get_pop_cursor_y(0);
 
 	nwindow = new NewWindow(mwindow, this, x, y);
 	nwindow->create_objects();
@@ -177,6 +176,7 @@ BC_Window* NewThread::new_gui()
 void NewThread::handle_close_event(int result)
 {
 
+	if( !new_project->new_edl ) return;
 	new_project->new_edl->save_defaults(mwindow->defaults);
 	mwindow->defaults->save();
 
@@ -227,16 +227,8 @@ int NewThread::update_aspect()
 
 
 NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
- : BC_Window(_(_(PROGRAM_NAME ": New Project")),
- 		x,
-		y,
-		WIDTH,
-		HEIGHT,
-		-1,
-		-1,
-		0,
-		0,
-		1)
+ : BC_Window(_(PROGRAM_NAME ": New Project"), x, y, WIDTH, HEIGHT,
+		-1, -1, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->new_thread = new_thread;
@@ -306,7 +298,7 @@ void NewWindow::create_objects()
 	y += 30;
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Tracks:")));
-	x1 += 100;
+	x1 += 115;
 	add_subwindow(vtracks = new NewVTracks(this, "", x1, y));
 	x1 += vtracks->get_w();
 	add_subwindow(new NewVTracksTumbler(this, x1, y));
@@ -321,7 +313,7 @@ void NewWindow::create_objects()
 // 	y += vchannels->get_h() + 5;
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Framerate:")));
-	x1 += 100;
+	x1 += 115;
 	add_subwindow(frame_rate = new NewFrameRate(this, "", x1, y));
 	x1 += frame_rate->get_w();
 	add_subwindow(new FrameRatePulldown(mwindow, frame_rate, x1, y));
@@ -347,7 +339,7 @@ void NewWindow::create_objects()
 
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Canvas size:")));
-	x1 += 100;
+	x1 += 115;
 	add_subwindow(output_w_text = new NewOutputW(this, x1, y));
 	x1 += output_w_text->get_w() + 2;
 	add_subwindow(new BC_Title(x1, y, "x"));
@@ -360,13 +352,13 @@ void NewWindow::create_objects()
 		output_h_text,
 		x1,
 		y));
-	x1 += pulldown->get_w() + 5;
+	x1 += pulldown->get_w() + 10;
 	add_subwindow(new NewSwapExtents(mwindow, this, x1, y));
 	y += output_h_text->get_h() + 5;
 
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Aspect ratio:")));
-	x1 += 100;
+	x1 += 115;
 	add_subwindow(aspect_w_text = new NewAspectW(this, "", x1, y));
 	x1 += aspect_w_text->get_w() + 2;
 	add_subwindow(new BC_Title(x1, y, ":"));
@@ -383,25 +375,23 @@ void NewWindow::create_objects()
 	y += aspect_w_text->get_h() + 5;
 	add_subwindow(new NewAspectAuto(this, x1, y));
 	y += 40;
-	add_subwindow(new BC_Title(x, y, _("Color model:")));
-	add_subwindow(textbox = new BC_TextBox(x + 100, y, 200, 1, ""));
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, _("Color model:")));
+	x1 = x + title->get_w();
+	y1 = y;  y += title->get_h() + 10;
+	add_subwindow(title = new BC_Title(x, y, _("Interlace mode:")));
+	int x2 = x + title->get_w();
+	int y2 = y;  y += title->get_h() + 10;
+	if( x1 < x2 ) x1 = x2;
+	x1 += 20;
+	add_subwindow(textbox = new BC_TextBox(x1, y1, 150, 1, ""));
 	add_subwindow(color_model = new ColormodelPulldown(mwindow,
-		textbox,
-		&new_edl->session->color_model,
-		x + 100 + textbox->get_w(),
-		y));
-	y += textbox->get_h() + 5;
-
-	// --------------------
-	add_subwindow(new BC_Title(x, y, _("Interlace mode:")));
-	add_subwindow(textbox = new BC_TextBox(x + 100, y, 140, 1, ""));
+		textbox, &new_edl->session->color_model, x1+textbox->get_w(), y1));
+	add_subwindow(textbox = new BC_TextBox(x1, y2, 150, 1, ""));
 	add_subwindow(interlace_pulldown = new InterlacemodePulldown(mwindow,
-		textbox,
-		&new_edl->session->interlace_mode,
+		textbox, &new_edl->session->interlace_mode,
 		(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_project_modes,
-		x + 100 + textbox->get_w(),
-		y));
-	y += textbox->get_h() + 5;
+		x1+textbox->get_w(), y2));
 
 	add_subwindow(new BC_OKButton(this,
 		mwindow->theme->get_image_set("new_ok_images")));

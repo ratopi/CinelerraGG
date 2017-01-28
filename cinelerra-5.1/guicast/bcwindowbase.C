@@ -2886,27 +2886,21 @@ int BC_WindowBase::get_text_width(int font, const char *text, int length)
 
 int BC_WindowBase::get_text_width(int font, const wchar_t *text, int length)
 {
-	int i, j, w = 0, line_w = 0;
+	int i, j, w = 0;
+	if( length < 0 ) length = wcslen(text);
 
-	if(length < 0) length = wcslen(text);
-
-	for(i = 0, j = 0; i <= length; i++)
-	{
-		line_w = 0;
-		if(text[i] == '\n')
-		{
-			line_w = get_single_text_width(font, &text[j], i - j);
-			j = i + 1;
+	for( i=j=0; i<length && text[i]; ++i ) {
+		if( text[i] != '\n' ) continue;
+		if( i > j ) {
+			int lw = get_single_text_width(font, &text[j], i-j);
+			if( w < lw ) w = lw;
 		}
-		else
-		if(text[i] == 0)
-			line_w = get_single_text_width(font, &text[j], length - j);
-
-		if(line_w > w) w = line_w;
+		j = i + 1;
 	}
-
-	if(i > length && w == 0)
-		w = get_single_text_width(font, text, length);
+	if( j < length ) {
+		int lw = get_single_text_width(font, &text[j], length-j);
+		if( w < lw ) w = lw;
+	}
 
 	return w;
 }
@@ -3694,6 +3688,26 @@ int BC_WindowBase::get_abs_cursor_y(int lock_window)
 		&temp_mask);
 	if(lock_window) this->unlock_window();
 	return abs_y;
+}
+
+int BC_WindowBase::get_pop_cursor_x(int lock_window)
+{
+	int margin = 100;
+	int px = get_abs_cursor_x(lock_window);
+	if( px < margin ) px = margin;
+	int wd = get_screen_w(lock_window,-1) - margin;
+	if( px > wd ) px = wd;
+	return px;
+}
+
+int BC_WindowBase::get_pop_cursor_y(int lock_window)
+{
+	int margin = 100;
+	int py = get_abs_cursor_y(lock_window);
+	if( py < margin ) py = margin;
+	int ht = get_screen_h(lock_window,-1) - margin;
+	if( py > ht ) py = ht;
+	return py;
 }
 
 int BC_WindowBase::match_window(Window win)

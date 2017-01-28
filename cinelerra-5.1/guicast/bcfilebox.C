@@ -215,7 +215,7 @@ int BC_FileBoxDirectoryText::handle_event()
 	while( *cp ) ++cp;
 	if( cp > path && *--cp != '/' ) return 0;
 	char *file_path = FileSystem::basepath(path);
-	char *dir_path = FileSystem::basepath(filebox->fs->get_current_dir());
+	char *dir_path = FileSystem::basepath(filebox->directory);
 	int ret = !strcmp(file_path, dir_path) ? 0 : 1;
 	if( ret ) {
 		strcpy(filebox->directory, file_path);
@@ -497,7 +497,7 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
 	this->want_directory = want_directory;
 	if(show_all_files) fs->set_show_all();
 	fs->complete_path(this->current_path);
-	fs->complete_path(this->submitted_path);
+	strcpy(this->submitted_path, this->current_path);
 	fs->extract_dir(directory, this->current_path);
 	fs->extract_name(filename, this->current_path);
 
@@ -535,16 +535,12 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
 // Test if current directory exists
 	if(!fs->is_dir(directory))
 	{
-		sprintf(this->current_path, "~");
-		fs->complete_path(this->current_path);
-		fs->set_current_dir(this->current_path);
-//		fs->update(this->current_path);
-		strcpy(directory, fs->get_current_dir());
+		sprintf(directory, "~");
+		fs->complete_path(directory);
+		strcpy(current_path,directory);
 		filename[0] = 0;
 	}
-	else
-		fs->set_current_dir(this->directory);
-
+	fs->set_current_dir(directory);
 
 	if(h_padding == -1)
 	{
@@ -591,10 +587,6 @@ void BC_FileBox::create_objects()
 		filter_list.append(new BC_ListBoxItem("*.xml"));
 		fs->set_filter(get_resources()->filebox_filter);
 	}
-
-	fs->set_sort_order(sort_order);
-	fs->set_sort_field(column_type[sort_column]);
-	fs->update(directory);
 
 	create_icons();
 	create_tables();
@@ -653,8 +645,12 @@ void BC_FileBox::create_objects()
 	if( newest >= 0 ) {
 		strcpy(directory, resources->filebox_history[newest].path);
 		fs->change_dir(directory, 0);
+		strcpy(directory, fs->get_current_dir());
 		directory_title->update(fs->get_current_dir());
 	}
+	fs->set_sort_order(sort_order);
+	fs->set_sort_field(column_type[sort_column]);
+	fs->update(directory);
 
 // Create recent dir list
 	create_history();
@@ -678,7 +674,7 @@ void BC_FileBox::create_objects()
 
 	rename_thread = new BC_RenameThread(this);
 
-
+	refresh();
 	show_window();
 }
 

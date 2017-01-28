@@ -336,13 +336,10 @@ BC_Window* Render::new_gui()
 		if(!asset) asset = new Asset;
 		load_defaults(asset);
 		check_asset(mwindow->edl, *asset);
-
+		int px = mwindow->gui->get_pop_cursor_x(1);
+		int py = mwindow->gui->get_pop_cursor_y(1);
 // Get format from user
-		render_window = new RenderWindow(mwindow,
-			this,
-			asset,
-			mwindow->gui->get_abs_cursor_x(1),
-			mwindow->gui->get_abs_cursor_y(1));
+		render_window = new RenderWindow(mwindow, this, asset, px, py);
 		render_window->create_objects();
 	}
 
@@ -1108,10 +1105,8 @@ RenderWindow::RenderWindow(MWindow *mwindow,
 	Asset *asset,
 	int x,
 	int y)
- : BC_Window(_(PROGRAM_NAME ": Render"),
- 	x - WIDTH / 2, y - HEIGHT / 2,
- 	WIDTH, HEIGHT, WIDTH, HEIGHT,
-	0, 0, 1)
+ : BC_Window(_(PROGRAM_NAME ": Render"), x, y,
+ 	WIDTH, HEIGHT, WIDTH, HEIGHT, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->render = render;

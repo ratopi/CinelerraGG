@@ -1,0 +1,9 @@
+mp4 libx265
+# only works in build cinx hi-depth build
+strict=-2
+colorspace=bt2020_cl
+color_primaries=bt2020
+color_trc=bt2020_12bit
+pixel_format=yuv422p12
+x265-params=output-depth=12
+

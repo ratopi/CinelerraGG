@@ -1,9 +1,8 @@
 mpegts libx265
-loglevel=debug
 id=0x1011
 #preset=ultrafast,superfast,veryfast,faster,fast,
 #preset=medium,slow,slower,veryslow,placebo
 preset=medium
 #tune=psnr,ssim,grain,zerolatency,fastdecode
 pixel_format=yuv422p
-x265_opts=output-depth=8
+x265_opts=profile=main:output-depth=8
