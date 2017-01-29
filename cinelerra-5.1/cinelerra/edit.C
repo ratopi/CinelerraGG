@@ -282,7 +282,7 @@ void Edit::equivalent_output(Edit *edit, int64_t *result)
 			!transition->identical(edit->transition)) ||
 // Asset changed
 		(asset && edit->asset &&
-			!asset->equivalent(*edit->asset, 1, 1)) ||
+			!asset->equivalent(*edit->asset, 1, 1, edl)) ||
 // Nested EDL changed
 		(nested_edl && edit->nested_edl &&
 			strcmp(nested_edl->path, edit->nested_edl->path))

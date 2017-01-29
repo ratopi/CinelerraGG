@@ -27,6 +27,7 @@
 #include "arraylist.h"
 #include "bcwindowbase.inc"
 #include "bchash.inc"
+#include "edl.inc"
 #include "filexml.inc"
 #include "indexable.h"
 #include "indexfile.inc"
@@ -85,12 +86,7 @@ public:
 
 
 // Executed during index building only
-	int equivalent(Asset &asset,
-		int test_audio,
-		int test_video);
-	Asset& operator=(Asset &asset);
-	int operator==(Asset &asset);
-	int operator!=(Asset &asset);
+	int equivalent(Asset &asset, int test_audio, int test_video, EDL *edl=0);
 // Return 1 if the paths match
 	int test_path(const char *path);
 	int read(FileXML *file,

@@ -208,7 +208,7 @@ int PreferencesThread::apply_settings()
 		(preferences->force_uniprocessor != mwindow->preferences->force_uniprocessor) ||
 		this_playback_config->active_config != playback_config->active_config ||
 		(*this_aconfig != *aconfig) || (*this_vconfig != *vconfig) ||
-		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1);
+		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1, edl);
 
 	if( strcmp(preferences->theme, mwindow->preferences->theme) != 0 )
 		mwindow->restart_status = -1; // reload, need new bcresources

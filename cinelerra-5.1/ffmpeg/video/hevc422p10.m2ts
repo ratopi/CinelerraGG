@@ -1,4 +1,4 @@
-bluray libx265
+mpegts libx265
 id=0x1011
 #preset=ultrafast,superfast,veryfast,faster,fast,
 #preset=medium,slow,slower,veryslow,placebo

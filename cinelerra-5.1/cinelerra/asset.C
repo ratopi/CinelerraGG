@@ -25,6 +25,7 @@
 #include "bchash.h"
 #include "bcsignals.h"
 #include "clip.h"
+#include "cstrdup.h"
 #include "edl.h"
 #include "file.h"
 #include "filesystem.h"
@@ -319,21 +320,30 @@ char* Asset::get_compression_text(int audio, int video)
 	return 0;
 }
 
-Asset& Asset::operator=(Asset &asset)
+int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 {
-printf("Asset::operator=\n");
-	copy_location(&asset);
-	copy_format(&asset, 1);
-	return *this;
-}
-
-
-int Asset::equivalent(Asset &asset,
-	int test_audio,
-	int test_video)
-{
-	int result = (!strcmp(asset.path, path) &&
-		format == asset.format);
+	int result = format == asset.format ? 1 : 0;
+	if( result && strcmp(asset.path, path) ) {
+		char *out_path = edl ? FileSystem::basepath(edl->path) : 0;
+		char *sp = out_path ? strrchr(out_path,'/') : 0;
+		if( sp ) *++sp = 0;
+		char *apath = FileSystem::basepath(asset.path);
+		char *tpath = FileSystem::basepath(this->path);
+		if( out_path ) {
+			if( *apath != '/' ) {
+				char *cp = cstrcat(2, out_path, apath);
+				delete [] apath;  apath = cp;
+			}
+			if( *tpath != '/' ) {
+				char *cp = cstrcat(2, out_path, tpath);
+				delete [] tpath;  tpath = cp;
+			}
+		}
+		if( strcmp(apath, tpath) ) result = 1;
+		delete [] apath;
+		delete [] tpath;
+		delete [] out_path;
+	}
 
 	if(result && format == FILE_FFMPEG)
 		result = !strcmp(fformat, asset.fformat);
@@ -378,19 +388,6 @@ int Asset::equivalent(Asset &asset,
 	}
 
 	return result;
-}
-
-int Asset::operator==(Asset &asset)
-{
-
-	return equivalent(asset,
-		1,
-		1);
-}
-
-int Asset::operator!=(Asset &asset)
-{
-	return !(*this == asset);
 }
 
 int Asset::test_path(const char *path)

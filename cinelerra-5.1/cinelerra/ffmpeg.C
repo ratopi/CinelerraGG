@@ -2051,7 +2051,8 @@ int FFMPEG::encode_activate()
 				for( int i=sizeof(lcode)/sizeof(lcode[0]); --i>=0 && !ep; )
 					if( !strncmp(lcode[i].lc,lp,2) ) ep = lcode[i].lng;
 			}
-			char lang[4];
+			if( !ep ) ep = "und";
+			char lang[5];
 			strncpy(lang,ep,3);  lang[3] = 0;
 			AVStream *st = ffaudio[0]->st;
 			av_dict_set(&st->metadata,"language",lang,0);

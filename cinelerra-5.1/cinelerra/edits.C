@@ -657,8 +657,7 @@ int Edits::clear_handle(double start, double end,
 
 		if(current_edit->asset && current_edit->next->asset) {
 
-			if(current_edit->asset->equivalent(*current_edit->next->asset,
-				0, 0)) {
+			if(current_edit->asset->equivalent(*current_edit->next->asset, 0, 0, edl)) {
 
 // Got two consecutive edits in same source
 				if(edl->equivalent(track->from_units(current_edit->next->startproject),

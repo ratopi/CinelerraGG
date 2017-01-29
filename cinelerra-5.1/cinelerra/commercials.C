@@ -559,7 +559,7 @@ scan_audio(int vstream, double start, double end)
 			Indexable *indexable = edit->get_source();
 			if( !indexable || !indexable->is_asset ) continue;
 			Asset *asset = (Asset *)indexable;
-			if( !scan_file->asset->equivalent(*asset,0,0) ) continue;
+			if( !scan_file->asset->equivalent(*asset,0,0,mwindow->edl) ) continue;
 			if( verify_edit(atrk, edit, start, end) ) continue;
 			next = cut_edit(atrk, edit,
 				atrk->to_units(start,0),

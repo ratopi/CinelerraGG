@@ -130,7 +130,7 @@ void AssetEdit::handle_close_event(int result)
 		if(indexable->is_asset)
 		{
 			asset = (Asset*)indexable;
-			if(!changed_params->equivalent(*asset, 1, 1))
+			if(!changed_params->equivalent(*asset, 1, 1, mwindow->edl))
 				changed = 1;
 		}
 		else

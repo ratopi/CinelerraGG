@@ -3544,7 +3544,7 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 					next_edit = edit->next;
 					if( edit->channel != vstream ||
 					    !edit->asset || !edit->asset->is_asset ||
-					    *asset != *edit->asset )
+					    !asset->equivalent(*edit->asset,1,1,edl) )
 						delete edit;
 				}
 			}
@@ -3604,7 +3604,7 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 					next_edit = edit->next;
 					if( !((1<<edit->channel) & channel_mask) ||
 					    !edit->asset || !edit->asset->is_asset ||
-					    *asset != *edit->asset )
+					    !asset->equivalent(*edit->asset,1,1,edl) )
 						delete edit;
 				}
 				if( !track->edits->first )
