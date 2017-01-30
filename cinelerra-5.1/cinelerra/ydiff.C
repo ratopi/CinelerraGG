@@ -367,6 +367,11 @@ int main(int ac, char **av)
   int64_t err = 0;
   int frm_no = 0;
 
+  if( ac>3 && (ret=atoi(av[3])) ) {
+    while( ret > 0 ) { a.read_frame(); --ret; }
+    while( ret < 0 ) { b.read_frame(); ++ret; }
+  }
+
   while( !done ) {
     AVFrame *ap = a.read_frame();
     if( !ap ) break;
