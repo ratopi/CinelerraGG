@@ -95,7 +95,6 @@ public:
 	class Path : public BC_TextBox {
 	public:
 		RecordBatches &batches;
-		ArrayList<BC_ListBoxItem*> *file_entries;
 
 		int handle_event();
 

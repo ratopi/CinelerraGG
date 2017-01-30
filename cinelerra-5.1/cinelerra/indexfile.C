@@ -738,9 +738,7 @@ SET_TRACE
 	int prev_y2 = center_pixel;
 	int first_frame = 1;
 	int zoom_y = mwindow->edl->local_session->zoom_y, zoom_y2 = zoom_y / 2;
-	int max_y = canvas->get_h();
-	int zmax_y = center_pixel + zoom_y2 - 1;
-	if( zmax_y < max_y ) max_y = zmax_y;
+	int max_y = center_pixel + zoom_y2 - 1;
 SET_TRACE
 
 	for(int bufferposition = 0;

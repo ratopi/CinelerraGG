@@ -133,7 +133,7 @@ public:
 
 // Compute suggestions for a path
 // If entries is null, just search absolute paths
-	int calculate_suggestions(ArrayList<BC_ListBoxItem*> *entries);
+	int calculate_suggestions(ArrayList<BC_ListBoxItem*> *entries=0, const char *filter=0);
 
 
 // User computes suggestions after handle_event.
@@ -141,6 +141,7 @@ public:
 // A highlighted extension is added if 1 suggestion or a popup appears
 // if multiple suggestions.
 // column - starting column to replace
+	void no_suggestions();
 	void set_suggestions(ArrayList<char*> *suggestions, int column);
 	BC_ScrollTextBoxYScroll *yscroll;
 
@@ -217,9 +218,7 @@ public:
 	BC_TextBoxSuggestions(BC_TextBox *text_box, int x, int y);
 	virtual ~BC_TextBoxSuggestions();
 
-	int selection_changed();
 	int handle_event();
-
 
 	BC_TextBox *text_box;
 };

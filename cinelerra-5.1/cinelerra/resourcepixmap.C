@@ -617,9 +617,7 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas,
 		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 
 	int64_t scale_y = mwindow->edl->local_session->zoom_y;
-	int y_max = canvas->get_h();
-	int max_y = center_pixel + scale_y / 2 - 1;
-	if( y_max > max_y ) y_max = max_y;
+	int y_max = center_pixel + scale_y / 2 - 1;
 // Single sample zoom
 	if(mwindow->edl->local_session->zoom_sample == 1)
 	{
@@ -984,9 +982,7 @@ void ResourcePixmap::draw_subttl_resource(TrackCanvas *canvas,
 	int x0 = edit_x;
 	if( x0 < 0 ) x0 = -x0;
         int x1 = (int)(pixmap_x - x0 + x);
-	int y_max = canvas->get_h();
-	int max_y = center_pixel + scale_y / 2 - 1;
-	if( y_max > max_y ) y_max = max_y;
+	int y_max = center_pixel + scale_y / 2 - 1;
 	int font = MEDIUMFONT, color = WHITE;
 	canvas->set_font(font);
 	canvas->set_color(color);

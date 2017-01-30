@@ -203,7 +203,6 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
 	preferences = 0;
 	warn = 1;
 	render = 0;
-	file_entries = 0;
 	batch_path[0] = 0;
 }
 
@@ -219,7 +218,6 @@ BatchRenderThread::BatchRenderThread()
 	preferences = 0;
 	warn = 1;
 	render = 0;
-	file_entries = 0;
 	batch_path[0] = 0;
 }
 
@@ -229,10 +227,6 @@ BatchRenderThread::~BatchRenderThread()
 	delete boot_defaults;
 	delete preferences;
 	delete render;
-	if( file_entries ) {
-		file_entries->remove_all_objects();
-		delete file_entries;
-	}
 }
 
 void BatchRenderThread::reset(const char *path)
@@ -245,10 +239,6 @@ void BatchRenderThread::reset(const char *path)
 	rendering_job = -1;
 	delete default_job;  default_job = 0;
 	jobs.remove_all_objects();
-	if(file_entries) {
-		file_entries->remove_all_objects();
-		delete file_entries;  file_entries = 0;
-	}
 }
 
 void BatchRenderThread::handle_close_event(int result)
@@ -264,23 +254,6 @@ BC_Window* BatchRenderThread::new_gui()
 	current_start = 0.0;
 	current_end = 0.0;
 	default_job = new BatchRenderJob(mwindow->preferences);
-
-
-	if(!file_entries)
-	{
-		file_entries = new ArrayList<BC_ListBoxItem*>;
-		FileSystem fs;
-		char string[BCTEXTLEN];
-	// Load current directory
-		fs.update(getcwd(string, BCTEXTLEN));
-		for(int i = 0; i < fs.total_files(); i++)
-		{
-			file_entries->append(
-				new BC_ListBoxItem(
-					fs.get_entry(i)->get_name()));
-		}
-	}
-
 	load_jobs(batch_path, mwindow->preferences);
 	load_defaults(mwindow->defaults);
 	this->gui = new BatchRenderGUI(mwindow,
@@ -1051,9 +1024,7 @@ BatchRenderEDLPath::BatchRenderEDLPath(BatchRenderThread *thread,
 
 int BatchRenderEDLPath::handle_event()
 {
-// Suggestions
-	calculate_suggestions(thread->file_entries);
-
+	calculate_suggestions();
 	strcpy(thread->get_current_edl(), get_text());
 	thread->gui->create_list(1);
 	return 1;

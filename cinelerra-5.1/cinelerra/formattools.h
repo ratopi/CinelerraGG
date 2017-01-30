@@ -116,8 +116,6 @@ public:
 
 	FormatMultiple *multiple_files;
 
-// Suggestions for the textbox
-	ArrayList<BC_ListBoxItem*> *file_entries;
 	ArrayList<PluginServer*> *plugindb;
 	MWindow *mwindow;
 	const char *locked_compressor;

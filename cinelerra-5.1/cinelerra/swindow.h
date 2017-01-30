@@ -57,7 +57,6 @@ class SWindowLoadPath : public BC_TextBox
 {
 public:
 	SWindowGUI *sw_gui;
-	ArrayList<BC_ListBoxItem*> *file_entries;
 
 	SWindowLoadPath(SWindowGUI *gui, int x, int y, char *path);
 	~SWindowLoadPath();

@@ -68,7 +68,6 @@ FormatTools::FormatTools(MWindow *mwindow,
 	channels_title = 0;
 	channels_button = 0;
 	multiple_files = 0;
-	file_entries = 0;
 	w = window->get_w();
 
 	recording = 0;
@@ -104,12 +103,6 @@ SET_TRACE
 	if(vparams_thread) delete vparams_thread;
 SET_TRACE
 	if(channels_tumbler) delete channels_tumbler;
-SET_TRACE
-	if(file_entries)
-	{
-		file_entries->remove_all_objects();
-		delete file_entries;
-	}
 }
 
 void FormatTools::create_objects(int &init_x,
@@ -140,19 +133,6 @@ void FormatTools::create_objects(int &init_x,
 	this->prompt_video = prompt_video;
 	this->prompt_video_compression = prompt_video_compression;
 	this->strategy = strategy;
-
-
-	file_entries = new ArrayList<BC_ListBoxItem*>;
-	FileSystem fs;
-	char string[BCTEXTLEN];
-// Load current directory
-	fs.update(getcwd(string, BCTEXTLEN));
-	for(int i = 0; i < fs.total_files(); i++)
-	{
-		file_entries->append(
-			new BC_ListBoxItem(
-				fs.get_entry(i)->get_name()));
-	}
 
 //printf("FormatTools::create_objects 1\n");
 
@@ -749,11 +729,7 @@ FormatPathText::~FormatPathText()
 }
 int FormatPathText::handle_event()
 {
-// Suggestions
-	calculate_suggestions(format->file_entries);
-
-
-
+	calculate_suggestions();
 	strcpy(format->asset->path, get_text());
 	format->handle_event();
 	return 1;

@@ -332,11 +332,13 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 		if( out_path ) {
 			if( *apath != '/' ) {
 				char *cp = cstrcat(2, out_path, apath);
-				delete [] apath;  apath = cp;
+				delete [] apath;  apath = FileSystem::basepath(cp);
+				delete [] cp;
 			}
 			if( *tpath != '/' ) {
 				char *cp = cstrcat(2, out_path, tpath);
-				delete [] tpath;  tpath = cp;
+				delete [] tpath;  tpath = FileSystem::basepath(cp);
+				delete [] cp;
 			}
 		}
 		if( strcmp(apath, tpath) ) result = 1;

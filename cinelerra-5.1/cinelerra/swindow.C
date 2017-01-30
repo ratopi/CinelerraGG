@@ -76,27 +76,15 @@ SWindowLoadPath::SWindowLoadPath(SWindowGUI *gui, int x, int y, char *path)
  : BC_TextBox(x, y, 200, 1, path)
 {
 	this->sw_gui = gui;
-
-	file_entries = new ArrayList<BC_ListBoxItem*>;
-	FileSystem fs;  char string[BCTEXTLEN];
-// Load current directory
-	fs.update(getcwd(string, BCTEXTLEN));
-	int total_files = fs.total_files();
-	for(int i = 0; i < total_files; i++) {
-		const char *name = fs.get_entry(i)->get_name();
-		file_entries->append(new BC_ListBoxItem(name));
-	}
 }
 
 SWindowLoadPath::~SWindowLoadPath()
 {
-	file_entries->remove_all_objects();
-	delete file_entries;
 }
 
 int SWindowLoadPath::handle_event()
 {
-	calculate_suggestions(file_entries);
+	calculate_suggestions();
 	strcpy(sw_gui->script_path, get_text());
 	return 1;
 }

@@ -354,21 +354,10 @@ RecordBatchesGUI::Dir::
 int RecordBatchesGUI::Dir::
 handle_event()
 {
-	strncpy(directory, get_text(),sizeof(directory));
-	char *bp, *cp, *dp = &directory[0];
-	if( *dp ) {
-		if( dp[0] != '~' || dp[1] != 0 ) {
-			for( cp=dp; *cp; ++cp ) {
-				if( *cp != '/' ) continue;
-				for( bp=cp; *bp=='/'; ++bp );
-				if( *bp ) dp = cp;
-			}
-			if( *--cp != '/' ) return 1;
-			while( cp>dp && *cp=='/' ) *cp-- = 0;
-		}
-		load_dirs(directory);
-		calculate_suggestions(dir_entries);
-	}
+	char *path = FileSystem::basepath(directory);
+	load_dirs(path);
+	calculate_suggestions(dir_entries);
+	delete [] path;
 	return 1;
 }
 
@@ -392,28 +381,17 @@ Path(RecordBatches &batches, int x, int y)
  : BC_TextBox(x, y, 200, 1, batches.get_editing_batch()->asset->path),
    batches(batches)
 {
-	file_entries = new ArrayList<BC_ListBoxItem*>;
-	FileSystem fs;  char string[BCTEXTLEN];
-// Load current directory
-	fs.update(getcwd(string, BCTEXTLEN));
-	int total_files = fs.total_files();
-	for(int i = 0; i < total_files; i++) {
-		const char *name = fs.get_entry(i)->get_name();
-		file_entries->append(new BC_ListBoxItem(name));
-	}
 }
 
 RecordBatchesGUI::Path::
 ~Path()
 {
-	file_entries->remove_all_objects();
-	delete file_entries;
 }
 
 int RecordBatchesGUI::Path::
 handle_event()
 {
-	calculate_suggestions(file_entries);
+	calculate_suggestions();
 	Batch *batch = batches.gui->get_editing_batch();
 	strcpy(batch->asset->path, get_text());
 	batches.gui->update_batches();

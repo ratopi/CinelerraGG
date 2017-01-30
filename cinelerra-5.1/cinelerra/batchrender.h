@@ -137,7 +137,6 @@ public:
 	int rendering_job;
 	int is_rendering;
 	int warn;
-	ArrayList<BC_ListBoxItem*> *file_entries;
 };
 
 
