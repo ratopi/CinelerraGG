@@ -764,7 +764,7 @@ if test  $WANT_X264_HIDEPTH = "yes" ; then
   echo "x264.cfg_params := --enable-static --bit-depth=10"
 fi
 if test  $WANT_X265_HIDEPTH = "yes" ; then
-  echo "x265.cfg_params := -DENABLE_SHARED=no -DHIGH_BIT_DEPTH:BOOL=ON -DMAIN12:BOOL=ON"
+  echo "x265.cfg_params := -DENABLE_SHARED=no -DHIGH_BIT_DEPTH:BOOL=ON" # -DMAIN12:BOOL=ON"
 fi
 
 for pkg in $STATIC_PKGS; do echo "static_pkgs += $pkg"; done

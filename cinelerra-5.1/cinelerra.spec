@@ -1,4 +1,4 @@
-%define ver 20170101
+%define ver 20170131
 Summary: Multimedia Editing and construction
 Name: cinelerra
 Version: 5.1
