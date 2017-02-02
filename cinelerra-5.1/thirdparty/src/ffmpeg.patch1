@@ -1,6 +1,6 @@
 --- a/configure	2015-09-10 13:36:03.763986195 -0600
 +++ b/configure	2015-09-10 13:37:25.190550438 -0600
-@@ -5556,7 +5556,9 @@
+@@ -5735,7 +5735,9 @@
                                 die "ERROR: libx264 must be installed and version must be >= 0.118."; } &&
                               { check_cpp_condition x264.h "X264_MPEG2" &&
                                 enable libx262; }

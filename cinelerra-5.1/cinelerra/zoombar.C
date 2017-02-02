@@ -67,25 +67,16 @@ void ZoomBar::create_objects()
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	sample_zoom = new SampleZoomPanel(mwindow, this, x, y);
-	sample_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
-	sample_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
 	sample_zoom->create_objects();
-	sample_zoom->zoom_text->set_tooltip(_("Duration visible in the timeline"));
-	sample_zoom->zoom_tumbler->set_tooltip(_("Duration visible in the timeline"));
+	sample_zoom->set_tooltip(_("Duration visible in the timeline"));
 	x += sample_zoom->get_w();
 	amp_zoom = new AmpZoomPanel(mwindow, this, x, y);
-	amp_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
-	amp_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
 	amp_zoom->create_objects();
-	amp_zoom->zoom_text->set_tooltip(_("Audio waveform scale"));
-	amp_zoom->zoom_tumbler->set_tooltip(_("Audio waveform scale"));
+	amp_zoom->set_tooltip(_("Audio waveform scale"));
 	x += amp_zoom->get_w();
 	track_zoom = new TrackZoomPanel(mwindow, this, x, y);
-	track_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
-	track_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
 	track_zoom->create_objects();
-	track_zoom->zoom_text->set_tooltip(_("Height of tracks in the timeline"));
-	track_zoom->zoom_tumbler->set_tooltip(_("Height of tracks in the timeline"));
+	track_zoom->set_tooltip(_("Height of tracks in the timeline"));
 	x += track_zoom->get_w() + 10;
 
 	int wid = 120;
@@ -136,23 +127,8 @@ void ZoomBar::update_formatting(BC_TextBox *dst)
 
 void ZoomBar::resize_event()
 {
-	reposition_window(mwindow->theme->mzoom_x,
-		mwindow->theme->mzoom_y,
-		mwindow->theme->mzoom_w,
-		mwindow->theme->mzoom_h);
-
-	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
- 	int x = 3, y = 1;
-	if (sample_zoom) delete sample_zoom;
-	sample_zoom = new SampleZoomPanel(mwindow, this, x, y);
-	sample_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
-	sample_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
-	sample_zoom->create_objects();
-// 	x += sample_zoom->get_w();
-// 	amp_zoom->reposition_window(x, y);
-// 	x += amp_zoom->get_w();
-// 	track_zoom->reposition_window(x, y);
-	flash();
+	reposition_window(mwindow->theme->mzoom_x, mwindow->theme->mzoom_y,
+		mwindow->theme->mzoom_w, mwindow->theme->mzoom_h);
 }
 
 void ZoomBar::redraw_time_dependancies()
@@ -350,19 +326,9 @@ int ZoomBar::set_selection(int which_one)
 
 
 
-SampleZoomPanel::SampleZoomPanel(MWindow *mwindow,
-	ZoomBar *zoombar,
-	int x,
-	int y)
- : ZoomPanel(mwindow,
- 	zoombar,
-	mwindow->edl->local_session->zoom_sample,
-	x,
-	y,
-	110,
-	MIN_ZOOM_TIME,
-	MAX_ZOOM_TIME,
-	ZOOM_TIME)
+SampleZoomPanel::SampleZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
+ : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_sample,
+		x, y, 110, MIN_ZOOM_TIME, MAX_ZOOM_TIME, ZOOM_TIME)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -375,15 +341,8 @@ int SampleZoomPanel::handle_event()
 
 
 AmpZoomPanel::AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
- : ZoomPanel(mwindow,
- 	zoombar,
-	mwindow->edl->local_session->zoom_y,
-	x,
-	y,
-	80,
-	MIN_AMP_ZOOM,
-	MAX_AMP_ZOOM,
-	ZOOM_LONG)
+ : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_y,
+		x, y, 80, MIN_AMP_ZOOM, MAX_AMP_ZOOM, ZOOM_LONG)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -395,15 +354,8 @@ int AmpZoomPanel::handle_event()
 }
 
 TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
- : ZoomPanel(mwindow,
- 	zoombar,
-	mwindow->edl->local_session->zoom_track,
-	x,
-	y,
-	70,
-	MIN_TRACK_ZOOM,
-	MAX_TRACK_ZOOM,
-	ZOOM_LONG)
+ : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_track,
+		x, y, 70, MIN_TRACK_ZOOM, MAX_TRACK_ZOOM, ZOOM_LONG)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -419,9 +371,7 @@ int TrackZoomPanel::handle_event()
 
 
 AutoZoom::AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int changemax)
- : BC_Tumbler(x,
- 	y,
- 	mwindow->theme->get_image_set("zoombar_tumbler"))
+ : BC_Tumbler(x, y, mwindow->theme->get_image_set("zoombar_tumbler"))
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;

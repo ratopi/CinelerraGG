@@ -419,8 +419,6 @@ int BC_PopupMenu::button_release_event()
 {
 // try the title
 	int result = 0;
-	if( pending )
-		return menu_activate();
 
 	if(is_event_win() && use_title)
 	{
@@ -431,6 +429,9 @@ int BC_PopupMenu::button_release_event()
 			draw_title(1);
 		}
 	}
+
+	if( pending )
+		return menu_activate();
 
 	if( !use_title && status == BUTTON_DN ) {
 		result = 1;

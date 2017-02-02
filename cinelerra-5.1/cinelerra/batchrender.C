@@ -782,7 +782,6 @@ void BatchRenderGUI::create_objects()
 	x += new_batch->get_w() + mwindow->theme->widget_border;
 	add_subwindow(delete_batch = new BatchRenderDelete(thread, x, y));
 	x = x2;  y += delete_batch->get_h() + mwindow->theme->widget_border;
-	y += mwindow->theme->widget_border;
 	add_subwindow(savelist_batch = new BatchRenderSaveList(thread, x, y));
 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
 	add_subwindow(loadlist_batch = new BatchRenderLoadList(thread, x, y));
@@ -868,7 +867,7 @@ int BatchRenderGUI::resize_event(int w, int h)
 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
 	loadlist_batch->reposition_window(x, y);
 	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
-	warning->reposition_window(x, y);
+	warning->reposition_window(x2, y);
 
 	y1 = 15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
 	y2 = get_h() - y1 - batch_list->get_h();

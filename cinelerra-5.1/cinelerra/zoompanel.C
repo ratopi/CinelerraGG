@@ -79,8 +79,6 @@ ZoomPanel::ZoomPanel(MWindow *mwindow,
 	this->min = min;
 	this->max = max;
 	this->zoom_type = zoom_type;
-	this->menu_images = 0;
-	this->tumbler_images = 0;
 	this->user_table = 0;
 	this->user_size = 0;
 }
@@ -104,8 +102,6 @@ ZoomPanel::ZoomPanel(MWindow *mwindow,
 	this->min = min;
 	this->max = max;
 	this->zoom_type = zoom_type;
-	this->menu_images = 0;
-	this->tumbler_images = 0;
 	this->user_table = user_table;
 	this->user_size = user_size;
 }
@@ -150,27 +146,11 @@ void ZoomPanel::update_menu()
 	calculate_menu();
 }
 
-void ZoomPanel::set_menu_images(VFrame **data)
-{
-	this->menu_images = data;
-}
-
-void ZoomPanel::set_tumbler_images(VFrame **data)
-{
-	this->tumbler_images = data;
-}
-
 void ZoomPanel::create_objects()
 {
-	subwindow->add_subwindow(zoom_text = new ZoomPopup(mwindow,
-		this,
-		x,
-		y));
+	subwindow->add_subwindow(zoom_text = new ZoomPopup(mwindow, this, x, y));
 	x += zoom_text->get_w();
-	subwindow->add_subwindow(zoom_tumbler = new ZoomTumbler(mwindow,
-		this,
-		x,
-		y));
+	subwindow->add_subwindow(zoom_tumbler = new ZoomTumbler(mwindow, this, x, y));
 	calculate_menu();
 }
 
@@ -200,6 +180,12 @@ char* ZoomPanel::get_text()
 void ZoomPanel::set_text(const char *text)
 {
 	zoom_text->set_text(text);
+}
+
+void ZoomPanel::set_tooltip(const char *text)
+{
+	zoom_text->set_tooltip(text);
+	zoom_tumbler->set_tooltip(text);
 }
 
 void ZoomPanel::update(double value)
@@ -309,12 +295,8 @@ double ZoomPanel::text_to_zoom(char *text, int use_table)
 
 
 ZoomPopup::ZoomPopup(MWindow *mwindow, ZoomPanel *panel, int x, int y)
- : BC_PopupMenu(x,
-		y,
-		panel->w,
-		panel->value_to_text(panel->value, 0),
-		1,
-		panel->menu_images)
+ : BC_PopupMenu(x, y, panel->w, panel->value_to_text(panel->value, 0),
+	1, mwindow->theme->get_image_set("zoombar_menu", 0))
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
@@ -334,9 +316,7 @@ int ZoomPopup::handle_event()
 
 
 ZoomTumbler::ZoomTumbler(MWindow *mwindow, ZoomPanel *panel, int x, int y)
- : BC_Tumbler(x,
- 	y,
- 	panel->tumbler_images)
+ : BC_Tumbler(x, y, mwindow->theme->get_image_set("zoombar_tumbler", 0))
 {
 	this->mwindow = mwindow;
 	this->panel = panel;

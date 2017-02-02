@@ -121,6 +121,49 @@ CreateBD_Thread::~CreateBD_Thread()
 	close_window();
 }
 
+void CreateBD_Thread::get_udfs_mount(char *udfs, char *mopts, char *mntpt)
+{
+// default: mount -t udf -o loop $1/bd.udfs $1/udfs
+	strcpy(udfs,"$1/bd.udfs");
+	strcpy(mopts,"-t udf -o loop $1/bd.udfs ");
+	strcpy(mntpt,"$1/udfs");
+	const char *home = getenv("HOME");
+	if( !home ) return;
+	FILE *fp = fopen("/etc/fstab","r");
+	if( !fp ) return;
+	int len = strlen(home);
+	char line[BCTEXTLEN], typ[BCTEXTLEN], file[BCTEXTLEN];
+	char mpnt[BCTEXTLEN], opts[BCTEXTLEN];
+	while( fgets(line,sizeof(line),fp) ) {
+// search "/etc/fstab" for: $HOME/img_file $HOME/bluray udf noauto,loop,rw,user
+		if( line[0] == '#' || line[0] == ';' ) continue;
+		if( sscanf(line,"%s %s %s %s ", &file[0], &mpnt[0], &typ[0], &opts[0]) != 4 )
+			continue;
+		if( strcmp("udf", typ) ) continue;
+		if( strncmp(home, file, len) || file[len] != '/' ) continue;
+		if( strncmp(home, mpnt, len) ) continue;
+		if( strcmp(&mpnt[len], "/bluray") ) continue;
+		int loop = 0, user = 0, rw = 0, noauto = 0;
+		char *op = opts, *ep = op + sizeof(opts)-1;
+		while( op < ep && *op ) {
+			char opt[BCTEXTLEN], *cp = opt;
+			while( op < ep && *op && (*cp=*op++)!=',' ) ++cp;
+			*cp = 0;
+			if( !strcmp("loop", opt) ) loop = 1;
+			else if( !strcmp("user", opt) ) user = 1;
+			else if( !strcmp("noauto", opt) ) noauto = 1;
+			else if( !strcmp("rw", opt) ) rw = 1;
+		}
+		if( loop && user && rw && noauto ) {
+			strcpy(udfs, file);
+			strcpy(mopts, "");
+			strcpy(mntpt, mpnt);
+			break;
+		}
+	}
+	fclose(fp);
+}
+
 int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char *asset_dir)
 {
 	EDL *edl = mwindow->edl;
@@ -174,19 +217,22 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 		MainError::show_error(msg);
 		return 1;
 	}
+	char udfs[BCTEXTLEN], mopts[BCTEXTLEN], mntpt[BCTEXTLEN];
+	get_udfs_mount(udfs, mopts, mntpt);
 	const char *exec_path = File::get_cinlib_path();
 	fprintf(fp,"#!/bin/bash -ex\n");
 	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
 	fprintf(fp,"mkdir -p $1/udfs\n");
 	fprintf(fp,"sz=`du -sb $1/bd.m2ts | sed -e 's/[ \t].*//'`\n");
 	fprintf(fp,"blks=$((sz/2048 + 4096))\n");
-	fprintf(fp,"mkudffs $1/bd.udfs $blks\n");
-	fprintf(fp,"mount -o loop $1/bd.udfs $1/udfs\n");
-	fprintf(fp,"bdwrite $1/udfs $1/bd.m2ts\n");
-	fprintf(fp,"umount $1/udfs\n");
+	fprintf(fp,"rm -f %s\n", udfs);
+	fprintf(fp,"mkudffs %s $blks\n", udfs);
+	fprintf(fp,"mount %s%s\n", mopts, mntpt);
+	fprintf(fp,"bdwrite %s $1/bd.m2ts\n",mntpt);
+	fprintf(fp,"umount %s\n",mntpt);
 	fprintf(fp,"echo To burn bluray, load writable media and run:\n");
-	fprintf(fp,"echo for WORM: growisofs -dvd-compat -Z /dev/bd=$1/bd.udfs\n");
-	fprintf(fp,"echo for RW:   dd if=$1/bd.udfs of=/dev/bd bs=2048000\n");
+	fprintf(fp,"echo for WORM: growisofs -dvd-compat -Z /dev/bd=%s\n", udfs);
+	fprintf(fp,"echo for RW:   dd if=%s of=/dev/bd bs=2048000\n",udfs);
 	fprintf(fp,"\n");
 	fclose(fp);
 

@@ -78,12 +78,10 @@ public:
 	void set_text(const char *text);
 	char* value_to_text(double value, int use_table = 1);
 	double text_to_zoom(char *text, int use_table = 1);
+	void set_tooltip(const char *text);
 	void update(double value);
 	void update(const char *value);
 	void reposition_window(int x, int y);
-// Set images to be used
-	void set_menu_images(VFrame **data);
-	void set_tumbler_images(VFrame **data);
 
 	MWindow *mwindow;
 	BC_WindowBase *subwindow;
@@ -100,8 +98,6 @@ public:
 	int user_size;
 	int zoom_type;
 	ArrayList<ZoomHash*> zoom_table;
-	VFrame **menu_images;
-	VFrame **tumbler_images;
 };
 
 class ZoomPopup : public BC_PopupMenu

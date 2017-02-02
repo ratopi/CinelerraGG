@@ -42,7 +42,7 @@ pkg-config=$(BLD)/$(1).configure
 pkg-built=$(BLD)/$(1).built
 
 ext=$(lastword $(subst ., ,$(1)))
-tarball=$(lastword $(wildcard src/$(1)*.tar.*))
+tarball=$(lastword $(sort $(wildcard src/$(1)*.tar.*)))
 unpack=$(call unpack_$(call ext,$(1)),$(1))
 unpack_gz=tar -xzf $(1)
 unpack_bz2=tar -xjf $(1)
@@ -71,7 +71,7 @@ $(1)-clean:
 
 $(call pkg-source,$(1)):
 	$(call unpack,$(call tarball,$(1))) \
-	$(foreach pch,$(wildcard src/$(1).patch*),
+	$(foreach pch,$(sort $(wildcard src/$(1).patch*)),
 		patch -d $(1)* -p1 < $(pch))
 	touch $$@
 
