@@ -6,4 +6,4 @@ color_primaries=bt2020
 color_trc=bt2020_12bit
 pixel_format=yuv422p12
 x265-params=output-depth=12
-
+cin_quality=-1

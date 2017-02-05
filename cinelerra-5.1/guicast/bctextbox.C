@@ -990,6 +990,7 @@ int BC_TextBox::deactivate()
 {
 	if( active ) {
 		active = 0;
+		text_selected = word_selected = line_selected = 0;
 		top_level->set_active_subwindow(0);
 		top_level->unset_repeat(top_level->get_resources()->blink_rate);
 	}
@@ -2781,17 +2782,23 @@ int BC_TumbleTextBox::get_h()
 	return textbox->get_h();
 }
 
-void BC_TumbleTextBox::disable()
+void BC_TumbleTextBox::disable(int hide_text)
 {
+	if( hide_text && !textbox->is_hidden() )
+		textbox->hide_window(0);
+	if( !tumbler->is_hidden() )
+		tumbler->hide_window(0);
 	if( !get_enabled() ) return;
-	tumbler->hide_window(0);
 	return textbox->disable();
 }
 
 void BC_TumbleTextBox::enable()
 {
+	if( textbox->is_hidden() )
+		textbox->show_window(0);
+	if( tumbler->is_hidden() )
+		tumbler->show_window(0);
 	if( get_enabled() ) return;
-	tumbler->show_window(0);
 	return textbox->enable();
 }
 

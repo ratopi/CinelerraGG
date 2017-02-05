@@ -405,10 +405,10 @@ int MWindowGUI::resize_event(int w, int h)
 	int x = w - MainShBtns::calculate_w(0);
 	mainmenu->resize_event(x, mainmenu->get_h());
 	mainshbtns->reposition_window(x, -1);
+	ffmpeg_toggle->reposition_window(menu_w(), menu_h()+2);
 	mwindow->theme->get_mwindow_sizes(this, w, h);
 	mwindow->theme->draw_mwindow_bg(this);
 	mbuttons->resize_event();
-	ffmpeg_toggle->reposition_window(menu_w(), menu_h()+2);
 	statusbar->resize_event();
 	zoombar->resize_event();
 
@@ -535,6 +535,7 @@ int MWindowGUI::resize_event(int w, int h)
 		mwindow->theme->mzoom_y + 1 - mwindow->theme->get_image_set("pane")[0]->get_h());
 	resource_thread->start_draw();
 
+	flash(1);
 	return 0;
 }
 

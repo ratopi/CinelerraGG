@@ -114,12 +114,12 @@ int BC_Trace::set_lock(const char *title, const char *loc, trace_info *info)
 	last_lock_title = title;
 	last_lock_location = loc;
 	lock_item *it;
-	if( lock_table.size >= TOTAL_LOCKS ) {
+	if( (it=(lock_item*)lock_free.first) != 0 )
+		lock_free.remove_pointer(it);
+	else if( lock_table.size >= TOTAL_LOCKS ) {
 		it = (lock_item*)lock_table.first;
 		lock_table.remove_pointer(it);
 	}
-	else if( (it=(lock_item*)lock_free.first) != 0 )
-		lock_free.remove_pointer(it);
 	else
 		it = new lock_item();
 	it->set(info, title, loc);

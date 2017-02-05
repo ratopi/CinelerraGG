@@ -209,6 +209,8 @@ void MotionHVWindow::create_objects()
 		this,
 		x + track_single->get_w() + title->get_w() + 20,
 		y));
+	if(plugin->config.tracking_object != MotionHVScan::TRACK_SINGLE)
+		track_frame_number->disable();
 
 	y += 20;
 	add_subwindow(track_previous = new TrackPreviousFrame(plugin,
@@ -779,7 +781,6 @@ TrackFrameNumber::TrackFrameNumber(MotionHVMain *plugin,
 {
 	this->plugin = plugin;
 	this->gui = gui;
-	if(plugin->config.tracking_object != MotionHVScan::TRACK_SINGLE) disable();
 }
 
 int TrackFrameNumber::handle_event()

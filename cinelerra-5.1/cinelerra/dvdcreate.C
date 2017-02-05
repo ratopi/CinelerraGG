@@ -407,6 +407,7 @@ void CreateDVD_Thread::handle_close_event(int result)
 					edit->startproject, edit->length,
 					PLUGIN_STANDALONE, 0, &keyframe, 0);
 			}
+			vtrk->optimize();
 		}
 	}
 
@@ -898,6 +899,7 @@ insert_video_plugin(const char *title, KeyFrame *default_keyframe)
 				edit->startproject, edit->length,
 				PLUGIN_STANDALONE, 0, default_keyframe, 0);
 		}
+		vtrk->optimize();
 	}
 	return 0;
 }

@@ -172,6 +172,9 @@ void MotionWindow::create_objects()
 		new BC_Title(x1=x2, y1, _("Frame number:")));
 	add_subwindow(track_frame_number =
 		new TrackFrameNumber(plugin, this, x1 += title->get_w(), y1));
+	if(plugin->config.tracking_object != MotionScan::TRACK_SINGLE)
+		track_frame_number->disable();
+
 	add_subwindow(addtrackedframeoffset =
 		new AddTrackedFrameOffset(plugin, this, x1=x2, y1+=track_frame_number->get_h()));
 	int pef = client->server->mwindow->edl->session->video_every_frame;
@@ -605,7 +608,6 @@ TrackFrameNumber::TrackFrameNumber(MotionMain *plugin,
 {
 	this->plugin = plugin;
 	this->gui = gui;
-	if(plugin->config.tracking_object != MotionScan::TRACK_SINGLE) disable();
 }
 
 int TrackFrameNumber::handle_event()

@@ -59,10 +59,18 @@ void FFMpegConfigNum::create_objects()
 	BC_TumbleTextBox::create_objects();
 }
 
-int FFMpegConfigNum::update_text(const char *text)
+int FFMpegConfigNum::update_param(const char *param, const char *opts)
 {
-	BC_TumbleTextBox::update(text);
-	return handle_event();
+	char value[BCTEXTLEN];
+	if( !FileFFMPEG::get_ff_option(param, opts, value) ) {
+		if( (*output = atol(value)) < 0 ) {
+			disable(1);
+			return 0;
+		}
+		BC_TumbleTextBox::update(value);
+	}
+	enable();
+	return 1;
 }
 
 int FFMpegConfigNum::handle_event()
@@ -464,9 +472,7 @@ void FFMPEGConfigAudio::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 
-	char value[BCTEXTLEN];
-	if( !FileFFMPEG::get_ff_option("cin_bitrate", asset->ff_audio_options, value) )
-		bitrate->update_text(value);
+	bitrate->update_param("cin_bitrate", asset->ff_audio_options);
 
 	show_window(1);
 	bitrate->handle_event();
@@ -504,9 +510,7 @@ int FFMPEGConfigAudioPopup::handle_event()
 	popup->audio_options->update(asset->ff_audio_options);
 	popup->audio_options->set_text_row(0);
 
-	char value[BCTEXTLEN];
-	if( !FileFFMPEG::get_ff_option("cin_bitrate", asset->ff_audio_options, value) )
-		popup->bitrate->update_text(value);
+	popup->bitrate->update_param("cin_bitrate", asset->ff_audio_options);
 	return 1;
 }
 
@@ -621,11 +625,8 @@ void FFMPEGConfigVideo::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 
-	char value[BCTEXTLEN];
-	if( !FileFFMPEG::get_ff_option("cin_quality", asset->ff_video_options, value) )
-		quality->update_text(value);
-	if( !FileFFMPEG::get_ff_option("cin_bitrate", asset->ff_video_options, value) )
-		bitrate->update_text(value);
+	bitrate->update_param("cin_bitrate", asset->ff_video_options);
+	quality->update_param("cin_quality", asset->ff_video_options);
 
 	show_window(1);
 	if( asset->ff_video_bitrate )
@@ -666,12 +667,8 @@ int FFMPEGConfigVideoPopup::handle_event()
 	popup->video_options->update(asset->ff_video_options);
 	popup->video_options->set_text_row(0);
 
-	char value[BCTEXTLEN];
-	if( !FileFFMPEG::get_ff_option("cin_quality", asset->ff_video_options, value) ) {
-		popup->quality->update_text(value);
-	}
-	if( !FileFFMPEG::get_ff_option("cin_bitrate", asset->ff_video_options, value) )
-		popup->bitrate->update_text(value);
+	popup->bitrate->update_param("cin_bitrate", asset->ff_video_options);
+	popup->quality->update_param("cin_quality", asset->ff_video_options);
 	return 1;
 }
 

@@ -129,6 +129,7 @@ void ZoomBar::resize_event()
 {
 	reposition_window(mwindow->theme->mzoom_x, mwindow->theme->mzoom_y,
 		mwindow->theme->mzoom_w, mwindow->theme->mzoom_h);
+	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 }
 
 void ZoomBar::redraw_time_dependancies()

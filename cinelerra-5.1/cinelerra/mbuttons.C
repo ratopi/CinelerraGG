@@ -102,20 +102,6 @@ void MButtons::update()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 MainTransport::MainTransport(MWindow *mwindow, MButtons *mbuttons, int x, int y)
  : PlayTransport(mwindow, mbuttons, x, y)
 {
@@ -139,28 +125,9 @@ void MainTransport::goto_end()
 }
 
 MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
- : EditPanel(mwindow,
-		mbuttons,
-		x,
-		y,
-		mwindow->edl->session->editing_mode,
-		1,
-		1,
-		0,
-		0,
-		1,
-		1,
-		1,
-		1,
-		1,
-		1,
-		1, // locklabels
-		1,
-		1,
-		0,
-		1,
-		1,
-		mwindow->has_commercials())
+ : EditPanel(mwindow, mbuttons, x, y, mwindow->edl->session->editing_mode,
+		1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, // locklabels
+		1, 1, 0, 1, 1, mwindow->has_commercials())
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;

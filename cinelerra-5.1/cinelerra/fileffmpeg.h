@@ -62,7 +62,7 @@ public:
         ~FFMpegConfigNum();
 
         void create_objects();
-        int update_text(const char *text);
+	int update_param(const char *param, const char *opts);
         int handle_event();
         int *output;
         BC_Window *window;

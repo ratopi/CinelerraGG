@@ -394,7 +394,7 @@ public:
 	int get_y();
 	int get_w();
 	int get_h();
-	void disable();
+	void disable(int hide_text=0);
 	void enable();
 	int get_enabled();
 	void reposition_window(int x, int y);
