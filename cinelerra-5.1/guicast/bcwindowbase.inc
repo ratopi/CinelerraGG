@@ -45,6 +45,9 @@ class BC_WindowList;
 #define MIDDLE_BUTTON 2
 #define RIGHT_BUTTON 3
 
+// textbox deactivate policy
+#define LEAVE_DEACTIVATE 0
+#define CLICK_DEACTIVATE 1
 
 // Use single thread for all windows.
 // This is a bad idea because it's very slow.  Windows which share the same

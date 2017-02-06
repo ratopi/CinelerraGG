@@ -776,7 +776,8 @@ int BC_TextBox::cursor_leave_event()
 		draw_border();
 		flash(1);
 	}
-	if( !suggestions_popup )
+	if( !suggestions_popup &&
+	    top_level->get_resources()->textbox_focus_policy == LEAVE_DEACTIVATE )
 		deactivate();
 	return 0;
 }
@@ -895,10 +896,13 @@ int BC_TextBox::button_press_event()
 		return 1;
 	}
 	else
-	if(active && suggestions_popup && (!yscroll || !yscroll->is_event_win()))
-	{
-		if( suggestions_popup->button_press_event() )
-			return suggestions_popup->handle_event();
+	if( active ) {
+		if( suggestions_popup && (!yscroll || !yscroll->is_event_win())) {
+			if( suggestions_popup->button_press_event() )
+				return suggestions_popup->handle_event();
+		}
+		else if( top_level->get_resources()->textbox_focus_policy == CLICK_DEACTIVATE )
+			deactivate();
 	}
 
 	return 0;

@@ -145,7 +145,13 @@ void InterfacePrefs::create_objects()
 	y1 += bdwr_win->get_h() + 5;
 	PopupMenuBtnup *pop_win = new PopupMenuBtnup(pwindow, x1, y1);
 	add_subwindow(pop_win);
-	y1 += pop_win->get_h() + 25;
+	y1 += pop_win->get_h() + 5;
+	TextboxFocusPolicy *focus_policy = new TextboxFocusPolicy(pwindow, x1, y1);
+	add_subwindow(focus_policy);
+	y1 += focus_policy->get_h() + 5;
+
+	if( y < y1 ) y = y1;
+	y += 10;
 
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
@@ -739,6 +745,20 @@ int PopupMenuBtnup::handle_event()
 	pwindow->thread->preferences->popupmenu_btnup = get_value();
 	return 1;
 }
+
+TextboxFocusPolicy::TextboxFocusPolicy(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->textbox_focus_policy,
+	_("Click to deactivate text focus"))
+{
+	this->pwindow = pwindow;
+}
+
+int TextboxFocusPolicy::handle_event()
+{
+	pwindow->thread->preferences->textbox_focus_policy = get_value();
+	return 1;
+}
+
 
 
 ScanCommercials::ScanCommercials(PreferencesWindow *pwindow, int x, int y)

@@ -109,6 +109,8 @@ public:
 	int bd_warn_root;
 // popup menus activate on button release
 	int popupmenu_btnup;
+// textbox focus policy: click, leave
+	int textbox_focus_policy;
 // use dvd yuv420p interlace format
 	int dvd_yuv420p_interlace;
 

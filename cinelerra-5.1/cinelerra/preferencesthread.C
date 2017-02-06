@@ -220,6 +220,7 @@ int PreferencesThread::apply_settings()
 	BC_Signals::set_catch_segv(mwindow->preferences->trap_sigsegv);
 	BC_Signals::set_catch_intr(mwindow->preferences->trap_sigintr);
 	BC_WindowBase::get_resources()->popupmenu_btnup = mwindow->preferences->popupmenu_btnup;
+	BC_WindowBase::get_resources()->textbox_focus_policy = mwindow->preferences->textbox_focus_policy;
 	if( mwindow->preferences->trap_sigsegv || mwindow->preferences->trap_sigintr ) {
 		BC_Trace::enable_locks();
 	}

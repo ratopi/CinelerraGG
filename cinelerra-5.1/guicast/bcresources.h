@@ -153,6 +153,7 @@ public:
 	int tooltip_delay;
 	int tooltip_bg_color;
 	int tooltips_enabled;
+	int textbox_focus_policy;
 
 	int audiovideo_color;
 

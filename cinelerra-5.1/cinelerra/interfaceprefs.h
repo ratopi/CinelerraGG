@@ -335,6 +335,14 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class TextboxFocusPolicy : public BC_CheckBox
+{
+public:
+	TextboxFocusPolicy(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 class AndroidPIN : public BC_TextBox
 {
 public:
