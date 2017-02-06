@@ -321,7 +321,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 		strncpy(cp, opts, sizeof(asset->ff_video_options)-len);
 	}
 	asset->ff_video_bitrate = vid_bitrate;
-	asset->ff_video_quality = 0;
+	asset->ff_video_quality = -1;
 
 	job = new BatchRenderJob(mwindow->preferences);
 	jobs->append(job);

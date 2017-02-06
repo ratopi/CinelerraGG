@@ -423,19 +423,8 @@ private:
 class BC_TumbleTextBoxText : public BC_TextBox
 {
 public:
-	BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
-		int64_t default_value,
-		int64_t min,
-		int64_t max,
-		int x,
-		int y);
-	BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
-		float default_value,
-		float min,
-		float max,
-		int x,
-		int y);
-	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, int x, int y);
+	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, int64_t default_value, int x, int y);
+	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, float default_value, int x, int y);
 	virtual ~BC_TumbleTextBoxText();
 	int handle_event();
 	int button_press_event();

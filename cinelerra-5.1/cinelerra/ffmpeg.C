@@ -1837,7 +1837,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				sprintf(arg, "%d", asset->ff_video_bitrate);
 				av_dict_set(&sopts, "b", arg, 0);
 			}
-			else if( asset->ff_video_quality > 0 ) {
+			else if( asset->ff_video_quality >= 0 ) {
 				ctx->global_quality = asset->ff_video_quality * FF_QP2LAMBDA;
 				ctx->qmin    = ctx->qmax =  asset->ff_video_quality;
 				ctx->mb_lmin = ctx->qmin * FF_QP2LAMBDA;

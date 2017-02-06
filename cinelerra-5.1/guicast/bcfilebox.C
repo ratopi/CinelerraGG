@@ -625,11 +625,9 @@ void BC_FileBox::create_objects()
 
 	add_subwindow(recent_popup = new BC_FileBoxRecent(this, x, y));
 	add_subwindow(directory_title = new BC_FileBoxDirectoryText(x, y, this));
-	directory_title->reposition_window(x, y,
-		get_w() - recent_popup->get_w() -  20, 1);
-	recent_popup->reposition_window(
-		x + directory_title->get_w(), y,
-		directory_title->get_w(), 200);
+	directory_title->reposition_window(x, y, get_w() - recent_popup->get_w() -  20, 1);
+	x += directory_title->get_w() + 8;
+	recent_popup->reposition_window(x, y, directory_title->get_w(), 200);
 
 	x = 10;
 	y += directory_title->get_h() + 5;
@@ -738,7 +736,7 @@ int BC_FileBox::resize_event(int w, int h)
 		get_w() - recent_popup->get_w() -  20,
 		1);
 	recent_popup->reposition_window(
-		directory_title->get_x() + directory_title->get_w(),
+		directory_title->get_x() + directory_title->get_w() + 8,
 		directory_title->get_y(),
 		directory_title->get_w() + recent_popup->get_w(),
 		recent_popup->get_h());

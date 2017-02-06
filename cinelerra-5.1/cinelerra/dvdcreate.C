@@ -314,7 +314,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		FFMPEG::load_options(option_path, asset->ff_video_options,
 			 sizeof(asset->ff_video_options));
 		asset->ff_video_bitrate = vid_bitrate;
-		asset->ff_video_quality = 0;
+		asset->ff_video_quality = -1;
 	}
 	else {
 		sprintf(&asset->path[0],"%s/dvd.m2v", asset_dir);

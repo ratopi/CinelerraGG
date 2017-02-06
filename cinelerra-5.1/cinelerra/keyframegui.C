@@ -108,7 +108,7 @@ void KeyFrameThread::update_values()
 			keyframe_data[1].append(new BC_ListBoxItem(hash.get_value(i)));
 		}
 		keyframe_data[0].append(new BC_ListBoxItem((char*)_("TEXT")));
-		keyframe_data[1].append(new BC_ListBoxItem(text));
+		keyframe_data[1].append(new BC_ListBoxItem(text ? text : ""));
 
 		delete [] text;
 		delete [] extra;

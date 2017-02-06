@@ -772,8 +772,9 @@ int BC_TextBox::cursor_leave_event()
 	if(highlighted)
 	{
 		highlighted = 0;
-		draw_border();
 		hide_tooltip();
+		draw_border();
+		flash(1);
 	}
 	if( !suggestions_popup )
 		deactivate();
@@ -2523,22 +2524,14 @@ void BC_PopupTextBox::reposition_window(int x, int y)
 
 
 BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
-	int64_t default_value,
-	int64_t min,
-	int64_t max,
-	int x,
-	int y)
+	int64_t default_value, int x, int y)
  : BC_TextBox(x, y, popup->text_w, 1, default_value)
 {
 	this->popup = popup;
 }
 
 BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
-	float default_value,
-	float min,
-	float max,
-	int x,
-	int y)
+	float default_value, int x, int y)
  : BC_TextBox(x, y, popup->text_w, 1, default_value)
 {
 	this->popup = popup;
@@ -2694,20 +2687,12 @@ int BC_TumbleTextBox::create_objects()
 	if(use_float)
 	{
 		parent_window->add_subwindow(textbox = new BC_TumbleTextBoxText(this,
-			default_value_f,
-			min_f,
-			max_f,
-			x,
-			y));
+			default_value_f, x, y));
 		textbox->set_precision(precision);
 	}
 	else
 		parent_window->add_subwindow(textbox = new BC_TumbleTextBoxText(this,
-			default_value,
-			min,
-			max,
-			x,
-			y));
+			default_value, x, y));
 
 	x += textbox->get_w();
 

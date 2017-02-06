@@ -88,7 +88,7 @@ int Asset::init_values()
 	ff_video_options[0] = 0;
 	ff_audio_bitrate = 0;
 	ff_video_bitrate = 0;
-	ff_video_quality = 0;
+	ff_video_quality = -1;
 
 	jpeg_quality = 80;
 	aspect_ratio = -1;

@@ -4674,7 +4674,8 @@ int TrackCanvas::button_press_event()
 			activate();
 		}
 
-		if( get_buttonpress() == LEFT_BUTTON ) {
+		if( get_buttonpress() == LEFT_BUTTON &&
+		    gui->mbuttons->transport->engine->command->command != STOP ) {
 			gui->unlock_window();
 			gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
 			gui->lock_window("TrackCanvas::button_press_event");
@@ -4817,7 +4818,7 @@ int TrackCanvas::button_press_event()
 int TrackCanvas::start_selection(double position)
 {
 	int rerender = 0;
-	position = mwindow->edl->align_to_frame(position, 0);
+	position = mwindow->edl->align_to_frame(position, 1);
 
 
 // Extend a border

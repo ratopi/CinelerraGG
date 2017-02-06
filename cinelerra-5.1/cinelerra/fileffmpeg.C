@@ -40,8 +40,7 @@ FileFFMPEG::~FileFFMPEG()
 
 FFMpegConfigNum::FFMpegConfigNum(BC_Window *window,
 		int x, int y, char *title_text, int *output)
- : BC_TumbleTextBox(window, (int64_t)*output,
-	(int64_t)-1, (int64_t)25000000, 100, y, 100)
+ : BC_TumbleTextBox(window, *output, -1, INT_MAX, 100, y, 100)
 {
 	this->window = window;
 	this->x = x;  this->y = y;
@@ -63,19 +62,19 @@ int FFMpegConfigNum::update_param(const char *param, const char *opts)
 {
 	char value[BCTEXTLEN];
 	if( !FileFFMPEG::get_ff_option(param, opts, value) ) {
-		if( (*output = atol(value)) < 0 ) {
+		if( (*output = atoi(value)) < 0 ) {
 			disable(1);
 			return 0;
 		}
-		BC_TumbleTextBox::update(value);
 	}
+	BC_TumbleTextBox::update((int64_t)*output);
 	enable();
 	return 1;
 }
 
 int FFMpegConfigNum::handle_event()
 {
-	*output = atol(get_text());
+	*output = atoi(get_text());
 	return 1;
 }
 
@@ -101,9 +100,9 @@ int FFMpegVideoBitrate::handle_event()
 {
 	int ret = FFMpegVideoNum::handle_event();
 	Asset *asset = window()->asset;
-	if( asset->ff_video_bitrate )
+	if( asset->ff_video_bitrate > 0 )
 		window()->quality->disable();
-	else
+	else if( !window()->quality->get_textbox()->is_hidden() )
 		window()->quality->enable();
 	return ret;
 }
@@ -112,9 +111,9 @@ int FFMpegVideoQuality::handle_event()
 {
 	int ret = FFMpegVideoNum::handle_event();
 	Asset *asset = window()->asset;
-	if( asset->ff_video_quality )
+	if( asset->ff_video_quality >= 0 )
 		window()->bitrate->disable();
-	else
+	else if( !window()->bitrate->get_textbox()->is_hidden() )
 		window()->bitrate->enable();
 	return ret;
 }
@@ -450,6 +449,7 @@ void FFMPEGConfigAudio::create_objects()
 	bitrate = new FFMpegAudioBitrate(this, x, y, _("Bitrate:"), &asset->ff_audio_bitrate);
 	bitrate->create_objects();
 	bitrate->set_increment(1000);
+	bitrate->set_boundaries((int64_t)0, (int64_t)INT_MAX);
 
 	y += bitrate->get_h() + 10;
 	BC_Title *title = new BC_Title(x, y, _("Audio Options:"));
@@ -471,11 +471,10 @@ void FFMPEGConfigAudio::create_objects()
 	audio_options->create_objects();
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
+	show_window(1);
 
 	bitrate->update_param("cin_bitrate", asset->ff_audio_options);
 
-	show_window(1);
-	bitrate->handle_event();
 	unlock_window();
 }
 
@@ -503,6 +502,7 @@ int FFMPEGConfigAudioPopup::handle_event()
 {
 	strcpy(popup->asset->acodec, get_text());
 	Asset *asset = popup->asset;
+	asset->ff_audio_bitrate = 0;
 	char option_path[BCTEXTLEN];
 	FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
 	FFMPEG::load_options(option_path, asset->ff_audio_options,
@@ -589,20 +589,20 @@ void FFMPEGConfigVideo::create_objects()
 	preset_popup = new FFMPEGConfigVideoPopup(this, x, y);
 	preset_popup->create_objects();
 
-	if( asset->ff_video_bitrate && asset->ff_video_quality ) {
-		asset->ff_video_bitrate = 0;
-		asset->ff_video_quality = 0;
+	if( asset->ff_video_bitrate > 0 && asset->ff_video_quality >= 0 ) {
+		asset->ff_video_bitrate = 0;  asset->ff_video_quality = -1;
 	}
 
 	y += 50;
 	bitrate = new FFMpegVideoBitrate(this, x, y, _("Bitrate:"), &asset->ff_video_bitrate);
 	bitrate->create_objects();
 	bitrate->set_increment(100000);
+	bitrate->set_boundaries((int64_t)0, (int64_t)INT_MAX);
 	y += bitrate->get_h() + 5;
 	quality = new FFMpegVideoQuality(this, x, y, _("Quality:"), &asset->ff_video_quality);
 	quality->create_objects();
 	quality->set_increment(1);
-	quality->set_boundaries((int64_t)0, (int64_t)31);
+	quality->set_boundaries((int64_t)-1, (int64_t)51);
 
 	y += quality->get_h() + 10;
 	BC_Title *title = new BC_Title(x, y, _("Video Options:"));
@@ -624,15 +624,13 @@ void FFMPEGConfigVideo::create_objects()
 	video_options->create_objects();
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
+	show_window(1);
 
 	bitrate->update_param("cin_bitrate", asset->ff_video_options);
 	quality->update_param("cin_quality", asset->ff_video_options);
 
-	show_window(1);
-	if( asset->ff_video_bitrate )
-		quality->disable();
-	if( asset->ff_video_quality )
-		bitrate->disable();
+	if( asset->ff_video_bitrate > 0 ) quality->disable();
+	else if( asset->ff_video_quality >= 0 ) bitrate->disable();
 	unlock_window();
 }
 
@@ -661,6 +659,7 @@ int FFMPEGConfigVideoPopup::handle_event()
 	strcpy(popup->asset->vcodec, get_text());
 	Asset *asset = popup->asset;
 	char option_path[BCTEXTLEN];
+	asset->ff_video_bitrate = 0;  asset->ff_video_quality = -1;
 	FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
 	FFMPEG::load_options(option_path, asset->ff_video_options,
 			 sizeof(asset->ff_video_options));
