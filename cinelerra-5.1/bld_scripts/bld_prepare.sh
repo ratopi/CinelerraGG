@@ -33,7 +33,7 @@ case "$dir" in
     rm -f /tmp/$yasm
   ;;
 "fedora")
-  dnf -y -best --allowerasing \
+  dnf -y --best --allowerasing \
     install nasm yasm libavc1394-devel libusb-devel flac-devel \
     libjpeg-devel libdv-devel libdvdnav-devel libdvdread-devel \
     libtheora-devel libiec61883-devel esound-devel uuid-devel \
@@ -46,7 +46,7 @@ case "$dir" in
     flac-devel libsndfile-devel libtheora-devel linux-firmware \
     ivtv-firmware libvorbis-devel texinfo xz-devel lzma-devel cmake git \
     ctags patch gcc-c++ perl-XML-XPath libtiff-devel python dvdauthor \
-    gettext-devel inkscape udftools autoconf automake
+    gettext-devel inkscape udftools autoconf automake numactl-devel
   ;;
 "suse" | "leap")
   zypper -n install nasm gcc gcc-c++ zlib-devel texinfo libpng16-devel \

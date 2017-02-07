@@ -55,7 +55,7 @@ static struct bd_format {
 	{ "1280x720  24p",	1280,720,  24.,    1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  23.976p",	1280,720,  23.976, 1, ILACE_MODE_NOTINTERLACED },
 	{ "720x576   25p*",	 720,576,  25.,    0, ILACE_MODE_NOTINTERLACED },
-	{ "720x576   25i",	 720,576,  25.,    0, ILACE_MODE_BOTTOM_FIRST },
+	{ "720x576   25i",	 720,576,  25.,    0, ILACE_MODE_TOP_FIRST },
 	{ "720x480   29.97p*",	 720,480,  29.97,  0, ILACE_MODE_NOTINTERLACED },
 	{ "720x480   29.97i",	 720,480,  29.97,  0, ILACE_MODE_BOTTOM_FIRST },
 };
@@ -233,6 +233,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 	fprintf(fp,"echo To burn bluray, load writable media and run:\n");
 	fprintf(fp,"echo for WORM: growisofs -dvd-compat -Z /dev/bd=%s\n", udfs);
 	fprintf(fp,"echo for RW:   dd if=%s of=/dev/bd bs=2048000\n",udfs);
+	fprintf(fp,"kill $$\n");
 	fprintf(fp,"\n");
 	fclose(fp);
 

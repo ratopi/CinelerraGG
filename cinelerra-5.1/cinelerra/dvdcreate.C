@@ -237,6 +237,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 	fprintf(fp,"\n");
 	fprintf(fp,"echo To burn dvd, load blank media and run:\n");
 	fprintf(fp,"echo growisofs -dvd-compat -Z /dev/dvd -dvd-video $1/iso\n");
+	fprintf(fp,"kill $$\n");
 	fprintf(fp,"\n");
 	fclose(fp);
 

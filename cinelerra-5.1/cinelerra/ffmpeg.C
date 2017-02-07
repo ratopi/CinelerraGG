@@ -1884,6 +1884,9 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 		if( fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER )
 			st->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
+		av_dict_set(&sopts, "cin_bitrate", 0, 0);
+		av_dict_set(&sopts, "cin_quality", 0, 0);
+
 		ret = avcodec_open2(st->codec, codec, &sopts);
 		if( ret < 0 ) {
 			ff_err(ret,"FFMPEG::open_encoder");

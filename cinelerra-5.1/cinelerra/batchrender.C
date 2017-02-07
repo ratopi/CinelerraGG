@@ -1206,6 +1206,8 @@ void BatchRenderLoadList::run()
 		thread->mwindow->defaults->update("DEFAULT_BATCHLOADPATH", thread->batch_path);
 		thread->load_jobs(thread->batch_path, thread->mwindow->preferences);
 		thread->gui->create_list(1);
+		thread->current_job = 0;
+		thread->gui->change_job();
 	}
 
 	thread->gui->flush();
