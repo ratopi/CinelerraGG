@@ -335,10 +335,18 @@ public:
 	PreferencesWindow *pwindow;
 };
 
-class TextboxFocusPolicy : public BC_CheckBox
+class ActivateFocusPolicy : public BC_CheckBox
 {
 public:
-	TextboxFocusPolicy(PreferencesWindow *pwindow, int x, int y);
+	ActivateFocusPolicy(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+class DeactivateFocusPolicy : public BC_CheckBox
+{
+public:
+	DeactivateFocusPolicy(PreferencesWindow *pwindow, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };

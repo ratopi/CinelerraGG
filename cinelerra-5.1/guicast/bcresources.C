@@ -644,7 +644,7 @@ BC_Resources::BC_Resources()
 	tooltip_delay = 1000;
 	tooltip_bg_color = YELLOW;
 	tooltips_enabled = 1;
-	textbox_focus_policy = LEAVE_DEACTIVATE;
+	textbox_focus_policy = 0;
 
 	filebox_margin = 110;
 	dirbox_margin = 90;

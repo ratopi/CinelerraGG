@@ -750,7 +750,8 @@ int BC_TextBox::focus_out_event()
 
 int BC_TextBox::cursor_enter_event()
 {
-	if(top_level->event_win == win && enabled)
+	if( top_level->event_win == win && enabled &&
+	    !(top_level->get_resources()->textbox_focus_policy & CLICK_ACTIVATE) )
 	{
 		tooltip_done = 0;
 		if( !active ) {
@@ -777,7 +778,7 @@ int BC_TextBox::cursor_leave_event()
 		flash(1);
 	}
 	if( !suggestions_popup &&
-	    top_level->get_resources()->textbox_focus_policy == LEAVE_DEACTIVATE )
+	    !(top_level->get_resources()->textbox_focus_policy & CLICK_DEACTIVATE) )
 		deactivate();
 	return 0;
 }
@@ -901,7 +902,7 @@ int BC_TextBox::button_press_event()
 			if( suggestions_popup->button_press_event() )
 				return suggestions_popup->handle_event();
 		}
-		else if( top_level->get_resources()->textbox_focus_policy == CLICK_DEACTIVATE )
+		else if( (top_level->get_resources()->textbox_focus_policy & CLICK_DEACTIVATE) )
 			deactivate();
 	}
 

@@ -146,9 +146,12 @@ void InterfacePrefs::create_objects()
 	PopupMenuBtnup *pop_win = new PopupMenuBtnup(pwindow, x1, y1);
 	add_subwindow(pop_win);
 	y1 += pop_win->get_h() + 5;
-	TextboxFocusPolicy *focus_policy = new TextboxFocusPolicy(pwindow, x1, y1);
-	add_subwindow(focus_policy);
-	y1 += focus_policy->get_h() + 5;
+	ActivateFocusPolicy *focus_activate = new ActivateFocusPolicy(pwindow, x1, y1);
+	add_subwindow(focus_activate);
+	y1 += focus_activate->get_h() + 5;
+	DeactivateFocusPolicy *focus_deactivate = new DeactivateFocusPolicy(pwindow, x1, y1);
+	add_subwindow(focus_deactivate);
+	y1 += focus_deactivate->get_h() + 5;
 
 	if( y < y1 ) y = y1;
 	y += 10;
@@ -746,16 +749,35 @@ int PopupMenuBtnup::handle_event()
 	return 1;
 }
 
-TextboxFocusPolicy::TextboxFocusPolicy(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->thread->preferences->textbox_focus_policy,
+ActivateFocusPolicy::ActivateFocusPolicy(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, (pwindow->thread->preferences->textbox_focus_policy & CLICK_ACTIVATE) != 0,
+	_("Click to activate text focus"))
+{
+	this->pwindow = pwindow;
+}
+
+int ActivateFocusPolicy::handle_event()
+{
+	if( get_value() )
+		pwindow->thread->preferences->textbox_focus_policy |= CLICK_ACTIVATE;
+	else
+		pwindow->thread->preferences->textbox_focus_policy &= ~CLICK_ACTIVATE;
+	return 1;
+}
+
+DeactivateFocusPolicy::DeactivateFocusPolicy(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, (pwindow->thread->preferences->textbox_focus_policy & CLICK_DEACTIVATE) != 0,
 	_("Click to deactivate text focus"))
 {
 	this->pwindow = pwindow;
 }
 
-int TextboxFocusPolicy::handle_event()
+int DeactivateFocusPolicy::handle_event()
 {
-	pwindow->thread->preferences->textbox_focus_policy = get_value();
+	if( get_value() )
+		pwindow->thread->preferences->textbox_focus_policy |= CLICK_DEACTIVATE;
+	else
+		pwindow->thread->preferences->textbox_focus_policy &= ~CLICK_DEACTIVATE;
 	return 1;
 }
 

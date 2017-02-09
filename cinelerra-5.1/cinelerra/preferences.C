@@ -83,7 +83,7 @@ Preferences::Preferences()
 	warn_version = 1;
 	bd_warn_root = 1;
 	popupmenu_btnup = 1;
-	textbox_focus_policy = LEAVE_DEACTIVATE;
+	textbox_focus_policy = 0;
 	dvd_yuv420p_interlace = 0;
 
 // Default brender asset
