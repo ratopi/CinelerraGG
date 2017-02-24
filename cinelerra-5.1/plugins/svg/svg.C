@@ -190,29 +190,17 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 				printf(_("Export of %s to %s failed\n"), config.svg_file, filename_png);
 		}
 		if( fd >= 0 ) {
-			struct stat st_png;
-			fstat(fd, &st_png);
-			unsigned char *png_buffer = (unsigned char *)
-				mmap (NULL, st_png.st_size, PROT_READ, MAP_SHARED, fd, 0);
-			if( png_buffer != MAP_FAILED ) {
-				if( png_buffer[0] == 0x89 && png_buffer[1] == 0x50 &&
-				    png_buffer[2] == 0x4e && png_buffer[3] == 0x47 ) {
-					ofrm = new VFramePng(png_buffer, st_png.st_size, 1., 1.);
-					if( ofrm->get_color_model() != output->get_color_model() ) {
-						VFrame *vfrm = new VFrame(ofrm->get_w(), ofrm->get_h(),
-							output->get_color_model());
-						vfrm->transfer_from(ofrm);
-						delete ofrm;  ofrm = vfrm;
-					}
-				}
-				else
-					printf (_("The file %s that was generated from %s is not in PNG format."
-						  " Try to delete all *.png files.\n"), filename_png, config.svg_file);
-				munmap(png_buffer, st_png.st_size);
-			}
-			else
-				printf(_("Access mmap to %s as %s failed.\n"), config.svg_file, filename_png);
+			ofrm = VFramePng::vframe_png(fd);
 			close(fd);
+			if( ofrm && ofrm->get_color_model() != output->get_color_model() ) {
+				VFrame *vfrm = new VFrame(ofrm->get_w(), ofrm->get_h(),
+					output->get_color_model());
+				vfrm->transfer_from(ofrm);
+				delete ofrm;  ofrm = vfrm;
+			}
+			if( !ofrm )
+				printf (_("The file %s that was generated from %s is not in PNG format."
+					  " Try to delete all *.png files.\n"), filename_png, config.svg_file);
 		}
 	}
 	if( ofrm ) {

@@ -200,9 +200,6 @@ public:
 // Set keyframe status
 	void set_keyframe(int value);
 	int get_keyframe();
-// Overlay src onto this with blending and translation of input.
-// Source and this must have alpha
-	void overlay(VFrame *src, int out_x1, int out_y1);
 
 // If the opengl state is RAM, transfer image from RAM to the texture
 // referenced by this frame.
@@ -344,7 +341,12 @@ public:
 // This clears the stacks and the param table
 	void clear_stacks();
 
-	void draw_pixel(int x, int y);
+	int (VFrame::*draw_point)(int x, int y);
+	int pixel_rgb, pixel_yuv, stipple;
+
+	void set_pixel_color(int rgb);
+	void set_stiple(int mask);
+	int draw_pixel(int x, int y);
 	void draw_line(int x1, int y1, int x2, int y2);
 	void draw_smooth(int x1, int y1, int x2, int y2, int x3, int y3);
 	void smooth_draw(int x1, int y1, int x2, int y2, int x3, int y3);
@@ -459,9 +461,11 @@ class VFramePng : public VFrame {
 // Read a PNG into the frame with alpha
 	int read_png(const unsigned char *data, long image_size, double xscale, double yscale);
 public:
-	VFramePng(unsigned char *png_data, double scale=0);
+	VFramePng(unsigned char *png_data, double s=0);
 	VFramePng(unsigned char *png_data, long image_size, double xs=0, double ys=0);
 	~VFramePng();
+	static VFrame *vframe_png(int fd, double xs=1, double ys=1);
+	static VFrame *vframe_png(const char *png_path, double xs=1, double ys=1);
 };
 
 #endif

@@ -150,30 +150,45 @@ int PluginServer::reset_parameters()
 	keyframe = 0;
 	prompt = 0;
 	cleanup_plugin();
-	autos = 0;
-	edl = 0;
-	preferences = 0;
-	title = 0;
-	path = 0;
-	ff_name = 0;
-	audio = video = theme = 0;
-	fileio = 0;
-	uses_gui = 0;
-	realtime = multichannel = fileio = 0;
-	synthesis = 0;
-	start_auto = end_auto = 0;
-	transition = 0;
-	new_plugin = 0;
-	client = 0;
-	use_opengl = 0;
-	vdevice = 0;
-	modules = 0;
-	nodes = 0;
-	picon = 0;
 
 	lad_index = -1;
 	lad_descriptor_function = 0;
 	lad_descriptor = 0;
+
+	plugin_obj = 0;
+	client = 0; 
+	new_plugin = 0;
+	lad_index = -1;
+	lad_descriptor_function = 0;
+	lad_descriptor = 0;
+	use_opengl = 0;
+	ff_name = 0;
+	vdevice = 0;
+	plugin_type = 0;
+	start_auto = end_auto = 0;
+	autos = 0;
+	reverse = 0;
+	plugin_open = 0;
+	realtime = multichannel = fileio = 0;
+	synthesis = 0;
+	audio = video = theme = 0;
+	uses_gui = 0;
+	transition = 0;
+	title = 0;
+	path = 0;
+	data_text = 0;
+	for( int i=sizeof(args)/sizeof(args[0]); --i>=0; ) args[i] = 0;
+	total_args = 0; 
+	dir_idx = 0;
+	modules = 0;
+	nodes = 0;
+	attachmentpoint = 0;
+	edl = 0;
+	preferences = 0;
+	prompt = 0;
+	temp_frame = 0;
+	picon = 0;
+
 	return 0;
 }
 
@@ -1243,27 +1258,8 @@ int PluginServer::get_plugin_png_path(char *png_path)
 VFrame *PluginServer::get_plugin_images()
 {
 	char png_path[BCTEXTLEN];
-	int len = get_plugin_png_path(png_path);
-	if( !len ) return 0;
-	int ret = 0, w = 0, h = 0;
-	unsigned char *bfr = 0;
-	int fd = ::open(png_path, O_RDONLY);
-	if( fd < 0 ) ret = 1;
-	if( !ret ) {
-		bfr = (unsigned char *) ::mmap (NULL, len, PROT_READ, MAP_SHARED, fd, 0);
-		if( bfr == MAP_FAILED ) ret = 1;
-	}
-	VFrame *vframe = 0;
-	if( !ret ) {
-		double scale = BC_WindowBase::get_resources()->icon_scale;
-		vframe = new VFramePng(bfr, len, scale, scale);
-		if( (w=vframe->get_w()) <= 0 || (h=vframe->get_h()) <= 0 ||
-		    vframe->get_data() == 0 ) ret = 1;
-	}
-	if( bfr && bfr != MAP_FAILED ) ::munmap(bfr, len);
-	if( fd >= 0 ) ::close(fd);
-	if( ret ) { delete vframe;  vframe = 0; }
-	return vframe;
+	if( !get_plugin_png_path(png_path) ) return 0;
+	return VFramePng::vframe_png(png_path,0,0);
 }
 
 VFrame *PluginServer::get_picon()

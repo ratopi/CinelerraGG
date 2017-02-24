@@ -76,6 +76,7 @@ int AngleSlider::handle_event()
 {
 	client->angle = get_value();
 	client->send_configure_change();
+	return 1;
 }
 
 PinchSlider::PinchSlider(WhirlMain *client, int x, int y)
@@ -90,6 +91,7 @@ int PinchSlider::handle_event()
 {
 	client->pinch = get_value();
 	client->send_configure_change();
+	return 1;
 }
 
 RadiusSlider::RadiusSlider(WhirlMain *client, int x, int y)
@@ -104,6 +106,7 @@ int RadiusSlider::handle_event()
 {
 	client->radius = get_value();
 	client->send_configure_change();
+	return 1;
 }
 
 AutomatedFn::AutomatedFn(WhirlMain *client, WhirlWindow *window, int x, int y, int number)
@@ -127,5 +130,6 @@ int AutomatedFn::handle_event()
 	update(1);
 	client->automated_function = number;
 	client->send_configure_change();
+	return 1;
 }
 

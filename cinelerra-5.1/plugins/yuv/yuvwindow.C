@@ -61,6 +61,7 @@ int YUVWindow::close_event()
 	client->save_defaults();
 	hide_window();
 	client->send_hide_gui();
+	return 1;
 }
 
 YSlider::YSlider(YUVMain *client, int x, int y)
@@ -75,6 +76,7 @@ int YSlider::handle_event()
 {
 	client->y = get_value();
 	client->send_configure_change();
+	return 1;
 }
 
 USlider::USlider(YUVMain *client, int x, int y)
@@ -89,6 +91,7 @@ int USlider::handle_event()
 {
 	client->u = get_value();
 	client->send_configure_change();
+	return 1;
 }
 
 VSlider::VSlider(YUVMain *client, int x, int y)
@@ -103,6 +106,7 @@ int VSlider::handle_event()
 {
 	client->v = get_value();
 	client->send_configure_change();
+	return 1;
 }
 
 AutomatedFn::AutomatedFn(YUVMain *client, YUVWindow *window, int x, int y, int number)
@@ -126,5 +130,6 @@ int AutomatedFn::handle_event()
 	update(1);
 	client->automated_function = number;
 	client->send_configure_change();
+	return 1;
 }
 

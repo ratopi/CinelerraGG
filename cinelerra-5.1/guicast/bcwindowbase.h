@@ -195,6 +195,7 @@ public:
 	virtual int uses_text() { return 0; };
 // Only if opengl is enabled
 	virtual int expose_event() { return 0; };
+	virtual int grab_event(XEvent *event) { return 0; };
 	virtual void create_objects() { return; };
 
 	int get_window_type() { return window_type; }
@@ -453,6 +454,9 @@ public:
 	int get_id();
 	void set_done(int return_value);
 	void close(int return_value);
+// Reroute toplevel events
+	int grab(BC_WindowBase *window);
+	int ungrab(BC_WindowBase *window);
 // Get a bitmap to draw on the window with
 	BC_Bitmap* new_bitmap(int w, int h, int color_model = -1);
 // Draw a bitmap on the window
@@ -629,6 +633,8 @@ private:
 	int light1, light2, medium, dark1, dark2, bg_color;
 // Type of window defined above
 	int window_type;
+// keypress/pointer active grab
+	BC_WindowBase* active_grab;
 // Pointer to the active menubar in the window.
 	BC_MenuBar* active_menubar;
 // pointer to the active popup menu in the window

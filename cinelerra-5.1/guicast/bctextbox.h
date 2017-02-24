@@ -231,6 +231,16 @@ class BC_ScrollTextBoxYScroll;
 
 class BC_ScrollTextBox
 {
+	BC_ScrollTextBoxText *text;
+	BC_ScrollTextBoxYScroll *yscroll;
+	BC_WindowBase *parent_window;
+	const char *default_text;
+	const wchar_t *default_wtext;
+	int default_size;
+	int x, y, w, rows;
+
+	friend class BC_ScrollTextBoxText;
+	friend class BC_ScrollTextBoxYScroll;
 public:
 	BC_ScrollTextBox(BC_WindowBase *parent_window,
 		int x, int y, int w, int rows,
@@ -241,6 +251,9 @@ public:
 	virtual ~BC_ScrollTextBox();
 	void create_objects();
 	virtual int handle_event();
+	virtual int button_press_event();
+	virtual int button_release_event();
+	int get_buttonpress();
 
 	const char* get_text();
 	const wchar_t* get_wtext();
@@ -251,6 +264,7 @@ public:
 	void set_selection(int char1, int char2, int ibeam);
 	void wset_selection(int char1, int char2, int ibeam);
 	void reposition_window(int x, int y, int w, int rows);
+
 	int get_x();
 	int get_y();
 	int get_w();
@@ -258,18 +272,6 @@ public:
 // Visible rows for resizing
 	int get_rows();
 	int get_ibeam_letter();
-
-	friend class BC_ScrollTextBoxText;
-	friend class BC_ScrollTextBoxYScroll;
-
-private:
-	BC_ScrollTextBoxText *text;
-	BC_ScrollTextBoxYScroll *yscroll;
-	BC_WindowBase *parent_window;
-	const char *default_text;
-	const wchar_t *default_wtext;
-	int default_size;
-	int x, y, w, rows;
 };
 
 class BC_ScrollTextBoxText : public BC_TextBox
@@ -281,6 +283,8 @@ public:
 	int handle_event();
 	int motion_event();
 	BC_ScrollTextBox *gui;
+	int button_press_event() { return gui->button_press_event(); }
+	int button_release_event() { return gui->button_release_event(); }
 };
 
 class BC_ScrollTextBoxYScroll : public BC_ScrollBar

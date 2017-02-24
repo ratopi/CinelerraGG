@@ -121,7 +121,7 @@ public:
 // This is used by BRender + BatchRender.
 	double equivalent_output(EDL *edl);
 // Set project path for filename prefixes in the assets
-	void set_path(char *path);
+	void set_path(const char *path);
 // Set points and labels
 	void set_inpoint(double position);
 	void set_outpoint(double position);

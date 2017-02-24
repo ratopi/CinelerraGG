@@ -32,38 +32,23 @@ HSV::~HSV()
 {
 }
 
-YUV HSV::yuv_static;
+YUV YUV::yuv;
 
 int HSV::rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v)
 {
-	float min, max, delta;
-	min = ((r < g) ? r : g) < b ? ((r < g) ? r : g) : b;
-	max = ((r > g) ? r : g) > b ? ((r > g) ? r : g) : b;
-	v = max;
-
-	delta = max - min;
-
-	if(max != 0 && delta != 0)
-    {
-	    s = delta / max;               // s
-
-		if(r == max)
-        	h = (g - b) / delta;         // between yellow & magenta
-		else
-		if(g == max)
-        	h = 2 + (b - r) / delta;     // between cyan & yellow
-		else
-        	h = 4 + (r - g) / delta;     // between magenta & cyan
-
-		h *= 60;                               // degrees
-		if(h < 0)
-        	h += 360;
+	float min = ((r < g) ? r : g) < b ? ((r < g) ? r : g) : b;
+	float max = ((r > g) ? r : g) > b ? ((r > g) ? r : g) : b;
+	float delta = max - min;
+	if( max != 0 && delta != 0 ) {
+		v = max;
+		s = delta / max;
+		h = r == max ? (g - b) / delta :     // between yellow & magenta
+		    g == max ? 2 + (b - r) / delta : // between cyan & yellow
+		               4 + (r - g) / delta;  // between magenta & cyan
+		if( (h*=60) < 0 ) h += 360;          // degrees
 	}
-	else
-	{
-        // r = g = b = 0                // s = 0, v is undefined
-        s = 0;
-        h = -1;
+	else { // r = g = b = 0
+	        h = -1;  s = 0;  v = 0;              // s = 0, v is undefined
 	}
 
 	return 0;
@@ -71,55 +56,26 @@ int HSV::rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v)
 
 int HSV::hsv_to_rgb(float &r, float &g, float &b, float h, float s, float v)
 {
-    int i;
-	float f, p, q, t;
-    if(s == 0)
-	{
-        // achromatic (grey)
-        r = g = b = v;
-        return 0;
-    }
+	if( s == 0 ) { // achromatic (grey)
+		r = g = b = v;
+		return 0;
+	}
 
-    h /= 60;                        // sector 0 to 5
-    i = (int)h;
-    f = h - i;                      // factorial part of h
-    p = v * (1 - s);
-    q = v * (1 - s * f);
-    t = v * (1 - s * (1 - f));
+	h /= 60;			// sector 0 to 5
+	int i = (int)h;
+	float f = h - i;		// factorial part of h
+	float p = v * (1 - s);
+	float q = v * (1 - s * f);
+	float t = v * (1 - s * (1 - f));
 
-    switch(i)
-	{
-        case 0:
-            r = v;
-            g = t;
-            b = p;
-            break;
-        case 1:
-            r = q;
-            g = v;
-            b = p;
-            break;
-        case 2:
-            r = p;
-            g = v;
-            b = t;
-            break;
-        case 3:
-            r = p;
-            g = q;
-            b = v;
-            break;
-        case 4:
-            r = t;
-            g = p;
-            b = v;
-            break;
-        default:                // case 5:
-            r = v;
-            g = p;
-            b = q;
-            break;
-    }
+	switch(i) {
+        case 0:  r = v; g = t; b = p; break;
+        case 1:  r = q; g = v; b = p; break;
+        case 2:  r = p; g = v; b = t; break;
+        case 3:  r = p; g = q; b = v; break;
+        case 4:  r = t; g = p; b = v; break;
+        default: r = v; g = p; b = q; break;
+	}
 	return 0;
 }
 
@@ -130,11 +86,11 @@ int HSV::yuv_to_hsv(int y, int u, int v, float &h, float &s, float &va, int max)
 
 // 	if(max == 0xffff)
 // 	{
-// 		yuv_static.yuv_to_rgb_16(r_i, g_i, b_i, y, u, v);
+// 		YUV::yuv.yuv_to_rgb_16(r_i, g_i, b_i, y, u, v);
 // 	}
 // 	else
 	{
-		yuv_static.yuv_to_rgb_8(r_i, g_i, b_i, y, u, v);
+		YUV::yuv.yuv_to_rgb_8(r_i, g_i, b_i, y, u, v);
 	}
 	r = (float)r_i / max;
 	g = (float)g_i / max;
@@ -142,10 +98,8 @@ int HSV::yuv_to_hsv(int y, int u, int v, float &h, float &s, float &va, int max)
 
 	float h2, s2, v2;
 	HSV::rgb_to_hsv(r, g, b, h2, s2, v2);
-	h = h2;
-	s = s2;
-	va = v2;
 
+	h = h2;  s = s2;  va = v2;
 	return 0;
 }
 
@@ -163,43 +117,17 @@ int HSV::hsv_to_yuv(int &y, int &u, int &v, float h, float s, float va, int max)
 
 	int y2, u2, v2;
 // 	if(max == 0xffff)
-// 		yuv_static.rgb_to_yuv_16(r_i, g_i, b_i, y2, u2, v2);
+// 		YUV::yuv.rgb_to_yuv_16(r_i, g_i, b_i, y2, u2, v2);
 // 	else
-		yuv_static.rgb_to_yuv_8(r_i, g_i, b_i, y2, u2, v2);
-	y = y2;
-	u = u2;
-	v = v2;
+		YUV::yuv.rgb_to_yuv_8(r_i, g_i, b_i, y2, u2, v2);
 
+	y = y2;  u = u2;  v = v2;
 	return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 YUV::YUV()
 {
-	for(int i = 0; i < 0x100; i++)
-	{
+	for(int i = 0; i < 0x100; i++) {
 // compression
 		rtoy_tab_8[i] = (int)(R_TO_Y * 0x100 * i);
 		rtou_tab_8[i] = (int)(R_TO_U * 0x100 * i);
@@ -219,8 +147,7 @@ YUV::YUV()
 	utog_8 = &(utog_tab_8[(0x100) / 2]);
 	utob_8 = &(utob_tab_8[(0x100) / 2]);
 
-	for(int i = (-0x100) / 2; i < (0x100) / 2; i++)
-	{
+	for(int i = (-0x100) / 2; i < (0x100) / 2; i++) {
 // decompression
 		vtor_8[i] = (int)(V_TO_R * 0x100 * i);
 		vtog_8[i] = (int)(V_TO_G * 0x100 * i);
@@ -229,8 +156,7 @@ YUV::YUV()
 		utob_8[i] = (int)(U_TO_B * 0x100 * i);
 	}
 
-	for(int i = 0; i < 0x10000; i++)
-	{
+	for(int i = 0; i < 0x10000; i++) {
 // compression
 		rtoy_tab_16[i] = (int)(R_TO_Y * 0x100 * i);
 		rtou_tab_16[i] = (int)(R_TO_U * 0x100 * i);
@@ -250,8 +176,7 @@ YUV::YUV()
 	utog_16 = &(utog_tab_16[(0x10000) / 2]);
 	utob_16 = &(utob_tab_16[(0x10000) / 2]);
 
-	for(int i = (-0x10000) / 2; i < (0x10000) / 2; i++)
-	{
+	for(int i = (-0x10000) / 2; i < (0x10000) / 2; i++) {
 // decompression
 		vtor_16[i] = (int)(V_TO_R * 0x100 * i);
 		vtog_16[i] = (int)(V_TO_G * 0x100 * i);
@@ -264,3 +189,4 @@ YUV::YUV()
 YUV::~YUV()
 {
 }
+

@@ -269,8 +269,6 @@ void YUVShiftEffect::read_data(KeyFrame *keyframe)
 }
 
 
-static YUV yuv_static;
-
 #define YUV_MACRO(type, temp_type, components) \
 { \
 	for(int i = 0; i < h; i++) { \
@@ -310,11 +308,11 @@ static YUV yuv_static;
 			temp_type u = up ? up[1] : 0x80; \
 			temp_type v = vp ? vp[2] : 0x80; \
 			if( sizeof(type) == 4 ) \
-				yuv_static.yuv_to_rgb_f(r, g, b, y/255., (u-128.)/255., (v-128.)/255.); \
+				YUV::yuv.yuv_to_rgb_f(r, g, b, y/255., (u-128.)/255., (v-128.)/255.); \
 			else if( sizeof(type) == 2 ) \
-				yuv_static.yuv_to_rgb_16(r, g, b, y, u, v); \
+				YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v); \
 			else \
-				yuv_static.yuv_to_rgb_8(r, g, b, y, u, v); \
+				YUV::yuv.yuv_to_rgb_8(r, g, b, y, u, v); \
 			out_row[0] = r; \
 			out_row[1] = g; \
 			out_row[2] = b; \

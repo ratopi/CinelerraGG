@@ -61,5 +61,20 @@ static inline void bclamp(float &fv, float fmn, float fmx) {
 static inline void bclamp(double &dv, double dmn, double dmx) {
         if( dv < dmn ) dv = dmn; else if( dv > dmx ) dv = dmx;
 }
+static inline void bc_rgb2yuv(int r, int g, int b, int &y, int &u, int &v, int max=255)
+{ //bt601, jpeg, unclipped
+	double mx = max, rr = r/mx, gg = g/mx, bb = b/mx;
+	y = (int)(( 0.29900*rr + 0.58700*gg + 0.11400*bb)       * mx + 0.5);
+	u = (int)((-0.16874*rr - 0.33126*gg + 0.50000*bb + 0.5) * mx + 0.5);
+	v = (int)(( 0.50000*rr - 0.41869*gg - 0.08131*bb + 0.5) * mx + 0.5);
+}
+static inline void bc_yuv2rgb(int y, int u, int v, int &r, int &g, int &b, int max=255)
+{
+	int ofs = (max + 1) / 2;
+	double mx = max, yy = y/mx, uu = (u-ofs)/mx, vv = (v-ofs)/mx;
+	r = (int)((yy + 1.40200*vv)              * mx + 0.5);
+	g = (int)((yy - 0.34414*uu - 0.71414*vv) * mx + 0.5);
+	b = (int)((yy + 1.77200*uu)              * mx + 0.5);
+}
 
 #endif

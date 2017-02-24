@@ -1,24 +1,17 @@
 include ../../plugin_defs
 
-OBJS = $(OBJDIR)/title.o  \
-	$(OBJDIR)/titlewindow.o
-
-
+OBJS = $(OBJDIR)/titler.o  \
+	$(OBJDIR)/titlerwindow.o
 
 PLUGIN = titler
 CFLAGS += -Wall
-#CFLAGS += -I$(FREETYPE_DIR)/include -I../../thirdparty/
-#LFLAGS += $(FREETYPE_DIR)/$(OBJDIR)/libfreetype.a
+
 ifneq ($(STATIC_LIBRARIES), y)
 LFLAGS += -lfreetype
 endif
 
 include ../../plugin_config
 
-
-
-$(OBJDIR)/title.o: title.C
-$(OBJDIR)/titlewindow.o: titlewindow.C
-
-
+$(OBJDIR)/titler.o: titler.C
+$(OBJDIR)/titlerwindow.o: titlerwindow.C
 

@@ -2166,46 +2166,18 @@ void BC_ScrollTextBox::create_objects()
 	set_text_row(0);
 }
 
-int BC_ScrollTextBox::handle_event()
-{
-	return 1;
-}
+int BC_ScrollTextBox::handle_event() { return 1; }
+int BC_ScrollTextBox::button_press_event() { return text->BC_TextBox::button_press_event(); }
+int BC_ScrollTextBox::button_release_event() { return text->BC_TextBox::button_release_event(); }
+int BC_ScrollTextBox::get_buttonpress() { return text->BC_TextBox::get_buttonpress(); };
+int BC_ScrollTextBox::get_x() { return x; }
+int BC_ScrollTextBox::get_y() { return y; }
+int BC_ScrollTextBox::get_w() { return w; }
+int BC_ScrollTextBox::get_h() { return text->get_h(); }
+int BC_ScrollTextBox::get_rows() { return rows; }
 
-int BC_ScrollTextBox::get_x()
-{
-	return x;
-}
-
-int BC_ScrollTextBox::get_y()
-{
-	return y;
-}
-
-int BC_ScrollTextBox::get_w()
-{
-	return w;
-}
-
-int BC_ScrollTextBox::get_h()
-{
-	return this->text->get_h();
-}
-
-int BC_ScrollTextBox::get_rows()
-{
-	return rows;
-}
-
-
-const char* BC_ScrollTextBox::get_text()
-{
-	return text->get_text();
-}
-
-const wchar_t* BC_ScrollTextBox::get_wtext()
-{
-	return text->get_wtext();
-}
+const char* BC_ScrollTextBox::get_text() { return text->get_text(); }
+const wchar_t* BC_ScrollTextBox::get_wtext() { return text->get_wtext(); }
 
 void BC_ScrollTextBox::set_text(char *text, int isz)
 {
@@ -2325,7 +2297,6 @@ int BC_ScrollTextBoxText::motion_event()
 		1);
 	return 1;
 }
-
 
 BC_ScrollTextBoxYScroll::BC_ScrollTextBoxYScroll(BC_ScrollTextBox *gui)
  : BC_ScrollBar(gui->x +

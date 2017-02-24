@@ -121,46 +121,37 @@ void AssetEdit::handle_done_event(int result)
 
 void AssetEdit::handle_close_event(int result)
 {
- 	if(!result)
- 	{
+	if(!result) {
 		int changed = 0;
 		Asset *asset = 0;
 		EDL *nested_edl = 0;
 
-		if(indexable->is_asset)
-		{
+		if(indexable->is_asset) {
 			asset = (Asset*)indexable;
-			if(!changed_params->equivalent(*asset, 1, 1, mwindow->edl))
+			if( changed_params->equivalent(*asset, 1, 1, mwindow->edl) )
 				changed = 1;
 		}
-		else
-		{
+		else {
 			nested_edl = (EDL*)indexable;
-			if(strcmp(changed_params->path, nested_edl->path)
-//                ||
-//                changed_params->sample_rate != nested_edl->session->sample_rate ||
-//				!EQUIV(changed_params->frame_rate, nested_edl->session->frame_rate)
-                )
+			if( strcmp(changed_params->path, nested_edl->path)
+// 			     || changed_params->sample_rate != nested_edl->session->sample_rate
+//			     || !EQUIV(changed_params->frame_rate, nested_edl->session->frame_rate
+			)
 				changed = 1;
 		}
-//printf("AssetEdit::handle_close_event %d\n", __LINE__);
-
- 		if(changed)
- 		{
+		if(changed) {
 			mwindow->gui->lock_window();
 //printf("AssetEdit::handle_close_event %d\n", __LINE__);
 
 // Omit index status from copy since an index rebuild may have been
 // happening when new_asset was created but not be happening anymore.
-			if(asset)
-			{
+			if(asset) {
 				mwindow->remove_asset_from_caches(asset);
 //printf("AssetEdit::handle_close_event %d %f\n", __LINE__, asset->get_frame_rate());
 				asset->copy_from(changed_params, 0);
 //printf("AssetEdit::handle_close_event %d %d %d\n", __LINE__, changed_params->bits, asset->bits);
 			}
-			else
-			{
+			else {
 				strcpy(nested_edl->path, changed_params->path);
 // Other parameters can't be changed because they're defined in the other EDL
 //                nested_edl->session->frame_rate = changed_params->frame_rate;
@@ -168,18 +159,11 @@ void AssetEdit::handle_close_event(int result)
 			}
 //printf("AssetEdit::handle_close_event %d\n", __LINE__);
 
-			mwindow->gui->update(0,
-				2,
-				0,
-				0,
-				0,
-				0,
-				0);
+			mwindow->gui->update(0, 2, 0, 0, 0, 0, 0);
 //printf("AssetEdit::handle_close_event %d\n", __LINE__);
 
 // Start index rebuilding
-			if( (asset && asset->audio_data) || nested_edl)
-			{
+			if( (asset && asset->audio_data) || nested_edl) {
 				char source_filename[BCTEXTLEN];
 				char index_filename[BCTEXTLEN];
 				IndexFile::get_index_filename(source_filename,

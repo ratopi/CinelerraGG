@@ -117,6 +117,7 @@ BC_WindowBase::~BC_WindowBase()
 #ifndef SINGLE_THREAD
 		top_level->dequeue_events(win);
 #endif
+		if(top_level->active_grab == this) top_level->active_grab = 0;
 		if(top_level->active_menubar == this) top_level->active_menubar = 0;
 		if(top_level->active_popup_menu == this) top_level->active_popup_menu = 0;
 		if(top_level->active_subwindow == this) top_level->active_subwindow = 0;
@@ -284,6 +285,7 @@ int BC_WindowBase::initialize()
 	event_win = 0;
 	last_motion_win = 0;
 	key_pressed = 0;
+	active_grab = 0;
 	active_menubar = 0;
 	active_popup_menu = 0;
 	active_subwindow = 0;
@@ -955,7 +957,10 @@ locking_message = event->xclient.message_type;
 //   event_names[event->type] : "Unknown");
 //}
 
-
+	if( active_grab && active_grab->grab_event(event) ) {
+		unlock_window();
+		return 0;
+	}
 
 
 	switch(event->type) {
@@ -3298,6 +3303,19 @@ void BC_WindowBase::close(int return_value)
 {
 	hide_window();  flush();
 	set_done(return_value);
+}
+
+int BC_WindowBase::grab(BC_WindowBase *window)
+{
+	if( window->active_grab && this != window->active_grab ) return 0;
+	window->active_grab = this;
+	return 1;
+}
+int BC_WindowBase::ungrab(BC_WindowBase *window)
+{
+	if( window->active_grab && this != window->active_grab ) return 0;
+	window->active_grab = 0;
+	return 1;
 }
 
 int BC_WindowBase::get_w()

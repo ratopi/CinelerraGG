@@ -24,7 +24,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <fcntl.h>
 #include <sys/shm.h>
+#include <sys/mman.h>
 
 #include "bcbitmap.h"
 #include "bchash.h"
@@ -78,25 +80,51 @@ VFrameScene::~VFrameScene()
 
 //static BCCounter counter;
 
-
-VFramePng::VFramePng(unsigned char *png_data, double scale)
+VFramePng::VFramePng(unsigned char *png_data, double s)
 {
 	long image_size =
 		((long)png_data[0] << 24) | ((long)png_data[1] << 16) |
 		((long)png_data[2] << 8)  |  (long)png_data[3];
-	if( !scale ) scale = BC_WindowBase::get_resources()->icon_scale;
-	read_png(png_data+4, image_size, scale, scale);
+	if( !s ) s = BC_WindowBase::get_resources()->icon_scale;
+	read_png(png_data+4, image_size, s, s);
 }
 
-VFramePng::VFramePng(unsigned char *png_data, long image_size, double xscale, double yscale)
+VFramePng::VFramePng(unsigned char *png_data, long image_size, double xs, double ys)
 {
-	if( !xscale ) xscale = BC_WindowBase::get_resources()->icon_scale;
-	if( !yscale ) yscale = BC_WindowBase::get_resources()->icon_scale;
-	read_png(png_data, image_size, xscale, yscale);
+	if( !xs ) xs = BC_WindowBase::get_resources()->icon_scale;
+	if( !ys ) ys = BC_WindowBase::get_resources()->icon_scale;
+	read_png(png_data, image_size, xs, ys);
 }
 
 VFramePng::~VFramePng()
 {
+}
+
+VFrame *VFramePng::vframe_png(int fd, double xs, double ys)
+{
+	struct stat st;
+	if( fstat(fd, &st) ) return 0;
+	long len = st.st_size;
+	if( !len ) return 0;
+	int w = 0, h = 0;
+	unsigned char *bfr = (unsigned char *)
+		::mmap (NULL, len, PROT_READ, MAP_SHARED, fd, 0);
+	if( bfr == MAP_FAILED ) return 0;
+	VFrame *vframe = new VFramePng(bfr, len, xs, ys);
+	if( (w=vframe->get_w()) <= 0 || (h=vframe->get_h()) <= 0 ||
+	    vframe->get_data() == 0 ) { delete vframe;  vframe = 0; }
+	::munmap(bfr, len);
+	return vframe;
+}
+VFrame *VFramePng::vframe_png(const char *png_path, double xs, double ys)
+{
+	VFrame *vframe = 0;
+	int fd = ::open(png_path, O_RDONLY);
+	if( fd >= 0 ) {
+		vframe = vframe_png(fd, xs, ys);
+		::close(fd);
+	}
+	return vframe;
 }
 
 
@@ -249,6 +277,9 @@ int VFrame::reset_parameters(int do_opengl)
 	sequence_number = -1;
 	timestamp = -1.;
 	is_keyframe = 0;
+	draw_point = 0;
+	set_pixel_color(BLACK);
+	stipple = 0;
 
 	if(do_opengl)
 	{
@@ -1104,58 +1135,6 @@ int VFrame::transfer_from(VFrame *that, int bg_color, int in_x, int in_y, int in
 }
 
 
-
-
-
-
-#define OVERLAY(type, max, components) \
-{ \
-	type **in_rows = (type**)src->get_rows(); \
-	type **out_rows = (type**)get_rows(); \
-	int in_w = src->get_w(); \
-	int in_h = src->get_h(); \
- \
-	for(int i = 0; i < in_h; i++) \
-	{ \
-		if(i + out_y1 >= 0 && i + out_y1 < h) \
-		{ \
-			type *src_row = in_rows[i]; \
-			type *dst_row = out_rows[i + out_y1] + out_x1 * components; \
- \
-			for(int j = 0; j < in_w; j++) \
-			{ \
-				if(j + out_x1 >= 0 && j + out_x1 < w) \
-				{ \
-					int opacity = src_row[3]; \
-					int transparency = dst_row[3] * (max - src_row[3]) / max; \
-					dst_row[0] = (transparency * dst_row[0] + opacity * src_row[0]) / max; \
-					dst_row[1] = (transparency * dst_row[1] + opacity * src_row[1]) / max; \
-					dst_row[2] = (transparency * dst_row[2] + opacity * src_row[2]) / max; \
-					dst_row[3] = MAX(dst_row[3], src_row[3]); \
-				} \
- \
-				dst_row += components; \
-				src_row += components; \
-			} \
-		} \
-	} \
-}
-
-
-void VFrame::overlay(VFrame *src,
-		int out_x1,
-		int out_y1)
-{
-	switch(get_color_model())
-	{
-		case BC_RGBA8888:
-			OVERLAY(unsigned char, 0xff, 4);
-			break;
-	}
-}
-
-
-
 int VFrame::get_scale_tables(int *column_table, int *row_table,
 			int in_x1, int in_y1, int in_x2, int in_y2,
 			int out_x1, int out_y1, int out_x2, int out_y2)
@@ -1312,62 +1291,75 @@ int VFrame::get_memory_usage()
 	return get_h() * get_bytes_per_line();
 }
 
-void VFrame::draw_pixel(int x, int y)
+void VFrame::set_pixel_color(int rgb)
 {
-	if(!(x >= 0 && y >= 0 && x < get_w() && y < get_h())) return;
-
-#define DRAW_PIXEL(x, y, components, do_yuv, max, type) \
-{ \
-	type **rows = (type**)get_rows(); \
-	rows[y][x * components] = max - rows[y][x * components]; \
-	if(!do_yuv) \
-	{ \
-		rows[y][x * components + 1] = max - rows[y][x * components + 1]; \
-		rows[y][x * components + 2] = max - rows[y][x * components + 2]; \
-	} \
-	else \
-	{ \
-		rows[y][x * components + 1] = (max / 2 + 1) - rows[y][x * components + 1]; \
-		rows[y][x * components + 2] = (max / 2 + 1) - rows[y][x * components + 2]; \
-	} \
-	if(components == 4) \
-		rows[y][x * components + 3] = max; \
+	pixel_rgb = rgb;
+	int ir = 0xff & (pixel_rgb >> 16);
+	int ig = 0xff & (pixel_rgb >> 8);
+	int ib = 0xff & (pixel_rgb >> 0);
+	bc_rgb2yuv(ir,ig,ib, ir,ig,ib);
+	bclamp(ir,0,255);
+	bclamp(ig,0,255);
+	bclamp(ib,0,255);
+	pixel_yuv =  (ir<<16) | (ig<<8) | (ib<<0);
 }
 
+void VFrame::set_stiple(int mask)
+{
+	stipple = mask;
+}
 
-	switch(get_color_model())
-	{
-		case BC_RGB888:
-			DRAW_PIXEL(x, y, 3, 0, 0xff, unsigned char);
-			break;
-		case BC_RGBA8888:
-			DRAW_PIXEL(x, y, 4, 0, 0xff, unsigned char);
-			break;
-		case BC_RGB_FLOAT:
-			DRAW_PIXEL(x, y, 3, 0, 1.0, float);
-			break;
-		case BC_RGBA_FLOAT:
-			DRAW_PIXEL(x, y, 4, 0, 1.0, float);
-			break;
-		case BC_YUV888:
-			DRAW_PIXEL(x, y, 3, 1, 0xff, unsigned char);
-			break;
-		case BC_YUVA8888:
-			DRAW_PIXEL(x, y, 4, 1, 0xff, unsigned char);
-			break;
-		case BC_RGB161616:
-			DRAW_PIXEL(x, y, 3, 0, 0xffff, uint16_t);
-			break;
-		case BC_YUV161616:
-			DRAW_PIXEL(x, y, 3, 1, 0xffff, uint16_t);
-			break;
-		case BC_RGBA16161616:
-			DRAW_PIXEL(x, y, 4, 0, 0xffff, uint16_t);
-			break;
-		case BC_YUVA16161616:
-			DRAW_PIXEL(x, y, 4, 1, 0xffff, uint16_t);
-			break;
+int VFrame::draw_pixel(int x, int y)
+{
+	if( x < 0 || y < 0 || x >= get_w() || y >= get_h() ) return 1;
+	if( draw_point ) return (this->*draw_point)(x, y);
+
+#define DRAW_PIXEL(type, r, g, b) { \
+	type **rows = (type**)get_rows(); \
+	rows[y][x * components + 0] = r; \
+	rows[y][x * components + 1] = g; \
+	rows[y][x * components + 2] = b; \
+	if( components == 4 ) \
+		rows[y][x * components + 3] = mx; \
+}
+	int components = BC_CModels::components(color_model);
+	int bch = BC_CModels::calculate_pixelsize(color_model) / components;
+	int sz = 8*bch, mx = BC_CModels::is_float(color_model) ? 1 : (1<<sz)-1;
+	int is_yuv = BC_CModels::is_yuv(color_model);
+	int pixel_color = is_yuv ? pixel_yuv : pixel_rgb;
+	int ir = 0xff & (pixel_color >> 16);  float fr = 0;
+	int ig = 0xff & (pixel_color >> 8);   float fg = 0;
+	int ib = 0xff & (pixel_color >> 0);   float fb = 0;
+	if( (x+y) & stipple ) {
+		ir = 255 - ir;  ig = 255 - ig;  ib = 255 - ib;
 	}
+	if( BC_CModels::is_float(color_model) ) {
+		fr = ir / 255.;  fg = ig / 255.;  fb = ib / 255.;
+		mx = 1;
+	}
+	else if( (sz-=8) > 0 ) {
+		ir <<= sz;  ig <<= sz;  ib <<= sz;
+	}
+
+	switch(get_color_model()) {
+	case BC_RGB888:
+	case BC_YUV888:
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		DRAW_PIXEL(uint8_t, ir, ig, ib);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		DRAW_PIXEL(uint16_t, ir, ig, ib);
+		break;
+	case BC_RGB_FLOAT:
+	case BC_RGBA_FLOAT:
+		DRAW_PIXEL(float, fr, fg, fb);
+		break;
+	}
+	return 0;
 }
 
 

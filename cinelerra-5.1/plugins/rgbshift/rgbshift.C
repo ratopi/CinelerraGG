@@ -268,9 +268,6 @@ void RGBShiftEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-
-static YUV yuv_static;
-
 #define RGB_MACRO(type, temp_type, components) \
 { \
 	for(int i = 0; i < h; i++) { \
@@ -310,11 +307,11 @@ static YUV yuv_static;
 			temp_type g = gp ? gp[1] : 0; \
 			temp_type b = bp ? bp[2] : 0; \
 			if( sizeof(type) == 4 ) \
-				yuv_static.rgb_to_yuv_f(r, g, b, y, u, v); \
+				YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v); \
 			else if( sizeof(type) == 2 ) \
-				yuv_static.rgb_to_yuv_16(r, g, b, y, u, v); \
+				YUV::yuv.rgb_to_yuv_16(r, g, b, y, u, v); \
 			else \
-				yuv_static.rgb_to_yuv_8(r, g, b, y, u, v); \
+				YUV::yuv.rgb_to_yuv_8(r, g, b, y, u, v); \
 			out_row[0] = y; \
 			out_row[1] = u; \
 			out_row[2] = v; \

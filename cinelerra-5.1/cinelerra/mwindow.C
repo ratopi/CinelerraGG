@@ -2470,8 +2470,8 @@ SET_TRACE
 // Needs mwindow to do GUI
 			gui->set_mwindow(this);
 			gui->open_plugin(0, preferences, edl, plugin);
-			gui->show_gui();
 			plugin->show = 1;
+			gui->show_gui();
 		}
 	}
 	plugin_gui_lock->unlock();
