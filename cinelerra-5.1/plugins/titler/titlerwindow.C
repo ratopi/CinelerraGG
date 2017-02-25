@@ -56,49 +56,68 @@ TitleWindow::TitleWindow(TitleMain *client)
 {
 //printf("TitleWindow::TitleWindow %d %d %d\n", __LINE__, client->config.window_w, client->config.window_h);
 	this->client = client;
-	font_tumbler = 0;
-	justify_title = 0;
-	style_title = 0;
-	size_title = 0;
-	motion_title = 0;
-	speed_title = 0;
-	font_title = 0;
-	fadeout_title = 0;
-	fadein_title = 0;
-	dropshadow_title = 0;
-	text_title = 0;
 
-	font = 0;  size = 0;
-	title_x = 0; title_y = 0;
-	x_title = 0; y_title = 0;
-	title_w = 0; title_h = 0;
-	w_title = 0; h_title = 0;
-	top = 0;  mid = 0;    bottom = 0;
-	left = 0; center = 0; right = 0;
-	loop = 0; motion = 0; speed = 0;
-	dropshadow = 0;
-	text = 0;
-	timecode = 0;
-	bold = 0;
+	font_title = 0;
+	font = 0;
+	font_tumbler = 0;
+	x_title = 0; title_x = 0;
+	y_title = 0; title_y = 0;
+	w_title = 0; title_w = 0;
+	h_title = 0; title_h = 0;
+	dropshadow_title = 0; dropshadow = 0;
+	outline_title = 0;    outline = 0;
+	stroker_title = 0;    stroker = 0;
+	style_title = 0;
 	italic = 0;
-	dragging = 0;
-	fade_in = 0;
-	fade_out = 0;
-	color_button = 0;
+	bold = 0;
+	drag = 0;
+	cur_popup = 0;
+	fonts_popup = 0;
+
 	color_x = color_y = 0;
+	outline_color_x = outline_color_y = 0;
+	drag_dx = drag_dy = dragging = 0;
+	cur_ibeam = -1;
+
+	size_title = 0;
+	size = 0;
+	size_tumbler = 0;
+	pitch_title = 0;
+	pitch = 0;
+	encoding_title = 0;
+	encoding = 0;
+	color_button = 0;
 	color_thread = 0;
+	outline_color_button = 0;
+	outline_color_thread = 0;
+	motion_title = 0;
+	motion = 0;
+	line_pitch = 0;
+	loop = 0;
+	fadein_title = 0;
+	fade_in = 0;
+	fadeout_title = 0;
+	fade_out = 0;
+	text_title = 0;
+	text = 0;
+	justify_title = 0;
+	left = 0;  center = 0;  right = 0;
+	top = 0;   mid = 0;     bottom = 0;
+	speed_title = 0;
+	speed = 0;
+	timecode = 0;
+	timecode_format = 0;
 	background = 0;
 	background_path = 0;
-	cur_ibeam = -1;
+	loop_playback = 0;
 }
 
 TitleWindow::~TitleWindow()
 {
 	ungrab(client->server->mwindow->cwindow->gui);
-	for( int j=0; j<fonts.size(); ++j ) {
-// delete the pixmaps but not the vframes since they're static
-		delete fonts.get(j)->get_icon();
-	}
+	delete fonts_popup;
+	for( int i=0; i<fonts.size(); ++i )
+		delete fonts[i]->get_icon();
 
 	sizes.remove_all_objects();
 	delete timecode_format;
@@ -357,9 +376,10 @@ void TitleWindow::create_objects()
 
 	add_tool(cur_popup = new TitleCurPopup(client, this));
 	cur_popup->create_objects();
+	add_tool(fonts_popup = new TitleFontsPopup(client, this));
 
-	update();
 	show_window(1);
+	update();
 }
 
 int TitleWindow::resize_event(int w, int h)
@@ -590,7 +610,17 @@ void  TitleWindow::next_font()
 	client->send_configure_change();
 }
 
-
+int TitleWindow::insert_ibeam(const char *txt, int adv)
+{
+	int ibeam = cur_ibeam;
+	client->insert_text(txt, ibeam);
+	if( (ibeam += adv) >= client->config.wlen)
+		ibeam = client->config.wlen;
+	text->wset_selection(-1, -1, ibeam);
+	text->update(client->config.wtext);
+	client->send_configure_change();
+	return 1;
+}
 
 void TitleWindow::update_color()
 {
@@ -965,6 +995,7 @@ int TitleText::button_press_event()
 
 int TitleText::handle_event()
 {
+	window->fonts_popup->deactivate();
 	int len =  sizeof(client->config.wtext) / sizeof(wchar_t);
 	wcsncpy(client->config.wtext, get_wtext(), len);
 	client->config.wtext[len-1] = 0;
@@ -1280,61 +1311,63 @@ TitleCurPopup::TitleCurPopup(TitleMain *client, TitleWindow *window)
 }
 int TitleCurPopup::handle_event()
 {
-printf("cur popup\n");
 	return 1;
 }
 void TitleCurPopup::create_objects()
 {
 	TitleCurItem *cur_item;
 	TitleCurSubMenu *sub_menu;
-	add_item(cur_item = new TitleCurItem(this, "nudge"));
+	add_item(cur_item = new TitleCurItem(this, _("nudge")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"nudge"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/nudge"));
-	add_item(cur_item = new TitleCurItem(this, "color"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("nudge")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/nudge")));
+	add_item(cur_item = new TitleCurItem(this, _("color")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"color"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/color"));
-	add_item(cur_item = new TitleCurItem(this, "alpha"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("color")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/color")));
+	add_item(cur_item = new TitleCurItem(this, _("alpha")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"alpha"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/alpha"));
-	add_item(cur_item = new TitleCurItem(this, "font"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("alpha")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/alpha")));
+	add_item(cur_item = new TitleCurItem(this, _("font")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"font"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/font"));
-	add_item(cur_item = new TitleCurItem(this, "size"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("font")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/font")));
+	add_item(cur_item = new TitleCurItem(this, _("size")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"size"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/size"));
-	add_item(cur_item = new TitleCurItem(this, "bold"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("size")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/size")));
+	add_item(cur_item = new TitleCurItem(this, _("bold")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"bold"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/bold"));
-	add_item(cur_item = new TitleCurItem(this, "italic"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("bold")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/bold")));
+	add_item(cur_item = new TitleCurItem(this, _("italic")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"italic"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/italic"));
-	add_item(cur_item = new TitleCurItem(this, "caps"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("italic")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/italic")));
+	add_item(cur_item = new TitleCurItem(this, _("caps")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"caps"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/caps"));
-	add_item(cur_item = new TitleCurItem(this, "ul"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("caps")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/caps")));
+	add_item(cur_item = new TitleCurItem(this, _("ul")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"ul"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/ul"));
-	add_item(cur_item = new TitleCurItem(this, "blink"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("ul")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/ul")));
+	add_item(cur_item = new TitleCurItem(this, _("blink")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"blink"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/blink"));
-	add_item(cur_item = new TitleCurItem(this, "fixed"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("blink")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/blink")));
+	add_item(cur_item = new TitleCurItem(this, _("fixed")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"fixed"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/fixed"));
-	add_item(cur_item = new TitleCurItem(this, "sup"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("fixed")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/fixed")));
+	add_item(cur_item = new TitleCurItem(this, _("sup")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"sup"));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,"/sup"));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("sup")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/sup")));
+	add_item(cur_item = new TitleCurItem(this, _("png")));
+	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("png")));
 }
 
 TitleCurItem::TitleCurItem(TitleCurPopup *popup, const char *text)
@@ -1365,34 +1398,47 @@ TitleCurSubMenuItem::~TitleCurSubMenuItem()
 }
 int TitleCurSubMenuItem::handle_event()
 {
-	char id[BCSTRLEN];
-	sprintf(id, "<%s>",get_text());
-	int ilen = strlen(id);
-	TitleMain *client = submenu->cur_item->popup->client;
-	TitleWindow *window = submenu->cur_item->popup->window;
-
-	wchar_t *wtext = client->config.wtext;
-	int wsize = sizeof(client->config.wtext)-1;
-	int wlen = client->config.wlen;
-	int ibeam_letter = window->cur_ibeam;
-	if( ibeam_letter < 0 ) ibeam_letter = 0;
-	if( ibeam_letter > wlen ) ibeam_letter = wlen;
-
-	for( int i=wlen-1, j=wlen+ilen-1; i>=ibeam_letter; --i,--j ) {
-		if( j >= wsize ) continue;
-		wtext[j] = wtext[i];
+	TitleCurPopup *popup = submenu->cur_item->popup;
+	TitleWindow *window = popup->window;
+	const char *item_text = get_text();
+	if( !strcmp(item_text, _("font")) ) {
+		int w = 300, h = 200;
+		int x = window->get_abs_cursor_x(0) - w + 10;
+		int y = window->get_abs_cursor_y(0) - 20;
+		if( x < 2 ) x = 2;
+		if( y < 2 ) y = 2;
+		window->fonts_popup->activate(x, y, w,h);
+		return 1;
 	}
-	for( int i=ibeam_letter, j=0; j<ilen; ++i,++j ) {
-		if( i >= wsize ) break;
-		wtext[i] = id[j];
-	}
-
-	if( (wlen+=ilen) > wsize ) wlen = wsize;
-	wtext[wlen] = 0;
-	window->text->update(wtext);
-	client->config.wlen = wlen;
-	client->send_configure_change();
-	return 1;
+	char txt[BCSTRLEN];
+	sprintf(txt, "<%s>", item_text);
+	int adv = strlen(txt);
+	if( adv > 1 && (txt[1] != '/' && strcmp(txt,_("font"))) ) --adv;
+	return window->insert_ibeam(txt,adv);
 }
 
+TitleFontsPopup::TitleFontsPopup(TitleMain *client, TitleWindow *window)
+ : BC_ListBox(-1, -1, 1, 1, LISTBOX_ICON_LIST,
+	&window->fonts, 0, 0, 1, 0, 1)
+{
+	this->client = client;
+	this->window = window;
+	set_use_button(0);
+}
+TitleFontsPopup::~TitleFontsPopup()
+{
+}
+
+int TitleFontsPopup::handle_event()
+{
+	deactivate();
+	BC_ListBoxItem *item = get_selection(0, 0);
+	if( !item ) return 1;
+	const char *item_text = item->get_text();
+	char txt[BCTEXTLEN];
+	sprintf(txt, "<font %s>",item_text);
+	int adv = strlen(txt);
+	int ret = window->insert_ibeam(txt, adv);
+	return ret;
+}
 

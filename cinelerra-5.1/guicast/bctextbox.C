@@ -777,7 +777,7 @@ int BC_TextBox::cursor_leave_event()
 		draw_border();
 		flash(1);
 	}
-	if( !suggestions_popup &&
+	if( !suggestions_popup && !get_buttonpress() &&
 	    !(top_level->get_resources()->textbox_focus_policy & CLICK_DEACTIVATE) )
 		deactivate();
 	return 0;
@@ -2166,19 +2166,6 @@ void BC_ScrollTextBox::create_objects()
 	set_text_row(0);
 }
 
-int BC_ScrollTextBox::handle_event() { return 1; }
-int BC_ScrollTextBox::button_press_event() { return text->BC_TextBox::button_press_event(); }
-int BC_ScrollTextBox::button_release_event() { return text->BC_TextBox::button_release_event(); }
-int BC_ScrollTextBox::get_buttonpress() { return text->BC_TextBox::get_buttonpress(); };
-int BC_ScrollTextBox::get_x() { return x; }
-int BC_ScrollTextBox::get_y() { return y; }
-int BC_ScrollTextBox::get_w() { return w; }
-int BC_ScrollTextBox::get_h() { return text->get_h(); }
-int BC_ScrollTextBox::get_rows() { return rows; }
-
-const char* BC_ScrollTextBox::get_text() { return text->get_text(); }
-const wchar_t* BC_ScrollTextBox::get_wtext() { return text->get_wtext(); }
-
 void BC_ScrollTextBox::set_text(char *text, int isz)
 {
 	this->text->set_text(text, isz);
@@ -2234,26 +2221,35 @@ void BC_ScrollTextBox::reposition_window(int x, int y, int w, int rows)
 		0);
 }
 
-void BC_ScrollTextBox::set_selection(int char1, int char2, int ibeam)
+int BC_ScrollTextBox::button_press_event()
 {
-	this->text->set_selection(char1, char2, ibeam);
+	return text->BC_TextBox::button_press_event();
+}
+int BC_ScrollTextBox::button_release_event()
+{
+	return text->BC_TextBox::button_release_event();
 }
 
+int BC_ScrollTextBox::get_h() { return text->get_h(); }
+const char *BC_ScrollTextBox::get_text() { return text->get_text(); }
+const wchar_t *BC_ScrollTextBox::get_wtext() { return text->get_wtext(); }
+
+int BC_ScrollTextBox::get_buttonpress()
+{
+	return text->BC_TextBox::get_buttonpress();
+}
 void BC_ScrollTextBox::wset_selection(int char1, int char2, int ibeam)
 {
-	this->text->wset_selection(char1, char2, ibeam);
+	text->wset_selection(char1, char2, ibeam);
 }
-
+void BC_ScrollTextBox::set_selection(int char1, int char2, int ibeam)
+{
+	text->set_selection(char1, char2, ibeam);
+}
 int BC_ScrollTextBox::get_ibeam_letter()
 {
-	return this->text->get_ibeam_letter();
+	return text->get_ibeam_letter();
 }
-
-
-
-
-
-
 
 BC_ScrollTextBoxText::BC_ScrollTextBoxText(BC_ScrollTextBox *gui, const char *text)
  : BC_TextBox(gui->x, gui->y,
@@ -2322,13 +2318,6 @@ int BC_ScrollTextBoxYScroll::handle_event()
 	gui->text->set_text_row(get_position());
 	return 1;
 }
-
-
-
-
-
-
-
 
 
 

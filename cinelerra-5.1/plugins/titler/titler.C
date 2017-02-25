@@ -1001,51 +1001,51 @@ LoadPackage* TitleTranslate::new_package()
 }
 
 TitleCurNudge::TitleCurNudge(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, 0)
+ : TitleStack<int>(parser, 0)
 {
 }
 TitleCurColor::TitleCurColor(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, plugin->config.color)
+ : TitleStack<int>(parser, plugin->config.color)
 {
 }
 TitleCurAlpha::TitleCurAlpha(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, plugin->config.alpha)
+ : TitleStack<int>(parser, plugin->config.alpha)
 {
 }
 TitleCurSize::TitleCurSize(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, plugin->config.size)
+ : TitleStack<float>(parser, plugin->config.size)
 {
 }
 TitleCurBold::TitleCurBold(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, (plugin->config.style & BC_FONT_BOLD) ? 1 : 0)
+ : TitleStack<int>(parser, (plugin->config.style & BC_FONT_BOLD) ? 1 : 0)
 {
 }
 TitleCurItalic::TitleCurItalic(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, (plugin->config.style & BC_FONT_ITALIC) ? 1 : 0)
+ : TitleStack<int>(parser, (plugin->config.style & BC_FONT_ITALIC) ? 1 : 0)
 {
 }
 TitleCurFont::TitleCurFont(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, plugin->config_font())
+ : TitleStack<BC_FontEntry*>(parser, plugin->config_font())
 {
 }
 TitleCurCaps::TitleCurCaps(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, 0)
+ : TitleStack<int>(parser, 0)
 {
 }
 TitleCurUnder::TitleCurUnder(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, 0)
+ : TitleStack<int>(parser, 0)
 {
 }
 TitleCurBlink::TitleCurBlink(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, 0)
+ : TitleStack<float>(parser, 0)
 {
 }
 TitleCurFixed::TitleCurFixed(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, 0)
+ : TitleStack<int>(parser, 0)
 {
 }
 TitleCurSuper::TitleCurSuper(TitleParser *parser, TitleMain *plugin)
- : TitleStack(parser, 0)
+ : TitleStack<int>(parser, 0)
 {
 }
 
@@ -1633,7 +1633,7 @@ int TitleCurSize::set(const char *txt)
 	}
 	if( *txt || size <= 0 || size > 2048 ) return 1;
 	int style = parser->cur_font.style();
-	if( parser->cur_font.set(0,style) ) return 1;
+	if( !parser->cur_font.set(0,style) ) return 1;
 	push(size);
 	return 0;
 }
@@ -1654,7 +1654,7 @@ int TitleCurBold::set(const char *txt)
 	int style = parser->cur_font.style();
 	if( bold ) style |= BC_FONT_BOLD;
 	else style &= ~BC_FONT_BOLD;
-	if( parser->cur_font.set(0,style) ) return 1;
+	if( !parser->cur_font.set(0,style) ) return 1;
 	push(bold);
 	return 0;
 }
@@ -1674,7 +1674,7 @@ int TitleCurItalic::set(const char *txt)
 	int style = parser->cur_font.style();
 	if( italic ) style |= BC_FONT_ITALIC;
 	else style &= ~BC_FONT_ITALIC;
-	if( parser->cur_font.set(0,style) ) return 1;
+	if( !parser->cur_font.set(0,style) ) return 1;
 	push(italic);
 	return 0;
 }
@@ -1700,16 +1700,16 @@ BC_FontEntry* TitleCurFont::get(const char *txt, int style)
 	else if( !*txt ) txt = parser->plugin->config.font;
 	return parser->plugin->get_font(txt, style);
 }
-int TitleCurFont::set(const char *txt, int style)
+BC_FontEntry *TitleCurFont::set(const char *txt, int style)
 {
 	BC_FontEntry *font = get(txt, style);
-	if( !font || parser->plugin->load_font(font) ) return 1;
+	if( !font || parser->plugin->load_font(font) ) return 0;
 	if( !txt ) (BC_FontEntry*&)*this = font;
-	return 0;
+	return font;
 }
 int TitleCurFont::set(const char *txt)
 {
-	BC_FontEntry *font = get(txt, style());
+	BC_FontEntry *font = set(txt, style());
 	if( !font ) return 1;
 	push(font);
 	return 0;
@@ -1787,6 +1787,7 @@ int TitleParser::set_attributes(int ret)
         if( !strcmp(id,_("sup")) )    return ret>1 ? cur_super.unset(text)  : cur_super.set(text);
 	return 1;
 }
+
 
 void TitleMain::load_glyphs()
 {
@@ -2302,11 +2303,11 @@ void TitleMain::draw_overlay()
 const char* TitleMain::motion_to_text(int motion)
 {
 	switch( motion ) {
-	case NO_MOTION: return _("No motion"); break;
-	case BOTTOM_TO_TOP: return _("Bottom to top"); break;
-	case TOP_TO_BOTTOM: return _("Top to bottom"); break;
-	case RIGHT_TO_LEFT: return _("Right to left"); break;
-	case LEFT_TO_RIGHT: return _("Left to right"); break;
+	case NO_MOTION:     return _("No motion");
+	case BOTTOM_TO_TOP: return _("Bottom to top");
+	case TOP_TO_BOTTOM: return _("Top to bottom");
+	case RIGHT_TO_LEFT: return _("Right to left");
+	case LEFT_TO_RIGHT: return _("Left to right");
 	}
 	return _("Unknown");
 }
@@ -2632,5 +2633,28 @@ void TitleMain::read_data(KeyFrame *keyframe)
 			result = 1;
 		}
 	}
+}
+
+void TitleMain::insert_text(const char *txt, int pos)
+{
+	int ilen = strlen(txt);
+	wchar_t *wtext = config.wtext;
+	int wsize = sizeof(config.wtext)-1;
+	int wlen = config.wlen;
+	if( pos < 0 ) pos = 0;
+	if( pos > wlen ) pos = wlen;
+
+	for( int i=wlen-1, j=wlen+ilen-1; i>=pos; --i,--j ) {
+		if( j >= wsize ) continue;
+		wtext[j] = wtext[i];
+	}
+	for( int i=pos, j=0; j<ilen; ++i,++j ) {
+		if( i >= wsize ) break;
+		wtext[i] = txt[j];
+	}
+
+	if( (wlen+=ilen) > wsize ) wlen = wsize;
+	wtext[wlen] = 0;
+	config.wlen = wlen;
 }
 

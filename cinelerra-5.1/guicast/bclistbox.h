@@ -189,13 +189,15 @@ public:
 	virtual int drag_motion_event();
 	virtual int drag_stop_event();
 
-	int deactivate();
 // After popping up a menu call this to interrupt the selection process
 	void deactivate_selection();
 
 // take_focus - used by the suggestion box to keep it from taking focus from the
 // textbox
 	int activate(int take_focus = 1);
+	int activate(int x, int y, int w=-1, int h=-1);
+	int deactivate();
+	int is_active();
 
 	int translation_event();
 	int repeat_event(int64_t duration);

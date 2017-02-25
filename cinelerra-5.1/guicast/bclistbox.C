@@ -3922,8 +3922,6 @@ int BC_ListBox::reposition_window(int x, int y, int w, int h, int flush)
 
 		if(!is_popup)
 		{
-			if(w != -1) popup_w = w;
-			if(h != -1) popup_h = h;
 			if(xscrollbar)
 				xscrollbar->reposition_window(get_xscroll_x(),
 					get_xscroll_y(),
@@ -3979,67 +3977,41 @@ int BC_ListBox::deactivate()
 
 int BC_ListBox::activate(int take_focus)
 {
-//printf("BC_ListBox::activate %d %p\n", __LINE__, this);
-	if(!active)
-	{
-		if(take_focus)
-		{
-			top_level->active_subwindow = this;
-			active = 1;
-		}
+	if( active ) return 0;
+	if( take_focus )
+		set_active_subwindow(this);
+	button_releases = 0;
+	if( !is_popup || gui ) return 0;
+	int wx = get_x(), wy = get_y() + get_h();
+	if( justify == LISTBOX_RIGHT ) wx += get_w() - popup_w;
+	Window xwin;
+	int abs_x, abs_y;
+	XTranslateCoordinates(top_level->display,
+		parent_window->win, top_level->rootwin,
+		wx, wy, &abs_x, &abs_y, &xwin);
+	if( x <= 0 ) x = 2;
+	if( y <= 0 ) y = 2;
+	return activate(abs_x, abs_y);
+}
 
-		button_releases = 0;
-
-// Test for existence of GUI in case this was previously called without
-// take_focus & again with take_focus
-		if(is_popup && !gui)
-		{
-			Window tempwin;
-			int x, y;
-			int new_x, new_y;
-			y = get_y() + get_h();
-			if(justify == LISTBOX_RIGHT)
-			{
-				x = get_x() - popup_w + get_w();
-			}
-			else
-			{
-				x = get_x();
-			}
-
-
-			XTranslateCoordinates(top_level->display,
-				parent_window->win,
-				top_level->rootwin,
-				x,
-				y,
-				&new_x,
-				&new_y,
-				&tempwin);
-
-			if(new_x < 0) new_x = 0;
-			if(new_y + popup_h > top_level->get_root_h(0))
-				new_y -= get_h() + popup_h;
-
-			add_subwindow(gui = new BC_Popup(this,
-				new_x,
-				new_y,
-				popup_w,
-				popup_h,
-				-1,
-				0,
-				0));
-// Avoid top going out of screen
-			if(new_y < 0 )
-				new_y = 2;
-//printf("BC_ListBox::activate %d this=%p %p\n", __LINE__, this, gui->win);
-			draw_items(1);
-			gui->show_window(1);
-		}
-//printf("BC_ListBox::activate %d %p\n", __LINE__, this);
-//sleep(1);
-	}
+int BC_ListBox::activate(int x, int y, int w, int h)
+{
+	if( active || !is_popup || gui ) return 0;
+	if(w != -1) popup_w = w;
+	if(h != -1) popup_h = h;
+	active = 1;
+	if( y + popup_h > top_level->get_root_h(0) )
+		y -= get_h() + popup_h;
+	add_subwindow(gui = new BC_Popup(this,
+		x, y, popup_w, popup_h, -1, 0, 0));
+	draw_items(1);
+	gui->show_window(1);
 	return 0;
+}
+
+int BC_ListBox::is_active()
+{
+	return active;
 }
 
 int BC_ListBox::keypress_event()

@@ -250,27 +250,30 @@ public:
                 const wchar_t *default_wtext, int default_size=BCTEXTLEN);
 	virtual ~BC_ScrollTextBox();
 	void create_objects();
-	virtual int handle_event();
+
+	virtual int handle_event() { return 1; }
 	virtual int button_press_event();
 	virtual int button_release_event();
-	int get_buttonpress();
 
-	const char* get_text();
-	const wchar_t* get_wtext();
 	void set_text(char *text, int isz);
 	int set_text_row(int n);
 	void update(const char *text);
 	void update(const wchar_t *wtext);
-	void set_selection(int char1, int char2, int ibeam);
-	void wset_selection(int char1, int char2, int ibeam);
 	void reposition_window(int x, int y, int w, int rows);
-
-	int get_x();
-	int get_y();
-	int get_w();
-	int get_h();
+// accessors
+	int get_x() { return x; }
+	int get_y() { return y; }
+	int get_w() { return w; }
 // Visible rows for resizing
-	int get_rows();
+	int get_rows() { return rows; }
+
+// forward functions
+	int get_h();
+	const char *get_text();
+	const wchar_t *get_wtext();
+	int get_buttonpress();
+	void wset_selection(int char1, int char2, int ibeam);
+	void set_selection(int char1, int char2, int ibeam);
 	int get_ibeam_letter();
 };
 

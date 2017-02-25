@@ -76,6 +76,7 @@ class TitleCurPopup;
 class TitleCurItem;
 class TitleCurSubMenu;
 class TitleCurSubMenuItem;
+class TitleFontsPopup;
 
 class TitleWindow : public PluginClientWindow
 {
@@ -91,6 +92,7 @@ public:
 	void update();
 	void previous_font();
 	void next_font();
+	int insert_ibeam(const char *txt, int adv);
 
 	TitleMain *client;
 
@@ -116,10 +118,12 @@ public:
 	TitleBold *bold;
 	TitleDrag *drag;
 	TitleCurPopup *cur_popup;
+	TitleFontsPopup *fonts_popup;
 
 	int color_x, color_y;
 	int outline_color_x, outline_color_y;
 	int drag_dx, drag_dy, dragging;
+	int cur_ibeam;
 
 	BC_Title *size_title;
 	TitleSize *size;
@@ -162,7 +166,6 @@ public:
 	ArrayList<BC_ListBoxItem*> encodings;
 	ArrayList<BC_ListBoxItem*> paths;
 	ArrayList<BC_ListBoxItem*> fonts;
-	int cur_ibeam;
 };
 
 
@@ -530,9 +533,20 @@ class TitleCurSubMenuItem : public BC_MenuItem
 public:
         TitleCurSubMenuItem(TitleCurSubMenu *submenu, const char *text);
         ~TitleCurSubMenuItem();
-
         int handle_event();
+
         TitleCurSubMenu *submenu;
+};
+
+class TitleFontsPopup : public BC_ListBox
+{
+public:
+	TitleFontsPopup(TitleMain *client, TitleWindow *window);
+	~TitleFontsPopup();
+	int handle_event();
+
+	TitleMain *client;
+	TitleWindow *window;
 };
 
 #endif

@@ -482,8 +482,8 @@ public:
 class TitleCurFont : public TitleStack<BC_FontEntry*>
 {
 public:
-	BC_FontEntry* get(const char *txt, int style);
-	int set(const char *txt, int style);
+	BC_FontEntry *get(const char *txt, int style);
+	BC_FontEntry *set(const char *txt, int style);
 	int style();
 	virtual int set(const char *txt=0);
 	virtual int unset(const char *txt);
@@ -566,6 +566,7 @@ public:
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
+	void insert_text(const char *txt, int pos);
 
 	void build_previews(TitleWindow *gui);
 	void reset_render();
