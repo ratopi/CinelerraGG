@@ -94,7 +94,8 @@ BC_PopupMenu::BC_PopupMenu(int x,
 
 BC_PopupMenu::~BC_PopupMenu()
 {
-	if(menu_popup) delete menu_popup;
+	use_title = 0;
+	deactivate();
 	for(int i = 0; i < TOTAL_IMAGES; i++)
 	{
 		if(images[i]) delete images[i];
@@ -503,25 +504,19 @@ int BC_PopupMenu::cursor_motion_event()
 	int result = 0;
 
 // This menu is down.
-	if(popup_down)
-	{
+	if(popup_down) {
 		result = menu_popup->dispatch_motion_event();
 	}
 
-	if(!result && use_title && top_level->event_win == win)
-	{
-		if(highlighted)
-		{
-			if(!cursor_inside())
-			{
+	if(!result && use_title && is_event_win()) {
+		if(highlighted) {
+			if(!cursor_inside()) {
 				highlighted = 0;
 				draw_title(1);
 			}
 		}
-		else
-		{
-			if(cursor_inside())
-			{
+		else {
+			if(cursor_inside()) {
 				highlighted = 1;
 				draw_title(1);
 				result = 1;

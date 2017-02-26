@@ -108,7 +108,7 @@ TitleConfig::TitleConfig()
 	strcpy(background_path, "");
 
 	outline_size = 0;
-	window_w = 720;
+	window_w = 800;
 	window_h = 460;
 	next_keyframe_position = 0;
 	prev_keyframe_position = 0;

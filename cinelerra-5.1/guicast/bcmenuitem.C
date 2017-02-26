@@ -167,7 +167,7 @@ int BC_MenuItem::dispatch_button_press()
 		result = submenu->dispatch_button_press();
 	}
 
-	if(!result && top_level->event_win == menu_popup->get_popup()->win)
+	if(!result && menu_popup->get_popup()->is_event_win())
 	{
 		if(top_level->cursor_x >= 0 && top_level->cursor_x < menu_popup->get_w() &&
 			top_level->cursor_y >= y && top_level->cursor_y < y + h)
@@ -192,8 +192,6 @@ int BC_MenuItem::dispatch_button_press()
 int BC_MenuItem::dispatch_button_release(int &redraw)
 {
 	int result = 0;
-	int cursor_x, cursor_y;
-	Window tempwin;
 
 	if(!strcmp(text, "-")) return 0;
 
@@ -202,20 +200,11 @@ int BC_MenuItem::dispatch_button_release(int &redraw)
 		result = submenu->dispatch_button_release();
 	}
 
-	if(!result)
-	{
-		XTranslateCoordinates(top_level->display,
-			top_level->event_win,
-			menu_popup->get_popup()->win,
-			top_level->cursor_x,
-			top_level->cursor_y,
-			&cursor_x,
-			&cursor_y,
-			&tempwin);
-
-		if(cursor_x >= 0 && cursor_x < menu_popup->get_w() &&
-			cursor_y >= y && cursor_y < y + h)
-		{
+	if( !result && menu_popup->cursor_inside() ) {
+		int cursor_x, cursor_y;
+		menu_popup->get_popup()->get_relative_cursor_xy(cursor_x, cursor_y);
+		if( cursor_x >= 0 && cursor_x < menu_popup->get_w() &&
+			cursor_y >= y && cursor_y < y + h ) {
 			if(menu_bar)
 				menu_bar->deactivate();
 			else
@@ -235,40 +224,35 @@ int BC_MenuItem::dispatch_button_release(int &redraw)
 int BC_MenuItem::dispatch_motion_event(int &redraw)
 {
 	int result = 0;
-	int cursor_x, cursor_y;
 
 	if(submenu)
 	{
 		result = submenu->dispatch_motion_event();
 	}
 
-	top_level->translate_coordinates(top_level->event_win,
-		menu_popup->get_popup()->win,
-		top_level->cursor_x,
-		top_level->cursor_y,
-		&cursor_x,
-		&cursor_y);
-
-	if(cursor_x >= 0 && cursor_x < menu_popup->get_w() &&
-		cursor_y >= y && cursor_y < y + h)
-	{
+	if( !result && menu_popup->cursor_inside() ) {
+		int cursor_x, cursor_y;
+		menu_popup->get_popup()->get_relative_cursor_xy(cursor_x, cursor_y);
+		if( cursor_x >= 0 && cursor_x < menu_popup->get_w() &&
+			cursor_y >= y && cursor_y < y + h) {
 // Highlight the item
-		if(!highlighted)
-		{
+			if(!highlighted)
+			{
 // Deactivate submenus in the parent menu excluding this one.
-			menu_popup->deactivate_submenus(submenu);
-			highlighted = 1;
-			if(submenu) activate_submenu();
+				menu_popup->deactivate_submenus(submenu);
+				highlighted = 1;
+				if(submenu) activate_submenu();
+				redraw = 1;
+			}
+			result = 1;
+		}
+		else
+		if(highlighted)
+		{
+			highlighted = 0;
+			result = 1;
 			redraw = 1;
 		}
-		result = 1;
-	}
-	else
-	if(highlighted)
-	{
-		highlighted = 0;
-		result = 1;
-		redraw = 1;
 	}
 	return result;
 }
@@ -288,7 +272,7 @@ int BC_MenuItem::dispatch_cursor_leave()
 		result = submenu->dispatch_cursor_leave();
 	}
 
-	if(!result && highlighted && top_level->event_win == menu_popup->get_popup()->win)
+	if(!result && highlighted && menu_popup->get_popup()->is_event_win())
 	{
 		highlighted = 0;
 		return 1;

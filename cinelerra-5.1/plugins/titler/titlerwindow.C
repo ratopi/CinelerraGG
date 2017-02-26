@@ -21,6 +21,7 @@
 
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
+#include "browsebutton.h"
 #include "clip.h"
 #include "cstrdup.h"
 #include "automation.h"
@@ -363,7 +364,11 @@ void TitleWindow::create_objects()
 	add_tool(background = new TitleBackground(client, this, x, y));
 	x += background->get_w() + margin;
 	add_tool(background_path = new TitleBackgroundPath(client, this, x, y));
-	x += background_path->get_w() + 2*margin;
+	x += background_path->get_w() + margin;
+	add_tool(background_browse = new BrowseButton(
+		client->server->mwindow->theme, this, background_path,
+		x, y, 0, _("background media"), _("Select background media path")));
+	x += background_browse->get_w() + 3*margin;
 	add_tool(loop_playback = new TitleLoopPlayback(client, x, y));
 	y += loop_playback->get_h() + 10;
 
@@ -1319,55 +1324,73 @@ void TitleCurPopup::create_objects()
 	TitleCurSubMenu *sub_menu;
 	add_item(cur_item = new TitleCurItem(this, _("nudge")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("nudge")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("nudge dx,dy")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/nudge")));
 	add_item(cur_item = new TitleCurItem(this, _("color")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("color")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("color #")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/color")));
 	add_item(cur_item = new TitleCurItem(this, _("alpha")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("alpha")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("alpha ")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("alpha 0.")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("alpha .5")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("alpha 1.")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/alpha")));
 	add_item(cur_item = new TitleCurItem(this, _("font")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("font")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("font name")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/font")));
 	add_item(cur_item = new TitleCurItem(this, _("size")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("size")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("size +")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("size -")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("size ")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/size")));
 	add_item(cur_item = new TitleCurItem(this, _("bold")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("bold")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("bold 1")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("bold 0")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/bold")));
 	add_item(cur_item = new TitleCurItem(this, _("italic")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("italic")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("italic 1")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("italic 0")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/italic")));
 	add_item(cur_item = new TitleCurItem(this, _("caps")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("caps")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("caps 1")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("caps 0")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("caps -1")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/caps")));
 	add_item(cur_item = new TitleCurItem(this, _("ul")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("ul")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("ul 1")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("ul 0")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/ul")));
 	add_item(cur_item = new TitleCurItem(this, _("blink")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("blink")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("blink 1")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("blink -1")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("blink ")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("blink 0")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/blink")));
 	add_item(cur_item = new TitleCurItem(this, _("fixed")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("fixed")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("fixed ")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("fixed 20")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("fixed 10")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("fixed 0")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/fixed")));
 	add_item(cur_item = new TitleCurItem(this, _("sup")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("sup")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("sup 1")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("sup 0")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("sup -1")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/sup")));
 	add_item(cur_item = new TitleCurItem(this, _("png")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("png")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("png file")));
 }
 
 TitleCurItem::TitleCurItem(TitleCurPopup *popup, const char *text)

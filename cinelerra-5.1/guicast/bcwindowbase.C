@@ -113,14 +113,19 @@ BC_WindowBase::~BC_WindowBase()
 	{
 // stop event input
 		XSelectInput(top_level->display, this->win, 0);
-		motion_events = resize_events = translation_events = 0;
+		XSync(top_level->display,0);
 #ifndef SINGLE_THREAD
 		top_level->dequeue_events(win);
 #endif
+// drop active window refs to this
 		if(top_level->active_grab == this) top_level->active_grab = 0;
 		if(top_level->active_menubar == this) top_level->active_menubar = 0;
 		if(top_level->active_popup_menu == this) top_level->active_popup_menu = 0;
 		if(top_level->active_subwindow == this) top_level->active_subwindow = 0;
+// drop motion window refs to this
+		if(top_level->motion_events && top_level->last_motion_win == this->win)
+			top_level->motion_events = 0;
+
 // Remove pointer from parent window to this
 		parent_window->subwindows->remove(this);
 	}
@@ -3648,83 +3653,80 @@ BC_Clipboard* BC_WindowBase::get_clipboard()
 #endif
 }
 
-int BC_WindowBase::get_relative_cursor_x()
+void BC_WindowBase::get_relative_cursor_xy(int &x, int &y, int lock_window)
 {
-	int abs_x, abs_y, x, y, win_x, win_y;
+	int abs_x, abs_y, win_x, win_y;
 	unsigned int temp_mask;
 	Window temp_win;
 
+	if(lock_window) this->lock_window("BC_WindowBase::get_relative_cursor_xy");
 	XQueryPointer(top_level->display, top_level->win,
 	   &temp_win, &temp_win, &abs_x, &abs_y, &win_x, &win_y,
 	   &temp_mask);
 
 	XTranslateCoordinates(top_level->display, top_level->rootwin,
 	   win, abs_x, abs_y, &x, &y, &temp_win);
-
+	if(lock_window) this->unlock_window();
+}
+int BC_WindowBase::get_relative_cursor_x(int lock_window)
+{
+	int x, y;
+	get_relative_cursor_xy(x, y, lock_window);
 	return x;
 }
-
-int BC_WindowBase::get_relative_cursor_y()
+int BC_WindowBase::get_relative_cursor_y(int lock_window)
 {
-	int abs_x, abs_y, x, y, win_x, win_y;
-	unsigned int temp_mask;
-	Window temp_win;
-
-	XQueryPointer(top_level->display, top_level->win,
-	   &temp_win, &temp_win, &abs_x, &abs_y, &win_x, &win_y,
-	   &temp_mask);
-
-	XTranslateCoordinates(top_level->display,
-	   top_level->rootwin, win, abs_x, abs_y, &x, &y, &temp_win);
-
+	int x, y;
+	get_relative_cursor_xy(x, y, lock_window);
 	return y;
 }
 
+void BC_WindowBase::get_abs_cursor_xy(int &abs_x, int &abs_y, int lock_window)
+{
+	int win_x, win_y;
+	unsigned int temp_mask;
+	Window temp_win;
+
+	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor_xy");
+	XQueryPointer(top_level->display, top_level->win,
+		&temp_win, &temp_win, &abs_x, &abs_y, &win_x, &win_y,
+		&temp_mask);
+	if(lock_window) this->unlock_window();
+}
 int BC_WindowBase::get_abs_cursor_x(int lock_window)
 {
-	int abs_x, abs_y, win_x, win_y;
-	unsigned int temp_mask;
-	Window temp_win;
-
-	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor_x");
-	XQueryPointer(top_level->display, top_level->win,
-		&temp_win, &temp_win, &abs_x, &abs_y, &win_x, &win_y,
-		&temp_mask);
-	if(lock_window) this->unlock_window();
+	int abs_x, abs_y;
+	get_abs_cursor_xy(abs_x, abs_y, lock_window);
 	return abs_x;
 }
-
 int BC_WindowBase::get_abs_cursor_y(int lock_window)
 {
-	int abs_x, abs_y, win_x, win_y;
-	unsigned int temp_mask;
-	Window temp_win;
-
-	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor_y");
-	XQueryPointer(top_level->display, top_level->win,
-		&temp_win, &temp_win, &abs_x, &abs_y, &win_x, &win_y,
-		&temp_mask);
-	if(lock_window) this->unlock_window();
+	int abs_x, abs_y;
+	get_abs_cursor_xy(abs_x, abs_y, lock_window);
 	return abs_y;
 }
 
-int BC_WindowBase::get_pop_cursor_x(int lock_window)
+void BC_WindowBase::get_pop_cursor_xy(int &px, int &py, int lock_window)
 {
 	int margin = 100;
-	int px = get_abs_cursor_x(lock_window);
+	get_abs_cursor_xy(px, py, lock_window);
 	if( px < margin ) px = margin;
+	if( py < margin ) py = margin;
 	int wd = get_screen_w(lock_window,-1) - margin;
 	if( px > wd ) px = wd;
-	return px;
-}
-
-int BC_WindowBase::get_pop_cursor_y(int lock_window)
-{
-	int margin = 100;
-	int py = get_abs_cursor_y(lock_window);
-	if( py < margin ) py = margin;
 	int ht = get_screen_h(lock_window,-1) - margin;
 	if( py > ht ) py = ht;
+}
+int BC_WindowBase::get_pop_cursor_x(int lock_window)
+{
+	int px, py;
+	get_pop_cursor_xy(px, py, lock_window);
+	return px;
+}
+int BC_WindowBase::get_pop_cursor_y(int lock_window)
+{
+	int px, py;
+	get_pop_cursor_xy(px, py, lock_window);
 	return py;
 }
 
@@ -3761,11 +3763,10 @@ int BC_WindowBase::get_cursor_over_window()
 
 int BC_WindowBase::cursor_above()
 {
-	int rx = get_relative_cursor_x();
-	if( rx < 0 || rx >= get_w() ) return 0;
-	int ry = get_relative_cursor_y();
-	if( ry < 0 || ry >= get_h() ) return 0;
-	return 1;
+	int rx, ry;
+	get_relative_cursor_xy(rx, ry);
+	return rx < 0 || rx >= get_w() ||
+		ry < 0 || ry >= get_h() ? 0 : 1;
 }
 
 int BC_WindowBase::get_drag_x()

@@ -159,6 +159,7 @@ public:
 	TitleTimecodeFormat *timecode_format;
 	TitleBackground *background;
 	TitleBackgroundPath *background_path;
+	BrowseButton *background_browse;
 	TitleLoopPlayback *loop_playback;
 
 // Color preview

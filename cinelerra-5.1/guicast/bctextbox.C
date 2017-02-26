@@ -777,7 +777,7 @@ int BC_TextBox::cursor_leave_event()
 		draw_border();
 		flash(1);
 	}
-	if( !suggestions_popup && !get_buttonpress() &&
+	if( !suggestions_popup && !get_button_down() &&
 	    !(top_level->get_resources()->textbox_focus_policy & CLICK_DEACTIVATE) )
 		deactivate();
 	return 0;

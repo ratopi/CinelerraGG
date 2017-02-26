@@ -5833,8 +5833,8 @@ msgid "Nudge"
 msgstr "Смещение начала/конца дорожки"
 
 #: cinelerra//patchgui.C:716 cinelerra//patchgui.C:722
-msgid "nudge"
-msgstr "cмещ-е нач./конца дорожки"
+msgid "nudge."
+msgstr "cмещ-е нач./конца дорожки."
 
 #: cinelerra//performanceprefs.C:83
 msgid "Cache size (MB):"

@@ -713,13 +713,13 @@ int NudgePatch::handle_event()
 
 void NudgePatch::set_value(int64_t value)
 {
-	mwindow->undo->update_undo_before(_("nudge"), this);
+	mwindow->undo->update_undo_before(_("nudge."), this);
 	patch->track->nudge = value;
 
 	if(patch->track->gang && patch->track->record)
 		patch->patchbay->synchronize_nudge(patch->track->nudge, patch->track);
 
-	mwindow->undo->update_undo_after(_("nudge"), LOAD_PATCHES);
+	mwindow->undo->update_undo_after(_("nudge."), LOAD_PATCHES);
 
 	mwindow->gui->unlock_window();
 	if(patch->track->data_type == TRACK_VIDEO)
