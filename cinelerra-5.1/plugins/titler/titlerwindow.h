@@ -77,6 +77,7 @@ class TitleCurItem;
 class TitleCurSubMenu;
 class TitleCurSubMenuItem;
 class TitleFontsPopup;
+class TitleColorPopup;
 
 class TitleWindow : public PluginClientWindow
 {
@@ -119,6 +120,7 @@ public:
 	TitleDrag *drag;
 	TitleCurPopup *cur_popup;
 	TitleFontsPopup *fonts_popup;
+	TitleColorPopup *color_popup;
 
 	int color_x, color_y;
 	int outline_color_x, outline_color_y;
@@ -548,6 +550,20 @@ public:
 
 	TitleMain *client;
 	TitleWindow *window;
+};
+
+class TitleColorPopup : public ColorThread
+{
+public:
+	TitleColorPopup(TitleMain *client, TitleWindow *window);
+	~TitleColorPopup();
+	int handle_new_color(int output, int alpha);
+	void handle_done_event(int result);
+	int activate();
+
+	TitleMain *client;
+	TitleWindow *window;
+	int color_value;
 };
 
 #endif

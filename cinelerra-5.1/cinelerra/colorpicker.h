@@ -23,6 +23,7 @@
 #define COLORPICKER_H
 
 #include "bcdialog.h"
+#include "clip.h"
 #include "condition.inc"
 #include "guicast.h"
 #include "mutex.inc"
@@ -34,12 +35,19 @@ class PaletteWheel;
 class PaletteWheelValue;
 class PaletteOutput;
 class PaletteHue;
-class PaletteSaturation;
-class PaletteValue;
+class PaletteSat;
+class PaletteVal;
 class PaletteRed;
-class PaletteGreen;
-class PaletteBlue;
+class PaletteGrn;
+class PaletteBlu;
+class PaletteLum;
+class PaletteCr;
+class PaletteCb;
 class PaletteAlpha;
+class PalletteHSV;
+class PalletteRGB;
+class PalletteYUV;
+class PalletteAPH;
 
 class ColorThread : public BC_DialogThread
 {
@@ -61,13 +69,24 @@ class ColorWindow : public BC_Window
 {
 public:
 	ColorWindow(ColorThread *thread, int x, int y, int w, int h, const char *title);
+	~ColorWindow();
 
 	void create_objects();
 	void change_values();
 	int close_event();
 	void update_display();
 	void update_rgb();
+	void update_hsv();
+	void update_yuv();
 	int handle_event();
+
+	struct { float r, g, b; } rgb;
+	struct { float y, u, v; } yuv;
+	struct { float h, s, v; } hsv;
+	float aph;
+	void update_rgb(float r, float g, float b);
+	void update_hsv(float h, float s, float v);
+	void update_yuv(float y, float u, float v);
 
 	ColorThread *thread;
 
@@ -75,14 +94,22 @@ public:
 	PaletteWheelValue *wheel_value;
 	PaletteOutput *output;
 	PaletteHue *hue;
-	PaletteSaturation *saturation;
-	PaletteValue *value;
+	PaletteSat *sat;
+	PaletteVal *val;
 	PaletteRed *red;
-	PaletteGreen *green;
-	PaletteBlue *blue;
+	PaletteGrn *grn;
+	PaletteBlu *blu;
+	PaletteLum *lum;
+	PaletteCr  *c_r;
+	PaletteCb  *c_b;
 	PaletteAlpha *alpha;
+
+	PalletteHSV *hsv_h, *hsv_s, *hsv_v;
+	PalletteRGB *rgb_r, *rgb_g, *rgb_b;
+	PalletteYUV *yuv_y, *yuv_u, *yuv_v;
+	PalletteAPH *aph_a;
+
 	VFrame *value_bitmap;
-	float h, s, v, r, g, b, a;
 };
 
 
@@ -141,20 +168,20 @@ public:
 	ColorWindow *window;
 };
 
-class PaletteSaturation : public BC_FSlider
+class PaletteSat : public BC_FSlider
 {
 public:
-	PaletteSaturation(ColorWindow *window, int x, int y);
-	~PaletteSaturation();
+	PaletteSat(ColorWindow *window, int x, int y);
+	~PaletteSat();
 	int handle_event();
 	ColorWindow *window;
 };
 
-class PaletteValue : public BC_FSlider
+class PaletteVal : public BC_FSlider
 {
 public:
-	PaletteValue(ColorWindow *window, int x, int y);
-	~PaletteValue();
+	PaletteVal(ColorWindow *window, int x, int y);
+	~PaletteVal();
 	int handle_event();
 	ColorWindow *window;
 };
@@ -168,20 +195,20 @@ public:
 	ColorWindow *window;
 };
 
-class PaletteGreen : public BC_FSlider
+class PaletteGrn : public BC_FSlider
 {
 public:
-	PaletteGreen(ColorWindow *window, int x, int y);
-	~PaletteGreen();
+	PaletteGrn(ColorWindow *window, int x, int y);
+	~PaletteGrn();
 	int handle_event();
 	ColorWindow *window;
 };
 
-class PaletteBlue : public BC_FSlider
+class PaletteBlu : public BC_FSlider
 {
 public:
-	PaletteBlue(ColorWindow *window, int x, int y);
-	~PaletteBlue();
+	PaletteBlu(ColorWindow *window, int x, int y);
+	~PaletteBlu();
 	int handle_event();
 	ColorWindow *window;
 };
@@ -193,6 +220,82 @@ public:
 	~PaletteAlpha();
 	int handle_event();
 	ColorWindow *window;
+};
+
+class PaletteLum : public BC_FSlider
+{
+public:
+	PaletteLum(ColorWindow *window, int x, int y);
+	~PaletteLum();
+	int handle_event();
+	ColorWindow *window;
+};
+
+class PaletteCr : public BC_FSlider
+{
+public:
+	PaletteCr(ColorWindow *window, int x, int y);
+	~PaletteCr();
+	int handle_event();
+	ColorWindow *window;
+};
+
+class PaletteCb : public BC_FSlider
+{
+public:
+	PaletteCb(ColorWindow *window, int x, int y);
+	~PaletteCb();
+	int handle_event();
+	ColorWindow *window;
+};
+
+class PalletteNum : public BC_TumbleTextBox
+{
+public:
+	ColorWindow *window;
+	float *output;
+
+	PalletteNum(ColorWindow *window, int x, int y,
+			float &output, float min, float max);
+	~PalletteNum();
+	void update_output() { *output = atof(get_text()); }
+	static int calculate_h() { return BC_Tumbler::calculate_h(); }
+};
+
+class PalletteRGB : public PalletteNum
+{
+public:
+	PalletteRGB(ColorWindow *window, int x, int y,
+			float &output, float min, float max)
+	 : PalletteNum(window, x, y, output, min, max) {}
+	int handle_event();
+};
+
+class PalletteYUV : public PalletteNum
+{
+public:
+	PalletteYUV(ColorWindow *window, int x, int y,
+			float &output, float min, float max)
+	 : PalletteNum(window, x, y, output, min, max) {}
+	int handle_event();
+};
+
+class PalletteHSV : public PalletteNum
+{
+public:
+	PalletteHSV(ColorWindow *window, int x, int y,
+			float &output, float min, float max)
+	 : PalletteNum(window, x, y, output, min, max) {}
+	int handle_event();
+};
+
+class PalletteAPH : public PalletteNum
+{
+public:
+	PalletteAPH(ColorWindow *window, int x, int y,
+			float &output, float min, float max)
+	 : PalletteNum(window, x, y, output, min, max) {}
+	int handle_event();
 };
 
 #endif

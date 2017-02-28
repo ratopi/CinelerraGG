@@ -382,6 +382,7 @@ void TitleWindow::create_objects()
 	add_tool(cur_popup = new TitleCurPopup(client, this));
 	cur_popup->create_objects();
 	add_tool(fonts_popup = new TitleFontsPopup(client, this));
+	color_popup = new TitleColorPopup(client, this);
 
 	show_window(1);
 	update();
@@ -1221,7 +1222,7 @@ int TitleBottom::handle_event()
 
 
 TitleColorThread::TitleColorThread(TitleMain *client, TitleWindow *window, int is_outline)
- : ColorThread(1)
+ : ColorThread(1, _("Text Color"))
 {
 	this->client = client;
 	this->window = window;
@@ -1329,6 +1330,7 @@ void TitleCurPopup::create_objects()
 	add_item(cur_item = new TitleCurItem(this, _("color")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("color #")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("color ")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/color")));
 	add_item(cur_item = new TitleCurItem(this, _("alpha")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
@@ -1340,6 +1342,7 @@ void TitleCurPopup::create_objects()
 	add_item(cur_item = new TitleCurItem(this, _("font")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("font name")));
+	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("font ")));
 	sub_menu->add_submenuitem(new TitleCurSubMenuItem(sub_menu,_("/font")));
 	add_item(cur_item = new TitleCurItem(this, _("size")));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
@@ -1424,13 +1427,14 @@ int TitleCurSubMenuItem::handle_event()
 	TitleCurPopup *popup = submenu->cur_item->popup;
 	TitleWindow *window = popup->window;
 	const char *item_text = get_text();
-	if( !strcmp(item_text, _("font")) ) {
-		int w = 300, h = 200;
-		int x = window->get_abs_cursor_x(0) - w + 10;
-		int y = window->get_abs_cursor_y(0) - 20;
-		if( x < 2 ) x = 2;
-		if( y < 2 ) y = 2;
-		window->fonts_popup->activate(x, y, w,h);
+	if( !strcmp(item_text, _("font name")) ) {
+		int px, py;
+		window->get_pop_cursor_xy(px ,py);
+		window->fonts_popup->activate(px, py, 300,200);
+		return 1;
+	}
+	if( !strcmp(item_text, _("color #")) ) {
+		window->color_popup->activate();
 		return 1;
 	}
 	char txt[BCSTRLEN];
@@ -1458,10 +1462,34 @@ int TitleFontsPopup::handle_event()
 	BC_ListBoxItem *item = get_selection(0, 0);
 	if( !item ) return 1;
 	const char *item_text = item->get_text();
-	char txt[BCTEXTLEN];
-	sprintf(txt, "<font %s>",item_text);
-	int adv = strlen(txt);
-	int ret = window->insert_ibeam(txt, adv);
-	return ret;
+	char txt[BCTEXTLEN];  sprintf(txt, "<font %s>",item_text);
+	return window->insert_ibeam(txt, strlen(txt));
+}
+
+TitleColorPopup::TitleColorPopup(TitleMain *client, TitleWindow *window)
+ : ColorThread(0, _("Text Color"))
+{
+	this->client = client;
+	this->window = window;
+	this->color_value = client->config.color;
+}
+TitleColorPopup::~TitleColorPopup()
+{
+}
+int TitleColorPopup::handle_new_color(int output, int alpha)
+{
+	color_value = output;
+	return 1;
+}
+int TitleColorPopup::activate()
+{
+	start_window(client->config.color, 255, 1);
+	return 1;
+}
+void TitleColorPopup::handle_done_event(int result)
+{
+	if( result ) return;
+	char txt[BCSTRLEN];  sprintf(txt, "<color #%06x>",color_value);
+	window->insert_ibeam(txt, strlen(txt));
 }
 

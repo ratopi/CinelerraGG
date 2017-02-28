@@ -3543,13 +3543,21 @@ int BC_WindowBase::deactivate()
 {
 	if(window_type == MAIN_WINDOW)
 	{
-		if(top_level->active_menubar) top_level->active_menubar->deactivate();
-		if(top_level->active_popup_menu) top_level->active_popup_menu->deactivate();
-		if(top_level->active_subwindow) top_level->active_subwindow->deactivate();
+		if( top_level->active_menubar ) {
+			top_level->active_menubar->deactivate();
+			top_level->active_menubar = 0;
+		}
+		if( top_level->active_popup_menu ) {
+			top_level->active_popup_menu->deactivate();
+			top_level->active_popup_menu = 0;
+		}
+		if( top_level->active_subwindow ) {
+			top_level->active_subwindow->deactivate();
+			top_level->active_subwindow = 0;
+		}
+		if( top_level->motion_events && top_level->last_motion_win == this->win )
+			top_level->motion_events = 0;
 
-		top_level->active_menubar = 0;
-		top_level->active_popup_menu = 0;
-		top_level->active_subwindow = 0;
 	}
 	return 0;
 }

@@ -1298,9 +1298,6 @@ void VFrame::set_pixel_color(int rgb)
 	int ig = 0xff & (pixel_rgb >> 8);
 	int ib = 0xff & (pixel_rgb >> 0);
 	bc_rgb2yuv(ir,ig,ib, ir,ig,ib);
-	bclamp(ir,0,255);
-	bclamp(ig,0,255);
-	bclamp(ib,0,255);
 	pixel_yuv =  (ir<<16) | (ig<<8) | (ib<<0);
 }
 

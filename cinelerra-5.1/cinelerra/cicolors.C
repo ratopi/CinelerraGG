@@ -47,8 +47,8 @@ int HSV::rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v)
 		               4 + (r - g) / delta;  // between magenta & cyan
 		if( (h*=60) < 0 ) h += 360;          // degrees
 	}
-	else { // r = g = b = 0
-	        h = -1;  s = 0;  v = 0;              // s = 0, v is undefined
+	else { // r = g = b
+	        h = 0;  s = 0;  v = max;
 	}
 
 	return 0;
