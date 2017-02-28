@@ -599,6 +599,7 @@ int MWindow::init_ladspa_plugins(MWindow *mwindow, Preferences *preferences)
 		len = !cp ? strlen(path) : cp-path;
 		char index_path[BCTEXTLEN], plugin_path[BCTEXTLEN];
 		memcpy(plugin_path, path, len);  plugin_path[len] = 0;
+		if( cp ) ++len;
 		char *plugin_dir = FileSystem::basepath(plugin_path);
 		strcpy(plugin_path, plugin_dir);  delete [] plugin_dir;
 		create_defaults_path(index_path, LADSPA_FILE);

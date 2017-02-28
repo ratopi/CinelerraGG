@@ -26,8 +26,6 @@
 #include "theme.h"
 
 
-
-
 BrowseButton::BrowseButton(Theme *theme,
 	BC_WindowBase *parent_window,
 	BC_TextBox *textbox,
@@ -92,7 +90,8 @@ int BrowseButton::handle_event()
 void BrowseButton::run()
 {
 	BrowseButtonWindow browsewindow(theme,
-		this,
+		get_x() - BC_WindowBase::get_resources()->filebox_w / 2,
+ 		get_y() - BC_WindowBase::get_resources()->filebox_h / 2,
 		parent_window,
 		textbox->get_text(),
 		title,
@@ -129,31 +128,13 @@ void BrowseButton::run()
 	startup_lock->unlock();
 }
 
-
-
-
-
-
-BrowseButtonWindow::BrowseButtonWindow(Theme *theme,
-	BrowseButton *button,
-	BC_WindowBase *parent_window,
-	const char *init_directory,
-	const char *title,
-	const char *caption,
-	int want_directory)
- : BC_FileBox(button->x -
- 		BC_WindowBase::get_resources()->filebox_w / 2,
- 	button->y -
-		BC_WindowBase::get_resources()->filebox_h / 2,
-	init_directory,
-	title,
-	caption,
-// Set to 1 to get hidden files.
-	want_directory,
-// Want only directories
-	want_directory,
-	0,
-	theme->browse_pad)
+BrowseButtonWindow::BrowseButtonWindow(Theme *theme, int x, int y,
+	BC_WindowBase *parent_window, const char *init_directory,
+	const char *title, const char *caption, int want_directory)
+ : BC_FileBox(x, y, init_directory, title, caption,
+	want_directory, // Set to 1 to get hidden files.
+	want_directory, // Want only directories
+	0, theme->browse_pad)
 {
 }
 

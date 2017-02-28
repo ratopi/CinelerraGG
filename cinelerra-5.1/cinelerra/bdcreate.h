@@ -34,7 +34,7 @@ class CreateBD_Thread : public BC_DialogThread
 	static const int BD_MAX_BITRATE, BD_CHANNELS, BD_WIDE_CHANNELS;
 	static const double BD_FRAMERATE, BD_SAMPLERATE, BD_KAUDIO_RATE;
 	static const int BD_INTERLACE_MODE;
-	static void get_udfs_mount(char *udfs, char *mopts, char *mntpt);
+	static int get_udfs_mount(char *udfs, char *mopts, char *mntpt);
 public:
 	CreateBD_Thread(MWindow *mwindow);
 	~CreateBD_Thread();

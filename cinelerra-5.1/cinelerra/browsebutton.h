@@ -62,7 +62,7 @@ class BrowseButtonWindow : public BC_FileBox
 {
 public:
 	BrowseButtonWindow(Theme *theme,
-		BrowseButton *button,
+		int x, int y,
 		BC_WindowBase *parent_window,
 		const char *init_directory,
 		const char *title,

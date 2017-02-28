@@ -20,6 +20,7 @@
  */
 
 #include "bcdisplayinfo.h"
+#include "bcdialog.h"
 #include "bcsignals.h"
 #include "browsebutton.h"
 #include "clip.h"
@@ -116,7 +117,8 @@ TitleWindow::TitleWindow(TitleMain *client)
 TitleWindow::~TitleWindow()
 {
 	ungrab(client->server->mwindow->cwindow->gui);
-	delete fonts_popup;
+	delete color_popup;
+	delete png_popup;
 	for( int i=0; i<fonts.size(); ++i )
 		delete fonts[i]->get_icon();
 
@@ -367,7 +369,7 @@ void TitleWindow::create_objects()
 	x += background_path->get_w() + margin;
 	add_tool(background_browse = new BrowseButton(
 		client->server->mwindow->theme, this, background_path,
-		x, y, 0, _("background media"), _("Select background media path")));
+		x, y, "", _("background media"), _("Select background media path")));
 	x += background_browse->get_w() + 3*margin;
 	add_tool(loop_playback = new TitleLoopPlayback(client, x, y));
 	y += loop_playback->get_h() + 10;
@@ -383,6 +385,7 @@ void TitleWindow::create_objects()
 	cur_popup->create_objects();
 	add_tool(fonts_popup = new TitleFontsPopup(client, this));
 	color_popup = new TitleColorPopup(client, this);
+	png_popup = new TitlePngPopup(client, this);
 
 	show_window(1);
 	update();
@@ -1437,6 +1440,10 @@ int TitleCurSubMenuItem::handle_event()
 		window->color_popup->activate();
 		return 1;
 	}
+	if( !strcmp(item_text, _("png file")) ) {
+		window->png_popup->activate();
+		return 1;
+	}
 	char txt[BCSTRLEN];
 	sprintf(txt, "<%s>", item_text);
 	int adv = strlen(txt);
@@ -1491,5 +1498,44 @@ void TitleColorPopup::handle_done_event(int result)
 	if( result ) return;
 	char txt[BCSTRLEN];  sprintf(txt, "<color #%06x>",color_value);
 	window->insert_ibeam(txt, strlen(txt));
+}
+
+TitlePngPopup::TitlePngPopup(TitleMain *client, TitleWindow *window)
+ : BC_DialogThread()
+{
+	this->client = client;
+	this->window = window;
+}
+
+TitlePngPopup::~TitlePngPopup()
+{
+	close_window();
+}
+
+void TitlePngPopup::handle_done_event(int result)
+{
+	if( result ) return;
+	BrowseButtonWindow *gui = (BrowseButtonWindow *)get_gui();
+	const char *path = gui->get_submitted_path();
+	char txt[BCSTRLEN];  sprintf(txt, "<png %s>",path);
+	window->insert_ibeam(txt, strlen(txt));
+}
+
+BC_Window *TitlePngPopup::new_gui()
+{
+        BC_DisplayInfo display_info;
+        int x = display_info.get_abs_cursor_x();
+        int y = display_info.get_abs_cursor_y();
+
+	BC_Window *gui = new BrowseButtonWindow(client->server->mwindow->theme,
+		x-25, y-100, window, "", _("Png file"), _("Png path"), 0);
+        gui->create_objects();
+	return gui;
+}
+
+int TitlePngPopup::activate()
+{
+	BC_DialogThread::start();
+	return 1;
 }
 

@@ -14,4 +14,4 @@ color_primaries=bt470bg
 color_trc=gamma28
 colorspace=bt470bg
 # must be last for bdcreate.C
-x264opts cabac=1:keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8:tff
+x264opts cabac=1:keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8:bff

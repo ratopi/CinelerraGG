@@ -54,10 +54,10 @@ static struct bd_format {
 	{ "1280x720  50p",	1280,720,  50.,    1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  24p",	1280,720,  24.,    1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  23.976p",	1280,720,  23.976, 1, ILACE_MODE_NOTINTERLACED },
+	{ "720x576   25i",	 720,576,  25.,    0, ILACE_MODE_BOTTOM_FIRST },
 	{ "720x576   25p*",	 720,576,  25.,    0, ILACE_MODE_NOTINTERLACED },
-	{ "720x576   25i",	 720,576,  25.,    0, ILACE_MODE_TOP_FIRST },
-	{ "720x480   29.97p*",	 720,480,  29.97,  0, ILACE_MODE_NOTINTERLACED },
 	{ "720x480   29.97i",	 720,480,  29.97,  0, ILACE_MODE_BOTTOM_FIRST },
+	{ "720x480   29.97p*",	 720,480,  29.97,  0, ILACE_MODE_NOTINTERLACED },
 };
 
 const int64_t CreateBD_Thread::BD_SIZE = 25000000000;
@@ -121,16 +121,17 @@ CreateBD_Thread::~CreateBD_Thread()
 	close_window();
 }
 
-void CreateBD_Thread::get_udfs_mount(char *udfs, char *mopts, char *mntpt)
+int CreateBD_Thread::get_udfs_mount(char *udfs, char *mopts, char *mntpt)
 {
+	int ret = 0;
 // default: mount -t udf -o loop $1/bd.udfs $1/udfs
 	strcpy(udfs,"$1/bd.udfs");
 	strcpy(mopts,"-t udf -o loop $1/bd.udfs ");
 	strcpy(mntpt,"$1/udfs");
 	const char *home = getenv("HOME");
-	if( !home ) return;
+	if( !home ) return ret;
 	FILE *fp = fopen("/etc/fstab","r");
-	if( !fp ) return;
+	if( !fp ) return ret;
 	int len = strlen(home);
 	char line[BCTEXTLEN], typ[BCTEXTLEN], file[BCTEXTLEN];
 	char mpnt[BCTEXTLEN], opts[BCTEXTLEN];
@@ -158,10 +159,12 @@ void CreateBD_Thread::get_udfs_mount(char *udfs, char *mopts, char *mntpt)
 			strcpy(udfs, file);
 			strcpy(mopts, "");
 			strcpy(mntpt, mpnt);
+			ret = 1;
 			break;
 		}
 	}
 	fclose(fp);
+	return ret;
 }
 
 int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char *asset_dir)
@@ -218,7 +221,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 		return 1;
 	}
 	char udfs[BCTEXTLEN], mopts[BCTEXTLEN], mntpt[BCTEXTLEN];
-	get_udfs_mount(udfs, mopts, mntpt);
+	int is_usr_mnt = get_udfs_mount(udfs, mopts, mntpt);
 	const char *exec_path = File::get_cinlib_path();
 	fprintf(fp,"#!/bin/bash -ex\n");
 	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
@@ -230,9 +233,11 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 	fprintf(fp,"mount %s%s\n", mopts, mntpt);
 	fprintf(fp,"bdwrite %s $1/bd.m2ts\n",mntpt);
 	fprintf(fp,"umount %s\n",mntpt);
+	if( is_usr_mnt )
+		fprintf(fp,"mv -f %s $1/bd.udfs\n", udfs);
 	fprintf(fp,"echo To burn bluray, load writable media and run:\n");
-	fprintf(fp,"echo for WORM: growisofs -dvd-compat -Z /dev/bd=%s\n", udfs);
-	fprintf(fp,"echo for RW:   dd if=%s of=/dev/bd bs=2048000\n",udfs);
+	fprintf(fp,"echo for WORM: growisofs -dvd-compat -Z /dev/bd=$1/bd.udfs\n");
+	fprintf(fp,"echo for RW:   dd if=$1/bd.udfs of=/dev/bd bs=2048000\n");
 	fprintf(fp,"kill $$\n");
 	fprintf(fp,"\n");
 	fclose(fp);

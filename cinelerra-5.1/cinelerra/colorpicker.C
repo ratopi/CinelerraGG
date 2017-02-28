@@ -200,9 +200,9 @@ void ColorWindow::create_objects()
 
 void ColorWindow::change_values()
 {
-	float r = ((thread->output & 0xff0000) >> 16) / 255.;
-	float g = ((thread->output & 0xff00) >> 8) / 255.;
-	float b = ((thread->output & 0xff)) / 255.;
+	float r = ((thread->output>>16) & 0xff) / 255.;
+	float g = ((thread->output>>8)  & 0xff) / 255.;
+	float b = ((thread->output>>0)  & 0xff) / 255.;
 	rgb.r = r;  rgb.g = g;  rgb.b = b;
 	aph = (float)thread->alpha / 255;
 	update_rgb(rgb.r, rgb.g, rgb.b);
@@ -293,10 +293,9 @@ PaletteWheel::~PaletteWheel()
 
 int PaletteWheel::button_press_event()
 {
-	if(get_cursor_x() >= 0 && get_cursor_x() < get_w() &&
+	if( get_cursor_x() >= 0 && get_cursor_x() < get_w() &&
 		get_cursor_y() >= 0 && get_cursor_y() < get_h() &&
-		is_event_win())
-	{
+		is_event_win() ) {
 		button_down = 1;
 		cursor_motion_event();
 		return 1;
@@ -307,17 +306,14 @@ int PaletteWheel::button_press_event()
 int PaletteWheel::cursor_motion_event()
 {
 	int x1, y1, distance;
-	if(button_down && is_event_win())
-	{
-		window->hsv.h = get_angle(get_w() / 2,
-			get_h() / 2,
-			get_cursor_x(),
-			get_cursor_y());
+	if( button_down && is_event_win() ) {
+		float h = get_angle(get_w()/2, get_h()/2, get_cursor_x(), get_cursor_y());
+		bclamp(h, 0, 359.999);  window->hsv.h = h;
 		x1 = get_w() / 2 - get_cursor_x();
 		y1 = get_h() / 2 - get_cursor_y();
 		distance = (int)sqrt(x1 * x1 + y1 * y1);
-		if(distance > get_w() / 2) distance = get_w() / 2;
-		window->hsv.s = (float)distance / (get_w() / 2);
+		float s = (float)distance / (get_w() / 2);
+		bclamp(s, 0, 1);  window->hsv.s = s;
 		window->update_hsv();
 		window->update_display();
 		window->handle_event();
@@ -328,8 +324,7 @@ int PaletteWheel::cursor_motion_event()
 
 int PaletteWheel::button_release_event()
 {
-	if(button_down)
-	{
+	if( button_down ) {
 		button_down = 0;
 		return 1;
 	}
@@ -340,9 +335,7 @@ void PaletteWheel::create_objects()
 {
 // Upper right
 //printf("PaletteWheel::create_objects 1\n");
-	float h;
-	float s;
-	float v = 1;
+	float h, s, v = 1;
 	float r, g, b;
 	float x1, y1, x2, y2;
 	float distance;
@@ -359,31 +352,25 @@ void PaletteWheel::create_objects()
 	int highlight_g = (get_resources()->button_light & 0xff00) >> 8;
 	int highlight_b = (get_resources()->button_light & 0xff);
 
-	for(y2 = 0; y2 < get_h(); y2++)
-	{
+	for( y2 = 0; y2 < get_h(); y2++ ) {
 		unsigned char *row = (unsigned char*)frame.get_rows()[(int)y2];
-		for(x2 = 0; x2 < get_w(); x2++)
-		{
+		for( x2 = 0; x2 < get_w(); x2++ ) {
 			distance = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-			if(distance > x1)
-			{
+			if( distance > x1 ) {
 				row[(int)x2 * 4] = default_r;
 				row[(int)x2 * 4 + 1] = default_g;
 				row[(int)x2 * 4 + 2] = default_b;
 				row[(int)x2 * 4 + 3] = 0;
 			}
 			else
-			if(distance > x1 - 1)
-			{
+			if( distance > x1 - 1 ) {
 				int r_i, g_i, b_i;
-				if(get_h() - y2 < x2)
-				{
+				if( get_h() - y2 < x2 ) {
 					r_i = highlight_r;
 					g_i = highlight_g;
 					b_i = highlight_b;
 				}
-				else
-				{
+				else {
 					r_i = 0;
 					g_i = 0;
 					b_i = 0;
@@ -394,8 +381,7 @@ void PaletteWheel::create_objects()
 				row[(int)x2 * 4 + 2] = b_i;
 				row[(int)x2 * 4 + 3] = 255;
 			}
-			else
-			{
+			else {
 				h = get_angle(x1, y1, x2, y2);
 				s = distance / x1;
 				HSV::hsv_to_rgb(r, g, b, h, s, v);
@@ -441,50 +427,35 @@ int PaletteWheel::draw(float hue, float saturation)
 	x = w = get_w() / 2;
 	y = h = get_h() / 2;
 
-	if(hue > 0 && hue < 90)
-	{
+	if( hue > 0 && hue < 90 ) {
 		x = (int)(w - w * cos(torads(90 - hue)) * saturation);
 		y = (int)(h - h * sin(torads(90 - hue)) * saturation);
 	}
-	else
-	if(hue > 90 && hue < 180)
-	{
+	else if( hue > 90 && hue < 180 ) {
 		x = (int)(w - w * cos(torads(hue - 90)) * saturation);
 		y = (int)(h + h * sin(torads(hue - 90)) * saturation);
 	}
-	else
-	if(hue > 180 && hue < 270)
-	{
+	else if( hue > 180 && hue < 270 ) {
 		x = (int)(w + w * cos(torads(270 - hue)) * saturation);
 		y = (int)(h + h * sin(torads(270 - hue)) * saturation);
 	}
-	else
-	if(hue > 270 && hue < 360)
-	{
+	else if( hue > 270 && hue < 360 ) {
 		x = (int)(w + w * cos(torads(hue - 270)) * saturation);
 		y = (int)(h - w * sin(torads(hue - 270)) * saturation);
 	}
-	else
-	if(hue == 0)
-	{
+	else if( hue == 0 ) {
 		x = w;
 		y = (int)(h - h * saturation);
 	}
-	else
-	if(hue == 90)
-	{
+	else if( hue == 90 ) {
 		x = (int)(w - w * saturation);
 		y = h;
 	}
-	else
-	if(hue == 180)
-	{
+	else if( hue == 180 ) {
 		x = w;
 		y = (int)(h + h * saturation);
 	}
-	else
-	if(hue == 270)
-	{
+	else if( hue == 270 ) {
 		x = (int)(w + w * saturation);
 		y = h;
 	}
@@ -499,7 +470,7 @@ int PaletteWheel::draw(float hue, float saturation)
 int PaletteWheel::get_angle(float x1, float y1, float x2, float y2)
 {
 	float result = -atan2(x2 - x1, y1 - y2) * (360 / M_PI / 2);
-	if (result < 0)
+	if( result < 0 )
 		result += 360;
 	return (int)result;
 }
@@ -525,10 +496,9 @@ void PaletteWheelValue::create_objects()
 int PaletteWheelValue::button_press_event()
 {
 //printf("PaletteWheelValue::button_press 1 %d\n", is_event_win());
-	if(get_cursor_x() >= 0 && get_cursor_x() < get_w() &&
+	if( get_cursor_x() >= 0 && get_cursor_x() < get_w() &&
 		get_cursor_y() >= 0 && get_cursor_y() < get_h() &&
-		is_event_win())
-	{
+		is_event_win() ) {
 //printf("PaletteWheelValue::button_press 2\n");
 		button_down = 1;
 		cursor_motion_event();
@@ -539,10 +509,10 @@ int PaletteWheelValue::button_press_event()
 
 int PaletteWheelValue::cursor_motion_event()
 {
-	if(button_down && is_event_win())
-	{
+	if( button_down && is_event_win() ) {
 //printf("PaletteWheelValue::cursor_motion 1\n");
-		window->hsv.v = 1.0 - (float)(get_cursor_y() - 2) / (get_h() - 4);
+		float v = 1.0 - (float)(get_cursor_y() - 2) / (get_h() - 4);
+		bclamp(v, 0, 1);  window->hsv.v = v;
 		window->update_hsv();
 		window->update_display();
 		window->handle_event();
@@ -553,8 +523,7 @@ int PaletteWheelValue::cursor_motion_event()
 
 int PaletteWheelValue::button_release_event()
 {
-	if(button_down)
-	{
+	if( button_down ) {
 //printf("PaletteWheelValue::button_release 1\n");
 		button_down = 0;
 		return 1;
@@ -567,16 +536,14 @@ int PaletteWheelValue::draw(float hue, float saturation, float value)
 	float r_f, g_f, b_f;
 	int i, j, r, g, b;
 
-	for(i = get_h() - 3; i >= 2; i--)
-	{
+	for( i = get_h() - 3; i >= 2; i-- ) {
 		unsigned char *row = (unsigned char*)frame->get_rows()[i];
 		HSV::hsv_to_rgb(r_f, g_f, b_f, hue, saturation,
 			1.0 - (float)(i - 2) / (get_h() - 4));
 		r = (int)(r_f * 255);
 		g = (int)(g_f * 255);
 		b = (int)(b_f * 255);
-		for(j = 0; j < get_w(); j++)
-		{
+		for( j = 0; j < get_w(); j++ ) {
  			row[j * 3] = r;
  			row[j * 3 + 1] = g;
  			row[j * 3 + 2] = b;
@@ -858,6 +825,7 @@ PalletteNum::PalletteNum(ColorWindow *window, int x, int y,
 	this->window = window;
 	this->output = &output;
 	set_increment(0.01);
+	set_precision(2);
 }
 
 PalletteNum::~PalletteNum()
