@@ -831,9 +831,21 @@ int BC_Resources::init_fontconfig(const char *search_path)
 } while(0)
 
 	char find_command[BCTEXTLEN];
-	sprintf(find_command,
-		"find %s -name 'fonts.dir' -print -exec cat {} \\;",
-		search_path);
+	char *fp = find_command, *ep = fp+sizeof(find_command)-1;
+	fp += snprintf(fp, ep-fp, "find '%s'", search_path);
+	const char *bc_font_path = getenv("BC_FONT_PATH");
+	if( bc_font_path ) {
+		const char *path = bc_font_path;
+		for( int len=0; *path; path+=len ) {
+	                const char *cp = strchr(path,':');
+			len = !cp ? strlen(path) : cp-path;
+			char font_path[BCTEXTLEN];
+			memcpy(font_path, path, len);  font_path[len] = 0;
+			if( cp ) ++len;
+			fp += snprintf(fp, ep-fp, " '%s'", font_path);
+		}
+        }
+	fp += snprintf(fp, ep-fp, " -name 'fonts.scale' -print -exec cat {} \\;");
 	FILE *in = popen(find_command, "r");
 
 	FT_Library freetype_library = 0;
@@ -864,7 +876,7 @@ int BC_Resources::init_fontconfig(const char *search_path)
 		entry->path = cstrcat(2, current_dir, string);
 // Foundary
 		skip_str(" -", in_ptr);
-		get_str(string, " -\n", in_ptr, 1);
+		get_str(string, "-\n", in_ptr, 1);
 		if( !string[0] ) { delete entry;  continue; }
 		entry->foundry = cstrdup(string);
 		if(*in_ptr == '-') in_ptr++;

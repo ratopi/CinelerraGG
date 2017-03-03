@@ -64,6 +64,7 @@
 #include <sys/stat.h>
 #include <fontconfig/fontconfig.h>
 
+#define FIXED_FONT "Bitstream Vera Sans Mono (Bits)"
 #define SMALL (1.0 / 64.0)
 
 #define MAX_FLT  3.40282347e+38
@@ -1147,6 +1148,7 @@ void TitleMain::build_previews(TitleWindow *gui)
 	const char *test_string = "Aa";
 	char new_path[BCTEXTLEN];
 	int text_height = gui->get_text_height(LARGEFONT);
+	int max_height = 3*text_height/2, max_width = 2 * max_height;
 	int text_color = BC_WindowBase::get_resources()->default_text_color;
 	int r = (text_color >> 16) & 0xff;
 	int g = (text_color >> 8) & 0xff;
@@ -1177,9 +1179,7 @@ void TitleMain::build_previews(TitleWindow *gui)
 			}
 
 			if( skip ) continue;
-
-			int current_x = 0, current_w = 0, current_h = 0, current_ascent = 0;
-			if( pass == 1 ) {
+			if( pass > 0 ) {
 				font->image = new VFrame;
 				font->image->set_use_shm(0);
 				font->image->reallocate(0, -1, 0, 0, 0,
@@ -1187,7 +1187,10 @@ void TitleMain::build_previews(TitleWindow *gui)
 				font->image->clear_frame();
 			}
 
+			int current_w = 1, current_h = 1;
+			int current_x = 0, current_ascent = 0;
 			int len = strlen(test_string);
+
 			for( int j=0; j<len; ++j ) {
 				FT_ULong c = test_string[j];
 // memory leaks here are fatal
@@ -1199,30 +1202,31 @@ void TitleMain::build_previews(TitleWindow *gui)
 				if( load_freetype_face(freetype_library, freetype_face, new_path)) continue;
 				FT_Set_Pixel_Sizes(freetype_face, text_height, 0);
 				if( FT_Load_Char(freetype_face, c, FT_LOAD_RENDER) ) continue;
+				int glyph_w = freetype_face->glyph->bitmap.width;
+				int glyph_h = freetype_face->glyph->bitmap.rows;
+				if( glyph_h > max_height ) glyph_h = max_height;
+				int glyph_a = freetype_face->glyph->advance.x >> 6;
+				int glyph_t = freetype_face->glyph->bitmap_top;
 				if( pass == 0 ) {
-					current_w = current_x + freetype_face->glyph->bitmap.width;
-					if( (int)freetype_face->glyph->bitmap_top > current_ascent )
-					current_ascent = freetype_face->glyph->bitmap_top;
-					if( (int)freetype_face->glyph->bitmap.rows > total_h )
-						total_h = freetype_face->glyph->bitmap.rows;
-					if( (int)freetype_face->glyph->bitmap.rows > current_h )
-						current_h = freetype_face->glyph->bitmap.rows;
+					current_w = current_x + glyph_w;
+					if( current_w > max_width ) current_w = max_width;
+					if( total_w < current_w ) total_w = current_w;
+					if( current_ascent < glyph_t ) current_ascent = glyph_t;
+					if( current_h < glyph_h ) current_h = glyph_h;
+					if( total_h < glyph_h ) total_h = glyph_h;
 				}
 				else {
 // copy 1 row at a time, center vertically
-					int out_y = (total_h - height[font_number]) / 2 +
-						ascent[font_number] - freetype_face->glyph->bitmap_top;
-					for( int in_y = 0;
-					     in_y < (int)freetype_face->glyph->bitmap.rows && out_y < total_h;
-					     ++in_y, ++out_y ) {
-						unsigned char *out_row = font->image->get_rows()[out_y] +
-							current_x * 4;
+					int out_y = (total_h-height[font_number])/2 + ascent[font_number]-glyph_t;
+					if( out_y < 0 ) out_y = 0;
+					for( int in_y = 0; in_y < glyph_h && out_y < total_h; ++in_y, ++out_y ) {
 						unsigned char *in_row = freetype_face->glyph->bitmap.buffer +
 							freetype_face->glyph->bitmap.pitch * in_y;
+						int out_x = current_x;
+						unsigned char *out_row = font->image->get_rows()[out_y] +
+							out_x * 4;
 
-						for( int out_x = 0;
-						     out_x < (int)freetype_face->glyph->bitmap.width && out_x < total_w;
-						     ++out_x ) {
+						for( int in_x = 0; in_x < glyph_w && out_x < total_w; ++in_x, ++out_x ) {
 							*out_row = (*in_row * r +
 								(0xff - *in_row) * *out_row) / 0xff; ++out_row;
 							*out_row = (*in_row * g +
@@ -1233,13 +1237,11 @@ void TitleMain::build_previews(TitleWindow *gui)
 							in_row++;
 						}
 					}
-					current_x += freetype_face->glyph->advance.x >> 6;
 				}
+				current_x += glyph_a;
 			}
-
 			height[font_number] = current_h;
 			ascent[font_number] = current_ascent;
-			if( pass == 0 && current_w > total_w ) total_w = current_w;
 		}
 	}
 
@@ -1457,6 +1459,8 @@ void TitleMain::draw_background()
 
 BC_FontEntry* TitleMain::get_font(const char *font_name, int style)
 {
+	if( !strcmp("fixed", font_name) )
+		font_name = FIXED_FONT;
 	int flavor =
 	    ((style & BC_FONT_ITALIC) != 0 ? FL_SLANT_ITALIC | FL_SLANT_OBLIQUE : FL_SLANT_ROMAN) |
 	    ((style & BC_FONT_BOLD) != 0 ? FL_WEIGHT_BOLD | FL_WEIGHT_DEMIBOLD |
@@ -1472,7 +1476,8 @@ BC_FontEntry* TitleMain::get_font(const char *font_name, int style)
 BC_FontEntry* TitleMain::config_font()
 {
 	BC_FontEntry *font = get_font(config.font, config.style);
-	if( font && load_font(font) ) font = 0;
+	if( font && load_font(font) )
+		font = get_font(FIXED_FONT,0);
 	return font;
 }
 
@@ -1537,10 +1542,11 @@ int TitleMain::get_width(TitleGlyph *cur, TitleGlyph *nxt)
 	int result = cur->advance_x;
 	if( !nxt ) return result;
 	FT_Vector kerning;
-	FT_Get_Kerning(freetype_face,
-		cur->freetype_index, nxt->freetype_index,
-		ft_kerning_default, &kerning);
-	return result + (kerning.x >> 6);
+	if( !FT_Get_Kerning(freetype_face,
+	    cur->freetype_index, nxt->freetype_index,
+	    ft_kerning_default, &kerning) )
+		result += (kerning.x >> 6);
+	return result;
 }
 
 
@@ -1824,7 +1830,7 @@ void TitleMain::load_glyphs()
 				}
 			}
 
-			if( !exists ) {
+			if( !exists && cur_font ) {
 				total_packages++;
 				TitleGlyph *glyph = new TitleGlyph;
 				glyph->char_code = (FT_ULong)wch;

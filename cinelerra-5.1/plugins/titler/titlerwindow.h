@@ -94,6 +94,7 @@ public:
 	void update();
 	void previous_font();
 	void next_font();
+	void check_style(const char *font_name);
 	int insert_ibeam(const char *txt, int adv);
 
 	TitleMain *client;

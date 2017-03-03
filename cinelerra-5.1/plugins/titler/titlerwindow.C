@@ -599,6 +599,7 @@ void TitleWindow::previous_font()
 
 	font->update(fonts.values[current_font]->get_text());
 	strcpy(client->config.font, fonts.values[current_font]->get_text());
+	check_style(client->config.font);
 	client->send_configure_change();
 }
 
@@ -616,6 +617,7 @@ void  TitleWindow::next_font()
 
 	font->update(fonts.values[current_font]->get_text());
 	strcpy(client->config.font, fonts.values[current_font]->get_text());
+	check_style(client->config.font);
 	client->send_configure_change();
 }
 
@@ -670,6 +672,7 @@ void TitleWindow::update()
 	fade_in->update((float)client->config.fade_in);
 	fade_out->update((float)client->config.fade_out);
 	font->update(client->config.font);
+	check_style(client->config.font);
 	text->update(&client->config.wtext[0]);
 	speed->update(client->config.pixels_per_second);
 	outline->update((int64_t)client->config.outline_size);
@@ -802,13 +805,7 @@ int TitleItalic::handle_event()
 
 
 TitleSize::TitleSize(TitleMain *client, TitleWindow *window, int x, int y, char *text)
- : BC_PopupTextBox(window,
-		&window->sizes,
-		text,
-		x,
-		y,
-		64,
-		300)
+ : BC_PopupTextBox(window, &window->sizes, text, x, y, 64, 300)
 {
 	this->client = client;
 	this->window = window;
@@ -967,9 +964,18 @@ int TitleFade::handle_event()
 	return 1;
 }
 
+void TitleWindow::check_style(const char *font_name)
+{
+	BC_FontEntry *font;
+	font = TitleMain::get_font(font_name, BC_FONT_ITALIC);
+	strcmp(font_name, font->displayname) ? italic->disable() : italic->enable();
+	font = TitleMain::get_font(font_name, BC_FONT_BOLD);
+	strcmp(font_name, font->displayname) ? bold->disable() : bold->enable();
+}
+
 TitleFont::TitleFont(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_PopupTextBox(window, &window->fonts, client->config.font,
-		x, y, 200, 500, LISTBOX_ICON_LIST)
+		x, y, 240, 300, LISTBOX_ICON_LIST)
 {
 	this->client = client;
 	this->window = window;
@@ -977,6 +983,7 @@ TitleFont::TitleFont(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleFont::handle_event()
 {
 	strcpy(client->config.font, get_text());
+	window->check_style(client->config.font);
 	client->send_configure_change();
 	return 1;
 }

@@ -2362,6 +2362,7 @@ int BC_PopupTextBoxList::handle_event()
 	if(item)
 	{
 		popup->textbox->update(item->get_text());
+		popup->textbox->set_text_row(0);
 		popup->handle_event();
 	}
 	return 1;
@@ -2410,14 +2411,12 @@ int BC_PopupTextBox::create_objects()
 void BC_PopupTextBox::update(const char *text)
 {
 	textbox->update(text);
+	textbox->set_text_row(0);
 }
 
 void BC_PopupTextBox::update_list(ArrayList<BC_ListBoxItem*> *data)
 {
-	listbox->update(data,
-		0,
-		0,
-		1);
+	listbox->update(data, 0, 0, 1);
 }
 
 
@@ -2696,18 +2695,21 @@ BC_TextBox* BC_TumbleTextBox::get_textbox()
 int BC_TumbleTextBox::update(const char *value)
 {
 	textbox->update(value);
+	textbox->set_text_row(0);
 	return 0;
 }
 
 int BC_TumbleTextBox::update(int64_t value)
 {
 	textbox->update(value);
+	textbox->set_text_row(0);
 	return 0;
 }
 
 int BC_TumbleTextBox::update(float value)
 {
 	textbox->update(value);
+	textbox->set_text_row(0);
 	return 0;
 }
 

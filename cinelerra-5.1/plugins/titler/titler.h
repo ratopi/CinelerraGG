@@ -594,7 +594,7 @@ public:
 	Indexable *open_background(const char *filename);
 	int read_background(VFrame *frame, int64_t position, int color_model);
 	void draw_background();
-	BC_FontEntry* get_font(const char *font_name, int style);
+	static BC_FontEntry* get_font(const char *font_name, int style);
 	BC_FontEntry* config_font();
 	TitleGlyph *get_glyph(FT_ULong char_code, BC_FontEntry *font, int size, int style);
 	int get_width(TitleGlyph *cur, TitleGlyph *nxt);

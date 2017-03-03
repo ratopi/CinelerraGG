@@ -3999,6 +3999,7 @@ int BC_ListBox::activate(int x, int y, int w, int h)
 	if( active || !is_popup || gui ) return 0;
 	if(w != -1) popup_w = w;
 	if(h != -1) popup_h = h;
+	reset_query();
 	active = 1;
 	if( y + popup_h > top_level->get_root_h(0) )
 		y -= get_h() + popup_h;
