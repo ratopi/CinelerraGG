@@ -19,18 +19,21 @@
  *
  */
 
+#include "bcbutton.h"
+#include "bccapture.h"
 #include "bcdisplayinfo.h"
 #include "colorpicker.h"
 #include "condition.h"
 #include "language.h"
 #include "mutex.h"
-#include "mwindow.inc"
+#include "mwindow.h"
 #include "cicolors.h"
 #include "vframe.h"
 
 #include <string.h>
 #include <unistd.h>
 
+#define PALETTE_DATA "palette.dat"
 
 ColorThread::ColorThread(int do_alpha, const char *title)
  : BC_DialogThread()
@@ -72,9 +75,7 @@ BC_Window* ColorThread::new_gui()
 	BC_DisplayInfo display_info;
 	int x = display_info.get_abs_cursor_x() + 25;
 	int y = display_info.get_abs_cursor_y() - 100;
-	int w = 540, h = 290;
-	if( do_alpha )
-		h += 40 + PalletteAPH::calculate_h();
+	int w = 540, h = 330;
 	if( do_okcancel )
 		h += bmax(BC_OKButton::calculate_h(),BC_CancelButton::calculate_h());
 	int root_w = display_info.get_root_w(), root_h = display_info.get_root_h();
@@ -123,6 +124,8 @@ ColorWindow::ColorWindow(ColorThread *thread, int x, int y, int w, int h, const 
 	rgb_r = 0;  rgb_g = 0;  rgb_b = 0;
 	yuv_y = 0;  yuv_u = 0;  yuv_v = 0;
 	aph_a = 0;
+
+	button_grabbed = 0;
 }
 ColorWindow::~ColorWindow()
 {
@@ -130,6 +133,9 @@ ColorWindow::~ColorWindow()
 	delete rgb_r;  delete rgb_g;  delete rgb_b;
 	delete yuv_y;  delete yuv_u;  delete yuv_v;
 	delete aph_a;
+
+	update_history(rgb888());
+	save_history();
 }
 
 void ColorWindow::create_objects()
@@ -148,6 +154,16 @@ void ColorWindow::create_objects()
 	y += 180;  add_tool(output = new PaletteOutput(this, x, y));
 	output->create_objects();
 	y += output->get_h() + 20;
+
+	load_history();  int x1 = x;
+	add_tool(hex_btn = new PaletteHexButton(this, x1, y));
+	char hex[BCSTRLEN];  sprintf(hex,"%06x",thread->output);
+	x1 += hex_btn->get_w() + 5;
+	add_tool(hex_box = new PaletteHex(this, x1, y, hex));
+	x1 += hex_box->get_w() + 15;
+	add_tool(grab_btn = new PaletteGrabButton(this, x1, y));
+	y += hex_box->get_h() + 15;
+	add_tool(history = new PaletteHistory(this, 10, y));
 
 	x += 240;
 	add_tool(new BC_Title(x, y =y0, _("H:"), SMALLFONT));
@@ -175,17 +191,27 @@ void ColorWindow::create_objects()
 		add_tool(alpha = new PaletteAlpha(this, x, y+=40));
 
 	x += hue->get_w() + 10;
-	hsv_h = new PalletteHSV(this, x,y= y0, hsv.h, 0, 360);  hsv_h->create_objects();
-	hsv_s = new PalletteHSV(this, x,y+=25, hsv.s, 0, 1);    hsv_s->create_objects();
-	hsv_v = new PalletteHSV(this, x,y+=25, hsv.v, 0, 1);    hsv_v->create_objects();
-	rgb_r = new PalletteRGB(this, x,y+=40, rgb.r, 0, 1);    rgb_r->create_objects();
-	rgb_g = new PalletteRGB(this, x,y+=25, rgb.g, 0, 1);    rgb_g->create_objects();
-	rgb_b = new PalletteRGB(this, x,y+=25, rgb.b, 0, 1);    rgb_b->create_objects();
-	yuv_y = new PalletteYUV(this, x,y+=40, yuv.y, 0, 1);    yuv_y->create_objects();
-	yuv_u = new PalletteYUV(this, x,y+=25, yuv.u, 0, 1);    yuv_u->create_objects();
-	yuv_v = new PalletteYUV(this, x,y+=25, yuv.v, 0, 1);    yuv_v->create_objects();
+	hsv_h = new PaletteHSV(this, x,y= y0, hsv.h, 0, 360);
+	hsv_h->create_objects();  hsv_h->set_tooltip(_("Hue"));
+	hsv_s = new PaletteHSV(this, x,y+=25, hsv.s, 0, 1);
+	hsv_s->create_objects();  hsv_s->set_tooltip(_("Saturation"));
+	hsv_v = new PaletteHSV(this, x,y+=25, hsv.v, 0, 1);
+	hsv_v->create_objects();  hsv_v->set_tooltip(_("Value"));
+	rgb_r = new PaletteRGB(this, x,y+=40, rgb.r, 0, 1);
+	rgb_r->create_objects();  rgb_r->set_tooltip(_("Red"));
+	rgb_g = new PaletteRGB(this, x,y+=25, rgb.g, 0, 1);
+	rgb_g->create_objects();  rgb_g->set_tooltip(_("Green"));
+	rgb_b = new PaletteRGB(this, x,y+=25, rgb.b, 0, 1);
+	rgb_b->create_objects();  rgb_b->set_tooltip(_("Blue"));
+	yuv_y = new PaletteYUV(this, x,y+=40, yuv.y, 0, 1);
+	yuv_y->create_objects();  yuv_y->set_tooltip(_("Luminance"));
+	yuv_u = new PaletteYUV(this, x,y+=25, yuv.u, 0, 1);
+	yuv_u->create_objects();  yuv_u->set_tooltip(_("Compliment Red"));
+	yuv_v = new PaletteYUV(this, x,y+=25, yuv.v, 0, 1);
+	yuv_v->create_objects();  yuv_v->set_tooltip(_("Compliment Blue"));
 	if( thread->do_alpha ) {
-		aph_a = new PalletteAPH(this, x,y+=40, aph, 0, 1); aph_a->create_objects();
+		aph_a = new PaletteAPH(this, x,y+=40, aph, 0, 1);
+		aph_a->create_objects();  aph_a->set_tooltip(_("Alpha"));
 	}
 	if( thread->do_okcancel ) {
 		add_tool(new BC_OKButton(this));
@@ -193,6 +219,7 @@ void ColorWindow::create_objects()
 	}
 
 	update_display();
+	update_history();
 	show_window(1);
 	unlock_window();
 }
@@ -265,16 +292,47 @@ void ColorWindow::update_display()
 	yuv_y->update(yuv.y);
 	yuv_u->update(yuv.u);
 	yuv_v->update(yuv.v);
+	hex_box->update();
+
 	if( thread->do_alpha )
 		aph_a->update(aph);
 }
 
 int ColorWindow::handle_event()
 {
-	int r = 255*rgb.r + 0.5, g = 255*rgb.g + 0.5, b = 255*rgb.b + 0.5;
-	int result = (r << 16) | (g << 8) | (b << 0);
-	thread->handle_new_color(result, (int)(255*aph + 0.5));
+	thread->handle_new_color(rgb888(), (int)(255*aph + 0.5));
 	return 1;
+}
+
+int ColorWindow::button_press_event()
+{
+	if( button_grabbed ) {
+		grab_cursor();
+	}
+	return 0;
+}
+int ColorWindow::button_release_event()
+{
+	if( button_grabbed ) {
+		grab_btn->disable();
+		grab_btn->enable();
+		ungrab_buttons();
+		ungrab_cursor();
+		button_grabbed = 0;
+		int cx, cy;
+		get_abs_cursor_xy(cx, cy);
+//printf("grabbed button %d,%d\n",cx,cy);
+		BC_Capture capture_bitmap(1, 1, 0);
+		VFrame vframe(1,1,BC_RGB888);
+		capture_bitmap.capture_frame(&vframe, cx,cy);
+		unsigned char *data = vframe.get_data();
+		rgb.r = data[0]/255.;  rgb.g = data[1]/255.;  rgb.b = data[2]/255.;
+		update_rgb();
+		update_display();
+		update_history();
+		return handle_event();
+	}
+	return 0;
 }
 
 
@@ -584,10 +642,7 @@ int PaletteOutput::handle_event()
 
 int PaletteOutput::draw()
 {
-	int r = 255*window->rgb.r + 0.5f;
-	int g = 255*window->rgb.g + 0.5f;
-	int b = 255*window->rgb.b + 0.5f;
-	set_color((r << 16) | (g << 8) | (b << 0));
+	set_color(window->rgb888());
 	draw_box(2, 2, get_w() - 4, get_h() - 4);
 	draw_3d_border(0, 0, get_w(), get_h(), 1);
 	return 0;
@@ -777,7 +832,7 @@ void ColorWindow::update_rgb(float r, float g, float b)
 {
 	{ float y, u, v;
 	YUV::rgb_to_yuv_f(r, g, b, y, u, v);
-	u += 0.5f;  v += 0.5f;
+	u += 0.5;  v += 0.5;
 	bclamp(y, 0, 1);    yuv.y = y;
 	bclamp(u, 0, 1);    yuv.u = u;
 	bclamp(v, 0, 1);    yuv.v = v; }
@@ -790,7 +845,7 @@ void ColorWindow::update_rgb(float r, float g, float b)
 
 void ColorWindow::update_yuv(float y, float u, float v)
 {
-	u -= 0.5f;  v -= 0.5f;
+	u -= 0.5;  v -= 0.5;
 	{ float r, g, b;
 	YUV::yuv_to_rgb_f(r, g, b, y, u, v);
 	bclamp(r, 0, 1);   rgb.r = r;
@@ -812,13 +867,77 @@ void ColorWindow::update_hsv(float h, float s, float v)
 	bclamp(b, 0, 1);   rgb.b = b;
 	float y, u, v;
 	YUV::rgb_to_yuv_f(r, g, b, y, u, v);
-	u += 0.5f;  v += 0.5f;
+	u += 0.5;  v += 0.5;
 	bclamp(y, 0, 1);   yuv.y = y;
 	bclamp(u, 0, 1);   yuv.u = u;
 	bclamp(v, 0, 1);   yuv.v = v; }
 }
 
-PalletteNum::PalletteNum(ColorWindow *window, int x, int y,
+void ColorWindow::load_history()
+{
+	char history_path[BCTEXTLEN];
+	MWindow::create_defaults_path(history_path,PALETTE_DATA);
+	FILE *fp = fopen(history_path,"r");
+	int i=0;
+	if( fp ) {
+ 		while( i < PALLETTE_HISTORY_SIZE ) {
+			char line[BCSTRLEN];
+			if( !fgets(line,sizeof(line)-1,fp) ) break;
+			line[sizeof(line)-1] = 0;
+			if( sscanf(line, "%x",&palette_history[i]) != 1 ) break;
+			++i;
+		}
+		fclose(fp);
+	}
+	int r = 0, g = 0, b = 0;
+	float v0 = 0, v1 = 1;
+	while( i < PALLETTE_HISTORY_SIZE ) {
+		int grey_code = i ^ (i>>1);
+		r = 255 * ((grey_code&4) ? v0 : v1);
+		g = 255 * ((grey_code&2) ? v0 : v1);
+		b = 255 * ((grey_code&1) ? v0 : v1);
+		int color = (r<<16) | (g<<8) | (b<<0);
+		palette_history[i++] = color;
+		if( i & 7 ) continue;
+		v0 = 0.5f * (v0+.5f);
+		v1 = 0.5f * (v1+.5f);
+	}
+}
+void ColorWindow::save_history()
+{
+	char history_path[BCTEXTLEN];
+	MWindow::create_defaults_path(history_path,PALETTE_DATA);
+	FILE *fp = fopen(history_path,"w");
+	if( fp ) {
+		for( int i=0; i<PALLETTE_HISTORY_SIZE; ++i ) {
+			fprintf(fp, "%06x\n", palette_history[i]);
+		}
+		fclose(fp);
+	}
+}
+void ColorWindow::update_history(int color)
+{
+	int out = palette_history[0];
+	palette_history[0] = color;
+	for( int i=1; out != color && i<PALLETTE_HISTORY_SIZE; ++i ) {
+		int in = out;
+		out = palette_history[i];
+		palette_history[i] = in;
+	}
+}
+void ColorWindow::update_history()
+{
+	update_history(rgb888());
+	history->update(0);
+}
+int ColorWindow::rgb888()
+{
+	int r = 255*rgb.r + 0.5, g = 255*rgb.g + 0.5, b = 255*rgb.b + 0.5;
+	bclamp(r, 0, 255);  bclamp(g, 0, 255);  bclamp(b, 0, 255);
+	return (r<<16) | (g<<8) | (b<<0);
+}
+
+PaletteNum::PaletteNum(ColorWindow *window, int x, int y,
 	float &output, float min, float max)
  : BC_TumbleTextBox(window, output, min, max, x, y, 64)
 {
@@ -828,12 +947,12 @@ PalletteNum::PalletteNum(ColorWindow *window, int x, int y,
 	set_precision(2);
 }
 
-PalletteNum::~PalletteNum()
+PaletteNum::~PaletteNum()
 {
 }
 
 
-int PalletteHSV::handle_event()
+int PaletteHSV::handle_event()
 {
 	update_output();
 	window->update_hsv();
@@ -842,7 +961,7 @@ int PalletteHSV::handle_event()
 	return 1;
 }
 
-int PalletteRGB::handle_event()
+int PaletteRGB::handle_event()
 {
 	update_output();
 	window->update_rgb();
@@ -851,7 +970,7 @@ int PalletteRGB::handle_event()
 	return 1;
 }
 
-int PalletteYUV::handle_event()
+int PaletteYUV::handle_event()
 {
 	update_output();
 	window->update_yuv();
@@ -860,11 +979,165 @@ int PalletteYUV::handle_event()
 	return 1;
 }
 
-int PalletteAPH::handle_event()
+int PaletteAPH::handle_event()
 {
 	update_output();
 	window->update_display();
 	window->handle_event();
 	return 1;
+}
+
+PaletteHexButton::PaletteHexButton(ColorWindow *window, int x, int y)
+ : BC_GenericButton(x, y, 50, "#")
+{
+	this->window = window;
+	set_tooltip(_("hex rgb color"));
+}
+PaletteHexButton::~PaletteHexButton()
+{
+}
+int PaletteHexButton::handle_event()
+{
+	const char *hex = window->hex_box->get_text();
+	int color;
+	if( sscanf(hex,"%x",&color) == 1 ) {
+		float r = ((color>>16) & 0xff) / 255.;
+		float g = ((color>>8)  & 0xff) / 255.;
+		float b = ((color>>0)  & 0xff) / 255.;
+		window->rgb.r = r;  window->rgb.g = g;  window->rgb.b = b;
+		window->update_rgb();
+		window->update_display();
+		window->update_history();
+		window->handle_event();
+	}
+	return 1;
+}
+
+PaletteHex::PaletteHex(ColorWindow *window, int x, int y, const char *hex)
+ : BC_TextBox(x, y, 100, 1, hex)
+{
+	this->window = window;
+}
+PaletteHex::~PaletteHex()
+{
+}
+void PaletteHex::update()
+{
+	char hex[BCSTRLEN];  sprintf(hex,"%06x",window->rgb888());
+	BC_TextBox::update(hex);
+}
+
+int PaletteHex::handle_event()
+{
+	return 1;
+}
+
+#include "grabpick_up_png.h"
+#include "grabpick_hi_png.h"
+#include "grabpick_dn_png.h"
+
+PaletteGrabButton::PaletteGrabButton(ColorWindow *window, int x, int y)
+ : BC_Button(x, y, vframes)
+{
+	this->window = window;
+	vframes[0] = new VFramePng(grabpick_up_png);
+	vframes[1] = new VFramePng(grabpick_hi_png);
+	vframes[2] = new VFramePng(grabpick_dn_png);
+	set_tooltip(_("grab from anywhere picker"));
+}
+PaletteGrabButton::~PaletteGrabButton()
+{
+        for( int i=0; i<3; ++i )
+                delete vframes[i];
+}
+int PaletteGrabButton::handle_event()
+{
+	if( window->grab_buttons() ) {
+		window->button_grabbed = 1;
+		button_press_event(); // redraw face HI
+	}
+	return 1;
+}
+
+PaletteHistory::PaletteHistory(ColorWindow *window, int x, int y)
+ : BC_SubWindow(x,y, 200, 24)
+{
+	this->window = window;
+	button_down = 0;
+	set_tooltip(_("color history"));
+}
+PaletteHistory::~PaletteHistory()
+{
+}
+void PaletteHistory::update(int flush)
+{
+	int x1 = 0, x2 = 0;
+	for( int i=0; i<PALLETTE_HISTORY_SIZE; x1=x2 ) {
+		int rgb = window->palette_history[i];
+		x2 = (++i * get_w())/PALLETTE_HISTORY_SIZE;
+		draw_3d_box(x1,0,x2-x1,get_h(),WHITE,BLACK,rgb,LTBLUE,DKBLUE);
+	}
+	flash(flush);
+}
+
+int PaletteHistory::button_press_event()
+{
+	if( button_down || !is_event_win() ) return 0;
+	button_down =  1;
+	cursor_motion_event();
+	return 1;
+}
+int PaletteHistory::button_release_event()
+{
+	if( !button_down || !is_event_win() ) return 0;
+	cursor_motion_event();
+	if( button_down > 0 ) {
+		window->handle_event();
+		window->update_display();
+		window->update_history();
+	}
+	button_down =  0;
+	return 1;
+}
+int PaletteHistory::cursor_motion_event()
+{
+	if( !button_down || !is_event_win() ) return 0;
+	hide_tooltip();
+	int pick = (PALLETTE_HISTORY_SIZE * get_cursor_x()) / get_w();
+	bclamp(pick, 0, PALLETTE_HISTORY_SIZE-1);
+	int color = window->palette_history[pick];
+	float r = ((color>>16) & 0xff) / 255.;
+	float g = ((color>>8)  & 0xff) / 255.;
+	float b = ((color>>0)  & 0xff) / 255.;
+	if( window->rgb.r != r || window->rgb.g != g || window->rgb.b != b ) {
+		window->rgb.r = r;  window->rgb.g = g;  window->rgb.b = b;
+		window->update_rgb();
+		window->update_display();
+	}
+	return 1;
+}
+
+int PaletteHistory::cursor_enter_event()
+{
+	set_tooltip_done(0);
+	return 0;
+}
+int PaletteHistory::cursor_leave_event()
+{
+	hide_tooltip();
+	set_tooltip_done(0);
+	return 0;
+}
+int PaletteHistory::repeat_event(int64_t duration)
+{
+	int result = 0;
+
+	if( duration == get_resources()->tooltip_delay &&
+	    get_tooltip() && *get_tooltip() && cursor_above() ) {
+		show_tooltip();
+		set_tooltip_done(1);
+		result = 1;
+	}
+	return result;
 }
 

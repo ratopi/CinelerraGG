@@ -93,6 +93,7 @@
 #endif
 #include <X11/extensions/Xinerama.h>
 #ifdef HAVE_GL
+#define GL_GLEXT_PROTOTYPES
 #include <GL/glx.h>
 #endif
 
@@ -460,6 +461,11 @@ public:
 // Reroute toplevel events
 	int grab(BC_WindowBase *window);
 	int ungrab(BC_WindowBase *window);
+// Grab button events
+	int grab_buttons();
+	void ungrab_buttons();
+	void grab_cursor();
+	void ungrab_cursor();
 // Get a bitmap to draw on the window with
 	BC_Bitmap* new_bitmap(int w, int h, int color_model = -1);
 // Draw a bitmap on the window
@@ -508,6 +514,7 @@ public:
 	int unset_repeat(int64_t duration);
 	const char *get_tooltip();
 	int set_tooltip(const char *text);
+	void set_tooltip_done(int v);
 	int show_tooltip(int w = -1, int h = -1);
 	int hide_tooltip();
 	int set_icon(VFrame *data);
@@ -637,7 +644,7 @@ private:
 // Type of window defined above
 	int window_type;
 // keypress/pointer active grab
-	BC_WindowBase* active_grab;
+	BC_WindowBase *active_grab, *grab_active;
 // Pointer to the active menubar in the window.
 	BC_MenuBar* active_menubar;
 // pointer to the active popup menu in the window
@@ -827,6 +834,7 @@ private:
 	Cursor downright_resize_cursor;
 	Cursor hourglass_cursor;
 	Cursor transparent_cursor;
+	Cursor grabbed_cursor;
 
 	int xvideo_port_id;
 	ArrayList<BC_ResizeCall*> resize_history;

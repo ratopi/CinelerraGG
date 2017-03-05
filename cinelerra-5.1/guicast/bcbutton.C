@@ -111,6 +111,7 @@ void BC_Button::enable()
 void BC_Button::disable()
 {
 	enabled = 0;
+	status = BUTTON_UP;
 	draw_face();
 }
 

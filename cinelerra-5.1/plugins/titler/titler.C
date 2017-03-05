@@ -46,6 +46,7 @@
 #include "language.h"
 #include "mwindow.inc"
 #include "overlayframe.h"
+#include "plugin.h"
 #include "renderengine.h"
 #include "titler.h"
 #include "titlerwindow.h"
@@ -81,38 +82,36 @@ REGISTER_PLUGIN(TitleMain)
 
 TitleConfig::TitleConfig()
 {
-	style = 0;
-	color = BLACK;
-	alpha = 0xff;
-	outline_alpha = 0xff;
-	size = 24;
-	motion_strategy = NO_MOTION;
-	loop = 0;
-	line_pitch = 0;
-	hjustification = JUSTIFY_CENTER;
-	vjustification = JUSTIFY_MID;
-	fade_in = 0.0;
-	fade_out = 0.0;
-	title_x = title_y = 0.0;
-	title_w = title_h = 0;
-	dropshadow = 2;
 	strcpy(font, "fixed");
 	strcpy(encoding, DEFAULT_ENCODING);
-	timecode_format = DEFAULT_TIMECODEFORMAT;
-	pixels_per_second = 1.0;
-	timecode = 0;
-	stroke_width = 1.0;
-	wtext[0] = 0;  wlen = 0;
-	color_stroke = 0xff0000;
+	style = 0;
+	size = 24;
+	color = BLACK;
+	alpha = 0xff;
+	outline_size = 0.;
 	outline_color = WHITE;
-	background = 0;
-	strcpy(background_path, "");
-
-	outline_size = 0;
+	outline_alpha = 0xff;
+	color_stroke = 0xff0000;
+	stroke_width = 1.0;
+	motion_strategy = NO_MOTION;
+	line_pitch = 0;
+	loop = 0;
+	hjustification = JUSTIFY_CENTER;
+	vjustification = JUSTIFY_MID;
+	fade_in = 0.0;  fade_out = 0.0;
+	pixels_per_second = 100.0;
+	wtext[0] = 0;  wlen = 0;
+	title_x = title_y = 0.0;
+	title_w = title_h = 0;
 	window_w = 800;
 	window_h = 460;
 	next_keyframe_position = 0;
 	prev_keyframe_position = 0;
+	timecode = 0;
+	dropshadow = 2;
+	background = 0;
+	strcpy(background_path, "");
+	timecode_format = DEFAULT_TIMECODEFORMAT;
 	drag = 0;
 	loop_playback = 0;
 }
@@ -124,102 +123,118 @@ TitleConfig::~TitleConfig()
 int TitleConfig::equivalent(TitleConfig &that)
 {
 	return !strcasecmp(font, that.font) &&
+		!strcasecmp(encoding, that.encoding) &&
 		style == that.style &&
 		size == that.size &&
 		color == that.color &&
+		alpha == that.alpha &&
+		outline_size == that.outline_size &&
+		outline_color == that.outline_color &&
+		outline_alpha == that.outline_alpha &&
 		color_stroke == that.color_stroke &&
 		stroke_width == that.stroke_width &&
-		outline_color == that.outline_color &&
-		alpha == that.alpha &&
-		outline_alpha == that.outline_alpha &&
-		EQUIV(pixels_per_second, that.pixels_per_second) &&
-		motion_strategy == that.motion_strategy &&
-		loop == that.loop &&
+// dont require redraw for these
+//		motion_strategy == that.motion_strategy &&
 		line_pitch == that.line_pitch &&
+//		loop == that.loop &&
 		hjustification == that.hjustification &&
 		vjustification == that.vjustification &&
-		fade_in == that.fade_in && fade_out == that.fade_out &&
-		title_x == that.title_x && title_y == that.title_y &&
-		title_w == that.title_w && title_h == that.title_h &&
-		dropshadow == that.dropshadow &&
-		timecode == that.timecode &&
-		timecode_format == that.timecode_format &&
-		outline_size == that.outline_size &&
-		!strcasecmp(encoding, that.encoding) &&
+//		fade_in == that.fade_in && fade_out == that.fade_out &&
+//		EQUIV(pixels_per_second, that.pixels_per_second) &&
 		wlen == that.wlen &&
-		!memcmp(wtext, that.wtext, wlen * sizeof(wchar_t));
+		!memcmp(wtext, that.wtext, wlen * sizeof(wchar_t)) &&
+//		title_x == that.title_x && title_y == that.title_y &&
+		title_w == that.title_w && title_h == that.title_h &&
+//		window_w == that.window_w && window_h == that.window_h &&
+		timecode == that.timecode &&
+		dropshadow == that.dropshadow &&
+		background == that.background &&
+		!strcmp(background_path, that.background_path) &&
+		timecode_format == that.timecode_format &&
+//		drag == that.drag &&
+		loop_playback == that.loop_playback;
 }
 
 void TitleConfig::copy_from(TitleConfig &that)
 {
 	strcpy(font, that.font);
+	strcpy(encoding, that.encoding);
 	style = that.style;
 	size = that.size;
 	color = that.color;
+	alpha = that.alpha;
+	outline_size = that.outline_size;
+	outline_color = that.outline_color;
+	outline_alpha = that.outline_alpha;
 	color_stroke = that.color_stroke;
 	stroke_width = that.stroke_width;
-	outline_color = that.outline_color;
-	alpha = that.alpha;
-	outline_alpha = that.outline_alpha;
-	pixels_per_second = that.pixels_per_second;
 	motion_strategy = that.motion_strategy;
-	loop = that.loop;
 	line_pitch = that.line_pitch;
+	loop = that.loop;
 	hjustification = that.hjustification;
 	vjustification = that.vjustification;
 	fade_in = that.fade_in;
 	fade_out = that.fade_out;
-	title_x = that.title_x;
-	title_y = that.title_y;
-	title_w = that.title_w;
-	title_h = that.title_h;
-	dropshadow = that.dropshadow;
-	timecode = that.timecode;
-	timecode_format = that.timecode_format;
-	outline_size = that.outline_size;
-	strcpy(encoding, that.encoding);
-	memcpy(wtext, that.wtext, that.wlen * sizeof(wchar_t));
+	pixels_per_second = that.pixels_per_second;
 	wlen = that.wlen;
-	window_w = that.window_w;
-	window_h = that.window_h;
+	memcpy(wtext, that.wtext, that.wlen * sizeof(wchar_t));
+	title_x = that.title_x;  title_y = that.title_y;
+	title_w = that.title_w;  title_h = that.title_h;
+	window_w = that.window_w;  window_h = that.window_h;
+	timecode = that.timecode;
+	dropshadow = that.dropshadow;
+	background = that.background;
+	strcpy(background_path, that.background_path);
+	timecode_format = that.timecode_format;
+	drag = that.drag;
+	loop_playback = that.loop_playback;
 }
 
 void TitleConfig::interpolate(TitleConfig &prev, TitleConfig &next,
 	int64_t prev_frame, int64_t next_frame, int64_t current_frame)
 {
+	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
+	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 	strcpy(font, prev.font);
 	strcpy(encoding, prev.encoding);
 	style = prev.style;
 	size = prev.size;
 	color = prev.color;
+	alpha = prev.alpha;
+	outline_size = prev.outline_size;
+	outline_color = prev.outline_color;
+	outline_alpha = prev.outline_alpha;
 	color_stroke = prev.color_stroke;
 	stroke_width = prev.stroke_width;
-	outline_color = prev.outline_color;
-	alpha = prev.alpha;
-	outline_alpha = prev.outline_alpha;
 	motion_strategy = prev.motion_strategy;
-	loop = prev.loop;
 	line_pitch = prev.line_pitch;
+	loop = prev.loop;
 	hjustification = prev.hjustification;
 	vjustification = prev.vjustification;
 	fade_in = prev.fade_in;
 	fade_out = prev.fade_out;
-	outline_size = prev.outline_size;
 	pixels_per_second = prev.pixels_per_second;
-	memcpy(wtext, prev.wtext, prev.wlen * sizeof(wchar_t));
 	wlen = prev.wlen;
+	memcpy(wtext, prev.wtext, prev.wlen * sizeof(wchar_t));
 	wtext[wlen] = 0;
-
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
-	this->title_x = prev.title_x * prev_scale + next.title_x * next_scale;
-	this->title_y = prev.title_y * prev_scale + next.title_y * next_scale;
-//	this->title_x = prev.title_x;
-//	this->title_y = prev.title_y;
+	this->title_x = prev.title_x == next.title_x ? prev.title_x :
+		prev.title_x * prev_scale + next.title_x * next_scale;
+	this->title_y = prev.title_y == next.title_y ? prev.title_y :
+		prev.title_y * prev_scale + next.title_y * next_scale;
+	this->title_w = prev.title_w == next.title_w ? prev.title_w :
+		prev.title_w * prev_scale + next.title_w * next_scale;
+	this->title_h = prev.title_h == next.title_h ? prev.title_h :
+		prev.title_h * prev_scale + next.title_h * next_scale;
+	window_w = prev.window_w;
+	window_h = prev.window_h;
 	timecode = prev.timecode;
+	this->dropshadow = prev.dropshadow == next.dropshadow ? prev.dropshadow :
+		prev.dropshadow * prev_scale + next.dropshadow * next_scale;
+	background = prev.background;
+	strcpy(background_path, prev.background_path);
 	timecode_format = prev.timecode_format;
-	this->dropshadow = prev.dropshadow * prev_scale + next.dropshadow * next_scale;
-//	this->dropshadow = prev.dropshadow;
+	drag = prev.drag;
+	loop_playback = prev.loop_playback;
 }
 
 void TitleConfig::to_wtext(const char *from_enc, const char *text, int tlen)
@@ -2055,7 +2070,7 @@ int TitleMain::get_visible_text()
 	case RIGHT_TO_LEFT:
 	case LEFT_TO_RIGHT: {
 		float magnitude = config.pixels_per_second *
-			(get_source_position() - config.prev_keyframe_position) /
+			(get_source_position() - get_source_start()) /
 			PluginVClient::project_frame_rate;
 		if( config.loop ) {
 			int loop_size = text_w + title_w;
@@ -2270,21 +2285,21 @@ int TitleMain::draw_underline(VFrame *mask, int alpha)
 
 void TitleMain::draw_overlay()
 {
-
 //printf("TitleMain::draw_overlay 1\n");
         fade = 1;
         if( !EQUIV(config.fade_in, 0) ) {
-		int fade_len = lroundf(config.fade_in * PluginVClient::project_frame_rate);
-		int fade_position = get_source_position() - config.prev_keyframe_position;
+		int64_t plugin_start = server->plugin->startproject;
+		int64_t fade_len = lroundf(config.fade_in * PluginVClient::project_frame_rate);
+		int64_t fade_position = get_source_position() - plugin_start;
 
 		if( fade_position >= 0 && fade_position < fade_len ) {
 			fade = (float)fade_position / fade_len;
 		}
 	}
         if( !EQUIV(config.fade_out, 0) ) {
-		int fade_len = lroundf(config.fade_out * PluginVClient::project_frame_rate);
-		int fade_position = config.next_keyframe_position - get_source_position();
-
+		int64_t plugin_end = server->plugin->startproject + server->plugin->length;
+		int64_t fade_len = lroundf(config.fade_out * PluginVClient::project_frame_rate);
+		int64_t fade_position = plugin_end - get_source_position();
 
 		if( fade_position >= 0 && fade_position < fade_len ) {
 			fade = (float)fade_position / fade_len;

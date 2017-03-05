@@ -75,7 +75,7 @@ void PluginClientThread::run()
 	if(client->window_x < 0) client->window_x = info.get_abs_cursor_x();
 	if(client->window_y < 0) client->window_y = info.get_abs_cursor_y();
 	if(!window)
-		window = client->new_window();
+		window = (PluginClientWindow*)client->new_window();
 
 	if(window) {
 		window->lock_window("PluginClientThread::run");
@@ -91,6 +91,7 @@ void PluginClientThread::run()
 //printf("PluginClientThread::run %p %d\n", this, __LINE__);
 		window->hide_window(1);
 		window->unlock_window();
+		window->done_event(result);
 // Can't save defaults in the destructor because it's not called immediately
 // after closing.
 		/* if(client->defaults) */ client->save_defaults_xml();

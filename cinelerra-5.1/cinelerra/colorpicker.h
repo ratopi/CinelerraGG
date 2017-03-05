@@ -22,13 +22,18 @@
 #ifndef COLORPICKER_H
 #define COLORPICKER_H
 
+#include "bcbutton.h"
 #include "bcdialog.h"
+#include "bctextbox.h"
+#include "bcsubwindow.h"
 #include "clip.h"
 #include "condition.inc"
 #include "guicast.h"
 #include "mutex.inc"
 #include "thread.h"
 #include "vframe.inc"
+
+#define PALLETTE_HISTORY_SIZE 16
 
 class ColorWindow;
 class PaletteWheel;
@@ -44,10 +49,14 @@ class PaletteLum;
 class PaletteCr;
 class PaletteCb;
 class PaletteAlpha;
-class PalletteHSV;
-class PalletteRGB;
-class PalletteYUV;
-class PalletteAPH;
+class PaletteHSV;
+class PaletteRGB;
+class PaletteYUV;
+class PaletteAPH;
+class PaletteHexButton;
+class PaletteHex;
+class PaletteGrabButton;
+class PaletteHistory;
 
 class ColorThread : public BC_DialogThread
 {
@@ -79,6 +88,8 @@ public:
 	void update_hsv();
 	void update_yuv();
 	int handle_event();
+	int button_press_event();
+	int button_release_event();
 
 	struct { float r, g, b; } rgb;
 	struct { float y, u, v; } yuv;
@@ -87,9 +98,9 @@ public:
 	void update_rgb(float r, float g, float b);
 	void update_hsv(float h, float s, float v);
 	void update_yuv(float y, float u, float v);
+	int rgb888();
 
 	ColorThread *thread;
-
 	PaletteWheel *wheel;
 	PaletteWheelValue *wheel_value;
 	PaletteOutput *output;
@@ -104,12 +115,24 @@ public:
 	PaletteCb  *c_b;
 	PaletteAlpha *alpha;
 
-	PalletteHSV *hsv_h, *hsv_s, *hsv_v;
-	PalletteRGB *rgb_r, *rgb_g, *rgb_b;
-	PalletteYUV *yuv_y, *yuv_u, *yuv_v;
-	PalletteAPH *aph_a;
+	PaletteHSV *hsv_h, *hsv_s, *hsv_v;
+	PaletteRGB *rgb_r, *rgb_g, *rgb_b;
+	PaletteYUV *yuv_y, *yuv_u, *yuv_v;
+	PaletteAPH *aph_a;
+
+	PaletteHexButton *hex_btn;
+	PaletteHex *hex_box;
+	PaletteGrabButton *grab_btn;
+	PaletteHistory *history;
 
 	VFrame *value_bitmap;
+	int button_grabbed;
+
+	int palette_history[PALLETTE_HISTORY_SIZE];
+	void load_history();
+	void save_history();
+	void update_history(int color);
+	void update_history();
 };
 
 
@@ -249,53 +272,100 @@ public:
 	ColorWindow *window;
 };
 
-class PalletteNum : public BC_TumbleTextBox
+class PaletteNum : public BC_TumbleTextBox
 {
 public:
 	ColorWindow *window;
 	float *output;
 
-	PalletteNum(ColorWindow *window, int x, int y,
+	PaletteNum(ColorWindow *window, int x, int y,
 			float &output, float min, float max);
-	~PalletteNum();
+	~PaletteNum();
 	void update_output() { *output = atof(get_text()); }
 	static int calculate_h() { return BC_Tumbler::calculate_h(); }
 };
 
-class PalletteRGB : public PalletteNum
+class PaletteRGB : public PaletteNum
 {
 public:
-	PalletteRGB(ColorWindow *window, int x, int y,
+	PaletteRGB(ColorWindow *window, int x, int y,
 			float &output, float min, float max)
-	 : PalletteNum(window, x, y, output, min, max) {}
+	 : PaletteNum(window, x, y, output, min, max) {}
 	int handle_event();
 };
 
-class PalletteYUV : public PalletteNum
+class PaletteYUV : public PaletteNum
 {
 public:
-	PalletteYUV(ColorWindow *window, int x, int y,
+	PaletteYUV(ColorWindow *window, int x, int y,
 			float &output, float min, float max)
-	 : PalletteNum(window, x, y, output, min, max) {}
+	 : PaletteNum(window, x, y, output, min, max) {}
 	int handle_event();
 };
 
-class PalletteHSV : public PalletteNum
+class PaletteHSV : public PaletteNum
 {
 public:
-	PalletteHSV(ColorWindow *window, int x, int y,
+	PaletteHSV(ColorWindow *window, int x, int y,
 			float &output, float min, float max)
-	 : PalletteNum(window, x, y, output, min, max) {}
+	 : PaletteNum(window, x, y, output, min, max) {}
 	int handle_event();
 };
 
-class PalletteAPH : public PalletteNum
+class PaletteAPH : public PaletteNum
 {
 public:
-	PalletteAPH(ColorWindow *window, int x, int y,
+	PaletteAPH(ColorWindow *window, int x, int y,
 			float &output, float min, float max)
-	 : PalletteNum(window, x, y, output, min, max) {}
+	 : PaletteNum(window, x, y, output, min, max) {}
 	int handle_event();
+};
+
+class PaletteHexButton : public BC_GenericButton
+{
+public:
+	PaletteHexButton(ColorWindow *window, int x, int y);
+	~PaletteHexButton();
+	int handle_event();
+	ColorWindow *window;
+};
+
+class PaletteHex : public BC_TextBox
+{
+public:
+	PaletteHex(ColorWindow *window, int x, int y, const char *hex);
+	~PaletteHex();
+	int handle_event();
+	void update();
+	ColorWindow *window;
+};
+
+class PaletteGrabButton : public BC_Button
+{
+public:
+	PaletteGrabButton(ColorWindow *window, int x, int y);
+	~PaletteGrabButton();
+	int handle_event();
+
+	ColorWindow *window;
+	VFrame *vframes[3];
+};
+
+class PaletteHistory : public BC_SubWindow
+{
+public:
+	PaletteHistory(ColorWindow *window, int x, int y);
+	~PaletteHistory();
+	void update(int flush=1);
+	int button_press_event();
+	int button_release_event();
+	int cursor_motion_event();
+	int cursor_enter_event();
+	int cursor_leave_event();
+	int repeat_event(int64_t duration);
+
+	ColorWindow *window;
+	int button_down;
 };
 
 #endif

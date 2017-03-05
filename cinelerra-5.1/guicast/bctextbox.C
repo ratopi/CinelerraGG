@@ -2788,3 +2788,9 @@ void BC_TumbleTextBox::set_boundaries(float min, float max)
 {
 	tumbler->set_boundaries(min, max);
 }
+
+void BC_TumbleTextBox::set_tooltip(const char *text)
+{
+	textbox->set_tooltip(text);
+}
+

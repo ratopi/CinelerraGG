@@ -114,9 +114,13 @@ TitleWindow::TitleWindow(TitleMain *client)
 	loop_playback = 0;
 }
 
-TitleWindow::~TitleWindow()
+void TitleWindow::done_event(int result)
 {
 	ungrab(client->server->mwindow->cwindow->gui);
+}
+
+TitleWindow::~TitleWindow()
+{
 	delete color_popup;
 	delete png_popup;
 	for( int i=0; i<fonts.size(); ++i )

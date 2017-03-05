@@ -160,6 +160,7 @@ public:
 
 	virtual int translation_event();
 	virtual int close_event();
+	virtual void done_event(int result) {}
 
 	PluginClient *client;
 };
@@ -178,7 +179,7 @@ public:
 
 	BC_WindowBase* get_window();
 	PluginClient* get_client();
-	BC_WindowBase *window;
+	PluginClientWindow *window;
 	PluginClient *client;
 
 private:

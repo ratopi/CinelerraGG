@@ -96,6 +96,7 @@ public:
 	void next_font();
 	void check_style(const char *font_name);
 	int insert_ibeam(const char *txt, int adv);
+	void done_event(int result);
 
 	TitleMain *client;
 

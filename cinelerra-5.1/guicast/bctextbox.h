@@ -410,6 +410,7 @@ public:
 	void set_precision(int precision);
 	void set_increment(float value);
 	void set_log_floatincrement(int value);
+	void set_tooltip(const char *text);
 
 	friend class BC_TumbleTextBoxText;
 	friend class BC_TumbleTextBoxTumble;

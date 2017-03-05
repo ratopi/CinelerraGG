@@ -118,7 +118,6 @@ BC_WindowBase::~BC_WindowBase()
 		top_level->dequeue_events(win);
 #endif
 // drop active window refs to this
-		if(top_level->active_grab == this) top_level->active_grab = 0;
 		if(top_level->active_menubar == this) top_level->active_menubar = 0;
 		if(top_level->active_popup_menu == this) top_level->active_popup_menu = 0;
 		if(top_level->active_subwindow == this) top_level->active_subwindow = 0;
@@ -130,6 +129,7 @@ BC_WindowBase::~BC_WindowBase()
 		parent_window->subwindows->remove(this);
 	}
 
+	if(grab_active) grab_active->active_grab = 0;
 	if(icon_window) delete icon_window;
 	if(window_type == POPUP_WINDOW)
 		parent_window->remove_popup(this);
@@ -291,6 +291,7 @@ int BC_WindowBase::initialize()
 	last_motion_win = 0;
 	key_pressed = 0;
 	active_grab = 0;
+	grab_active = 0;
 	active_menubar = 0;
 	active_popup_menu = 0;
 	active_subwindow = 0;
@@ -1870,6 +1871,10 @@ int BC_WindowBase::set_tooltip(const char *text)
 	}
 	return 0;
 }
+void BC_WindowBase::set_tooltip_done(int v)
+{
+	tooltip_done = v;
+}
 
 // signal the event handler to repeat
 int BC_WindowBase::set_repeat(int64_t duration)
@@ -2027,7 +2032,7 @@ void BC_WindowBase::init_cursors()
 	hourglass_cursor = XCreateFontCursor(display, XC_watch);
 
 
-	char cursor_data[] = { 0,0,0,0, 0,0,0,0 };
+	static char cursor_data[] = { 0,0,0,0, 0,0,0,0 };
 	Colormap colormap = DefaultColormap(display, screen);
 	Pixmap pixmap_bottom = XCreateBitmapFromData(display,
 		rootwin, cursor_data, 8, 8);
@@ -2037,6 +2042,49 @@ void BC_WindowBase::init_cursors()
 		pixmap_bottom, pixmap_bottom, &black, &black, 0, 0);
 //	XDefineCursor(display, win, transparent_cursor);
 	XFreePixmap(display, pixmap_bottom);
+
+	int iw = 23, iw1 = iw-1, iw2 = iw/2;
+	int ih = 23, ih1 = ih-1, ih2 = ih/2;
+	VFrame grab(iw,ih,BC_RGB888);
+	grab.clear_frame();
+	grab.set_pixel_color(RED);   // fg
+	grab.draw_smooth(iw2,0,   iw1,0,   iw1,ih2);
+	grab.draw_smooth(iw1,ih2, iw1,ih1, iw2,ih1);
+	grab.draw_smooth(iw2,ih1, 0,ih1,   0,ih2);
+	grab.draw_smooth(0,ih2,   0,0,     iw2,0);
+	grab.set_pixel_color(WHITE); // bg
+	grab.draw_line(0,ih2,     iw2-2,ih2);
+	grab.draw_line(iw2+2,ih2, iw1,ih2);
+	grab.draw_line(iw2,0,     iw2,ih2-2);
+	grab.draw_line(iw2,ih2+2, iw2,ih1);
+
+	int bpl = (iw+7)/8, isz = bpl * ih;
+	char img[isz];  memset(img, 0, isz);
+	char msk[isz];  memset(msk, 0, isz);
+	unsigned char **rows = grab.get_rows();
+	for( int iy=0; iy<ih; ++iy ) {
+		char *op = img + iy*bpl;
+		char *mp = msk + iy*bpl;
+		unsigned char *ip = rows[iy];
+		for( int ix=0; ix<iw; ++ix,ip+=3 ) {
+			if( ip[0] ) mp[ix>>3] |= (1<<(ix&7));
+			if( !ip[1] ) op[ix>>3] |= (1<<(ix&7));
+		}
+	}
+	unsigned long white_pix = WhitePixel(display, screen);
+	unsigned long black_pix = BlackPixel(display, screen);
+	Pixmap img_xpm = XCreatePixmapFromBitmapData(display, rootwin,
+		img, iw,ih, white_pix,black_pix, 1);
+	Pixmap msk_xpm = XCreatePixmapFromBitmapData(display, rootwin,
+		msk, iw,ih, white_pix,black_pix, 1);
+
+	XColor fc, bc;
+	fc.flags = bc.flags = DoRed | DoGreen | DoBlue;
+	fc.red = 0xffff; fc.green = fc.blue = 0;  // fg
+	bc.red = bc.green = bc.blue = 0x0000;     // bg
+	grabbed_cursor = XCreatePixmapCursor(display, img_xpm,msk_xpm, &fc,&bc, iw2,ih2);
+	XFreePixmap(display, img_xpm);
+	XFreePixmap(display, msk_xpm);
 }
 
 int BC_WindowBase::evaluate_color_model(int client_byte_order, int server_byte_order, int depth)
@@ -3314,13 +3362,40 @@ int BC_WindowBase::grab(BC_WindowBase *window)
 {
 	if( window->active_grab && this != window->active_grab ) return 0;
 	window->active_grab = this;
+	this->grab_active = window;
 	return 1;
 }
 int BC_WindowBase::ungrab(BC_WindowBase *window)
 {
 	if( window->active_grab && this != window->active_grab ) return 0;
 	window->active_grab = 0;
+	this->grab_active = 0;
 	return 1;
+}
+int BC_WindowBase::grab_buttons()
+{
+	XSync(top_level->display, False);
+	if( XGrabButton(top_level->display, AnyButton, AnyModifier,
+			top_level->rootwin, True, ButtonPressMask | ButtonReleaseMask,
+			GrabModeAsync, GrabModeSync, None, grabbed_cursor) == GrabSuccess ) {
+		set_active_subwindow(this);
+		return 0;
+	}
+	return 1;
+}
+void BC_WindowBase::ungrab_buttons()
+{
+	XUngrabButton(top_level->display, AnyButton, AnyModifier, top_level->rootwin);
+	set_active_subwindow(0);
+	unhide_cursor();
+}
+void BC_WindowBase::grab_cursor()
+{
+	XDefineCursor(top_level->display, top_level->rootwin, grabbed_cursor);
+}
+void BC_WindowBase::ungrab_cursor()
+{
+	XUndefineCursor(top_level->display, top_level->rootwin);
 }
 
 int BC_WindowBase::get_w()
