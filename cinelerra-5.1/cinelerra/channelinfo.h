@@ -267,10 +267,7 @@ public:
 	ChannelPanel *panel;
 	int x0, y0;
 	const char *tip_info;
-	int in_window, tooltip_done;
 
-	int cursor_enter_event();
-	int cursor_leave_event();
 	int repeat_event(int64_t duration);
 	void set_tooltip(const char *tip);
 

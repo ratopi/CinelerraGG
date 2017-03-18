@@ -1117,9 +1117,11 @@ void BC_WindowBase::draw_vframe(VFrame *frame,
 		pixmap);
 }
 
-void BC_WindowBase::draw_tooltip()
+void BC_WindowBase::draw_tooltip(const char *text)
 {
-	if(tooltip_popup && tooltip_text)
+	if( !text )
+		text = tooltip_text;
+	if(tooltip_popup && text)
 	{
 		int w = tooltip_popup->get_w(), h = tooltip_popup->get_h();
 		tooltip_popup->set_color(get_resources()->tooltip_bg_color);
@@ -1129,7 +1131,7 @@ void BC_WindowBase::draw_tooltip()
 		tooltip_popup->set_font(MEDIUMFONT);
 		tooltip_popup->draw_text(TOOLTIP_MARGIN,
 			get_text_ascent(MEDIUMFONT) + TOOLTIP_MARGIN,
-			tooltip_text);
+			text);
 	}
 }
 

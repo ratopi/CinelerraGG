@@ -461,6 +461,32 @@ void MWindow::init_defaults(BC_Hash* &defaults, char *config_path)
 	defaults->load();
 }
 
+
+void MWindow::check_language()
+{
+	char curr_lang[BCTEXTLEN]; curr_lang[0] = 0;
+	const char *env_lang = getenv("LANGUAGE");
+	if( !env_lang ) env_lang = getenv("LANG");
+	if( !env_lang ) {
+		snprintf(curr_lang, sizeof(curr_lang), "%s-%s.%s",
+			BC_Resources::language, BC_Resources::region, BC_Resources::encoding);
+		env_lang = curr_lang;
+	}
+	char last_lang[BCTEXTLEN]; last_lang[0] = 0;
+	defaults->get("LAST_LANG",last_lang);
+	if( strcmp(env_lang,last_lang)) {
+		printf("lang changed from '%s' to '%s'\n", last_lang, env_lang);
+		defaults->update("LAST_LANG",env_lang);
+		char plugin_path[BCTEXTLEN];
+		create_defaults_path(plugin_path, PLUGIN_FILE);
+		::remove(plugin_path);
+		char ladspa_path[BCTEXTLEN];
+		create_defaults_path(ladspa_path, LADSPA_FILE);
+		::remove(ladspa_path);
+		defaults->save();
+	}
+}
+
 void MWindow::get_plugin_path(char *path, const char *plug_dir, const char *fs_path)
 {
 	char *base_path = FileSystem::basepath(fs_path), *bp = base_path;
@@ -796,6 +822,7 @@ void MWindow::init_preferences()
 		BC_Trace::disable_locks();
 	}
 	BC_WindowBase::get_resources()->popupmenu_btnup = preferences->popupmenu_btnup;
+	BC_WindowBase::get_resources()->textbox_focus_policy = preferences->textbox_focus_policy;
 }
 
 void MWindow::clean_indexes()
@@ -1891,6 +1918,7 @@ void MWindow::create_objects(int want_gui,
 	if(debug) PRINT_TRACE
 	default_standard = default_std();
 	init_defaults(defaults, config_path);
+	check_language();
 	init_preferences();
 	if(splash_window)
 		splash_window->operation->update(_("Initializing Plugins"));

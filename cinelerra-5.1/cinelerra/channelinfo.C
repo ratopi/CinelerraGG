@@ -628,7 +628,6 @@ ChannelDataItem::ChannelDataItem(ChannelPanel *panel, int x, int y, int w,
 {
 	this->panel = panel;
 	x0 = x;  y0 = y;
-	in_window = tooltip_done = 0;
 	tip_info = 0;
 	set_force_tooltip(1);
 }
@@ -638,25 +637,11 @@ ChannelDataItem::~ChannelDataItem()
 	delete [] tip_info;
 }
 
-int ChannelDataItem::cursor_enter_event()
-{
-	if( is_event_win() ) { in_window = 1; tooltip_done = 0; }
-	else in_window = 0;
-	return 0;
-}
-
-int ChannelDataItem::cursor_leave_event()
-{
-	if( tooltip_done ) { hide_tooltip(); in_window = 0; }
-	return 0;
-}
-
 int ChannelDataItem::repeat_event(int64_t duration)
 {
-	if( !tooltip_done && tip_info && in_window &&
+	if( tip_info && cursor_above() &&
 		duration == get_resources()->tooltip_delay ) {
 		show_tooltip();
-		tooltip_done = 1;
 		return 1;
 	}
 	return 0;

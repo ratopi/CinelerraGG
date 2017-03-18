@@ -753,7 +753,6 @@ int BC_TextBox::cursor_enter_event()
 	if( top_level->event_win == win && enabled &&
 	    !(top_level->get_resources()->textbox_focus_policy & CLICK_ACTIVATE) )
 	{
-		tooltip_done = 0;
 		if( !active ) {
 			top_level->deactivate();
 			activate();
@@ -1014,7 +1013,6 @@ int BC_TextBox::repeat_event(int64_t duration)
 		tooltip_text && tooltip_text[0] != 0 && highlighted)
 	{
 		show_tooltip();
-		tooltip_done = 1;
 		result = 1;
 	}
 
@@ -2453,6 +2451,16 @@ int BC_PopupTextBox::get_w()
 int BC_PopupTextBox::get_h()
 {
 	return textbox->get_h();
+}
+
+int BC_PopupTextBox::get_show_query()
+{
+	return listbox->get_show_query();
+}
+
+void BC_PopupTextBox::set_show_query(int v)
+{
+	listbox->set_show_query(v);
 }
 
 int BC_PopupTextBox::handle_event()

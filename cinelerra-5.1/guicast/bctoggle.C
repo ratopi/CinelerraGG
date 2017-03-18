@@ -273,12 +273,11 @@ void BC_Toggle::set_status(int value)
 
 int BC_Toggle::repeat_event(int64_t duration)
 {
-	if(tooltip_text && tooltip_text[0] != 0 && !tooltip_done &&
+	if(tooltip_text && tooltip_text[0] != 0 &&
 		duration == top_level->get_resources()->tooltip_delay &&
 		(status == BC_Toggle::TOGGLE_UPHI || status == BC_Toggle::TOGGLE_CHECKEDHI))
 	{
 		show_tooltip();
-		tooltip_done = 1;
 		return 1;
 	}
 	return 0;
@@ -288,7 +287,6 @@ int BC_Toggle::cursor_enter_event()
 {
 	if(top_level->event_win == win && enabled)
 	{
-		tooltip_done = 0;
 		if(top_level->button_down)
 			status = BC_Toggle::TOGGLE_DOWN;
 		else

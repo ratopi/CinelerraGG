@@ -322,6 +322,9 @@ public:
 	int get_y();
 	int get_w();
 	int get_h();
+	int get_show_query();
+	void set_show_query(int v);
+
 	void update(const char *text);
 	void update_list(ArrayList<BC_ListBoxItem*> *data);
 	void reposition_window(int x, int y);

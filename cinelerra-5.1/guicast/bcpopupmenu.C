@@ -355,12 +355,11 @@ int BC_PopupMenu::focus_out_event()
 
 int BC_PopupMenu::repeat_event(int64_t duration)
 {
-	if( status == BUTTON_HI && !tooltip_done &&
+	if( status == BUTTON_HI &&
 		tooltip_text && tooltip_text[0] != 0 &&
 		duration == top_level->get_resources()->tooltip_delay )
 	{
 		show_tooltip();
-		tooltip_done = 1;
 		return 1;
 	}
 	return 0;
@@ -485,7 +484,6 @@ int BC_PopupMenu::cursor_enter_event()
 {
 	if(is_event_win() && use_title)
 	{
-		tooltip_done = 0;
 		if(top_level->button_down)
 		{
 			status = BUTTON_DN;

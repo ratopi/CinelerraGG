@@ -24,6 +24,7 @@
 #include "bcdisplayinfo.h"
 #include "colorpicker.h"
 #include "condition.h"
+#include "keys.h"
 #include "language.h"
 #include "mutex.h"
 #include "mwindow.h"
@@ -134,6 +135,10 @@ ColorWindow::~ColorWindow()
 	delete yuv_y;  delete yuv_u;  delete yuv_v;
 	delete aph_a;
 
+	if( button_grabbed ) {
+		ungrab_buttons();
+		ungrab_cursor();
+	}
 	update_history(rgb888());
 	save_history();
 }
@@ -206,9 +211,9 @@ void ColorWindow::create_objects()
 	yuv_y = new PaletteYUV(this, x,y+=40, yuv.y, 0, 1);
 	yuv_y->create_objects();  yuv_y->set_tooltip(_("Luminance"));
 	yuv_u = new PaletteYUV(this, x,y+=25, yuv.u, 0, 1);
-	yuv_u->create_objects();  yuv_u->set_tooltip(_("Compliment Red"));
+	yuv_u->create_objects();  yuv_u->set_tooltip(_("Complement Blue"));
 	yuv_v = new PaletteYUV(this, x,y+=25, yuv.v, 0, 1);
-	yuv_v->create_objects();  yuv_v->set_tooltip(_("Compliment Blue"));
+	yuv_v->create_objects();  yuv_v->set_tooltip(_("Complement Red"));
 	if( thread->do_alpha ) {
 		aph_a = new PaletteAPH(this, x,y+=40, aph, 0, 1);
 		aph_a->create_objects();  aph_a->set_tooltip(_("Alpha"));
@@ -333,6 +338,21 @@ int ColorWindow::button_release_event()
 		return handle_event();
 	}
 	return 0;
+}
+
+void ColorWindow::update_rgb_hex(const char *hex)
+{
+	int color;
+	if( sscanf(hex,"%x",&color) == 1 ) {
+		float r = ((color>>16) & 0xff) / 255.;
+		float g = ((color>>8)  & 0xff) / 255.;
+		float b = ((color>>0)  & 0xff) / 255.;
+		rgb.r = r;  rgb.g = g;  rgb.b = b;
+		update_rgb();
+		update_display();
+		update_history();
+		handle_event();
+	}
 }
 
 
@@ -602,9 +622,9 @@ int PaletteWheelValue::draw(float hue, float saturation, float value)
 		g = (int)(g_f * 255);
 		b = (int)(b_f * 255);
 		for( j = 0; j < get_w(); j++ ) {
- 			row[j * 3] = r;
- 			row[j * 3 + 1] = g;
- 			row[j * 3 + 2] = b;
+			row[j * 3] = r;
+			row[j * 3 + 1] = g;
+			row[j * 3 + 2] = b;
 		}
 	}
 
@@ -880,7 +900,7 @@ void ColorWindow::load_history()
 	FILE *fp = fopen(history_path,"r");
 	int i=0;
 	if( fp ) {
- 		while( i < PALLETTE_HISTORY_SIZE ) {
+		while( i < PALLETTE_HISTORY_SIZE ) {
 			char line[BCSTRLEN];
 			if( !fgets(line,sizeof(line)-1,fp) ) break;
 			line[sizeof(line)-1] = 0;
@@ -999,17 +1019,7 @@ PaletteHexButton::~PaletteHexButton()
 int PaletteHexButton::handle_event()
 {
 	const char *hex = window->hex_box->get_text();
-	int color;
-	if( sscanf(hex,"%x",&color) == 1 ) {
-		float r = ((color>>16) & 0xff) / 255.;
-		float g = ((color>>8)  & 0xff) / 255.;
-		float b = ((color>>0)  & 0xff) / 255.;
-		window->rgb.r = r;  window->rgb.g = g;  window->rgb.b = b;
-		window->update_rgb();
-		window->update_display();
-		window->update_history();
-		window->handle_event();
-	}
+	window->update_rgb_hex(hex);
 	return 1;
 }
 
@@ -1027,8 +1037,11 @@ void PaletteHex::update()
 	BC_TextBox::update(hex);
 }
 
-int PaletteHex::handle_event()
+int PaletteHex::keypress_event()
 {
+	if( get_keypress() != RETURN )
+		return BC_TextBox::keypress_event();
+	window->update_rgb_hex(get_text());
 	return 1;
 }
 
@@ -1047,8 +1060,8 @@ PaletteGrabButton::PaletteGrabButton(ColorWindow *window, int x, int y)
 }
 PaletteGrabButton::~PaletteGrabButton()
 {
-        for( int i=0; i<3; ++i )
-                delete vframes[i];
+	for( int i=0; i<3; ++i )
+		delete vframes[i];
 }
 int PaletteGrabButton::handle_event()
 {
@@ -1117,15 +1130,9 @@ int PaletteHistory::cursor_motion_event()
 	return 1;
 }
 
-int PaletteHistory::cursor_enter_event()
-{
-	set_tooltip_done(0);
-	return 0;
-}
 int PaletteHistory::cursor_leave_event()
 {
 	hide_tooltip();
-	set_tooltip_done(0);
 	return 0;
 }
 int PaletteHistory::repeat_event(int64_t duration)
@@ -1135,7 +1142,6 @@ int PaletteHistory::repeat_event(int64_t duration)
 	if( duration == get_resources()->tooltip_delay &&
 	    get_tooltip() && *get_tooltip() && cursor_above() ) {
 		show_tooltip();
-		set_tooltip_done(1);
 		result = 1;
 	}
 	return result;

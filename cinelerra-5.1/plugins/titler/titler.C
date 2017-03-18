@@ -1486,13 +1486,15 @@ BC_FontEntry* TitleMain::get_font(const char *font_name, int style)
 	int mask = FL_WEIGHT_MASK | FL_SLANT_MASK;
 
 	BC_Resources *resources =  BC_WindowBase::get_resources();
-	return resources->find_fontentry(font_name, flavor, mask, style);
+	BC_FontEntry *font = resources->find_fontentry(font_name, flavor, mask, style);
+	if( font && strcmp(font_name, font->displayname) ) font = 0;
+	return font;
 }
 BC_FontEntry* TitleMain::config_font()
 {
 	BC_FontEntry *font = get_font(config.font, config.style);
-	if( font && load_font(font) )
-		font = get_font(FIXED_FONT,0);
+	if( !font || load_font(font) )
+		load_font(font = get_font(FIXED_FONT,0));
 	return font;
 }
 

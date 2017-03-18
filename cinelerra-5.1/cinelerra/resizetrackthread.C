@@ -60,6 +60,12 @@ ResizeVTrackThread::~ResizeVTrackThread()
 
 void ResizeVTrackThread::start_window(int w, int h, int w1, int h1)
 {
+	if( window && running() ) {
+		window->lock_window();
+		window->raise_window();
+		window->unlock_window();
+		return;
+	}
 	this->w = w;    this->h = h;
 	this->w1 = w1;  this->h1 = h1;
 	w_scale = h_scale = 1;
@@ -69,24 +75,18 @@ void ResizeVTrackThread::start_window(int w, int h, int w1, int h1)
 
 void ResizeVTrackThread::run()
 {
-	ResizeVTrackWindow *window = this->window =
-		new ResizeVTrackWindow(mwindow,
-			this,
+	window = new ResizeVTrackWindow(mwindow, this,
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 	window->create_objects();
 	int result = window->run_window();
-	this->window = 0;
-	delete window;
 
-
-	if(!result)
-	{
+	delete window;  window = 0;
+	if(!result) {
 		update();
 	}
 
-	if(((w % 4) ||
-		(h % 4)) &&
+	if(((w % 4) || (h % 4)) &&
 		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
 	{
 		MainError::show_error(

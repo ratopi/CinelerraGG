@@ -968,25 +968,25 @@ int BC_Resources::init_fontconfig(const char *search_path)
 		}
 
 		if(!strcasecmp(entry->swidth, "normal"))
-			entry->style = FL_WIDTH_NORMAL;
+			entry->style |= FL_WIDTH_NORMAL;
 		else if(!strcasecmp(entry->swidth, "ultracondensed"))
-			entry->style = FL_WIDTH_ULTRACONDENSED;
+			entry->style |= FL_WIDTH_ULTRACONDENSED;
 		else if(!strcasecmp(entry->swidth, "extracondensed"))
-			entry->style = FL_WIDTH_EXTRACONDENSED;
+			entry->style |= FL_WIDTH_EXTRACONDENSED;
 		else if(!strcasecmp(entry->swidth, "condensed"))
-			entry->style = FL_WIDTH_CONDENSED;
+			entry->style |= FL_WIDTH_CONDENSED;
 		else if(!strcasecmp(entry->swidth, "semicondensed"))
-			entry->style = FL_WIDTH_SEMICONDENSED;
+			entry->style |= FL_WIDTH_SEMICONDENSED;
 		else if(!strcasecmp(entry->swidth, "semiexpanded"))
-			entry->style = FL_WIDTH_SEMIEXPANDED;
+			entry->style |= FL_WIDTH_SEMIEXPANDED;
 		else if(!strcasecmp(entry->swidth, "expanded"))
-			entry->style = FL_WIDTH_EXPANDED;
+			entry->style |= FL_WIDTH_EXPANDED;
 		else if(!strcasecmp(entry->swidth, "extraexpanded"))
-			entry->style = FL_WIDTH_EXTRAEXPANDED;
+			entry->style |= FL_WIDTH_EXTRAEXPANDED;
 		else if(!strcasecmp(entry->swidth, "ultraexpanded"))
-			entry->style = FL_WIDTH_ULTRAEXPANDED;
+			entry->style |= FL_WIDTH_ULTRAEXPANDED;
 		else
-			entry->style = FL_WIDTH_NORMAL;
+			entry->style |= FL_WIDTH_NORMAL;
 
 		fontlist->append(entry);
 //		printf("TitleMain::build_fonts %s: success\n",	entry->path);

@@ -30,6 +30,7 @@
 #include "cwindowgui.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "keys.h"
 #include "language.h"
 #include "mwindow.h"
 #include "plugin.h"
@@ -117,6 +118,10 @@ TitleWindow::TitleWindow(TitleMain *client)
 void TitleWindow::done_event(int result)
 {
 	ungrab(client->server->mwindow->cwindow->gui);
+	color_thread->close_window();
+	outline_color_thread->close_window();
+	color_popup->close_window();
+	png_popup->close_window();
 }
 
 TitleWindow::~TitleWindow()
@@ -224,6 +229,7 @@ void TitleWindow::create_objects()
 	add_tool(font_title = new BC_Title(x, y, _("Font:")));
 	font = new TitleFont(client, this, x, y + font_title->get_h());
 	font->create_objects();
+	font->set_show_query(1);
 	x += font->get_w();
 	add_subwindow(font_tumbler = new TitleFontTumble(client, this, x, y+margin));
 	x += font_tumbler->get_w() + margin;
@@ -853,7 +859,7 @@ int TitlePitch::handle_event()
 }
 
 TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_GenericButton(x, y, _("Color..."))
+ : BC_GenericButton(x, y, _("Text Color..."))
 {
 	this->client = client;
 	this->window = window;
@@ -970,11 +976,27 @@ int TitleFade::handle_event()
 
 void TitleWindow::check_style(const char *font_name)
 {
-	BC_FontEntry *font;
-	font = TitleMain::get_font(font_name, BC_FONT_ITALIC);
-	strcmp(font_name, font->displayname) ? italic->disable() : italic->enable();
-	font = TitleMain::get_font(font_name, BC_FONT_BOLD);
-	strcmp(font_name, font->displayname) ? bold->disable() : bold->enable();
+	BC_FontEntry *font_nrm = TitleMain::get_font(font_name, 0);
+	BC_FontEntry *font_itl = TitleMain::get_font(font_name, BC_FONT_ITALIC);
+	BC_FontEntry *font_bld = TitleMain::get_font(font_name, BC_FONT_BOLD);
+	BC_FontEntry *font_bit = TitleMain::get_font(font_name, BC_FONT_ITALIC | BC_FONT_BOLD);
+	int has_norm = font_nrm != 0 ? 1 : 0;
+	int has_ital = font_itl != 0 || font_bit != 0 ? 1 : 0;
+	int has_bold = font_bld != 0 || font_bit != 0 ? 1 : 0;
+	if( bold->get_value() ) {
+		if( !has_bold ) bold->update(0);
+	}
+	else {
+		if( !has_norm && has_bold ) bold->update(1);
+	}
+	if( italic->get_value() ) {
+		if( !has_ital ) italic->update(0);
+	}
+	else {
+		if( !has_norm && has_ital ) italic->update(1);
+	}
+	if( has_norm && has_bold ) bold->enable();   else bold->disable();
+	if( has_norm && has_ital ) italic->enable(); else italic->disable();
 }
 
 TitleFont::TitleFont(TitleMain *client, TitleWindow *window, int x, int y)
@@ -1236,7 +1258,7 @@ int TitleBottom::handle_event()
 
 
 TitleColorThread::TitleColorThread(TitleMain *client, TitleWindow *window, int is_outline)
- : ColorThread(1, _("Text Color"))
+ : ColorThread(1, is_outline? _("Outline Color") : _("Text Color"))
 {
 	this->client = client;
 	this->window = window;
@@ -1469,9 +1491,22 @@ TitleFontsPopup::TitleFontsPopup(TitleMain *client, TitleWindow *window)
 	this->client = client;
 	this->window = window;
 	set_use_button(0);
+	set_show_query(1);
 }
 TitleFontsPopup::~TitleFontsPopup()
 {
+}
+int TitleFontsPopup::keypress_event()
+{
+	switch( get_keypress() ) {
+	case ESC:
+	case DELETE:
+		deactivate();
+		return 1;
+	default:
+		break;
+	}
+	return BC_ListBox::keypress_event();
 }
 
 int TitleFontsPopup::handle_event()
@@ -1485,7 +1520,7 @@ int TitleFontsPopup::handle_event()
 }
 
 TitleColorPopup::TitleColorPopup(TitleMain *client, TitleWindow *window)
- : ColorThread(0, _("Text Color"))
+ : ColorThread(0, _("Color"))
 {
 	this->client = client;
 	this->window = window;

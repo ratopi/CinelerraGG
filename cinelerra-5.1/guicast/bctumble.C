@@ -130,10 +130,9 @@ int BC_Tumbler::repeat_event(int64_t duration)
 	if(duration == top_level->get_resources()->tooltip_delay)
 	{
 		if(tooltip_text && tooltip_text[0] != 0 &&
-			status == TUMBLE_UPHI && !tooltip_done)
+			status == TUMBLE_UPHI)
 		{
 			show_tooltip();
-			tooltip_done = 1;
 			return 1;
 		}
 	}
@@ -163,7 +162,6 @@ int BC_Tumbler::cursor_enter_event()
 {
 	if(top_level->event_win == win)
 	{
-		tooltip_done = 0;
 		if(! top_level->button_down && status == TUMBLE_UP)
 		{
 			status = TUMBLE_UPHI;

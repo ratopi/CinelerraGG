@@ -98,6 +98,7 @@ public:
 	void update_rgb(float r, float g, float b);
 	void update_hsv(float h, float s, float v);
 	void update_yuv(float y, float u, float v);
+	void update_rgb_hex(const char *hex);
 	int rgb888();
 
 	ColorThread *thread;
@@ -335,7 +336,7 @@ class PaletteHex : public BC_TextBox
 public:
 	PaletteHex(ColorWindow *window, int x, int y, const char *hex);
 	~PaletteHex();
-	int handle_event();
+	int keypress_event();
 	void update();
 	ColorWindow *window;
 };
@@ -360,7 +361,6 @@ public:
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
-	int cursor_enter_event();
 	int cursor_leave_event();
 	int repeat_event(int64_t duration);
 

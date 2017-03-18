@@ -192,12 +192,11 @@ int BC_Pan::button_release_event()
 
 int BC_Pan::repeat_event(int64_t duration)
 {
-	if( highlighted && !active && !tooltip_done &&
+	if( highlighted && !active &&
 		tooltip_text && tooltip_text[0] != 0 &&
 		duration == top_level->get_resources()->tooltip_delay )
 	{
 		show_tooltip();
-		tooltip_done = 1;
 		return 1;
 	}
 	return 0;
@@ -207,7 +206,6 @@ int BC_Pan::cursor_enter_event()
 {
 	if(is_event_win() && !highlighted)
 	{
-		tooltip_done = 0;
 		highlighted = 1;
 		draw(1, 1);
 	}

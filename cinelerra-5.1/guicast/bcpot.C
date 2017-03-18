@@ -247,7 +247,6 @@ int BC_Pot::repeat_event(int64_t duration)
 				}
 				else
 					show_tooltip();
-				tooltip_done = 1;
 			}
 			return 1;
 		}
@@ -291,7 +290,6 @@ int BC_Pot::cursor_enter_event()
 {
 	if(top_level->event_win == win && enabled)
 	{
-		tooltip_done = 0;
 		if(!top_level->button_down && status == POT_UP)
 		{
 			status = POT_HIGH;

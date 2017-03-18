@@ -302,7 +302,6 @@ int BC_WindowBase::initialize()
 	force_tooltip = 0;
 //	next_repeat_id = 0;
 	tooltip_popup = 0;
-	tooltip_done = 0;
 	current_font = MEDIUMFONT;
 	current_color = BLACK;
 	current_cursor = ARROW_CURSOR;
@@ -1771,69 +1770,54 @@ int BC_WindowBase::dispatch_drag_motion()
 }
 
 
-
-
-
-int BC_WindowBase::show_tooltip(int w, int h)
+int BC_WindowBase::show_tooltip(const char *text, int x, int y, int w, int h)
 {
-	Window tempwin;
-
-	if(tooltip_text && !tooltip_on &&
-		(force_tooltip || get_resources()->tooltips_enabled))
-	{
-		int x, y;
+// default text
+	int forced = !text ? force_tooltip : 1;
+	if( !text ) text = tooltip_text;
+	if( !text || (!forced && !get_resources()->tooltips_enabled) ) {
 		top_level->hide_tooltip();
-
-		tooltip_on = 1;
-		if(w < 0)
-			w = get_text_width(MEDIUMFONT, tooltip_text);
-
-		if(h < 0)
-			h = get_text_height(MEDIUMFONT, tooltip_text);
-
-		w += TOOLTIP_MARGIN * 2;
-		h += TOOLTIP_MARGIN * 2;
-
-		XTranslateCoordinates(top_level->display, win,
-				top_level->rootwin, get_w(), get_h(),
-				&x, &y, &tempwin);
-		// keep the tip inside the window/display
-		int top_x = top_level->get_x();
-		if( x < top_x ) x = top_x;
-		int top_w = top_x + top_level->get_w();
-		int lmt_w = top_level->get_screen_x(0, -1) + top_level->get_screen_w(0, -1);
-		if( top_w < lmt_w ) lmt_w = top_w;
-		if( x+w > lmt_w ) x = lmt_w-w;
-		if( x < 0 ) x = 0;
-		int top_y = top_level->get_y();
-		if( y < top_y ) y = top_y;
-		int top_h = top_y + top_level->get_h();
-		int lmt_h = top_level->get_root_h(0);
-		if( top_h < lmt_h ) lmt_h = top_h;
-		if( y+h > lmt_h ) y = lmt_h-h;
-		if( y < 0 ) y = 0;
-		int abs_x, abs_y, win_x, win_y;
-		unsigned int temp_mask;
-		Window temp_win;
-		XQueryPointer(top_level->display, top_level->win,
-			&temp_win, &temp_win, &abs_x, &abs_y,
-			&win_x, &win_y, &temp_mask);
-		// check for cursor inside popup
-		if( x < abs_x && abs_x < x+w && y < abs_y && abs_y < y+h )
-		{
-			if( x-abs_x < y-abs_y )
-				x = abs_x+1;
-			else
-				y = abs_y+1;
-		}
-		tooltip_popup = new BC_Popup(top_level, x, y, w, h,
-					get_resources()->tooltip_bg_color);
-
-		draw_tooltip();
-		tooltip_popup->set_font(MEDIUMFONT);
-		tooltip_popup->flash();
-		tooltip_popup->flush();
+		return 1;
 	}
+// default w,h
+	if(w < 0) w = get_text_width(MEDIUMFONT, text)  + TOOLTIP_MARGIN * 2;
+	if(h < 0) h = get_text_height(MEDIUMFONT, text) + TOOLTIP_MARGIN * 2;
+// default x,y (win relative)
+	if( x < 0 ) x = get_w();
+	if( y < 0 ) y = get_h();
+	int wx, wy;
+	get_root_coordinates(x, y, &wx, &wy);
+// keep the tip inside the window/display
+	int x0 = top_level->get_x(), x1 = x0 + top_level->get_w();
+	int x2 = top_level->get_screen_x(0, -1) + top_level->get_screen_w(0, -1);
+	if( x1 > x2 ) x1 = x2;
+	if( wx < x0 ) wx = x0;
+	if( wx >= (x1-=w) ) wx = x1;
+	int y0 = top_level->get_y(), y1 = y0 + top_level->get_h();
+	int y2 = top_level->get_root_h(0);
+	if( y1 > y2 ) y1 = y2;
+	if( wy < y0 ) wy = y0;
+	if( wy >= (y1-=h) ) wy = y1;
+// avoid tip under cursor (flickers)
+	int abs_x, abs_y;
+	get_abs_cursor_xy(abs_x,abs_y, 0);
+	if( wx < abs_x && abs_x < wx+w && wy < abs_y && abs_y < wy+h ) {
+		if( wx-abs_x < wy-abs_y )
+			wx = abs_x+1;
+		else
+			wy = abs_y+1;
+	}
+	if( !tooltip_on ) {
+		tooltip_on = 1;
+		tooltip_popup = new BC_Popup(top_level, wx, wy, w, h,
+				get_resources()->tooltip_bg_color);
+	}
+	else
+		tooltip_popup->reposition_window(wx, wy, w, h);
+
+	draw_tooltip(text);
+	tooltip_popup->flash();
+	tooltip_popup->flush();
 	return 0;
 }
 
@@ -1871,11 +1855,6 @@ int BC_WindowBase::set_tooltip(const char *text)
 	}
 	return 0;
 }
-void BC_WindowBase::set_tooltip_done(int v)
-{
-	tooltip_done = v;
-}
-
 // signal the event handler to repeat
 int BC_WindowBase::set_repeat(int64_t duration)
 {
@@ -3396,26 +3375,6 @@ void BC_WindowBase::grab_cursor()
 void BC_WindowBase::ungrab_cursor()
 {
 	XUndefineCursor(top_level->display, top_level->rootwin);
-}
-
-int BC_WindowBase::get_w()
-{
-	return w;
-}
-
-int BC_WindowBase::get_h()
-{
-	return h;
-}
-
-int BC_WindowBase::get_x()
-{
-	return x;
-}
-
-int BC_WindowBase::get_y()
-{
-	return y;
 }
 
 // for get_root_w/h

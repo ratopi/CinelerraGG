@@ -550,7 +550,11 @@ class TitleFontsPopup : public BC_ListBox
 public:
 	TitleFontsPopup(TitleMain *client, TitleWindow *window);
 	~TitleFontsPopup();
+	int keypress_event();
 	int handle_event();
+	int show_tooltip(const char *text, int x,int y, int w,int h) {
+		return gui_tooltip(text);
+	}
 
 	TitleMain *client;
 	TitleWindow *window;

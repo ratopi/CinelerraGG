@@ -208,7 +208,6 @@ int BC_Slider::repeat_event(int64_t duration)
 				set_tooltip(get_caption());
 				show_tooltip();
 			}
-			tooltip_done = 1;
 			return 1;
 		}
 	}
@@ -256,7 +255,6 @@ int BC_Slider::cursor_enter_event()
 //printf("BC_Slider::cursor_enter_event 1\n");
 	if(top_level->event_win == win && status == SLIDER_UP)
 	{
-		tooltip_done = 0;
 		status = SLIDER_HI;
 		draw_face(1);
 	}

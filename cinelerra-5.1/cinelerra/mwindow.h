@@ -632,6 +632,7 @@ public:
 	void init_error();
 	void finit_error();
 	static void init_defaults(BC_Hash* &defaults, char *config_path);
+	void check_language();
 	const char *default_std();
 	void fill_preset_defaults(const char *preset, EDLSession *session);
 	const char *get_preset_name(int index);

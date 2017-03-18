@@ -432,6 +432,7 @@ BC_ListBox::BC_ListBox(int x,
 
 // reset the search engine
 //printf("BC_ListBox::BC_ListBox 4\n");
+	show_query = 0;
 	reset_query();
 //printf("BC_ListBox::BC_ListBox 5\n");
 }
@@ -2479,12 +2480,11 @@ int BC_ListBox::repeat_event(int64_t duration)
 
 		case NO_OPERATION:
 // Show tooltip
-			if(button_highlighted && is_popup && !tooltip_done &&
+			if(button_highlighted && is_popup &&
 				tooltip_text && tooltip_text[0] != 0 &&
 				duration == get_resources()->tooltip_delay)
 			{
 				show_tooltip();
-				tooltip_done = 1;
 				return 1;
 			}
 			break;
@@ -3942,6 +3942,7 @@ int BC_ListBox::reposition_window(int x, int y, int w, int h, int flush)
 
 int BC_ListBox::deactivate()
 {
+	hide_tooltip();
 // printf("BC_ListBox::deactivate %d this=%p gui=%p active=%d\n",
 // __LINE__,
 // this,
@@ -4030,7 +4031,6 @@ int BC_ListBox::keypress_event()
 	{
 		case ESC:
 		case RETURN:
-		case BACKSPACE:
 			top_level->deactivate();
 
 // If user is manipulating popup with keyboard, don't pass on event.
@@ -4131,7 +4131,12 @@ int BC_ListBox::keypress_event()
 					if(query_len > 0) query[--query_len] = 0;
 					new_selection = query_list();
 				}
-
+				if( show_query ) {
+					if( query_len > 0 )
+						show_tooltip(query);
+					else
+						hide_tooltip();
+				}
 				redraw = 1;
 				result = 1;
 			}

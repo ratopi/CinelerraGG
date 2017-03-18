@@ -253,6 +253,9 @@ public:
 	void set_justify(int value);
 	int get_w() { return is_popup ? BCPOPUPLISTBOX_W : popup_w; }
 	int get_h() { return is_popup ? BCPOPUPLISTBOX_H : popup_h; }
+	int gui_tooltip(const char *text) {
+		return is_popup && gui ? gui->show_tooltip(text, gui->get_w(),0, -1,-1) : -1;
+	}
 	int get_view_w() { return view_w; }
 	int get_view_h() { return view_h; }
 	int get_row_height() { return row_height; }
@@ -275,6 +278,9 @@ public:
 
 
 	void reset_query();
+	int get_show_query() { return show_query; }
+	void set_show_query(int v) { show_query = v; }
+
 	int reposition_window(int x,
 		int y,
 		int w = -1,
@@ -503,7 +509,7 @@ private:
 	BC_ListBoxYScroll *yscrollbar;
 	ArrayList<BC_ListBoxToggle*> expanders;
 	char query[BCTEXTLEN];
-
+	int show_query;
 
 // Window containing the listbox
 	BC_WindowBase *gui;
@@ -532,7 +538,6 @@ private:
 	int allow_drag_column;
 // Background color of listbox
 	int list_background;
-
 
 
 // Popup button

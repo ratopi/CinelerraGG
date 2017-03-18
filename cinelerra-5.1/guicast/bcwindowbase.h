@@ -269,10 +269,10 @@ public:
 	void add_keyboard_listener(int(BC_WindowBase::*handler)(BC_WindowBase *));
 	void del_keyboard_listener(int(BC_WindowBase::*handler)(BC_WindowBase *));
 // Dimensions
-	virtual int get_w();
-	virtual int get_h();
-	virtual int get_x();
-	virtual int get_y();
+	virtual int get_w() { return w; }
+	virtual int get_h() { return h; }
+	virtual int get_x() { return x; }
+	virtual int get_y() { return y; }
 	int get_root_w(int lock_display);
 	int get_root_h(int lock_display);
 	XineramaScreenInfo *get_xinerama_info(int screen);
@@ -514,8 +514,8 @@ public:
 	int unset_repeat(int64_t duration);
 	const char *get_tooltip();
 	int set_tooltip(const char *text);
-	void set_tooltip_done(int v);
-	int show_tooltip(int w = -1, int h = -1);
+	virtual int show_tooltip(const char *text, int x=-1, int y=-1, int w = -1, int h = -1);
+	int show_tooltip(int w=-1, int h=-1) { return show_tooltip(0, -1, -1, w, h); }
 	int hide_tooltip();
 	int set_icon(VFrame *data);
 	int load_defaults(BC_Hash *defaults);
@@ -583,7 +583,7 @@ private:
 
 	int trigger_tooltip();
 	int untrigger_tooltip();
-	void draw_tooltip();
+	void draw_tooltip(const char *text=0);
 	static XEvent *new_xevent();
 // delete all repeater opjects for a close
 	int unset_all_repeaters();
@@ -730,7 +730,6 @@ private:
 // Popup window for tooltip
 	BC_Popup *tooltip_popup;
 // If this subwindow has already shown a tooltip since the last EnterNotify
-	int tooltip_done;
 	int options;
 	int flash_enabled;
 
