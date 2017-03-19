@@ -38,5 +38,6 @@
 #define CROSS_CURSOR        12
 #define HOURGLASS_CURSOR    13
 #define TRANSPARENT_CURSOR  14
+#define GRABBED_CURSOR      15
 
 #endif

@@ -2009,7 +2009,7 @@ void BC_WindowBase::init_cursors()
 	downleft_resize_cursor = XCreateFontCursor(display, XC_bottom_left_corner);
 	downright_resize_cursor = XCreateFontCursor(display, XC_bottom_right_corner);
 	hourglass_cursor = XCreateFontCursor(display, XC_watch);
-
+	grabbed_cursor = create_grab_cursor();
 
 	static char cursor_data[] = { 0,0,0,0, 0,0,0,0 };
 	Colormap colormap = DefaultColormap(display, screen);
@@ -2021,49 +2021,6 @@ void BC_WindowBase::init_cursors()
 		pixmap_bottom, pixmap_bottom, &black, &black, 0, 0);
 //	XDefineCursor(display, win, transparent_cursor);
 	XFreePixmap(display, pixmap_bottom);
-
-	int iw = 23, iw1 = iw-1, iw2 = iw/2;
-	int ih = 23, ih1 = ih-1, ih2 = ih/2;
-	VFrame grab(iw,ih,BC_RGB888);
-	grab.clear_frame();
-	grab.set_pixel_color(RED);   // fg
-	grab.draw_smooth(iw2,0,   iw1,0,   iw1,ih2);
-	grab.draw_smooth(iw1,ih2, iw1,ih1, iw2,ih1);
-	grab.draw_smooth(iw2,ih1, 0,ih1,   0,ih2);
-	grab.draw_smooth(0,ih2,   0,0,     iw2,0);
-	grab.set_pixel_color(WHITE); // bg
-	grab.draw_line(0,ih2,     iw2-2,ih2);
-	grab.draw_line(iw2+2,ih2, iw1,ih2);
-	grab.draw_line(iw2,0,     iw2,ih2-2);
-	grab.draw_line(iw2,ih2+2, iw2,ih1);
-
-	int bpl = (iw+7)/8, isz = bpl * ih;
-	char img[isz];  memset(img, 0, isz);
-	char msk[isz];  memset(msk, 0, isz);
-	unsigned char **rows = grab.get_rows();
-	for( int iy=0; iy<ih; ++iy ) {
-		char *op = img + iy*bpl;
-		char *mp = msk + iy*bpl;
-		unsigned char *ip = rows[iy];
-		for( int ix=0; ix<iw; ++ix,ip+=3 ) {
-			if( ip[0] ) mp[ix>>3] |= (1<<(ix&7));
-			if( !ip[1] ) op[ix>>3] |= (1<<(ix&7));
-		}
-	}
-	unsigned long white_pix = WhitePixel(display, screen);
-	unsigned long black_pix = BlackPixel(display, screen);
-	Pixmap img_xpm = XCreatePixmapFromBitmapData(display, rootwin,
-		img, iw,ih, white_pix,black_pix, 1);
-	Pixmap msk_xpm = XCreatePixmapFromBitmapData(display, rootwin,
-		msk, iw,ih, white_pix,black_pix, 1);
-
-	XColor fc, bc;
-	fc.flags = bc.flags = DoRed | DoGreen | DoBlue;
-	fc.red = 0xffff; fc.green = fc.blue = 0;  // fg
-	bc.red = bc.green = bc.blue = 0x0000;     // bg
-	grabbed_cursor = XCreatePixmapCursor(display, img_xpm,msk_xpm, &fc,&bc, iw2,ih2);
-	XFreePixmap(display, img_xpm);
-	XFreePixmap(display, msk_xpm);
 }
 
 int BC_WindowBase::evaluate_color_model(int client_byte_order, int server_byte_order, int depth)
@@ -2213,6 +2170,53 @@ int BC_WindowBase::create_shared_colors()
 	create_color(FTGREY);
 
 	return 0;
+}
+
+Cursor BC_WindowBase::create_grab_cursor()
+{
+	int iw = 23, iw1 = iw-1, iw2 = iw/2;
+	int ih = 23, ih1 = ih-1, ih2 = ih/2;
+	VFrame grab(iw,ih,BC_RGB888);
+	grab.clear_frame();
+	grab.set_pixel_color(RED);   // fg
+	grab.draw_smooth(iw2,0,   iw1,0,   iw1,ih2);
+	grab.draw_smooth(iw1,ih2, iw1,ih1, iw2,ih1);
+	grab.draw_smooth(iw2,ih1, 0,ih1,   0,ih2);
+	grab.draw_smooth(0,ih2,   0,0,     iw2,0);
+	grab.set_pixel_color(WHITE); // bg
+	grab.draw_line(0,ih2,     iw2-2,ih2);
+	grab.draw_line(iw2+2,ih2, iw1,ih2);
+	grab.draw_line(iw2,0,     iw2,ih2-2);
+	grab.draw_line(iw2,ih2+2, iw2,ih1);
+
+	int bpl = (iw+7)/8, isz = bpl * ih;
+	char img[isz];  memset(img, 0, isz);
+	char msk[isz];  memset(msk, 0, isz);
+	unsigned char **rows = grab.get_rows();
+	for( int iy=0; iy<ih; ++iy ) {
+		char *op = img + iy*bpl;
+		char *mp = msk + iy*bpl;
+		unsigned char *ip = rows[iy];
+		for( int ix=0; ix<iw; ++ix,ip+=3 ) {
+			if( ip[0] ) mp[ix>>3] |= (1<<(ix&7));
+			if( !ip[1] ) op[ix>>3] |= (1<<(ix&7));
+		}
+	}
+	unsigned long white_pix = WhitePixel(display, screen);
+	unsigned long black_pix = BlackPixel(display, screen);
+	Pixmap img_xpm = XCreatePixmapFromBitmapData(display, rootwin,
+		img, iw,ih, white_pix,black_pix, 1);
+	Pixmap msk_xpm = XCreatePixmapFromBitmapData(display, rootwin,
+		msk, iw,ih, white_pix,black_pix, 1);
+
+	XColor fc, bc;
+	fc.flags = bc.flags = DoRed | DoGreen | DoBlue;
+	fc.red = 0xffff; fc.green = fc.blue = 0;  // fg
+	bc.red = bc.green = bc.blue = 0x0000;     // bg
+	Cursor cursor = XCreatePixmapCursor(display, img_xpm,msk_xpm, &fc,&bc, iw2,ih2);
+	XFreePixmap(display, img_xpm);
+	XFreePixmap(display, msk_xpm);
+	return cursor;
 }
 
 int BC_WindowBase::allocate_color_table()
@@ -2610,21 +2614,22 @@ Cursor BC_WindowBase::get_cursor_struct(int cursor)
 {
 	switch(cursor)
 	{
-		case ARROW_CURSOR:  	   return top_level->arrow_cursor;  	    	   break;
+		case ARROW_CURSOR:         return top_level->arrow_cursor;
 		case CROSS_CURSOR:         return top_level->cross_cursor;
-		case IBEAM_CURSOR:  	   return top_level->ibeam_cursor;  	    	   break;
-		case VSEPARATE_CURSOR:     return top_level->vseparate_cursor;      	   break;
-		case HSEPARATE_CURSOR:     return top_level->hseparate_cursor;      	   break;
-		case MOVE_CURSOR:  	       return top_level->move_cursor;          	       break;
-		case LEFT_CURSOR:   	   return top_level->left_cursor;   	    	   break;
-		case RIGHT_CURSOR:         return top_level->right_cursor;  	    	   break;
-		case UPRIGHT_ARROW_CURSOR: return top_level->upright_arrow_cursor;  	   break;
-		case UPLEFT_RESIZE:        return top_level->upleft_resize_cursor;     	   break;
-		case UPRIGHT_RESIZE:       return top_level->upright_resize_cursor;    	   break;
-		case DOWNLEFT_RESIZE:      return top_level->downleft_resize_cursor;   	   break;
-		case DOWNRIGHT_RESIZE:     return top_level->downright_resize_cursor;  	   break;
-		case HOURGLASS_CURSOR:     return top_level->hourglass_cursor;  	       break;
-		case TRANSPARENT_CURSOR:   return top_level->transparent_cursor;  	       break;
+		case IBEAM_CURSOR:         return top_level->ibeam_cursor;
+		case VSEPARATE_CURSOR:     return top_level->vseparate_cursor;
+		case HSEPARATE_CURSOR:     return top_level->hseparate_cursor;
+		case MOVE_CURSOR:          return top_level->move_cursor;
+		case LEFT_CURSOR:          return top_level->left_cursor;
+		case RIGHT_CURSOR:         return top_level->right_cursor;
+		case UPRIGHT_ARROW_CURSOR: return top_level->upright_arrow_cursor;
+		case UPLEFT_RESIZE:        return top_level->upleft_resize_cursor;
+		case UPRIGHT_RESIZE:       return top_level->upright_resize_cursor;
+		case DOWNLEFT_RESIZE:      return top_level->downleft_resize_cursor;
+		case DOWNRIGHT_RESIZE:     return top_level->downright_resize_cursor;
+		case HOURGLASS_CURSOR:     return top_level->hourglass_cursor;
+		case TRANSPARENT_CURSOR:   return top_level->transparent_cursor;
+		case GRABBED_CURSOR:       return top_level->grabbed_cursor;
 	}
 	return 0;
 }
@@ -3356,7 +3361,7 @@ int BC_WindowBase::grab_buttons()
 	XSync(top_level->display, False);
 	if( XGrabButton(top_level->display, AnyButton, AnyModifier,
 			top_level->rootwin, True, ButtonPressMask | ButtonReleaseMask,
-			GrabModeAsync, GrabModeSync, None, grabbed_cursor) == GrabSuccess ) {
+			GrabModeAsync, GrabModeSync, None, None) == GrabSuccess ) {
 		set_active_subwindow(this);
 		return 0;
 	}
@@ -3370,11 +3375,14 @@ void BC_WindowBase::ungrab_buttons()
 }
 void BC_WindowBase::grab_cursor()
 {
-	XDefineCursor(top_level->display, top_level->rootwin, grabbed_cursor);
+	Cursor cursor_grab = get_cursor_struct(GRABBED_CURSOR);
+	XGrabPointer(top_level->display, top_level->rootwin, True,
+		PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
+		GrabModeAsync, GrabModeAsync, None, cursor_grab, CurrentTime);
 }
 void BC_WindowBase::ungrab_cursor()
 {
-	XUndefineCursor(top_level->display, top_level->rootwin);
+       XUngrabPointer(top_level->display, CurrentTime);
 }
 
 // for get_root_w/h

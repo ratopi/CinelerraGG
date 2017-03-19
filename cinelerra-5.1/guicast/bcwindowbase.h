@@ -557,6 +557,7 @@ private:
 	int create_private_colors();
 	int create_color(int color);
 	int create_shared_colors();
+	Cursor create_grab_cursor();
 // Get width of a single line.  Used by get_text_width
 	int get_single_text_width(int font, const char *text, int length);
 	int get_single_text_width(int font, const wchar_t *text, int length);

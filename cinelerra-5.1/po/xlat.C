@@ -62,21 +62,21 @@ static bool is_opnr(int ch)
   return 0;
 }
 
-// converts libreoffice csv to string (with quotes attached)
+// converts libreoffice csv stuttered quoted string (with quotes attached)
 //  quote marks only
 static void xlat1(uint8_t *&in, uint8_t *out)
 {
   uint8_t *ibp = in, *obp = out;
-  unsigned ch;
+  unsigned ch, lch = 0;
   if( (ch=wnext(in)) == '\"' ) { 
     bool is_nested = in[0] == '\"' && in[1] == '\"';
     while( (ch=wnext(in)) != 0 ) {
-      if( ch == '\"' ) {
+      if( ch == '\"' && lch != '\\' ) {
         uint8_t *bp = in;
         unsigned nch = wnext(in);
         if( nch != '\"' ) { in = bp;  break; }
       }
-      wnext(out, ch);
+      wnext(out, lch = ch);
     }
     if( is_nested && ch == '"' ) {
       while( out > obp && *(out-1) == ' ' ) --out;
@@ -108,14 +108,16 @@ static inline unsigned gch(uint8_t *&in) {
 // converts string (with opn/cls attached) to c string
 static void xlat2(uint8_t *in, uint8_t *out)
 {
-  unsigned lch = gch(in), rch = 1, ch = 0;
+  unsigned lch = gch(in), sep = 0, rch = 0, ch;
   if( lch ) {
     if( is_opnr(lch) ) {
       for( uint8_t *ip=in; (ch=gch(ip))!=0; rch=ch );
-      if( lch == rch ) { lch = gch(in);  rch = 0; }
+      if( lch == rch ) { sep = lch;  lch = gch(in); }
     }
-    while( (ch=gch(in)) != 0 ) { wnext(out, lch);  lch = ch; }
-    if( rch ) wnext(out, lch);
+    while( (ch=gch(in)) != 0 ) {
+      wnext(out, lch);  lch = ch;
+    }
+    if( !sep ) wnext(out, lch);
   }
   *out = 0;
 }
@@ -167,7 +169,7 @@ static void xlat4(const char *cp, uint8_t *out)
     case '\r':  ch = 'r';  break;
     case '\t':  ch = 't';  break;
     case '\v':  ch = 'v';  break;
-    case '\"': wnext(out,ch); // fall thru
+    case '\"': break;
     default: wnext(out,ch);  continue;
     }
     wnext(out,'\\');
@@ -366,6 +368,7 @@ static bool chkfmt(int no, uint8_t *ap, uint8_t *bp, uint8_t *cp)
       bch = bp >= bep ? 0 : wnext(bp);
     }
     if( !ach || !bch ) break;
+    if( !*ap && !*bp ) break;
     // if % on a and % on b and is fmt_spec
     if( is_per(ach) && is_per(bch) && (n=fmt_spec(ap)) > 0 ) {
       if( apr && apr != bpr ) wnext(cp,apr);
@@ -493,8 +496,8 @@ void scan_po(FILE *ifp, FILE *ofp)
     if( it == trans.end() || it->first.compare(key) ) {
       fprintf(stderr, "no trans line %d: %s\n", no, ibfr);
       xlat3(key.c_str(), &tbfr[7]);
-      no += bputs(tbfr, ofp);
-      no += bputs((uint8_t*)"#msgstr \"\"", ofp);
+      //no += bputs(tbfr, ofp);
+      no += bputs((uint8_t*)"msgstr \"\"", ofp);
     }
     else if( 0 && !it->second.ok ) {
       fprintf(stderr, "bad fmt line %d: %s\n", no, ibfr);

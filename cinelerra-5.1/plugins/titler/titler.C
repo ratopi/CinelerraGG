@@ -65,7 +65,7 @@
 #include <sys/stat.h>
 #include <fontconfig/fontconfig.h>
 
-#define FIXED_FONT "Bitstream Vera Sans Mono (Bits)"
+#define FIXED_FONT "bitstream vera sans mono (bitstream)"
 #define SMALL (1.0 / 64.0)
 
 #define MAX_FLT  3.40282347e+38
