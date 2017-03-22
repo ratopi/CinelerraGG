@@ -3,27 +3,28 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-
+#, fuzzy
 msgid ""
 msgstr "Project-Id-Version: Cinelerra 5.1\n"
 "Report-Msgid-Bugs-To: cinelerra@lists.cinelerra-cv.org\n"
-"POT-Creation-Date: 2017-01-29 20:15+0300\n"
-"PO-Revision-Date: 2017-01-29 22:15+0300\n"
+"POT-Creation-Date: 2017-03-11 20:15+0300\n"
+"PO-Revision-Date: 2017-03-11 22:15+0300\n"
 "Last-Translator: Igor Vladimirsky aka igor_ubuntu <sitelve@gmail.com>\n"
 "Language-Team: <sitelve@gmail.com>\n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 
-#: guicast//bcbutton.C:268 guicast//bcbutton.C:276 guicast//bcbutton.C:492
-#: cinelerra//preferencesthread.C:630
+#: guicast//bcbutton.C:265 guicast//bcbutton.C:273 guicast//bcbutton.C:489
+#: cinelerra//preferencesthread.C:631
 msgid "OK"
 msgstr "ОК"
 
-#: guicast//bcbutton.C:324 guicast//bcbutton.C:332 guicast//bcbutton.C:340
-#: guicast//bcbutton.C:519 guicast//bcbutton.C:521 guicast//bcbutton.C:528
+#: guicast//bcbutton.C:321 guicast//bcbutton.C:329 guicast//bcbutton.C:337
+#: guicast//bcbutton.C:516 guicast//bcbutton.C:518 guicast//bcbutton.C:525
 #: cinelerra//confirmquit.C:107 cinelerra//confirmquit.C:109
-#: cinelerra//preferencesthread.C:658 cinelerra//preferencesthread.C:660
+#: cinelerra//preferencesthread.C:659 cinelerra//preferencesthread.C:661
 msgid "Cancel"
 msgstr "Прервать"
 
@@ -32,8 +33,8 @@ msgstr "Прервать"
 msgid "cannot connect to X server.\n"
 msgstr "cannot connect to X server.\n"
 
-#: guicast//bccapture.C:67 guicast//bcdisplay.C:60
-#: guicast//bcdisplayinfo.C:242 guicast//bcwindowbase.C:668
+#: guicast//bccapture.C:67 guicast//bcdisplay.C:60 guicast//bcdisplayinfo.C:242
+#: guicast//bcwindowbase.C:675
 #, c-format
 msgid "'DISPLAY' environment variable not set.\n"
 msgstr "DISPLAY' environment variable not set.\n"
@@ -102,15 +103,15 @@ msgstr "Удалить файлы"
 msgid "Refresh"
 msgstr "Обновить"
 
-#: guicast//bcfilebox.C:1299 cinelerra//newfolder.C:37
+#: guicast//bcfilebox.C:1293 cinelerra//newfolder.C:37
 msgid ": New folder"
 msgstr ": Новая папка"
 
-#: guicast//bcfilebox.C:1314
+#: guicast//bcfilebox.C:1308
 msgid ": Rename"
 msgstr ": Переименование"
 
-#: guicast//bcfilebox.C:1329
+#: guicast//bcfilebox.C:1323
 msgid ": Delete"
 msgstr ": Удаление"
 
@@ -136,13 +137,13 @@ msgid "Enter the name of the folder:"
 msgstr "Введите имя папки:"
 
 #: guicast//bcnewfolder.C:62 cinelerra//newfolder.C:62
-#: cinelerra//pluginclient.C:318
+#: cinelerra//pluginclient.C:319
 msgid "Untitled"
 msgstr "Безымянный"
 
 #: guicast//bcpopup.C:36 guicast//bcpopup.C:54 cinelerra//canvas.C:1195
 msgid "Fullscreen"
-msgstr "На весь экран"
+msgstr "Во весь экран"
 
 #: guicast//bcpopup.C:88
 msgid "Popup"
@@ -160,7 +161,7 @@ msgstr "Выбрать из недавно использованных"
 msgid "Enter a new name for the file:"
 msgstr "Введите новое имя для файла"
 
-#: guicast//bcresources.C:1493
+#: guicast//bcresources.C:1506
 #, c-format
 msgid "Conversion from %s to %s is not available\n"
 msgstr "Конвертация из %s в %s недоступна.\n"
@@ -180,7 +181,7 @@ msgstr "BC_Theme::check_used: Images aren't used.\n"
 msgid "%s: opengl initialization failed failed\n"
 msgstr "%s: opengl initialization failed failed\n"
 
-#: guicast//bcwindowbase.C:213
+#: guicast//bcwindowbase.C:219
 #, c-format
 msgid ""
 "BC_WindowBase::~BC_WindowBase window deleted but opengl deletion is not\n"
@@ -228,8 +229,7 @@ msgstr "Футы+кадры"
 msgid "Hours:Minutes:Seconds"
 msgstr "Часы:Мин:Сек."
 
-#: guicast//units.h:71 cinelerra//interfaceprefs.C:231
-#: cinelerra//patchbay.C:93
+#: guicast//units.h:71 cinelerra//interfaceprefs.C:240 cinelerra//patchbay.C:93
 msgid "Seconds"
 msgstr "Секунды"
 
@@ -276,7 +276,7 @@ msgstr "Путь к устройству:"
 
 #: cinelerra//adeviceprefs.C:318 cinelerra//adeviceprefs.C:385
 #: cinelerra//adeviceprefs.C:570 cinelerra//adeviceprefs.C:587
-#: cinelerra//adeviceprefs.C:589 cinelerra//assetedit.C:415
+#: cinelerra//adeviceprefs.C:589 cinelerra//assetedit.C:399
 #: cinelerra//fileformat.C:89 cinelerra//formatwindow.C:48
 msgid "Bits:"
 msgstr "Биты:"
@@ -294,7 +294,7 @@ msgid "Server:"
 msgstr "Сервер:"
 
 #: cinelerra//adeviceprefs.C:442 cinelerra//adeviceprefs.C:493
-#: cinelerra//interfaceprefs.C:206 cinelerra//performanceprefs.C:209
+#: cinelerra//interfaceprefs.C:215 cinelerra//performanceprefs.C:209
 #: cinelerra//vdeviceprefs.C:268
 msgid "Port:"
 msgstr "Порт:"
@@ -363,141 +363,141 @@ msgstr "Панорама"
 msgid "pan"
 msgstr "панорама"
 
-#: cinelerra//assetedit.C:225
+#: cinelerra//assetedit.C:209
 msgid ": Asset Info"
 msgstr ": Информация о ресурсе"
 
-#: cinelerra//assetedit.C:295
+#: cinelerra//assetedit.C:279
 msgid ": Asset path"
 msgstr ": Путь к ресурсу"
 
-#: cinelerra//assetedit.C:295
+#: cinelerra//assetedit.C:279
 msgid "Select a file for this asset:"
 msgstr "Выберите файл для этого ресурса:"
 
-#: cinelerra//assetedit.C:300
+#: cinelerra//assetedit.C:284
 msgid "File format:"
 msgstr "Формат файла:"
 
-#: cinelerra//assetedit.C:310
+#: cinelerra//assetedit.C:294
 msgid "Bytes:"
-msgstr "Байты:"
+msgstr "Размер (в байтах):"
 
-#: cinelerra//assetedit.C:339
+#: cinelerra//assetedit.C:323
 msgid "Bitrate (bits/sec):"
 msgstr "Битрейт (бит/сек):"
 
-#: cinelerra//assetedit.C:354 cinelerra//formattools.C:223
+#: cinelerra//assetedit.C:338 cinelerra//formattools.C:203
 msgid "Audio:"
 msgstr "Аудио:"
 
-#: cinelerra//assetedit.C:362 cinelerra//assetedit.C:507
-#: cinelerra//fileexr.C:599 cinelerra//fileffmpeg.C:557
+#: cinelerra//assetedit.C:346 cinelerra//assetedit.C:491
+#: cinelerra//fileexr.C:599 cinelerra//fileffmpeg.C:562
 #: cinelerra//filesndfile.C:405 cinelerra//filetga.C:927
 #: cinelerra//filetiff.C:612
 msgid "Compression:"
 msgstr "Сжатие:"
 
-#: cinelerra//assetedit.C:374 cinelerra//fileformat.C:77 cinelerra//new.C:289
+#: cinelerra//assetedit.C:358 cinelerra//fileformat.C:77 cinelerra//new.C:281
 #: cinelerra//setformat.C:354 plugins/livevideo/livevideo.C:226
 msgid "Channels:"
 msgstr "Каналы:"
 
-#: cinelerra//assetedit.C:394 cinelerra//fileformat.C:83
+#: cinelerra//assetedit.C:378 cinelerra//fileformat.C:83
 msgid "Sample rate:"
 msgstr "Частота дискрет.:"
 
-#: cinelerra//assetedit.C:436 cinelerra//fileformat.C:102
+#: cinelerra//assetedit.C:420 cinelerra//fileformat.C:102
 msgid "Header length:"
 msgstr "Длина заголовка:"
 
-#: cinelerra//assetedit.C:448 cinelerra//fileformat.C:109
+#: cinelerra//assetedit.C:432 cinelerra//fileformat.C:109
 #: cinelerra//filesndfile.C:424 cinelerra//formatwindow.C:64
 msgid "Byte order:"
 msgstr "Порядок байтов:"
 
-#: cinelerra//assetedit.C:469 cinelerra//assetedit.C:885
+#: cinelerra//assetedit.C:453 cinelerra//assetedit.C:869
 msgid "Lo-Hi"
 msgstr "Lo-Hi"
 
-#: cinelerra//assetedit.C:471 cinelerra//assetedit.C:903
+#: cinelerra//assetedit.C:455 cinelerra//assetedit.C:887
 msgid "Hi-Lo"
 msgstr "Hi-Lo"
 
-#: cinelerra//assetedit.C:485
+#: cinelerra//assetedit.C:469
 msgid "Values are unsigned"
 msgstr "Беззнаковые целые"
 
-#: cinelerra//assetedit.C:487 cinelerra//assetedit.C:921
+#: cinelerra//assetedit.C:471 cinelerra//assetedit.C:905
 #: cinelerra//fileformat.C:194
 msgid "Values are signed"
 msgstr "Знаковые целые"
 
-#: cinelerra//assetedit.C:500 cinelerra//formattools.C:260
+#: cinelerra//assetedit.C:484 cinelerra//formattools.C:240
 msgid "Video:"
 msgstr "Видео:"
 
-#: cinelerra//assetedit.C:518 cinelerra//setformat.C:394
+#: cinelerra//assetedit.C:502 cinelerra//setformat.C:394
 msgid "Frame rate:"
 msgstr "Част. кадров:"
 
-#: cinelerra//assetedit.C:537 cinelerra//scale.C:210 cinelerra//scale.C:214
+#: cinelerra//assetedit.C:521 cinelerra//scale.C:210 cinelerra//scale.C:214
 #: cinelerra//setformat.C:409 plugins/freeverb/freeverb.C:330
 #: plugins/photoscale/photoscale.C:66
 msgid "Width:"
 msgstr "Ширина:"
 
-#: cinelerra//assetedit.C:545 cinelerra//scale.C:220 cinelerra//scale.C:224
+#: cinelerra//assetedit.C:529 cinelerra//scale.C:220 cinelerra//scale.C:224
 #: cinelerra//setformat.C:416 plugins/photoscale/photoscale.C:60
 #: plugins/photoscale/photoscale.C:76
 msgid "Height:"
 msgstr "Высота:"
 
-#: cinelerra//assetedit.C:556
+#: cinelerra//assetedit.C:540
 msgid "Actual width:"
 msgstr ""
 
-#: cinelerra//assetedit.C:566
+#: cinelerra//assetedit.C:550
 msgid "Actual height:"
 msgstr ""
 
-#: cinelerra//assetedit.C:575
+#: cinelerra//assetedit.C:559
 msgid "Fix interlacing:"
 msgstr "Чересстрочность:"
 
-#: cinelerra//assetedit.C:579
+#: cinelerra//assetedit.C:563
 msgid "Asset's interlacing:"
 msgstr "Чересстроч-ь ресурса:"
 
-#: cinelerra//assetedit.C:593
+#: cinelerra//assetedit.C:577
 msgid "Interlace correction:"
 msgstr "Ручная коррекция ч.:"
 
-#: cinelerra//assetedit.C:607
+#: cinelerra//assetedit.C:591
 msgid "Reel Name:"
 msgstr "Имя рулона:"
 
-#: cinelerra//assetedit.C:613
+#: cinelerra//assetedit.C:597
 msgid "Reel Number:"
 msgstr "Номер рулона:"
 
-#: cinelerra//assetedit.C:619
+#: cinelerra//assetedit.C:603
 msgid "Time Code Start:"
 msgstr "Старт. таймкод:"
 
-#: cinelerra//assetedit.C:711
+#: cinelerra//assetedit.C:695
 msgid "Automatically Fix Interlacing"
 msgstr "Автоматическая коррекция ч."
 
-#: cinelerra//assetedit.C:989
+#: cinelerra//assetedit.C:973
 msgid "Detail"
 msgstr "Подробнее"
 
-#: cinelerra//assetedit.C:1006
+#: cinelerra//assetedit.C:990
 msgid "Asset Detail"
 msgstr "Подробная информация о ресурсе"
 
-#: cinelerra//assetedit.C:1051
+#: cinelerra//assetedit.C:1035
 msgid "no info available"
 msgstr "нет доступной информации"
 
@@ -530,7 +530,7 @@ msgid "View in new window"
 msgstr "Вид (просмотр) в новом окне"
 
 #: cinelerra//assetpopup.C:295 cinelerra//mainmenu.C:870
-#: cinelerra//swindow.C:555
+#: cinelerra//swindow.C:543
 msgid "Paste"
 msgstr "Вставить"
 
@@ -585,12 +585,12 @@ msgstr "failed to set output format.\n"
 #: cinelerra//audioalsa.C:305
 #, c-format
 msgid "Configured ALSA device does not support %d channel operation.\n"
-msgstr "Конфигурация ALSA устройства не поддерживает операции %d канала.\n"
+msgstr ""
 
 #: cinelerra//audioalsa.C:316
 #, c-format
 msgid " Configured ALSA device does not support %u Hz playback.\n"
-msgstr "Конфигурация ALSA устройства не поддерживает воспроизведение %u Hz.\n"
+msgstr ""
 
 #: cinelerra//audiooss.C:201 cinelerra//audiooss.C:203
 #: cinelerra//audiooss.C:207 cinelerra//audiooss.C:209
@@ -668,7 +668,7 @@ msgstr ": Ресурсы"
 
 #: cinelerra//awindowgui.C:517 cinelerra//awindowgui.C:1248
 #: cinelerra//awindowgui.C:1267 cinelerra//channelinfo.C:340
-#: cinelerra//dbwindow.C:591 plugins/titler/title.C:1128
+#: cinelerra//dbwindow.C:591 plugins/titler/titler.C:1145
 msgid "Title"
 msgstr "Титры"
 
@@ -745,7 +745,7 @@ msgstr "Правка..."
 msgid "ladspa"
 msgstr "ladspa"
 
-#: cinelerra//awindowgui.C:2020 cinelerra//fileffmpeg.C:911
+#: cinelerra//awindowgui.C:2020 cinelerra//fileffmpeg.C:909
 msgid "ffmpeg"
 msgstr "ffmpeg"
 
@@ -822,13 +822,13 @@ msgstr "Невременной"
 msgid "Timed"
 msgstr "Временной"
 
-#: cinelerra//batch.C:141 cinelerra//batchrender.C:958
-#: cinelerra//ffmpeg.C:2200 cinelerra//ffmpeg.C:2310 cinelerra//file.C:1349
-#: cinelerra//file.C:1377 cinelerra//interfaceprefs.C:886
-#: cinelerra//interlacemodes.h:34 cinelerra//loadmode.C:93
-#: cinelerra//new.C:857 cinelerra//record.C:723 cinelerra//vdeviceprefs.C:638
-#: plugins/motion2point/motionwindow.C:796
-#: plugins/motion2point/motionwindow.C:867 plugins/timefront/timefront.C:419
+#: cinelerra//batch.C:141 cinelerra//batchrender.C:930 cinelerra//ffmpeg.C:2276
+#: cinelerra//ffmpeg.C:2386 cinelerra//file.C:1349 cinelerra//file.C:1377
+#: cinelerra//interfaceprefs.C:928 cinelerra//interlacemodes.h:34
+#: cinelerra//loadmode.C:93 cinelerra//new.C:847 cinelerra//record.C:723
+#: cinelerra//vdeviceprefs.C:638 plugins/motion2point/motionwindow.C:797
+#: plugins/motion2point/motionwindow.C:868 plugins/timefront/timefront.C:419
+#: plugins/titler/titler.C:2351
 msgid "Unknown"
 msgstr "Неизвестно"
 
@@ -858,134 +858,134 @@ msgstr "Пакетный рендеринг..."
 msgid "Shift-B"
 msgstr "Shift-B"
 
-#: cinelerra//batchrender.C:436 cinelerra//bdcreate.C:231
-#: cinelerra//dvdcreate.C:282
+#: cinelerra//batchrender.C:409 cinelerra//bdcreate.C:283
+#: cinelerra//dvdcreate.C:283
 #, c-format
 msgid "Unable to save: %s"
 msgstr "Невозможно сохранить: %s"
 
-#: cinelerra//batchrender.C:506
+#: cinelerra//batchrender.C:479
 #, c-format
 msgid "EDL %s not found.\n"
 msgstr "EDL %s не найден.\n"
 
-#: cinelerra//batchrender.C:508 cinelerra//file.C:275
-#: cinelerra//formatcheck.C:51 cinelerra//formatcheck.C:62
-#: cinelerra//formatcheck.C:71 cinelerra//menueffects.C:148
+#: cinelerra//batchrender.C:481 cinelerra//file.C:275
+#: cinelerra//formatcheck.C:47 cinelerra//formatcheck.C:58
+#: cinelerra//formatcheck.C:67 cinelerra//menueffects.C:148
 #: cinelerra//menueffects.C:159 cinelerra//menueffects.C:259
 #: cinelerra//menueffects.C:267 cinelerra//menueffects.C:308
 #: cinelerra//menueffects.C:470 cinelerra//packagerenderer.C:175
 #: cinelerra//quit.C:76 cinelerra//quit.C:86 cinelerra//recordaudio.C:248
-#: cinelerra//recordvideo.C:248 cinelerra//render.C:273
-#: cinelerra//render.C:297 cinelerra//render.C:908
-#: cinelerra//renderprofiles.C:264 cinelerra//savefile.C:102
-#: cinelerra//savefile.C:209
+#: cinelerra//recordvideo.C:248 cinelerra//render.C:273 cinelerra//render.C:297
+#: cinelerra//render.C:905 cinelerra//renderprofiles.C:260
+#: cinelerra//savefile.C:102 cinelerra//savefile.C:209
 msgid ": Error"
 msgstr ": Ошибка"
 
-#: cinelerra//batchrender.C:521 cinelerra//batchrender.C:523
+#: cinelerra//batchrender.C:494 cinelerra//batchrender.C:496
 #, c-format
 msgid "%d job EDLs do not match session edl\n"
-msgstr ""
+msgstr "EDL %d заданий не соответствуют EDL их сессий.\n"
+"EDL сессий имеют несохранённые изменения.\n"
 
-#: cinelerra//batchrender.C:524
+#: cinelerra//batchrender.C:497
 #, c-format
 msgid "press cancel to abandon batch render"
-msgstr ""
+msgstr "Вы можете отказаться от пакет. рендеринга, нажав кнопку 'Закрыть'."
 
-#: cinelerra//batchrender.C:754
+#: cinelerra//batchrender.C:727
 msgid ": Batch Render"
 msgstr ": Пакетный рендеринг"
 
-#: cinelerra//batchrender.C:781
+#: cinelerra//batchrender.C:754
 msgid "Output path:"
 msgstr "Путь выведения в файл:"
 
-#: cinelerra//batchrender.C:790
+#: cinelerra//batchrender.C:763
 msgid "EDL Path:"
 msgstr "Путь к EDL:"
 
-#: cinelerra//batchrender.C:799
+#: cinelerra//batchrender.C:772
 msgid "Input EDL"
-msgstr "Импорт EDL"
+msgstr "Загрузка EDL"
 
-#: cinelerra//batchrender.C:799
+#: cinelerra//batchrender.C:772
 msgid "Select an EDL to load:"
 msgstr "Выберите EDL для загрузки:"
 
-#: cinelerra//batchrender.C:822
+#: cinelerra//batchrender.C:794
 msgid "Batches to render:"
 msgstr "Пакеты для рендеринга:"
 
-#: cinelerra//batchrender.C:833 cinelerra//batchrender.C:1404
-#: cinelerra//recordbatches.C:538
+#: cinelerra//batchrender.C:805 cinelerra//batchrender.C:1376
+#: cinelerra//recordbatches.C:516
 msgid "Stop"
 msgstr "Стоп"
 
-#: cinelerra//batchrender.C:835 cinelerra//batchrender.C:1436
+#: cinelerra//batchrender.C:807 cinelerra//batchrender.C:1408
 #: cinelerra//tipwindow.C:276
 msgid "Close"
 msgstr "Закрыть"
 
-#: cinelerra//batchrender.C:1070 cinelerra//recordbatches.C:489
+#: cinelerra//batchrender.C:1040 cinelerra//recordbatches.C:467
 msgid "New"
 msgstr "Новый"
 
-#: cinelerra//batchrender.C:1084 cinelerra//channeledit.C:587
+#: cinelerra//batchrender.C:1054 cinelerra//channeledit.C:587
 #: cinelerra//cwindowtool.C:1604 cinelerra//dbwindow.C:240
-#: cinelerra//recordbatches.C:507 plugins/piano/piano.C:841
+#: cinelerra//recordbatches.C:485 plugins/piano/piano.C:841
 #: plugins/synthesizer/synthesizer.C:1377
 msgid "Delete"
 msgstr "Удалить"
 
-#: cinelerra//batchrender.C:1100
+#: cinelerra//batchrender.C:1070
 msgid "Save Jobs"
 msgstr "Сохранить список"
 
-#: cinelerra//batchrender.C:1103
+#: cinelerra//batchrender.C:1073
 msgid "Save a Batch Render List"
 msgstr "Сохранить список пакетного рендеринга"
 
-#: cinelerra//batchrender.C:1146
+#: cinelerra//batchrender.C:1116
 msgid "Save Batch Render List"
 msgstr "Сохранение списка пакетного рендеринга"
 
-#: cinelerra//batchrender.C:1147
+#: cinelerra//batchrender.C:1117
 msgid "Enter a Batch Render filename to save as:"
 msgstr "Введите имя файла для сохран-я списка пак. рендеринга:"
 
-#: cinelerra//batchrender.C:1180
+#: cinelerra//batchrender.C:1150
 msgid "Load Jobs"
 msgstr "Загрузить список"
 
-#: cinelerra//batchrender.C:1184
+#: cinelerra//batchrender.C:1154
 msgid "Load a previously saved Batch Render List"
 msgstr "Загрузить ранее сохранённый\n"
 "список пакетного рендеринга"
 
-#: cinelerra//batchrender.C:1224
+#: cinelerra//batchrender.C:1194
 msgid "Load Batch Render List"
 msgstr "Загрузка списка пакетного рендеринга"
 
-#: cinelerra//batchrender.C:1225
+#: cinelerra//batchrender.C:1195
 msgid "Enter a Batch Render filename to load from:"
-msgstr "Введите имя загруж. файла списка пакет. рендеринга:"
+msgstr "Введите имя файла списка пакет. рендеринга:"
 
-#: cinelerra//batchrender.C:1256
+#: cinelerra//batchrender.C:1228
 msgid "Use Current EDL"
-msgstr "Использ-ть текущий EDL"
+msgstr "Использовать текущий EDL"
 
-#: cinelerra//batchrender.C:1270
+#: cinelerra//batchrender.C:1242
 msgid "Save to EDL Path"
-msgstr ""
+msgstr "Сохранить в загруженный EDL"
 
-#: cinelerra//batchrender.C:1388 cinelerra//recordbatches.C:523
+#: cinelerra//batchrender.C:1360 cinelerra//recordbatches.C:501
 msgid "Start"
 msgstr "Старт"
 
-#: cinelerra//batchrender.C:1419
+#: cinelerra//batchrender.C:1391
 msgid "warn if jobs/session mismatched"
-msgstr ""
+msgstr "предупреждать, если задание не соответствует сессии"
 
 #: cinelerra//bdcreate.C:81
 msgid "BD Render..."
@@ -995,131 +995,132 @@ msgstr "BD-рендеринг..."
 msgid "Ctrl-d"
 msgstr "Ctrl-d"
 
-#: cinelerra//bdcreate.C:129 cinelerra//dvdcreate.C:134
+#: cinelerra//bdcreate.C:175 cinelerra//dvdcreate.C:134
 #, c-format
 msgid "No EDL/Session"
 msgstr ""
 
-#: cinelerra//bdcreate.C:138 cinelerra//dvdcreate.C:143
+#: cinelerra//bdcreate.C:184 cinelerra//dvdcreate.C:143
 #, c-format
 msgid "No content: %s"
 msgstr ""
 
-#: cinelerra//bdcreate.C:146 cinelerra//dvdcreate.C:151
+#: cinelerra//bdcreate.C:192 cinelerra//dvdcreate.C:151
 #, c-format
 msgid ""
 "Unable to create directory: %s\n"
 "-- %s"
-msgstr ""
+msgstr "Невозможно создать директорию: %s\n"
+"-- %s"
 
-#: cinelerra//bdcreate.C:173 cinelerra//dvdcreate.C:177
+#: cinelerra//bdcreate.C:219 cinelerra//dvdcreate.C:177
 #, c-format
 msgid ""
 "Unable to save: %s\n"
 "-- %s"
-msgstr ""
+msgstr "Невозможно сохранить: %s\n"
+"-- %s"
 
-#: cinelerra//bdcreate.C:333 cinelerra//bdcreate.C:877
-#: cinelerra//dvdcreate.C:406 cinelerra//dvdcreate.C:971
+#: cinelerra//bdcreate.C:385 cinelerra//bdcreate.C:933
+#: cinelerra//dvdcreate.C:407 cinelerra//dvdcreate.C:974
 #: plugins/scaleratio/scaleratio.C:96
 msgid "Scale Ratio"
 msgstr ""
 
-#: cinelerra//bdcreate.C:369
+#: cinelerra//bdcreate.C:422
 msgid "create bd"
 msgstr "создание BD"
 
-#: cinelerra//bdcreate.C:434
+#: cinelerra//bdcreate.C:487
 msgid "Must be root to mount UDFS images\n"
 msgstr ""
 
-#: cinelerra//bdcreate.C:444 cinelerra//dvdcreate.C:525
+#: cinelerra//bdcreate.C:497 cinelerra//dvdcreate.C:527
 msgid "end setup, start batch render"
 msgstr ""
 
-#: cinelerra//bdcreate.C:521 cinelerra//dvdcreate.C:603
+#: cinelerra//bdcreate.C:574 cinelerra//dvdcreate.C:605
 msgid "disk space: "
 msgstr "Диск. простр-во:"
 
-#: cinelerra//bdcreate.C:563 cinelerra//bdcreate.C:874
-#: cinelerra//dvdcreate.C:646 cinelerra//dvdcreate.C:968
-#: plugins/deinterlace/deinterlace.C:95
-#: plugins/denoisemjpeg/denoisemjpeg.C:248
+#: cinelerra//bdcreate.C:616 cinelerra//bdcreate.C:930
+#: cinelerra//dvdcreate.C:648 cinelerra//dvdcreate.C:971
+#: plugins/deinterlace/deinterlace.C:95 plugins/denoisemjpeg/denoisemjpeg.C:248
 msgid "Deinterlace"
 msgstr "Деинтерлейс"
 
-#: cinelerra//bdcreate.C:583 cinelerra//dvdcreate.C:666 plugins/ivtc/ivtc.C:76
+#: cinelerra//bdcreate.C:636 cinelerra//dvdcreate.C:668 plugins/ivtc/ivtc.C:76
 msgid "Inverse Telecine"
 msgstr "Обратный телесин"
 
-#: cinelerra//bdcreate.C:603 cinelerra//dvdcreate.C:686
+#: cinelerra//bdcreate.C:656 cinelerra//dvdcreate.C:688
 msgid "Resize Tracks"
 msgstr ""
 
-#: cinelerra//bdcreate.C:614 cinelerra//dvdcreate.C:697
+#: cinelerra//bdcreate.C:667 cinelerra//dvdcreate.C:699
 #: cinelerra//scopewindow.C:1331 plugins/colorbalance/colorbalance.C:493
 #: plugins/gamma/gamma.C:438 plugins/histogram/histogram.C:99
 #: plugins/interpolate/interpolate.C:256
 msgid "Histogram"
 msgstr "Гистограмма"
 
-#: cinelerra//bdcreate.C:624 cinelerra//dvdcreate.C:707
+#: cinelerra//bdcreate.C:677 cinelerra//dvdcreate.C:709
 msgid "Chapters at Labels"
 msgstr ""
 
-#: cinelerra//bdcreate.C:634 cinelerra//dvdcreate.C:717
+#: cinelerra//bdcreate.C:687 cinelerra//dvdcreate.C:719
 msgid "Audio 5.1"
 msgstr "Аудио 5.1"
 
-#: cinelerra//bdcreate.C:645
+#: cinelerra//bdcreate.C:698
 msgid ": Create BD"
 msgstr ": Создание BD (Blu-ray Disc)"
 
-#: cinelerra//bdcreate.C:678 cinelerra//channeledit.C:1032
-#: cinelerra//clipedit.C:188 cinelerra//dvdcreate.C:772
+#: cinelerra//bdcreate.C:731 cinelerra//channeledit.C:1032
+#: cinelerra//clipedit.C:188 cinelerra//dvdcreate.C:774
 msgid "Title:"
 msgstr "Имя:"
 
-#: cinelerra//bdcreate.C:684 cinelerra//dvdcreate.C:778
+#: cinelerra//bdcreate.C:737 cinelerra//dvdcreate.C:780
 msgid "Work path:"
 msgstr "Путь к раб. каталогу:"
 
-#: cinelerra//bdcreate.C:691 cinelerra//dvdcreate.C:785
+#: cinelerra//bdcreate.C:744 cinelerra//dvdcreate.C:787
 msgid "Work path"
 msgstr "Путь к рабочему каталогу"
 
-#: cinelerra//bdcreate.C:691 cinelerra//dvdcreate.C:785
+#: cinelerra//bdcreate.C:744 cinelerra//dvdcreate.C:787
 msgid "Select a Work directory:"
 msgstr "Выберите рабочий каталог:"
 
-#: cinelerra//bdcreate.C:697 cinelerra//dvdcreate.C:791
+#: cinelerra//bdcreate.C:750 cinelerra//dvdcreate.C:793
 msgid "Media:"
 msgstr "Медиа:"
 
-#: cinelerra//bdcreate.C:708 cinelerra//dvdcreate.C:802
+#: cinelerra//bdcreate.C:761 cinelerra//dvdcreate.C:804
 #: cinelerra//recordgui.C:223
 msgid "Format:"
 msgstr "Формат:"
 
-#: cinelerra//bdcreate.C:715 cinelerra//dvdcreate.C:808
+#: cinelerra//bdcreate.C:768 cinelerra//dvdcreate.C:810
 #: cinelerra//resizetrackthread.C:128 plugins/pitch/pitch.C:418
 #: plugins/scale/scalewin.C:50
 msgid "Scale:"
 msgstr "Масштаб:"
 
-#: cinelerra//bdcreate.C:876 cinelerra//dvdcreate.C:970
+#: cinelerra//bdcreate.C:932 cinelerra//dvdcreate.C:973
 #: plugins/photoscale/photoscale.C:291
 msgid "Auto Scale"
 msgstr ""
 
-#: cinelerra//bdcreate.C:878 cinelerra//dvdcreate.C:972
+#: cinelerra//bdcreate.C:934 cinelerra//dvdcreate.C:975
 #: plugins/scale/scale.C:90
 msgid "Scale"
 msgstr "Масштаб"
 
-#: cinelerra//bdcreate.C:938
+#: cinelerra//bdcreate.C:994
 msgid "* non-standard format"
-msgstr ""
+msgstr "* non-standard format"
 
 #: cinelerra//brender.C:153
 msgid "BRender::fork_background: can't open /proc/self/cmdline.\n"
@@ -1135,7 +1136,7 @@ msgstr "BRender::set_video_map called to set NOT_SCANNED\n"
 msgid "BRender::set_video_map %jd: attempt to set beyond end of map %jd.\n"
 msgstr "BRender::set_video_map %jd: attempt to set beyond end of map %jd.\n"
 
-#: cinelerra//browsebutton.C:50
+#: cinelerra//browsebutton.C:48
 msgid "Look for file"
 msgstr "Поиск файла"
 
@@ -1146,47 +1147,38 @@ msgstr "В окне"
 #: cinelerra//canvas.C:1069
 msgid "Zoom 25%"
 msgstr "Масштаб 25%"
-#msgstr "Масштаб 25%"
 
 #: cinelerra//canvas.C:1070
 msgid "Zoom 33%"
 msgstr "Масштаб 33%"
-#msgstr "Масштаб 33%"
 
 #: cinelerra//canvas.C:1071
 msgid "Zoom 50%"
 msgstr "Масштаб 50%"
-#msgstr "Масштаб 50%"
 
 #: cinelerra//canvas.C:1072
 msgid "Zoom 75%"
 msgstr "Масштаб 75%"
-#msgstr "Масштаб 75%"
 
 #: cinelerra//canvas.C:1073 cinelerra//recordmonitor.C:851
 msgid "Zoom 100%"
 msgstr "Масштаб 100%"
-#msgstr "Масштаб 100%"
 
 #: cinelerra//canvas.C:1074
 msgid "Zoom 150%"
 msgstr "Масштаб 150%"
-#msgstr "Масштаб 150%"
 
 #: cinelerra//canvas.C:1075
 msgid "Zoom 200%"
 msgstr "Масштаб 200%"
-#msgstr "Масштаб 200%"
 
 #: cinelerra//canvas.C:1076
 msgid "Zoom 300%"
 msgstr "Масштаб 300%"
-#msgstr "Масштаб 300%"
 
 #: cinelerra//canvas.C:1077
 msgid "Zoom 400%"
 msgstr "Масштаб 400%"
-#msgstr "Масштаб 400%"
 
 #: cinelerra//canvas.C:1100
 msgid "Zoom Auto"
@@ -1416,7 +1408,7 @@ msgid "Search"
 msgstr "Поиск"
 
 #: cinelerra//channelinfo.C:266 cinelerra//dbwindow.C:511
-#: plugins/titler/titlewindow.C:359
+#: plugins/titler/titlerwindow.C:386
 msgid "Text:"
 msgstr "Текст:"
 
@@ -1443,132 +1435,132 @@ msgstr "Старт"
 msgid "%d found"
 msgstr "%d найдено"
 
-#: cinelerra//channelinfo.C:962
+#: cinelerra//channelinfo.C:947
 msgid "sunmontuewedthufrisat"
-msgstr ""
+msgstr "Пн Вт Ср Чт Пт Сб Вс"
 
-#: cinelerra//channelinfo.C:988
+#: cinelerra//channelinfo.C:973
 msgid "activate batch record when ok pressed"
 msgstr ""
 
-#: cinelerra//channelinfo.C:1008
+#: cinelerra//channelinfo.C:993
 msgid "poweroff system when batch record done"
 msgstr "Выкл. систему по завершении\n"
 "пакетной записи"
 
-#: cinelerra//channelinfo.C:1023
+#: cinelerra//channelinfo.C:1008
 msgid "Find"
 msgstr "Поиск"
 
-#: cinelerra//channelinfo.C:1026
+#: cinelerra//channelinfo.C:1011
 msgid "search event titles/info"
 msgstr ""
 
-#: cinelerra//channelinfo.C:1106
+#: cinelerra//channelinfo.C:1091
 #, c-format
 msgid "bad scan time: %s\n"
 msgstr ""
 
-#: cinelerra//channelinfo.C:1113
+#: cinelerra//channelinfo.C:1098
 #, c-format
 msgid "bad title: %s\n"
 msgstr ""
 
-#: cinelerra//channelinfo.C:1120
+#: cinelerra//channelinfo.C:1105
 #, c-format
 msgid "bad scan date: %s\n"
 msgstr ""
 
-#: cinelerra//channelinfo.C:1133
+#: cinelerra//channelinfo.C:1118
 #, c-format
 msgid "end before start: %s\n"
 msgstr ""
 
-#: cinelerra//channelinfo.C:1137
+#: cinelerra//channelinfo.C:1122
 #, c-format
 msgid "end time early: %s\n"
 msgstr ""
 
-#: cinelerra//channelinfo.C:1141
+#: cinelerra//channelinfo.C:1126
 #, c-format
 msgid "start time late: %s\n"
 msgstr ""
 
-#: cinelerra//channelinfo.C:1148
+#: cinelerra//channelinfo.C:1133
 #, c-format
 msgid "zero duration: %s\n"
 msgstr ""
 
-#: cinelerra//channelinfo.C:1233
+#: cinelerra//channelinfo.C:1218
 msgid "end channel info, start record"
 msgstr ""
 
-#: cinelerra//channelinfo.C:1333
+#: cinelerra//channelinfo.C:1318
 msgid "Directory:"
 msgstr "Каталог:"
 
-#: cinelerra//channelinfo.C:1335 cinelerra//recordgui.C:156
-#: cinelerra//swindow.C:155
+#: cinelerra//channelinfo.C:1320 cinelerra//recordgui.C:156
+#: cinelerra//swindow.C:143
 msgid "Path:"
 msgstr "Путь:"
 
-#: cinelerra//channelinfo.C:1337
+#: cinelerra//channelinfo.C:1322
 msgid "Start:"
 msgstr "Старт:"
 
-#: cinelerra//channelinfo.C:1339
+#: cinelerra//channelinfo.C:1324
 msgid "Duration:"
 msgstr "Длительность"
 
-#: cinelerra//channelinfo.C:1341 cinelerra//recordgui.C:165
+#: cinelerra//channelinfo.C:1326 cinelerra//recordgui.C:165
 msgid "Source:"
 msgstr "Источник:"
 
-#: cinelerra//channelinfo.C:1395
+#: cinelerra//channelinfo.C:1380
 msgid ": Channel Info"
 msgstr ": Информация каналов"
 
-#: cinelerra//channelinfo.C:1415
+#: cinelerra//channelinfo.C:1400
 msgid "Start Cron"
 msgstr "Старт Cron"
 
-#: cinelerra//channelinfo.C:1416
+#: cinelerra//channelinfo.C:1401
 msgid "Poweroff"
 msgstr ""
 
-#: cinelerra//channelinfo.C:1674
+#: cinelerra//channelinfo.C:1659
 #, c-format
 msgid "Recording in progress\n"
 msgstr "Идёт процесс записи\n"
 
-#: cinelerra//channelinfo.C:1682
+#: cinelerra//channelinfo.C:1667
 #, c-format
 msgid "capture driver not dvb\n"
 msgstr "драйвер захвата не dvb\n"
 
-#: cinelerra//channelinfo.C:1752
+#: cinelerra//channelinfo.C:1737
 #, c-format
 msgid "cannot open dvb video device\n"
 msgstr "невозможно открыть dvb видеоустройство\n"
 
-#: cinelerra//channelinfo.C:1791
+#: cinelerra//channelinfo.C:1776
 msgid "Scan..."
 msgstr "Сканирование..."
 
-#: cinelerra//channelinfo.C:1791
+#: cinelerra//channelinfo.C:1776
 msgid "Shift-S"
 msgstr "Shift-S"
 
-#: cinelerra//channelinfo.C:1910 cinelerra//recordbatches.C:568
+#: cinelerra//channelinfo.C:1895 cinelerra//recordbatches.C:546
 msgid "Delete all clips."
 msgstr "Удалить все клипы"
 
-#: cinelerra//channelinfo.C:1928 cinelerra//recordbatches.C:492
+#: cinelerra//channelinfo.C:1913 cinelerra//recordbatches.C:470
 #: cinelerra//recordgui.C:920
 msgid "Create new clip."
 msgstr "Создать новый клип."
 
-#: cinelerra//channelinfo.C:1941 cinelerra//recordbatches.C:510
+#: cinelerra//channelinfo.C:1926 cinelerra//recordbatches.C:488
 #: cinelerra//recordgui.C:933
 msgid "Delete clip."
 msgstr "Удалить клип."
@@ -1597,29 +1589,69 @@ msgstr ": Информация о клипе"
 msgid "Comments:"
 msgstr "Комментарии:"
 
-#: cinelerra//colorpicker.C:68
+#: cinelerra//colorpicker.C:77
 msgid ": "
 msgstr ": "
 
-#: cinelerra//colorpicker.C:69
+#: cinelerra//colorpicker.C:78
 msgid "Color Picker"
 msgstr "Выбор цвета"
 
-#: cinelerra//colorpicker.C:128
+#: cinelerra//colorpicker.C:177
+msgid "colorpicker#H:"
+msgstr "H:"
+
+#: cinelerra//colorpicker.C:178
+msgid "colorpicker#S:"
+msgstr "S:"
+
+#: cinelerra//colorpicker.C:179
+msgid "colorpicker_value#V:"
+msgstr "V:"
+
+#: cinelerra//colorpicker.C:180
+msgid "colorpicker#R:"
+msgstr "R:"
+
+#: cinelerra//colorpicker.C:181
+msgid "colorpicker#G:"
+msgstr "G:"
+
+#: cinelerra//colorpicker.C:182
+msgid "colorpicker#B:"
+msgstr "B:"
+
+#: cinelerra//colorpicker.C:183
+msgid "colorpicker#Y:"
+msgstr "Y:"
+
+#: cinelerra//colorpicker.C:184
+msgid "colorpicker#U:"
+msgstr "U:"
+
+#: cinelerra//colorpicker.C:185
+msgid "colorpicker_Cr#V:"
+msgstr "V:"
+
+#: cinelerra//colorpicker.C:187
+msgid "colorpicker#A:"
+msgstr "A:"
+
+#: cinelerra//colorpicker.C:203
 msgid "Hue"
 msgstr "Оттенок"
 
-#: cinelerra//colorpicker.C:130
+#: cinelerra//colorpicker.C:205
 msgid "Saturation"
 msgstr "Насыщенность"
 
-#: cinelerra//colorpicker.C:132 cinelerra//keyframegui.C:51
+#: cinelerra//colorpicker.C:207 cinelerra//keyframegui.C:51
 #: plugins/histogram/histogramwindow.C:63
 #: plugins/histogram_bezier/bistogramwindow.C:63
 msgid "Value"
 msgstr "Значение"
 
-#: cinelerra//colorpicker.C:134 plugins/colorbalance/colorbalancewindow.C:58
+#: cinelerra//colorpicker.C:209 plugins/colorbalance/colorbalancewindow.C:58
 #: plugins/denoisevideo/denoisevideo.C:275 plugins/downsample/downsample.C:276
 #: plugins/histogram/histogramwindow.C:69
 #: plugins/histogram_bezier/bistogramwindow.C:69
@@ -1629,7 +1661,7 @@ msgstr "Значение"
 msgid "Red"
 msgstr "Красный"
 
-#: cinelerra//colorpicker.C:136 plugins/colorbalance/colorbalancewindow.C:62
+#: cinelerra//colorpicker.C:211 plugins/colorbalance/colorbalancewindow.C:62
 #: plugins/denoisevideo/denoisevideo.C:277 plugins/downsample/downsample.C:282
 #: plugins/histogram/histogramwindow.C:75
 #: plugins/histogram_bezier/bistogramwindow.C:75
@@ -1639,7 +1671,7 @@ msgstr "Красный"
 msgid "Green"
 msgstr "Зелёный"
 
-#: cinelerra//colorpicker.C:138 plugins/colorbalance/colorbalancewindow.C:66
+#: cinelerra//colorpicker.C:213 plugins/colorbalance/colorbalancewindow.C:66
 #: plugins/denoisevideo/denoisevideo.C:279 plugins/downsample/downsample.C:288
 #: plugins/histogram/histogramwindow.C:81
 #: plugins/histogram_bezier/bistogramwindow.C:81
@@ -1650,12 +1682,36 @@ msgstr "Зелёный"
 msgid "Blue"
 msgstr "Синий"
 
-#: cinelerra//colorpicker.C:142 plugins/denoisevideo/denoisevideo.C:281
+#: cinelerra//colorpicker.C:215
+msgid "Luminance"
+msgstr ""
+
+#: cinelerra//colorpicker.C:217
+msgid "Complement Blue"
+msgstr ""
+
+#: cinelerra//colorpicker.C:219
+msgid "Complement Red"
+msgstr ""
+
+#: cinelerra//colorpicker.C:222 plugins/denoisevideo/denoisevideo.C:281
 #: plugins/downsample/downsample.C:294 plugins/linearblur/linearblur.C:300
 #: plugins/radialblur/radialblur.C:298 plugins/swapchannels/swapchannels.C:434
 #: plugins/swapchannels/swapchannels.C:453 plugins/zoomblur/zoomblur.C:310
 msgid "Alpha"
 msgstr "Альфа-канал"
+
+#: cinelerra//colorpicker.C:1017
+msgid "hex rgb color"
+msgstr ""
+
+#: cinelerra//colorpicker.C:1062
+msgid "grab from anywhere picker"
+msgstr "Захват цвета в любой точке экрана"
+
+#: cinelerra//colorpicker.C:1083
+msgid "color history"
+msgstr "Архив ранее выбранных цветов"
 
 #: cinelerra//commercials.C:168 cinelerra//commercials.C:578
 #: cinelerra//commercials.C:797
@@ -1745,8 +1801,7 @@ msgstr ": Подтвердите выход"
 msgid "( Answering \"No\" will destroy changes )"
 msgstr "( Ответ \"Нет\" отменит все изменения. )"
 
-#: cinelerra//confirmquit.C:67 cinelerra//question.C:61
-#: cinelerra//reindex.C:92
+#: cinelerra//confirmquit.C:67 cinelerra//question.C:61 cinelerra//reindex.C:92
 msgid "Yes"
 msgstr "Да"
 
@@ -1776,7 +1831,7 @@ msgstr "Файлы уже существуют. Переписать их ?"
 
 #: cinelerra//cpanel.C:131
 msgid "Protect video from changes"
-msgstr "Защитить видео от изменений."
+msgstr "Защитить видео от изменений"
 
 #: cinelerra//cpanel.C:155
 msgid "Edit mask"
@@ -1878,8 +1933,7 @@ msgstr "проектор"
 msgid "mask"
 msgstr "маска"
 
-#: cinelerra//cwindowgui.h:55 cinelerra//scale.C:383
-#: cinelerra//setformat.C:853
+#: cinelerra//cwindowgui.h:55 cinelerra//scale.C:383 cinelerra//setformat.C:853
 msgid "Auto"
 msgstr "Авто"
 
@@ -1887,11 +1941,13 @@ msgstr "Авто"
 msgid "Do it"
 msgstr "Выполнить"
 
-#: cinelerra//cwindowtool.C:385
+#: cinelerra//cwindowtool.C:385 plugins/titler/titlerwindow.C:280
+#: plugins/titler/titlerwindow.C:294
 msgid "W:"
 msgstr "Ш.:"
 
-#: cinelerra//cwindowtool.C:407
+#: cinelerra//cwindowtool.C:407 plugins/titler/titlerwindow.C:281
+#: plugins/titler/titlerwindow.C:299
 msgid "H:"
 msgstr "В.:"
 
@@ -2255,15 +2311,15 @@ msgstr "DVD-рендеринг..."
 msgid "Shift-D"
 msgstr "Shift-D"
 
-#: cinelerra//dvdcreate.C:442
+#: cinelerra//dvdcreate.C:444
 msgid "create dvd"
 msgstr "создание DVD"
 
-#: cinelerra//dvdcreate.C:727
+#: cinelerra//dvdcreate.C:729
 msgid "Use FFMPEG"
 msgstr "Использ-ть FFmpeg"
 
-#: cinelerra//dvdcreate.C:740
+#: cinelerra//dvdcreate.C:742
 msgid ": Create DVD"
 msgstr ": Создание DVD"
 
@@ -2323,7 +2379,7 @@ msgstr "Перейти к ... ( g )"
 
 #: cinelerra//editpanel.C:929
 msgid "Splice ( v )"
-msgstr "Раздвинуть ( v )"
+msgstr "Разрезать и вставить ( v )"
 
 #: cinelerra//editpanel.C:954
 msgid "Cut ( x )"
@@ -2444,44 +2500,44 @@ msgstr "Перекрестное затухание"
 msgid "Dissolve"
 msgstr "Наплыв"
 
-#: cinelerra//exportedl.C:108
+#: cinelerra//exportedl.C:101
 #, c-format
 msgid "Warning: chopping the reel name to eight characters!\n"
 msgstr "Предупреждение: имя рулона ограничено 8 символами !\n"
 
-#: cinelerra//exportedl.C:255
+#: cinelerra//exportedl.C:248
 msgid "Export EDL..."
 msgstr "Экспорт EDL..."
 
-#: cinelerra//exportedl.C:356
+#: cinelerra//exportedl.C:349
 msgid "No."
 msgstr "№"
 
-#: cinelerra//exportedl.C:357
+#: cinelerra//exportedl.C:350
 msgid "Track name"
 msgstr "Название дорожки"
 
-#: cinelerra//exportedl.C:368
+#: cinelerra//exportedl.C:361
 msgid ": Export EDL"
 msgstr ": Экспорт EDL"
 
-#: cinelerra//exportedl.C:396
+#: cinelerra//exportedl.C:389
 msgid "Select a file to export to:"
 msgstr "Введите имя для экспорта EDL-файла:"
 
-#: cinelerra//exportedl.C:410 cinelerra//formattools.C:192
+#: cinelerra//exportedl.C:403 cinelerra//formattools.C:172
 msgid "Output to file"
 msgstr "Выведение в файл"
 
-#: cinelerra//exportedl.C:410 cinelerra//formattools.C:192
+#: cinelerra//exportedl.C:403 cinelerra//formattools.C:172
 msgid "Select a file to write to:"
 msgstr "Введите имя для результирующего файла:"
 
-#: cinelerra//exportedl.C:414
+#: cinelerra//exportedl.C:407
 msgid "Select track to be exported:"
 msgstr "Выберите экспортируемую дорожку:"
 
-#: cinelerra//exportedl.C:444
+#: cinelerra//exportedl.C:437
 msgid "Currently only CMX 3600 format is supported"
 msgstr "Поддерживается только формат CMX 3600"
 
@@ -2501,144 +2557,144 @@ msgstr ""
 msgid "Feather by how many frames:"
 msgstr ""
 
-#: cinelerra//ffmpeg.C:47 cinelerra//pluginfclient.C:29
+#: cinelerra//ffmpeg.C:48 cinelerra//pluginfclient.C:29
 #, c-format
 msgid "%s  err: %s\n"
 msgstr "%s  err: %s\n"
 
-#: cinelerra//ffmpeg.C:317
+#: cinelerra//ffmpeg.C:318
 msgid "open decoder failed\n"
 msgstr "open decoder failed\n"
 
-#: cinelerra//ffmpeg.C:320
+#: cinelerra//ffmpeg.C:321
 msgid "can't clone input file\n"
 msgstr "can't clone input file\n"
 
-#: cinelerra//ffmpeg.C:387
+#: cinelerra//ffmpeg.C:388
 msgid "av_buffersrc_add_frame_flags failed\n"
 msgstr "av_buffersrc_add_frame_flags failed\n"
 
-#: cinelerra//ffmpeg.C:1325
+#: cinelerra//ffmpeg.C:1351
 #, c-format
 msgid "options open failed %s\n"
 msgstr "options open failed %s\n"
 
-#: cinelerra//ffmpeg.C:1329
+#: cinelerra//ffmpeg.C:1355
 #, c-format
 msgid "format/codec not found %s\n"
 msgstr "format/codec not found %s\n"
 
-#: cinelerra//ffmpeg.C:1381
+#: cinelerra//ffmpeg.C:1413
 #, c-format
 msgid "err reading %s: line %d\n"
 msgstr "err reading %s: line %d\n"
 
-#: cinelerra//ffmpeg.C:1464
+#: cinelerra//ffmpeg.C:1496
 #, c-format
 msgid "vid%d (%d),  id 0x%06x:\n"
 msgstr "vid%d (%d),  id 0x%06x:\n"
 
-#: cinelerra//ffmpeg.C:1486
+#: cinelerra//ffmpeg.C:1518
 #, c-format
 msgid "aud%d (%d),  id 0x%06x:\n"
 msgstr "aud%d (%d),  id 0x%06x:\n"
 
-#: cinelerra//ffmpeg.C:1574
+#: cinelerra//ffmpeg.C:1606
 #, c-format
 msgid "can't stat file: %s\n"
 msgstr "can't stat file: %s\n"
 
-#: cinelerra//ffmpeg.C:1666
+#: cinelerra//ffmpeg.C:1698
 #, c-format
 msgid "bad file path: %s\n"
 msgstr "bad file path: %s\n"
 
-#: cinelerra//ffmpeg.C:1672
+#: cinelerra//ffmpeg.C:1704
 #, c-format
 msgid "bad file format: %s\n"
 msgstr "bad file format: %s\n"
 
-#: cinelerra//ffmpeg.C:1676
+#: cinelerra//ffmpeg.C:1708
 #, c-format
 msgid "mismatch audio/video file format: %s\n"
 msgstr "mismatch audio/video file format: %s\n"
 
-#: cinelerra//ffmpeg.C:1683
+#: cinelerra//ffmpeg.C:1718
 #, c-format
 msgid "failed: %s\n"
 msgstr "failed: %s\n"
 
-#: cinelerra//ffmpeg.C:1708
+#: cinelerra//ffmpeg.C:1743
 #, c-format
 msgid "get_encoder failed %s:%s\n"
 msgstr "get_encoder failed %s:%s\n"
 
-#: cinelerra//ffmpeg.C:1724
+#: cinelerra//ffmpeg.C:1759
 #, c-format
 msgid "cant find codec %s:%s\n"
 msgstr "cant find codec %s:%s\n"
 
-#: cinelerra//ffmpeg.C:1730
+#: cinelerra//ffmpeg.C:1765
 #, c-format
 msgid "unknown codec %s:%s\n"
 msgstr "unknown codec %s:%s\n"
 
-#: cinelerra//ffmpeg.C:1737
+#: cinelerra//ffmpeg.C:1772
 #, c-format
 msgid "cant create stream %s:%s\n"
 msgstr "cant create stream %s:%s\n"
 
-#: cinelerra//ffmpeg.C:1746
+#: cinelerra//ffmpeg.C:1781
 #, c-format
 msgid "duplicate audio %s:%s\n"
 msgstr "duplicate audio %s:%s\n"
 
-#: cinelerra//ffmpeg.C:1752
+#: cinelerra//ffmpeg.C:1787
 #, c-format
 msgid "bad audio options %s:%s\n"
 msgstr "bad audio options %s:%s\n"
 
-#: cinelerra//ffmpeg.C:1773
+#: cinelerra//ffmpeg.C:1808
 #, c-format
 msgid "check_sample_rate failed %s\n"
 msgstr "check_sample_rate failed %s\n"
 
-#: cinelerra//ffmpeg.C:1789
+#: cinelerra//ffmpeg.C:1824
 #, c-format
 msgid "duplicate video %s:%s\n"
 msgstr "duplicate video %s:%s\n"
 
-#: cinelerra//ffmpeg.C:1795
+#: cinelerra//ffmpeg.C:1830
 #, c-format
 msgid "bad video options %s:%s\n"
 msgstr "bad video options %s:%s\n"
 
-#: cinelerra//ffmpeg.C:1832
+#: cinelerra//ffmpeg.C:1867
 #, c-format
 msgid "check_frame_rate failed %s\n"
 msgstr "check_frame_rate failed %s\n"
 
-#: cinelerra//ffmpeg.C:1841
+#: cinelerra//ffmpeg.C:1879
 #, c-format
 msgid "not audio/video, %s:%s\n"
 msgstr "not audio/video, %s:%s\n"
 
-#: cinelerra//ffmpeg.C:1852
+#: cinelerra//ffmpeg.C:1893
 #, c-format
 msgid "open failed %s:%s\n"
 msgstr "open failed %s:%s\n"
 
-#: cinelerra//ffmpeg.C:2501
+#: cinelerra//ffmpeg.C:2577
 #, c-format
 msgid "av_frame_alloc failed\n"
 msgstr "av_frame_alloc failed\n"
 
-#: cinelerra//ffmpeg.C:2516
+#: cinelerra//ffmpeg.C:2592
 #, c-format
 msgid "codec open failed\n"
 msgstr "codec open failed\n"
 
-#: cinelerra//ffmpeg.C:2529
+#: cinelerra//ffmpeg.C:2605
 msgid "over 100 read_frame errs\n"
 msgstr "over 100 read_frame errs\n"
 
@@ -2807,185 +2863,185 @@ msgstr "Нет опций видео для этого формата"
 msgid "Use alpha"
 msgstr "Использ. альфа-канал"
 
-#: cinelerra//fileffmpeg.C:163
+#: cinelerra//fileffmpeg.C:170
 #, c-format
 msgid "file path: %s\n"
 msgstr "путь к файлу: %s\n"
 
-#: cinelerra//fileffmpeg.C:167
+#: cinelerra//fileffmpeg.C:174
 #, c-format
 msgid " err: %s\n"
 msgstr " err: %s\n"
 
-#: cinelerra//fileffmpeg.C:171
+#: cinelerra//fileffmpeg.C:178
 #, c-format
 msgid "  %jd bytes\n"
 msgstr "  %jd bytes\n"
 
-#: cinelerra//fileffmpeg.C:176
+#: cinelerra//fileffmpeg.C:183
 #, c-format
 msgid "info:\n"
 msgstr "info:\n"
 
-#: cinelerra//fileffmpeg.C:180
+#: cinelerra//fileffmpeg.C:187
 #, c-format
 msgid "== open failed\n"
 msgstr "== open failed\n"
 
-#: cinelerra//fileffmpeg.C:384
+#: cinelerra//fileffmpeg.C:391
 msgid ": Audio Preset"
 msgstr ": Предустановки аудио"
 
-#: cinelerra//fileffmpeg.C:436
+#: cinelerra//fileffmpeg.C:443
 msgid "Preset:"
 msgstr "Предустановки"
 
-#: cinelerra//fileffmpeg.C:442 cinelerra//fileffmpeg.C:593
+#: cinelerra//fileffmpeg.C:449 cinelerra//fileffmpeg.C:597
 #: cinelerra//filempeg.C:2027 cinelerra//fileogg.C:2166
 msgid "Bitrate:"
 msgstr "Битрейт:"
 
-#: cinelerra//fileffmpeg.C:447
+#: cinelerra//fileffmpeg.C:455
 msgid "Audio Options:"
 msgstr "Аудиоопции:"
 
-#: cinelerra//fileffmpeg.C:452 cinelerra//fileffmpeg.C:608
+#: cinelerra//fileffmpeg.C:460 cinelerra//fileffmpeg.C:613
 msgid "view"
 msgstr "обзор"
 
-#: cinelerra//fileffmpeg.C:529
+#: cinelerra//fileffmpeg.C:534
 msgid ": Video Preset"
 msgstr ": Предустановки видео"
 
-#: cinelerra//fileffmpeg.C:597 cinelerra//filejpeg.C:318
+#: cinelerra//fileffmpeg.C:602 cinelerra//filejpeg.C:318
 #: cinelerra//filejpeglist.C:170 cinelerra//fileogg.C:2171
 #: cinelerra//formatwindow.C:108
 msgid "Quality:"
 msgstr "Качество:"
 
-#: cinelerra//fileffmpeg.C:603
+#: cinelerra//fileffmpeg.C:608
 msgid "Video Options:"
 msgstr "Видеоопции:"
 
-#: cinelerra//fileffmpeg.C:748 cinelerra//filempeg.C:822
+#: cinelerra//fileffmpeg.C:746 cinelerra//filempeg.C:822
 #, c-format
 msgid "Creating %s\n"
 msgstr "Создание %s\n"
 
-#: cinelerra//fileffmpeg.C:788
+#: cinelerra//fileffmpeg.C:786
 msgid "option"
 msgstr "Опция"
 
-#: cinelerra//fileffmpeg.C:788 plugins/bluebanana/bluebananawindow.C:2086
+#: cinelerra//fileffmpeg.C:786 plugins/bluebanana/bluebananawindow.C:2086
 msgid "value"
 msgstr "Значение"
 
-#: cinelerra//fileffmpeg.C:910
+#: cinelerra//fileffmpeg.C:908
 msgid "codec"
 msgstr "кодек"
 
-#: cinelerra//fileffmpeg.C:988 cinelerra//fileffmpeg.C:1387
+#: cinelerra//fileffmpeg.C:986 cinelerra//fileffmpeg.C:1385
 #: cinelerra//pluginfclient.C:208 cinelerra//pluginfclient.C:471
-#: cinelerra//pluginfclient.C:497 cinelerra//preferencesthread.C:606
-#: cinelerra//preferencesthread.C:608 cinelerra//setformat.C:891
+#: cinelerra//pluginfclient.C:497 cinelerra//preferencesthread.C:607
+#: cinelerra//preferencesthread.C:609 cinelerra//setformat.C:891
 msgid "Apply"
 msgstr "Применить"
 
-#: cinelerra//fileffmpeg.C:1216
+#: cinelerra//fileffmpeg.C:1214
 msgid "<flags>"
 msgstr "<flags>"
 
-#: cinelerra//fileffmpeg.C:1217
+#: cinelerra//fileffmpeg.C:1215
 msgid "<int>"
 msgstr "<int>"
 
-#: cinelerra//fileffmpeg.C:1218
+#: cinelerra//fileffmpeg.C:1216
 msgid "<int64>"
 msgstr "<int64>"
 
-#: cinelerra//fileffmpeg.C:1219
+#: cinelerra//fileffmpeg.C:1217
 msgid "<double>"
 msgstr "<double>"
 
-#: cinelerra//fileffmpeg.C:1220
+#: cinelerra//fileffmpeg.C:1218
 msgid "<float>"
 msgstr "<float>"
 
-#: cinelerra//fileffmpeg.C:1221
+#: cinelerra//fileffmpeg.C:1219
 msgid "<string>"
 msgstr "<string>"
 
-#: cinelerra//fileffmpeg.C:1222
+#: cinelerra//fileffmpeg.C:1220
 msgid "<rational>"
 msgstr "<rational>"
 
-#: cinelerra//fileffmpeg.C:1223
+#: cinelerra//fileffmpeg.C:1221
 msgid "<binary>"
 msgstr "<binary>"
 
-#: cinelerra//fileffmpeg.C:1224
+#: cinelerra//fileffmpeg.C:1222
 msgid "<image_size>"
 msgstr "<image_size>"
 
-#: cinelerra//fileffmpeg.C:1225
+#: cinelerra//fileffmpeg.C:1223
 msgid "<video_rate>"
 msgstr "<video_rate>"
 
-#: cinelerra//fileffmpeg.C:1226
+#: cinelerra//fileffmpeg.C:1224
 msgid "<pix_fmt>"
 msgstr "<pix_fmt>"
 
-#: cinelerra//fileffmpeg.C:1227
+#: cinelerra//fileffmpeg.C:1225
 msgid "<sample_fmt>"
 msgstr "<sample_fmt>"
 
-#: cinelerra//fileffmpeg.C:1228
+#: cinelerra//fileffmpeg.C:1226
 msgid "<duration>"
 msgstr "<duration>"
 
-#: cinelerra//fileffmpeg.C:1229
+#: cinelerra//fileffmpeg.C:1227
 msgid "<color>"
 msgstr "<color>"
 
-#: cinelerra//fileffmpeg.C:1230
+#: cinelerra//fileffmpeg.C:1228
 msgid "<channel_layout>"
 msgstr "<channel_layout>"
 
-#: cinelerra//fileffmpeg.C:1231
+#: cinelerra//fileffmpeg.C:1229
 msgid "<bool>"
 msgstr "<bool>"
 
-#: cinelerra//fileffmpeg.C:1232
+#: cinelerra//fileffmpeg.C:1230
 msgid "<undef>"
 msgstr "<undef>"
 
-#: cinelerra//fileffmpeg.C:1352
+#: cinelerra//fileffmpeg.C:1350
 msgid ": Options"
 msgstr ": Опции"
 
-#: cinelerra//fileffmpeg.C:1367
+#: cinelerra//fileffmpeg.C:1365
 msgid "Format: "
 msgstr "Формат:"
 
-#: cinelerra//fileffmpeg.C:1371
+#: cinelerra//fileffmpeg.C:1369
 msgid "Codec: "
 msgstr "Кодек:"
 
-#: cinelerra//fileffmpeg.C:1376 cinelerra//pluginfclient.C:456
+#: cinelerra//fileffmpeg.C:1374 cinelerra//pluginfclient.C:456
 #, c-format
 msgid "Type: "
 msgstr "Тип:"
 
-#: cinelerra//fileffmpeg.C:1380 cinelerra//pluginfclient.C:461
+#: cinelerra//fileffmpeg.C:1378 cinelerra//pluginfclient.C:461
 #, c-format
 msgid "Range: "
 msgstr "Диапазон:"
 
-#: cinelerra//fileffmpeg.C:1393
+#: cinelerra//fileffmpeg.C:1391
 msgid "Kind:"
 msgstr "Вид:"
 
-#: cinelerra//fileffmpeg.C:1579 cinelerra//fileffmpeg.C:1608
+#: cinelerra//fileffmpeg.C:1577 cinelerra//fileffmpeg.C:1606
 #, c-format
 msgid "no codec named: %s: %s"
 msgstr "no codec named: %s: %s"
@@ -3149,57 +3205,57 @@ msgstr "JPEGLIST"
 #: cinelerra//filempeg.C:150
 #, c-format
 msgid "toc path:%s\n"
-msgstr ""
+msgstr "Путь к TOC-файлу:%s\n"
 
 #: cinelerra//filempeg.C:151
 #, c-format
 msgid "title path:\n"
-msgstr ""
+msgstr "Путь к файлу:\n"
 
 #: cinelerra//filempeg.C:159
 #, c-format
 msgid "file path:%s\n"
-msgstr "путь к файлу:%s\n"
+msgstr "Путь к файлу:%s\n"
 
 #: cinelerra//filempeg.C:164
 #, c-format
 msgid "size: %s"
-msgstr ""
+msgstr "Размер (в байтах): %s"
 
 #: cinelerra//filempeg.C:167
 #, c-format
 msgid "  program stream\n"
-msgstr ""
+msgstr "  program stream\n"
 
 #: cinelerra//filempeg.C:169
 #, c-format
 msgid "  transport stream\n"
-msgstr ""
+msgstr "  transport stream\n"
 
 #: cinelerra//filempeg.C:171
 #, c-format
 msgid "  video stream\n"
-msgstr ""
+msgstr "  video stream\n"
 
 #: cinelerra//filempeg.C:173
 #, c-format
 msgid "  audio stream\n"
-msgstr ""
+msgstr "  audio stream\n"
 
 #: cinelerra//filempeg.C:182
 #, c-format
 msgid "date: %s\n"
-msgstr ""
+msgstr "Дата: %s\n"
 
 #: cinelerra//filempeg.C:185
 #, c-format
 msgid "%d video tracks\n"
-msgstr ""
+msgstr "%d video tracks\n"
 
 #: cinelerra//filempeg.C:192
 #, c-format
 msgid "  v%d %s %dx%d"
-msgstr ""
+msgstr "  v%d %s %dx%d"
 
 #: cinelerra//filempeg.C:195
 #, c-format
@@ -3214,17 +3270,17 @@ msgstr " (%0.3f secs)"
 #: cinelerra//filempeg.C:203
 #, c-format
 msgid "%d audio tracks\n"
-msgstr ""
+msgstr "%d audio tracks\n"
 
 #: cinelerra//filempeg.C:206
 #, c-format
 msgid " a%d %s"
-msgstr ""
+msgstr " a%d %s"
 
 #: cinelerra//filempeg.C:209
 #, c-format
 msgid " ch%d (%d)"
-msgstr ""
+msgstr " ch%d (%d)"
 
 #: cinelerra//filempeg.C:214
 #, c-format
@@ -3234,7 +3290,7 @@ msgstr "%jd samples"
 #: cinelerra//filempeg.C:223
 #, c-format
 msgid "%d subtitles\n"
-msgstr ""
+msgstr "%d subtitles\n"
 
 #: cinelerra//filempeg.C:227
 #, c-format
@@ -3297,12 +3353,12 @@ msgstr ""
 #: cinelerra//filempeg.C:422
 #, c-format
 msgid "Couldn't open %s: no audio or video.\n"
-msgstr ""
+msgstr "Couldn't open %s: no audio or video.\n"
 
 #: cinelerra//filempeg.C:477
 #, c-format
 msgid "Couldn't open %s: failed.\n"
-msgstr ""
+msgstr "Couldn't open %s: failed.\n"
 
 #: cinelerra//filempeg.C:598
 #, c-format
@@ -3340,7 +3396,7 @@ msgstr "cant start toc/idx for file: %s\n"
 
 #: cinelerra//filempeg.C:818
 msgid "cant access commercials database"
-msgstr "cant access commercials database"
+msgstr "can't access commercials database"
 
 #: cinelerra//filempeg.C:833
 msgid "toc scan stopped before eof"
@@ -3386,7 +3442,7 @@ msgstr "II"
 msgid "III"
 msgstr "III"
 
-#: cinelerra//filempeg.C:1949 cinelerra//new.C:386 cinelerra//setformat.C:457
+#: cinelerra//filempeg.C:1949 cinelerra//new.C:379 cinelerra//setformat.C:457
 msgid "Color model:"
 msgstr "Цвет. модель:"
 
@@ -3771,38 +3827,38 @@ msgstr "FileVorbis::open_file %s: invalid bitstream.\n"
 msgid "Flipbook..."
 msgstr ""
 
-#: cinelerra//floatauto.C:422
+#: cinelerra//floatauto.C:424
 msgid "Smooth"
 msgstr "Сглаженная"
 
-#: cinelerra//floatauto.C:423 plugins/gradient/gradient.C:347
+#: cinelerra//floatauto.C:425 plugins/gradient/gradient.C:347
 #: plugins/gradient/gradient.C:437
 #: plugins/histogram_bezier/bistogramwindow.C:1016
 #: plugins/timefront/timefront.C:369 plugins/timefront/timefront.C:511
 msgid "Linear"
 msgstr "Линейная"
 
-#: cinelerra//floatauto.C:424
+#: cinelerra//floatauto.C:426
 msgid "Tangent"
 msgstr "Связанные направляющие"
 
-#: cinelerra//floatauto.C:425
+#: cinelerra//floatauto.C:427
 msgid "Disjoint"
 msgstr "Несвязанные направляющие"
 
-#: cinelerra//floatauto.C:427
+#: cinelerra//floatauto.C:429
 msgid "Error"
 msgstr "Ошибка"
 
-#: cinelerra//formatcheck.C:52
+#: cinelerra//formatcheck.C:48
 msgid "The format you selected doesn't support video."
 msgstr "Выбранный формат не поддерживает видео."
 
-#: cinelerra//formatcheck.C:63
+#: cinelerra//formatcheck.C:59
 msgid "The format you selected doesn't support audio."
 msgstr "Выбранный формат не поддерживает звук."
 
-#: cinelerra//formatcheck.C:72
+#: cinelerra//formatcheck.C:68
 msgid ""
 "ULAW compression is only available in\n"
 "Quicktime Movies and PCM files."
@@ -3811,7 +3867,7 @@ msgstr "Сжатие ULAW доступно только для\n"
 
 #: cinelerra//formatpopup.C:38
 msgid "Change file format"
-msgstr "Измененить формат файла"
+msgstr "Изменить формат файла"
 
 #: cinelerra//formatpopup.C:103
 msgid "Set ffmpeg file type"
@@ -3825,39 +3881,39 @@ msgstr "Польз. установки"
 msgid "Presets:"
 msgstr "Предустановки:"
 
-#: cinelerra//formattools.C:205 cinelerra//recordprefs.C:66
+#: cinelerra//formattools.C:185 cinelerra//recordprefs.C:66
 msgid "File Format:"
 msgstr "Формат файла:"
 
-#: cinelerra//formattools.C:641
+#: cinelerra//formattools.C:621
 msgid "Configure audio compression"
 msgstr "Настройки сжатия аудио"
 
-#: cinelerra//formattools.C:662
+#: cinelerra//formattools.C:642
 msgid "Configure video compression"
 msgstr "Настройки сжатия видео"
 
-#: cinelerra//formattools.C:769
+#: cinelerra//formattools.C:745
 msgid "Record audio tracks"
 msgstr "Запись аудиодорожек"
 
-#: cinelerra//formattools.C:769
+#: cinelerra//formattools.C:745
 msgid "Render audio tracks"
 msgstr "Рендеринг аудиодорожек"
 
-#: cinelerra//formattools.C:786
+#: cinelerra//formattools.C:762
 msgid "Record video tracks"
 msgstr "Запись видеодорожек"
 
-#: cinelerra//formattools.C:786
+#: cinelerra//formattools.C:762
 msgid "Render video tracks"
 msgstr "Рендеринг видеодорожек"
 
-#: cinelerra//formattools.C:883
+#: cinelerra//formattools.C:859
 msgid "Overwrite project with output"
 msgstr "Перезапись проекта результатами вывода"
 
-#: cinelerra//formattools.C:903
+#: cinelerra//formattools.C:879
 msgid "Create new file at each label"
 msgstr "Создавать отдельный файл на каждую метку"
 
@@ -4008,124 +4064,132 @@ msgstr "Флаги"
 msgid "Frames per foot:"
 msgstr "Кадров на фут"
 
-#: cinelerra//interfaceprefs.C:153
+#: cinelerra//interfaceprefs.C:162
 msgid "Index files"
 msgstr "Индексные файлы"
 
-#: cinelerra//interfaceprefs.C:158
+#: cinelerra//interfaceprefs.C:167
 msgid "Index files go here:"
 msgstr "Расположение индекс. файлов:"
 
-#: cinelerra//interfaceprefs.C:165
+#: cinelerra//interfaceprefs.C:174
 msgid "Index Path"
 msgstr "Путь к индексным файлам"
 
-#: cinelerra//interfaceprefs.C:166
+#: cinelerra//interfaceprefs.C:175
 msgid "Select the directory for index files"
 msgstr "Выберите каталог для индексных файлов"
 
-#: cinelerra//interfaceprefs.C:171
+#: cinelerra//interfaceprefs.C:180
 msgid "Size of index file:"
 msgstr "Размер индексного файла:"
 
-#: cinelerra//interfaceprefs.C:178
+#: cinelerra//interfaceprefs.C:187
 msgid "Number of index files to keep:"
 msgstr "Сохранять индексных файлов:"
 
-#: cinelerra//interfaceprefs.C:191
+#: cinelerra//interfaceprefs.C:200
 msgid "Editing"
 msgstr "Редактирование"
 
-#: cinelerra//interfaceprefs.C:195
+#: cinelerra//interfaceprefs.C:204
 msgid "Keyframe reticle:"
 msgstr "Визирные линии\n"
 "  ключев. кадров:"
 
-#: cinelerra//interfaceprefs.C:211
+#: cinelerra//interfaceprefs.C:220
 msgid "PIN:"
 msgstr "PIN"
 
-#: cinelerra//interfaceprefs.C:234
+#: cinelerra//interfaceprefs.C:243
 msgid "Clicking on edit boundaries does what:"
 msgstr "Поведение кнопок мыши на границах редактиров-я:"
 
-#: cinelerra//interfaceprefs.C:236
+#: cinelerra//interfaceprefs.C:245
 msgid "Button 1:"
 msgstr "Левая:"
 
-#: cinelerra//interfaceprefs.C:245
+#: cinelerra//interfaceprefs.C:254
 msgid "Button 2:"
 msgstr "Средняя:"
 
-#: cinelerra//interfaceprefs.C:253
+#: cinelerra//interfaceprefs.C:262
 msgid "Button 3:"
 msgstr "Правая:"
 
-#: cinelerra//interfaceprefs.C:263
+#: cinelerra//interfaceprefs.C:272
 msgid "Min DB for meter:"
 msgstr "Мин. шкалы дБ:"
 
-#: cinelerra//interfaceprefs.C:269
+#: cinelerra//interfaceprefs.C:278
 msgid "Max DB:"
 msgstr "Макс. дБ:"
 
-#: cinelerra//interfaceprefs.C:277
+#: cinelerra//interfaceprefs.C:286
 msgid "Theme:"
 msgstr "Тема:"
 
-#: cinelerra//interfaceprefs.C:663
+#: cinelerra//interfaceprefs.C:672
 msgid "Use thumbnails in resource window"
 msgstr "Показывать миниатюры в окне 'Ресурсы'"
 
-#: cinelerra//interfaceprefs.C:680
+#: cinelerra//interfaceprefs.C:689
 msgid "Show tip of the day"
 msgstr "Показывать совет дня"
 
-#: cinelerra//interfaceprefs.C:693
+#: cinelerra//interfaceprefs.C:702
 msgid "ffmpeg probe warns rebuild indexes"
 msgstr "Предупреждение при смене приоритета FFmpeg"
 
-#: cinelerra//interfaceprefs.C:706
+#: cinelerra//interfaceprefs.C:715
 msgid "EDL version warns if mismatched"
-msgstr ""
+msgstr "Предупреждать о несоответствии версии EDL"
 
-#: cinelerra//interfaceprefs.C:719
+#: cinelerra//interfaceprefs.C:728
 msgid "Create Bluray warns if not root"
 msgstr ""
 
-#: cinelerra//interfaceprefs.C:732
+#: cinelerra//interfaceprefs.C:741
 msgid "Popups activate on button up"
 msgstr "Вход в контекст. меню, отпустив правую к. мыши"
 
-#: cinelerra//interfaceprefs.C:748
+#: cinelerra//interfaceprefs.C:754
+msgid "Click to activate text focus"
+msgstr "Активировать текст. поле щелчком мыши"
+
+#: cinelerra//interfaceprefs.C:770
+msgid "Click to deactivate text focus"
+msgstr "Деактивировать текст. поле щелчком мыши"
+
+#: cinelerra//interfaceprefs.C:790
 msgid "Scan for commercials during toc build"
 msgstr "Сканировать на рекламу при создании TOC"
 
-#: cinelerra//interfaceprefs.C:762
+#: cinelerra//interfaceprefs.C:804
 msgid "Android Remote Control"
 msgstr "Удалённое управление с Android"
 
-#: cinelerra//interfaceprefs.C:813
+#: cinelerra//interfaceprefs.C:855
 msgid "Shell Commands"
-msgstr "Shell - команды"
+msgstr "Команды Shell"
 
-#: cinelerra//interfaceprefs.C:817
+#: cinelerra//interfaceprefs.C:859
 msgid "Main Menu Shell Commands"
-msgstr "Главное меню shell - команд"
+msgstr "Главное меню команд Shell"
 
-#: cinelerra//interfaceprefs.C:827
+#: cinelerra//interfaceprefs.C:869
 msgid "Import images with a duration of"
-msgstr "Длительность импортир-нных изображ-й"
+msgstr "Длительность импортированных изображений"
 
-#: cinelerra//interfaceprefs.C:882
+#: cinelerra//interfaceprefs.C:924
 msgid "Never"
 msgstr "Не показывать"
 
-#: cinelerra//interfaceprefs.C:883
+#: cinelerra//interfaceprefs.C:925
 msgid "Dragging"
 msgstr "При перетаскивании кл. к."
 
-#: cinelerra//interfaceprefs.C:884
+#: cinelerra//interfaceprefs.C:926
 msgid "Always"
 msgstr "Всегда показывать"
 
@@ -4153,12 +4217,11 @@ msgstr "Нижн. поле первое"
 msgid "Not Interlaced"
 msgstr "Без чередования"
 
-#: cinelerra//interlacemodes.h:52
-#: plugins/deinterlace-cv/deinterwindow-cv.C:273
-#: plugins/motion/motionwindow.C:758 plugins/motion2point/motionwindow.C:772
-#: plugins/motion2point/motionwindow.C:793
-#: plugins/motion-cv/motionwindow-cv.C:621
-#: plugins/motion-hv/motionwindow-hv.C:955
+#: cinelerra//interlacemodes.h:52 plugins/deinterlace-cv/deinterwindow-cv.C:273
+#: plugins/motion/motionwindow.C:760 plugins/motion2point/motionwindow.C:773
+#: plugins/motion2point/motionwindow.C:794
+#: plugins/motion-cv/motionwindow-cv.C:622
+#: plugins/motion-hv/motionwindow-hv.C:956
 msgid "Do Nothing"
 msgstr "Ничего не делать"
 
@@ -4261,7 +4324,7 @@ msgstr "Несвязанные направляющие"
 
 #: cinelerra//keyframepopup.C:476
 msgid "misconfigured"
-msgstr ""
+msgstr "недопустимая конфигурация"
 
 #: cinelerra//keyframepopup.C:491 cinelerra//keyframepopup.C:497
 msgid "change keyframe curve mode"
@@ -4306,15 +4369,15 @@ msgstr "Открыть файлы ..."
 
 #: cinelerra//loadfile.C:174
 msgid ": Load"
-msgstr ": Загрузка"
+msgstr ": Загрузка файлов"
 
 #: cinelerra//loadfile.C:175
 msgid "Select files to load:"
-msgstr "Выбор файлов для загрузки:"
+msgstr "Выберите файлы для загрузки:"
 
 #: cinelerra//loadfile.C:239
 msgid ": Locate file"
-msgstr ": Открыть файл"
+msgstr ": Обнаружить файл"
 
 #: cinelerra//loadfile.C:298
 msgid "Load backup"
@@ -4401,7 +4464,7 @@ msgstr "-d = Запуск в фоновом режиме как клиента �
 #: cinelerra//main.C:290
 #, c-format
 msgid "-f = Run in the foreground as renderfarm client.  Substitute for -d.\n"
-msgstr "-f = Запуск в приоритетном режиме как клиента распределённого рендеринга.\n"
+msgstr "-f = Запуск в режиме переднего плана как клиента распределённого рендеринга.\n"
 "Альтернатива для -d.\n"
 
 #: cinelerra//main.C:291
@@ -4452,11 +4515,11 @@ msgstr "Правка"
 msgid "Keyframes"
 msgstr "Ключевые кадры"
 
-#: cinelerra//mainmenu.C:178 cinelerra//new.C:277 cinelerra//setformat.C:336
+#: cinelerra//mainmenu.C:178 cinelerra//new.C:269 cinelerra//setformat.C:336
 msgid "Audio"
 msgstr "Аудио"
 
-#: cinelerra//mainmenu.C:187 cinelerra//new.C:305 cinelerra//setformat.C:388
+#: cinelerra//mainmenu.C:187 cinelerra//new.C:297 cinelerra//setformat.C:388
 msgid "Video"
 msgstr "Видео"
 
@@ -4614,8 +4677,8 @@ msgstr "Вырезать"
 msgid "Copy"
 msgstr "Копировать"
 
-#: cinelerra//mainmenu.C:882 cinelerra//recordbatches.C:566
-#: cinelerra//swindow.C:571 plugins/compressor/compressor.C:1394
+#: cinelerra//mainmenu.C:882 cinelerra//recordbatches.C:544
+#: cinelerra//swindow.C:559 plugins/compressor/compressor.C:1394
 #: plugins/piano/piano.C:912 plugins/synthesizer/synthesizer.C:1466
 msgid "Clear"
 msgstr "Удалить"
@@ -4724,7 +4787,7 @@ msgstr "Добавить дорожку для субтитров"
 msgid "Shift-Y"
 msgstr "Shift-Y"
 
-#: cinelerra//mainmenu.C:1228 cinelerra//swindow.C:469
+#: cinelerra//mainmenu.C:1228 cinelerra//swindow.C:457
 msgid "paste subttl"
 msgstr "Вставить субтитры"
 
@@ -4890,7 +4953,7 @@ msgstr "Не выбран эффект."
 msgid "No selected range to process."
 msgstr "Не выбрана область для обработки."
 
-#: cinelerra//menueffects.C:324 cinelerra//mwindowgui.C:608
+#: cinelerra//menueffects.C:324 cinelerra//mwindowgui.C:609
 #: cinelerra//vwindowgui.C:101
 #, c-format
 msgid ": %s"
@@ -4910,11 +4973,11 @@ msgstr ": Рендеринг эффекта"
 msgid "Select an effect"
 msgstr "Выберите эффект"
 
-#: cinelerra//menueffects.C:646 cinelerra//render.C:1151
+#: cinelerra//menueffects.C:646 cinelerra//render.C:1146
 msgid "Select the first file to render to:"
 msgstr "Выберите первый файл для рендеринга:"
 
-#: cinelerra//menueffects.C:647 cinelerra//render.C:1152
+#: cinelerra//menueffects.C:647 cinelerra//render.C:1147
 msgid "Select a file to render to:"
 msgstr "Введите имя для результирующего файла:"
 
@@ -4950,67 +5013,67 @@ msgid "Show meters"
 msgstr "Показывать измерители\n"
 "уровня звука"
 
-#: cinelerra//mwindow.C:577
+#: cinelerra//mwindow.C:604
 #, c-format
 msgid "MWindow::init_plugins: can't create plugin index: %s\n"
 msgstr "MWindow::init_plugins: can't create plugin index: %s\n"
 
-#: cinelerra//mwindow.C:638
+#: cinelerra//mwindow.C:666
 #, c-format
 msgid "MWindow::init_ladspa_index: can't create plugin index: %s\n"
 msgstr "MWindow::init_ladspa_index: can't create plugin index: %s\n"
 
-#: cinelerra//mwindow.C:923
+#: cinelerra//mwindow.C:952
 #, c-format
 msgid "MWindow::init_theme: prefered theme %s not found.\n"
 msgstr "MWindow::init_theme: prefered theme %s not found.\n"
 
-#: cinelerra//mwindow.C:927
+#: cinelerra//mwindow.C:956
 #, c-format
 msgid "MWindow::init_theme: trying default theme %s\n"
 msgstr "MWindow::init_theme: trying default theme %s\n"
 
-#: cinelerra//mwindow.C:937
+#: cinelerra//mwindow.C:966
 #, c-format
 msgid "MWindow::init_theme: theme_plugin not found.\n"
 msgstr "MWindow::init_theme: theme_plugin not found.\n"
 
-#: cinelerra//mwindow.C:943
+#: cinelerra//mwindow.C:972
 #, c-format
 msgid "MWindow::init_theme: unable to load theme %s\n"
 msgstr "MWindow::init_theme: unable to load theme %s\n"
 
-#: cinelerra//mwindow.C:1233
+#: cinelerra//mwindow.C:1262
 msgid "multiple video tracks"
 msgstr ""
 
-#: cinelerra//mwindow.C:1245
+#: cinelerra//mwindow.C:1274
 msgid "crosses edits"
 msgstr ""
 
-#: cinelerra//mwindow.C:1247
+#: cinelerra//mwindow.C:1276
 msgid "not asset"
 msgstr ""
 
-#: cinelerra//mwindow.C:1266
+#: cinelerra//mwindow.C:1295
 msgid "no file"
 msgstr ""
 
-#: cinelerra//mwindow.C:1272
+#: cinelerra//mwindow.C:1301
 msgid "db failed"
 msgstr ""
 
-#: cinelerra//mwindow.C:1276
+#: cinelerra//mwindow.C:1305
 #, c-format
 msgid "put_commercial: %s"
 msgstr ""
 
-#: cinelerra//mwindow.C:1341
+#: cinelerra//mwindow.C:1370
 #, c-format
 msgid "Loading %s"
 msgstr "Загрузка %s"
 
-#: cinelerra//mwindow.C:1359
+#: cinelerra//mwindow.C:1388
 #, c-format
 msgid ""
 "%s's resolution is %dx%d.\n"
@@ -5018,7 +5081,7 @@ msgid ""
 msgstr "Изображение %s имеет размер %dx%d (в пикселях).\n"
 "Изображения с нечётными размерами не могут быть декодированы должным образом."
 
-#: cinelerra//mwindow.C:1370
+#: cinelerra//mwindow.C:1399
 #, c-format
 msgid ""
 "%s's index was built for program number %d\n"
@@ -5026,16 +5089,16 @@ msgid ""
 "  Using program %d."
 msgstr ""
 
-#: cinelerra//mwindow.C:1416
+#: cinelerra//mwindow.C:1445
 #, c-format
 msgid "Failed to open %s"
 msgstr "Ошибка открытия %s"
 
-#: cinelerra//mwindow.C:1449
+#: cinelerra//mwindow.C:1478
 msgid "'s format couldn't be determined."
 msgstr " - не удалось определить формат."
 
-#: cinelerra//mwindow.C:1519
+#: cinelerra//mwindow.C:1548
 #, c-format
 msgid ""
 "XML file %s\n"
@@ -5043,12 +5106,12 @@ msgid ""
 msgstr "XML-файл %s\n"
 " создан не в cinelerra."
 
-#: cinelerra//mwindow.C:1521
+#: cinelerra//mwindow.C:1550
 #, c-format
 msgid "Unknown %s"
 msgstr "Неизвестно %s"
 
-#: cinelerra//mwindow.C:1529
+#: cinelerra//mwindow.C:1558
 #, c-format
 msgid ""
 "Warning: XML from cinelerra version %s\n"
@@ -5056,18 +5119,18 @@ msgid ""
 msgstr "Предупреждение:  XML-файл был создан в cinelerra версии %s.\n"
 "Сессионные данные могут быть несовместимы."
 
-#: cinelerra//mwindow.C:1722
+#: cinelerra//mwindow.C:1751
 msgid "load"
 msgstr "загрузка"
 
-#: cinelerra//mwindow.C:1799 cinelerra//mwindow.C:1832
+#: cinelerra//mwindow.C:1828 cinelerra//mwindow.C:1861
 #, c-format
 msgid ""
 "The %s '%s' in file '%s' is not part of your installation of Cinelerra.\n"
 "The project won't be rendered as it was meant and Cinelerra might crash.\n"
 msgstr ""
 
-#: cinelerra//mwindow.C:1865
+#: cinelerra//mwindow.C:1894
 #, c-format
 msgid ""
 "MWindow::init_shm: /proc/sys/kernel/shmmax is %p.\n"
@@ -5081,41 +5144,41 @@ msgstr "MWindow::init_shm: /proc/sys/kernel/shmmax is %p.\n"
 "прежде чем запустить Сinelerra.\n"
 "Для Cinelerra значение должно быть не менее 0x7fffffff\n"
 
-#: cinelerra//mwindow.C:1895
+#: cinelerra//mwindow.C:1925
 msgid "Initializing Plugins"
 msgstr "Инициализация плагинов"
 
-#: cinelerra//mwindow.C:1901
+#: cinelerra//mwindow.C:1931
 msgid "Initializing GUI"
 msgstr "Инициализация GUI"
 
-#: cinelerra//mwindow.C:1909
+#: cinelerra//mwindow.C:1939
 msgid "Initializing Fonts"
 msgstr "Инициализация шрифтов"
 
-#: cinelerra//mwindow.C:2958
+#: cinelerra//mwindow.C:2988
 #, c-format
 msgid "Couldn't open %s for writing."
 msgstr "Couldn't open %s for writing."
 
-#: cinelerra//mwindow.C:3119
+#: cinelerra//mwindow.C:3149
 msgid "remove assets"
 msgstr "удалить ресурсы"
 
-#: cinelerra//mwindow.C:3351
+#: cinelerra//mwindow.C:3381
 #, c-format
 msgid "Using %s"
 msgstr "Использование %s"
 
-#: cinelerra//mwindow.C:3488 cinelerra//mwindowedit.C:234
-#: cinelerra//mwindowedit.C:300 cinelerra//preferencesthread.C:247
+#: cinelerra//mwindow.C:3518 cinelerra//mwindowedit.C:234
+#: cinelerra//mwindowedit.C:300 cinelerra//preferencesthread.C:248
 msgid ""
 "This project's dimensions are not multiples of 4 so\n"
 "it can't be rendered by OpenGL."
 msgstr "Размер проекта не кратен 4.\n"
 "Невозможно выполнить OpenGL-рендеринг."
 
-#: cinelerra//mwindow.C:3621
+#: cinelerra//mwindow.C:3651
 msgid "select asset"
 msgstr "выберите ресурс"
 
@@ -5308,7 +5371,7 @@ msgstr "кон. точка"
 
 #: cinelerra//mwindowedit.C:2344
 msgid "splice"
-msgstr "раздвинуть"
+msgstr "разрезать и вставить"
 
 #: cinelerra//mwindowedit.C:2380 cinelerra//vwindowgui.C:701
 #, c-format
@@ -5351,19 +5414,19 @@ msgstr "вырезать рекламу"
 msgid ": Program"
 msgstr ": Программа"
 
-#: cinelerra//mwindowgui.C:2279 cinelerra//mwindowgui.C:2290
-#: cinelerra//preferencesthread.C:233
+#: cinelerra//mwindowgui.C:2280 cinelerra//mwindowgui.C:2291
+#: cinelerra//preferencesthread.C:234
 msgid "Try FFMpeg first"
 msgstr "Включён приоритет FFmpeg\n"
 "при сборе инфо. об открываемом файле"
 
-#: cinelerra//mwindowgui.C:2279 cinelerra//mwindowgui.C:2290
-#: cinelerra//preferencesthread.C:233
+#: cinelerra//mwindowgui.C:2280 cinelerra//mwindowgui.C:2291
+#: cinelerra//preferencesthread.C:234
 msgid "Try FFMpeg last"
 msgstr "Выключен приоритет FFmpeg\n"
 "при сборе инфо. об открываемом файле"
 
-#: cinelerra//mwindowgui.C:2292
+#: cinelerra//mwindowgui.C:2293
 msgid "Changing the base codecs may require rebuilding indexes."
 msgstr "Для изменения базы кодеков может потребоваться переиндексация"
 
@@ -5521,7 +5584,7 @@ msgstr "Cinelerra: Уровни"
 
 #: cinelerra//mwindow.inc:90
 msgid "Cinelerra: Load"
-msgstr "Cinelerra: Загрузка"
+msgstr "Cinelerra: Загрузка файлов"
 
 #: cinelerra//mwindow.inc:91
 msgid "Cinelerra: Loading"
@@ -5529,7 +5592,7 @@ msgstr "Cinelerra: Загрузка"
 
 #: cinelerra//mwindow.inc:92
 msgid "Cinelerra: Locate file"
-msgstr "Cinelerra: Открыть файл"
+msgstr "Cinelerra: Обнаружить файл"
 
 #: cinelerra//mwindow.inc:93
 msgid "Cinelerra: Mask"
@@ -5728,11 +5791,11 @@ msgstr "Cinelerra: Просмотр"
 msgid "Cinelerra: Warning"
 msgstr "Cinelerra: Предупреждение"
 
-#: cinelerra//new.C:57
+#: cinelerra//new.C:56
 msgid "New Project..."
 msgstr "Новый проект..."
 
-#: cinelerra//new.C:139
+#: cinelerra//new.C:138
 msgid "New Project"
 msgstr "Новый проект"
 
@@ -5740,40 +5803,40 @@ msgstr "Новый проект"
 msgid ": New Project"
 msgstr ": Новый проект"
 
-#: cinelerra//new.C:262
+#: cinelerra//new.C:254
 msgid "Parameters for the new project:"
 msgstr "Параметры для нового проекта:"
 
-#: cinelerra//new.C:281 cinelerra//new.C:308
+#: cinelerra//new.C:273 cinelerra//new.C:300
 msgid "Tracks:"
 msgstr "Дорожки:"
 
-#: cinelerra//new.C:297 cinelerra//recordgui.C:232 cinelerra//setformat.C:342
+#: cinelerra//new.C:289 cinelerra//recordgui.C:232 cinelerra//setformat.C:342
 msgid "Samplerate:"
 msgstr "Част. дискр.:"
 
-#: cinelerra//new.C:323 cinelerra//recordgui.C:245
+#: cinelerra//new.C:315 cinelerra//recordgui.C:245
 msgid "Framerate:"
 msgstr "Част. кадров:"
 
-#: cinelerra//new.C:349 cinelerra//setformat.C:406
+#: cinelerra//new.C:341 cinelerra//setformat.C:406
 msgid "Canvas size:"
 msgstr "Размер холста   (Размер вывода):"
 
-#: cinelerra//new.C:368 cinelerra//scale.C:270 cinelerra//setformat.C:474
+#: cinelerra//new.C:360 cinelerra//scale.C:270 cinelerra//setformat.C:474
 msgid "Aspect ratio:"
 msgstr "Пропорции:"
 
-#: cinelerra//new.C:396 cinelerra//setformat.C:501
+#: cinelerra//new.C:382 cinelerra//setformat.C:501
 msgid "Interlace mode:"
 msgstr "Чересстрочн.\n"
 "режим"
 
-#: cinelerra//new.C:909
+#: cinelerra//new.C:899
 msgid "Auto aspect ratio"
 msgstr "Автоматически"
 
-#: cinelerra//new.C:935 cinelerra//resizetrackthread.C:192
+#: cinelerra//new.C:925 cinelerra//resizetrackthread.C:192
 #: cinelerra//setformat.C:924 plugins/photoscale/photoscale.C:198
 msgid "Swap dimensions"
 msgstr "Поменять местами значения"
@@ -5834,7 +5897,7 @@ msgstr "Смещение начала/конца дорожки"
 
 #: cinelerra//patchgui.C:716 cinelerra//patchgui.C:722
 msgid "nudge."
-msgstr "cмещ-е нач./конца дорожки."
+msgstr "cмещ-е нач./конца дорожки"
 
 #: cinelerra//performanceprefs.C:83
 msgid "Cache size (MB):"
@@ -5850,7 +5913,7 @@ msgstr "Количество CPU (SMP), используемых плагина�
 
 #: cinelerra//performanceprefs.C:119 cinelerra//performanceprefs.C:124
 msgid "(must be root)"
-msgstr "(Вы должны быть root)"
+msgstr "(только с правами root)"
 
 #: cinelerra//performanceprefs.C:141
 msgid "Background Rendering (Video only)"
@@ -6096,7 +6159,7 @@ msgstr "Лицензия: %s"
 msgid "%s took %s"
 msgstr "%s закончен %s"
 
-#: cinelerra//pluginclient.C:839 cinelerra//pluginclient.C:851
+#: cinelerra//pluginclient.C:840 cinelerra//pluginclient.C:852
 msgid "tweek"
 msgstr "настройка"
 
@@ -6202,39 +6265,39 @@ msgstr "Параметры программы"
 msgid "Shift-P"
 msgstr "Shift-P"
 
-#: cinelerra//preferencesthread.C:333
+#: cinelerra//preferencesthread.C:334
 msgid "*Playback A"
 msgstr "*Воспроизв-ние А"
 
-#: cinelerra//preferencesthread.C:333
+#: cinelerra//preferencesthread.C:334
 msgid "Playback A"
 msgstr "Воспроизв-ние А"
 
-#: cinelerra//preferencesthread.C:336
+#: cinelerra//preferencesthread.C:337
 msgid "*Playback B"
 msgstr "*Воспр-ние В"
 
-#: cinelerra//preferencesthread.C:336
+#: cinelerra//preferencesthread.C:337
 msgid "Playback B"
 msgstr "Воспр-ние В"
 
-#: cinelerra//preferencesthread.C:338
+#: cinelerra//preferencesthread.C:339
 msgid "Recording"
 msgstr "Запись"
 
-#: cinelerra//preferencesthread.C:340
+#: cinelerra//preferencesthread.C:341
 msgid "Performance"
 msgstr "Производит-ность"
 
-#: cinelerra//preferencesthread.C:342
+#: cinelerra//preferencesthread.C:343
 msgid "Interface"
 msgstr "Интерфейс"
 
-#: cinelerra//preferencesthread.C:344
+#: cinelerra//preferencesthread.C:345
 msgid "About"
 msgstr "О программе"
 
-#: cinelerra//preferencesthread.C:375
+#: cinelerra//preferencesthread.C:376
 msgid ": Preferences"
 msgstr ": Параметры"
 
@@ -6283,18 +6346,18 @@ msgstr "Инфо"
 msgid "Duration"
 msgstr "Длительность"
 
-#: cinelerra//recordbatches.C:525 cinelerra//recordgui.C:947
+#: cinelerra//recordbatches.C:503 cinelerra//recordgui.C:947
 msgid ""
 "Start batch recording\n"
 "from the current position."
 msgstr "Начать пакетную запись\n"
 "с текущей позиции."
 
-#: cinelerra//recordbatches.C:552
+#: cinelerra//recordbatches.C:530
 msgid "Activate"
 msgstr "Активировать"
 
-#: cinelerra//recordbatches.C:554 cinelerra//recordgui.C:978
+#: cinelerra//recordbatches.C:532 cinelerra//recordgui.C:978
 msgid ""
 "Make the highlighted\n"
 "clip active."
@@ -6322,7 +6385,7 @@ msgid "start over"
 msgstr "начать сначала"
 
 #: cinelerra//recordengine.C:695 cinelerra//recordengine.C:703
-#: plugins/titler/titlewindow.C:748
+#: plugins/titler/titlerwindow.C:907
 #, c-format
 msgid "Loop"
 msgstr "Зациклить"
@@ -6667,54 +6730,54 @@ msgstr "Расчётное время (ETA)"
 msgid "Already rendering"
 msgstr "Рендеринг уже идёт."
 
-#: cinelerra//render.C:494
+#: cinelerra//render.C:491
 #, c-format
 msgid "Rendering %s..."
 msgstr "Рендеринг %s..."
 
-#: cinelerra//render.C:497
+#: cinelerra//render.C:494
 msgid "Rendering..."
 msgstr "Рендеринг..."
 
-#: cinelerra//render.C:515
+#: cinelerra//render.C:512
 #, c-format
 msgid "Rendering took %s"
 msgstr "Рендеринг закончен %s"
 
-#: cinelerra//render.C:785
+#: cinelerra//render.C:782
 msgid "Starting render farm"
 msgstr "Начать распределённый рендеринг"
 
-#: cinelerra//render.C:813
+#: cinelerra//render.C:810
 msgid "Failed to start render farm"
 msgstr "Не удалось запустить распределённый рендеринг"
 
-#: cinelerra//render.C:911
+#: cinelerra//render.C:908
 msgid "Error rendering data."
 msgstr "Ошибка данных рендеринга."
 
-#: cinelerra//render.C:969
+#: cinelerra//render.C:966
 msgid "render"
 msgstr "рендеринг"
 
-#: cinelerra//render.C:1111
+#: cinelerra//render.C:1108
 msgid ": Render"
 msgstr ": Рендеринг"
 
-#: cinelerra//render.C:1159
+#: cinelerra//render.C:1154
 msgid "Render range:"
 msgstr "Область\n"
 "рендеринга:"
 
-#: cinelerra//render.C:1196
+#: cinelerra//render.C:1191
 msgid "Project"
 msgstr "Весь проект"
 
-#: cinelerra//render.C:1207
+#: cinelerra//render.C:1202
 msgid "Selection"
 msgstr "Выделенный участок"
 
-#: cinelerra//render.C:1219
+#: cinelerra//render.C:1214
 msgid "In/Out Points"
 msgstr "Нач./Кон. точки"
 
@@ -6734,12 +6797,12 @@ msgstr "RenderFarmServerThread::start_loop: socket"
 #: cinelerra//renderfarm.C:215
 #, c-format
 msgid "RenderFarmServerThread::open_client: unknown host %s.\n"
-msgstr "RenderFarmServerThread::open_client: неизвестный хост %s.\n"
+msgstr "RenderFarmServerThread::open_client: unknown host %s.\n"
 
 #: cinelerra//renderfarm.C:459
 #, c-format
 msgid "RenderFarmServerThread::run: unknown request %02x\n"
-msgstr "RenderFarmServerThread::run: неизвестный запрос %02x\n"
+msgstr "RenderFarmServerThread::run: unknown request %02x\n"
 
 #: cinelerra//renderfarmclient.C:120 cinelerra//renderfarmclient.C:145
 msgid "RenderFarmClient::main_loop: socket"
@@ -6748,43 +6811,43 @@ msgstr "RenderFarmClient::main_loop: socket"
 #: cinelerra//renderfarmclient.C:129
 #, c-format
 msgid "RenderFarmClient::main_loop: bind port %d: %s"
-msgstr "RenderFarmClient::main_loop: связанный порт %d: %s"
+msgstr "RenderFarmClient::main_loop: bind port %d: %s"
 
 #: cinelerra//renderfarmclient.C:154
 #, c-format
 msgid "RenderFarmClient::main_loop: bind path %s: %s\n"
-msgstr "RenderFarmClient::main_loop: связанный путь %s: %s\n"
+msgstr "RenderFarmClient::main_loop: bind path %s: %s\n"
 
 #: cinelerra//renderfarmclient.C:166
 msgid "RenderFarmClient::main_loop: listen"
-msgstr "RenderFarmClient::main_loop: слушает"
+msgstr "RenderFarmClient::main_loop: listen"
 
 #: cinelerra//renderfarmclient.C:178 cinelerra//renderfarmclient.C:192
 msgid "RenderFarmClient::main_loop: accept"
-msgstr "RenderFarmClient::main_loop: принимает"
+msgstr "RenderFarmClient::main_loop: accept"
 
 #: cinelerra//renderfarmclient.C:680
 #, c-format
 msgid "RenderFarmClientThread::run: Session finished.\n"
 msgstr "RenderFarmClientThread::run: Сессия завершена.\n"
 
-#: cinelerra//renderprofiles.C:92
+#: cinelerra//renderprofiles.C:88
 msgid "RenderProfile:"
 msgstr "Профиль рендеринга:"
 
-#: cinelerra//renderprofiles.C:96
+#: cinelerra//renderprofiles.C:92
 msgid "Render profile:"
 msgstr "Профиль рендеринга:"
 
-#: cinelerra//renderprofiles.C:248
+#: cinelerra//renderprofiles.C:244
 msgid "Save profile"
 msgstr "Сохранить профиль"
 
-#: cinelerra//renderprofiles.C:267
+#: cinelerra//renderprofiles.C:263
 msgid "Maximum number of render profiles reached"
 msgstr "Достигнуто максим. количество профилей"
 
-#: cinelerra//renderprofiles.C:287
+#: cinelerra//renderprofiles.C:283
 msgid "Delete profile"
 msgstr "Удалить профиль"
 
@@ -6820,7 +6883,7 @@ msgid ": Resize Track"
 msgstr ": Размер дорожки"
 
 #: cinelerra//resizetrackthread.C:124 plugins/scale/scalewin.C:63
-#: plugins/titler/titlewindow.C:230
+#: plugins/titler/titlerwindow.C:236
 msgid "Size:"
 msgstr "Размер:"
 
@@ -6833,7 +6896,7 @@ msgstr "x"
 msgid "Resize"
 msgstr ""
 
-#: cinelerra//resourcepixmap.C:643
+#: cinelerra//resourcepixmap.C:641
 #, c-format
 msgid "ResourcePixmap::draw_audio_source: failed to check out %s for drawing.\n"
 msgstr "ResourcePixmap::draw_audio_source: failed to check out %s for drawing.\n"
@@ -6846,7 +6909,7 @@ msgstr "Сохранить резервную копию"
 msgid "Saved backup."
 msgstr "Сохранённая резервная копия."
 
-#: cinelerra//savefile.C:70 cinelerra//swindow.C:129
+#: cinelerra//savefile.C:70 cinelerra//swindow.C:117
 msgid "Save"
 msgstr "Сохранить проект"
 
@@ -6981,7 +7044,7 @@ msgstr "Команды:"
 
 #: cinelerra//shbtnprefs.C:336
 msgid "shell cmds"
-msgstr "команды shell"
+msgstr "Команды Shell"
 
 #: cinelerra//splashgui.C:33
 msgid ": Loading"
@@ -7004,43 +7067,43 @@ msgstr "Прервать операцию"
 msgid "Subttl %d"
 msgstr "Субтитры %d"
 
-#: cinelerra//swindow.C:106
+#: cinelerra//swindow.C:94
 msgid "Load"
 msgstr "Загрузка"
 
-#: cinelerra//swindow.C:123
+#: cinelerra//swindow.C:111
 msgid "script text file path required"
 msgstr ""
 
-#: cinelerra//swindow.C:144
+#: cinelerra//swindow.C:132
 msgid "script microdvd file path required"
 msgstr ""
 
-#: cinelerra//swindow.C:167
+#: cinelerra//swindow.C:155
 msgid "File Size:"
 msgstr ""
 
-#: cinelerra//swindow.C:170
+#: cinelerra//swindow.C:158
 msgid "Entries:"
 msgstr ""
 
-#: cinelerra//swindow.C:175
+#: cinelerra//swindow.C:163
 msgid "Lines:"
 msgstr ""
 
-#: cinelerra//swindow.C:176
+#: cinelerra//swindow.C:164
 msgid "Texts:"
 msgstr ""
 
-#: cinelerra//swindow.C:196
+#: cinelerra//swindow.C:184
 msgid "Script Text:"
 msgstr ""
 
-#: cinelerra//swindow.C:198 cinelerra//swindow.C:204
+#: cinelerra//swindow.C:186 cinelerra//swindow.C:192
 msgid "Line Text:"
 msgstr ""
 
-#: cinelerra//swindow.C:217
+#: cinelerra//swindow.C:205
 msgid ""
 "Adding Subtitles: quick \"How To\" (= or * indicates comment)\n"
 "*2345678901234567890123456789012345678901234567890123456789\n"
@@ -7058,19 +7121,19 @@ msgid ""
 "This is the second entry.\n"
 msgstr ""
 
-#: cinelerra//swindow.C:249
+#: cinelerra//swindow.C:237
 msgid ": Subtitle"
 msgstr ": Субтитры"
 
-#: cinelerra//swindow.C:523
+#: cinelerra//swindow.C:511
 msgid "Prev"
 msgstr "Предыд."
 
-#: cinelerra//swindow.C:539
+#: cinelerra//swindow.C:527
 msgid "Next"
 msgstr "След."
 
-#: cinelerra//swindow.C:804
+#: cinelerra//swindow.C:792
 #, c-format
 msgid ""
 "cannot open: \"%s\"\n"
@@ -7078,7 +7141,7 @@ msgid ""
 msgstr "cannot open: \"%s\"\n"
 "%s"
 
-#: cinelerra//swindow.C:856
+#: cinelerra//swindow.C:844
 #, c-format
 msgid ""
 "Unable to open %s:\n"
@@ -7086,11 +7149,11 @@ msgid ""
 msgstr "Unable to open %s:\n"
 "%m"
 
-#: cinelerra//swindow.C:1015
+#: cinelerra//swindow.C:1003
 msgid "SubTitle..."
 msgstr "Субтитры..."
 
-#: cinelerra//swindow.C:1015
+#: cinelerra//swindow.C:1003
 msgid "Alt-y"
 msgstr "Alt-y"
 
@@ -7129,8 +7192,8 @@ msgstr "Суб."
 
 #: cinelerra//tipwindow.C:37
 msgid "Shift-click on a curve keyframe to snap it to the neighboring values."
-msgstr "`Shift+щелчок` по ключевому кадру производит автоматическое выравнивание\n"
-"его значения по ближайшему к нему значению соседнего ключевого кадра."
+msgstr "Удерживая Shift, сместите ключ. кадр. Произойдёт автоматическое выравнивание\n"
+"его значения по соседнему ключ. кадру с ближайшим к нему значением."
 
 #: cinelerra//tipwindow.C:39
 msgid ""
@@ -7501,62 +7564,62 @@ msgstr ": Предупреждение"
 msgid "Don't show this warning again."
 msgstr "Не показывать больше это предупреждение."
 
-#: cinelerra//zoombar.C:73 cinelerra//zoombar.C:74
+#: cinelerra//zoombar.C:71
 msgid "Duration visible in the timeline"
 msgstr "Масштаб монтажного стола"
 
-#: cinelerra//zoombar.C:80 cinelerra//zoombar.C:81
+#: cinelerra//zoombar.C:75
 msgid "Audio waveform scale"
 msgstr "Масштаб отображения\n"
 "звук. волны на дорожке"
 
-#: cinelerra//zoombar.C:87 cinelerra//zoombar.C:88
+#: cinelerra//zoombar.C:79
 msgid "Height of tracks in the timeline"
-msgstr "Высота отображения дорожек"
+msgstr "Высота дорожек"
 
-#: cinelerra//zoombar.C:430
+#: cinelerra//zoombar.C:381
 msgid "Automation range maximum"
 msgstr "Макс. значение\n"
 "диапазона автоматизации"
 
-#: cinelerra//zoombar.C:432
+#: cinelerra//zoombar.C:383
 msgid "Automation range minimum"
 msgstr "Мин. значение\n"
 "диапазона автоматизации"
 
-#: cinelerra//zoombar.C:464
+#: cinelerra//zoombar.C:415
 msgid "Automation Type"
 msgstr "Тип автоматизации (fade)"
 
-#: cinelerra//zoombar.C:480
+#: cinelerra//zoombar.C:431
 msgid "Audio Fade:"
 msgstr "Громкость"
 
-#: cinelerra//zoombar.C:481
+#: cinelerra//zoombar.C:432
 msgid "Video Fade:"
 msgstr "Непрозрачность"
 
-#: cinelerra//zoombar.C:482
+#: cinelerra//zoombar.C:433
 msgid "Zoom:"
 msgstr "Z (глубина):"
 
-#: cinelerra//zoombar.C:483 plugins/titler/titlewindow.C:310
+#: cinelerra//zoombar.C:434 plugins/titler/titlerwindow.C:332
 msgid "Speed:"
 msgstr "Скорость:"
 
-#: cinelerra//zoombar.C:514
+#: cinelerra//zoombar.C:465
 msgid "Automation range"
 msgstr "Диапазон автоматизации"
 
-#: cinelerra//zoombar.C:574
+#: cinelerra//zoombar.C:525
 msgid "Selection start time"
 msgstr "Начало выделенного участка"
 
-#: cinelerra//zoombar.C:612
+#: cinelerra//zoombar.C:563
 msgid "Selection length"
 msgstr "Длина выделенного участка"
 
-#: cinelerra//zoombar.C:646
+#: cinelerra//zoombar.C:597
 msgid "Selection end time"
 msgstr "Конец выделенного участка"
 
@@ -7755,9 +7818,9 @@ msgstr "Зелёный"
 msgid "blue"
 msgstr "Синий"
 
-#: plugins/bluebanana/bluebananawindow.C:2086
+#: plugins/bluebanana/bluebananawindow.C:2086 plugins/titler/titler.h:27
 msgid "alpha"
-msgstr ""
+msgstr "альфа"
 
 #: plugins/bluebanana/bluebananawindow.C:2099
 msgid "pre-erode"
@@ -7769,7 +7832,7 @@ msgstr ""
 
 #: plugins/bluebanana/bluebananawindow.C:2345
 msgid "Color Adjustment"
-msgstr "Настройки цвета"
+msgstr "Настройка цвета"
 
 #: plugins/bluebanana/bluebananawindow.C:2346
 msgid " Filter Active"
@@ -7965,7 +8028,6 @@ msgid "Threshold:"
 msgstr "Порог:"
 
 #: plugins/chromakey/chromakey.C:186 plugins/chromakeyhsv/chromakey.C:294
-#: plugins/titler/titlewindow.C:711
 msgid "Color..."
 msgstr "Цвет..."
 
@@ -8674,11 +8736,11 @@ msgid "Draw object border"
 msgstr ""
 
 #: plugins/findobject/findobjectwindow.C:496
-#: plugins/findobject/findobjectwindow.C:510 plugins/motion/motionwindow.C:816
-#: plugins/motion2point/motionwindow.C:843
-#: plugins/motion2point/motionwindow.C:855
-#: plugins/motion-cv/motionwindow-cv.C:671
-#: plugins/motion-hv/motionwindow-hv.C:1020
+#: plugins/findobject/findobjectwindow.C:510 plugins/motion/motionwindow.C:818
+#: plugins/motion2point/motionwindow.C:844
+#: plugins/motion2point/motionwindow.C:856
+#: plugins/motion-cv/motionwindow-cv.C:672
+#: plugins/motion-hv/motionwindow-hv.C:1021
 msgid "Don't Calculate"
 msgstr "Не рассчитывать"
 
@@ -9180,8 +9242,8 @@ msgstr ""
 msgid "Frame number:"
 msgstr "№ кадра:"
 
-#: plugins/motion/motionwindow.C:179 plugins/motion51/motionwindow51.C:105
-#: plugins/motion-cv/motionwindow-cv.C:157
+#: plugins/motion/motionwindow.C:182 plugins/motion51/motionwindow51.C:105
+#: plugins/motion-cv/motionwindow-cv.C:160
 msgid ""
 "For best results\n"
 " Set: Play every frame\n"
@@ -9190,162 +9252,161 @@ msgstr "Для достижения наилучших результатов\n"
 "включите опцию 'Воспр-ть каждый кадр'\n"
 "в Параметры->Воспр-ние->Настр. видео (выход)"
 
-#: plugins/motion/motionwindow.C:182 plugins/motion51/motionwindow51.C:108
-#: plugins/motion-cv/motionwindow-cv.C:160
+#: plugins/motion/motionwindow.C:185 plugins/motion51/motionwindow51.C:108
+#: plugins/motion-cv/motionwindow-cv.C:163
 msgid "Currently using: Play every frame"
 msgstr "Опция 'Воспроизводить каждый кадр'\n"
 "включена"
 
-#: plugins/motion/motionwindow.C:185 plugins/motion2point/motionwindow.C:218
+#: plugins/motion/motionwindow.C:188 plugins/motion2point/motionwindow.C:220
 #: plugins/motion-cv/motionwindow-cv.C:145
-#: plugins/motion-hv/motionwindow-hv.C:227
+#: plugins/motion-hv/motionwindow-hv.C:229
 msgid "Master layer:"
 msgstr "Мастер - трек:"
 
-#: plugins/motion/motionwindow.C:191 plugins/motion2point/motionwindow.C:227
-#: plugins/motion-cv/motionwindow-cv.C:164
-#: plugins/motion-hv/motionwindow-hv.C:236
+#: plugins/motion/motionwindow.C:194 plugins/motion2point/motionwindow.C:229
+#: plugins/motion-cv/motionwindow-cv.C:167
+#: plugins/motion-hv/motionwindow-hv.C:238
 msgid "Action:"
 msgstr "Действие:"
 
-#: plugins/motion/motionwindow.C:197 plugins/motion2point/motionwindow.C:238
-#: plugins/motion-cv/motionwindow-cv.C:170
-#: plugins/motion-hv/motionwindow-hv.C:247
+#: plugins/motion/motionwindow.C:200 plugins/motion2point/motionwindow.C:240
+#: plugins/motion-cv/motionwindow-cv.C:173
+#: plugins/motion-hv/motionwindow-hv.C:249
 msgid "Calculation:"
 msgstr "Расчёт:"
 
-#: plugins/motion/motionwindow.C:405 plugins/motion-cv/motionwindow-cv.C:321
+#: plugins/motion/motionwindow.C:408 plugins/motion-cv/motionwindow-cv.C:324
 msgid "Add (loaded) offset from tracked frame"
 msgstr ""
 
-#: plugins/motion/motionwindow.C:452 plugins/motion-cv/motionwindow-cv.C:351
+#: plugins/motion/motionwindow.C:455 plugins/motion-cv/motionwindow-cv.C:354
 msgid "Track translation"
 msgstr "Перемещение"
 
-#: plugins/motion/motionwindow.C:467 plugins/motion-cv/motionwindow-cv.C:366
-#: plugins/motion-hv/motionwindow-hv.C:589
+#: plugins/motion/motionwindow.C:470 plugins/motion-cv/motionwindow-cv.C:369
+#: plugins/motion-hv/motionwindow-hv.C:591
 msgid "Track rotation"
 msgstr "Вращение"
 
-#: plugins/motion/motionwindow.C:563 plugins/motion2point/motionwindow.C:558
+#: plugins/motion/motionwindow.C:566 plugins/motion2point/motionwindow.C:560
 #: plugins/motion51/motionwindow51.C:222
-#: plugins/motion-cv/motionwindow-cv.C:447
-#: plugins/motion-hv/motionwindow-hv.C:724
+#: plugins/motion-cv/motionwindow-cv.C:450
+#: plugins/motion-hv/motionwindow-hv.C:726
 msgid "Draw vectors"
 msgstr "Показывать векторы движения"
 
-#: plugins/motion/motionwindow.C:584 plugins/motion2point/motionwindow.C:586
-#: plugins/motion-cv/motionwindow-cv.C:465
-#: plugins/motion-hv/motionwindow-hv.C:751
+#: plugins/motion/motionwindow.C:587 plugins/motion2point/motionwindow.C:588
+#: plugins/motion-cv/motionwindow-cv.C:468
+#: plugins/motion-hv/motionwindow-hv.C:753
 msgid "Track single frame"
 msgstr "Отслеживать одиночн. кадр"
 
-#: plugins/motion/motionwindow.C:626 plugins/motion2point/motionwindow.C:640
-#: plugins/motion-cv/motionwindow-cv.C:503
-#: plugins/motion-hv/motionwindow-hv.C:805
+#: plugins/motion/motionwindow.C:628 plugins/motion2point/motionwindow.C:641
+#: plugins/motion-cv/motionwindow-cv.C:504
+#: plugins/motion-hv/motionwindow-hv.C:806
 msgid "Track previous frame"
 msgstr "Отслеживать предыдущ. кадр"
 
-#: plugins/motion/motionwindow.C:649 plugins/motion2point/motionwindow.C:669
-#: plugins/motion-cv/motionwindow-cv.C:524
-#: plugins/motion-hv/motionwindow-hv.C:834
+#: plugins/motion/motionwindow.C:651 plugins/motion2point/motionwindow.C:670
+#: plugins/motion-cv/motionwindow-cv.C:525
+#: plugins/motion-hv/motionwindow-hv.C:835
 msgid "Previous frame same block"
 msgstr "Отслеживать предыдущ. кадр (позиция блока не изменяется)"
 
-#: plugins/motion/motionwindow.C:690 plugins/motion/motionwindow.C:696
-#: plugins/motion2point/motionwindow.C:716
-#: plugins/motion2point/motionwindow.C:722
-#: plugins/motion-cv/motionwindow-cv.C:564
-#: plugins/motion-cv/motionwindow-cv.C:570
-#: plugins/motion-hv/motionwindow-hv.C:881
-#: plugins/motion-hv/motionwindow-hv.C:887 plugins/overlay/overlay.C:170
+#: plugins/motion/motionwindow.C:692 plugins/motion/motionwindow.C:698
+#: plugins/motion2point/motionwindow.C:717
+#: plugins/motion2point/motionwindow.C:723
+#: plugins/motion-cv/motionwindow-cv.C:565
+#: plugins/motion-cv/motionwindow-cv.C:571
+#: plugins/motion-hv/motionwindow-hv.C:882
+#: plugins/motion-hv/motionwindow-hv.C:888 plugins/overlay/overlay.C:170
 #: plugins/overlayaudio/overlayaudio.C:163 plugins/reroute/reroute.C:164
-#: plugins/titler/titlewindow.C:1039
+#: plugins/titler/titlerwindow.C:1227
 msgid "Top"
 msgstr "Верх"
 
-#: plugins/motion/motionwindow.C:696 plugins/motion2point/motionwindow.C:722
-#: plugins/motion-cv/motionwindow-cv.C:570
-#: plugins/motion-hv/motionwindow-hv.C:887 plugins/overlay/overlay.C:171
+#: plugins/motion/motionwindow.C:698 plugins/motion2point/motionwindow.C:723
+#: plugins/motion-cv/motionwindow-cv.C:571
+#: plugins/motion-hv/motionwindow-hv.C:888 plugins/overlay/overlay.C:171
 #: plugins/overlayaudio/overlayaudio.C:164 plugins/reroute/reroute.C:165
-#: plugins/titler/titlewindow.C:1067
+#: plugins/titler/titlerwindow.C:1255
 msgid "Bottom"
 msgstr "Низ"
 
-#: plugins/motion/motionwindow.C:736 plugins/motion/motionwindow.C:749
-#: plugins/motion-cv/motionwindow-cv.C:606
-#: plugins/motion-cv/motionwindow-cv.C:617
-#: plugins/motion-hv/motionwindow-hv.C:933
-#: plugins/motion-hv/motionwindow-hv.C:946
-msgid "Track Subpixel"
-msgstr "Субпиксельное отслеживание"
-
-#: plugins/motion/motionwindow.C:737 plugins/motion/motionwindow.C:751
-#: plugins/motion2point/motionwindow.C:769
-#: plugins/motion2point/motionwindow.C:784
+#: plugins/motion/motionwindow.C:738 plugins/motion/motionwindow.C:751
 #: plugins/motion-cv/motionwindow-cv.C:607
 #: plugins/motion-cv/motionwindow-cv.C:618
 #: plugins/motion-hv/motionwindow-hv.C:934
-#: plugins/motion-hv/motionwindow-hv.C:948
-msgid "Track Pixel"
-msgstr "Пиксельное отслеживание"
+#: plugins/motion-hv/motionwindow-hv.C:947
+msgid "Track Subpixel"
+msgstr "Субпиксельное отслеживание"
 
-#: plugins/motion/motionwindow.C:738 plugins/motion/motionwindow.C:753
+#: plugins/motion/motionwindow.C:739 plugins/motion/motionwindow.C:753
+#: plugins/motion2point/motionwindow.C:770
+#: plugins/motion2point/motionwindow.C:785
 #: plugins/motion-cv/motionwindow-cv.C:608
 #: plugins/motion-cv/motionwindow-cv.C:619
 #: plugins/motion-hv/motionwindow-hv.C:935
-#: plugins/motion-hv/motionwindow-hv.C:950
-msgid "Stabilize Subpixel"
-msgstr "Субпиксельное стабилиз-ние"
+#: plugins/motion-hv/motionwindow-hv.C:949
+msgid "Track Pixel"
+msgstr "Пиксельное отслеживание"
 
-#: plugins/motion/motionwindow.C:739 plugins/motion/motionwindow.C:755
-#: plugins/motion2point/motionwindow.C:771
-#: plugins/motion2point/motionwindow.C:790
+#: plugins/motion/motionwindow.C:740 plugins/motion/motionwindow.C:755
 #: plugins/motion-cv/motionwindow-cv.C:609
 #: plugins/motion-cv/motionwindow-cv.C:620
 #: plugins/motion-hv/motionwindow-hv.C:936
-#: plugins/motion-hv/motionwindow-hv.C:952
+#: plugins/motion-hv/motionwindow-hv.C:951
+msgid "Stabilize Subpixel"
+msgstr "Субпиксельное стабилиз-ние"
+
+#: plugins/motion/motionwindow.C:741 plugins/motion/motionwindow.C:757
+#: plugins/motion2point/motionwindow.C:772
+#: plugins/motion2point/motionwindow.C:791
+#: plugins/motion-cv/motionwindow-cv.C:610
+#: plugins/motion-cv/motionwindow-cv.C:621
+#: plugins/motion-hv/motionwindow-hv.C:937
+#: plugins/motion-hv/motionwindow-hv.C:953
 msgid "Stabilize Pixel"
 msgstr "Пиксельное стабилиз-ние"
 
-#: plugins/motion/motionwindow.C:801 plugins/motion/motionwindow.C:812
-#: plugins/motion-cv/motionwindow-cv.C:662
-#: plugins/motion-cv/motionwindow-cv.C:673
+#: plugins/motion/motionwindow.C:803 plugins/motion/motionwindow.C:814
+#: plugins/motion-cv/motionwindow-cv.C:663
+#: plugins/motion-cv/motionwindow-cv.C:674
 msgid "Save coords to tracking file"
 msgstr "Сохранить коорд-ты в файл коорд-т"
 
-#: plugins/motion/motionwindow.C:802 plugins/motion/motionwindow.C:813
-#: plugins/motion-cv/motionwindow-cv.C:663
-#: plugins/motion-cv/motionwindow-cv.C:674
+#: plugins/motion/motionwindow.C:804 plugins/motion/motionwindow.C:815
+#: plugins/motion-cv/motionwindow-cv.C:664
+#: plugins/motion-cv/motionwindow-cv.C:675
 msgid "Load coords from tracking file"
 msgstr "Загрузить коорд-ты из файла коорд-т"
 
-#: plugins/motion/motionwindow.C:803 plugins/motion/motionwindow.C:814
-#: plugins/motion2point/motionwindow.C:844
-#: plugins/motion2point/motionwindow.C:858
-#: plugins/motion-cv/motionwindow-cv.C:661
-#: plugins/motion-cv/motionwindow-cv.C:672
-#: plugins/motion-hv/motionwindow-hv.C:1003
-#: plugins/motion-hv/motionwindow-hv.C:1017
+#: plugins/motion/motionwindow.C:805 plugins/motion/motionwindow.C:816
+#: plugins/motion2point/motionwindow.C:845
+#: plugins/motion2point/motionwindow.C:859
+#: plugins/motion-cv/motionwindow-cv.C:662
+#: plugins/motion-cv/motionwindow-cv.C:673
+#: plugins/motion-hv/motionwindow-hv.C:1004
+#: plugins/motion-hv/motionwindow-hv.C:1018
 msgid "Recalculate"
 msgstr "Пересчитывать"
 
-#: plugins/motion/motionwindow.C:865 plugins/motion2point/motionwindow.C:925
-#: plugins/motion-cv/motionwindow-cv.C:723
-#: plugins/motion-hv/motionwindow-hv.C:1077
-#: plugins/sharpen/sharpenwindow.C:114
+#: plugins/motion/motionwindow.C:867 plugins/motion2point/motionwindow.C:926
+#: plugins/motion-cv/motionwindow-cv.C:724
+#: plugins/motion-hv/motionwindow-hv.C:1078 plugins/sharpen/sharpenwindow.C:114
 msgid "Horizontal only"
 msgstr "Только по горизонтали"
 
-#: plugins/motion/motionwindow.C:866 plugins/motion2point/motionwindow.C:926
-#: plugins/motion-cv/motionwindow-cv.C:724
-#: plugins/motion-hv/motionwindow-hv.C:1078
+#: plugins/motion/motionwindow.C:868 plugins/motion2point/motionwindow.C:927
+#: plugins/motion-cv/motionwindow-cv.C:725
+#: plugins/motion-hv/motionwindow-hv.C:1079
 msgid "Vertical only"
 msgstr "Только по вертикали"
 
-#: plugins/motion/motionwindow.C:867 plugins/motion2point/motionwindow.C:927
-#: plugins/motion-cv/motionwindow-cv.C:725
-#: plugins/motion-hv/motionwindow-hv.C:1079
+#: plugins/motion/motionwindow.C:869 plugins/motion2point/motionwindow.C:928
+#: plugins/motion-cv/motionwindow-cv.C:726
+#: plugins/motion-hv/motionwindow-hv.C:1080
 msgid "Both"
 msgstr "Оба направления"
 
@@ -9381,33 +9442,33 @@ msgstr "Направление поиска:"
 msgid "Settling speed:"
 msgstr ""
 
-#: plugins/motion2point/motionwindow.C:768
-#: plugins/motion2point/motionwindow.C:781
+#: plugins/motion2point/motionwindow.C:769
+#: plugins/motion2point/motionwindow.C:782
 msgid "Track"
 msgstr "Отслеживание"
 
-#: plugins/motion2point/motionwindow.C:770
-#: plugins/motion2point/motionwindow.C:787
+#: plugins/motion2point/motionwindow.C:771
+#: plugins/motion2point/motionwindow.C:788
 msgid "Stabilize"
 msgstr "Стабилизирование"
 
-#: plugins/motion2point/motionwindow.C:845
-#: plugins/motion2point/motionwindow.C:861
-#: plugins/motion-hv/motionwindow-hv.C:1001
-#: plugins/motion-hv/motionwindow-hv.C:1013
+#: plugins/motion2point/motionwindow.C:846
+#: plugins/motion2point/motionwindow.C:862
+#: plugins/motion-hv/motionwindow-hv.C:1002
+#: plugins/motion-hv/motionwindow-hv.C:1014
 msgid "Save coords to /tmp"
 msgstr "Сохранить координаты в /tmp"
 
-#: plugins/motion2point/motionwindow.C:846
-#: plugins/motion2point/motionwindow.C:864
-#: plugins/motion-hv/motionwindow-hv.C:1002
-#: plugins/motion-hv/motionwindow-hv.C:1015
+#: plugins/motion2point/motionwindow.C:847
+#: plugins/motion2point/motionwindow.C:865
+#: plugins/motion-hv/motionwindow-hv.C:1003
+#: plugins/motion-hv/motionwindow-hv.C:1016
 msgid "Load coords from /tmp"
 msgstr "Загрузить координаты из /tmp"
 
 #: plugins/motion51/motion51.C:123
 msgid "Motion51"
-msgstr ""
+msgstr "Движение (51)"
 
 #: plugins/motion51/motionwindow51.C:52
 msgid "Sample Radius%"
@@ -9463,7 +9524,7 @@ msgstr ""
 
 #: plugins/motionblur/motionblur.C:315
 msgid "Motion Blur"
-msgstr "Размытие - Камера X/Y"
+msgstr "Размытие (Камера X/Y)"
 
 #: plugins/motion-cv/motion-cv.C:209
 msgid "MotionCV"
@@ -9581,8 +9642,9 @@ msgid "Current X:"
 msgstr "Текущая X:"
 
 #: plugins/perspective/perspective.C:155 plugins/radialblur/radialblur.C:280
-#: plugins/titler/titlewindow.C:275 plugins/yuv/yuv.C:178
-#: plugins/yuv/yuvwindow.C:43 plugins/zoomblur/zoomblur.C:292
+#: plugins/titler/titlerwindow.C:279 plugins/titler/titlerwindow.C:287
+#: plugins/yuv/yuv.C:178 plugins/yuv/yuvwindow.C:43
+#: plugins/zoomblur/zoomblur.C:292
 msgid "Y:"
 msgstr "Y:"
 
@@ -9741,19 +9803,19 @@ msgstr ""
 msgid "Angle"
 msgstr "Угол"
 
-#: plugins/polar/polarwindow.C:106 plugins/whirl/whirlwindow.C:110
-#: plugins/yuv/yuvwindow.C:109
+#: plugins/polar/polarwindow.C:109 plugins/whirl/whirlwindow.C:113
+#: plugins/yuv/yuvwindow.C:113
 msgid "Automate"
 msgstr ""
 
-#: plugins/radialblur/radialblur.C:276 plugins/titler/titlewindow.C:270
-#: plugins/zoomblur/zoomblur.C:288
+#: plugins/radialblur/radialblur.C:276 plugins/titler/titlerwindow.C:278
+#: plugins/titler/titlerwindow.C:282 plugins/zoomblur/zoomblur.C:288
 msgid "X:"
 msgstr "X:"
 
 #: plugins/radialblur/radialblur.C:383
 msgid "Radial Blur"
-msgstr "Радиальное размытие"
+msgstr "Размытие радиальное"
 
 #: plugins/reframe/reframe.C:54
 msgid "Reframe"
@@ -9942,7 +10004,7 @@ msgstr "B_dy:"
 
 #: plugins/rgbshift/rgbshift.C:211
 msgid "RGBShift"
-msgstr ""
+msgstr "Сдвиг каналов RGB"
 
 #: plugins/rotate/rotate.C:310
 msgid "Draw pivot"
@@ -10049,7 +10111,7 @@ msgstr "Фигурное вытеснение"
 #: plugins/shapewipe/shapewipe.C:798
 #, c-format
 msgid "Shape Wipe: cannot load shape %s\n"
-msgstr ""
+msgstr "Фигурное вытеснение: невозможно загрузить фигуру %s\n"
 
 #: plugins/sharpen/sharpen.C:115
 msgid "Sharpen"
@@ -10079,12 +10141,12 @@ msgstr "Чётные поля:"
 msgid "ShiftInterlace"
 msgstr "Сдвиг полей"
 
-#: plugins/slide/slide.C:50 plugins/titler/titlewindow.C:995
+#: plugins/slide/slide.C:50 plugins/titler/titlerwindow.C:1183
 #: plugins/wipe/wipe.C:49
 msgid "Left"
 msgstr "Влево"
 
-#: plugins/slide/slide.C:72 plugins/titler/titlewindow.C:1023
+#: plugins/slide/slide.C:72 plugins/titler/titlerwindow.C:1211
 #: plugins/wipe/wipe.C:71
 msgid "Right"
 msgstr "Вправо"
@@ -10125,15 +10187,10 @@ msgstr "Запуск команды %s\n"
 msgid "Export of %s to %s failed\n"
 msgstr "Экспорт %s в %s не удался\n"
 
-#: plugins/svg/svg.C:209
+#: plugins/svg/svg.C:202
 #, c-format
 msgid "The file %s that was generated from %s is not in PNG format. Try to delete all *.png files.\n"
 msgstr "Файл %s, созданный из %s, не PNG формата. Попробуйте удалить все *.png файлы.\n"
-
-#: plugins/svg/svg.C:214
-#, c-format
-msgid "Access mmap to %s as %s failed.\n"
-msgstr "Access mmap to %s as %s failed.\n"
 
 #: plugins/svg/svgwin.C:58 plugins/translate/translatewin.C:86
 msgid "Out X:"
@@ -10298,7 +10355,7 @@ msgstr "Макс:"
 
 #: plugins/timeavg/timeavg.C:118
 msgid "Time Average"
-msgstr "Шлейф времени"
+msgstr "Шлейф времени (TA)"
 
 #: plugins/timeavg/timeavgwindow.C:47
 msgid "Frame count:"
@@ -10427,104 +10484,204 @@ msgstr ""
 msgid "Time Stretch RT"
 msgstr "Резиновое время (RT)"
 
-#: plugins/titler/title.C:293
+#: plugins/titler/titler.C:300
 #, c-format
-msgid "GlyphUnit::process_package FT_New_Face failed.\n"
-msgstr "GlyphUnit::process_package FT_New_Face failed.\n"
+msgid "GlyphUnit::process_package FT_New_Face failed, path=%s\n"
+msgstr "GlyphUnit::process_package FT_New_Face failed, path=%s\n"
 
-#: plugins/titler/title.C:317
+#: plugins/titler/titler.C:327
 #, c-format
 msgid "GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"
 msgstr "GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"
 
-#: plugins/titler/title.C:1376
+#: plugins/titler/titler.C:1346
 #, c-format
 msgid "TitleMain::load_freetype_face %s failed.\n"
 msgstr "TitleMain::load_freetype_face %s failed.\n"
 
-#: plugins/titler/title.C:1929
+#: plugins/titler/titler.C:2345
 msgid "No motion"
 msgstr "Без движения"
 
-#: plugins/titler/title.C:1930
+#: plugins/titler/titler.C:2346
 msgid "Bottom to top"
 msgstr "Снизу вверх"
 
-#: plugins/titler/title.C:1931
+#: plugins/titler/titler.C:2347
 msgid "Top to bottom"
 msgstr "Сверху вниз"
 
-#: plugins/titler/title.C:1932
+#: plugins/titler/titler.C:2348
 msgid "Right to left"
 msgstr "Справа налево"
 
-#: plugins/titler/title.C:1933
+#: plugins/titler/titler.C:2349
 msgid "Left to right"
 msgstr "Слева направо"
 
-#: plugins/titler/titlewindow.C:222
+#: plugins/titler/titler.h:25
+msgid "nudge"
+msgstr "сдвиг"
+
+#: plugins/titler/titler.h:26
+msgid "color"
+msgstr "цвет"
+
+#: plugins/titler/titler.h:28
+msgid "font"
+msgstr "шрифт"
+
+#: plugins/titler/titler.h:29
+msgid "size"
+msgstr "размер"
+
+#: plugins/titler/titler.h:30
+msgid "bold"
+msgstr "жирный"
+
+#: plugins/titler/titler.h:31
+msgid "italic"
+msgstr "наклонный"
+
+#: plugins/titler/titler.h:32
+msgid "caps"
+msgstr "регистр"
+
+#: plugins/titler/titler.h:33
+msgid "ul"
+msgstr "подчёркнутый"
+
+#: plugins/titler/titler.h:34
+msgid "blink"
+msgstr "мигание"
+
+#: plugins/titler/titler.h:35
+msgid "fixed"
+msgstr "интервал"
+
+#: plugins/titler/titler.h:36
+msgid "sup"
+msgstr "индекс"
+
+#: plugins/titler/titler.h:37
+msgid "png"
+msgstr "png"
+
+#: plugins/titler/titlerwindow.C:227
 msgid "Font:"
 msgstr "Шрифт:"
 
-#: plugins/titler/titlewindow.C:238
+#: plugins/titler/titlerwindow.C:244
 msgid "Pitch:"
 msgstr "Шаг:"
 
-#: plugins/titler/titlewindow.C:244
+#: plugins/titler/titlerwindow.C:251
 msgid "Style:"
 msgstr "Стиль:"
 
-#: plugins/titler/titlewindow.C:254
+#: plugins/titler/titlerwindow.C:262
 msgid "Justify:"
 msgstr "Выравнивание:"
 
-#: plugins/titler/titlewindow.C:280
-msgid "Motion type:"
-msgstr "Тип движения:"
+#: plugins/titler/titlerwindow.C:306
+msgid "Motion:"
+msgstr "Движение"
 
-#: plugins/titler/titlewindow.C:291
+#: plugins/titler/titlerwindow.C:313
 msgid "Drop shadow:"
 msgstr "Тень:"
 
-#: plugins/titler/titlewindow.C:298
+#: plugins/titler/titlerwindow.C:320
 msgid "Fade in (sec):"
 msgstr "Проявление (сек):"
 
-#: plugins/titler/titlewindow.C:304
+#: plugins/titler/titlerwindow.C:326
 msgid "Fade out (sec):"
 msgstr "Исчезание (сек):"
 
-#: plugins/titler/titlewindow.C:337
+#: plugins/titler/titlerwindow.C:353
 msgid "Outline:"
 msgstr "Обводка:"
 
-#: plugins/titler/titlewindow.C:343
-msgid "Encoding:"
-msgstr "Кодировка"
+#: plugins/titler/titlerwindow.C:360
+msgid "Stroker:"
+msgstr ""
 
-#: plugins/titler/titlewindow.C:623
+#: plugins/titler/titlerwindow.C:380
+msgid "background media"
+msgstr "Загрузка файла для фона"
+
+#: plugins/titler/titlerwindow.C:380
+msgid "Select background media path"
+msgstr "Выберите файл для фона:"
+
+#: plugins/titler/titlerwindow.C:789
 msgid "Bold"
 msgstr "Жирный"
 
-#: plugins/titler/titlewindow.C:639
+#: plugins/titler/titlerwindow.C:805
 msgid "Italic"
 msgstr "Наклонный"
 
-#: plugins/titler/titlewindow.C:711
+#: plugins/titler/titlerwindow.C:866
+msgid "Text Color..."
+msgstr "Цвет текста..."
+
+#: plugins/titler/titlerwindow.C:878
 msgid "Outline color..."
 msgstr "Цвет обводки..."
 
-#: plugins/titler/titlewindow.C:759
+#: plugins/titler/titlerwindow.C:918
 msgid "Stamp timecode"
 msgstr "Вывод таймкода"
 
-#: plugins/titler/titlewindow.C:1009
+#: plugins/titler/titlerwindow.C:1197
 msgid "Center"
 msgstr "Центр"
 
-#: plugins/titler/titlewindow.C:1053
+#: plugins/titler/titlerwindow.C:1241
 msgid "Mid"
 msgstr "Середина"
+
+#: plugins/titler/titlerwindow.C:1271
+msgid "Outline Color"
+msgstr "Цвет обводки"
+
+#: plugins/titler/titlerwindow.C:1271
+msgid "Text Color"
+msgstr "Цвет текста"
+
+#: plugins/titler/titlerwindow.C:1299
+msgid "Drag"
+msgstr "Перетаскивание"
+
+#: plugins/titler/titlerwindow.C:1318
+msgid "Background:"
+msgstr "Фон"
+
+#: plugins/titler/titlerwindow.C:1346
+msgid "Loop playback"
+msgstr "Зациклить воспроизведение"
+
+#: plugins/titler/titlerwindow.C:1400
+msgid "name"
+msgstr "имя"
+
+#: plugins/titler/titlerwindow.C:1452
+msgid "file"
+msgstr "файл"
+
+#: plugins/titler/titlerwindow.C:1545
+msgid "Color"
+msgstr "Цвет"
+
+#: plugins/titler/titlerwindow.C:1599
+msgid "Png file"
+msgstr "Загрузка файла .png"
+
+#: plugins/titler/titlerwindow.C:1599
+msgid "Png path"
+msgstr "Выберите файл .png для загрузки:"
 
 #: plugins/translate/translate.C:115
 msgid "Translate"
@@ -10656,7 +10813,7 @@ msgstr "V_dy:"
 
 #: plugins/yuvshift/yuvshift.C:211
 msgid "YUVShift"
-msgstr ""
+msgstr "Сдвиг каналов YUV"
 
 #: plugins/zoom/zoom.C:100
 msgid "X Magnification:"

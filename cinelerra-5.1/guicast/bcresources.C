@@ -1440,7 +1440,7 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style,
 			{
 				if(!style_match)
 					style_match = entry;
-				if(!preferred_match && (entry->style & preferred))
+				if(!preferred_match && entry->fixed_style == preferred)
 					preferred_match = entry;
 			}
 		}

@@ -20,6 +20,7 @@
  */
 
 #include "clip.h"
+#include "language.h"
 #include "renderprofiles.h"
 #include "mwindow.h"
 #include "theme.h"
@@ -29,11 +30,6 @@
 #include "asset.h"
 #include "errorbox.h"
 #include "mwindowgui.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 #define LISTWIDTH 200
 

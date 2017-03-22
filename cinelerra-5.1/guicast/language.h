@@ -22,22 +22,45 @@
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
 
-
-
 #include <libintl.h>
+#include <string.h>
 
+#define _(msgid) gettext(msgid)
+#define gettext_noop(msgid) msgid
+#define N_(msgid) gettext_noop(msgid)
 
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+// for contextual use:
+//  #undef MSGQUAL
+//  #define MSGQUAL "qual_id"
+// C_: msgid decorated as: MSGQUAL#msg_id implicitly
+// D_: msgid decorated as: qual_id#msg_id explicitly
+// see po/xlat.sh for details
 
+#define MSGQUAL 0
+// qualifier from MSGQUAL
+#define C_(msgid) ((MSGQUAL)? msgqual(MSGQUAL,msgid) : gettext(msgid))
+// qualifier from msgid
+#define D_(msgid) msgtext(msgid)
 
+static inline char *msgtext(const char *msgid)
+{
+  char *msgstr = gettext(msgid);
+  if( msgstr == msgid ) {
+    for( char *cp=msgstr; *cp!=0; ) if( *cp++ == '#' ) return cp;
+    msgstr = (char*) msgid;
+  }
+  return msgstr;
+}
+
+static inline char *msgqual(const char *msgqual,const char *msgid)
+{
+  char msg[strlen(msgid) + strlen(msgqual) + 2], *cp = msg;
+  for( const char *bp=msgqual; *bp!=0; *cp++=*bp++ );
+  *cp++ = '#';
+  for( const char *bp=msgid; *bp!=0; *cp++=*bp++ );
+  *cp = 0;
+  if( (cp=gettext(msg)) == msg ) cp = (char*)msgid;
+  return cp;
+}
 
 #endif
-
-
-
-
-
-
-

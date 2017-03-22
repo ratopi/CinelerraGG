@@ -40,13 +40,6 @@
 #include "tracks.h"
 #include "transition.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-
-
 #include <ctype.h>
 #include <string.h>
 

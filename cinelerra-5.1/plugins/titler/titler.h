@@ -22,6 +22,20 @@
 #ifndef TITLE_H
 #define TITLE_H
 
+#define KW_NUDGE  _("nudge")
+#define KW_COLOR  _("color")
+#define KW_ALPHA  _("alpha")
+#define KW_FONT   _("font")
+#define KW_SIZE   _("size")
+#define KW_BOLD   _("bold")
+#define KW_ITALIC _("italic")
+#define KW_CAPS   _("caps")
+#define KW_UL     _("ul")
+#define KW_BLINK  _("blink")
+#define KW_FIXED  _("fixed")
+#define KW_SUP    _("sup")
+#define KW_PNG    _("png")
+
 class TitleConfig;
 class TitleGlyph;
 class TitleGlyphs;
@@ -72,6 +86,8 @@ class TitleMain;
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <sys/types.h>
+#include <wchar.h>
+#include <wctype.h>
 
 // Motion strategy
 #define TOTAL_PATHS 5
@@ -532,6 +548,8 @@ public:
 	int wcur() { return eof() ? -1 : *out; }
 	int wnext() { return eof() ? -1 : *out++; }
 	int wget(wchar_t &wch);
+	int tget(wchar_t &wch);
+	wchar_t wid[BCSTRLEN], wtxt[BCTEXTLEN];
 	char id[BCSTRLEN], text[BCTEXTLEN];
 	int set_attributes(int ret);
 
@@ -566,7 +584,7 @@ public:
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void insert_text(const char *txt, int pos);
+	void insert_text(const wchar_t *wtxt, int pos);
 
 	void build_previews(TitleWindow *gui);
 	void reset_render();

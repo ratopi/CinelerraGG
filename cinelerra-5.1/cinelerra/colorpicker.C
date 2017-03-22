@@ -34,6 +34,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#undef MSGQUAL
+#define MSGQUAL "colorpicker"
+
 #define PALETTE_DATA "palette.dat"
 
 ColorThread::ColorThread(int do_alpha, const char *title)
@@ -171,17 +174,17 @@ void ColorWindow::create_objects()
 	add_tool(history = new PaletteHistory(this, 10, y));
 
 	x += 240;
-	add_tool(new BC_Title(x, y =y0, _("H:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, _("S:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, _("V:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=40, _("R:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, _("G:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, _("B:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=40, _("Y:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, _("U:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, _("V:"), SMALLFONT));
+	add_tool(new BC_Title(x, y =y0, C_("H:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=25, C_("S:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=25, D_("colorpicker_value#V:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=40, C_("R:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=25, C_("G:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=25, C_("B:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=40, C_("Y:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=25, C_("U:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=25, D_("colorpicker_Cr#V:"), SMALLFONT));
 	if( thread->do_alpha )
-		add_tool(new BC_Title(x, y+=40, _("A:"), SMALLFONT));
+		add_tool(new BC_Title(x, y+=40, C_("A:"), SMALLFONT));
 	x += 24;
 	add_tool(hue = new PaletteHue(this, x, y= y0));
 	add_tool(sat = new PaletteSat(this, x, y+=25));

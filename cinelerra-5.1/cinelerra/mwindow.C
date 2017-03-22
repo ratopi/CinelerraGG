@@ -466,6 +466,7 @@ void MWindow::check_language()
 {
 	char curr_lang[BCTEXTLEN]; curr_lang[0] = 0;
 	const char *env_lang = getenv("LANGUAGE");
+	if( !env_lang ) env_lang = getenv("LC_ALL");
 	if( !env_lang ) env_lang = getenv("LANG");
 	if( !env_lang ) {
 		snprintf(curr_lang, sizeof(curr_lang), "%s-%s.%s",

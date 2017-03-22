@@ -33,9 +33,7 @@ class TitleInterlace;
 #include "mutex.h"
 #include "titler.h"
 
-
-
-
+#include <stdarg.h>
 
 class TitleFontTumble;
 class TitleSizeTumble;
@@ -94,8 +92,8 @@ public:
 	void update();
 	void previous_font();
 	void next_font();
-	void check_style(const char *font_name);
-	int insert_ibeam(const char *txt, int adv);
+	void check_style(const char *font_name, int update);
+	int insert_ibeam(const char *txt, int ofs=0);
 	void done_event(int result);
 
 	TitleMain *client;
@@ -526,23 +524,32 @@ public:
         TitleCurPopup *popup;
 };
 
+enum { POPUP_OFFSET=-1, POPUP_NONE=0, POPUP_FONT, POPUP_COLOR, POPUP_PNG, };
+
 class TitleCurSubMenu : public BC_SubMenu
 {
 public:
         TitleCurSubMenu(TitleCurItem *cur_item);
         ~TitleCurSubMenu();
-
+	void add_subitem(int popup_type, const char *fmt, va_list ap);
+	void add_subitem(int popup_type, const char *fmt,...) { va_list ap;
+		va_start(ap, fmt); add_subitem(popup_type, fmt, ap); va_end(ap);
+	}
+	void add_subitem(const char *fmt,...) { va_list ap;
+		va_start(ap, fmt); add_subitem(POPUP_NONE, fmt, ap); va_end(ap);
+	}
         TitleCurItem *cur_item;
 };
 
 class TitleCurSubMenuItem : public BC_MenuItem
 {
 public:
-        TitleCurSubMenuItem(TitleCurSubMenu *submenu, const char *text);
+        TitleCurSubMenuItem(TitleCurSubMenu *submenu, const char *text, int popup_type);
         ~TitleCurSubMenuItem();
         int handle_event();
 
         TitleCurSubMenu *submenu;
+	int popup_type;
 };
 
 class TitleFontsPopup : public BC_ListBox

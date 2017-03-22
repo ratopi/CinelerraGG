@@ -61,7 +61,6 @@
 #include <endian.h>
 #include <byteswap.h>
 #include <iconv.h>
-#include <wctype.h>
 #include <sys/stat.h>
 #include <fontconfig/fontconfig.h>
 
@@ -103,7 +102,7 @@ TitleConfig::TitleConfig()
 	wtext[0] = 0;  wlen = 0;
 	title_x = title_y = 0.0;
 	title_w = title_h = 0;
-	window_w = 800;
+	window_w = 860;
 	window_h = 460;
 	next_keyframe_position = 0;
 	prev_keyframe_position = 0;
@@ -302,13 +301,16 @@ void GlyphUnit::process_package(LoadPackage *package)
 			glyph->font->path);
 		result = 1;
 	}
-
 	if( !result ) {
 		int gindex = FT_Get_Char_Index(freetype_face, glyph->char_code);
-
-//printf("GlyphUnit::process_package 1 %c\n", glyph->char_code);
-// Char not found
+		if( !gindex && !freetype_face->charmap && // if no default charmap
+		    freetype_face->charmaps && freetype_face->charmaps[0] &&
+		    !FT_Select_Charmap(freetype_face, freetype_face->charmaps[0]->encoding) ) {
+			gindex = FT_Get_Char_Index(freetype_face, glyph->char_code);
+		}
 		if( gindex == 0 ) {
+printf("GlyphUnit::process_package 1 glyph not found (%s) %04x, '%c'\n",
+ glyph->font->displayname, (unsigned)glyph->char_code, (unsigned)glyph->char_code);
 			BC_Resources *resources =  BC_WindowBase::get_resources();
 			// Search replacement font
 			if( resources->find_font_by_char(glyph->char_code, new_path, freetype_face) ) {
@@ -1476,14 +1478,14 @@ BC_FontEntry* TitleMain::get_font(const char *font_name, int style)
 {
 	if( !strcmp("fixed", font_name) )
 		font_name = FIXED_FONT;
-	int flavor =
+	int flavor = FL_WIDTH_MASK |
 	    ((style & BC_FONT_ITALIC) != 0 ? FL_SLANT_ITALIC | FL_SLANT_OBLIQUE : FL_SLANT_ROMAN) |
 	    ((style & BC_FONT_BOLD) != 0 ? FL_WEIGHT_BOLD | FL_WEIGHT_DEMIBOLD |
 			FL_WEIGHT_EXTRABOLD| FL_WEIGHT_BLACK | FL_WEIGHT_EXTRABLACK :
 			FL_WEIGHT_BOOK | FL_WEIGHT_NORMAL | FL_WEIGHT_MEDIUM |
 			FL_WEIGHT_LIGHT | FL_WEIGHT_EXTRALIGHT | FL_WEIGHT_THIN);
 
-	int mask = FL_WEIGHT_MASK | FL_SLANT_MASK;
+	int mask = FL_WEIGHT_MASK | FL_SLANT_MASK | FL_WIDTH_MASK;
 
 	BC_Resources *resources =  BC_WindowBase::get_resources();
 	BC_FontEntry *font = resources->find_fontentry(font_name, flavor, mask, style);
@@ -1499,16 +1501,18 @@ BC_FontEntry* TitleMain::config_font()
 }
 
 
-static inline bool is_ltr(wchar_t wch) { return (wch>='a' && wch<='z') || (wch>='A' && wch<='Z'); }
-static inline bool is_nbr(wchar_t wch) { return (wch>='0' && wch<='9'); }
+static inline bool is_ltr(wchar_t wch) { return iswalpha(wch); }
+static inline bool is_nbr(wchar_t wch) { return iswdigit(wch); }
 static inline bool is_ws(wchar_t wch) { return wch==' ' || wch=='\t'; }
 static inline bool is_idch(wchar_t wch) { return is_ltr(wch) || is_nbr(wch) || wch=='_'; }
 
 // return eof=-1, chr=0, opener=1, closer=2
 int TitleParser::wget(wchar_t &wch)
 {
-	char *ip = id, *tp = text;  *ip = 0;  *tp = 0;
-	int ilen = sizeof(id), tlen = sizeof(text), ich;
+	wchar_t *wip = wid, *wtp = wtxt;  *wip = 0;  *wtp = 0;
+	int ilen = sizeof(wid)/sizeof(wid[0]);
+	int tlen = sizeof(wtxt)/sizeof(wtxt[0]);
+	int ich;
 	while( (ich=wnext()) >= 0 ) {
 		if( ich == '\\' ) {
 			if( (ich=wnext()) == '\n' ) continue;
@@ -1524,21 +1528,36 @@ int TitleParser::wget(wchar_t &wch)
  	int ret = 1;  long pos = tell();
 	if( (ich=wnext()) == '/' ) { ret = 2; ich = wnext(); }
 	if( is_ltr(ich) ) {
-		*ip++ = ich;
+		*wip++ = ich;
 		while( is_idch(ich=wnext()) )
-			if( --ilen > 0 ) *ip++ = ich;
+			if( --ilen > 0 ) *wip++ = ich;
 	}
-	*ip = 0;
+	*wip = 0;
 	while( is_ws(ich) ) ich = wnext();
 	while( ich >= 0 && ich != '>' ) {
 		if( ich == '\n' || ich == '<' ) { ich = -1;  break; }
 		if( ich == '\\' && (ich=wnext()) < 0 ) break;
-		if( --tlen > 0 ) *tp++ = ich;
+		if( --tlen > 0 ) *wtp++ = ich;
 		ich = wnext();
 	}
-	*tp = 0;
+	*wtp = 0;
 	if( ich < 0 ) { ich = '<';  seek(pos);  ret = 0; }
 	wch = ich;
+	return ret;
+}
+int TitleParser::tget(wchar_t &wch)
+{
+	int ret = wget(wch);
+	if( ret > 0 ) {
+		int wid_len = wcslen(wid)+1;
+		BC_Resources::encode(
+			BC_Resources::wide_encoding, plugin->config.encoding,
+			(char*)wid,wid_len*sizeof(wid[0]), (char *)id,sizeof(id));
+		int wtxt_len = wcslen(wtxt)+1;
+		BC_Resources::encode(
+			BC_Resources::wide_encoding, plugin->config.encoding,
+			(char*)wtxt,wtxt_len*sizeof(wtxt[0]), (char *)text,sizeof(text));
+	}
 	return ret;
 }
 
@@ -1793,18 +1812,18 @@ int TitleCurNudge::set(const char *txt)
 
 int TitleParser::set_attributes(int ret)
 {
-        if( !strcmp(id,_("nudge")) )  return ret>1 ? cur_nudge.unset(text)  : cur_nudge.set(text);
-        if( !strcmp(id,_("color")) )  return ret>1 ? cur_color.unset(text)  : cur_color.set(text);
-        if( !strcmp(id,_("alpha")) )  return ret>1 ? cur_alpha.unset(text)  : cur_alpha.set(text);
-        if( !strcmp(id,_("font")) )   return ret>1 ? cur_font.unset(text)   : cur_font.set(text);
-        if( !strcmp(id,_("size")) )   return ret>1 ? cur_size.unset(text)   : cur_size.set(text);
-        if( !strcmp(id,_("bold")) )   return ret>1 ? cur_bold.unset(text)   : cur_bold.set(text);
-        if( !strcmp(id,_("italic")) ) return ret>1 ? cur_italic.unset(text) : cur_italic.set(text);
-        if( !strcmp(id,_("caps")) )   return ret>1 ? cur_caps.unset(text)   : cur_caps.set(text);
-        if( !strcmp(id,_("ul")) )     return ret>1 ? cur_under.unset(text)  : cur_under.set(text);
-        if( !strcmp(id,_("blink")) )  return ret>1 ? cur_blink.unset(text)  : cur_blink.set(text);
-        if( !strcmp(id,_("fixed")) )  return ret>1 ? cur_fixed.unset(text)  : cur_fixed.set(text);
-        if( !strcmp(id,_("sup")) )    return ret>1 ? cur_super.unset(text)  : cur_super.set(text);
+        if( !strcmp(id,KW_NUDGE) )  return ret>1 ? cur_nudge.unset(text)  : cur_nudge.set(text);
+        if( !strcmp(id,KW_COLOR) )  return ret>1 ? cur_color.unset(text)  : cur_color.set(text);
+        if( !strcmp(id,KW_ALPHA) )  return ret>1 ? cur_alpha.unset(text)  : cur_alpha.set(text);
+        if( !strcmp(id,KW_FONT) )   return ret>1 ? cur_font.unset(text)   : cur_font.set(text);
+        if( !strcmp(id,KW_SIZE) )   return ret>1 ? cur_size.unset(text)   : cur_size.set(text);
+        if( !strcmp(id,KW_BOLD) )   return ret>1 ? cur_bold.unset(text)   : cur_bold.set(text);
+        if( !strcmp(id,KW_ITALIC) ) return ret>1 ? cur_italic.unset(text) : cur_italic.set(text);
+        if( !strcmp(id,KW_CAPS) )   return ret>1 ? cur_caps.unset(text)   : cur_caps.set(text);
+        if( !strcmp(id,KW_UL) )     return ret>1 ? cur_under.unset(text)  : cur_under.set(text);
+        if( !strcmp(id,KW_BLINK) )  return ret>1 ? cur_blink.unset(text)  : cur_blink.set(text);
+        if( !strcmp(id,KW_FIXED) )  return ret>1 ? cur_fixed.unset(text)  : cur_fixed.set(text);
+        if( !strcmp(id,KW_SUP) )    return ret>1 ? cur_super.unset(text)  : cur_super.set(text);
 	return 1;
 }
 
@@ -1818,44 +1837,44 @@ void TitleMain::load_glyphs()
 	while( !wchrs.eof() ) {
 		wchar_t wch1 = wchrs.wcur(), wch;
 		long ipos = wchrs.tell();
-		int ret = wchrs.wget(wch);
+		int ret = wchrs.tget(wch);
 		if( ret > 0 ) {
 			if( !wchrs.set_attributes(ret) ) continue;
-			if( !strcmp(wchrs.id,"png") && add_image(wchrs.text) ) continue;
+			if( !strcmp(wchrs.id,KW_PNG) && add_image(wchrs.text) ) continue;
 			wch = wch1;  wchrs.seek(ipos+1);
 			ret = 0;
 		}
-		if( !ret ) {
-			int cur_caps = wchrs.cur_caps;
-			if( cur_caps > 0 ) wch = towupper(wch);
-			else if( cur_caps < 0 ) wch = towlower(wch);
-			BC_FontEntry *cur_font = wchrs.cur_font;
-			int cur_size = wchrs.cur_size;
-			int cur_style = 0;
-			int cur_bold  = wchrs.cur_bold;
-			if( cur_bold ) cur_style |= BC_FONT_BOLD;
-			int cur_italic  = wchrs.cur_italic;
-			if( cur_italic ) cur_style |= BC_FONT_ITALIC;
-			int cur_super = wchrs.cur_super;
-			if( cur_super ) cur_size /= 2;
-			int exists = 0;
-			for( int j=0; j<title_glyphs.count(); ++j ) {
-				TitleGlyph *glyph = title_glyphs[j];
-				if( glyph->char_code == (FT_ULong)wch && glyph->font == cur_font &&
-				    glyph->size == cur_size && glyph->style == cur_style ) {
-					exists = 1;   break;
-				}
-			}
+		if( ret || wch == '\n' ) continue;
 
-			if( !exists && cur_font ) {
-				total_packages++;
-				TitleGlyph *glyph = new TitleGlyph;
-				glyph->char_code = (FT_ULong)wch;
-				glyph->font = cur_font;
-				glyph->size = cur_size;
-				glyph->style = cur_style;
-				title_glyphs.append(glyph);
+		int cur_caps = wchrs.cur_caps;
+		if( cur_caps > 0 ) wch = towupper(wch);
+		else if( cur_caps < 0 ) wch = towlower(wch);
+		BC_FontEntry *cur_font = wchrs.cur_font;
+		int cur_size = wchrs.cur_size;
+		int cur_style = 0;
+		int cur_bold  = wchrs.cur_bold;
+		if( cur_bold ) cur_style |= BC_FONT_BOLD;
+		int cur_italic  = wchrs.cur_italic;
+		if( cur_italic ) cur_style |= BC_FONT_ITALIC;
+		int cur_super = wchrs.cur_super;
+		if( cur_super ) cur_size /= 2;
+		int exists = 0;
+		for( int j=0; j<title_glyphs.count(); ++j ) {
+			TitleGlyph *glyph = title_glyphs[j];
+			if( glyph->char_code == (FT_ULong)wch && glyph->font == cur_font &&
+			    glyph->size == cur_size && glyph->style == cur_style ) {
+				exists = 1;   break;
 			}
+		}
+
+		if( !exists && cur_font ) {
+			total_packages++;
+			TitleGlyph *glyph = new TitleGlyph;
+			glyph->char_code = (FT_ULong)wch;
+			glyph->font = cur_font;
+			glyph->size = cur_size;
+			glyph->style = cur_style;
+			title_glyphs.append(glyph);
 		}
 	}
 
@@ -1923,7 +1942,7 @@ int TitleMain::get_text()
 		TitleChar *chr = 0;
 		long ipos = wchrs.tell();
 		wchar_t wch1 = wchrs.wcur(), wch;
-		int ret = wchrs.wget(wch);
+		int ret = wchrs.tget(wch);
 		if( ret < 0 || wch == '\n' ) {
 			if( row->x1 > row->x2 ) row->x1 = row->x2 = 0;
 			if( row->y2 > row->y1 ) row->y1 = row->y2 = 0;
@@ -1958,7 +1977,7 @@ int TitleMain::get_text()
 		if( ret > 0 ) {
 			if( !wchrs.set_attributes(ret) ) continue;
 			ret = -1;
-			if( !strcmp(wchrs.id,"png") ) {
+			if( !strcmp(wchrs.id,KW_PNG) ) {
 				VFrame *png_image = get_image(wchrs.text);
 				if( png_image ) {
 					chr = title_chars.add(CHAR_IMAGE, png_image);
@@ -2655,25 +2674,25 @@ void TitleMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void TitleMain::insert_text(const char *txt, int pos)
+void TitleMain::insert_text(const wchar_t *wtxt, int pos)
 {
-	int ilen = strlen(txt);
+	int len = wcslen(wtxt);
 	wchar_t *wtext = config.wtext;
 	int wsize = sizeof(config.wtext)-1;
 	int wlen = config.wlen;
 	if( pos < 0 ) pos = 0;
 	if( pos > wlen ) pos = wlen;
 
-	for( int i=wlen-1, j=wlen+ilen-1; i>=pos; --i,--j ) {
+	for( int i=wlen-1, j=wlen+len-1; i>=pos; --i,--j ) {
 		if( j >= wsize ) continue;
 		wtext[j] = wtext[i];
 	}
-	for( int i=pos, j=0; j<ilen; ++i,++j ) {
+	for( int i=pos, j=0; j<len; ++i,++j ) {
 		if( i >= wsize ) break;
-		wtext[i] = txt[j];
+		wtext[i] = wtxt[j];
 	}
 
-	if( (wlen+=ilen) > wsize ) wlen = wsize;
+	if( (wlen+=len) > wsize ) wlen = wsize;
 	wtext[wlen] = 0;
 	config.wlen = wlen;
 }
