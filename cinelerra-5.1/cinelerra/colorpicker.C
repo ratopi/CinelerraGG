@@ -312,35 +312,47 @@ int ColorWindow::handle_event()
 	return 1;
 }
 
-int ColorWindow::button_press_event()
+void ColorWindow::get_screen_sample()
 {
-	if( button_grabbed ) {
-		grab_cursor();
+	int cx, cy;
+	get_abs_cursor_xy(cx, cy);
+	BC_Capture capture_bitmap(1, 1, 0);
+	VFrame vframe(1,1,BC_RGB888);
+	capture_bitmap.capture_frame(&vframe, cx,cy);
+	unsigned char *data = vframe.get_data();
+	rgb.r = data[0]/255.;  rgb.g = data[1]/255.;  rgb.b = data[2]/255.;
+	update_rgb();
+}
+
+int ColorWindow::cursor_motion_event()
+{
+	if( button_grabbed && get_button_down() ) {
+		get_screen_sample();
+		return 1;
 	}
 	return 0;
 }
+
+int ColorWindow::button_press_event()
+{
+	if( button_grabbed ) {
+		get_screen_sample();
+		return 1;
+	}
+	return 0;
+}
+
 int ColorWindow::button_release_event()
 {
 	if( button_grabbed ) {
-		grab_btn->disable();
-		grab_btn->enable();
 		ungrab_buttons();
 		ungrab_cursor();
+		grab_btn->enable();
 		button_grabbed = 0;
-		int cx, cy;
-		get_abs_cursor_xy(cx, cy);
-//printf("grabbed button %d,%d\n",cx,cy);
-		BC_Capture capture_bitmap(1, 1, 0);
-		VFrame vframe(1,1,BC_RGB888);
-		capture_bitmap.capture_frame(&vframe, cx,cy);
-		unsigned char *data = vframe.get_data();
-		rgb.r = data[0]/255.;  rgb.g = data[1]/255.;  rgb.b = data[2]/255.;
-		update_rgb();
-		update_display();
 		update_history();
 		return handle_event();
 	}
-	return 0;
+	return 1;
 }
 
 void ColorWindow::update_rgb_hex(const char *hex)
@@ -352,7 +364,6 @@ void ColorWindow::update_rgb_hex(const char *hex)
 		float b = ((color>>0)  & 0xff) / 255.;
 		rgb.r = r;  rgb.g = g;  rgb.b = b;
 		update_rgb();
-		update_display();
 		update_history();
 		handle_event();
 	}
@@ -395,8 +406,8 @@ int PaletteWheel::cursor_motion_event()
 		distance = (int)sqrt(x1 * x1 + y1 * y1);
 		float s = (float)distance / (get_w() / 2);
 		bclamp(s, 0, 1);  window->hsv.s = s;
+		window->hsv.v = 1;
 		window->update_hsv();
-		window->update_display();
 		window->handle_event();
 		return 1;
 	}
@@ -595,7 +606,6 @@ int PaletteWheelValue::cursor_motion_event()
 		float v = 1.0 - (float)(get_cursor_y() - 2) / (get_h() - 4);
 		bclamp(v, 0, 1);  window->hsv.v = v;
 		window->update_hsv();
-		window->update_display();
 		window->handle_event();
 		return 1;
 	}
@@ -979,7 +989,6 @@ int PaletteHSV::handle_event()
 {
 	update_output();
 	window->update_hsv();
-	window->update_display();
 	window->handle_event();
 	return 1;
 }
@@ -988,7 +997,6 @@ int PaletteRGB::handle_event()
 {
 	update_output();
 	window->update_rgb();
-	window->update_display();
 	window->handle_event();
 	return 1;
 }
@@ -997,7 +1005,6 @@ int PaletteYUV::handle_event()
 {
 	update_output();
 	window->update_yuv();
-	window->update_display();
 	window->handle_event();
 	return 1;
 }
@@ -1069,6 +1076,7 @@ PaletteGrabButton::~PaletteGrabButton()
 int PaletteGrabButton::handle_event()
 {
 	if( window->grab_buttons() ) {
+		grab_cursor();
 		window->button_grabbed = 1;
 		button_press_event(); // redraw face HI
 	}
@@ -1128,7 +1136,6 @@ int PaletteHistory::cursor_motion_event()
 	if( window->rgb.r != r || window->rgb.g != g || window->rgb.b != b ) {
 		window->rgb.r = r;  window->rgb.g = g;  window->rgb.b = b;
 		window->update_rgb();
-		window->update_display();
 	}
 	return 1;
 }

@@ -88,6 +88,8 @@ public:
 	void update_hsv();
 	void update_yuv();
 	int handle_event();
+	void get_screen_sample();
+	int cursor_motion_event();
 	int button_press_event();
 	int button_release_event();
 

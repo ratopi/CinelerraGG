@@ -531,12 +531,12 @@ class TitleCurSubMenu : public BC_SubMenu
 public:
         TitleCurSubMenu(TitleCurItem *cur_item);
         ~TitleCurSubMenu();
-	void add_subitem(int popup_type, const char *fmt, va_list ap);
+	void add_subitem(int popup_type, va_list ap, const char *fmt);
 	void add_subitem(int popup_type, const char *fmt,...) { va_list ap;
-		va_start(ap, fmt); add_subitem(popup_type, fmt, ap); va_end(ap);
+		va_start(ap, fmt); add_subitem(popup_type, ap, fmt); va_end(ap);
 	}
 	void add_subitem(const char *fmt,...) { va_list ap;
-		va_start(ap, fmt); add_subitem(POPUP_NONE, fmt, ap); va_end(ap);
+		va_start(ap, fmt); add_subitem(POPUP_NONE, ap, fmt); va_end(ap);
 	}
         TitleCurItem *cur_item;
 };

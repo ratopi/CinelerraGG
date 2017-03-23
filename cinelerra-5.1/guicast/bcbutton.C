@@ -105,6 +105,7 @@ int BC_Button::update_bitmaps(VFrame **data)
 void BC_Button::enable()
 {
 	enabled = 1;
+	status = BUTTON_UP;
 	draw_face();
 }
 
