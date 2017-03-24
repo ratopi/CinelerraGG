@@ -3979,6 +3979,7 @@ int BC_ListBox::deactivate()
 int BC_ListBox::activate(int take_focus)
 {
 	if( active ) return 0;
+	active = 1;
 	if( take_focus )
 		set_active_subwindow(this);
 	button_releases = 0;
@@ -3997,11 +3998,11 @@ int BC_ListBox::activate(int take_focus)
 
 int BC_ListBox::activate(int x, int y, int w, int h)
 {
-	if( active || !is_popup || gui ) return 0;
+	if( !is_popup || gui ) return 0;
+	active = 1;
 	if(w != -1) popup_w = w;
 	if(h != -1) popup_h = h;
 	reset_query();
-	active = 1;
 	if( y + popup_h > top_level->get_root_h(0) )
 		y -= get_h() + popup_h;
 	add_subwindow(gui = new BC_Popup(this,
