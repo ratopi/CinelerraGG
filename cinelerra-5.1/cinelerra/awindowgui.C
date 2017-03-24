@@ -1143,6 +1143,30 @@ void AWindowGUI::update_asset_list()
 //printf("AWindowGUI::update_asset_list 7 %d\n", assets.total);
 }
 
+void AWindowGUI::update_picon(Indexable *indexable)
+{
+//printf("AWindowGUI::update_asset_list 1\n");
+	VIcon *vicon = 0;
+	for(int i = 0; i < assets.total; i++) {
+		AssetPicon *picon = (AssetPicon*)assets.values[i];
+		if( picon->indexable == indexable ||
+		    picon->edl == (EDL *)indexable ) {
+			char name[BCTEXTLEN];
+			FileSystem fs;
+			fs.extract_name(name, indexable->path);
+			picon->set_text(name);
+			vicon = picon->vicon;
+			break;
+		}
+	}
+	if( vicon ) {
+		stop_vicon_drawing();
+		vicon->clear_images();
+		vicon->reset(indexable->get_frame_rate());
+		start_vicon_drawing();
+	}
+}
+
 void AWindowGUI::sort_assets()
 {
 //printf("AWindowGUI::sort_assets 1 %s\n", mwindow->edl->session->current_folder);

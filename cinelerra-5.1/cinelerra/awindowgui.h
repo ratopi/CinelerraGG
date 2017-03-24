@@ -184,6 +184,7 @@ public:
 	int load_defaults(BC_Hash *defaults);
 	void start_vicon_drawing();
 	void stop_vicon_drawing();
+	void update_picon(Indexable *indexable);
 
 	MWindow *mwindow;
 	AWindow *awindow;

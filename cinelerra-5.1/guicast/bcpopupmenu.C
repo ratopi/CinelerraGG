@@ -96,6 +96,7 @@ BC_PopupMenu::~BC_PopupMenu()
 {
 	use_title = 0;
 	deactivate();
+	delete menu_popup;
 	for(int i = 0; i < TOTAL_IMAGES; i++)
 	{
 		if(images[i]) delete images[i];

@@ -44,6 +44,7 @@ public:
 
 	int64_t vframes() { return images.size(); }
 	void reset() { seq_no = 0; cycle_start = 0; age = 0; }
+	void reset(double rate) { reset(); frame_rate = rate; }
 	void clear_images() { images.remove_all_objects(); }
 
 	virtual int64_t set_seq_no(int64_t no) { return seq_no = no; }

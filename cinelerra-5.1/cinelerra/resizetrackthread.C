@@ -299,7 +299,8 @@ void ResizeTrackThread::start_window(Track *track)
 
 void ResizeTrackThread::update()
 {
-	mwindow->resize_track(track, w, h);
+	if( mwindow->edl->tracks->track_exists(track) )
+		mwindow->resize_track(track, w, h);
 }
 
 
@@ -350,7 +351,8 @@ ResizeAssetButton::~ResizeAssetButton()
 
 int ResizeAssetButton::handle_event()
 {
-	resize_asset_thread = new ResizeAssetThread(fwindow);
+	if( !resize_asset_thread )
+		resize_asset_thread = new ResizeAssetThread(fwindow);
 	resize_asset_thread->start_window(fwindow->asset_edit->changed_params);
         return 1;
 }

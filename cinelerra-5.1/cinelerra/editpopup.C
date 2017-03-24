@@ -35,11 +35,7 @@
 #include <string.h>
 
 EditPopup::EditPopup(MWindow *mwindow, MWindowGUI *gui)
- : BC_PopupMenu(0,
-		0,
-		0,
-		"",
-		0)
+ : BC_PopupMenu(0, 0, 0, "", 0)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -58,6 +54,7 @@ void EditPopup::create_objects()
 	add_item(new EditPopupAddTrack(mwindow, this));
 //	add_item(new EditPopupTitle(mwindow, this));
 	resize_option = 0;
+	matchsize_option = 0;
 }
 
 int EditPopup::update(Track *track, Edit *edit)

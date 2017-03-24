@@ -128,7 +128,7 @@ void AssetEdit::handle_close_event(int result)
 
 		if(indexable->is_asset) {
 			asset = (Asset*)indexable;
-			if( changed_params->equivalent(*asset, 1, 1, mwindow->edl) )
+			if( !changed_params->equivalent(*asset, 1, 1, mwindow->edl) )
 				changed = 1;
 		}
 		else {
@@ -177,6 +177,7 @@ void AssetEdit::handle_close_event(int result)
 			}
 			mwindow->gui->unlock_window();
 //printf("AssetEdit::handle_close_event %d\n", __LINE__);
+			mwindow->awindow->gui->update_picon(indexable);
 			mwindow->awindow->gui->async_update_assets();
 
 			mwindow->restart_brender();

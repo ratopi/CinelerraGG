@@ -341,14 +341,14 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 				delete [] cp;
 			}
 		}
-		if( strcmp(apath, tpath) ) result = 1;
+		if( strcmp(apath, tpath) ) result = 0;
 		delete [] apath;
 		delete [] tpath;
 		delete [] out_path;
 	}
 
-	if(result && format == FILE_FFMPEG)
-		result = !strcmp(fformat, asset.fformat);
+	if(result && format == FILE_FFMPEG && strcmp(fformat, asset.fformat) )
+		result = 0;
 
 	if(test_audio && result)
 	{
