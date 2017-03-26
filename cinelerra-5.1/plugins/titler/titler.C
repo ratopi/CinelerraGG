@@ -91,7 +91,7 @@ TitleConfig::TitleConfig()
 	outline_color = WHITE;
 	outline_alpha = 0xff;
 	color_stroke = 0xff0000;
-	stroke_width = 1.0;
+	stroke_width = 0.0;
 	motion_strategy = NO_MOTION;
 	line_pitch = 0;
 	loop = 0;

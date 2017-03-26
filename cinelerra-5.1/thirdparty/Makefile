@@ -195,7 +195,7 @@ libraw1394.cfg_params?=  --enable-shared=no; ln -sf src libraw1394
 libtheora.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libogg):$(call bld_path,libvorbis)
 libtheora.cflags?="$(call inc_path,libogg,include) $(call inc_path,libogg,src) $(call inc_path,libvorbis,include)"
 libtheora.ldflags?="$(call ld_path,libvorbis,lib/.libs) $(call ld_path,libogg,src/.libs)"
-libtheora.cfg_params?= --disable-examples --enable-shared=no
+libtheora.cfg_params?= --disable-examples --disable-spec --enable-shared=no
 libuuid.cfg_params?=--enable-shared=no
 libvorbis.cfg_params?= --disable-oggtest --enable-shared=no
 openjpeg.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF

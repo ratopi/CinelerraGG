@@ -21,6 +21,7 @@
 
 #ifndef TITLE_H
 #define TITLE_H
+#define USE_STROKER
 
 #define KW_NUDGE  _("nudge")
 #define KW_COLOR  _("color")

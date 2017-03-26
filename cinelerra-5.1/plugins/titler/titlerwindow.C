@@ -355,8 +355,7 @@ void TitleWindow::create_objects()
 	outline = new TitleOutline(client, this, x, y1);
 	outline->create_objects();
 	x += outline->get_w() + 2*margin;
-#ifdef USE_STOKER
-// to different to be used
+#ifdef USE_STROKER
 	add_tool(stroker_title = new BC_Title(x, y, _("Stroker:")));
 	stroker = new TitleStroker(client, this, x, y1);
 	stroker->create_objects();
@@ -690,7 +689,7 @@ void TitleWindow::update()
 	text->update(&client->config.wtext[0]);
 	speed->update(client->config.pixels_per_second);
 	outline->update((int64_t)client->config.outline_size);
-#ifdef USE_STOKER
+#ifdef USE_STROKER
 	stroker->update((int64_t)client->config.stroke_width);
 #endif
 	timecode->update(client->config.timecode);
@@ -1002,7 +1001,7 @@ void TitleWindow::check_style(const char *font_name, int update)
 	if( has_norm && has_bold ) bold->enable();   else bold->disable();
 	if( has_norm && has_ital ) italic->enable(); else italic->disable();
 	if( update ) {
-		int style = 0;
+		int style = stroker && atof(stroker->get_text()) ? BC_FONT_OUTLINE : 0;
 		if( bold->get_value() ) style |= BC_FONT_BOLD;
 		if( italic->get_value() ) style |= BC_FONT_ITALIC;
 		client->config.style = style;
@@ -1086,6 +1085,7 @@ int TitleOutline::handle_event()
 	return 1;
 }
 
+
 TitleStroker::TitleStroker(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window, (int64_t)client->config.stroke_width,
 	(int64_t)0, (int64_t)1000, x, y, 70)
@@ -1095,8 +1095,8 @@ TitleStroker::TitleStroker(TitleMain *client, TitleWindow *window, int x, int y)
 }
 int TitleStroker::handle_event()
 {
-	client->config.stroke_width = atol(get_text());
-	if( client->config.stroke_width > 1 )
+	client->config.stroke_width = atof(get_text());
+	if( client->config.stroke_width )
 		client->config.style |= BC_FONT_OUTLINE;
 	else
 		client->config.style &= ~BC_FONT_OUTLINE;
