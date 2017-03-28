@@ -104,7 +104,6 @@ public:
 	Label* next_label(double position);
 
 	Label* label_of(double position); // first label on or after position
-	MWindow *mwindow;
 	TimeBar *timebar;
 	EDL *edl;
 	const char *xml_tag;

@@ -214,9 +214,9 @@ void ColorWindow::create_objects()
 	yuv_y = new PaletteYUV(this, x,y+=40, yuv.y, 0, 1);
 	yuv_y->create_objects();  yuv_y->set_tooltip(_("Luminance"));
 	yuv_u = new PaletteYUV(this, x,y+=25, yuv.u, 0, 1);
-	yuv_u->create_objects();  yuv_u->set_tooltip(_("Complement Blue"));
+	yuv_u->create_objects();  yuv_u->set_tooltip(_("Blue Luminance Difference"));
 	yuv_v = new PaletteYUV(this, x,y+=25, yuv.v, 0, 1);
-	yuv_v->create_objects();  yuv_v->set_tooltip(_("Complement Red"));
+	yuv_v->create_objects();  yuv_v->set_tooltip(_("Red Luminance Difference"));
 	if( thread->do_alpha ) {
 		aph_a = new PaletteAPH(this, x,y+=40, aph, 0, 1);
 		aph_a->create_objects();  aph_a->set_tooltip(_("Alpha"));

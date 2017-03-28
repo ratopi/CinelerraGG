@@ -1385,7 +1385,7 @@ void TitleCurPopup::create_objects()
 	sub_menu->add_subitem("/%s",item);
 	add_item(cur_item = new TitleCurItem(this, item = KW_COLOR));
 	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
-	sub_menu->add_subitem(POPUP_COLOR,"%s #",item);
+	sub_menu->add_subitem(POPUP_COLOR,"%s %s",item,_("#"));
 	sub_menu->add_subitem("%s ",item);
 	sub_menu->add_subitem("/%s",item);
 	add_item(cur_item = new TitleCurItem(this, item = KW_ALPHA));
