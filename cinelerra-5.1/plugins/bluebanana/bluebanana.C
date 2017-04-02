@@ -130,6 +130,7 @@ void BluebananaMain::save_data(KeyFrame *keyframe){
   output.tag.set_title("BLUEBANANA");
 
   output.tag.set_property("ACTIVE", config.active);
+  output.tag.set_property("OP", config.op);
   output.tag.set_property("INVERT_SELECTION", config.invert_selection);
   output.tag.set_property("USE_MASK", config.use_mask);
   output.tag.set_property("CAPTURE_MASK", config.capture_mask);
@@ -272,6 +273,7 @@ void BluebananaMain::read_data(KeyFrame *keyframe){
 
     if(!result && input.tag.title_is("BLUEBANANA")){
       config.active = input.tag.get_property("ACTIVE", config.active);
+      config.op = input.tag.get_property("OP", config.op);
       config.invert_selection = input.tag.get_property("INVERT_SELECTION", config.invert_selection);
       config.use_mask = input.tag.get_property("USE_MASK", config.use_mask);
       config.capture_mask = input.tag.get_property("CAPTURE_MASK", config.capture_mask);

@@ -31,6 +31,7 @@ class BluebananaMain;
 class BluebananaThread;
 class BluebananaMark;
 class BluebananaActive;
+class BluebananaOp;
 class BluebananaA2Sel;
 class BluebananaIS;
 class BluebananaUnmask;
@@ -171,6 +172,7 @@ public:
 	BluebananaMain *plugin;
 
         BluebananaMark *mark;
+        BluebananaOp *op;
         BluebananaActive *active;
         BluebananaA2Sel *use_mask;
         BluebananaUnmask *capture_mask;

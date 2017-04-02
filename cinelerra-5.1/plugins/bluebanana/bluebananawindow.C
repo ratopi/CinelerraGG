@@ -29,6 +29,7 @@
 #include "bluebananawindow.h"
 #include "keys.h"
 #include "language.h"
+#include "plugin.h"
 #include "brender.h"
 
 #include "bluebananacolor.c"
@@ -1762,6 +1763,31 @@ public:
 };
 
 
+// -------------------------------------------- Op --------------------------------------------
+class BluebananaOp : public BC_CheckBox {
+public:
+  BluebananaOp(BluebananaMain *plugin, BluebananaWindow *gui)
+    : BC_CheckBox(-1, -1, &plugin->config.op, ""){
+    this->plugin = plugin;
+    this->gui = gui;
+  }
+  virtual int handle_event() {
+    if(plugin->config.op != get_value()){
+      plugin->config.op = get_value();
+      gui->enter_config_change();
+      gui->commit_config_change();
+    }
+    return 1;
+  }
+  void update (){
+    if(plugin->config.op != get_value()){
+      this->BC_CheckBox::update(plugin->config.op,1);
+    }
+  };
+  BluebananaMain *plugin;
+  BluebananaWindow *gui;
+};
+
 // -------------------------------------------- Mark --------------------------------------------
 class BluebananaMark : public BC_CheckBox {
 public:
@@ -2063,26 +2089,30 @@ void BluebananaWindow::create_objects()
 
   /* window headline */
   {
-    BC_Title *l = new BC_Title(xmargin,y,_("Color Selection"));
+    BC_Title *l = new BC_Title(xmargin,y,_("Combine Selection"));
     BC_Title *l2 = new BC_Title(-1,-1,_(" Mark Selected Areas"));
     add_subwindow(mark = new BluebananaMark(plugin,this));
     add_subwindow(l);
     add_subwindow(l2);
     padx = l->get_h()*column_padding;
-    label_x = xmargin + l->get_w();
-
-    int x0 = get_w()-xmargin-mark->get_w();
-    mark->reposition_window(x0,y-(mark->get_h()-l->get_h())/2);
-    x0 -= padx+l2->get_w();
-    l2->reposition_window(x0,y);
-    x0-=padx;
+    add_subwindow(op = new BluebananaOp(plugin,this));
+    int x0 = xmargin + l->get_w() + padx;
+    op->reposition_window(x0,y-(op->get_h()-l->get_h())/2);
+    x0 += op->get_w() + padx;
+    int x1 = get_w()-xmargin-mark->get_w();
+    mark->reposition_window(x1,y-(mark->get_h()-l->get_h())/2);
+    x1 -= padx+l2->get_w();
+    l2->reposition_window(x1,y);
+    x1-=padx;
 
     set_color(get_resources()->default_text_color);
-    draw_line(label_x+padx, (int)(y+l->get_h()*.5), x0, (int)(y+l->get_h()*.5));
+    int y0 = y+l->get_h()*.5;
+    draw_line(x0,y0, x1,y0);
 
     y += l->get_h()*(row_padding+1.);
   }
 
+  label_x = xmargin + 100 + padx;
   const char *labels[12]={_("hue"),_("saturation"),_("value"),_("fill"),_("red"),_("green"),_("blue"),_("hue"),_("saturation"),_("value"),_("fade"),_("alpha")};
   for(i=0;i<12;i++){
     add_subwindow(slider_labels[i] = new BC_Title(-1,-1,labels[i]));
@@ -2442,10 +2472,10 @@ int BluebananaWindow::flush_config_change(){
 
 int BluebananaWindow::repeat_event(int64_t d){
   if(d==97){
-    if(config_consume==config_produce)
+    if(config_consume!=config_produce)
       flush_config_change();
-    config_consume=config_produce;
   }
+  if(!plugin->server->plugin->on) return 0;
   if(d==207){
 
     /* if background render is active and we're showing the zebra, mark

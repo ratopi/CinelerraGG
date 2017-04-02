@@ -39,6 +39,7 @@ public:
         int mark;
 
 // auto
+	int op;
         int active;
         int use_mask;
         int capture_mask;

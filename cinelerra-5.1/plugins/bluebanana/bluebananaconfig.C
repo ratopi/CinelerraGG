@@ -25,6 +25,7 @@
 #include <math.h>
 
 BluebananaConfig::BluebananaConfig() {
+  op = 0;
   mark = 0;
   active = 1;
   use_mask = 0;
@@ -91,6 +92,7 @@ BluebananaConfig::BluebananaConfig() {
 int BluebananaConfig::equivalent(BluebananaConfig &that) {
   if(active != that.active) return 0;
   // mark is no an auto
+  if(op != that.op) return 0;
   if(use_mask != that.use_mask) return 0;
   if(capture_mask != that.capture_mask) return 0;
   if(invert_selection != that.invert_selection) return 0;
@@ -155,6 +157,7 @@ int BluebananaConfig::equivalent(BluebananaConfig &that) {
 
 void BluebananaConfig::copy_from(BluebananaConfig &that) {
   mark = that.mark;
+  op = that.op;
   active = that.active;
   use_mask = that.use_mask;
   capture_mask = that.capture_mask;
@@ -220,6 +223,7 @@ void BluebananaConfig::interpolate(BluebananaConfig &prev,
   double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
   double prev_scale = 1.0 - next_scale;
 
+  op = prev.op;
   active = prev.active;
   use_mask = prev.use_mask;
   capture_mask = prev.capture_mask;

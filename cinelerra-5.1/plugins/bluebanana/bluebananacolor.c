@@ -226,11 +226,16 @@ static inline void RGB_to_rgb8(float *R, float *G, float *B, float *S, float F, 
 }
 
 static inline void Aal_to_alp8(float *S, float F, unsigned char *row, int w, int bpp){
-  F = 1.f - F;
-  while(w--){
-    float a = (1 - *S*F)*255.f +.5f;
-    row[3] = CLAMP(a,0,255);
-    row+=bpp;  ++S;
+  if(S){
+    while(w--){
+      float a = *S*F*255.f +.5f;
+      row[3] = CLAMP(a,0,255);
+      row+=bpp;  ++S;
+    }
+  }else{
+    float a = F*255.f +.5f;
+    unsigned char s = CLAMP(a,0,255);
+    while(w--){ row[3] = s; row+=bpp; }
   }
 }
 
@@ -275,11 +280,15 @@ static inline void RGB_to_rgbF(float *R, float *G, float *B, float *S, float F, 
 }
 
 static inline void Aal_to_alpF(float *S, float F, float *row, int w, int bpp){
-  F = 1.f - F;
-  while(w--){
-    float a = 1.f - *S*F;
-    row[3] = a;
-    row+=bpp;
+  if(S){
+    while(w--){
+      float a = *S*F;
+      row[3] = a;
+      row+=bpp;
+    }
+  }else{
+    float a = F;
+    while(w--){ row[3] = a; row+=bpp; }
   }
 }
 

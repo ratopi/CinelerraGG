@@ -53,6 +53,7 @@ void BluebananaUnit::process_package(LoadPackage *package){
   int j;
 
   int active = plugin->config.active;
+  int op = plugin->config.op;
   int use_mask = plugin->config.use_mask;
   int capture_mask = plugin->config.capture_mask;
   int invert_selection = plugin->config.invert_selection;
@@ -115,7 +116,7 @@ void BluebananaUnit::process_package(LoadPackage *package){
   int byte_advance=0;
   int have_alpha=1;
 
-#define SPLIT 128
+#define SPLIT 256
 
   int tasks = engine->get_total_packages()*16;
   int taski,rowi,coli;
@@ -405,45 +406,77 @@ void BluebananaUnit::process_package(LoadPackage *package){
 
           /* selection modification according to config */
           if(use_mask && have_alpha){
-            if(!have_selection){
-              /* selection consists only of mask */
-              selection_test=0.;
-              for(j = 0; j < todo; j++)
-                selection_test += selection[j] = Avec[j];
-              have_selection=1;
-            }else{
-              if(invert_selection){
-                if(selection_test < SELECT_THRESH){
-                  /* fully selected after invert, clip to mask */
-                  selection_test=0.f;
-                  for(j = 0; j < todo; j++)
-                    selection_test += selection[j] = Avec[j];
-                }else if (selection_test >= todo-SELECT_THRESH){
-                  /* fully deselected after invert */
-                  selection_test=0.;
-                }else{
-                  /* partial selection after invert, clip to mask */
-                  selection_test=0.f;
-                  for(j = 0; j < todo; j++)
-                    selection_test += selection[j] = Avec[j]*(1.f-selection[j]);
-                }
+            if(!op){
+              if(!have_selection){
+                /* selection consists only of mask */
+                selection_test=0.;
+                for(j = 0; j < todo; j++)
+                  selection_test += selection[j] = Avec[j];
+                have_selection=1;
               }else{
-                if(selection_test < SELECT_THRESH){
-                  /* fully deselected */
-                }else if (selection_test >= todo-SELECT_THRESH){
-                  /* fully selected, clip to mask */
-                  selection_test=0.f;
-                  for(j = 0; j < todo; j++)
-                    selection_test += selection[j] = Avec[j];
+                if(invert_selection){
+                  if(selection_test < SELECT_THRESH){
+                    /* fully selected after invert, clip to mask */
+                    selection_test=0.f;
+                    for(j = 0; j < todo; j++)
+                      selection_test += selection[j] = Avec[j];
+                  }else{
+                    /* partial selection after invert, clip to mask */
+                    selection_test=0.f;
+                    for(j = 0; j < todo; j++)
+                      selection_test += selection[j] = Avec[j]*(1.f-selection[j]);
+                  }
                 }else{
-                  /* partial selection, clip to mask */
-                  selection_test=0.f;
-                  for(j = 0; j < todo; j++)
-                    selection_test += selection[j] *= Avec[j];
+                  if(selection_test < SELECT_THRESH){
+                    /* fully deselected */
+                  }else if(selection_test >= todo-SELECT_THRESH){
+                    /* fully selected, clip to mask */
+                    selection_test=0.f;
+                    for(j = 0; j < todo; j++)
+                      selection_test += selection[j] = Avec[j];
+                  }else{
+                    /* partial selection, clip to mask */
+                    selection_test=0.f;
+                    for(j = 0; j < todo; j++)
+                      selection_test += selection[j] *= Avec[j];
+                  }
+                }
+              }
+            }else{
+              if(!have_selection){
+                for(j = 0; j < todo; j++) selection[j] = 1;
+              }else{
+                if(invert_selection){
+                  if(selection_test < SELECT_THRESH){
+                    /* fully selected after invert */
+                    for(j = 0; j < todo; j++) selection[j] = 1;
+                  }else{
+                    /* partial selection after invert, clip to mask */
+                    selection_test=0.f;
+                    for(j = 0; j < todo; j++)
+                      selection_test += selection[j] =
+                        Avec[j]+(1.f-selection[j])-Avec[j]*(1.f-selection[j]);
+                  }
+                }else{
+                  if(selection_test < SELECT_THRESH){
+                    /* fully deselected, clip to mask */
+                    selection_test=0.f;
+                    for(j = 0; j < todo; j++)
+                      selection_test += selection[j] = Avec[j];
+                  }else if(selection_test >= todo-SELECT_THRESH){
+                    /* fully selected */
+                  }else{
+                    /* partial selection, clip to mask */
+                    selection_test=0.f;
+                    for(j = 0; j < todo; j++)
+                      selection_test += selection[j] =
+                        selection[j]+Avec[j]-selection[j]*Avec[j];
+                  }
                 }
               }
             }
-            if(selection_test < SELECT_THRESH){
+
+            if(!use_mask && !invert_selection && selection_test < SELECT_THRESH){
               /* skip processing this fragment */
               /* we're using a mask; if the mask is set to capture, we
                  need to restore alpha before skipping */
@@ -893,51 +926,53 @@ void BluebananaUnit::process_package(LoadPackage *package){
               }
             }
           }
-
+          float *s = have_selection?selection:0;
           /* re-layer back into pipeline color format */
           switch(frame->get_color_model()) {
           case BC_RGB888:
-            RGB_to_rgb8(Rvec,Gvec,Bvec,have_selection?selection:0,1.f,row_fragment,todo,3);
+            RGB_to_rgb8(Rvec,Gvec,Bvec,s,1.f,row_fragment,todo,3);
             break;
           case BC_RGBA8888:
-            RGB_to_rgb8(Rvec,Gvec,Bvec,have_selection?selection:0,1.f,row_fragment,todo,4);
+            RGB_to_rgb8(Rvec,Gvec,Bvec,s,1.f,row_fragment,todo,4);
             break;
           case BC_RGB_FLOAT:
-            RGB_to_rgbF(Rvec,Gvec,Bvec,have_selection?selection:0,1.f,(float *)row_fragment,todo,3);
+            RGB_to_rgbF(Rvec,Gvec,Bvec,s,1.f,(float *)row_fragment,todo,3);
             break;
           case BC_RGBA_FLOAT:
-            RGB_to_rgbF(Rvec,Gvec,Bvec,have_selection?selection:0,1.f,(float *)row_fragment,todo,4);
+            RGB_to_rgbF(Rvec,Gvec,Bvec,s,1.f,(float *)row_fragment,todo,4);
             break;
           case BC_YUV888:
-            RGB_to_yuv8(Rvec,Gvec,Bvec,have_selection?selection:0,1.f,row_fragment,todo,3);
+            RGB_to_yuv8(Rvec,Gvec,Bvec,s,1.f,row_fragment,todo,3);
             break;
           case BC_YUVA8888:
-            RGB_to_yuv8(Rvec,Gvec,Bvec,have_selection?selection:0,1.f,row_fragment,todo,4);
+            RGB_to_yuv8(Rvec,Gvec,Bvec,s,1.f,row_fragment,todo,4);
             break;
           }
         }
 
-        if(active || show_ants || (use_mask && capture_mask)){
-
-          if(use_mask && capture_mask){
+        if(active || show_ants || use_mask || capture_mask){
+          if(capture_mask){
             switch(frame->get_color_model()) {
             case BC_RGBA8888:
-              if( have_selection && Aal < 1.f )
-                Aal_to_alp8(selection,Aal,row_fragment,todo,4);
-              else
-                unmask_rgba8(row_fragment,todo);
+              unmask_rgba8(row_fragment,todo);
               break;
             case BC_RGBA_FLOAT:
-              if( have_selection && Aal < 1.f )
-                Aal_to_alpF(selection,Aal,(float *)row_fragment,todo,4);
-              else
-                unmask_rgbaF((float *)row_fragment,todo);
+              unmask_rgbaF((float *)row_fragment,todo);
               break;
             case BC_YUVA8888:
-              if( have_selection && Aal < 1.f )
-                Aal_to_alp8(selection,Aal,row_fragment,todo,4);
-              else
-                unmask_yuva8(row_fragment,todo);
+              unmask_yuva8(row_fragment,todo);
+              break;
+            }
+          }
+          else if(use_mask){
+            float *s = !show_ants&&have_selection?selection:0;
+            switch(frame->get_color_model()) {
+            case BC_RGBA8888:
+            case BC_YUVA8888:
+              Aal_to_alp8(s,Aal,row_fragment,todo,4);
+              break;
+            case BC_RGBA_FLOAT:
+              Aal_to_alpF(s,Aal,(float *)row_fragment,todo,4);
               break;
             }
           }
