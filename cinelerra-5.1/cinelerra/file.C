@@ -622,8 +622,8 @@ int File::open_file(Preferences *preferences,
 	}
 
 	if( rd ) {
-// one frame image file, no specific length
-		if( !this->asset->audio_data &&
+// one frame image file, not brender, no specific length
+		if( !this->asset->audio_data && this->asset->use_header &&
 		    this->asset->video_data && !this->asset->single_frame &&
 		    this->asset->video_length >= 0 && this->asset->video_length <= 1 ) {
 			this->asset->single_frame = 1;

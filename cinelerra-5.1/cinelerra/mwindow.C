@@ -1004,6 +1004,7 @@ void MWindow::init_edl()
 	edl->create_objects();
 	fill_preset_defaults(default_standard, edl->session);
 	edl->load_defaults(defaults);
+	edl->session->brender_start = edl->session->brender_end = 0;
 	edl->create_default_tracks();
 	edl->tracks->update_y_pixels(theme);
 }

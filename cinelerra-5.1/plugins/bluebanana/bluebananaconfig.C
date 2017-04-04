@@ -261,6 +261,7 @@ void BluebananaConfig::interpolate(BluebananaConfig &prev,
 
   Hadj_val = ( prev.Hadj_val*prev_scale + next.Hadj_val*next_scale);
   Oadj_val = ( prev.Oadj_val*prev_scale + next.Oadj_val*next_scale);
+  Aadj_val = ( prev.Aadj_val*prev_scale + next.Aadj_val*next_scale);
 
   Sadj_gamma = ( prev.Sadj_gamma*prev_scale + next.Sadj_gamma*next_scale);
   Sadj_lo = ( prev.Sadj_lo*prev_scale + next.Sadj_lo*next_scale);
