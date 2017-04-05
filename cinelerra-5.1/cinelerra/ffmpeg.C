@@ -1930,30 +1930,33 @@ int FFMPEG::decode_activate()
 		for( int aidx=0; aidx<ffaudio.size(); ++aidx )
 			ffaudio[aidx]->nudge = AV_NOPTS_VALUE;
 		// set nudges for each program stream set
+		const int64_t min_nudge = INT64_MIN+1;
 		int npgrms = fmt_ctx->nb_programs;
 		for( int i=0; i<npgrms; ++i ) {
 			AVProgram *pgrm = fmt_ctx->programs[i];
 			// first start time video stream
-			int64_t vstart_time = -1, astart_time = -1;
+			int64_t vstart_time = min_nudge, astart_time = min_nudge;
 			for( int j=0; j<(int)pgrm->nb_stream_indexes; ++j ) {
 				int fidx = pgrm->stream_index[j];
 				AVStream *st = fmt_ctx->streams[fidx];
 				AVCodecContext *avctx = st->codec;
 				if( avctx->codec_type == AVMEDIA_TYPE_VIDEO ) {
 					if( st->start_time == AV_NOPTS_VALUE ) continue;
-					if( vstart_time > st->start_time ) continue;
-					vstart_time = st->start_time;
+					if( vstart_time < st->start_time )
+						vstart_time = st->start_time;
 					continue;
 				}
-				if( avctx->codec_type == AVMEDIA_TYPE_VIDEO ) {
+				if( avctx->codec_type == AVMEDIA_TYPE_AUDIO ) {
 					if( st->start_time == AV_NOPTS_VALUE ) continue;
-					if( astart_time > st->start_time ) continue;
-					astart_time = st->start_time;
+					if( astart_time < st->start_time )
+						astart_time = st->start_time;
 					continue;
 				}
 			}
-			// match program streams to max start_time
-			int64_t nudge = vstart_time > astart_time ? vstart_time : astart_time;
+			//since frame rate is much more grainy than sample rate, it is better to
+			// align using video, so that total absolute error is minimized.
+			int64_t nudge = vstart_time > min_nudge ? vstart_time :
+				astart_time > min_nudge ? astart_time : AV_NOPTS_VALUE;
 			for( int j=0; j<(int)pgrm->nb_stream_indexes; ++j ) {
 				int fidx = pgrm->stream_index[j];
 				AVStream *st = fmt_ctx->streams[fidx];
@@ -1975,7 +1978,7 @@ int FFMPEG::decode_activate()
 			}
 		}
 		// set nudges for any streams not yet set
-		int64_t vstart_time = 0, astart_time = 0;
+		int64_t vstart_time = min_nudge, astart_time = min_nudge;
 		int nstreams = fmt_ctx->nb_streams;
 		for( int i=0; i<nstreams; ++i ) {
 			AVStream *st = fmt_ctx->streams[i];
@@ -1986,28 +1989,29 @@ int FFMPEG::decode_activate()
 				int vidx = ffvideo.size();
 				while( --vidx >= 0 && ffvideo[vidx]->fidx != i );
 				if( vidx >= 0 && ffvideo[vidx]->nudge != AV_NOPTS_VALUE ) continue;
-				if( vstart_time >= st->start_time ) continue;
-				vstart_time = st->start_time;
+				if( vstart_time < st->start_time )
+					vstart_time = st->start_time;
 				break; }
 			case AVMEDIA_TYPE_AUDIO: {
 				if( st->start_time == AV_NOPTS_VALUE ) continue;
 				int aidx = ffaudio.size();
 				while( --aidx >= 0 && ffaudio[aidx]->fidx != i );
 				if( aidx >= 0 && ffaudio[aidx]->nudge != AV_NOPTS_VALUE ) continue;
-				if( astart_time >= st->start_time ) continue;
-				astart_time = st->start_time;
+				if( astart_time < st->start_time )
+					astart_time = st->start_time;
 				break; }
 			default: break;
 			}
 		}
-		int64_t nudge = vstart_time > astart_time ? vstart_time : astart_time;
+		int64_t nudge = vstart_time > min_nudge ? vstart_time :
+			astart_time > min_nudge ? astart_time : AV_NOPTS_VALUE;
 		for( int vidx=0; vidx<ffvideo.size(); ++vidx ) {
-			if( ffvideo[vidx]->nudge != AV_NOPTS_VALUE ) continue;
-			ffvideo[vidx]->nudge = nudge;
+			if( ffvideo[vidx]->nudge == AV_NOPTS_VALUE )
+				ffvideo[vidx]->nudge = nudge;
 		}
 		for( int aidx=0; aidx<ffaudio.size(); ++aidx ) {
-			if( ffaudio[aidx]->nudge != AV_NOPTS_VALUE ) continue;
-			ffaudio[aidx]->nudge = nudge;
+			if( ffaudio[aidx]->nudge == AV_NOPTS_VALUE )
+				ffaudio[aidx]->nudge = nudge;
 		}
 		decoding = 1;
 	}
@@ -2593,6 +2597,23 @@ int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
 		}
 		av_dict_free(&copts);
 	}
+
+	decode_activate();
+	for( int i=0; i<(int)fmt_ctx->nb_streams; ++i ) {
+		AVStream *st = fmt_ctx->streams[i];
+		AVCodecContext *avctx = st->codec;
+		if( avctx->codec_type != AVMEDIA_TYPE_AUDIO ) continue;
+		int64_t tstmp = st->start_time;
+		if( tstmp == AV_NOPTS_VALUE ) continue;
+		int aidx = ffaudio.size();
+		while( --aidx>=0 && ffaudio[aidx]->fidx != i );
+		if( aidx < 0 ) continue;
+		FFAudioStream *aud = ffaudio[aidx];
+		tstmp -= aud->nudge;
+		double secs = to_secs(tstmp, st->time_base);
+		aud->curr_pos = secs * aud->sample_rate + 0.5;
+	}
+
 	int errs = 0;
 	for( int64_t count=0; !*canceled; ++count ) {
 		av_packet_unref(&pkt);
@@ -2652,8 +2673,8 @@ int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
 				if( aud->nudge != AV_NOPTS_VALUE ) tstmp -= aud->nudge;
 				double secs = to_secs(tstmp, st->time_base);
 				int64_t sample = secs * aud->sample_rate + 0.5;
-				if( sample < 0 ) sample = 0;
-				index_state->put_audio_mark(aidx, sample, pkt.pos);
+				if( sample >= 0 )
+					index_state->put_audio_mark(aidx, sample, pkt.pos);
 			}
 			while( pkt.size > 0 ) {
 				int ch = aud->channel0,  nch = aud->channels;
@@ -2671,9 +2692,15 @@ printf("audio%d pad %jd %jd (%jd)\n", aud->idx, pos, aud->curr_pos, pos-aud->cur
 					float *samples;
 					int len = aud->get_samples(samples,
 						 &frame->extended_data[0], frame->nb_samples);
-					for( int i=0; i<nch; ++i )
-						index_state->put_data(ch+i,nch,samples+i,len);
-					aud->curr_pos += len;
+					pos = aud->curr_pos;
+					if( (aud->curr_pos += len) >= 0 ) {
+						if( pos < 0 ) {
+							samples += -pos * nch;
+							len = aud->curr_pos;
+						}
+						for( int i=0; i<nch; ++i )
+							index_state->put_data(ch+i,nch,samples+i,len);
+					}
 				}
 				pkt.data += ret;
 				pkt.size -= ret;

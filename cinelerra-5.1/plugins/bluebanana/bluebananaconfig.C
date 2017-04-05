@@ -212,6 +212,8 @@ void BluebananaConfig::copy_from(BluebananaConfig &that) {
 
   Oadj_active = that.Oadj_active;
   Oadj_val = that.Oadj_val;
+  Aadj_active = that.Aadj_active;
+  Aadj_val = that.Aadj_val;
 }
 
 void BluebananaConfig::interpolate(BluebananaConfig &prev,

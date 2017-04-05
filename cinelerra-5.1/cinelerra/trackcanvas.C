@@ -1854,7 +1854,9 @@ void TrackCanvas::draw_loop_points()
 
 void TrackCanvas::draw_brender_range()
 {
-	if(mwindow->preferences->use_brender)
+	if( !mwindow->preferences->use_brender || !mwindow->brender_active ) return;
+	if( mwindow->edl->session->brender_start >= mwindow->edl->session->brender_end ) return;
+	if( mwindow->edl->session->brender_end > 0 )
 	{
 		int64_t x1 = Units::round(mwindow->edl->session->brender_start *
 			mwindow->edl->session->sample_rate /

@@ -212,7 +212,7 @@ void MainMenu::create_objects()
 	settingsmenu->add_item(new BC_MenuItem("-"));
 	settingsmenu->add_item(new SaveSettingsNow(mwindow));
 	settingsmenu->add_item(loop_playback = new LoopPlayback(mwindow));
-	settingsmenu->add_item(new SetBRenderRange(mwindow));
+	settingsmenu->add_item(brender_active = new SetBRenderActive(mwindow));
 // set scrubbing speed
 //	ScrubSpeed *scrub_speed;
 //	settingsmenu->add_item(scrub_speed = new ScrubSpeed(mwindow));
@@ -1237,26 +1237,20 @@ int PasteSubttl::handle_event()
 }
 
 
-
-
-
-
-SetBRenderRange::SetBRenderRange(MWindow *mwindow)
- : BC_MenuItem(_("Set background rendering"))
+SetBRenderActive::SetBRenderActive(MWindow *mwindow)
+ : BC_MenuItem(_("Toggle background rendering"),_("Shift-G"),'G')
 {
 	this->mwindow = mwindow;
+	set_shift(1);
 }
 
-int SetBRenderRange::handle_event()
+int SetBRenderActive::handle_event()
 {
-	mwindow->set_brender_range();
+	int v = mwindow->brender_active ? 0 : 1;
+	set_checked(v);
+	mwindow->set_brender_active(v);
 	return 1;
 }
-
-
-
-
-
 
 
 LabelsFollowEdits::LabelsFollowEdits(MWindow *mwindow)

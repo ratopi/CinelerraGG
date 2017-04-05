@@ -28,6 +28,7 @@ class PluginsFollowEdits;
 class KeyframesFollowEdits;
 class CursorOnFrames;
 class TypelessKeyframes;
+class SetBRenderActive;
 class LoopPlayback;
 
 class Redo;
@@ -120,6 +121,7 @@ public:
 	KeyframesFollowEdits *keyframes_follow_edits;
 	CursorOnFrames *cursor_on_frames;
 	TypelessKeyframes *typeless_keyframes;
+	SetBRenderActive *brender_active;
 	LoopPlayback *loop_playback;
 	ShowAssets *show_assets;
 	ShowTitles *show_titles;
@@ -554,10 +556,10 @@ public:
 	MWindow *mwindow;
 };
 
-class SetBRenderRange : public BC_MenuItem
+class SetBRenderActive : public BC_MenuItem
 {
 public:
-	SetBRenderRange(MWindow *mwindow);
+	SetBRenderActive(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

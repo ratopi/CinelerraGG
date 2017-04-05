@@ -528,6 +528,7 @@ public:
 	MainIndexes *mainindexes;
 	MainProgress *mainprogress;
 	BRender *brender;
+	int brender_active;
 	const char *default_standard;
 	static Commercials *commercials;
 	int commercial_active;
@@ -621,7 +622,7 @@ public:
 // This one happens asynchronously of the others.  Used by playback to
 // see what frame is background rendered.
 	int brender_available(int position);
-	void set_brender_range();
+	void set_brender_active(int v, int update=1);
 	int put_commercial();
 	void activate_commercial() { commercial_active = 1; }
 	void commit_commercial();

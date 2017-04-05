@@ -200,6 +200,7 @@ MWindow::MWindow()
 	mainindexes = 0;
 	mainprogress = 0;
 	brender = 0;
+	brender_active = 0;
 	channeldb_buz =  new ChannelDB;
 	channeldb_v4l2jpeg =  new ChannelDB;
 	//file_server = 0;
@@ -1163,12 +1164,14 @@ void MWindow::init_brender()
 		session->brender_end = 0;
 		brender_lock->unlock();
 	}
-	if(brender) brender->restart(edl);
+	brender_active = 0;
+	stop_brender();
 }
 
 void MWindow::restart_brender()
 {
 //printf("MWindow::restart_brender 1\n");
+	if(!brender_active || !preferences->use_brender) return;
 	if(brender) brender->restart(edl);
 }
 
@@ -1200,20 +1203,27 @@ int MWindow::brender_available(int position)
 	return result;
 }
 
-void MWindow::set_brender_range()
+void MWindow::set_brender_active(int v, int update)
 {
-	edl->session->brender_start = edl->local_session->get_selectionstart(1);
-	edl->session->brender_end = edl->local_session->get_selectionend(1);
+	if( !preferences->use_brender ) v = 0;
+	brender_active = v;
+	gui->mainmenu->brender_active->set_checked(v);
+	if( v != 0 ) {
+		edl->session->brender_start = edl->local_session->get_selectionstart(1);
+		edl->session->brender_end = edl->local_session->get_selectionend(1);
 
-	if(EQUIV(edl->session->brender_end, edl->session->brender_start))
-	{
-		edl->session->brender_end = edl->tracks->total_video_length();
+		if(EQUIV(edl->session->brender_end, edl->session->brender_start)) {
+			edl->session->brender_end = edl->tracks->total_video_length();
+		}
+		restart_brender();
 	}
-
-	restart_brender();
-	gui->draw_overlays(1);
+	else
+		stop_brender();
+	if( update ) {
+		gui->update_timebar(0);
+		gui->draw_overlays(1);
+	}
 }
-
 
 int MWindow::has_commercials()
 {
@@ -1742,6 +1752,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 		edl->local_session->loop_playback = 0;
 		edl->local_session->set_selectionstart(0);
 		edl->local_session->set_selectionend(0);
+		set_brender_active(0, 0);
 		fit_selection();
 		goto_start();
 	}

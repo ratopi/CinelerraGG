@@ -426,9 +426,8 @@ void MTimeBar::draw_time()
 void MTimeBar::draw_range()
 {
 	int x1 = 0, x2 = 0;
-	if(mwindow->edl->tracks->total_playable_vtracks() &&
-		mwindow->preferences->use_brender)
-	{
+	if( mwindow->brender_active && mwindow->preferences->use_brender &&
+	    mwindow->edl->tracks->total_playable_vtracks() ) {
 		double time_per_pixel = (double)mwindow->edl->local_session->zoom_sample /
 			mwindow->edl->session->sample_rate;
 		x1 = (int)(mwindow->edl->session->brender_start / time_per_pixel) -
@@ -437,21 +436,14 @@ void MTimeBar::draw_range()
 			mwindow->edl->local_session->view_start[pane->number];
 	}
 
-	if(x2 > x1 &&
-		x1 < get_w() &&
-		x2 > 0)
-	{
+	if(x2 > x1 && x1 < get_w() && x2 > 0) {
 		draw_top_background(get_parent(), 0, 0, x1, get_h());
-
 		draw_3segmenth(x1, 0, x2 - x1, mwindow->theme->get_image("timebar_brender"));
-
 		draw_top_background(get_parent(), x2, 0, get_w() - x2, get_h());
 	}
-	else
-	{
+	else {
 		draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	}
-
 
 //  	int64_t pixel = position_to_pixel(
 //  		mwindow->edl->local_session->get_selectionstart(1));

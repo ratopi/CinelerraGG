@@ -1839,8 +1839,11 @@ public:
   }
   void update(){
     if(active != plugin->config.active){
-      plugin->config.active = active;
-      this->BC_CheckBox::update(plugin->config.active,1);
+      if(active>=0)
+        plugin->config.active = active;
+      else
+        active = plugin->config.active;
+      this->BC_CheckBox::update(active,1);
       gui->enter_config_change();
       gui->Hadj_slider->update();
       gui->Sadj_slider->update();

@@ -478,25 +478,6 @@ void BluebananaUnit::process_package(LoadPackage *package){
 
             if(!use_mask && !invert_selection && selection_test < SELECT_THRESH){
               /* skip processing this fragment */
-              /* we're using a mask; if the mask is set to capture, we
-                 need to restore alpha before skipping */
-              if(capture_mask){
-                switch(frame->get_color_model()) {
-                case BC_RGBA8888:
-                  unmask_rgba8(row_fragment,todo);
-                  break;
-                case BC_RGBA_FLOAT:
-                  unmask_rgbaF((float *)row_fragment,todo);
-                  break;
-                case BC_YUVA8888:
-                  unmask_yuva8(row_fragment,todo);
-                  break;
-                }
-                pthread_mutex_lock(&engine->copylock);
-                memcpy(row,row_fragment,byte_advance);
-                pthread_mutex_unlock(&engine->copylock);
-              }
-
               row+=byte_advance;
               continue;
             }
