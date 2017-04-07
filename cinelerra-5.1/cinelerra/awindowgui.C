@@ -1758,12 +1758,17 @@ int AWindowAssets::drag_stop_event()
 
 	if(!result)
 	{
-		for(int i = 0; i < mwindow->vwindows.size(); i++)
+		for(int i = 0; !result && i < mwindow->vwindows.size(); i++)
 		{
 			VWindow *vwindow = mwindow->vwindows.get(i);
+			if( !vwindow ) continue;
 			if( !vwindow->is_running() ) continue;
+			if( vwindow->gui->is_hidden() ) continue;
 			vwindow->gui->lock_window("AWindowAssets::drag_stop_event");
-			result = vwindow->gui->drag_stop();
+			if( vwindow->gui->cursor_above() &&
+			    vwindow->gui->get_cursor_over_window() ) {
+				result = vwindow->gui->drag_stop();
+			}
 			vwindow->gui->unlock_window();
 		}
 	}

@@ -1362,6 +1362,8 @@ int BC_ListBox::get_text_mask(BC_ListBoxItem *item,
 	{
 		w = get_text_width(MEDIUMFONT, item->text) + LISTBOX_MARGIN * 2;
 		h = row_height;
+		int ih = get_icon_h(item);
+		if( h < ih ) h = ih;
 	}
 	return 0;
 }
@@ -4404,9 +4406,14 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 				gui->set_color(row_color);
 				gui->draw_box(x, y, column_width, h);
 				gui->set_color(BLACK);
-				int yy = y, xx = x + column_width-1;
-				gui->draw_line(x, yy, xx, yy);
-				yy = y + row_height;
+				int xx = x + column_width-1;
+				gui->draw_line(x, y, xx, y);
+				int hh = row_height;
+				if( display_format == LISTBOX_ICON_LIST ) {
+					int ih = get_icon_h(item);
+					if( ih > hh ) hh = ih;
+				}
+				int yy = y + hh-1;
 				gui->draw_line(x, yy, xx, yy);
 			}
 

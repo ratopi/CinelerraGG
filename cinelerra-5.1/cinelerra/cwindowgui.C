@@ -109,6 +109,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	inactive = 0;
 	crop_translate = 0;
 	eyedrop_visible = 0;
+	highlighted = 0;
 }
 
 CWindowGUI::~CWindowGUI()
@@ -570,43 +571,26 @@ void CWindowGUI::drag_motion()
 {
 	if(get_hidden()) return;
 
-	if(mwindow->session->current_operation == DRAG_ASSET ||
-		mwindow->session->current_operation == DRAG_VTRANSITION ||
-		mwindow->session->current_operation == DRAG_VEFFECT)
-	{
-		int old_status = mwindow->session->ccanvas_highlighted;
-		int cursor_x = get_relative_cursor_x();
-		int cursor_y = get_relative_cursor_y();
-
-		mwindow->session->ccanvas_highlighted = get_cursor_over_window() &&
-			cursor_x >= canvas->x &&
-			cursor_x < canvas->x + canvas->w &&
-			cursor_y >= canvas->y &&
-			cursor_y < canvas->y + canvas->h;
-
-
-		if(old_status != mwindow->session->ccanvas_highlighted)
-			canvas->draw_refresh();
-	}
+	if(mwindow->session->current_operation != DRAG_ASSET &&
+		mwindow->session->current_operation != DRAG_VTRANSITION &&
+		mwindow->session->current_operation != DRAG_VEFFECT) return;
+	int need_highlight = cursor_above() && get_cursor_over_window();
+	if( highlighted == need_highlight ) return;
+	highlighted = need_highlight;
+	canvas->draw_refresh();
 }
 
 int CWindowGUI::drag_stop()
 {
 	int result = 0;
 	if(get_hidden()) return 0;
-
-	if((mwindow->session->current_operation == DRAG_ASSET ||
-		mwindow->session->current_operation == DRAG_VTRANSITION ||
-		mwindow->session->current_operation == DRAG_VEFFECT) &&
-		mwindow->session->ccanvas_highlighted)
-	{
-// Hide highlighting
-		mwindow->session->ccanvas_highlighted = 0;
-		canvas->draw_refresh();
-		result = 1;
-	}
-	else
-		return 0;
+	if( !highlighted ) return 0;
+	if( mwindow->session->current_operation != DRAG_ASSET &&
+	    mwindow->session->current_operation != DRAG_VTRANSITION &&
+	    mwindow->session->current_operation != DRAG_VEFFECT) return 0;
+	highlighted = 0;
+	canvas->draw_refresh();
+	result = 1;
 
 	if(mwindow->session->current_operation == DRAG_ASSET)
 	{
@@ -2287,7 +2271,7 @@ void CWindowCanvas::draw_overlays()
 		get_canvas()->set_opaque();
 	}
 
-	if(mwindow->session->ccanvas_highlighted)
+	if(gui->highlighted)
 	{
 		get_canvas()->set_color(WHITE);
 		get_canvas()->set_inverse();

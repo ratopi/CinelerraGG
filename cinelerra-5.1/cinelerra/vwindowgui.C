@@ -76,6 +76,7 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 	meters = 0;
 //	source = 0;
 	strcpy(loaded_title, "");
+	highlighted = 0;
 }
 
 VWindowGUI::~VWindowGUI()
@@ -394,34 +395,20 @@ void VWindowGUI::drag_motion()
 // Window hidden
 	if(get_hidden()) return;
 	if(mwindow->session->current_operation != DRAG_ASSET) return;
-
-	int old_status = mwindow->session->vcanvas_highlighted;
-
-	int cursor_x = get_relative_cursor_x();
-	int cursor_y = get_relative_cursor_y();
-
-	mwindow->session->vcanvas_highlighted = (get_cursor_over_window() &&
-		cursor_x >= canvas->x &&
-		cursor_x < canvas->x + canvas->w &&
-		cursor_y >= canvas->y &&
-		cursor_y < canvas->y + canvas->h);
-
-
-//printf("VWindowGUI::drag_motion 1 %d %d %d %d %d\n", __LINE__,
-// mwindow->session->vcanvas_highlighted, get_cursor_over_window(), cursor_x, cursor_y);
-
-	if(old_status != mwindow->session->vcanvas_highlighted)
-		canvas->draw_refresh();
+	int need_highlight = cursor_above() && get_cursor_over_window() ? 1 : 0;
+	if( highlighted == need_highlight ) return;
+	highlighted = need_highlight;
+	canvas->draw_refresh();
 }
 
 int VWindowGUI::drag_stop()
 {
 	if(get_hidden()) return 0;
 
-	if(mwindow->session->vcanvas_highlighted &&
+	if(highlighted &&
 		mwindow->session->current_operation == DRAG_ASSET)
 	{
-		mwindow->session->vcanvas_highlighted = 0;
+		highlighted = 0;
 		canvas->draw_refresh();
 
 		Indexable *indexable = mwindow->session->drag_assets->size() ?
@@ -878,7 +865,7 @@ void VWindowCanvas::draw_refresh(int flush)
 
 void VWindowCanvas::draw_overlays()
 {
-	if(mwindow->session->vcanvas_highlighted)
+	if( gui->highlighted )
 	{
 		get_canvas()->set_color(WHITE);
 		get_canvas()->set_inverse();

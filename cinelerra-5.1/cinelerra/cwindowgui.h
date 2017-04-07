@@ -153,6 +153,7 @@ public:
 // Must recalculate the origin when pressing shift.
 // Switch toggle on and off to recalculate origin.
 	int translating_zoom;
+	int highlighted;
 };
 
 

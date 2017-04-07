@@ -91,6 +91,7 @@ public:
 	VWindowInPoint *in_point;
 	VWindowOutPoint *out_point;
 	char loaded_title[BCTEXTLEN];
+	int highlighted;
 private:
 	void get_scrollbars(int &canvas_x, int &canvas_y, int &canvas_w, int &canvas_h);
 };

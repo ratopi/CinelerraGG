@@ -281,11 +281,7 @@ static inline void RGB_to_rgbF(float *R, float *G, float *B, float *S, float F, 
 
 static inline void Aal_to_alpF(float *S, float F, float *row, int w, int bpp){
   if(S){
-    while(w--){
-      float a = *S*F;
-      row[3] = a;
-      row+=bpp;
-    }
+    while(w--){ row[3] = *S++ * F; row+=bpp; }
   }else{
     float a = F;
     while(w--){ row[3] = a; row+=bpp; }

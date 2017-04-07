@@ -38,6 +38,7 @@
 #include "pluginset.inc"
 #include "pluginserver.inc"
 #include "track.inc"
+#include "vwindowgui.inc"
 
 // Options not in EDL but not changed in preferences
 class MainSession
@@ -66,10 +67,6 @@ public:
 	PluginSet *pluginset_highlighted;
 // The plugin after the point where the plugin is going to be dropped.
 	Plugin *plugin_highlighted;
-// Viewer canvas highlighted
-	int vcanvas_highlighted;
-// Compositor canvas highlighted
-	int ccanvas_highlighted;
 // Current drag operation
 	int current_operation;
 

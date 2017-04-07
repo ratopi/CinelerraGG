@@ -866,12 +866,12 @@ int IndexFile::read_info(Indexable *test_indexable)
 // Read the file format & index state.
 		if(test_indexable->is_asset)
 		{
-			Asset *asset = (Asset*)test_indexable;
-			asset->read(&xml);
-
+			Asset asset, *test_asset = (Asset *)test_indexable;
+			asset.read(&xml);
 //printf("IndexFile::read_info %d %f\n", __LINE__, asset->get_frame_rate());
 
-			if(asset->format == FILE_UNKNOWN)
+			if( asset.format == FILE_UNKNOWN ||
+			    test_asset->format != asset.format )
 			{
 if(debug) printf("IndexFile::read_info %d\n", __LINE__);
 				return 1;
