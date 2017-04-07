@@ -932,7 +932,7 @@ void BluebananaUnit::process_package(LoadPackage *package){
         }
 
         if(active || show_ants || use_mask || capture_mask){
-          if(capture_mask){
+          if(use_mask && capture_mask){
             switch(frame->get_color_model()) {
             case BC_RGBA8888:
               unmask_rgba8(row_fragment,todo);
