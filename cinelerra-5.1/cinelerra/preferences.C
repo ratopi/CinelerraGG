@@ -77,7 +77,7 @@ Preferences::Preferences()
 	renderfarm_job_count = 20;
 	project_smp = processors = calculate_processors(0);
 	real_processors = calculate_processors(1);
-	ffmpeg_early_probe = 0;
+	ffmpeg_early_probe = 1;
 	ffmpeg_marker_indexes = 1;
 	warn_indexes = 1;
 	warn_version = 1;

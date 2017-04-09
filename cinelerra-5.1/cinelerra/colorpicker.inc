@@ -24,6 +24,4 @@
 
 class ColorPicker;
 
-class ColorThread;
-
 #endif

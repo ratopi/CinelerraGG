@@ -468,7 +468,7 @@ public:
 	TitleMain *client;
 	TitleWindow *window;
 };
-class TitleColorThread : public ColorThread
+class TitleColorThread : public ColorPicker
 {
 public:
 	TitleColorThread(TitleMain *client, TitleWindow *window, int is_outline);
@@ -567,7 +567,7 @@ public:
 	TitleWindow *window;
 };
 
-class TitleColorPopup : public ColorThread
+class TitleColorPopup : public ColorPicker
 {
 public:
 	TitleColorPopup(TitleMain *client, TitleWindow *window);

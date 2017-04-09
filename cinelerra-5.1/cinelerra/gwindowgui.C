@@ -248,7 +248,7 @@ void GWindowColorButton::update_gui(int color)
 }
 
 GWindowColorThread::GWindowColorThread(GWindowColorButton *color_button)
- : ColorThread(0, color_button->auto_toggle->caption)
+ : ColorPicker(0, color_button->auto_toggle->caption)
 {
 	this->color = 0;
 	this->color_button = color_button;
@@ -415,6 +415,7 @@ int GWindowGUI::translation_event()
 
 int GWindowGUI::close_event()
 {
+	delete color_thread;  color_thread = 0;
 	hide_window();
 	mwindow->session->show_gwindow = 0;
 	unlock_window();

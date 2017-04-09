@@ -103,7 +103,7 @@ public:
 	GWindowToggle *auto_toggle;
 };
 
-class GWindowColorThread : public ColorThread
+class GWindowColorThread : public ColorPicker
 {
 public:
 	GWindowColorThread(GWindowColorButton *color_button);

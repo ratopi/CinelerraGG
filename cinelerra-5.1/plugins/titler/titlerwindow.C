@@ -1268,7 +1268,7 @@ int TitleBottom::handle_event()
 
 
 TitleColorThread::TitleColorThread(TitleMain *client, TitleWindow *window, int is_outline)
- : ColorThread(1, is_outline? _("Outline Color") : _("Text Color"))
+ : ColorPicker(1, is_outline? _("Outline Color") : _("Text Color"))
 {
 	this->client = client;
 	this->window = window;
@@ -1542,7 +1542,7 @@ int TitleFontsPopup::handle_event()
 }
 
 TitleColorPopup::TitleColorPopup(TitleMain *client, TitleWindow *window)
- : ColorThread(0, _("Color"))
+ : ColorPicker(0, _("Color"))
 {
 	this->client = client;
 	this->window = window;

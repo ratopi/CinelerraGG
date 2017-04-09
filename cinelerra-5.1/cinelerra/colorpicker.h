@@ -58,11 +58,11 @@ class PaletteHex;
 class PaletteGrabButton;
 class PaletteHistory;
 
-class ColorThread : public BC_DialogThread
+class ColorPicker : public BC_DialogThread
 {
 public:
-	ColorThread(int do_alpha = 0, const char *title = 0);
-	~ColorThread();
+	ColorPicker(int do_alpha = 0, const char *title = 0);
+	~ColorPicker();
 
 	void start_window(int output, int alpha, int do_okcancel=0);
 	virtual int handle_new_color(int output, int alpha);
@@ -77,7 +77,7 @@ public:
 class ColorWindow : public BC_Window
 {
 public:
-	ColorWindow(ColorThread *thread, int x, int y, int w, int h, const char *title);
+	ColorWindow(ColorPicker *thread, int x, int y, int w, int h, const char *title);
 	~ColorWindow();
 
 	void create_objects();
@@ -103,7 +103,7 @@ public:
 	void update_rgb_hex(const char *hex);
 	int rgb888();
 
-	ColorThread *thread;
+	ColorPicker *thread;
 	PaletteWheel *wheel;
 	PaletteWheelValue *wheel_value;
 	PaletteOutput *output;

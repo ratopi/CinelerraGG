@@ -171,7 +171,7 @@ public:
 };
 
 
-class GradientInColorThread : public ColorThread
+class GradientInColorThread : public ColorPicker
 {
 public:
 	GradientInColorThread(GradientMain *plugin, GradientWindow *window);
@@ -181,7 +181,7 @@ public:
 };
 
 
-class GradientOutColorThread : public ColorThread
+class GradientOutColorThread : public ColorPicker
 {
 public:
 	GradientOutColorThread(GradientMain *plugin, GradientWindow *window);
@@ -202,6 +202,7 @@ public:
 	void update_in_color();
 	void update_out_color();
 	void update_shape();
+	void done_event(int result);
 
 	GradientMain *plugin;
 	BC_Title *angle_title;

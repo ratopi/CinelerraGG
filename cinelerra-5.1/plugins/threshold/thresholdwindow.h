@@ -91,7 +91,7 @@ public:
 	ThresholdWindow *window;
 };
 
-class ThresholdLowColorThread : public ColorThread
+class ThresholdLowColorThread : public ColorPicker
 {
 public:
 	ThresholdLowColorThread(ThresholdMain *plugin, ThresholdWindow *window);
@@ -100,7 +100,7 @@ public:
 	ThresholdWindow *window;
 };
 
-class ThresholdMidColorThread : public ColorThread
+class ThresholdMidColorThread : public ColorPicker
 {
 public:
 	ThresholdMidColorThread(ThresholdMain *plugin, ThresholdWindow *window);
@@ -109,7 +109,7 @@ public:
 	ThresholdWindow *window;
 };
 
-class ThresholdHighColorThread : public ColorThread
+class ThresholdHighColorThread : public ColorPicker
 {
 public:
 	ThresholdHighColorThread(ThresholdMain *plugin, ThresholdWindow *window);
@@ -155,6 +155,7 @@ public:
 	void update_low_color();
 	void update_mid_color();
 	void update_high_color();
+	void done_event(int result);
 
 	ThresholdMain *plugin;
 	ThresholdMin *min;

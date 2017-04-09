@@ -367,7 +367,7 @@ int ThresholdHighColorButton::handle_event()
 
 
 ThresholdLowColorThread::ThresholdLowColorThread(ThresholdMain *plugin, ThresholdWindow *window)
- : ColorThread(1, _("Low color"))
+ : ColorPicker(1, _("Low color"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -387,7 +387,7 @@ int ThresholdLowColorThread::handle_new_color(int output, int alpha)
 
 
 ThresholdMidColorThread::ThresholdMidColorThread(ThresholdMain *plugin, ThresholdWindow *window)
- : ColorThread(1, _("Mid color"))
+ : ColorPicker(1, _("Mid color"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -407,7 +407,7 @@ int ThresholdMidColorThread::handle_new_color(int output, int alpha)
 
 
 ThresholdHighColorThread::ThresholdHighColorThread(ThresholdMain *plugin, ThresholdWindow *window)
- : ColorThread(1, _("High color"))
+ : ColorPicker(1, _("High color"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -535,6 +535,13 @@ void ThresholdWindow::update_high_color()
 	set_color(plugin->config.high_color.getRGB());
 	draw_box(high_color_x, high_color_y, COLOR_W, COLOR_H);
 	flash(high_color_x, high_color_y, COLOR_W, COLOR_H);
+}
+
+void ThresholdWindow::done_event(int result)
+{
+	low_color_thread->close_window();
+	mid_color_thread->close_window();
+	high_color_thread->close_window();
 }
 
 

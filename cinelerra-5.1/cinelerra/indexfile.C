@@ -866,16 +866,19 @@ int IndexFile::read_info(Indexable *test_indexable)
 // Read the file format & index state.
 		if(test_indexable->is_asset)
 		{
-			Asset asset, *test_asset = (Asset *)test_indexable;
-			asset.read(&xml);
+			Asset *test_asset = (Asset *)test_indexable;
+			Asset *asset = new Asset;
+			asset->read(&xml);
+			int ret = 0;
 //printf("IndexFile::read_info %d %f\n", __LINE__, asset->get_frame_rate());
 
-			if( asset.format == FILE_UNKNOWN ||
-			    test_asset->format != asset.format )
-			{
+			if( asset->format == FILE_UNKNOWN ||
+			    test_asset->format != asset->format ) {
 if(debug) printf("IndexFile::read_info %d\n", __LINE__);
-				return 1;
+				ret = 1;
 			}
+			asset->remove_user();
+			if( ret ) return ret;
 		}
 		else
 		{

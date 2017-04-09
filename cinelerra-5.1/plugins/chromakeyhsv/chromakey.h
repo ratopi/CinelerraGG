@@ -182,7 +182,7 @@ public:
 };
 
 
-class ChromaKeyColorThread : public ColorThread
+class ChromaKeyColorThread : public ColorPicker
 {
 public:
 	ChromaKeyColorThread(ChromaKeyHSV *plugin, ChromaKeyWindow *gui);
@@ -209,6 +209,7 @@ public:
 
 	void create_objects();
 	void update_sample();
+	void done_event(int result);
 
 	ChromaKeyColor *color;
 	ChromaKeyUseColorPicker *use_colorpicker;

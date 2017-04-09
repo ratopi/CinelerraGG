@@ -103,7 +103,7 @@ public:
 };
 
 
-class ChromaKeyColorThread : public ColorThread
+class ChromaKeyColorThread : public ColorPicker
 {
 public:
 	ChromaKeyColorThread(ChromaKey *plugin, ChromaKeyWindow *gui);
@@ -121,6 +121,7 @@ public:
 
 	void create_objects();
 	void update_sample();
+	void done_event(int result);
 
 	ChromaKeyColor *color;
 	ChromaKeyThreshold *threshold;

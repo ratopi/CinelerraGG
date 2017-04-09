@@ -39,7 +39,7 @@
 
 #define PALETTE_DATA "palette.dat"
 
-ColorThread::ColorThread(int do_alpha, const char *title)
+ColorPicker::ColorPicker(int do_alpha, const char *title)
  : BC_DialogThread()
 {
 	this->title = title;
@@ -49,17 +49,17 @@ ColorThread::ColorThread(int do_alpha, const char *title)
 	this->alpha = 255;
 }
 
-ColorThread::~ColorThread()
+ColorPicker::~ColorPicker()
 {
 	close_window();
 }
 
-void ColorThread::start_window(int output, int alpha, int do_okcancel)
+void ColorPicker::start_window(int output, int alpha, int do_okcancel)
 {
 	if( running() ) {
 		ColorWindow *gui = (ColorWindow *)get_gui();
 		if( gui ) {
-			gui->lock_window("ColorThread::start_window");
+			gui->lock_window("ColorPicker::start_window");
 			gui->raise_window(1);
 			gui->unlock_window();
 		}
@@ -71,7 +71,7 @@ void ColorThread::start_window(int output, int alpha, int do_okcancel)
 	start();
 }
 
-BC_Window* ColorThread::new_gui()
+BC_Window* ColorPicker::new_gui()
 {
 	char window_title[BCTEXTLEN];
 	strcpy(window_title, _(PROGRAM_NAME ": "));
@@ -92,7 +92,7 @@ BC_Window* ColorThread::new_gui()
 	return gui;
 }
 
-void ColorThread::update_gui(int output, int alpha)
+void ColorPicker::update_gui(int output, int alpha)
 {
 	ColorWindow *gui = (ColorWindow *)get_gui();
 	if( !gui ) return;
@@ -104,14 +104,14 @@ void ColorThread::update_gui(int output, int alpha)
 	gui->unlock_window();
 }
 
-int ColorThread::handle_new_color(int output, int alpha)
+int ColorPicker::handle_new_color(int output, int alpha)
 {
-	printf("ColorThread::handle_new_color undefined.\n");
+	printf("ColorPicker::handle_new_color undefined.\n");
 	return 0;
 }
 
 
-ColorWindow::ColorWindow(ColorThread *thread, int x, int y, int w, int h, const char *title)
+ColorWindow::ColorWindow(ColorPicker *thread, int x, int y, int w, int h, const char *title)
  : BC_Window(title, x, y, w, h, w, h, 0, 0, 1)
 {
 	this->thread = thread;

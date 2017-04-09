@@ -317,6 +317,12 @@ void GradientWindow::update_out_color()
 	flash(out_color_x, out_color_y, COLOR_W, COLOR_H);
 }
 
+void GradientWindow::done_event(int result)
+{
+	in_color_thread->close_window();
+	out_color_thread->close_window();
+}
+
 
 
 
@@ -534,7 +540,7 @@ int GradientOutColorButton::handle_event()
 
 GradientInColorThread::GradientInColorThread(GradientMain *plugin,
 	GradientWindow *window)
- : ColorThread(1, _("Inner color"))
+ : ColorPicker(1, _("Inner color"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -569,7 +575,7 @@ int GradientInColorThread::handle_new_color(int output, int alpha)
 
 GradientOutColorThread::GradientOutColorThread(GradientMain *plugin,
 	GradientWindow *window)
- : ColorThread(1, _("Outer color"))
+ : ColorPicker(1, _("Outer color"))
 {
 	this->plugin = plugin;
 	this->window = window;

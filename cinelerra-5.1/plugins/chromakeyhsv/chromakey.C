@@ -287,6 +287,10 @@ ChromaKeyWindow::update_sample ()
   sample->flash ();
 }
 
+void ChromaKeyWindow::done_event(int result)
+{
+	color_thread->close_window();
+}
 
 
 ChromaKeyColor::ChromaKeyColor (ChromaKeyHSV * plugin,
@@ -525,7 +529,7 @@ ChromaKeySpillAmount::handle_event ()
 
 
 ChromaKeyColorThread::ChromaKeyColorThread (ChromaKeyHSV * plugin, ChromaKeyWindow * gui)
- : ColorThread (1, _("Inner color"))
+ : ColorPicker (1, _("Inner color"))
 {
   this->plugin = plugin;
   this->gui = gui;
