@@ -181,3 +181,14 @@ vflip
 #ahistogram
 #showspectrumpic
 #spectrumsynth
+#asidedata
+#hysteresis
+#lut2
+#maskedclamp
+#midequalizer
+#premultiply
+#sidedata
+#signature
+#threshold
+#abitscope
+#hwupload_cuda

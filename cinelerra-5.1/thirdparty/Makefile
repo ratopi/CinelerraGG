@@ -113,7 +113,6 @@ ffmpeg.cfg_params= \
 	--enable-pthreads --enable-gpl \
 	--disable-ffserver --disable-ffplay \
 	--disable-vaapi \
-	--enable-libfaac \
 	--enable-libfdk-aac \
 	--enable-libtwolame \
 	--enable-libopenjpeg \

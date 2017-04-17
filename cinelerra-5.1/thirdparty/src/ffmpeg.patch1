@@ -1,6 +1,7 @@
---- a/configure	2015-09-10 13:36:03.763986195 -0600
-+++ b/configure	2015-09-10 13:37:25.190550438 -0600
-@@ -5735,7 +5735,9 @@
+diff -urN a/configure b/configure
+--- a/configure	2017-04-12 19:55:54.000000000 -0600
++++ b/configure	2017-04-16 16:12:23.518837543 -0600
+@@ -5871,7 +5871,9 @@
                                 die "ERROR: libx264 must be installed and version must be >= 0.118."; } &&
                               { check_cpp_condition x264.h "X264_MPEG2" &&
                                 enable libx262; }
@@ -10,4 +11,4 @@
 +                                 warn "using libx265 without pkg-config"; } } &&
                               { check_cpp_condition x265.h "X265_BUILD >= 68" ||
                                 die "ERROR: libx265 version must be >= 68."; }
- enabled libxavs           && require libxavs xavs.h xavs_encoder_encode -lxavs
+ enabled libxavs           && require libxavs "stdint.h xavs.h" xavs_encoder_encode -lxavs

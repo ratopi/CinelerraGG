@@ -131,12 +131,12 @@ PKG_3RD([faad2],[auto],
   [ include ])
 
 PKG_3RD([fdk],[auto],
-  [fdk-aac-0.1.4],
+  [fdk-aac-0.1.5],
   [ .libs/libfdk-aac.a ],
   [ libAACdec/include libAACenc/include libSYS/include ])
 
 PKG_3RD([ffmpeg],[yes],
-  [ffmpeg-3.1.4],
+  [ffmpeg-3.3],
   [ libavutil/libavutil.a \
     libavcodec/libavcodec.a \
     libpostproc/libpostproc.a \
@@ -148,7 +148,7 @@ PKG_3RD([ffmpeg],[yes],
   [ . ])
 
 PKG_3RD([fftw],[auto],
-  [fftw-3.3.4],
+  [fftw-3.3.6-pl2],
   [ .libs/libfftw3.a \
     libbench2/libbench2.a \
     rdft/scalar/r2cb/.libs/librdft_scalar_r2cb.a \
@@ -167,7 +167,7 @@ PKG_3RD([fftw],[auto],
   [ api ])
 
 PKG_3RD([flac],[auto],
-  [flac-1.3.1],
+  [flac-1.3.2],
   [ src/libFLAC/.libs/libFLAC.a \
     src/libFLAC++/.libs/libFLAC++.a \
     src/share/replaygain_analysis/.libs/libreplaygain_analysis.a \
@@ -178,7 +178,7 @@ PKG_3RD([flac],[auto],
   [ include ])
 
 PKG_3RD([giflib],[yes],
-  [giflib-5.1.2],
+  [giflib-5.1.4],
   [ lib/.libs/libgif.a \
     util/libgetarg.a ],
   [ lib ])
@@ -208,7 +208,7 @@ PKG_3RD([libavc1394],[auto],
   [ . ])
 
 PKG_3RD([libraw1394],[auto],
-  [libraw1394-2.0.5],
+  [libraw1394-2.1.2],
   [ src/.libs/libraw1394.a ],
   [ . ])
 
@@ -223,7 +223,7 @@ PKG_3RD([libdv],[auto],
   [ . ])
 
 PKG_3RD([libjpeg],[auto],
-  [libjpeg-turbo-1.4.0],
+  [libjpeg-turbo-1.5.1],
   [ .libs/libjpeg.a \
     .libs/libturbojpeg.a \
     simd/.libs/libsimd.a ],
@@ -240,7 +240,7 @@ PKG_3RD([libogg],[auto],
   [ include ])
 
 PKG_3RD([libsndfile],[auto],
-  [libsndfile-1.0.26],
+  [libsndfile-1.0.28],
   [ src/.libs/libsndfile.a \
     src/.libs/libcommon.a \
     src/G72x/.libs/libg72x.a \
@@ -293,7 +293,7 @@ PKG_3RD([openexr],[auto],
 #  [])
 #
 PKG_3RD([tiff],[auto],
-  [tiff-3.8.2],
+  [tiff-4.0.6],
   [ libtiff/.libs/libtiff.a \
     libtiff/.libs/libtiffxx.a \
     port/.libs/libport.a ],[
@@ -305,17 +305,17 @@ PKG_3RD([twolame],[auto],
   [  libtwolame ])
 
 PKG_3RD([x264],[auto],
-  [x264-snapshot-20160220-2245-stable],
+  [x264-snapshot-20170416-2245-stable],
   [ libx264.a ],
   [ . ])
 
 PKG_3RD([x265],[auto],
-  [x265_2.1],
+  [x265_2.3],
   [ libx265.a ],
   [ . source ])
 
 PKG_3RD([libvpx],[auto],
-  [libvpx-1.5.0],
+  [libvpx-1.6.1],
   [ libvpx.a ],
   [ . ])
 

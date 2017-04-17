@@ -1,7 +1,16 @@
-diff -ur ffmpeg-3.1.1.orig/libavcodec/avcodec.h ffmpeg-3.1.1/libavcodec/avcodec.h
---- ffmpeg-3.1.1.orig/libavcodec/avcodec.h	2016-06-26 17:54:28.000000000 -0600
-+++ ffmpeg-3.1.1/libavcodec/avcodec.h	2016-07-08 09:32:20.040623502 -0600
-@@ -4700,7 +4700,7 @@
+diff -urN a/libavcodec/avcodec.h b/libavcodec/avcodec.h
+--- a/libavcodec/avcodec.h	2017-04-12 19:55:55.000000000 -0600
++++ b/libavcodec/avcodec.h	2017-04-16 16:16:04.497012383 -0600
+@@ -4600,7 +4600,7 @@
+ attribute_deprecated
+ int av_packet_merge_side_data(AVPacket *pkt);
+ 
+-attribute_deprecated
++//attribute_deprecated
+ int av_packet_split_side_data(AVPacket *pkt);
+ #endif
+ 
+@@ -4838,7 +4838,7 @@
   *
  * @deprecated Use avcodec_send_packet() and avcodec_receive_frame().
   */
@@ -10,7 +19,7 @@ diff -ur ffmpeg-3.1.1.orig/libavcodec/avcodec.h ffmpeg-3.1.1/libavcodec/avcodec.
  int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame,
                            int *got_frame_ptr, const AVPacket *avpkt);
  
-@@ -4749,7 +4749,7 @@
+@@ -4887,7 +4887,7 @@
   *
   * @deprecated Use avcodec_send_packet() and avcodec_receive_frame().
   */
@@ -19,7 +28,7 @@ diff -ur ffmpeg-3.1.1.orig/libavcodec/avcodec.h ffmpeg-3.1.1/libavcodec/avcodec.
  int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture,
                           int *got_picture_ptr,
                           const AVPacket *avpkt);
-@@ -5218,7 +5218,7 @@
+@@ -5363,7 +5363,7 @@
   *
   * @deprecated use avcodec_send_frame()/avcodec_receive_packet() instead
   */
@@ -28,7 +37,7 @@ diff -ur ffmpeg-3.1.1.orig/libavcodec/avcodec.h ffmpeg-3.1.1/libavcodec/avcodec.
  int avcodec_encode_audio2(AVCodecContext *avctx, AVPacket *avpkt,
                            const AVFrame *frame, int *got_packet_ptr);
  
-@@ -5257,7 +5257,7 @@
+@@ -5402,7 +5402,7 @@
   *
   * @deprecated use avcodec_send_frame()/avcodec_receive_packet() instead
   */
@@ -37,7 +46,7 @@ diff -ur ffmpeg-3.1.1.orig/libavcodec/avcodec.h ffmpeg-3.1.1/libavcodec/avcodec.
  int avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt,
                            const AVFrame *frame, int *got_packet_ptr);
  
-@@ -5778,7 +5778,7 @@
+@@ -5924,7 +5924,7 @@
   * @return a bitstream filter context if a matching filter was found
   * and successfully initialized, NULL otherwise
   */
@@ -46,7 +55,7 @@ diff -ur ffmpeg-3.1.1.orig/libavcodec/avcodec.h ffmpeg-3.1.1/libavcodec/avcodec.
  AVBitStreamFilterContext *av_bitstream_filter_init(const char *name);
  
  /**
-@@ -5810,7 +5810,7 @@
+@@ -5956,7 +5956,7 @@
   * its starting address). A special case is if *poutbuf was set to NULL and
   * *poutbuf_size was set to 0, which indicates the packet should be dropped.
   */
@@ -55,7 +64,7 @@ diff -ur ffmpeg-3.1.1.orig/libavcodec/avcodec.h ffmpeg-3.1.1/libavcodec/avcodec.
  int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
                                 AVCodecContext *avctx, const char *args,
                                 uint8_t **poutbuf, int *poutbuf_size,
-@@ -5822,7 +5822,7 @@
+@@ -5968,7 +5968,7 @@
   * @param bsf the bitstream filter context created with
   * av_bitstream_filter_init(), can be NULL
   */
@@ -64,10 +73,10 @@ diff -ur ffmpeg-3.1.1.orig/libavcodec/avcodec.h ffmpeg-3.1.1/libavcodec/avcodec.
  void av_bitstream_filter_close(AVBitStreamFilterContext *bsf);
  
  /**
-diff -ur ffmpeg-3.1.1.orig/libavformat/avformat.h ffmpeg-3.1.1/libavformat/avformat.h
---- ffmpeg-3.1.1.orig/libavformat/avformat.h	2016-06-30 19:00:55.000000000 -0600
-+++ ffmpeg-3.1.1/libavformat/avformat.h	2016-07-08 09:33:16.610668989 -0600
-@@ -876,7 +876,7 @@
+diff -urN a/libavformat/avformat.h b/libavformat/avformat.h
+--- a/libavformat/avformat.h	2017-04-12 19:55:55.000000000 -0600
++++ b/libavformat/avformat.h	2017-04-16 16:16:04.499012276 -0600
+@@ -889,7 +889,7 @@
      /**
       * @deprecated use the codecpar struct instead
       */
