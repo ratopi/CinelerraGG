@@ -792,7 +792,8 @@ int FileMPEG::create_toc(char *toc_path)
 // delete any existing toc files
 	char toc_file[BCTEXTLEN];
 	strcpy(toc_file, toc_path);
-	remove(toc_file);
+	if( strcmp(toc_file, asset->path) )
+		remove(toc_file);
 	char *bp = strrchr(toc_file, '/');
 	if( !bp ) bp = toc_file;
 	char *sfx = strrchr(bp,'.');

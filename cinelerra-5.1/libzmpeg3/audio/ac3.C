@@ -1,10 +1,14 @@
 #include "../libzmpeg3.h"
 
+#ifndef MM_ACCEL_DJBFFT
+#define MM_ACCEL_DJBFFT 0x00000001
+#endif
+
 zaudio_decoder_ac3_t::
 audio_decoder_ac3_t()
 {
   stream = new bits_t(0, 0);
-  state = a52_init(0);
+  state = a52_init(MM_ACCEL_DJBFFT);
   output = a52_samples(state);
 }
 

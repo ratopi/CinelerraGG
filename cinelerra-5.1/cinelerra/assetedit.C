@@ -110,7 +110,7 @@ void AssetEdit::edit_asset(Indexable *indexable)
 
 void AssetEdit::handle_done_event(int result)
 {
-	if( !result ) {
+	if( !result && window->tc_hours_textbox ) {
 		changed_params->tcstart = ceil(indexable->get_frame_rate() *
 			(atoi(window->tc_hours_textbox->get_text()) * 3600 +
 			 atoi(window->tc_minutes_textbox->get_text()) * 60 +
@@ -225,6 +225,12 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	lohi = 0;
 	allow_edits = 0;
 	detail_thread = 0;
+	tc_hours_textbox = 0;
+	tc_minutes_textbox = 0;
+	tc_seconds_textbox = 0;
+	tc_rest_textbox = 0;
+	win_width = 0;
+	win_height = 0;
 }
 
 

@@ -1,3 +1,3 @@
-mov libfdk_aac | aac_adtstoasc
+mov libfdk_aac
 strict -2
 b 256000

@@ -113,6 +113,11 @@ gtk_window::gtk_window(int width, int height)
 
 gtk_window::~gtk_window()
 {
+  gtk_widget_destroy(window);
+  g_object_unref(pbuf0);
+  g_object_unref(img0);
+  g_object_unref(pbuf1);
+  g_object_unref(img1);
   delete [] row0;
   delete [] row1;
   pthread_mutex_destroy(&draw);
@@ -178,6 +183,7 @@ public:
   AVPixelFormat pix_fmt;
   double frame_rate;
   int width, height;
+  int need_packet, eof;
   int open_decoder(const char *filename, int vid_no);
   void close_decoder();
   AVFrame *read_frame();
@@ -191,6 +197,8 @@ ffcmpr::ffcmpr()
   this->st = 0;
   this->ctx = 0 ;
   this->frame_rate = 0;
+  this->need_packet = 0;
+  this->eof = 0;
   this->pix_fmt = AV_PIX_FMT_NONE;
   width = height = 0;
 }
@@ -199,6 +207,7 @@ void ffcmpr::close_decoder()
 {
   av_packet_unref(&ipkt);
   if( !fmt_ctx ) return;
+  if( ctx ) avcodec_free_context(&ctx);
   avformat_close_input(&fmt_ctx);
   av_frame_free(&ipic);
 }
@@ -235,28 +244,31 @@ int ffcmpr::open_decoder(const char *filename, int vid_no)
   this->st = 0;
   for( int i=0; !this->st && ret>=0 && i<(int)fmt_ctx->nb_streams; ++i ) {
     AVStream *fst = fmt_ctx->streams[i];
-    AVMediaType type = fst->codec->codec_type;
+    AVMediaType type = fst->codecpar->codec_type;
     if( type != AVMEDIA_TYPE_VIDEO ) continue;
     if( --vid_no < 0 ) this->st = fst;
   }
 
-  AVCodecID codec_id = st->codec->codec_id;
+  AVCodecID codec_id = st->codecpar->codec_id;
   AVDictionary *copts = 0;
   //av_dict_copy(&copts, opts, 0);
   AVCodec *decoder = avcodec_find_decoder(codec_id);
-  if( avcodec_open2(st->codec, decoder, &copts) < 0 ) {
+  ctx = avcodec_alloc_context3(decoder);
+  avcodec_parameters_to_context(ctx, st->codecpar);
+  if( avcodec_open2(ctx, decoder, &copts) < 0 ) {
     fprintf(stderr,"codec open failed: %s\n", filename);
     return -1;
   }
   av_dict_free(&copts);
   ipic = av_frame_alloc();
+  eof = 0;
+  need_packet = 1;
 
   AVRational framerate = av_guess_frame_rate(fmt_ctx, st, 0);
   this->frame_rate = !framerate.den ? 0 : (double)framerate.num / framerate.den;
-  this->ctx = st->codec;
-  this->pix_fmt = ctx->pix_fmt;
-  this->width  = ctx->width;
-  this->height = ctx->height;
+  this->pix_fmt = (AVPixelFormat)st->codecpar->format;
+  this->width  = st->codecpar->width;
+  this->height = st->codecpar->height;
   return 0;
 }
 
@@ -265,21 +277,29 @@ AVFrame *ffcmpr::read_frame()
   av_frame_unref(ipic);
 
   for( int retrys=1000; --retrys>=0; ) {
-    av_packet_unref(&ipkt);
-    int ret = av_read_frame(fmt_ctx, &ipkt);
-    if( ret == AVERROR_EOF ) break;
-    if( ret != 0 ) continue;
-    if( !ipkt.data ) continue;
-    if( ipkt.stream_index != st->index ) continue;
-    while( ipkt.size > 0 ) {
-      int got_frame = 0;
-      ret = avcodec_decode_video2(st->codec, ipic, &got_frame, &ipkt);
-      if( ret <= 0 ) break;
-      if( got_frame )
-        return ipic;
-      ipkt.data += ret;
-      ipkt.size -= ret;
+    if( need_packet ) {
+      if( eof ) return 0;
+      AVPacket *pkt = &ipkt;
+      av_packet_unref(pkt);
+      int ret = av_read_frame(fmt_ctx, pkt);
+      if( ret < 0 ) {
+        if( ret != AVERROR_EOF ) return 0;
+        ret = 0;  eof = 1;  pkt = 0;
+      }
+      if( pkt ) {
+        if( pkt->stream_index != st->index ) continue;
+        if( !pkt->data || !pkt->size ) continue;
+      }
+      avcodec_send_packet(ctx, pkt);
+      need_packet = 0;
     }
+    int ret = avcodec_receive_frame(ctx, ipic);
+    if( ret >= 0 ) return ipic;
+    if( ret != AVERROR(EAGAIN) ) {
+      eof = 1; need_packet = 0;
+      break;
+    }
+    need_packet = 1;
   }
   return 0;
 }
@@ -388,7 +408,9 @@ int main(int ac, char **av)
     gw.post();
   }
 
+  av_freep(&afrm->data);
   av_frame_free(&afrm);
+  av_freep(&bfrm->data);
   av_frame_free(&bfrm);
   
   b.close_decoder();

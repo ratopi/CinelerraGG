@@ -72,8 +72,6 @@ int FileAC3::reset_parameters_derived()
 	temp_raw = 0;
 	temp_raw_size = 0;
 	temp_raw_allocated = 0;
-	temp_compressed = 0;
-	compressed_allocated = 0;
 	return 0;
 }
 
@@ -130,7 +128,7 @@ int FileAC3::open_file(int rd, int wr)
 
 	if( !result && wr )
 	{
-  		//avcodec_init();
+		//avcodec_init();
 		avcodec_register_all();
 		codec = avcodec_find_encoder(AV_CODEC_ID_AC3);
 		if(!codec)
@@ -148,6 +146,7 @@ int FileAC3::open_file(int rd, int wr)
 			int sample_rate = asset->sample_rate;
 			int64_t layout = get_channel_layout(channels);
 			int bitrate = asset->ac3_bitrate * 1000;
+			av_init_packet(&avpkt);
 			codec_context = avcodec_alloc_context3(codec);
 			codec_context->bit_rate = bitrate;
 			codec_context->sample_rate = sample_rate;
@@ -179,6 +178,7 @@ int FileAC3::close_file()
 	}
 	if(codec_context)
 	{
+		encode_flush();
 		avcodec_close(codec_context);
 		avcodec_free_context(&codec_context);
 		codec = 0;
@@ -194,11 +194,6 @@ int FileAC3::close_file()
 	{
 		delete [] temp_raw;
 		temp_raw = 0;
-	}
-	if(temp_compressed)
-	{
-		delete [] temp_compressed;
-		temp_compressed = 0;
 	}
 	reset_parameters();
 	FileBase::close_file();
@@ -229,6 +224,57 @@ int FileAC3::get_index(IndexFile *index_file, MainProgressBar *progress_bar)
 // 	{ }
 // };
 
+int FileAC3::write_packet()
+{
+	AVCodecContext *&avctx = codec_context;
+	int ret = avcodec_receive_packet(avctx, &avpkt);
+	if( ret >= 0 ) {
+		ret = 0;
+		if( avpkt.data && avpkt.size > 0 ) {
+			int sz = fwrite(avpkt.data, 1, avpkt.size, fd);
+			if( sz == avpkt.size ) ret = 1;
+		}
+		if( !ret )
+			eprintf(_("Error while writing samples. \n%m\n"));
+		av_packet_unref(&avpkt);
+	}
+	else if( ret == AVERROR_EOF )
+		ret = 0;
+	return ret;
+}
+
+int FileAC3::encode_frame(AVFrame *frame)
+{
+	AVCodecContext *&avctx = codec_context;
+	int ret = 0, pkts = 0;
+	for( int retry=100; --retry>=0; ) {
+		ret = avcodec_send_frame(avctx, frame);
+		if( ret >= 0 ) return pkts;
+		if( ret != AVERROR(EAGAIN) ) break;
+		if( (ret=write_packet()) < 0 ) break;
+		if( !ret ) return pkts;
+		++pkts;
+	}
+	if( ret < 0 ) {
+		char errmsg[BCTEXTLEN];
+		av_strerror(ret, errmsg, sizeof(errmsg));
+		fprintf(stderr, "FileAC3::encode_frame: encode failed: %s\n", errmsg);
+	}
+	return ret;
+}
+
+int FileAC3::encode_flush()
+{
+	AVCodecContext *&avctx = codec_context;
+	int ret = avcodec_send_frame(avctx, 0);
+	while( (ret=write_packet()) > 0 );
+	if( ret < 0 ) {
+		char errmsg[BCTEXTLEN];
+		av_strerror(ret, errmsg, sizeof(errmsg));
+		fprintf(stderr, "FileAC3::encode_flush: encode failed: %s\n", errmsg);
+	}
+	return ret;
+}
 
 int FileAC3::write_samples(double **buffer, int64_t len)
 {
@@ -248,14 +294,6 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 		temp_raw_allocated = new_allocated;
 	}
 
-// Allocate compressed data buffer
-	if(temp_raw_allocated * asset->channels * 2 > compressed_allocated)
-	{
-		compressed_allocated = temp_raw_allocated * asset->channels * 2;
-		delete [] temp_compressed;
-		temp_compressed = new unsigned char[compressed_allocated];
-	}
-
 // Append buffer to temp raw
 	int16_t *out_ptr = temp_raw + temp_raw_size * asset->channels;
 	for(int i = 0; i < len; i++)
@@ -271,15 +309,11 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 
 	AVCodecContext *&avctx = codec_context;
 	int frame_size = avctx->frame_size;
-	int output_size = 0, cur_sample = 0, ret = 0;
-	for(cur_sample = 0; !ret &&
+	int cur_sample = 0, ret = 0;
+	for(cur_sample = 0; ret >= 0 &&
 		cur_sample + frame_size <= temp_raw_size;
 		cur_sample += frame_size)
 	{
-		AVPacket avpkt;
-		av_init_packet(&avpkt);
-		avpkt.data = temp_compressed + output_size;
-		avpkt.size = compressed_allocated - output_size;
 		AVFrame *frame = av_frame_alloc();
 		frame->nb_samples = frame_size;
 		frame->format = avctx->sample_fmt;
@@ -296,18 +330,8 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 		if( ret >= 0 ) {
 			frame->pts = avctx->sample_rate && avctx->time_base.num ?
 				file->get_audio_position() : AV_NOPTS_VALUE ;
-			int got_packet = 0;
-			ret = avcodec_encode_audio2(avctx, &avpkt, frame, &got_packet);
-			if( ret < 0 ) {
-				char errmsg[BCSTRLEN];
-				av_strerror(ret, errmsg, sizeof(errmsg));
-				fprintf(stderr, "avcodec_encode_audio2 failed. \n%s\n", errmsg);
-			}
+			ret = encode_frame(frame);
 		}
-		av_packet_free_side_data(&avpkt);
-		output_size += avpkt.size;
-		if(frame->extended_data != frame->data)
-			av_freep(&frame->extended_data);
 		av_frame_free(&frame);
 	}
 
@@ -317,12 +341,6 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 		(temp_raw_size - cur_sample) * sizeof(int16_t) * asset->channels);
 	temp_raw_size -= cur_sample;
 
-	int bytes_written = fwrite(temp_compressed, 1, output_size, fd);
-	if(bytes_written < output_size)
-	{
-		eprintf(_("Error while writing samples. \n%m\n"));
-		return 1;
-	}
 	return 0;
 }
 

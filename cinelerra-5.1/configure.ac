@@ -119,17 +119,6 @@ PKG_3RD([esound],[no],
     .libs/libesddsp.a ],
   [ . ])
 
-PKG_3RD([faac],[auto],
-  [faac-1.28],
-  [ libfaac/.libs/libfaac.a ],
-  [ include ])
-
-PKG_3RD([faad2],[auto],
-  [faad2-2.7],
-  [ libfaad/.libs/libfaad.a \
-    common/mp4ff/libmp4ff.a ],
-  [ include ])
-
 PKG_3RD([fdk],[auto],
   [fdk-aac-0.1.5],
   [ .libs/libfdk-aac.a ],
@@ -452,10 +441,6 @@ CHECK_LIB([a52dec], [a52], [a52_init])
 CHECK_HEADERS([a52dec], [a52 headers], [a52.h])
 CHECK_LIB([encore], [encore], [encore])
 CHECK_HEADERS([encore], [encore headers], [encore.h])
-CHECK_LIB([faac], [faac], [faacEncOpen])
-CHECK_HEADERS([faac], [faac headers], [faac.h])
-CHECK_LIB([faad2], [faad], [faacDecInit])
-CHECK_HEADERS([faad2], [faad headers], [faad.h])
 CHECK_LIB([giflib], [gif], [DGifOpen])
 CHECK_HEADERS([giflib], [gif lib headers], [gif_lib.h])
 CHECK_LIB([fdk], [fdk-aac], [faacDecInit])
@@ -596,7 +581,7 @@ AC_DEFUN([PKG_FORCED],[PKG_STATIC([$1],[forced])])
 
 # order matters
 for dep in \
-        ffmpeg/faac ffmpeg/faad2 ffmpeg/twolame ffmpeg/lame ffmpeg/openjpeg \
+        ffmpeg/twolame ffmpeg/lame ffmpeg/openjpeg \
         ffmpeg/libvorbis ffmpeg/libtheora ffmpeg/x264 ffmpeg/x265 ffmpeg/fdk \
         libiec61883/libraw1394 libavc1394/librom1394 \
         openexr/ilmbase ilmbase/libogg \
@@ -629,8 +614,6 @@ PKG_PROVIDE([djbfft])
 PKG_PROVIDE([encore])
 PKG_PROVIDE([audiofile],[$WANT_ESOUND])
 PKG_PROVIDE([esound],[$WANT_ESOUND])
-PKG_PROVIDE([faac])
-PKG_PROVIDE([faad2])
 PKG_PROVIDE([fdk])
 PKG_PROVIDE([ffmpeg])
 PKG_PROVIDE([fftw])

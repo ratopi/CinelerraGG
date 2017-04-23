@@ -55,8 +55,12 @@ public:
 	int read_samples(double *buffer, int64_t len);
 	int write_samples(double **buffer, int64_t len);
 	int get_index(IndexFile *index_file, MainProgressBar *progress_bar);
+	int write_packet();
+	int encode_frame(AVFrame *frame);
+	int encode_flush();
 
 private:
+	AVPacket avpkt;
 	AVCodec *codec;
 	AVCodecContext *codec_context;
 	SwrContext *resample_context;
@@ -66,8 +70,6 @@ private:
 	int16_t *temp_raw;
 	int temp_raw_allocated;
 	int temp_raw_size;
-	unsigned char *temp_compressed;
-	int compressed_allocated;
 };
 
 

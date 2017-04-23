@@ -1110,17 +1110,18 @@ public:
   int av_idx;
   AVMediaType type;
   AVCodecID codec_id;
+  AVCodecContext *ctx;
   int64_t start_pts;
   int64_t end_pts;
   int64_t last_pts;
   int64_t duration;
 
   stream(AVMediaType ty, int i) {
-    type = ty;  av_idx = i;
+    type = ty;  av_idx = i;  ctx = 0;
     start_pts = INT64_MAX; end_pts = INT64_MIN;
     last_pts = -1;
   }
-  ~stream() {}
+  ~stream() { if( ctx ) avcodec_free_context(&ctx); }
 };
 
 class mark {
@@ -2508,9 +2509,15 @@ static int field_probe(AVFormatContext *fmt_ctx, AVStream *st)
 {
   AVDictionary *copts = 0;
   //av_dict_copy(&copts, opts, 0);
-  AVCodecID codec_id = st->codec->codec_id;
+  AVCodecID codec_id = st->codecpar->codec_id;
   AVCodec *decoder = avcodec_find_decoder(codec_id);
-  if( avcodec_open2(st->codec, decoder, &copts) < 0 ) {
+  AVCodecContext *ctx = avcodec_alloc_context3(decoder);
+  if( !ctx ) {
+    fprintf(stderr,"codec alloc failed\n");
+    return -1;
+  }
+  avcodec_parameters_to_context(ctx, st->codecpar);
+  if( avcodec_open2(ctx, decoder, &copts) < 0 ) {
     fprintf(stderr,"codec open failed\n");
     return -1;
   }
@@ -2525,22 +2532,24 @@ static int field_probe(AVFormatContext *fmt_ctx, AVStream *st)
     int ret = av_read_frame(fmt_ctx, &ipkt);
     if( ret == AVERROR_EOF ) break;
     if( ret != 0 ) continue;
-    if( !ipkt.data ) continue;
     if( ipkt.stream_index != st->index ) continue;
-    while( ipkt.size > 0 ) {
-      int got_frame = 0;
-      ret = avcodec_decode_video2(st->codec, ipic, &got_frame, &ipkt);
-      if( ret <= 0 ) break;
-      if( got_frame ) {
-        ilaced = ipic->interlaced_frame ? 1 : 0;
-        break;
-      }
-      ipkt.data += ret;
-      ipkt.size -= ret;
+    if( !ipkt.data || !ipkt.size ) continue;
+    ret = avcodec_send_packet(ctx, &ipkt);
+    if( ret < 0 ) {
+      fprintf(stderr, "avcodec_send_packet failed\n");
+      break;
     }
+    ret = avcodec_receive_frame(ctx, ipic);
+    if( ret >= 0 ) {
+      ilaced = ipic->interlaced_frame ? 1 : 0;
+      break;
+    }
+    if( ret != AVERROR(EAGAIN) )
+      fprintf(stderr, "avcodec_receive_frame failed %d\n", ret);
   }
   av_packet_unref(&ipkt);
   av_frame_free(&ipic);
+  avcodec_free_context(&ctx);
   return ilaced;
 }
 
@@ -2565,7 +2574,7 @@ int media_info::scan()
   int ep_pid = -1;
   for( int i=0; ret>=0 && i<(int)fmt_ctx->nb_streams; ++i ) {
     AVStream *st = fmt_ctx->streams[i];
-    AVMediaType type = st->codec->codec_type;
+    AVMediaType type = st->codecpar->codec_type;
     switch( type ) {
     case AVMEDIA_TYPE_VIDEO: break;
     case AVMEDIA_TYPE_AUDIO: break;
@@ -2574,7 +2583,13 @@ int media_info::scan()
     }
     stream *s = new stream(type, i);
     s->pid = st->id;
-    AVCodecID codec_id = st->codec->codec_id;
+    AVCodecID codec_id = st->codecpar->codec_id;
+    AVCodec *decoder = avcodec_find_decoder(codec_id);
+    s->ctx = avcodec_alloc_context3(decoder);
+    if( !s->ctx ) {
+      fprintf(stderr, "avcodec_alloc_context failed\n");
+      continue;
+    }
     switch( type ) {
     case AVMEDIA_TYPE_VIDEO: {
       if( ep_pid < 0 ) ep_pid = st->id;
@@ -2584,17 +2599,17 @@ int media_info::scan()
         fprintf(stderr, "interlace probe failed\n");
         exit(1);
       }
-      s->format = bd_video_format(st->codec->width, st->codec->height, ilace);
-      s->rate = bd_video_rate(!st->codec->framerate.den ? 0 :
-		(double)st->codec->framerate.num / st->codec->framerate.den);
-      s->aspect = bd_aspect_ratio(st->codec->width, st->codec->height,
+      s->format = bd_video_format(st->codecpar->width, st->codecpar->height, ilace);
+      AVRational framerate = av_guess_frame_rate(fmt_ctx, st, 0);
+      s->rate = bd_video_rate(!framerate.den ? 0 : (double)framerate.num / framerate.den);
+      s->aspect = bd_aspect_ratio(st->codecpar->width, st->codecpar->height,
 		!st->sample_aspect_ratio.num || !st->sample_aspect_ratio.den ? 1. :
 		 (double)st->sample_aspect_ratio.num / st->sample_aspect_ratio.den);
       break; }
     case AVMEDIA_TYPE_AUDIO: {
       s->coding_type = bd_stream_type(codec_id);
-      s->format = bd_audio_format(st->codec->channels);
-      s->rate = bd_audio_rate(st->codec->sample_rate);
+      s->format = bd_audio_format(st->codecpar->channels);
+      s->rate = bd_audio_rate(st->codecpar->sample_rate);
       strcpy((char*)s->lang, "eng");
       break; }
     case AVMEDIA_TYPE_SUBTITLE: {
@@ -2613,9 +2628,8 @@ int media_info::scan()
     s->duration = av_rescale_q(st->duration, st->time_base, clk45k);
     streams.append(s);
 
-    AVCodec *decoder = avcodec_find_decoder(codec_id);
     AVDictionary *copts = 0;
-    ret = avcodec_open2(st->codec, decoder, &copts);
+    ret = avcodec_open2(s->ctx, decoder, &copts);
   }
   if( ep_pid < 0 )
     ep_pid = fmt_ctx->nb_streams > 0 ? fmt_ctx->streams[0]->id : 0;
@@ -2629,7 +2643,7 @@ int media_info::scan()
     pgm->duration = 0;
     for( int jj=0; jj<streams.size(); ++jj ) {
       AVStream *st = fmt_ctx->streams[jj];
-      AVMediaType type = st->codec->codec_type;
+      AVMediaType type = st->codecpar->codec_type;
       switch( type ) {
       case AVMEDIA_TYPE_VIDEO:
       case AVMEDIA_TYPE_AUDIO:
@@ -2654,7 +2668,7 @@ int media_info::scan()
     for( int jj=0; jj<(int)pgrm->nb_stream_indexes; ++jj ) {
       int av_idx = pgrm->stream_index[jj];
       AVStream *st = fmt_ctx->streams[av_idx];
-      AVMediaType type = st->codec->codec_type;
+      AVMediaType type = st->codecpar->codec_type;
       switch( type ) {
       case AVMEDIA_TYPE_VIDEO:
         if( ep_pid < 0 ) ep_pid = st->id;
@@ -2687,8 +2701,8 @@ int media_info::scan()
   if( ret >= 0 )
     ret = scan(fmt_ctx);
 
-  for( int i=0; i<(int)fmt_ctx->nb_streams; ++i )
-    avcodec_close(fmt_ctx->streams[i]->codec);
+  for( int i=0; i<(int)streams.size(); ++i )
+    avcodec_close(streams[i]->ctx);
   avformat_close_input(&fmt_ctx);
 
   return ret;

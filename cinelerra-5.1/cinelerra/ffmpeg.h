@@ -89,11 +89,10 @@ public:
 
 	virtual int is_audio() = 0;
 	virtual int is_video() = 0;
-	virtual int decode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame) = 0;
-	virtual int encode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame) = 0;
+	virtual int decode_frame(AVFrame *frame) = 0;
+	virtual int encode_frame(AVFrame *frame) = 0;
 	virtual int init_frame(AVFrame *frame) = 0;
-	virtual int create_filter(const char *filter_spec,
-		AVCodecContext *src_ctx, AVCodecContext *sink_ctx) = 0;
+	virtual int create_filter(const char *filter_spec, AVCodecParameters *avpar) = 0;
 	virtual void load_markers() = 0;
 	virtual IndexMarks *get_markers() = 0;
 	int create_filter(const char *filter_spec);
@@ -104,28 +103,13 @@ public:
 	FFMPEG *ffmpeg;
 	AVStream *st;
 	AVFormatContext *fmt_ctx;
+	AVCodecContext *avctx;
 
 	AVFilterContext *buffersink_ctx;
 	AVFilterContext *buffersrc_ctx;
 	AVFilterGraph *filter_graph;
 	AVFrame *frame, *fframe;
-
-	class BSFilter {
-	public:
-		AVBitStreamFilterContext *bsfc;
-		const char *args;
-		BSFilter(const char *bsf, const char *ap) {
-			bsfc = av_bitstream_filter_init(bsf);
-			args = ap ? cstrdup(ap) : 0;
-		}
-		~BSFilter() {
-			av_bitstream_filter_close(bsfc);
-			delete [] args;
-		}
-	};
-	void add_bsfilter(const char *bsf, const char *ap);
-	ArrayList<BSFilter *> bsfilter;
-	int bs_filter(AVPacket *pkt);
+	AVBSFContext *bsfc;
 
 	FFPacket ipkt;
 	int need_packet, flushed;
@@ -168,15 +152,13 @@ public:
 	int is_video() { return 0; }
 	int get_samples(float *&samples, uint8_t **data, int len);
 	int load_history(uint8_t **data, int len);
-	int decode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame);
-	int encode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame);
-	int create_filter(const char *filter_spec,
-		AVCodecContext *src_ctx, AVCodecContext *sink_ctx);
+	int decode_frame(AVFrame *frame);
+	int encode_frame(AVFrame *frame);
+	int create_filter(const char *filter_spec, AVCodecParameters *avpar);
 	void load_markers();
 	IndexMarks *get_markers();
 
 	int encode_activate();
-	int nb_samples();
 	int64_t load_buffer(double ** const sp, int len);
 	int in_history(int64_t pos);
 	void reset_history();
@@ -225,10 +207,9 @@ public:
 	virtual ~FFVideoStream();
 	int is_audio() { return 0; }
 	int is_video() { return 1; }
-	int decode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame);
-	int encode_frame(AVPacket *pkt, AVFrame *frame, int &got_frame);
-	int create_filter(const char *filter_spec,
-		AVCodecContext *src_ctx, AVCodecContext *sink_ctx);
+	int decode_frame(AVFrame *frame);
+	int encode_frame(AVFrame *frame);
+	int create_filter(const char *filter_spec, AVCodecParameters *avpar);
 	void load_markers();
 	IndexMarks *get_markers();
 
@@ -267,10 +248,8 @@ public:
 		 char *codec, char *codec_options, int len);
 	static void set_asset_format(Asset *asset, const char *text);
 	int get_file_format();
-	int get_encoder(const char *options,
-		char *format, char *codec, char *bsfilter, char *bsargs);
-	int get_encoder(FILE *fp,
-		char *format, char *codec, char *bsfilter, char *bsargs);
+	int get_encoder(const char *options, char *format, char *codec, char *bsfilter);
+	int get_encoder(FILE *fp, char *format, char *codec, char *bsfilter);
 	int read_options(const char *options, AVDictionary *&opts, int skip=0);
 	int scan_options(const char *options, AVDictionary *&opts, AVStream *st);
 	int read_options(FILE *fp, const char *options, AVDictionary *&opts);
