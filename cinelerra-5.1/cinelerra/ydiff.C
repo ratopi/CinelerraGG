@@ -113,6 +113,7 @@ gtk_window::gtk_window(int width, int height)
 
 gtk_window::~gtk_window()
 {
+  gdk_flush();
   gtk_widget_destroy(window);
   g_object_unref(pbuf0);
   g_object_unref(img0);

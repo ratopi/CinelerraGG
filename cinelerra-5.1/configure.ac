@@ -294,12 +294,12 @@ PKG_3RD([twolame],[auto],
   [  libtwolame ])
 
 PKG_3RD([x264],[auto],
-  [x264-snapshot-20170416-2245-stable],
+  [x264-snapshot-20170426-2245],
   [ libx264.a ],
   [ . ])
 
 PKG_3RD([x265],[auto],
-  [x265_2.3],
+  [x265_2.4],
   [ libx265.a ],
   [ . source ])
 

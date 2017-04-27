@@ -27,7 +27,7 @@ http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2
 https://sourceforge.net/projects/lame/files/latest/download?source=directory = 3.99.5
 http://dl.maptools.org/dl/libtiff/libtiff-cvsroot, untar, cd libtiff, cvs init, cd /tmp/x, cvs co -d path/libtiff = 4.0.6
 https://sourceforge.net/projects/libuuid/files/latest/download?source=directory - 1.0.3
-ftp://ftp.videolan.org/pub/x264/snapshots/x264-snapshot-20170416-2245-stable.tar.bz2
-https://bitbucket.org/multicoreware/x265/downloads/x265_2.3.tar.gz
+ftp://ftp.videolan.org/pub/x264/snapshots/x264-snapshot-20170426-2245-stable.tar.bz2
+https://bitbucket.org/multicoreware/x265/downloads/x265_2.4.tar.gz
 http://ffmpeg.org/releases/ffmpeg-3.3.tar.bz2
 https://chromium.googlesource.com/webm/libvpx/+archive/0c0a05046db1c0b59a7fcc29785a190fdbbe39c2.tar.gz = 1,6,1

@@ -262,6 +262,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 
 	double new_samplerate = session->sample_rate;
 	double new_framerate = session->frame_rate;
+	edl->retrack();
 	edl->rechannel();
 	edl->resample(old_samplerate, new_samplerate, TRACK_AUDIO);
 	edl->resample(old_framerate, new_framerate, TRACK_VIDEO);

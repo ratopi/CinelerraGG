@@ -97,6 +97,8 @@ public:
 // Convert position to frames if cursor alignment is enabled
 	double align_to_frame(double position, int round);
 
+// increase track w/h to at least session w/h
+	void retrack();
 // Scale all sample values since everything is locked to audio
 	void rechannel();
 	void resample(double old_rate, double new_rate, int data_type);

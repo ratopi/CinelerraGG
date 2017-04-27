@@ -3597,6 +3597,7 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 			else if( delete_tracks )
 				edl->tracks->delete_track(track);
 		}
+		edl->retrack();
 		edl->resample(old_framerate, session->frame_rate, TRACK_VIDEO);
 	}
 	if( !result && asset->audio_data && asset->channels > 0 ) {

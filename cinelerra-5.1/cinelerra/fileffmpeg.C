@@ -1064,6 +1064,9 @@ void FFOptions::initialize(FFOptionsWindow *win, int kind)
 			if( dupl ) continue;
 			FFOptions_Opt *fopt = new FFOptions_Opt(this, opt, opt->name);
 			append(fopt);
+			AVDictionaryEntry *elem = av_dict_get(win->dialog->ff_opts,
+					opt->name, 0, AV_DICT_IGNORE_SUFFIX);
+			if( elem && elem->value ) fopt->set(elem->value);
 			char val[BCTEXTLEN], *vp = fopt->get(val, sizeof(val));
 			fopt->item_value->update(vp);
 		}

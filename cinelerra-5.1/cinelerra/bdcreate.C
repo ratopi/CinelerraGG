@@ -263,6 +263,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 
 	double new_samplerate = session->sample_rate;
 	double new_framerate = session->frame_rate;
+	edl->retrack();
 	edl->rechannel();
 	edl->resample(old_samplerate, new_samplerate, TRACK_AUDIO);
 	edl->resample(old_framerate, new_framerate, TRACK_VIDEO);

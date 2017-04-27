@@ -549,7 +549,7 @@ int FFStream::seek(int64_t no, double rate)
 		}
 	}
 	if( ret < 0 ) {
-//printf("** seek fail %ld, %ld\n", pos, tstmp);
+printf("** seek fail %ld, %ld\n", pos, tstmp);
 		seeked = need_packet = 0;
 	        st_eof(flushed=1);
 		return -1;
@@ -1214,7 +1214,7 @@ AVRational FFMPEG::to_sample_aspect_ratio(Asset *asset)
 {
 #if 1
 	double display_aspect = asset->width / (double)asset->height;
-	double sample_aspect = asset->aspect_ratio / display_aspect;
+	double sample_aspect = display_aspect / asset->aspect_ratio;
 	int width = 1000000, height = width * sample_aspect + 0.5;
 	float w, h;
 	MWindow::create_aspect_ratio(w, h, width, height);

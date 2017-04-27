@@ -38,6 +38,7 @@
 #include "interlacemodes.h"
 #include "labels.h"
 #include "localsession.h"
+#include "maskautos.h"
 #include "mutex.h"
 #include "nestededls.h"
 #include "panauto.h"
@@ -667,6 +668,26 @@ int EDL::copy(double start,
 		file->rewind();
 	}
 	return 0;
+}
+
+void EDL::retrack()
+{
+	int min_w = session->output_w, min_h = session->output_h;
+	for( Track *track=tracks->first; track!=0; track=track->next ) {
+		if( track->data_type != TRACK_VIDEO ) continue;
+		int w = min_w, h = min_h;
+		for( Edit *current=track->edits->first; current!=0; current=NEXT ) {
+			Indexable* indexable = current->get_source();
+			if( !indexable ) continue;
+			int edit_w = indexable->get_w(), edit_h = indexable->get_h();
+			if( w < edit_w ) w = edit_w;
+			if( h < edit_h ) h = edit_h;
+		}
+		if( track->track_w == w && track->track_h == h ) continue;
+	        ((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->
+			translate_masks( (w - track->track_w) / 2, (h - track->track_h) / 2);
+		track->track_w = w;  track->track_h = h;
+	}
 }
 
 void EDL::rechannel()
