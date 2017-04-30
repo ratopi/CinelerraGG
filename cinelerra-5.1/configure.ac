@@ -445,6 +445,7 @@ CHECK_LIB([giflib], [gif], [DGifOpen])
 CHECK_HEADERS([giflib], [gif lib headers], [gif_lib.h])
 CHECK_LIB([fdk], [fdk-aac], [faacDecInit])
 CHECK_HEADERS([fdk], [fdk headers], [fdk-aac/genericStds.h])
+CHECK_LIB([jbig], [jbig], [jbg_dec_init])
 
 #if test "x$HAVE_mjpegtools" = "xyes"; then
 #CFG_CFLAGS+=" -I/usr/include/mjpegtools"
@@ -678,7 +679,9 @@ echo ""
 
 # build extras
 if test "x$HAVE_tiff" = "xyes"; then
-  EXTRA_LIBS+=' -ljbig'
+  if test "x$HAVE_jbig" = "xyes"; then
+    EXTRA_LIBS+=' -ljbig'
+  fi
 fi
 if test "x$HAVE_NUMA" = "xyes"; then
   EXTRA_LIBS+=' -lnuma'
@@ -797,3 +800,10 @@ echo ""
 echo "export thirdparty_libraries libraries"
 echo "export CFLAGS_ CXXFLAGS_ LDFLAGS_"
 echo "unexport CFLAGS CXXFLAGS LDFLAGS"
+
+if test "x$HAVE_tiff" = "xyes"; then
+  if test "x$HAVE_jbig" != "xyes"; then
+    echo "tiff.cfg_params+= --disable-jbig"
+  fi
+fi
+
