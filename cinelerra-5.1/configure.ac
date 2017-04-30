@@ -677,6 +677,9 @@ echo "  using: ladspa-build = $WANT_LADSPA_BUILD"
 echo ""
 
 # build extras
+if test "x$HAVE_tiff" = "xyes"; then
+  EXTRA_LIBS+=' -ljbig'
+fi
 if test "x$HAVE_NUMA" = "xyes"; then
   EXTRA_LIBS+=' -lnuma'
 fi

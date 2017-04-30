@@ -105,7 +105,7 @@ esound.mak_vars+= CFLAGS=""
 esound.ldflags=" -lm -lstdc++"
 faac.cfg_params= --enable-shared=no --without-mp4v2
 faad2.cfg_params= --enable-shared=no
-fdk.cfg_vars= ./autogen.sh ; CFLAGS+=" -Wno-narrowing" CXXFLAGS+=" -Wno-narrowing"
+#fdk.cfg_vars= ./autogen.sh ; CFLAGS+=" -Wno-narrowing" CXXFLAGS+=" -Wno-narrowing"
 fdk.cfg_params= --enable-shared=no
 fdk.mak_params= ; for f in $(call bld_path,fdk,/lib*/include); do ln -s . $$$$f/fdk-aac; done
 fftw.cfg_params= --disable-fortran --enable-shared=no
