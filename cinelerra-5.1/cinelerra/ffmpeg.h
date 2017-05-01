@@ -168,6 +168,7 @@ public:
 	int load(int64_t pos, int len);
 	int audio_seek(int64_t pos);
 	int encode(double **samples, int len);
+	int drain();
 
 	int idx;
 	int channel0, channels;
@@ -217,6 +218,7 @@ public:
 	int load(VFrame *vframe, int64_t pos);
 	int video_seek(int64_t pos);
 	int encode(VFrame *vframe);
+	int drain();
 
 	int idx;
 	double frame_rate;

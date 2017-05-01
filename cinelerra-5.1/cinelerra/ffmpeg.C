@@ -721,29 +721,37 @@ int FFAudioStream::encode(double **samples, int len)
 	if( encode_activate() <= 0 ) return -1;
 	ffmpeg->flow_ctl();
 	int ret = 0;
-	int64_t count = load_buffer(samples, len);
+	int64_t count = samples ? load_buffer(samples, len) : used();
+	int frame_sz1 = samples ? frame_sz-1 : 0;
 	FFrame *frm = 0;
 
-	while( ret >= 0 && count >= frame_sz ) {
+	while( ret >= 0 && count > frame_sz1 ) {
 		frm = new FFrame(this);
 		if( (ret=frm->initted()) < 0 ) break;
 		AVFrame *frame = *frm;
-		float *bfrp = get_outp(frame_sz);
+		len = count >= frame_sz ? frame_sz : count;
+		float *bfrp = get_outp(len);
 		ret =  swr_convert(resample_context,
-			(uint8_t **)frame->extended_data, frame_sz,
-			(const uint8_t **)&bfrp, frame_sz);
+			(uint8_t **)frame->extended_data, len,
+			(const uint8_t **)&bfrp, len);
 		if( ret < 0 ) {
 			ff_err(ret, "FFAudioStream::encode: swr_convert failed\n");
 			break;
 		}
+		frame->nb_samples = len;
 		frm->queue(curr_pos);
 		frm = 0;
-		curr_pos += frame_sz;
-		count -= frame_sz;
+		curr_pos += len;
+		count -= len;
 	}
 
 	delete frm;
 	return ret >= 0 ? 0 : 1;
+}
+
+int FFAudioStream::drain()
+{
+	return encode(0,0);
 }
 
 int FFAudioStream::encode_frame(AVFrame *frame)
@@ -865,6 +873,11 @@ int FFVideoStream::encode(VFrame *vframe)
 		delete picture;
 	}
 	return ret >= 0 ? 0 : 1;
+}
+
+int FFVideoStream::drain()
+{
+	return 0;
 }
 
 int FFVideoStream::encode_frame(AVFrame *frame)
@@ -2298,6 +2311,10 @@ void FFMPEG::run()
 		mux_lock->lock("FFMPEG::run");
 		if( !done ) mux();
 	}
+	for( int i=0; i<ffaudio.size(); ++i )
+		ffaudio[i]->drain();
+	for( int i=0; i<ffvideo.size(); ++i )
+		ffvideo[i]->drain();
 	mux();
 	for( int i=0; i<ffaudio.size(); ++i )
 		ffaudio[i]->flush();
