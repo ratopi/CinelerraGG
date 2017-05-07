@@ -162,13 +162,13 @@ void Piano::raise_window()
 
 void Piano::update_gui()
 {
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->update_gui();
-		thread->window->unlock_window();
-	}
+	if( !thread ) return;
+	PianoWindow *window = (PianoWindow *)thread->window:
+// load_configuration,read_data deletes oscillator_config
+	window->lock_window("Piano::update_gui");
+	load_configuration();
+	window->update_gui();
+	window->unlock_window();
 }
 
 

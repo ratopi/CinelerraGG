@@ -189,15 +189,13 @@ void CompressorEffect::save_data(KeyFrame *keyframe)
 
 void CompressorEffect::update_gui()
 {
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("CompressorEffect::update_gui");
-			((CompressorWindow*)thread->window)->update();
-			thread->window->unlock_window();
-		}
-	}
+	if( !thread ) return;
+	CompressorWindow *window = (CompressorWindow*)thread->window;
+// load_configuration,read_data deletes levels
+	window->lock_window("CompressorEffect::update_gui");
+	if( load_configuration() )
+		window->update();
+	window->unlock_window();
 }
 
 

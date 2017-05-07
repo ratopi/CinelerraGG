@@ -176,15 +176,13 @@ void Synth::save_data(KeyFrame *keyframe)
 
 void Synth::update_gui()
 {
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window();
-			((SynthWindow*)thread->window)->update_gui();
-			thread->window->unlock_window();
-		}
-	}
+	if( !thread ) return;
+	SynthWindow *window = (SynthWindow*)thread->window;
+// load_configuration,read_data deletes oscillator_config
+	window->lock_window("Synth::update_gui");
+	if( load_configuration() )
+		window->update_gui();
+	window->unlock_window();
 }
 
 

@@ -1129,28 +1129,23 @@ void GraphicEQ::save_data(KeyFrame *keyframe)
 
 void GraphicEQ::update_gui()
 {
-	if(thread)
-	{
-		if(load_configuration() &&
-			((GraphicGUI*)thread->window)->canvas->state != GraphicCanvas::DRAG_POINT)
-		{
-			((GraphicGUI*)thread->window)->lock_window("GraphicEQ::update_gui");
-			((GraphicGUI*)thread->window)->update_canvas();
-			((GraphicGUI*)thread->window)->update_textboxes();
-			((GraphicGUI*)thread->window)->unlock_window();
-		}
-		else
-		{
-			int total_frames = get_gui_update_frames();
-//printf("ParametricEQ::update_gui %d %d\n", __LINE__, total_frames);
-			if(total_frames)
-			{
-				((GraphicGUI*)thread->window)->lock_window("GraphicEQ::update_gui");
-				((GraphicGUI*)thread->window)->update_canvas();
-				((GraphicGUI*)thread->window)->unlock_window();
-			}
-		}
+	if( !thread ) return;
+	GraphicGUI *window = (GraphicGUI *)thread->window;
+//lock here for points, needed by window cursor_motion callback
+//  deleted in load_configuration by read_data
+	window->lock_window("GraphicEQ::update_gui");
+	if( load_configuration() &&
+	    window->canvas->state != GraphicCanvas::DRAG_POINT ) {
+		window->update_canvas();
+		window->update_textboxes();
 	}
+	else {
+		int total_frames = get_gui_update_frames();
+//printf("ParametricEQ::update_gui %d %d\n", __LINE__, total_frames);
+		if( total_frames )
+			window->update_canvas();
+	}
+	window->unlock_window();
 }
 
 void GraphicEQ::reconfigure()

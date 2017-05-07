@@ -1016,13 +1016,14 @@ static int get_defaults(const char *name, char *args)
 	FILE *fp = fopen(defaults_path,"r");
 	if( !fp ) return 0;
 	char ff_plugin[BCSTRLEN], ff_args[BCTEXTLEN], *ap = 0;
-	while( !ap && fgets(ff_args, sizeof(ff_args), fp) ) {
-		if( *(ap=ff_args) == ';' ) continue;
-		if( *(ap=ff_args) == '#' ) ++ap;
+	while( fgets(ff_args, sizeof(ff_args), fp) ) {
+		char *cp = ff_args;
+		if( *cp == ';' ) continue;
+		if( *cp == '#' ) ++cp;
 		char *bp = ff_plugin, *ep = bp + sizeof(ff_plugin)-1;
-		while( bp < ep && *ap && *ap != '\n' && *ap != ' ' ) *bp++ = *ap++;
+		while( bp < ep && *cp && *cp != '\n' && *cp != ' ' ) *bp++ = *cp++;
 		*bp = 0;
-		if( strcmp(ff_plugin, name) ) ap = 0;
+		if( !strcmp(ff_plugin, name) ) { ap = cp;  break; }
 	}
 	fclose(fp);
 	if( !ap ) return 0;

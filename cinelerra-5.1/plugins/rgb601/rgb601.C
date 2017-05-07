@@ -117,13 +117,7 @@ void RGB601Main::read_data(KeyFrame *keyframe)
 			}
 		}
 	}
-
-	if(thread)
-	{
-		((RGB601Window*)thread->window)->update();
-	}
 }
-
 
 #define CREATE_TABLE(max) \
 { \

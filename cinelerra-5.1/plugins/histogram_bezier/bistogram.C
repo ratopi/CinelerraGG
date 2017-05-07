@@ -109,21 +109,16 @@ void HistogramMain::render_gui(void *data)
 
 void HistogramMain::update_gui()
 {
-	if(thread)
-	{
-		thread->window->lock_window("HistogramMain::update_gui");
-		int reconfigure = load_configuration();
-		if(reconfigure)
-		{
-			HistogramWindow *window = (HistogramWindow *)thread->window;
-			window->update(0);
-			if(!config.automatic)
-			{
-				window->update_input();
-			}
-		}
-		thread->window->unlock_window();
+	if( !thread ) return;
+	HistogramWindow *window = (HistogramWindow *)thread->window;
+// points delete in load_configuration,read_data
+	window->lock_window("HistogramMain::update_gui");
+	if( load_configuration() ) {
+		window->update(0);
+		if(!config.automatic)
+			window->update_input();
 	}
+	window->unlock_window();
 }
 
 
