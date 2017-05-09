@@ -52,6 +52,8 @@ class TitleLinePitch;
 class TitleFade;
 class TitleFont;
 class TitleText;
+class TitleTextChars;
+class TitleTextBfrSz;
 class TitleX;
 class TitleY;
 class TitleW;
@@ -89,6 +91,7 @@ public:
 	int grab_event(XEvent *event);
 	void update_color();
 	void update_justification();
+	void update_stats();
 	void update();
 	void previous_font();
 	void next_font();
@@ -150,6 +153,8 @@ public:
 	TitleFade *fade_out;
 	BC_Title *text_title;
 	TitleText *text;
+	TitleTextChars *text_chars;
+	TitleTextBfrSz *text_bfrsz;
 	BC_Title *justify_title;
 	TitleLeft *left;
 	TitleCenter *center;
@@ -351,6 +356,21 @@ public:
 	TitleMain *client;
 	TitleWindow *window;
 };
+class TitleTextChars : public BC_Title
+{
+public:
+	int update(int n);
+	TitleTextChars(int x, int y, int w);
+	~TitleTextChars();
+};
+class TitleTextBfrSz : public BC_Title
+{
+public:
+	int update(int n);
+	TitleTextBfrSz(int x, int y, int w);
+	~TitleTextBfrSz();
+};
+
 class TitleX : public BC_TumbleTextBox
 {
 public:

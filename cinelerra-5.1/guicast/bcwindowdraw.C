@@ -246,37 +246,6 @@ void BC_WindowBase::draw_xft_text(int x, int y,
 	}
 }
 
-int BC_WindowBase::wcharpos(const wchar_t *text, XftFont *font, int length,
-		int *charpos)
-{
-	XGlyphInfo extents;
-
-	if(charpos)
-	{
-		int bpos = charpos[-1];
-
-		for(int i = 0; i < length; i++)
-		{
-			XftTextExtents32(top_level->display,
-				font,
-				(const FcChar32*)text,
-				i + 1,
-				&extents);
-			charpos[i] = extents.xOff + bpos;
-		}
-		return charpos[length - 1] - bpos;
-	}
-	else
-	{
-		XftTextExtents32(top_level->display,
-			font,
-			(const FcChar32*)text,
-			length,
-			&extents);
-		return extents.xOff;
-	}
-}
-
 void BC_WindowBase::xft_draw_string(XftColor *xft_color, XftFont *xft_font,
 		int x, int y, const FcChar32 *fc, int len, BC_Pixmap *pixmap)
 {
@@ -312,7 +281,7 @@ void BC_WindowBase::xft_draw_string(XftColor *xft_color, XftFont *xft_font,
 }
 
 void BC_WindowBase::draw_wtext(int x, int y,
-	const wchar_t *text, int length, BC_Pixmap *pixmap, int *charpos)
+	const wchar_t *text, int length, BC_Pixmap *pixmap)
 {
 	if( !get_resources()->use_xft ) {
 		if( !get_font_struct(current_font) ) return;
@@ -329,15 +298,13 @@ void BC_WindowBase::draw_wtext(int x, int y,
 	XRenderColor color;
 	XftColor xft_color;
 	const wchar_t *up, *ubp;
-	int l, *cp;
+	int l;
 	FcPattern *newpat;
 	XftFont *curfont, *nextfont, *altfont, *basefont;
 
 	if(length < 0)
 		length = wcslen(text);
 
-	if(charpos)
-		charpos[0] = 0;
 	if(!length)
 		return;
 
@@ -359,7 +326,6 @@ void BC_WindowBase::draw_wtext(int x, int y,
 
 	curfont = nextfont = basefont;
 	altfont = 0;
-	cp = 0;
 	ubp = text;
 
 	for(up = text; up < &text[length]; up++)
@@ -397,10 +363,11 @@ void BC_WindowBase::draw_wtext(int x, int y,
 			xft_draw_string(&xft_color, curfont, x, y,
 				(const FcChar32*)ubp, l, pixmap);
 
-			if(charpos)
-				cp = &charpos[ubp - text + 1];
+			XGlyphInfo extents;
+			XftTextExtents32(top_level->display, curfont,
+				(const FcChar32*)ubp, l, &extents);
+			x += extents.xOff;
 
-			x += wcharpos(ubp, curfont, l, cp);
 			ubp = up;
 			curfont = nextfont;
 		}
@@ -410,8 +377,6 @@ void BC_WindowBase::draw_wtext(int x, int y,
 	{
 		xft_draw_string(&xft_color, curfont, x, y,
 			(const FcChar32*)ubp, up - ubp, pixmap);
-		if(charpos)
-			wcharpos(ubp, curfont, up - ubp, &charpos[ubp - text + 1]);
 	}
 
 	if(altfont)

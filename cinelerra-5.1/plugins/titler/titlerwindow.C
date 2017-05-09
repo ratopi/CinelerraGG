@@ -101,6 +101,8 @@ TitleWindow::TitleWindow(TitleMain *client)
 	fade_out = 0;
 	text_title = 0;
 	text = 0;
+	text_chars = 0;
+	text_bfrsz = 0;
 	justify_title = 0;
 	left = 0;  center = 0;  right = 0;
 	top = 0;   mid = 0;     bottom = 0;
@@ -383,6 +385,12 @@ void TitleWindow::create_objects()
 
 	x = 10;
 	add_tool(text_title = new BC_Title(x, y, _("Text:")));
+	x += text_title->get_w() + 20;
+	int wid = BC_Title::calculate_w(this,"0")*10;
+	add_tool(text_chars = new TitleTextChars(x,y,wid));
+	x += text_chars->get_w() + 20;
+	add_tool(text_bfrsz = new TitleTextBfrSz(x,y,wid));
+
 	y += text_title->get_h() + margin;
 	x = margin;
 	text = new TitleText(client, this, x, y, get_w()-margin - x, get_h() - y - 10);
@@ -670,6 +678,14 @@ void TitleWindow::update_justification()
 	bottom->update(client->config.vjustification == JUSTIFY_BOTTOM);
 }
 
+void TitleWindow::update_stats()
+{
+	text_chars->update(client->config.wlen);
+	int len = MESSAGESIZE-16 - strlen(text->get_text());
+	if( len < 0 ) len = 0;
+	text_bfrsz->update(len);
+}
+
 void TitleWindow::update()
 {
 	title_x->update((int64_t)client->config.title_x);
@@ -707,6 +723,7 @@ void TitleWindow::update()
 		}
 	}
 	update_justification();
+	update_stats();
 	update_color();
 }
 
@@ -1051,8 +1068,36 @@ int TitleText::handle_event()
 	wcsncpy(client->config.wtext, get_wtext(), len);
 	client->config.wtext[len-1] = 0;
 	client->config.wlen = wcslen(client->config.wtext);
+	window->update_stats();
 	client->send_configure_change();
 	return 1;
+}
+TitleTextChars::TitleTextChars(int x, int y, int w)
+ : BC_Title(x, y, "", MEDIUMFONT, -1, 0, w)
+{
+}
+TitleTextChars::~TitleTextChars()
+{
+}
+int TitleTextChars::update(int n)
+{
+	char text[BCSTRLEN];
+	sprintf(text, _("chars: %d  "),n);
+	return BC_Title::update(text, 0);
+}
+
+TitleTextBfrSz::TitleTextBfrSz(int x, int y, int w)
+ : BC_Title(x, y, "", MEDIUMFONT, -1, 0, w)
+{
+}
+TitleTextBfrSz::~TitleTextBfrSz()
+{
+}
+int TitleTextBfrSz::update(int n)
+{
+	char text[BCSTRLEN];
+	sprintf(text, _("bfrsz: %d  "),n);
+	return BC_Title::update(text, 0);
 }
 
 

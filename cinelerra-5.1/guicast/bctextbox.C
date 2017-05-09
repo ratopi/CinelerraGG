@@ -133,7 +133,6 @@ BC_TextBox::~BC_TextBox()
 	delete suggestions_popup;
 	suggestions->remove_all_objects();
 	delete suggestions;
-	delete [] positions;
 	delete [] wtext;
 	if( size > 0 )
 		delete [] text;
@@ -171,8 +170,6 @@ int BC_TextBox::reset_parameters(int rows, int has_border, int font, int size)
 	wtext = 0;
 	wsize = 0;
 	wlen = 0;
-	positions = 0;
-	plen = 0;
 	keypress_draw = 1;
 	last_keypress = 0;
 	separators = 0;
@@ -226,12 +223,6 @@ int BC_TextBox::wtext_update()
 			wchar_t *ntext = new wchar_t[nsize+1];
 			memcpy(ntext, wtext, wsize*sizeof(wtext[0]));
 			delete [] wtext;  wtext = ntext;  wsize = nsize;
-			int *npositions = new int[nsize+1];
-			if( plen > 0 )
-				memcpy(npositions, positions, (plen+1)*sizeof(positions[0]));
-			else
-				npositions[0] = 0;
-			delete [] positions;  positions = npositions;  plen = nsize;
 		}
 		wlen = BC_Resources::encode(src_enc, dst_enc, text, strlen(text),
 			(char*)wtext, wsize*sizeof(wchar_t)) / sizeof(wchar_t);
@@ -406,7 +397,6 @@ void BC_TextBox::set_suggestions(ArrayList<char*> *suggestions, int column)
 			if( col < 0 ) col = 0;
 			char *cur = current_suggestion + col;
 			tstrcat(cur);
-			draw(0);  // update positions
 			highlight_letter2 = wtext_update();
 //printf("BC_TextBox::set_suggestions %d %d\n", __LINE__, suggestion_column);
 
@@ -687,13 +677,13 @@ void BC_TextBox::draw(int flush)
 				set_color(color);
 				if(highlight_letter1 >= row_begin &&
 					highlight_letter1 <= row_end)
-					highlight_x1 = positions[highlight_letter1];
+					highlight_x1 = get_x_position(highlight_letter1, row_begin);
 				else
 					highlight_x1 = 0;
 
 				if(highlight_letter2 > row_begin &&
 					highlight_letter2 <= row_end)
-					highlight_x2 = positions[highlight_letter2];
+					highlight_x2 = get_x_position(highlight_letter2, row_begin);
 				else
 					highlight_x2 = get_w();
 
@@ -705,17 +695,14 @@ void BC_TextBox::draw(int flush)
 			int len = row_end - row_begin;
 			if( len > 0 ) {
 				set_color(enabled ? resources->text_default : DMGREY);
-				draw_wtext(text_x, k + text_ascent, wtext_row, len,
-					0, &positions[wtext_row - wtext]);
+				draw_wtext(text_x, k + text_ascent, wtext_row, len, 0);
 			}
-			else
-				positions[wtext_row - wtext] = 0;
 
 // Get ibeam location
 			if(ibeam_letter >= row_begin && ibeam_letter <= row_end) {
 				need_ibeam = 0;
 				ibeam_y = k - text_y;
-				ibeam_x = positions[ibeam_letter];
+				ibeam_x = get_x_position(ibeam_letter, row_begin);
 			}
 		}
 	}
@@ -1767,6 +1754,11 @@ void BC_TextBox::do_separators(int ibeam_left)
 	}
 }
 
+int BC_TextBox::get_x_position(int i, int start)
+{
+	return get_text_width(font, &wtext[start], i - start);
+}
+
 void BC_TextBox::get_ibeam_position(int &x, int &y)
 {
 	int i, row_begin, row_end;
@@ -1779,7 +1771,7 @@ void BC_TextBox::get_ibeam_position(int &x, int &y)
 		row_end = i;
 
 		if( ibeam_letter >= row_begin && ibeam_letter <= row_end ) {
-			x = get_text_width(font,  &wtext[row_begin], ibeam_letter - row_begin);
+			x = get_x_position(ibeam_letter, row_begin);
 //printf("BC_TextBox::get_ibeam_position %d %d %d %d %d\n", ibeam_letter, row_begin, row_end, x, y);
 			return;
 		}

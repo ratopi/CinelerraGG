@@ -156,7 +156,7 @@ public:
 	double fade_in, fade_out;
 	float pixels_per_second; // Speed of motion
 // Text to display
-	wchar_t wtext[BCTEXTLEN];
+	wchar_t wtext[3*BCTEXTLEN];
 	int wlen;
 // Position in frame relative to top left
 	float title_x, title_y;

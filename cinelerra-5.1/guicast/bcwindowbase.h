@@ -397,8 +397,7 @@ public:
 		BC_Pixmap *pixmap = 0, int is_utf8 = 0);
 	void draw_xft_text(int x, int y, const wchar_t *text,
 		int length, BC_Pixmap *pixmap);
-	void draw_wtext(int x, int y, const wchar_t *text, int length = -1,
-		BC_Pixmap *pixmap = 0, int *charpos = 0);
+	void draw_wtext(int x, int y, const wchar_t *text, int length = -1, BC_Pixmap *pixmap = 0);
 // truncate the text to a ... version that fits in the width, using the current_font
 	void truncate_text(char *result, const char *text, int w);
 	void draw_center_text(int x, int y, const char *text, int length = -1);
@@ -573,7 +572,6 @@ private:
 	int64_t get_color_bgr24(int color);
 	XFontStruct* get_font_struct(int font);
 	XftFont* get_xft_struct(int font);
-	int wcharpos(const wchar_t *text, XftFont *font, int length, int *charpos);
 	Cursor get_cursor_struct(int cursor);
 	XFontSet get_fontset(int font);
 	XFontSet get_curr_fontset(void);

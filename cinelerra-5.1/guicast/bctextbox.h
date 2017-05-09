@@ -158,6 +158,7 @@ private:
 // ibeam_left causes the ibeam to move left.
 	int is_separator(const char *txt, int i);
 	void do_separators(int ibeam_left);
+	int get_x_position(int i, int start=0);
 	void get_ibeam_position(int &x, int &y);
 	void find_ibeam(int dispatch_event);
 	void select_word(int &letter1, int &letter2, int ibeam_letter);
@@ -192,7 +193,7 @@ private:
 	int high_color, back_color;
 	int background_color;
 	int size, tsize, dirty;
-	int wlen, wsize, *positions, plen;
+	int wlen, wsize;
 	char temp_string[KEYPRESSLEN];
 	int is_utf8;
 	int active;

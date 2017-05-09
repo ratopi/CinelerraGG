@@ -2604,11 +2604,19 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("LOOP_PLAYBACK", config.loop_playback);
 	output.append_tag();
 	output.append_newline();
-	char text[BCTEXTLEN];
+	char text[2*sizeof(config.wtext)];
 	int text_len = BC_Resources::encode(
 		BC_Resources::wide_encoding, DEFAULT_ENCODING,
 		(char*)config.wtext, config.wlen*sizeof(wchar_t),
 		text, sizeof(text));
+	int len = output.length(), avail = MESSAGESIZE-16 - len;
+	if( text_len >= avail ) { // back off last utf8 char
+		text_len = avail;
+		while( text_len > 0 && (text[text_len-1] & 0xc0) == 0x80 )
+			text[--text_len] = 0;
+		if( text_len > 0 )
+			text[--text_len] = 0;
+	}
 	output.append_text(text, text_len);
 	output.tag.set_title("/TITLE");
 	output.append_tag();
