@@ -446,6 +446,7 @@ CHECK_HEADERS([giflib], [gif lib headers], [gif_lib.h])
 CHECK_LIB([fdk], [fdk-aac], [faacDecInit])
 CHECK_HEADERS([fdk], [fdk headers], [fdk-aac/genericStds.h])
 CHECK_LIB([jbig], [jbig], [jbg_dec_init])
+CHECK_LIB([vdpau], [vdpau], [vdp_device_create_x11])
 
 #if test "x$HAVE_mjpegtools" = "xyes"; then
 #CFG_CFLAGS+=" -I/usr/include/mjpegtools"
