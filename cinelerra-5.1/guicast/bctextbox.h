@@ -35,7 +35,10 @@
 
 
 class BC_TextBoxSuggestions;
+
+class BC_ScrollTextBoxXScroll;
 class BC_ScrollTextBoxYScroll;
+class BC_ScrollTextBoxText;
 
 
 class BC_TextBox : public BC_SubWindow
@@ -69,6 +72,7 @@ public:
 
 
 	friend class BC_TextBoxSuggestions;
+	friend class BC_ScrollTextBox;
 
 
 // Whenever the contents of the text change
@@ -106,6 +110,10 @@ public:
 // Set top left of text view
 	void set_text_row(int row);
 	int get_text_row();
+	int get_text_x();
+	int get_text_y();
+	void set_text_x(int v);
+	void set_text_y(int v);
 
 	int reposition_window(int x, int y, int w = -1, int rows = -1);
 	int uses_text();
@@ -143,8 +151,9 @@ public:
 // column - starting column to replace
 	void no_suggestions();
 	void set_suggestions(ArrayList<char*> *suggestions, int column);
-	BC_ScrollTextBoxYScroll *yscroll;
 
+	BC_ScrollTextBoxXScroll *xscroll;
+	BC_ScrollTextBoxYScroll *yscroll;
 private:
 	int reset_parameters(int rows, int has_border, int font, int size);
 	void draw(int flush);
@@ -225,14 +234,10 @@ public:
 };
 
 
-
-class BC_ScrollTextBoxText;
-class BC_ScrollTextBoxYScroll;
-
-
 class BC_ScrollTextBox
 {
 	BC_ScrollTextBoxText *text;
+	BC_ScrollTextBoxXScroll *xscroll;
 	BC_ScrollTextBoxYScroll *yscroll;
 	BC_WindowBase *parent_window;
 	const char *default_text;
@@ -241,6 +246,7 @@ class BC_ScrollTextBox
 	int x, y, w, rows;
 
 	friend class BC_ScrollTextBoxText;
+	friend class BC_ScrollTextBoxXScroll;
 	friend class BC_ScrollTextBoxYScroll;
 public:
 	BC_ScrollTextBox(BC_WindowBase *parent_window,
@@ -261,13 +267,15 @@ public:
 	void update(const char *text);
 	void update(const wchar_t *wtext);
 	void reposition_window(int x, int y, int w, int rows);
+	void update_scrollbars();
 // accessors
 	int get_x() { return x; }
 	int get_y() { return y; }
 	int get_w() { return w; }
 // Visible rows for resizing
 	int get_rows() { return rows; }
-
+	int get_x_pos();
+	void set_x_pos(int x);
 // forward functions
 	int get_h();
 	const char *get_text();
@@ -289,6 +297,15 @@ public:
 	BC_ScrollTextBox *gui;
 	int button_press_event() { return gui->button_press_event(); }
 	int button_release_event() { return gui->button_release_event(); }
+};
+
+class BC_ScrollTextBoxXScroll : public BC_ScrollBar
+{
+public:
+	BC_ScrollTextBoxXScroll(BC_ScrollTextBox *gui);
+	virtual ~BC_ScrollTextBoxXScroll();
+	int handle_event();
+	BC_ScrollTextBox *gui;
 };
 
 class BC_ScrollTextBoxYScroll : public BC_ScrollBar

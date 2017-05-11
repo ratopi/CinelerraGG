@@ -2329,7 +2329,8 @@ void TitleMain::draw_overlay()
 
 	if( !translate )
 		translate = new TitleTranslate(this, cpus);
-	if( text_x+mask_w > 0 && text_x < title_w ) {
+	int tx = text_x - text_x1 + mask_x1;
+	if( tx < title_w && tx+mask_w > 0 ) {
 		translate->xlat_mask = text_mask;
 		translate->run_packages();
 		if( config.stroke_width >= SMALL && (config.style & BC_FONT_OUTLINE) ) {

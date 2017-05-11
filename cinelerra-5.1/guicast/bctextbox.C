@@ -173,6 +173,7 @@ int BC_TextBox::reset_parameters(int rows, int has_border, int font, int size)
 	keypress_draw = 1;
 	last_keypress = 0;
 	separators = 0;
+	xscroll = 0;
 	yscroll = 0;
 	dirty = 1;
 	return 0;
@@ -503,10 +504,11 @@ void BC_TextBox::enable()
 	}
 }
 
-int BC_TextBox::get_enabled()
-{
-	return enabled;
-}
+int BC_TextBox::get_enabled() { return enabled; }
+int BC_TextBox::get_text_x() { return text_x; }
+int BC_TextBox::get_text_y() { return text_y; }
+void BC_TextBox::set_text_x(int v) { text_x = v; }
+void BC_TextBox::set_text_y(int v) { text_y = v; }
 
 int BC_TextBox::pixels_to_rows(BC_WindowBase *window, int font, int pixels)
 {
@@ -2116,6 +2118,7 @@ BC_ScrollTextBox::BC_ScrollTextBox(BC_WindowBase *parent_window,
 	this->y = y;
 	this->w = w;
 	this->rows = rows;
+	xscroll = 0;  yscroll = 0;
 	this->default_text = default_text;
 	this->default_wtext = 0;
 	this->default_size = default_size;
@@ -2130,6 +2133,7 @@ BC_ScrollTextBox::BC_ScrollTextBox(BC_WindowBase *parent_window,
 	this->y = y;
 	this->w = w;
 	this->rows = rows;
+	xscroll = 0;  yscroll = 0;
 	this->default_text = 0;
 	this->default_wtext = default_wtext;
 	this->default_size = default_size;
@@ -2137,6 +2141,7 @@ BC_ScrollTextBox::BC_ScrollTextBox(BC_WindowBase *parent_window,
 
 BC_ScrollTextBox::~BC_ScrollTextBox()
 {
+	delete xscroll;
 	delete yscroll;
 	if(text) {
 		text->gui = 0;
@@ -2150,44 +2155,32 @@ void BC_ScrollTextBox::create_objects()
 	parent_window->add_subwindow(text = default_wtext ?
  		new BC_ScrollTextBoxText(this, default_wtext) :
 		new BC_ScrollTextBoxText(this, default_text));
-	parent_window->add_subwindow(yscroll = new BC_ScrollTextBoxYScroll(this));
-	text->yscroll = yscroll;
-	yscroll->bound_to = text;
 	set_text_row(0);
 }
 
 void BC_ScrollTextBox::set_text(char *text, int isz)
 {
 	this->text->set_text(text, isz);
-	yscroll->update_length(this->text->get_text_rows(),
-		this->text->get_text_row(),
-		yscroll->get_handlelength(),
-		1);
+	update_scrollbars();
 }
 
 int BC_ScrollTextBox::set_text_row(int n)
 {
 	text->set_text_row(n);
-	yscroll->update_value(n);
+	update_scrollbars();
 	return 1;
 }
 
 void BC_ScrollTextBox::update(const char *text)
 {
 	this->text->update(text);
-	yscroll->update_length(this->text->get_text_rows(),
-		this->text->get_text_row(),
-		yscroll->get_handlelength(),
-		1);
+	update_scrollbars();
 }
 
 void BC_ScrollTextBox::update(const wchar_t *wtext)
 {
 	this->text->update(wtext);
-	yscroll->update_length(this->text->get_text_rows(),
-		this->text->get_text_row(),
-		yscroll->get_handlelength(),
-		1);
+	update_scrollbars();
 }
 
 void BC_ScrollTextBox::reposition_window(int x, int y, int w, int rows)
@@ -2196,19 +2189,7 @@ void BC_ScrollTextBox::reposition_window(int x, int y, int w, int rows)
 	this->y = y;
 	this->w = w;
 	this->rows = rows;
-
-	text->reposition_window(x,
-		y,
-		w - yscroll->get_span(),
-		rows);
-	yscroll->reposition_window(x + w - yscroll->get_span(),
-		y,
-		BC_TextBox::calculate_row_h(rows,
-			parent_window));
-	yscroll->update_length(text->get_text_rows(),
-		text->get_text_row(),
-		rows,
-		0);
+	update_scrollbars();
 }
 
 int BC_ScrollTextBox::button_press_event()
@@ -2240,6 +2221,15 @@ int BC_ScrollTextBox::get_ibeam_letter()
 {
 	return text->get_ibeam_letter();
 }
+int BC_ScrollTextBox::get_x_pos()
+{
+	return text->left_margin - text->get_text_x();
+}
+void BC_ScrollTextBox::set_x_pos(int x)
+{
+	text->set_text_x(text->left_margin - x);
+	text->draw(1);
+}
 
 BC_ScrollTextBoxText::BC_ScrollTextBoxText(BC_ScrollTextBox *gui, const char *text)
  : BC_TextBox(gui->x, gui->y,
@@ -2266,35 +2256,111 @@ BC_ScrollTextBoxText::~BC_ScrollTextBoxText()
 	}
 }
 
+void BC_ScrollTextBox::update_scrollbars()
+{
+	int view_w = w, view_rows = rows;
+	int view_h = BC_TextBox::calculate_row_h(view_rows, parent_window);
+	int text_rows = text->get_text_rows();
+	int text_width = parent_window->get_text_width(text->font, text->get_wtext());
+	BC_Resources *resources = parent_window->get_resources();
+	int need_xscroll = 0, need_yscroll = 0;
+
+// Create scrollbars as needed
+	int resize = 1;
+	while( resize ) {
+		resize = 0;
+		if( !need_xscroll && (text->get_text_x() != text->left_margin ||
+		      text_width >= view_w - text->left_margin - text->right_margin) ) {
+			resize = need_xscroll = 1;
+			view_h -= resources->hscroll_data[SCROLL_HANDLE_UP]->get_h();
+			view_rows = BC_TextBox::pixels_to_rows(parent_window, text->font, view_h);
+		}
+		if( !need_yscroll && (text->get_text_y() != text->top_margin ||
+		      text_rows > view_rows) ) {
+			resize = need_yscroll = 1;
+			view_w -= resources->vscroll_data[SCROLL_HANDLE_UP]->get_w();
+		}
+	}
+
+	if( !need_xscroll && xscroll ) {
+		text->yscroll = 0;
+		delete xscroll;  xscroll = 0;
+	}
+	if( !need_yscroll && yscroll ) {
+		text->yscroll = 0;
+		delete yscroll;  yscroll = 0;
+	}
+
+	if( view_rows != text->get_rows() || view_w != text->get_w() ) {
+		text->reposition_window(x, y, view_w, view_rows);
+	}
+	if( need_xscroll && !xscroll ) {
+		xscroll = new BC_ScrollTextBoxXScroll(this);
+		parent_window->add_subwindow(xscroll);
+		text->xscroll = xscroll;
+		xscroll->bound_to = text;
+		xscroll->show_window();
+	}
+	if( need_yscroll && !yscroll ) {
+		yscroll = new BC_ScrollTextBoxYScroll(this);
+		parent_window->add_subwindow(yscroll);
+		text->yscroll = yscroll;
+		yscroll->bound_to = text;
+		yscroll->show_window();
+	}
+	if( xscroll ) {
+		xscroll->reposition_window(x, y + text->get_h(), view_w);
+		int xpos = get_x_pos();
+		if( xpos != xscroll->get_value() )
+			xscroll->update_value(xpos);
+		int xlength = text_width + view_w/4;
+		if( xlength != xscroll->get_length() ||
+		    view_w != xscroll->get_handlelength() )
+			xscroll->update_length(xlength, xpos, view_w, 0);
+	}
+	if( yscroll ) {
+		yscroll->reposition_window(x + w - yscroll->get_span(), y, text->get_h());
+		int text_row = text->get_text_row();
+		if( text_row != yscroll->get_value() )
+			yscroll->update_value(text_row);
+		if( text_rows != yscroll->get_length() ||
+		    view_rows != yscroll->get_handlelength() )
+			yscroll->update_length(text_rows, text_row, view_rows, 0);
+	}
+}
+
 int BC_ScrollTextBoxText::handle_event()
 {
-	gui->yscroll->update_length(get_text_rows(),
-		get_text_row(),
-		gui->yscroll->get_handlelength(),
-		1);
+	gui->update_scrollbars();
 	return gui->handle_event();
 }
 
 int BC_ScrollTextBoxText::motion_event()
 {
-	gui->yscroll->update_length(get_text_rows(),
-		get_text_row(),
-		gui->yscroll->get_handlelength(),
-		1);
+	gui->update_scrollbars();
+	return 1;
+}
+
+BC_ScrollTextBoxXScroll::BC_ScrollTextBoxXScroll(BC_ScrollTextBox *gui)
+ : BC_ScrollBar(gui->x, gui->y + gui->text->get_h(), SCROLL_HORIZ, gui->text->get_w(),
+		gui->text->get_text_width(MEDIUMFONT, gui->get_wtext()), 0, gui->w)
+{
+	this->gui = gui;
+}
+
+BC_ScrollTextBoxXScroll::~BC_ScrollTextBoxXScroll()
+{
+}
+
+int BC_ScrollTextBoxXScroll::handle_event()
+{
+	gui->set_x_pos(get_position());
 	return 1;
 }
 
 BC_ScrollTextBoxYScroll::BC_ScrollTextBoxYScroll(BC_ScrollTextBox *gui)
- : BC_ScrollBar(gui->x +
- 			gui->w -
-			get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w(),
-		gui->y,
-		SCROLL_VERT,
-		BC_TextBox::calculate_row_h(gui->rows,
-			gui->parent_window),
-		gui->text->get_text_rows(),
-		0,
-		gui->rows)
+ : BC_ScrollBar(gui->x + gui->text->get_w(), gui->y, SCROLL_VERT, gui->text->get_h(),
+		gui->text->get_text_rows(), 0, gui->rows)
 {
 	this->gui = gui;
 }
