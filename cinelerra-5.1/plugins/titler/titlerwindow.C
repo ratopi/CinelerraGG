@@ -681,7 +681,7 @@ void TitleWindow::update_justification()
 void TitleWindow::update_stats()
 {
 	text_chars->update(client->config.wlen);
-	int len = MESSAGESIZE-16 - strlen(text->get_text());
+	int len = MESSAGESIZE - BCTEXTLEN - strlen(text->get_text()) - 1;
 	if( len < 0 ) len = 0;
 	text_bfrsz->update(len);
 }
@@ -1064,6 +1064,18 @@ int TitleText::button_press_event()
 int TitleText::handle_event()
 {
 	window->fonts_popup->deactivate();
+	int text_len = strlen(get_text());
+	int avail = MESSAGESIZE - BCTEXTLEN;
+	if( text_len >= avail ) { // back off last utf8 char
+		char text[2*sizeof(client->config.wtext)];
+		strcpy(text, get_text());
+                text_len = avail;
+                while( text_len > 0 && (text[text_len-1] & 0xc0) == 0x80 )
+                        text[--text_len] = 0;
+                if( text_len > 0 )
+                        text[--text_len] = 0;
+		update(text);
+	}
 	int len =  sizeof(client->config.wtext) / sizeof(wchar_t);
 	wcsncpy(client->config.wtext, get_wtext(), len);
 	client->config.wtext[len-1] = 0;
