@@ -58,6 +58,7 @@ public:
 	File();
 	~File();
 
+	int probe();
 // Get attributes for various file formats.
 // The dither parameter is carried over from recording, where dither is done at the device.
 	int get_options(FormatTools *format,
@@ -328,6 +329,9 @@ public:
 	static const char *get_plugin_path() { return getenv("CIN_PLUGIN"); }
 	static const char *get_ladspa_path() { return getenv("CIN_LADSPA"); }
 	static const char *get_locale_path() { return getenv("CIN_LOCALE"); }
+
+	static const char *default_probes[];
+	static const int nb_probes;
 
 private:
 	void reset_parameters();

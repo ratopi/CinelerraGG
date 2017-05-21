@@ -47,5 +47,7 @@ class PrefsRenderFarmSortNodes;
 class PrefsRenderFarmReset;
 class PrefsYUV420P_DVDlace;
 class CICacheSize;
+class PrefsFileProbes;
+
 
 #endif

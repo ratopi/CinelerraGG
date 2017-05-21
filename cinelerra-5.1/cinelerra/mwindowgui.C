@@ -2272,12 +2272,12 @@ int PaneButton::button_release_event()
 
 
 FFMpegToggle::FFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y)
- : BC_Toggle(x, y, mwindow->theme->ffmpeg_toggle, mwindow->preferences->ffmpeg_early_probe)
+ : BC_Toggle(x, y, mwindow->theme->ffmpeg_toggle,
+	 mwindow->preferences->get_file_probe_armed("FFMPEG_Early") > 0 ? 1 : 0)
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;
-	set_tooltip( mwindow->preferences->ffmpeg_early_probe ?
-		_("Try FFMpeg first") : _("Try FFMpeg last"));
+	set_tooltip( !get_value() ? _("Try FFMpeg first") : _("Try FFMpeg last") );
 }
 
 FFMpegToggle::~FFMpegToggle()
@@ -2286,9 +2286,11 @@ FFMpegToggle::~FFMpegToggle()
 
 int FFMpegToggle::handle_event()
 {
-	mwindow->preferences->ffmpeg_early_probe = get_value();
-	set_tooltip( mwindow->preferences->ffmpeg_early_probe ?
-		_("Try FFMpeg first") : _("Try FFMpeg last"));
+	int ffmpeg_early_probe = get_value();
+	set_tooltip( !ffmpeg_early_probe ?  _("Try FFMpeg first") : _("Try FFMpeg last"));
+	mwindow->preferences->set_file_probe_armed("FFMPEG_Early", ffmpeg_early_probe);
+	mwindow->preferences->set_file_probe_armed("FFMPEG_Late", !ffmpeg_early_probe);
+	
 	mwindow->show_warning(&mwindow->preferences->warn_indexes,
 		_("Changing the base codecs may require rebuilding indexes."));
 	return 1;

@@ -616,7 +616,8 @@ Undo::Undo(MWindow *mwindow) : BC_MenuItem(_("Undo"), "z", 'z')
 }
 int Undo::handle_event()
 {
-	mwindow->undo_entry(mwindow->gui);
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->undo_entry(mwindow->gui);
 	return 1;
 }
 int Undo::update_caption(const char *new_caption)
@@ -636,8 +637,8 @@ Redo::Redo(MWindow *mwindow) : BC_MenuItem(_("Redo"), _("Shift-Z"), 'Z')
 
 int Redo::handle_event()
 {
-	mwindow->redo_entry(mwindow->gui);
-
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->redo_entry(mwindow->gui);
 	return 1;
 }
 int Redo::update_caption(const char *new_caption)
@@ -657,7 +658,8 @@ CutKeyframes::CutKeyframes(MWindow *mwindow)
 
 int CutKeyframes::handle_event()
 {
-	mwindow->cut_automation();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->cut_automation();
 	return 1;
 }
 
@@ -670,7 +672,8 @@ CopyKeyframes::CopyKeyframes(MWindow *mwindow)
 
 int CopyKeyframes::handle_event()
 {
-	mwindow->copy_automation();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->copy_automation();
 	return 1;
 }
 
@@ -683,7 +686,8 @@ PasteKeyframes::PasteKeyframes(MWindow *mwindow)
 
 int PasteKeyframes::handle_event()
 {
-	mwindow->paste_automation();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->paste_automation();
 	return 1;
 }
 
@@ -696,7 +700,8 @@ ClearKeyframes::ClearKeyframes(MWindow *mwindow)
 
 int ClearKeyframes::handle_event()
 {
-	mwindow->clear_automation();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->clear_automation();
 	return 1;
 }
 
@@ -799,7 +804,8 @@ CutDefaultKeyframe::CutDefaultKeyframe(MWindow *mwindow)
 
 int CutDefaultKeyframe::handle_event()
 {
-	mwindow->cut_default_keyframe();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->cut_default_keyframe();
 	return 1;
 }
 
@@ -812,7 +818,8 @@ CopyDefaultKeyframe::CopyDefaultKeyframe(MWindow *mwindow)
 
 int CopyDefaultKeyframe::handle_event()
 {
-	mwindow->copy_default_keyframe();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->copy_default_keyframe();
 	return 1;
 }
 
@@ -825,7 +832,8 @@ PasteDefaultKeyframe::PasteDefaultKeyframe(MWindow *mwindow)
 
 int PasteDefaultKeyframe::handle_event()
 {
-	mwindow->paste_default_keyframe();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->paste_default_keyframe();
 	return 1;
 }
 
@@ -838,7 +846,8 @@ ClearDefaultKeyframe::ClearDefaultKeyframe(MWindow *mwindow)
 
 int ClearDefaultKeyframe::handle_event()
 {
-	mwindow->clear_default_keyframe();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->clear_default_keyframe();
 	return 1;
 }
 
@@ -850,7 +859,8 @@ Cut::Cut(MWindow *mwindow)
 
 int Cut::handle_event()
 {
-	mwindow->cut();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->cut();
 	return 1;
 }
 
@@ -862,7 +872,8 @@ Copy::Copy(MWindow *mwindow)
 
 int Copy::handle_event()
 {
-	mwindow->copy();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->copy();
 	return 1;
 }
 
@@ -874,7 +885,8 @@ Paste::Paste(MWindow *mwindow)
 
 int Paste::handle_event()
 {
-	mwindow->paste();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->paste();
 	return 1;
 }
 
@@ -886,9 +898,11 @@ Clear::Clear(MWindow *mwindow)
 
 int Clear::handle_event()
 {
-	mwindow->cwindow->gui->lock_window("Clear::handle_event");
-	mwindow->clear_entry();
-	mwindow->cwindow->gui->unlock_window();
+	if( mwindow->session->current_operation == NO_OPERATION ) {
+		mwindow->cwindow->gui->lock_window("Clear::handle_event");
+		mwindow->clear_entry();
+		mwindow->cwindow->gui->unlock_window();
+	}
 	return 1;
 }
 
@@ -901,7 +915,8 @@ PasteSilence::PasteSilence(MWindow *mwindow)
 
 int PasteSilence::handle_event()
 {
-	mwindow->paste_silence();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->paste_silence();
 	return 1;
 }
 
@@ -913,7 +928,8 @@ SelectAll::SelectAll(MWindow *mwindow)
 
 int SelectAll::handle_event()
 {
-	mwindow->select_all();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->select_all();
 	return 1;
 }
 
@@ -959,7 +975,8 @@ MuteSelection::MuteSelection(MWindow *mwindow)
 
 int MuteSelection::handle_event()
 {
-	mwindow->mute_selection();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->mute_selection();
 	return 1;
 }
 
@@ -997,7 +1014,8 @@ AddAudioTrack::AddAudioTrack(MWindow *mwindow)
 
 int AddAudioTrack::handle_event()
 {
-	mwindow->add_audio_track_entry(0, 0);
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->add_audio_track_entry(0, 0);
 	return 1;
 }
 
@@ -1020,7 +1038,8 @@ DefaultATransition::DefaultATransition(MWindow *mwindow)
 
 int DefaultATransition::handle_event()
 {
-	mwindow->paste_audio_transition();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->paste_audio_transition();
 	return 1;
 }
 
@@ -1064,7 +1083,8 @@ AddVideoTrack::AddVideoTrack(MWindow *mwindow)
 
 int AddVideoTrack::handle_event()
 {
-	mwindow->add_video_track_entry();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->add_video_track_entry();
 	return 1;
 }
 
@@ -1104,7 +1124,8 @@ DefaultVTransition::DefaultVTransition(MWindow *mwindow)
 
 int DefaultVTransition::handle_event()
 {
-	mwindow->paste_video_transition();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->paste_video_transition();
 	return 1;
 }
 
@@ -1143,7 +1164,8 @@ DeleteTrack::DeleteTrack(MWindow *mwindow)
 
 int DeleteTrack::handle_event()
 {
-	mwindow->delete_track();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->delete_track();
 	return 1;
 }
 
@@ -1155,7 +1177,8 @@ MoveTracksUp::MoveTracksUp(MWindow *mwindow)
 
 int MoveTracksUp::handle_event()
 {
-	mwindow->move_tracks_up();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->move_tracks_up();
 	return 1;
 }
 
@@ -1167,7 +1190,8 @@ MoveTracksDown::MoveTracksDown(MWindow *mwindow)
 
 int MoveTracksDown::handle_event()
 {
-	mwindow->move_tracks_down();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->move_tracks_down();
 	return 1;
 }
 
@@ -1201,8 +1225,10 @@ LoopPlayback::LoopPlayback(MWindow *mwindow)
 
 int LoopPlayback::handle_event()
 {
-	mwindow->toggle_loop_playback();
-	set_checked(mwindow->edl->local_session->loop_playback);
+	if( mwindow->session->current_operation == NO_OPERATION ) {
+		mwindow->toggle_loop_playback();
+		set_checked(mwindow->edl->local_session->loop_playback);
+	}
 	return 1;
 }
 
@@ -1220,7 +1246,8 @@ AddSubttlTrack::AddSubttlTrack(MWindow *mwindow)
 
 int AddSubttlTrack::handle_event()
 {
-	mwindow->add_subttl_track_entry();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->add_subttl_track_entry();
 	return 1;
 }
 
@@ -1232,7 +1259,8 @@ PasteSubttl::PasteSubttl(MWindow *mwindow)
 
 int PasteSubttl::handle_event()
 {
-	mwindow->gui->swindow->paste_subttl();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->gui->swindow->paste_subttl();
 	return 1;
 }
 
@@ -1246,9 +1274,11 @@ SetBRenderActive::SetBRenderActive(MWindow *mwindow)
 
 int SetBRenderActive::handle_event()
 {
-	int v = mwindow->brender_active ? 0 : 1;
-	set_checked(v);
-	mwindow->set_brender_active(v);
+	if( mwindow->session->current_operation == NO_OPERATION ) {
+		int v = mwindow->brender_active ? 0 : 1;
+		set_checked(v);
+		mwindow->set_brender_active(v);
+	}
 	return 1;
 }
 
@@ -1419,11 +1449,13 @@ ShowGWindow::ShowGWindow(MWindow *mwindow)
 }
 int ShowGWindow::handle_event()
 {
-	if( !mwindow->session->show_gwindow )
-		mwindow->show_gwindow();
-	else
-		mwindow->hide_gwindow();
-	set_checked(mwindow->session->show_gwindow);
+	if( mwindow->session->current_operation == NO_OPERATION ) {
+		if( !mwindow->session->show_gwindow )
+			mwindow->show_gwindow();
+		else
+			mwindow->hide_gwindow();
+		set_checked(mwindow->session->show_gwindow);
+	}
 	return 1;
 }
 
@@ -1450,11 +1482,13 @@ TileWindows::TileWindows(MWindow *mwindow, const char *item_title, int config,
 }
 int TileWindows::handle_event()
 {
-	int window_config = config >= 0 ? config :
-		mwindow->session->window_config;
-	if( mwindow->tile_windows(window_config) ) {
-		mwindow->restart_status = 1;
-		mwindow->gui->set_done(0);
+	if( mwindow->session->current_operation == NO_OPERATION ) {
+		int window_config = config >= 0 ? config :
+			mwindow->session->window_config;
+		if( mwindow->tile_windows(window_config) ) {
+			mwindow->restart_status = 1;
+			mwindow->gui->set_done(0);
+		}
 	}
 	return 1;
 }
@@ -1468,7 +1502,8 @@ SplitX::SplitX(MWindow *mwindow)
 }
 int SplitX::handle_event()
 {
-	mwindow->split_x();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->split_x();
 	return 1;
 }
 
@@ -1481,7 +1516,8 @@ SplitY::SplitY(MWindow *mwindow)
 }
 int SplitY::handle_event()
 {
-	mwindow->split_y();
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->split_y();
 	return 1;
 }
 

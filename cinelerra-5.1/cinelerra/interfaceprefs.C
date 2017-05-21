@@ -160,16 +160,17 @@ void InterfacePrefs::create_objects()
 	y += 5;
 
 	add_subwindow(new BC_Title(x, y, _("Index files"), LARGEFONT, resources->text_default));
+	add_subwindow(ffmpeg_marker_files = new IndexFFMPEGMarkerFiles(this, x1, y));
 
 
-	y += 25;
+	y += 30;
 	add_subwindow(new BC_Title(x, y + 5,
 		_("Index files go here:"), MEDIUMFONT, resources->text_default));
 	add_subwindow(ipathtext = new IndexPathText(x + 230, y,
 		pwindow,
 		pwindow->thread->preferences->index_directory));
 	add_subwindow(ipath = new BrowseButton(mwindow->theme, this, ipathtext,
-		x + 230 + ipathtext->get_w(), y,
+		x1 = x + 230 + ipathtext->get_w(), y,
 		pwindow->thread->preferences->index_directory,
 		_("Index Path"),
 		_("Select the directory for index files"),
@@ -188,9 +189,6 @@ void InterfacePrefs::create_objects()
 	sprintf(string, "%ld", (long)pwindow->thread->preferences->index_count);
 	add_subwindow(icount = new IndexCount(x + 230, y, pwindow, string));
 	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow, 350, y));
-
-
-
 
 
 	y += 35;
@@ -292,23 +290,12 @@ void InterfacePrefs::create_objects()
 
 const char* InterfacePrefs::behavior_to_text(int mode)
 {
-	switch(mode)
-	{
-		case MOVE_ALL_EDITS:
-			return _(MOVE_ALL_EDITS_TITLE);
-			break;
-		case MOVE_ONE_EDIT:
-			return _(MOVE_ONE_EDIT_TITLE);
-			break;
-		case MOVE_NO_EDITS:
-			return _(MOVE_NO_EDITS_TITLE);
-			break;
-		case MOVE_EDITS_DISABLED:
-			return _(MOVE_EDITS_DISABLED_TITLE);
-			break;
-		default:
-			return "";
-			break;
+	switch(mode) {
+		case MOVE_ALL_EDITS: return _(MOVE_ALL_EDITS_TITLE);
+		case MOVE_ONE_EDIT:  return _(MOVE_ONE_EDIT_TITLE);
+		case MOVE_NO_EDITS:  return _(MOVE_NO_EDITS_TITLE);
+		case MOVE_EDITS_DISABLED: return _(MOVE_EDITS_DISABLED_TITLE);
+		default: return "";
 	}
 }
 
@@ -325,17 +312,6 @@ int InterfacePrefs::update(int new_value)
 	seconds->update(new_value == TIME_SECONDS);
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -403,15 +379,22 @@ int IndexCount::handle_event()
 
 
 
+IndexFFMPEGMarkerFiles::IndexFFMPEGMarkerFiles(InterfacePrefs *iface_prefs, int x, int y)
+ : BC_CheckBox(x, y,
+	iface_prefs->pwindow->thread->preferences->ffmpeg_marker_indexes,
+	_("build ffmpeg marker indexes"))
+{
+	this->iface_prefs = iface_prefs;
+}
+IndexFFMPEGMarkerFiles::~IndexFFMPEGMarkerFiles()
+{
+}
 
-
-
-
-
-
-
-
-
+int IndexFFMPEGMarkerFiles::handle_event()
+{
+	iface_prefs->pwindow->thread->preferences->ffmpeg_marker_indexes = get_value();
+	return 1;
+}
 
 
 

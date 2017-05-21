@@ -229,8 +229,9 @@ int PreferencesThread::apply_settings()
 	}
 
 	mwindow->reset_android_remote();
-	mwindow->gui->ffmpeg_toggle->update(mwindow->preferences->ffmpeg_early_probe);
-	mwindow->gui->ffmpeg_toggle->set_tooltip( mwindow->preferences->ffmpeg_early_probe ?
+	int ffmpeg_early_probe = mwindow->preferences->get_file_probe_armed("FFPMEG_Early");
+	mwindow->gui->ffmpeg_toggle->update(ffmpeg_early_probe);
+	mwindow->gui->ffmpeg_toggle->set_tooltip(ffmpeg_early_probe ?
 		_("Try FFMpeg first") : _("Try FFMpeg last") );
 	mwindow->gui->mainshbtns->load(mwindow->preferences);
 	double tc_position =

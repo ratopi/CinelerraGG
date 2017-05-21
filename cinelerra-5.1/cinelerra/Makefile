@@ -226,6 +226,7 @@ OBJS = \
 	$(OBJDIR)/pluginvclient.o \
 	$(OBJDIR)/preferences.o \
 	$(OBJDIR)/preferencesthread.o \
+	$(OBJDIR)/probeprefs.o \
 	$(OBJDIR)/question.o \
 	$(OBJDIR)/quit.o \
 	$(OBJDIR)/recconfirmdelete.o \
@@ -445,7 +446,7 @@ $(OBJDIR)/sha1.o:	sha1.C sha1.h
 	$(CXX) `cat $(OBJDIR)/c_flags` -O3 -c $< -o $@
 
 $(DCRAW): dcraw.c
-	$(GCC) `cat $(OBJDIR)/c_flags` -Wno-misleading-indentation dcraw.c -c -o $*.o
+	$(GCC) `cat $(OBJDIR)/c_flags` -O4 -Wno-misleading-indentation dcraw.c -c -o $*.o
 
 $(THEME_DATA):
 	cd $(OBJDIR) && \

@@ -22,9 +22,10 @@
 #ifndef INTERFACEPREFS_H
 #define INTERFACEPREFS_H
 
+class InterfacePrefs;
+class IndexPathText;
 class IndexSize;
 class IndexCount;
-class IndexPathText;
 class TimeFormatHMS;
 class TimeFormatHMSF;
 class TimeFormatSamples;
@@ -32,19 +33,33 @@ class TimeFormatFrames;
 class TimeFormatHex;
 class TimeFormatFeet;
 class TimeFormatSeconds;
+class TimeFormatFeetSetting;
 class MeterMinDB;
 class MeterMaxDB;
 class MeterVUDB;
 class MeterVUInt;
 class ViewBehaviourText;
+class ViewBehaviourItem;
 class ViewTheme;
 class ViewThumbnails;
 class ViewThemeItem;
 class UseTipWindow;
+class UseWarnIndecies;
+class UseWarnVersion;
+class BD_WarnRoot;
+class ScanCommercials;
+class AndroidRemote;
+class PopupMenuBtnup;
+class ActivateFocusPolicy;
+class DeactivateFocusPolicy;
+class AndroidPIN;
+class AndroidPort;
+class ShBtnPrefs;
 class StillImageUseDuration;
 class StillImageDuration;
 class KeyframeReticle;
-class PopupMenuBtnup;
+class HairlineItem;
+class IndexFFMPEGMarkerFiles;
 
 #include "browsebutton.h"
 #include "deleteallindexes.inc"
@@ -70,6 +85,7 @@ public:
 	IndexCount *icount;
 	IndexPathText *ipathtext;
 	DeleteAllIndexes *deleteall;
+	IndexFFMPEGMarkerFiles *ffmpeg_marker_files;
 
 	TimeFormatHMS *hms;
 	TimeFormatHMSF *hmsf;
@@ -413,5 +429,17 @@ public:
 	int handle_event();
 	int hairline;
 };
+
+class IndexFFMPEGMarkerFiles : public BC_CheckBox
+{
+public:
+	IndexFFMPEGMarkerFiles(InterfacePrefs *iface_prefs, int x, int y);
+	~IndexFFMPEGMarkerFiles();
+
+	int handle_event();
+
+	InterfacePrefs *iface_prefs;
+};
+
 
 #endif

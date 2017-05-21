@@ -33,6 +33,7 @@
 #include "indexfile.h"
 #include "mutex.h"
 #include "preferences.h"
+#include "probeprefs.h"
 #include "shbtnprefs.h"
 #include "theme.h"
 #include "videoconfig.h"
@@ -77,7 +78,6 @@ Preferences::Preferences()
 	renderfarm_job_count = 20;
 	project_smp = processors = calculate_processors(0);
 	real_processors = calculate_processors(1);
-	ffmpeg_early_probe = 1;
 	ffmpeg_marker_indexes = 1;
 	warn_indexes = 1;
 	warn_version = 1;
@@ -120,6 +120,7 @@ Preferences::~Preferences()
 {
 	brender_asset->Garbage::remove_user();
 	shbtn_prefs.remove_all_objects();
+	file_probes.remove_all_objects();
 	renderfarm_nodes.remove_all_objects();
 	delete preferences_lock;
 }
@@ -180,6 +181,9 @@ void Preferences::copy_from(Preferences *that)
 	this->shbtn_prefs.remove_all_objects();
 	for( int i=0; i<that->shbtn_prefs.size(); ++i )
 		this->shbtn_prefs.append(new ShBtnPref(*that->shbtn_prefs[i]));
+	this->file_probes.remove_all_objects();
+	for( int i=0; i<that->file_probes.size(); ++i )
+		this->file_probes.append(new ProbePref(*that->file_probes[i]));
 	cache_size = that->cache_size;
 	project_smp = that->project_smp;
 	force_uniprocessor = that->force_uniprocessor;
@@ -187,7 +191,6 @@ void Preferences::copy_from(Preferences *that)
 	trap_sigintr = that->trap_sigintr;
 	processors = that->processors;
 	real_processors = that->real_processors;
-	ffmpeg_early_probe = that->ffmpeg_early_probe;
 	ffmpeg_marker_indexes = that->ffmpeg_marker_indexes;
 	warn_indexes = that->warn_indexes;
 	warn_version = that->warn_version;
@@ -339,7 +342,6 @@ int Preferences::load_defaults(BC_Hash *defaults)
 
 	project_smp = defaults->get("PROJECT_SMP", project_smp);
 	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", force_uniprocessor);
-	ffmpeg_early_probe = defaults->get("FFMPEG_EARLY_PROBE", ffmpeg_early_probe);
 	ffmpeg_marker_indexes = defaults->get("FFMPEG_MARKER_INDEXES", ffmpeg_marker_indexes);
 	warn_indexes = defaults->get("WARN_INDEXES", warn_indexes);
 	warn_version = defaults->get("WARN_VERSION", warn_version);
@@ -406,6 +408,28 @@ int Preferences::load_defaults(BC_Hash *defaults)
 		shbtn_prefs.append(new ShBtnPref(name, commands, warn));
 	}
 
+	file_probes.remove_all_objects();
+	int file_probe_total = defaults->get("FILE_PROBE_TOTAL", 0);
+	for( int i=0; i<file_probe_total; ++i ) {
+		char name[BCTEXTLEN];
+		sprintf(string, "FILE_PROBE%d_NAME", i);
+		defaults->get(string, name);
+		sprintf(string, "FILE_PROBE%d_ARMED", i);
+		int armed = defaults->get(string, 1);
+		file_probes.append(new ProbePref(name, armed));
+	}
+	// append any missing probes
+	for( int i=0; i<File::nb_probes; ++i ) {
+		const char *nm = File::default_probes[i];
+		int k = file_probes.size();
+		while( --k>=0 && strcmp(nm, file_probes[k]->name) );
+		if( k >= 0 ) continue;
+		int armed = 1;
+		if( !strcmp(nm, "FFMPEG_Late") ||
+		    !strcmp(nm, "CR2") ) armed = 0;
+		file_probes.append(new ProbePref(nm, armed));
+	}
+
 // Redo with the proper value of force_uniprocessor
 	processors = calculate_processors(0);
 	boundaries();
@@ -445,7 +469,6 @@ int Preferences::save_defaults(BC_Hash *defaults)
 
 	defaults->update("PROJECT_SMP", project_smp);
 	defaults->update("FORCE_UNIPROCESSOR", force_uniprocessor);
-	defaults->update("FFMPEG_EARLY_PROBE", ffmpeg_early_probe);
 	defaults->update("FFMPEG_MARKER_INDEXES", ffmpeg_marker_indexes);
 	defaults->update("WARN_INDEXES", warn_indexes);
 	defaults->update("WARN_VERSION", warn_version);
@@ -486,6 +509,14 @@ int Preferences::save_defaults(BC_Hash *defaults)
 		defaults->update(string, pref->commands);
 		sprintf(string, "SHBTN%d_WARN", i);
 		defaults->update(string, pref->warn);
+	}
+	defaults->update("FILE_PROBE_TOTAL", file_probes.size());
+	for( int i=0; i<file_probes.size(); ++i ) {
+		ProbePref *pref = file_probes[i];
+		sprintf(string, "FILE_PROBE%d_NAME", i);
+		defaults->update(string, pref->name);
+		sprintf(string, "FILE_PROBE%d_ARMED", i);
+		defaults->update(string, pref->armed);
 	}
 	return 0;
 }
@@ -737,5 +768,21 @@ int Preferences::calculate_processors(int interactive)
 {
 	if(force_uniprocessor && !interactive) return 1;
 	return BC_WindowBase::get_resources()->machine_cpus;
+}
+
+int Preferences::get_file_probe_armed(const char *nm)
+{
+	int k = file_probes.size();
+	while( --k>=0 && strcmp(nm, file_probes[k]->name) );
+	if( k < 0 ) return -1;
+	return file_probes[k]->armed;
+}
+
+void Preferences::set_file_probe_armed(const char *nm, int v)
+{
+	int k = file_probes.size();
+	while( --k>=0 && strcmp(nm, file_probes[k]->name) );
+	if( k < 0 ) return;
+	file_probes[k]->armed = v;
 }
 

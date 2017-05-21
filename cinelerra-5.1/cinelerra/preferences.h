@@ -29,6 +29,7 @@
 #include "maxchannels.h"
 #include "mutex.inc"
 #include "preferences.inc"
+#include "probeprefs.inc"
 #include "shbtnprefs.inc"
 #include "videoconfig.inc"
 
@@ -76,7 +77,9 @@ public:
 // Determined by /proc/cpuinfo and force_uniprocessor.
 // interactive forces it to ignore force_uniprocessor
 	int calculate_processors(int interactive = 0);
-
+// file probe armed
+	int get_file_probe_armed(const char *nm);
+	void set_file_probe_armed(const char *nm, int v);
 // ================================= Performance ================================
 // directory to look in for indexes
 	char index_directory[BCTEXTLEN];
@@ -99,8 +102,6 @@ public:
 	int processors;
 // Number of processors for interactive operations.
 	int real_processors;
-// ffmpeg probes early/late during File::open_file read
-	int ffmpeg_early_probe;
 // ffmpeg builds marker indexes as it builds idx files
 	int ffmpeg_marker_indexes;
 // warning
@@ -153,6 +154,8 @@ public:
 	char android_pin[BCSTRLEN];
 // shell cmd line menu ops
 	ArrayList<ShBtnPref *> shbtn_prefs;
+// file open probe order
+	ArrayList<ProbePref *> file_probes;
 
 // ====================================== Plugin Set ==============================
 	char plugin_dir[BCTEXTLEN];

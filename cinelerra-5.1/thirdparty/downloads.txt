@@ -1,3 +1,4 @@
+https://www.cybercom.net/~dcoffin/dcraw/dcraw.c
 http://download-mirror.savannah.gnu.org/releases//openexr/ilmbase-2.2.0.tar.gz
 http://gnu.mirrors.pair.com/savannah/savannah//openexr/openexr-2.2.0.tar.gz
 https://sourceforge.net/projects/opencvlibrary/files/latest/download?source=directory = 3.2.0

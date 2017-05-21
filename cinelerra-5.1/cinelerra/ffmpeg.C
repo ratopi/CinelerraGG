@@ -320,11 +320,15 @@ int FFStream::decode_activate()
 				ret = AVERROR(ENOMEM);
 			}
 			if( ret >= 0 ) {
+				av_codec_set_pkt_timebase(avctx, st->time_base);
+				if( decoder->capabilities & AV_CODEC_CAP_DR1 )
+					avctx->flags |= CODEC_FLAG_EMU_EDGE;
 				avcodec_parameters_to_context(avctx, st->codecpar);
 				ret = avcodec_open2(avctx, decoder, &copts);
 			}
-			if( ret >= 0 )
+			if( ret >= 0 ) {
 				reading = 1;
+			}
 			else
 				eprintf(_("open decoder failed\n"));
 		}
@@ -2079,7 +2083,7 @@ int FFMPEG::decode_activate()
 			}
 		}
 		int64_t nudge = vstart_time > min_nudge ? vstart_time :
-			astart_time > min_nudge ? astart_time : AV_NOPTS_VALUE;
+			astart_time > min_nudge ? astart_time : 0;
 		for( int vidx=0; vidx<ffvideo.size(); ++vidx ) {
 			if( ffvideo[vidx]->nudge == AV_NOPTS_VALUE )
 				ffvideo[vidx]->nudge = nudge;

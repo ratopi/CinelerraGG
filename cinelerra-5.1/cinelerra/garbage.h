@@ -49,6 +49,8 @@
 
 class Garbage
 {
+	Garbage(Garbage &v) {} //disallow copy constructor
+	Garbage &operator=(Garbage &v) { return *this=v; } //disallow = operator
 public:
 	Garbage(const char *title);
 	virtual ~Garbage();

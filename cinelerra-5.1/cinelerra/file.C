@@ -71,6 +71,7 @@
 #include "packagingengine.h"
 #include "pluginserver.h"
 #include "preferences.h"
+#include "probeprefs.h"
 #include "samples.h"
 #include "vframe.h"
 
@@ -359,15 +360,139 @@ int File::delete_oldest()
 	return frame_cache->delete_oldest();
 }
 
+// file driver in order of probe precidence
+//  can be reordered in preferences->interface
+const char *File::default_probes[] = { 
+	"FFMPEG_Early",
+	"Scene", 
+	"DB",
+#ifdef HAVE_DV 
+	"DV",   
+#endif 
+	"SndFile",
+	"PNG",
+	"JPEG",
+	"GIF",
+	"EXR",
+	"FLAC",
+	"CR2",
+	"TGA",
+	"TIFF",
+	"OGG",
+	"Vorbis",
+	"MPEG",
+	"EDL",
+       	"FFMPEG_Late", 
+}; 
+const int File::nb_probes =
+	sizeof(File::default_probes)/sizeof(File::default_probes[0]); 
 
 
+int File::probe()
+{
+	FILE *fp = fopen(this->asset->path, "rb");
+	if( !fp ) return FILE_NOT_FOUND;
+	char data[16];
+	memset(data,0,sizeof(data));
+	int ret = fread(data, 1, 16, fp);
+	fclose(fp);
+	if( !ret ) return FILE_NOT_FOUND;
 
-
-
-
-
-
-
+	for( int i=0; i<preferences->file_probes.size(); ++i ) {
+		ProbePref *pref = preferences->file_probes[i];
+		if( !pref->armed ) continue;
+		if( !strncmp(pref->name,"FFMPEG",6) ) { // FFMPEG Early/Late
+			if( !FileFFMPEG::check_sig(this->asset) ) continue;
+			file = new FileFFMPEG(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"DB") ) { // MediaDB
+			if( !FileDB::check_sig(this->asset) ) continue;
+			file = new FileDB(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"Scene") ) { // scene file
+			if( !FileScene::check_sig(this->asset, data)) continue;
+			file = new FileScene(this->asset, this);
+			return FILE_OK;
+		}
+#ifdef HAVE_DV
+		if( !strcmp(pref->name,"DV") ) { // libdv
+			if( !FileDV::check_sig(this->asset) ) continue;
+			file = new FileDV(this->asset, this);
+			return FILE_OK;
+		}
+#endif
+		if( !strcmp(pref->name,"SndFile") ) { // libsndfile
+			if( !FileSndFile::check_sig(this->asset) ) continue;
+			file = new FileSndFile(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"PNG") ) { // PNG file
+			if( !FilePNG::check_sig(this->asset) ) continue;
+			file = new FilePNG(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"JPEG") ) { // JPEG file
+			if( !FileJPEG::check_sig(this->asset) ) continue;
+			file = new FileJPEG(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"GIF") ) { // GIF file
+			if( !FileGIF::check_sig(this->asset)) continue;
+			file = new FileGIF(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"EXR") ) { // EXR file
+			if( !FileEXR::check_sig(this->asset, data)) continue;
+			file = new FileEXR(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"FLAC") ) { // FLAC file
+			if( !FileFLAC::check_sig(this->asset, data)) continue;
+			file = new FileFLAC(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"CR2") ) { // CR2 file
+			if( !FileCR2::check_sig(this->asset)) continue;
+			file = new FileCR2(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"TGA") ) { // TGA file
+			if( !FileTGA::check_sig(this->asset) ) continue;
+			file = new FileTGA(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"TIFF") ) { // TIFF file
+			if( !FileTIFF::check_sig(this->asset) ) continue;
+			file = new FileTIFF(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"OGG") ) { // OGG file
+			if( !FileOGG::check_sig(this->asset) ) continue;
+			file = new FileOGG(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"Vorbis") ) { // VorbisFile file
+			if( !FileVorbis::check_sig(this->asset) ) continue;
+			file = new FileVorbis(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"MPEG") ) { // MPEG file
+			if( !FileMPEG::check_sig(this->asset) ) continue;
+			file = new FileMPEG(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"EDL") ) { // XML file
+			if( data[0] != '<' ) continue;
+			if( !strncmp(&data[1],"EDL>",4) ||
+			    !strncmp(&data[1],"HTAL>",5) ||
+			    !strncmp(&data[1],"?xml",4) )
+				return FILE_IS_XML;
+		}
+	}
+	return FILE_UNRECOGNIZED_CODEC; // maybe PCM file ?
+}
 
 int File::open_file(Preferences *preferences,
 	Asset *asset,
@@ -386,138 +511,14 @@ int File::open_file(Preferences *preferences,
 
 	if(debug) printf("File::open_file %p %d\n", this, __LINE__);
 
-	switch(this->asset->format)
-	{
+	switch(this->asset->format) {
 // get the format now
 // If you add another format to case 0, you also need to add another case for the
 // file format #define.
-		case FILE_UNKNOWN:
-			if(FileDB::check_sig(this->asset)) {
-// MediaDb file
-				file = new FileDB(this->asset, this);
-				break;
-			}
-// if early probe enabled
-			if( preferences->ffmpeg_early_probe &&
-			    FileFFMPEG::check_sig(this->asset)) {
-				file = new FileFFMPEG(this->asset, this);
-				break;
-			}
-
-			FILE *stream;
-			if(!(stream = fopen(this->asset->path, "rb"))) {
-// file not found
-				return 1;
-			}
-
-			char test[16];  memset(test,0,sizeof(test)); // int result =
-			fread(test, 16, 1, stream);
-
-			if(FileScene::check_sig(this->asset, test)) {
-// scene file
-				fclose(stream);
-				file = new FileScene(this->asset, this);
-				break;
-			}
-#ifdef HAVE_DV
-			if(FileDV::check_sig(this->asset)) {
-// libdv
-				fclose(stream);
-				file = new FileDV(this->asset, this);
-				break;
-			}
-#endif
-			if(FileSndFile::check_sig(this->asset)) {
-// libsndfile
-				fclose(stream);
-				file = new FileSndFile(this->asset, this);
-				break;
-			}
-			if(FilePNG::check_sig(this->asset)) {
-// PNG file
-				fclose(stream);
-				file = new FilePNG(this->asset, this);
-				break;
-			}
-			if(FileJPEG::check_sig(this->asset)) {
-// JPEG file
-				fclose(stream);
-				file = new FileJPEG(this->asset, this);
-				break;
-			}
-			if(FileGIF::check_sig(this->asset)) {
-// GIF file
-				fclose(stream);
-				file = new FileGIF(this->asset, this);
-				break;
-			}
-			if(FileEXR::check_sig(this->asset, test)) {
-// EXR file
-				fclose(stream);
-				file = new FileEXR(this->asset, this);
-				break;
-			}
-			if(FileFLAC::check_sig(this->asset, test)) {
-// FLAC file
-				fclose(stream);
-				file = new FileFLAC(this->asset, this);
-				break;
-			}
-			if(FileCR2::check_sig(this->asset)) {
-// CR2 file
-				fclose(stream);
-				file = new FileCR2(this->asset, this);
-				break;
-			}
-			if(FileTGA::check_sig(this->asset)) {
-// TGA file
-				fclose(stream);
-				file = new FileTGA(this->asset, this);
-				break;
-			}
-			if(FileTIFF::check_sig(this->asset)) {
-// TIFF file
-				fclose(stream);
-				file = new FileTIFF(this->asset, this);
-				break;
-			}
-			if(FileOGG::check_sig(this->asset)) {
-// OGG file
-				fclose(stream);
-				file = new FileOGG(this->asset, this);
-				break;
-			}
-			if(FileVorbis::check_sig(this->asset)) {
-// VorbisFile file
-				fclose(stream);
-				file = new FileVorbis(this->asset, this);
-				break;
-			}
-			if(FileMPEG::check_sig(this->asset)) {
-// MPEG file
-				fclose(stream);
-				file = new FileMPEG(this->asset, this);
-				break;
-			}
-			if( test[0] == '<' && (
-				!strncmp(&test[1],"EDL>",4) ||
-				!strncmp(&test[1],"HTAL>",5) ||
-				!strncmp(&test[1],"?xml",4) ) ) {
-// XML file
-				fclose(stream);
-				return FILE_IS_XML;
-			}    // can't load project file
-			if( !preferences->ffmpeg_early_probe &&
-			    FileFFMPEG::check_sig(this->asset) ) {
-				fclose(stream);
-				file = new FileFFMPEG(this->asset, this);
-				break;
-			}
-// PCM file
-			fclose(stream);
-			return FILE_UNRECOGNIZED_CODEC;
-			break;
-
+		case FILE_UNKNOWN: {
+			int ret = probe();
+			if( ret != FILE_OK ) return ret;
+			break; }
 // format already determined
 		case FILE_AC3:
 			file = new FileAC3(this->asset, this);

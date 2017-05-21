@@ -28,6 +28,7 @@
 #include "mwindow.h"
 #include "performanceprefs.h"
 #include "preferences.h"
+#include "probeprefs.h"
 #include <string.h>
 #include "theme.h"
 
@@ -40,11 +41,13 @@ PerformancePrefs::PerformancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
 	hot_node = -1;
+	file_probe_dialog = 0;
 }
 
 PerformancePrefs::~PerformancePrefs()
 {
 	delete brender_tools;
+	delete file_probe_dialog;
 	nodes[0].remove_all_objects();
 	nodes[1].remove_all_objects();
 	nodes[2].remove_all_objects();
@@ -61,7 +64,7 @@ void PerformancePrefs::create_objects()
 	char string[BCTEXTLEN];
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
-	int maxw, curw, y1;
+	int maxw, curw;
 
 	node_list = 0;
 	generate_node_list();
@@ -77,30 +80,25 @@ void PerformancePrefs::create_objects()
 //
 // 	y += get_text_height(LARGEFONT) + 5;
 
-	int ybx[2];
-	ybx[0] = y;
+	int y0 = y;
 
 	win = add_subwindow(new BC_Title(x, y + 5, _("Cache size (MB):"), MEDIUMFONT, resources->text_default));
 	maxw = win->get_w();
 
-	ybx[1] = y += 30;
+	int y1 = y += 30;
 	win = add_subwindow(new BC_Title(x, y + 5, _("Seconds to preroll renders:")));
 	if((curw = win->get_w()) > maxw)
 		maxw = curw;
 	maxw += x + 5;
 
-	cache_size = new CICacheSize(maxw,
-		ybx[0],
-		pwindow,
-		this);
+	cache_size = new CICacheSize(maxw, y0, pwindow, this);
 	cache_size->create_objects();
+	int x1 = cache_size->get_x() + cache_size->get_w() + 30;
+	add_subwindow(file_probes = new PrefsFileProbes(pwindow, this, x1, y0));
+
 	add_subwindow(new BC_Title(x, y + 5, _("Seconds to preroll renders:")));
-	PrefsRenderPreroll *preroll = new PrefsRenderPreroll(pwindow,
-		this,
-		maxw,
-		ybx[1]);
+	PrefsRenderPreroll *preroll = new PrefsRenderPreroll(pwindow, this, maxw, y1);
 	preroll->create_objects();
-	int x1 = preroll->get_x() + preroll->get_w() + 20;
 	BC_Title *smp_title = new BC_Title(x1, y + 5, _("Project SMP cpus:"));
 	add_subwindow(smp_title);
 	int x2 = x1 + smp_title->get_w() + 5;
@@ -122,12 +120,7 @@ void PerformancePrefs::create_objects()
 	PrefsTrapSigINTR *trap_intr = new PrefsTrapSigINTR(this, x1, y);
 	add_subwindow(trap_intr);
 	add_subwindow(new BC_Title(x2, y, _("(must be root)"), MEDIUMFONT, RED));
-	ffmpeg_marker_indexes = new PrefsFFMPEGMarkerIndecies(this, x, y);
-	add_subwindow(ffmpeg_marker_indexes);
 	y += 30;
-
-	ffmpeg_early_probe = new PrefsFFMPEGEarlyProbe(this, x, y);
-	add_subwindow(ffmpeg_early_probe);
 
 	yuv420p_dvdlace = new PrefsYUV420P_DVDlace(pwindow, this, x1, y);
 	add_subwindow(yuv420p_dvdlace);
@@ -353,6 +346,29 @@ void PerformancePrefs::update_rates()
 	update_node_list();
 }
 
+void PerformancePrefs::start_probe_dialog()
+{
+	if( !file_probe_dialog )
+		file_probe_dialog = new FileProbeDialog(pwindow);
+	file_probe_dialog->start();
+}
+
+PrefsFileProbes::PrefsFileProbes(PreferencesWindow *pwindow,
+		PerformancePrefs *perf_prefs, int x, int y)
+ : BC_GenericButton(x, y, _("Probe Order"))
+{
+	this->pwindow = pwindow;
+	this->perf_prefs = perf_prefs;
+	set_tooltip(_("File Open Probe Ordering"));
+}
+
+int PrefsFileProbes::handle_event()
+{
+	perf_prefs->start_probe_dialog();
+	return 1;
+}
+
+
 
 PrefsUseBRender::PrefsUseBRender(PreferencesWindow *pwindow,
 	int x,
@@ -559,44 +575,6 @@ int PrefsTrapSigINTR::handle_event()
 }
 
 
-PrefsFFMPEGEarlyProbe::PrefsFFMPEGEarlyProbe(PerformancePrefs *perf_prefs, int x, int y)
- : BC_CheckBox(x, y,
-	perf_prefs->pwindow->thread->preferences->ffmpeg_early_probe,
-	_("On file open, ffmpeg probes early"))
-{
-	this->perf_prefs = perf_prefs;
-}
-PrefsFFMPEGEarlyProbe::~PrefsFFMPEGEarlyProbe()
-{
-}
-
-int PrefsFFMPEGEarlyProbe::handle_event()
-{
-	perf_prefs->pwindow->thread->preferences->ffmpeg_early_probe = get_value();
-	return 1;
-}
-
-
-PrefsFFMPEGMarkerIndecies::PrefsFFMPEGMarkerIndecies(PerformancePrefs *perf_prefs, int x, int y)
- : BC_CheckBox(x, y,
-	perf_prefs->pwindow->thread->preferences->ffmpeg_marker_indexes,
-	_("build ffmpeg marker indexes"))
-{
-	this->perf_prefs = perf_prefs;
-}
-PrefsFFMPEGMarkerIndecies::~PrefsFFMPEGMarkerIndecies()
-{
-}
-
-int PrefsFFMPEGMarkerIndecies::handle_event()
-{
-	perf_prefs->pwindow->thread->preferences->ffmpeg_marker_indexes = get_value();
-	return 1;
-}
-
-
-
-
 
 
 PrefsRenderFarmConsolidate::PrefsRenderFarmConsolidate(PreferencesWindow *pwindow, int x, int y)
@@ -615,9 +593,6 @@ int PrefsRenderFarmConsolidate::handle_event()
 	pwindow->thread->preferences->renderfarm_consolidate = get_value();
 	return 1;
 }
-
-
-
 
 
 PrefsRenderFarmPort::PrefsRenderFarmPort(PreferencesWindow *pwindow,

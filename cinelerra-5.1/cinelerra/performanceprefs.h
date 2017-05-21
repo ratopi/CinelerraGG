@@ -27,6 +27,7 @@
 #include "mwindow.inc"
 #include "performanceprefs.inc"
 #include "preferencesthread.h"
+#include "probeprefs.inc"
 
 
 class PerformancePrefs : public PreferencesDialog
@@ -40,10 +41,12 @@ public:
 	void generate_node_list();
 	void update_node_list();
 	void update_rates();
+	void start_probe_dialog();
 
 	int hot_node;
 
 	CICacheSize *cache_size;
+	PrefsFileProbes *file_probes;
 
 	enum
 	{
@@ -60,9 +63,8 @@ public:
 	PrefsRenderFarmNodes *node_list;
 	FormatTools *brender_tools;
 	BC_Title *master_rate;
-	PrefsFFMPEGEarlyProbe *ffmpeg_early_probe;
 	PrefsYUV420P_DVDlace *yuv420p_dvdlace;
-	PrefsFFMPEGMarkerIndecies *ffmpeg_marker_indexes;
+	FileProbeDialog *file_probe_dialog;
 };
 
 
@@ -140,17 +142,6 @@ class PrefsTrapSigINTR : public BC_CheckBox
 public:
 	PrefsTrapSigINTR(PerformancePrefs *perf_prefs, int x, int y);
 	~PrefsTrapSigINTR();
-	int handle_event();
-
-	PerformancePrefs *perf_prefs;
-};
-
-class PrefsFFMPEGEarlyProbe : public BC_CheckBox
-{
-public:
-	PrefsFFMPEGEarlyProbe(PerformancePrefs *perf_prefs, int x, int y);
-	~PrefsFFMPEGEarlyProbe();
-
 	int handle_event();
 
 	PerformancePrefs *perf_prefs;
@@ -381,5 +372,17 @@ public:
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
+
+
+class PrefsFileProbes : public BC_GenericButton
+{
+public:
+	PreferencesWindow *pwindow;
+	PerformancePrefs *perf_prefs;
+
+	int handle_event();
+	PrefsFileProbes(PreferencesWindow *pwindow, PerformancePrefs *perf_prefs, int x, int y);
+};
+
 
 #endif

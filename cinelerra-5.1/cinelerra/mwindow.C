@@ -1461,11 +1461,9 @@ SET_TRACE
 			case FILE_UNRECOGNIZED_CODEC:
 			{
 // Test index file
-				IndexFile indexfile(this, new_asset);
-				result = indexfile.open_index();
-				if(!result)
-				{
-					indexfile.close_index();
+				{	IndexFile indexfile(this, new_asset);
+					if( !(result = indexfile.open_index()) )
+						indexfile.close_index();
 				}
 
 // Test existing EDLs
@@ -1474,7 +1472,7 @@ SET_TRACE
 						new_edls[j]->assets->get_asset(new_asset->path) :
 						edl->assets->get_asset(new_asset->path);
 					if( old_asset ) {
-						*new_asset = *old_asset;
+						new_asset->copy_from(old_asset,1);
 						result = 0;
 					}
 				}

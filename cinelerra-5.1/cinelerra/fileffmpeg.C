@@ -210,7 +210,6 @@ int FileFFMPEG::select_video_stream(Asset *asset, int vstream)
 	if( !ff || !asset->video_data ) return 1;
 	asset->width = ff->ff_video_width(vstream);
 	asset->height = ff->ff_video_height(vstream);
-	asset->video_length = ff->ff_video_frames(vstream);
 	if( (asset->video_length = ff->ff_video_frames(vstream)) < 2 )
 		asset->video_length = asset->video_length < 0 ? 0 : -1;
 	asset->frame_rate = ff->ff_frame_rate(vstream);

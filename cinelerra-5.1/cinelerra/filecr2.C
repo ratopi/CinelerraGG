@@ -39,6 +39,14 @@ extern float dcraw_matrix[9];
 int dcraw_main (int argc, const char **argv);
 }
 
+static int dcraw_run(int argc, const char **argv)
+{
+	static Mutex dcraw_lock;
+	dcraw_lock.lock("dcraw_run");
+	int result = dcraw_main(argc, argv);
+	dcraw_lock.unlock();
+	return result;
+}
 
 FileCR2::FileCR2(Asset *asset, File *file)
  : FileList(asset, file, "CR2LIST", ".cr2", FILE_CR2, FILE_CR2_LIST)
@@ -96,7 +104,7 @@ int FileCR2::check_sig(Asset *asset)
 		0
 	};
 
-	int result = dcraw_main(argc, argv);
+	int result = dcraw_run(argc, argv);
 
 //printf("FileCR2::check_sig %d %d\n", __LINE__, result);
 
@@ -115,7 +123,7 @@ int FileCR2::check_sig(Asset *asset)
 // 		0
 // 	};
 //
-// 	int result = dcraw_main(argc, argv);
+// 	int result = dcraw_run(argc, argv);
 // 	if(!result) format_to_asset();
 //
 // 	return result;
@@ -133,7 +141,7 @@ printf("FileCR2::read_frame_header %d\n", __LINE__);
 		0
 	};
 
-	int result = dcraw_main(argc, argv);
+	int result = dcraw_run(argc, argv);
 	if(!result) format_to_asset();
 
 printf("FileCR2::read_frame_header %d %d\n", __LINE__, result);
@@ -214,7 +222,7 @@ printf("FileCR2::read_frame %d %s\n", __LINE__, path);
 	dcraw_data = (float**)frame->get_rows();
 
 //Timer timer;
-	int result = dcraw_main(argc, (const char**) argv);
+	int result = dcraw_run(argc, (const char**) argv);
 
 // This was only used by the bayer interpolate plugin, which itself created
 // too much complexity to use effectively.
