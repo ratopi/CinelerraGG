@@ -31,7 +31,7 @@ export mkinstalldirs install_sh inst_sh
 
 # install to bin
 binstall:	install-recursive
-	cp -a COPYING README models ffmpeg msg.txt bin/.
+	cp -a COPYING README models ffmpeg msg.txt tips bin/.
 	sed -e 's/\<cin\>/$(WANT_CIN)/g' < image/cin.desktop \
 		> "bin/applications/$(WANT_CIN).desktop"
 	cp -a image/cin.svg "bin/pixmaps/$(WANT_CIN)".svg
@@ -48,7 +48,7 @@ cinstall:
 	cd bin; $(inst_sh) "$(DESTDIR)$(WANT_CINLIB_DIR)" \
 		bdwrite cutads hveg2enc mpeg2enc mplex mplexlo
 	cd bin; $(inst_sh) "$(DESTDIR)$(datadir)/$(WANT_CIN)" \
-		COPYING README msg.txt ffmpeg doc models
+		COPYING README msg.txt ffmpeg doc models tips
 	cd bin/locale; $(inst_sh) "$(DESTDIR)$(localedir)" .
 	cd bin/plugins; $(inst_sh) "$(DESTDIR)$(WANT_PLUGIN_DIR)" .
 	cd bin/ladspa; $(inst_sh) "$(DESTDIR)$(WANT_LADSPA_DIR)" .

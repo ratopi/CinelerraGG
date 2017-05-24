@@ -201,6 +201,7 @@ MWindow::MWindow()
 	mainprogress = 0;
 	brender = 0;
 	brender_active = 0;
+	strcpy(cin_lang,"en");
 	channeldb_buz =  new ChannelDB;
 	channeldb_v4l2jpeg =  new ChannelDB;
 	//file_server = 0;
@@ -470,7 +471,7 @@ void MWindow::check_language()
 	if( !env_lang ) env_lang = getenv("LC_ALL");
 	if( !env_lang ) env_lang = getenv("LANG");
 	if( !env_lang ) {
-		snprintf(curr_lang, sizeof(curr_lang), "%s-%s.%s",
+		snprintf(curr_lang, sizeof(curr_lang), "%s_%s-%s",
 			BC_Resources::language, BC_Resources::region, BC_Resources::encoding);
 		env_lang = curr_lang;
 	}
@@ -487,6 +488,12 @@ void MWindow::check_language()
 		::remove(ladspa_path);
 		defaults->save();
 	}
+	if( strlen(env_lang) > 1 &&
+	    ( env_lang[2] == 0 || env_lang[2] == '_'  || env_lang[2] == '.' ) ) {
+		cin_lang[0] = env_lang[0];  cin_lang[1] = env_lang[1];  cin_lang[2] = 0;
+	}
+	else
+		strcpy(cin_lang, "en");
 }
 
 void MWindow::get_plugin_path(char *path, const char *plug_dir, const char *fs_path)
@@ -919,6 +926,7 @@ void MWindow::init_gwindow()
 
 void MWindow::init_tipwindow()
 {
+	TipWindow::load_tips(cin_lang);
 	if( !twindow )
 		twindow = new TipWindow(this);
 	twindow->start();

@@ -19,8 +19,14 @@
  *
  */
 
+#include "bcbutton.h"
+#include "bcdialog.h"
 #include "bcdisplayinfo.h"
+#include "bcresources.h"
 #include "bcsignals.h"
+#include "bctoggle.h"
+#include "cstrdup.h"
+#include "file.h"
 #include "keys.h"
 #include "language.h"
 #include "mainsession.h"
@@ -30,52 +36,8 @@
 #include "tipwindow.h"
 
 
-
 // Table of tips of the day
-static const char *tips[] =
-{
-	_("Shift-click on a curve keyframe to snap it to the neighboring values."),
-
-	_("When configuring slow effects, disable playback for the track.  After configuring it,\n"
-	"re-enable playback to process a single frame."),
-
-	_("Ctrl + any transport command causes playback to only cover\n"
-	"the region defined by the in/out points."),
-
-	_("Shift + clicking a patch causes all other patches except the\n"
-	"selected one to toggle."),
-
-	_("Clicking on a patch and dragging across other tracks causes\n"
-	"the other patches to match the first one."),
-
-	_("Shift + clicking on an effect boundary causes dragging to affect\n"
-	"just the one effect."),
-
-	_("Load multiple files by clicking on one file and shift + clicking on\n"
-	"another file.  Ctrl + clicking toggles individual files."),
-
-	_("Ctrl + left clicking on the time bar cycles forward a time format.\n"
-	"Ctrl + middle clicking on the time bar cycles backward a time format."),
-
-	_("Use the +/- keys in the Compositor window to zoom in and out.\n"),
-
-	_("Pressing Alt while clicking in the cropping window causes translation of\n"
-	"all 4 points.\n"),
-
-	_("Pressing Tab over a track toggles the Record status.\n"
-	"Pressing Shift-Tab over a track toggles the Record status of all the other tracks.\n"),
-
-	_("Audio->Map 1:1 maps each recordable audio track to a different channel.\n"
-	"Map 5.1:2 maps 6 recordable AC3 tracks to 2 channels.\n"),
-
-	_("Alt + left moves to the previous edit handle.\n"
-	"Alt + right moves to the next edit handle.\n"),
-
-	_("Settings->typeless keyframes allows keyframes from any track to be pasted on either\n"
-	"audio or video tracks.\n")
-};
-
-static int total_tips = sizeof(tips) / sizeof(char*);
+static Tips tips;
 
 
 TipWindow::TipWindow(MWindow *mwindow)
@@ -89,6 +51,31 @@ TipWindow::~TipWindow()
 	close_window();
 }
 
+void TipWindow::load_tips(const char *lang)
+{
+	tips.remove_all_objects();
+	char tip[0x10000];  tip[0] = 0;
+	char string[BCTEXTLEN];
+	sprintf(string, "%s/%s.%s", File::get_cindat_path(), TIPS_FILE, lang);
+	FILE *fp = fopen(string, "r");
+	if( !fp ) {
+		sprintf(tip, _("tip file missing:\n %s"), string);
+		tips.add(tip);
+		return;
+	}
+
+	while( fgets(string, sizeof(string), fp) ) {
+		if( string[0] == '\n' && string[1] == 0 && strlen(tip) > 0 ) {
+			tips.add(tip);
+			tip[0] = 0;
+			continue;
+		}
+		strcat(tip, string);
+	}
+
+	fclose(fp);
+}
+
 void TipWindow::handle_close_event(int result)
 {
 	gui = 0;
@@ -99,22 +86,19 @@ BC_Window* TipWindow::new_gui()
 	BC_DisplayInfo display_info;
 	int x = display_info.get_abs_cursor_x();
 	int y = display_info.get_abs_cursor_y();
-	TipWindowGUI *gui = this->gui = new TipWindowGUI(mwindow,
-		this,
-		x,
-		y);
+	TipWindowGUI *gui = this->gui = new TipWindowGUI(mwindow, this, x, y);
 	gui->create_objects();
 	return gui;
 }
 
-char* TipWindow::get_current_tip(int n)
+const char* TipWindow::get_current_tip(int n)
 {
 	mwindow->session->current_tip += n;
 	if( mwindow->session->current_tip < 0 )
-		mwindow->session->current_tip = total_tips - 1;
-	else if( mwindow->session->current_tip >= total_tips )
+		mwindow->session->current_tip = tips.size()-1;
+	else if( mwindow->session->current_tip >= tips.size() )
 		mwindow->session->current_tip = 0;
-	char *result = _(tips[mwindow->session->current_tip]);
+	const char *result = tips[mwindow->session->current_tip];
 	mwindow->save_defaults();
 	return result;
 }
@@ -131,23 +115,9 @@ void TipWindow::prev_tip()
 
 
 
-
-
-
-TipWindowGUI::TipWindowGUI(MWindow *mwindow,
-	TipWindow *thread,
-	int x,
-	int y)
- : BC_Window(_(PROGRAM_NAME ": Tip of the day"),
- 	x,
-	y,
- 	640,
-	100,
-	640,
-	100,
-	0,
-	0,
-	1)
+TipWindowGUI::TipWindowGUI(MWindow *mwindow, TipWindow *thread, int x, int y)
+ : BC_Window(_(PROGRAM_NAME ": Tip of the day"), x, y,
+		640, 100, 640, 100, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -156,24 +126,18 @@ TipWindowGUI::TipWindowGUI(MWindow *mwindow,
 void TipWindowGUI::create_objects()
 {
 	int x = 10, y = 10;
-SET_TRACE
 	add_subwindow(tip_text = new BC_Title(x, y, thread->get_current_tip(0)));
 	y = get_h() - 30;
-SET_TRACE
 	BC_CheckBox *checkbox;
 	add_subwindow(checkbox = new TipDisable(mwindow, this, x, y));
-SET_TRACE
 	BC_Button *button;
 	y = get_h() - TipClose::calculate_h(mwindow) - 10;
 	x = get_w() - TipClose::calculate_w(mwindow) - 10;
 	add_subwindow(button = new TipClose(mwindow, this, x, y));
-SET_TRACE
 	x -= TipNext::calculate_w(mwindow) + 10;
 	add_subwindow(button = new TipNext(mwindow, this, x, y));
-SET_TRACE
 	x -= TipPrev::calculate_w(mwindow) + 10;
 	add_subwindow(button = new TipPrev(mwindow, this, x, y));
-SET_TRACE
 	x += button->get_w() + 10;
 
 	show_window();
@@ -182,27 +146,20 @@ SET_TRACE
 
 int TipWindowGUI::keypress_event()
 {
-	switch(get_keypress())
-	{
-		case RETURN:
-		case ESC:
-		case 'w':
-			set_done(0);
-			break;
+	switch(get_keypress()) {
+	case RETURN:
+	case ESC:
+	case 'w':
+		set_done(0);
+		break;
 	}
 	return 0;
 }
 
 
 
-
-
-
-
 TipDisable::TipDisable(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
- : BC_CheckBox(x,
- 	y,
-	mwindow->preferences->use_tipwindow,
+ : BC_CheckBox(x, y, mwindow->preferences->use_tipwindow,
 	_("Show tip of the day."))
 {
 	this->mwindow = mwindow;
@@ -218,9 +175,7 @@ int TipDisable::handle_event()
 
 
 TipNext::TipNext(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
- : BC_Button(x,
- 	y,
-	mwindow->theme->get_image_set("next_tip"))
+ : BC_Button(x, y, mwindow->theme->get_image_set("next_tip"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -236,9 +191,6 @@ int TipNext::calculate_w(MWindow *mwindow)
 {
 	return mwindow->theme->get_image_set("next_tip")[0]->get_w();
 }
-
-
-
 
 
 
@@ -259,13 +211,6 @@ int TipPrev::calculate_w(MWindow *mwindow)
 {
 	return mwindow->theme->get_image_set("prev_tip")[0]->get_w();
 }
-
-
-
-
-
-
-
 
 
 TipClose::TipClose(MWindow *mwindow, TipWindowGUI *gui, int x, int y)

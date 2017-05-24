@@ -704,17 +704,18 @@ static void get_mcu_rows(mjpeg_t *mjpeg,
 	mjpeg_compressor *engine,
 	int start_row)
 {
-	int i, j, scanline;
+	int i, j, scanline, lastline;
 	for(i = 0; i < 3; i++)
 	{
 		for(j = 0; j < 16; j++)
 		{
-			if(i > 0 && j >= 8 && mjpeg->jpeg_color_model == BC_YUV420P) break;
-
 			scanline = start_row;
-			if(i > 0 && mjpeg->jpeg_color_model == BC_YUV420P) scanline /= 2;
+			lastline = engine->coded_field_h;
+			if(i > 0 && mjpeg->jpeg_color_model == BC_YUV420P) {
+				lastline /= 2;  scanline /= 2;
+			}
 			scanline += j;
-			if(scanline >= engine->coded_field_h) scanline = engine->coded_field_h - 1;
+			if(scanline >= lastline) scanline = lastline - 1;
 			engine->mcu_rows[i][j] = engine->rows[i][scanline];
 		}
 	}

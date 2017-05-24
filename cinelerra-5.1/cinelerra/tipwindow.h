@@ -23,11 +23,18 @@
 #define TIPWINDOW_H
 
 #include "bcdialog.h"
+#include "cstrdup.h"
 #include "guicast.h"
 #include "mwindow.inc"
 #include "tipwindow.inc"
 
 
+class Tips : public ArrayList<const char *> {
+public:
+	Tips() { set_array_delete(); }
+	~Tips() { remove_all_objects(); }
+	void add(const char *tip) { append(cstrdup(tip)); }
+};
 
 // Tip of the day to be run at initialization
 
@@ -40,7 +47,8 @@ public:
 	void handle_close_event(int result);
 
 	BC_Window* new_gui();
-	char* get_current_tip(int n);
+	static void load_tips(const char *lang);
+	const char* get_current_tip(int n);
 	void next_tip();
 	void prev_tip();
 

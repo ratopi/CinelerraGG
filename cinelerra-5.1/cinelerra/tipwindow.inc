@@ -26,6 +26,6 @@
 class TipWindow;
 class TipWindowGUI;
 
-
+#define TIPS_FILE "tips/tips"
 
 #endif

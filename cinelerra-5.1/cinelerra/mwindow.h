@@ -528,6 +528,7 @@ public:
 	MainIndexes *mainindexes;
 	MainProgress *mainprogress;
 	BRender *brender;
+	char cin_lang[4];
 	int brender_active;
 	const char *default_standard;
 	static Commercials *commercials;
