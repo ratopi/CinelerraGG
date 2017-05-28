@@ -81,6 +81,7 @@ public:
 	ChannelDB* get_channeldb();
 
 	void run();
+	void stop_playback();
 
 // Maintain caches through console changes
 	CICache *audio_cache, *video_cache;

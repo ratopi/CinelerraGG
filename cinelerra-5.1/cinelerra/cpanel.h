@@ -23,6 +23,7 @@
 #define CPANEL_H
 
 #include "cwindowgui.inc"
+#include "cpanel.inc"
 #include "edl.inc"
 #include "guicast.h"
 #include "mwindow.inc"
@@ -39,6 +40,7 @@ public:
 
 	MWindow *mwindow;
 	CWindowGUI *subwindow;
+	CPanelZoom *cpanel_zoom;
 
 	int x, y, w, h;
 
@@ -166,6 +168,17 @@ public:
 	CPanel *gui;
 };
 
-
+class CPanelZoom : public BC_FSlider
+{
+public:
+	CPanelZoom(MWindow *mwindow, CPanel *gui, int x, int y, int h);
+	~CPanelZoom();
+	char *get_caption();
+	int handle_event();
+	int set_shown(int shown);
+	void update(float zoom);
+	MWindow *mwindow;
+	CPanel *gui;
+};
 
 #endif

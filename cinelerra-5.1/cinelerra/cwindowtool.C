@@ -812,9 +812,9 @@ void CWindowCameraGUI::handle_event()
 			if(z_auto)
 			{
 				float zoom = atof(z->get_text());
-				if(zoom > 10) zoom = 10;
+				if(zoom > 100.) zoom = 100.;
 				else
-				if(zoom < 0) zoom = 0;
+				if(zoom < 0.01) zoom = 0.01;
 	// Doesn't allow user to enter from scratch
 	// 		if(zoom != atof(z->get_text()))
 	// 			z->update(zoom);
@@ -855,8 +855,11 @@ void CWindowCameraGUI::update()
 		x->update(x_auto->get_value());
 	if(y_auto)
 		y->update(y_auto->get_value());
-	if(z_auto)
-		z->update(z_auto->get_value());
+	if(z_auto) {
+		float value = z_auto->get_value();
+		z->update(value);
+		thread->gui->composite_panel->cpanel_zoom->update(value);
+	}
 
 	if( x_auto && y_auto && z_auto )
 	{
@@ -1257,9 +1260,8 @@ void CWindowProjectorGUI::handle_event()
 			if(z_auto)
 			{
 				float zoom = atof(z->get_text());
-				if(zoom > 10000) zoom = 10000;
-				else
-				if(zoom < 0) zoom = 0;
+				if(zoom > 100.) zoom = 100.;
+				else if(zoom < 0.01) zoom = 0.01;
 // 			if (zoom != atof(z->get_text()))
 // 				z->update(zoom);
 				z_auto->set_value(zoom);
@@ -1299,8 +1301,11 @@ void CWindowProjectorGUI::update()
 		x->update(x_auto->get_value());
 	if(y_auto)
 		y->update(y_auto->get_value());
-	if(z_auto)
-		z->update(z_auto->get_value());
+	if(z_auto) {
+		float value = z_auto->get_value();
+		z->update(value);
+		thread->gui->composite_panel->cpanel_zoom->update(value);
+	}
 
 	if( x_auto && y_auto && z_auto )
 	{

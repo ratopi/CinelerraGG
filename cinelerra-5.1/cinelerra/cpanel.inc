@@ -23,5 +23,18 @@
 #define CPANEL_INC
 
 class CPanel;
+class CPanelMask;
+class CPanelRuler;
+class CPanelTitleSafe;
+class CPanelErase;
+class CPanelAntierase;
+class CPanelProtect;
+class CPanelMagnify;
+class CPanelCamera;
+class CPanelProj;
+class CPanelCrop;
+class CPanelEyedrop;
+class CPanelToolWindow;
+class CPanelZoom;
 
 #endif

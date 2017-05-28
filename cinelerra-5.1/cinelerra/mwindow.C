@@ -231,6 +231,7 @@ MWindow::MWindow()
 MWindow::~MWindow()
 {
 	run_lock->lock("MWindow::~MWindow");
+	stop_playback(1);
 	in_destructor = 1;
 //printf("MWindow::~MWindow %d\n", __LINE__);
 	gui->stop_drawing();
@@ -1334,17 +1335,12 @@ void MWindow::stop_playback(int wait)
 	int locked  = gui->get_window_lock();
 	if( locked ) gui->unlock_window();
 
-	cwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE,
-		0,
-		0);
-	cwindow->playback_engine->interrupt_playback(wait);
+	cwindow->playback_engine->stop_playback();
 
 	for(int i = 0; i < vwindows.size(); i++) {
 		VWindow *vwindow = vwindows[i];
 		if( !vwindow->is_running() ) continue;
-		vwindow->playback_engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
-		vwindow->playback_engine->interrupt_playback(wait);
+		vwindow->playback_engine->stop_playback();
 	}
 	if( locked ) gui->lock_window("MWindow::stop_playback");
 }

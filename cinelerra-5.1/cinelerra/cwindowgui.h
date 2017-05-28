@@ -60,8 +60,10 @@ public:
 	CWindowGUI(MWindow *mwindow, CWindow *cwindow);
 	~CWindowGUI();
 
-    void create_objects();
+	void create_objects();
 	int resize_event(int w, int h);
+	void zoom_canvas(int do_auto, double value, int update_menu);
+	float get_auto_zoom();
 
 // Events for the fullscreen canvas fall through to here.
 	int button_press_event();
@@ -69,9 +71,6 @@ public:
 	int cursor_enter_event();
 	int button_release_event();
 	int cursor_motion_event();
-
-
-	void zoom_canvas(int do_auto, double value, int update_menu);
 
 	int close_event();
 	int keypress_event();

@@ -45,30 +45,8 @@ ZoomHash::~ZoomHash()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-ZoomPanel::ZoomPanel(MWindow *mwindow,
-	BC_WindowBase *subwindow,
-	double value,
-	int x,
-	int y,
-	int w,
-	double min,
-	double max,
-	int zoom_type)
+ZoomPanel::ZoomPanel(MWindow *mwindow, BC_WindowBase *subwindow, double value,
+		int x, int y, int w, double min, double max, int zoom_type)
 {
 	this->mwindow = mwindow;
 	this->subwindow = subwindow;
@@ -83,15 +61,8 @@ ZoomPanel::ZoomPanel(MWindow *mwindow,
 	this->user_size = 0;
 }
 
-ZoomPanel::ZoomPanel(MWindow *mwindow,
-	BC_WindowBase *subwindow,
-	double value,
-	int x,
-	int y,
-	int w,
-	double *user_table,
-	int user_size,
-	int zoom_type)
+ZoomPanel::ZoomPanel(MWindow *mwindow, BC_WindowBase *subwindow, double value,
+		int x, int y, int w, double *user_table, int user_size, int zoom_type)
 {
 	this->mwindow = mwindow;
 	this->subwindow = subwindow;

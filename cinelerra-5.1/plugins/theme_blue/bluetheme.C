@@ -337,6 +337,16 @@ void BlueDotTheme::initialize()
 			"hslider_bg_up.png",
 			"hslider_bg_hi.png",
 			"hslider_bg_dn.png");
+	resources->vertical_slider_data = new_image_set(6,
+			"hslider_fg_up.png",
+			"hslider_fg_hi.png",
+			"hslider_fg_dn.png",
+			"hslider_bg_up.png",
+			"hslider_bg_hi.png",
+			"hslider_bg_dn.png");
+	for( int i=0; i<6; ++i )
+		resources->vertical_slider_data[i]->rotate90();
+
 	resources->progress_images = new_image_set(2,
 			"progress_bg.png",
 			"progress_hi.png");

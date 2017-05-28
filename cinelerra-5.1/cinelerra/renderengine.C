@@ -76,6 +76,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	input_lock = new Condition(1, "RenderEngine::input_lock");
 	start_lock = new Condition(1, "RenderEngine::start_lock");
 	output_lock = new Condition(1, "RenderEngine::output_lock");
+	render_active = new Condition(1,"RenderEngine::render_active");
 	interrupt_lock = new Mutex("RenderEngine::interrupt_lock");
 	first_frame_lock = new Condition(1, "RenderEngine::first_frame_lock");
 }
@@ -503,6 +504,7 @@ void RenderEngine::get_module_levels(ArrayList<double> *module_levels, int64_t p
 
 void RenderEngine::run()
 {
+	render_active->lock("RenderEngine::run");
 	start_render_threads();
 	start_lock->unlock();
 	interrupt_lock->unlock();
@@ -555,7 +557,13 @@ void RenderEngine::run()
 
 	input_lock->unlock();
 	interrupt_lock->unlock();
+	render_active->unlock();
 }
 
+void RenderEngine::wait_done()
+{
+	render_active->lock("RenderEngine::wait_done");
+	render_active->unlock();
+}
 
 

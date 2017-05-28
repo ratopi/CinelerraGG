@@ -19,15 +19,20 @@
  *
  */
 
+#include "automation.h"
 #include "cpanel.h"
+#include "cwindow.h"
 #include "cwindowgui.h"
 #include "cwindowtool.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "floatauto.h"
 #include "language.h"
 #include "mbuttons.h"
 #include "mwindow.h"
+#include "mwindowgui.h"
 #include "theme.h"
+#include "track.h"
 
 
 
@@ -73,6 +78,9 @@ void CPanel::create_objects()
 	subwindow->add_subwindow(operation[CWINDOW_TOOL_WINDOW] = new CPanelToolWindow(mwindow, this, x, y));
 	y += operation[CWINDOW_TOOL_WINDOW]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_TITLESAFE] = new CPanelTitleSafe(mwindow, this, x, y));
+	y += operation[CWINDOW_TITLESAFE]->get_h();
+	x += (w - BC_Slider::get_span(1)) / 2;
+	subwindow->add_subwindow(cpanel_zoom = new CPanelZoom(mwindow, this, x, y+15, h-y-15));
 }
 
 void CPanel::reposition_buttons(int x, int y)
@@ -85,6 +93,8 @@ void CPanel::reposition_buttons(int x, int y)
 		operation[i]->reposition_window(x, y);
 		y += operation[i]->get_h();
 	}
+	x += (w - BC_Slider::get_span(1)) / 2;
+	cpanel_zoom->reposition_window(x, y+15);
 }
 
 
@@ -114,6 +124,13 @@ void CPanel::set_operation(int value)
 				operation[i]->update(1);
 		}
 	}
+	if( operation[CWINDOW_ZOOM]->get_value() ||
+	    operation[CWINDOW_CAMERA]->get_value() ||
+	    operation[CWINDOW_PROJECTOR]->get_value() ) {
+		cpanel_zoom->set_shown(1);
+	}
+	else
+		cpanel_zoom->set_shown(0);
 }
 
 
@@ -345,5 +362,80 @@ int CPanelTitleSafe::handle_event()
 	mwindow->edl->session->safe_regions = get_value();
 	gui->subwindow->canvas->draw_refresh();
 	return 1;
+}
+
+CPanelZoom::CPanelZoom(MWindow *mwindow, CPanel *gui, int x, int y, int h)
+ : BC_FSlider(x, y, 1, h-30, h, -2., 2., 0, 0)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_precision(0.001);
+	set_tooltip(_("Zoom"));
+}
+CPanelZoom::~CPanelZoom()
+{
+}
+int CPanelZoom::handle_event()
+{
+	FloatAuto *z_auto = 0;
+	int aidx = -1;
+	float value = get_value();
+	BC_FSlider::update(value);
+	double zoom = pow(10.,value);
+	switch( mwindow->edl->session->cwindow_operation ) {
+	case CWINDOW_ZOOM:
+		gui->subwindow->zoom_canvas(0, zoom, 1);
+		break;
+	case CWINDOW_CAMERA:
+		aidx = AUTOMATION_CAMERA_Z;
+		break;
+	case CWINDOW_PROJECTOR:
+		aidx = AUTOMATION_PROJECTOR_Z;
+		break;
+	}
+	if( aidx < 0 ) return 1;
+	Track *track = mwindow->cwindow->calculate_affected_track();
+	if( !track ) return 1;
+	z_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+			track->automation->autos[aidx], 1);
+	if( !z_auto ) return 1;
+	z_auto->set_value(zoom);
+	gui->subwindow->update_tool();
+	mwindow->gui->lock_window("CPanelZoom::handle_event 1");
+	mwindow->gui->draw_overlays(1);
+	mwindow->gui->unlock_window();
+	mwindow->sync_parameters(CHANGE_PARAMS);
+	return 1;
+}
+
+int CPanelZoom::set_shown(int shown)
+{
+	if( shown ) {
+		float zoom = gui->subwindow->canvas->get_zoom();
+		gui->subwindow->zoom_canvas(0, zoom, 1);
+		show_window();
+	}
+	else
+		hide_window();
+	return 1;
+}
+
+char *CPanelZoom::get_caption()
+{
+	double value = get_value();
+	int frac = value >= 0. ? 1 : value >= -1. ? 2 : 3;
+	double zoom = pow(10., value);
+	char *caption = BC_Slider::get_caption();
+	sprintf(caption, "%.*f", frac, zoom);
+	return caption;
+}
+
+void CPanelZoom::update(float zoom)
+{
+	if( !is_hidden() ) {
+		if( zoom < 0.01 ) zoom = 0.01;
+		float value = log(zoom) / log(10.);
+ 		BC_FSlider::update(value);
+	}
 }
 

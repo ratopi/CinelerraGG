@@ -127,9 +127,14 @@ int Thread::join()   // join this thread
 {
 	if( !exists() ) return 0;
 	if( synchronous ) {
-// NOTE: this does not do anything if the thread is not synchronous
+// NOTE: this fails if the thread is not synchronous or
+//  or another thread is already waiting to join.
 		int ret = pthread_join(tid, 0);
-		if( ret ) strerror(ret);
+		if( ret ) {
+			fflush(stdout);
+			fprintf(stderr, "Thread %p: %s\n", (void*)tid, strerror(ret));
+			fflush(stderr);
+		}
 		CLEAR_LOCKS_TID(tid);
 		TheList::dbg_del(tid);
 		tid = ((pthread_t)-1);

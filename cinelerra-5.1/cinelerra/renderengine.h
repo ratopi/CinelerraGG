@@ -58,6 +58,7 @@ public:
 	void start_render_threads();
 	void wait_render_threads();
 	void interrupt_playback();
+	void wait_done();
 	int get_output_w();
 	int get_output_h();
 	int brender_available(int position, int direction);
@@ -106,6 +107,7 @@ public:
 // Lock out interrupts until started
 	Condition *start_lock;
 	Condition *output_lock;
+	Condition *render_active;
 // Lock out audio and synchronization timers until first frame is done
 	Condition *first_frame_lock;
 // Lock out interrupts before and after renderengine is active

@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "bcsignals.h"
+#include "cstrdup.h"
 #include "file.h"
 #include "filelist.h"
 #include "guicast.h"
@@ -207,59 +208,51 @@ int FileList::write_list_header()
 
 int FileList::read_list_header()
 {
-	char string[BCTEXTLEN], *new_entry;
+	char string[BCTEXTLEN];
 
 	FILE *stream = fopen(asset->path, "r");
-
-
-	if(stream)
-	{
+	if( !stream ) return 1;
 // Get information about the frames
-		do
-		{
-			(void)fgets(string, BCTEXTLEN, stream);
-		}while(!feof(stream) && (string[0] == '#' || string[0] == ' ' || isalpha(string[0])));
+	do {
+		if( feof(stream) || !fgets(string, BCTEXTLEN, stream) ) return 1;
+	} while(string[0] == '#' || string[0] == ' ' || isalpha(string[0]));
 
 // Don't want a user configured frame rate to get destroyed
-		if(asset->frame_rate == 0)
-			asset->frame_rate = atof(string);
+	if(asset->frame_rate == 0)
+		asset->frame_rate = atof(string);
 
-		do
-		{
-			(void)fgets(string, BCTEXTLEN, stream);
-		}while(!feof(stream) && (string[0] == '#' || string[0] == ' '));
-		asset->width = atol(string);
+	do {
+		if( feof(stream) || !fgets(string, BCTEXTLEN, stream) ) return 1;
+	} while(string[0] == '#' || string[0] == ' ');
+	if( (asset->width = atol(string)) <= 0 ) return 1;
 
-		do
-		{
-			(void)fgets(string, BCTEXTLEN, stream);
-		}while(!feof(stream) && (string[0] == '#' || string[0] == ' '));
-		asset->height = atol(string);
+	do {
+		if( feof(stream) || !fgets(string, BCTEXTLEN, stream) ) return 1;
+	} while(string[0] == '#' || string[0] == ' ');
+	if( (asset->height = atol(string)) <= 0 ) return 1;
 
-		asset->interlace_mode = ILACE_MODE_UNDETECTED;  // May be good to store the info in the list?
-		asset->layers = 1;
-		asset->audio_data = 0;
-		asset->video_data = 1;
+	asset->interlace_mode = ILACE_MODE_UNDETECTED;
+	asset->layers = 1;
+	asset->audio_data = 0;
+	asset->video_data = 1;
 
 // Get all the paths
-		while(!feof(stream))
-		{
-			(void)fgets(string, BCTEXTLEN, stream);
-			if(strlen(string) && string[0] != '#' && string[0] != ' ' && !feof(stream))
-			{
-				string[strlen(string) - 1] = 0;
-				path_list.append(new_entry = new char[strlen(string) + 1]);
-				strcpy(new_entry, string);
-			}
-		}
+	int missing = 0;
+	while(!feof(stream) && fgets(string, BCTEXTLEN, stream) ) {
+		int len = strlen(string);
+		if( !len || string[0] == '#' || string[0] == ' ') continue;
+		string[len-1] = 0;
+		if( access(string,R_OK) && !missing++ )
+			eprintf(_("%s:no such file"), string);
+		path_list.append(cstrdup(string));
+	}
 
 //for(int i = 0; i < path_list.total; i++) printf("%s\n", path_list.values[i]);
-		fclose(stream);
-		asset->video_length = path_list.total;
-	}
-	else
-		return 1;
-
+	fclose(stream);
+	if( !(asset->video_length = path_list.total) )
+		eprintf(_("%s:\nlist empty"), asset->path);
+	if( missing )
+		eprintf(_("%s:\n%d files not found"), asset->path, missing);
 	return 0;
 }
 

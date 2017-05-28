@@ -132,7 +132,7 @@ int FileCR2::check_sig(Asset *asset)
 int FileCR2::read_frame_header(char *path)
 {
 	int argc = 3;
-printf("FileCR2::read_frame_header %d\n", __LINE__);
+//printf("FileCR2::read_frame_header %d\n", __LINE__);
 	const char *argv[4] =
 	{
 		"dcraw",
@@ -144,7 +144,7 @@ printf("FileCR2::read_frame_header %d\n", __LINE__);
 	int result = dcraw_run(argc, argv);
 	if(!result) format_to_asset();
 
-printf("FileCR2::read_frame_header %d %d\n", __LINE__, result);
+//printf("FileCR2::read_frame_header %d %d\n", __LINE__, result);
 	return result;
 }
 
@@ -216,7 +216,7 @@ int FileCR2::read_frame(VFrame *frame, char *path)
 		argv[argc++] = (char*)"-d";
 	}
 
-printf("FileCR2::read_frame %d %s\n", __LINE__, path);
+//printf("FileCR2::read_frame %d %s\n", __LINE__, path);
 	argv[argc++] = path;
 
 	dcraw_data = (float**)frame->get_rows();
@@ -270,7 +270,7 @@ int FileCR2::get_best_colormodel(Asset *asset, int driver)
 // int64_t FileCR2::get_memory_usage()
 // {
 // 	int64_t result = asset->width * asset->height * sizeof(float) * 3;
-// //printf("FileCR2::get_memory_usage %d " _LD "\n", __LINE__, result);
+//printf("FileCR2::get_memory_usage %d " _LD "\n", __LINE__, result);
 // 	return result;
 // }
 

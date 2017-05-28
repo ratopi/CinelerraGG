@@ -358,7 +358,6 @@ void PlaybackEngine::run()
 
 		wait_render_engine();
 
-
 // Read the new command
 		que->input_lock->lock("PlaybackEngine::run");
 		if(done) return;
@@ -368,7 +367,6 @@ void PlaybackEngine::run()
 		que->input_lock->unlock();
 
 //printf("PlaybackEngine::run 1 %d\n", command->command);
-
 
 		switch(command->command)
 		{
@@ -423,4 +421,13 @@ void PlaybackEngine::run()
 }
 
 
+void PlaybackEngine::stop_playback()
+{
+	que->send_command(STOP, CHANGE_NONE, 0, 0);
+	interrupt_playback(1);
+	renderengine_lock->lock("PlaybackEngine::stop_playback");
+	if(render_engine)
+		render_engine->wait_done();
+	renderengine_lock->unlock();
+}
 

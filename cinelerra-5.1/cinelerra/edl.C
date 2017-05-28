@@ -1022,19 +1022,10 @@ int64_t EDL::get_tracks_width()
 // Get the total output size scaled to aspect ratio
 void EDL::calculate_conformed_dimensions(int single_channel, float &w, float &h)
 {
-	w = session->output_w;
-	h = session->output_h;
-
 	if((float)session->output_w / session->output_h > get_aspect_ratio())
-	{
-		h = (float)h *
-			(session->output_w / get_aspect_ratio() / session->output_h);
-	}
+		h = (w = session->output_w) / get_aspect_ratio();
 	else
-	{
-		w = (float)w *
-			(h * get_aspect_ratio() / session->output_w);
-	}
+		w = (h = session->output_h) * get_aspect_ratio();
 }
 
 float EDL::get_aspect_ratio()
