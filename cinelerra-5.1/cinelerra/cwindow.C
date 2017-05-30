@@ -267,10 +267,9 @@ void CWindow::update(int position,
 		gui->timebar->update(1);
 	}
 
-	if(!mwindow->edl->session->cwindow_scrollbars)
-		gui->zoom_panel->update(_(AUTO_ZOOM));
-	else
-		gui->zoom_panel->update(mwindow->edl->session->cwindow_zoom);
+	double zoom = !mwindow->edl->session->cwindow_scrollbars ?
+		0 :mwindow->edl->session->cwindow_zoom;
+	gui->zoom_panel->update(zoom);
 
 	gui->canvas->update_zoom(mwindow->edl->session->cwindow_xscroll,
 			mwindow->edl->session->cwindow_yscroll,

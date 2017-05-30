@@ -384,7 +384,7 @@ int CPanelZoom::handle_event()
 	double zoom = pow(10.,value);
 	switch( mwindow->edl->session->cwindow_operation ) {
 	case CWINDOW_ZOOM:
-		gui->subwindow->zoom_canvas(0, zoom, 1);
+		gui->subwindow->zoom_canvas(zoom, 1);
 		break;
 	case CWINDOW_CAMERA:
 		aidx = AUTOMATION_CAMERA_Z;
@@ -411,9 +411,8 @@ int CPanelZoom::handle_event()
 int CPanelZoom::set_shown(int shown)
 {
 	if( shown ) {
-		float zoom = gui->subwindow->canvas->get_zoom();
-		gui->subwindow->zoom_canvas(0, zoom, 1);
 		show_window();
+		update(gui->subwindow->canvas->get_zoom());
 	}
 	else
 		hide_window();

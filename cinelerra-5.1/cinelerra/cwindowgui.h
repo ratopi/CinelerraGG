@@ -62,7 +62,7 @@ public:
 
 	void create_objects();
 	int resize_event(int w, int h);
-	void zoom_canvas(int do_auto, double value, int update_menu);
+	void zoom_canvas(double value, int update_menu);
 	float get_auto_zoom();
 
 // Events for the fullscreen canvas fall through to here.
@@ -199,6 +199,7 @@ public:
 	CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y, int w);
 	virtual ~CWindowZoom();
 	int handle_event();
+	void update(double value);
 	MWindow *mwindow;
 	CWindowGUI *gui;
 };
