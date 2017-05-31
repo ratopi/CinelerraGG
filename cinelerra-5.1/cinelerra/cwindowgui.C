@@ -370,27 +370,23 @@ float CWindowGUI::get_auto_zoom()
 
 void CWindowGUI::zoom_canvas(double value, int update_menu)
 {
-	EDL *edl = mwindow->edl;
-	float x = canvas->get_xscroll(), y = canvas->get_yscroll();
-	float old_zoom = mwindow->edl->session->cwindow_zoom;
-	float new_zoom = !value ? get_auto_zoom() : value;
-	edl->session->cwindow_scrollbars = !value ? 0 : 1;
+	float x = 0, y = 0;
+	float zoom = !value ? get_auto_zoom() : value;
+	mwindow->edl->session->cwindow_scrollbars = !value ? 0 : 1;
 	if( value ) {
-		float z = (1 - old_zoom / new_zoom) / 2;
-		x += canvas->w_visible * z;
-		y += canvas->h_visible * z;
+		float cx = canvas->get_xscroll() + 0.5f*canvas->w_visible;
+		float cy = canvas->get_yscroll() + 0.5f*canvas->h_visible;
+		float output_x = cx, output_y = cy;
+		canvas->output_to_canvas(mwindow->edl, 0, cx, cy);
+		x = output_x - cx / zoom;
+		y = output_y - cy / zoom;
 	}
-	else
-		x = y = 0;
-
-	canvas->update_zoom((int)x, (int)y, new_zoom);
-	if( !value )
-		mwindow->edl->session->cwindow_scrollbars = 0;
+	canvas->update_zoom((int)x, (int)y, zoom);
 
 	if( update_menu )
 		zoom_panel->update(value);
 	if( mwindow->edl->session->cwindow_operation == CWINDOW_ZOOM )
-		composite_panel->cpanel_zoom->update(new_zoom);
+		composite_panel->cpanel_zoom->update(zoom);
 
 	canvas->reposition_window(mwindow->edl,
 		mwindow->theme->ccanvas_x, mwindow->theme->ccanvas_y,
@@ -2944,13 +2940,7 @@ int CWindowCanvas::test_zoom(int &redraw)
 	float x, y;
 	float zoom = 0;
 
-	if( !mwindow->edl->session->cwindow_scrollbars ) {
-		mwindow->edl->session->cwindow_scrollbars = 1;
-		x = (mwindow->edl->session->output_w - w) / 2;
-		y = (mwindow->edl->session->output_h - h) / 2;
-		zoom = 1;
-	}
-	else {
+	if( mwindow->edl->session->cwindow_scrollbars ) {
 		if( *gui->zoom_panel->get_text() != 'x' ) {
 // Find current zoom in table
 			int idx = total_zooms;  float old_zoom = get_zoom();
@@ -2963,19 +2953,25 @@ int CWindowCanvas::test_zoom(int &redraw)
 			}
 		}
 		x = get_cursor_x();  y = get_cursor_y();
+		if( !zoom ) {
+			mwindow->edl->session->cwindow_scrollbars = 0;
+			gui->zoom_panel->update(0);
+			zoom = gui->get_auto_zoom();
+		}
+		else {
+			gui->zoom_panel->ZoomPanel::update(zoom);
+			float output_x = x, output_y = y;
+			canvas_to_output(mwindow->edl, 0, output_x, output_y);
+			x = output_x - x / zoom;
+			y = output_y - y / zoom;
+		}
 	}
-	if( !zoom ) {
-		mwindow->edl->session->cwindow_scrollbars = 0;
-		gui->zoom_panel->update(0);
-		zoom = gui->get_auto_zoom();
+	else {
+		mwindow->edl->session->cwindow_scrollbars = 1;
+		x = (mwindow->edl->session->output_w - w) / 2;
+		y = (mwindow->edl->session->output_h - h) / 2;
+		zoom = 1;
 	}
-	else
-		gui->zoom_panel->ZoomPanel::update(zoom);
-
-	float output_x = x, output_y = y;
-	canvas_to_output(mwindow->edl, 0, output_x, output_y);
-	x = output_x - x / zoom;
-	y = output_y - y / zoom;
 	update_zoom((int)x, (int)y, zoom);
 
 	gui->composite_panel->cpanel_zoom->update(zoom);
