@@ -30,29 +30,23 @@
 #include <unistd.h>
 
 
-extern "C"
-{
-extern char dcraw_info[1024];
-extern float **dcraw_data;
-extern int dcraw_alpha;
-extern float dcraw_matrix[9];
-int dcraw_main (int argc, const char **argv);
-}
-
-Mutex FileCR2::dcraw_lock;
+#define NODEPS
+#define NO_JASPER
+#define NO_JPEG
+#define NO_LCMS
+#include "dcraw.h"
 
 int FileCR2::dcraw_run(FileCR2 *file, int argc, const char **argv, VFrame *frame)
 {
-	dcraw_lock.lock("dcraw_run");
-        memset(dcraw_info, 0, sizeof(dcraw_info));
-        memset(dcraw_matrix, 0, sizeof(dcraw_matrix));
-	dcraw_data = !frame ? 0 : (float**) frame->get_rows();
-	dcraw_alpha = !frame ? 0 :
-		frame->get_color_model() == BC_RGBA_FLOAT ? 1 : 0;
-	int result = dcraw_main(argc, argv);
-	if( !result && file )
-		file->format_to_asset(dcraw_info);
-	if( !result && frame ) {
+	DCRaw dcraw;
+	if( frame ) {
+		dcraw.data = (float**) frame->get_rows();
+		dcraw.alpha = frame->get_color_model() == BC_RGBA_FLOAT ? 1 : 0;
+	}
+	int result = dcraw.main(argc, argv);
+	if( file )
+		file->format_to_asset(dcraw.info);
+	if( frame ) {
 // This was only used by the bayer interpolate plugin, which itself created
 // too much complexity to use effectively.
 // It required bypassing the cache any time a plugin parameter changed
@@ -61,14 +55,12 @@ int FileCR2::dcraw_run(FileCR2 *file, int argc, const char **argv, VFrame *frame
 // from dcraw or a plugin & replace it.
 		char string[BCTEXTLEN];
 		sprintf(string, "%f %f %f %f %f %f %f %f %f\n",
-			dcraw_matrix[0], dcraw_matrix[1], dcraw_matrix[2],
-			dcraw_matrix[3], dcraw_matrix[4], dcraw_matrix[5],
-			dcraw_matrix[6], dcraw_matrix[7], dcraw_matrix[8]);
+			dcraw.matrix[0], dcraw.matrix[1], dcraw.matrix[2],
+			dcraw.matrix[3], dcraw.matrix[4], dcraw.matrix[5],
+			dcraw.matrix[6], dcraw.matrix[7], dcraw.matrix[8]);
 		frame->get_params()->update("DCRAW_MATRIX", string);
 // frame->dump_params();
 	}
-
-	dcraw_lock.unlock();
 	return result;
 }
 
@@ -139,11 +131,6 @@ void FileCR2::format_to_asset(const char *info)
 int FileCR2::read_frame(VFrame *frame, char *path)
 {
 //printf("FileCR2::read_frame\n");
-
-	if(frame->get_color_model() == BC_RGBA_FLOAT)
-		dcraw_alpha = 1;
-	else
-		dcraw_alpha = 0;
 
 // Want to disable interpolation if an interpolation plugin is on, but
 // this is impractical because of the amount of caching.  The interpolation

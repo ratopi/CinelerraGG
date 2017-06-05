@@ -445,9 +445,9 @@ $(OBJDIR)/%.o:		%.C
 $(OBJDIR)/sha1.o:	sha1.C sha1.h
 	$(CXX) `cat $(OBJDIR)/c_flags` -O3 -c $< -o $@
 
-$(DCRAW): dcraw.c
-	$(GCC) `cat $(OBJDIR)/c_flags` $(if $(findstring -ggdb,$(CFLAGS)),,-O4) -c -o $*.o \
-		-Wno-misleading-indentation -Wno-sign-compare -Wno-narrowing dcraw.c
+$(DCRAW): dcraw.C
+	$(CXX) `cat $(OBJDIR)/c_flags` $(if $(findstring -ggdb,$(CFLAGS)),,-O4) -DNODEPS -DLOCALTIME \
+		-Wno-misleading-indentation -Wno-sign-compare -Wno-narrowing dcraw.C -c -o $*.o
 
 $(THEME_DATA):
 	cd $(OBJDIR) && \

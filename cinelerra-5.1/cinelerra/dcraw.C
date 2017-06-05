@@ -42,10 +42,6 @@
 #include <time.h>
 #include <sys/types.h>
 
-// CINELERRA
-#define NODEPS
-#define LOCALTIME
-
 #if defined(DJGPP) || defined(__MINGW32__)
 #define fseeko fseek
 #define ftello ftell
@@ -68,8 +64,9 @@ typedef unsigned __int64 UINT64;
 #include <unistd.h>
 #include <utime.h>
 #include <netinet/in.h>
-typedef long long INT64;
-typedef unsigned long long UINT64;
+#include <stdint.h>
+typedef int64_t INT64;
+typedef uint64_t UINT64;
 #endif
 
 #ifdef NODEPS
@@ -93,92 +90,13 @@ typedef unsigned long long UINT64;
 #define _(String) (String)
 #endif
 
-#if !defined(uchar)
-#define uchar unsigned char
-#endif
-#if !defined(ushort)
-#define ushort unsigned short
-#endif
+#include "dcraw.h"
 
 /*
    All global variables are defined here, and all functions that
    access them are prefixed with "CLASS".  Note that a thread-safe
    C++ class cannot have non-const static local variables.
  */
-
-// CINELERRA
-char dcraw_info[1024];
-float **dcraw_data;
-int dcraw_alpha;
-float dcraw_matrix[9];
-
-// CINELERRA
-#define CLASS
-struct jhead;
-struct tiff_tag;
-struct tiff_hdr;
-
-#include "dcraw.h"
-
-// CINELERRA
-static FILE *ifp, *ofp;
-static short order;
-static const char *ifname;
-static char *meta_data, xtrans[6][6], xtrans_abs[6][6];
-static char cdesc[5], desc[512], make[64], model[64], model2[64], artist[64];
-static float flash_used, canon_ev, iso_speed, shutter, aperture, focal_len;
-static time_t timestamp;
-static off_t strip_offset, data_offset;
-static off_t thumb_offset, meta_offset, profile_offset;
-static unsigned shot_order, kodak_cbpp, exif_cfa, unique_id;
-static unsigned thumb_length, meta_length, profile_length;
-static unsigned thumb_misc, *oprof, fuji_layout;
-static unsigned tiff_nifds, tiff_samples, tiff_bps, tiff_compress;
-static unsigned black, maximum, mix_green, raw_color, zero_is_bad;
-static unsigned zero_after_ff, is_raw, dng_version, is_foveon, data_error;
-static unsigned tile_width, tile_length, gpsdata[32], load_flags;
-static unsigned flip, tiff_flip, filters, colors;
-static ushort raw_height, raw_width, height, width, top_margin, left_margin;
-static ushort shrink, iheight, iwidth, fuji_width, thumb_width, thumb_height;
-static ushort *raw_image, (*image)[4], cblack[4102];
-static ushort white[8][8], curve[0x10000], cr2_slice[3], sraw_mul[4];
-
-static unsigned shot_select=0, multi_out=0;
-static double pixel_aspect, aber[4]={1,1,1,1}, gamm[6]={ 0.45,4.5,0,0,0,0 };
-static float bright=1, user_mul[4]={0,0,0,0}, threshold=0;
-static int mask[8][4];
-static int half_size=0, four_color_rgb=0, document_mode=0, highlight=0;
-static int verbose=0, use_auto_wb=0, use_camera_wb=0, use_camera_matrix=1;
-static int output_color=1, output_bps=8, output_tiff=0, med_passes=0;
-static int no_auto_bright=0;
-static unsigned greybox[4] = { 0, 0, UINT_MAX, UINT_MAX };
-static float cam_mul[4], pre_mul[4], cmatrix[3][4], rgb_cam[3][4];
-static const double xyz_rgb[3][3] = {			/* XYZ from RGB */
-  { 0.412453, 0.357580, 0.180423 },
-  { 0.212671, 0.715160, 0.072169 },
-  { 0.019334, 0.119193, 0.950227 } };
-static const float d65_white[3] = { 0.950456, 1, 1.088754 };
-static int histogram[4][0x2000];
-static void (*write_thumb)(), (*write_fun)();
-static void (*load_raw)(), (*thumb_load_raw)();
-static jmp_buf failure;
-
-static struct decode {
-  struct decode *branch[2];
-  int leaf;
-} first_decode[2048], /* *second_decode, CINELERRA */ *free_decode;
-
-static struct tiff_ifd {
-  int width, height, bps, comp, phint, offset, flip, samples, bytes;
-  int tile_width, tile_length;
-  float shutter;
-} tiff_ifd[10];
-
-static struct ph1 {
-  int format, key_off, tag_21a;
-  int black, split_col, black_col, split_row, black_row;
-  float tag_210;
-} ph1;
 
 #define FORC(cnt) for (c=0; c < cnt; c++)
 #define FORC3 FORC(3)
@@ -269,8 +187,7 @@ int CLASS fcol (int row, int col)
   return FC(row,col);
 }
 
-// CINELERRA
-static void reset()
+void CLASS reset()
 {
 // uninitialized
 #define ZERO(var) memset(&var, 0, sizeof var);
@@ -380,6 +297,14 @@ static void reset()
 	no_auto_bright = 0;
 	greybox[0] = 0;		greybox[1] = 0;
 	greybox[2] = UINT_MAX;	greybox[3] = UINT_MAX;
+// local static
+	gbh_bitbuf = 0;  gbh_vbits = 0;  gbh_reset = 0;
+	ph1_bitbuf = 0;  ph1_vbits = 0;
+	ZERO(ljpeg_cs);
+	ZERO(sony_pad);  sony_p = 0;
+	ZERO(fov_huff);
+	ZERO(clb_cbrt);  ZERO(clb_xyz_cam);
+	ZERO(pana_buf);  pana_vbits = 0;
 }
 
 #if 0
@@ -418,7 +343,7 @@ void CLASS derror()
     if (feof(ifp))
       fprintf (stderr,_("Unexpected end of file\n"));
     else
-      fprintf (stderr,_("Corrupt data near 0x%llx\n"), (INT64) ftello(ifp));
+      fprintf (stderr,_("Corrupt data near 0x%jx\n"), (INT64) ftello(ifp));
   }
   data_error++;
 }
@@ -723,14 +648,15 @@ int CLASS canon_s2is()
 
 unsigned CLASS getbithuff (int nbits, ushort *huff)
 {
-  static unsigned bitbuf=0;
-  static int vbits=0, reset=0;
   unsigned c;
+  unsigned bitbuf;
+  int vbits, reset;
 
   if (nbits > 25) return 0;
   if (nbits < 0)
-    return bitbuf = vbits = reset = 0;
-  if (nbits == 0 || vbits < 0) return 0;
+    return gbh_bitbuf = gbh_vbits = gbh_reset = 0;
+  if (nbits == 0 || gbh_vbits < 0) return 0;
+  bitbuf = gbh_bitbuf;  vbits = gbh_vbits;  reset = gbh_reset;
   while (!reset && vbits < nbits && (c = fgetc(ifp)) != EOF &&
     !(reset = zero_after_ff && c == 0xff && fgetc(ifp))) {
     bitbuf = (bitbuf << 8) + (uchar) c;
@@ -743,6 +669,7 @@ unsigned CLASS getbithuff (int nbits, ushort *huff)
   } else
     vbits -= nbits;
   if (vbits < 0) derror();
+  gbh_bitbuf = bitbuf;  gbh_vbits = vbits;  gbh_reset = reset;
   return c;
 }
 
@@ -1129,7 +1056,7 @@ void CLASS canon_sraw_load_raw()
   ip = (short (*)[4]) image;
   rp = ip[0];
   for (row=0; row < height; row++, ip+=width) {
-    if (row & (jh.sraw >> 1)) { //CINELERRA
+    if (row & (jh.sraw >> 1)) {
       for (col=0; col < width; col+=2)
 	for (c=1; c < 3; c++)
 	  if (row == height-1)
@@ -1186,8 +1113,7 @@ void CLASS adobe_copy_pixel (unsigned row, unsigned col, ushort **rp)
 void CLASS ljpeg_idct (struct jhead *jh)
 {
   int c, i, j, len, skip, coef;
-  float work[3][8][8];
-  static float cs[106] = { 0 };
+  float work[3][8][8], *cs = ljpeg_cs;
   static const uchar zigzag[80] =
   {  0, 1, 8,16, 9, 2, 3,10,17,24,32,25,18,11, 4, 5,12,19,26,33,
     40,48,41,34,27,20,13, 6, 7,14,21,28,35,42,49,56,57,50,43,36,
@@ -1471,8 +1397,6 @@ int CLASS minolta_z2()
     if (tail[i]) nz++;
   return nz > 20;
 }
-
-void CLASS jpeg_thumb();
 
 void CLASS ppm_thumb()
 {
@@ -1836,23 +1760,25 @@ void CLASS phase_one_load_raw()
 
 unsigned CLASS ph1_bithuff (int nbits, ushort *huff)
 {
-  static UINT64 bitbuf=0;
-  static int vbits=0;
+  UINT64 bitbuf;
+  int vbits;
   unsigned c;
 
   if (nbits == -1)
-    return bitbuf = vbits = 0;
+    return ph1_bitbuf = ph1_vbits = 0;
   if (nbits == 0) return 0;
+  bitbuf = ph1_bitbuf;  vbits = ph1_vbits;
   if (vbits < nbits) {
     bitbuf = bitbuf << 32 | get4();
     vbits += 32;
   }
   c = bitbuf << (64-vbits) >> (64-nbits);
   if (huff) {
-    vbits -= huff[c] >> 8;
-    return (uchar) huff[c];
+    nbits = huff[c] >> 8;
+    c = (uchar) huff[c];
   }
   vbits -= nbits;
+  ph1_bitbuf = bitbuf;  ph1_vbits = vbits;
   return c;
 }
 #define ph1_bits(n) ph1_bithuff(n,0)
@@ -2137,17 +2063,18 @@ void CLASS canon_rmf_load_raw()
 
 unsigned CLASS pana_bits (int nbits)
 {
-  static uchar buf[0x4000];
-  static int vbits;
+  uchar *buf = pana_buf;
+  int vbits = pana_vbits;
   int byte;
 
-  if (!nbits) return vbits=0;
+  if (!nbits) return pana_vbits=0;
   if (!vbits) {
     fread (buf+load_flags, 1, 0x4000-load_flags, ifp);
     fread (buf, 1, load_flags, ifp);
   }
   vbits = (vbits - nbits) & 0x1ffff;
   byte = vbits >> 3 ^ 0x3ff0;
+  pana_vbits = vbits;
   return (buf[byte] | buf[byte+1] << 8) >> (vbits & 7) & ~(-1 << nbits);
 }
 
@@ -2783,8 +2710,7 @@ void CLASS kodak_thumb_load_raw()
 
 void CLASS sony_decrypt (unsigned *data, int len, int start, int key)
 {
-  static unsigned pad[128], p;
-
+  unsigned p = sony_p, *pad = sony_pad;;
   if (start) {
     for (p=0; p < 4; p++)
       pad[p] = key = key * 48828125 + 1;
@@ -2796,6 +2722,7 @@ void CLASS sony_decrypt (unsigned *data, int len, int start, int key)
   }
   while (len-- && p++)
     *data++ ^= pad[(p-1) & 127] = pad[p & 127] ^ pad[(p+64) & 127];
+   sony_p = p;
 }
 
 void CLASS sony_load_raw()
@@ -2983,7 +2910,6 @@ void CLASS samsung3_load_raw()
 /* Kudos to Rich Taylor for figuring out SMaL's compression algorithm. */
 void CLASS smal_decode_segment (unsigned seg[2][2], int holes)
 {
-// CINELERRA
   uchar hist[3][18] = {
     { 7, 7, 0, 0, 63, 55, 47, 39, 31, 23, 15, 7, 0 },
     { 7, 7, 0, 0, 63, 55, 47, 39, 31, 23, 15, 7, 0 },
@@ -3172,7 +3098,7 @@ void CLASS redcine_load_raw()
 
 void CLASS foveon_decoder (unsigned size, unsigned code)
 {
-  static unsigned huff[1024];
+  unsigned *huff = fov_huff;
   struct decode *cur;
   int i, len;
 
@@ -4555,7 +4481,7 @@ void CLASS lin_interpolate()
  */
 void CLASS vng_interpolate()
 {
-  static const signed char *cp, terms[] = {
+  static const signed char terms[] = {
     -2,-2,+0,-1,0,0x01, -2,-2,+0,+0,1,0x01, -2,-1,-1,+0,0,0x01,
     -2,-1,+0,-1,0,0x02, -2,-1,+0,+0,0,0x03, -2,-1,+0,+1,1,0x01,
     -2,+0,+0,-1,0,0x06, -2,+0,+0,+0,1,0x02, -2,+0,+0,+1,0,0x03,
@@ -4579,6 +4505,7 @@ void CLASS vng_interpolate()
     +1,-1,+1,+1,0,0x88, +1,+0,+1,+2,0,0x08, +1,+0,+2,-1,0,0x40,
     +1,+0,+2,+1,0,0x10
   }, chood[] = { -1,-1, -1,0, -1,+1, 0,+1, +1,+1, +1,0, +1,-1, 0,-1 };
+  const signed char *cp;
   ushort (*brow[5])[4], *pix;
   int prow=8, pcol=2, *ip, *code[16][16], gval[8], gmin, gmax, sum[4];
   int row, col, x, y, x1, x2, y1, y2, t, weight, grads, color, diag;
@@ -4688,6 +4615,7 @@ void CLASS ppg_interpolate()
   int dir[5] = { 1, width, -1, -width, 1 };
   int row, col, diff[2], guess[2], c, d, i;
   ushort (*pix)[4];
+  diff[0] = diff[1] = 0;
 
   border_interpolate(3);
   if (verbose) fprintf (stderr,_("PPG interpolation...\n"));
@@ -4738,7 +4666,7 @@ void CLASS cielab (ushort rgb[3], short lab[3])
 {
   int c, i, j, k;
   float r, xyz[3];
-  static float cbrt[0x10000], xyz_cam[3][4];
+  float *cbrt = clb_cbrt, (*xyz_cam)[4] = clb_xyz_cam;
 
   if (!rgb) {
     for (i=0; i < 0x10000; i++) {
@@ -5274,8 +5202,6 @@ void CLASS parse_thumb_note (int base, unsigned toff, unsigned tlen)
   }
 }
 
-int CLASS parse_tiff_ifd (int base);
-
 void CLASS parse_makernote (int base, int uptag)
 {
   static const uchar xlat[2][256] = {
@@ -5801,9 +5727,6 @@ void CLASS parse_kodak_ifd (int base)
     fseek (ifp, save, SEEK_SET);
   }
 }
-
-void CLASS parse_minolta (int base);
-int CLASS parse_tiff (int base);
 
 int CLASS parse_tiff_ifd (int base)
 {
@@ -9546,9 +9469,9 @@ notraw:
     case  90:  flp = 6;
   }
   if( (flp & 4) )
-    sprintf(dcraw_info, "%d %d", height, width);
+    sprintf(info, "%d %d", height, width);
   else
-    sprintf(dcraw_info, "%d %d", width, height); }
+    sprintf(info, "%d %d", width, height); }
 }
 
 #ifndef NO_LCMS
@@ -9716,7 +9639,7 @@ void CLASS convert_to_rgb()
   k = 0;
   for(i = 0; i < 3; i++) {
     for(j = 0; j < 3; j++)
-       dcraw_matrix[k++] = rgb_cam[i][j];
+       matrix[k++] = rgb_cam[i][j];
   }
 
 }
@@ -9867,7 +9790,7 @@ void CLASS tiff_head (struct tiff_hdr *th, int full)
   strncpy (th->desc, desc, 512);
   strncpy (th->make, make, 64);
   strncpy (th->model, model, 64);
-  strcpy (th->soft, "dcraw v"DCRAW_VERSION);
+  strcpy (th->soft, "dcraw v" DCRAW_VERSION);
   t = localtime (&timestamp);
   sprintf (th->date, "%04d:%02d:%02d %02d:%02d:%02d",
       t->tm_year+1900,t->tm_mon+1,t->tm_mday,t->tm_hour,t->tm_min,t->tm_sec);
@@ -10007,11 +9930,11 @@ void CLASS write_cinelerra()
 	rstep = flip_index(1, 0) - flip_index(0, width);
 	if( document_mode ) {
 		for( row=0; row<height; ++row, soff += rstep ) {
-			float *output = dcraw_data[row];
+			float *output = data[row];
 			for( col=0; col<width; ++col, soff += cstep ) {
 				ushort *pixel = image[soff];
 				FORC3 *output++ = (float)*pixel++ * scale;
-				if( dcraw_alpha ) *output++ = 1.0;
+				if( alpha ) *output++ = 1.0;
 			}
 		}
 	}
@@ -10028,18 +9951,18 @@ void CLASS write_cinelerra()
 		}
 		gamma_curve(gamm[0], gamm[1], 2, (white << 3)/bright);
 		for( row=0; row<height; ++row, soff += rstep ) {
-			float *output = dcraw_data[row];
+			float *output = data[row];
 			for( col=0; col<width; ++col, soff += cstep ) {
 				ushort *pixel = image[soff];
 				FORC3 *output++ = (float)curve[*pixel++] * scale;
-				if( dcraw_alpha ) *output++ = 1.0;
+				if( alpha ) *output++ = 1.0;
 			}
 		}
 	}
 }
 
 // CINELERRA
-int CLASS dcraw_main (int argc, const char **argv)
+int CLASS main (int argc, const char **argv)
 {
   int arg, status=0, quality, i, c;
   int timestamp_only=0, thumbnail_only=0, identify_only=0;
@@ -10361,7 +10284,8 @@ next:
     fseeko (ifp, data_offset, SEEK_SET);
     if (raw_image && read_from_stdin)
       fread (raw_image, 2, raw_height*raw_width, stdin);
-    else (*load_raw)();
+    else
+      (this->*load_raw)();
     if (document_mode == 3) {
       top_margin = left_margin = fuji_width = 0;
       height = raw_height;
@@ -10457,7 +10381,7 @@ thumbnail:
     }
     if (verbose)
       fprintf (stderr,_("Writing data to %s ...\n"), ofname);
-    (*write_fun)();
+    (this->*write_fun)();
     fclose(ifp);
     if (ofp != stdout) fclose(ofp);
 cleanup:
@@ -10472,3 +10396,16 @@ cleanup:
   }
   return status;
 }
+
+DCRaw::DCRaw()
+{
+	ZERO(info);
+	data = 0;
+	alpha = 0;
+	ZERO(matrix);
+}
+
+DCRaw::~DCRaw()
+{
+}
+

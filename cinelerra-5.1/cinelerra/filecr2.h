@@ -39,7 +39,6 @@
 
 class FileCR2 : public FileList
 {
-	static Mutex dcraw_lock;
 	static int dcraw_run(FileCR2 *file, int argc, const char **argv, VFrame *frame=0);
 	void format_to_asset(const char *info);
 public:

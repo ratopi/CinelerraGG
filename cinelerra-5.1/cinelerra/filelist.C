@@ -35,6 +35,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -76,22 +77,27 @@ int FileList::reset_parameters_derived()
 
 int FileList::open_file(int rd, int wr)
 {
-	int result = 0;
+	int result = 1;
 
 // skip header for write
 	if(file->wr)
 	{
+		int fd = open(asset->path, O_CREAT+O_TRUNC+O_RDWR, 0777);
+		if( fd >= 0 ) {
+			close(fd);
+			result = 0;
 // Frame files are created in write_frame and list index is created when
 // file is closed.
 // Look for the starting number in the path but ignore the starting character
 // and total digits since these are used by the header.
-		Render::get_starting_number(asset->path,
-			first_number,
-			number_start,
-			number_digits);
-		path_list.remove_all_objects();
-		writer = new FrameWriter(this,
+			Render::get_starting_number(asset->path,
+				first_number, number_start, number_digits);
+			path_list.remove_all_objects();
+			writer = new FrameWriter(this,
 			asset->format == list_type ? file->cpus : 1);
+		}
+		else
+			eprintf(_("Error while opening \"%s\" for writing. \n%m\n"), asset->path);
 	}
 	else
 	if(file->rd)
@@ -132,15 +138,16 @@ int FileList::open_file(int rd, int wr)
 						asset->frame_rate = 1;
 					asset->video_length = -1;
 				}
+				result = 0;
 			}
+			else
+				eprintf(_("Error while opening \"%s\" for reading. \n%m\n"), asset->path);
 		}
 		else
 		{
 			Render::get_starting_number(asset->path,
-				first_number,
-				number_start,
-				number_digits,
-				6);
+				first_number, number_start, number_digits, 6);
+			result = 0;
 		}
 	}
 
@@ -172,6 +179,7 @@ int FileList::close_file()
 int FileList::write_list_header()
 {
 	FILE *stream = fopen(asset->path, "w");
+	if( !stream ) return 1;
 // Use sprintf instead of fprintf for VFS.
 	char string[BCTEXTLEN];
 	sprintf(string, "%s\n", list_prefix);
