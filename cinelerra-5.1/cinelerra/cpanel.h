@@ -35,7 +35,7 @@ public:
 	~CPanel();
 
 	void create_objects();
-	void reposition_buttons(int x, int y);
+	void reposition_buttons(int x, int y, int h);
 	void set_operation(int value);
 
 	MWindow *mwindow;

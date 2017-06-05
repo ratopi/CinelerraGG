@@ -39,11 +39,35 @@ extern float dcraw_matrix[9];
 int dcraw_main (int argc, const char **argv);
 }
 
-static int dcraw_run(int argc, const char **argv)
+Mutex FileCR2::dcraw_lock;
+
+int FileCR2::dcraw_run(FileCR2 *file, int argc, const char **argv, VFrame *frame)
 {
-	static Mutex dcraw_lock;
 	dcraw_lock.lock("dcraw_run");
+        memset(dcraw_info, 0, sizeof(dcraw_info));
+        memset(dcraw_matrix, 0, sizeof(dcraw_matrix));
+	dcraw_data = !frame ? 0 : (float**) frame->get_rows();
+	dcraw_alpha = !frame ? 0 :
+		frame->get_color_model() == BC_RGBA_FLOAT ? 1 : 0;
 	int result = dcraw_main(argc, argv);
+	if( !result && file )
+		file->format_to_asset(dcraw_info);
+	if( !result && frame ) {
+// This was only used by the bayer interpolate plugin, which itself created
+// too much complexity to use effectively.
+// It required bypassing the cache any time a plugin parameter changed
+// to store the color matrix from dcraw in the frame stack along with the new
+// plugin parameters.  The cache couldn't know if a parameter in the stack came
+// from dcraw or a plugin & replace it.
+		char string[BCTEXTLEN];
+		sprintf(string, "%f %f %f %f %f %f %f %f %f\n",
+			dcraw_matrix[0], dcraw_matrix[1], dcraw_matrix[2],
+			dcraw_matrix[3], dcraw_matrix[4], dcraw_matrix[5],
+			dcraw_matrix[6], dcraw_matrix[7], dcraw_matrix[8]);
+		frame->get_params()->update("DCRAW_MATRIX", string);
+// frame->dump_params();
+	}
+
 	dcraw_lock.unlock();
 	return result;
 }
@@ -73,78 +97,26 @@ int FileCR2::check_sig(Asset *asset)
 	if(ptr) return 0;
 //printf("FileCR2::check_sig %d\n", __LINE__);
 	FILE *stream = fopen(asset->path, "rb");
-
-	if(stream)
-	{
+	if( stream ) {
 		char test[10];
 		(void)fread(test, 10, 1, stream);
 		fclose(stream);
-
-		if(test[0] == 'C' && test[1] == 'R' && test[2] == '2' &&
-			test[3] == 'L' && test[4] == 'I' && test[5] == 'S' && test[6] == 'T')
-		{
-//printf("FileCR2::check_sig %d\n", __LINE__);
-			return 1;
-		}
+		if( !strncmp("CR2LIST",test,6) ) return 1;
 	}
-
-//printf("FileCR2::check_sig %d\n", __LINE__);
-
-
 	char string[BCTEXTLEN];
-	int argc = 3;
-
 	strcpy(string, asset->path);
-
-	const char *argv[4] =
-	{
-		"dcraw",
-		"-i",
-		string,
-		0
-	};
-
-	int result = dcraw_run(argc, argv);
-
+	const char *argv[4] = { "dcraw", "-i", string, 0 };
+	int argc = 3;
+	int result = dcraw_run(0, argc, argv);
 //printf("FileCR2::check_sig %d %d\n", __LINE__, result);
-
 	return !result;
 }
-
-// int FileCR2::open_file(int rd, int wr)
-// {
-//
-// 	int argc = 3;
-// 	const char *argv[4] =
-// 	{
-// 		"dcraw",
-// 		"-i",
-// 		asset->path,
-// 		0
-// 	};
-//
-// 	int result = dcraw_run(argc, argv);
-// 	if(!result) format_to_asset();
-//
-// 	return result;
-// }
 
 int FileCR2::read_frame_header(char *path)
 {
 	int argc = 3;
-//printf("FileCR2::read_frame_header %d\n", __LINE__);
-	const char *argv[4] =
-	{
-		"dcraw",
-		"-i",
-		path,
-		0
-	};
-
-	int result = dcraw_run(argc, argv);
-	if(!result) format_to_asset();
-
-//printf("FileCR2::read_frame_header %d %d\n", __LINE__, result);
+	const char *argv[4] = { "dcraw", "-i", path, 0 };
+	int result = dcraw_run(this, argc, argv);
 	return result;
 }
 
@@ -156,11 +128,11 @@ int FileCR2::read_frame_header(char *path)
 // 	return 0;
 // }
 //
-void FileCR2::format_to_asset()
+void FileCR2::format_to_asset(const char *info)
 {
 	asset->video_data = 1;
 	asset->layers = 1;
-	sscanf(dcraw_info, "%d %d", &asset->width, &asset->height);
+	sscanf(info, "%d %d", &asset->width, &asset->height);
 }
 
 
@@ -185,19 +157,13 @@ int FileCR2::read_frame(VFrame *frame, char *path)
 
 // printf("FileCR2::read_frame %d\n", interpolate);
 // frame->dump_stacks();
-// output to stdout
-	int argc = 0;
-	char *argv[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	argv[argc++] = (char*)"dcraw";
-// write to stdout
-	argv[argc++] = (char*)"-c";
-// no rotation
-	argv[argc++] = (char*)"-j";
+	int argc = 0;  const char *argv[10];
+	argv[argc++] = "dcraw";
+	argv[argc++] = "-c"; // output to stdout
+	argv[argc++] = "-j"; // no rotation
 
 // printf("FileCR2::read_frame %d interpolate=%d white_balance=%d\n",
-// __LINE__,
-// file->interpolate_raw,
-// file->white_balance_raw);
+// __LINE__, file->interpolate_raw, file->white_balance_raw);
 
 // Use camera white balance.
 // Before 2006, DCraw had no Canon white balance.
@@ -205,49 +171,22 @@ int FileCR2::read_frame(VFrame *frame, char *path)
 // Still no gamma support.
 // Need to toggle this in preferences because it defeats dark frame subtraction.
 	if(file->white_balance_raw)
-		argv[argc++] = (char*)"-w";
+		argv[argc++] = "-w";
 
 
-	if(!file->interpolate_raw)
-	{
+	if(!file->interpolate_raw) {
 // Trying to do everything but interpolate doesn't work because convert_to_rgb
 // doesn't work with bayer patterns.
 // Use document mode and hack dcraw to apply white balance in the write_ function.
-		argv[argc++] = (char*)"-d";
+		argv[argc++] = "-d";
 	}
 
 //printf("FileCR2::read_frame %d %s\n", __LINE__, path);
 	argv[argc++] = path;
-
-	dcraw_data = (float**)frame->get_rows();
+	argv[argc] = 0;
 
 //Timer timer;
-	int result = dcraw_run(argc, (const char**) argv);
-
-// This was only used by the bayer interpolate plugin, which itself created
-// too much complexity to use effectively.
-// It required bypassing the cache any time a plugin parameter changed
-// to store the color matrix from dcraw in the frame stack along with the new
-// plugin parameters.  The cache couldn't know if a parameter in the stack came
-// from dcraw or a plugin & replace it.
-	char string[BCTEXTLEN];
-	sprintf(string,
-		"%f %f %f %f %f %f %f %f %f\n",
-		dcraw_matrix[0],
-		dcraw_matrix[1],
-		dcraw_matrix[2],
-		dcraw_matrix[3],
-		dcraw_matrix[4],
-		dcraw_matrix[5],
-		dcraw_matrix[6],
-		dcraw_matrix[7],
-		dcraw_matrix[8]);
-
-
-	frame->get_params()->update("DCRAW_MATRIX", string);
-
-// frame->dump_params();
-
+	int result = dcraw_run(0, argc, argv, frame);
 	return result;
 }
 

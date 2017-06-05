@@ -39,6 +39,9 @@
 
 class FileCR2 : public FileList
 {
+	static Mutex dcraw_lock;
+	static int dcraw_run(FileCR2 *file, int argc, const char **argv, VFrame *frame=0);
+	void format_to_asset(const char *info);
 public:
 	FileCR2(Asset *asset, File *file);
 	~FileCR2();
@@ -58,9 +61,6 @@ public:
 	static int get_best_colormodel(Asset *asset, int driver);
 //	int64_t get_memory_usage();
 	int read_frame_header(char *path);
-
-private:
-	void format_to_asset();
 };
 
 

@@ -44,7 +44,7 @@ buninstall:
 # with system_build
 cinstall:
 	cd bin; $(inst_sh) "$(DESTDIR)$(bindir)" "$(WANT_CIN)" \
-		cin_db mpeg3{cat,cc2txt,ifochk,show,toc}
+		cin_db zmpeg3{cat,cc2txt,ifochk,show,toc}
 	cd bin; $(inst_sh) "$(DESTDIR)$(WANT_CINLIB_DIR)" \
 		bdwrite cutads hveg2enc mpeg2enc mplex mplexlo
 	cd bin; $(inst_sh) "$(DESTDIR)$(datadir)/$(WANT_CIN)" \
@@ -57,7 +57,7 @@ cinstall:
 
 cuninstall:
 	rm -f "$(DESTDIR)$(bindir)/$(WANT_CIN)"
-	rm -f "$(DESTDIR)$(bindir)"/mpeg3{cat,cc2txt,ifochk,show,toc}
+	rm -f "$(DESTDIR)$(bindir)"/zmpeg3{cat,cc2txt,ifochk,show,toc}
 	rm -f "$(DESTDIR)$(bindir)/cin_db"
 	rm -rf "$(DESTDIR)$(WANT_CINLIB_DIR)"
 	rm -rf "$(DESTDIR)$(datadir)/$(WANT_CIN)"

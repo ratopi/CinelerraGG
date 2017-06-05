@@ -184,5 +184,5 @@ static void CLASS tiff_set(struct tiff_hdr *th,ushort *ntag,ushort tag,ushort ty
 static void CLASS tiff_head(struct tiff_hdr *th,int full);
 static void CLASS jpeg_thumb(void);
 static void CLASS write_ppm_tiff(void);
-static void CLASS write_cinelerra(FILE *ofp);
+static void CLASS write_cinelerra(void);
 

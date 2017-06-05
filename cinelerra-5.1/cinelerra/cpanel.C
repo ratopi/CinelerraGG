@@ -79,14 +79,15 @@ void CPanel::create_objects()
 	y += operation[CWINDOW_TOOL_WINDOW]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_TITLESAFE] = new CPanelTitleSafe(mwindow, this, x, y));
 	y += operation[CWINDOW_TITLESAFE]->get_h();
-	x += (w - BC_Slider::get_span(1)) / 2;
-	subwindow->add_subwindow(cpanel_zoom = new CPanelZoom(mwindow, this, x, y+15, h-y-15));
+	x += (w - BC_Slider::get_span(1)) / 2;  y += 15;
+	subwindow->add_subwindow(cpanel_zoom = new CPanelZoom(mwindow, this, x, y, h-y-20));
 }
 
-void CPanel::reposition_buttons(int x, int y)
+void CPanel::reposition_buttons(int x, int y, int h)
 {
 	this->x = x;
 	this->y = y;
+	this->h = h;
 
 	for(int i = 0; i < CPANEL_OPERATIONS; i++)
 	{
@@ -94,7 +95,10 @@ void CPanel::reposition_buttons(int x, int y)
 		y += operation[i]->get_h();
 	}
 	x += (w - BC_Slider::get_span(1)) / 2;
-	cpanel_zoom->reposition_window(x, y+15);
+	y += 15;
+	h = this->h - this->y;
+	cpanel_zoom->reposition_window(x, y, w, h-y-20);
+	cpanel_zoom->set_pointer_motion_range(h);
 }
 
 
@@ -365,7 +369,7 @@ int CPanelTitleSafe::handle_event()
 }
 
 CPanelZoom::CPanelZoom(MWindow *mwindow, CPanel *gui, int x, int y, int h)
- : BC_FSlider(x, y, 1, h-30, h, -2., 2., 0, 0)
+ : BC_FSlider(x, y, 1, h, h, -2., 2., 0, 0)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

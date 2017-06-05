@@ -69,11 +69,11 @@ DIRS := \
 $(shell mkdir -p $(DIRS) )
 
 OUTPUT = $(OBJDIR)/libzmpeg3.a
-UTILS += $(OBJDIR)/mpeg3toc
-UTILS += $(OBJDIR)/mpeg3show
-UTILS += $(OBJDIR)/mpeg3cat
-UTILS += $(OBJDIR)/mpeg3ifochk
-UTILS += $(OBJDIR)/mpeg3cc2txt
+UTILS += $(OBJDIR)/zmpeg3toc
+UTILS += $(OBJDIR)/zmpeg3show
+UTILS += $(OBJDIR)/zmpeg3cat
+UTILS += $(OBJDIR)/zmpeg3ifochk
+UTILS += $(OBJDIR)/zmpeg3cc2txt
 
 LIBS = -lm -lpthread
 
@@ -104,8 +104,8 @@ $(OUTPUT): $(OBJS) $(ASMOBJS) $(NASMOBJS)
 	ar rcs $(OUTPUT) `cat $(OBJDIR)/objs`
 
 
-mpeg3% $(OBJDIR)/mpeg3%: $(OUTPUT) mpeg3%.C
-	$(CXX) `cat $(OBJDIR)/c_flags` -o $(OBJDIR)/$(notdir $@) $(notdir $@).C $(OUTPUT) $(LIBS)
+zmpeg3% $(OBJDIR)/zmpeg3%: $(OUTPUT) mpeg3%.C
+	$(CXX) `cat $(OBJDIR)/c_flags` -o $(OBJDIR)/$(notdir $@) mpeg3$*.C $(OUTPUT) $(LIBS)
 
 tags:
 	ctags -R .

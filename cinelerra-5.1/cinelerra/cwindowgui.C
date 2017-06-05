@@ -245,7 +245,7 @@ int CWindowGUI::resize_event(int w, int h)
 	flash(0);
 
 	composite_panel->reposition_buttons(mwindow->theme->ccomposite_x,
-		mwindow->theme->ccomposite_y);
+		mwindow->theme->ccomposite_y, mwindow->theme->ccomposite_h);
 
 	canvas->reposition_window(mwindow->edl,
 		mwindow->theme->ccanvas_x,
