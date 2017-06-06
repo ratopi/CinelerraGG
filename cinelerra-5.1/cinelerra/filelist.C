@@ -400,38 +400,9 @@ int FileList::read_frame(VFrame *frame)
 
 		if(!temp) return result;
 
-// printf("FileList::read_frame frame=%d temp=%d\n",
-// frame->get_color_model(),
-// temp->get_color_model());
-		if(frame->get_color_model() == temp->get_color_model())
-		{
-			frame->copy_from(temp);
-		}
-		else
-		{
-// Never happens
-			BC_CModels::transfer(frame->get_rows(), /* Leave NULL if non existent */
-				temp->get_rows(),
-				frame->get_y(), /* Leave NULL if non existent */
-				frame->get_u(),
-				frame->get_v(),
-				temp->get_y(), /* Leave NULL if non existent */
-				temp->get_u(),
-				temp->get_v(),
-				0,        /* Dimensions to capture from input frame */
-				0,
-				asset->width,
-				asset->height,
-				0,       /* Dimensions to project on output frame */
-				0,
-				asset->width,
-				asset->height,
-				temp->get_color_model(),
-				frame->get_color_model(),
-				0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
-				temp->get_w(),       /* For planar use the luma rowspan */
-				frame->get_w());
-		}
+//printf("FileList::read_frame frame=%d temp=%d\n",
+// frame->get_color_model(), // temp->get_color_model());
+		frame->transfer_from(temp);
 	}
 
 

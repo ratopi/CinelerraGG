@@ -1080,6 +1080,7 @@ int VFrame::copy_from(VFrame *frame)
 			break;
 	}
 
+	params->copy_from(frame->params);
 	return 0;
 }
 
@@ -1131,6 +1132,7 @@ int VFrame::transfer_from(VFrame *that, int bg_color, int in_x, int in_y, int in
 			that->get_bytes_per_line(),
 		bg_color);
 #endif
+	params->copy_from(that->params);
 	return 0;
 }
 
