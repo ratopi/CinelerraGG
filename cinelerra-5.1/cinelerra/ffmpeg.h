@@ -150,6 +150,7 @@ public:
 	virtual ~FFAudioStream();
 	int is_audio() { return 1; }
 	int is_video() { return 0; }
+	void init_swr(int ichs, int ifmt, int irate);
 	int get_samples(float *&samples, uint8_t **data, int len);
 	int load_history(uint8_t **data, int len);
 	int decode_frame(AVFrame *frame);
@@ -177,6 +178,7 @@ public:
 	int64_t length;
 
 	SwrContext *resample_context;
+	int swr_ichs, swr_ifmt, swr_irate;
 	int aud_bfr_sz;
 	float *aud_bfr;
 };

@@ -154,6 +154,7 @@ void FileSndFile::format_to_asset()
 			case SF_FORMAT_AIFF: asset->format = FILE_AIFF; break;
 			case SF_FORMAT_AU:   asset->format = FILE_AU;   break;
 			case SF_FORMAT_RAW:  asset->format = FILE_PCM;  break;
+			default:
 			case SF_FORMAT_PAF:  asset->format = FILE_SND;  break;
 			case SF_FORMAT_SVX:  asset->format = FILE_SND;  break;
 			case SF_FORMAT_NIST: asset->format = FILE_SND;  break;

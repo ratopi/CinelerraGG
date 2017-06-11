@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include <time.h>
 
+class DCRaw_data;
+class DCRaw;
+
 #define CLASS DCRaw::
 
 #if !defined(uchar)
@@ -13,7 +16,81 @@
 #define ushort unsigned short
 #endif
 
-class DCRaw {
+struct jhead;
+struct tiff_tag;
+struct tiff_hdr;
+
+class DCRaw_data {
+// ZEROd by DCRaw reset
+public:
+	FILE *ifp, *ofp;
+	short order;
+	const char *ifname;
+	char *meta_data, xtrans[6][6], xtrans_abs[6][6];
+	char cdesc[5], desc[512], make[64], model[64], model2[64], artist[64];
+	float flash_used, canon_ev, iso_speed, shutter, aperture, focal_len;
+	time_t timestamp;
+	off_t strip_offset, data_offset;
+	off_t thumb_offset, meta_offset, profile_offset;
+	unsigned shot_order, kodak_cbpp, exif_cfa, unique_id;
+	unsigned thumb_length, meta_length, profile_length;
+	unsigned thumb_misc, *oprof, fuji_layout;
+	unsigned tiff_nifds, tiff_samples, tiff_bps, tiff_compress;
+	unsigned black, maximum, mix_green, raw_color, zero_is_bad;
+	unsigned zero_after_ff, is_raw, dng_version, is_foveon, data_error;
+	unsigned tile_width, tile_length, gpsdata[32], load_flags;
+	unsigned flip, tiff_flip, filters, colors;
+	ushort raw_height, raw_width, height, width, top_margin, left_margin;
+	ushort shrink, iheight, iwidth, fuji_width, thumb_width, thumb_height;
+	ushort *raw_image, (*image)[4], cblack[4102];
+	ushort white[8][8], curve[0x10000], cr2_slice[3], sraw_mul[4];
+
+	unsigned shot_select, multi_out;
+	double pixel_aspect, aber[4], gamm[6];
+	float bright, user_mul[4], threshold;
+	int mask[8][4];
+	int half_size, four_color_rgb, document_mode, highlight;
+	int verbose, use_auto_wb, use_camera_wb, use_camera_matrix;
+	int output_color, output_bps, output_tiff, med_passes;
+	int no_auto_bright;
+	unsigned greybox[4];
+	float cam_mul[4], pre_mul[4], cmatrix[3][4], rgb_cam[3][4];
+	int histogram[4][0x2000];
+	void (CLASS *write_thumb)(), (CLASS *write_fun)();
+	void (CLASS *load_raw)(), (CLASS *thumb_load_raw)();
+	jmp_buf failure;
+
+	struct decode {
+		struct decode *branch[2];
+		int leaf;
+	} first_decode[2048], /* *second_decode, CINELERRA */ *free_decode;
+
+	struct tiff_ifd {
+		int width, height, bps, comp, phint, offset, flip, samples, bytes;
+		int tile_width, tile_length;
+		float shutter;
+	} tiff_ifd[10];
+
+	struct ph1 {
+		int format, key_off, tag_21a;
+		int black, split_col, black_col, split_row, black_row;
+		float tag_210;
+	} ph1;
+
+// local static data
+	unsigned gbh_bitbuf;
+	int gbh_vbits, gbh_reset;
+	uint64_t ph1_bitbuf;
+	int ph1_vbits;
+	float ljpeg_cs[106];
+	unsigned sony_pad[128], sony_p;
+	unsigned fov_huff[1024];
+	float clb_cbrt[0x10000], clb_xyz_cam[3][4];
+	uchar pana_buf[0x4000];  int pana_vbits;
+};
+
+class DCRaw : public DCRaw_data {
+private:
 	int fcol(int row,int col);
 #if 0
 	char *my_memmem(char *haystack,size_t haystacklen,char *needle,size_t needlelen);
@@ -198,89 +275,21 @@ class DCRaw {
 	void write_ppm_tiff(void);
 	void write_cinelerra(void);
 	void reset();
-
-	FILE *ifp, *ofp;
-	short order;
-	const char *ifname;
-	char *meta_data, xtrans[6][6], xtrans_abs[6][6];
-	char cdesc[5], desc[512], make[64], model[64], model2[64], artist[64];
-	float flash_used, canon_ev, iso_speed, shutter, aperture, focal_len;
-	time_t timestamp;
-	off_t strip_offset, data_offset;
-	off_t thumb_offset, meta_offset, profile_offset;
-	unsigned shot_order, kodak_cbpp, exif_cfa, unique_id;
-	unsigned thumb_length, meta_length, profile_length;
-	unsigned thumb_misc, *oprof, fuji_layout;
-	unsigned tiff_nifds, tiff_samples, tiff_bps, tiff_compress;
-	unsigned black, maximum, mix_green, raw_color, zero_is_bad;
-	unsigned zero_after_ff, is_raw, dng_version, is_foveon, data_error;
-	unsigned tile_width, tile_length, gpsdata[32], load_flags;
-	unsigned flip, tiff_flip, filters, colors;
-	ushort raw_height, raw_width, height, width, top_margin, left_margin;
-	ushort shrink, iheight, iwidth, fuji_width, thumb_width, thumb_height;
-	ushort *raw_image, (*image)[4], cblack[4102];
-	ushort white[8][8], curve[0x10000], cr2_slice[3], sraw_mul[4];
-
-	unsigned shot_select, multi_out;
-	double pixel_aspect, aber[4], gamm[6];
-	float bright, user_mul[4], threshold;
-	int mask[8][4];
-	int half_size, four_color_rgb, document_mode, highlight;
-	int verbose, use_auto_wb, use_camera_wb, use_camera_matrix;
-	int output_color, output_bps, output_tiff, med_passes;
-	int no_auto_bright;
-	unsigned greybox[4];
-	float cam_mul[4], pre_mul[4], cmatrix[3][4], rgb_cam[3][4];
+//const data
 	const double xyz_rgb[3][3] = {			/* XYZ from RGB */
 		{ 0.412453, 0.357580, 0.180423 },
 		{ 0.212671, 0.715160, 0.072169 },
 		{ 0.019334, 0.119193, 0.950227 } };
 	const float d65_white[3] = { 0.950456, 1, 1.088754 };
-	int histogram[4][0x2000];
-	void (CLASS *write_thumb)(), (CLASS *write_fun)();
-	void (CLASS *load_raw)(), (CLASS *thumb_load_raw)();
-	jmp_buf failure;
-
-	struct decode {
-		struct decode *branch[2];
-		int leaf;
-	} first_decode[2048], /* *second_decode, CINELERRA */ *free_decode;
-
-	struct tiff_ifd {
-		int width, height, bps, comp, phint, offset, flip, samples, bytes;
-		int tile_width, tile_length;
-		float shutter;
-	} tiff_ifd[10];
-
-	struct ph1 {
-		int format, key_off, tag_21a;
-		int black, split_col, black_col, split_row, black_row;
-		float tag_210;
-	} ph1;
-
-// local static data
-	unsigned gbh_bitbuf;
-	int gbh_vbits, gbh_reset;
-	uint64_t ph1_bitbuf;
-	int ph1_vbits;
-	float ljpeg_cs[106];
-	unsigned sony_pad[128], sony_p;
-	unsigned fov_huff[1024];
-	float clb_cbrt[0x10000], clb_xyz_cam[3][4];
-	uchar pana_buf[0x4000];  int pana_vbits;
 
 public:
 	DCRaw();
 	~DCRaw();
-
+// CINELERRA
 	char info[1024];
 	float **data;
 	int alpha;
 	float matrix[9];
 	int main(int argc, const char **argv);
 };
-
-struct jhead;
-struct tiff_tag;
-struct tiff_hdr;
 

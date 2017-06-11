@@ -245,7 +245,7 @@ public:
 	int hardware_scaling() {
 		return xv_portid < 0 ? 0 :
 			(get_color_model() == BC_YUV420P ||
-			get_color_model() == BC_YUV422P ||
+	//		get_color_model() == BC_YUV422P ||  not in bc_to_x
 			get_color_model() == BC_YUV422) ? 1 : 0;
 	}
 	int get_w() { return w; }

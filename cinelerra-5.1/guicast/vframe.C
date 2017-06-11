@@ -127,15 +127,13 @@ VFrame *VFramePng::vframe_png(const char *png_path, double xs, double ys)
 	return vframe;
 }
 
-
 VFrame::VFrame(VFrame &frame)
 {
 	reset_parameters(1);
 	params = new BC_Hash;
 	allocate_data(0, -1, 0, 0, 0, frame.w, frame.h,
 		frame.color_model, frame.bytes_per_line);
-	memcpy(data, frame.data, bytes_per_line * h);
-	copy_stacks(&frame);
+	copy_from(&frame);
 }
 
 VFrame::VFrame(int w, int h, int color_model, long bytes_per_line)
@@ -807,49 +805,41 @@ int VFramePng::read_png(const unsigned char *data, long sz, double xscale, doubl
 
 int VFrame::write_png(const char *path)
 {
+	VFrame *vframe = this;
 	png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	FILE *out_fd = fopen(path, "w");
-	if(!out_fd)
-	{
+	if(!out_fd) {
 		printf("VFrame::write_png %d %s %s\n", __LINE__, path, strerror(errno));
 		return 1;
 	}
 
 	int png_cmodel = PNG_COLOR_TYPE_RGB;
-	switch(get_color_model())
-	{
-		case BC_RGB888:
-		case BC_YUV888:
-			png_cmodel = PNG_COLOR_TYPE_RGB;
-			break;
-
-		case BC_RGBA8888:
-		case BC_YUVA8888:
+	int bc_cmodel = get_color_model();
+	switch( bc_cmodel ) {
+	case BC_RGB888:                                          break;
+	case BC_RGBA8888: png_cmodel = PNG_COLOR_TYPE_RGB_ALPHA; break;
+	case BC_A8:       png_cmodel = PNG_COLOR_TYPE_GRAY;      break;
+	default:
+		bc_cmodel = BC_RGB888;
+		if( BC_CModels::has_alpha(bc_cmodel) ) {
+			bc_cmodel = BC_RGBA8888;
 			png_cmodel = PNG_COLOR_TYPE_RGB_ALPHA;
-			break;
-
-		case BC_A8:
-			png_cmodel = PNG_COLOR_TYPE_GRAY;
-			break;
+		}
+		vframe = new VFrame(get_w(), get_h(), bc_cmodel, -1);
+		vframe->transfer_from(this);
+		break;
 	}
-
 	png_init_io(png_ptr, out_fd);
 	png_set_compression_level(png_ptr, 9);
-	png_set_IHDR(png_ptr,
-		info_ptr,
-		get_w(),
-		get_h(),
-    	8,
-		png_cmodel,
-		PNG_INTERLACE_NONE,
-		PNG_COMPRESSION_TYPE_DEFAULT,
-		PNG_FILTER_TYPE_DEFAULT);
+	png_set_IHDR(png_ptr, info_ptr, get_w(), get_h(), 8, png_cmodel,
+		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 	png_write_info(png_ptr, info_ptr);
-	png_write_image(png_ptr, get_rows());
+	png_write_image(png_ptr, vframe->get_rows());
 	png_write_end(png_ptr, info_ptr);
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 	fclose(out_fd);
+	if( vframe != this ) delete vframe;
 	return 0;
 }
 

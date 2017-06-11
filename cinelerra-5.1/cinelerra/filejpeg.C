@@ -48,34 +48,30 @@ FileJPEG::~FileJPEG()
 
 int FileJPEG::check_sig(Asset *asset)
 {
-	FILE *stream = fopen(asset->path, "rb");
-
-	if(stream)
-	{
-		char test[10];
-		(void)fread(test, 10, 1, stream);
-		fclose(stream);
-
-		if(test[6] == 'J' && test[7] == 'F' && test[8] == 'I' && test[9] == 'F')
-		{
-			return 1;
+	FILE *fp = fopen(asset->path, "r");
+	if( !fp ) return 0;
+	char test[10];
+	int result = -1;
+	if( fread(test, 1, sizeof(test), fp) == sizeof(test) ) {
+		if( test[6] == 'J' && test[7] == 'F' && test[8] == 'I' && test[9] == 'F' ) {
+			fseek(fp, 0, SEEK_SET);
+			int w = 0, h = 0;
+			result = read_header(fp, w, h);
 		}
-		else
-		if(test[0] == 'J' && test[1] == 'P' && test[2] == 'E' && test[3] == 'G' &&
-			test[4] == 'L' && test[5] == 'I' && test[6] == 'S' && test[7] == 'T')
-		{
-			return 1;
+		else if(test[0] == 'J' && test[1] == 'P' && test[2] == 'E' && test[3] == 'G' &&
+			test[4] == 'L' && test[5] == 'I' && test[6] == 'S' && test[7] == 'T') {
+			result = 0;
 		}
 	}
+	fclose(fp);
 
-	if(strlen(asset->path) > 4)
-	{
-		int len = strlen(asset->path);
-		if(!strncasecmp(asset->path + len - 4, ".jpg", 4)) return 1;
+	if( result < 0 ) {
+		int i = strlen(asset->path) - 4;
+		if( i >= 0 && !strcasecmp(asset->path+i, ".jpg") )
+			result = 0;
 	}
-	return 0;
+	return !result ? 1 : 0;
 }
-
 
 
 void FileJPEG::get_parameters(BC_WindowBase *parent_window,
@@ -187,49 +183,47 @@ int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 
 int FileJPEG::read_frame_header(char *path)
 {
-	int result = 0;
-
-
-	FILE *stream;
-
-	if(!(stream = fopen(path, "rb")))
-	{
+	FILE *fp = fopen(path, "rb");
+	if( !fp ) {
 		eprintf("FileJPEG::read_frame_header %s: %m\n", path);
 		return 1;
 	}
-
-
+	int w = 0, h = 0, result = 1;
 	unsigned char test[2];
-	(void)fread(test, 2, 1, stream);
-	if(test[0] != 0xff || test[1] != 0xd8)
-	{
-		eprintf("FileJPEG::read_frame_header %s bad header %02x%02x\n",
-			path, test[0], test[1]);
-		fclose(stream);
-		return 1;
+	if( fread(test, 1, sizeof(test), fp) == sizeof(test) &&
+	    test[0] == 0xff && test[1] == 0xd8 ) {
+		fseek(fp, 0, SEEK_SET);
+		result = read_header(fp, w, h);
 	}
-	fseek(stream, 0, SEEK_SET);
-
-	struct jpeg_decompress_struct jpeg_decompress;
-	struct jpeg_error_mgr jpeg_error;
-
-	jpeg_decompress.err = jpeg_std_error(&jpeg_error);
-	jpeg_create_decompress(&jpeg_decompress);
-
-	jpeg_stdio_src(&jpeg_decompress, stream);
-	jpeg_read_header(&jpeg_decompress, TRUE);
-
-	asset->width = jpeg_decompress.image_width;
-	asset->height = jpeg_decompress.image_height;
-
-	asset->interlace_mode = ILACE_MODE_NOTINTERLACED;
-
-	jpeg_destroy((j_common_ptr)&jpeg_decompress);
-	fclose(stream);
-
+	fclose(fp);
+	if( !result ) {
+		asset->width = w;  asset->height = h;
+		asset->interlace_mode = ILACE_MODE_NOTINTERLACED;
+	}
+	else
+		eprintf("FileJPEG::read_frame_header %s bad header\n", path);
 	return result;
 }
 
+int FileJPEG::read_header(FILE *fp, int &w, int &h)
+{
+	int result = 0;
+	struct jpeg_error_mgr jpeg_error;
+	struct jpeg_decompress_struct jpeg_decompress;
+	jpeg_decompress.err = jpeg_std_error(&jpeg_error);
+	jpeg_create_decompress(&jpeg_decompress);
+	jpeg_stdio_src(&jpeg_decompress, fp);
+	if( jpeg_read_header(&jpeg_decompress, TRUE) != JPEG_HEADER_OK ) result = 1;
+	if( !result && jpeg_decompress.jpeg_color_space != JCS_YCbCr ) result = 1;
+	if( !result && jpeg_decompress.comp_info[0].h_samp_factor > 2 ) result = 1;
+	if( !result && jpeg_decompress.comp_info[0].v_samp_factor > 2 ) result = 1;
+	if( !result ) {
+		w = jpeg_decompress.image_width;
+		h = jpeg_decompress.image_height;
+	}
+	jpeg_destroy((j_common_ptr)&jpeg_decompress);
+	return result;
+}
 
 
 int FileJPEG::read_frame(VFrame *output, VFrame *input)

@@ -111,6 +111,7 @@ typedef uint64_t UINT64;
 #define ULIM(x,y,z) ((y) < (z) ? LIM(x,y,z) : LIM(x,z,y))
 #define CLIP(x) LIM((int)(x),0,65535)
 #define SWAP(a,b) { a=a+b; b=a-b; a=a-b; }
+#define ZERO(var) memset(&var, 0, sizeof var)
 /*
    In order to inline this calculation, I make the risky
    assumption that all filter patterns can be described
@@ -189,122 +190,17 @@ int CLASS fcol (int row, int col)
 
 void CLASS reset()
 {
-// uninitialized
-#define ZERO(var) memset(&var, 0, sizeof var);
-	aperture = 0;
-	ZERO(artist);
-	black = 0;
-	ZERO(cam_mul)
-	canon_ev = 0;
-	ZERO(cblack);
-	ZERO(cmatrix);
-	ZERO(cdesc);
-	colors = 0;
-	ZERO(cr2_slice);
-	ZERO(curve);
-	data_error = 0;
-	data_offset = 0;
-	dng_version = 0;
-	exif_cfa = 0;
-	ZERO(failure);
-	filters = 0;
-	ZERO(first_decode);
-	flash_used = 0;
-	flip = 0;
-	focal_len = 0;
-	fuji_layout = 0;
-	fuji_width = 0;
-	ZERO(gpsdata);
-	height = 0;
-	ZERO(histogram);
-	ifname = 0;
-	ifp = 0;
-	iheight = 0;
-	is_foveon = 0;
-	iso_speed = 0;
-	is_raw = 0;
-	iwidth = 0;
-	kodak_cbpp = 0;
-	left_margin = 0;
-	load_flags = 0;
-	load_raw = 0;
-	maximum = 0;
-	meta_data = 0;
-	meta_length = 0;
-	meta_offset = 0;
-	mix_green = 0;
-	ZERO(model);
-	ZERO(model2);
-	ofp = 0;
-	oprof = 0;
-	order = 0;
-	ZERO(ph1);
-	pixel_aspect = 0;
-	memset(pre_mul, 0, sizeof pre_mul);
-	profile_length = 0;
-	profile_offset = 0;
-	raw_color = 0;
-	raw_height = 0;
-	raw_width = 0;
-	raw_image = 0;
-	memset(rgb_cam, 0, sizeof rgb_cam);
-	shot_order = 0;
-	shrink = 0;
-	shutter = 0;
-	strip_offset = 0;
-	thumb_height = 0;
-	thumb_length = 0;
-	thumb_load_raw = 0;
-	thumb_misc = 0;
-	thumb_offset = 0;
-	thumb_width = 0;
-	tiff_bps = 0;
-	tiff_compress = 0;
-	tiff_flip = 0;
-	tiff_nifds = 0;
-	tiff_samples = 0;
-	tile_length = 0;
-	tile_width = 0;
-	timestamp = 0;
-	top_margin = 0;
-	unique_id = 0;
-	ZERO(white);
-	width = 0;
-	zero_after_ff = 0;
-	zero_is_bad = 0;
-
-// initializer data
-	shot_select = 0;
-	multi_out = 0;
+// zero data segment
+	DCRaw_data *data = (DCRaw_data *)this;
+	memset(data, 0, sizeof(*data));
+// non-zero init data
 	aber[0] = aber[1] = aber[2] = aber[3] = 1;
-	gamm[0] = 0.45;	gamm[1] = 4.5;	gamm[2] = 0;
-	gamm[3] = 0;	gamm[4] = 0;	gamm[5] = 0;
+	gamm[0] = 0.45;	gamm[1] = 4.5;
 	bright = 1;
-	ZERO(user_mul);
-	threshold = 0;
-	half_size = 0;
-	four_color_rgb = 0;
-	document_mode = 0;
-	highlight = 0;
-	verbose = 0;
-	use_auto_wb = 0;
-	use_camera_wb = 0;
 	use_camera_matrix = 1;
 	output_color = 1;
 	output_bps = 8;
-	output_tiff = 0;
-	med_passes = 0;
-	no_auto_bright = 0;
-	greybox[0] = 0;		greybox[1] = 0;
 	greybox[2] = UINT_MAX;	greybox[3] = UINT_MAX;
-// local static
-	gbh_bitbuf = 0;  gbh_vbits = 0;  gbh_reset = 0;
-	ph1_bitbuf = 0;  ph1_vbits = 0;
-	ZERO(ljpeg_cs);
-	ZERO(sony_pad);  sony_p = 0;
-	ZERO(fov_huff);
-	ZERO(clb_cbrt);  ZERO(clb_xyz_cam);
-	ZERO(pana_buf);  pana_vbits = 0;
 }
 
 #if 0

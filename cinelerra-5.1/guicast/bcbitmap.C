@@ -431,6 +431,7 @@ update_buffers(int count, int lock_avail)
 	delete [] buffers;
 	buffers = new_buffers;
 	buffer_count = count;
+	XFlush(top_level->display);
 	if( lock_avail ) avail_lock->unlock();
 	//top_level->unlock_window();
 }
