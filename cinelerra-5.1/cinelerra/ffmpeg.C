@@ -148,10 +148,13 @@ void FFAudioStream::reset_history()
 {
 	inp = outp = bfr;
 	hpos = 0;
+	memset(bfr, 0, lmt-bfr);
 }
 
 void FFAudioStream::iseek(int64_t ofs)
 {
+	if( ofs > hpos ) ofs = hpos;
+	if( ofs > sz ) ofs = sz;
 	outp = inp - ofs*nch;
 	if( outp < bfr ) outp += sz*nch;
 }
@@ -505,6 +508,7 @@ int FFStream::seek(int64_t no, double rate)
 			npkts = MAX_RETRY;
 		}
 	}
+	if( pos == curr_pos ) return 0;
 	if( pos > 0 && st->time_base.num > 0 ) {
 		double secs = pos / rate;
 		tstmp = secs * st->time_base.den / st->time_base.num;
@@ -521,7 +525,7 @@ int FFStream::seek(int64_t no, double rate)
 	}
         int ret = avformat_seek_file(fmt_ctx, st->index, -INT64_MAX, seek, INT64_MAX, flags);
 #else
-        int ret = av_seek_frame(fmt_ctx, st->index, tstmp, AVSEEK_FLAG_ANY);
+	int ret = av_seek_frame(fmt_ctx, st->index, tstmp, AVSEEK_FLAG_ANY);
 #endif
 	int retry = MAX_RETRY;
 	while( ret >= 0 ) {
