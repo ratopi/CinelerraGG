@@ -43,7 +43,7 @@ video_tools := blur decimate delayvideo denoisemjpeg denoisevideo downsample \
 	unsharp videoscope wave zoomblur
 
 plugin_dirs += blending
-blending := chromakeyhsv chromakey diffkey
+blending := crikey chromakeyhsv chromakey diffkey
 
 plugin_dirs += tv_effects
 tv_effects := deinterlace-cv deinterlace ivtc liveaudio livevideo rgb601 \

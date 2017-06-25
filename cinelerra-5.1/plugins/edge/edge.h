@@ -36,13 +36,9 @@ public:
 
 	int equivalent(EdgeConfig &that);
 	void copy_from(EdgeConfig &that);
-	void interpolate(EdgeConfig &prev,
-		EdgeConfig &next,
-		long prev_frame,
-		long next_frame,
-		long current_frame);
+	void interpolate(EdgeConfig &prev, EdgeConfig &next,
+		long prev_frame, long next_frame, long current_frame);
 	void limits();
-
 
 	int amount;
 };
@@ -51,8 +47,7 @@ class EdgePackage : public LoadPackage
 {
 public:
 	EdgePackage();
-	int y1;
-	int y2;
+	int y1, y2;
 };
 
 class EdgeUnit : public LoadClient
@@ -75,11 +70,9 @@ public:
 	~EdgeEngine();
 
 	void init_packages();
-	void process(VFrame *dst, VFrame *src);
 
 	LoadClient* new_client();
 	LoadPackage* new_package();
-	VFrame *src, *dst;
 	Edge *plugin;
 };
 
@@ -100,12 +93,8 @@ public:
 		double frame_rate);
 
 	EdgeEngine *engine;
-	VFrame *temp;
+	VFrame *src, *dst;
+	int w, h, color_model, bpp;
 };
 
-
-
 #endif
-
-
-

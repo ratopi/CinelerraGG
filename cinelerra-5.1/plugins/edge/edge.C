@@ -28,8 +28,6 @@
 #include "transportque.inc"
 #include <string.h>
 
-// Edge detection from the Gimp
-
 REGISTER_PLUGIN(Edge)
 
 EdgeConfig::EdgeConfig()
@@ -48,12 +46,8 @@ void EdgeConfig::copy_from(EdgeConfig &that)
 	this->amount = that.amount;
 }
 
-void EdgeConfig::interpolate(
-	EdgeConfig &prev,
-	EdgeConfig &next,
-	long prev_frame,
-	long next_frame,
-	long current_frame)
+void EdgeConfig::interpolate( EdgeConfig &prev, EdgeConfig &next,
+		long prev_frame, long next_frame, long current_frame)
 {
 	copy_from(next);
 }
@@ -68,13 +62,13 @@ Edge::Edge(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	temp = 0;
+	dst = 0;
 }
 
 Edge::~Edge()
 {
-	if(engine) delete engine;
-	if(temp) delete temp;
+	delete engine;
+	delete dst;
 }
 
 const char* Edge::plugin_title() { return _("Edge"); }
@@ -103,27 +97,16 @@ void Edge::save_data(KeyFrame *keyframe)
 void Edge::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-
 	input.set_shared_input(keyframe->get_data(), strlen(keyframe->get_data()));
-
 	int result = 0;
-	while(!result)
-	{
-		result = input.read_tag();
 
-		if(!result)
-		{
-			if(input.tag.title_is("EDGE"))
-			{
-				config.amount = input.tag.get_property("AMOUNT", config.amount);
-				config.limits();
-
-			}
-			else
-			if(input.tag.title_is("/EDGE"))
-			{
-				result = 1;
-			}
+	while( !(result=input.read_tag()) ) {
+		if(input.tag.title_is("EDGE")) {
+			config.amount = input.tag.get_property("AMOUNT", config.amount);
+			config.limits();
+		}
+		else if(input.tag.title_is("/EDGE")) {
+			result = 1;
 		}
 	}
 
@@ -131,59 +114,39 @@ void Edge::read_data(KeyFrame *keyframe)
 
 void Edge::update_gui()
 {
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("Edge::update_gui");
-			EdgeWindow *window = (EdgeWindow*)thread->window;
-			window->flush();
-			thread->window->unlock_window();
-		}
-	}
+	if( !thread ) return;
+	if( !load_configuration() ) return;
+	thread->window->lock_window("Edge::update_gui");
+	EdgeWindow *window = (EdgeWindow*)thread->window;
+	window->flush();
+	thread->window->unlock_window();
 }
 
-
-
-int Edge::process_buffer(VFrame *frame,
-	int64_t start_position,
-	double frame_rate)
+int Edge::process_buffer(VFrame *frame, int64_t start_position, double frame_rate)
 {
-
-//	int need_reconfigure =
 	load_configuration();
-	int w = frame->get_w();
-	int h = frame->get_h();
-	int color_model = frame->get_color_model();
+	src = frame;
+	w = src->get_w(), h = src->get_h();
+	color_model = frame->get_color_model();
+	bpp = BC_CModels::calculate_pixelsize(color_model);
 
-// initialize everything
-	if(!temp)
-	{
+	if( dst && (dst->get_w() != w || dst->get_h() != h ||
+	    dst->get_color_model() != color_model ) ) {
+		delete dst;  dst = 0;
+	}
+	if( !dst )
+		dst = new VFrame(0, -1, w, h, color_model, -1);
+
+	if( !engine )
 		engine = new EdgeEngine(this,
 			PluginClient::get_project_smp() + 1,
 			PluginClient::get_project_smp() + 1);
 
-		temp = new VFrame(0,
-			-1,
-			w,
-			h,
-			color_model,
-			-1);
-
-	}
-
-	read_frame(frame,
-		0,
-		start_position,
-		frame_rate,
-		0);
-	engine->process(temp, frame);
-	frame->copy_from(temp);
-
+	read_frame(frame, 0, start_position, frame_rate, 0);
+	engine->process_packages();
+	frame->copy_from(dst);
 	return 0;
 }
-
-
 
 
 EdgePackage::EdgePackage()
@@ -200,143 +163,60 @@ EdgeUnit::~EdgeUnit()
 {
 }
 
-
-float EdgeUnit::edge_detect(float *data, float max, int do_max)
-{
-	const float v_kernel[9] = { 0,  0,  0,
-                               0,  2, -2,
-                               0,  2, -2 };
-	const float h_kernel[9] = { 0,  0,  0,
-                               0, -2, -2,
-                               0,  2,  2 };
-	int i;
-	float v_grad, h_grad;
-	float amount = server->plugin->config.amount;
-
-	for (i = 0, v_grad = 0, h_grad = 0; i < 9; i++)
-    {
-    	v_grad += v_kernel[i] * data[i];
-    	h_grad += h_kernel[i] * data[i];
-    }
-
-	float result = sqrt (v_grad * v_grad * amount +
-            	 h_grad * h_grad * amount);
-	if(do_max)
-		CLAMP(result, 0, max);
-	return result;
-}
-
 #define EDGE_MACRO(type, max, components, is_yuv) \
 { \
-	type **input_rows = (type**)server->src->get_rows(); \
-	type **output_rows = (type**)server->dst->get_rows(); \
 	int comps = MIN(components, 3); \
-	for(int y = pkg->y1; y < pkg->y2; y++) \
-	{ \
-		for(int x = 0; x < w; x++) \
-		{ \
-/* kernel is in bounds */ \
-			if(y > 0 && x > 0 && y < h - 2 && x < w - 2) \
-			{ \
-				for(int chan = 0; chan < comps; chan++) \
-				{ \
-/* load kernel */ \
-					for(int kernel_y = 0; kernel_y < 3; kernel_y++) \
-					{ \
-						for(int kernel_x = 0; kernel_x < 3; kernel_x++) \
-						{ \
-							kernel[3 * kernel_y + kernel_x] = \
-								(type)input_rows[y - 1 + kernel_y][(x - 1 + kernel_x) * components + chan]; \
- \
- 							if(is_yuv && chan > 0) \
-							{ \
-								kernel[3 * kernel_y + kernel_x] -= 0x80; \
-							} \
- \
-						} \
-					} \
-/* do the business */ \
-					output_rows[y][x * components + chan] = edge_detect(kernel, max, sizeof(type) < 4); \
- 					if(is_yuv && chan > 0) \
-					{ \
-						output_rows[y][x * components + chan] += 0x80; \
-					} \
- \
-				} \
- \
-				if(components == 4) output_rows[y][x * components + 3] = \
-					input_rows[y][x * components + 3]; \
+	float amounts = amount * amount / max; \
+	for( int y=y1; y<y2; ++y ) { \
+		uint8_t *row0 = input_rows[y], *row1 = input_rows[y+1]; \
+		uint8_t *outp = output_rows[y]; \
+		for( int x=x1; x<x2; ++x ) { \
+			type *r0 = (type *)row0, *r1 = (type *)row1, *op = (type *)outp; \
+			float h_grad = 0, v_grad = 0; \
+			for( int i=0; i<comps; ++i,++r0,++r1 ) { \
+				float dh = -r0[0] - r0[components] + r1[0] + r1[components]; \
+				if( (dh*=dh) > h_grad ) h_grad = dh; \
+				float dv =  r0[0] - r0[components] + r1[0] - r1[components]; \
+				if( (dv*=dv) > v_grad ) v_grad = dv; \
 			} \
-			else \
-			{ \
-				for(int chan = 0; chan < comps; chan++) \
-				{ \
-/* load kernel */ \
-					for(int kernel_y = 0; kernel_y < 3; kernel_y++) \
-					{ \
-						for(int kernel_x = 0; kernel_x < 3; kernel_x++) \
-						{ \
-							int in_y = y - 1 + kernel_y; \
-							int in_x = x - 1 + kernel_x; \
-							CLAMP(in_y, 0, h - 1); \
-							CLAMP(in_x, 0, w - 1); \
-							kernel[3 * kernel_y + kernel_x] = \
-								(type)input_rows[in_y][in_x * components + chan]; \
- 							if(is_yuv && chan > 0) \
-							{ \
-								kernel[3 * kernel_y + kernel_x] -= 0x80; \
-							} \
-						} \
-					} \
-/* do the business */ \
-					output_rows[y][x * components + chan] = edge_detect(kernel, max, sizeof(type) < 4); \
- 					if(is_yuv && chan > 0) \
-					{ \
-						output_rows[y][x * components + chan] += 0x80; \
-					} \
-				} \
-				if(components == 4) output_rows[y][x * components + 3] = \
-					input_rows[y][x * components + 3]; \
+			float v = (h_grad + v_grad) * amounts; \
+			type t = v > max ? max : v; \
+			if( is_yuv ) { \
+				*op++ = t;  *op++ = 0x80;  *op++ = 0x80; \
 			} \
+			else { \
+				for( int i=0; i<comps; ++i ) *op++ = t; \
+			} \
+			if( components == 4 ) *op = *r0; \
+			row0 += bpp;  row1 += bpp;  outp += bpp; \
 		} \
 	} \
-}
+} break
 
 
 void EdgeUnit::process_package(LoadPackage *package)
 {
+	VFrame *src = server->plugin->src;
+	uint8_t **input_rows = src->get_rows();
+	VFrame *dst = server->plugin->dst;
+	uint8_t **output_rows = dst->get_rows();
+	float amount = (float)server->plugin->config.amount;
 	EdgePackage *pkg = (EdgePackage*)package;
-	int w = server->src->get_w();
-	int h = server->src->get_h();
-	float kernel[9];
+	int x1 = 0, x2 = server->plugin->w-1, bpp = server->plugin->bpp;
+	int y1 = pkg->y1, y2 = pkg->y2;
 
-	switch(server->src->get_color_model())
-	{
-		case BC_RGB_FLOAT:
-			EDGE_MACRO(float, 1, 3, 0);
-			break;
-		case BC_RGBA_FLOAT:
-			EDGE_MACRO(float, 1, 4, 0);
-			break;
-		case BC_RGB888:
-			EDGE_MACRO(unsigned char, 0xff, 3, 0);
-			break;
-		case BC_YUV888:
-			EDGE_MACRO(unsigned char, 0xff, 3, 1);
-			break;
-		case BC_RGBA8888:
-			EDGE_MACRO(unsigned char, 0xff, 4, 0);
-			break;
-		case BC_YUVA8888:
-			EDGE_MACRO(unsigned char, 0xff, 4, 1);
-			break;
+	switch( server->plugin->color_model ) {
+	case BC_RGB_FLOAT:  EDGE_MACRO(float, 1, 3, 0);
+	case BC_RGBA_FLOAT: EDGE_MACRO(float, 1, 4, 0);
+	case BC_RGB888:	    EDGE_MACRO(unsigned char, 0xff, 3, 0);
+	case BC_YUV888:	    EDGE_MACRO(unsigned char, 0xff, 3, 1);
+	case BC_RGBA8888:   EDGE_MACRO(unsigned char, 0xff, 4, 0);
+	case BC_YUVA8888:   EDGE_MACRO(unsigned char, 0xff, 4, 1);
 	}
 }
 
 
-EdgeEngine::EdgeEngine(Edge *plugin,
-	int total_clients,
-	int total_packages)
+EdgeEngine::EdgeEngine(Edge *plugin, int total_clients, int total_packages)
  : LoadServer(total_clients, total_packages)
 {
 	this->plugin = plugin;
@@ -349,21 +229,14 @@ EdgeEngine::~EdgeEngine()
 
 void EdgeEngine::init_packages()
 {
-	for(int i = 0; i < get_total_packages(); i++)
-	{
-		EdgePackage *pkg = (EdgePackage*)get_package(i);
-		pkg->y1 = plugin->get_input(0)->get_h() * i / LoadServer::get_total_packages();
-		pkg->y2 = plugin->get_input(0)->get_h() * (i + 1) / LoadServer::get_total_packages();
+	int y = 0, h1 = plugin->h-1;
+	for(int i = 0; i < get_total_packages(); ) {
+		EdgePackage *pkg = (EdgePackage*)get_package(i++);
+		pkg->y1 = y;
+		y = h1 * i / LoadServer::get_total_packages();
+		pkg->y2 = y;
 	}
 }
-
-void EdgeEngine::process(VFrame *dst, VFrame *src)
-{
-	this->dst = dst;
-	this->src = src;
-	process_packages();
-}
-
 
 LoadClient* EdgeEngine::new_client()
 {
@@ -374,5 +247,4 @@ LoadPackage* EdgeEngine::new_package()
 {
 	return new EdgePackage;
 }
-
 

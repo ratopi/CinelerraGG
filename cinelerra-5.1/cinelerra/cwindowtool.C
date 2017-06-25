@@ -480,7 +480,9 @@ void CWindowEyedropGUI::create_objects()
 	int y = margin;
 	int x2 = 70;
 	lock_window("CWindowEyedropGUI::create_objects");
-	BC_Title *title1, *title2, *title3, *title4, *title5, *title6, *title7;
+	BC_Title *title0, *title1, *title2, *title3, *title4, *title5, *title6, *title7;
+	add_subwindow(title0 = new BC_Title(x, y,_("X,Y:")));
+	y += title0->get_h() + margin;
 	add_subwindow(title7 = new BC_Title(x, y, _("Radius:")));
 	y += BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1) + margin;
 
@@ -497,6 +499,7 @@ void CWindowEyedropGUI::create_objects()
 	y += title5->get_h() + margin;
 	add_subwindow(title6 = new BC_Title(x, y, "V:"));
 
+	add_subwindow(current = new BC_Title(x2, title0->get_y(), ""));
 
 	radius = new CWindowCoord(this, x2, title7->get_y(),
 		mwindow->edl->session->eyedrop_radius);
@@ -520,6 +523,12 @@ void CWindowEyedropGUI::create_objects()
 
 void CWindowEyedropGUI::update()
 {
+	char string[BCTEXTLEN];
+	sprintf(string, "%d, %d",
+		thread->gui->eyedrop_x,
+		thread->gui->eyedrop_y);
+	current->update(string);
+
 	radius->update((int64_t)mwindow->edl->session->eyedrop_radius);
 
 	red->update(mwindow->edl->local_session->red);

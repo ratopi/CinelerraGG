@@ -264,6 +264,7 @@ public:
 	void create_objects();
 	void update();
 
+	BC_Title *current;
 	CWindowCoord *radius;
 	BC_Title *red, *green, *blue, *y, *u, *v;
 	BC_SubWindow *sample;

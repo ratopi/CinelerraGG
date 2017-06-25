@@ -2561,8 +2561,8 @@ BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
 }
 
 BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
-	float default_value, int x, int y)
- : BC_TextBox(x, y, popup->text_w, 1, default_value)
+	float default_value, int x, int y, int precision)
+ : BC_TextBox(x, y, popup->text_w, 1, default_value, 1, MEDIUMFONT, precision)
 {
 	this->popup = popup;
 }
@@ -2714,31 +2714,17 @@ int BC_TumbleTextBox::create_objects()
 {
 	int x = this->x, y = this->y;
 
-	if(use_float)
-	{
-		parent_window->add_subwindow(textbox = new BC_TumbleTextBoxText(this,
-			default_value_f, x, y));
-		textbox->set_precision(precision);
-	}
-	else
-		parent_window->add_subwindow(textbox = new BC_TumbleTextBoxText(this,
-			default_value, x, y));
+	textbox = use_float ?
+		new BC_TumbleTextBoxText(this, default_value_f, x, y, precision) :
+		new BC_TumbleTextBoxText(this, default_value, x, y);
 
+	parent_window->add_subwindow(textbox);
 	x += textbox->get_w();
 
-	if(use_float)
-		parent_window->add_subwindow(tumbler = new BC_FTumbler(textbox,
- 			min_f,
-			max_f,
-			x,
-			y));
-	else
-		parent_window->add_subwindow(tumbler = new BC_ITumbler(textbox,
- 			min,
-			max,
-			x,
-			y));
-
+	tumbler = use_float ?
+		(BC_Tumbler *)new BC_FTumbler(textbox, min_f, max_f, x, y) :
+		(BC_Tumbler *)new BC_ITumbler(textbox, min, max, x, y);
+	parent_window->add_subwindow(tumbler);
 	tumbler->set_increment(increment);
 	return 0;
 }

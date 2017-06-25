@@ -30,6 +30,7 @@ DIRS = \
 	color3way \
 	colorbalance \
 	compressor \
+	crikey \
 	crossfade \
 	dcoffset \
 	decimate \
