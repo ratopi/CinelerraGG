@@ -791,6 +791,11 @@ int FFAudioStream::encode_frame(AVFrame *frame)
 	return FFStream::encode_frame(frame);
 }
 
+int FFAudioStream::write_packet(FFPacket &pkt)
+{
+	return FFStream::write_packet(pkt);
+}
+
 void FFAudioStream::load_markers()
 {
 	IndexState *index_state = ffmpeg->file_base->asset->index_state;
@@ -919,6 +924,13 @@ int FFVideoStream::encode_frame(AVFrame *frame)
 		frame->top_field_first = top_field_first;
 	}
 	return FFStream::encode_frame(frame);
+}
+
+int FFVideoStream::write_packet(FFPacket &pkt)
+{
+	if( !(ffmpeg->fmt_ctx->oformat->flags & AVFMT_VARIABLE_FPS) )
+		pkt->duration = 1;
+	return FFStream::write_packet(pkt);
 }
 
 AVPixelFormat FFVideoConvert::color_model_to_pix_fmt(int color_model)

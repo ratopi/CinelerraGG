@@ -80,9 +80,9 @@ public:
 
 	virtual int encode_activate();
 	virtual int decode_activate();
+	virtual int write_packet(FFPacket &pkt);
 	int read_packet();
 	int seek(int64_t no, double rate);
-	int write_packet(FFPacket &pkt);
 	int flush();
 	int decode(AVFrame *frame);
 	void load_markers(IndexMarks &marks, double rate);
@@ -145,6 +145,7 @@ class FFAudioStream : public FFStream {
 	int write(const float *fp, long len);
 	int zero(long len);
 	int write(const double *dp, long len, int ch);
+	int write_packet(FFPacket &pkt);
 public:
 	FFAudioStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx);
 	virtual ~FFAudioStream();
@@ -205,6 +206,7 @@ public:
 };
 
 class FFVideoStream : public FFStream, public FFVideoConvert {
+	int write_packet(FFPacket &pkt);
 public:
 	FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx);
 	virtual ~FFVideoStream();
