@@ -1193,7 +1193,7 @@ int MWindow::brender_available(int position)
 {
 	int result = 0;
 	brender_lock->lock("MWindow::brender_available 1");
-	if(brender)
+	if(brender && brender_active)
 	{
 		if(brender->map_valid)
 		{
@@ -1226,8 +1226,10 @@ void MWindow::set_brender_active(int v, int update)
 		}
 		restart_brender();
 	}
-	else
+	else {
+		edl->session->brender_start = edl->session->brender_end = 0;
 		stop_brender();
+	}
 	if( update ) {
 		gui->update_timebar(0);
 		gui->draw_overlays(1);

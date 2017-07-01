@@ -75,7 +75,7 @@ public:
 	CriKeyDrawMode(CriKeyWindow *gui, int x, int y);
 
 	void create_objects();
-	void update(int mode);
+	void update(int mode, int send=1);
 	CriKeyWindow *gui;
 	int mode;
 };
@@ -97,7 +97,7 @@ public:
 	CriKeyKeyMode(CriKeyWindow *gui, int x, int y);
 
 	void create_objects();
-	void update(int mode);
+	void update(int mode, int send=1);
 	CriKeyWindow *gui;
 	int mode;
 };

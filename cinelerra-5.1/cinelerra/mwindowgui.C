@@ -382,6 +382,12 @@ void MWindowGUI::redraw_time_dependancies()
 	mainclock->update(mwindow->edl->local_session->get_selectionstart(1));
 }
 
+int MWindowGUI::cursor_enter_event()
+{
+	reset_default_message();
+	return 0;
+}
+
 int MWindowGUI::focus_in_event()
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
@@ -918,16 +924,22 @@ int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2
 }
 
 
-int MWindowGUI::show_message(char *message, int color)
+void MWindowGUI::show_message(const char *message, int color)
 {
-// printf("MWindowGUI::show_message %d: %s 0x%08x 0x%08x\n",
-// __LINE__, message, color, mwindow->theme->message_normal);
-	if(color < 0) color = mwindow->theme->message_normal;
-	statusbar->status_text->set_color(color);
-	statusbar->status_text->update(message);
-	return 0;
+	statusbar->set_message(message, color);
 }
-
+void MWindowGUI::set_default_message(const char *message)
+{
+	statusbar->set_default_message(message);
+}
+void MWindowGUI::reset_default_message()
+{
+	statusbar->reset_default_message();
+}
+void MWindowGUI::default_message()
+{
+	statusbar->default_message();
+}
 
 // Drag motion called from other window
 int MWindowGUI::drag_motion()

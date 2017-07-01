@@ -72,7 +72,7 @@ void StatusBar::create_objects()
 			mwindow->theme->mstatus_cancel_x,
 			mwindow->theme->mstatus_cancel_y));
 //printf("StatusBar::create_objects 1\n");
-	default_message();
+	reset_default_message();
 	flash();
 }
 
@@ -103,17 +103,25 @@ void StatusBar::resize_event()
 	flash(0);
 }
 
-void StatusBar::set_message(char *text)
+void StatusBar::set_message(const char *text, int color)
 {
+	if( color < 0 ) color = mwindow->theme->message_normal;
+	status_text->set_color(color);
 	status_text->update(text);
 }
-
+void StatusBar::set_default_message(const char *text)
+{
+	strcpy(default_msg, text);
+	default_message();
+}
+void StatusBar::reset_default_message()
+{
+	set_default_message(_("Welcome to cinelerra"));
+}
 void StatusBar::default_message()
 {
-	status_text->set_color(mwindow->theme->message_normal);
-	status_text->update(_("Welcome to Cinelerra."));
+	set_message(default_msg, mwindow->theme->message_normal);
 }
-
 
 StatusBarCancel::StatusBarCancel(MWindow *mwindow, int x, int y)
  : BC_Button(x, y, mwindow->theme->statusbar_cancel_data)

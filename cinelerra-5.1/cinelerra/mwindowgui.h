@@ -129,6 +129,7 @@ public:
 	void set_meter_format(int mode, int min, int max);
 
 	int translation_event();
+	int cursor_enter_event();
 	int resize_event(int w, int h);          // handle a resize event
 	int button_release_event();
 	int keypress_event();
@@ -142,7 +143,10 @@ public:
 	int menu_w();
 	int menu_h();
 // Draw on the status bar only.
-	int show_message(char *message, int color = -1);
+	void show_message(const char *message, int color = -1);
+	void set_default_message(const char *message);
+	void reset_default_message();
+	void default_message();
 // Pop up a box if the statusbar is taken and show an error.
 	void show_error(char *message, int color = BLACK);
 	int repeat_event(int64_t duration);

@@ -75,15 +75,15 @@ void CriKeyDrawMode::create_objects()
 {
 	for( int i=0; i<DRAW_MODES; ++i )
 		add_item(new CriKeyDrawModeItem(draw_modes[i], i));
-	update(gui->plugin->config.draw_mode);
+	update(gui->plugin->config.draw_mode, 0);
 }
-void CriKeyDrawMode::update(int mode)
+void CriKeyDrawMode::update(int mode, int send)
 {
 	if( this->mode == mode ) return;
 	this->mode = mode;
 	set_text(draw_modes[mode]);
 	gui->plugin->config.draw_mode = mode;
-	gui->plugin->send_configure_change();
+	if( send ) gui->plugin->send_configure_change();
 }
 
 int CriKeyKeyModeItem::handle_event()
@@ -104,15 +104,15 @@ void CriKeyKeyMode::create_objects()
 {
 	for( int i=0; i<KEY_MODES; ++i )
 		add_item(new CriKeyKeyModeItem(key_modes[i], i));
-	update(gui->plugin->config.key_mode);
+	update(gui->plugin->config.key_mode, 0);
 }
-void CriKeyKeyMode::update(int mode)
+void CriKeyKeyMode::update(int mode, int send)
 {
 	if( this->mode == mode ) return;
 	this->mode = mode;
 	set_text(key_modes[mode]);
 	gui->draw_key(mode);
-	gui->plugin->send_configure_change();
+	if( send ) gui->plugin->send_configure_change();
 }
 
 CriKeyColorButton::CriKeyColorButton(CriKeyWindow *gui, int x, int y)
