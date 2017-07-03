@@ -296,6 +296,7 @@ void GradientWindow::update_shape()
 				y));
 		}
 	}
+	show_window();
 }
 
 
