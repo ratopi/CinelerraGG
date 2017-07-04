@@ -2587,19 +2587,10 @@ int BC_TumbleTextBoxText::handle_event()
 
 int BC_TumbleTextBoxText::button_press_event()
 {
-	if(is_event_win())
-	{
-		if(get_buttonpress() < 4) return BC_TextBox::button_press_event();
-
-		if(get_buttonpress() == 4)
-		{
-			popup->tumbler->handle_up_event();
-		}
-		else
-		if(get_buttonpress() == 5)
-		{
-			popup->tumbler->handle_down_event();
-		}
+	if( get_enabled() && is_event_win() ) {
+		if( get_buttonpress() < 4 ) return BC_TextBox::button_press_event();
+		if( get_buttonpress() == 4 )      popup->tumbler->handle_up_event();
+		else if( get_buttonpress() == 5 ) popup->tumbler->handle_down_event();
 		return 1;
 	}
 	return 0;
