@@ -32,11 +32,17 @@
 #include "pluginvclient.h"
 #include "vframe.h"
 
-class PerspectiveMain;
+
+class PerspectiveConfig;
+class PerspectiveCanvas;
+class PerspectiveCoord;
+class PerspectiveReset;
+class PerspectiveMode;
+class PerspectiveDirection;
+class PerspectiveAffine;
+class PerspectiveAffineItem;
 class PerspectiveWindow;
-
-
-
+class PerspectiveMain;
 
 class PerspectiveConfig
 {
@@ -45,14 +51,11 @@ public:
 
 	int equivalent(PerspectiveConfig &that);
 	void copy_from(PerspectiveConfig &that);
-	void interpolate(PerspectiveConfig &prev,
-		PerspectiveConfig &next,
-		int64_t prev_frame,
-		int64_t next_frame,
-		int64_t current_frame);
+	void interpolate(PerspectiveConfig &prev, PerspectiveConfig &next,
+		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 
 	float x1, y1, x2, y2, x3, y3, x4, y4;
-	int mode;
+	int mode, smoothing;
 	int window_w, window_h;
 	int current_point;
 	int forward;
@@ -64,22 +67,13 @@ class PerspectiveCanvas : public BC_SubWindow
 {
 public:
 	PerspectiveCanvas(PerspectiveMain *plugin,
-		int x,
-		int y,
-		int w,
-		int h);
+		int x, int y, int w, int h);
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
-	int state;
 
-	enum
-	{
-		NONE,
-		DRAG,
-		DRAG_FULL,
-		ZOOM
-	};
+	int state;
+	enum { NONE, DRAG, DRAG_FULL, ZOOM };
 
 	int start_cursor_x, start_cursor_y;
 	float start_x1, start_y1;
@@ -94,10 +88,7 @@ class PerspectiveCoord : public BC_TumbleTextBox
 public:
 	PerspectiveCoord(PerspectiveWindow *gui,
 		PerspectiveMain *plugin,
-		int x,
-		int y,
-		float value,
-		int is_x);
+		int x, int y, float value, int is_x);
 	int handle_event();
 	PerspectiveMain *plugin;
 	int is_x;
@@ -107,8 +98,7 @@ class PerspectiveReset : public BC_GenericButton
 {
 public:
 	PerspectiveReset(PerspectiveMain *plugin,
-		int x,
-		int y);
+		int x, int y);
 	int handle_event();
 	PerspectiveMain *plugin;
 };
@@ -117,10 +107,7 @@ class PerspectiveMode : public BC_Radial
 {
 public:
 	PerspectiveMode(PerspectiveMain *plugin,
-		int x,
-		int y,
-		int value,
-		char *text);
+		int x, int y, int value, char *text);
 	int handle_event();
 	PerspectiveMain *plugin;
 	int value;
@@ -130,14 +117,41 @@ class PerspectiveDirection : public BC_Radial
 {
 public:
 	PerspectiveDirection(PerspectiveMain *plugin,
-		int x,
-		int y,
-		int value,
-		char *text);
+		int x, int y, int value, char *text);
 	int handle_event();
 	PerspectiveMain *plugin;
 	int value;
 };
+
+class PerspectiveAffine : public BC_PopupMenu
+{
+	static const int n_modes = AffineEngine::AF_MODES;
+	const char *affine_modes[n_modes];
+	PerspectiveAffineItem *affine_items[n_modes];
+public:
+	PerspectiveAffine(PerspectiveWindow *gui, int x, int y);
+	~PerspectiveAffine();
+
+	void create_objects();
+	void update(int mode, int send=1);
+	void affine_item(int id);
+
+	PerspectiveWindow *gui;
+	int mode;
+};
+
+class PerspectiveAffineItem : public BC_MenuItem
+{
+public:
+	PerspectiveAffineItem(const char *txt, int id)
+	: BC_MenuItem(txt) { this->id = id; }
+
+	int handle_event();
+	PerspectiveWindow *gui;
+	int id;
+};
+
+
 
 class PerspectiveWindow : public PluginClientWindow
 {
@@ -150,26 +164,18 @@ public:
 	void update_canvas();
 	void update_mode();
 	void update_coord();
-	void calculate_canvas_coords(int &x1,
-		int &y1,
-		int &x2,
-		int &y2,
-		int &x3,
-		int &y3,
-		int &x4,
-		int &y4);
+	void calculate_canvas_coords(
+		int &x1, int &y1, int &x2, int &y2,
+		int &x3, int &y3, int &x4, int &y4);
 
 	PerspectiveCanvas *canvas;
 	PerspectiveCoord *x, *y;
 	PerspectiveReset *reset;
 	PerspectiveMode *mode_perspective, *mode_sheer, *mode_stretch;
+	PerspectiveAffine *affine;
 	PerspectiveMain *plugin;
 	PerspectiveDirection *forward, *reverse;
 };
-
-
-
-
 
 
 class PerspectiveMain : public PluginVClient
@@ -197,15 +203,5 @@ public:
 	VFrame *temp;
 	AffineEngine *engine;
 };
-
-
-
-
-
-
-
-
-
-
 
 

@@ -147,17 +147,8 @@ int AssetPopupInfo::handle_event()
 {
 	if(mwindow->session->drag_assets->total)
 	{
-		if(mwindow->awindow->asset_edit->running() &&
-			mwindow->awindow->asset_edit->window)
-		{
-			mwindow->awindow->asset_edit->window->raise_window();
-			mwindow->awindow->asset_edit->window->flush();
-		}
-		else
-		{
-			mwindow->awindow->asset_edit->edit_asset(
-				mwindow->session->drag_assets->values[0]);
-		}
+		mwindow->awindow->asset_edit->edit_asset(
+			mwindow->session->drag_assets->values[0]);
 	}
 	else
 	if(mwindow->session->drag_clips->total)

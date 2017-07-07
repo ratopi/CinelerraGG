@@ -78,11 +78,7 @@ AssetEdit::~AssetEdit()
 
 void AssetEdit::edit_asset(Indexable *indexable)
 {
-	if(this->indexable)
-	{
-		close_window();
-	}
-
+	close_window();
 	this->indexable = indexable;
 	this->indexable->add_user();
 

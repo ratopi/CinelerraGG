@@ -86,24 +86,13 @@ public:
 
 // Range of coords is 0 to 100 for coordinates in the image.
 // The coordinate locations are clockwise around the image.
-	void process(VFrame *output,
-		VFrame *input,
-		VFrame *temp,
-		int mode,
-		float x1,
-		float y1,
-		float x2,
-		float y2,
-		float x3,
-		float y3,
-		float x4,
-		float y4,
+	void process(VFrame *output, VFrame *input, VFrame *temp, int mode,
+		float x1, float y1, float x2, float y2,
+		float x3, float y3, float x4, float y4,
 		int forward);
 // Do rotation with the affine/perspective transform.
 // This removes some of the extremely faint artifacts in the trig rotation.
-	void rotate(VFrame *output,
-		VFrame *input,
-		float angle);
+	void rotate(VFrame *output, VFrame *input, float angle);
 	void set_matrix(AffineMatrix *matrix);
 // Set the viewport to transform.  The transform is based on the input viewport.
 // The output viewport clips the transformed output.
@@ -127,6 +116,8 @@ public:
 // Never used
 	void unset_pivot();
 	void unset_viewport();
+// default: AF_CUBIC
+	void set_interpolation(int type);
 // To use OpenGL for the processing, set to 1
 	void set_opengl(int value);
 	void init_packages();
@@ -136,14 +127,21 @@ public:
 
 	VFrame *input, *output, *temp;
 	int mode;
-	enum
-	{
+	enum {
 		PERSPECTIVE,
 		SHEER,
 		STRETCH,
 		ROTATE,
 // multiply directly by a matrix.
 		TRANSFORM
+	};
+	int interpolation;
+	enum {
+		AF_DEFAULT,
+		AF_NEAREST,
+		AF_LINEAR,
+		AF_CUBIC,
+		AF_MODES
 	};
 
 // arbitrary matrix

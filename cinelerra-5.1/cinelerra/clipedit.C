@@ -127,6 +127,7 @@ BC_Window* ClipEdit::new_gui()
 
 void ClipEdit::edit_clip(EDL *clip)
 {
+	close_window();
 // Allow more than one window so we don't have to delete the clip in handle_event
 	if(!this->clip)
 	{
