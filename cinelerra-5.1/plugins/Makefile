@@ -164,8 +164,8 @@ $(DATA):
 
 $(LADSPA_DIR):
 	mkdir -p $@
-	if [ -d $(THIRDPARTY)/ladspa-*/usr/local/lib/ladspa ]; then \
-		cp -a $(THIRDPARTY)/ladspa-*/usr/local/lib/ladspa/. $@/. ; \
+	if [ -d $(THIRDPARTY)/ladspa-*/usr/local/lib*/ladspa ]; then \
+		cp -a $(THIRDPARTY)/ladspa-*/usr/local/lib*/ladspa/. $@/. ; \
 	fi
 
 # parallel compilation of all directories

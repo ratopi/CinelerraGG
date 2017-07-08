@@ -34,6 +34,7 @@
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "filesystem.h"
 #include "filexml.h"
 #include "floatauto.h"
 #include "floatautos.h"
@@ -2348,7 +2349,7 @@ void MWindow::splice(EDL *source)
 	sync_parameters(CHANGE_EDL);
 }
 
-void MWindow::to_clip()
+void MWindow::to_clip(EDL *edl, const char *txt)
 {
 	FileXML file;
 	double start, end;
@@ -2357,36 +2358,57 @@ void MWindow::to_clip()
 	start = edl->local_session->get_selectionstart();
 	end = edl->local_session->get_selectionend();
 
-	if(EQUIV(end, start))
-	{
+	if(EQUIV(end, start)) {
 		start = 0;
 		end = edl->tracks->total_length();
 	}
 
 // Don't copy all since we don't want the clips twice.
-	edl->copy(start,
-		end,
-		0,
-		0,
-		0,
-		&file,
-		"",
-		1);
-
+	edl->copy(start, end, 0, 0, 0, &file, "", 1);
 
 	EDL *new_edl = new EDL(edl);
 	new_edl->create_objects();
 	new_edl->load_xml(&file, LOAD_ALL);
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"), session->clip_number++);
-	char string[BCTEXTLEN];
-	Units::totext(string,
-			end - start,
+	char duration[BCTEXTLEN];
+	Units::totext(duration, end - start,
 			edl->session->time_format,
 			edl->session->sample_rate,
 			edl->session->frame_rate,
 			edl->session->frames_per_foot);
 
-	sprintf(new_edl->local_session->clip_notes, _("%s\nCreated from main window"), string);
+	const char *path = edl->path;
+	Track *track=edl->tracks->first;
+	for(; (!path || !*path) && track; track=track->next ) {
+		if( !track->record ) continue;
+		Edit *edit = track->edits->editof(start, PLAY_FORWARD, 0);
+		if( !edit ) continue;
+		Indexable *indexable = edit->get_source();
+		if( !indexable ) continue;
+		path = indexable->path;
+	}
+
+        time_t now;  time(&now);
+        struct tm *tm = localtime(&now);
+	char *cp = new_edl->local_session->clip_notes;
+	int n, sz = sizeof(new_edl->local_session->clip_notes)-1;
+	if( txt && *txt ) {
+		n = snprintf(cp, sz, "%s", txt);
+		cp += n;  sz -= n;
+	}
+	n = snprintf(cp, sz, 
+		"%02d/%02d/%02d %02d:%02d:%02d,  +%s\n",
+		tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, 
+		tm->tm_hour, tm->tm_min, tm->tm_sec, duration);
+	cp += n;  sz -= n;
+	if( path && *path ) {
+	        FileSystem fs;
+        	char title[BCTEXTLEN];
+		fs.extract_name(title, path);
+		n = snprintf(cp, sz, "%s", title);
+		cp += n;  sz -= n;
+	}
+	cp[n] = 0;
 
 	new_edl->local_session->set_selectionstart(0);
 	new_edl->local_session->set_selectionend(0);
@@ -2398,6 +2420,10 @@ void MWindow::to_clip()
 	gui->lock_window("MWindow::to_clip 2");
 	save_backup();
 	gui->unlock_window();
+}
+void MWindow::to_clip(const char *txt)
+{
+	to_clip(edl, txt);
 }
 
 int MWindow::toggle_label(int is_mwindow)

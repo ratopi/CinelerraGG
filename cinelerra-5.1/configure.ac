@@ -181,7 +181,7 @@ PKG_3RD([ilmbase],[auto],
     IlmThread/.libs/libIlmThread.a ],
   [ Iex Half Imath config IlmThread ])
 
-PKG_DEF([ladspa], [ladspa-05182015], [], [])
+PKG_DEF([ladspa], [ladspa-0.4.17], [], [])
 
 PKG_3RD([lame],[auto],
   [lame-3.99.5],

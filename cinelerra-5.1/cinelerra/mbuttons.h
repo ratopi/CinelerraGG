@@ -81,6 +81,7 @@ class MainEditing : public EditPanel
 public:
 	MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y);
 	virtual ~MainEditing() {}
+	void to_clip();
 
 	MWindow *mwindow;
 	MButtons *mbuttons;

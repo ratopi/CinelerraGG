@@ -654,60 +654,10 @@ void VWindowEditing::clear_outpoint()
 
 void VWindowEditing::to_clip()
 {
-	if(vwindow->get_edl())
-	{
-		FileXML file;
-		EDL *edl = vwindow->get_edl();
-		double start = edl->local_session->get_selectionstart();
-		double end = edl->local_session->get_selectionend();
-
-		if(EQUIV(start, end))
-		{
-			end = edl->tracks->total_length();
-			start = 0;
-		}
-
-
-
-		edl->copy(start,
-			end,
-			1,
-			0,
-			0,
-			&file,
-			"",
-			1);
-
-
-
-
-		EDL *new_edl = new EDL(mwindow->edl);
-		new_edl->create_objects();
-		new_edl->load_xml(&file, LOAD_ALL);
-		sprintf(new_edl->local_session->clip_title,
-			_("Clip %d"), mwindow->session->clip_number++);
-		char string[BCTEXTLEN];
-		Units::totext(string,
-				end - start,
-				edl->session->time_format,
-				edl->session->sample_rate,
-				edl->session->frame_rate,
-				edl->session->frames_per_foot);
-
-		sprintf(new_edl->local_session->clip_notes,
-			_("%s\n Created from:\n%s"), string, vwindow->gui->loaded_title);
-
-		new_edl->local_session->set_selectionstart(0);
-		new_edl->local_session->set_selectionend(0);
-
-
-//printf("VWindowEditing::to_clip 1 %s\n", edl->local_session->clip_title);
-		new_edl->local_session->set_selectionstart(0.0);
-		new_edl->local_session->set_selectionend(0.0);
-		vwindow->clip_edit->create_clip(new_edl);
-	}
+	EDL *edl = vwindow->get_edl();
+	if( !edl ) return;
+	mwindow->to_clip(edl, _("viewer window: "));
 }
-
 
 VWindowSource::VWindowSource(MWindow *mwindow, VWindowGUI *vwindow, int x, int y)
  : BC_PopupTextBox(vwindow,

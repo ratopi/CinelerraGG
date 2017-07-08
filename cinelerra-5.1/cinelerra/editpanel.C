@@ -639,13 +639,6 @@ void EditPanel::clear_outpoint()
 	mwindow->delete_outpoint();
 }
 
-void EditPanel::to_clip()
-{
-	subwindow->unlock_window();
-	mwindow->to_clip();
-	subwindow->lock_window("EditPanel::to_clip");
-}
-
 
 EditInPoint::EditInPoint(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("inbutton"))

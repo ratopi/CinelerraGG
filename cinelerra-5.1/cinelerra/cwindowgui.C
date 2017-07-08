@@ -713,13 +713,16 @@ CWrapper(set_inpoint)
 CWrapper(set_outpoint)
 CWrapper(clear_inpoint)
 CWrapper(clear_outpoint)
-CWrapper(to_clip)
 CWrapper(toggle_label)
 CWrapper(prev_label)
 CWrapper(next_label)
 CWrapper(prev_edit)
 CWrapper(next_edit)
 
+void CWindowEditing::to_clip()
+{
+        mwindow->to_clip(_("composer window: "));
+}
 
 
 CWindowMeters::CWindowMeters(MWindow *mwindow,

@@ -442,7 +442,7 @@ public:
 	virtual void set_outpoint();
 	virtual void clear_inpoint();
 	virtual void clear_outpoint();
-	virtual void to_clip();
+	virtual void to_clip() = 0;
 	virtual void toggle_label();
 	virtual void prev_label();
 	virtual void next_label();

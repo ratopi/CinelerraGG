@@ -1061,7 +1061,7 @@ int BC_ListBox::get_text_w(BC_ListBoxItem *item)
 int BC_ListBox::get_text_h(BC_ListBoxItem *item)
 {
 	int h = item->get_text_h();
-	if( h < 0 ) item->set_text_h(h = get_text_height(MEDIUMFONT));
+	if( h < 0 ) item->set_text_h(h = get_text_height(MEDIUMFONT, item->get_text()));
 	return h;
 }
 
