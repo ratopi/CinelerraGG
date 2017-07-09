@@ -62,7 +62,7 @@ BRender::BRender(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
 	map_lock = new Mutex("BRender::map_lock");
-	completion_lock = new Condition(0, "BRender::completion_lock");
+	completion_lock = new Condition(0, "BRender::completion_lock", 1);
 	timer = new Timer;
 	socket_path[0] = 0;
 	thread = 0;
@@ -77,44 +77,24 @@ BRender::BRender(MWindow *mwindow)
 
 BRender::~BRender()
 {
-TRACE("BRender::~BRender 1\n");
-	if(thread)
-	{
-TRACE("BRender::~BRender 2\n");
+	if(thread) {
 		stop();
-TRACE("BRender::~BRender 3\n");
 		delete thread;
-TRACE("BRender::~BRender 4\n");
 	}
 
-
-TRACE("BRender::~BRender 5\n");
-	if(master_pid >= 0)
-	{
+	if( master_pid >= 0 )
 		kill(master_pid, SIGKILL);
-TRACE("BRender::~BRender 6\n");
-TRACE("BRender::~BRender 7\n");
-	}
 	Thread::join();
 
-TRACE("BRender::~BRender 8\n");
 	delete map_lock;
-TRACE("BRender::~BRender 9\n");
 	delete completion_lock;
-TRACE("BRender::~BRender 10\n");
-UNSET_TEMP(socket_path);
+	UNSET_TEMP(socket_path);
 	remove(socket_path);
-TRACE("BRender::~BRender 11\n");
 	if(arguments[0]) delete [] arguments[0];
-TRACE("BRender::~BRender 12\n");
 	if(arguments[1]) delete [] arguments[1];
-TRACE("BRender::~BRender 13\n");
 	if(arguments[2]) delete [] arguments[2];
-TRACE("BRender::~BRender 14\n");
 	if(map) delete [] map;
-TRACE("BRender::~BRender 15\n");
 	delete timer;
-TRACE("BRender::~BRender 100\n");
 }
 
 void BRender::initialize()
@@ -203,15 +183,11 @@ void BRender::restart(EDL *edl)
 
 void BRender::stop()
 {
-//printf("BRender::stop 1\n");
+	if( !running() || !thread->running() ) return;
 	BRenderCommand *new_command = new BRenderCommand;
-//printf("BRender::stop 1\n");
 	new_command->command = BRenderCommand::BRENDER_STOP;
-//printf("BRender::stop 1\n");
 	thread->send_command(new_command);
-//printf("BRender::stop 1\n");
 	completion_lock->lock("BRender::stop");
-//printf("BRender::stop 2\n");
 }
 
 
@@ -282,7 +258,7 @@ int BRender::set_video_map(int64_t position, int value)
 	}
 
 // Maintain last contiguous here to reduce search time
-	if(position == last_contiguous)
+	if(position == last_contiguous && last_contiguous < map_size )
 	{
 		int i;
 		for(i = position + 1; i < map_size && map[i]; i++)
@@ -388,12 +364,13 @@ BRenderThread::~BRenderThread()
 	input_lock->unlock();
 	thread_lock->unlock();
 	Thread::join();
+
 	delete input_lock;
 	delete thread_lock;
 	delete total_frames_lock;
-	if(command) delete command;
-	if(command_queue) delete command_queue;
-	if(preferences) delete preferences;
+	delete command;
+	delete command_queue;
+	delete preferences;
 }
 
 
@@ -404,126 +381,57 @@ void BRenderThread::initialize()
 
 void BRenderThread::send_command(BRenderCommand *command)
 {
-TRACE("BRenderThread::send_command 1");
 	thread_lock->lock("BRenderThread::send_command");
-TRACE("BRenderThread::send_command 10");
-
-	if(this->command_queue)
-	{
-		delete this->command_queue;
-		this->command_queue = 0;
-	}
+	delete this->command_queue;
 	this->command_queue = command;
-TRACE("BRenderThread::send_command 20");
-
-
 	input_lock->unlock();
 	thread_lock->unlock();
 }
 
-int BRenderThread::is_done(int do_lock)
-{
-	if(do_lock) thread_lock->lock("BRenderThread::is_done");
-	int result = done;
-	if(do_lock) thread_lock->unlock();
-	return result;
-}
-
 void BRenderThread::run()
 {
-	while(!is_done(1))
-	{
-		BRenderCommand *new_command = 0;
-		thread_lock->lock("BRenderThread::run 1");
-
-// Got new command
-		if(command_queue)
-		{
-			;
-		}
-		else
-// Wait for new command
-		{
+	thread_lock->lock("BRenderThread::run");
+	while( !done ) {
+		if( !command_queue ) {
 			thread_lock->unlock();
-			input_lock->lock("BRenderThread::run 2");
-			thread_lock->lock("BRenderThread::run 3");
+			input_lock->lock("BRenderThread::run");
+			thread_lock->lock("BRenderThread::run 1");
+			continue;
 		}
 
-// Pull the command off
-		if(!is_done(0))
-		{
-			new_command = command_queue;
-			command_queue = 0;
-		}
-
+		BRenderCommand *new_command = command_queue;
+		command_queue = 0;
+		if( !new_command ) continue;
 		thread_lock->unlock();
-
-
-
-
-// Process the command here to avoid delay.
-// Quit condition
-		if(!new_command)
-		{
-			;
-		}
-		else
-		if(new_command->command == BRenderCommand::BRENDER_STOP)
-		{
-			stop();
+		stop();
+		switch( new_command->command ) {
+		case BRenderCommand::BRENDER_STOP:
 			delete new_command;
-			new_command = 0;
-//			if(command) delete command;
-//			command = new_command;
-		}
-		else
-		if(new_command->command == BRenderCommand::BRENDER_RESTART)
-		{
-// Compare EDL's and get last equivalent position in new EDL
-			if(command && command->edl)
-				new_command->position =
-					new_command->edl->equivalent_output(command->edl);
-			else
-				new_command->position = 0;
-
-
-			stop();
-//printf("BRenderThread::run 4\n");
-			brender->completion_lock->lock("BRenderThread::run 4");
-//printf("BRenderThread::run 5\n");
-
-			if(new_command->edl->tracks->total_playable_vtracks())
-			{
-				if(command) delete command;
+			brender->completion_lock->unlock();
+			break;
+		case BRenderCommand::BRENDER_RESTART:
+			new_command->position = command && command->edl ?
+				new_command->edl->equivalent_output(command->edl) : 0;
+			delete command;  command = 0;
+			if( new_command->edl->tracks->total_playable_vtracks() ) {
 				command = new_command;
-//printf("BRenderThread::run 6\n");
 				start();
-//printf("BRenderThread::run 7\n");
 			}
-			else
-			{
-//printf("BRenderThread::run 8 %p\n", farm_server);
-				delete new_command;
-				new_command = 0;
-			}
+			break;
 		}
+		thread_lock->lock("BRenderThread::run 2");
 	}
+	thread_lock->unlock();
 }
 
 void BRenderThread::stop()
 {
-	if(farm_server)
-	{
-		farm_result = 1;
-		farm_server->wait_clients();
-		delete farm_server;
-		delete packages;
-		delete preferences;
-		farm_server = 0;
-		packages = 0;
-		preferences = 0;
-	}
-	brender->completion_lock->unlock();
+	if( !farm_server ) return;
+	farm_result = 1;
+	farm_server->wait_clients();
+	delete farm_server;  farm_server = 0;
+	delete packages;     packages = 0;
+	delete preferences;  preferences = 0;
 }
 
 void BRenderThread::start()

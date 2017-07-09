@@ -179,19 +179,24 @@ public:
 	void lock() { pthread_mutex_lock(&the_lock); }
 	void unlock() { pthread_mutex_unlock(&the_lock); }
 
-	TheLock() {
+	void init() {
 		pthread_mutexattr_t attr;
 		pthread_mutexattr_init(&attr);
 		pthread_mutex_init(&the_lock, &attr);
 	}
-	~TheLock() {
+	void finit() {
 		pthread_mutex_destroy(&the_lock);
 	}
+	void reset() { finit();  init(); }
+
+	TheLock()  { init();  }
+	~TheLock() { finit(); }
 };
 
 class TheLocker {
 public:
 	static TheLock the_lock;
+	static void reset() { the_lock.reset(); }
 
 	TheLocker() { the_lock.lock(); }
 	~TheLocker() { the_lock.unlock(); }
@@ -211,12 +216,9 @@ public:
 	static void dump_threads(FILE *fp);
 	static void dbg_add(pthread_t tid, pthread_t owner, const char *nm);
 	static void dbg_del(pthread_t tid);
-
+	static void reset() { the_list.remove_all_objects(); TheLocker::reset(); }
 	 TheList() {}
-	~TheList() {
-		TheLocker the_locker;
-		remove_all_objects();
-	}
+	~TheList() { reset(); }
 };
 
 class TheChk {

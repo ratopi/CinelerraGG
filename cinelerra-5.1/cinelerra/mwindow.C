@@ -1180,13 +1180,21 @@ void MWindow::init_brender()
 void MWindow::restart_brender()
 {
 //printf("MWindow::restart_brender 1\n");
-	if(!brender_active || !preferences->use_brender) return;
-	if(brender) brender->restart(edl);
+	if( !brender_active || !preferences->use_brender ) return;
+	if( !brender ) return;
+	int locked  = gui->get_window_lock();
+	if( locked ) gui->unlock_window();
+	brender->restart(edl);
+	if( locked ) gui->lock_window("MWindow::restart_brender");
 }
 
 void MWindow::stop_brender()
 {
-	if(brender) brender->stop();
+	if( !brender ) return;
+	int locked  = gui->get_window_lock();
+	if( locked ) gui->unlock_window();
+	brender->stop();
+	if( locked ) gui->lock_window("MWindow::stop_brender");
 }
 
 int MWindow::brender_available(int position)

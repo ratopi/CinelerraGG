@@ -552,6 +552,7 @@ void RenderFarmClientThread::run()
 // Get the pid of the fork if inside the fork
 	pid = getpid();
 	BC_Signals::set_trap_hook(trap_hook, this);
+	TheList::reset();
 
 	int socket_fd = this->socket_fd;
 
