@@ -301,7 +301,8 @@ int EDL::load_xml(FileXML *file,
 				else
 				if(file->tag.title_is("ASSETS"))
 				{
-					if(load_flags & LOAD_ASSETS)
+					if((load_flags & LOAD_ASSETS) &&
+						!parent_edl)
 						assets->load(file, load_flags);
 					else
 						result = file->skip_tag();

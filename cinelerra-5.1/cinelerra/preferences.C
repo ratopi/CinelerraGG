@@ -392,9 +392,10 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	shbtn_prefs.remove_all_objects();
 	int shbtns_total = defaults->get("SHBTNS_TOTAL", -1);
 	if( shbtns_total < 0 ) {
-		shbtn_prefs.append(new ShBtnPref("Features5", "firefox file://$CIN_DAT/doc/Features5.pdf", 0));
-		shbtn_prefs.append(new ShBtnPref("Online Help", "firefox https://cinelerra-cv.org/docs.php", 0));
-		shbtn_prefs.append(new ShBtnPref("Orignal Manual", "firefox file://$CIN_DAT/doc/cinelerra.html", 0));
+		shbtn_prefs.append(new ShBtnPref(_("Features5"), "$CIN_BROWSER file://$CIN_DAT/doc/Features5.pdf", 0));
+		shbtn_prefs.append(new ShBtnPref(_("Online Help"), "$CIN_BROWSER https://cinelerra-cv.org/docs.php", 0));
+		shbtn_prefs.append(new ShBtnPref(_("Original Manual"), "$CIN_BROWSER file://$CIN_DAT/doc/cinelerra.html", 0));
+		shbtn_prefs.append(new ShBtnPref(_("Setting Shell Commands"), "$CIN_BROWSER file://$CIN_DAT/doc/ShellCmds.html", 0));
 		shbtns_total = 0;
 	}
 	for( int i=0; i<shbtns_total; ++i ) {

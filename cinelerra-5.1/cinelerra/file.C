@@ -1672,6 +1672,7 @@ char File::cincfg_path[BCTEXTLEN];
 char File::cinplg_path[BCTEXTLEN];
 char File::cinlad_path[BCTEXTLEN];
 char File::cinlcl_path[BCTEXTLEN];
+char File::cinbwr_path[BCTEXTLEN];
 
 void File::init_cin_path()
 {
@@ -1706,6 +1707,13 @@ void File::init_cin_path()
 	getenv_path(env_path, LOCALE_DIR);
 	snprintf(cinlcl_path, sizeof(cinlcl_path), "CIN_LOCALE=%s", env_path);
 	putenv(cinlcl_path);
+
+#ifndef CIN_BROWSER
+#define CIN_BROWSER "firefox"
+#endif
+	getenv_path(env_path, CIN_BROWSER);
+	snprintf(cinbwr_path, sizeof(cinlcl_path), "CIN_BROWSER=%s", env_path);
+	putenv(cinbwr_path);
 }
 
 

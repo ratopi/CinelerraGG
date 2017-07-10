@@ -321,6 +321,7 @@ public:
 	static char cindat_path[BCTEXTLEN], cinlib_path[BCTEXTLEN];
 	static char cincfg_path[BCTEXTLEN], cinplg_path[BCTEXTLEN];
 	static char cinlad_path[BCTEXTLEN], cinlcl_path[BCTEXTLEN];
+	static char cinbwr_path[BCTEXTLEN];
 	static const char *get_cin() { return getenv("CIN_PKG"); }
 	static const char *get_cin_path() { return getenv("CIN_PATH"); }
 	static const char *get_cindat_path() { return getenv("CIN_DAT"); }
@@ -329,6 +330,7 @@ public:
 	static const char *get_plugin_path() { return getenv("CIN_PLUGIN"); }
 	static const char *get_ladspa_path() { return getenv("CIN_LADSPA"); }
 	static const char *get_locale_path() { return getenv("CIN_LOCALE"); }
+	static const char *get_browser_path() { return getenv("CIN_BROWSER"); }
 
 	static const char *default_probes[];
 	static const int nb_probes;

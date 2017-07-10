@@ -2289,7 +2289,9 @@ FFMpegToggle::FFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;
-	set_tooltip( !get_value() ? _("Try FFMpeg first") : _("Try FFMpeg last") );
+	set_tooltip(!get_value() ?
+		_("Currently: Try FFMpeg last\n   Click to: Try FFMpeg first") :
+		_("Currently: Try FFMpeg first\n   Click to: Try FFMpeg last"));
 }
 
 FFMpegToggle::~FFMpegToggle()
@@ -2299,7 +2301,9 @@ FFMpegToggle::~FFMpegToggle()
 int FFMpegToggle::handle_event()
 {
 	int ffmpeg_early_probe = get_value();
-	set_tooltip( !ffmpeg_early_probe ?  _("Try FFMpeg first") : _("Try FFMpeg last"));
+	set_tooltip(!ffmpeg_early_probe ?
+		_("Currently: Try FFMpeg last\n   Click to: Try FFMpeg first") :
+		_("Currently: Try FFMpeg first\n   Click to: Try FFMpeg last"));
 	mwindow->preferences->set_file_probe_armed("FFMPEG_Early", ffmpeg_early_probe);
 	mwindow->preferences->set_file_probe_armed("FFMPEG_Late", !ffmpeg_early_probe);
 	

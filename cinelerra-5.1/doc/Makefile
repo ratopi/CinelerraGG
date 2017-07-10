@@ -53,6 +53,7 @@ $(IMAGES):
 install:	all
 	mkdir -p $(TARGET_DIR)
 	cp -a *.png $(TARGET_DIR)/.
+	cp -a ShellCmds.* $(TARGET_DIR)/.
 	cp -a cinelerra.html $(TARGET_DIR)/.
 	cp -a Features5.pdf $(TARGET_DIR)/.
 
