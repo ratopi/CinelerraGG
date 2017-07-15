@@ -24,5 +24,23 @@
 
 class AssetEdit;
 class AssetEditWindow;
+class AssetEditPath;
+class AssetEditPathText;
+class AssetEditFormat;
+class AssetEditChannels;
+class AssetEditRate;
+class AssetEditFRate;
+class Interlaceautofix;
+class AssetEditILaceautofixoption;
+class AssetEditILacemode;
+class AssetEditInterlacemodePulldown;
+class AssetEditILacefixmethod;
+class AssetEditHeader;
+class AssetEditByteOrderLOHI;
+class AssetEditByteOrderHILO;
+class AssetEditSigned;
+class DetailAssetWindow;
+class DetailAssetThread;
+class DetailAssetButton;
 
 #endif

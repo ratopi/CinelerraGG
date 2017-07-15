@@ -19,16 +19,23 @@
  *
  */
 
-#ifndef AWINDOWMENU_INC
-#define AWINDOWMENU_INC
+#ifndef CLIPPOPUP_INC
+#define CLIPPOPUP_INC
 
-
-
-
-class AssetListMenu;
-class FolderListMenu;
-class AssetListFormat;
-
-
+class ClipPopup;
+class ClipPopupInfo;
+class ClipPopupSort;
+class ClipPopupView;
+class ClipPopupViewWindow;
+class ClipPopupCopy;
+class ClipPopupPaste;
+class ClipMatchSize;
+class ClipMatchRate;
+class ClipMatchAll;
+class ClipPopupProjectRemove;
+class ClipPopupDiskRemove;
+class ClipPasteToFolder;
+class ClipListMenu;
+class ClipListFormat;
 
 #endif

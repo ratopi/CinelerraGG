@@ -101,7 +101,7 @@ int LabelGUI::button_press_event()
 
 	if (this->is_event_win() && get_buttonpress() == 3) {
 		if (label)
-			timebar->label_edit->edit_label(label);
+			timebar->label_edit->start(label);
 		result = 1;
 	} else {
 		result = BC_Toggle::button_press_event();

@@ -22,6 +22,30 @@
 #ifndef FILE_INC
 #define FILE_INC
 
+// Normally, these are sourced from the compiler command line
+//   as: c++ -Dvar=value defines
+#ifndef CIN_CONFIG
+#define CIN_CONFIG "~/.bcast5"
+#endif
+#ifndef LOCALE_DIR
+#define LOCALE_DIR "$CIN_LIB/locale"
+#endif
+#ifndef CINDAT_DIR
+#define CINDAT_DIR "$CIN_PATH"
+#endif
+#ifndef CINLIB_DIR
+#define CINLIB_DIR "$CIN_PATH"
+#endif
+#ifndef PLUGIN_DIR
+#define PLUGIN_DIR "$CIN_LIB/plugins"
+#endif
+#ifndef LADSPA_DIR
+#define LADSPA_DIR "$CIN_LIB/ladspa"
+#endif
+#ifndef CIN_BROWSER
+#define CIN_BROWSER "firefox"
+#endif
+
 #include "language.h"
 
 // Return values for open_file

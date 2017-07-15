@@ -80,9 +80,11 @@ void ExportEDLAsset::double_to_CMX3600(double seconds, double frame_rate, char *
 	//sprintf(str, "%02d:%02d:%02d:%02d", hour, minute, second, hundredths);
 }
 
-int ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sourceoutpoint, char *destinpoint, char *destoutpoint, char *reel_name)
+int ExportEDLAsset::edit_to_timecodes(Edit *edit,
+	char *sourceinpoint, char *sourceoutpoint,
+	char *destinpoint, char *destoutpoint,
+	char *reel_name)
 {
-	Asset *asset = edit->asset;
 	Track *track = edit->track;
 	double frame_rate = edit->track->edl->session->frame_rate;
 
@@ -91,30 +93,9 @@ int ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sou
 	double edit_deststart;
 	double edit_destend;
 
-	if (asset)
-	{
-		// reelname should be 8 chars long
-
-		strncpy(reel_name, asset->reel_name, 9);
-		if (strlen(asset->reel_name) > 8)
-		{
-			printf(_("Warning: chopping the reel name to eight characters!\n"));
-		};
-		reel_name[8] = 0;
-		for (int i = strlen(reel_name); i<8; i++)
-			reel_name[i] = ' ';
-
-		edit_sourcestart = (double)asset->tcstart / asset->frame_rate
-			+ track->from_units(edit->startsource);
-		edit_sourceend = (double)asset->tcstart / asset->frame_rate
-			+ track->from_units(edit->startsource + edit->length);
-
-	} else
-	{
-		strcpy(reel_name, "   BL   ");
-		edit_sourcestart = 0;
-		edit_sourceend = track->from_units(edit->length);
-	}
+	strcpy(reel_name, "   BL   ");
+	edit_sourcestart = 0;
+	edit_sourceend = track->from_units(edit->length);
 
 	edit_deststart = track->from_units(edit->startproject);
 	edit_destend = track->from_units(edit->startproject + edit->length);
@@ -201,7 +182,7 @@ void ExportEDLAsset::export_it()
 				last_dissolve = 1;
 			} else
 			{
-							edit_to_timecodes(edit, sourceinpoint, sourceoutpoint, destinpoint, destoutpoint, reel_name);
+				edit_to_timecodes(edit, sourceinpoint, sourceoutpoint, destinpoint, destoutpoint, reel_name);
 				fprintf(fh, "%03d %8s %s %4s %3s", colnum, reel_name, avselect, edittype, cutinfo);
 				fprintf(fh, " %s %s", sourceinpoint, sourceoutpoint);
 				fprintf(fh, " %s %s", destinpoint, destoutpoint);

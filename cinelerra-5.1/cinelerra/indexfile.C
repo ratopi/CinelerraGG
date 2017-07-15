@@ -141,7 +141,6 @@ IndexFile::IndexFile(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->indexable = indexable;
 	redraw_timer = new Timer;
-
 	if(indexable)
 	{
 		indexable->add_user();
@@ -433,6 +432,9 @@ SET_TRACE
 
 // open the source file
 	if(open_source()) return 1;
+	source_channels = indexable->get_audio_channels();
+	source_samplerate = indexable->get_sample_rate();
+	source_length = indexable->get_audio_samples();
 
 SET_TRACE
 

@@ -137,7 +137,7 @@ void MainEditing::to_clip()
 {
 	MWindowGUI *gui = mwindow->gui;
 	gui->unlock_window();
-	mwindow->to_clip(_("main window: "));
+	mwindow->to_clip(mwindow->edl, _("main window: "));
 	gui->lock_window("MainEditing::to_clip");
 }
 

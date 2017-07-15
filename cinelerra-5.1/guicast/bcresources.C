@@ -234,10 +234,11 @@ BC_Resources::BC_Resources()
 	wide_encoding = little_endian ?  "UTF32LE" : "UTF32BE";
 	use_xvideo = 1;
 
-#include "images/file_film_png.h"
 #include "images/file_folder_png.h"
-#include "images/file_sound_png.h"
 #include "images/file_unknown_png.h"
+#include "images/file_film_png.h"
+#include "images/file_sound_png.h"
+#include "images/file_label_png.h"
 #include "images/file_column_png.h"
 	static VFrame* default_type_to_icon[] =
 	{
@@ -245,6 +246,7 @@ BC_Resources::BC_Resources()
 		new VFramePng(file_unknown_png),
 		new VFramePng(file_film_png),
 		new VFramePng(file_sound_png),
+		new VFramePng(file_label_png),
 		new VFramePng(file_column_png)
 	};
 	type_to_icon = default_type_to_icon;

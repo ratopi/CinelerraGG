@@ -466,8 +466,8 @@ public:
 // Synchronize EDL settings with all playback engines depending on current
 // operation.  Doesn't redraw anything.
 	void sync_parameters(int change_type = CHANGE_PARAMS);
+	void save_clip(EDL *new_edl, const char *txt);
 	void to_clip(EDL *edl, const char *txt);
-	void to_clip(const char *txt);
 	int toggle_label(int is_mwindow);
 	void undo_entry(BC_WindowBase *calling_window_gui);
 	void redo_entry(BC_WindowBase *calling_window_gui);

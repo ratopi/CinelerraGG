@@ -1610,6 +1610,15 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 						if(update_filename)
 							set_filename(new_edl->local_session->clip_title);
 					}
+					else
+					if( load_mode == LOADMODE_RESOURCESONLY ) {
+						strcpy(new_edl->local_session->clip_title,
+							filenames->get(i));
+						struct stat st;
+						time_t t = !stat(filenames->get(i),&st) ?
+							st.st_mtime : time(&t);
+						ctime_r(&t, new_edl->local_session->clip_notes);
+					}
 				}
 
 				new_edls.append(new_edl);
@@ -1630,12 +1639,10 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 
-	if(!result) gui->statusbar->default_message();
-
-
-
-
-
+	if(!result) {
+		gui->reset_default_message();
+		gui->default_message();
+	}
 
 
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
@@ -1689,32 +1696,26 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 	}
 
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
-	if(new_assets.size())
+	for(int i = 0; i < new_assets.size(); i++)
 	{
-		for(int i = 0; i < new_assets.size(); i++)
+		Asset *new_asset = new_assets[i];
+
+		File *new_file = 0;
+		int got_it = 0;
+		for(int j = 0; j < new_files.size(); j++)
 		{
-			Asset *new_asset = new_assets[i];
-
-			File *new_file = 0;
-			int got_it = 0;
-			for(int j = 0; j < new_files.size(); j++)
+			new_file = new_files[j];
+			if(!strcmp(new_file->asset->path,
+				new_asset->path))
 			{
-				new_file = new_files[j];
-				if(!strcmp(new_file->asset->path,
-					new_asset->path))
-				{
-					got_it = 1;
-					break;
-				}
+				got_it = 1;
+				break;
 			}
-
-			mainindexes->add_next_asset(got_it ? new_file : 0, new_asset);
-			got_indexes = 1;
-			edl->assets->update(new_asset);
-
 		}
 
-
+		mainindexes->add_next_asset(got_it ? new_file : 0, new_asset);
+		got_indexes = 1;
+		edl->assets->update(new_asset);
 	}
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
@@ -2983,9 +2984,13 @@ void MWindow::rebuild_indices()
 		index_state->index_status = INDEX_NOTTESTED;
 		if( indexable->is_asset ) {
 			Asset *asset = (Asset *)indexable;
-			if( asset->format != FILE_PCM )
+			if( asset->format != FILE_PCM ) {
+				asset->format = FILE_UNKNOWN;
 				asset->reset_audio();
+			}
 			asset->reset_video();
+//			File file; // re-probe the asset
+//			file.open_file(preferences, asset, 1, 0);
 		}
 		mainindexes->add_next_asset(0, indexable);
 	}

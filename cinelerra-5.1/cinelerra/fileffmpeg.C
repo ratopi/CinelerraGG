@@ -240,6 +240,7 @@ int FileFFMPEG::open_file(int rd, int wr)
 				asset->channels = audio_channels;
 				asset->sample_rate = ff->ff_sample_rate(0);
 		        	asset->audio_length = ff->ff_audio_samples(0);
+				strcpy(asset->acodec, ff->ff_audio_format(0));
 			}
 			int video_layers = ff->ff_total_video_layers();
 			if( video_layers > 0 ) {
@@ -253,6 +254,7 @@ int FileFFMPEG::open_file(int rd, int wr)
 				    (asset->video_length = ff->ff_video_frames(0)) < 2 )
 					asset->video_length = asset->video_length < 0 ? 0 : -1;
 				if( !asset->frame_rate ) asset->frame_rate = ff->ff_frame_rate(0);
+				strcpy(asset->vcodec, ff->ff_video_format(0));
 			}
 			IndexState *index_state = asset->index_state;
 			index_state->read_markers(file->preferences->index_directory, asset->path);

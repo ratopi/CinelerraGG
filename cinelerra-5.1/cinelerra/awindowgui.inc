@@ -22,6 +22,29 @@
 #ifndef AWINDOWGUI_INC
 #define AWINDOWGUI_INC
 
+class AssetPicon;
+class AssetVIcon;
+class AWindowRemovePlugin;
+class AWindowRemovePluginGUI;
+class AWindowRemovePlugin;
 class AWindowGUI;
+class AWindowAssets;
+class AWindowDivider;
+class AWindowFolders;
+class AWindowNewFolder;
+class AWindowDeleteFolder;
+class AWindowRenameFolder;
+class AWindowDeleteDisk;
+class AWindowDeleteProject;
+class AWindowInfo;
+class AWindowRedrawIndex;
+class AWindowPaste;
+class AWindowAppend;
+class AWindowView;
+class AddTools;
+class AddPluginItem;
+class AVIconDrawing;
+class AWindowListFormat;
+class AWindowListSort;
 
 #endif

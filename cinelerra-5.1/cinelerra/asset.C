@@ -136,7 +136,6 @@ int Asset::init_values()
 
 	use_header = 1;
 	id = EDL::next_id();
-	reset_timecode();
 
 	return 0;
 }
@@ -173,17 +172,6 @@ void Asset::boundaries()
  	CLAMP(width, 0, 10000);
  	CLAMP(height, 0, 10000);
 //printf("Asset::boundaries %d %d %f\n", __LINE__, sample_rate, frame_rate);
-}
-
-int Asset::reset_timecode()
-{
-	strcpy(reel_name, "cin0000");
-	reel_number = 0;
-	tcstart = 0;
-	tcend = 0;
-	tcformat = 0;
-
-	return 0;
 }
 
 void Asset::copy_from(Asset *asset, int do_index)
@@ -282,12 +270,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 	tiff_cmodel = asset->tiff_cmodel;
 	tiff_compression = asset->tiff_compression;
-
-	strcpy(reel_name, asset->reel_name);
-	reel_number = asset->reel_number;
-	tcstart = asset->tcstart;
-	tcend = asset->tcend;
-	tcformat = asset->tcformat;
 }
 
 int64_t Asset::get_index_offset(int channel)
@@ -377,12 +359,7 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 			interlace_fixmethod     == asset.interlace_fixmethod &&
 			width == asset.width &&
 			height == asset.height &&
-			!strcmp(vcodec, asset.vcodec) &&
-			strcmp(reel_name, asset.reel_name) == 0 &&
-			reel_number == asset.reel_number &&
-			tcstart == asset.tcstart &&
-			tcend == asset.tcend &&
-			tcformat == asset.tcformat);
+			!strcmp(vcodec, asset.vcodec));
 		if(result && format == FILE_FFMPEG)
 			result = !strcmp(ff_video_options, asset.ff_video_options) &&
 				ff_video_bitrate == asset.ff_video_bitrate &&
@@ -507,13 +484,6 @@ int Asset::read_audio(FileXML *file)
 	audio_length = file->tag.get_property("AUDIO_LENGTH", (int64_t)0);
 	acodec[0] = 0;
 	file->tag.get_property("ACODEC", acodec);
-
-	if(!video_data)
-	{
-		tcstart = 0;
-		tcend = audio_length;
-		tcformat = 0;
-	}
 	return 0;
 }
 
@@ -544,12 +514,6 @@ int Asset::read_video(FileXML *file)
 
 	ilacefixmethod_to_xmltext(string, ILACE_FIXMETHOD_NONE);
 	interlace_fixmethod = ilacefixmethod_from_xmltext(file->tag.get_property("INTERLACE_FIXMETHOD",string), ILACE_FIXMETHOD_NONE);
-
-	file->tag.get_property("REEL_NAME", reel_name);
-	reel_number = file->tag.get_property("REEL_NUMBER", reel_number);
-	tcstart = file->tag.get_property("TCSTART", tcstart);
-	tcend = file->tag.get_property("TCEND", tcend);
-	tcformat = file->tag.get_property("TCFORMAT", tcformat);
 
 	return 0;
 }
@@ -706,13 +670,6 @@ int Asset::write_video(FileXML *file)
 	ilacefixmethod_to_xmltext(string, interlace_fixmethod);
 	file->tag.set_property("INTERLACE_FIXMETHOD", string);
 
-
-	file->tag.set_property("REEL_NAME", reel_name);
-	file->tag.set_property("REEL_NUMBER", reel_number);
-	file->tag.set_property("TCSTART", tcstart);
-	file->tag.set_property("TCEND", tcend);
-	file->tag.set_property("TCFORMAT", tcformat);
-
 	file->append_tag();
 	if(video_data)
 		file->tag.set_title("/VIDEO");
@@ -867,12 +824,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
-	GET_DEFAULT("REEL_NAME", reel_name);
-	reel_number = GET_DEFAULT("REEL_NUMBER", reel_number);
-	tcstart = GET_DEFAULT("TCSTART", tcstart);
-	tcend = GET_DEFAULT("TCEND", tcend);
-	tcformat = GET_DEFAULT("TCFORMAT", tcformat);
-
 	boundaries();
 }
 
@@ -992,12 +943,6 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("SINGLE_FRAME", single_frame);
 
 	}
-
-	UPDATE_DEFAULT("REEL_NAME", reel_name);
-	UPDATE_DEFAULT("REEL_NUMBER", reel_number);
-	UPDATE_DEFAULT("TCSTART", tcstart);
-	UPDATE_DEFAULT("TCEND", tcend);
-	UPDATE_DEFAULT("TCFORMAT", tcformat);
 }
 
 
@@ -1031,11 +976,7 @@ int Asset::dump(FILE *fp)
 		" height %d vcodec %4.4s aspect_ratio %f ilace_mode %s\n",
 		video_data, layers, program, frame_rate, width, height,
 		vcodec, aspect_ratio,string);
-	fprintf(fp,"   reel_name %s reel_number %i tcstart %jd tcend %jd tcf %d\n",
-		reel_name, reel_number, tcstart, tcend, tcformat);
 	fprintf(fp,"   video_length %jd repeat %d\n", video_length, single_frame);
-
-
 	return 0;
 }
 
@@ -1113,24 +1054,4 @@ double Asset::total_length_framealigned(double fps)
 
 	return 0;
 }
-
-int Asset::set_timecode(char *tc, int format, int end)
-{
-	int hr, min, sec;
-
-	hr = ((int) tc[0] - 48) * 10 + (int) tc[1] - 48;
-	min = ((int) tc[3] - 48) * 10 + (int) tc[4] - 48;
-	sec = ((int) tc[6] - 48) * 10 + (int) tc[7] - 48;
-
-	// This needs to be modified to handle drop-frame
-
-	if(end)
-		tcend = (int64_t) (((hr * 3600) + (min * 60) + sec) * frame_rate);
-	else
-		tcstart = (int64_t) (((hr * 3600) + (min * 60) + sec) * frame_rate);
-
-	tcformat = format;
-	return 0;
-}
-
 

@@ -24,13 +24,12 @@
 #include "assetpopup.h"
 #include "assets.h"
 #include "awindowgui.h"
-#include "awindowgui.inc"
 #include "awindow.h"
-#include "awindowmenu.h"
 #include "bcsignals.h"
 #include "bchash.h"
 #include "cache.h"
 #include "bccmodels.h"
+#include "clippopup.h"
 #include "cursors.h"
 #include "cwindowgui.h"
 #include "cwindow.h"
@@ -38,11 +37,12 @@
 #include "edlsession.h"
 #include "file.h"
 #include "filesystem.h"
+#include "folderlistmenu.h"
 #include "indexable.h"
 #include "keys.h"
 #include "language.h"
 #include "labels.h"
-#include "labeledit.h"
+#include "labelpopup.h"
 #include "localsession.h"
 #include "mainmenu.h"
 #include "mainsession.h"
@@ -211,8 +211,8 @@ AssetPicon::~AssetPicon()
 {
 	if( vicon )
 		gui->vicon_thread->del_vicon(vicon);
-	if(indexable) indexable->remove_user();
-	if(edl) edl->remove_user();
+	if( indexable ) indexable->remove_user();
+	if( edl ) edl->remove_user();
 	if( icon && !gui->protected_pixmap(icon) ) {
 		delete icon;
 		if( !plugin ) delete icon_vframe;
@@ -242,53 +242,46 @@ void AssetPicon::create_objects()
 
 	pixmap_h = 50 * BC_WindowBase::get_resources()->icon_scale;
 
-	if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
-	if(indexable)
-	{
+	if( debug ) printf("AssetPicon::create_objects %d\n", __LINE__);
+	if( indexable ) {
 		fs.extract_name(name, indexable->path);
 		set_text(name);
 	}
 
-	if(indexable && indexable->is_asset)
-	{
-		if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
+	if( indexable && indexable->is_asset ) {
+		if( debug ) printf("AssetPicon::create_objects %d\n", __LINE__);
 		Asset *asset = (Asset*)indexable;
-		if(asset->video_data)
-		{
-			if(mwindow->preferences->use_thumbnails)
-			{
+		if( asset->video_data ) {
+			if( mwindow->preferences->use_thumbnails ) {
 				gui->unlock_window();
-				if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
+				if( debug ) printf("AssetPicon::create_objects %d\n", __LINE__);
 				File *file = mwindow->video_cache->check_out(asset,
 					mwindow->edl,
 					1);
-				if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
+				if( debug ) printf("AssetPicon::create_objects %d\n", __LINE__);
 
-				if(file)
-				{
+				if( file ) {
 					int height = asset->height > 0 ? asset->height : 1;
 					pixmap_w = pixmap_h * asset->width / height;
 
 					file->set_layer(0);
 					file->set_video_position(0, 0);
 
-					if(gui->temp_picon &&
+					if( gui->temp_picon &&
 						(gui->temp_picon->get_w() != asset->width ||
-						gui->temp_picon->get_h() != asset->height))
-					{
+						gui->temp_picon->get_h() != asset->height) ) {
 						delete gui->temp_picon;
 						gui->temp_picon = 0;
 					}
 
-					if(!gui->temp_picon)
-					{
+					if( !gui->temp_picon ) {
 						gui->temp_picon = new VFrame(0, -1,
 							asset->width, asset->height,
 							BC_RGB888, -1);
 					}
 
 					file->read_frame(gui->temp_picon);
-					if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
+					if( debug ) printf("AssetPicon::create_objects %d\n", __LINE__);
 					mwindow->video_cache->check_in(asset);
 
 					gui->lock_window("AssetPicon::create_objects 1");
@@ -308,49 +301,43 @@ void AssetPicon::create_objects()
 					int64_t length = secs * gui->vicon_thread->refresh_rate;
 					vicon = new AssetVIcon(this, pixmap_w, pixmap_h, framerate, length);
 					gui->vicon_thread->add_vicon(vicon);
-					if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
+					if( debug ) printf("AssetPicon::create_objects %d\n", __LINE__);
 
 				}
-				else
-				{
+				else {
 					gui->lock_window("AssetPicon::create_objects 2");
 					icon = gui->video_icon;
 					icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];
 				}
 			}
-			else
-			{
+			else {
 				icon = gui->video_icon;
 				icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];
 			}
 		}
 		else
-		if(asset->audio_data)
-		{
+		if( asset->audio_data ) {
 			icon = gui->audio_icon;
 			icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_SOUND];
 		}
 //printf("AssetPicon::create_objects 2\n");
 
-		if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
+		if( debug ) printf("AssetPicon::create_objects %d\n", __LINE__);
 	}
 	else
-	if(indexable && !indexable->is_asset)
-	{
+	if( indexable && !indexable->is_asset ) {
 		icon = gui->video_icon;
 		icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];
 	}
 	else
-	if(edl)
-	{
+	if( edl ) {
 //printf("AssetPicon::create_objects 4 %s\n", edl->local_session->clip_title);
 		set_text(strcpy(name, edl->local_session->clip_title));
 		icon = gui->clip_icon;
 		icon_vframe = mwindow->theme->get_image("clip_icon");
 	}
 	else
-	if(plugin)
-	{
+	if( plugin ) {
 		strcpy(name, _(plugin->title));
 		set_text(name);
 		icon_vframe = plugin->get_picon();
@@ -390,7 +377,7 @@ void AssetPicon::create_objects()
 		}
 	}
 	else
-	if(label) {
+	if( label ) {
 		Units::totext(name,
 			      label->position,
 			      mwindow->edl->session->time_format,
@@ -398,8 +385,8 @@ void AssetPicon::create_objects()
 			      mwindow->edl->session->frame_rate,
 			      mwindow->edl->session->frames_per_foot);
 		set_text(name);
-		icon = gui->file_icon;
-		icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_UNKNOWN];
+		icon = gui->label_icon;
+		icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_LABEL];
 		set_icon(icon);
 		set_icon_vframe(icon_vframe);
 	}
@@ -410,7 +397,7 @@ void AssetPicon::create_objects()
 	set_icon(icon);
 	set_icon_vframe(icon_vframe);
 
-	if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
+	if( debug ) printf("AssetPicon::create_objects %d\n", __LINE__);
 }
 
 
@@ -436,6 +423,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	video_icon = 0;
 	folder_icon = 0;
 	clip_icon = 0;
+	label_icon = 0;
 	atransition_icon = 0;  atransition_vframe = 0;
 	vtransition_icon = 0;  vtransition_vframe = 0;
 	aeffect_icon = 0;      aeffect_vframe = 0;
@@ -447,6 +435,8 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	newfolder_thread = 0;
 	asset_menu = 0;
 	assetlist_menu = 0;
+	cliplist_menu = 0;
+	labellist_menu = 0;
 	folderlist_menu = 0;
 	temp_picon = 0;
 	allow_iconlisting = 1;
@@ -472,6 +462,7 @@ AWindowGUI::~AWindowGUI()
 	delete video_icon;
 	delete folder_icon;
 	delete clip_icon;
+	delete label_icon;
 	delete atransition_icon;
 	delete vtransition_icon;
 	delete aeffect_icon;
@@ -484,10 +475,13 @@ AWindowGUI::~AWindowGUI()
 	delete veffect_icon;
 	delete newfolder_thread;
 	delete asset_menu;
+	delete clip_menu;
 	delete label_menu;
 	delete assetlist_menu;
+	delete cliplist_menu;
+	delete labellist_menu;
 	delete folderlist_menu;
-	if(temp_picon) delete temp_picon;
+	if( temp_picon ) delete temp_picon;
 	delete remove_plugin;
 }
 
@@ -498,6 +492,7 @@ bool AWindowGUI::protected_pixmap(BC_Pixmap *icon)
 		icon == audio_icon ||
 		icon == video_icon ||
 		icon == clip_icon ||
+		icon == label_icon ||
 		icon == vtransition_icon ||
 		icon == atransition_icon ||
 		icon == veffect_icon ||
@@ -534,6 +529,10 @@ SET_TRACE
 
 	video_icon = new BC_Pixmap(this,
 		BC_WindowBase::get_resources()->type_to_icon[ICON_FILM],
+		PIXMAP_ALPHA);
+
+	label_icon = new BC_Pixmap(this,
+		BC_WindowBase::get_resources()->type_to_icon[ICON_LABEL],
 		PIXMAP_ALPHA);
 
 SET_TRACE
@@ -626,24 +625,24 @@ SET_TRACE
 
 	add_subwindow(asset_menu = new AssetPopup(mwindow, this));
 	asset_menu->create_objects();
-
+	add_subwindow(clip_menu = new ClipPopup(mwindow, this));
+	clip_menu->create_objects();
 	add_subwindow(label_menu = new LabelPopup(mwindow, this));
 	label_menu->create_objects();
 
-SET_TRACE
-
 	add_subwindow(assetlist_menu = new AssetListMenu(mwindow, this));
-
-SET_TRACE
 	assetlist_menu->create_objects();
-
+	add_subwindow(cliplist_menu = new ClipListMenu(mwindow, this));
+	cliplist_menu->create_objects();
+	add_subwindow(labellist_menu = new LabelListMenu(mwindow, this));
+	labellist_menu->create_objects();
 SET_TRACE
 
 	add_subwindow(folderlist_menu = new FolderListMenu(mwindow, this));
 	folderlist_menu->create_objects();
+SET_TRACE
 //printf("AWindowGUI::create_objects 2\n");
 
-SET_TRACE
 	create_custom_xatoms();
 	unlock_window();
 }
@@ -860,15 +859,15 @@ BC_Window* AWindowRemovePlugin::new_gui()
 
 int AWindowGUI::keypress_event()
 {
-	switch(get_keypress()) {
+	switch( get_keypress() ) {
 	case 'w': case 'W':
-		if(ctrl_down()) {
+		if( ctrl_down() ) {
 			close_event();
 			return 1;
 		}
 		break;
 	case DELETE:
-		if(shift_down()) {
+		if( shift_down() ) {
 			PluginServer* plugin = selected_plugin();
 			if( !plugin ) break;
 			remove_plugin = new AWindowRemovePlugin(awindow, plugin);
@@ -913,33 +912,28 @@ void AWindowGUI::update_folder_list()
 {
 	stop_vicon_drawing();
 //printf("AWindowGUI::update_folder_list 1\n");
-	for(int i = 0; i < folders.total; i++)
-	{
+	for( int i = 0; i < folders.total; i++ ) {
 		AssetPicon *picon = (AssetPicon*)folders.values[i];
 		picon->in_use--;
 	}
 //printf("AWindowGUI::update_folder_list 1\n");
 
 // Search assets for folders
-	for(int i = 0; i < mwindow->edl->folders.total; i++)
-	{
+	for( int i = 0; i < mwindow->edl->folders.total; i++ ) {
 		const char *folder = mwindow->edl->folders.values[i];
 		int exists = 0;
 //printf("AWindowGUI::update_folder_list 1.1\n");
 
-		for(int j = 0; j < folders.total; j++)
-		{
+		for( int j = 0; j < folders.total; j++ ) {
 			AssetPicon *picon = (AssetPicon*)folders.values[j];
-			if(!strcasecmp(picon->get_text(), folder))
-			{
+			if( !strcasecmp(picon->get_text(), folder) ) {
 				exists = 1;
 				picon->in_use = 1;
 				break;
 			}
 		}
 
-		if(!exists)
-		{
+		if( !exists ) {
 			int aw_folder = folder_number(folder);
 			AssetPicon *picon = aw_folder >= 0 ?
 				new AssetPicon(mwindow, this, aw_folder) :
@@ -950,20 +944,18 @@ void AWindowGUI::update_folder_list()
 //printf("AWindowGUI::update_folder_list 1.3\n");
 	}
 //printf("AWindowGUI::update_folder_list 1\n");
-//for(int i = 0; i < folders.total; i++)
+//for( int i = 0; i < folders.total; i++ )
 //	printf("AWindowGUI::update_folder_list %s\n", folders.values[i]->get_text());
 
 // Delete excess
-	for(int i = folders.total - 1; i >= 0; i--)
-	{
+	for( int i = folders.total - 1; i >= 0; i-- ) {
 		AssetPicon *picon = (AssetPicon*)folders.values[i];
-		if(!picon->in_use && !picon->persistent)
-		{
+		if( !picon->in_use && !picon->persistent ) {
 			delete picon;
 			folders.remove_number(i);
 		}
 	}
-//for(int i = 0; i < folders.total; i++)
+//for( int i = 0; i < folders.total; i++ )
 //	printf("AWindowGUI::update_folder_list %s\n", folders.values[i]->get_text());
 //printf("AWindowGUI::update_folder_list 2\n");
 	start_vicon_drawing();
@@ -977,10 +969,10 @@ void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
 	mwindow->search_plugindb(do_audio, do_video, is_realtime, is_transition,
 			0, plugin_list);
 
-	for(int i = 0; i < plugin_list.total; i++) {
+	for( int i = 0; i < plugin_list.total; i++ ) {
 		PluginServer *server = plugin_list.values[i];
 		int visible = plugin_visibility & (1<<server->dir_idx);
-		if(!visible) continue;
+		if( !visible ) continue;
 // Create new listitem
 		AssetPicon *picon = new AssetPicon(mwindow, this, server);
 		picon->create_objects();
@@ -991,7 +983,7 @@ void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
 void AWindowGUI::create_label_folder()
 {
 	Label *current;
-	for(current = mwindow->edl->labels->first; current; current = NEXT) {
+	for( current = mwindow->edl->labels->first; current; current = NEXT ) {
 		AssetPicon *picon = new AssetPicon(mwindow, this, current);
 		picon->create_objects();
 		labellist.append(picon);
@@ -1002,8 +994,7 @@ void AWindowGUI::create_label_folder()
 void AWindowGUI::update_asset_list()
 {
 //printf("AWindowGUI::update_asset_list 1\n");
-	for(int i = 0; i < assets.total; i++)
-	{
+	for( int i = 0; i < assets.total; i++ ) {
 		AssetPicon *picon = (AssetPicon*)assets.values[i];
 		picon->in_use--;
 	}
@@ -1016,17 +1007,14 @@ void AWindowGUI::update_asset_list()
 
 
 // Synchronize EDL clips
-	for(int i = 0; i < mwindow->edl->clips.total; i++)
-	{
+	for( int i = 0; i < mwindow->edl->clips.total; i++ ) {
 		int exists = 0;
 
 // Look for clip in existing listitems
-		for(int j = 0; j < assets.total && !exists; j++)
-		{
+		for( int j = 0; j < assets.total && !exists; j++ ) {
 			AssetPicon *picon = (AssetPicon*)assets.values[j];
 
-			if(picon->id == mwindow->edl->clips.values[i]->id)
-			{
+			if( picon->id == mwindow->edl->clips.values[i]->id ) {
 				picon->edl = mwindow->edl->clips.values[i];
 				picon->set_text(mwindow->edl->clips.values[i]->local_session->clip_title);
 				exists = 1;
@@ -1035,8 +1023,7 @@ void AWindowGUI::update_asset_list()
 		}
 
 // Create new listitem
-		if(!exists)
-		{
+		if( !exists ) {
 			AssetPicon *picon = new AssetPicon(mwindow,
 				this,
 				mwindow->edl->clips.values[i]);
@@ -1053,19 +1040,16 @@ void AWindowGUI::update_asset_list()
 
 
 // Synchronize EDL assets
-	for(Asset *current = mwindow->edl->assets->first;
+	for( Asset *current = mwindow->edl->assets->first;
 		current;
-		current = NEXT)
-	{
+		current = NEXT ) {
 		int exists = 0;
 
 // Look for asset in existing listitems
-		for(int j = 0; j < assets.total && !exists; j++)
-		{
+		for( int j = 0; j < assets.total && !exists; j++ ) {
 			AssetPicon *picon = (AssetPicon*)assets.values[j];
 
-			if(picon->id == current->id)
-			{
+			if( picon->id == current->id ) {
 				picon->indexable = current;
 				exists = 1;
 				picon->in_use = 1;
@@ -1074,8 +1058,7 @@ void AWindowGUI::update_asset_list()
 		}
 
 // Create new listitem
-		if(!exists)
-		{
+		if( !exists ) {
 //printf("AWindowGUI::update_asset_list %d\n", __LINE__);
 			AssetPicon *picon = new AssetPicon(mwindow, this, current);
 //printf("AWindowGUI::update_asset_list %d\n", __LINE__);
@@ -1091,18 +1074,15 @@ void AWindowGUI::update_asset_list()
 
 
 // Synchronize nested EDLs
-	for(int i = 0; i < mwindow->edl->nested_edls->size(); i++)
-	{
+	for( int i = 0; i < mwindow->edl->nested_edls->size(); i++ ) {
 		int exists = 0;
 		Indexable *indexable = mwindow->edl->nested_edls->get(i);
 
 // Look for asset in existing listitems
-		for(int j = 0; j < assets.total && !exists; j++)
-		{
+		for( int j = 0; j < assets.total && !exists; j++ ) {
 			AssetPicon *picon = (AssetPicon*)assets.values[j];
 
-			if(picon->id == indexable->id)
-			{
+			if( picon->id == indexable->id ) {
 				picon->indexable = indexable;
 				exists = 1;
 				picon->in_use = 1;
@@ -1111,8 +1091,7 @@ void AWindowGUI::update_asset_list()
 		}
 
 // Create new listitem
-		if(!exists)
-		{
+		if( !exists ) {
 			AssetPicon *picon = new AssetPicon(mwindow,
 				this,
 				indexable);
@@ -1130,12 +1109,10 @@ void AWindowGUI::update_asset_list()
 
 
 //printf("AWindowGUI::update_asset_list %d\n", __LINE__);
-	for(int i = assets.size() - 1; i >= 0; i--)
-	{
+	for( int i = assets.size() - 1; i >= 0; i-- ) {
 		AssetPicon *picon = (AssetPicon*)assets.get(i);
 //printf("AWindowGUI::update_asset_list %s %d\n", picon->asset->path, picon->in_use);
-		if(!picon->in_use)
-		{
+		if( !picon->in_use ) {
 			delete picon;
 			assets.remove_number(i);
 		}
@@ -1147,7 +1124,7 @@ void AWindowGUI::update_picon(Indexable *indexable)
 {
 //printf("AWindowGUI::update_asset_list 1\n");
 	VIcon *vicon = 0;
-	for(int i = 0; i < assets.total; i++) {
+	for( int i = 0; i < assets.total; i++ ) {
 		AssetPicon *picon = (AssetPicon*)assets.values[i];
 		if( picon->indexable == indexable ||
 		    picon->edl == (EDL *)indexable ) {
@@ -1184,7 +1161,7 @@ void AWindowGUI::sort_assets()
 		sort_picons(&vtransitions);
 		break;
 	case AW_LABEL_FOLDER:
-		// Labels should ALWAYS be sorted by time
+		sort_picons(&labellist);
 		break;
 	default:
 		sort_picons(&assets);
@@ -1201,10 +1178,10 @@ void AWindowGUI::collect_assets()
 	while(1)
 	{
 		AssetPicon *result = (AssetPicon*)asset_list->get_selection(0, i++);
-		if(!result) break;
+		if( !result ) break;
 
-		if(result->indexable) mwindow->session->drag_assets->append(result->indexable);
-		if(result->edl) mwindow->session->drag_clips->append(result->edl);
+		if( result->indexable ) mwindow->session->drag_assets->append(result->indexable);
+		if( result->edl ) mwindow->session->drag_clips->append(result->edl);
 	}
 }
 
@@ -1216,9 +1193,8 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 	dst[1].remove_all_objects();
 
 // Create new pointers
-//if(folder) printf("AWindowGUI::copy_picons 1 %s\n", folder);
-	for(int i = 0; i < src->total; i++)
-	{
+//if( folder ) printf("AWindowGUI::copy_picons 1 %s\n", folder);
+	for( int i = 0; i < src->total; i++ ) {
 		AssetPicon *picon = (AssetPicon*)src->values[i];
 //printf("AWindowGUI::copy_picons 2 %s\n", picon->asset->folder);
 		if( folder < 0 ||
@@ -1226,10 +1202,10 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 		    (picon->edl && picon->edl->local_session->awindow_folder == folder) ) {
 			BC_ListBoxItem *item2, *item1;
 			dst[0].append(item1 = picon);
-			if(picon->edl)
+			if( picon->edl )
 				dst[1].append(item2 = new BC_ListBoxItem(picon->edl->local_session->clip_notes));
 			else
-			if(picon->label && picon->label->textstr)
+			if( picon->label && picon->label->textstr )
 				dst[1].append(item2 = new BC_ListBoxItem(picon->label->textstr));
 			else
 				dst[1].append(item2 = new BC_ListBoxItem(""));
@@ -1247,16 +1223,14 @@ void AWindowGUI::sort_picons(ArrayList<BC_ListBoxItem*> *src)
 	while(!done)
 	{
 		done = 1;
-		for(int i = 0; i < src->total - 1; i++)
-		{
+		for( int i = 0; i < src->total - 1; i++ ) {
 			BC_ListBoxItem *item1 = src->values[i];
 			BC_ListBoxItem *item2 = src->values[i + 1];
 			item1->set_autoplace_icon(1);
 			item2->set_autoplace_icon(1);
 			item1->set_autoplace_text(1);
 			item2->set_autoplace_text(1);
-			if(strcmp(item1->get_text(), item2->get_text()) > 0)
-			{
+			if( strcmp(item1->get_text(), item2->get_text()) > 0 ) {
 				src->values[i + 1] = item1;
 				src->values[i] = item2;
 				done = 0;
@@ -1268,7 +1242,7 @@ void AWindowGUI::sort_picons(ArrayList<BC_ListBoxItem*> *src)
 
 void AWindowGUI::filter_displayed_assets()
 {
-	allow_iconlisting = 1;
+	//allow_iconlisting = 1;
 	asset_titles[0] = _("Title");
 	asset_titles[1] = _("Comments");
 
@@ -1289,7 +1263,7 @@ void AWindowGUI::filter_displayed_assets()
 		copy_picons(displayed_assets, &labellist, AW_NO_FOLDER);
 		asset_titles[0] = _("Time Stamps");
 		asset_titles[1] = _("Title");
-		allow_iconlisting = 0;
+		//allow_iconlisting = 0;
 		break;
 	default:
 		copy_picons(displayed_assets, &assets, mwindow->edl->session->awindow_folder);
@@ -1297,7 +1271,7 @@ void AWindowGUI::filter_displayed_assets()
 	}
 
 	// Ensure the current folder icon is highlighted
-	for(int i = 0; i < folders.total; i++)
+	for( int i = 0; i < folders.total; i++ )
 		folders.values[i]->set_selected(0);
 
 	folders.values[mwindow->edl->session->awindow_folder]->set_selected(1);
@@ -1315,33 +1289,27 @@ void AWindowGUI::update_assets()
 //printf("AWindowGUI::update_assets 3\n");
 	filter_displayed_assets();
 
-//for(int i = 0; i < folders.total; i++)
+//for( int i = 0; i < folders.total; i++ )
 //printf("AWindowGUI::update_assets 4\n");
 //	printf("AWindowGUI::update_assets %s\n", folders.values[i]->get_text());
-	if(mwindow->edl->session->folderlist_format != folder_list->get_format())
+	if( mwindow->edl->session->folderlist_format != folder_list->get_format() )
 		folder_list->update_format(mwindow->edl->session->folderlist_format, 0);
-	folder_list->update(&folders,
-		0,
-		0,
-		1,
+	folder_list->update(&folders, 0, 0, 1,
 		folder_list->get_xposition(),
 		folder_list->get_yposition(),
 		-1);
 //printf("AWindowGUI::update_assets 5\n");
 
-	if(mwindow->edl->session->assetlist_format != asset_list->get_format())
+	if( mwindow->edl->session->assetlist_format != asset_list->get_format() )
 		asset_list->update_format(mwindow->edl->session->assetlist_format, 0);
 
 
 //printf("AWindowGUI::update_assets 6 %d\n", displayed_assets[0].total);
-	asset_list->update(displayed_assets,
-		asset_titles,
-		mwindow->edl->session->asset_columns,
-		ASSET_COLUMNS,
+	asset_list->update(displayed_assets, asset_titles,
+		mwindow->edl->session->asset_columns, ASSET_COLUMNS,
 		asset_list->get_xposition(),
 		asset_list->get_yposition(),
-		-1,
-		0);
+		-1, 0);
 	asset_list->center_selection();
 //printf("AWindowGUI::update_assets 7\n");
 
@@ -1364,7 +1332,7 @@ void AWindowGUI::update_effects()
 
 int AWindowGUI::folder_number(const char *name)
 {
-	for(int i = 0; i < AWINDOW_FOLDERS; i++) {
+	for( int i = 0; i < AWINDOW_FOLDERS; i++ ) {
 		if( !strcasecmp(name, folder_names[i]) ) return i;
 	}
 	return AW_NO_FOLDER;
@@ -1372,7 +1340,7 @@ int AWindowGUI::folder_number(const char *name)
 
 int AWindowGUI::drag_motion()
 {
-	if(get_hidden()) return 0;
+	if( get_hidden() ) return 0;
 
 	int result = 0;
 	return result;
@@ -1380,7 +1348,7 @@ int AWindowGUI::drag_motion()
 
 int AWindowGUI::drag_stop()
 {
-	if(get_hidden()) return 0;
+	if( get_hidden() ) return 0;
 
 	return 0;
 }
@@ -1422,8 +1390,7 @@ AWindowDivider::~AWindowDivider()
 
 int AWindowDivider::button_press_event()
 {
-	if(is_event_win() && cursor_inside())
-	{
+	if( is_event_win() && cursor_inside() ) {
 		mwindow->session->current_operation = DRAG_PARTITION;
 		return 1;
 	}
@@ -1432,8 +1399,7 @@ int AWindowDivider::button_press_event()
 
 int AWindowDivider::cursor_motion_event()
 {
-	if(mwindow->session->current_operation == DRAG_PARTITION)
-	{
+	if( mwindow->session->current_operation == DRAG_PARTITION ) {
 		int wmin = 25;
 		int wmax = mwindow->session->awindow_w - mwindow->theme->adivider_w - wmin;
 		int fw = gui->get_relative_cursor_x();
@@ -1449,8 +1415,7 @@ int AWindowDivider::cursor_motion_event()
 
 int AWindowDivider::button_release_event()
 {
-	if(mwindow->session->current_operation == DRAG_PARTITION)
-	{
+	if( mwindow->session->current_operation == DRAG_PARTITION ) {
 		mwindow->session->current_operation = NO_OPERATION;
 		return 1;
 	}
@@ -1491,12 +1456,10 @@ AWindowFolders::~AWindowFolders()
 int AWindowFolders::selection_changed()
 {
 	AssetPicon *picon = (AssetPicon*)get_selection(0, 0);
-	if(picon)
-	{
+	if( picon ) {
 		gui->stop_vicon_drawing();
 
-		if(get_button_down() && get_buttonpress() == 3)
-		{
+		if( get_button_down() && get_buttonpress() == 3 ) {
 			gui->folderlist_menu->update_titles();
 			gui->folderlist_menu->activate_menu();
 		}
@@ -1517,10 +1480,8 @@ int AWindowFolders::button_press_event()
 
 	result = BC_ListBox::button_press_event();
 
-	if(!result)
-	{
-		if(get_buttonpress() == 3 && is_event_win() && cursor_inside())
-		{
+	if( !result ) {
+		if( get_buttonpress() == 3 && is_event_win() && cursor_inside() ) {
 			gui->folderlist_menu->update_titles();
 			gui->folderlist_menu->activate_menu();
 			result = 1;
@@ -1538,10 +1499,7 @@ int AWindowFolders::button_press_event()
 
 
 AWindowAssets::AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h)
- : BC_ListBox(x,
- 		y,
-		w,
-		h,
+ : BC_ListBox(x, y, w, h,
 		(mwindow->edl->session->assetlist_format == ASSETS_ICONS && gui->allow_iconlisting ) ?
 			LISTBOX_ICONS : LISTBOX_TEXT,
 		&gui->assets,  	  // Each column has an ArrayList of BC_ListBoxItems.
@@ -1569,11 +1527,23 @@ int AWindowAssets::button_press_event()
 
 	result = BC_ListBox::button_press_event();
 
-	if(!result && get_buttonpress() == 3 && is_event_win() && cursor_inside())
-	{
+	if( !result && get_buttonpress() == 3 && is_event_win() && cursor_inside() ) {
 		BC_ListBox::deactivate_selection();
-		gui->assetlist_menu->update_titles();
-		gui->assetlist_menu->activate_menu();
+		int folder = mwindow->edl->session->awindow_folder;
+		switch( folder ) {
+		case AW_LABEL_FOLDER:
+			gui->labellist_menu->update();
+			gui->labellist_menu->activate_menu();
+			break;
+		case AW_CLIP_FOLDER:
+			gui->cliplist_menu->update();
+			gui->cliplist_menu->activate_menu();
+			break;
+		default:
+			gui->assetlist_menu->update_titles();
+			gui->assetlist_menu->activate_menu();
+			break;
+		}
 		result = 1;
 	}
 
@@ -1610,8 +1580,11 @@ int AWindowAssets::handle_event()
 int AWindowAssets::selection_changed()
 {
 // Show popup window
-	if( get_button_down() && get_buttonpress() == 3 && get_selection(0, 0) ) {
-		switch( mwindow->edl->session->awindow_folder ) {
+	AssetPicon *item;
+	if( get_button_down() && get_buttonpress() == 3 &&
+	    (item = (AssetPicon*)get_selection(0, 0)) ) {
+		int folder = mwindow->edl->session->awindow_folder;
+		switch( folder ) {
 		case AW_AEFFECT_FOLDER:
 		case AW_VEFFECT_FOLDER:
 		case AW_ATRANSITION_FOLDER:
@@ -1620,27 +1593,29 @@ int AWindowAssets::selection_changed()
 			gui->assetlist_menu->activate_menu();
 			break;
 		case AW_LABEL_FOLDER:
-			if(((AssetPicon*)get_selection(0, 0))->label)
-				gui->label_menu->activate_menu();
+			if( !item->label ) break;
+			gui->label_menu->activate_menu();
+			break;
+		case AW_CLIP_FOLDER:
+			if( !item->indexable && !item->edl ) break;
+			gui->clip_menu->update();
+			gui->clip_menu->activate_menu();
 			break;
 		default:
-			if(((AssetPicon*)get_selection(0, 0))->indexable)
-				gui->asset_menu->update();
-			else
-			if(((AssetPicon*)get_selection(0, 0))->edl)
-				gui->asset_menu->update();
-
+			if( !item->indexable && !item->edl ) break;
+			gui->asset_menu->update();
 			gui->asset_menu->activate_menu();
+			break;
 		}
 
 		BC_ListBox::deactivate_selection();
 		return 1;
 	}
-	else if( get_button_down() && get_buttonpress() == 1 && get_selection(0, 0) ) {
+	else if( get_button_down() && get_buttonpress() == 1 &&
+		 (item = (AssetPicon*)get_selection(0, 0)) ) {
 		VIcon *vicon = 0;
 		if( !gui->vicon_thread->viewing ) {
-			AssetPicon *picon = (AssetPicon*)get_selection(0, 0);
-			vicon = picon->vicon;
+			vicon = item->vicon;
 		}
 		gui->vicon_thread->set_view_popup(vicon);
 
@@ -1692,21 +1667,19 @@ int AWindowAssets::drag_start_event()
 			break;
 		}
 
-		if(collect_pluginservers)
-		{
+		if( collect_pluginservers ) {
 			int i = 0;
 			mwindow->session->drag_pluginservers->remove_all();
 			while(1)
 			{
 				AssetPicon *result = (AssetPicon*)get_selection(0, i++);
-				if(!result) break;
+				if( !result ) break;
 
 				mwindow->session->drag_pluginservers->append(result->plugin);
 			}
 		}
 
-		if(collect_assets)
-		{
+		if( collect_assets ) {
 			gui->collect_assets();
 		}
 
@@ -1724,8 +1697,7 @@ int AWindowAssets::drag_motion_event()
 	mwindow->gui->drag_motion();
 	mwindow->gui->unlock_window();
 
-	for(int i = 0; i < mwindow->vwindows.size(); i++)
-	{
+	for( int i = 0; i < mwindow->vwindows.size(); i++ ) {
 		VWindow *vwindow = mwindow->vwindows.get(i);
 		if( !vwindow->is_running() ) continue;
 		vwindow->gui->lock_window("AWindowAssets::drag_motion_event");
@@ -1749,17 +1721,14 @@ int AWindowAssets::drag_stop_event()
 
 	unlock_window();
 
-	if(!result)
-	{
+	if( !result ) {
 		mwindow->gui->lock_window("AWindowAssets::drag_stop_event");
 		result = mwindow->gui->drag_stop();
 		mwindow->gui->unlock_window();
 	}
 
-	if(!result)
-	{
-		for(int i = 0; !result && i < mwindow->vwindows.size(); i++)
-		{
+	if( !result ) {
+		for( int i = 0; !result && i < mwindow->vwindows.size(); i++ ) {
 			VWindow *vwindow = mwindow->vwindows.get(i);
 			if( !vwindow ) continue;
 			if( !vwindow->is_running() ) continue;
@@ -1773,8 +1742,7 @@ int AWindowAssets::drag_stop_event()
 		}
 	}
 
-	if(!result)
-	{
+	if( !result ) {
 		mwindow->cwindow->gui->lock_window("AWindowAssets::drag_stop_event");
 		result = mwindow->cwindow->gui->drag_stop();
 		mwindow->cwindow->gui->unlock_window();
@@ -1782,7 +1750,7 @@ int AWindowAssets::drag_stop_event()
 
 	lock_window("AWindowAssets::drag_stop_event");
 
-	if(result) get_drag_popup()->set_animation(0);
+	if( result ) get_drag_popup()->set_animation(0);
 
 	BC_ListBox::drag_stop_event();
 	mwindow->session->current_operation = ::NO_OPERATION; // since NO_OPERATION is also defined in listbox, we have to reach for global scope...
@@ -1843,8 +1811,7 @@ AWindowDeleteFolder::AWindowDeleteFolder(MWindow *mwindow, AWindowGUI *gui, int 
 
 int AWindowDeleteFolder::handle_event()
 {
-	if(gui->folder_list->get_selection(0, 0))
-	{
+	if( gui->folder_list->get_selection(0, 0) ) {
 		BC_ListBoxItem *folder = gui->folder_list->get_selection(0, 0);
 		mwindow->delete_folder(folder->get_text());
 	}
@@ -1956,63 +1923,6 @@ int AWindowView::handle_event()
 	return 1;
 }
 
-
-LabelPopup::LabelPopup(MWindow *mwindow, AWindowGUI *gui)
- : BC_PopupMenu(0,
-		0,
-		0,
-		"",
-		0)
-{
-	this->mwindow = mwindow;
-	this->gui = gui;
-}
-
-LabelPopup::~LabelPopup()
-{
-}
-
-void LabelPopup::create_objects()
-{
-	add_item(editlabel = new LabelPopupEdit(mwindow, this));
-}
-
-int LabelPopup::update()
-{
-	gui->collect_assets();
-	return 0;
-}
-
-
-
-LabelPopupEdit::LabelPopupEdit(MWindow *mwindow, LabelPopup *popup)
- : BC_MenuItem(_("Edit..."))
-{
-	this->mwindow = mwindow;
-	this->popup = popup;
-}
-
-LabelPopupEdit::~LabelPopupEdit()
-{
-}
-
-int LabelPopupEdit::handle_event()
-{
-	int i = 0;
-	while(1)
-	{
-		AssetPicon *result = (AssetPicon*)mwindow->awindow->gui->asset_list->get_selection(0, i++);
-		if(!result) break;
-
-		if(result->label) {
-			mwindow->awindow->gui->awindow->label_edit->edit_label(result->label);
-			break;
-		}
-	}
-
-	return 1;
-}
-
 AddTools::AddTools(MWindow *mwindow, AWindowGUI *gui, int x, int y, const char *title)
  : BC_PopupMenu(x, y, BC_Title::calculate_w(gui, title, MEDIUMFONT)+8, title, -1, 0, 4)
 {
@@ -2109,4 +2019,55 @@ int AVIconDrawing::handle_event()
 		agui->stop_vicon_drawing();
 	return 1;
 }
+
+
+AWindowListFormat::AWindowListFormat(MWindow *mwindow)
+ : BC_MenuItem("")
+{
+	this->mwindow = mwindow;
+}
+
+int AWindowListFormat::handle_event()
+{
+	AWindowGUI *gui = mwindow->awindow->gui;
+	gui->stop_vicon_drawing();
+
+	EDLSession *session = mwindow->edl->session;
+	switch( session->assetlist_format ) {
+	case ASSETS_TEXT:
+		session->assetlist_format = ASSETS_ICONS;
+		break;
+	case ASSETS_ICONS:
+		session->assetlist_format = ASSETS_TEXT;
+		break;
+	}
+
+	gui->asset_list->update_format(session->assetlist_format, 1);
+	if( !mwindow->awindow->gui->allow_iconlisting ) {
+		mwindow->edl->session->assetlist_format = ASSETS_TEXT;
+	}
+
+	gui->start_vicon_drawing();
+	return 1;
+}
+
+void AWindowListFormat::update()
+{
+        set_text(mwindow->edl->session->assetlist_format == ASSETS_TEXT ?
+                (char*)_("Display icons") : (char*)_("Display text"));
+}
+
+AWindowListSort::AWindowListSort(MWindow *mwindow)
+ : BC_MenuItem(_("Sort items"))
+{
+	this->mwindow = mwindow;
+}
+
+int AWindowListSort::handle_event()
+{
+	AWindowGUI *gui = mwindow->awindow->gui;
+	gui->sort_assets();
+	return 1;
+}
+
 

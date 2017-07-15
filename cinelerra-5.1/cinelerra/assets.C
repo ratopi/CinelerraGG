@@ -65,8 +65,7 @@ int Assets::load(FileXML *file, uint32_t load_flags)
 				{
 					Asset *new_asset = new Asset(path);
 					new_asset->read(file);
-					Asset *asset = update(new_asset);
-					asset->copy_from(new_asset,1);
+					update(new_asset);
 					new_asset->Garbage::remove_user();
 				}
 			}
@@ -106,14 +105,6 @@ void Assets::copy_from(Assets *assets)
 		new_asset->copy_from(current, 1);
 	}
 }
-
-Assets& Assets::operator=(Assets &assets)
-{
-printf("Assets::operator= 1\n");
-	copy_from(&assets);
-	return *this;
-}
-
 
 void Assets::update_index(Asset *asset)
 {

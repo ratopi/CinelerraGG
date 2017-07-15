@@ -23,5 +23,23 @@
 #define ASSETPOPUP_INC
 
 class AssetPopup;
+class AssetPopupInfo;
+class AssetPopupSort;
+class AssetPopupBuildIndex;
+class AssetPopupView;
+class AssetPopupViewWindow;
+class AssetPopupPaste;
+class AssetMatchSize;
+class AssetMatchRate;
+class AssetMatchAll;
+class AssetPopupProjectRemove;
+class AssetPopupDiskRemove;
+class AssetListMenu;
+class AssetListCopy;
+class AssetCopyDialog;
+class AssetCopyWindow;
+class AssetListPaste;
+class AssetPasteDialog;
+class AssetPasteWindow;
 
 #endif

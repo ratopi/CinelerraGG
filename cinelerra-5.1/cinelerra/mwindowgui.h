@@ -129,7 +129,6 @@ public:
 	void set_meter_format(int mode, int min, int max);
 
 	int translation_event();
-	int cursor_enter_event();
 	int resize_event(int w, int h);          // handle a resize event
 	int button_release_event();
 	int keypress_event();

@@ -382,12 +382,6 @@ void MWindowGUI::redraw_time_dependancies()
 	mainclock->update(mwindow->edl->local_session->get_selectionstart(1));
 }
 
-int MWindowGUI::cursor_enter_event()
-{
-	reset_default_message();
-	return 0;
-}
-
 int MWindowGUI::focus_in_event()
 {
 	for(int i = 0; i < TOTAL_PANES; i++)

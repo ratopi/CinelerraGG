@@ -317,6 +317,7 @@ public:
 	static void init_cin_path();
 	static void get_exe_path(char *result, char *bnp=0);
 	static void getenv_path(char *result, const char *path);
+	static void setenv_path(char *result, const char *var, const char *path);
 	static char cinexe_path[BCTEXTLEN], cinpkg_path[BCTEXTLEN];
 	static char cindat_path[BCTEXTLEN], cinlib_path[BCTEXTLEN];
 	static char cincfg_path[BCTEXTLEN], cinplg_path[BCTEXTLEN];

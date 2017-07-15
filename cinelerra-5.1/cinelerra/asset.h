@@ -96,8 +96,6 @@ public:
 	int read_index(FileXML *xml);
 	void reset_audio();
 	void reset_video();
-	int set_timecode(char *tc, int format, int end);
-	int reset_timecode();
 
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if; complete names should be used.
@@ -145,13 +143,6 @@ public:
 	int video_data, single_frame;
 	int layers, program;
 	double frame_rate;
-
-// Timecode information. User setable, in case of errors in source
-	char reel_name[BCTEXTLEN];
-	int reel_number;
-	int64_t tcstart;
-	int64_t tcend;
-	int tcformat;
 
 	int actual_width, actual_height;
 	int width, height;

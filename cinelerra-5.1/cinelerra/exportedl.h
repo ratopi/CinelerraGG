@@ -64,7 +64,10 @@ public:
 	int load_defaults();
 	int save_defaults();
 private:
-	int edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sourceoutpoint, char *destinpoint, char *destoutpoint, char *reel_name);
+	int edit_to_timecodes(Edit *edit,
+		char *sourceinpoint, char *sourceoutpoint,
+		char *destinpoint, char *destoutpoint,
+		char *reel_name);
 	void double_to_CMX3600(double seconds, double frame_rate, char *str);
 
 };

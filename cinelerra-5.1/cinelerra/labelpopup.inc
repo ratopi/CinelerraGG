@@ -19,12 +19,11 @@
  *
  */
 
-#ifndef LABELEDIT_INC
-#define LABELEDIT_INC
+#ifndef LABELPOPUP_INC
+#define LABELPOPUP_INC
 
-class LabelEdit;
-class LabelEditWindow;
-class LabelEditTitle;
-class LabelEditComments;
+class LabelPopup;
+class LabelPopupEdit;
+class LabelListMenu;
 
 #endif

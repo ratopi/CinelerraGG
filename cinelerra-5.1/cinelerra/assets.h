@@ -43,11 +43,8 @@ public:
 	Assets(EDL *edl);
 	virtual ~Assets();
 
-	int load(FileXML *xml,
-		uint32_t load_flags);
-	int save(FileXML *xml,
-		char *output_path);
-	Assets& operator=(Assets &assets);
+	int load(FileXML *xml, uint32_t load_flags);
+	int save(FileXML *xml, char *output_path);
 	void copy_from(Assets *assets);
 
 // Enter a new asset into the table.
@@ -57,17 +54,8 @@ public:
 // Update the index information for assets with the same path
 	void update_index(Asset *asset);
 
-
 // Parent EDL
 	EDL *edl;
-
-
-
-
-
-
-
-
 
 	int delete_all();
 	int dump(FILE *fp=stdout);
@@ -90,8 +78,5 @@ public:
 
 	int update_old_filename(char *old_filename, char *new_filename);
 };
-
-
-
 
 #endif

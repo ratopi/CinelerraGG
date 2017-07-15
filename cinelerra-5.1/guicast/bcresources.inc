@@ -40,6 +40,7 @@ class BC_Resources;
 #define ICON_UNKNOWN     1      // Private bitmap
 #define ICON_FILM        2      // Private bitmap
 #define ICON_SOUND       3      // Private bitmap
-#define ICON_COLUMN      4      // Private bitmap
+#define ICON_LABEL       4      // Private bitmap
+#define ICON_COLUMN      5      // Private bitmap
 
 #endif

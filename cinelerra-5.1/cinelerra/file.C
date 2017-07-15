@@ -1664,6 +1664,16 @@ void File::getenv_path(char *result, const char *path)
 	*rp = 0;
 }
 
+void File::setenv_path(char *result, const char *var, const char *path)
+{
+	char *env = getenv(var);
+	if( env ) return;
+	char env_path[BCTEXTLEN];
+	getenv_path(env_path, path);
+	sprintf(result, "%s=%s", var, env_path);
+	putenv(result);
+}
+
 char File::cinexe_path[BCTEXTLEN];
 char File::cinpkg_path[BCTEXTLEN];
 char File::cindat_path[BCTEXTLEN];
@@ -1684,36 +1694,13 @@ void File::init_cin_path()
 	snprintf(cinpkg_path, sizeof(cinpkg_path), "CIN_PKG=%s", env_pkg);
 	putenv(cinpkg_path);
 
-	getenv_path(env_path, CINDAT_DIR);
-	snprintf(cindat_path, sizeof(cindat_path), "CIN_DAT=%s", env_path);
-	putenv(cindat_path);
-
-	getenv_path(env_path, CINLIB_DIR);
-	snprintf(cinlib_path, sizeof(cinlib_path), "CIN_LIB=%s", env_path);
-	putenv(cinlib_path);
-
-	getenv_path(env_path, CONFIG_DIR);
-	snprintf(cincfg_path, sizeof(cincfg_path), "CIN_CONFIG=%s", env_path);
-	putenv(cincfg_path);
-
-	getenv_path(env_path, PLUGIN_DIR);
-	snprintf(cinplg_path, sizeof(cinplg_path), "CIN_PLUGIN=%s", env_path);
-	putenv(cinplg_path);
-
-	getenv_path(env_path, LADSPA_DIR);
-	snprintf(cinlad_path, sizeof(cinlad_path), "CIN_LADSPA=%s", env_path);
-	putenv(cinlad_path);
-
-	getenv_path(env_path, LOCALE_DIR);
-	snprintf(cinlcl_path, sizeof(cinlcl_path), "CIN_LOCALE=%s", env_path);
-	putenv(cinlcl_path);
-
-#ifndef CIN_BROWSER
-#define CIN_BROWSER "firefox"
-#endif
-	getenv_path(env_path, CIN_BROWSER);
-	snprintf(cinbwr_path, sizeof(cinlcl_path), "CIN_BROWSER=%s", env_path);
-	putenv(cinbwr_path);
+	setenv_path(cindat_path, "CIN_DAT", CINDAT_DIR);
+	setenv_path(cinlib_path, "CIN_LIB", CINLIB_DIR);
+	setenv_path(cincfg_path, "CIN_CONFIG", CONFIG_DIR);
+	setenv_path(cinplg_path, "CIN_PLUGIN", PLUGIN_DIR);
+	setenv_path(cinlad_path, "CIN_LADSPA", LADSPA_DIR);
+	setenv_path(cinlcl_path, "CIN_LOCALE", LOCALE_DIR);
+	setenv_path(cinbwr_path, "CIN_BROWSER", CIN_BROWSER);
 }
 
 

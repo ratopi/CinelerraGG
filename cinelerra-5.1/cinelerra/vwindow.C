@@ -334,14 +334,6 @@ void VWindow::update_position(int change_type,
 			1);
 
 		double position = edl->local_session->get_selectionstart(1);
-		Asset *asset = edl->assets->first;
-		if( asset && asset->tcstart ) {
-			double rate = asset->video_data ? asset->frame_rate :
-				asset->audio_data ? asset->sample_rate : 0;
-			if( rate > 0 )
-				position += asset->tcstart / rate;
-		}
-
 		if(lock_window) gui->lock_window("VWindow::update_position");
 		gui->clock->update(position);
 		if(lock_window) gui->unlock_window();

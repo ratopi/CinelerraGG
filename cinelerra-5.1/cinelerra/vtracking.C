@@ -58,21 +58,10 @@ void VTracking::update_tracker(double position)
 	vwindow->gui->lock_window("VTracking::update_tracker");
 	vwindow->get_edl()->local_session->set_selectionstart(position);
 	vwindow->get_edl()->local_session->set_selectionend(position);
-
-	Asset *asset = vwindow->get_edl()->assets->first;
-	if( asset && asset->tcstart ) {
-		double rate = asset->video_data ? asset->frame_rate :
-			asset->audio_data ? asset->sample_rate : 0;
-		if( rate > 0 )
-			position += asset->tcstart / rate;
-	}
 	vwindow->gui->clock->update(position);
-
 // This is going to boost the latency but we need to update the timebar
 	vwindow->gui->timebar->update(1);
-
 	vwindow->gui->unlock_window();
-
 	update_meters((int64_t)(position * mwindow->edl->session->sample_rate));
 }
 

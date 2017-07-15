@@ -23,6 +23,7 @@
 #define ASSETEDIT_H
 
 #include "asset.inc"
+#include "assetedit.inc"
 #include "awindow.inc"
 #include "bcdialog.h"
 #include "bitspopup.inc"
@@ -35,18 +36,6 @@
 #include "resizetrackthread.inc"
 
 
-class AssetEditReelNumber;
-class AssetEditReelName;
-class AssetEditByteOrderHILO;
-class AssetEditByteOrderLOHI;
-class AssetEditPath;
-class AssetEditPathText;
-class AssetEditWindow;
-
-class DetailAssetWindow;
-class DetailAssetThread;
-class DetailAssetButton;
-
 class AssetEdit : public BC_DialogThread
 {
 public:
@@ -58,6 +47,7 @@ public:
 	void handle_done_event(int result);
 	void handle_close_event(int result);
 	BC_Window* new_gui();
+	int window_height();
 
 	Indexable *indexable;
 	MWindow *mwindow;
@@ -84,8 +74,6 @@ public:
 	AssetEditPath *path_button;
 	AssetEditByteOrderHILO *hilo;
 	AssetEditByteOrderLOHI *lohi;
-	BC_TextBox *tc_hours_textbox, *tc_minutes_textbox;
-	BC_TextBox *tc_seconds_textbox, *tc_rest_textbox;
 	BitsPopup *bitspopup;
 	int allow_edits;
 	MWindow *mwindow;
@@ -270,28 +258,6 @@ class AssetEditSigned : public BC_CheckBox
 {
 public:
 	AssetEditSigned(AssetEditWindow *fwindow, int value, int x, int y);
-
-	int handle_event();
-
-	AssetEditWindow *fwindow;
-};
-
-class AssetEditReelName : public BC_TextBox
-{
-public:
-	AssetEditReelName(AssetEditWindow *fwindow, int x, int y);
-	~AssetEditReelName();
-
-	int handle_event();
-
-	AssetEditWindow *fwindow;
-};
-
-class AssetEditReelNumber : public BC_TextBox
-{
-public:
-	AssetEditReelNumber(AssetEditWindow *fwindow, int x, int y);
-	~AssetEditReelNumber();
 
 	int handle_event();
 

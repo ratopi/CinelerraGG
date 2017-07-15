@@ -33,6 +33,7 @@ CHECK_WITH([cindat],[cinelerra share path],[CINDAT_DIR],[auto])
 CHECK_WITH([plugin-dir],[plugin install dir],[PLUGIN_DIR],[auto])
 CHECK_WITH([ladspa-dir],[ladspa install dir],[LADSPA_DIR],[auto])
 CHECK_WITH([config-dir],[.bcast config dir],[CONFIG_DIR],[$$HOME/.bcast5])
+CHECK_WITH([browser],[cin_browser path],[CIN_BROWSER],[firefox])
 
 if test "x$WANT_CINBIN_BUILD" = "xyes"; then
   WANT_LOCALE_DIR='$$CIN_LIB/locale'
@@ -670,6 +671,7 @@ echo "  using: exec-name = $WANT_CIN"
 echo "  using: with-cinlib = $WANT_CINLIB_DIR"
 echo "  using: with-cindat = $WANT_CINDAT_DIR"
 echo "  using: with-config-dir = $WANT_CONFIG_DIR"
+echo "  using: with-browser = $WANT_CIN_BROWSER"
 echo "  using: with-plugin-dir = $WANT_PLUGIN_DIR"
 echo "  using: with-ladspa-dir = $WANT_LADSPA_DIR"
 echo ""
@@ -745,6 +747,7 @@ echo "CFLAGS += '-DCONFIG_DIR=\"$WANT_CONFIG_DIR\"'"
 echo "CFLAGS += '-DPLUGIN_DIR=\"$WANT_PLUGIN_DIR\"'"
 echo "CFLAGS += '-DLOCALE_DIR=\"$WANT_LOCALE_DIR\"'"
 echo "CFLAGS += '-DLADSPA_DIR=\"$WANT_LADSPA_DIR\"'"
+echo "CFLAGS += '-DCIN_BROWSER=\"$WANT_CIN_BROWSER\"'"
 for flg in $CFG_CFLAGS; do echo "CFLAGS += $flg"; done
 echo ""
 for flg in $CFG_CXXFLAGS; do echo "CXXFLAGS += $flg"; done

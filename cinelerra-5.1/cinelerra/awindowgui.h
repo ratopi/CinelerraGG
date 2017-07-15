@@ -28,39 +28,19 @@
 #include "asset.inc"
 #include "assets.inc"
 #include "awindow.inc"
-#include "awindowmenu.inc"
+#include "awindowgui.inc"
+#include "clippopup.inc"
 #include "edl.inc"
+#include "folderlistmenu.inc"
 #include "guicast.h"
+#include "labeledit.inc"
+#include "labelpopup.inc"
 #include "labels.h"
 #include "indexable.inc"
 #include "mwindow.inc"
 #include "newfolder.inc"
 #include "pluginserver.inc"
 #include "vicon.h"
-
-class AWindowAssets;
-class AWindowFolders;
-class AWindowNewFolder;
-class AWindowDeleteFolder;
-class AWindowRenameFolder;
-class AWindowDeleteDisk;
-class AWindowDeleteProject;
-class AWindowDivider;
-class AWindowInfo;
-class AWindowRedrawIndex;
-class AWindowPaste;
-class AWindowAppend;
-class AWindowView;
-class AddTools;
-class AddPluginsMenu;
-class AddPluginItem;
-class AVIconDrawing;
-
-class AssetPicon;
-class AssetVIcon;
-class LabelPopup;
-class LabelPopupEdit;
-class AWindowGUI;
 
 class AssetPicon : public BC_ListBoxItem
 {
@@ -216,6 +196,7 @@ public:
 	BC_Pixmap *file_icon;
 	BC_Pixmap *audio_icon;
 	BC_Pixmap *video_icon;
+	BC_Pixmap *label_icon;
 	BC_Pixmap *clip_icon;         VFrame *clip_vframe;
 	BC_Pixmap *atransition_icon;  VFrame *atransition_vframe;
 	BC_Pixmap *vtransition_icon;  VFrame *vtransition_vframe;
@@ -228,8 +209,11 @@ public:
 
 // Popup menus
 	AssetPopup *asset_menu;
+	ClipPopup *clip_menu;
 	LabelPopup *label_menu;
 	AssetListMenu *assetlist_menu;
+	ClipListMenu *cliplist_menu;
+	LabelListMenu *labellist_menu;
 	FolderListMenu *folderlist_menu;
 	AddTools *add_tools;
 // Temporary for reading picons from files
@@ -406,34 +390,6 @@ public:
 	int x, y;
 };
 
-class LabelPopup : public BC_PopupMenu
-{
-public:
-	LabelPopup(MWindow *mwindow, AWindowGUI *gui);
-	~LabelPopup();
-
-	void create_objects();
-// Set mainsession with the current selections
-	int update();
-
-	MWindow *mwindow;
-	AWindowGUI *gui;
-
-	LabelPopupEdit *editlabel;
-};
-
-class LabelPopupEdit : public BC_MenuItem
-{
-public:
-	LabelPopupEdit(MWindow *mwindow, LabelPopup *popup);
-	~LabelPopupEdit();
-
-	int handle_event();
-
-	MWindow *mwindow;
-	LabelPopup *popup;
-};
-
 class AddTools : public BC_PopupMenu
 {
 public:
@@ -442,7 +398,6 @@ public:
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
-	AddPluginsMenu *add_plugins;
 };
 
 class AddPluginItem : public BC_MenuItem
@@ -465,6 +420,28 @@ public:
 
 	AVIconDrawing(AWindowGUI *agui, int x, int y, VFrame **images);
 	~AVIconDrawing();
+};
+
+
+class AWindowListFormat : public BC_MenuItem
+{
+public:
+	AWindowListFormat(MWindow *mwindow);
+
+	void update();
+	int handle_event();
+	MWindow *mwindow;
+};
+
+
+class AWindowListSort : public BC_MenuItem
+{
+public:
+	AWindowListSort(MWindow *mwindow);
+
+	void update();
+	int handle_event();
+	MWindow *mwindow;
 };
 
 #endif

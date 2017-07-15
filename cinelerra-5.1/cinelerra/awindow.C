@@ -26,6 +26,7 @@
 #include "bcsignals.h"
 #include "clipedit.h"
 #include "labeledit.h"
+#include "labelpopup.h"
 
 AWindow::AWindow(MWindow *mwindow)
  : Thread(1, 0, 0)

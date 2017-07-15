@@ -29,6 +29,7 @@
 #include "bcwindowbase.inc"
 #include "clipedit.inc"
 #include "labeledit.inc"
+#include "labelpopup.inc"
 #include "mwindow.inc"
 #include "thread.h"
 

@@ -1038,12 +1038,17 @@ int BC_FileBox::submit_dir(char *dir)
 
 int BC_FileBox::submit_file(const char *path, int use_this)
 {
+	char path1[BCTEXTLEN];
+	strcpy(path1, path);
+	char *cp = strchr(path1,'\n');
+	if( cp ) *cp = 0;
+
 // Deactivate textbox to hide suggestions
 	textbox->deactivate();
 
 // If file wanted, take the current directory as the desired file.
 // If directory wanted, ignore it.
-	if(!path[0] && !want_directory)
+	if(!path1[0] && !want_directory)
 	{
 // save complete path
 		strcpy(this->current_path, directory);
@@ -1057,9 +1062,9 @@ int BC_FileBox::submit_file(const char *path, int use_this)
 	}
 
 // is a directory, change directories
-	if(fs->is_dir(path) && !use_this)
+	if(fs->is_dir(path1) && !use_this)
 	{
-		fs->change_dir(path, 0);
+		fs->change_dir(path1, 0);
 		refresh(1);
 		directory_title->update(fs->get_current_dir());
 		strcpy(this->current_path, fs->get_current_dir());
@@ -1078,7 +1083,7 @@ int BC_FileBox::submit_file(const char *path, int use_this)
 // Is a file or desired directory.  Quit the operation.
 	{
 		char path2[BCTEXTLEN];
-		strcpy(path2, path);
+		strcpy(path2, path1);
 
 // save directory for defaults
 		fs->extract_dir(directory, path2);
@@ -1114,7 +1119,7 @@ void BC_FileBox::update_history()
 	strcpy(path, directory);
 // enfore one trailing slash
 	char *cp = path;
-	while( *cp ) ++cp;
+	while( *cp && *cp != '\n' ) ++cp;
 	while( cp > path && *(cp-1) == '/' ) --cp;
 	*cp++ = '/';  *cp = 0;
 

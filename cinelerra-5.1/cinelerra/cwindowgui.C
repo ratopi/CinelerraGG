@@ -721,7 +721,7 @@ CWrapper(next_edit)
 
 void CWindowEditing::to_clip()
 {
-        mwindow->to_clip(_("composer window: "));
+        mwindow->to_clip(mwindow->edl, _("composer window: "));
 }
 
 

@@ -301,8 +301,7 @@ int EDL::load_xml(FileXML *file,
 				else
 				if(file->tag.title_is("ASSETS"))
 				{
-					if((load_flags & LOAD_ASSETS) &&
-						!parent_edl)
+					if(load_flags & LOAD_ASSETS)
 						assets->load(file, load_flags);
 					else
 						result = file->skip_tag();
@@ -610,14 +609,9 @@ int EDL::copy(double start,
 
 // Media
 // Don't replicate all assets for every clip.
-// The assets for the clips are probably in the mane EDL.
-		if(!is_clip)
-			copy_assets(start,
-				end,
-				file,
-				all,
-				output_path);
-
+// The assets for the clips are probably in the main EDL.
+		if( !is_clip )
+			copy_assets(start, end, file, all, output_path);
 // Clips
 // Don't want this if using clipboard
 		if(all)
@@ -650,10 +644,9 @@ int EDL::copy(double start,
 //printf("EDL::copy 2\n");
 
 // terminate file
-	if(is_clip)
+	if( is_clip )
 		file->tag.set_title("/CLIP_EDL");
-	else
-	if(is_vwindow)
+	else if( is_vwindow )
 		file->tag.set_title("/VWINDOW_EDL");
 	else
 		file->tag.set_title("/EDL");

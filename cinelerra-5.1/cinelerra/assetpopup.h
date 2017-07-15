@@ -22,14 +22,9 @@
 #ifndef ASSETPOPUP_H
 #define ASSETPOPUP_H
 
-class AssetPopupInfo;
-class AssetPopupBuildIndex;
-class AssetPopupView;
-class AssetPopupViewWindow;
-
 #include "assetedit.inc"
+#include "assetpopup.inc"
 #include "awindowgui.inc"
-#include "awindowmenu.inc"
 #include "edl.inc"
 #include "guicast.h"
 #include "assets.inc"
@@ -59,7 +54,7 @@ public:
 	AssetPopupBuildIndex *index;
 	AssetPopupView *view;
 	AssetPopupViewWindow *view_window;
-	AssetListFormat *format;
+	AWindowListFormat *format;
 };
 
 class AssetPopupInfo : public BC_MenuItem
@@ -194,5 +189,96 @@ public:
 	AssetPopup *popup;
 };
 
+class AssetListMenu : public BC_PopupMenu
+{
+public:
+	AssetListMenu(MWindow *mwindow, AWindowGUI *gui);
+	~AssetListMenu();
+
+	void create_objects();
+	void update_titles();
+
+	MWindow *mwindow;
+	AWindowGUI *gui;
+	AWindowListFormat *format;
+};
+
+class AssetListCopy : public BC_MenuItem
+{
+public:
+	AssetListCopy(MWindow *mwindow);
+	~AssetListCopy();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AssetCopyDialog *copy_dialog;
+};
+
+class AssetCopyDialog : public BC_DialogThread
+{
+public:
+	AssetCopyDialog(AssetListCopy *copy);
+	~AssetCopyDialog();
+
+	void start(char *text);
+	BC_Window* new_gui();
+	void handle_done_event(int result);
+	void handle_close_event(int result);
+
+	char *text;
+	AssetListCopy *copy;
+	AssetCopyWindow *copy_window;
+};
+
+class AssetCopyWindow : public BC_Window
+{
+public:
+	AssetCopyWindow(AssetCopyDialog *copy_dialog, int x, int y);
+	~AssetCopyWindow();
+
+	void create_objects();
+
+	AssetCopyDialog *copy_dialog;
+	BC_ScrollTextBox *file_list;
+};
+
+class AssetListPaste : public BC_MenuItem
+{
+public:
+	AssetListPaste(MWindow *mwindow);
+	~AssetListPaste();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AssetPasteDialog *paste_dialog;
+};
+
+class AssetPasteDialog : public BC_DialogThread
+{
+public:
+	AssetPasteDialog(AssetListPaste *paste);
+	~AssetPasteDialog();
+
+	BC_Window* new_gui();
+	void handle_done_event(int result);
+	void handle_close_event(int result);
+
+	AssetListPaste *paste;
+	AssetPasteWindow *paste_window;
+};
+
+class AssetPasteWindow : public BC_Window
+{
+public:
+	AssetPasteWindow(AssetPasteDialog *paste_dialog, int x, int y);
+	~AssetPasteWindow();
+
+	void create_objects();
+
+	AssetPasteDialog *paste_dialog;
+	BC_ScrollTextBox *file_list;
+};
 
 #endif

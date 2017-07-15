@@ -1,7 +1,7 @@
-
 /*
  * CINELERRA
  * Copyright (C) 2006 Pierre Dumuid
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,71 +21,59 @@
 
 #include "awindow.h"
 #include "awindowgui.h"
+#include "bcdialog.h"
 #include "labeledit.h"
-#include "edl.h"
-#include "fonts.h"
 #include "language.h"
-#include "localsession.h"
-#include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
 
 
-
 LabelEdit::LabelEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow)
- : Thread()
+ : BC_DialogThread()
 {
 	this->mwindow = mwindow;
 	this->awindow = awindow;
 	this->vwindow = vwindow;
-	this->label = 0;
+	label = 0;
+	label_edit_window = 0;
 }
 
 LabelEdit::~LabelEdit()
 {
+	close_window();
 }
 
-void LabelEdit::edit_label(Label *label)
+void LabelEdit::start(Label *label)
 {
-// Allow more than one window so we don't have to delete the clip in handle_event
-	if(label)
-	{
-		this->label = label;
-		Thread::start();
-	}
+	this->label = label;
+	BC_DialogThread::start();
 }
 
-void LabelEdit::run()
+void LabelEdit::handle_close_event(int result)
 {
-	if(label)
-	{
-		LabelEditWindow *window = new LabelEditWindow(mwindow, this);
-		window->create_objects();
-		/*int result = */ window->run_window();
-		delete window;
-		if (awindow) awindow->gui->async_update_assets();
-	}
+	label_edit_window = 0;
 }
 
 
+void LabelEdit::handle_done_event(int result)
+{
+	awindow->gui->async_update_assets();
+}
 
+BC_Window *LabelEdit::new_gui()
+{
+ 	int x = mwindow->gui->get_abs_cursor_x(1) - 400 / 2;
+	int y = mwindow->gui->get_abs_cursor_y(1) - 350 / 2;
+	label_edit_window = new LabelEditWindow(mwindow, this, x, y);
+	label_edit_window->create_objects();
+	return label_edit_window;
+}
 
-
-
-
-LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
- : BC_Window(_(PROGRAM_NAME ": Label Info"),
- 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
-	mwindow->gui->get_abs_cursor_y(1) - 350 / 2,
-	400,
-	350,
-	400,
-	430,
-	0,
-	0,
-	1)
+LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread, int x, int y)
+ : BC_Window(_(PROGRAM_NAME ": Label Info"), x, y,
+	400, 350, 400, 430, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -94,7 +82,6 @@ LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
 LabelEditWindow::~LabelEditWindow()
 {
 }
-
 
 void LabelEditWindow::create_objects()
 {
@@ -107,23 +94,14 @@ void LabelEditWindow::create_objects()
 
 	add_subwindow(title = new BC_Title(x1, y, _("Label Text:")));
 	y += title->get_h() + 5;
-	add_subwindow(textbox = new LabelEditComments(this,
-		x1,
-		y,
-		get_w() - x1 * 2,
+	add_subwindow(textbox = new LabelEditComments(this, x1, y, get_w() - x1 * 2,
 		BC_TextBox::pixels_to_rows(this, MEDIUMFONT, get_h() - 10 - 40 - y)));
-
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	textbox->activate();
 }
-
-
-
-
-
 
 LabelEditComments::LabelEditComments(LabelEditWindow *window, int x, int y, int w, int rows)
  : BC_TextBox(x, y, w, rows, window->label->textstr,  1, MEDIUMFONT, 1)
@@ -136,3 +114,4 @@ int LabelEditComments::handle_event()
 	strcpy(window->label->textstr, get_text());
 	return 1;
 }
+

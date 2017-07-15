@@ -1,0 +1,81 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
+#include "awindow.h"
+#include "awindowgui.h"
+#include "folderlistmenu.h"
+#include "edl.h"
+#include "edlsession.h"
+#include "language.h"
+#include "mwindow.h"
+
+
+FolderListMenu::FolderListMenu(MWindow *mwindow, AWindowGUI *gui)
+ : BC_PopupMenu(0, 0, 0, "", 0)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+
+FolderListMenu::~FolderListMenu()
+{
+}
+
+void FolderListMenu::create_objects()
+{
+	add_item(format = new FolderListFormat(mwindow, this));
+	update_titles();
+}
+
+
+void FolderListMenu::update_titles()
+{
+	format->set_text(mwindow->edl->session->folderlist_format == FOLDERS_TEXT ?
+		(char*)_("Display icons") : (char*)_("Display text"));
+}
+
+
+
+FolderListFormat::FolderListFormat(MWindow *mwindow, FolderListMenu *menu)
+ : BC_MenuItem("")
+{
+	this->mwindow = mwindow;
+	this->menu = menu;
+}
+
+int FolderListFormat::handle_event()
+{
+	switch(mwindow->edl->session->folderlist_format) {
+	case FOLDERS_TEXT:
+		mwindow->edl->session->folderlist_format = FOLDERS_ICONS;
+		break;
+	case FOLDERS_ICONS:
+		mwindow->edl->session->folderlist_format = FOLDERS_TEXT;
+		break;
+	}
+
+	mwindow->awindow->gui->folder_list->update_format(
+		mwindow->edl->session->folderlist_format, 1);
+	menu->update_titles();
+
+	return 1;
+}
+

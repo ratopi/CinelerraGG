@@ -19,67 +19,83 @@
  *
  */
 
-#ifndef LABELEDIT_H
-#define LABELEDIT_H
+#ifndef LABELPOPUP_H
+#define LABELPOPUP_H
 
 #include "assetedit.inc"
 #include "assets.inc"
-#include "awindow.inc"
 #include "awindowgui.inc"
+#include "clippopup.inc"
+#include "edl.inc"
 #include "guicast.h"
-#include "labeledit.inc"
+#include "labelpopup.inc"
 #include "mwindow.inc"
-#include "vwindow.inc"
 
 
-class LabelEdit : public BC_DialogThread
+class LabelPopup : public BC_PopupMenu
 {
 public:
-	LabelEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow);
-	~LabelEdit();
-
-	BC_Window *new_gui();
-	void start(Label *label);
-	void handle_close_event(int result);
-	void handle_done_event(int result);
-
-// If it is being created or edited
-	MWindow *mwindow;
-	AWindow *awindow;
-	VWindow *vwindow;
-
-	Label *label;
-	LabelEditWindow *label_edit_window;
-};
-
-class LabelEditWindow : public BC_Window
-{
-public:
-	LabelEditWindow(MWindow *mwindow, LabelEdit *thread, int x, int y);
-	~LabelEditWindow();
+	LabelPopup(MWindow *mwindow, AWindowGUI *gui);
+	~LabelPopup();
 
 	void create_objects();
+// Set mainsession with the current selections
+	int update();
 
-// Use this copy of the pointer in LabelEdit since multiple windows are possible
-	Label *label;
 	MWindow *mwindow;
-	LabelEdit *thread;
+	AWindowGUI *gui;
+
+	LabelPopupEdit *editlabel;
 };
 
-class LabelEditTitle : public BC_TextBox
+class LabelPopupEdit : public BC_MenuItem
 {
 public:
-	LabelEditTitle(LabelEditWindow *window, int x, int y, int w);
+	LabelPopupEdit(MWindow *mwindow, AWindowGUI *gui);
+	~LabelPopupEdit();
+
 	int handle_event();
-	LabelEditWindow *window;
+
+	MWindow *mwindow;
+	AWindowGUI *gui;
 };
 
-class LabelEditComments : public BC_TextBox
+class LabelPopupDelete : public BC_MenuItem
 {
 public:
-	LabelEditComments(LabelEditWindow *window, int x, int y, int w, int rows);
+	LabelPopupDelete(MWindow *mwindow, AWindowGUI *gui);
+	~LabelPopupDelete();
+
 	int handle_event();
-	LabelEditWindow *window;
+
+	MWindow *mwindow;
+	AWindowGUI *gui;
+};
+
+class LabelPopupGoTo : public BC_MenuItem
+{
+public:
+	LabelPopupGoTo(MWindow *mwindow, AWindowGUI *gui);
+	~LabelPopupGoTo();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AWindowGUI *gui;
+};
+
+class LabelListMenu : public BC_PopupMenu
+{
+public:
+	LabelListMenu(MWindow *mwindow, AWindowGUI *gui);
+	~LabelListMenu();
+
+	void create_objects();
+	void update();
+
+	MWindow *mwindow;
+	AWindowGUI *gui;
+	AWindowListFormat *format;
 };
 
 #endif

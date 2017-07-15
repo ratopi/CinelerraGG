@@ -40,7 +40,6 @@ OBJS = \
 	$(OBJDIR)/avc1394control.o \
 	$(OBJDIR)/avc1394transport.o \
 	$(OBJDIR)/awindowgui.o \
-	$(OBJDIR)/awindowmenu.o \
 	$(OBJDIR)/awindow.o \
 	$(OBJDIR)/batch.o \
 	$(OBJDIR)/batchrender.o \
@@ -61,6 +60,7 @@ OBJS = \
 	$(OBJDIR)/chantables.o \
 	$(OBJDIR)/cicolors.o \
 	$(OBJDIR)/clipedit.o \
+	$(OBJDIR)/clippopup.o \
 	$(OBJDIR)/colorpicker.o \
 	$(OBJDIR)/commercials.o \
 	$(OBJDIR)/commonrender.o \
@@ -124,6 +124,7 @@ OBJS = \
 	$(OBJDIR)/filexml.o \
 	$(OBJDIR)/floatauto.o \
 	$(OBJDIR)/floatautos.o \
+	$(OBJDIR)/folderlistmenu.o \
 	$(OBJDIR)/formatcheck.o \
 	$(OBJDIR)/formatpopup.o \
 	$(OBJDIR)/formatpresets.o \
@@ -149,6 +150,7 @@ OBJS = \
 	$(OBJDIR)/keyframepopup.o \
 	$(OBJDIR)/keyframes.o \
 	$(OBJDIR)/labeledit.o \
+	$(OBJDIR)/labelpopup.o \
 	$(OBJDIR)/labelnavigate.o \
 	$(OBJDIR)/labels.o \
 	$(OBJDIR)/levelwindowgui.o \

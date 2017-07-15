@@ -1,6 +1,5 @@
 /*
  * CINELERRA
- * Copyright (C) 2006 Pierre Dumuid
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,12 +18,10 @@
  *
  */
 
-#ifndef LABELEDIT_INC
-#define LABELEDIT_INC
+#ifndef FOLDERLISTMENU_INC
+#define FOLDERLISTMENU_INC
 
-class LabelEdit;
-class LabelEditWindow;
-class LabelEditTitle;
-class LabelEditComments;
+class FolderListFormat;
+class FolderListMenu;
 
 #endif

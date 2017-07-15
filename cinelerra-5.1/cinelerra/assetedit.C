@@ -106,13 +106,6 @@ void AssetEdit::edit_asset(Indexable *indexable)
 
 void AssetEdit::handle_done_event(int result)
 {
-	if( !result && window->tc_hours_textbox ) {
-		changed_params->tcstart = ceil(indexable->get_frame_rate() *
-			(atoi(window->tc_hours_textbox->get_text()) * 3600 +
-			 atoi(window->tc_minutes_textbox->get_text()) * 60 +
-			 atoi(window->tc_seconds_textbox->get_text()))) +
-			 atoi(window->tc_rest_textbox->get_text());
-	}
 }
 
 void AssetEdit::handle_close_event(int result)
@@ -194,23 +187,29 @@ BC_Window* AssetEdit::new_gui()
 	return window;
 }
 
-
-
-
-
-
-
-
+int AssetEdit::window_height()
+{
+	int h = 128 + 64;
+	if( indexable->have_audio() )
+		h += 180;
+	if( indexable->have_video() ) {
+		h += 200;
+		if( indexable->is_asset ) {
+			Asset *asset = (Asset *)indexable;
+			if( asset->format == FILE_MPEG ||
+			    asset->format == FILE_FFMPEG ) {
+				h += 40;
+			}
+		}
+	}
+	return h;
+}
 
 AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
  : BC_Window(_(PROGRAM_NAME ": Asset Info"),
  	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
-	mwindow->gui->get_abs_cursor_y(1) - (128 + 64 +
-		(!asset_edit->indexable->have_audio() ? 0 : 180) +
-		(!asset_edit->indexable->have_video() ? 0 : 350)) / 2,
-	450, (128 + 64 +
-		(!asset_edit->indexable->have_audio() ? 0 : 180) +
-		(!asset_edit->indexable->have_video() ? 0 : 350)), 0, 0, 1)
+	mwindow->gui->get_abs_cursor_y(1) - asset_edit->window_height() / 2,
+	450, asset_edit->window_height(), 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->asset_edit = asset_edit;
@@ -221,10 +220,6 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	lohi = 0;
 	allow_edits = 0;
 	detail_thread = 0;
-	tc_hours_textbox = 0;
-	tc_minutes_textbox = 0;
-	tc_seconds_textbox = 0;
-	tc_rest_textbox = 0;
 	win_width = 0;
 	win_height = 0;
 }
@@ -589,47 +584,6 @@ void AssetEditWindow::create_objects()
 		ilacefixoption_chkboxw->ilacefixmethod_listbox = listboxw;
 		ilacefixoption_chkboxw->showhideotherwidgets();
 		y += textboxw->get_h() + 5;
-
-		x = x1;
-		add_subwindow(new BC_Title(x, y, _("Reel Name:")));
-		x = x2;
-		add_subwindow(new AssetEditReelName(this, x, y));
-		y += 30;
-
-		x = x1;
-		add_subwindow(new BC_Title(x, y, _("Reel Number:")));
-		x = x2;
-		add_subwindow(new AssetEditReelNumber(this, x, y));
-		y += 30;
-
-		x = x1;
-		add_subwindow(new BC_Title(x, y, _("Time Code Start:")));
-		x = x2;
-
-// Calculate values to enter into textboxes
-		char text[32], *tc = text;
-		if( asset )
-			Units::totext(tc, asset->tcstart / asset->frame_rate,
-				TIME_HMSF, asset->sample_rate, asset->frame_rate);
-		else
-			strcpy(tc, "0:00:00:00");
-
-		const char *tc_hours = tc, *tc_minutes, *tc_seconds, *tc_rest;
-		tc = strchr(tc, ':');  *tc++ = 0;  tc_minutes = tc;
-		tc = strchr(tc, ':');  *tc++ = 0;  tc_seconds = tc;
-		tc = strchr(tc, ':');  *tc++ = 0;  tc_rest = tc;
-
-		int padw = BC_Title::calculate_w(this, ":", MEDIUMFONT);
-		int fldw = BC_Title::calculate_w(this, "00", MEDIUMFONT) + 5;
-		add_subwindow(tc_hours_textbox = new BC_TextBox(x, y, fldw, 1, tc_hours));
-		add_subwindow(new BC_Title(x += tc_hours_textbox->get_w(), y, ":"));
-		add_subwindow(tc_minutes_textbox = new BC_TextBox(x += padw, y, fldw, 1, tc_minutes));
-		add_subwindow(new BC_Title(x += tc_minutes_textbox->get_w(), y, ":"));
-		add_subwindow(tc_seconds_textbox = new BC_TextBox(x += padw, y , fldw, 1, tc_seconds));
-		add_subwindow(new BC_Title(x += tc_seconds_textbox->get_w(), y, ":"));
-		add_subwindow(tc_rest_textbox = new BC_TextBox(x += 10, y, fldw, 1, tc_rest));
-
-		y += 30;
 	}
 
 	add_subwindow(new BC_OKButton(this));
@@ -1070,45 +1024,4 @@ void DetailAssetThread::run()
 	delete dwindow;
 	dwindow = 0;
 }
-
-
-
-
-
-AssetEditReelName::AssetEditReelName(AssetEditWindow *fwindow, int x, int y)
- : BC_TextBox(x, y, 220, 1, fwindow->asset_edit->changed_params->reel_name,
-	1, MEDIUMFONT, 1)
-{
-	this->fwindow = fwindow;
-}
-AssetEditReelName::~AssetEditReelName()
-{
-}
-int AssetEditReelName::handle_event()
-{
-	Asset *asset = fwindow->asset_edit->changed_params;
-	strcpy(asset->reel_name, get_text());
-	return 1;
-}
-
-
-
-
-
-AssetEditReelNumber::AssetEditReelNumber(AssetEditWindow *fwindow, int x, int y)
- : BC_TextBox(x, y, 200, 1, fwindow->asset_edit->changed_params->reel_number)
-{
-	this->fwindow = fwindow;
-}
-AssetEditReelNumber::~AssetEditReelNumber()
-{
-}
-int AssetEditReelNumber::handle_event()
-{
-	Asset *asset = fwindow->asset_edit->changed_params;
-	asset->reel_number = atoi(get_text());
-	return 1;
-}
-
-
 
