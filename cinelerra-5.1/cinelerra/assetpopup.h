@@ -206,12 +206,13 @@ public:
 class AssetListCopy : public BC_MenuItem
 {
 public:
-	AssetListCopy(MWindow *mwindow);
+	AssetListCopy(MWindow *mwindow, AWindowGUI *gui);
 	~AssetListCopy();
 
 	int handle_event();
 
 	MWindow *mwindow;
+	AWindowGUI *gui;
 	AssetCopyDialog *copy_dialog;
 };
 
@@ -221,12 +222,13 @@ public:
 	AssetCopyDialog(AssetListCopy *copy);
 	~AssetCopyDialog();
 
-	void start(char *text);
+	void start(char *text, int x, int y);
 	BC_Window* new_gui();
 	void handle_done_event(int result);
 	void handle_close_event(int result);
 
 	char *text;
+	int x, y;
 	AssetListCopy *copy;
 	AssetCopyWindow *copy_window;
 };
@@ -234,7 +236,7 @@ public:
 class AssetCopyWindow : public BC_Window
 {
 public:
-	AssetCopyWindow(AssetCopyDialog *copy_dialog, int x, int y);
+	AssetCopyWindow(AssetCopyDialog *copy_dialog);
 	~AssetCopyWindow();
 
 	void create_objects();
@@ -246,12 +248,13 @@ public:
 class AssetListPaste : public BC_MenuItem
 {
 public:
-	AssetListPaste(MWindow *mwindow);
+	AssetListPaste(MWindow *mwindow, AWindowGUI *gui);
 	~AssetListPaste();
 
 	int handle_event();
 
 	MWindow *mwindow;
+	AWindowGUI *gui;
 	AssetPasteDialog *paste_dialog;
 };
 
@@ -264,15 +267,17 @@ public:
 	BC_Window* new_gui();
 	void handle_done_event(int result);
 	void handle_close_event(int result);
+	void start(int x, int y);
 
 	AssetListPaste *paste;
 	AssetPasteWindow *paste_window;
+	int x, y;
 };
 
 class AssetPasteWindow : public BC_Window
 {
 public:
-	AssetPasteWindow(AssetPasteDialog *paste_dialog, int x, int y);
+	AssetPasteWindow(AssetPasteDialog *paste_dialog);
 	~AssetPasteWindow();
 
 	void create_objects();

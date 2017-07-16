@@ -55,8 +55,10 @@ void FormatPopup::create_objects()
 
 	if(!use_brender)
 	{
+#ifdef HAVE_OPENEXR
 		format_items.append(new BC_ListBoxItem(_(EXR_NAME)));
 		format_items.append(new BC_ListBoxItem(_(EXR_LIST_NAME)));
+#endif
 		format_items.append(new BC_ListBoxItem(_(WAV_NAME)));
 		format_items.append(new BC_ListBoxItem(_(RAWDV_NAME)));
 		format_items.append(new BC_ListBoxItem(_(AMPEG_NAME)));

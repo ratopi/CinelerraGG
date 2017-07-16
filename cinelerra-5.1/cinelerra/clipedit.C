@@ -56,8 +56,7 @@ ClipEdit::~ClipEdit()
 // After the window is closed and deleted, this is called.
 void ClipEdit::handle_close_event(int result)
 {
-	if(!result)
-	{
+	if( !result ) {
 		int name_ok = 1;
 		for( int i = 0; name_ok && i < mwindow->edl->clips.total; ++i ) {
 			if( !strcasecmp(clip->local_session->clip_title,
@@ -72,10 +71,9 @@ void ClipEdit::handle_close_event(int result)
 		}
 	}
 
-	if(!result)
-	{
+	if( !result ) {
 // Add to EDL
-		if(create_it)
+		if( create_it )
 			mwindow->edl->add_clip(clip);
 		else // Copy clip to existing clip in EDL
 			original->copy_session(clip);
@@ -84,13 +82,11 @@ void ClipEdit::handle_close_event(int result)
 
 // Change VWindow to it if vwindow was called
 // But this doesn't let you easily create a lot of clips.
-		if(vwindow && create_it)
-		{
+		if( vwindow && create_it ) {
 //				vwindow->change_source(new_edl);
 		}
 	}
-	else
-	{
+	else {
 		mwindow->session->clip_number--;
 	}
 
@@ -98,7 +94,7 @@ void ClipEdit::handle_close_event(int result)
 
 // For creating new clips, the original was copied in add_clip.
 // For editing old clips, the original was transferred to another variable.
-	if(!create_it) clip->remove_user();
+	if( !create_it ) clip->remove_user();
 	original = 0;
 	clip = 0;
 	create_it = 0;
@@ -110,13 +106,11 @@ BC_Window* ClipEdit::new_gui()
 {
 	original = clip;
 
-	if(!create_it)
-	{
+	if( !create_it ) {
 		this->clip = new EDL(mwindow->edl);
 		clip->create_objects();
 		clip->copy_all(original);
 	}
-
 
 	window = new ClipEditWindow(mwindow, this);
 	window->create_objects();
@@ -125,47 +119,31 @@ BC_Window* ClipEdit::new_gui()
 
 
 
-void ClipEdit::edit_clip(EDL *clip)
+void ClipEdit::edit_clip(EDL *clip, int x, int y)
 {
 	close_window();
-// Allow more than one window so we don't have to delete the clip in handle_event
-	if(!this->clip)
-	{
-		this->clip = clip;
-		this->create_it = 0;
-		start();
-	}
+
+	this->clip = clip;
+	this->create_it = 0;
+	this->x = x;  this->y = y;
+	start();
 }
 
-void ClipEdit::create_clip(EDL *clip)
+void ClipEdit::create_clip(EDL *clip, int x, int y)
 {
-// Allow more than one window so we don't have to delete the clip in handle_event
-	if(!this->clip)
-	{
-		this->clip = clip;
-		this->create_it = 1;
-		start();
-	}
+	close_window();
+
+	this->clip = clip;
+	this->create_it = 1;
+	this->x = x;  this->y = y;
+	start();
 }
-
-
-
-
-
-
 
 
 ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread)
  : BC_Window(_(PROGRAM_NAME ": Clip Info"),
- 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
-	mwindow->gui->get_abs_cursor_y(1) - 350 / 2,
-	400,
-	350,
-	400,
-	430,
-	0,
-	0,
-	1)
+	thread->x -400/2, thread->y - 350/2,
+	400, 350, 400, 430, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;

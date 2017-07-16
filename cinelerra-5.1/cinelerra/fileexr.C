@@ -19,6 +19,8 @@
  *
  */
 
+#ifdef HAVE_OPENEXR
+
 #include "asset.h"
 #include "bcsignals.h"
 #include "clip.h"
@@ -662,3 +664,4 @@ int EXRCompressionItem::handle_event()
 	return 0;
 }
 
+#endif

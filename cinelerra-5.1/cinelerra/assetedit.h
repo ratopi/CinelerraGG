@@ -42,7 +42,7 @@ public:
 	AssetEdit(MWindow *mwindow);
 	~AssetEdit();
 
-	void edit_asset(Indexable *indexable);
+	void edit_asset(Indexable *indexable, int x, int y);
 	int set_asset(Indexable *indexable);
 	void handle_done_event(int result);
 	void handle_close_event(int result);
@@ -52,7 +52,7 @@ public:
 	Indexable *indexable;
 	MWindow *mwindow;
 	AssetEditWindow *window;
-
+	int x, y;
 
 // Changed parameters
 	Asset *changed_params;
@@ -80,7 +80,7 @@ public:
 	AssetEdit *asset_edit;
 	BC_Title *win_width;
 	BC_Title *win_height;
-	DetailAssetThread *detail_thread;
+	DetailAssetDialog *detail_dialog;
 	void show_info_detail();
 
 };
@@ -128,7 +128,8 @@ public:
 class AssetEditChannels : public BC_TumbleTextBox
 {
 public:
-	AssetEditChannels(AssetEditWindow *fwindow, char *text, int x, int y);
+	AssetEditChannels(AssetEditWindow *fwindow,
+		char *text, int x, int y);
 
 	int handle_event();
 
@@ -138,7 +139,8 @@ public:
 class AssetEditRate : public BC_TextBox
 {
 public:
-	AssetEditRate(AssetEditWindow *fwindow, char *text, int x, int y);
+	AssetEditRate(AssetEditWindow *fwindow,
+		char *text, int x, int y);
 
 	int handle_event();
 
@@ -148,7 +150,8 @@ public:
 class AssetEditFRate : public BC_TextBox
 {
 public:
-	AssetEditFRate(AssetEditWindow *fwindow, char *text, int x, int y);
+	AssetEditFRate(AssetEditWindow *fwindow,
+		char *text, int x, int y);
 
 	int handle_event();
 
@@ -158,7 +161,8 @@ public:
 class Interlaceautofix : public BC_CheckBox
 {
 public:
-	Interlaceautofix(MWindow *mwindow,AssetEditWindow *fwindow, int x, int y);
+	Interlaceautofix(MWindow *mwindow, AssetEditWindow *fwindow,
+		int x, int y);
 	~Interlaceautofix();
 	int handle_event();
 
@@ -178,7 +182,8 @@ private:
 class AssetEditILaceautofixoption : public BC_TextBox
 {
 public:
-	AssetEditILaceautofixoption(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w);
+	AssetEditILaceautofixoption(AssetEditWindow *fwindow,
+		char *text, int thedefault, int x, int y, int w);
 
 	int handle_event();
 	int thedefault;
@@ -188,7 +193,8 @@ public:
 class AssetEditILacemode : public BC_TextBox
 {
 public:
-	AssetEditILacemode(AssetEditWindow *fwindow, const char *text, int thedefault, int x, int y, int w);
+	AssetEditILacemode(AssetEditWindow *fwindow,
+		const char *text, int thedefault, int x, int y, int w);
 	int handle_event();
 	int thedefault;
 	AssetEditWindow *fwindow;
@@ -198,12 +204,10 @@ class AssetEditInterlacemodePulldown : public BC_ListBox
 {
 public:
 	AssetEditInterlacemodePulldown(MWindow *mwindow,
-				BC_TextBox *output_text,
-				int *output_value,
-				ArrayList<BC_ListBoxItem*> *data,
-				Interlaceautofix *fixoption_chkbox,
-				int x,
-				int y);
+		BC_TextBox *output_text, int *output_value,
+		ArrayList<BC_ListBoxItem*> *data,
+		Interlaceautofix *fixoption_chkbox,
+		int x, int y);
 	int handle_event();
 	char* interlacemode_to_text();
 	MWindow *mwindow;
@@ -217,7 +221,8 @@ private:
 class AssetEditILacefixmethod : public BC_TextBox
 {
 public:
-	AssetEditILacefixmethod(AssetEditWindow *fwindow, const char *text, int thedefault, int x, int y, int w);
+	AssetEditILacefixmethod(AssetEditWindow *fwindow,
+		const char *text, int thedefault, int x, int y, int w);
 
 	int handle_event();
 	int thedefault;
@@ -227,7 +232,8 @@ public:
 class AssetEditHeader : public BC_TextBox
 {
 public:
-	AssetEditHeader(AssetEditWindow *fwindow, char *text, int x, int y);
+	AssetEditHeader(AssetEditWindow *fwindow,
+		char *text, int x, int y);
 
 	int handle_event();
 
@@ -237,7 +243,8 @@ public:
 class AssetEditByteOrderLOHI : public BC_Radial
 {
 public:
-	AssetEditByteOrderLOHI(AssetEditWindow *fwindow, int value, int x, int y);
+	AssetEditByteOrderLOHI(AssetEditWindow *fwindow,
+		int value, int x, int y);
 
 	int handle_event();
 
@@ -247,7 +254,8 @@ public:
 class AssetEditByteOrderHILO : public BC_Radial
 {
 public:
-	AssetEditByteOrderHILO(AssetEditWindow *fwindow, int value, int x, int y);
+	AssetEditByteOrderHILO(AssetEditWindow *fwindow,
+		int value, int x, int y);
 
 	int handle_event();
 
@@ -257,7 +265,8 @@ public:
 class AssetEditSigned : public BC_CheckBox
 {
 public:
-	AssetEditSigned(AssetEditWindow *fwindow, int value, int x, int y);
+	AssetEditSigned(AssetEditWindow *fwindow,
+		int value, int x, int y);
 
 	int handle_event();
 
@@ -271,22 +280,25 @@ class DetailAssetWindow : public BC_Window
 	char info[65536];
 	BC_ScrollTextBox *text;
 public:
-	DetailAssetWindow(MWindow *mwindow, Asset *asset);
+	DetailAssetWindow(MWindow *mwindow,
+		DetailAssetDialog *detail_dialog, Asset *asset);
 	~DetailAssetWindow();
 	void create_objects();
+	DetailAssetDialog *detail_dialog;
 };
 
-class DetailAssetThread : public Thread
+class DetailAssetDialog : public BC_DialogThread
 {
 	MWindow *mwindow;
 	DetailAssetWindow *dwindow;
 public:
-	DetailAssetThread(MWindow *mwindow);
-	~DetailAssetThread();
+	DetailAssetDialog(MWindow *mwindow);
+	~DetailAssetDialog();
+	void start(Asset *asset, int x, int y);
+	BC_Window* new_gui();
 
-	void start(Asset *asset);
-	void stop();
-	void run();
+	Asset *asset;
+	int x, y;
 };
 
 

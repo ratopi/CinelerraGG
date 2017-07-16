@@ -426,22 +426,24 @@ public:
 class AWindowListFormat : public BC_MenuItem
 {
 public:
-	AWindowListFormat(MWindow *mwindow);
+	AWindowListFormat(MWindow *mwindow, AWindowGUI *gui);
 
 	void update();
 	int handle_event();
 	MWindow *mwindow;
+	AWindowGUI *gui;
 };
 
 
 class AWindowListSort : public BC_MenuItem
 {
 public:
-	AWindowListSort(MWindow *mwindow);
+	AWindowListSort(MWindow *mwindow, AWindowGUI *gui);
 
 	void update();
 	int handle_event();
 	MWindow *mwindow;
+	AWindowGUI *gui;
 };
 
 #endif

@@ -58,7 +58,7 @@ void ClipPopup::create_objects()
 	BC_MenuItem *menu_item;
 	BC_SubMenu *submenu;
 	add_item(info = new ClipPopupInfo(mwindow, this));
-	add_item(format = new AWindowListFormat(mwindow));
+	add_item(format = new AWindowListFormat(mwindow, gui));
 	add_item(new ClipPopupSort(mwindow, this));
 	add_item(view = new ClipPopupView(mwindow, this));
 	add_item(view_window = new ClipPopupViewWindow(mwindow, this));
@@ -137,16 +137,17 @@ ClipPopupInfo::~ClipPopupInfo()
 
 int ClipPopupInfo::handle_event()
 {
-	if(mwindow->session->drag_assets->total)
-	{
+	int cur_x, cur_y;
+	popup->gui->get_abs_cursor_xy(cur_x, cur_y, 0);
+
+	if( mwindow->session->drag_assets->total ) {
 		mwindow->awindow->asset_edit->edit_asset(
-			mwindow->session->drag_assets->values[0]);
+			mwindow->session->drag_assets->values[0], cur_x, cur_y);
 	}
 	else
-	if(mwindow->session->drag_clips->total)
-	{
+	if( mwindow->session->drag_clips->total ) {
 		popup->gui->awindow->clip_edit->edit_clip(
-			mwindow->session->drag_clips->values[0]);
+			mwindow->session->drag_clips->values[0], cur_x, cur_y);
 	}
 	return 1;
 }
@@ -186,11 +187,11 @@ int ClipPopupView::handle_event()
 	VWindow *vwindow = mwindow->get_viewer(1, DEFAULT_VWINDOW);
 	vwindow->gui->lock_window("ClipPopupView::handle_event");
 
-	if(mwindow->session->drag_assets->total)
+	if( mwindow->session->drag_assets->total )
 		vwindow->change_source(
 			mwindow->session->drag_assets->values[0]);
 	else
-	if(mwindow->session->drag_clips->total)
+	if( mwindow->session->drag_clips->total )
 		vwindow->change_source(
 			mwindow->session->drag_clips->values[0]);
 
@@ -218,11 +219,11 @@ int ClipPopupViewWindow::handle_event()
 // TODO: create new vwindow or change current vwindow
 	vwindow->gui->lock_window("ClipPopupView::handle_event");
 
-	if(mwindow->session->drag_assets->total)
+	if( mwindow->session->drag_assets->total )
 		vwindow->change_source(
 			mwindow->session->drag_assets->values[0]);
 	else
-	if(mwindow->session->drag_clips->total)
+	if( mwindow->session->drag_clips->total )
 		vwindow->change_source(
 			mwindow->session->drag_clips->values[0]);
 
@@ -397,8 +398,8 @@ ClipListMenu::~ClipListMenu()
 
 void ClipListMenu::create_objects()
 {
-	add_item(format = new AWindowListFormat(mwindow));
-	add_item(new AWindowListSort(mwindow));
+	add_item(format = new AWindowListFormat(mwindow, gui));
+	add_item(new AWindowListSort(mwindow, gui));
 	add_item(new ClipPasteToFolder(mwindow));
 	update();
 }

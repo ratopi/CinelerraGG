@@ -23,5 +23,10 @@
 #define FILEEXR_INC
 
 class FileEXR;
+class EXRUnit;
+class EXRConfigVideo;
+class EXRUseAlpha;
+class EXRCompression;
+class EXRCompressionItem;
 
 #endif

@@ -2026,9 +2026,11 @@ void MWindow::save_clip(EDL *new_edl, const char *txt)
 	cp[n] = 0;
 
 	edl->update_assets(new_edl);
+	int cur_x, cur_y;
+	gui->get_abs_cursor_xy(cur_x, cur_y, 0);
 	gui->unlock_window();
 
-	awindow->clip_edit->create_clip(new_edl);
+	awindow->clip_edit->create_clip(new_edl, cur_x, cur_y);
 
 	gui->lock_window("MWindow::save_clip");
 	save_backup();

@@ -37,8 +37,8 @@ public:
 	ClipEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow);
 	~ClipEdit();
 
-	void edit_clip(EDL *clip);
-	void create_clip(EDL *clip);
+	void edit_clip(EDL *clip, int x, int y);
+	void create_clip(EDL *clip, int x, int y);
 // After the window is closed and deleted, this is called.
 	void handle_close_event(int result);
 
@@ -55,6 +55,7 @@ public:
 	EDL *original;
 	ClipEditWindow *window;
 	int create_it;
+	int x, y;
 };
 
 

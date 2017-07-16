@@ -39,7 +39,7 @@ public:
 	~LabelEdit();
 
 	BC_Window *new_gui();
-	void start(Label *label);
+	void start(Label *label, int x, int y);
 	void handle_close_event(int result);
 	void handle_done_event(int result);
 
@@ -49,13 +49,14 @@ public:
 	VWindow *vwindow;
 
 	Label *label;
+	int x, y;
 	LabelEditWindow *label_edit_window;
 };
 
 class LabelEditWindow : public BC_Window
 {
 public:
-	LabelEditWindow(MWindow *mwindow, LabelEdit *thread, int x, int y);
+	LabelEditWindow(MWindow *mwindow, LabelEdit *thread);
 	~LabelEditWindow();
 
 	void create_objects();

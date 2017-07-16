@@ -32,18 +32,9 @@
 #include "theme.h"
 
 
-CTimeBar::CTimeBar(MWindow *mwindow,
-		CWindowGUI *gui,
-		int x,
-		int y,
-		int w,
-		int h)
- : TimeBar(mwindow,
-		gui,
-		x,
-		y,
-		w,
-		h)
+CTimeBar::CTimeBar(MWindow *mwindow, CWindowGUI *gui,
+		int x, int y, int w, int h)
+ : TimeBar(mwindow, gui, x, y, w, h)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -75,13 +66,12 @@ double CTimeBar::pixel_to_position(int pixel)
 {
 	double start = 0, length = 0;
 	EDL *edl = get_edl();
-	if(edl)
-	{
+	if( edl ) {
 		start = edl->local_session->preview_start;
-		if(start >= 0)
+		if( start >= 0 )
 			length = edl->local_session->preview_end - start;
 	}
-	if(length <= 0)
+	if( length <= 0 )
 		length = get_edl_length();
 	return start + (double)pixel * length / get_w();
 }
@@ -106,21 +96,17 @@ void CTimeBar::select_label(double position)
 
 	position = mwindow->edl->align_to_frame(position, 1);
 
-	if(shift_down())
-	{
-		if(position > edl->local_session->get_selectionend(1) / 2 +
-			edl->local_session->get_selectionstart(1) / 2)
-		{
+	if( shift_down() ) {
+		if( position > edl->local_session->get_selectionend(1) / 2 +
+			edl->local_session->get_selectionstart(1) / 2 ) {
 
 			edl->local_session->set_selectionend(position);
 		}
-		else
-		{
+		else {
 			edl->local_session->set_selectionstart(position);
 		}
 	}
-	else
-	{
+	else {
 		edl->local_session->set_selectionstart(position);
 		edl->local_session->set_selectionend(position);
 	}
@@ -133,19 +119,10 @@ void CTimeBar::select_label(double position)
 	mwindow->gui->lock_window();
 	mwindow->gui->hide_cursor(0);
 	mwindow->gui->draw_cursor(1);
-	mwindow->gui->update(0,
-		1,      // 1 for incremental drawing.  2 for full refresh
-		1,
-		0,
-		1,
-		1,
-		0);
+	mwindow->gui->update(0, 1,      // 1 for incremental drawing.  2 for full refresh
+		1, 0, 1, 1, 0);
 	mwindow->gui->unlock_window();
 	mwindow->update_plugin_guis();
 //printf("CTimeBar::select_label 2\n");
 }
-
-
-
-
 

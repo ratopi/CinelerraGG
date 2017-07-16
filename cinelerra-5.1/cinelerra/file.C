@@ -221,6 +221,7 @@ int File::get_options(FormatTools *format,
 				audio_options,
 				video_options);
 			break;
+#ifdef HAVE_OPENEXR
 		case FILE_EXR:
 		case FILE_EXR_LIST:
 			FileEXR::get_parameters(parent_window,
@@ -229,6 +230,7 @@ int File::get_options(FormatTools *format,
 				audio_options,
 				video_options);
 			break;
+#endif
 		case FILE_FLAC:
 			FileFLAC::get_parameters(parent_window,
 				asset,
@@ -373,7 +375,9 @@ const char *File::default_probes[] = {
 	"PNG",
 	"JPEG",
 	"GIF",
+#ifdef HAVE_OPENEXR
 	"EXR",
+#endif
 	"FLAC",
 	"CR2",
 	"TGA",
@@ -443,11 +447,13 @@ int File::probe()
 			file = new FileGIF(this->asset, this);
 			return FILE_OK;
 		}
+#ifdef HAVE_EXR
 		if( !strcmp(pref->name,"EXR") ) { // EXR file
 			if( !FileEXR::check_sig(this->asset, data)) continue;
 			file = new FileEXR(this->asset, this);
 			return FILE_OK;
 		}
+#endif
 		if( !strcmp(pref->name,"FLAC") ) { // FLAC file
 			if( !FileFLAC::check_sig(this->asset, data)) continue;
 			file = new FileFLAC(this->asset, this);
@@ -515,97 +521,97 @@ int File::open_file(Preferences *preferences,
 // get the format now
 // If you add another format to case 0, you also need to add another case for the
 // file format #define.
-		case FILE_UNKNOWN: {
-			int ret = probe();
-			if( ret != FILE_OK ) return ret;
-			break; }
+	case FILE_UNKNOWN: {
+		int ret = probe();
+		if( ret != FILE_OK ) return ret;
+		break; }
 // format already determined
-		case FILE_AC3:
-			file = new FileAC3(this->asset, this);
-			break;
+	case FILE_AC3:
+		file = new FileAC3(this->asset, this);
+		break;
 
-		case FILE_SCENE:
-			file = new FileScene(this->asset, this);
-			break;
+	case FILE_SCENE:
+		file = new FileScene(this->asset, this);
+		break;
 
-		case FILE_FFMPEG:
-			file = new FileFFMPEG(this->asset, this);
-			break;
+	case FILE_FFMPEG:
+		file = new FileFFMPEG(this->asset, this);
+		break;
 
-		case FILE_PCM:
-		case FILE_WAV:
-		case FILE_AU:
-		case FILE_AIFF:
-		case FILE_SND:
+	case FILE_PCM:
+	case FILE_WAV:
+	case FILE_AU:
+	case FILE_AIFF:
+	case FILE_SND:
 //printf("File::open_file 1\n");
-			file = new FileSndFile(this->asset, this);
-			break;
+		file = new FileSndFile(this->asset, this);
+		break;
 
-		case FILE_PNG:
-		case FILE_PNG_LIST:
-			file = new FilePNG(this->asset, this);
-			break;
+	case FILE_PNG:
+	case FILE_PNG_LIST:
+		file = new FilePNG(this->asset, this);
+		break;
 
-		case FILE_JPEG:
-		case FILE_JPEG_LIST:
-			file = new FileJPEG(this->asset, this);
-			break;
+	case FILE_JPEG:
+	case FILE_JPEG_LIST:
+		file = new FileJPEG(this->asset, this);
+		break;
 
-		case FILE_GIF:
-		case FILE_GIF_LIST:
-			file = new FileGIF(this->asset, this);
-			break;
+	case FILE_GIF:
+	case FILE_GIF_LIST:
+		file = new FileGIF(this->asset, this);
+		break;
+#ifdef HAVE_OPENEXR
+	case FILE_EXR:
+	case FILE_EXR_LIST:
+		file = new FileEXR(this->asset, this);
+		break;
+#endif
+	case FILE_FLAC:
+		file = new FileFLAC(this->asset, this);
+		break;
 
-		case FILE_EXR:
-		case FILE_EXR_LIST:
-			file = new FileEXR(this->asset, this);
-			break;
+	case FILE_CR2:
+	case FILE_CR2_LIST:
+		file = new FileCR2(this->asset, this);
+		break;
 
-		case FILE_FLAC:
-			file = new FileFLAC(this->asset, this);
-			break;
+	case FILE_TGA_LIST:
+	case FILE_TGA:
+		file = new FileTGA(this->asset, this);
+		break;
 
-		case FILE_CR2:
-		case FILE_CR2_LIST:
-			file = new FileCR2(this->asset, this);
-			break;
+	case FILE_TIFF:
+	case FILE_TIFF_LIST:
+		file = new FileTIFF(this->asset, this);
+		break;
 
-		case FILE_TGA_LIST:
-		case FILE_TGA:
-			file = new FileTGA(this->asset, this);
-			break;
+	case FILE_DB:
+		file = new FileDB(this->asset, this);
+		break;
 
-		case FILE_TIFF:
-		case FILE_TIFF_LIST:
-			file = new FileTIFF(this->asset, this);
-			break;
+	case FILE_MPEG:
+	case FILE_AMPEG:
+	case FILE_VMPEG:
+		file = new FileMPEG(this->asset, this);
+		break;
 
-		case FILE_DB:
-			file = new FileDB(this->asset, this);
-			break;
+	case FILE_OGG:
+		file = new FileOGG(this->asset, this);
+		break;
 
-		case FILE_MPEG:
-		case FILE_AMPEG:
-		case FILE_VMPEG:
-			file = new FileMPEG(this->asset, this);
-			break;
-
-		case FILE_OGG:
-			file = new FileOGG(this->asset, this);
-			break;
-
-		case FILE_VORBIS:
-			file = new FileVorbis(this->asset, this);
-			break;
+	case FILE_VORBIS:
+		file = new FileVorbis(this->asset, this);
+		break;
 #ifdef HAVE_DV
-		case FILE_RAWDV:
-			file = new FileDV(this->asset, this);
-			break;
+	case FILE_RAWDV:
+		file = new FileDV(this->asset, this);
+		break;
 #endif
 // try plugins
-		default:
-			return 1;
-			break;
+	default:
+		return 1;
+		break;
 	}
 
 
@@ -1254,16 +1260,12 @@ int File::can_copy_from(Asset *asset,
 	int output_w,
 	int output_h)
 {
-	if(!asset) return 0;
-
-	if(file)
-	{
+	if( asset && file ) {
 		return asset->width == output_w &&
 			asset->height == output_h &&
 			file->can_copy_from(asset, position);
 	}
-	else
-		return 0;
+	return 0;
 }
 
 // Fill in queries about formats when adding formats here.
@@ -1316,36 +1318,35 @@ const char* File::formattostr(int format)
 
 const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 {
-	switch(format)
-	{
-		case FILE_SCENE:	return _(SCENE_NAME);
-		case FILE_AC3:		return _(AC3_NAME);
-		case FILE_WAV:		return _(WAV_NAME);
-		case FILE_PCM:		return _(PCM_NAME);
-		case FILE_AU:		return _(AU_NAME);
-		case FILE_AIFF:		return _(AIFF_NAME);
-		case FILE_SND:		return _(SND_NAME);
-		case FILE_PNG:		return _(PNG_NAME);
-		case FILE_PNG_LIST:	return _(PNG_LIST_NAME);
-		case FILE_JPEG:		return _(JPEG_NAME);
-		case FILE_JPEG_LIST:	return _(JPEG_LIST_NAME);
-		case FILE_CR2:		return _(CR2_NAME);
-		case FILE_CR2_LIST:	return _(CR2_LIST_NAME);
-		case FILE_FLAC:		return _(FLAC_NAME);
-		case FILE_EXR:		return _(EXR_NAME);
-		case FILE_EXR_LIST:	return _(EXR_LIST_NAME);
-		case FILE_MPEG:		return _(MPEG_NAME);
-		case FILE_AMPEG:	return _(AMPEG_NAME);
-		case FILE_VMPEG:	return _(VMPEG_NAME);
-		case FILE_TGA:		return _(TGA_NAME);
-		case FILE_TGA_LIST:	return _(TGA_LIST_NAME);
-		case FILE_TIFF:		return _(TIFF_NAME);
-		case FILE_TIFF_LIST:	return _(TIFF_LIST_NAME);
-		case FILE_OGG:		return _(OGG_NAME);
-		case FILE_VORBIS:	return _(VORBIS_NAME);
-		case FILE_RAWDV:	return _(RAWDV_NAME);
-		case FILE_FFMPEG:	return _(FFMPEG_NAME);
-		case FILE_DB:		return _(DBASE_NAME);
+	switch(format) {
+	case FILE_SCENE:	return _(SCENE_NAME);
+	case FILE_AC3:		return _(AC3_NAME);
+	case FILE_WAV:		return _(WAV_NAME);
+	case FILE_PCM:		return _(PCM_NAME);
+	case FILE_AU:		return _(AU_NAME);
+	case FILE_AIFF:		return _(AIFF_NAME);
+	case FILE_SND:		return _(SND_NAME);
+	case FILE_PNG:		return _(PNG_NAME);
+	case FILE_PNG_LIST:	return _(PNG_LIST_NAME);
+	case FILE_JPEG:		return _(JPEG_NAME);
+	case FILE_JPEG_LIST:	return _(JPEG_LIST_NAME);
+	case FILE_CR2:		return _(CR2_NAME);
+	case FILE_CR2_LIST:	return _(CR2_LIST_NAME);
+	case FILE_FLAC:		return _(FLAC_NAME);
+	case FILE_EXR:		return _(EXR_NAME);
+	case FILE_EXR_LIST:	return _(EXR_LIST_NAME);
+	case FILE_MPEG:		return _(MPEG_NAME);
+	case FILE_AMPEG:	return _(AMPEG_NAME);
+	case FILE_VMPEG:	return _(VMPEG_NAME);
+	case FILE_TGA:		return _(TGA_NAME);
+	case FILE_TGA_LIST:	return _(TGA_LIST_NAME);
+	case FILE_TIFF:		return _(TIFF_NAME);
+	case FILE_TIFF_LIST:	return _(TIFF_LIST_NAME);
+	case FILE_OGG:		return _(OGG_NAME);
+	case FILE_VORBIS:	return _(VORBIS_NAME);
+	case FILE_RAWDV:	return _(RAWDV_NAME);
+	case FILE_FFMPEG:	return _(FFMPEG_NAME);
+	case FILE_DB:		return _(DBASE_NAME);
 	}
 	return _("Unknown");
 }
@@ -1365,15 +1366,14 @@ int File::strtobits(const char *bits)
 const char* File::bitstostr(int bits)
 {
 //printf("File::bitstostr\n");
-	switch(bits)
-	{
-		case BITSLINEAR8:	return (NAME_8BIT);
-		case BITSLINEAR16:	return (NAME_16BIT);
-		case BITSLINEAR24:	return (NAME_24BIT);
-		case BITSLINEAR32:	return (NAME_32BIT);
-		case BITSULAW:		return (NAME_ULAW);
-		case BITS_ADPCM:	return (NAME_ADPCM);
-		case BITSFLOAT:		return (NAME_FLOAT);
+	switch(bits) {
+	case BITSLINEAR8:	return (NAME_8BIT);
+	case BITSLINEAR16:	return (NAME_16BIT);
+	case BITSLINEAR24:	return (NAME_24BIT);
+	case BITSLINEAR32:	return (NAME_32BIT);
+	case BITSULAW:		return (NAME_ULAW);
+	case BITS_ADPCM:	return (NAME_ADPCM);
+	case BITSFLOAT:		return (NAME_FLOAT);
 	}
 	return _("Unknown");
 }
@@ -1418,14 +1418,16 @@ int File::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(asset->format)
 	{
-#ifdef HAVE_FIREWIRE
+#ifdef HAVE_DV
 		case FILE_RAWDV:	return FileDV::get_best_colormodel(asset, driver);
 #endif
 		case FILE_MPEG:		return FileMPEG::get_best_colormodel(asset, driver);
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:	return FileJPEG::get_best_colormodel(asset, driver);
+#ifdef HAVE_OPENEXR
 		case FILE_EXR:
 		case FILE_EXR_LIST:	return FileEXR::get_best_colormodel(asset, driver);
+#endif
 		case FILE_PNG:
 		case FILE_PNG_LIST:	return FilePNG::get_best_colormodel(asset, driver);
 		case FILE_TGA:

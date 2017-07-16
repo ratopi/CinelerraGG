@@ -128,6 +128,7 @@ int Asset::init_values()
 	ac3_bitrate = 128;
 
 	png_use_alpha = 0;
+
 	exr_use_alpha = 0;
 	exr_compression = 0;
 

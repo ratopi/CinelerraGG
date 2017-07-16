@@ -40,7 +40,7 @@ class AssetEditByteOrderLOHI;
 class AssetEditByteOrderHILO;
 class AssetEditSigned;
 class DetailAssetWindow;
-class DetailAssetThread;
+class DetailAssetDialog;
 class DetailAssetButton;
 
 #endif

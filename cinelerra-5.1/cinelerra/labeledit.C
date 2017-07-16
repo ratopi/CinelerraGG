@@ -45,9 +45,11 @@ LabelEdit::~LabelEdit()
 	close_window();
 }
 
-void LabelEdit::start(Label *label)
+void LabelEdit::start(Label *label, int x, int y)
 {
 	this->label = label;
+	this->x = x;  this->y = y;
+
 	BC_DialogThread::start();
 }
 
@@ -64,15 +66,14 @@ void LabelEdit::handle_done_event(int result)
 
 BC_Window *LabelEdit::new_gui()
 {
- 	int x = mwindow->gui->get_abs_cursor_x(1) - 400 / 2;
-	int y = mwindow->gui->get_abs_cursor_y(1) - 350 / 2;
-	label_edit_window = new LabelEditWindow(mwindow, this, x, y);
+	label_edit_window = new LabelEditWindow(mwindow, this);
 	label_edit_window->create_objects();
 	return label_edit_window;
 }
 
-LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Label Info"), x, y,
+LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
+ : BC_Window(_(PROGRAM_NAME ": Label Info"),
+	thread->x - 400/2, thread->y - 350/2,
 	400, 350, 400, 430, 0, 0, 1)
 {
 	this->mwindow = mwindow;

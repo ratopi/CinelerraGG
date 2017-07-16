@@ -1873,7 +1873,9 @@ AWindowInfo::AWindowInfo(MWindow *mwindow, AWindowGUI *gui, int x, int y)
 
 int AWindowInfo::handle_event()
 {
-	gui->awindow->asset_edit->edit_asset(gui->selected_asset());
+	int cur_x, cur_y;
+	gui->get_abs_cursor_xy(cur_x, cur_y, 0);
+	gui->awindow->asset_edit->edit_asset(gui->selected_asset(), cur_x, cur_y);
 	return 1;
 }
 
@@ -2027,15 +2029,15 @@ int AVIconDrawing::handle_event()
 }
 
 
-AWindowListFormat::AWindowListFormat(MWindow *mwindow)
+AWindowListFormat::AWindowListFormat(MWindow *mwindow, AWindowGUI *gui)
  : BC_MenuItem("")
 {
 	this->mwindow = mwindow;
+	this->gui = gui;
 }
 
 int AWindowListFormat::handle_event()
 {
-	AWindowGUI *gui = mwindow->awindow->gui;
 	gui->stop_vicon_drawing();
 
 	EDLSession *session = mwindow->edl->session;
@@ -2063,15 +2065,15 @@ void AWindowListFormat::update()
                 (char*)_("Display icons") : (char*)_("Display text"));
 }
 
-AWindowListSort::AWindowListSort(MWindow *mwindow)
+AWindowListSort::AWindowListSort(MWindow *mwindow, AWindowGUI *gui)
  : BC_MenuItem(_("Sort items"))
 {
 	this->mwindow = mwindow;
+	this->gui = gui;
 }
 
 int AWindowListSort::handle_event()
 {
-	AWindowGUI *gui = mwindow->awindow->gui;
 	gui->sort_assets();
 	return 1;
 }

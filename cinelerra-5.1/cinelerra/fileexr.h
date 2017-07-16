@@ -24,6 +24,7 @@
 
 
 #include "file.inc"
+#include "fileexr.inc"
 #include "filelist.h"
 #include "vframe.inc"
 

@@ -62,7 +62,7 @@ void AssetPopup::create_objects()
 	BC_MenuItem *menu_item;
 	BC_SubMenu *submenu;
 	add_item(info = new AssetPopupInfo(mwindow, this));
-	add_item(format = new AWindowListFormat(mwindow));
+	add_item(format = new AWindowListFormat(mwindow, gui));
 	add_item(new AssetPopupSort(mwindow, this));
 	add_item(index = new AssetPopupBuildIndex(mwindow, this));
 	add_item(view = new AssetPopupView(mwindow, this));
@@ -144,16 +144,17 @@ AssetPopupInfo::~AssetPopupInfo()
 
 int AssetPopupInfo::handle_event()
 {
-	if(mwindow->session->drag_assets->total)
-	{
+	int cur_x, cur_y;
+	popup->gui->get_abs_cursor_xy(cur_x, cur_y, 0);
+	
+	if( mwindow->session->drag_assets->total ) {
 		mwindow->awindow->asset_edit->edit_asset(
-			mwindow->session->drag_assets->values[0]);
+			mwindow->session->drag_assets->values[0], cur_x, cur_y);
 	}
 	else
-	if(mwindow->session->drag_clips->total)
-	{
+	if( mwindow->session->drag_clips->total ) {
 		popup->gui->awindow->clip_edit->edit_clip(
-			mwindow->session->drag_clips->values[0]);
+			mwindow->session->drag_clips->values[0], cur_x, cur_y);
 	}
 	return 1;
 }
@@ -212,11 +213,11 @@ int AssetPopupView::handle_event()
 	VWindow *vwindow = mwindow->get_viewer(1, DEFAULT_VWINDOW);
 	vwindow->gui->lock_window("AssetPopupView::handle_event");
 
-	if(mwindow->session->drag_assets->total)
+	if( mwindow->session->drag_assets->total )
 		vwindow->change_source(
 			mwindow->session->drag_assets->values[0]);
 	else
-	if(mwindow->session->drag_clips->total)
+	if( mwindow->session->drag_clips->total )
 		vwindow->change_source(
 			mwindow->session->drag_clips->values[0]);
 
@@ -244,11 +245,11 @@ int AssetPopupViewWindow::handle_event()
 // TODO: create new vwindow or change current vwindow
 	vwindow->gui->lock_window("AssetPopupView::handle_event");
 
-	if(mwindow->session->drag_assets->total)
+	if( mwindow->session->drag_assets->total )
 		vwindow->change_source(
 			mwindow->session->drag_assets->values[0]);
 	else
-	if(mwindow->session->drag_clips->total)
+	if( mwindow->session->drag_clips->total )
 		vwindow->change_source(
 			mwindow->session->drag_clips->values[0]);
 
@@ -367,10 +368,10 @@ AssetListMenu::~AssetListMenu()
 
 void AssetListMenu::create_objects()
 {
-	add_item(format = new AWindowListFormat(mwindow));
-	add_item(new AWindowListSort(mwindow));
-	add_item(new AssetListCopy(mwindow));
-	add_item(new AssetListPaste(mwindow));
+	add_item(format = new AWindowListFormat(mwindow, gui));
+	add_item(new AWindowListSort(mwindow, gui));
+	add_item(new AssetListCopy(mwindow, gui));
+	add_item(new AssetListPaste(mwindow, gui));
 	update_titles();
 }
 
@@ -379,10 +380,11 @@ void AssetListMenu::update_titles()
 	format->update();
 }
 
-AssetListCopy::AssetListCopy(MWindow *mwindow)
+AssetListCopy::AssetListCopy(MWindow *mwindow, AWindowGUI *gui)
  : BC_MenuItem(_("Copy file list"))
 {
 	this->mwindow = mwindow;
+	this->gui = gui;
 	copy_dialog = 0;
 }
 AssetListCopy::~AssetListCopy()
@@ -411,12 +413,14 @@ int AssetListCopy::handle_event()
 		cp += sprintf(cp, "%s\n", path);
 	}
 	*cp = 0;
+	int cur_x, cur_y;
+	gui->get_abs_cursor_xy(cur_x, cur_y, 0);
 	gui->unlock_window(); 
 
 	if( n ) {
 		if( !copy_dialog )
 			copy_dialog = new AssetCopyDialog(this);
-		copy_dialog->start(text);
+		copy_dialog->start(text, cur_x, cur_y);
 	}
 	else {
 		eprintf(_("Nothing selected"));
@@ -432,10 +436,11 @@ AssetCopyDialog::AssetCopyDialog(AssetListCopy *copy)
 	copy_window = 0;
 }
 
-void AssetCopyDialog::start(char *text)
+void AssetCopyDialog::start(char *text, int x, int y)
 {
         close_window();
         this->text = text;
+	this->x = x;  this->y = y;
 	BC_DialogThread::start();
 }
 
@@ -447,10 +452,8 @@ AssetCopyDialog::~AssetCopyDialog()
 BC_Window* AssetCopyDialog::new_gui()
 {
         BC_DisplayInfo display_info;
-        int x = display_info.get_abs_cursor_x();
-        int y = display_info.get_abs_cursor_y();
 
-        copy_window = new AssetCopyWindow(this, x, y);
+        copy_window = new AssetCopyWindow(this);
         copy_window->create_objects();
         return copy_window;
 }
@@ -466,8 +469,10 @@ void AssetCopyDialog::handle_close_event(int result)
 }
 
 
-AssetCopyWindow::AssetCopyWindow(AssetCopyDialog *copy_dialog, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Copy File List"), x, y, 500, 200, 500, 200, 0, 0, 1)
+AssetCopyWindow::AssetCopyWindow(AssetCopyDialog *copy_dialog)
+ : BC_Window(_(PROGRAM_NAME ": Copy File List"),
+	copy_dialog->x - 500/2, copy_dialog->y - 200/2,
+	500, 200, 500, 200, 0, 0, 1)
 {
         this->copy_dialog = copy_dialog;
 }
@@ -495,10 +500,11 @@ void AssetCopyWindow::create_objects()
 }
 
 
-AssetListPaste::AssetListPaste(MWindow *mwindow)
+AssetListPaste::AssetListPaste(MWindow *mwindow, AWindowGUI *gui)
  : BC_MenuItem(_("Paste file list"))
 {
 	this->mwindow = mwindow;
+	this->gui = gui;
 	paste_dialog = 0;
 }
 AssetListPaste::~AssetListPaste()
@@ -509,8 +515,12 @@ AssetListPaste::~AssetListPaste()
 int AssetListPaste::handle_event()
 {
 	if( !paste_dialog )
+		paste_dialog->close_window();
+	else
 		paste_dialog = new AssetPasteDialog(this);
-	paste_dialog->start();
+	int cur_x, cur_y;
+	gui->get_abs_cursor_xy(cur_x, cur_y, 0);
+	paste_dialog->start(cur_x, cur_y);
 	return 1;
 }
 
@@ -528,11 +538,7 @@ AssetPasteDialog::~AssetPasteDialog()
 
 BC_Window* AssetPasteDialog::new_gui()
 {
-        BC_DisplayInfo display_info;
-        int x = display_info.get_abs_cursor_x();
-        int y = display_info.get_abs_cursor_y();
-
-        paste_window = new AssetPasteWindow(this, x, y);
+        paste_window = new AssetPasteWindow(this);
         paste_window->create_objects();
         return paste_window;
 }
@@ -573,9 +579,16 @@ void AssetPasteDialog::handle_close_event(int result)
         paste_window = 0;
 }
 
+void AssetPasteDialog::start(int x, int y)
+{
+	this->x = x;  this->y = y;
+	BC_DialogThread::start();
+}
 
-AssetPasteWindow::AssetPasteWindow(AssetPasteDialog *paste_dialog, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Paste File List"), x, y, 500, 200, 500, 200, 0, 0, 1)
+AssetPasteWindow::AssetPasteWindow(AssetPasteDialog *paste_dialog)
+ : BC_Window(_(PROGRAM_NAME ": Paste File List"),
+	paste_dialog->x - 500/2, paste_dialog->y - 200/2,
+	500, 200, 500, 200, 0, 0, 1)
 {
         this->paste_dialog = paste_dialog;
 }

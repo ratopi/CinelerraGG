@@ -76,22 +76,20 @@ AssetEdit::~AssetEdit()
 }
 
 
-void AssetEdit::edit_asset(Indexable *indexable)
+void AssetEdit::edit_asset(Indexable *indexable, int x, int y)
 {
 	close_window();
 	this->indexable = indexable;
 	this->indexable->add_user();
+	this->x = x;  this->y = y;
 
 // Copy asset parameters into temporary storage for editing.
-	if(indexable->is_asset)
-	{
+	if( indexable->is_asset ) {
 		changed_params->copy_from((Asset*)indexable, 0);
 	}
-	else
-	{
+	else {
 		EDL *nested_edl = (EDL*)indexable;
-
-	        strcpy(changed_params->path, nested_edl->path);
+		strcpy(changed_params->path, nested_edl->path);
 		changed_params->sample_rate = nested_edl->session->sample_rate;
 		changed_params->channels = nested_edl->session->audio_channels;
 
@@ -110,12 +108,12 @@ void AssetEdit::handle_done_event(int result)
 
 void AssetEdit::handle_close_event(int result)
 {
-	if(!result) {
+	if( !result ) {
 		int changed = 0;
 		Asset *asset = 0;
 		EDL *nested_edl = 0;
 
-		if(indexable->is_asset) {
+		if( indexable->is_asset ) {
 			asset = (Asset*)indexable;
 			if( !changed_params->equivalent(*asset, 1, 1, mwindow->edl) )
 				changed = 1;
@@ -123,18 +121,18 @@ void AssetEdit::handle_close_event(int result)
 		else {
 			nested_edl = (EDL*)indexable;
 			if( strcmp(changed_params->path, nested_edl->path)
-// 			     || changed_params->sample_rate != nested_edl->session->sample_rate
-//			     || !EQUIV(changed_params->frame_rate, nested_edl->session->frame_rate
+// 				|| changed_params->sample_rate != nested_edl->session->sample_rate
+//				|| !EQUIV(changed_params->frame_rate, nested_edl->session->frame_rate
 			)
 				changed = 1;
 		}
-		if(changed) {
+		if( changed ) {
 			mwindow->gui->lock_window();
 //printf("AssetEdit::handle_close_event %d\n", __LINE__);
 
 // Omit index status from copy since an index rebuild may have been
 // happening when new_asset was created but not be happening anymore.
-			if(asset) {
+			if( asset ) {
 				mwindow->remove_asset_from_caches(asset);
 //printf("AssetEdit::handle_close_event %d %f\n", __LINE__, asset->get_frame_rate());
 				asset->copy_from(changed_params, 0);
@@ -143,8 +141,8 @@ void AssetEdit::handle_close_event(int result)
 			else {
 				strcpy(nested_edl->path, changed_params->path);
 // Other parameters can't be changed because they're defined in the other EDL
-//                nested_edl->session->frame_rate = changed_params->frame_rate;
-//                nested_edl->session->sample_rate = changed_params->sample_rate;
+//		nested_edl->session->frame_rate = changed_params->frame_rate;
+//		nested_edl->session->sample_rate = changed_params->sample_rate;
 			}
 //printf("AssetEdit::handle_close_event %d\n", __LINE__);
 
@@ -207,8 +205,7 @@ int AssetEdit::window_height()
 
 AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
  : BC_Window(_(PROGRAM_NAME ": Asset Info"),
- 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
-	mwindow->gui->get_abs_cursor_y(1) - asset_edit->window_height() / 2,
+	asset_edit->x - 450/2, asset_edit->y - asset_edit->window_height()/2,
 	450, asset_edit->window_height(), 0, 0, 1)
 {
 	this->mwindow = mwindow;
@@ -219,7 +216,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	hilo = 0;
 	lohi = 0;
 	allow_edits = 0;
-	detail_thread = 0;
+	detail_dialog = 0;
 	win_width = 0;
 	win_height = 0;
 }
@@ -231,8 +228,8 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 AssetEditWindow::~AssetEditWindow()
 {
 	lock_window("AssetEditWindow::~AssetEditWindow");
-	if(bitspopup) delete bitspopup;
-	if(detail_thread) delete detail_thread;
+	delete bitspopup;
+	delete detail_dialog;
 	unlock_window();
 }
 
@@ -252,33 +249,30 @@ void AssetEditWindow::create_objects()
 	Asset *asset = 0;
 	EDL *nested_edl = 0;
 
-	if(asset_edit->indexable->is_asset)
+	if( asset_edit->indexable->is_asset )
 		asset = (Asset*)asset_edit->indexable;
 	else
 		nested_edl = (EDL*)asset_edit->indexable;
 
-	if(asset && asset->format == FILE_PCM)
+	if( asset && asset->format == FILE_PCM )
 		allow_edits = 1;
 	else
 		allow_edits = 0;
 
 	lock_window("AssetEditWindow::create_objects");
-	if(allow_edits)
+	if( allow_edits )
 		vmargin = 30;
 	else
 		vmargin = 20;
 
 	add_subwindow(path_text = new AssetEditPathText(this, y));
-	add_subwindow(path_button = new AssetEditPath(mwindow,
-		this,
-		path_text,
-		y,
-		asset_edit->indexable->path,
-		_(PROGRAM_NAME ": Asset path"), _("Select a file for this asset:")));
+	add_subwindow(path_button = new AssetEditPath(mwindow, this,
+		path_text, y, asset_edit->indexable->path,
+		_(PROGRAM_NAME ": Asset path"),
+		_("Select a file for this asset:")));
 	y += 30;
 
-	if(asset)
-	{
+	if( asset ) {
 		add_subwindow(new BC_Title(x, y, _("File format:")));
 		x = x2;
 		add_subwindow(new BC_Title(x, y, File::formattostr(mwindow->plugindb,
@@ -295,9 +289,8 @@ void AssetEditWindow::create_objects()
 
 
 		add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
-		if(asset->format == FILE_MPEG || asset->format == FILE_FFMPEG)
-		{
-			detail_thread = new DetailAssetThread(mwindow);
+		if( asset->format == FILE_MPEG || asset->format == FILE_FFMPEG ) {
+			detail_dialog = new DetailAssetDialog(mwindow);
 			BC_GenericButton *detail = new DetailAssetButton(this, x2+120, y);
 			add_subwindow(detail);
 		}
@@ -309,12 +302,12 @@ void AssetEditWindow::create_objects()
 		y += 20;
 		x = x1;
 
-		if(asset->audio_length > 0)
+		if( asset->audio_length > 0 )
 			length = (double)asset->audio_length / asset->sample_rate;
-		if(asset->video_length > 0)
+		if( asset->video_length > 0 )
 			length = MAX(length, (double)asset->video_length / asset->frame_rate);
 		int64_t bitrate;
-		if(!EQUIV(length, 0))
+		if( !EQUIV(length, 0) )
 			bitrate = (int64_t)(bytes * 8 / length);
 		else
 			bitrate = bytes;
@@ -328,8 +321,7 @@ void AssetEditWindow::create_objects()
 		x = x1;
 	}
 
-	if((asset && asset->audio_data) || nested_edl)
-	{
+	if( (asset && asset->audio_data) || nested_edl ) {
 		add_subwindow(new BC_Bar(x, y, get_w() - x * 2));
 		y += 5;
 
@@ -337,10 +329,8 @@ void AssetEditWindow::create_objects()
 
 		y += 30;
 
-		if(asset)
-		{
-			if(asset->get_compression_text(1, 0))
-			{
+		if( asset ) {
+			if( asset->get_compression_text(1, 0) ) {
 				add_subwindow(new BC_Title(x, y, _("Compression:")));
 				x = x2;
 				add_subwindow(new BC_Title(x,
@@ -357,8 +347,7 @@ void AssetEditWindow::create_objects()
 		sprintf(string, "%d", asset_edit->changed_params->channels);
 
 		x = x2;
-		if(allow_edits)
-		{
+		if( allow_edits ) {
 			BC_TumbleTextBox *textbox = new AssetEditChannels(this,
 				string,
 				x,
@@ -366,8 +355,7 @@ void AssetEditWindow::create_objects()
 			textbox->create_objects();
 			y += vmargin;
 		}
-		else
-		{
+		else {
 			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 			y += 20;
 		}
@@ -377,36 +365,26 @@ void AssetEditWindow::create_objects()
 		sprintf(string, "%d", asset_edit->changed_params->sample_rate);
 
 		x = x2;
-		if(asset)
-		{
+		if( asset ) {
 			BC_TextBox *textbox;
 			add_subwindow(textbox = new AssetEditRate(this, string, x, y));
 			x += textbox->get_w();
 			add_subwindow(new SampleRatePulldown(mwindow, textbox, x, y));
 		}
-		else
-		{
+		else {
 			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 		}
 
 		y += 30;
 		x = x1;
 
-		if(asset)
-		{
+		if( asset ) {
 			add_subwindow(new BC_Title(x, y, _("Bits:")));
 			x = x2;
-			if(allow_edits)
-			{
-				bitspopup = new BitsPopup(this,
-					x,
-					y,
+			if( allow_edits ) {
+				bitspopup = new BitsPopup(this, x, y,
 					&asset_edit->changed_params->bits,
-					1,
-					1,
-					1,
-					0,
-					1);
+					1, 1, 1, 0, 1);
 				bitspopup->create_objects();
 			}
 			else
@@ -419,7 +397,7 @@ void AssetEditWindow::create_objects()
 			sprintf(string, "%d", asset->header);
 
 			x = x2;
-			if(allow_edits)
+			if( allow_edits )
 				add_subwindow(new AssetEditHeader(this, string, x, y));
 			else
 				add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
@@ -429,7 +407,7 @@ void AssetEditWindow::create_objects()
 
 			add_subwindow(new BC_Title(x, y, _("Byte order:")));
 
-			if(allow_edits)
+			if( allow_edits )
 			{
 				x = x2;
 
@@ -444,10 +422,9 @@ void AssetEditWindow::create_objects()
 					y));
 				y += vmargin;
 			}
-			else
-			{
+			else {
 				x = x2;
-				if(asset->byte_order)
+				if( asset->byte_order )
 					add_subwindow(new BC_Title(x, y, _("Lo-Hi"), MEDIUMFONT, mwindow->theme->assetedit_color));
 				else
 					add_subwindow(new BC_Title(x, y, _("Hi-Lo"), MEDIUMFONT, mwindow->theme->assetedit_color));
@@ -456,14 +433,12 @@ void AssetEditWindow::create_objects()
 
 
 			x = x1;
-			if(allow_edits)
-			{
+			if( allow_edits ) {
 	//			add_subwindow(new BC_Title(x, y, _("Values are signed:")));
 				add_subwindow(new AssetEditSigned(this, asset->signed_, x, y));
 			}
-			else
-			{
-				if(!asset->signed_ && asset->bits == 8)
+			else {
+				if( !asset->signed_ && asset->bits == 8 )
 					add_subwindow(new BC_Title(x, y, _("Values are unsigned")));
 				else
 					add_subwindow(new BC_Title(x, y, _("Values are signed")));
@@ -474,8 +449,7 @@ void AssetEditWindow::create_objects()
 	}
 
 	x = x1;
-	if((asset && asset->video_data) || nested_edl)
-	{
+	if( (asset && asset->video_data) || nested_edl ) {
 		add_subwindow(new BC_Bar(x, y, get_w() - x * 2));
 		y += 5;
 
@@ -484,8 +458,7 @@ void AssetEditWindow::create_objects()
 		x = x1;
 
 
-		if(asset && asset->get_compression_text(0,1))
-		{
+		if( asset && asset->get_compression_text(0,1) ) {
 			add_subwindow(new BC_Title(x, y, _("Compression:")));
 			x = x2;
 			add_subwindow(new BC_Title(x,
@@ -502,15 +475,13 @@ void AssetEditWindow::create_objects()
 		sprintf(string, "%.4f", asset_edit->changed_params->frame_rate);
 
 //printf("AssetEditWindow::create_objects %d %f\n", __LINE__, asset_edit->changed_params->frame_rate);
-		if(asset)
-		{
+		if( asset ) {
 			BC_TextBox *framerate;
 			add_subwindow(framerate = new AssetEditFRate(this, string, x, y));
 			x += 105;
 			add_subwindow(new FrameRatePulldown(mwindow, framerate, x, y));
 		}
-		else
-		{
+		else {
 			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 		}
 
@@ -531,8 +502,7 @@ void AssetEditWindow::create_objects()
 		add_subwindow(win_height);
 		y += win_height->get_h() + 5;
 
-		if(asset && (asset->format == FILE_MPEG || asset->format == FILE_FFMPEG ) )
-		{
+		if( asset && (asset->format == FILE_MPEG || asset->format == FILE_FFMPEG )  ) {
 			y += 5;
 			x = x1;
 			add_subwindow(new BC_Title(x, y, _("Actual width:")));
@@ -594,7 +564,9 @@ void AssetEditWindow::create_objects()
 
 void AssetEditWindow::show_info_detail()
 {
-	detail_thread->start((Asset*)asset_edit->indexable);
+	int cur_x, cur_y;
+	get_abs_cursor_xy(cur_x, cur_y, 0);
+	detail_dialog->start((Asset*)asset_edit->indexable, cur_x, cur_y);
 }
 
 
@@ -672,24 +644,22 @@ void Interlaceautofix::showhideotherwidgets()
   int thevalue = get_value();
 
 	Asset *asset = fwindow->asset_edit->changed_params;
-	if (thevalue == ILACE_AUTOFIXOPTION_AUTO)
-	  {
-	    this->ilacemode_textbox->enable();
-	    this->ilacemode_listbox->enable();
-	    this->ilacefixmethod_textbox->disable();
-	    this->ilacefixmethod_listbox->disable();
-	    int xx = ilaceautofixmethod(mwindow->edl->session->interlace_mode,asset->interlace_mode);
-	    ilacefixmethod_to_text(string,xx);
-	    this->ilacefixmethod_textbox->update(string);
-	  }
-	if (thevalue == ILACE_AUTOFIXOPTION_MANUAL)
-	  {
-	    this->ilacemode_textbox->disable();
-	    this->ilacemode_listbox->disable();
-	    this->ilacefixmethod_textbox->enable();
-	    this->ilacefixmethod_listbox->enable();
-	    ilacefixmethod_to_text(string,asset->interlace_fixmethod);
-	    this->ilacefixmethod_textbox->update(string);
+	if( thevalue == ILACE_AUTOFIXOPTION_AUTO ) {
+		this->ilacemode_textbox->enable();
+		this->ilacemode_listbox->enable();
+		this->ilacefixmethod_textbox->disable();
+		this->ilacefixmethod_listbox->disable();
+		int xx = ilaceautofixmethod(mwindow->edl->session->interlace_mode,asset->interlace_mode);
+		ilacefixmethod_to_text(string, xx);
+		this->ilacefixmethod_textbox->update(string);
+	}
+	if( thevalue == ILACE_AUTOFIXOPTION_MANUAL ) {
+		this->ilacemode_textbox->disable();
+		this->ilacemode_listbox->disable();
+		this->ilacefixmethod_textbox->enable();
+		this->ilacefixmethod_listbox->enable();
+		ilacefixmethod_to_text(string, asset->interlace_fixmethod);
+		this->ilacefixmethod_textbox->update(string);
 	  }
 }
 
@@ -929,8 +899,8 @@ int AssetEditFormat::handle_event()
 DetailAssetButton::DetailAssetButton(AssetEditWindow *fwindow, int x, int y)
  : BC_GenericButton(x, y, _("Detail"))
 {
-        this->fwindow = fwindow;
-        set_underline(0);
+	this->fwindow = fwindow;
+	set_underline(0);
 }
 
 DetailAssetButton::~DetailAssetButton()
@@ -940,16 +910,16 @@ DetailAssetButton::~DetailAssetButton()
 int DetailAssetButton::handle_event()
 {
 	fwindow->show_info_detail();
-        return 1;
+	return 1;
 }
 
-DetailAssetWindow::DetailAssetWindow(MWindow *mwindow, Asset *asset)
+DetailAssetWindow::DetailAssetWindow(MWindow *mwindow,
+	DetailAssetDialog *detail_dialog, Asset *asset)
  : BC_Window(_("Asset Detail"),
-        mwindow->gui->get_abs_cursor_x(1) - 600/2,
-        mwindow->gui->get_abs_cursor_y(1) - 500/2,
-        600, 500)
+	detail_dialog->x - 600/2, detail_dialog->y - 500/2, 600, 500)
 {
 	this->mwindow = mwindow;
+	this->detail_dialog = detail_dialog;
 	this->asset = asset;
 	asset->add_user();
 	info[0] = 0;
@@ -962,26 +932,16 @@ DetailAssetWindow::~DetailAssetWindow()
 	delete text;
 }
 
-DetailAssetThread::DetailAssetThread(MWindow *mwindow)
- : Thread(1, 0, 0)
+DetailAssetDialog::DetailAssetDialog(MWindow *mwindow)
+ : BC_DialogThread()
 {
 	this->mwindow = mwindow;
 	dwindow = 0;
 }
 
-DetailAssetThread::~DetailAssetThread()
+DetailAssetDialog::~DetailAssetDialog()
 {
-	stop();
-}
-
-void DetailAssetThread::stop()
-{
-	if( Thread::running() ) {
-		dwindow->lock_window("DetailAssetThread::stop");
-		dwindow->set_done(1);
-		dwindow->unlock_window();
-	}
-	Thread::join();
+	close_window();
 }
 
 void DetailAssetWindow::create_objects()
@@ -1000,28 +960,24 @@ void DetailAssetWindow::create_objects()
 			break;
 		}
 	}
-	lock_window("DetailAssetThread::create_objects");
 	text = new BC_ScrollTextBox(this, x, y, get_w()-32, 23, info, -len);
 	text->create_objects();  text->set_text_row(0);
 	add_subwindow(new BC_OKButton(this));
 	show_window();
-	unlock_window();
 }
 
-void DetailAssetThread::start(Asset *asset)
+void DetailAssetDialog::start(Asset *asset, int x, int y)
 {
-	stop();
 	delete dwindow;
-	dwindow = new DetailAssetWindow(mwindow, asset);
-	Thread::start();
+	this->asset = asset;
+	this->x = x;  this->y = y;
+	BC_DialogThread::start();
 }
 
-void DetailAssetThread::run()
+BC_Window *DetailAssetDialog::new_gui()
 {
-// Get length from TOC
+	dwindow = new DetailAssetWindow(mwindow, this, asset);
 	dwindow->create_objects();
-	dwindow->run_window();
-	delete dwindow;
-	dwindow = 0;
+	return dwindow;
 }
 

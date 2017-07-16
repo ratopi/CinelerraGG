@@ -1980,6 +1980,9 @@ void MWindow::create_objects(int want_gui,
 
 	Timer timer;
 
+	init_awindow();
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+
 	init_compositor();
 	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 
@@ -1991,24 +1994,21 @@ void MWindow::create_objects(int want_gui,
 	init_gui();
 	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 
-	init_awindow();
-	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
-
 	init_levelwindow();
-	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
-
 	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 
 	init_indexes();
 	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 
 	init_channeldb();
-
 	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+
 	init_gwindow();
 	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+
 	init_render();
 	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+
 	init_brender();
 	init_exportedl();
 	init_commercials();

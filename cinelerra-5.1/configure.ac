@@ -15,7 +15,6 @@ CFG_CFLAGS+=" -D__STDC_LIMIT_MACROS"
 CFG_CFLAGS+=" -DPNG_SKIP_SETJMP_CHECK=1"
 CFG_CFLAGS+=" -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
 CFG_CFLAGS+=" -I/usr/include/freetype2"
-CFG_CFLAGS+=" -I/usr/include/OpenEXR"
 
 AC_DEFUN([CHECK_WITH], [
 AC_ARG_WITH([$1],
@@ -520,18 +519,20 @@ CHECK_WANT([ESOUND], [no], [use esd], [
 CHECK_WANT([DL], [auto], [system has libdl], [
  CHECK_LIB([DL], [dl], [dlopen])])
 
+CHECK_WANT([EXR], [auto], [use exr], [])
+
 CHECK_WANT([NUMA], [auto], [system has libnuma], [
  CHECK_LIB([NUMA], [numa], [numa_alloc])])
 
-
-AC_MSG_CHECKING([for openexr available])
-saved_LIBS="$LIBS"
-saved_CXXFLAGS="$CXXFLAGS"
-# ilmbase libs
-LIBS=" -lIlmImf -lIlmThread -lIex"
-CXXFLAGS="-I/usr/include/OpenEXR"
-AC_LANG_PUSH(C++)
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+CHECK_WANT([OPENEXR], [auto], [use openexr], [
+ AC_MSG_CHECKING([for openexr available])
+ saved_LIBS="$LIBS"
+ saved_CXXFLAGS="$CXXFLAGS"
+ # ilmbase libs
+ LIBS=" -lIlmImf -lIlmThread -lIex"
+ CXXFLAGS="-I/usr/include/OpenEXR"
+ AC_LANG_PUSH(C++)
+ AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include "ImfChannelList.h"
 #include "ImfChromaticities.h"
 #include "ImfCompression.h"
@@ -546,15 +547,18 @@ class EXRIStream : public Imf::IStream { public:
 EXRIStream() : Imf::IStream("mypath") {} };
 class EXROStream : public Imf::OStream { public: 
 EXROStream() : Imf::OStream("mypath") {} };
-]])], [HAVE_openexr=yes], [HAVE_openexr=no])
-if test "x$HAVE_openexr" = "xyes"; then
-  SHARED_openexr="$LIBS"
-fi
-LIBS="$saved_LIBS"
-CXXFLAGS="$saved_CXXFLAGS"
-AC_LANG_POP(C++)
-AC_MSG_RESULT([$HAVE_openexr])
-AC_SUBST([HAVE_openexr])
+]])], [HAVE_OPENEXR=yes], [HAVE_OPENEXR=no])
+ RESULT="$HAVE_OPENEXR"
+ if test "x$RESULT" = "xyes"; then
+   SHARED_openexr="$LIBS"
+   CFG_CFLAGS+=" -I/usr/include/OpenEXR"
+ fi
+ LIBS="$saved_LIBS"
+ CXXFLAGS="$saved_CXXFLAGS"
+ AC_LANG_POP(C++)
+ AC_MSG_RESULT([$HAVE_OPENEXR])
+])
+AC_SUBST([HAVE_OPENEXR])
 
 # build global_config
 OBJDIR=`uname -m`
@@ -564,9 +568,10 @@ echo "AC_HELP_STRING([Reason],[Package])"
 echo "AC_HELP_STRING([------],[-------])"
 
 AC_DEFUN([PKG_DISABLED],[
-  BUILD_$1=0
-  AC_SUBST(BUILD_$1)
-  echo "AC_HELP_STRING([disabled],[$1])"
+ PKG_$1="no"
+ BUILD_$1=0
+ AC_SUBST(BUILD_$1)
+ echo "AC_HELP_STRING([disabled],[$1])"
 ])
 AC_DEFUN([PKG_SHARED],[
  BUILD_$1=0
@@ -575,6 +580,7 @@ AC_DEFUN([PKG_SHARED],[
  echo "AC_HELP_STRING([shared],[$1])"
 ])
 AC_DEFUN([PKG_STATIC],[
+ PKG_$1="yes"
  BUILD_$1=1
  AC_SUBST(BUILD_$1)
  STATIC_BLDS+=" [$1]"
@@ -591,6 +597,7 @@ for dep in \
         libtheora/libogg libtheora/libvorbis ; do
   lib=`dirname $dep`;  needs=`basename $dep`
   eval pkg_lib="\$PKG_$lib"; eval needs_lib="\$HAVE_$needs";
+  echo "dep lib=$lib, needs=$needs, pkg_lib=$pkg_lib, needs_lib=$needs_lib" > /dev/tty
   if test "x$pkg_lib" != "xno"; then
     eval "PKG_$needs=yes"
   fi
@@ -622,7 +629,7 @@ PKG_PROVIDE([ffmpeg])
 PKG_PROVIDE([fftw])
 PKG_PROVIDE([flac])
 PKG_PROVIDE([giflib])
-PKG_PROVIDE([ilmbase])
+PKG_PROVIDE([ilmbase], [$WANT_OPENEXR])
 PKG_PROVIDE([ladspa],[$WANT_LADSPA_BUILD])
 PKG_PROVIDE([lame])
 PKG_PROVIDE([libavc1394],[$WANT_FIREWIRE])
@@ -636,7 +643,9 @@ PKG_PROVIDE([libtheora])
 PKG_PROVIDE([libuuid])
 PKG_PROVIDE([libvorbis])
 PKG_PROVIDE([mjpegtools])
-PKG_PROVIDE([openexr])
+echo "WANT_OPENEXR = $WANT_OPENEXR" > /dev/tty
+PKG_PROVIDE([openexr], [$WANT_OPENEXR])
+echo "PKG_openexr = $PKG_openexr" > /dev/tty
 PKG_PROVIDE([openjpeg])
 PKG_PROVIDE([tiff])
 PKG_PROVIDE([twolame])
@@ -654,7 +663,7 @@ AC_SUBST(SYSTEM_LIBS)
 
 echo ""
 for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB \
-	 VIDEO4LINUX2 ESOUND PACTL; do
+	 VIDEO4LINUX2 ESOUND PACTL OPENEXR; do
   eval vv="\$WANT_$v"
   if test "x$vv" != "xno"; then
     CFG_CFLAGS+=" -DHAVE_$v"
@@ -760,8 +769,13 @@ if test  $WANT_X265_HIDEPTH = "yes" ; then
   echo "x265.cfg_params := -DENABLE_SHARED=no -DHIGH_BIT_DEPTH:BOOL=ON" # -DMAIN12:BOOL=ON"
 fi
 
-for pkg in $STATIC_PKGS; do echo "static_pkgs += $pkg"; done
+for pkg in $STATIC_PKGS; do
+  eval pkg_lib="\$PKG_$pkg"
+  if test "x$pkg_lib" = "xno"; then continue; fi;
+  echo "static_pkgs += $pkg"
+done
 echo ""
+
 for pkg in $STATIC_BLDS; do
   echo "static_blds += $pkg"
   ver_pkg=ver_$pkg
