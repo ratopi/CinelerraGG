@@ -2283,9 +2283,7 @@ FFMpegToggle::FFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;
-	set_tooltip(!get_value() ?
-		_("Currently: Try FFMpeg last\n   Click to: Try FFMpeg first") :
-		_("Currently: Try FFMpeg first\n   Click to: Try FFMpeg last"));
+	set_tooltip(get_value() ? FFMPEG_EARLY_TIP : FFMPEG_LATE_TIP);
 }
 
 FFMpegToggle::~FFMpegToggle()
@@ -2295,12 +2293,10 @@ FFMpegToggle::~FFMpegToggle()
 int FFMpegToggle::handle_event()
 {
 	int ffmpeg_early_probe = get_value();
-	set_tooltip(!ffmpeg_early_probe ?
-		_("Currently: Try FFMpeg last\n   Click to: Try FFMpeg first") :
-		_("Currently: Try FFMpeg first\n   Click to: Try FFMpeg last"));
+	set_tooltip(ffmpeg_early_probe ? FFMPEG_EARLY_TIP : FFMPEG_LATE_TIP);
 	mwindow->preferences->set_file_probe_armed("FFMPEG_Early", ffmpeg_early_probe);
 	mwindow->preferences->set_file_probe_armed("FFMPEG_Late", !ffmpeg_early_probe);
-	
+
 	mwindow->show_warning(&mwindow->preferences->warn_indexes,
 		_("Changing the base codecs may require rebuilding indexes."));
 	return 1;

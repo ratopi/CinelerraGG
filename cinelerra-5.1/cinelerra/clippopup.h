@@ -163,11 +163,11 @@ public:
 	ClipPopup *popup;
 };
 
-class ClipPopupProjectRemove : public BC_MenuItem
+class ClipPopupDelete : public BC_MenuItem
 {
 public:
-	ClipPopupProjectRemove(MWindow *mwindow, ClipPopup *popup);
-	~ClipPopupProjectRemove();
+	ClipPopupDelete(MWindow *mwindow, ClipPopup *popup);
+	~ClipPopupDelete();
 
 	int handle_event();
 
@@ -175,17 +175,6 @@ public:
 	ClipPopup *popup;
 };
 
-class ClipPopupDiskRemove : public BC_MenuItem
-{
-public:
-	ClipPopupDiskRemove(MWindow *mwindow, ClipPopup *popup);
-	~ClipPopupDiskRemove();
-
-	int handle_event();
-
-	MWindow *mwindow;
-	ClipPopup *popup;
-};
 
 class ClipPasteToFolder : public BC_MenuItem
 {

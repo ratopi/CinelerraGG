@@ -69,10 +69,7 @@ void ClipPopup::create_objects()
 	submenu->add_submenuitem(new ClipMatchSize(mwindow, this));
 	submenu->add_submenuitem(new ClipMatchRate(mwindow, this));
 	submenu->add_submenuitem(new ClipMatchAll(mwindow, this));
-	add_item(menu_item = new BC_MenuItem(_("Remove...")));
-	menu_item->add_submenu(submenu = new BC_SubMenu());
-	submenu->add_submenuitem(new ClipPopupProjectRemove(mwindow, this));
-	submenu->add_submenuitem(new ClipPopupDiskRemove(mwindow, this));
+	add_item(new ClipPopupDelete(mwindow, this));
 }
 
 void ClipPopup::paste_assets()
@@ -325,42 +322,23 @@ int ClipMatchAll::handle_event()
 }
 
 
-ClipPopupProjectRemove::ClipPopupProjectRemove(MWindow *mwindow, ClipPopup *popup)
- : BC_MenuItem(_("Remove from project"))
+ClipPopupDelete::ClipPopupDelete(MWindow *mwindow, ClipPopup *popup)
+ : BC_MenuItem(_("Delete"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 
-ClipPopupProjectRemove::~ClipPopupProjectRemove()
+ClipPopupDelete::~ClipPopupDelete()
 {
 }
 
-int ClipPopupProjectRemove::handle_event()
+int ClipPopupDelete::handle_event()
 {
-	mwindow->remove_assets_from_project(1,
-		1,
+	mwindow->remove_assets_from_project(1, 1,
 		mwindow->session->drag_assets,
 		mwindow->session->drag_clips);
-	return 1;
-}
-
-
-ClipPopupDiskRemove::ClipPopupDiskRemove(MWindow *mwindow, ClipPopup *popup)
- : BC_MenuItem(_("Remove from disk"))
-{
-	this->mwindow = mwindow;
-	this->popup = popup;
-}
-
-ClipPopupDiskRemove::~ClipPopupDiskRemove()
-{
-}
-
-int ClipPopupDiskRemove::handle_event()
-{
-	mwindow->awindow->asset_remove->start();
 	return 1;
 }
 

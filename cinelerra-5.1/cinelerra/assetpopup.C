@@ -328,8 +328,7 @@ AssetPopupProjectRemove::~AssetPopupProjectRemove()
 
 int AssetPopupProjectRemove::handle_event()
 {
-	mwindow->remove_assets_from_project(1,
-		1,
+	mwindow->remove_assets_from_project(1, 1,
 		mwindow->session->drag_assets,
 		mwindow->session->drag_clips);
 	return 1;

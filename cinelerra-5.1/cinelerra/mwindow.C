@@ -3135,8 +3135,8 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 void MWindow::remove_assets_from_project(int push_undo, int redraw,
 		ArrayList<Indexable*> *drag_assets, ArrayList<EDL*> *drag_clips)
 {
-	for(int i = 0; i < session->drag_assets->total; i++) {
-		Indexable *indexable = session->drag_assets->get(i);
+	for(int i = 0; i < drag_assets->total; i++) {
+		Indexable *indexable = drag_assets->get(i);
 		if(indexable->is_asset) remove_asset_from_caches((Asset*)indexable);
 	}
 
@@ -3153,11 +3153,11 @@ void MWindow::remove_assets_from_project(int push_undo, int redraw,
 		}
 	}
 
-	for(int i = 0; i < session->drag_assets->size(); i++) {
+	for(int i = 0; i < drag_assets->size(); i++) {
 		for(int j = 0; j < vwindows.size(); j++) {
 			VWindow *vwindow = vwindows[j];
 			if( !vwindow->is_running() ) continue;
-			if(session->drag_assets->get(i) == vwindow->get_source()) {
+			if(drag_assets->get(i) == vwindow->get_source()) {
 				vwindow->gui->lock_window("MWindow::remove_assets_from_project 2");
 				vwindow->delete_source(1, 1);
 				vwindow->gui->unlock_window();
@@ -3165,29 +3165,22 @@ void MWindow::remove_assets_from_project(int push_undo, int redraw,
 		}
 	}
 
-	for(int i = 0; i < session->drag_assets->size(); i++) {
-		Indexable *indexable = session->drag_assets->get(i);
+	for(int i = 0; i < drag_assets->size(); i++) {
+		Indexable *indexable = drag_assets->get(i);
 		remove_indexfile(indexable);
 	}
 
 //printf("MWindow::rebuild_indices 1 %s\n", indexable->path);
 	if(push_undo) undo->update_undo_before();
 	if(drag_assets) edl->remove_from_project(drag_assets);
-	if(drag_clips) edl->remove_from_project(session->drag_clips);
+	if(drag_clips) edl->remove_from_project(drag_clips);
 	if(redraw) save_backup();
 	if(push_undo) undo->update_undo_after(_("remove assets"), LOAD_ALL);
-	if(redraw)
-	{
+	if(redraw) {
 		restart_brender();
 
 		gui->lock_window("MWindow::remove_assets_from_project 3");
-		gui->update(1,
-			1,
-			1,
-			1,
-			0,
-			1,
-			0);
+		gui->update(1, 1, 1, 1, 0, 1, 0);
 		gui->unlock_window();
 
 	// Removes from playback here

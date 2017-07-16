@@ -232,7 +232,7 @@ int PreferencesThread::apply_settings()
 	int ffmpeg_early_probe = mwindow->preferences->get_file_probe_armed("FFPMEG_Early");
 	mwindow->gui->ffmpeg_toggle->update(ffmpeg_early_probe);
 	mwindow->gui->ffmpeg_toggle->set_tooltip(ffmpeg_early_probe ?
-		_("Try FFMpeg first") : _("Try FFMpeg last") );
+		FFMPEG_EARLY_TIP : FFMPEG_LATE_TIP);
 	mwindow->gui->mainshbtns->load(mwindow->preferences);
 	double tc_position =
 		mwindow->edl->session->get_frame_offset() / mwindow->edl->session->frame_rate;
