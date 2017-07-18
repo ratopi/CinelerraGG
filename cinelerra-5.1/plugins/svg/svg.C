@@ -178,7 +178,7 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 		int fd = ms_time < config.ms_time ? -1 : open(filename_png, O_RDWR);
 		if( fd < 0 ) { // file does not exist, export it
 			char command[BCTEXTLEN];
-			sprintf(command,
+			snprintf(command, sizeof(command),
 				"inkscape --without-gui --export-background=0x000000 "
 				"--export-background-opacity=0 -d %f %s --export-png=%s",
 				config.dpi, config.svg_file, filename_png);

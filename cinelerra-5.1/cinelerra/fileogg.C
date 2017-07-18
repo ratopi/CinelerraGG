@@ -2379,7 +2379,9 @@ int PackagingEngineOGG::create_packages_single_farm(
 	if (default_asset->audio_data)
 	{
 		packages[local_current_package] = new RenderPackage;
-		sprintf(packages[current_package]->path, "%s.audio", default_asset->path);
+		snprintf(packages[current_package]->path,
+			sizeof(packages[current_package]->path),
+			"%s.audio", default_asset->path);
 		local_current_package++;
 	}
 

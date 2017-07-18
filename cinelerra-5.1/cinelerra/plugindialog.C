@@ -292,7 +292,7 @@ void PluginDialog::create_objects()
 		char *plugin_title = plugin->title;
 		char string[BCTEXTLEN];
 
-		sprintf(string, "%s: %s", track_title, _(plugin_title));
+		snprintf(string, sizeof(string), "%s: %s", track_title, _(plugin_title));
 		shared_data.append(new BC_ListBoxItem(string));
 	}
 	for(int i = 0; i < module_locations.total; i++)

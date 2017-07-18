@@ -495,7 +495,8 @@ int FileMPEG::open_file(int rd, int wr)
 			if(!result)
 			{
 				const char *exec_path = File::get_cinlib_path();
-				sprintf(mjpeg_command, "%s/%s", exec_path, HVPEG_EXE);
+				snprintf(mjpeg_command, sizeof(mjpeg_command),
+					"%s/%s", exec_path, HVPEG_EXE);
 				append_vcommand_line(mjpeg_command);
 
 				if(asset->aspect_ratio > 0)
@@ -545,7 +546,8 @@ int FileMPEG::open_file(int rd, int wr)
 //  this one is cinelerra-x.x.x/thirdparty/mjpegtools/mpeg2enc
 		{
 			const char *exec_path = File::get_cinlib_path();
-			sprintf(mjpeg_command, "%s/%s -v 0 ", exec_path, MJPEG_EXE);
+			snprintf(mjpeg_command, sizeof(mjpeg_command),
+				"%s/%s -v 0 ", exec_path, MJPEG_EXE);
 
 // Must disable interlacing if MPEG-1
 			switch (asset->vmpeg_preset)
@@ -560,18 +562,15 @@ int FileMPEG::open_file(int rd, int wr)
 // quantization of 1 when bitrate is fixed.  Perfectly intuitive.
 			if(asset->vmpeg_fix_bitrate)
 			{
-				sprintf(string, " -b %d -q 1", asset->vmpeg_bitrate / 1000);
+				snprintf(string, sizeof(string),
+					" -b %d -q 1", asset->vmpeg_bitrate / 1000);
 			}
 			else
 			{
-				sprintf(string, " -b 0 -q %d", asset->vmpeg_quantization);
+				snprintf(string, sizeof(string),
+					" -b 0 -q %d", asset->vmpeg_quantization);
 			}
-			strcat(mjpeg_command, string);
-
-
-
-
-
+			strncat(mjpeg_command, string, sizeof(mjpeg_command));
 
 // Aspect ratio
 			int aspect_ratio_code = -1;
@@ -599,7 +598,7 @@ int FileMPEG::open_file(int rd, int wr)
 				aspect_ratio_code = 2;
 			}
 			sprintf(string, " -a %d", aspect_ratio_code);
-			strcat(mjpeg_command, string);
+			strncat(mjpeg_command, string, sizeof(mjpeg_command));
 
 
 
@@ -623,43 +622,49 @@ int FileMPEG::open_file(int rd, int wr)
 				eprintf(_("Unsupported frame rate %f\n"), asset->frame_rate);
 			}
 			sprintf(string, " -F %d", frame_rate_code);
-			strcat(mjpeg_command, string);
+			strncat(mjpeg_command, string, sizeof(mjpeg_command));
 
 
 
 
 
-			strcat(mjpeg_command,
-				asset->vmpeg_progressive ? " -I 0" : " -I 1");
+			strncat(mjpeg_command,
+				asset->vmpeg_progressive ? " -I 0" : " -I 1",
+				sizeof(mjpeg_command));
 
 
 
 			sprintf(string, " -M %d", file->cpus);
-			strcat(mjpeg_command, string);
+			strncat(mjpeg_command, string, sizeof(mjpeg_command));
 
 
 			if(!asset->vmpeg_progressive)
 			{
-				strcat(mjpeg_command, asset->vmpeg_field_order ? " -z b" : " -z t");
+				strncat(mjpeg_command,
+					asset->vmpeg_field_order ? " -z b" : " -z t",
+					sizeof(mjpeg_command));
 			}
 
 
-			sprintf(string, " -f %d", asset->vmpeg_preset);
-			strcat(mjpeg_command, string);
+			snprintf(string, sizeof(string), " -f %d", asset->vmpeg_preset);
+			strncat(mjpeg_command, string, sizeof(mjpeg_command));
 
 
-			sprintf(string, " -g %d -G %d", asset->vmpeg_iframe_distance, asset->vmpeg_iframe_distance);
-			strcat(mjpeg_command, string);
+			snprintf(string, sizeof(string),
+				" -g %d -G %d", asset->vmpeg_iframe_distance, asset->vmpeg_iframe_distance);
+			strncat(mjpeg_command, string, sizeof(mjpeg_command));
 
 
-			if(asset->vmpeg_seq_codes) strcat(mjpeg_command, " -s");
+			if(asset->vmpeg_seq_codes)
+				strncat(mjpeg_command, " -s", sizeof(mjpeg_command));
 
 
-			sprintf(string, " -R %d", CLAMP(asset->vmpeg_pframe_distance, 0, 2));
-			strcat(mjpeg_command, string);
+			snprintf(string, sizeof(string),
+				" -R %d", CLAMP(asset->vmpeg_pframe_distance, 0, 2));
+			strncat(mjpeg_command, string, sizeof(mjpeg_command));
 
-			sprintf(string, " -o '%s'", asset->path);
-			strcat(mjpeg_command, string);
+			snprintf(string, sizeof(string), " -o '%s'", asset->path);
+			strncat(mjpeg_command, string, sizeof(mjpeg_command));
 
 
 

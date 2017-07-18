@@ -87,6 +87,10 @@ public:
 	unsigned fov_huff[1024];
 	float clb_cbrt[0x10000], clb_xyz_cam[3][4];
 	uchar pana_buf[0x4000];  int pana_vbits;
+// const static data
+	static const double xyz_rgb[3][3];
+	static const float d65_white[3];
+
 };
 
 class DCRaw : public DCRaw_data {
@@ -275,13 +279,6 @@ private:
 	void write_ppm_tiff(void);
 	void write_cinelerra(void);
 	void reset();
-//const data
-	const double xyz_rgb[3][3] = {			/* XYZ from RGB */
-		{ 0.412453, 0.357580, 0.180423 },
-		{ 0.212671, 0.715160, 0.072169 },
-		{ 0.019334, 0.119193, 0.950227 } };
-	const float d65_white[3] = { 0.950456, 1, 1.088754 };
-
 public:
 	DCRaw();
 	~DCRaw();

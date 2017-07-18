@@ -152,9 +152,10 @@ void PackageRenderer::create_output()
 	asset = new Asset(*default_asset);
 
 	if(!get_master() && preferences->renderfarm_vfs && preferences->use_renderfarm)
-		sprintf(asset->path, RENDERFARM_FS_PREFIX "%s", package->path);
+		snprintf(asset->path, sizeof(asset->path),
+			RENDERFARM_FS_PREFIX "%s", package->path);
 	else
-		strcpy(asset->path, package->path);
+		strncpy(asset->path, package->path, sizeof(asset->path));
 
 	file = new File;
 
@@ -171,7 +172,7 @@ void PackageRenderer::create_output()
 	{
 // open failed
 		char string[BCTEXTLEN];
-		sprintf(string, _("Couldn't open %s"), asset->path);
+		snprintf(string, sizeof(string), _("Couldn't open %s"), asset->path);
 		ErrorBox error(_(PROGRAM_NAME ": Error"),
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));

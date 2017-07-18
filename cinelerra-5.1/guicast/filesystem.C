@@ -643,18 +643,14 @@ int FileSystem::parse_directories(char *new_dir)
 			strcpy(string, new_dir);
 		}
 		else
-		if(!is_root_dir(current_dir))
 		{
-// current directory is not root
-			if(current_dir[strlen(current_dir) - 1] == '/')
-// current_dir already has ending /
-			sprintf(string, "%s%s", current_dir, new_dir);
-			else
-// need ending /
-			sprintf(string, "%s/%s", current_dir, new_dir);
+			snprintf(string, sizeof(string),
+				is_root_dir(current_dir) ||
+				current_dir[strlen(current_dir)-1] == '/' ?
+// current directory is root or already has ending /
+				 "%s%s" : "%s/%s",
+				current_dir, new_dir);
 		}
-		else
-			sprintf(string, "%s%s", current_dir, new_dir);
 
 //printf("FileSystem::parse_directories 3 %s %s\n", new_dir, string);
 		strcpy(new_dir, string);

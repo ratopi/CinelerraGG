@@ -5,7 +5,10 @@
 cin="$1"
 THIRDPARTY=`pwd`/thirdparty
 unset LIBS LDFLAGS CFLAGS CPPFLAGS CXXFLAGS
-
+export ac_cv_header_xmmintrin_h=no
+for f in ./quicktime/Makefile.am ./libmpeg3/Makefile.am; do
+  sed -e 's/-Wl,--no-undefined//' -i $f
+done
 rm -rf thirdparty; cp -a $cin/thirdparty .
 for f in configure.ac Makefile.am autogen.sh; do mv $f $f.cv; cp -a $cin/$f .; done
 mv m4 m4.cv
@@ -83,7 +86,6 @@ echo LDFLAGS=$LDFLAGS
 echo LIBS=$LIBS
 echo CFLAGS=$CFLAGS
 
-export ac_cv_header_xmmintrin_h=no
 # -lmxxxxx dies, feed it a -lm early to prevent misformed parameters
 export LIBS="-la52 -ldjbfft -lfaac -lfaad -lHalf -lIex -lIexMath -lIlmThread -lImath -llavfile -llavjpeg -lm -lmjpegutils -lmmxsse -lmp3lame -lmp4ff -lmpeg2encpp -lmpgdecoder -lmplex2 -logg -lvorbis -lvorbisenc -lvorbisfile -lx264 -lyuvfilters -lpthread -ldl"
 # po Makefile construction error: skip it
@@ -96,11 +98,15 @@ find thirdparty/ -name .libs | while read f ; do ( cd $f; ln -s . .libs ); done
 
 ./configure
 
+echo "Run:"
+echo "export ac_cv_header_xmmintrin_h=no"
+echo "export THIRDPARTY=\"$THIRDPARTY\""
 exit
 
 # have to rebuild these by hand
-# cd plugins/libeffecttv/.libs/; rm libeffectv.a; ar r libeffecttv.a effecttv.o
-# cd quicktime/encore50/.libs/; rm libencore.a; ar r libencore.a *.o
+# have to get rid of  -Wl,--no-undefined"
+# cd plugins/libeffecttv/.libs/; \rm -f libeffecttv.a; ar r libeffecttv.a effecttv.o
+# cd quicktime/encore50/.libs/; \rm -f libencore.a; ar r libencore.a *.o
 # cd quicktime; vi Makefile; remove -Wl,--no-undefined from:, make
 #   libquicktimecv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0
 

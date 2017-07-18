@@ -686,7 +686,7 @@ int Motion51Main::put_cache_line(const char *line)
 	if( key == active_key ) return 1;
 	if( !active_fp ) {
 		close_cache_file();
-		sprintf(cache_file, "%s.bak", config.tracking_file);
+		snprintf(cache_file, sizeof(cache_file), "%s.bak", config.tracking_file);
 		::rename(config.tracking_file, cache_file);
 		if( !(active_fp = fopen(config.tracking_file, "w")) ) {
 			perror(config.tracking_file);

@@ -358,7 +358,8 @@ void SvgInkscapeThread::run()
 {
 // Runs the inkscape
 	char command[1024];
-	sprintf(command, "inkscape --with-gui %s", edit->client->config.svg_file);
+	snprintf(command, sizeof(command),
+		"inkscape --with-gui %s", edit->client->config.svg_file);
 	printf(_("Running external SVG editor: %s\n"), command);
 
 	enable_cancel();

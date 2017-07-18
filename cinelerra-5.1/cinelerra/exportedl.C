@@ -365,8 +365,7 @@ ExportEDLWindow::~ExportEDLWindow()
 void ExportEDLWindow::create_objects()
 {
 	int x = 5, y = 5;
-	add_subwindow(new BC_Title(x,
-		y,
+	add_subwindow(new BC_Title(x, y,
 			_("Select a file to export to:")));
 	y += 25;
 
@@ -399,7 +398,7 @@ void ExportEDLWindow::create_objects()
 		track = track->next)
 	{
 
-		char tmp[10];
+		char tmp[16];
 		sprintf(tmp, "%i\n", serial+1);
 
 		BC_ListBoxItem *listitem = new BC_ListBoxItem(tmp);

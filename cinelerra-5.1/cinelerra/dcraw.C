@@ -92,6 +92,14 @@ typedef uint64_t UINT64;
 
 #include "dcraw.h"
 
+//const static data
+const double DCRaw_data::xyz_rgb[3][3] = {		/* XYZ from RGB */
+	{ 0.412453, 0.357580, 0.180423 },
+	{ 0.212671, 0.715160, 0.072169 },
+	{ 0.019334, 0.119193, 0.950227 } };
+const float DCRaw_data::d65_white[3] = {
+	  0.950456, 1.000000, 1.088754 };
+
 /*
    All global variables are defined here, and all functions that
    access them are prefixed with "CLASS".  Note that a thread-safe
@@ -3264,7 +3272,7 @@ short * CLASS foveon_make_curve (double max, double mul, double filt)
 
   if (!filt) filt = 0.8;
   size = 4*M_PI*max / filt;
-  if (size == UINT_MAX) size--;
+  if (size > INT_MAX-1) size = INT_MAX-1;
   curve = (short *) calloc (size+1, sizeof *curve);
   merror (curve, "foveon_make_curve()");
   curve[0] = size;
@@ -3298,19 +3306,34 @@ void CLASS foveon_interpolate()
 {
   static const short hood[] = { -1,-1, -1,0, -1,1, 0,-1, 0,1, 1,-1, 1,0, 1,1 };
   short *pix, prev[3], *curve[8], (*shrink)[3];
-  float cfilt=0, ddft[3][3][2], ppm[3][3][3];
+  float cfilt, ddft[3][3][2], ppm[3][3][3];
   float cam_xyz[3][3], correct[3][3], last[3][3], trans[3][3];
   float chroma_dq[3], color_dq[3], diag[3][3], div[3];
   float (*black)[3], (*sgain)[3], (*sgrow)[3];
   float fsum[3], val, frow, num;
   int row, col, c, i, j, diff, sgx, irow, sum, min, max, limit;
   int dscr[2][2], dstb[4], (*smrow[7])[3], total[4], ipix[3];
-  int work[3][3], smlast, smred, smred_p=0, dev[3];
+  int work[3][3], smlast, smred, smred_p, dev[3];
   int satlev[3], keep[4], active[4];
   unsigned dim[3], *badpix;
-  double dsum=0, trsum[3];
+  double dsum, trsum[3];
   char str[128];
   const char* cp;
+// clear local storage
+  pix = 0; ZERO(prev); ZERO(curve); ZERO(shrink);
+  cfilt = 0; ZERO(ddft); ZERO(ppm);
+  ZERO(cam_xyz); ZERO(correct); ZERO(last); ZERO(trans);
+  ZERO(chroma_dq); ZERO(color_dq); ZERO(diag); ZERO(div);
+  ZERO(black); ZERO(sgain); ZERO(sgrow);
+  ZERO(fsum); val = frow = num = 0;
+  row = col = c = i = j = diff = sgx = irow = sum = min = max = limit = 0;
+  ZERO(dscr); ZERO(dstb); ZERO(smrow); ZERO(total); ZERO(ipix);
+  ZERO(work); ZERO(smlast); ZERO(smred); smred_p=0; ZERO(dev);
+  ZERO(satlev); ZERO(keep); ZERO(active);
+  ZERO(dim); badpix = 0;
+  dsum = 0; ZERO(trsum);
+  ZERO(str);
+  cp = 0;
 
   if (verbose)
     fprintf (stderr,_("Foveon interpolation...\n"));
@@ -6017,7 +6040,7 @@ guess_cfa_pc:
       case 61450:
 	cblack[4] = cblack[5] = MIN(sqrt(len),64);
       case 50714:			/* BlackLevel */
-	if (!(cblack[4] * cblack[5]))
+	if ((cblack[4] * cblack[5])==0)
 	  cblack[4] = cblack[5] = 1;
 	FORC (cblack[4] * cblack[5])
 	  cblack[6+c] = getreal(type);

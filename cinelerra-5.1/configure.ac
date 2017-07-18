@@ -597,7 +597,6 @@ for dep in \
         libtheora/libogg libtheora/libvorbis ; do
   lib=`dirname $dep`;  needs=`basename $dep`
   eval pkg_lib="\$PKG_$lib"; eval needs_lib="\$HAVE_$needs";
-  echo "dep lib=$lib, needs=$needs, pkg_lib=$pkg_lib, needs_lib=$needs_lib" > /dev/tty
   if test "x$pkg_lib" != "xno"; then
     eval "PKG_$needs=yes"
   fi
@@ -643,9 +642,7 @@ PKG_PROVIDE([libtheora])
 PKG_PROVIDE([libuuid])
 PKG_PROVIDE([libvorbis])
 PKG_PROVIDE([mjpegtools])
-echo "WANT_OPENEXR = $WANT_OPENEXR" > /dev/tty
 PKG_PROVIDE([openexr], [$WANT_OPENEXR])
-echo "PKG_openexr = $PKG_openexr" > /dev/tty
 PKG_PROVIDE([openjpeg])
 PKG_PROVIDE([tiff])
 PKG_PROVIDE([twolame])

@@ -826,7 +826,8 @@ void AWindowRemovePlugin::handle_close_event(int result)
 		mwindow->plugindb->remove(plugin);
 		remove(plugin_path);
 		char index_path[BCTEXTLEN];
-        	sprintf(index_path, "%s/%s", mwindow->preferences->plugin_dir, PLUGIN_FILE);
+		snprintf(index_path, sizeof(index_path), "%s/%s",
+			mwindow->preferences->plugin_dir, PLUGIN_FILE);
 		remove(index_path);
 		char png_path[BCTEXTLEN];
 		if( plugin->get_theme_png_path(png_path, mwindow->preferences->theme) )

@@ -557,7 +557,7 @@ int FFStream::seek(int64_t no, double rate)
 		}
 	}
 	if( ret < 0 ) {
-printf("** seek fail %ld, %ld\n", pos, tstmp);
+printf("** seek fail %jd, %jd\n", pos, tstmp);
 		seeked = need_packet = 0;
 	        st_eof(flushed=1);
 		return -1;

@@ -416,8 +416,8 @@ void CreateBD_Thread::handle_close_event(int result)
 	}
 
 	char asset_dir[BCTEXTLEN], jobs_path[BCTEXTLEN];
-	sprintf(asset_dir, "%s/%s", tmp_path, asset_title);
-	sprintf(jobs_path, "%s/bd.jobs", asset_dir);
+	snprintf(asset_dir, sizeof(asset_dir), "%s/%s", tmp_path, asset_title);
+	snprintf(jobs_path, sizeof(jobs_path), "%s/bd.jobs", asset_dir);
 	mwindow->batch_render->reset(jobs_path);
 	int ret = create_bd_jobs(&mwindow->batch_render->jobs, asset_dir);
 	mwindow->undo->update_undo_after(_("create bd"), LOAD_ALL);

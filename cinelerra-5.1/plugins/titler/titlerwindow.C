@@ -1423,7 +1423,7 @@ int TitleCurPopup::handle_event()
 	return 1;
 }
 
-void TitleCurSubMenu::add_subitem(int popup_type, va_list ap, const char *fmt)
+void TitleCurSubMenu::add_subitemx(int popup_type, va_list ap, const char *fmt)
 {
 	char item[BCSTRLEN];
 	vsnprintf(item, sizeof(item)-1, fmt, ap);

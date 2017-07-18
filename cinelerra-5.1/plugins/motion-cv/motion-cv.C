@@ -652,7 +652,7 @@ printf("MotionCVMain::process_buffer 1 start_position=%jd\n", start_position);
 	    config.mode2 == MotionCVConfig::SAVE ) {
 		reset_cache_file();
 		char save_file[BCTEXTLEN];
-		sprintf(save_file, "%s.sav", config.tracking_file);
+		snprintf(save_file, sizeof(save_file), "%s.sav", config.tracking_file);
 #ifdef DEBUG
 printf("MotionCVMain::process_buffer 2 rename tracking file: %s to %s\n",
  config.tracking_file, save_file);
@@ -1320,7 +1320,7 @@ int MotionCVMain::put_cache_line(const char *line)
 	if( key == active_key ) return 1;
 	if( !active_fp ) {
 		close_cache_file();
-		sprintf(cache_file, "%s.bak", config.tracking_file);
+		snprintf(cache_file, sizeof(cache_file), "%s.bak", config.tracking_file);
 		::rename(config.tracking_file, cache_file);
 		if( !(active_fp = fopen(config.tracking_file, "w")) ) {
 			perror(config.tracking_file);

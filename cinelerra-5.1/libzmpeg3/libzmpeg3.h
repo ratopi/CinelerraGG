@@ -2846,9 +2846,9 @@ public:
   }
 
   static inline void complete_path(char *full_path, char *path) {
-    char dir[zmpeg3_t::STRLEN];
+    char dir[STRLEN];
     if( path[0] != '/' && getcwd(dir, sizeof(dir)) )
-      sprintf(full_path, "%s/%s", dir, path);
+      snprintf(full_path, STRLEN, "%s/%s", dir, path);
     else
       strcpy(full_path, path);
   }
@@ -2875,7 +2875,7 @@ public:
   }
 
   static inline void joinpath(char *path, char *dir, char *filename) {
-    sprintf(path, "%s/%s", dir, filename);
+    snprintf(path, STRLEN, "%s/%s", dir, filename);
   }
 
   static inline int64_t path_total_bytes(char *path) {
