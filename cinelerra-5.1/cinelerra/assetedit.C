@@ -968,7 +968,7 @@ void DetailAssetWindow::create_objects()
 
 void DetailAssetDialog::start(Asset *asset, int x, int y)
 {
-	delete dwindow;
+	close_window();
 	this->asset = asset;
 	this->x = x;  this->y = y;
 	BC_DialogThread::start();
