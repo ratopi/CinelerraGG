@@ -437,7 +437,7 @@ void CPanelZoom::update(float zoom)
 {
 	if( !is_hidden() ) {
 		if( zoom < 0.01 ) zoom = 0.01;
-		float value = log(zoom) / log(10.);
+		float value = log10f(zoom);
  		BC_FSlider::update(value);
 	}
 }

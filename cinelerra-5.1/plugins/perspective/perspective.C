@@ -24,14 +24,10 @@
 #include "language.h"
 #include "perspective.h"
 
-
-
-
-
-
+#define PERSPECTIVE_WIDTH 400
+#define PERSPECTIVE_HEIGHT 600
 
 REGISTER_PLUGIN(PerspectiveMain)
-
 
 
 PerspectiveConfig::PerspectiveConfig()
@@ -42,10 +38,12 @@ PerspectiveConfig::PerspectiveConfig()
 	x4 = 0;    y4 = 100;
 	mode = AffineEngine::PERSPECTIVE;
 	smoothing = AffineEngine::AF_DEFAULT;
-	window_w = 400;
-	window_h = 450;
+	window_w = PERSPECTIVE_WIDTH;
+	window_h = PERSPECTIVE_HEIGHT;
 	current_point = 0;
 	forward = 1;
+	view_x = view_y = 0;
+	view_zoom = 1;
 }
 
 int PerspectiveConfig::equivalent(PerspectiveConfig &that)
@@ -62,6 +60,10 @@ int PerspectiveConfig::equivalent(PerspectiveConfig &that)
 		mode == that.mode &&
 		smoothing == that.smoothing &&
 		forward == that.forward;
+// not tracking:
+//		view_x == that.view_x &&
+//		view_y == that.view_y &&
+//		view_zoom == that.view_zoom &&
 }
 
 void PerspectiveConfig::copy_from(PerspectiveConfig &that)
@@ -76,6 +78,9 @@ void PerspectiveConfig::copy_from(PerspectiveConfig &that)
 	window_h = that.window_h;
 	current_point = that.current_point;
 	forward = that.forward;
+	view_x = that.view_x;
+	view_y = that.view_y;
+	view_zoom = that.view_zoom;
 }
 
 void PerspectiveConfig::interpolate(PerspectiveConfig &prev, PerspectiveConfig &next,
@@ -94,6 +99,9 @@ void PerspectiveConfig::interpolate(PerspectiveConfig &prev, PerspectiveConfig &
 	mode = prev.mode;
 	smoothing = prev.smoothing;
 	forward = prev.forward;
+	view_x = prev.view_x;
+	view_y = prev.view_y;
+	view_zoom = prev.view_zoom;
 }
 
 
@@ -114,48 +122,67 @@ void PerspectiveWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(canvas = new PerspectiveCanvas(plugin,
-		x, y, get_w() - 20, get_h() - 140));
+	add_subwindow(canvas = new PerspectiveCanvas(this,
+		x, y, get_w() - 20, get_h() - 290));
 	canvas->set_cursor(CROSS_CURSOR, 0, 0);
 	y += canvas->get_h() + 10;
 	add_subwindow(new BC_Title(x, y, _("Current X:")));
 	x += 80;
 	this->x = new PerspectiveCoord(this,
-		plugin, x, y, plugin->get_current_x(), 1);
+		x, y, plugin->get_current_x(), 1);
 	this->x->create_objects();
 	x += 140;
 	add_subwindow(new BC_Title(x, y, _("Y:")));
 	x += 20;
 	this->y = new PerspectiveCoord(this,
-		plugin, x, y, plugin->get_current_y(), 0);
+		x, y, plugin->get_current_y(), 0);
 	this->y->create_objects();
 	x = 10;   y += 30;
-	add_subwindow(mode_perspective = new PerspectiveMode(plugin,
+	add_subwindow(mode_perspective = new PerspectiveMode(this,
 		x, y, AffineEngine::PERSPECTIVE, _("Perspective")));
 	x += 120;
-	add_subwindow(mode_sheer = new PerspectiveMode(plugin,
+	add_subwindow(mode_sheer = new PerspectiveMode(this,
 		x, y, AffineEngine::SHEER, _("Sheer")));
 	x += 100;
 	add_subwindow(affine = new PerspectiveAffine(this, x, y));
 	affine->create_objects();
 	x = 10;  y += 30;
-	add_subwindow(mode_stretch = new PerspectiveMode(plugin,
+	add_subwindow(mode_stretch = new PerspectiveMode(this,
 		x, y, AffineEngine::STRETCH, _("Stretch")));
 	x += 120;
-	add_subwindow(new PerspectiveReset(plugin, x, y));
+	add_subwindow(new PerspectiveReset(this, x, y));
 	update_canvas();
+
 	x = 10;   y += 30;
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, _("Zoom view:")));
+	int x1 = x + title->get_w() + 10, w1 = get_w() - x1 - 10;
+	add_subwindow(zoom_view = new PerspectiveZoomView(this, x1, y, w1));
+	y += 30;
+
 	add_subwindow(new BC_Title(x, y, _("Perspective direction:")));
 	x += 170;
-	add_subwindow(forward = new PerspectiveDirection(plugin,
+	add_subwindow(forward = new PerspectiveDirection(this,
 		x, y, 1, _("Forward")));
 	x += 100;
-	add_subwindow(reverse = new PerspectiveDirection(plugin,
+	add_subwindow(reverse = new PerspectiveDirection(this,
 		x, y, 0, _("Reverse")));
-
+	x = 10;  y += 40;
+	add_subwindow(title = new BC_Title(x, y, _("Alt/Shift:")));
+	add_subwindow(new BC_Title(x+100, y, _("Button1 Action:")));
+	y += title->get_h() + 5;
+	add_subwindow(new BC_Title(x, y,
+		"  0 / 0\n"
+		"  0 / 1\n"
+		"  1 / 0\n"
+		"  1 / 1"));
+	add_subwindow(new BC_Title(x+100, y,
+	      _("Translate endpoint\n"
+		"Zoom image\n"
+		"Translate image\n"
+		"Translate view")));
 	show_window();
 }
-
 
 
 int PerspectiveWindow::resize_event(int w, int h)
@@ -163,11 +190,79 @@ int PerspectiveWindow::resize_event(int w, int h)
 	return 1;
 }
 
+PerspectiveZoomView::PerspectiveZoomView(PerspectiveWindow *gui,
+	int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w, -2., 2.,
+	log10(gui->plugin->config.view_zoom < 0.01 ?
+		0.01 : gui->plugin->config.view_zoom))
+{
+	this->gui = gui;
+	set_precision(0.001);
+	set_tooltip(_("Zoom"));
+}
+PerspectiveZoomView::~PerspectiveZoomView()
+{
+}
+int PerspectiveZoomView::handle_event()
+{
+	float value = get_value();
+	BC_FSlider::update(value);
+	PerspectiveMain *plugin = gui->plugin;
+	float view_zoom = plugin->config.view_zoom;
+	double new_zoom = pow(10.,value);
+	double scale = new_zoom / view_zoom;
+	plugin->config.view_zoom = new_zoom;
+	plugin->config.view_x *= scale;
+	plugin->config.view_y *= scale;
+	gui->update_canvas();
+	plugin->send_configure_change();
+	return 1;
+}
+
+char *PerspectiveZoomView::get_caption()
+{
+	double value = get_value();
+	int frac = value >= 0. ? 1 : value >= -1. ? 2 : 3;
+	double zoom = pow(10., value);
+	char *caption = BC_Slider::get_caption();
+	sprintf(caption, "%.*f", frac, zoom);
+	return caption;
+}
+
+void PerspectiveZoomView::update(float zoom)
+{
+	if( zoom < 0.01 ) zoom = 0.01;
+	float value = log10f(zoom);
+	BC_FSlider::update(value);
+}
+
 void PerspectiveWindow::update_canvas()
 {
-	canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
+	int cw = canvas->get_w(), ch = canvas->get_h();
+	canvas->clear_box(0, 0, cw, ch);
 	int x1, y1, x2, y2, x3, y3, x4, y4;
 	calculate_canvas_coords(x1, y1, x2, y2, x3, y3, x4, y4);
+	float x0 = cw / 2.0f, y0 = ch / 2.0f;
+	float view_zoom = plugin->config.view_zoom;
+	float view_x = plugin->config.view_x, view_y = plugin->config.view_y;
+	x1 = (x1-x0) * view_zoom + view_x + x0;
+	y1 = (y1-y0) * view_zoom + view_y + y0;
+	x2 = (x2-x0) * view_zoom + view_x + x0;
+	y2 = (y2-y0) * view_zoom + view_y + y0;
+	x3 = (x3-x0) * view_zoom + view_x + x0;
+	y3 = (y3-y0) * view_zoom + view_y + y0;
+	x4 = (x4-x0) * view_zoom + view_x + x0;
+	y4 = (y4-y0) * view_zoom + view_y + y0;
+
+	canvas->set_color(RED);
+	int vx1 = x0 - x0 * view_zoom + view_x;
+	int vy1 = y0 - y0 * view_zoom + view_y;
+	int vx2 = vx1 + cw * view_zoom - 1;
+	int vy2 = vy1 + ch * view_zoom - 1;
+	canvas->draw_line(vx1, vy1, vx2, vy1);
+	canvas->draw_line(vx2, vy1, vx2, vy2);
+	canvas->draw_line(vx2, vy2, vx1, vy2);
+	canvas->draw_line(vx1, vy2, vx1, vy1);
 
 //printf("PerspectiveWindow::update_canvas %d,%d %d,%d %d,%d %d,%d\n",
 // x1, y1, x2, y2, x3, y3, x4, y4);
@@ -228,6 +323,19 @@ void PerspectiveWindow::update_coord()
 	y->update(plugin->get_current_y());
 }
 
+void PerspectiveWindow::update_view_zoom()
+{
+	zoom_view->update(plugin->config.view_zoom);
+}
+
+void PerspectiveWindow::reset_view()
+{
+	plugin->config.view_x = plugin->config.view_y = 0;
+	zoom_view->update(plugin->config.view_zoom = 1);
+	update_canvas();
+	plugin->send_configure_change();
+}
+
 void PerspectiveWindow::calculate_canvas_coords(
 	int &x1, int &y1, int &x2, int &y2,
 	int &x3, int &y3, int &x4, int &y4)
@@ -258,11 +366,11 @@ void PerspectiveWindow::calculate_canvas_coords(
 }
 
 
-PerspectiveCanvas::PerspectiveCanvas(PerspectiveMain *plugin,
+PerspectiveCanvas::PerspectiveCanvas(PerspectiveWindow *gui,
 	int x, int y, int w, int h)
  : BC_SubWindow(x, y, w, h, BLACK)
 {
-	this->plugin = plugin;
+	this->gui = gui;
 	state = PerspectiveCanvas::NONE;
 }
 
@@ -271,21 +379,26 @@ int PerspectiveCanvas::button_press_event()
 {
 	if( is_event_win() && cursor_inside() ) {
 // Set current point
-		int x1, y1, x2, y2, x3, y3, x4, y4;
-		int cursor_x = get_cursor_x();
-		int cursor_y = get_cursor_y();
-		((PerspectiveWindow*)plugin->thread->window)->calculate_canvas_coords(x1, y1, x2, y2, x3, y3, x4, y4);
+		int cx = get_cursor_x(), cy = get_cursor_y();
+		if( alt_down() && shift_down() ) {
+			state = PerspectiveCanvas::DRAG_VIEW;
+			start_x = cx;  start_y = cy;
+			return 1;
+		}
 
-		float distance1 = DISTANCE(cursor_x, cursor_y, x1, y1);
-		float distance2 = DISTANCE(cursor_x, cursor_y, x2, y2);
-		float distance3 = DISTANCE(cursor_x, cursor_y, x3, y3);
-		float distance4 = DISTANCE(cursor_x, cursor_y, x4, y4);
-// printf("PerspectiveCanvas::button_press_event %f %d %d %d %d\n",
-// distance3,
-// cursor_x,
-// cursor_y,
-// x3,
-// y3);
+		PerspectiveMain *plugin = gui->plugin;
+		int x1, y1, x2, y2, x3, y3, x4, y4;
+		gui->calculate_canvas_coords(x1, y1, x2, y2, x3, y3, x4, y4);
+		float cw = gui->canvas->get_w(), ch = gui->canvas->get_h();
+		float x0 = cw / 2, y0 = ch / 2;
+		float view_zoom = plugin->config.view_zoom;
+		float view_x = plugin->config.view_x, view_y = plugin->config.view_y;
+		int x = (cx-x0 - view_x) / view_zoom + x0;
+		int y = (cy-y0 - view_y) / view_zoom + y0;
+		float distance1 = DISTANCE(x, y, x1, y1);
+		float distance2 = DISTANCE(x, y, x2, y2);
+		float distance3 = DISTANCE(x, y, x3, y3);
+		float distance4 = DISTANCE(x, y, x4, y4);
 		float min = distance1;
 		plugin->config.current_point = 0;
 		if( distance2 < min ) {
@@ -307,9 +420,8 @@ int PerspectiveCanvas::button_press_event()
 			else if( plugin->config.current_point == 2 )
 				plugin->config.current_point = 3;
 		}
-		start_cursor_x = cursor_x;
-		start_cursor_y = cursor_y;
-
+		start_x = x;
+		start_y = y;
 		if( alt_down() || shift_down() ) {
 			state =  alt_down() ?
 				PerspectiveCanvas::DRAG_FULL :
@@ -330,8 +442,8 @@ int PerspectiveCanvas::button_press_event()
 			start_x1 = plugin->get_current_x();
 			start_y1 = plugin->get_current_y();
 		}
-		((PerspectiveWindow*)plugin->thread->window)->update_coord();
-		((PerspectiveWindow*)plugin->thread->window)->update_canvas();
+		gui->update_coord();
+		gui->update_canvas();
 		return 1;
 	}
 
@@ -340,36 +452,44 @@ int PerspectiveCanvas::button_press_event()
 
 int PerspectiveCanvas::button_release_event()
 {
-	if( state != PerspectiveCanvas::NONE ) {
-		state = PerspectiveCanvas::NONE;
-		return 1;
-	}
-	return 0;
+	if( state == PerspectiveCanvas::NONE ) return 0;
+	state = PerspectiveCanvas::NONE;
+	return 1;
 }
 
 int PerspectiveCanvas::cursor_motion_event()
 {
-	if( state != PerspectiveCanvas::NONE ) {
-		int w = get_w() - 1;
-		int h = get_h() - 1;
-		if( state == PerspectiveCanvas::DRAG ) {
-			plugin->set_current_x((float)(get_cursor_x() - start_cursor_x) / w * 100 + start_x1);
-			plugin->set_current_y((float)(get_cursor_y() - start_cursor_y) / h * 100 + start_y1);
-		}
-		else if( state == PerspectiveCanvas::DRAG_FULL ) {
-			plugin->config.x1 = ((float)(get_cursor_x() - start_cursor_x) / w * 100 + start_x1);
-			plugin->config.y1 = ((float)(get_cursor_y() - start_cursor_y) / h * 100 + start_y1);
-			plugin->config.x2 = ((float)(get_cursor_x() - start_cursor_x) / w * 100 + start_x2);
-			plugin->config.y2 = ((float)(get_cursor_y() - start_cursor_y) / h * 100 + start_y2);
-			plugin->config.x3 = ((float)(get_cursor_x() - start_cursor_x) / w * 100 + start_x3);
-			plugin->config.y3 = ((float)(get_cursor_y() - start_cursor_y) / h * 100 + start_y3);
-			plugin->config.x4 = ((float)(get_cursor_x() - start_cursor_x) / w * 100 + start_x4);
-			plugin->config.y4 = ((float)(get_cursor_y() - start_cursor_y) / h * 100 + start_y4);
-		}
-		else if( state == PerspectiveCanvas::ZOOM ) {
+	if( state == PerspectiveCanvas::NONE ) return 0;
+	PerspectiveMain *plugin = gui->plugin;
+	int cx = get_cursor_x(), cy = get_cursor_y();
+	if( state != PerspectiveCanvas::DRAG_VIEW ) {
+		float cw = gui->canvas->get_w(), ch = gui->canvas->get_h();
+		float x0 = cw / 2, y0 = ch / 2;
+		float view_zoom = plugin->config.view_zoom;
+		float view_x = plugin->config.view_x, view_y = plugin->config.view_y;
+		int x = (cx-x0 - view_x) / view_zoom + x0;
+		int y = (cy-y0 - view_y) / view_zoom + y0;
+		int w1 = get_w() - 1, h1 = get_h() - 1;
+
+		switch( state ) {
+		case PerspectiveCanvas::DRAG:
+			plugin->set_current_x((float)(x - start_x) / w1 * 100 + start_x1);
+			plugin->set_current_y((float)(y - start_y) / h1 * 100 + start_y1);
+			break;
+		case PerspectiveCanvas::DRAG_FULL:
+			plugin->config.x1 = ((float)(x - start_x) / w1 * 100 + start_x1);
+			plugin->config.y1 = ((float)(y - start_y) / h1 * 100 + start_y1);
+			plugin->config.x2 = ((float)(x - start_x) / w1 * 100 + start_x2);
+			plugin->config.y2 = ((float)(y - start_y) / h1 * 100 + start_y2);
+			plugin->config.x3 = ((float)(x - start_x) / w1 * 100 + start_x3);
+			plugin->config.y3 = ((float)(y - start_y) / h1 * 100 + start_y3);
+			plugin->config.x4 = ((float)(x - start_x) / w1 * 100 + start_x4);
+			plugin->config.y4 = ((float)(y - start_y) / h1 * 100 + start_y4);
+			break;
+		case PerspectiveCanvas::ZOOM:
 			float center_x = (start_x1 + start_x2 + start_x3 + start_x4) / 4;
 			float center_y = (start_y1 + start_y2 + start_y3 + start_y4) / 4;
-			float zoom = (float)(get_cursor_y() - start_cursor_y + 640) / 640;
+			float zoom = (float)(get_cursor_y() - start_y + 640) / 640;
 			plugin->config.x1 = center_x + (start_x1 - center_x) * zoom;
 			plugin->config.y1 = center_y + (start_y1 - center_y) * zoom;
 			plugin->config.x2 = center_x + (start_x2 - center_x) * zoom;
@@ -378,87 +498,94 @@ int PerspectiveCanvas::cursor_motion_event()
 			plugin->config.y3 = center_y + (start_y3 - center_y) * zoom;
 			plugin->config.x4 = center_x + (start_x4 - center_x) * zoom;
 			plugin->config.y4 = center_y + (start_y4 - center_y) * zoom;
+			break;
 		}
-		((PerspectiveWindow*)plugin->thread->window)->update_canvas();
-		((PerspectiveWindow*)plugin->thread->window)->update_coord();
-		plugin->send_configure_change();
-		return 1;
+		gui->update_coord();
 	}
-
-	return 0;
+	else {
+		plugin->config.view_x += cx - start_x;
+		plugin->config.view_y += cy - start_y;
+		start_x = cx;  start_y = cy;
+	}
+	gui->update_canvas();
+	plugin->send_configure_change();
+	return 1;
 }
 
 
 PerspectiveCoord::PerspectiveCoord(PerspectiveWindow *gui,
-	PerspectiveMain *plugin, int x, int y, float value, int is_x)
+	int x, int y, float value, int is_x)
  : BC_TumbleTextBox(gui, value, (float)-100, (float)200, x, y, 100)
 {
-	this->plugin = plugin;
+	this->gui = gui;
 	this->is_x = is_x;
 }
 
 int PerspectiveCoord::handle_event()
 {
+	PerspectiveMain *plugin = gui->plugin;
 	float v = atof(get_text());
 	if( is_x )
 		plugin->set_current_x(v);
 	else
 		plugin->set_current_y(v);
-	((PerspectiveWindow*)plugin->thread->window)->update_canvas();
+	gui->update_canvas();
 	plugin->send_configure_change();
 	return 1;
 }
 
 
-PerspectiveReset::PerspectiveReset(PerspectiveMain *plugin, int x, int y)
+PerspectiveReset::PerspectiveReset(PerspectiveWindow *gui, int x, int y)
  : BC_GenericButton(x, y, _("Reset"))
 {
-	this->plugin = plugin;
+	this->gui = gui;
 }
 int PerspectiveReset::handle_event()
 {
+	gui->reset_view();
+
+	PerspectiveMain *plugin = gui->plugin;
 	plugin->config.x1 = 0;    plugin->config.y1 = 0;
 	plugin->config.x2 = 100;  plugin->config.y2 = 0;
 	plugin->config.x3 = 100;  plugin->config.y3 = 100;
 	plugin->config.x4 = 0;    plugin->config.y4 = 100;
-	((PerspectiveWindow*)plugin->thread->window)->update_canvas();
-	((PerspectiveWindow*)plugin->thread->window)->update_coord();
+	gui->update_canvas();
+	gui->update_coord();
 	plugin->send_configure_change();
 	return 1;
 }
 
 
-PerspectiveMode::PerspectiveMode(PerspectiveMain *plugin,
+PerspectiveMode::PerspectiveMode(PerspectiveWindow *gui,
 	int x, int y, int value, char *text)
- : BC_Radial(x, y, plugin->config.mode == value, text)
+ : BC_Radial(x, y, gui->plugin->config.mode == value, text)
 {
-	this->plugin = plugin;
+	this->gui = gui;
 	this->value = value;
 }
 int PerspectiveMode::handle_event()
 {
+	PerspectiveMain *plugin = gui->plugin;
 	plugin->config.mode = value;
-	((PerspectiveWindow*)plugin->thread->window)->update_mode();
-	((PerspectiveWindow*)plugin->thread->window)->update_canvas();
+	gui->update_mode();
+	gui->update_canvas();
 	plugin->send_configure_change();
 	return 1;
 }
 
 
-PerspectiveDirection::PerspectiveDirection(PerspectiveMain *plugin,
-	int x,
-	int y,
-	int value,
-	char *text)
- : BC_Radial(x, y, plugin->config.forward == value, text)
+PerspectiveDirection::PerspectiveDirection(PerspectiveWindow *gui,
+	int x, int y, int value, char *text)
+ : BC_Radial(x, y, gui->plugin->config.forward == value, text)
 {
-	this->plugin = plugin;
+	this->gui = gui;
 	this->value = value;
 }
 int PerspectiveDirection::handle_event()
 {
+	PerspectiveMain *plugin = gui->plugin;
 	plugin->config.forward = value;
-	((PerspectiveWindow*)plugin->thread->window)->update_mode();
+	gui->update_mode();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -500,7 +627,8 @@ void PerspectiveAffine::create_objects()
 	affine_item(AffineEngine::AF_NEAREST);
 	affine_item(AffineEngine::AF_LINEAR);
 	affine_item(AffineEngine::AF_CUBIC);
-	update(gui->plugin->config.smoothing, 0);
+	PerspectiveMain *plugin = gui->plugin;
+	update(plugin->config.smoothing, 0);
 }
 
 void PerspectiveAffine::update(int mode, int send)
@@ -508,8 +636,9 @@ void PerspectiveAffine::update(int mode, int send)
 	if( this->mode == mode ) return;
 	this->mode = mode;
 	set_text(affine_modes[mode]);
-	gui->plugin->config.smoothing = mode;
-	if( send ) gui->plugin->send_configure_change();
+	PerspectiveMain *plugin = gui->plugin;
+	plugin->config.smoothing = mode;
+	if( send ) plugin->send_configure_change();
 }
 
 PerspectiveMain::PerspectiveMain(PluginServer *server)
@@ -545,6 +674,7 @@ void PerspectiveMain::update_gui()
 	load_configuration();
 	gui->update_coord();
 	gui->update_mode();
+	gui->update_view_zoom();
 	gui->update_canvas();
 	thread->window->unlock_window();
 //printf("PerspectiveMain::update_gui 3\n");
@@ -572,6 +702,9 @@ void PerspectiveMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("Y4", config.y4);
 
 	output.tag.set_property("MODE", config.mode);
+	output.tag.set_property("VIEW_X", config.view_x);
+	output.tag.set_property("VIEW_Y", config.view_y);
+	output.tag.set_property("VIEW_ZOOM", config.view_zoom);
 	output.tag.set_property("SMOOTHING", config.smoothing);
 	output.tag.set_property("FORWARD", config.forward);
 	output.tag.set_property("WINDOW_W", config.window_w);
@@ -601,6 +734,9 @@ void PerspectiveMain::read_data(KeyFrame *keyframe)
 			config.y4 = input.tag.get_property("Y4", config.y4);
 
 			config.mode = input.tag.get_property("MODE", config.mode);
+			config.view_x = input.tag.get_property("VIEW_X", config.view_x);
+			config.view_y = input.tag.get_property("VIEW_Y", config.view_y);
+			config.view_zoom = input.tag.get_property("VIEW_ZOOM", config.view_zoom);
 			config.smoothing = input.tag.get_property("SMOOTHING", config.smoothing);
 			config.forward = input.tag.get_property("FORWARD", config.forward);
 			config.window_w = input.tag.get_property("WINDOW_W", config.window_w);
@@ -660,7 +796,7 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 	int use_opengl = smoothing != AffineEngine::AF_DEFAULT ? 0 :
 // Opengl does some funny business with stretching.
 		config.mode == AffineEngine::PERSPECTIVE ||
-                config.mode == AffineEngine::SHEER ? get_use_opengl() : 0;
+		config.mode == AffineEngine::SHEER ? get_use_opengl() : 0;
 
 	read_frame(frame, 0, start_position, frame_rate, use_opengl);
 

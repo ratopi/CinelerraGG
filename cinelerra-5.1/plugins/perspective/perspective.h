@@ -27,6 +27,7 @@
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
+#include "guicast.h"
 #include "keyframe.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
@@ -41,6 +42,7 @@ class PerspectiveMode;
 class PerspectiveDirection;
 class PerspectiveAffine;
 class PerspectiveAffineItem;
+class PerspectiveZoomView;
 class PerspectiveWindow;
 class PerspectiveMain;
 
@@ -55,6 +57,7 @@ public:
 		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 
 	float x1, y1, x2, y2, x3, y3, x4, y4;
+	float view_x, view_y, view_zoom;
 	int mode, smoothing;
 	int window_w, window_h;
 	int current_point;
@@ -66,60 +69,58 @@ public:
 class PerspectiveCanvas : public BC_SubWindow
 {
 public:
-	PerspectiveCanvas(PerspectiveMain *plugin,
+	PerspectiveCanvas(PerspectiveWindow *gui,
 		int x, int y, int w, int h);
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
 
 	int state;
-	enum { NONE, DRAG, DRAG_FULL, ZOOM };
+	enum { NONE, DRAG, DRAG_FULL, ZOOM, DRAG_VIEW };
 
-	int start_cursor_x, start_cursor_y;
+	int start_x, start_y;
 	float start_x1, start_y1;
 	float start_x2, start_y2;
 	float start_x3, start_y3;
 	float start_x4, start_y4;
-	PerspectiveMain *plugin;
+	PerspectiveWindow *gui;
 };
 
 class PerspectiveCoord : public BC_TumbleTextBox
 {
 public:
 	PerspectiveCoord(PerspectiveWindow *gui,
-		PerspectiveMain *plugin,
 		int x, int y, float value, int is_x);
 	int handle_event();
-	PerspectiveMain *plugin;
+	PerspectiveWindow *gui;
 	int is_x;
 };
 
 class PerspectiveReset : public BC_GenericButton
 {
 public:
-	PerspectiveReset(PerspectiveMain *plugin,
-		int x, int y);
+	PerspectiveReset(PerspectiveWindow *gui, int x, int y);
 	int handle_event();
-	PerspectiveMain *plugin;
+	PerspectiveWindow *gui;
 };
 
 class PerspectiveMode : public BC_Radial
 {
 public:
-	PerspectiveMode(PerspectiveMain *plugin,
+	PerspectiveMode(PerspectiveWindow *gui,
 		int x, int y, int value, char *text);
 	int handle_event();
-	PerspectiveMain *plugin;
+	PerspectiveWindow *gui;
 	int value;
 };
 
 class PerspectiveDirection : public BC_Radial
 {
 public:
-	PerspectiveDirection(PerspectiveMain *plugin,
+	PerspectiveDirection(PerspectiveWindow *gui,
 		int x, int y, int value, char *text);
 	int handle_event();
-	PerspectiveMain *plugin;
+	PerspectiveWindow *gui;
 	int value;
 };
 
@@ -151,6 +152,19 @@ public:
 	int id;
 };
 
+class PerspectiveZoomView : public BC_FSlider
+{
+public:
+	PerspectiveZoomView(PerspectiveWindow *gui,
+		int x, int y, int w);
+	~PerspectiveZoomView();
+
+	int handle_event();
+	char *get_caption();
+	void update(float zoom);
+
+	PerspectiveWindow *gui;
+};
 
 
 class PerspectiveWindow : public PluginClientWindow
@@ -163,6 +177,8 @@ public:
 	int resize_event(int x, int y);
 	void update_canvas();
 	void update_mode();
+	void update_view_zoom();
+	void reset_view();
 	void update_coord();
 	void calculate_canvas_coords(
 		int &x1, int &y1, int &x2, int &y2,
@@ -171,6 +187,7 @@ public:
 	PerspectiveCanvas *canvas;
 	PerspectiveCoord *x, *y;
 	PerspectiveReset *reset;
+	PerspectiveZoomView *zoom_view;
 	PerspectiveMode *mode_perspective, *mode_sheer, *mode_stretch;
 	PerspectiveAffine *affine;
 	PerspectiveMain *plugin;
