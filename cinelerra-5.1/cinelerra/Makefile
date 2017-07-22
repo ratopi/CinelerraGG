@@ -94,6 +94,7 @@ OBJS = \
 	$(OBJDIR)/edits.o \
 	$(OBJDIR)/edl.o \
 	$(OBJDIR)/edlsession.o \
+	$(OBJDIR)/effectlist.o \
 	$(OBJDIR)/exportedl.o \
 	$(OBJDIR)/fadeengine.o \
 	$(OBJDIR)/ffmpeg.o \

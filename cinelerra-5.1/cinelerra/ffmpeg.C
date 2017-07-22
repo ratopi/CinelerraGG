@@ -491,7 +491,6 @@ int FFStream::flush()
 
 int FFStream::seek(int64_t no, double rate)
 {
-	int64_t tstmp = -INT64_MAX+1;
 // default ffmpeg native seek
 	int npkts = 1;
 	int64_t pos = no, pkt_pos = -1;
@@ -509,11 +508,18 @@ int FFStream::seek(int64_t no, double rate)
 		}
 	}
 	if( pos == curr_pos ) return 0;
-	if( pos > 0 && st->time_base.num > 0 ) {
-		double secs = pos / rate;
-		tstmp = secs * st->time_base.den / st->time_base.num;
-		if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
-	}
+	double secs = pos < 0 ? 0. : pos / rate;
+	AVRational time_base = st->time_base;
+	int64_t tstmp = time_base.num > 0 ? secs * time_base.den/time_base.num : 0;
+	if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
+	int idx = st->index;
+#if 0
+// seek all streams using the default timebase.
+//   this is how ffmpeg and ffplay work.  stream seeks are less tested.
+	tstmp = av_rescale_q(tstmp, time_base, AV_TIME_BASE_Q);
+	idx = -1;
+#endif
+
 	avcodec_flush_buffers(avctx);
 	avformat_flush(fmt_ctx);
 #if 0
@@ -523,9 +529,9 @@ int FFStream::seek(int64_t no, double rate)
 		seek = pkt_pos;
 		flags = AVSEEK_FLAG_BYTE;
 	}
-        int ret = avformat_seek_file(fmt_ctx, st->index, -INT64_MAX, seek, INT64_MAX, flags);
+	int ret = avformat_seek_file(fmt_ctx, st->index, -INT64_MAX, seek, INT64_MAX, flags);
 #else
-	int ret = av_seek_frame(fmt_ctx, st->index, tstmp, AVSEEK_FLAG_ANY);
+	int ret = av_seek_frame(fmt_ctx, idx, tstmp, AVSEEK_FLAG_ANY);
 #endif
 	int retry = MAX_RETRY;
 	while( ret >= 0 ) {
@@ -559,7 +565,7 @@ int FFStream::seek(int64_t no, double rate)
 	if( ret < 0 ) {
 printf("** seek fail %jd, %jd\n", pos, tstmp);
 		seeked = need_packet = 0;
-	        st_eof(flushed=1);
+		st_eof(flushed=1);
 		return -1;
 	}
 //printf("seeked pos = %ld, %ld\n", pos, tstmp);

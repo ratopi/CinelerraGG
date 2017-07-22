@@ -79,6 +79,7 @@ void PluginServer::init()
 	plugin_obj = new PluginObj();
 	modules = new ArrayList<Module*>;
 	nodes = new ArrayList<VirtualNode*>;
+	tip = 0;
 }
 
 PluginServer::PluginServer()
@@ -107,6 +108,7 @@ PluginServer::PluginServer(PluginServer &that)
 	plugin_obj = that.plugin_obj;
 	plugin_obj->add_user();
 	title = !that.title ? 0 : cstrdup(that.title);
+	tip = !that.tip ? 0 : cstrdup(that.tip);
 	path = !that.path ? 0 : cstrdup(that.path);
 	ff_name = !that.ff_name ? 0 : cstrdup(that.ff_name);
 	modules = new ArrayList<Module*>;
@@ -137,6 +139,7 @@ PluginServer::~PluginServer()
 	delete [] path;
 	delete [] ff_name;
 	delete [] title;
+	delete [] tip;
 	delete modules;
 	delete nodes;
 	delete picon;
@@ -175,6 +178,7 @@ int PluginServer::reset_parameters()
 	uses_gui = 0;
 	transition = 0;
 	title = 0;
+	tip = 0;
 	path = 0;
 	data_text = 0;
 	for( int i=sizeof(args)/sizeof(args[0]); --i>=0; ) args[i] = 0;

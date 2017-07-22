@@ -647,6 +647,7 @@ public:
 	static void get_plugin_path(char *path, const char *plug_dir, const char *fs_path);
 	static int init_plugins(MWindow *mwindow, Preferences *preferences);
 	static int init_ladspa_plugins(MWindow *mwindow, Preferences *preferences);
+	static void init_plugin_tips(ArrayList<PluginServer*> &plugins);
 	static int check_plugin_index(ArrayList<PluginServer*> &plugins,
 		const char *plug_dir, const char *plug_path);
 	static void init_plugin_index(MWindow *mwindow, Preferences *preferences,

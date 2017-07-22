@@ -1153,15 +1153,11 @@ int MWindow::paste_assets(double position, Track *dest_track, int overwrite)
 }
 
 void MWindow::load_assets(ArrayList<Indexable*> *new_assets,
-	double position,
-	int load_mode,
-	Track *first_track,
-	RecordLabels *labels,
-	int edit_labels,
-	int edit_plugins,
-	int edit_autos,
-	int overwrite)
+	double position, int load_mode, Track *first_track, RecordLabels *labels,
+	int edit_labels, int edit_plugins, int edit_autos, int overwrite)
 {
+	if( load_mode == LOADMODE_RESOURCESONLY )
+		load_mode = LOADMODE_ASSETSONLY;
 const int debug = 0;
 if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
 	if( position < 0 ) position = edl->local_session->get_selectionstart();
@@ -1444,7 +1440,8 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 		}
 //PRINT_TRACE
 // Insert edl
-		if( load_mode != LOADMODE_RESOURCESONLY ) {
+		if( load_mode != LOADMODE_RESOURCESONLY &&
+		    load_mode != LOADMODE_ASSETSONLY ) {
 // Insert labels
 //printf("MWindow::paste_edls %f %f\n", current_position, edl_length);
 			if( load_mode == LOADMODE_PASTE ||

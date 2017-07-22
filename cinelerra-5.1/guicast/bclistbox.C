@@ -64,6 +64,10 @@ int BC_ListBoxYScroll::handle_event()
 	return 1;
 }
 
+int BC_ListBoxYScroll::update_length(int64_t length, int64_t position, int64_t handlelength, int flush)
+{
+	return BC_ScrollBar::update_length(length+handlelength/4, position, handlelength, flush);
+}
 
 
 
@@ -95,6 +99,10 @@ int BC_ListBoxXScroll::handle_event()
 	return 1;
 }
 
+int BC_ListBoxXScroll::update_length(int64_t length, int64_t position, int64_t handlelength, int flush)
+{
+	return BC_ScrollBar::update_length(length+handlelength/4, position, handlelength, flush);
+}
 
 
 

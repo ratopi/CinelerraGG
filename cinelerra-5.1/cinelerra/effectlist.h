@@ -1,6 +1,6 @@
-
 /*
  * CINELERRA
+ * Copyright (C) 2006 Pierre Dumuid
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,41 +19,62 @@
  *
  */
 
-#ifndef AWINDOW_H
-#define AWINDOW_H
+#ifndef EFFECTLIST_H
+#define EFFECTLIST_H
 
-#include "assetedit.inc"
-#include "assetremove.inc"
 #include "awindowgui.inc"
-#include "bchash.inc"
-#include "bcwindowbase.inc"
-#include "clipedit.inc"
+#include "guicast.h"
 #include "effectlist.inc"
-#include "labeledit.inc"
-#include "labelpopup.inc"
 #include "mwindow.inc"
-#include "thread.h"
 
-class AWindow : public Thread
+class EffectTipDialog : public BC_DialogThread
 {
 public:
-	AWindow(MWindow *mwindow);
-	~AWindow();
+	EffectTipDialog(MWindow *mwindow, AWindow *awindow);
+	~EffectTipDialog();
+	void start(int x, int y, const char *effect, const char *text);
+	BC_Window* new_gui();
 
-	void run();
+	MWindow *mwindow;
+	AWindow *awindow;
+	EffectTipWindow *effect_gui;
+	int x, y, w, h;
+	const char *effect, *text;
+};
+
+class EffectTipWindow : public BC_Window
+{
+public:
+	EffectTipWindow(AWindowGUI *gui, EffectTipDialog *thread);
+	~EffectTipWindow();
 	void create_objects();
-	int load_defaults(BC_Hash *defaults);
-	int save_defaults(BC_Hash *defaults);
-
-	char current_folder[BCTEXTLEN];
 
 	AWindowGUI *gui;
+	EffectTipDialog *thread;
+	BC_Title *tip_text;
+};
+
+class EffectTipItem : public BC_MenuItem
+{
+public:
+	EffectTipItem(AWindowGUI *gui);
+	~EffectTipItem();
+	int handle_event();
+
+	AWindowGUI *gui;
+};
+
+class EffectListMenu : public BC_PopupMenu
+{
+public:
+	EffectListMenu(MWindow *mwindow, AWindowGUI *gui);
+	~EffectListMenu();
+	void create_objects();
+	void update();
+
 	MWindow *mwindow;
-	AssetEdit *asset_edit;
-	AssetRemoveThread *asset_remove;
-	ClipEdit *clip_edit;
-	LabelEdit *label_edit;
-	EffectTipDialog *effect_tip;
+	AWindowGUI *gui;
+	AWindowListFormat *format;
 };
 
 #endif

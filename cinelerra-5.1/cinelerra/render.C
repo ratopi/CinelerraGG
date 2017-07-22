@@ -929,11 +929,7 @@ if(debug) printf("Render::render %d\n", __LINE__);
 		if(render->load_mode == LOADMODE_PASTE)
 			mwindow->clear(0);
 if(debug) printf("Render::render %d\n", __LINE__);
-		mwindow->load_assets(assets,
-			-1,
-			render->load_mode,
-			0,
-			0,
+		mwindow->load_assets(assets, -1, render->load_mode, 0, 0,
 			mwindow->edl->session->labels_follow_edits,
 			mwindow->edl->session->plugins_follow_edits,
 			mwindow->edl->session->autos_follow_edits,

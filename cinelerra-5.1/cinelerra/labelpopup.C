@@ -75,10 +75,11 @@ LabelPopupEdit::~LabelPopupEdit()
 int LabelPopupEdit::handle_event()
 {
 	AssetPicon *result = (AssetPicon*)gui->asset_list->get_selection(0,0);
-	int cur_x, cur_y;
-	gui->get_abs_cursor_xy(cur_x, cur_y, 0);
-	if( result && result->label )
+	if( result && result->label ) {
+		int cur_x, cur_y;
+		gui->get_abs_cursor_xy(cur_x, cur_y, 0);
 		gui->awindow->label_edit->start(result->label, cur_x, cur_y);
+	}
 	return 1;
 }
 

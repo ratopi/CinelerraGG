@@ -25,6 +25,7 @@
 #include "awindowgui.h"
 #include "bcsignals.h"
 #include "clipedit.h"
+#include "effectlist.h"
 #include "labeledit.h"
 #include "labelpopup.h"
 
@@ -63,6 +64,7 @@ void AWindow::create_objects()
 	asset_edit = new AssetEdit(mwindow);
 	clip_edit = new ClipEdit(mwindow, this, 0);
 	label_edit = new LabelEdit(mwindow, this, 0);
+	effect_tip = new EffectTipDialog(mwindow, this);
 }
 
 int AWindow::save_defaults(BC_Hash *defaults)

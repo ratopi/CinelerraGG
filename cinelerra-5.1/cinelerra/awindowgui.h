@@ -31,6 +31,7 @@
 #include "awindowgui.inc"
 #include "clippopup.inc"
 #include "edl.inc"
+#include "effectlist.inc"
 #include "folderlistmenu.inc"
 #include "guicast.h"
 #include "labeledit.inc"
@@ -211,6 +212,7 @@ public:
 	AssetPopup *asset_menu;
 	ClipPopup *clip_menu;
 	LabelPopup *label_menu;
+	EffectListMenu *effectlist_menu;
 	AssetListMenu *assetlist_menu;
 	ClipListMenu *cliplist_menu;
 	LabelListMenu *labellist_menu;

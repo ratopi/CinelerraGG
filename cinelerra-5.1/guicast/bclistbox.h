@@ -45,6 +45,7 @@ public:
 	                  int position);
 	~BC_ListBoxYScroll();
 	int handle_event();
+	int update_length(int64_t length, int64_t position, int64_t handlelength, int flush);
 private:
 	BC_ListBox *listbox;
 };
@@ -58,6 +59,7 @@ public:
 	                  int position);
 	~BC_ListBoxXScroll();
 	int handle_event();
+	int update_length(int64_t length, int64_t position, int64_t handlelength, int flush);
 private:
 	BC_ListBox *listbox;
 };

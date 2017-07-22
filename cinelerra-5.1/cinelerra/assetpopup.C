@@ -515,9 +515,9 @@ AssetListPaste::~AssetListPaste()
 int AssetListPaste::handle_event()
 {
 	if( !paste_dialog )
-		paste_dialog->close_window();
-	else
 		paste_dialog = new AssetPasteDialog(this);
+	else
+		paste_dialog->close_window();
 	int cur_x, cur_y;
 	gui->get_abs_cursor_xy(cur_x, cur_y, 0);
 	paste_dialog->start(cur_x, cur_y);

@@ -1,0 +1,490 @@
+# plugin info
+# 
+# Name of plugin followed by: and then description.
+#  Additional lines start with a blank/tab.
+#
+1080 to 480:	Extracts 2 1920x540 fields from image,
+		resizes, and combines to 1920x480.
+1080 to 540:	Extracts 2 1920x540 fields from image,
+		resizes, and combines to 1920x540.
+AgingTV:	Use to achieve an "old" movie or TV show
+		effect by adding moving lines and snow.
+Auto Scale:	Automatically scale to a specified size.
+Blue Banana:	Used for color transformation or
+		remapping; also for chroma-key filtering.
+Blur:		Blurs a video track in the horizontal or
+		vertical in chosen color channels.
+Brightness/Contrast: Use to change the brightness or
+		contrast; could reduce quality.
+BurningTV:	Makes your video "burn" by adding small
+		light colored patches.
+C41:		Converts C-41 negative film into the positive image.
+Chroma key:	Erases pixels which match chosen color;
+		replaces with black or transparency.
+Chroma key (HSV): Removes a color with another color or
+		transparency using HSV variables.
+Color 3 Way:	Modify color of Shadows, Midtones, and Highlights as
+		wanted.
+Color Balance:	Modify RGB colors or white balance to compensate
+		compensate for errors in video.
+CriKey:		Regionally based chroma key with interpolation;
+		only a specific zone defined.
+Decimate:	Drop frames from a track which are most similar
+		in order to reduce frame rate.
+Deinterlace:	Various line replication to eliminate comb
+		artifacts in interlaced video.
+Deinterlace-CV:	Variation of deinterlacing video to eliminate comb
+		artifacts.
+Delay Video:	Delay the video by some number of seconds.
+Denoise video:	Clear the video of noise.
+Difference key:	Creates transparency in areas which are similar
+		between 2 frames; must be applied to 2 tracks.
+DotTV:		Puts various size dots over the picture to simulate
+		tv effect.
+Downsample:	Reduce the sie of an image by throwing out data,
+		reducing sampling rate.
+Edge:		Display only the edges of the video throughout the image.
+Fields to frames: Reads frames at 2x the framerate, combining 2
+		input frames into 1 interlaced output frame.
+Flip:		Flip a portion of a video track from left to right,
+		up to down or vice versa.
+Frames to Fields: Extracts 2 interlaced fields stored in alternating
+		lines & outputs them as full frames.
+Freeze Frame:	Lowest numbered frame in highlighted area will play
+		in the entire region.
+Gamma:		Converts the logarithmic colors to linear colors
+		using gamma and maximum value.
+Gradient:	Overlays a smooth color gradient on top of every
+		video frame.
+Histogram:	Shows the number of occurrences of each color on a
+		histogram plot.
+Histogram Bezier: Uses a Bezier curve (parametric) on the histogram plot.
+HolographgicTV:	Holographic tv effect.
+Hue saturation:	Use to change hue, saturation and value parameters.
+Interpolate Pixels: Works only for float color models.
+Interpolate Video: Create illusion of higher frame rate video of low
+		framesrates by averaging over time.
+Inverse Telecine: Effective deinterlacing tool for use on a video
+		transfer of a film.
+Invert Video:	Method of reversing the colors of a video track.
+Lens:		Create the effect of looking through a lens.
+Linear Blur:	Blur with parameters of length, andle, number of 
+		steps, and which channels.
+Live Video:	Reads video directly from the capture card input and
+		will replace current.
+Loop video:	Loop video by specifying the length of the region to loop.
+Motion:		Tracks translation and rotation motion to stabilize
+		shaky video.
+Motion 2 Point:	Motion stabilization using 2 pass tracking.
+Motion Blur:	Uses X/Y camera automation vectors to apply a linear
+		blur trailing camera direction.
+Motion51:	Compensates for unwanted motion and stabilizes the
+		image using a unique curve/spline algorithm.  Has a
+		reset option to use default parameters.
+MotionCV:	Motion tracking/stabilization from the community
+		version of cinelerra.
+MotionHV:	Motion tracking/stabilization from the original
+		author of cinelerra.
+Oil Painting:	Makes video tracks appear as a painting.
+Overlay:	Combine tracks via an overlayer that puts images on
+		top of a bottom layer.
+Perspective:	Allows you to change the viewpoint of an object.
+Polar:		Bends and warps your video in strange ways based on
+		a mathematical algorithm.
+RGB - 601:	Used to reduce/increase contrast in your video via
+		601 compression or RGB expansion.
+RGBShift:	Align 3 separate planes of R, G, B if misaligned in
+		in the video or just shift for interest.
+Radial Blur:	Creates a whirlpool based on settings that simulates
+		a swirling camera.
+ReframeRT:	Changes number of frames in a sequence of video
+		directly from timeline.
+Reroute:	Selectively transfer the alpha channel or the
+		RGB/YUV components from source to target track.
+Reverse video:	Reverse media on the timeline in realtime.
+Rotate:		Rotate the video in degree increments around a
+		pivot point or reverse and flip the video.
+SVG via Inkscape: Allow the manipulation of an SVG image with
+		Inkscape without having to exit the program.
+Scale:		Reduce or expand the image size depending on the ratio.
+Scale Ratio:	Manipulate your video to maintain the pixel aspect
+		ratio (proportional geometry).
+Selective Temporal Averaging: Smooths out non-moving areas of a video
+		clip by averaging the color across frames.
+Sharpen:	Sharpen the video, either the luminance, horizontal,
+		or interlace.
+ShiftInterlace:	Shift the interlace lines using odd or even.
+Swap Frames:	Swap frames with 0-1, 2-3, 4-5... or 1-2, 3-4, 5-6...
+Swap channels:	Swap R,G,B,Alpha with another color channel.
+Threshold:	Converts the image to pure luminanceand replaces
+		pixels with 1 of 3 colors.
+Time Average:	Takes a number of frames to average or
+		accumulate-stacking 1 frame on top of another.
+TimeFront:	Performs spatio-temporal video warping.
+Title:		Add text/timestamp/background pngs to video with
+		many nice variations such as changing font color,
+		size, bold, subscripts.
+Translate:	Allows displacing, cropping and/or scaling video
+		horizontally/vertically.
+Unsharp:	Applies a traditional darkroom technique, unsharp
+		mask, to every video frame.
+VideoScope:	Summarizes intensity and color on a calibrated display.
+Wave:		Generates waves in video using Amplitude, Phase, and
+		Wavelength.
+Whirl:		Creates a whirl (spiral) of the video around the center.
+YUV:		Modify the Y, U, V settings.
+YUV411:		Modify the 411 yuv to look like 420 color space instead.
+YUVShift:	Realign the 3 sets of YUV inputvideo nubers when
+		misaligned.
+Zoom Blur:	Blur the video and use a zoom effect.
+#
+#  Description of FFmpeg Video Plugins
+#
+F_atadenoise:	Apply an Adaptive Temporal Averaging Denoiser.
+F_avgblur:	Apply average blur filter.
+F_bbox:		Compute bounding box for each frame.
+F_bench:	Benchmarks part of a filtergraph.
+F_bitplaneoise:	Measure bit plane noise.
+F_blackdetect:	Detect video intervals that are (almost) black.
+F_blackframe:	Detect frames that are (almost) black.
+F_boxblur:	Blurs the input video.
+		Through the settings you are
+		able to change the power and the
+		radius of the boxblur applied to luma, chroma and alpha.
+F_bwdif:	Deinterlaces the input image.
+F_chromakey:	Turns a certain color into
+		transparency.  Operates on YUV colors.
+F_ciescope:	Video CIE scope.
+F_colorbalance:	Adjusts the color balance.
+F_colorchannelmixer: Adjusts colors by mixing color channels.
+F_colorkey:	Turns a certain color into
+		transparency. Operates on RGB colors.
+F_colorlevels:	Adjusts the color levels.
+F_colormatrix:	Converts color matrix.
+F_cover_rect:	Find and cover a user specified object.
+F_crop:		Crops the input video.
+F_cropdetect:	Auto-detect crop size
+F_datascope:	Video data analysis.
+F_deband:	Debands video.
+F_deflate:	Applies deflate effect.
+F_dejudder:	Removes judder produced by pullup.
+F_delogo:	Removes logo from input video.
+		When using this plugin a green box will appear on the
+		screen, once the logo is inside the box the
+		plugin will hide it. Through the settings you can specify
+		the position of the logo to hide (on a X-Y axis)
+		and the size of the box (so you can adjust it to the
+		size of the logo).
+F_deshake:	Stabilizes shaky video.
+F_dilation:	Applies dilation effect.
+F_drawbox:	Draws a colored box on the input video.
+		Through the settings you are able to choose the
+		position of the box on X and Y coordinates,
+		the size of the box,
+		the color and the thickness of the lines.
+F_drawgraph:	Draw a graph using input video metadata.
+F_drawgrid:	Draws a colored grid on the input video.
+		Through the settings you can select the
+		horizontal and the vertical offset,
+		set the width and  height of
+		the grid cell, and the color and
+		thickness of the lines.
+F_edgedetect:	Detects and draws edge.
+F_elbg:		Apply posterize effect, using the ELBG algorithm.
+F_eq:		Adjusts brightness, contrast, gamma and saturation.
+F_erosion:	Applies erosion effect.
+F_fade:		Fade in/out input video.
+F_fftfilt:	Apply arbitrary expressions to pixels in frequency domain.
+F_field:	Extract a field from the input video.
+F_fieldorder:	Set the field order.
+F_framerate:	Upsamples or downsamples progressive
+		source between specified frame rates.
+F_fspp:		Applies Fast Simple Post-processing filter.
+F_gblur:	Apply Gaussian Blur filter.
+F_gradfun:	Debands video quickly using gradients.
+F_hflip:	Horizontally flips the input video.
+F_histeq:	Applies global color histogram equalization.
+F_histogram:	Computes and draws a histogram.
+F_hqdn3d:	Applies a High Quality 3D Denoiser.
+F_hqx:		Scales the input by 2,
+		3 or 4 using the hq*x magnification algorithm.
+F_hue:		Adjust the hue and saturation of the input video.
+F_idet:		Interlace detect Filter.
+F_il:		Deinterleaves or interleaves fields.
+F_inflate:	Applies inflate effect.
+F_interlace:	Convert progressive video into interlaced.
+F_kerndeint:	Applies kernel deinterlacing to the input.
+F_lenscorrection: Rectifies the image by correcting for lens distortion.
+F_loop:		Loops video frames.
+F_lut:		Compute and apply a lookup
+		table to the RGB/YUV input video.
+F_lutrgb:	Compute and apply a lookup table to the RGB input video.
+F_lutyuv:	Combine and apply a lookup table to the YUV input video.
+F_mcdeint:	Applies motion compensating deinterlacing.
+F_mestimate:	Generate motion vectors.
+F_mpdecimate:	Remove near-duplicate frames.
+F_negate:	Negates input video.
+F_nlmeans:	Non-local means denoiser.
+F_noise:	Adds noise to the video.
+		Through the settings you can
+		select the variables of the noise
+		(strength, flag and seed).
+F_owndenoise:	Denoises using wavelets.
+F_perms:	Set permissions for the output video frame.
+F_perspective:	Corrects the perspective of video.
+F_phase:	Phases shift fields.
+F_pp:		Filters video using libpostproc.
+F_pp7:		Applies Postprocessing 7 filter.
+F_prewitt:	Apply prewitt operator.
+F_readeia608:	Read EIA-608 Closed Caption codes from
+		input video and write them to frame metadata.
+F_readvitc:	Reads vertical interval
+		timecode and writes it to frame metadata.
+F_realtime:	Slows down filtering to match realtime.
+F_removegrain:	Removes grain.
+F_repeatfields:	Hard repeat fields based on MPEG repeat field flag.
+F_rotate:	Rotates the input image.
+F_sab:		Applies shape adaptive blur.
+F_separatefields: Split input video frames into fields.
+F_showinfo:	Show textual information for each video frame.
+F_shuffleframes: Shuffles video frames.
+F_shuffleplanes: Shuffles video planes.
+F_signalstats:	Separates statistics from video analysis.
+F_smartblur:	Blurs the input video without impacting
+		the outlines. Through the settings you can
+		select the radius,
+		the strength and the threshold of luma and chroma.
+F_sobel:	Applies sobel operator.
+F_spp:		Applies a simple post processing filter.
+F_stereo3d:	Converts video stereoscopic 3D view.
+F_super2xsai:	Scales the input by 2x using
+		the Super2xSal pixel art algorithm.
+F_swaprect:	Swaps 2 rectangular objects in video.
+F_swapuv:	Swaps U and V components.
+F_tinterlace:	Performs temporal field interlacing.
+F_transpose:	Transposes input video.
+F_uspp:		Applies Ultra Simple/Slow Post-processing filter.
+F_vaguedenoiser: Applies a Wavelet based Denoiser.
+F_vectorscope:	Video vectorscope.
+F_vflip:	Flips the input video vertically.
+F_vignette:	Makes or reverses a vignette effect.
+		Through the settings you can set the circle center
+		position on a X-Y axis,choose the angle,
+		the aspect and set the dithering of the vignette.
+F_w3dif:	Applies Martin Weston three field deinterlace.
+F_waveform:	Video waveform monitor.
+F_weave:	Weaves input video fields into frames.
+F_xbr:		Scales the input using xBR algorithm.
+F_yadif:	Deinterlaces the input image.
+F_zoompan:	Applies Zoom & Pan effect.
+#
+#  Description of FFmpeg Audio Plugins
+#
+F_abench:	Benchmark part of a filtergraph.
+F_acompressor:	Audio compressor.
+F_acrusher:	Reduces audio bit resolution.
+F_adelay:	Delays one or more audio channels.
+F_aecho:	Adds echoing to the audio.
+F_aemphasis:	Audio emphasis.
+F_aeval:	Filters audio signal according to a specific expression.
+F_afade:	Fades in/out input audio.
+F_agate:	Audio gate.
+F_allpass:	Applies a two-pole all-pass filter.
+F_aloop:	Loops audio samples.
+F_anoisesrc:	Generates a noise audio signal.
+F_aperms:	Set permissions for the output audio frame.
+F_aphaser:	Adds a phasing effect to the audio.
+F_arealtime:	Slows down filtering to match realtime.
+F_aresample:	Resamples audio data.
+F_astats:	Shows time domain statistics about audio frames
+F_atempo:	Adjusts audio tempo.
+F_atrim:	Pick one continuous section from the input, drop the rest.
+F_bandpass:	Applies a two-pole Butterworth band-pass filter.
+F_bandreject:	Applies a two-pole Butterworth band-reject filter.
+F_bass:		Boosts or cuts lower frequencies.
+F_biquad:	Applies a biquad IIR filter with the given coefficents.
+F_chorus:	Adds a chorus effect to the audio.
+F_compand:	Compresses or expands audio dynamic range.
+F_compensationdelay: audio compensation delay line.
+F_crystalizer:	Simple Expand Audio Dynamic Range filter.
+F_dcshift:	Applies a DC shift to the audio.
+F_dyaudnorm:	Dynamic Audio Normalizer.  When using this plugin,
+		be sure to “attach effect” to all audio tracks by dragging
+		the plugin to the 1st audio track and then right mouse
+		clicking all subsequent audio tracks which brings up an menu.
+		Highlight the effect shown in the middle section and click OK.
+F_earwax:	Widens the stereo image.  When using this plugin,
+		be sure to “attach effect” to all audio tracks by dragging
+		the plugin to the 1st audio track and then right mouse
+		clicking all subsequent audio tracks which brings up an menu.
+		Highlight the effect shown in the middle section and click OK.
+F_equalizer:	Applies two-pole peaking equalization (EQ) filter.
+F_extrastereo:	Increases difference between stereo audio
+		channels.  When using this plugin, be sure to
+		“attach effect” to all audio tracks by dragging
+		the plugin to the 1st audio track and then right mouse
+		clicking all subsequent audio tracks which
+		brings up an menu.  Highlight the effect shown in the
+		middle section and click OK.
+F_flanger:	Applies a flanging effect to the audio.
+F_highpass:	Applies a high-pass filter with 3dB point frequency.
+F_loudnorm:	EBU R128 loudness normalization.
+F_lowpass:	Applies a low-pass filter with 3dB point frequency.
+F_silenceremove: Removes silence.
+F_sine:		Generate sine wave audio signal.
+F_stereotools:	Applies various stereo tools.  When using this plugin,
+		be sure to “attach effect” to all audio tracks by dragging
+		the plugin to the 1st audio track and then right mouse
+		clicking all subsequent audio tracks which brings up an menu.
+		Highlight the effect shown in the middle section and click OK.
+F_stereowiden:	Applies stereo widening effect.  When using this plugin,
+		be sure to “attach effect” to all audio tracks by dragging
+		the plugin to the 1st audio track and then right mouse
+		clicking all subsequent audio tracks which brings up an menu.
+		Highlight the effect shown in the middle section and click OK.
+F_treble:	Boosts or cuts upper frequencies.
+F_tremolo:	Applies tremolo effect.
+F_vibrato:	Applies vibrato effect.
+F_volume:	Change input volume.
+#
+# audio plugins
+#
+#AM pitchshifter:	
+#Aliasing:	
+#Allpass delay line, cubic spline interpolation:
+#Allpass delay line, linear interpolation:
+#Allpass delay line, noninterpolating:
+#Analogue Oscillator:
+#4 x 4 pole allpass:
+#Artificial latency:
+#Audio Divider (Suboctave Generator):
+#AudioScope:
+#Auto phaser:
+#Barry's Satan Maximiser:
+#Bode frequency shifter:
+#Bode frequency shifter (CV):
+#Chebyshev distortion:
+#Comb Filter:
+#Comb Splitter:
+#Comb delay line, cubic spline interpolation:
+#Comb delay line, linear interpolation:
+#Comb delay line, noninterpolating:
+#Compressor:
+#Constant Signal Generator:
+#Crossfade:
+#Crossfade (4 outs):
+#Crossover distortion:
+#DC Offset:
+#DC Offset Remover:
+#DJ EQ:
+#DJ EQ (mono):
+#DJ flanger:
+#Decimator:
+#Declipper:
+#Delay audio:
+#Delayorama:
+#Denoise:
+#DenoiseFFT:
+#Despike:
+#Diode Processor:
+#Dyson compressor:
+#EQ Graphic:
+#EQ Parametric:
+Echo:		Add echoing to audio for an interesting effect.
+EchoCancel:	Remove echos from audio in order to
+		improve the quality.
+#Exponential signal decay:
+#FM Oscillator:
+#Fast Lookahead limiter:
+#Fast overdrive:
+#Flanger:
+#Foldover distortion:
+#Fractionally Addressed Delay Line:
+#Freeverb:
+#Frequency tracker:
+#GLAME Butterworth Highpass:
+#GLAME Butterworth Lowpass:
+#GSM simulator:
+#GVerb:
+#Gain:
+#Gate:
+#Giant flange:
+#Glame Bandpass Analog Filter:
+#Glame Bandpass Filter:
+#Glame Butterworth X-over Filter:
+#Glame Highpass Filter:
+#Glame Lowpass Filter:
+#Gong beater:
+#Gong model:
+#Hard Limiter:
+#Harmonic generator:
+#Hermes Filter:
+#Higher Quality Pitch Scaler:
+#Hilbert transformer:
+#Impulse convolver:
+#Interpolate:
+#Invert Audio:
+#Inverter:
+#Karaoke:
+#L/C/R Delay:
+#LFO Phaser:
+#LS Filter:
+Live Audio:	Reads audio directly from the soundcard input, 
+		replacing any audio on track.
+#Loop audio:
+#Mag's Notch Filter:
+#Matrix Spatialiser:
+#Matrix; MS to Stereo:
+#Matrix; Stereo to MS:
+#Modulatable delay:
+#Mono to Stereo splitter:
+#Multiband EQ:
+#Multivoice Chorus:
+#Nonbandlimited single-sample impulses (Frequency; Control):
+#Overlay:
+#Pitch Scaler:
+Pitch shift:	Uses FFT to try to change the pitch without 
+		changing the duration.
+#Plate reverb:
+#Pointer cast distortion:
+#Rate shifter:
+#Remove Gaps:
+#ResampleRT:
+#Retro Flanger:
+#Reverb:
+#Reverse Delay (5s max):
+Reverse audio:		Play the audio backwards.
+#Ringmod with LFO:
+#Ringmod with two inputs:
+#SC1:
+#SC2:
+#SC3:
+#SC4:
+#SC4 mono:
+#SE4:
+#Signal sifter:
+#Simple amplifier:
+#Simple delay line, cubic spline interpolation:
+#Simple delay line, linear interpolation:
+#Simple delay line, noninterpolating:
+#Sine + cosine oscillator:
+#Single band parametric:
+#Sinus wavewrapper:
+#Smooth Decimator:
+#SoundLevel:
+#Spectrogram:
+#State Variable Filter:
+#Step Demuxer:
+#Surround matrix encoder:
+#Synthesizer:
+#Tape Delay Simulation:
+#Time Stretch RT:
+#Transient mangler:
+#Triple band parametric with shelves:
+#Valve rectifier:
+#Valve saturation:
+#Vocoder:
+#Vocoder:
+#VyNil (Vinyl Effect):
+#Wave Terrain Oscillator:
+#z-1:

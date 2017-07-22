@@ -518,12 +518,7 @@ void MenuEffectThread::run()
 		if(load_mode == LOADMODE_PASTE)
 			mwindow->clear(0);
 
-
-		mwindow->load_assets(&assets,
-			-1,
-			load_mode,
-			0,
-			0,
+		mwindow->load_assets(&assets, -1, load_mode, 0, 0,
 			mwindow->edl->session->labels_follow_edits,
 			mwindow->edl->session->plugins_follow_edits,
 			mwindow->edl->session->autos_follow_edits,
@@ -532,17 +527,9 @@ void MenuEffectThread::run()
 		mwindow->save_backup();
 		mwindow->undo->update_undo_after(title, LOAD_ALL);
 
-
-
 		mwindow->restart_brender();
 		mwindow->update_plugin_guis();
-		mwindow->gui->update(1,
-			2,
-			1,
-			1,
-			1,
-			1,
-			0);
+		mwindow->gui->update(1, 2, 1, 1, 1, 1, 0);
 		mwindow->sync_parameters(CHANGE_ALL);
 		mwindow->gui->unlock_window();
 

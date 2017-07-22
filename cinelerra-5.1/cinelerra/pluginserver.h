@@ -382,9 +382,8 @@ public:
 	int uses_gui;
 // Plugin is a transition
 	int transition;
-// name of plugin in english.
-// Compared against the title value in the plugin for resolving symbols.
-	char *title;
+// name/tip of plugin in current locale.
+	char *title, *tip;
 	int64_t written_samples, written_frames;
 	char *path;           // location of plugin on disk
 	char *data_text;      // pointer to the data that was requested by a save_data command

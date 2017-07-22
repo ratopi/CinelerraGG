@@ -74,16 +74,27 @@ void AboutPrefs::create_objects()
 
 	const char *cfg_path = File::get_cindat_path();
 	char msg_path[BCTEXTLEN];
-	snprintf(msg_path, sizeof(msg_path), "%s/msg.txt", cfg_path);
-	FILE *fp = fopen(msg_path, "r");
+	FILE *fp = 0;
+	if( BC_Resources::language[0] ) {
+		snprintf(msg_path, sizeof(msg_path), "%s/msg/%s",
+			cfg_path, BC_Resources::language);
+		fp = fopen(msg_path, "r");
+	}
+	if( !fp ) {
+		snprintf(msg_path, sizeof(msg_path), "%s/msg/txt",
+			cfg_path);
+		fp = fopen(msg_path, "r");
+	}
 	if( fp ) {
 		set_font(LARGEFONT);
 		draw_text(x, y, _("About:"));
 		y += get_text_height(LARGEFONT);
 		char msg[BCTEXTLEN];
-		while( fgets(msg, sizeof(msg), fp) )
+		while( fgets(msg, sizeof(msg), fp) ) {
+			int len = strlen(msg);
+			if( len > 0 && msg[len-1] == '\n' ) msg[len-1] = 0;
 			about.append(new BC_ListBoxItem(msg));
-
+		}
 		BC_ListBox *listbox;
 		add_subwindow(listbox = new BC_ListBox(x, y, 300, 280,
 			LISTBOX_TEXT, &about, 0, 0, 1));

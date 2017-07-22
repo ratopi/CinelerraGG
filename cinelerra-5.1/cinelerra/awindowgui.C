@@ -35,6 +35,7 @@
 #include "cwindow.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "effectlist.h"
 #include "file.h"
 #include "filesystem.h"
 #include "folderlistmenu.h"
@@ -342,7 +343,7 @@ void AssetPicon::create_objects()
 	}
 	else
 	if( plugin ) {
-		strcpy(name, _(plugin->title));
+		strcpy(name,  plugin->title);
 		set_text(name);
 		icon_vframe = plugin->get_picon();
 		if( icon_vframe )
@@ -438,6 +439,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	plugin_visibility = ((uint64_t)1<<(8*sizeof(uint64_t)-1))-1;
 	newfolder_thread = 0;
 	asset_menu = 0;
+	effectlist_menu = 0;
 	assetlist_menu = 0;
 	cliplist_menu = 0;
 	labellist_menu = 0;
@@ -481,6 +483,7 @@ AWindowGUI::~AWindowGUI()
 	delete asset_menu;
 	delete clip_menu;
 	delete label_menu;
+	delete effectlist_menu;
 	delete assetlist_menu;
 	delete cliplist_menu;
 	delete labellist_menu;
@@ -634,6 +637,8 @@ SET_TRACE
 	add_subwindow(label_menu = new LabelPopup(mwindow, this));
 	label_menu->create_objects();
 
+	add_subwindow(effectlist_menu = new EffectListMenu(mwindow, this));
+	effectlist_menu->create_objects();
 	add_subwindow(assetlist_menu = new AssetListMenu(mwindow, this));
 	assetlist_menu->create_objects();
 	add_subwindow(cliplist_menu = new ClipListMenu(mwindow, this));
@@ -1538,6 +1543,13 @@ int AWindowAssets::button_press_event()
 		BC_ListBox::deactivate_selection();
 		int folder = mwindow->edl->session->awindow_folder;
 		switch( folder ) {
+		case AW_AEFFECT_FOLDER:
+		case AW_VEFFECT_FOLDER:
+		case AW_ATRANSITION_FOLDER:
+		case AW_VTRANSITION_FOLDER:
+			gui->effectlist_menu->update();
+			gui->effectlist_menu->activate_menu();
+			break;
 		case AW_LABEL_FOLDER:
 			gui->labellist_menu->update();
 			gui->labellist_menu->activate_menu();
@@ -1546,7 +1558,7 @@ int AWindowAssets::button_press_event()
 			gui->cliplist_menu->update();
 			gui->cliplist_menu->activate_menu();
 			break;
-		default:
+		case AW_MEDIA_FOLDER:
 			gui->assetlist_menu->update_titles();
 			gui->assetlist_menu->activate_menu();
 			break;
@@ -1596,8 +1608,8 @@ int AWindowAssets::selection_changed()
 		case AW_VEFFECT_FOLDER:
 		case AW_ATRANSITION_FOLDER:
 		case AW_VTRANSITION_FOLDER:
-			gui->assetlist_menu->update_titles();
-			gui->assetlist_menu->activate_menu();
+			gui->effectlist_menu->update();
+			gui->effectlist_menu->activate_menu();
 			break;
 		case AW_LABEL_FOLDER:
 			if( !item->label ) break;

@@ -125,7 +125,6 @@ DIRS = \
 	translate \
 	unsharp \
 	videoscope \
-	vocoder \
 	wave \
 	whirl \
 	wipe \
@@ -149,6 +148,8 @@ DIRS = \
 #	greycstoration \
 # not finished
 #	denoisemjpeg \
+# duplicate
+#	vocoder \
 
 PLUGIN_DIR = $(BINDIR)/plugins
 DATA = $(PLUGIN_DIR)/fonts $(PLUGIN_DIR)/shapes

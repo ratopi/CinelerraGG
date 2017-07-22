@@ -733,6 +733,66 @@ void MWindow::add_plugins(ArrayList<PluginServer*> &plugins)
 	plugins.remove_all();
 }
 
+void MWindow::init_plugin_tips(ArrayList<PluginServer*> &plugins)
+{
+	const char *cfg_path = File::get_cindat_path();
+	char msg_path[BCTEXTLEN];  int txt = 0;
+	FILE *fp = 0;
+	if( BC_Resources::language[0] ) {
+		snprintf(msg_path, sizeof(msg_path), "%s/info/plugins.%s",
+			cfg_path, BC_Resources::language);
+		fp = fopen(msg_path, "r");
+	}
+	if( !fp ) {
+		txt = 1;
+		snprintf(msg_path, sizeof(msg_path), "%s/info/plugins.txt",
+			cfg_path);
+		fp = fopen(msg_path, "r");
+	}
+	if( !fp ) return;
+	char text[BCTEXTLEN];
+	char *tp = text, *ep = tp + sizeof(text)-1;
+	char title[BCTEXTLEN];
+	title[0] = 0;
+	int no = 0;
+	for(;;) {
+		++no;  int done = 1;
+		char line[BCTEXTLEN], *cp = line;
+		if( fgets(line,sizeof(line)-1,fp) ) {
+			if( *cp == '#' ) continue;
+			done = *cp == ' ' || *cp == '\t' ? 0 : -1;
+		}
+		if( done ) {
+			if( tp > text && *--tp == '\n' ) *tp = 0;
+			if( title[0] ) {
+				tp = !txt ? title : _(title);
+				int idx = plugins.size();
+				while( --idx>=0 && strcmp(plugins[idx]->title, tp) );
+				if( idx >= 0 ) {
+					delete [] plugins[idx]->tip;
+					plugins[idx]->tip = cstrdup(text);
+				}
+				title[0] = 0;
+			}
+			if( done > 0 ) break;
+			tp = text;  *tp = 0;
+			char *dp = strchr(cp, ':');
+			if( !dp ) {
+				printf("plugin tips: error on line %d\n", no);
+				continue;
+			}
+			char *bp = title;
+			while( cp < dp ) *bp++ = *cp++;
+			*bp = 0;
+			++cp;
+		}
+
+		while( *cp == ' ' || *cp == '\t' ) ++cp;
+		for( ; tp<ep && (*tp=*cp)!=0; ++tp,++cp );
+	}
+	fclose(fp);
+}
+
 void MWindow::delete_plugins()
 {
 	plugindb->remove_all_objects();
@@ -1665,10 +1725,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 					edl->session->autos_follow_edits);
 		}
 
-		paste_edls(&new_edls,
-			load_mode,
-			0,
-			-1,
+		paste_edls(&new_edls, load_mode, 0, -1,
 			edl->session->labels_follow_edits,
 			edl->session->plugins_follow_edits,
 			edl->session->autos_follow_edits,
@@ -1952,6 +2009,7 @@ void MWindow::create_objects(int want_gui,
 	if(debug) PRINT_TRACE
 	init_ladspa_plugins(this, preferences);
 	if(debug) PRINT_TRACE
+	init_plugin_tips(*plugindb);
 	if(splash_window)
 		splash_window->operation->update(_("Initializing GUI"));
 	if(debug) PRINT_TRACE

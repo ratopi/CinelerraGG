@@ -402,8 +402,9 @@ void Record::run()
 // For pasting, clear the active region
 			if(load_mode == LOADMODE_PASTE)
 				mwindow->clear(0);
-
-			mwindow->paste_edls(&new_edls, load_mode, 0, -1,
+			int loadmode = load_mode == LOADMODE_RESOURCESONLY ?
+				LOADMODE_ASSETSONLY : load_mode;
+			mwindow->paste_edls(&new_edls, loadmode, 0, -1,
 				SESSION->labels_follow_edits,
 				SESSION->plugins_follow_edits,
 				SESSION->autos_follow_edits,
