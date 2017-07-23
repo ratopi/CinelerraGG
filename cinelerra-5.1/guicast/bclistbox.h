@@ -106,8 +106,6 @@ public:
 		int allow_drag = 0);                  // Allow user to drag icons around
 	virtual ~BC_ListBox();
 
-	friend class BC_ListBoxToggle;
-
 	int initialize();
 
 // User event handler for new selections
