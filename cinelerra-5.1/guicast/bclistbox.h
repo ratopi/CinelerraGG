@@ -32,45 +32,36 @@
 #define BCPOPUPLISTBOX_W 25
 #define BCPOPUPLISTBOX_H 25
 
+class BC_ListBoxYScroll;
+class BC_ListBoxXScroll;
+class BC_ListBoxToggle;
+class BC_ListBox;
 
 #define MIN_COLUMN_WIDTH 10
 
 
 class BC_ListBoxYScroll : public BC_ScrollBar
 {
+	BC_ListBox *listbox;
 public:
-	BC_ListBoxYScroll(BC_ListBox *listbox,
-	                  int total_height,
-					  int view_height,
-	                  int position);
+	BC_ListBoxYScroll(BC_ListBox *listbox);
 	~BC_ListBoxYScroll();
 	int handle_event();
-	int update_length(int64_t length, int64_t position, int64_t handlelength, int flush);
-private:
-	BC_ListBox *listbox;
 };
 
 class BC_ListBoxXScroll : public BC_ScrollBar
 {
+	BC_ListBox *listbox;
 public:
-	BC_ListBoxXScroll(BC_ListBox *listbox,
-	                  int total_width,
-					  int view_width,
-	                  int position);
+	BC_ListBoxXScroll(BC_ListBox *listbox);
 	~BC_ListBoxXScroll();
 	int handle_event();
-	int update_length(int64_t length, int64_t position, int64_t handlelength, int flush);
-private:
-	BC_ListBox *listbox;
 };
 
 class BC_ListBoxToggle
 {
 public:
-	BC_ListBoxToggle(BC_ListBox *listbox,
-		BC_ListBoxItem *item,
-		int x,
-		int y);
+	BC_ListBoxToggle(BC_ListBox *listbox, BC_ListBoxItem *item, int x, int y);
 
 	int cursor_motion_event(int *redraw_toggles);
 	int cursor_leave_event(int *redraw_toggles);
@@ -98,11 +89,11 @@ public:
 
 class BC_ListBox : public BC_SubWindow
 {
+	friend class BC_ListBoxYScroll;
+	friend class BC_ListBoxXScroll;
+	friend class BC_ListBoxToggle;
 public:
-	BC_ListBox(int x,
-		int y,
-		int w,
-		int h,
+	BC_ListBox(int x, int y, int w, int h,
 		int display_format,                   // Display text list or icons
 		ArrayList<BC_ListBoxItem*> *data = 0, // Each column has an ArrayList of BC_ListBoxItems.
 		const char **column_titles = 0,             // Titles for columns.  Set to 0 for no titles
@@ -212,14 +203,11 @@ public:
 
 // change the contents
 	int update(ArrayList<BC_ListBoxItem*> *data,
-						const char **column_titles,
-						int *column_widths,
-						int columns,
-						int xposition = 0,
-						int yposition = 0,
-						int highlighted_number = -1,  // Flat index of item cursor is over
-						int recalc_positions = 0,     // set all autoplace flags to 1
-						int draw = 1);
+		const char **column_titles, int *column_widths, int columns,
+		int xposition = 0, int yposition = 0,
+		int highlighted_number = -1,  // Flat index of item cursor is over
+		int recalc_positions = 0,     // set all autoplace flags to 1
+		int draw = 1);
 	void center_selection();
 	void update_format(int display_format, int redraw);
 	int get_format();
@@ -248,6 +236,7 @@ public:
 	int get_xscroll_x();
 	int get_xscroll_y();
 	int get_xscroll_width();
+	void set_scroll_stretch(int xv, int yv);
 	int get_column_offset(int column);
 	int get_column_width(int column, int clamp_right = 0);
 	int get_title_h();
@@ -265,7 +254,6 @@ public:
 	int get_row_descent() { return row_descent; }
 	int get_first_visible() { return first_in_view; }
 	int get_last_visible() { return last_in_view; }
-
 
 	enum
 	{
@@ -533,6 +521,7 @@ private:
 // In BCLISTBOX_SELECT mode determines the value to set items to
 	int new_value;
 	int need_xscroll, need_yscroll;
+	int xscroll_orientation, yscroll_orientation;
 // Move items during drag operation of text items.
 	int process_drag;
 	int allow_drag;

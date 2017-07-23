@@ -28,13 +28,8 @@
 
 #include <string.h>
 
-BC_ScrollBar::BC_ScrollBar(int x,
-	int y,
-	int orientation,
-	int pixels,
-	int64_t length,
-	int64_t position,
-	int64_t handlelength,
+BC_ScrollBar::BC_ScrollBar(int x, int y, int orientation, int pixels,
+	int64_t length, int64_t position, int64_t handlelength,
 	VFrame **data)
  : BC_SubWindow(x, y, 0, 0, -1)
 {
@@ -43,16 +38,15 @@ BC_ScrollBar::BC_ScrollBar(int x,
 	this->handlelength = handlelength;
 	this->selection_status = 0;
 	this->highlight_status = 0;
+	this->stretch = orientation & SCROLL_STRETCH ? 1 : 0;
+	orientation &= ~SCROLL_STRETCH;
 	this->orientation = orientation;
 	this->pixels = pixels;
 
-	if(data)
-		this->data = data;
-	else
-	if(orientation == SCROLL_HORIZ)
-		this->data = BC_WindowBase::get_resources()->hscroll_data;
-	else
-		this->data = BC_WindowBase::get_resources()->vscroll_data;
+	if( !data ) data = orientation == SCROLL_HORIZ ?
+		BC_WindowBase::get_resources()->hscroll_data :
+		BC_WindowBase::get_resources()->vscroll_data ;
+	this->data = data;
 
 	handle_pixel = 0;
 	handle_pixels = 0;
@@ -89,8 +83,6 @@ void BC_ScrollBar::set_images(VFrame **data)
 	}
 	calculate_dimensions(w, h);
 }
-
-
 
 void BC_ScrollBar::calculate_dimensions(int &w, int &h)
 {
@@ -664,6 +656,7 @@ int BC_ScrollBar::update_value(int64_t value)
 
 int BC_ScrollBar::update_length(int64_t length, int64_t position, int64_t handlelength, int flush)
 {
+	if( stretch ) length += handlelength/4;
 	this->length = length;
 	this->position = position;
 	this->handlelength = handlelength;

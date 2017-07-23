@@ -41,8 +41,10 @@ class MeterVUInt;
 class ViewBehaviourText;
 class ViewBehaviourItem;
 class ViewTheme;
-class ViewThumbnails;
 class ViewThemeItem;
+class ViewPluginIcons;
+class ViewPluginIconItem;
+class ViewThumbnails;
 class UseTipWindow;
 class UseWarnIndecies;
 class UseWarnVersion;
@@ -279,20 +281,40 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class ViewThemeItem : public BC_MenuItem
+{
+public:
+	ViewThemeItem(ViewTheme *popup, const char *text);
+	int handle_event();
+	ViewTheme *popup;
+};
+
+class ViewPluginIcons : public BC_PopupMenu
+{
+public:
+	ViewPluginIcons(int x, int y, PreferencesWindow *pwindow);
+	~ViewPluginIcons();
+
+	void create_objects();
+	int handle_event();
+
+	PreferencesWindow *pwindow;
+};
+
+class ViewPluginIconItem : public BC_MenuItem
+{
+public:
+	ViewPluginIconItem(ViewPluginIcons *popup, const char *text);
+	int handle_event();
+	ViewPluginIcons *popup;
+};
+
 class ViewThumbnails : public BC_CheckBox
 {
 public:
 	ViewThumbnails(int x, int y, PreferencesWindow *pwindow);
 	int handle_event();
 	PreferencesWindow *pwindow;
-};
-
-class ViewThemeItem : public BC_MenuItem
-{
-public:
-	ViewThemeItem(ViewTheme *popup, char *text);
-	int handle_event();
-	ViewTheme *popup;
 };
 
 class UseTipWindow : public BC_CheckBox

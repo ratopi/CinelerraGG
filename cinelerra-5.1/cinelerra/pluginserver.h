@@ -125,8 +125,7 @@ public:
 			EDL *edl, Plugin *plugin);
 // close the plugin
 	int close_plugin();
-	int get_theme_png_path(char *png_path, const char *theme_dir);
-	int get_theme_png_path(char *png_path, Theme *theme);
+	int get_plugin_png_path(char *png_path, const char *plugin_icons);
 	int get_plugin_png_path(char *png_path);
 	void dump(FILE *fp=stdout);
 // Release any objects which are required after playback stops.

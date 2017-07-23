@@ -188,16 +188,13 @@ BC_Window* AssetEdit::new_gui()
 int AssetEdit::window_height()
 {
 	int h = 128 + 64;
-	if( indexable->have_audio() )
-		h += 180;
+	if( indexable->have_audio() ) h += 200;
 	if( indexable->have_video() ) {
-		h += 200;
+		h += 210;
 		if( indexable->is_asset ) {
 			Asset *asset = (Asset *)indexable;
 			if( asset->format == FILE_MPEG ||
-			    asset->format == FILE_FFMPEG ) {
-				h += 40;
-			}
+			    asset->format == FILE_FFMPEG ) h += 42;
 		}
 	}
 	return h;

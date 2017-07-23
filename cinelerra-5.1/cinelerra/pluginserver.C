@@ -1222,16 +1222,20 @@ Theme* PluginServer::get_theme()
 }
 
 
-int PluginServer::get_theme_png_path(char *png_path, const char *theme_dir)
+int PluginServer::get_plugin_png_path(char *png_path, const char *plugin_icons)
 {
-	char *bp = strrchr(path, '/');
-	if( !bp ) bp = path; else ++bp;
-	char *sp = strrchr(bp,'.');
-	if( !sp ) sp = bp + strlen(bp);
-	char *cp = png_path, *dp = bp;
-	cp += sprintf(cp,"%s/%s/", mwindow->preferences->plugin_dir, theme_dir);
-	while( dp < sp ) *cp++ = *dp++;
-	strcpy(cp, ".png");
+	char *pp = png_path, *ep = pp + BCTEXTLEN-1;
+	pp += snprintf(pp, ep-pp, "%s/picon", File::get_plugin_path());
+	if( strcmp(DEFAULT_PICON, plugin_icons) )
+		pp += snprintf(pp, ep-pp, "_%s", plugin_icons);
+	if( pp < ep ) *pp++ = '/';
+	char *cp = strrchr(path, '/');
+	cp = !cp ? path : cp+1;
+	char *sp = strrchr(cp, '.');
+	if( !sp ) sp = cp+strlen(cp);
+	while( pp < ep && cp < sp ) *pp++ = *cp++;
+	pp += snprintf(pp, ep-pp, ".png");
+	*pp = 0;
 	struct stat st;
 	if( stat(png_path, &st) ) return 0;
 	if( !S_ISREG(st.st_mode) ) return 0;
@@ -1239,23 +1243,10 @@ int PluginServer::get_theme_png_path(char *png_path, const char *theme_dir)
 	return st.st_size;
 }
 
-int PluginServer::get_theme_png_path(char *png_path, Theme *theme)
-{
-	char *bp = strrchr(theme->path, '/');
-	if( !bp ) bp = theme->path; else ++bp;
-	char *sp = strrchr(bp,'.');
-	if( !sp || ( strcmp(sp, ".plugin") && strcmp(sp,".so") ) ) return 0;
-	char theme_dir[BCTEXTLEN], *cp = theme_dir;
-	while( bp < sp ) *cp++ = *bp++;
-	*cp = 0;
-	return get_theme_png_path(png_path, theme_dir);
-}
-
 int PluginServer::get_plugin_png_path(char *png_path)
 {
-	int len = get_theme_png_path(png_path, mwindow->theme);
-	if( !len )
-		len = get_theme_png_path(png_path, "picon");
+	int len = get_plugin_png_path(png_path, mwindow->preferences->plugin_icons);
+	if( !len ) len = get_plugin_png_path(png_path, DEFAULT_PICON);
 	return len;
 }
 

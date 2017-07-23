@@ -22,6 +22,8 @@
 #include "deleteallindexes.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "file.h"
+#include "filesystem.h"
 #include "language.h"
 #include "mwindow.h"
 #include "preferences.h"
@@ -78,12 +80,12 @@ InterfacePrefs::~InterfacePrefs()
 
 void InterfacePrefs::create_objects()
 {
-	int x, y;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	int margin = mwindow->theme->widget_border;
 	char string[BCTEXTLEN];
-	x = mwindow->theme->preferencesoptions_x;
-	y = mwindow->theme->preferencesoptions_y;
+	int x0 = mwindow->theme->preferencesoptions_x;
+	int y0 = mwindow->theme->preferencesoptions_y;
+	int x = x0, y = y0;
 
 	add_subwindow(new BC_Title(x, y, _("Time Format"), LARGEFONT,
 		resources->text_default));
@@ -114,17 +116,17 @@ void InterfacePrefs::create_objects()
 		pwindow->thread->edl->session->time_format == TIME_FRAMES,
 		x, y));
 	y += 20;
-	int x0 = x;
 	add_subwindow(feet = new TimeFormatFeet(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_FEET_FRAMES,
-		x0, y));
-	x0 += feet->get_w() + 15;
+		x, y));
+	x += feet->get_w() + 15;
 	BC_Title *title;
-	add_subwindow(title = new BC_Title(x0, y, _("Frames per foot:")));
-	x0 += title->get_w() + margin;
+	add_subwindow(title = new BC_Title(x, y, _("Frames per foot:")));
+	x += title->get_w() + margin;
 	sprintf(string, "%0.2f", pwindow->thread->edl->session->frames_per_foot);
 	add_subwindow(new TimeFormatFeetSetting(pwindow,
-		x0, y - 5, 	string));
+		x, y - 5, 	string));
+	x = x0;
 	y += 20;
 	add_subwindow(seconds = new TimeFormatSeconds(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_SECONDS,
@@ -200,7 +202,7 @@ void InterfacePrefs::create_objects()
 	y1 = y + 5;
 	y += 35;
 	add_subwindow(title = new BC_Title(x, y, _("Keyframe reticle:")));
-	x1 = x + title->get_w() + 10;
+	x1 = x + 100;
 	keyframe_reticle = new KeyframeReticle(x1, y, &pwindow->thread->preferences->keyframe_reticle);
 	add_subwindow(keyframe_reticle);
 	keyframe_reticle->create_objects();
@@ -243,14 +245,14 @@ void InterfacePrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Button 1:")));
 
 	ViewBehaviourText *text;
-	add_subwindow(text = new ViewBehaviourText(80, y - 5,
+	add_subwindow(text = new ViewBehaviourText(x1, y - 5,
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[0]),
 			pwindow,
 			&(pwindow->thread->edl->session->edit_handle_mode[0])));
 	text->create_objects();
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Button 2:")));
-	add_subwindow(text = new ViewBehaviourText(80,
+	add_subwindow(text = new ViewBehaviourText(x1,
 		y - 5,
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[1]),
 			pwindow,
@@ -258,7 +260,7 @@ void InterfacePrefs::create_objects()
 	text->create_objects();
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Button 3:")));
-	add_subwindow(text = new ViewBehaviourText(80,
+	add_subwindow(text = new ViewBehaviourText(x1,
 		y - 5,
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[2]),
 			pwindow,
@@ -266,7 +268,7 @@ void InterfacePrefs::create_objects()
 	text->create_objects();
 
 	y += 40;
-	x1 = x;
+
 	add_subwindow(title = new BC_Title(x, y + 5, _("Min DB for meter:")));
 	x += title->get_w() + 10;
 	sprintf(string, "%d", pwindow->thread->edl->session->min_meter_db);
@@ -278,14 +280,21 @@ void InterfacePrefs::create_objects()
 	sprintf(string, "%d", pwindow->thread->edl->session->max_meter_db);
 	add_subwindow(max_db = new MeterMaxDB(pwindow, string, x, y));
 
-	x = x1;
+	x = x0;
 	y += 30;
 	ViewTheme *theme;
 	add_subwindow(new BC_Title(x, y, _("Theme:")));
-	x += 60;
+	x += 100;
 	add_subwindow(theme = new ViewTheme(x, y, pwindow));
 	theme->create_objects();
 
+	x = x0;
+	y += theme->get_h() + 5;
+	ViewPluginIcons *plugin_icons;
+	add_subwindow(new BC_Title(x, y, _("Plugin Icons:")));
+	x += 100;
+	add_subwindow(plugin_icons = new ViewPluginIcons(x, y, pwindow));
+	plugin_icons->create_objects();
 }
 
 const char* InterfacePrefs::behavior_to_text(int mode)
@@ -611,15 +620,9 @@ ViewTheme::~ViewTheme()
 void ViewTheme::create_objects()
 {
 	ArrayList<PluginServer*> themes;
-	MWindow::search_plugindb(0,
-		0,
-		0,
-		0,
-		1,
-		themes);
+	MWindow::search_plugindb(0, 0, 0, 0, 1, themes);
 
-	for(int i = 0; i < themes.total; i++)
-	{
+	for(int i = 0; i < themes.total; i++) {
 		add_item(new ViewThemeItem(this, themes.values[i]->title));
 	}
 }
@@ -629,11 +632,7 @@ int ViewTheme::handle_event()
 	return 1;
 }
 
-
-
-
-
-ViewThemeItem::ViewThemeItem(ViewTheme *popup, char *text)
+ViewThemeItem::ViewThemeItem(ViewTheme *popup, const char *text)
  : BC_MenuItem(text)
 {
 	this->popup = popup;
@@ -646,6 +645,54 @@ int ViewThemeItem::handle_event()
 	popup->handle_event();
 	return 1;
 }
+
+
+ViewPluginIcons::ViewPluginIcons(int x, int y, PreferencesWindow *pwindow)
+ : BC_PopupMenu(x, y, 200, pwindow->thread->preferences->plugin_icons, 1)
+{
+	this->pwindow = pwindow;
+}
+ViewPluginIcons::~ViewPluginIcons()
+{
+}
+
+void ViewPluginIcons::create_objects()
+{
+	add_item(new ViewPluginIconItem(this, DEFAULT_PICON));
+	FileSystem fs;
+	const char *plugin_path = File::get_plugin_path();
+	fs.update(plugin_path);
+	if( fs.update(plugin_path) ) return;
+	for( int i=0; i<fs.dir_list.total; ++i ) {
+		char *fs_path = fs.dir_list[i]->path;
+		if( !fs.is_dir(fs_path) ) continue;
+		char *cp = strrchr(fs_path,'/');
+		cp = !cp ? fs_path : cp+1;
+		if( strncmp("picon_", cp, 6) ) continue;
+		cp += 6;
+		add_item(new ViewPluginIconItem(this, cp));
+	}
+}
+
+int ViewPluginIcons::handle_event()
+{
+	return 1;
+}
+
+ViewPluginIconItem::ViewPluginIconItem(ViewPluginIcons *popup, const char *text)
+ : BC_MenuItem(text)
+{
+	this->popup = popup;
+}
+
+int ViewPluginIconItem::handle_event()
+{
+	popup->set_text(get_text());
+	strcpy(popup->pwindow->thread->preferences->plugin_icons, get_text());
+	popup->handle_event();
+	return 1;
+}
+
 
 ViewThumbnails::ViewThumbnails(int x,
 	int y,

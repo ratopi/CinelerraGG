@@ -8,7 +8,7 @@ $(shell mkdir -p $(OBJDIR))
 
 PLUGIN_DIR := $(BINDIR)/plugins
 OUTPUT_DIR = $(PLUGIN_DIR)/$($(PLUGIN))
-PLUGIN_PNGS = $(wildcard $(foreach t,$(themes),$(t).png)) picon.png
+PLUGIN_PNGS = $(wildcard picon*.png)
 OUTPUT_PNGS = $(foreach png,$(PLUGIN_PNGS), $(PLUGIN_DIR)/$(basename $(png))/$(PLUGIN).png)
 OUTPUT = $(OUTPUT_DIR)/$(PLUGIN).plugin
 OUTPUT_G = $(OBJDIR)/$(PLUGIN).debuginfo

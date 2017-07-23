@@ -2313,10 +2313,9 @@ void BC_ScrollTextBox::update_scrollbars()
 		int xpos = get_x_pos();
 		if( xpos != xscroll->get_value() )
 			xscroll->update_value(xpos);
-		int xlength = text_width + view_w/4;
-		if( xlength != xscroll->get_length() ||
+		if( text_width != xscroll->get_length() ||
 		    view_w != xscroll->get_handlelength() )
-			xscroll->update_length(xlength, xpos, view_w, 0);
+			xscroll->update_length(text_width, xpos, view_w, 0);
 	}
 	if( yscroll ) {
 		yscroll->reposition_window(x + w - yscroll->get_span(), y, text->get_h());
@@ -2342,8 +2341,9 @@ int BC_ScrollTextBoxText::motion_event()
 }
 
 BC_ScrollTextBoxXScroll::BC_ScrollTextBoxXScroll(BC_ScrollTextBox *gui)
- : BC_ScrollBar(gui->x, gui->y + gui->text->get_h(), SCROLL_HORIZ, gui->text->get_w(),
-		gui->text->get_text_width(MEDIUMFONT, gui->get_wtext()), 0, gui->w)
+ : BC_ScrollBar(gui->x, gui->y + gui->text->get_h(), SCROLL_HORIZ + SCROLL_STRETCH,
+	gui->text->get_w(), gui->text->get_text_width(MEDIUMFONT, gui->get_wtext()),
+	0, gui->w)
 {
 	this->gui = gui;
 }
@@ -2359,8 +2359,8 @@ int BC_ScrollTextBoxXScroll::handle_event()
 }
 
 BC_ScrollTextBoxYScroll::BC_ScrollTextBoxYScroll(BC_ScrollTextBox *gui)
- : BC_ScrollBar(gui->x + gui->text->get_w(), gui->y, SCROLL_VERT, gui->text->get_h(),
-		gui->text->get_text_rows(), 0, gui->rows)
+ : BC_ScrollBar(gui->x + gui->text->get_w(), gui->y, SCROLL_VERT,
+	gui->text->get_h(), gui->text->get_text_rows(), 0, gui->rows)
 {
 	this->gui = gui;
 }

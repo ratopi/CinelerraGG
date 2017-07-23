@@ -38,9 +38,10 @@ public:
 	int set_path(char *path);
 	int set_name(char *name);
 	int reset();
-	const char* get_path();
-        const char* get_name();
-	int get_is_dir();
+
+	const char *get_path() { return path; }
+	const char *get_name() { return name; }
+	int get_is_dir() { return is_dir; }
 
 	char *path;
 	char *name;
@@ -75,7 +76,6 @@ public:
 	int set_current_dir(const char *new_dir);
 
 	int move_up();
-	char *get_current_dir();
 // Syntax of filter is
 // single filter without [].
 // multiple filters enclosed in [].
@@ -95,22 +95,19 @@ public:
 	static void set_date(const char *path, int64_t value); // set the date of the file
 	static int64_t get_size(char *filename);        // Get the number of bytes in the file.
 	int add_end_slash(char *new_dir);
-	int total_files();
-	FileItem* get_entry(int entry);
-	int number_of(FileItem *item);
 
 	int parse_tildas(char *new_dir);     // expand tildas
 	int parse_directories(char *new_dir);  // add directories
 	int parse_dots(char *new_dir);         // move up directory tree after expanding tildas
 	static char *basepath(const char *path); // collapse ".", "..", "//" elements
 
-// Alphabetize all the directories and files.  By default
-// directories come first.
-	void alphabetize();
-
 // Array of files and directories in the directory pointed to by current_dir.
 // Directories are first.
 	ArrayList<FileItem*> dir_list;
+	char *get_current_dir() { return current_dir; }
+	FileItem* get_entry(int entry) { return dir_list.values[entry]; }
+	int total_files() { return dir_list.total; }
+	void alphabetize() { sort_table(&dir_list); }
 
 // Sorting order and sorting field.  These are identical in BC_ListBox.
 	enum
@@ -142,8 +139,6 @@ private:
 
 // Combine the directories and files into the master list, directories first.
 	int combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *file_list);
-// Return whether or not the string is the root directory.
-	int is_root_dir(char *path);
 // Whether or not the file passes the current filter.
 	int test_filter(FileItem *file);
 	int reset_parameters();

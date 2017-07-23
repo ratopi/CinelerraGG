@@ -184,14 +184,14 @@ void SWindowGUI::create_objects()
 	add_subwindow(script_title = new BC_Title(x1, y, _("Script Text:")));
 	y += script_title->get_h() + pad;
 	int rows = (ok_y - y - BC_Title::calculate_h(this,_("Line Text:")) -
-		4*pad) / text_rowsz - 3;
+		4*pad) / text_rowsz - 4;
 	int w1 = get_w() - x1 - pad;
 	script_entry = new ScriptEntry(this, x1, y, w1, rows, blank_line);
 	script_entry->create_objects();
 	y += script_entry->get_h() + pad;
 	add_subwindow(line_title = new BC_Title(x1, y, _("Line Text:")));
 	y += line_title->get_h() + pad;
-	line_entry = new ScriptEntry(this, x1, y, w1, 3);
+	line_entry = new ScriptEntry(this, x1, y, w1, 4);
 	line_entry->create_objects();
 	ok = new SWindowOK(this, ok_x, ok_y);
 	add_subwindow(ok);
@@ -321,12 +321,12 @@ int SWindowGUI::resize_event(int w, int h)
 	script_title->reposition_window(x, y);
 	y += script_title->get_h() + pad;
 	w1 = w - x - pad;
-	int rows = (ok_y - y - line_title->get_h() - 4*pad) / text_rowsz - 3;
+	int rows = (ok_y - y - line_title->get_h() - 4*pad) / text_rowsz - 4;
 	script_entry->reposition_window(x, y, w1, rows);
 	y += script_entry->get_h() + 2*pad;
 	line_title->reposition_window(x, y);
 	y += line_title->get_h() + pad;
-	line_entry->reposition_window(x, y, w1, 3);
+	line_entry->reposition_window(x, y, w1, 4);
 	return 0;
 }
 
@@ -677,7 +677,7 @@ char *ScriptLines::get_text_row(int n)
 }
 
 ScriptScroll::ScriptScroll(SWindowGUI *gui, int x, int y, int w)
- : BC_ScrollBar(x, y, SCROLL_HORIZ, w, 0, 0, 0)
+ : BC_ScrollBar(x, y, SCROLL_HORIZ + SCROLL_STRETCH, w, 0, 0, 0)
 {
 	this->sw_gui = gui;
 }
@@ -811,7 +811,7 @@ void SWindowGUI::load_script(FILE *fp)
 	script_entries->update(value);
 	sprintf(value,"%jd",script_text_lines);
 	script_texts->update(value);
-	int hw = 2*script_scroll->get_h();
+	int hw = script_scroll->get_h();
 	script_scroll->update_length(script.size(), script_entry_no, hw, 0);
 	script_position->update(script_entry_no);
 	script_position->set_boundaries((int64_t)0, (int64_t)script.size()-1);

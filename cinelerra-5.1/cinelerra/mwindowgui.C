@@ -320,12 +320,8 @@ void MWindowGUI::create_objects()
 
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(mainclock = new MainClock(mwindow,
-		mwindow->theme->mclock_x,
- 		mwindow->theme->mclock_y,
+		mwindow->theme->mclock_x, mwindow->theme->mclock_y,
 		mwindow->theme->mclock_w));
-	mainclock->set_position_offset( (double)
-		(mwindow->edl->session->get_frame_offset() /
-			mwindow->edl->session->frame_rate));
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	mainclock->update(0);
 

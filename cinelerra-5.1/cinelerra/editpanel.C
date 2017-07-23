@@ -442,9 +442,7 @@ void EditPanel::next_edit()
 double EditPanel::get_position()
 {
 	EDL *edl = mwindow->edl;
-	return !edl ? 0 :
-		edl->local_session->get_selectionstart(1) +
-			edl->session->get_frame_offset() / edl->session->frame_rate;
+	return !edl ? 0 : edl->local_session->get_selectionstart(1);
 }
 
 void EditPanel::set_position(double position)
@@ -452,7 +450,6 @@ void EditPanel::set_position(double position)
 	EDL *edl = mwindow->edl;
 	if( !edl ) return;
 	if( position != get_position() ) {
-		position -= edl->session->get_frame_offset() / edl->session->frame_rate;
 		if( position < 0 ) position = 0;
 		edl->local_session->set_selectionstart(position);
 		edl->local_session->set_selectionend(position);

@@ -97,21 +97,6 @@ int FileItem::set_name(char *name)
 	return 0;
 }
 
-const char* FileItem::get_path()
-{
-	return path;
-}
-
-const char* FileItem::get_name()
-{
-	return name;
-}
-
-int FileItem::get_is_dir()
-{
-	return is_dir;
-}
-
 
 
 FileSystem::FileSystem()
@@ -306,17 +291,6 @@ int FileSystem::combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *fi
 	return 0;
 }
 
-void FileSystem::alphabetize()
-{
-	sort_table(&dir_list);
-}
-
-int FileSystem::is_root_dir(char *path)
-{
-	if(!strcmp(current_dir, "/")) return 1;
-	return 0;
-}
-
 int FileSystem::test_filter(FileItem *file)
 {
 	char *filter1 = 0, *filter2 = filter, *subfilter1, *subfilter2;
@@ -464,7 +438,7 @@ int FileSystem::scan_directory(const char *new_dir)
 			new_file = new FileItem;
 			char full_path[BCTEXTLEN], name_only[BCTEXTLEN];
 			sprintf(full_path, "%s", current_dir);
-			if(!is_root_dir(current_dir)) strcat(full_path, "/");
+			add_end_slash(full_path);
 			strcat(full_path, new_filename->d_name);
 			strcpy(name_only, new_filename->d_name);
 			new_file->set_path(full_path);
@@ -632,29 +606,12 @@ int FileSystem::parse_tildas(char *new_dir)
 int FileSystem::parse_directories(char *new_dir)
 {
 //printf("FileSystem::parse_directories 1 %s\n", new_dir);
-	if(new_dir[0] != '/')
-	{
-// extend path completely
+	if( *new_dir != '/' ) {  // expand to abs path
 		char string[BCTEXTLEN];
-//printf("FileSystem::parse_directories 2 %s\n", current_dir);
-		if(!strlen(current_dir))
-		{
-// no current directory
-			strcpy(string, new_dir);
-		}
-		else
-		{
-			snprintf(string, sizeof(string),
-				is_root_dir(current_dir) ||
-				current_dir[strlen(current_dir)-1] == '/' ?
-// current directory is root or already has ending /
-				 "%s%s" : "%s/%s",
-				current_dir, new_dir);
-		}
-
-//printf("FileSystem::parse_directories 3 %s %s\n", new_dir, string);
+		strcpy(string, current_dir);
+		add_end_slash(string);
+		strcat(string, new_dir);
 		strcpy(new_dir, string);
-//printf("FileSystem::parse_directories 4\n");
 	}
 	return 0;
 }
@@ -846,22 +803,6 @@ int FileSystem::add_end_slash(char *new_dir)
 {
 	if(new_dir[strlen(new_dir) - 1] != '/') strcat(new_dir, "/");
 	return 0;
-}
-
-char* FileSystem::get_current_dir()
-{
-	return current_dir;
-}
-
-int FileSystem::total_files()
-{
-	return dir_list.total;
-}
-
-
-FileItem* FileSystem::get_entry(int entry)
-{
-	return dir_list.values[entry];
 }
 
 

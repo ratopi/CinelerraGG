@@ -835,9 +835,9 @@ void AWindowRemovePlugin::handle_close_event(int result)
 			mwindow->preferences->plugin_dir, PLUGIN_FILE);
 		remove(index_path);
 		char png_path[BCTEXTLEN];
-		if( plugin->get_theme_png_path(png_path, mwindow->preferences->theme) )
+		if( plugin->get_plugin_png_path(png_path, mwindow->preferences->plugin_icons) )
 			remove(png_path);
-		if( plugin->get_theme_png_path(png_path, "picon") )
+		if( plugin->get_plugin_png_path(png_path, DEFAULT_PICON) )
 			remove(png_path);
 		delete plugin;  plugin = 0;
 		awindow->gui->async_update_assets();
@@ -1440,21 +1440,18 @@ int AWindowDivider::button_release_event()
 
 
 AWindowFolders::AWindowFolders(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h)
- : BC_ListBox(x,
- 		y,
-		w,
-		h,
+ : BC_ListBox(x, y, w, h,
 		mwindow->edl->session->folderlist_format == ASSETS_ICONS ?
 			LISTBOX_ICONS : LISTBOX_TEXT,
-		&gui->folders, // Each column has an ArrayList of BC_ListBoxItems.
-		0,             // Titles for columns.  Set to 0 for no titles
+		&gui->folders,    // Each column has an ArrayList of BC_ListBoxItems.
+		0,                // Titles for columns.  Set to 0 for no titles
 		0,                // width of each column
-		1,                      // Total columns.
-		0,                    // Pixel of top of window.
-		0,                        // If this listbox is a popup window
-		LISTBOX_SINGLE,  // Select one item or multiple items
-		ICON_TOP,        // Position of icon relative to text of each item
-		1)               // Allow drags
+		1,                // Total columns.
+		0,                // Pixel of top of window.
+		0,                // If this listbox is a popup window
+		LISTBOX_SINGLE,   // Select one item or multiple items
+		ICON_TOP,         // Position of icon relative to text of each item
+		1)                // Allow drags
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -1515,18 +1512,19 @@ AWindowAssets::AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, in
 		(mwindow->edl->session->assetlist_format == ASSETS_ICONS && gui->allow_iconlisting ) ?
 			LISTBOX_ICONS : LISTBOX_TEXT,
 		&gui->assets,  	  // Each column has an ArrayList of BC_ListBoxItems.
-		gui->asset_titles,             // Titles for columns.  Set to 0 for no titles
-		mwindow->edl->session->asset_columns,                // width of each column
-		1,                      // Total columns.
-		0,                    // Pixel of top of window.
-		0,                        // If this listbox is a popup window
-		LISTBOX_MULTIPLE,  // Select one item or multiple items
-		ICON_TOP,        // Position of icon relative to text of each item
-		1)               // Allow drag
+		gui->asset_titles,// Titles for columns.  Set to 0 for no titles
+		mwindow->edl->session->asset_columns, // width of each column
+		1,                // Total columns.
+		0,                // Pixel of top of window.
+		0,                // If this listbox is a popup window
+		LISTBOX_MULTIPLE, // Select one item or multiple items
+		ICON_TOP,         // Position of icon relative to text of each item
+		1)                // Allow drag
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_drag_scroll(0);
+	set_scroll_stretch(1, 1);
 }
 
 AWindowAssets::~AWindowAssets()

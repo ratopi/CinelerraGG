@@ -93,6 +93,8 @@ public:
 	int trap_sigintr;
 // Title of theme
 	char theme[BCTEXTLEN];
+// plugin icon set
+	char plugin_icons[BCTEXTLEN];
 	double render_preroll;
 	int brender_preroll;
 	int force_uniprocessor;

@@ -63,7 +63,7 @@
 
 
 #define WIDTH 770
-#define HEIGHT 720
+#define HEIGHT 740
 
 
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
@@ -212,6 +212,8 @@ int PreferencesThread::apply_settings()
 
 	if( strcmp(preferences->theme, mwindow->preferences->theme) != 0 )
 		mwindow->restart_status = -1; // reload, need new bcresources
+	if( strcmp(preferences->plugin_icons, mwindow->preferences->plugin_icons) != 0 )
+		mwindow->restart_status = -1;
 
 	mwindow->edl->copy_session(edl, 1);
 	mwindow->preferences->copy_from(preferences);
@@ -234,9 +236,6 @@ int PreferencesThread::apply_settings()
 	mwindow->gui->ffmpeg_toggle->set_tooltip(ffmpeg_early_probe ?
 		FFMPEG_EARLY_TIP : FFMPEG_LATE_TIP);
 	mwindow->gui->mainshbtns->load(mwindow->preferences);
-	double tc_position =
-		mwindow->edl->session->get_frame_offset() / mwindow->edl->session->frame_rate;
-	mwindow->gui->mainclock->set_position_offset(tc_position);
 
 //edl->session->recording_format->dump();
 //mwindow->edl->session->recording_format->dump();

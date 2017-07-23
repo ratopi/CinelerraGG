@@ -27,8 +27,9 @@
 #include "bcsubwindow.h"
 
 // Orientations
-#define SCROLL_HORIZ 0
-#define SCROLL_VERT  1
+#define SCROLL_HORIZ   0
+#define SCROLL_VERT    1
+#define SCROLL_STRETCH 2
 
 // Selection identifiers
 #define SCROLL_HANDLE 1
@@ -61,14 +62,8 @@
 class BC_ScrollBar : public BC_SubWindow
 {
 public:
-	BC_ScrollBar(int x,
-		int y,
-		int orientation,
-		int pixels,
-		int64_t length,
-		int64_t position,
-		int64_t handlelength,
-		VFrame **data = 0);
+	BC_ScrollBar(int x, int y, int orientation, int pixels, int64_t length,
+		int64_t position, int64_t handlelength, VFrame **data = 0);
 	virtual ~BC_ScrollBar();
 
 	friend class BC_ListBox;
@@ -95,7 +90,6 @@ public:
 	int get_span();
 	static int get_span(int orientation);
 	int get_arrow_pixels();
-
 private:
 	void calculate_dimensions(int &w, int &h);
 	int activate();
@@ -105,7 +99,7 @@ private:
 
 	int64_t length, position, handlelength;   // handle position and size
 	int selection_status, highlight_status;
-	int orientation, pixels;
+	int orientation, pixels, stretch;
 	int handle_pixel, handle_pixels;
 	int min_pixel, max_pixel;
 	int64_t repeat_count;

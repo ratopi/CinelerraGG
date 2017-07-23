@@ -121,8 +121,6 @@ EDLSession::EDLSession(EDL *edl)
         show_titles = 1;
 	test_playback_edits = 1;
 	time_format = TIME_HMSF;
-	for(int i = 0; i < 4; i++)
-        	timecode_offset[i] = 0;
         nudge_format = 1;
         tool_window = 0;
 	for(int i = 0; i < MAXCHANNELS; i++) {
@@ -316,10 +314,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	show_titles = defaults->get("SHOW_TITLES", 1);
 //	test_playback_edits = defaults->get("TEST_PLAYBACK_EDITS", 1);
 	time_format = defaults->get("TIME_FORMAT", TIME_HMSF);
-	for(int i = 0; i < 4; i++) {
-		sprintf(string, "TIMECODE_OFFSET_%d", i);
-		timecode_offset[i] = defaults->get(string, 0);
-	}
 	nudge_format = defaults->get("NUDGE_FORMAT", 1);
 	tool_window = defaults->get("TOOL_WINDOW", 0);
 	vconfig_in->load_defaults(defaults);
@@ -452,10 +446,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("SHOW_TITLES", show_titles);
 //	defaults->update("TEST_PLAYBACK_EDITS", test_playback_edits);
 	defaults->update("TIME_FORMAT", time_format);
-	for(int i = 0; i < 4; i++) {
-		sprintf(string, "TIMECODE_OFFSET_%d", i);
-		defaults->update(string, timecode_offset[i]);
-	}
 	defaults->update("NUDGE_FORMAT", nudge_format);
 	defaults->update("TOOL_WINDOW", tool_window);
 	vconfig_in->save_defaults(defaults);
@@ -638,10 +628,6 @@ int EDLSession::load_xml(FileXML *file,
 		show_titles = file->tag.get_property("SHOW_TITLES", 1);
 //		test_playback_edits = file->tag.get_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 		time_format = file->tag.get_property("TIME_FORMAT", time_format);
-		for(int i = 0; i < 4; i++) {
-			sprintf(string, "TIMECODE_OFFSET_%d", i);
-			timecode_offset[i] = file->tag.get_property(string, timecode_offset[i]);
-		}
 		nudge_format = file->tag.get_property("NUDGE_FORMAT", nudge_format);
 		tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
 		vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
@@ -706,10 +692,6 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("SHOW_TITLES", show_titles);
 	file->tag.set_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 	file->tag.set_property("TIME_FORMAT", time_format);
-	for(int i = 0; i < 4; i++) {
-		sprintf(string, "TIMECODE_OFFSET_%d", i);
-		file->tag.set_property(string, timecode_offset[i]);
-	}
 	file->tag.set_property("NUDGE_FORMAT", nudge_format);
 	file->tag.set_property("TOOL_WINDOW", tool_window);
 	file->tag.set_property("VWINDOW_METER", vwindow_meter);
@@ -876,9 +858,6 @@ int EDLSession::copy(EDLSession *session)
 	show_titles = session->show_titles;
 	test_playback_edits = session->test_playback_edits;
 	time_format = session->time_format;
-	for(int i = 0; i < 4; i++) {
-		timecode_offset[i] = session->timecode_offset[i];
-	}
 	nudge_format = session->nudge_format;
 	tool_window = session->tool_window;
 	for(int i = 0; i < MAXCHANNELS; i++) {
@@ -901,12 +880,6 @@ int EDLSession::copy(EDLSession *session)
 	program_no = session->program_no;
 
 	return 0;
-}
-
-int64_t EDLSession::get_frame_offset()
-{
-	return int64_t((timecode_offset[3] * 3600 + timecode_offset[2] * 60 +
-		timecode_offset[1]) * frame_rate + timecode_offset[0]);
 }
 
 void EDLSession::dump()

@@ -205,32 +205,11 @@ SET_TRACE
 	if(!pwindow->thread->edl->session->interpolate_raw)
 		white_balance_raw->disable();
 
-
-SET_TRACE
-//	y += 30;
-//	add_subwindow(new PlaybackDeblock(pwindow, 10, y));
-
-	x2 = x;
-	x += 370;
-	title1 = new BC_Title(x, y, _("Timecode offset:"), MEDIUMFONT);
-	add_subwindow(title1);  x += title1->get_w();
-	for( int i=3;;) {
-		sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[i]);
-		TimecodeOffset *tcofs = new TimecodeOffset(x, y, pwindow, this, string, i);
-		add_subwindow(tcofs);   x += tcofs->get_w();
-		if( --i < 0 ) break;
-		title1 = new BC_Title(x, y, ":", MEDIUMFONT);
-		add_subwindow(title1);  x += title1->get_w();
-	}
-
-	x = x2;
 	y += white_balance_raw->get_h() + 5;
 	add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
 	video_device = new VDevicePrefs(x + vdevice_title->get_w() + 10, y,
 		pwindow, this, playback_config->vconfig, 0, MODEPLAY);
 	video_device->initialize(0);
-SET_TRACE
-
 }
 
 
@@ -501,21 +480,6 @@ int PlaybackGain::handle_event()
 {
 	pwindow->thread->edl->session->playback_config->
 		aconfig->play_gain = atof(get_text());
-	return 1;
-}
-
-TimecodeOffset::TimecodeOffset(int x, int y, PreferencesWindow *pwindow,
-      PlaybackPrefs *playback, char *text, int unit)
- : BC_TextBox(x, y, 30, 1, text)
-{
-   this->pwindow = pwindow;
-   this->playback = playback;
-	this->unit = unit;
-}
-
-int TimecodeOffset::handle_event()
-{
-	pwindow->thread->edl->session->timecode_offset[unit] = atol(get_text());
 	return 1;
 }
 

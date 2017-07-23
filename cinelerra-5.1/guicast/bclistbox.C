@@ -38,18 +38,10 @@
 
 // ====================================================== scrollbars
 
-
-BC_ListBoxYScroll::BC_ListBoxYScroll(BC_ListBox *listbox,
-	                  int total_height,
-					  int view_height,
-	                  int position)
- : BC_ScrollBar(listbox->get_yscroll_x(),
- 	listbox->get_yscroll_y(),
-	SCROLL_VERT,
- 	listbox->get_yscroll_height(),
-	total_height,
-	position,
-	view_height)
+BC_ListBoxYScroll::BC_ListBoxYScroll(BC_ListBox *listbox)
+ : BC_ScrollBar(listbox->get_yscroll_x(), listbox->get_yscroll_y(),
+	listbox->yscroll_orientation, listbox->get_yscroll_height(),
+	listbox->items_h, listbox->yposition, listbox->view_h)
 {
 	this->listbox = listbox;
 }
@@ -64,27 +56,10 @@ int BC_ListBoxYScroll::handle_event()
 	return 1;
 }
 
-int BC_ListBoxYScroll::update_length(int64_t length, int64_t position, int64_t handlelength, int flush)
-{
-	return BC_ScrollBar::update_length(length+handlelength/4, position, handlelength, flush);
-}
-
-
-
-
-
-
-BC_ListBoxXScroll::BC_ListBoxXScroll(BC_ListBox *listbox,
-	                  int total_width,
-					  int view_width,
-	                  int position)
- : BC_ScrollBar(listbox->get_xscroll_x(),
- 	listbox->get_xscroll_y(),
-	SCROLL_HORIZ,
- 	listbox->get_xscroll_width(),
-	total_width,
-	position,
-	view_width)
+BC_ListBoxXScroll::BC_ListBoxXScroll(BC_ListBox *listbox)
+ : BC_ScrollBar(listbox->get_xscroll_x(), listbox->get_xscroll_y(),
+	listbox->xscroll_orientation, listbox->get_xscroll_width(),
+	listbox->items_w, listbox->xposition, listbox->view_w)
 {
 	this->listbox = listbox;
 }
@@ -98,16 +73,6 @@ int BC_ListBoxXScroll::handle_event()
 	listbox->set_xposition(get_value());
 	return 1;
 }
-
-int BC_ListBoxXScroll::update_length(int64_t length, int64_t position, int64_t handlelength, int flush)
-{
-	return BC_ScrollBar::update_length(length+handlelength/4, position, handlelength, flush);
-}
-
-
-
-
-
 
 
 BC_ListBoxToggle::BC_ListBoxToggle(BC_ListBox *listbox,
@@ -369,6 +334,8 @@ BC_ListBox::BC_ListBox(int x,
 	new_value = 0;
 	need_xscroll = 0;
 	need_yscroll = 0;
+	xscroll_orientation = SCROLL_HORIZ;
+	yscroll_orientation = SCROLL_VERT;
  	bg_tile = 0;
 	bg_draw = 1;
  	drag_popup = 0;
@@ -1242,6 +1209,13 @@ void BC_ListBox::set_autoplacement(ArrayList<BC_ListBoxItem*> *data,
 }
 
 
+void BC_ListBox::set_scroll_stretch(int xv, int yv)
+{
+	if( xv >= 0 ) xscroll_orientation =
+		!xv ? SCROLL_HORIZ : SCROLL_HORIZ + SCROLL_STRETCH;
+	if( yv >= 0 ) yscroll_orientation =
+		!yv ? SCROLL_VERT  : SCROLL_VERT  + SCROLL_STRETCH;
+}
 
 int BC_ListBox::get_yscroll_x()
 {
@@ -1978,11 +1952,8 @@ int BC_ListBox::get_scrollbars()
 	{
 		if(!xscrollbar)
 		{
-			destination->add_subwindow(xscrollbar =
-				new BC_ListBoxXScroll(this,
-					w_needed,
-					view_w,
-					xposition));
+			xscrollbar = new BC_ListBoxXScroll(this);
+			destination->add_subwindow(xscrollbar);
 			xscrollbar->show_window(0);
 			xscrollbar->bound_to = this;
 		}
@@ -2005,11 +1976,8 @@ int BC_ListBox::get_scrollbars()
 	{
 		if(!yscrollbar)
 		{
-			destination->add_subwindow(yscrollbar =
-				new BC_ListBoxYScroll(this,
-					h_needed,
-					view_h,
-					yposition));
+			yscrollbar = new BC_ListBoxYScroll(this);
+			destination->add_subwindow(yscrollbar);
 			yscrollbar->show_window(0);
 			yscrollbar->bound_to = this;
 		}

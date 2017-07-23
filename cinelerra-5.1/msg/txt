@@ -1,49 +1,43 @@
 Email cinelerra@lists.cinelerra-cv.org 4 help.
-Join Mailing List at cinelerra-cv.org.  
-Testers/programmers/translators needed.
-Use root, to capture crashes in /tmp/cin*.dmp file.  
+Join Mailing List at cinelerra-cv.org.
+Use root, to capture crashes in /tmp/cin*.dmp file.
 For usage help, refer to the following:
- https://cinelerra-cv.org/docs/cinelerra_cv_manual_en.html 
- https://cinelerra-cv.org/five/Features5.pdf
- http://beccatoria.dreamwidth.org/144288.html#cutid2
- http://g-raffa.eu/Cinelerra/HOWTO/basics.html
-May 2017 Release/Changes of note:
- Title plugin allows for 3071 characters now.
- Horizontal scrollbar added to Title plugin. 
- Number of chars. used/remaining show in Titler.
- Faststart option added for Mp4/ffmpeg format.
- Probe Order preference added for flexibility.
- Dcraw program updated to latest Coffin version.
-  NOTE: to use raw mode, must enable CR2 probe.
- Equalizer plugin lock problem fixed + others.
- Gif files now correctly handled by ffmpeg.
- Zoom bar in compositor handles any size.
-April 2017 Release/Changes of note:
- Upgraded FFMPEG to 3.3 + other 3rd party libraries.
- Blue Banana plugin improvements - End Mask +.
- New OGG option file / Ubuntu 17 build added.
- Fixed Background Rendering / added G HotKey.
- Aspect Ratio when not 1 to 1, is now correct.
-March 2017 Release/Changes of note:
- Title plugin major changes to include:
-  ColorPicker added, fast Font selection,
-  Stroker for fonts added, BC_FONT_PATH.
- 32-bit Debian build now available.
- New Quicktime options for v308/v410/16mmto264.
- Added C_/D_ for ambiguous translations.
- Fixed Fade/curve not copying correctly backward.
-February 2017 Release/Changes of note:
- Title plugin major changes to include:
-  Drag with 9 different handles, Background 
-   video, individual character attributes of 
-   Color, Size, Font, Underline, Bold, Italic,
-   Caps, Blink, Alpha, Nudge, Sup(erscript,
-   subscript), and PNG inclusion + Rt. Click.
- Text focus policy choice preference added.
- Bluray creation allowing for non-root usage.
-January 2017 Release/Changes of note:
- Motion51 plugin added with easier usage.
- Unicode characters can be put into textbox.
- Smooth Lines create near-perfect circles/curves.
- Bluray creation improved to cover more area.
- H265 options file added for mp4 rendering.
+  https://cinelerra-cv.org/docs/cinelerra_cv_manual_en.html
+  https://cinelerra-cv.org/five/Features5.pdf
+  http://beccatoria.dreamwidth.org/144288.html#cutid2
+  http://g-raffa.eu/Cinelerra/HOWTO/basics.html
+.
+Cinfinity icons selected in Preferences (Creative Common
+  By https://creativecommons.org/licenses/by/3.0/)
+.
+July 2017 New Features of note:
+  Cinfinity icons added along with a Preferences choice.
+  Perspective plugin improvements with more versatility.
+  Info on plugins with a short description added.
+  Copy/Paste within and across instances enhancements.
+  Ffmpeg seek changes for ffmpeg non-stream type files.
+June 2017 New Features of note:
+  CriKey does edgedetect, chroma key, and interpolation.
+  Faststart option added for Mp4 and QT ffmpeg format.
+.
+January to May 2017 New Features of note:
+  Probe Order preference added for flexibility.
+  Dcraw program updated to latest Coffin version.
+  Zoom bar in compositor handles any size.
+  Upgraded FFMPEG to 3.3 + other 3rd party libraries.
+  Blue Banana plugin improvements - End Mask +.
+  Title plugin major changes to include:
+   ColorPicker added, fast Font selection,
+   Stroker for fonts added, BC_FONT_PATH.
+   Drag with 9 different handles, Background
+     video, individual character attributes of
+     Color, Size, Font, Underline, Bold, Italic,
+     Caps, Blink, Alpha, Nudge, Sup(erscript,
+     subscript), and PNG inclusion + Rt. Click.
+   Now handles 3071 characters and a count provided.
+  Added C_/D_ for ambiguous translations.
+  Bluray creation allowing for non-root usage.
+  Motion51 plugin added with easier usage.
+  Unicode characters can be put into textbox.
+  Smooth Lines create near-perfect circles/curves.
+  Bluray creation improved to cover more area.

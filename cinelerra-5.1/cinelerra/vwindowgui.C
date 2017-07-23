@@ -614,8 +614,7 @@ void VWindowEditing::next_label()
 double VWindowEditing::get_position()
 {
 	EDL *edl = vwindow->get_edl();
-	double position = !edl ? 0 : edl->local_session->get_selectionstart(1) +
-			edl->session->get_frame_offset() / edl->session->frame_rate;
+	double position = !edl ? 0 : edl->local_session->get_selectionstart(1);
 	return position;
 }
 
@@ -624,7 +623,6 @@ void VWindowEditing::set_position(double position)
 	EDL *edl = vwindow->get_edl();
 	if( !edl ) return;
 	if( get_position() != position ) {
-		position -= edl->session->get_frame_offset() / edl->session->frame_rate;
 		if( position < 0 ) position = 0;
 		edl->local_session->set_selectionstart(position);
 		edl->local_session->set_selectionend(position);

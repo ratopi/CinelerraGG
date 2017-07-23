@@ -202,8 +202,7 @@ int ZoomBar::update_playback(int64_t new_position)
 {
 	if(new_position != old_position)
 	{
-		Units::totext(string,
-				new_position,
+		Units::totext(string, new_position,
 				mwindow->edl->session->sample_rate,
 				mwindow->edl->session->time_format,
 				mwindow->edl->session->frame_rate,
@@ -537,8 +536,6 @@ int FromTextBox::handle_event()
 
 int FromTextBox::update_position(double new_position)
 {
-	new_position += mwindow->edl->session->get_frame_offset() /
-						 mwindow->edl->session->frame_rate;;
 	Units::totext(string,
 		new_position,
 		mwindow->edl->session->time_format,
@@ -609,10 +606,7 @@ int ToTextBox::handle_event()
 
 int ToTextBox::update_position(double new_position)
 {
-	new_position += mwindow->edl->session->get_frame_offset() /
-						 mwindow->edl->session->frame_rate;
-	Units::totext(string,
-		new_position,
+	Units::totext(string, new_position,
 		mwindow->edl->session->time_format,
 		mwindow->edl->session->sample_rate,
 		mwindow->edl->session->frame_rate,

@@ -24,6 +24,7 @@
 
 #define PROGRAM_NAME "Cinelerra"
 #define DEFAULT_THEME "S.U.V."
+#define DEFAULT_PICON "picon"
 #define CONFIG_FILE "Cinelerra_rc"
 #define PRESETS_FILE "Cinelerra_presets"
 #define PICTURE_FILE "Cinelerra_picture"

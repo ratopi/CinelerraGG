@@ -113,9 +113,6 @@ public:
 // Lock out interrupts before and after renderengine is active
 	Mutex *interrupt_lock;
 
-// Show the timecode on the video
-	int show_tc;
-
 	int done;
 	int is_nested;
 // If nested, the devices are owned by someone else
