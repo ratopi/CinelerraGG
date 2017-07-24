@@ -449,6 +449,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	remove_plugin = 0;
 	vicon_thread = 0;
 	vicon_drawing = 1;
+	displayed_folder = AW_NO_FOLDER;
 }
 
 AWindowGUI::~AWindowGUI()
@@ -1301,27 +1302,27 @@ void AWindowGUI::update_assets()
 //printf("AWindowGUI::update_assets 3\n");
 	filter_displayed_assets();
 
-//for( int i = 0; i < folders.total; i++ )
 //printf("AWindowGUI::update_assets 4\n");
-//	printf("AWindowGUI::update_assets %s\n", folders.values[i]->get_text());
-	if( mwindow->edl->session->folderlist_format != folder_list->get_format() )
+	if( mwindow->edl->session->folderlist_format != folder_list->get_format() ) {
 		folder_list->update_format(mwindow->edl->session->folderlist_format, 0);
-	folder_list->update(&folders, 0, 0, 1,
-		folder_list->get_xposition(),
-		folder_list->get_yposition(),
-		-1);
+	}
+	int folder_xposition = folder_list->get_xposition();
+	int folder_yposition = folder_list->get_yposition();
+	folder_list->update(&folders, 0, 0, 1, folder_xposition, folder_yposition, -1);
+
 //printf("AWindowGUI::update_assets 5\n");
-
-	if( mwindow->edl->session->assetlist_format != asset_list->get_format() )
+	if( mwindow->edl->session->assetlist_format != asset_list->get_format() ) {
 		asset_list->update_format(mwindow->edl->session->assetlist_format, 0);
-
-
-//printf("AWindowGUI::update_assets 6 %d\n", displayed_assets[0].total);
+	}
+	int asset_xposition = asset_list->get_xposition();
+	int asset_yposition = asset_list->get_yposition();
+	if( displayed_folder != mwindow->edl->session->awindow_folder ) {
+		displayed_folder = mwindow->edl->session->awindow_folder;
+		asset_xposition = asset_yposition = 0;
+	}
 	asset_list->update(displayed_assets, asset_titles,
 		mwindow->edl->session->asset_columns, ASSET_COLUMNS,
-		asset_list->get_xposition(),
-		asset_list->get_yposition(),
-		-1, 0);
+		asset_xposition, asset_yposition, -1, 0);
 	asset_list->center_selection();
 //printf("AWindowGUI::update_assets 7\n");
 
@@ -1563,7 +1564,6 @@ int AWindowAssets::button_press_event()
 		}
 		result = 1;
 	}
-
 
 	return result;
 }

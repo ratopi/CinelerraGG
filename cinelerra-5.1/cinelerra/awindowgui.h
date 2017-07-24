@@ -188,8 +188,8 @@ public:
 // Currently displayed data for listboxes
 // Currently displayed assets + comments
 	ArrayList<BC_ListBoxItem*> displayed_assets[2];
-
 	const char *asset_titles[ASSET_COLUMNS];
+	int displayed_folder;
 
 	BC_Hash *defaults;
 // Persistent icons

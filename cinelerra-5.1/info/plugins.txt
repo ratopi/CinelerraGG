@@ -1,42 +1,69 @@
 # plugin info
-# 
+#
 # Name of plugin followed by: and then description.
 #  Additional lines start with a blank/tab.
 #
-1080 to 480:	Extracts 2 1920x540 fields from image,
-		resizes, and combines to 1920x480.
-1080 to 540:	Extracts 2 1920x540 fields from image,
-		resizes, and combines to 1920x540.
+1080 to 480:	Extracts 2 1920x540 fields from 1920x1080
+		image, resizes them separately, and
+		combines them to 1920x480 interlaced image.
+1080 to 540:	Extracts 2 1920x540 fields from 1920x1080,
+		image, resizes them separately, and
+		combines them to 1920x540 interlaced image.
 AgingTV:	Use to achieve an "old" movie or TV show
 		effect by adding moving lines and snow.
 Auto Scale:	Automatically scale to a specified size.
-Blue Banana:	Used for color transformation or
-		remapping; also for chroma-key filtering.
-Blur:		Blurs a video track in the horizontal or
+Blue Banana:	Used for color transformation or remapping as
+		well as chroma-key filtering.  Basic usage:
+		. Select a specifc target color.
+		. Create a selection region by expanding color.
+		. Optionally reduce or expand the alpha plane.
+		. Optionally apply a color remapping to selection.
+		. Optionally reset the output alpha to opaque.
+		1) choose your color, click Pick, check Mark Selected
+		2) modify selection in the Color Selection area
+		3) uncheck Mark Selected, and check Filter Active
+		4) adjust your color choice as desired
+Blur:		Blurs a video track in horizontal and/or
 		vertical in chosen color channels.
 Brightness/Contrast: Use to change the brightness or
-		contrast; could reduce quality.
-BurningTV:	Makes your video "burn" by adding small
-		light colored patches.
-C41:		Converts C-41 negative film into the positive image.
+		contrast, but could reduce quality.
+BurningTV:	Makes your video "burn" where there are
+		small light colored patches of video.
+C41:		Converts C-41 negative film to the positive image.
 Chroma key:	Erases pixels which match chosen color;
-		replaces with black or transparency.
-Chroma key (HSV): Removes a color with another color or
+		they are replaced to black if there is no alpha
+		channel and transparency if there is alpha.
+Chroma key (HSV): Replaces a color with another color or
 		transparency using HSV variables.
 Color 3 Way:	Modify color of Shadows, Midtones, and Highlights as
 		wanted.
 Color Balance:	Modify RGB colors or white balance to compensate
-		compensate for errors in video.
+		for errors in video such as low lighting.
 CriKey:		Regionally based chroma key with interpolation;
-		only a specific zone defined.
+		useful when you only want a specific zone defined.
+		.
+		Color button is used to specify the key by color.
+		Threshold slider is used to set tolerance (0-1).
+		Key mode choices let you pick the method by which
+		the chroma key will be defined.
+		.  Search - point at a zone or spot to define
+		area then uses the specified tolerance to pick an
+		edge.  A fill will be performed in that area.
+		.   Point - the point is the Mask, not the color.
+		.    (This method has drag capabilities).
+		.   Search all - works same as standard Chroma key.
+		Draw mode options let you use
+		.    Alpha - matching pixels replaced with see-thru.
+		.    Edge to just outline the edges of the region.
+		.    Mask - matching color pixels replaced by black.
 Decimate:	Drop frames from a track which are most similar
 		in order to reduce frame rate.
-Deinterlace:	Various line replication to eliminate comb
-		artifacts in interlaced video.
-Deinterlace-CV:	Variation of deinterlacing video to eliminate comb
-		artifacts.
+Deinterlace:	Several selections of line replication to eliminate
+		comb artifacts in interlaced video.
+Deinterlace-CV:	Selection of deinterlacing mode for your video to
+		eliminate comb artifacts.
 Delay Video:	Delay the video by some number of seconds.
-Denoise video:	Clear the video of noise.
+Denoise video:	Clear the video of noise; specify R,G,B, or Alpha.
 Difference key:	Creates transparency in areas which are similar
 		between 2 frames; must be applied to 2 tracks.
 DotTV:		Puts various size dots over the picture to simulate
@@ -68,10 +95,10 @@ Inverse Telecine: Effective deinterlacing tool for use on a video
 		transfer of a film.
 Invert Video:	Method of reversing the colors of a video track.
 Lens:		Create the effect of looking through a lens.
-Linear Blur:	Blur with parameters of length, andle, number of 
-		steps, and which channels.
+Linear Blur:	Blur with parameters of length, angle, # of steps,
+		and which channels. Does Linear, Radial, or Zoom.
 Live Video:	Reads video directly from the capture card input and
-		will replace current.
+		replaces any video on the track.
 Loop video:	Loop video by specifying the length of the region to loop.
 Motion:		Tracks translation and rotation motion to stabilize
 		shaky video.
@@ -79,8 +106,20 @@ Motion 2 Point:	Motion stabilization using 2 pass tracking.
 Motion Blur:	Uses X/Y camera automation vectors to apply a linear
 		blur trailing camera direction.
 Motion51:	Compensates for unwanted motion and stabilizes the
-		image using a unique curve/spline algorithm.  Has a
-		reset option to use default parameters.
+		image using a unique curve/spline algorithm. A reset
+		option for defaults helps as does OpenGL if available.
+		.
+		Samples - number of pixels which software uses
+		Draw vectors - demonstrates the search operation
+		Sample Radius - radius of circle denoting area of sample
+		Center X/Y - center position of the sample circle
+		Search W/H - determines width/height used for search
+		Horiz/Vert shake limit - uses as translation constraints
+		Shake fade - how fast translation cancellation fades
+		Twist limit - determines rotation constraints
+		Twist fade - how fast rotation cancellation fades away
+		Enable Tracking - caches search results for later use
+		Tracking file - name of file with calculate results
 MotionCV:	Motion tracking/stabilization from the community
 		version of cinelerra.
 MotionHV:	Motion tracking/stabilization from the original
@@ -89,16 +128,27 @@ Oil Painting:	Makes video tracks appear as a painting.
 Overlay:	Combine tracks via an overlayer that puts images on
 		top of a bottom layer.
 Perspective:	Allows you to change the viewpoint of an object.
-Polar:		Bends and warps your video in strange ways based on
-		a mathematical algorithm.
+		With left mouse button, you can drag the corner or:
+		.
+		Alt/Shift        + Button1 Action:
+		. 0/0           Translate endpoint
+		. 0/1           Zoom image
+		. 1/0           Translate image
+		. 1/1           Translate view but does not change output.
+		.
+		The red colored lines in the box show the composer boundary.
+		Use the zoom slider which changes only the zoom view to see
+		if it goes off the screen. The slider goes from 1/100 to 100.
+Polar:		Bends and warps your video in weird ways based on conversion
+		from either polar coordinates to rectangular or vice-versa.
 RGB - 601:	Used to reduce/increase contrast in your video via
 		601 compression or RGB expansion.
 RGBShift:	Align 3 separate planes of R, G, B if misaligned in
-		in the video or just shift for interest.
+		the video or just shift for interest. Adjust via sliders.
 Radial Blur:	Creates a whirlpool based on settings that simulates
 		a swirling camera.
 ReframeRT:	Changes number of frames in a sequence of video
-		directly from timeline.
+		directly from timeline; has Stretch and Downsample modes.
 Reroute:	Selectively transfer the alpha channel or the
 		RGB/YUV components from source to target track.
 Reverse video:	Reverse media on the timeline in realtime.
@@ -108,7 +158,13 @@ SVG via Inkscape: Allow the manipulation of an SVG image with
 		Inkscape without having to exit the program.
 Scale:		Reduce or expand the image size depending on the ratio.
 Scale Ratio:	Manipulate your video to maintain the pixel aspect
-		ratio (proportional geometry).
+		ratio (proportional geometry).  Change values on the
+		left and see the resuluts in the compositor window.
+		. In R,Out R - current input and output aspect ratios
+		. In W/H,Out W/H - current width and height
+		. Scale type of None,Scaled,Cropped,Filled,Horiz/Vert
+		Top aspect ratio data is used to compute bottom part.
+		Bottom part allows for repositioning the input/output.
 Selective Temporal Averaging: Smooths out non-moving areas of a video
 		clip by averaging the color across frames.
 Sharpen:	Sharpen the video, either the luminance, horizontal,
@@ -116,14 +172,19 @@ Sharpen:	Sharpen the video, either the luminance, horizontal,
 ShiftInterlace:	Shift the interlace lines using odd or even.
 Swap Frames:	Swap frames with 0-1, 2-3, 4-5... or 1-2, 3-4, 5-6...
 Swap channels:	Swap R,G,B,Alpha with another color channel.
-Threshold:	Converts the image to pure luminanceand replaces
+Threshold:	Converts the image to pure luminance and replaces
 		pixels with 1 of 3 colors.
-Time Average:	Takes a number of frames to average or
-		accumulate-stacking 1 frame on top of another.
+Time Average:	Use to create trail patterns, or reduce noise in still
+		images.  A number of frames is accumulated and then
+		divided by a divisor to the the average.
 TimeFront:	Performs spatio-temporal video warping.
-Title:		Add text/timestamp/background pngs to video with
-		many nice variations such as changing font color,
-		size, bold, subscripts.
+Title:		Add text/timestamp/background pngs to video along with
+		the ability to drag to a location if Drag checked on.
+		Current text string limitation of 3071 characters.
+		Flexible attributes in textbox (mouse right click):
+		. color, font, alpha, size, png, bold, italic, blink,
+		. ul, caps, sup(super/sub script), fixed, nudge.
+		Special characters are  <, >, \, /, # (see manual).
 Translate:	Allows displacing, cropping and/or scaling video
 		horizontally/vertically.
 Unsharp:	Applies a traditional darkroom technique, unsharp
@@ -134,8 +195,8 @@ Wave:		Generates waves in video using Amplitude, Phase, and
 Whirl:		Creates a whirl (spiral) of the video around the center.
 YUV:		Modify the Y, U, V settings.
 YUV411:		Modify the 411 yuv to look like 420 color space instead.
-YUVShift:	Realign the 3 sets of YUV inputvideo nubers when
-		misaligned.
+YUVShift:	Realign the 3 sets of YUV input video numbers when they
+		are misaligned.  Use slider bars to modify.
 Zoom Blur:	Blur the video and use a zoom effect.
 #
 #  Description of FFmpeg Video Plugins
@@ -349,8 +410,8 @@ F_volume:	Change input volume.
 #
 # audio plugins
 #
-#AM pitchshifter:	
-#Aliasing:	
+#AM pitchshifter:
+#Aliasing:
 #Allpass delay line, cubic spline interpolation:
 #Allpass delay line, linear interpolation:
 #Allpass delay line, noninterpolating:
@@ -390,9 +451,12 @@ F_volume:	Change input volume.
 #Dyson compressor:
 #EQ Graphic:
 #EQ Parametric:
-Echo:		Add echoing to audio for an interesting effect.
-EchoCancel:	Remove echos from audio in order to
-		improve the quality.
+Echo:		Add echo - reflection of sound - for effect.
+		. Level represents the volume adjustment
+		. Atten is attenuation meaning a reduction in reflection
+		. Offset is the lag in the attenuated echo signal
+EchoCancel:	Removes echoes from audio to improve the quality.
+		Recommended to just set the Mode to On for simplicity.
 #Exponential signal decay:
 #FM Oscillator:
 #Fast Lookahead limiter:
@@ -429,7 +493,7 @@ EchoCancel:	Remove echos from audio in order to
 #L/C/R Delay:
 #LFO Phaser:
 #LS Filter:
-Live Audio:	Reads audio directly from the soundcard input, 
+Live Audio:	Reads audio directly from the soundcard input,
 		replacing any audio on track.
 #Loop audio:
 #Mag's Notch Filter:
@@ -443,7 +507,7 @@ Live Audio:	Reads audio directly from the soundcard input,
 #Nonbandlimited single-sample impulses (Frequency; Control):
 #Overlay:
 #Pitch Scaler:
-Pitch shift:	Uses FFT to try to change the pitch without 
+Pitch shift:	Uses FFT to try to change the pitch without
 		changing the duration.
 #Plate reverb:
 #Pointer cast distortion:

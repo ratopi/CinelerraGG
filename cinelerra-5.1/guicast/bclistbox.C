@@ -4170,6 +4170,7 @@ void BC_ListBox::clear_listbox(int x, int y, int w, int h)
 void BC_ListBox::update_format(int display_format, int redraw)
 {
 	this->display_format = display_format;
+	xposition = 0;  yposition = 0;
 	if( redraw && gui ) draw_items(1, 1);
 }
 

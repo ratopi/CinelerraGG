@@ -2877,26 +2877,6 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 	}
 }
 
-int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int length)
-{
-#ifdef HAVE_XFT
-	if(get_resources()->use_xft && get_xft_struct(font)) {
-		XGlyphInfo extents;
-
-		XftTextExtents32(top_level->display, get_xft_struct(font),
-			(const FcChar32*)text, length, &extents);
-		return extents.xOff;
-	}
-#endif
-	if(!get_font_struct(font)) return 0;
-	XChar2b xtext[length], *xp = xtext;
-	for( int i=0; i<length; ++i,++xp ) {
-		xp->byte1 = (unsigned char) (text[i] >> 8);
-		xp->byte2 = (unsigned char) (text[i] & 0xff);
-	}
-	return XTextWidth16(get_font_struct(font), xtext, length);
-}
-
 int BC_WindowBase::get_text_width(int font, const char *text, int length)
 {
 	int i, j, w = 0, line_w = 0;
