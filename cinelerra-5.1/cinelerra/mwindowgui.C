@@ -916,16 +916,19 @@ int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2
 
 void MWindowGUI::show_message(const char *message, int color)
 {
-	statusbar->set_message(message, color);
+	statusbar->show_message(message, color);
 }
-void MWindowGUI::set_default_message(const char *message)
+
+void MWindowGUI::update_default_message()
 {
-	statusbar->set_default_message(message);
+	statusbar->update_default_message();
 }
+
 void MWindowGUI::reset_default_message()
 {
 	statusbar->reset_default_message();
 }
+
 void MWindowGUI::default_message()
 {
 	statusbar->default_message();

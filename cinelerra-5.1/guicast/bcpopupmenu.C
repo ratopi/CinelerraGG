@@ -291,6 +291,7 @@ int BC_PopupMenu::activate_menu()
 {
 	if( !get_button_down() || !BC_WindowBase::get_resources()->popupmenu_btnup )
 		return menu_activate();
+	top_level->active_popup_menu = this;
 	pending = 1;
 	return 0;
 }
@@ -328,7 +329,7 @@ int BC_PopupMenu::menu_activate()
 		popup_down = 1;
 		if(use_title) draw_title(1);
 	}
-	return 0;
+	return 1;
 }
 
 int BC_PopupMenu::deactivate_menu()

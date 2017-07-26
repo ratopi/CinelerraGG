@@ -50,7 +50,7 @@ public:
 	AssetPicon(MWindow *mwindow, AWindowGUI *gui, EDL *edl);
 	AssetPicon(MWindow *mwindow, AWindowGUI *gui, PluginServer *plugin);
 	AssetPicon(MWindow *mwindow, AWindowGUI *gui, Label *plugin);
-	AssetPicon(MWindow *mwindow, AWindowGUI *gui, int folder);
+	AssetPicon(MWindow *mwindow, AWindowGUI *gui, int folder, int persist);
 	AssetPicon(MWindow *mwindow, AWindowGUI *gui, const char *folder_name, int folder_num);
 	virtual ~AssetPicon();
 
@@ -167,6 +167,12 @@ public:
 	void stop_vicon_drawing();
 	void update_picon(Indexable *indexable);
 
+	VFrame *get_picon(const char *name, const char *plugin_icons);
+	VFrame *get_picon(const char *name);
+	VFrame *resource_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn, int idx);
+	VFrame *theme_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn);
+	VFrame *plugin_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn, unsigned char *png);
+
 	MWindow *mwindow;
 	AWindow *awindow;
 
@@ -193,19 +199,19 @@ public:
 
 	BC_Hash *defaults;
 // Persistent icons
-	BC_Pixmap *folder_icon;
-	BC_Pixmap *file_icon;
-	BC_Pixmap *audio_icon;
-	BC_Pixmap *video_icon;
-	BC_Pixmap *label_icon;
-	BC_Pixmap *clip_icon;         VFrame *clip_vframe;
-	BC_Pixmap *atransition_icon;  VFrame *atransition_vframe;
-	BC_Pixmap *vtransition_icon;  VFrame *vtransition_vframe;
-	BC_Pixmap *aeffect_icon;      VFrame *aeffect_vframe;
-	BC_Pixmap *ladspa_icon;       VFrame *ladspa_vframe;
-	BC_Pixmap *ff_aud_icon;       VFrame *ff_aud_vframe;
-	BC_Pixmap *ff_vid_icon;       VFrame *ff_vid_vframe;
-	BC_Pixmap *veffect_icon;      VFrame *veffect_vframe;
+	BC_Pixmap *folder_icon;       VFrame *folder_res,  *folder_vframe;
+	BC_Pixmap *file_icon;         VFrame *file_res,    *file_vframe;
+	BC_Pixmap *audio_icon;        VFrame *audio_res,   *audio_vframe;
+	BC_Pixmap *video_icon;        VFrame *video_res,   *video_vframe;
+	BC_Pixmap *label_icon;        VFrame *label_res,   *label_vframe;
+	BC_Pixmap *clip_icon;         VFrame *clip_res,    *clip_vframe;
+	BC_Pixmap *atransition_icon;  VFrame *atrans_res,  *atransition_vframe;
+	BC_Pixmap *vtransition_icon;  VFrame *vtrans_res,  *vtransition_vframe;
+	BC_Pixmap *aeffect_icon;      VFrame *aeffect_res, *aeffect_vframe;
+	BC_Pixmap *veffect_icon;      VFrame *veffect_res, *veffect_vframe;
+	BC_Pixmap *ladspa_icon;       VFrame *ladspa_res,  *ladspa_vframe;
+	BC_Pixmap *ff_aud_icon;       VFrame *ff_aud_res,  *ff_aud_vframe;
+	BC_Pixmap *ff_vid_icon;       VFrame *ff_vid_res,  *ff_vid_vframe;
 	NewFolderThread *newfolder_thread;
 
 // Popup menus

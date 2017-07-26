@@ -419,7 +419,8 @@ F_volume:	Change input volume.
 #4 x 4 pole allpass:
 #Artificial latency:
 #Audio Divider (Suboctave Generator):
-#AudioScope:
+AudioScope:	Convert input audio to video output representing the
+		audio power spectrum. Shows you the sound wave.
 #Auto phaser:
 #Barry's Satan Maximiser:
 #Bode frequency shifter:
@@ -430,7 +431,9 @@ F_volume:	Change input volume.
 #Comb delay line, cubic spline interpolation:
 #Comb delay line, linear interpolation:
 #Comb delay line, noninterpolating:
-#Compressor:
+Compressor:	Lessen the dynamic range between the loudest and quietest
+		parts of an audio signal by boosting the quieter signals
+		and attenuating the louder signals.
 #Constant Signal Generator:
 #Crossfade:
 #Crossfade (4 outs):
@@ -442,10 +445,10 @@ F_volume:	Change input volume.
 #DJ flanger:
 #Decimator:
 #Declipper:
-#Delay audio:
+Delay audio:    Delay the audio by some number of seconds.
 #Delayorama:
-#Denoise:
-#DenoiseFFT:
+Denoise:	Reduce audio background noise.
+DenoiseFFT:	Noise removal from audio using FFT editing.
 #Despike:
 #Diode Processor:
 #Dyson compressor:
@@ -453,7 +456,7 @@ F_volume:	Change input volume.
 #EQ Parametric:
 Echo:		Add echo - reflection of sound - for effect.
 		. Level represents the volume adjustment
-		. Atten is attenuation meaning a reduction in reflection
+		. Atten is attenuation meaning reduction in reflection
 		. Offset is the lag in the attenuated echo signal
 EchoCancel:	Removes echoes from audio to improve the quality.
 		Recommended to just set the Mode to On for simplicity.
@@ -515,7 +518,9 @@ Pitch shift:	Uses FFT to try to change the pitch without
 #Remove Gaps:
 #ResampleRT:
 #Retro Flanger:
-#Reverb:
+Reverb:		Reflections of sound to add depth and fullness.
+		Simulates creation of a large number of reflections
+		which build up and then decay.
 #Reverse Delay (5s max):
 Reverse audio:		Play the audio backwards.
 #Ringmod with LFO:
@@ -552,3 +557,22 @@ Reverse audio:		Play the audio backwards.
 #VyNil (Vinyl Effect):
 #Wave Terrain Oscillator:
 #z-1:
+#
+# Transitions - Audio and Video
+#
+Crossfade:	Creates a smooth transition from one audio source
+		edit to another. The crossfade has the first
+		source fade out while the second fades in.
+BandSlide:	Bands slide across video and you see the image slide.
+BandWipe:	Bands wipe across the video and you see the mask slides.
+Dissolve:	A soft dissolve transition between two video segments,
+		The left segment turns more transparent while at the
+		same time the right segment materializes into place.
+Flash:		The video flashes when transitioning between segments.
+IrisSquare:	Video switches segments via a small rectangular view
+		that gradually grows to full size.
+Shape Wipe:	Wipe a specific shape across the video.  Available
+		shapes are: circle, clock, heart, tile2x2h, tile2x2v.
+Slide:		Image slides into view - can set: Left/Right/In/Out.
+Wipe:		Wipe the image across screen starting left or right.
+Zoom:		Zoom out video at X/Y magnification for some seconds.

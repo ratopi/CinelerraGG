@@ -232,15 +232,16 @@ void BC_WindowBase::draw_xft_text(int x, int y,
 {
 	int dy = -1;
 	const wchar_t *wsp = text, *wep = wsp + length;
+	int font = top_level->current_font;
 	while( wsp < wep ) {
 		const wchar_t *wcp = wsp;
 		while( wcp < wep && *wcp != '\n' ) ++wcp;
 		int len = wcp - wsp;
 		if( len > 0 )
-			draw_wtext(x, y, wsp, len, pixmap);
+			draw_single_text(1, font, x, y, wsp, len, pixmap);
 		if( wcp >= wep ) break;
 		if( dy < 0 )
-			dy = get_text_height(top_level->current_font);
+			dy = get_text_height(font);
 		y += dy;
 		wsp = wcp + 1;
 	}
@@ -282,6 +283,12 @@ void BC_WindowBase::xft_draw_string(XftColor *xft_color, XftFont *xft_font,
 
 int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int length)
 {
+	return draw_single_text(0, font, 0,0, text, length);
+}
+
+int BC_WindowBase::draw_single_text(int draw, int font,
+	int x, int y, const wchar_t *text, int length, BC_Pixmap *pixmap)
+{
 	if( length < 0 )
 		length = wcslen(text);
 	if( !length ) return 0;
@@ -293,10 +300,31 @@ int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int leng
 			xp->byte1 = (unsigned char) (text[i] >> 8);
 			xp->byte2 = (unsigned char) (text[i] & 0xff);
 		}
+		if( draw ) {
+			XDrawString16(top_level->display,
+				pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
+				top_level->gc, x, y, xtext, length);
+		}
 		return XTextWidth16(get_font_struct(font), xtext, length);
 	}
-	int x = 0;
+
 #ifdef HAVE_XFT
+	XftColor xft_color;
+	if( draw ) {
+		XRenderColor color;
+		color.red = (top_level->current_color & 0xff0000) >> 16;
+		color.red |= color.red << 8;
+		color.green = (top_level->current_color & 0xff00) >> 8;
+		color.green |= color.green << 8;
+		color.blue = (top_level->current_color & 0xff);
+		color.blue |= color.blue << 8;
+		color.alpha = 0xffff;
+
+		XftColorAllocValue(top_level->display, top_level->vis, top_level->cmap,
+			&color, &xft_color);
+	}
+
+	int x0 = x;
 	XftFont *basefont = top_level->get_xft_struct(font);
 	XftFont *curfont = 0, *altfont = 0;
 	const wchar_t *up = text, *ubp = up, *uep = ubp + length;
@@ -327,6 +355,10 @@ int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int leng
 			xft_font = basefont;
 		if( xft_font != curfont ) {
 			if( curfont && up > ubp ) {
+				if( draw ) {
+					xft_draw_string(&xft_color, curfont, x, y,
+						(const FcChar32*)ubp, up-ubp, pixmap);
+				}
 				XGlyphInfo extents;
 				XftTextExtents32(top_level->display, curfont,
 					(const FcChar32*)ubp, up-ubp, &extents);
@@ -338,6 +370,10 @@ int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int leng
 	}
 
 	if( curfont && up > ubp ) {
+		if( draw ) {
+			xft_draw_string(&xft_color, curfont, x, y,
+				(const FcChar32*)ubp, up-ubp, pixmap);
+		}
 		XGlyphInfo extents;
 		XftTextExtents32(top_level->display, curfont,
 			(const FcChar32*)ubp, up-ubp, &extents);
@@ -346,97 +382,10 @@ int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int leng
 
 	if( altfont )
 		XftFontClose(top_level->display, altfont);
-#endif
-	return x;
-}
-
-void BC_WindowBase::draw_wtext(int x, int y,
-	const wchar_t *text, int length, BC_Pixmap *pixmap)
-{
-	if( length < 0 )
-		length = wcslen(text);
-	if( !length ) return;
-
-	int font = top_level->current_font;
-	if( !get_resources()->use_xft ) {
-		if( !get_font_struct(font) ) return;
-		XChar2b xtext[length], *xp = xtext;
-		for( int i=0; i<length; ++i,++xp ) {
-			xp->byte1 = (unsigned char) (text[i] >> 8);
-			xp->byte2 = (unsigned char) (text[i] & 0xff);
-		}
-		XDrawString16(top_level->display,
-			pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
-			top_level->gc, x, y, xtext, length);
-		return;
-	}
-
-#ifdef HAVE_XFT
-	XRenderColor color;
-	color.red = (top_level->current_color & 0xff0000) >> 16;
-	color.red |= color.red << 8;
-	color.green = (top_level->current_color & 0xff00) >> 8;
-	color.green |= color.green << 8;
-	color.blue = (top_level->current_color & 0xff);
-	color.blue |= color.blue << 8;
-	color.alpha = 0xffff;
-
-	XftColor xft_color;
-	XftColorAllocValue(top_level->display, top_level->vis, top_level->cmap,
-		&color, &xft_color);
-
-	XftFont *basefont = top_level->get_xft_struct(font);
-	XftFont *curfont = 0, *altfont = 0;
-	const wchar_t *up = text, *ubp = up, *uep = ubp + length;
-
-	while( up < uep ) {
-		XftFont *xft_font = 0;
-		if( XftCharExists(top_level->display, basefont, *up) )
-			xft_font = basefont;
-		else if( altfont ) {
-			if( XftCharExists(top_level->display, altfont, *up))
-				xft_font = altfont;
-			else {
-				XftFontClose(top_level->display, altfont);
-				altfont = 0;
-			}
-		}
-		if( !xft_font ) {
-			FcPattern *pattern = BC_Resources::find_similar_font(*up, basefont->pattern);
-			if( pattern != 0 ) {
-				double psize = 0;
-				FcPatternGetDouble(basefont->pattern, FC_PIXEL_SIZE, 0, &psize);
-				FcPatternAddDouble(pattern, FC_PIXEL_SIZE, psize);
-				FcPatternDel(pattern, FC_SCALABLE);
-				xft_font = altfont = XftFontOpenPattern(top_level->display, pattern);
-			}
-		}
-		if( !xft_font )
-			xft_font = basefont;
-		if( xft_font != curfont ) {
-			if( curfont && up > ubp ) {
-				xft_draw_string(&xft_color, curfont, x, y,
-					(const FcChar32*)ubp, up-ubp, pixmap);
-				XGlyphInfo extents;
-				XftTextExtents32(top_level->display, curfont,
-					(const FcChar32*)ubp, up-ubp, &extents);
-				x += extents.xOff;
-			}
-			ubp = up;  curfont = xft_font;
-		}
-		++up;
-	}
-
-	if( curfont && up > ubp ) {
-		xft_draw_string(&xft_color, curfont, x, y,
-			(const FcChar32*)ubp, up-ubp, pixmap);
-	}
-
-	if( altfont )
-		XftFontClose(top_level->display, altfont);
 
 	XftColorFree(top_level->display, top_level->vis, top_level->cmap, &xft_color);
 #endif
+	return x - x0;
 }
 
 void BC_WindowBase::truncate_text(char *result, const char *text, int w)

@@ -34,8 +34,8 @@ public:
 	StatusBar(MWindow *mwindow, MWindowGUI *gui);
 	~StatusBar();
 
-	void set_message(const char *text, int color=-1);
-	void set_default_message(const char *text);
+	void show_message(const char *text, int color=-1);
+	void update_default_message();
 	void reset_default_message();
 	void default_message();
 
@@ -47,6 +47,7 @@ public:
 	BC_ProgressBar *main_progress;
 	StatusBarCancel *main_progress_cancel;
 	BC_Title *status_text;
+	int status_color;
 	char default_msg[BCTEXTLEN];
 };
 

@@ -202,7 +202,7 @@ void InterfacePrefs::create_objects()
 	y1 = y + 5;
 	y += 35;
 	add_subwindow(title = new BC_Title(x, y, _("Keyframe reticle:")));
-	x1 = x + 100;
+	x1 = x + 140;
 	keyframe_reticle = new KeyframeReticle(x1, y, &pwindow->thread->preferences->keyframe_reticle);
 	add_subwindow(keyframe_reticle);
 	keyframe_reticle->create_objects();
@@ -244,6 +244,7 @@ void InterfacePrefs::create_objects()
 	y += 25;
 	add_subwindow(new BC_Title(x, y, _("Button 1:")));
 
+	x1 = x + 100;
 	ViewBehaviourText *text;
 	add_subwindow(text = new ViewBehaviourText(x1, y - 5,
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[0]),
@@ -284,16 +285,14 @@ void InterfacePrefs::create_objects()
 	y += 30;
 	ViewTheme *theme;
 	add_subwindow(new BC_Title(x, y, _("Theme:")));
-	x += 100;
-	add_subwindow(theme = new ViewTheme(x, y, pwindow));
+	add_subwindow(theme = new ViewTheme(x1, y, pwindow));
 	theme->create_objects();
 
 	x = x0;
 	y += theme->get_h() + 5;
 	ViewPluginIcons *plugin_icons;
 	add_subwindow(new BC_Title(x, y, _("Plugin Icons:")));
-	x += 100;
-	add_subwindow(plugin_icons = new ViewPluginIcons(x, y, pwindow));
+	add_subwindow(plugin_icons = new ViewPluginIcons(x1, y, pwindow));
 	plugin_icons->create_objects();
 }
 

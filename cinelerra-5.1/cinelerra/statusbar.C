@@ -103,24 +103,25 @@ void StatusBar::resize_event()
 	flash(0);
 }
 
-void StatusBar::set_message(const char *text, int color)
+void StatusBar::show_message(const char *text, int color)
 {
 	if( color < 0 ) color = mwindow->theme->message_normal;
 	status_text->set_color(color);
 	status_text->update(text);
 }
-void StatusBar::set_default_message(const char *text)
-{
-	strcpy(default_msg, text);
-	default_message();
-}
 void StatusBar::reset_default_message()
 {
-	set_default_message(_("Welcome to cinelerra"));
+	status_color = -1;
+	strcpy(default_msg, _("Welcome to cinelerra"));
+}
+void StatusBar::update_default_message()
+{
+	status_color = status_text->get_color();
+	strcpy(default_msg, status_text->get_text());
 }
 void StatusBar::default_message()
 {
-	set_message(default_msg, mwindow->theme->message_normal);
+	show_message(default_msg, status_color);
 }
 
 StatusBarCancel::StatusBarCancel(MWindow *mwindow, int x, int y)

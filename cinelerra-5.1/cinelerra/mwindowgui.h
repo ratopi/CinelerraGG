@@ -142,11 +142,10 @@ public:
 	int menu_w();
 	int menu_h();
 // Draw on the status bar only.
-	void show_message(const char *message, int color = -1);
-	void set_default_message(const char *message);
+	void show_message(const char *message, int color=-1);
+	void update_default_message();
 	void reset_default_message();
 	void default_message();
-// Pop up a box if the statusbar is taken and show an error.
 	void show_error(char *message, int color = BLACK);
 	int repeat_event(int64_t duration);
 // Entry point for drag events in all windows

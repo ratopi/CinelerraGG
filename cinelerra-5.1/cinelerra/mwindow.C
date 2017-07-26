@@ -1529,6 +1529,7 @@ SET_TRACE
 			case FILE_NOT_FOUND:
 				sprintf(string, _("Failed to open %s"), new_asset->path);
 				gui->show_message(string, theme->message_error);
+				gui->update_default_message();
 				break;
 
 // Unknown format

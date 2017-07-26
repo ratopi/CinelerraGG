@@ -697,7 +697,7 @@ void BC_TextBox::draw(int flush)
 			int len = row_end - row_begin;
 			if( len > 0 ) {
 				set_color(enabled ? resources->text_default : DMGREY);
-				draw_wtext(text_x, k + text_ascent, wtext_row, len, 0);
+				draw_single_text(1, font, text_x, k + text_ascent, wtext_row, len);
 			}
 
 // Get ibeam location

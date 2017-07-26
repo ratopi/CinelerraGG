@@ -163,13 +163,14 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 }
 
 AssetPicon::AssetPicon(MWindow *mwindow,
-	AWindowGUI *gui, int folder)
+	AWindowGUI *gui, int folder, int persist)
  : BC_ListBoxItem(_(AWindowGUI::folder_names[folder]), gui->folder_icon)
 {
 	reset();
 	foldernum = folder;
 	this->mwindow = mwindow;
 	this->gui = gui;
+	persistent = persist;
 }
 
 AssetPicon::AssetPicon(MWindow *mwindow,
@@ -464,22 +465,19 @@ AWindowGUI::~AWindowGUI()
 	displayed_assets[1].remove_all_objects();
 
 	delete vicon_thread;
-	delete file_icon;
-	delete audio_icon;
-	delete video_icon;
-	delete folder_icon;
-	delete clip_icon;
-	delete label_icon;
-	delete atransition_icon;
-	delete vtransition_icon;
-	delete aeffect_icon;
-	delete ladspa_icon;
-	delete ladspa_vframe;
-	delete ff_aud_icon;
-	delete ff_aud_vframe;
-	delete ff_vid_icon;
-	delete ff_vid_vframe;
-	delete veffect_icon;
+	delete file_icon;         delete file_res;
+	delete audio_icon;        delete audio_res;
+	delete video_icon;        delete video_res;
+	delete folder_icon;       delete folder_res;
+	delete clip_icon;         delete clip_res;
+	delete label_icon;        delete label_res;
+	delete atransition_icon;  delete atrans_res;
+	delete vtransition_icon;  delete vtrans_res;
+	delete aeffect_icon;      delete aeffect_res;
+	delete veffect_icon;      delete veffect_res;
+	delete ladspa_icon;       delete ladspa_res;
+	delete ff_aud_icon;       delete ff_aud_res;
+	delete ff_vid_icon;       delete ff_vid_res;
 	delete newfolder_thread;
 	delete asset_menu;
 	delete clip_menu;
@@ -489,7 +487,7 @@ AWindowGUI::~AWindowGUI()
 	delete cliplist_menu;
 	delete labellist_menu;
 	delete folderlist_menu;
-	if( temp_picon ) delete temp_picon;
+	delete temp_picon;
 	delete remove_plugin;
 }
 
@@ -510,10 +508,48 @@ bool AWindowGUI::protected_pixmap(BC_Pixmap *icon)
 		icon == ff_vid_icon;
 }
 
+VFrame *AWindowGUI::get_picon(const char *name, const char *plugin_icons)
+{
+	char png_path[BCTEXTLEN];
+	char *pp = png_path, *ep = pp + sizeof(png_path)-1;
+	pp += snprintf(pp, ep-pp, "%s/picon", File::get_plugin_path());
+	if( strcmp(DEFAULT_PICON, plugin_icons) )
+		pp += snprintf(pp, ep-pp, "_%s", plugin_icons);
+	pp += snprintf(pp, ep-pp, "/%s.png", name);
+	return VFramePng::vframe_png(png_path,0,0);
+}
+
+VFrame *AWindowGUI::get_picon(const char *name)
+{
+	VFrame *vframe = get_picon(name, mwindow->preferences->plugin_icons);
+	if( !vframe ) vframe = get_picon(name, DEFAULT_PICON);
+	return vframe;
+}
+
+VFrame *AWindowGUI::resource_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn, int idx)
+{
+	VFrame *ret = vfrm = get_picon(fn);
+	if( !ret ) vfrm = BC_WindowBase::get_resources()->type_to_icon[idx];
+	icon = new BC_Pixmap(this, vfrm, PIXMAP_ALPHA);
+	return ret;
+}
+VFrame *AWindowGUI::theme_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn)
+{
+	VFrame *ret = vfrm = get_picon(fn);
+	if( !ret ) vfrm = mwindow->theme->get_image(fn);
+	icon = new BC_Pixmap(this, vfrm, PIXMAP_ALPHA);
+	return ret;
+}
+VFrame *AWindowGUI::plugin_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn, unsigned char *png)
+{
+	VFrame *ret = vfrm = get_picon(fn);
+	if( !ret ) vfrm = new VFramePng(png);
+	icon = new BC_Pixmap(this, vfrm, PIXMAP_ALPHA);
+	return vfrm;
+}
+
 void AWindowGUI::create_objects()
 {
-	AssetPicon *picon;
-
 	lock_window("AWindowGUI::create_objects");
 SET_TRACE
 //printf("AWindowGUI::create_objects 1\n");
@@ -521,64 +557,34 @@ SET_TRACE
 	asset_titles[1] = _("Comments");
 
 SET_TRACE
-
 	set_icon(mwindow->theme->get_image("awindow_icon"));
-	file_icon = new BC_Pixmap(this,
-		BC_WindowBase::get_resources()->type_to_icon[ICON_UNKNOWN],
-		PIXMAP_ALPHA);
 
-	folder_icon = new BC_Pixmap(this,
-		BC_WindowBase::get_resources()->type_to_icon[ICON_FOLDER],
-		PIXMAP_ALPHA);
+	file_res    = resource_icon(file_vframe,   file_icon,   "film_icon",   ICON_UNKNOWN);
+	folder_res  = resource_icon(folder_vframe, folder_icon, "folder_icon", ICON_FOLDER);
+	audio_res   = resource_icon(audio_vframe,  audio_icon,  "audio_icon",  ICON_SOUND);
+	video_res   = resource_icon(video_vframe,  video_icon,  "video_icon",  ICON_FILM);
+	label_res   = resource_icon(label_vframe,  label_icon,  "label_icon",  ICON_LABEL);
 
-	audio_icon = new BC_Pixmap(this,
-		BC_WindowBase::get_resources()->type_to_icon[ICON_SOUND],
-		PIXMAP_ALPHA);
+	clip_res    = theme_icon(clip_vframe,        clip_icon,        "clip_icon");
+	atrans_res  = theme_icon(atransition_vframe, atransition_icon, "atransition_icon");
+	vtrans_res  = theme_icon(vtransition_vframe, vtransition_icon, "vtransition_icon");
+	aeffect_res = theme_icon(aeffect_vframe,     aeffect_icon,     "aeffect_icon");
+	veffect_res = theme_icon(veffect_vframe,     veffect_icon,     "veffect_icon");
 
-	video_icon = new BC_Pixmap(this,
-		BC_WindowBase::get_resources()->type_to_icon[ICON_FILM],
-		PIXMAP_ALPHA);
-
-	label_icon = new BC_Pixmap(this,
-		BC_WindowBase::get_resources()->type_to_icon[ICON_LABEL],
-		PIXMAP_ALPHA);
-
-SET_TRACE
-
-	clip_vframe = mwindow->theme->get_image("clip_icon");
-	clip_icon = new BC_Pixmap(this, clip_vframe, PIXMAP_ALPHA);
-	atransition_vframe = mwindow->theme->get_image("atransition_icon");
-	atransition_icon = new BC_Pixmap(this, atransition_vframe, PIXMAP_ALPHA);
-	vtransition_vframe = mwindow->theme->get_image("vtransition_icon");
-	vtransition_icon = new BC_Pixmap(this, vtransition_vframe, PIXMAP_ALPHA);
-	aeffect_vframe = mwindow->theme->get_image("aeffect_icon");
-	aeffect_icon = new BC_Pixmap(this, aeffect_vframe, PIXMAP_ALPHA);
-	ladspa_vframe = new VFramePng(lad_picon_png);
-	ladspa_icon = new BC_Pixmap(this, ladspa_vframe, PIXMAP_ALPHA);
-	ff_aud_vframe = new VFramePng(ff_audio_png);
-	ff_aud_icon = new BC_Pixmap(this, ff_aud_vframe, PIXMAP_ALPHA);
-	ff_vid_vframe = new VFramePng(ff_video_png);
-	ff_vid_icon = new BC_Pixmap(this, ff_vid_vframe, PIXMAP_ALPHA);
-	veffect_vframe = mwindow->theme->get_image("veffect_icon");
-	veffect_icon = new BC_Pixmap(this, veffect_vframe, PIXMAP_ALPHA);
+	ladspa_res  = plugin_icon(ladspa_vframe, ladspa_icon, "lad_picon", lad_picon_png);
+	ff_aud_res  = plugin_icon(ff_aud_vframe, ff_aud_icon, "ff_audio",  ff_audio_png);
+	ff_vid_res  = plugin_icon(ff_vid_vframe, ff_vid_icon, "ff_video",  ff_video_png);
 
 SET_TRACE
 
 // Mandatory folders
-	folders.append(picon = new AssetPicon(mwindow, this, AW_AEFFECT_FOLDER));
-	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, AW_VEFFECT_FOLDER));
-	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, AW_ATRANSITION_FOLDER));
-	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, AW_VTRANSITION_FOLDER));
-	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, AW_LABEL_FOLDER));
-	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, AW_CLIP_FOLDER));
-	picon->persistent = 1;
-	folders.append(picon = new AssetPicon(mwindow, this, AW_MEDIA_FOLDER));
-	picon->persistent = 1;
+	folders.append(new AssetPicon(mwindow, this, AW_AEFFECT_FOLDER, 1));
+	folders.append(new AssetPicon(mwindow, this, AW_VEFFECT_FOLDER, 1));
+	folders.append(new AssetPicon(mwindow, this, AW_ATRANSITION_FOLDER, 1));
+	folders.append(new AssetPicon(mwindow, this, AW_VTRANSITION_FOLDER, 1));
+	folders.append(new AssetPicon(mwindow, this, AW_LABEL_FOLDER, 1));
+	folders.append(new AssetPicon(mwindow, this, AW_CLIP_FOLDER, 1));
+	folders.append(new AssetPicon(mwindow, this, AW_MEDIA_FOLDER, 1));
 
 	create_label_folder();
 SET_TRACE
@@ -947,7 +953,7 @@ void AWindowGUI::update_folder_list()
 		if( !exists ) {
 			int aw_folder = folder_number(folder);
 			AssetPicon *picon = aw_folder >= 0 ?
-				new AssetPicon(mwindow, this, aw_folder) :
+				new AssetPicon(mwindow, this, aw_folder, 0) :
 				new AssetPicon(mwindow, this, folder, AW_USER_FOLDER);
 			picon->create_objects();
 			folders.append(picon);

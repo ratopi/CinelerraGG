@@ -1071,6 +1071,7 @@ CompressorCanvas::CompressorCanvas(CompressorEffect *plugin, int x, int y, int w
 {
 	this->plugin = plugin;
 	current_operation = NONE;
+	current_point = 0;
 }
 
 int CompressorCanvas::button_press_event()
