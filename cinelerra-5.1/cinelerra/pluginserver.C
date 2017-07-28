@@ -1225,35 +1225,28 @@ Theme* PluginServer::get_theme()
 int PluginServer::get_plugin_png_path(char *png_path, const char *plugin_icons)
 {
 	char *pp = png_path, *ep = pp + BCTEXTLEN-1;
-	pp += snprintf(pp, ep-pp, "%s/picon", File::get_plugin_path());
-	if( strcmp(DEFAULT_PICON, plugin_icons) )
-		pp += snprintf(pp, ep-pp, "_%s", plugin_icons);
-	if( pp < ep ) *pp++ = '/';
+	pp += snprintf(pp, ep-pp, "%s/picon_%s/",
+		File::get_plugin_path(), plugin_icons);
 	char *cp = strrchr(path, '/');
 	cp = !cp ? path : cp+1;
 	char *sp = strrchr(cp, '.');
 	if( !sp ) sp = cp+strlen(cp);
 	while( pp < ep && cp < sp ) *pp++ = *cp++;
-	pp += snprintf(pp, ep-pp, ".png");
-	*pp = 0;
-	struct stat st;
-	if( stat(png_path, &st) ) return 0;
-	if( !S_ISREG(st.st_mode) ) return 0;
-	if( st.st_size == 0 ) return 0;
-	return st.st_size;
+	snprintf(pp, ep-pp, ".png");
+	return access(png_path,R_OK) ? 1 : 0;
 }
 
 int PluginServer::get_plugin_png_path(char *png_path)
 {
-	int len = get_plugin_png_path(png_path, mwindow->preferences->plugin_icons);
-	if( !len ) len = get_plugin_png_path(png_path, DEFAULT_PICON);
-	return len;
+	int ret = get_plugin_png_path(png_path, mwindow->preferences->plugin_icons);
+	if( ret ) ret = get_plugin_png_path(png_path, DEFAULT_PICON);
+	return ret;
 }
 
 VFrame *PluginServer::get_plugin_images()
 {
 	char png_path[BCTEXTLEN];
-	if( !get_plugin_png_path(png_path) ) return 0;
+	if( get_plugin_png_path(png_path) ) return 0;
 	return VFramePng::vframe_png(png_path,0,0);
 }
 

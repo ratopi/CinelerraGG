@@ -28,7 +28,6 @@
 #include "mwindow.h"
 #include "performanceprefs.h"
 #include "preferences.h"
-#include "probeprefs.h"
 #include <string.h>
 #include "theme.h"
 
@@ -41,13 +40,11 @@ PerformancePrefs::PerformancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
 	hot_node = -1;
-	file_probe_dialog = 0;
 }
 
 PerformancePrefs::~PerformancePrefs()
 {
 	delete brender_tools;
-	delete file_probe_dialog;
 	nodes[0].remove_all_objects();
 	nodes[1].remove_all_objects();
 	nodes[2].remove_all_objects();
@@ -58,9 +55,9 @@ void PerformancePrefs::create_objects()
 {
 	int x, y;
 	int xmargin1;
-	int xmargin2 = 170;
-	int xmargin3 = 250;
-	int xmargin4 = 380;
+	int xmargin2 = 180;
+	int xmargin3 = 260;
+	int xmargin4 = 420;
 	char string[BCTEXTLEN];
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
@@ -93,37 +90,21 @@ void PerformancePrefs::create_objects()
 
 	cache_size = new CICacheSize(maxw, y0, pwindow, this);
 	cache_size->create_objects();
-	int x1 = cache_size->get_x() + cache_size->get_w() + 30;
-	add_subwindow(file_probes = new PrefsFileProbes(pwindow, this, x1, y0));
 
 	add_subwindow(new BC_Title(x, y + 5, _("Seconds to preroll renders:")));
 	PrefsRenderPreroll *preroll = new PrefsRenderPreroll(pwindow, this, maxw, y1);
 	preroll->create_objects();
+	y += 30;
+
+	int x1 = x + xmargin4;
 	BC_Title *smp_title = new BC_Title(x1, y + 5, _("Project SMP cpus:"));
 	add_subwindow(smp_title);
 	int x2 = x1 + smp_title->get_w() + 5;
 	PrefsProjectSMP *proj_smp = new PrefsProjectSMP(pwindow, this, x2, y);
 	proj_smp->create_objects();
 
-	y += 30;
 	PrefsForceUniprocessor *force_1cpu = new PrefsForceUniprocessor(pwindow, x, y);
 	add_subwindow(force_1cpu);
-
-	x1 = force_1cpu->get_x() + force_1cpu->get_w() + 120;
-
-	PrefsTrapSigSEGV *trap_segv = new PrefsTrapSigSEGV(this, x1, y);
-	add_subwindow(trap_segv);
-	x2 = x1 + trap_segv->get_w() + 10;
-	add_subwindow(new BC_Title(x2, y, _("(must be root)"), MEDIUMFONT, RED));
-	y += 30;
-
-	PrefsTrapSigINTR *trap_intr = new PrefsTrapSigINTR(this, x1, y);
-	add_subwindow(trap_intr);
-	add_subwindow(new BC_Title(x2, y, _("(must be root)"), MEDIUMFONT, RED));
-	y += 30;
-
-	yuv420p_dvdlace = new PrefsYUV420P_DVDlace(pwindow, this, x1, y);
-	add_subwindow(yuv420p_dvdlace);
 	y += 30;
 
 // Background rendering
@@ -134,9 +115,7 @@ void PerformancePrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Background Rendering (Video only)"), LARGEFONT, resources->text_default));
 	y1 = y += 30;
 
-	win = add_subwindow(new PrefsUseBRender(pwindow,
-		x,
-		y));
+	win = add_subwindow(new PrefsUseBRender(pwindow, x, y));
 
 	y += win->get_h() + 10;
 	win = add_subwindow(new BC_Title(x, y, _("Frames per background rendering job:")));
@@ -346,29 +325,6 @@ void PerformancePrefs::update_rates()
 	update_node_list();
 }
 
-void PerformancePrefs::start_probe_dialog()
-{
-	if( !file_probe_dialog )
-		file_probe_dialog = new FileProbeDialog(pwindow);
-	file_probe_dialog->start();
-}
-
-PrefsFileProbes::PrefsFileProbes(PreferencesWindow *pwindow,
-		PerformancePrefs *perf_prefs, int x, int y)
- : BC_GenericButton(x, y, _("Probe Order"))
-{
-	this->pwindow = pwindow;
-	this->perf_prefs = perf_prefs;
-	set_tooltip(_("File Open Probe Ordering"));
-}
-
-int PrefsFileProbes::handle_event()
-{
-	perf_prefs->start_probe_dialog();
-	return 1;
-}
-
-
 
 PrefsUseBRender::PrefsUseBRender(PreferencesWindow *pwindow,
 	int x,
@@ -541,39 +497,6 @@ int PrefsForceUniprocessor::handle_event()
 	pwindow->thread->preferences->force_uniprocessor = get_value();
 	return 1;
 }
-
-PrefsTrapSigSEGV::PrefsTrapSigSEGV(PerformancePrefs *perf_prefs, int x, int y)
- : BC_CheckBox(x, y,
-	perf_prefs->pwindow->thread->preferences->trap_sigsegv,
-	_("trap sigSEGV"))
-{
-	this->perf_prefs = perf_prefs;
-}
-PrefsTrapSigSEGV::~PrefsTrapSigSEGV()
-{
-}
-int PrefsTrapSigSEGV::handle_event()
-{
-	perf_prefs->pwindow->thread->preferences->trap_sigsegv = get_value();
-	return 1;
-}
-
-PrefsTrapSigINTR::PrefsTrapSigINTR(PerformancePrefs *perf_prefs, int x, int y)
- : BC_CheckBox(x, y,
-	perf_prefs->pwindow->thread->preferences->trap_sigintr,
-	_("trap sigINT"))
-{
-	this->perf_prefs = perf_prefs;
-}
-PrefsTrapSigINTR::~PrefsTrapSigINTR()
-{
-}
-int PrefsTrapSigINTR::handle_event()
-{
-	perf_prefs->pwindow->thread->preferences->trap_sigintr = get_value();
-	return 1;
-}
-
 
 
 
@@ -926,22 +849,6 @@ PrefsRenderFarmVFS::PrefsRenderFarmVFS(PreferencesWindow *pwindow,
 int PrefsRenderFarmVFS::handle_event()
 {
 	pwindow->thread->preferences->renderfarm_vfs = get_value();
-	return 1;
-}
-
-
-PrefsYUV420P_DVDlace::PrefsYUV420P_DVDlace(PreferencesWindow *pwindow,
-	PerformancePrefs *subwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->thread->preferences->dvd_yuv420p_interlace,
-	_("Use yuv420p dvd interlace format"))
-{
-	this->pwindow = pwindow;
-	this->subwindow = subwindow;
-}
-
-int PrefsYUV420P_DVDlace::handle_event()
-{
-	pwindow->thread->preferences->dvd_yuv420p_interlace = get_value();
 	return 1;
 }
 

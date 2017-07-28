@@ -28,6 +28,7 @@
 #include "mwindow.h"
 #include "preferences.h"
 #include "preferencesthread.h"
+#include "probeprefs.h"
 #include "interfaceprefs.h"
 #include "shbtnprefs.h"
 #include "theme.h"
@@ -47,34 +48,18 @@ N_("No effect")
 InterfacePrefs::InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
-	hms = 0;
-	hmsf = 0;
-	samples = 0;
-	frames = 0;
-	hex = 0;
-	feet = 0;
 	min_db = 0;
 	max_db = 0;
-//	vu_db = 0;
-//	vu_int = 0;
-	thumbnails = 0;
 	shbtn_dialog = 0;
+	file_probe_dialog = 0;
 }
 
 InterfacePrefs::~InterfacePrefs()
 {
-	delete hms;
-	delete hmsf;
-	delete samples;
-	delete frames;
-	delete hex;
-	delete feet;
 	delete min_db;
 	delete max_db;
-//	delete vu_db;
-//	delete vu_int;
-	delete thumbnails;
 	delete shbtn_dialog;
+	delete file_probe_dialog;
 }
 
 
@@ -87,164 +72,25 @@ void InterfacePrefs::create_objects()
 	int y0 = mwindow->theme->preferencesoptions_y;
 	int x = x0, y = y0;
 
-	add_subwindow(new BC_Title(x, y, _("Time Format"), LARGEFONT,
+	add_subwindow(new BC_Title(x, y, _("Editing:"), LARGEFONT,
 		resources->text_default));
-	int x1 = get_w()/2;
-	add_subwindow(new BC_Title(x1, y, _("Flags"), LARGEFONT,
-		resources->text_default));
+	y += 35;
 
-	y += get_text_height(LARGEFONT) + 5;
-	int y1 = y;
-
-	add_subwindow(hms = new TimeFormatHMS(pwindow, this,
-		pwindow->thread->edl->session->time_format == TIME_HMS,
-		x, y));
-	y += 20;
-	add_subwindow(hmsf = new TimeFormatHMSF(pwindow, this,
-		pwindow->thread->edl->session->time_format == TIME_HMSF,
-		x, y));
-	y += 20;
-	add_subwindow(samples = new TimeFormatSamples(pwindow, this,
-		pwindow->thread->edl->session->time_format == TIME_SAMPLES,
-		x, y));
-	y += 20;
-	add_subwindow(hex = new TimeFormatHex(pwindow, this,
-		pwindow->thread->edl->session->time_format == TIME_SAMPLES_HEX,
-		x, y));
-	y += 20;
-	add_subwindow(frames = new TimeFormatFrames(pwindow, this,
-		pwindow->thread->edl->session->time_format == TIME_FRAMES,
-		x, y));
-	y += 20;
-	add_subwindow(feet = new TimeFormatFeet(pwindow, this,
-		pwindow->thread->edl->session->time_format == TIME_FEET_FRAMES,
-		x, y));
-	x += feet->get_w() + 15;
+	int x2 = get_w()/2, y2 = y;
+	x = x2;
 	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y, _("Frames per foot:")));
-	x += title->get_w() + margin;
-	sprintf(string, "%0.2f", pwindow->thread->edl->session->frames_per_foot);
-	add_subwindow(new TimeFormatFeetSetting(pwindow,
-		x, y - 5, 	string));
-	x = x0;
-	y += 20;
-	add_subwindow(seconds = new TimeFormatSeconds(pwindow, this,
-		pwindow->thread->edl->session->time_format == TIME_SECONDS,
-		x, y));
-	y += 35;
-
-	UseTipWindow *tip_win = new UseTipWindow(pwindow, x1, y1);
-	add_subwindow(tip_win);
-	y1 += tip_win->get_h() + 5;
-	UseWarnIndecies *idx_win = new UseWarnIndecies(pwindow, x1, y1);
-	add_subwindow(idx_win);
-	y1 += idx_win->get_h() + 5;
-	UseWarnVersion *ver_win = new UseWarnVersion(pwindow, x1, y1);
-	add_subwindow(ver_win);
-	y1 += ver_win->get_h() + 5;
-	BD_WarnRoot *bdwr_win = new BD_WarnRoot(pwindow, x1, y1);
-	add_subwindow(bdwr_win);
-	y1 += bdwr_win->get_h() + 5;
-	PopupMenuBtnup *pop_win = new PopupMenuBtnup(pwindow, x1, y1);
-	add_subwindow(pop_win);
-	y1 += pop_win->get_h() + 5;
-	ActivateFocusPolicy *focus_activate = new ActivateFocusPolicy(pwindow, x1, y1);
-	add_subwindow(focus_activate);
-	y1 += focus_activate->get_h() + 5;
-	DeactivateFocusPolicy *focus_deactivate = new DeactivateFocusPolicy(pwindow, x1, y1);
-	add_subwindow(focus_deactivate);
-	y1 += focus_deactivate->get_h() + 5;
-
-	if( y < y1 ) y = y1;
-	y += 10;
-
-	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
-	y += 5;
-
-	add_subwindow(new BC_Title(x, y, _("Index files"), LARGEFONT, resources->text_default));
-	add_subwindow(ffmpeg_marker_files = new IndexFFMPEGMarkerFiles(this, x1, y));
-
-
-	y += 30;
-	add_subwindow(new BC_Title(x, y + 5,
-		_("Index files go here:"), MEDIUMFONT, resources->text_default));
-	add_subwindow(ipathtext = new IndexPathText(x + 230, y,
-		pwindow,
-		pwindow->thread->preferences->index_directory));
-	add_subwindow(ipath = new BrowseButton(mwindow->theme, this, ipathtext,
-		x1 = x + 230 + ipathtext->get_w(), y,
-		pwindow->thread->preferences->index_directory,
-		_("Index Path"),
-		_("Select the directory for index files"),
-		1));
-
-	y += 30;
-	add_subwindow(new BC_Title(x, y + 5,
-		_("Size of index file:"),
-		MEDIUMFONT,
-		resources->text_default));
-	sprintf(string, "%jd", pwindow->thread->preferences->index_size);
-	add_subwindow(isize = new IndexSize(x + 230, y, pwindow, string));
-	add_subwindow(new ScanCommercials(pwindow, 350,y));
-	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, _("Number of index files to keep:"), MEDIUMFONT, resources->text_default));
-	sprintf(string, "%ld", (long)pwindow->thread->preferences->index_count);
-	add_subwindow(icount = new IndexCount(x + 230, y, pwindow, string));
-	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow, 350, y));
-
-
-	y += 35;
-	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
-	y += 5;
-
-	add_subwindow(new BC_Title(x, y, _("Editing"), LARGEFONT, resources->text_default));
-
-	y1 = y + 5;
-	y += 35;
 	add_subwindow(title = new BC_Title(x, y, _("Keyframe reticle:")));
-	x1 = x + 140;
-	keyframe_reticle = new KeyframeReticle(x1, y, &pwindow->thread->preferences->keyframe_reticle);
+	y += 25;
+	keyframe_reticle = new KeyframeReticle(x, y, &pwindow->thread->preferences->keyframe_reticle);
 	add_subwindow(keyframe_reticle);
 	keyframe_reticle->create_objects();
 
-	int x2 = x + 400, y2 = y;
-	add_subwindow(thumbnails = new ViewThumbnails(x2, y1, pwindow));
-	AndroidRemote *android_remote = new AndroidRemote(pwindow, x2, y2);
-	add_subwindow(android_remote);
-	y2 += android_remote->get_h() + 10;
-	add_subwindow(title = new BC_Title(x2, y2, _("Port:")));
-	int x3 = x2 + title->get_w() + margin;
-	AndroidPort *android_port = new AndroidPort(pwindow, x3, y2);
-	add_subwindow(android_port);
-	y2 += title->get_h() + 10;
-	add_subwindow(title = new BC_Title(x2, y2, _("PIN:")));
-	AndroidPIN *android_pin = new AndroidPIN(pwindow, x3, y2);
-	add_subwindow(android_pin);
-
-	y2 += title->get_h() + 30;
-	ShBtnPrefs *shbtn_prefs = new ShBtnPrefs(pwindow, this, x2, y2);
-	add_subwindow(shbtn_prefs);
-
-	y2 += shbtn_prefs->get_h() + 30;
-	StillImageUseDuration *use_stduration = new StillImageUseDuration(pwindow,
-		pwindow->thread->edl->session->si_useduration, x2, y2);
-	add_subwindow(use_stduration);
-	int tw = 0, th = 0;
-	BC_CheckBox::calculate_extents(this, &tw, &th, 0, 0);
-	x2 += tw + 3;
-	y2 += use_stduration->get_h() + 3;
-	StillImageDuration *stduration = new StillImageDuration(pwindow, x2, y2);
-	add_subwindow(stduration);
-	x2 += stduration->get_w() + 10;
-	y2 += 3;
-	add_subwindow(new BC_Title(x2, y2, _("Seconds")));
-
-	y += 35;
+	x = x0;  y = y2;
 	add_subwindow(new BC_Title(x, y, _("Clicking on edit boundaries does what:")));
 	y += 25;
 	add_subwindow(new BC_Title(x, y, _("Button 1:")));
 
-	x1 = x + 100;
+	int x1 = x + 100;
 	ViewBehaviourText *text;
 	add_subwindow(text = new ViewBehaviourText(x1, y - 5,
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[0]),
@@ -261,39 +107,118 @@ void InterfacePrefs::create_objects()
 	text->create_objects();
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Button 3:")));
-	add_subwindow(text = new ViewBehaviourText(x1,
-		y - 5,
+	add_subwindow(text = new ViewBehaviourText(x1, y - 5,
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[2]),
 			pwindow,
 			&(pwindow->thread->edl->session->edit_handle_mode[2])));
 	text->create_objects();
+	y += text->get_h() + 30;
 
-	y += 40;
+	x = x0;
+	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	y += 5;
+	add_subwindow(new BC_Title(x, y, _("Operation:"), LARGEFONT,
+		resources->text_default));
+	y += 35;
 
+	int y1 = y;
+	AndroidRemote *android_remote = new AndroidRemote(pwindow, x2, y);
+	add_subwindow(android_remote);
+	y += android_remote->get_h() + 10;
+	add_subwindow(title = new BC_Title(x2, y, _("Port:")));
+	int x3 = x2 + title->get_w() + margin;
+	AndroidPort *android_port = new AndroidPort(pwindow, x3, y);
+	add_subwindow(android_port);
+	y += title->get_h() + 10;
+	add_subwindow(title = new BC_Title(x2, y, _("PIN:")));
+	AndroidPIN *android_pin = new AndroidPIN(pwindow, x3, y);
+	add_subwindow(android_pin);
+	y += title->get_h() + 30;
+
+	ShBtnPrefs *shbtn_prefs = new ShBtnPrefs(pwindow, this, x2, y);
+	add_subwindow(shbtn_prefs);
+	y += shbtn_prefs->get_h() + 30;
+
+	y2 = y;
+	x = x0;  y = y1;
+	add_subwindow(file_probes = new PrefsFileProbes(pwindow, this, x, y));
+	y += 30;
+
+	PrefsTrapSigSEGV *trap_segv = new PrefsTrapSigSEGV(this, x, y);
+	add_subwindow(trap_segv);
+	x1 = x + trap_segv->get_w() + 10;
+	add_subwindow(new BC_Title(x1, y, _("(must be root)"), MEDIUMFONT, RED));
+	y += 30;
+
+	PrefsTrapSigINTR *trap_intr = new PrefsTrapSigINTR(this, x, y);
+	add_subwindow(trap_intr);
+	add_subwindow(new BC_Title(x1, y, _("(must be root)"), MEDIUMFONT, RED));
+	y += 30;
+
+	yuv420p_dvdlace = new PrefsYUV420P_DVDlace(pwindow, this, x, y);
+	add_subwindow(yuv420p_dvdlace);
+	y += 30;
+
+	if( y2 > y ) y = y2;
 	add_subwindow(title = new BC_Title(x, y + 5, _("Min DB for meter:")));
 	x += title->get_w() + 10;
 	sprintf(string, "%d", pwindow->thread->edl->session->min_meter_db);
 	add_subwindow(min_db = new MeterMinDB(pwindow, string, x, y));
-
 	x += min_db->get_w() + 10;
 	add_subwindow(title = new BC_Title(x, y + 5, _("Max DB:")));
 	x += title->get_w() + 10;
 	sprintf(string, "%d", pwindow->thread->edl->session->max_meter_db);
 	add_subwindow(max_db = new MeterMaxDB(pwindow, string, x, y));
-
-	x = x0;
 	y += 30;
-	ViewTheme *theme;
-	add_subwindow(new BC_Title(x, y, _("Theme:")));
-	add_subwindow(theme = new ViewTheme(x1, y, pwindow));
-	theme->create_objects();
 
-	x = x0;
-	y += theme->get_h() + 5;
-	ViewPluginIcons *plugin_icons;
-	add_subwindow(new BC_Title(x, y, _("Plugin Icons:")));
-	add_subwindow(plugin_icons = new ViewPluginIcons(x1, y, pwindow));
-	plugin_icons->create_objects();
+	StillImageUseDuration *use_stduration = new StillImageUseDuration(pwindow,
+		pwindow->thread->edl->session->si_useduration, x2, y2);
+	add_subwindow(use_stduration);
+	int tw = 0, th = 0;
+	BC_CheckBox::calculate_extents(this, &tw, &th, 0, 0);
+	x2 += tw + 3;
+	y2 += use_stduration->get_h() + 3;
+	StillImageDuration *stduration = new StillImageDuration(pwindow, x2, y2);
+	add_subwindow(stduration);
+	x2 += stduration->get_w() + 10;
+	y2 += 3;
+	add_subwindow(new BC_Title(x2, y2, _("Seconds")));
+	y2 += 30;
+
+	x = x0;  y = y2;
+	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	y += 5;
+
+
+	add_subwindow(new BC_Title(x, y, _("Index files:"), LARGEFONT, resources->text_default));
+	y += 30;
+
+	add_subwindow(new BC_Title(x, y + 5,
+		_("Index files go here:"), MEDIUMFONT, resources->text_default));
+	x1 = x + 230;
+	add_subwindow(ipathtext = new IndexPathText(x1, y, pwindow,
+		pwindow->thread->preferences->index_directory));
+	x1 +=  ipathtext->get_w();
+	add_subwindow(ipath = new BrowseButton(mwindow->theme, this, ipathtext, x1, y,
+		pwindow->thread->preferences->index_directory,
+		_("Index Path"), _("Select the directory for index files"), 1));
+
+	y += 30;
+	add_subwindow(new BC_Title(x, y + 5, _("Size of index file:"),
+		MEDIUMFONT, resources->text_default));
+	sprintf(string, "%jd", pwindow->thread->preferences->index_size);
+	add_subwindow(isize = new IndexSize(x + 230, y, pwindow, string));
+	add_subwindow(new ScanCommercials(pwindow, 400,y));
+
+	y += 30;
+	add_subwindow(new BC_Title(x, y + 5, _("Number of index files to keep:"),
+		MEDIUMFONT, resources->text_default));
+	sprintf(string, "%ld", (long)pwindow->thread->preferences->index_count);
+	add_subwindow(icount = new IndexCount(x + 230, y, pwindow, string));
+	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow, 400, y));
+	y += 30;
+	add_subwindow(ffmpeg_marker_files = new IndexFFMPEGMarkerFiles(this, x, y));
+	y += 35;
 }
 
 const char* InterfacePrefs::behavior_to_text(int mode)
@@ -307,27 +232,7 @@ const char* InterfacePrefs::behavior_to_text(int mode)
 	}
 }
 
-int InterfacePrefs::update(int new_value)
-{
-	pwindow->thread->redraw_times = 1;
-	pwindow->thread->edl->session->time_format = new_value;
-	hms->update(new_value == TIME_HMS);
-	hmsf->update(new_value == TIME_HMSF);
-	samples->update(new_value == TIME_SAMPLES);
-	hex->update(new_value == TIME_SAMPLES_HEX);
-	frames->update(new_value == TIME_FRAMES);
-	feet->update(new_value == TIME_FEET_FRAMES);
-	seconds->update(new_value == TIME_SECONDS);
-	return 0;
-}
-
-
-
-
-IndexPathText::IndexPathText(int x,
-	int y,
-	PreferencesWindow *pwindow,
-	char *text)
+IndexPathText::IndexPathText(int x, int y, PreferencesWindow *pwindow, char *text)
  : BC_TextBox(x, y, 240, 1, text)
 {
 	this->pwindow = pwindow;
@@ -344,10 +249,7 @@ int IndexPathText::handle_event()
 
 
 
-IndexSize::IndexSize(int x,
-	int y,
-	PreferencesWindow *pwindow,
-	char *text)
+IndexSize::IndexSize(int x, int y, PreferencesWindow *pwindow, char *text)
  : BC_TextBox(x, y, 100, 1, text)
 {
 	this->pwindow = pwindow;
@@ -366,10 +268,7 @@ int IndexSize::handle_event()
 
 
 
-IndexCount::IndexCount(int x,
-	int y,
-	PreferencesWindow *pwindow,
-	char *text)
+IndexCount::IndexCount(int x, int y, PreferencesWindow *pwindow, char *text)
  : BC_TextBox(x, y, 100, 1, text)
 {
 	this->pwindow = pwindow;
@@ -405,98 +304,7 @@ int IndexFFMPEGMarkerFiles::handle_event()
 }
 
 
-
-TimeFormatHMS::TimeFormatHMS(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, TIME_HMS_TEXT)
-{ this->pwindow = pwindow; this->tfwindow = tfwindow; }
-
-int TimeFormatHMS::handle_event()
-{
-	tfwindow->update(TIME_HMS);
-	return 1;
-}
-
-TimeFormatHMSF::TimeFormatHMSF(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, TIME_HMSF_TEXT)
-{ this->pwindow = pwindow; this->tfwindow = tfwindow; }
-
-int TimeFormatHMSF::handle_event()
-{
-	tfwindow->update(TIME_HMSF);
-	return 1;
-}
-
-TimeFormatSamples::TimeFormatSamples(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, TIME_SAMPLES_TEXT)
-{ this->pwindow = pwindow; this->tfwindow = tfwindow; }
-
-int TimeFormatSamples::handle_event()
-{
-	tfwindow->update(TIME_SAMPLES);
-	return 1;
-}
-
-TimeFormatFrames::TimeFormatFrames(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, TIME_FRAMES_TEXT)
-{ this->pwindow = pwindow; this->tfwindow = tfwindow; }
-
-int TimeFormatFrames::handle_event()
-{
-	tfwindow->update(TIME_FRAMES);
-	return 1;
-}
-
-TimeFormatHex::TimeFormatHex(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, TIME_SAMPLES_HEX_TEXT)
-{ this->pwindow = pwindow; this->tfwindow = tfwindow; }
-
-int TimeFormatHex::handle_event()
-{
-	tfwindow->update(TIME_SAMPLES_HEX);
-	return 1;
-}
-
-TimeFormatSeconds::TimeFormatSeconds(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, TIME_SECONDS_TEXT)
-{
-	this->pwindow = pwindow;
-	this->tfwindow = tfwindow;
-}
-
-int TimeFormatSeconds::handle_event()
-{
-	tfwindow->update(TIME_SECONDS);
-	return 1;
-}
-
-TimeFormatFeet::TimeFormatFeet(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, TIME_FEET_FRAMES_TEXT)
-{ this->pwindow = pwindow; this->tfwindow = tfwindow; }
-
-int TimeFormatFeet::handle_event()
-{
-	tfwindow->update(TIME_FEET_FRAMES);
-	return 1;
-}
-
-TimeFormatFeetSetting::TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, char *string)
- : BC_TextBox(x, y, 90, 1, string)
-{ this->pwindow = pwindow; }
-
-int TimeFormatFeetSetting::handle_event()
-{
-	pwindow->thread->edl->session->frames_per_foot = atof(get_text());
-	if(pwindow->thread->edl->session->frames_per_foot < 1) pwindow->thread->edl->session->frames_per_foot = 1;
-	return 0;
-}
-
-
-
-
-ViewBehaviourText::ViewBehaviourText(int x,
-	int y,
-	const char *text,
-	PreferencesWindow *pwindow,
+ViewBehaviourText::ViewBehaviourText(int x, int y, const char *text, PreferencesWindow *pwindow,
 	int *output)
  : BC_PopupMenu(x, y, 200, text)
 {
@@ -514,7 +322,6 @@ int ViewBehaviourText::handle_event()
 
 void ViewBehaviourText::create_objects()
 {
-// Video4linux versions are automatically detected
 	add_item(new ViewBehaviourItem(this, _(MOVE_ALL_EDITS_TITLE), MOVE_ALL_EDITS));
 	add_item(new ViewBehaviourItem(this, _(MOVE_ONE_EDIT_TITLE), MOVE_ONE_EDIT));
 	add_item(new ViewBehaviourItem(this, _(MOVE_NO_EDITS_TITLE), MOVE_NO_EDITS));
@@ -541,8 +348,6 @@ int ViewBehaviourItem::handle_event()
 }
 
 
-
-
 MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, char *text, int x, int y)
  : BC_TextBox(x, y, 50, 1, text)
 {
@@ -557,8 +362,6 @@ int MeterMinDB::handle_event()
 }
 
 
-
-
 MeterMaxDB::MeterMaxDB(PreferencesWindow *pwindow, char *text, int x, int y)
  : BC_TextBox(x, y, 50, 1, text)
 {
@@ -571,245 +374,6 @@ int MeterMaxDB::handle_event()
 	pwindow->thread->edl->session->max_meter_db = atol(get_text());
 	return 0;
 }
-
-
-
-
-
-MeterVUDB::MeterVUDB(PreferencesWindow *pwindow, char *text, int y)
- : BC_Radial(145, y, pwindow->thread->edl->session->meter_format == METER_DB, text)
-{
-	this->pwindow = pwindow;
-}
-
-int MeterVUDB::handle_event()
-{
-	pwindow->thread->redraw_meters = 1;
-//	vu_int->update(0);
-	pwindow->thread->edl->session->meter_format = METER_DB;
-	return 1;
-}
-
-MeterVUInt::MeterVUInt(PreferencesWindow *pwindow, char *text, int y)
- : BC_Radial(205, y, pwindow->thread->edl->session->meter_format == METER_INT, text)
-{
-	this->pwindow = pwindow;
-}
-
-int MeterVUInt::handle_event()
-{
-	pwindow->thread->redraw_meters = 1;
-	vu_db->update(0);
-	pwindow->thread->edl->session->meter_format = METER_INT;
-	return 1;
-}
-
-
-
-
-ViewTheme::ViewTheme(int x, int y, PreferencesWindow *pwindow)
- : BC_PopupMenu(x, y, 200, pwindow->thread->preferences->theme, 1)
-{
-	this->pwindow = pwindow;
-}
-ViewTheme::~ViewTheme()
-{
-}
-
-void ViewTheme::create_objects()
-{
-	ArrayList<PluginServer*> themes;
-	MWindow::search_plugindb(0, 0, 0, 0, 1, themes);
-
-	for(int i = 0; i < themes.total; i++) {
-		add_item(new ViewThemeItem(this, themes.values[i]->title));
-	}
-}
-
-int ViewTheme::handle_event()
-{
-	return 1;
-}
-
-ViewThemeItem::ViewThemeItem(ViewTheme *popup, const char *text)
- : BC_MenuItem(text)
-{
-	this->popup = popup;
-}
-
-int ViewThemeItem::handle_event()
-{
-	popup->set_text(get_text());
-	strcpy(popup->pwindow->thread->preferences->theme, get_text());
-	popup->handle_event();
-	return 1;
-}
-
-
-ViewPluginIcons::ViewPluginIcons(int x, int y, PreferencesWindow *pwindow)
- : BC_PopupMenu(x, y, 200, pwindow->thread->preferences->plugin_icons, 1)
-{
-	this->pwindow = pwindow;
-}
-ViewPluginIcons::~ViewPluginIcons()
-{
-}
-
-void ViewPluginIcons::create_objects()
-{
-	add_item(new ViewPluginIconItem(this, DEFAULT_PICON));
-	FileSystem fs;
-	const char *plugin_path = File::get_plugin_path();
-	fs.update(plugin_path);
-	if( fs.update(plugin_path) ) return;
-	for( int i=0; i<fs.dir_list.total; ++i ) {
-		char *fs_path = fs.dir_list[i]->path;
-		if( !fs.is_dir(fs_path) ) continue;
-		char *cp = strrchr(fs_path,'/');
-		cp = !cp ? fs_path : cp+1;
-		if( strncmp("picon_", cp, 6) ) continue;
-		cp += 6;
-		add_item(new ViewPluginIconItem(this, cp));
-	}
-}
-
-int ViewPluginIcons::handle_event()
-{
-	return 1;
-}
-
-ViewPluginIconItem::ViewPluginIconItem(ViewPluginIcons *popup, const char *text)
- : BC_MenuItem(text)
-{
-	this->popup = popup;
-}
-
-int ViewPluginIconItem::handle_event()
-{
-	popup->set_text(get_text());
-	strcpy(popup->pwindow->thread->preferences->plugin_icons, get_text());
-	popup->handle_event();
-	return 1;
-}
-
-
-ViewThumbnails::ViewThumbnails(int x,
-	int y,
-	PreferencesWindow *pwindow)
- : BC_CheckBox(x,
- 	y,
-	pwindow->thread->preferences->use_thumbnails, _("Use thumbnails in resource window"))
-{
-	this->pwindow = pwindow;
-}
-
-int ViewThumbnails::handle_event()
-{
-	pwindow->thread->preferences->use_thumbnails = get_value();
-	return 1;
-}
-
-
-
-UseTipWindow::UseTipWindow(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x,
- 	y,
-	pwindow->thread->preferences->use_tipwindow,
-	_("Show tip of the day"))
-{
-	this->pwindow = pwindow;
-}
-int UseTipWindow::handle_event()
-{
-	pwindow->thread->preferences->use_tipwindow = get_value();
-	return 1;
-}
-
-
-UseWarnIndecies::UseWarnIndecies(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->thread->preferences->warn_indexes,
-	_("ffmpeg probe warns rebuild indexes"))
-{
-	this->pwindow = pwindow;
-}
-
-int UseWarnIndecies::handle_event()
-{
-	pwindow->thread->preferences->warn_indexes = get_value();
-	return 1;
-}
-
-UseWarnVersion::UseWarnVersion(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->thread->preferences->warn_version,
-	_("EDL version warns if mismatched"))
-{
-	this->pwindow = pwindow;
-}
-
-int UseWarnVersion::handle_event()
-{
-	pwindow->thread->preferences->warn_version = get_value();
-	return 1;
-}
-
-BD_WarnRoot::BD_WarnRoot(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->thread->preferences->bd_warn_root,
-	_("Create Bluray warns if not root"))
-{
-	this->pwindow = pwindow;
-}
-
-int BD_WarnRoot::handle_event()
-{
-	pwindow->thread->preferences->bd_warn_root = get_value();
-	return 1;
-}
-
-PopupMenuBtnup::PopupMenuBtnup(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->thread->preferences->popupmenu_btnup,
-	_("Popups activate on button up"))
-{
-	this->pwindow = pwindow;
-}
-
-int PopupMenuBtnup::handle_event()
-{
-	pwindow->thread->preferences->popupmenu_btnup = get_value();
-	return 1;
-}
-
-ActivateFocusPolicy::ActivateFocusPolicy(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, (pwindow->thread->preferences->textbox_focus_policy & CLICK_ACTIVATE) != 0,
-	_("Click to activate text focus"))
-{
-	this->pwindow = pwindow;
-}
-
-int ActivateFocusPolicy::handle_event()
-{
-	if( get_value() )
-		pwindow->thread->preferences->textbox_focus_policy |= CLICK_ACTIVATE;
-	else
-		pwindow->thread->preferences->textbox_focus_policy &= ~CLICK_ACTIVATE;
-	return 1;
-}
-
-DeactivateFocusPolicy::DeactivateFocusPolicy(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, (pwindow->thread->preferences->textbox_focus_policy & CLICK_DEACTIVATE) != 0,
-	_("Click to deactivate text focus"))
-{
-	this->pwindow = pwindow;
-}
-
-int DeactivateFocusPolicy::handle_event()
-{
-	if( get_value() )
-		pwindow->thread->preferences->textbox_focus_policy |= CLICK_DEACTIVATE;
-	else
-		pwindow->thread->preferences->textbox_focus_policy &= ~CLICK_DEACTIVATE;
-	return 1;
-}
-
 
 
 ScanCommercials::ScanCommercials(PreferencesWindow *pwindow, int x, int y)
@@ -962,5 +526,76 @@ void KeyframeReticle::create_objects()
 	add_item(new HairlineItem(this, HAIRLINE_NEVER));
 	add_item(new HairlineItem(this, HAIRLINE_DRAGGING));
 	add_item(new HairlineItem(this, HAIRLINE_ALWAYS));
+}
+
+PrefsTrapSigSEGV::PrefsTrapSigSEGV(InterfacePrefs *subwindow, int x, int y)
+ : BC_CheckBox(x, y,
+	subwindow->pwindow->thread->preferences->trap_sigsegv,
+	_("trap sigSEGV"))
+{
+	this->subwindow = subwindow;
+}
+PrefsTrapSigSEGV::~PrefsTrapSigSEGV()
+{
+}
+int PrefsTrapSigSEGV::handle_event()
+{
+	subwindow->pwindow->thread->preferences->trap_sigsegv = get_value();
+	return 1;
+}
+
+PrefsTrapSigINTR::PrefsTrapSigINTR(InterfacePrefs *subwindow, int x, int y)
+ : BC_CheckBox(x, y,
+	subwindow->pwindow->thread->preferences->trap_sigintr,
+	_("trap sigINT"))
+{
+	this->subwindow = subwindow;
+}
+PrefsTrapSigINTR::~PrefsTrapSigINTR()
+{
+}
+int PrefsTrapSigINTR::handle_event()
+{
+	subwindow->pwindow->thread->preferences->trap_sigintr = get_value();
+	return 1;
+}
+
+
+void InterfacePrefs::start_probe_dialog()
+{
+	if( !file_probe_dialog )
+		file_probe_dialog = new FileProbeDialog(pwindow);
+	file_probe_dialog->start();
+}
+
+PrefsFileProbes::PrefsFileProbes(PreferencesWindow *pwindow,
+		InterfacePrefs *subwindow, int x, int y)
+ : BC_GenericButton(x, y, _("Probe Order"))
+{
+	this->pwindow = pwindow;
+	this->subwindow = subwindow;
+	set_tooltip(_("File Open Probe Ordering"));
+}
+
+int PrefsFileProbes::handle_event()
+{
+	subwindow->start_probe_dialog();
+	return 1;
+}
+
+
+PrefsYUV420P_DVDlace::PrefsYUV420P_DVDlace(PreferencesWindow *pwindow,
+	InterfacePrefs *subwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->dvd_yuv420p_interlace,
+	_("Use yuv420p dvd interlace format"))
+{
+	this->pwindow = pwindow;
+	this->subwindow = subwindow;
+}
+
+int PrefsYUV420P_DVDlace::handle_event()
+{
+	pwindow->thread->preferences->dvd_yuv420p_interlace = get_value();
+	return 1;
 }
 

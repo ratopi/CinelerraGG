@@ -19,31 +19,29 @@
  *
  */
 
-#ifndef PERFORMANCEPREFS_INC
-#define PERFORMANCEPREFS_INC
+#ifndef APPEARANCEPREFS_INC
+#define APPEARANCEPREFS_INC
 
-class PerformancePrefs;
-class PrefsUseBRender;
-class PrefsBRenderFragment;
-class PrefsRenderPreroll;
-class PrefsBRenderPreroll;
-class PrefsForceUniprocessor;
-class PrefsTrapSigSEGV;
-class PrefsTrapSigINTR;
-class PrefsFFMPEGMarkerIndecies;
-class PrefsRenderFarm;
-class PrefsRenderFarmConsolidate;
-class PrefsRenderFarmPort;
-class PrefsRenderFarmJobs;
-class PrefsRenderFarmMountpoint;
-class PrefsRenderFarmVFS;
-class PrefsRenderFarmNodes;
-class PrefsRenderFarmEditNode;
-class PrefsRenderFarmNewNode;
-class PrefsRenderFarmReplaceNode;
-class PrefsRenderFarmDelNode;
-class PrefsRenderFarmSortNodes;
-class PrefsRenderFarmReset;
-class CICacheSize;
+class AppearancePrefs;
+class TimeFormatHMS;
+class TimeFormatHMSF;
+class TimeFormatSamples;
+class TimeFormatFrames;
+class TimeFormatHex;
+class TimeFormatFeet;
+class TimeFormatSeconds;
+class TimeFormatFeetSetting;
+class ViewTheme;
+class ViewThemeItem;
+class ViewPluginIcons;
+class ViewPluginIconItem;
+class ViewThumbnails;
+class UseTipWindow;
+class UseWarnIndecies;
+class UseWarnVersion;
+class BD_WarnRoot;
+class PopupMenuBtnup;
+class ActivateFocusPolicy;
+class DeactivateFocusPolicy;
 
 #endif

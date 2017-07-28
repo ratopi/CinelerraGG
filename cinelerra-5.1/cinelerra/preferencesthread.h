@@ -75,7 +75,7 @@ public:
 	EDL *edl;
 
 // Categories
-#define CATEGORIES 6
+#define CATEGORIES 7
 	enum
 	{
 		PLAYBACK_A,
@@ -83,6 +83,7 @@ public:
 		RECORD,
 		PERFORMANCE,
 		INTERFACE,
+		APPEARANCE,
 		ABOUT
 	};
 };

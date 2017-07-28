@@ -315,8 +315,8 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	trap_sigintr = defaults->get("TRAP_SIGINTR", trap_sigintr);
 
 	strcpy(theme, DEFAULT_THEME);
-	defaults->get("THEME", theme);
 	strcpy(plugin_icons, DEFAULT_PICON);
+	defaults->get("THEME", theme);
 	defaults->get("PLUGIN_ICONS", plugin_icons);
 
 	for(int i = 0; i < MAXCHANNELS; i++)

@@ -23,8 +23,8 @@
 #define MWINDOW_INC
 
 #define PROGRAM_NAME "Cinelerra"
-#define DEFAULT_THEME "S.U.V."
-#define DEFAULT_PICON "picon"
+#define DEFAULT_THEME "UnFlat"
+#define DEFAULT_PICON "cinfinity"
 #define CONFIG_FILE "Cinelerra_rc"
 #define PRESETS_FILE "Cinelerra_presets"
 #define PICTURE_FILE "Cinelerra_picture"

@@ -20,6 +20,7 @@
  */
 
 #include "aboutprefs.h"
+#include "appearanceprefs.h"
 #include "asset.h"
 #include "audiodevice.inc"
 #include "bcsignals.h"
@@ -62,8 +63,8 @@
 
 
 
-#define WIDTH 770
-#define HEIGHT 740
+#define WIDTH 800
+#define HEIGHT 700
 
 
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
@@ -341,6 +342,8 @@ const char* PreferencesThread::category_to_text(int category)
 			return _("Performance");
 		case INTERFACE:
 			return _("Interface");
+		case APPEARANCE:
+			return _("Appearance");
 		case ABOUT:
 			return _("About");
 	}
@@ -409,11 +412,7 @@ void PreferencesWindow::create_objects()
 	for(int i = 0; i < CATEGORIES; i++)
 	{
 		add_subwindow(category_button[i] = new PreferencesButton(mwindow,
-			thread,
-			x,
-			y,
-			i,
-			thread->category_to_text(i),
+			thread, x, y, i, thread->category_to_text(i),
 			(i == thread->current_dialog) ?
 				mwindow->theme->get_image_set("category_button_checked") :
 				mwindow->theme->get_image_set("category_button")));
@@ -517,6 +516,10 @@ int PreferencesWindow::set_current_dialog(int number)
 
 		case PreferencesThread::INTERFACE:
 			add_subwindow(dialog = new InterfacePrefs(mwindow, this));
+			break;
+
+		case PreferencesThread::APPEARANCE:
+			add_subwindow(dialog = new AppearancePrefs(mwindow, this));
 			break;
 
 		case PreferencesThread::ABOUT:

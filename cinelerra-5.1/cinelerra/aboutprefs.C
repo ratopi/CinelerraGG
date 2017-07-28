@@ -96,7 +96,7 @@ void AboutPrefs::create_objects()
 			about.append(new BC_ListBoxItem(msg));
 		}
 		BC_ListBox *listbox;
-		add_subwindow(listbox = new BC_ListBox(x, y, 300, 280,
+		add_subwindow(listbox = new BC_ListBox(x, y, 450, 280,
 			LISTBOX_TEXT, &about, 0, 0, 1));
 		y += listbox->get_h() + get_text_height(LARGEFONT) + 10;
 	}

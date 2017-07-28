@@ -22,7 +22,8 @@ clean:
 
 install:
 	for dir in $(SUBDIRS); do $(MAKE) -C $$dir install; done
-	cp -a COPYING README models ffmpeg msg.txt bin/.
+	cp -a COPYING README models ffmpeg msg info tips bin/.
+	for d in picon*; do cp -a $$d/. bin/plugins/$$d/.; done
 
 rebuild:
 	$(MAKE) -C guicast clean
@@ -31,6 +32,7 @@ rebuild:
 	+$(MAKEJ) -C guicast
 	+$(MAKEJ) -C cinelerra
 	+$(MAKEJ) -C plugins
+	$(MAKE) install
 
 rebuild_all:
 	$(MAKE) -C libzmpeg3 clean

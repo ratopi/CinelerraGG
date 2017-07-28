@@ -23,5 +23,26 @@
 #define INTERFACEPREFS_INC
 
 class InterfacePrefs;
+class IndexPathText;
+class IndexSize;
+class IndexCount;
+class ViewBehaviourText;
+class ViewBehaviourItem;
+class MeterMinDB;
+class MeterMaxDB;
+class ScanCommercials;
+class AndroidRemote;
+class AndroidPIN;
+class AndroidPort;
+class ShBtnPrefs;
+class StillImageUseDuration;
+class StillImageDuration;
+class KeyframeReticle;
+class HairlineItem;
+class IndexFFMPEGMarkerFiles;
+class PrefsTrapSigSEGV;
+class PrefsTrapSigINTR;
+class PrefsFileProbes;
+class PrefsYUV420P_DVDlace;
 
 #endif

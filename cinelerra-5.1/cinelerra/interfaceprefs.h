@@ -22,51 +22,12 @@
 #ifndef INTERFACEPREFS_H
 #define INTERFACEPREFS_H
 
-class InterfacePrefs;
-class IndexPathText;
-class IndexSize;
-class IndexCount;
-class TimeFormatHMS;
-class TimeFormatHMSF;
-class TimeFormatSamples;
-class TimeFormatFrames;
-class TimeFormatHex;
-class TimeFormatFeet;
-class TimeFormatSeconds;
-class TimeFormatFeetSetting;
-class MeterMinDB;
-class MeterMaxDB;
-class MeterVUDB;
-class MeterVUInt;
-class ViewBehaviourText;
-class ViewBehaviourItem;
-class ViewTheme;
-class ViewThemeItem;
-class ViewPluginIcons;
-class ViewPluginIconItem;
-class ViewThumbnails;
-class UseTipWindow;
-class UseWarnIndecies;
-class UseWarnVersion;
-class BD_WarnRoot;
-class ScanCommercials;
-class AndroidRemote;
-class PopupMenuBtnup;
-class ActivateFocusPolicy;
-class DeactivateFocusPolicy;
-class AndroidPIN;
-class AndroidPort;
-class ShBtnPrefs;
-class StillImageUseDuration;
-class StillImageDuration;
-class KeyframeReticle;
-class HairlineItem;
-class IndexFFMPEGMarkerFiles;
-
 #include "browsebutton.h"
 #include "deleteallindexes.inc"
+#include "interfaceprefs.inc"
 #include "mwindow.inc"
 #include "preferencesthread.h"
+#include "probeprefs.inc"
 #include "shbtnprefs.inc"
 
 
@@ -81,6 +42,7 @@ public:
 	int update(int new_value);
 	const char* behavior_to_text(int mode);
 	int start_shbtn_dialog();
+	void start_probe_dialog();
 
 	BrowseButton *ipath;
 	IndexSize *isize;
@@ -89,22 +51,17 @@ public:
 	DeleteAllIndexes *deleteall;
 	IndexFFMPEGMarkerFiles *ffmpeg_marker_files;
 
-	TimeFormatHMS *hms;
-	TimeFormatHMSF *hmsf;
-	TimeFormatSamples *samples;
-	TimeFormatHex *hex;
-	TimeFormatFrames *frames;
-	TimeFormatFeet *feet;
-	TimeFormatSeconds *seconds;
-
+	ViewBehaviourText *button1, *button2, *button3;
 	MeterMinDB *min_db;
 	MeterMaxDB *max_db;
-	MeterVUDB *vu_db;
-//	MeterVUInt *vu_int;
-	ViewBehaviourText *button1, *button2, *button3;
-	ViewThumbnails *thumbnails;
+
 	ShBtnEditDialog *shbtn_dialog;
 	KeyframeReticle *keyframe_reticle;
+	PrefsYUV420P_DVDlace *yuv420p_dvdlace;
+	FileProbeDialog *file_probe_dialog;
+	PrefsFileProbes *file_probes;
+	PrefsTrapSigSEGV *trap_segv;
+	PrefsTrapSigINTR *trap_intr;
 };
 
 
@@ -134,122 +91,12 @@ public:
 	PreferencesWindow *pwindow;
 };
 
-class TimeFormatHMS : public BC_Radial
-{
-public:
-	TimeFormatHMS(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	InterfacePrefs *tfwindow;
-};
-
-class TimeFormatHMSF : public BC_Radial
-{
-public:
-	TimeFormatHMSF(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	InterfacePrefs *tfwindow;
-};
-
-class TimeFormatSamples : public BC_Radial
-{
-public:
-	TimeFormatSamples(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	InterfacePrefs *tfwindow;
-};
-
-class TimeFormatFrames : public BC_Radial
-{
-public:
-	TimeFormatFrames(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	InterfacePrefs *tfwindow;
-};
-
-class TimeFormatHex : public BC_Radial
-{
-public:
-	TimeFormatHex(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	InterfacePrefs *tfwindow;
-};
-
-class TimeFormatFeet : public BC_Radial
-{
-public:
-	TimeFormatFeet(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	InterfacePrefs *tfwindow;
-};
-
-class TimeFormatSeconds : public BC_Radial
-{
-public:
-	TimeFormatSeconds(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	InterfacePrefs *tfwindow;
-};
-
-class TimeFormatFeetSetting : public BC_TextBox
-{
-public:
-	TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, char *string);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-
-
-class MeterMinDB : public BC_TextBox
-{
-public:
-	MeterMinDB(PreferencesWindow *pwindow, char *text, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-
-class MeterMaxDB : public BC_TextBox
-{
-public:
-	MeterMaxDB(PreferencesWindow *pwindow, char *text, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-class MeterVUDB : public BC_Radial
-{
-public:
-	MeterVUDB(PreferencesWindow *pwindow, char *text, int y);
-	int handle_event();
-//	MeterVUInt *vu_int;
-	PreferencesWindow *pwindow;
-};
-
-class MeterVUInt : public BC_Radial
-{
-public:
-	MeterVUInt(PreferencesWindow *pwindow, char *text, int y);
-	int handle_event();
-	MeterVUDB *vu_db;
-	PreferencesWindow *pwindow;
-};
 
 class ViewBehaviourText : public BC_PopupMenu
 {
 public:
-	ViewBehaviourText(int x,
-		int y,
-		const char *text,
-		PreferencesWindow *pwindow,
-		int *output);
+	ViewBehaviourText(int x, int y, const char *text,
+		PreferencesWindow *pwindow, int *output);
 	~ViewBehaviourText();
 
 	int handle_event();  // user copies text to value here
@@ -269,82 +116,20 @@ public:
 	int behaviour;
 };
 
-class ViewTheme : public BC_PopupMenu
+
+class MeterMinDB : public BC_TextBox
 {
 public:
-	ViewTheme(int x, int y, PreferencesWindow *pwindow);
-	~ViewTheme();
-
-	void create_objects();
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-class ViewThemeItem : public BC_MenuItem
-{
-public:
-	ViewThemeItem(ViewTheme *popup, const char *text);
-	int handle_event();
-	ViewTheme *popup;
-};
-
-class ViewPluginIcons : public BC_PopupMenu
-{
-public:
-	ViewPluginIcons(int x, int y, PreferencesWindow *pwindow);
-	~ViewPluginIcons();
-
-	void create_objects();
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-class ViewPluginIconItem : public BC_MenuItem
-{
-public:
-	ViewPluginIconItem(ViewPluginIcons *popup, const char *text);
-	int handle_event();
-	ViewPluginIcons *popup;
-};
-
-class ViewThumbnails : public BC_CheckBox
-{
-public:
-	ViewThumbnails(int x, int y, PreferencesWindow *pwindow);
+	MeterMinDB(PreferencesWindow *pwindow, char *text, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
 
-class UseTipWindow : public BC_CheckBox
-{
-public:
-	UseTipWindow(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
 
-class UseWarnIndecies : public BC_CheckBox
+class MeterMaxDB : public BC_TextBox
 {
 public:
-	UseWarnIndecies(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-class UseWarnVersion : public BC_CheckBox
-{
-public:
-	UseWarnVersion(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-class BD_WarnRoot : public BC_CheckBox
-{
-public:
-	BD_WarnRoot(PreferencesWindow *pwindow, int x, int y);
+	MeterMaxDB(PreferencesWindow *pwindow, char *text, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
@@ -361,30 +146,6 @@ class AndroidRemote : public BC_CheckBox
 {
 public:
 	AndroidRemote(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-class PopupMenuBtnup : public BC_CheckBox
-{
-public:
-	PopupMenuBtnup(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-class ActivateFocusPolicy : public BC_CheckBox
-{
-public:
-	ActivateFocusPolicy(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-class DeactivateFocusPolicy : public BC_CheckBox
-{
-public:
-	DeactivateFocusPolicy(PreferencesWindow *pwindow, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
@@ -461,6 +222,50 @@ public:
 	int handle_event();
 
 	InterfacePrefs *iface_prefs;
+};
+
+
+class PrefsTrapSigSEGV : public BC_CheckBox
+{
+public:
+	PrefsTrapSigSEGV(InterfacePrefs *subwindow, int x, int y);
+	~PrefsTrapSigSEGV();
+	int handle_event();
+
+	InterfacePrefs *subwindow;
+};
+
+class PrefsTrapSigINTR : public BC_CheckBox
+{
+public:
+	PrefsTrapSigINTR(InterfacePrefs *subwindow, int x, int y);
+	~PrefsTrapSigINTR();
+	int handle_event();
+
+	InterfacePrefs *subwindow;
+};
+
+
+class PrefsFileProbes : public BC_GenericButton
+{
+public:
+	PreferencesWindow *pwindow;
+	InterfacePrefs *subwindow;
+
+	int handle_event();
+	PrefsFileProbes(PreferencesWindow *pwindow, InterfacePrefs *subwindow, int x, int y);
+};
+
+
+class PrefsYUV420P_DVDlace : public BC_CheckBox
+{
+public:
+	PrefsYUV420P_DVDlace(PreferencesWindow *pwindow,
+		InterfacePrefs *subwindow, int x, int y);
+	int handle_event();
+
+	InterfacePrefs *subwindow;
+	PreferencesWindow *pwindow;
 };
 
 

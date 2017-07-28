@@ -46,7 +46,6 @@ public:
 	int hot_node;
 
 	CICacheSize *cache_size;
-	PrefsFileProbes *file_probes;
 
 	enum
 	{
@@ -63,8 +62,6 @@ public:
 	PrefsRenderFarmNodes *node_list;
 	FormatTools *brender_tools;
 	BC_Title *master_rate;
-	PrefsYUV420P_DVDlace *yuv420p_dvdlace;
-	FileProbeDialog *file_probe_dialog;
 };
 
 
@@ -125,26 +122,6 @@ public:
 	int handle_event();
 
 	PreferencesWindow *pwindow;
-};
-
-class PrefsTrapSigSEGV : public BC_CheckBox
-{
-public:
-	PrefsTrapSigSEGV(PerformancePrefs *perf_prefs, int x, int y);
-	~PrefsTrapSigSEGV();
-	int handle_event();
-
-	PerformancePrefs *perf_prefs;
-};
-
-class PrefsTrapSigINTR : public BC_CheckBox
-{
-public:
-	PrefsTrapSigINTR(PerformancePrefs *perf_prefs, int x, int y);
-	~PrefsTrapSigINTR();
-	int handle_event();
-
-	PerformancePrefs *perf_prefs;
 };
 
 class PrefsFFMPEGMarkerIndecies : public BC_CheckBox
@@ -347,21 +324,6 @@ public:
 };
 
 
-class PrefsYUV420P_DVDlace : public BC_CheckBox
-{
-public:
-	PrefsYUV420P_DVDlace(PreferencesWindow *pwindow,
-		PerformancePrefs *subwindow,
-		int x, int y);
-
-	int handle_event();
-
-	PerformancePrefs *subwindow;
-	PreferencesWindow *pwindow;
-};
-
-
-
 class CICacheSize : public BC_TumbleTextBox
 {
 public:
@@ -371,17 +333,6 @@ public:
 		PerformancePrefs *subwindow);
 	int handle_event();
 	PreferencesWindow *pwindow;
-};
-
-
-class PrefsFileProbes : public BC_GenericButton
-{
-public:
-	PreferencesWindow *pwindow;
-	PerformancePrefs *perf_prefs;
-
-	int handle_event();
-	PrefsFileProbes(PreferencesWindow *pwindow, PerformancePrefs *perf_prefs, int x, int y);
 };
 
 

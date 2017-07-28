@@ -15,6 +15,7 @@ OBJS = \
 	$(OBJDIR)/apluginarray.o \
 	$(OBJDIR)/aplugin.o \
 	$(OBJDIR)/apluginset.o \
+	$(OBJDIR)/appearanceprefs.o \
 	$(OBJDIR)/arender.o \
 	$(OBJDIR)/assetedit.o \
 	$(OBJDIR)/asset.o \

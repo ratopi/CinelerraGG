@@ -606,7 +606,7 @@ int FileSystem::parse_tildas(char *new_dir)
 int FileSystem::parse_directories(char *new_dir)
 {
 //printf("FileSystem::parse_directories 1 %s\n", new_dir);
-	if( *new_dir != '/' ) {  // expand to abs path
+	if( *new_dir != '/' && current_dir[0] ) {  // expand to abs path
 		char string[BCTEXTLEN];
 		strcpy(string, current_dir);
 		add_end_slash(string);
