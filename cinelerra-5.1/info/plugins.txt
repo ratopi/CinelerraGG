@@ -410,153 +410,244 @@ F_volume:	Change input volume.
 #
 # audio plugins
 #
-#AM pitchshifter:
-#Aliasing:
-#Allpass delay line, cubic spline interpolation:
+AM pitchshifter: runs a single write pointer and two read pointers
+		over a ringbuffer. The output is faded between the
+		two readpointers according to the sine of the distance
+		from the write pointer. The design is based on the 
+		mechanism of a mechanical pitchshifter.
+Aliasing:	Effect that causes different signals to become aliases
+		of one another when sampled..
+#Allpass delay line, cubic spline interpolation: 
 #Allpass delay line, linear interpolation:
 #Allpass delay line, noninterpolating:
-#Analogue Oscillator:
+Analogue Oscillator: Simulates the output you get from an analogue synth's
+	 oscillators. You can get a reasonable emualtion of a 303's square.
 #4 x 4 pole allpass:
-#Artificial latency:
-#Audio Divider (Suboctave Generator):
+Artificial latency: used to correct for latency between channels.
+Audio Divider (Suboctave Generator): Reduces the period of the signal by
+		the factor given, and makes it a square wave in the process.
+		Has some amplitude tracking capability.
 AudioScope:	Convert input audio to video output representing the
 		audio power spectrum. Shows you the sound wave.
 #Auto phaser:
-#Barry's Satan Maximiser:
-#Bode frequency shifter:
-#Bode frequency shifter (CV):
-#Chebyshev distortion:
-#Comb Filter:
-#Comb Splitter:
+Barry's Satan Maximiser: Compresses signals with a very short attack and
+		decay, infinite ratio and hard knee.  Gives good harsh
+		(non-musical) distortion. 
+Bode frequency shifter: A popular analogue synth module, it works by
+		shifting all the frequencies of an input signal up or
+		down by a specified frequency
+Bode frequency shifter (CV): Controls the frequency shift applied to
+		the input signal, in KHz.
+Chebyshev distortion: Interesting distortion effect that is seeded
+		from incoming signal envelope.
+Comb Filter:	Controls the distance between the filters peaks.
+Comb Splitter:	Divides the input up into two parts with frequency 
+		peaks at f Hz intervals, skewed by f/2 Hz between
+		the two outputs. 
 #Comb delay line, cubic spline interpolation:
 #Comb delay line, linear interpolation:
 #Comb delay line, noninterpolating:
 Compressor:	Lessen the dynamic range between the loudest and quietest
 		parts of an audio signal by boosting the quieter signals
 		and attenuating the louder signals.
-#Constant Signal Generator:
-#Crossfade:
-#Crossfade (4 outs):
-#Crossover distortion:
-#DC Offset:
-#DC Offset Remover:
-#DJ EQ:
+Constant Signal Generator: Add an output DC offset at the given amplitude
+		to the input signal. It has no real use other than for
+		debugging and in modular synths. 
+Crossfade:	Controls the degree to which the inputs are mixed into
+		the output.  Value of -1 means that the output is just
+		the A input, and a value of 1.0 means it is just the B. 
+Crossfade (4 outs):  Controls the degree to which the inputs are mixed
+		into the output.  Value of -1 means the output is just 
+                the A input, and a value of 1.0 means it is just the B.
+Crossover distortion: Simulation of the distortion that happens in class
+		B and AB power amps when the signal crosses 0.
+DC Offset:	Remove DC Offset, which is usually an undesirable
+		characteristic of a recording normally caused by
+		defective equipment. (Has no controls)
+DC Offset Remover: Remove DC Offset, which is usually an undesirable
+		characteristic of a recording normally caused by
+		defective equipment.
+DJ EQ:		3-band Equalization - Hi-Mid-Lo.
 #DJ EQ (mono):
 #DJ flanger:
-#Decimator:
-#Declipper:
-Delay audio:    Delay the audio by some number of seconds.
+Decimator:	Reduces the effective sample rate, and reduces the
+		bit depth of the input signal. 
+Declipper:	Removes clicks from input signals.
+Delay audio:    Delay the audio by a specified time offset.
 #Delayorama:
 Denoise:	Reduce audio background noise.
 DenoiseFFT:	Noise removal from audio using FFT editing.
-#Despike:
-#Diode Processor:
-#Dyson compressor:
-#EQ Graphic:
-#EQ Parametric:
+Despike:	Detect and eliminate out of range impulse values. 
+Diode Processor: Mangles the signal as if it had been passed through
+		 a diode rectifier network.
+Dyson compressor: Compress peaks to reduce dynamic range and create
+		room to increase audio levels
+EQ Graphic:	Graphic equalizer which sets the output levels for
+		specified frequency bands.
+EQ Parametric:	Parametric equalizer to show and output levels for
+		frequency, quality, level, mode, and wetness.
 Echo:		Add echo - reflection of sound - for effect.
 		. Level represents the volume adjustment
-		. Atten is attenuation meaning reduction in reflection
+		. Atten is the reflected output level
 		. Offset is the lag in the attenuated echo signal
 EchoCancel:	Removes echoes from audio to improve the quality.
-		Recommended to just set the Mode to On for simplicity.
-#Exponential signal decay:
+		Detects and removes time delayed reflections.
+Exponential signal decay: Time for the echoes to decay by 60 DCBs.
 #FM Oscillator:
-#Fast Lookahead limiter:
-#Fast overdrive:
-#Flanger:
-#Foldover distortion:
-#Fractionally Addressed Delay Line:
-#Freeverb:
-#Frequency tracker:
-#GLAME Butterworth Highpass:
-#GLAME Butterworth Lowpass:
-#GSM simulator:
-#GVerb:
-#Gain:
+Fast Lookahead limiter: A limiter with an attack time of 5ms. It adds
+		just over 5ms of lantecy to the input signal, but 
+		guarantees no signals over the limit, and tries to
+		get the minimum amount of distortion. 
+Fast overdrive: Compresses the extreme peaks to make a sound similar
+		to an overdriven amplifier. 
+Flanger:	Digital flanger implementation.  Uses excursion, 
+		controlled bandwidth modulation function, which makes
+		the modulation less repetitive and noticable.
+Foldover distortion: Uses a sine wave approximation to simulate
+		valve style foldover distortion.
+Fractionally Addressed Delay Line: Fixed ring buffer delay implementation.
+		Has different dynamics than a normal delay
+Freeverb:	Adds effect of multiple decaying echoes to audio
+		signals based on a specific algorithm. Common use
+		of reverb is simulate music played in a closed room.
+Frequency tracker: Controls the level of damping applied to the output.
+		High values make the frequency output jump around,
+		low values make it a bit slow to respond.
+GLAME Butterworth Highpass: Cuts off frequencies below a certain point.
+GLAME Butterworth Lowpass: Cuts off frequencies above a certain point.
+GSM simulator:	Encodes and decodes signal using the GSM voice 
+		compression system. Has the effect of making it sound
+		like being sent over a European mobile phone network. 
+GVerb:		A mono In, stereo Out reverb implementation.
+Gain:		Add gain, input level, to increase/decrease loudness.
 #Gate:
-#Giant flange:
-#Glame Bandpass Analog Filter:
-#Glame Bandpass Filter:
+Giant flange:	A normal flanger with excessively long delay times.
+Glame Bandpass Analog Filter: IIR bandpass filter modeled after a
+		n analog circuit.
+Glame Bandpass Filter: Allows you to tweak the number of stages used
+		for filtering.  Every stage adds two more poles, which
+		leads to a steeper dropoff.
 #Glame Butterworth X-over Filter:
-#Glame Highpass Filter:
+Glame Highpass Filter: IIR highpass filter allows you to tweak the
+		number of stages used for filtering. Every stage adds
+		2 more poles, which leads to steeper dropoff. 
 #Glame Lowpass Filter:
-#Gong beater:
-#Gong model:
-#Hard Limiter:
-#Harmonic generator:
-#Hermes Filter:
-#Higher Quality Pitch Scaler:
-#Hilbert transformer:
-#Impulse convolver:
-#Interpolate:
-#Invert Audio:
-#Inverter:
-#Karaoke:
-#L/C/R Delay:
+Gong beater:	Simulates the action of a beator on a gong surface,
+		used to trigger the gong physical model.
+Gong model:	Physical model of a metal gong.
+Hard Limiter:	Brick hard limiter with residue mixer.
+Harmonic generator: Allows you to add harmonics and remove the
+		fundamental from any audio signal.
+Hermes Filter:	Simulation of a modern analogue synth called a Pro Tone,
+Higher Quality Pitch Scaler: Pitch shifter implementation that scales
+		the harmonics appropriately with the base frequencies.
+Hilbert transformer: Phase shifts the input signal by 90 degrees. It
+		outputs the 90 degree phase shifted signal and the
+		unshifted signal, both delayed by an equal amount.
+Impulse convolver: Convolver for a set of short impulses which have to
+		be compiled in.
+Interpolate:	Generate a smooth curves based on sound - currently,
+		does not appear to work. (Has no controls).
+Invert Audio:	Reverses the numerical sign of the digital audio.
+		(Has no controls).
+Inverter:	Utility plugin that inverts the signal.
+Karaoke:	Attempts to strip the vocals from a stereo signal.
+L/C/R Delay:	A left/center/right delay with feedback
 #LFO Phaser:
-#LS Filter:
+LS Filter:	Filter similiar to the filter used in giga sampler.
 Live Audio:	Reads audio directly from the soundcard input,
 		replacing any audio on track.
-#Loop audio:
-#Mag's Notch Filter:
-#Matrix Spatialiser:
+Loop audio:	Loop some number of samples of audio over and over.
+Mag's Notch Filter: Allows you to tweak the number of stages used for
+		filtering.  Every stage adds two more poles, which
+		leads to a steeper dropoff.
+Matrix Spatialiser: Simple spatializer to control the width of a
+		stereo signal. 
 #Matrix; MS to Stereo:
 #Matrix; Stereo to MS:
-#Modulatable delay:
-#Mono to Stereo splitter:
-#Multiband EQ:
-#Multivoice Chorus:
+Modulatable delay: A delay whose tape is modulated at audio rate.
+Mono to Stereo splitter: Takes mono input signal, and outputs it to
+		both left and right channel.
+Multiband EQ:	Multiband graphical equalizer implemented using FFT.
+Multivoice Chorus: Implementation of a Multivoice chorus algorithm,
+		using a sync based noise interpolation method to
+		produce a modulation law making it possible to have
+		many voices without the metallic, artificial sound.
 #Nonbandlimited single-sample impulses (Frequency; Control):
-#Overlay:
-#Pitch Scaler:
+Overlay:	Overlay Top or Bottom track in Add/Multiply mode.
+Pitch Scaler:	Pitch shifter implementation that scales the harmonics
+		appropriately with the base frequencies.
 Pitch shift:	Uses FFT to try to change the pitch without
 		changing the duration.
-#Plate reverb:
-#Pointer cast distortion:
-#Rate shifter:
-#Remove Gaps:
-#ResampleRT:
-#Retro Flanger:
+Plate reverb:	Physical model of a steel plate reverb.  It uses 8
+		linear waveguides to model the plate. 
+Pointer cast distortion: Distortion is created by treating the floating
+		point repesentation of the input signal as a 0.32 1's
+		complement fixed point integer. Not musical but still
+		recognizable.  Makes interesting noises. 
+Rate shifter:	Stretches or compresses the input with a ringbuffer.
+Remove Gaps:	Remove silent gap (below DB threshold) which persist
+		for more than the time limit.
+ResampleRT:	Allows you to convert an audio file from one 
+		sample rate to another.
+Retro Flanger:	Model of someone flanging the input.  Models the tape
+		saturation effects and frequency smear of a manual
+		flanger.  Results are distorted, but more subtle
+		flanger sound than you get from a digial flanger. 
 Reverb:		Reflections of sound to add depth and fullness.
 		Simulates creation of a large number of reflections
-		which build up and then decay.
-#Reverse Delay (5s max):
-Reverse audio:		Play the audio backwards.
-#Ringmod with LFO:
-#Ringmod with two inputs:
-#SC1:
-#SC2:
-#SC3:
-#SC4:
-#SC4 mono:
-#SE4:
-#Signal sifter:
-#Simple amplifier:
+		(lots of walls) which build up and then decay.  
+Reverse Delay (5s max): A reverse delay.
+Reverse audio:	Play the audio backwards.   
+Ringmod with LFO: Simple ring modulator and LFO.
+Ringmod with two inputs: Simple 2 input ring modulator.
+SC1:		High quality RMS compressor designed for musical work.
+SC2:		Compressor with sidechain.
+SC3:		Stereo compressor with sidechain input.
+SC4:		Stereo compressor with variable envelope follower for
+		RMS / peak behavior. 
+SC4 mono:	Mono compressor with variable envelope follower for
+		RMS / peak behavior. 
+SE4:		Stereo expander with variable envelope follower for
+		RMS / peak behavior.
+Signal sifter:	Sorts and mixes blocks of the input signal to give a 
+		bumpy ramp effect.  Can produce some interesting noises. 
+Simple amplifier:	Controls the gain of the input signal in dB's.
 #Simple delay line, cubic spline interpolation:
 #Simple delay line, linear interpolation:
 #Simple delay line, noninterpolating:
-#Sine + cosine oscillator:
-#Single band parametric:
-#Sinus wavewrapper:
+Sine + cosine oscillator: Simple oscillator that outputs sinewaves
+		with a 90 degree phase shift between them.
+Single band parametric: A single band of a parametric filter.
+Sinus wavewrapper: Produces unusual distortion, for amp like tone.
 #Smooth Decimator:
-#SoundLevel:
-#Spectrogram:
-#State Variable Filter:
-#Step Demuxer:
-#Surround matrix encoder:
-#Synthesizer:
-#Tape Delay Simulation:
-#Time Stretch RT:
+SoundLevel:	Displays the Max/RMS sound level in decibels.
+Spectrogram:	Visual representation of the sound levels at
+		specified frequencies as they vary with time. 
+State Variable Filter: Oversampled state variable filter with tweaks.
+Step Demuxer:	Inputs up to 8 signals and switches between them on
+		output when the signal on the clock input goes high.
+Surround matrix encoder: Allows you to encode 4 channels of sound into
+		a stereo compatible stream that will be decoded by a
+		Dolby1 Surround/Pro-Logic decoder into Left, Right,
+		Center and Surround signals.
+Synthesizer:	Generate synthesizer sounds; to set key data, turn on
+		Generate keyframes while tweeking.
+Tape Delay Simulation: Models the tape motion and some smear effect,
+Time Stretch RT: Change the speed of an audio signal without affecting
+		its pitch.
 #Transient mangler:
 #Triple band parametric with shelves:
 #Valve rectifier:
-#Valve saturation:
-#Vocoder:
-#Vocoder:
-#VyNil (Vinyl Effect):
-#Wave Terrain Oscillator:
-#z-1:
+Valve saturation: Model of valve (tube) distortion, lacking some of
+		the harmonics you would get in a real tube amp.
+Vocoder:	A category of voice codec that analyzes and synthesizes
+		the human voice signal for audio data compression,
+		multiplexing, voice encryption, voice transformation,+.
+VyNil (Vinyl Effect): Sounds like it is being played from a record.
+Wave Terrain Oscillator: x and y move the cursor around on a 2D
+		landscape wavetable used to generate the output.
+z-1:		Implements the z-1 function - a single sample delay.
 #
 # Transitions - Audio and Video
 #
