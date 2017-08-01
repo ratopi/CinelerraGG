@@ -887,6 +887,7 @@ void Playback3D::do_camera_sync(Playback3DCommand *command)
 
 
 		command->frame->set_opengl_state(VFrame::SCREEN);
+		command->frame->screen_to_ram();
 		command->canvas->get_canvas()->unlock_window();
 	}
 	command->canvas->unlock_canvas();
