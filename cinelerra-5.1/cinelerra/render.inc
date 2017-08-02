@@ -42,5 +42,6 @@ class RenderWindow;
 #define RANGE_PROJECT		1
 #define RANGE_SELECTION		2
 #define RANGE_INOUT		3
+#define RANGE_1FRAME		4
 
 #endif

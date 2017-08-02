@@ -74,7 +74,7 @@ int MenuAEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 
 
 // Fix asset for audio only
-	if(!File::supports_audio(asset->format)) asset->format = FILE_WAV;
+	if(!File::renders_audio(asset)) asset->format = FILE_WAV;
 	asset->audio_data = 1;
 	asset->video_data = 0;
 

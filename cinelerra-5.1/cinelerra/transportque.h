@@ -49,6 +49,7 @@ public:
 	void playback_range_inout();
 // Set playback range to whole project for rendering
 	void playback_range_project();
+	void playback_range_1frame();
 
 	int single_frame();
 	EDL* get_edl();

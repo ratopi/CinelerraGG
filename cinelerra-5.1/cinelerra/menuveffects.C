@@ -67,7 +67,7 @@ int MenuVEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 	asset->load_defaults(defaults, "VEFFECT_", 1, 1, 1, 0, 0);
 
 // Fix asset for video only
-	if(!File::supports_video(asset->format)) {
+	if(!File::renders_video(asset)) {
 		asset->format = FILE_FFMPEG;
 		strcpy(asset->vcodec, "mp4");
 	}

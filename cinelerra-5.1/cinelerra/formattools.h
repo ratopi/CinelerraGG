@@ -70,7 +70,7 @@ public:
 // In recording preferences, aspects of the format are locked
 // depending on the driver used.
 	void update_driver(int driver);
-	void update_format();
+	virtual void update_format();
 
 
 	void reposition_window(int &init_x, int &init_y);

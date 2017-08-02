@@ -272,8 +272,7 @@ void AssetEditWindow::create_objects()
 	if( asset ) {
 		add_subwindow(new BC_Title(x, y, _("File format:")));
 		x = x2;
-		add_subwindow(new BC_Title(x, y, File::formattostr(mwindow->plugindb,
-				asset->format),
+		add_subwindow(new BC_Title(x, y, File::formattostr(asset->format),
 			MEDIUMFONT,
 			mwindow->theme->assetedit_color));
 		x = x1;
@@ -885,8 +884,7 @@ AssetEditFormat::~AssetEditFormat()
 int AssetEditFormat::handle_event()
 {
 	Asset *asset = fwindow->asset_edit->changed_params;
-	asset->format = File::strtoformat(fwindow->mwindow->plugindb,
-		get_selection(0, 0)->get_text());
+	asset->format = File::strtoformat(get_selection(0, 0)->get_text());
 	return 1;
 }
 

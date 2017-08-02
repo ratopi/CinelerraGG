@@ -36,7 +36,7 @@
 #include "errorbox.inc"
 #include "file.inc"
 #include "formatpopup.inc"
-#include "formattools.inc"
+#include "formattools.h"
 #include "guicast.h"
 #include "loadmode.inc"
 #include "mainprogress.inc"
@@ -125,6 +125,7 @@ public:
 	int load_defaults(Asset *asset);
 	int save_defaults(Asset *asset);
 	int load_profile(int profile_slot, Asset *asset);
+	double get_render_range();
 // force asset parameters regardless of window
 // This should be integrated into the Asset Class.
 	static int check_asset(EDL *edl, Asset &asset);
@@ -184,7 +185,6 @@ public:
 	double total_start, total_end;
 // External Render farm checks this every frame.
 	int result;
-	int format_error;
 	Asset *default_asset;
 // Asset containing the file format
 	Asset *asset;
@@ -257,6 +257,23 @@ public:
 };
 
 
+class RenderRange1Frame : public BC_Radial
+{
+public:
+	RenderRange1Frame(RenderWindow *rwindow, int value, int x, int y);
+	int handle_event();
+	RenderWindow *rwindow;
+};
+
+
+class RenderFormat : public FormatTools
+{
+public:
+	RenderFormat(MWindow *mwindow, BC_WindowBase *window, Asset *asset);
+	~RenderFormat();
+	void update_format();
+};
+
 
 class RenderWindow : public BC_Window
 {
@@ -269,33 +286,23 @@ public:
 	~RenderWindow();
 
 	void create_objects();
+	void enable_render_range(int v);
 	void update_range_type(int range_type);
 	void load_profile(int profile_slot);
 
 	RenderRangeProject *rangeproject;
 	RenderRangeSelection *rangeselection;
 	RenderRangeInOut *rangeinout;
+	RenderRange1Frame *range1frame;
 
 	RenderProfile *renderprofile;
 
 	LoadMode *loadmode;
-	FormatTools *format_tools;
+	RenderFormat *render_format;
 
 	MWindow *mwindow;
 	Render *render;
 	Asset *asset;
 };
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif

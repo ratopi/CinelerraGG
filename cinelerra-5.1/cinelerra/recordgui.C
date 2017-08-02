@@ -265,7 +265,7 @@ void RecordGUI::create_objects()
 	x = x3 + x2 + x1 + 40;
 
 	add_subwindow(new BC_Title(x, y,
-		File::formattostr(mwindow->plugindb, asset->format),
+		File::formattostr(asset->format),
 		MEDIUMFONT,
 		mwindow->theme->recordgui_fixed_color));
 	y += pad;

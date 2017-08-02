@@ -246,17 +246,14 @@ public:
 // The minimum setting for cache_size should be bigger than 1MB.
 	int64_t get_memory_usage();
 
-	static int supports_video(ArrayList<PluginServer*> *plugindb, char *format);   // returns 1 if the format supports video or audio
-	static int supports_audio(ArrayList<PluginServer*> *plugindb, char *format);
+	static int renders_video(Asset *asset);
+	static int renders_audio(Asset *asset);
 // Get the extension for the filename
 	static const char* get_tag(int format);
 	static const char* get_prefix(int format);
-	static int supports_video(int format);   // returns 1 if the format supports video or audio
-	static int supports_audio(int format);
 	static int strtoformat(const char *format);
 	static const char* formattostr(int format);
-	static int strtoformat(ArrayList<PluginServer*> *plugindb, const char *format);
-	static const char* formattostr(ArrayList<PluginServer*> *plugindb, int format);
+	static int is_image_render(int format);
 	static int strtobits(const char *bits);
 	static const char* bitstostr(int bits);
 	static int str_to_byteorder(const char *string);

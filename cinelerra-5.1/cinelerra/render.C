@@ -270,9 +270,9 @@ void Render::start_interactive()
 		BC_DialogThread::start();
 	}
 	else if( in_progress ) {
-		ErrorBox error_box(_(PROGRAM_NAME ": Error"),
-			mwindow->gui->get_abs_cursor_x(1),
-			mwindow->gui->get_abs_cursor_y(1));
+		int cx, cy;
+		mwindow->gui->get_abs_cursor_xy(cx, cy, 1);
+		ErrorBox error_box(_(PROGRAM_NAME ": Error"), cx, cy);
 		error_box.create_objects(_("Already rendering"));
 		error_box.raise_window();
 		error_box.run_window();
@@ -294,9 +294,9 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 		start_render();
 	}
 	else if( in_progress ) {
-		ErrorBox error_box(_(PROGRAM_NAME ": Error"),
-				   mwindow->gui->get_abs_cursor_x(1),
-				   mwindow->gui->get_abs_cursor_y(1));
+		int cx, cy;
+		mwindow->gui->get_abs_cursor_xy(cx, cy, 1);
+		ErrorBox error_box(_(PROGRAM_NAME ": Error"), cx, cy);
 		error_box.create_objects("Already rendering");
 		error_box.raise_window();
 		error_box.run_window();
@@ -328,7 +328,6 @@ BC_Window* Render::new_gui()
 {
 	this->jobs = 0;
 	batch_cancelled = 0;
-	format_error = 0;
 	result = 0;
 
 	if(mode == Render::INTERACTIVE) {
@@ -350,7 +349,7 @@ void Render::handle_done_event(int result)
 {
 	if(!result) {
 		// add to recentlist only on OK
-		render_window->format_tools->path_recent->
+		render_window->render_format->path_recent->
 			add_item(File::formattostr(asset->format), asset->path);
 	}
 	render_window = 0;
@@ -358,13 +357,55 @@ void Render::handle_done_event(int result)
 
 void Render::handle_close_event(int result)
 {
-	int format_error = 0;
 	const int debug = 0;
+	double render_range = get_render_range();
+	const char *err_msg = 0;
+
+	if( !result && !render_range ) {
+		err_msg = _("zero render range");
+		result = 1;
+	}
+	if( !result && asset->video_data ) {
+		double frame_rate = mwindow->edl->session->frame_rate;
+		if( frame_rate > 0 && render_range+1e-3 < 1./frame_rate ) {
+			err_msg = _("Video data and range less than 1 frame");
+			result = 1;
+		}
+	}
+	if( !result && asset->audio_data ) {
+		double sample_rate = mwindow->edl->session->sample_rate;
+		if( sample_rate > 0 && render_range+1e-6 < 1./sample_rate ) {
+			err_msg = _("Audio data and range less than 1 sample");
+			result = 1;
+		}
+	}
+	if( !result && File::is_image_render(asset->format) ) {
+		if( asset->video_data ) {
+			double frames = render_range * mwindow->edl->session->frame_rate;
+			if( !EQUIV(frames, 1.) ) {
+				err_msg = _("Image format and not 1 frame");
+				result = 1;
+			}
+		}
+		else {
+			err_msg = _("Image format and no video data");
+			result = 1;
+		}
+	}
+	if( err_msg ) {
+		int cx, cy;
+		mwindow->gui->get_abs_cursor_xy(cx, cy, 1);
+		ErrorBox error_box(_(PROGRAM_NAME ": Error"),cx, cy);
+		error_box.create_objects(err_msg);
+		error_box.raise_window();
+		error_box.run_window();
+	}
 
 	if(!result) {
 // Check the asset format for errors.
 		FormatCheck format_check(asset);
-		format_error = format_check.check_format();
+		if( format_check.check_format() )
+			result = 1;
 	}
 
 //PRINT_TRACE
@@ -374,8 +415,7 @@ void Render::handle_close_event(int result)
 	mwindow->save_defaults();
 //PRINT_TRACE
 
-	if(!format_error && !result)
-	{
+	if( !result ) {
 		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
 		if(!result) start_render();
 		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
@@ -402,7 +442,7 @@ int Render::check_asset(EDL *edl, Asset &asset)
 {
 	if(asset.video_data &&
 		edl->tracks->playable_video_tracks() &&
-		File::supports_video(asset.format))
+		File::renders_video(&asset))
 	{
 		asset.video_data = 1;
 		asset.layers = 1;
@@ -418,7 +458,7 @@ int Render::check_asset(EDL *edl, Asset &asset)
 
 	if(asset.audio_data &&
 		edl->tracks->playable_audio_tracks() &&
-		File::supports_audio(asset.format))
+		File::renders_audio(&asset))
 	{
 		asset.audio_data = 1;
 		asset.channels = edl->session->audio_channels;
@@ -658,11 +698,8 @@ RenderThread::~RenderThread()
 }
 
 
-void RenderThread::render_single(int test_overwrite,
-	Asset *asset,
-	EDL *edl,
-	int strategy,
-	int range_type)
+void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
+	int strategy, int range_type)
 {
 // Total length in seconds
 	double total_length;
@@ -693,20 +730,25 @@ void RenderThread::render_single(int test_overwrite,
 	command->get_edl()->copy_all(edl);
 	command->change_type = CHANGE_ALL;
 
-	if (range_type == RANGE_BACKCOMPAT) {
+	switch( range_type ) {
+	case RANGE_BACKCOMPAT:
 // Get highlighted playback range
 		command->set_playback_range();
 // Adjust playback range with in/out points
 		command->playback_range_adjust_inout();
-	}
-	else if (range_type == RANGE_PROJECT) {
+		break;
+	case RANGE_PROJECT:
 		command->playback_range_project();
-	}
-	else if (range_type == RANGE_SELECTION) {
+		break;
+	case RANGE_SELECTION:
 		command->set_playback_range();
-	}
-	else if (range_type == RANGE_INOUT) {
+		break;
+	case RANGE_INOUT:
 		command->playback_range_inout();
+		break;
+	case RANGE_1FRAME:
+		command->playback_range_1frame();
+		break;
 	}
 
 	render->packages = new PackageDispatcher;
@@ -887,9 +929,9 @@ if(debug) printf("Render::render %d\n", __LINE__);
 			if(mwindow)
 			{
 if(debug) printf("Render::render %d\n", __LINE__);
-				ErrorBox error_box(_(PROGRAM_NAME ": Error"),
-					mwindow->gui->get_abs_cursor_x(1),
-					mwindow->gui->get_abs_cursor_y(1));
+				int cx, cy;
+				mwindow->gui->get_abs_cursor_xy(cx, cy, 1);
+				ErrorBox error_box(_(PROGRAM_NAME ": Error"), cx, cy);
 				error_box.create_objects(_("Error rendering data."));
 				error_box.raise_window();
 				error_box.run_window();
@@ -996,7 +1038,8 @@ void RenderThread::run()
 {
 	if(render->mode == Render::INTERACTIVE)
 	{
-		render_single(1, render->asset, mwindow->edl, render->strategy, render->range_type);
+		render_single(1, render->asset, mwindow->edl,
+			render->strategy, render->range_type);
 	}
 	else
 	if(render->mode == Render::BATCH)
@@ -1077,7 +1120,7 @@ void RenderThread::run()
 }
 
 
-#define WIDTH 440
+#define WIDTH 480
 #define HEIGHT 455
 
 
@@ -1092,6 +1135,10 @@ RenderWindow::RenderWindow(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->render = render;
 	this->asset = asset;
+	rangeproject = 0;
+	rangeselection = 0;
+	rangeinout = 0;
+	range1frame = 0;
 }
 
 RenderWindow::~RenderWindow()
@@ -1099,7 +1146,7 @@ RenderWindow::~RenderWindow()
 SET_TRACE
 	lock_window("RenderWindow::~RenderWindow");
 SET_TRACE
-	delete format_tools;
+	delete render_format;
 SET_TRACE
 	delete loadmode;
 SET_TRACE
@@ -1112,39 +1159,46 @@ void RenderWindow::load_profile(int profile_slot)
 {
 	render->load_profile(profile_slot, asset);
 	update_range_type(render->range_type);
-	format_tools->update(asset, &render->strategy);
+	render_format->update(asset, &render->strategy);
 }
 
 
 void RenderWindow::create_objects()
 {
-	int x = 10, y = 5;
+	int x = 10, y = 10;
 	lock_window("RenderWindow::create_objects");
-	add_subwindow(new BC_Title(x,
-		y,
+	add_subwindow(new BC_Title(x, y,
 		(char*)((render->strategy == FILE_PER_LABEL ||
 				render->strategy == FILE_PER_LABEL_FARM) ?
 			_("Select the first file to render to:") :
 			_("Select a file to render to:"))));
 	y += 25;
 
-	format_tools = new FormatTools(mwindow, this, asset);
-	format_tools->create_objects(x, y,
+	render_format = new RenderFormat(mwindow, this, asset);
+	render_format->create_objects(x, y,
 		1, 1, 1, 1, 0, 1, 0, 0, &render->strategy, 0);
 
-	add_subwindow(new BC_Title(x, y, _("Render range:")));
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, _("Render range:")));
 
-	x += 110;
+	int is_image = File::is_image_render(asset->format);
+	if( is_image )
+		render->range_type = RANGE_1FRAME;
+
+	int x1 = x + title->get_w() + 20, x2 = x1 + 140;
 	add_subwindow(rangeproject = new RenderRangeProject(this,
-		render->range_type == RANGE_PROJECT, x, y));
+		render->range_type == RANGE_PROJECT, x1, y));
+	add_subwindow(range1frame = new RenderRange1Frame(this,
+		render->range_type == RANGE_1FRAME, x2, y));
 	y += 20;
 	add_subwindow(rangeselection = new RenderRangeSelection(this,
-		render->range_type == RANGE_SELECTION, x, y));
-	y += 20;
+		render->range_type == RANGE_SELECTION, x1, y));
 	add_subwindow(rangeinout = new RenderRangeInOut(this,
-		render->range_type == RANGE_INOUT, x, y));
+		render->range_type == RANGE_INOUT, x2, y));
 	y += 30;
-	x = 5;
+
+	if( is_image )
+		enable_render_range(0);
 
 	renderprofile = new RenderProfile(mwindow, this, x, y, 1);
 	renderprofile->create_objects();
@@ -1155,16 +1209,35 @@ void RenderWindow::create_objects()
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
+
 	show_window();
 	unlock_window();
 }
 
 void RenderWindow::update_range_type(int range_type)
 {
+	if( render->range_type == range_type ) return;
 	render->range_type = range_type;
 	rangeproject->update(range_type == RANGE_PROJECT);
 	rangeselection->update(range_type == RANGE_SELECTION);
 	rangeinout->update(range_type == RANGE_INOUT);
+	range1frame->update(range_type == RANGE_1FRAME);
+}
+
+void RenderWindow::enable_render_range(int v)
+{
+	if( v ) {
+		rangeproject->enable();
+		rangeselection->enable();
+		rangeinout->enable();
+		range1frame->enable();
+	}
+	else {
+		rangeproject->disable();
+		rangeselection->disable();
+		rangeinout->disable();
+		range1frame->disable();
+	}
 }
 
 
@@ -1202,4 +1275,73 @@ int RenderRangeInOut::handle_event()
 	return 1;
 }
 
+RenderRange1Frame::RenderRange1Frame(RenderWindow *rwindow, int value, int x, int y)
+ : BC_Radial(x, y, value, _("One Frame"))
+{
+	this->rwindow = rwindow;
+}
+int RenderRange1Frame::handle_event()
+{
+	rwindow->update_range_type(RANGE_1FRAME);
+	return 1;
+}
+
+double Render::get_render_range()
+{
+	EDL *edl = mwindow->edl;
+	double last = edl->tracks->total_playable_length();
+	double framerate = edl->session->frame_rate;
+	if( framerate <= 0 ) framerate = 1;
+	double start = 0, end = last;
+	switch( range_type ) {
+	default:
+	case RANGE_BACKCOMPAT:
+		start = edl->local_session->get_selectionstart(1);
+		end   = edl->local_session->get_selectionend(1);
+		if( EQUIV(start, end) ) end = last;
+		break;
+	case RANGE_PROJECT:
+		break;
+	case RANGE_SELECTION:
+		start = edl->local_session->get_selectionstart(1);
+		end   = edl->local_session->get_selectionend(1);
+		break;
+	case RANGE_INOUT:
+		start = edl->local_session->inpoint_valid() ?
+			edl->local_session->get_inpoint() : 0;
+		end   = edl->local_session->outpoint_valid() ?
+			edl->local_session->get_outpoint() : last;
+		break;
+	case RANGE_1FRAME:
+		start = end = edl->local_session->get_selectionstart(1);
+		if( edl->session->frame_rate > 0 ) end += 1./edl->session->frame_rate;
+		break;
+	}
+	if( start < 0 ) start = 0;
+	if( end > last ) end = last;
+	return end - start;
+}
+
+RenderFormat::RenderFormat(MWindow *mwindow, BC_WindowBase *window, Asset *asset)
+ : FormatTools(mwindow, window, asset)
+{
+}
+RenderFormat::~RenderFormat()
+{
+}
+
+void RenderFormat::update_format()
+{
+	FormatTools::update_format();
+	RenderWindow *render_window = (RenderWindow *)window;
+	if( render_window->is_hidden() ) return;
+
+	int is_image = File::is_image_render(asset->format);
+	if( is_image ) {
+		render_window->update_range_type(RANGE_1FRAME);
+		render_window->enable_render_range(0);
+	}
+	else
+		render_window->enable_render_range(1);
+}
 

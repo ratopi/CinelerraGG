@@ -39,6 +39,9 @@ public:
 		int &width, int &height, char *title=0);
 	int get_audio_for_video(int vstream, int astream, int64_t &channel_mask);
 	static void get_info(char *path,char *text,int len);
+	static int can_render(const char *fformat, const char *type);
+	static int renders_audio(const char *fformat) { return can_render(fformat, "audio"); }
+	static int renders_video(const char *fformat) { return can_render(fformat, "video"); }
 	static int get_ff_option(const char *nm, const char *options, char *value);
 	int open_file(int rd,int wr);
 	int get_index(IndexFile *index_file, MainProgressBar *progress_bar);

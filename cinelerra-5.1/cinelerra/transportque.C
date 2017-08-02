@@ -256,19 +256,11 @@ void TransportCommand::playback_range_project()
 	end_position = edl->tracks->total_playable_length();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+void TransportCommand::playback_range_1frame()
+{
+	start_position = end_position = edl->local_session->get_selectionstart(1);
+	if( edl->session->frame_rate > 0 ) end_position += 1./edl->session->frame_rate;
+}
 
 
 TransportQue::TransportQue()

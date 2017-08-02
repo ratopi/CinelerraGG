@@ -1095,8 +1095,8 @@ void Record::start_writing_file()
 	if( !writing_file ) {
 		written_frames = 0;
 		written_samples = 0;
-		do_video = File::supports_video(default_asset->format);
-		do_audio = File::supports_audio(default_asset->format);
+		do_video = File::renders_video(default_asset);
+		do_audio = File::renders_audio(default_asset);
 		if( single_frame ) do_audio = 0;
 		if( !do_video && single_frame )
 			single_frame = 0;

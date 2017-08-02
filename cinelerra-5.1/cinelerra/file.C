@@ -93,14 +93,13 @@ File::File()
 
 File::~File()
 {
-	if(getting_options)
-	{
-		if(format_window) format_window->set_done(0);
+	if( getting_options ) {
+		if( format_window ) format_window->set_done(0);
 		format_completion->lock("File::~File");
 		format_completion->unlock();
 	}
 
-	if(temp_frame) delete temp_frame;
+	if( temp_frame ) delete temp_frame;
 
 
 	close_file(0);
@@ -141,8 +140,7 @@ void File::reset_parameters()
 
 int File::raise_window()
 {
-	if(getting_options && format_window)
-	{
+	if( getting_options && format_window ) {
 		format_window->raise_window();
 		format_window->flush();
 	}
@@ -151,8 +149,7 @@ int File::raise_window()
 
 void File::close_window()
 {
-	if(getting_options)
-	{
+	if( getting_options ) {
 		format_window->lock_window("File::close_window");
 		format_window->set_done(1);
 		format_window->unlock_window();
@@ -169,121 +166,86 @@ int File::get_options(FormatTools *format,
 
 	getting_options = 1;
 	format_completion->lock("File::get_options");
-	switch(asset->format)
-	{
-		case FILE_AC3:
-			FileAC3::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
+	switch( asset->format ) {
+	case FILE_AC3:
+		FileAC3::get_parameters(parent_window,
+			asset,
+			format_window,
+			audio_options,
+			video_options);
+		break;
 #ifdef HAVE_DV
-		case FILE_RAWDV:
-			FileDV::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
+	case FILE_RAWDV:
+		FileDV::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
 #endif
-		case FILE_PCM:
-		case FILE_WAV:
-		case FILE_AU:
-		case FILE_AIFF:
-		case FILE_SND:
-			FileSndFile::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
-		case FILE_FFMPEG:
-			FileFFMPEG::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
-		case FILE_AMPEG:
-		case FILE_VMPEG:
-			FileMPEG::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
-		case FILE_JPEG:
-		case FILE_JPEG_LIST:
-			FileJPEG::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
+	case FILE_PCM:
+	case FILE_WAV:
+	case FILE_AU:
+	case FILE_AIFF:
+	case FILE_SND:
+		FileSndFile::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
+	case FILE_FFMPEG:
+		FileFFMPEG::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
+	case FILE_AMPEG:
+	case FILE_VMPEG:
+		FileMPEG::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
+	case FILE_JPEG:
+	case FILE_JPEG_LIST:
+		FileJPEG::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
 #ifdef HAVE_OPENEXR
-		case FILE_EXR:
-		case FILE_EXR_LIST:
-			FileEXR::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
+	case FILE_EXR:
+	case FILE_EXR_LIST:
+		FileEXR::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
 #endif
-		case FILE_FLAC:
-			FileFLAC::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
-		case FILE_PNG:
-		case FILE_PNG_LIST:
-			FilePNG::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
-		case FILE_TGA:
-		case FILE_TGA_LIST:
-			FileTGA::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
-		case FILE_TIFF:
-		case FILE_TIFF_LIST:
-			FileTIFF::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
-		case FILE_OGG:
-			FileOGG::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
-		default:
-			break;
+	case FILE_FLAC:
+		FileFLAC::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
+	case FILE_PNG:
+	case FILE_PNG_LIST:
+		FilePNG::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
+	case FILE_TGA:
+	case FILE_TGA_LIST:
+		FileTGA::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
+	case FILE_TIFF:
+	case FILE_TIFF_LIST:
+		FileTIFF::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
+	case FILE_OGG:
+		FileOGG::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
+	default:
+		break;
 	}
 
-	if(!format_window)
-	{
+	if( !format_window ) {
 		ErrorBox *errorbox = new ErrorBox(_(PROGRAM_NAME ": Error"),
 			parent_window->get_abs_cursor_x(1),
 			parent_window->get_abs_cursor_y(1));
 		format_window = errorbox;
 		getting_options = 1;
-		if(audio_options)
+		if( audio_options )
 			errorbox->create_objects(_("This format doesn't support audio."));
 		else
-		if(video_options)
+		if( video_options )
 			errorbox->create_objects(_("This format doesn't support video."));
 		errorbox->run_window();
 		delete errorbox;
@@ -340,7 +302,7 @@ void File::set_white_balance_raw(int value)
 void File::set_cache_frames(int value)
 {
 // caching only done locally
-	if(!video_thread)
+	if( !video_thread )
 		use_cache = value;
 }
 
@@ -348,8 +310,7 @@ int File::purge_cache()
 {
 // caching only done locally
 	int result = 0;
-	if( frame_cache->cache_items() > 0 )
-	{
+	if( frame_cache->cache_items() > 0 ) {
 		frame_cache->remove_all();
 		result = 1;
 	}
@@ -513,11 +474,11 @@ int File::open_file(Preferences *preferences,
 	this->wr = wr;
 	file = 0;
 
-	if(debug) printf("File::open_file %d\n", __LINE__);
+	if( debug ) printf("File::open_file %d\n", __LINE__);
 
-	if(debug) printf("File::open_file %p %d\n", this, __LINE__);
+	if( debug ) printf("File::open_file %p %d\n", this, __LINE__);
 
-	switch(this->asset->format) {
+	switch( this->asset->format ) {
 // get the format now
 // If you add another format to case 0, you also need to add another case for the
 // file format #define.
@@ -616,7 +577,7 @@ int File::open_file(Preferences *preferences,
 
 
 // Reopen file with correct parser and get header.
-	if(file->open_file(rd, wr)) {
+	if( file->open_file(rd, wr) ) {
 		delete file;  file = 0;
 		return FILE_NOT_FOUND;
 	}
@@ -625,7 +586,7 @@ int File::open_file(Preferences *preferences,
 
 // Set extra writing parameters to mandatory settings.
 	if( wr ) {
-		if(this->asset->dither) file->set_dither();
+		if( this->asset->dither ) file->set_dither();
 	}
 
 	if( rd ) {
@@ -642,7 +603,7 @@ int File::open_file(Preferences *preferences,
 	asset->copy_from(this->asset, 1);
 //asset->dump();
 
-	if(debug) printf("File::open_file %d file=%p\n", __LINE__, file);
+	if( debug ) printf("File::open_file %d file=%p\n", __LINE__, file);
 // sleep(1);
 
 	return FILE_OK;
@@ -651,9 +612,9 @@ int File::open_file(Preferences *preferences,
 void File::delete_temp_samples_buffer()
 {
 
-	if(temp_samples_buffer) {
-		for(int j = 0; j < audio_ring_buffers; j++) {
-			for(int i = 0; i < asset->channels; i++) {
+	if( temp_samples_buffer ) {
+		for( int j = 0; j < audio_ring_buffers; j++ ) {
+			for( int i = 0; i < asset->channels; i++ ) {
 				delete temp_samples_buffer[j][i];
 			}
 			delete [] temp_samples_buffer[j];
@@ -668,10 +629,10 @@ void File::delete_temp_samples_buffer()
 void File::delete_temp_frame_buffer()
 {
 
-	if(temp_frame_buffer) {
-		for(int k = 0; k < video_ring_buffers; k++) {
-			for(int i = 0; i < asset->layers; i++) {
-				for(int j = 0; j < video_buffer_size; j++) {
+	if( temp_frame_buffer ) {
+		for( int k = 0; k < video_ring_buffers; k++ ) {
+			for( int i = 0; i < asset->layers; i++ ) {
+				for( int j = 0; j < video_buffer_size; j++ ) {
 					delete temp_frame_buffer[k][i][j];
 				}
 				delete [] temp_frame_buffer[k][i];
@@ -690,19 +651,19 @@ int File::close_file(int ignore_thread)
 {
 	const int debug = 0;
 
-	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
+	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
 
-	if(!ignore_thread) {
+	if( !ignore_thread ) {
 		stop_audio_thread();
 		stop_video_thread();
 	}
 
 
-	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
-	if(file) {
+	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
+	if( file ) {
 // The file's asset is a copy of the argument passed to open_file so the
 // user must copy lengths from the file's asset.
-		if(asset && wr) {
+		if( asset && wr ) {
 			asset->audio_length = current_sample;
 			asset->video_length = current_frame;
 		}
@@ -710,16 +671,16 @@ int File::close_file(int ignore_thread)
 		file->close_file();
 		delete file;
 	}
-	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
+	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
 
 	delete_temp_samples_buffer();
 	delete_temp_frame_buffer();
-	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
+	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
 
-	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
+	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
 
 	reset_parameters();
-	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
+	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
 	return 0;
 }
 
@@ -737,8 +698,7 @@ int File::start_audio_thread(int buffer_size, int ring_buffers)
 	this->audio_ring_buffers = ring_buffers;
 
 
-	if(!audio_thread)
-	{
+	if( !audio_thread ) {
 		audio_thread = new FileThread(this, 1, 0);
 		audio_thread->start_writing(buffer_size, 0, ring_buffers, 0);
 	}
@@ -753,8 +713,7 @@ int File::start_video_thread(int buffer_size,
 	this->video_ring_buffers = ring_buffers;
 	this->video_buffer_size = buffer_size;
 
-	if(!video_thread)
-	{
+	if( !video_thread ) {
 		video_thread = new FileThread(this, 0, 1);
 		video_thread->start_writing(buffer_size,
 			color_model,
@@ -768,8 +727,7 @@ int File::start_video_decode_thread()
 {
 // Currently, CR2 is the only one which won't work asynchronously, so
 // we're not using a virtual function yet.
-	if(!video_thread /* && asset->format != FILE_CR2 */)
-	{
+	if( !video_thread /* && asset->format != FILE_CR2 */ ) {
 		video_thread = new FileThread(this, 0, 1);
 		video_thread->start_reading();
 		use_cache = 0;
@@ -779,8 +737,7 @@ int File::start_video_decode_thread()
 
 int File::stop_audio_thread()
 {
-	if(audio_thread)
-	{
+	if( audio_thread ) {
 		audio_thread->stop_writing();
 		delete audio_thread;
 		audio_thread = 0;
@@ -790,8 +747,7 @@ int File::stop_audio_thread()
 
 int File::stop_video_thread()
 {
-	if(video_thread)
-	{
+	if( video_thread ) {
 		video_thread->stop_reading();
 		video_thread->stop_writing();
 		delete video_thread;
@@ -807,8 +763,7 @@ FileThread* File::get_video_thread()
 
 int File::set_channel(int channel)
 {
-	if(file && channel < asset->channels)
-	{
+	if( file && channel < asset->channels ) {
 		current_channel = channel;
 		return 0;
 	}
@@ -891,14 +846,11 @@ int File::skim_video(int track, void *vp, skim_fn fn)
 
 int File::set_layer(int layer, int is_thread)
 {
-	if(file && layer < asset->layers)
-	{
-		if(!is_thread && video_thread)
-		{
+	if( file && layer < asset->layers ) {
+		if( !is_thread && video_thread ) {
 			video_thread->set_layer(layer);
 		}
-		else
-		{
+		else {
 			current_layer = layer;
 		}
 		return 0;
@@ -911,9 +863,8 @@ int64_t File::get_audio_length()
 {
 	int64_t result = asset->audio_length;
 	int64_t base_samplerate = -1;
-	if(result > 0)
-	{
-		if(base_samplerate > 0)
+	if( result > 0 ) {
+		if( base_samplerate > 0 )
 			return (int64_t)((double)result / asset->sample_rate * base_samplerate + 0.5);
 		else
 			return result;
@@ -926,9 +877,8 @@ int64_t File::get_video_length()
 {
 	int64_t result = asset->video_length;
 	float base_framerate = -1;
-	if(result > 0)
-	{
-		if(base_framerate > 0)
+	if( result > 0 ) {
+		if( base_framerate > 0 )
 			return (int64_t)((double)result / asset->frame_rate * base_framerate + 0.5);
 		else
 			return result;
@@ -941,7 +891,7 @@ int64_t File::get_video_length()
 int64_t File::get_video_position()
 {
 	float base_framerate = -1;
-	if(base_framerate > 0)
+	if( base_framerate > 0 )
 		return (int64_t)((double)current_frame / asset->frame_rate * base_framerate + 0.5);
 	else
 		return current_frame;
@@ -950,9 +900,9 @@ int64_t File::get_video_position()
 int64_t File::get_audio_position()
 {
 // 	int64_t base_samplerate = -1;
-// 	if(base_samplerate > 0)
+// 	if( base_samplerate > 0 )
 // 	{
-// 		if(normalized_sample_rate == base_samplerate)
+// 		if( normalized_sample_rate == base_samplerate )
 // 			return normalized_sample;
 // 		else
 // 			return (int64_t)((double)current_sample /
@@ -970,7 +920,7 @@ int File::set_audio_position(int64_t position)
 {
 	int result = 0;
 
-	if(!file) return 1;
+	if( !file ) return 1;
 
 #define REPOSITION(x, y) \
 	(labs((x) - (y)) > 1)
@@ -983,7 +933,7 @@ int File::set_audio_position(int64_t position)
 // normalized_sample);
 		result = file->set_audio_position(current_sample);
 
-		if(result)
+		if( result )
 			printf("File::set_audio_position position=%jd"
 				" base_samplerate=%f asset=%p asset->sample_rate=%d\n",
 				position, base_samplerate, asset, asset->sample_rate);
@@ -997,26 +947,23 @@ int File::set_video_position(int64_t position,
 	int is_thread)
 {
 	int result = 0;
-	if(!file) return 0;
+	if( !file ) return 0;
 
 // Convert to file's rate
-// 	if(base_framerate > 0)
+// 	if( base_framerate > 0 )
 // 		position = (int64_t)((double)position /
 // 			base_framerate *
 // 			asset->frame_rate +
 // 			0.5);
 
 
-	if(video_thread && !is_thread)
-	{
+	if( video_thread && !is_thread ) {
 // Call thread.  Thread calls this again to set the file state.
 		video_thread->set_video_position(position);
 	}
 	else
-	if(current_frame != position)
-	{
-		if(file)
-		{
+	if( current_frame != position ) {
+		if( file ) {
 			current_frame = position;
 			result = file->set_video_position(current_frame);
 		}
@@ -1030,14 +977,12 @@ int File::write_samples(Samples **buffer, int64_t len)
 {
 	int result = 1;
 
-	if(file)
-	{
+	if( file ) {
 		write_lock->lock("File::write_samples");
 
 // Convert to arrays for backwards compatability
 		double *temp[asset->channels];
-		for(int i = 0; i < asset->channels; i++)
-		{
+		for( int i = 0; i < asset->channels; i++ ) {
 			temp[i] = buffer[i]->get_data();
 		}
 
@@ -1094,8 +1039,7 @@ int File::write_compressed_frame(VFrame *buffer)
 int File::write_audio_buffer(int64_t len)
 {
 	int result = 0;
-	if(audio_thread)
-	{
+	if( audio_thread ) {
 		result = audio_thread->write_buffer(len);
 	}
 	return result;
@@ -1104,8 +1048,7 @@ int File::write_audio_buffer(int64_t len)
 int File::write_video_buffer(int64_t len)
 {
 	int result = 0;
-	if(video_thread)
-	{
+	if( video_thread ) {
 		result = video_thread->write_buffer(len);
 	}
 
@@ -1114,14 +1057,13 @@ int File::write_video_buffer(int64_t len)
 
 Samples** File::get_audio_buffer()
 {
-	if(audio_thread) return audio_thread->get_audio_buffer();
+	if( audio_thread ) return audio_thread->get_audio_buffer();
 	return 0;
 }
 
 VFrame*** File::get_video_buffer()
 {
-	if(video_thread)
-	{
+	if( video_thread ) {
 		VFrame*** result = video_thread->get_video_buffer();
 
 		return result;
@@ -1134,35 +1076,34 @@ VFrame*** File::get_video_buffer()
 int File::read_samples(Samples *samples, int64_t len)
 {
 // Never try to read more samples than exist in the file
-	if (asset->audio_length >= 0 && current_sample + len > asset->audio_length) {
+	if( asset->audio_length >= 0 && current_sample + len > asset->audio_length ) {
 		len = asset->audio_length - current_sample;
 	}
-	if(len <= 0) return 0;
+	if( len <= 0 ) return 0;
 
 	int result = 0;
 	const int debug = 0;
-	if(debug) PRINT_TRACE
+	if( debug ) PRINT_TRACE
 
-	if(debug) PRINT_TRACE
+	if( debug ) PRINT_TRACE
 
 	double *buffer = samples->get_data();
 
 	int64_t base_samplerate = asset->sample_rate;
 
-	if(file)
-	{
+	if( file ) {
 // Resample recursively calls this with the asset sample rate
-		if(base_samplerate == 0) base_samplerate = asset->sample_rate;
+		if( base_samplerate == 0 ) base_samplerate = asset->sample_rate;
 
-		if(debug) PRINT_TRACE
+		if( debug ) PRINT_TRACE
 		result = file->read_samples(buffer, len);
 
-		if(debug) PRINT_TRACE
+		if( debug ) PRINT_TRACE
 		current_sample += len;
 
 		normalized_sample += len;
 	}
-	if(debug) PRINT_TRACE
+	if( debug ) PRINT_TRACE
 
 	return result;
 }
@@ -1171,16 +1112,16 @@ int File::read_frame(VFrame *frame, int is_thread)
 {
 	const int debug = 0;
 
-	if(debug) PRINT_TRACE
+	if( debug ) PRINT_TRACE
 
 //printf("File::read_frame %d\n", __LINE__);
 
-	if(video_thread && !is_thread) return video_thread->read_frame(frame);
+	if( video_thread && !is_thread ) return video_thread->read_frame(frame);
 
 //printf("File::read_frame %d\n", __LINE__);
-	if(debug) PRINT_TRACE
+	if( debug ) PRINT_TRACE
 	if( !file ) return 1;
-	if(debug) PRINT_TRACE
+	if( debug ) PRINT_TRACE
 	int result = 0;
 	int supported_colormodel = colormodel_supported(frame->get_color_model());
 	int advance_position = 1;
@@ -1188,33 +1129,28 @@ int File::read_frame(VFrame *frame, int is_thread)
 	int64_t cache_position = !asset->single_frame ? current_frame : -1;
 // Test cache
 	if( cache_active && frame_cache->get_frame(frame, cache_position,
-			current_layer, asset->frame_rate) )
-	{
+			current_layer, asset->frame_rate) ) {
 // Can't advance position if cache used.
 //printf("File::read_frame %d\n", __LINE__);
 		advance_position = 0;
 	}
 // Need temp
-	else if(frame->get_color_model() != BC_COMPRESSED &&
+	else if( frame->get_color_model() != BC_COMPRESSED &&
 		(supported_colormodel != frame->get_color_model() ||
 		frame->get_w() != asset->width ||
-		frame->get_h() != asset->height))
-	{
+		frame->get_h() != asset->height) ) {
 
 //			printf("File::read_frame %d\n", __LINE__);
 // Can't advance position here because it needs to be added to cache
-		if(temp_frame)
-		{
-			if(!temp_frame->params_match(asset->width, asset->height, supported_colormodel))
-			{
+		if( temp_frame ) {
+			if( !temp_frame->params_match(asset->width, asset->height, supported_colormodel) ) {
 				delete temp_frame;
 				temp_frame = 0;
 			}
 		}
 
 //			printf("File::read_frame %d\n", __LINE__);
-		if(!temp_frame)
-		{
+		if( !temp_frame ) {
 			temp_frame = new VFrame(0,
 				-1,
 				asset->width,
@@ -1232,14 +1168,13 @@ int File::read_frame(VFrame *frame, int is_thread)
 			frame->set_status(-1);
 //printf("File::read_frame %d\n", __LINE__);
 	}
-	else
-	{
+	else {
 // Can't advance position here because it needs to be added to cache
 //printf("File::read_frame %d\n", __LINE__);
 		result = file->read_frame(frame);
 		if( result && frame->get_status() > 0 )
 			frame->set_status(-1);
-//for(int i = 0; i < 100 * 1000; i++) ((float*)frame->get_rows()[0])[i] = 1.0;
+//for( int i = 0; i < 100 * 1000; i++ ) ((float*)frame->get_rows()[0])[i] = 1.0;
 	}
 
 	if( result && !current_frame )
@@ -1250,8 +1185,8 @@ int File::read_frame(VFrame *frame, int is_thread)
 			current_layer, asset->frame_rate, 1, 0);
 //printf("File::read_frame %d\n", __LINE__);
 
-	if(advance_position) current_frame++;
-	if(debug) PRINT_TRACE
+	if( advance_position ) current_frame++;
+	if( debug ) PRINT_TRACE
 	return 0;
 }
 
@@ -1273,39 +1208,34 @@ int File::can_copy_from(Asset *asset,
 
 int File::strtoformat(const char *format)
 {
-	return strtoformat(0, format);
-}
-
-int File::strtoformat(ArrayList<PluginServer*> *plugindb, const char *format)
-{
-	if(!strcasecmp(format, _(AC3_NAME))) return FILE_AC3;
-	if(!strcasecmp(format, _(SCENE_NAME))) return FILE_SCENE;
-	if(!strcasecmp(format, _(WAV_NAME))) return FILE_WAV;
-	if(!strcasecmp(format, _(PCM_NAME))) return FILE_PCM;
-	if(!strcasecmp(format, _(AU_NAME))) return FILE_AU;
-	if(!strcasecmp(format, _(AIFF_NAME))) return FILE_AIFF;
-	if(!strcasecmp(format, _(SND_NAME))) return FILE_SND;
-	if(!strcasecmp(format, _(PNG_NAME))) return FILE_PNG;
-	if(!strcasecmp(format, _(PNG_LIST_NAME))) return FILE_PNG_LIST;
-	if(!strcasecmp(format, _(TIFF_NAME))) return FILE_TIFF;
-	if(!strcasecmp(format, _(TIFF_LIST_NAME))) return FILE_TIFF_LIST;
-	if(!strcasecmp(format, _(JPEG_NAME))) return FILE_JPEG;
-	if(!strcasecmp(format, _(JPEG_LIST_NAME))) return FILE_JPEG_LIST;
-	if(!strcasecmp(format, _(EXR_NAME))) return FILE_EXR;
-	if(!strcasecmp(format, _(EXR_LIST_NAME))) return FILE_EXR_LIST;
-	if(!strcasecmp(format, _(FLAC_NAME))) return FILE_FLAC;
-	if(!strcasecmp(format, _(CR2_NAME))) return FILE_CR2;
-	if(!strcasecmp(format, _(CR2_LIST_NAME))) return FILE_CR2_LIST;
-	if(!strcasecmp(format, _(MPEG_NAME))) return FILE_MPEG;
-	if(!strcasecmp(format, _(AMPEG_NAME))) return FILE_AMPEG;
-	if(!strcasecmp(format, _(VMPEG_NAME))) return FILE_VMPEG;
-	if(!strcasecmp(format, _(TGA_NAME))) return FILE_TGA;
-	if(!strcasecmp(format, _(TGA_LIST_NAME))) return FILE_TGA_LIST;
-	if(!strcasecmp(format, _(OGG_NAME))) return FILE_OGG;
-	if(!strcasecmp(format, _(VORBIS_NAME))) return FILE_VORBIS;
-	if(!strcasecmp(format, _(RAWDV_NAME))) return FILE_RAWDV;
-	if(!strcasecmp(format, _(FFMPEG_NAME))) return FILE_FFMPEG;
-	if(!strcasecmp(format, _(DBASE_NAME))) return FILE_DB;
+	if( !strcasecmp(format, _(AC3_NAME)) ) return FILE_AC3;
+	if( !strcasecmp(format, _(SCENE_NAME)) ) return FILE_SCENE;
+	if( !strcasecmp(format, _(WAV_NAME)) ) return FILE_WAV;
+	if( !strcasecmp(format, _(PCM_NAME)) ) return FILE_PCM;
+	if( !strcasecmp(format, _(AU_NAME)) ) return FILE_AU;
+	if( !strcasecmp(format, _(AIFF_NAME)) ) return FILE_AIFF;
+	if( !strcasecmp(format, _(SND_NAME)) ) return FILE_SND;
+	if( !strcasecmp(format, _(PNG_NAME)) ) return FILE_PNG;
+	if( !strcasecmp(format, _(PNG_LIST_NAME)) ) return FILE_PNG_LIST;
+	if( !strcasecmp(format, _(TIFF_NAME)) ) return FILE_TIFF;
+	if( !strcasecmp(format, _(TIFF_LIST_NAME)) ) return FILE_TIFF_LIST;
+	if( !strcasecmp(format, _(JPEG_NAME)) ) return FILE_JPEG;
+	if( !strcasecmp(format, _(JPEG_LIST_NAME)) ) return FILE_JPEG_LIST;
+	if( !strcasecmp(format, _(EXR_NAME)) ) return FILE_EXR;
+	if( !strcasecmp(format, _(EXR_LIST_NAME)) ) return FILE_EXR_LIST;
+	if( !strcasecmp(format, _(FLAC_NAME)) ) return FILE_FLAC;
+	if( !strcasecmp(format, _(CR2_NAME)) ) return FILE_CR2;
+	if( !strcasecmp(format, _(CR2_LIST_NAME)) ) return FILE_CR2_LIST;
+	if( !strcasecmp(format, _(MPEG_NAME)) ) return FILE_MPEG;
+	if( !strcasecmp(format, _(AMPEG_NAME)) ) return FILE_AMPEG;
+	if( !strcasecmp(format, _(VMPEG_NAME)) ) return FILE_VMPEG;
+	if( !strcasecmp(format, _(TGA_NAME)) ) return FILE_TGA;
+	if( !strcasecmp(format, _(TGA_LIST_NAME)) ) return FILE_TGA_LIST;
+	if( !strcasecmp(format, _(OGG_NAME)) ) return FILE_OGG;
+	if( !strcasecmp(format, _(VORBIS_NAME)) ) return FILE_VORBIS;
+	if( !strcasecmp(format, _(RAWDV_NAME)) ) return FILE_RAWDV;
+	if( !strcasecmp(format, _(FFMPEG_NAME)) ) return FILE_FFMPEG;
+	if( !strcasecmp(format, _(DBASE_NAME)) ) return FILE_DB;
 
 	return 0;
 }
@@ -1313,12 +1243,7 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, const char *format)
 
 const char* File::formattostr(int format)
 {
-	return formattostr(0, format);
-}
-
-const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
-{
-	switch(format) {
+	switch( format ) {
 	case FILE_SCENE:	return _(SCENE_NAME);
 	case FILE_AC3:		return _(AC3_NAME);
 	case FILE_WAV:		return _(WAV_NAME);
@@ -1353,20 +1278,20 @@ const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 
 int File::strtobits(const char *bits)
 {
-	if(!strcasecmp(bits, _(NAME_8BIT))) return BITSLINEAR8;
-	if(!strcasecmp(bits, _(NAME_16BIT))) return BITSLINEAR16;
-	if(!strcasecmp(bits, _(NAME_24BIT))) return BITSLINEAR24;
-	if(!strcasecmp(bits, _(NAME_32BIT))) return BITSLINEAR32;
-	if(!strcasecmp(bits, _(NAME_ULAW))) return BITSULAW;
-	if(!strcasecmp(bits, _(NAME_ADPCM))) return BITS_ADPCM;
-	if(!strcasecmp(bits, _(NAME_FLOAT))) return BITSFLOAT;
+	if( !strcasecmp(bits, _(NAME_8BIT)) ) return BITSLINEAR8;
+	if( !strcasecmp(bits, _(NAME_16BIT)) ) return BITSLINEAR16;
+	if( !strcasecmp(bits, _(NAME_24BIT)) ) return BITSLINEAR24;
+	if( !strcasecmp(bits, _(NAME_32BIT)) ) return BITSLINEAR32;
+	if( !strcasecmp(bits, _(NAME_ULAW)) ) return BITSULAW;
+	if( !strcasecmp(bits, _(NAME_ADPCM)) ) return BITS_ADPCM;
+	if( !strcasecmp(bits, _(NAME_FLOAT)) ) return BITSFLOAT;
 	return BITSLINEAR16;
 }
 
 const char* File::bitstostr(int bits)
 {
 //printf("File::bitstostr\n");
-	switch(bits) {
+	switch( bits ) {
 	case BITSLINEAR8:	return (NAME_8BIT);
 	case BITSLINEAR16:	return (NAME_16BIT);
 	case BITSLINEAR24:	return (NAME_24BIT);
@@ -1382,25 +1307,24 @@ const char* File::bitstostr(int bits)
 
 int File::str_to_byteorder(const char *string)
 {
-	if(!strcasecmp(string, _("Lo Hi"))) return 1;
+	if( !strcasecmp(string, _("Lo Hi")) ) return 1;
 	return 0;
 }
 
 const char* File::byteorder_to_str(int byte_order)
 {
-	if(byte_order) return _("Lo Hi");
+	if( byte_order ) return _("Lo Hi");
 	return _("Hi Lo");
 }
 
 int File::bytes_per_sample(int bits)
 {
-	switch(bits)
-	{
-		case BITSLINEAR8:	return 1;
-		case BITSLINEAR16:	return 2;
-		case BITSLINEAR24:	return 3;
-		case BITSLINEAR32:	return 4;
-		case BITSULAW:		return 1;
+	switch( bits ) {
+	case BITSLINEAR8:	return 1;
+	case BITSLINEAR16:	return 2;
+	case BITSLINEAR24:	return 3;
+	case BITSLINEAR32:	return 4;
+	case BITSULAW:		return 1;
 	}
 	return 1;
 }
@@ -1416,26 +1340,25 @@ int File::get_best_colormodel(int driver)
 
 int File::get_best_colormodel(Asset *asset, int driver)
 {
-	switch(asset->format)
-	{
+	switch( asset->format ) {
 #ifdef HAVE_DV
-		case FILE_RAWDV:	return FileDV::get_best_colormodel(asset, driver);
+	case FILE_RAWDV:	return FileDV::get_best_colormodel(asset, driver);
 #endif
-		case FILE_MPEG:		return FileMPEG::get_best_colormodel(asset, driver);
-		case FILE_JPEG:
-		case FILE_JPEG_LIST:	return FileJPEG::get_best_colormodel(asset, driver);
+	case FILE_MPEG:		return FileMPEG::get_best_colormodel(asset, driver);
+	case FILE_JPEG:
+	case FILE_JPEG_LIST:	return FileJPEG::get_best_colormodel(asset, driver);
 #ifdef HAVE_OPENEXR
-		case FILE_EXR:
-		case FILE_EXR_LIST:	return FileEXR::get_best_colormodel(asset, driver);
+	case FILE_EXR:
+	case FILE_EXR_LIST:	return FileEXR::get_best_colormodel(asset, driver);
 #endif
-		case FILE_PNG:
-		case FILE_PNG_LIST:	return FilePNG::get_best_colormodel(asset, driver);
-		case FILE_TGA:
-		case FILE_TGA_LIST:	return FileTGA::get_best_colormodel(asset, driver);
-		case FILE_CR2:
-		case FILE_CR2_LIST:	return FileCR2::get_best_colormodel(asset, driver);
-		case FILE_DB:		return FileDB::get_best_colormodel(asset, driver);
-		case FILE_FFMPEG:	return FileFFMPEG::get_best_colormodel(asset, driver);
+	case FILE_PNG:
+	case FILE_PNG_LIST:	return FilePNG::get_best_colormodel(asset, driver);
+	case FILE_TGA:
+	case FILE_TGA_LIST:	return FileTGA::get_best_colormodel(asset, driver);
+	case FILE_CR2:
+	case FILE_CR2_LIST:	return FileCR2::get_best_colormodel(asset, driver);
+	case FILE_DB:		return FileDB::get_best_colormodel(asset, driver);
+	case FILE_FFMPEG:	return FileFFMPEG::get_best_colormodel(asset, driver);
 	}
 
 	return BC_RGB888;
@@ -1444,7 +1367,7 @@ int File::get_best_colormodel(Asset *asset, int driver)
 
 int File::colormodel_supported(int colormodel)
 {
-	if(file)
+	if( file )
 		return file->colormodel_supported(colormodel);
 
 	return BC_RGB888;
@@ -1461,113 +1384,109 @@ int64_t File::get_memory_usage()
 	int64_t result = 0;
 
 	result += file_memory_usage();
-	if(temp_frame) result += temp_frame->get_data_size();
+	if( temp_frame ) result += temp_frame->get_data_size();
 	result += frame_cache->get_memory_usage();
-	if(video_thread) result += video_thread->get_memory_usage();
+	if( video_thread ) result += video_thread->get_memory_usage();
 
-	if(result < MIN_CACHEITEM_SIZE) result = MIN_CACHEITEM_SIZE;
+	if( result < MIN_CACHEITEM_SIZE ) result = MIN_CACHEITEM_SIZE;
 	return result;
 }
 
 
-int File::supports_video(ArrayList<PluginServer*> *plugindb, char *format)
-{
-	int format_i = strtoformat(plugindb, format);
-
-	return supports_video(format_i);
-	return 0;
-}
-
-int File::supports_audio(ArrayList<PluginServer*> *plugindb, char *format)
-{
-	int format_i = strtoformat(plugindb, format);
-
-	return supports_audio(format_i);
-	return 0;
-}
-
-
-int File::supports_video(int format)
+int File::renders_video(Asset *asset)
 {
 //printf("File::supports_video %d\n", format);
-	switch(format)
-	{
-		case FILE_OGG:
-		case FILE_JPEG:
-		case FILE_JPEG_LIST:
-		case FILE_CR2:
-		case FILE_CR2_LIST:
-		case FILE_EXR:
-		case FILE_EXR_LIST:
-		case FILE_PNG:
-		case FILE_PNG_LIST:
-		case FILE_TGA:
-		case FILE_TGA_LIST:
-		case FILE_TIFF:
-		case FILE_TIFF_LIST:
-		case FILE_VMPEG:
-	        case FILE_FFMPEG:
-		case FILE_RAWDV:
-			return 1;
+	switch( asset->format ) {
+	case FILE_OGG:
+	case FILE_JPEG:
+	case FILE_JPEG_LIST:
+	case FILE_CR2:
+	case FILE_CR2_LIST:
+	case FILE_EXR:
+	case FILE_EXR_LIST:
+	case FILE_PNG:
+	case FILE_PNG_LIST:
+	case FILE_TGA:
+	case FILE_TGA_LIST:
+	case FILE_TIFF:
+	case FILE_TIFF_LIST:
+	case FILE_VMPEG:
+	case FILE_RAWDV:
+		return 1;
+        case FILE_FFMPEG:
+		return FileFFMPEG::renders_video(asset->fformat);
 	}
 	return 0;
 }
 
-int File::supports_audio(int format)
+int File::renders_audio(Asset *asset)
 {
-	switch(format)
-	{
-		case FILE_AC3:
-		case FILE_FLAC:
-		case FILE_PCM:
-		case FILE_WAV:
-		case FILE_OGG:
-		case FILE_VORBIS:
-		case FILE_AMPEG:
-		case FILE_AU:
-		case FILE_AIFF:
-		case FILE_SND:
-		case FILE_FFMPEG:
-		case FILE_RAWDV:
-			return 1;
+	switch( asset->format ) {
+	case FILE_AC3:
+	case FILE_FLAC:
+	case FILE_PCM:
+	case FILE_WAV:
+	case FILE_OGG:
+	case FILE_VORBIS:
+	case FILE_AMPEG:
+	case FILE_AU:
+	case FILE_AIFF:
+	case FILE_SND:
+	case FILE_RAWDV:
+		return 1;
+        case FILE_FFMPEG:
+		return FileFFMPEG::renders_audio(asset->fformat);
 	}
+	return 0;
+}
+
+int File::is_image_render(int format)
+{
+	switch( format ) {
+	case FILE_EXR:
+	case FILE_JPEG:
+	case FILE_PNG:
+	case FILE_TGA:
+	case FILE_TIFF:
+		return 1;
+	}
+
 	return 0;
 }
 
 const char* File::get_tag(int format)
 {
-	switch(format)
-	{
-		case FILE_AC3:          return "ac3";
-		case FILE_AIFF:         return "aif";
-		case FILE_AMPEG:        return "mp3";
-		case FILE_AU:           return "au";
-		case FILE_RAWDV:        return "dv";
-		case FILE_DB:           return "db";
-		case FILE_EXR:          return "exr";
-		case FILE_EXR_LIST:     return "exr";
-		case FILE_FLAC:         return "flac";
-		case FILE_JPEG:         return "jpg";
-		case FILE_JPEG_LIST:    return "jpg";
-		case FILE_OGG:          return "ogg";
-		case FILE_PCM:          return "pcm";
-		case FILE_PNG:          return "png";
-		case FILE_PNG_LIST:     return "png";
-		case FILE_TGA:          return "tga";
-		case FILE_TGA_LIST:     return "tga";
-		case FILE_TIFF:         return "tif";
-		case FILE_TIFF_LIST:    return "tif";
-		case FILE_VMPEG:        return "m2v";
-		case FILE_VORBIS:       return "ogg";
-		case FILE_WAV:          return "wav";
-		case FILE_FFMPEG:       return "ffmpg";
+	switch( format ) {
+	case FILE_AC3:          return "ac3";
+	case FILE_AIFF:         return "aif";
+	case FILE_AMPEG:        return "mp3";
+	case FILE_AU:           return "au";
+	case FILE_RAWDV:        return "dv";
+	case FILE_DB:           return "db";
+	case FILE_EXR:          return "exr";
+	case FILE_EXR_LIST:     return "exr";
+	case FILE_FLAC:         return "flac";
+	case FILE_JPEG:         return "jpg";
+	case FILE_JPEG_LIST:    return "jpg";
+	case FILE_OGG:          return "ogg";
+	case FILE_PCM:          return "pcm";
+	case FILE_PNG:          return "png";
+	case FILE_PNG_LIST:     return "png";
+	case FILE_TGA:          return "tga";
+	case FILE_TGA_LIST:     return "tga";
+	case FILE_TIFF:         return "tif";
+	case FILE_TIFF_LIST:    return "tif";
+	case FILE_VMPEG:        return "m2v";
+	case FILE_VORBIS:       return "ogg";
+	case FILE_WAV:          return "wav";
+	case FILE_FFMPEG:       return "ffmpg";
 	}
 	return 0;
 }
 
 const char* File::get_prefix(int format)
 {
-	switch(format) {
+	switch( format ) {
 	case FILE_PCM:		return "PCM";
 	case FILE_WAV:		return "WAV";
 	case FILE_PNG:		return "PNG";
@@ -1606,14 +1525,13 @@ const char* File::get_prefix(int format)
 PackagingEngine *File::new_packaging_engine(Asset *asset)
 {
 	PackagingEngine *result;
-	switch (asset->format)
-	{
-		case FILE_OGG:
-			result = (PackagingEngine*)new PackagingEngineOGG();
-			break;
-		default:
-			result = (PackagingEngine*) new PackagingEngineDefault();
-			break;
+	switch( asset->format ) {
+	case FILE_OGG:
+		result = (PackagingEngine*)new PackagingEngineOGG();
+		break;
+	default:
+		result = (PackagingEngine*) new PackagingEngineDefault();
+		break;
 	}
 
 	return result;
@@ -1704,5 +1622,4 @@ void File::init_cin_path()
 	setenv_path(cinlcl_path, "CIN_LOCALE", LOCALE_DIR);
 	setenv_path(cinbwr_path, "CIN_BROWSER", CIN_BROWSER);
 }
-
 

@@ -62,9 +62,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 	format_button = 0;
 	format_text = 0;
 	audio_title = 0;
-	audio_switch = 0;
 	video_title = 0;
-	video_switch = 0;
 	channels_title = 0;
 	channels_button = 0;
 	multiple_files = 0;
@@ -339,17 +337,17 @@ void FormatTools::update_format()
 {
 	if( do_audio && prompt_audio && audio_switch ) {
 		audio_switch->update(asset->audio_data);
-		if( !asset->audio_data )
-			audio_switch->disable();
-		else
+		if( File::renders_audio(asset) )
 			audio_switch->enable();
+		else
+			audio_switch->disable();
 	}
 	if( do_video && prompt_video && video_switch ) {
 		video_switch->update(asset->video_data);
-		if( !asset->video_data )
-			video_switch->disable();
-		else
+		if( File::renders_video(asset) )
 			video_switch->enable();
+		else
+			video_switch->disable();
 	}
 	if( asset->format == FILE_FFMPEG ) {
 		ffmpeg_type->show();
@@ -453,11 +451,8 @@ void FormatTools::update(Asset *asset, int *strategy)
 
 	if(path_textbox)
 		path_textbox->update(asset->path);
-	format_text->update(File::formattostr(plugindb, asset->format));
-	if(do_audio && prompt_audio && audio_switch)
-		audio_switch->update(asset->audio_data);
-	if(do_video && prompt_video && video_switch)
-		video_switch->update(asset->video_data);
+	format_text->update(File::formattostr(asset->format));
+	update_format();
 	if(strategy)
 	{
 		multiple_files->update(strategy);
@@ -788,13 +783,13 @@ int FormatFormat::handle_event()
 {
 	BC_ListBoxItem *selection = get_selection(0, 0);
 	if( selection ) {
-		int new_format = File::strtoformat(format->plugindb, get_selection(0, 0)->get_text());
+		int new_format = File::strtoformat(get_selection(0, 0)->get_text());
 //		if(new_format != format->asset->format)
 		{
 			Asset *asset = format->asset;
 			asset->format = new_format;
-			asset->audio_data = File::supports_audio(asset->format);
-			asset->video_data = File::supports_video(asset->format);
+			asset->audio_data = File::renders_audio(asset);
+			asset->video_data = File::renders_video(asset);
 			asset->ff_audio_options[0] = 0;
 			asset->ff_video_options[0] = 0;
 			format->format_text->update(selection->get_text());

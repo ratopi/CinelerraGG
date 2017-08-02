@@ -173,7 +173,8 @@ public:
 	InterfacePrefs *iface_prefs;
 
 	int handle_event();
-	ShBtnPrefs(PreferencesWindow *pwindow, InterfacePrefs *iface_prefs, int x, int y);
+	ShBtnPrefs(PreferencesWindow *pwindow,
+		InterfacePrefs *iface_prefs, int x, int y);
 };
 class StillImageUseDuration : public BC_CheckBox
 {
@@ -194,11 +195,15 @@ public:
 class KeyframeReticle : public BC_PopupMenu
 {
 public:
-	KeyframeReticle(int x, int y, int *output);
+	KeyframeReticle(PreferencesWindow *pwindow,
+		InterfacePrefs *iface_prefs, int x, int y, int *output);
 	~KeyframeReticle();
 
-	const char* hairline_to_string(int type);
+	const char *hairline_to_string(int type);
 	void create_objects();
+
+	PreferencesWindow *pwindow;
+	InterfacePrefs *iface_prefs;
 	int *output;
 };
 

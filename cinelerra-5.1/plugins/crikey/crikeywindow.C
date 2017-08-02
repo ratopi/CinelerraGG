@@ -155,6 +155,8 @@ int CriKeyColorPicker::handle_new_color(int color, int alpha)
 	gui->lock_window("CriKeyColorPicker::handle_new_color");
 	gui->update_color(this->color = color);
 	gui->flush();
+	gui->plugin->config.color = color;
+	gui->plugin->send_configure_change();
 	gui->unlock_window();
 	return 1;
 }
@@ -215,6 +217,15 @@ int CriKeyWindow::grab_event(XEvent *event)
 {
 	if( key_mode->mode != KEY_POINT ) return 0;
 
+	MWindow *mwindow = plugin->server->mwindow;
+	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
+	CWindowCanvas *canvas = cwindow_gui->canvas;
+	int cx, cy;  canvas->get_canvas()->get_relative_cursor_xy(cx, cy);
+	if( cx < mwindow->theme->ccanvas_x ) return 0;
+	if( cx >= mwindow->theme->ccanvas_x+mwindow->theme->ccanvas_w ) return 0;
+	if( cy < mwindow->theme->ccanvas_y ) return 0;
+	if( cy >= mwindow->theme->ccanvas_y+mwindow->theme->ccanvas_h ) return 0;
+
 	switch( event->type ) {
 	case ButtonPress:
 		if( dragging ) return 0;
@@ -229,11 +240,8 @@ int CriKeyWindow::grab_event(XEvent *event)
 	default:
 		return 0;
 	}
-	MWindow *mwindow = plugin->server->mwindow;
-	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
-	CWindowCanvas *canvas = cwindow_gui->canvas;
-	float cursor_x = canvas->get_canvas()->get_relative_cursor_x();
-	float cursor_y = canvas->get_canvas()->get_relative_cursor_y();
+
+	float cursor_x = cx, cursor_y = cy;
 	canvas->canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
 	int64_t position = plugin->get_source_position();
 	float projector_x, projector_y, projector_z;

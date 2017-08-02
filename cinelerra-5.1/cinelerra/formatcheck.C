@@ -42,7 +42,7 @@ int FormatCheck::check_format()
 	if(!result && asset->video_data)
 	{
 // Only 1 format can store video.
-		if(!File::supports_video(asset->format))
+		if(!File::renders_video(asset))
 		{
 			ErrorBox errorbox(_(PROGRAM_NAME ": Error"));
 			errorbox.create_objects(_("The format you selected doesn't support video."));
@@ -53,7 +53,7 @@ int FormatCheck::check_format()
 
 	if(!result && asset->audio_data)
 	{
-		if(!File::supports_audio(asset->format))
+		if(!File::renders_audio(asset))
 		{
 			ErrorBox errorbox(_(PROGRAM_NAME ": Error"));
 			errorbox.create_objects(_("The format you selected doesn't support audio."));

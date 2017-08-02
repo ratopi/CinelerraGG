@@ -367,6 +367,21 @@ int FileFFMPEG::get_best_colormodel(Asset *asset, int driver)
 	return BC_RGB888;
 }
 
+int FileFFMPEG::can_render(const char *fformat, const char *type)
+{
+	FileSystem fs;
+	char option_path[BCTEXTLEN];
+	FFMPEG::set_option_path(option_path, type);
+	fs.update(option_path);
+	int total_files = fs.total_files();
+	for( int i=0; i<total_files; ++i ) {
+		const char *name = fs.get_entry(i)->get_name();
+		const char *ext = strrchr(name,'.');
+		if( !ext ) continue;
+		if( !strcmp(fformat, ++ext) ) return 1;
+	}
+	return 0;
+}
 
 int FileFFMPEG::get_ff_option(const char *nm, const char *options, char *value)
 {

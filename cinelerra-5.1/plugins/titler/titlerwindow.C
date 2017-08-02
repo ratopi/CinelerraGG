@@ -465,6 +465,15 @@ int TitleWindow::resize_event(int w, int h)
 
 int TitleWindow::grab_event(XEvent *event)
 {
+	MWindow *mwindow = client->server->mwindow;
+	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
+	CWindowCanvas *canvas = cwindow_gui->canvas;
+	int cx, cy;  canvas->get_canvas()->get_relative_cursor_xy(cx, cy);
+	if( cx < mwindow->theme->ccanvas_x ) return 0;
+	if( cx >= mwindow->theme->ccanvas_x+mwindow->theme->ccanvas_w ) return 0;
+	if( cy < mwindow->theme->ccanvas_y ) return 0;
+	if( cy >= mwindow->theme->ccanvas_y+mwindow->theme->ccanvas_h ) return 0;
+
 	switch( event->type ) {
 	case ButtonPress:
 		if( !dragging ) break;
@@ -478,11 +487,8 @@ int TitleWindow::grab_event(XEvent *event)
 	default:
 		return 0;
 	}
-	MWindow *mwindow = client->server->mwindow;
-	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
-	CWindowCanvas *canvas = cwindow_gui->canvas;
-	float cursor_x = canvas->get_canvas()->get_relative_cursor_x();
-	float cursor_y = canvas->get_canvas()->get_relative_cursor_y();
+
+	float cursor_x = cx, cursor_y = cy;
 	canvas->canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
 	int64_t position = client->get_source_position();
 	float projector_x, projector_y, projector_z;
@@ -504,7 +510,7 @@ int TitleWindow::grab_event(XEvent *event)
 	int y0 = title_y, y1 = title_y+(title_h+1)/2, y2 = title_y+title_h;
 	int drag_dx = 0, drag_dy = 0;
 	if( !dragging ) {  // clockwise
-		     if( abs(drag_dx = cursor_x-x0) < r &&       // x0,y0
+		     if( abs(drag_dx = cursor_x-x0) < r &&  // x0,y0
 			 abs(drag_dy = cursor_y-y0) < r ) dragging = 1;
 		else if( abs(drag_dx = cursor_x-x1) < r &&  // x1,y0
 			 abs(drag_dy = cursor_y-y0) < r ) dragging = 2;
