@@ -41,7 +41,7 @@ public:
 	void copy_from(TransportCommand *command);
 	TransportCommand& operator=(TransportCommand &command);
 // Get the range to play back from the EDL
-	void set_playback_range(EDL *edl = 0, int use_inout = 0);
+	void set_playback_range(EDL *edl=0, int use_inout=0, int toggle_audio=0);
 
 // Adjust playback range with in/out points for rendering
 	void playback_range_adjust_inout();
@@ -69,6 +69,8 @@ public:
 	int realtime;
 // Use persistant starting point
 	int resume;
+// reverse audio duty
+	int audio_toggle;
 
 private:
 // Copied to render engines
@@ -88,7 +90,8 @@ public:
 		int realtime,
 // Persistent starting point
 		int resume = 0,
-		int use_inout = 0);
+		int use_inout = 0,
+		int toggle_audio = 0);
 	void update_change_type(int change_type);
 
 	TransportCommand command;

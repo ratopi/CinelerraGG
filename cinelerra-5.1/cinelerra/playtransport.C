@@ -180,74 +180,52 @@ int PlayTransport::flip_vertical(int vertical, int &x, int &y)
 int PlayTransport::keypress_event()
 {
 	int result = 1;
-	if(subwindow->shift_down())
-	{
-		switch(subwindow->get_keypress())
-		{
-			case END:
-				subwindow->lock_window("PlayTransport::keypress_event 1");
-				goto_end();
-				subwindow->unlock_window();
-				break;
-			case HOME:
-				subwindow->lock_window("PlayTransport::keypress_event 2");
-				goto_start();
-				subwindow->unlock_window();
-				break;
-			default:
-				result = 0;
-				break;
-		}
+	int key = subwindow->get_keypress();
+// unqualified keys, still holding lock
+	switch( key ) {
+	case HOME:
+		goto_start();
+		return result;
+	case END:
+		goto_end();
 		return result;
 	}
 
-// Set playback range to in/out points if CTRL is down
-	int use_inout = 0;
-	if(subwindow->ctrl_down())
-	{
-		use_inout = 1;
-	}
+	int toggle_audio = subwindow->shift_down() ? 1 : 0;
+	int use_inout = subwindow->ctrl_down() ? 1 : 0;
+	int command = -1, prev_command = engine->command->command;
 	using_inout = use_inout;
 	subwindow->unlock_window();
 
-
-	switch(subwindow->get_keypress())
-	{
-		case KPPLUS:	handle_transport(FAST_REWIND, 0, use_inout);		break;
-		case KP6:	handle_transport(NORMAL_REWIND, 0, use_inout);		break;
-		case KP5:	handle_transport(SLOW_REWIND, 0, use_inout);		break;
-		case KP4:	handle_transport(SINGLE_FRAME_REWIND, 0, use_inout);	break;
-		case KP1:	handle_transport(SINGLE_FRAME_FWD, 0, use_inout);	break;
-		case KP2:	handle_transport(SLOW_FWD, 0, use_inout);		break;
-		case KP3:	handle_transport(NORMAL_FWD, 0, use_inout);		break;
-		case KPENTER:	handle_transport(FAST_FWD, 0, use_inout);		break;
-		case KPINS:	handle_transport(STOP, 0, use_inout);			break;
-		case ' ': {
-			int prev_command = engine->command->command;
-			int new_command = prev_command == COMMAND_NONE ||
-					prev_command == CURRENT_FRAME ||
-				    	prev_command == PAUSE ||
-					prev_command == STOP ? NORMAL_FWD : STOP;
-				handle_transport(new_command, 0, use_inout);		break;
-			  }
-		case 'k':	handle_transport(STOP, 0, use_inout);			break;
-		case END:
-			subwindow->lock_window("PlayTransport::keypress_event 3");
-			goto_end();
-			subwindow->unlock_window();
+	switch( key ) {
+	case 'k':
+	case KPINS:	command = STOP;			break;
+	case KPPLUS:	command = FAST_REWIND;		break;
+	case KP6:	command = NORMAL_REWIND;	break;
+	case KP5:	command = SLOW_REWIND;		break;
+	case KP4:	command = SINGLE_FRAME_REWIND;	break;
+	case KP1:	command = SINGLE_FRAME_FWD;	break;
+	case KP2:	command = SLOW_FWD;		break;
+	case KP3:	command = NORMAL_FWD;		break;
+	case KPENTER:	command = FAST_FWD;		break;
+	case ' ':
+		switch( prev_command ) {
+		case COMMAND_NONE:
+		case CURRENT_FRAME:
+		case PAUSE:
+		case STOP:
+			command = NORMAL_FWD;
 			break;
-		case HOME:
-			subwindow->lock_window("PlayTransport::keypress_event 4");
-			goto_start();
-			subwindow->unlock_window();
-			break;
-		default:
-			result = 0;
-			break;
+		}
+		break;
+	default:
+		result = 0;
+		break;
 	}
+	if( command >= 0 )
+		handle_transport(command, 0, use_inout, 1, toggle_audio);
 
 	subwindow->lock_window("PlayTransport::keypress_event 5");
-
 	return result;
 }
 
@@ -265,114 +243,79 @@ void PlayTransport::goto_end()
 
 
 void PlayTransport::handle_transport(int command,
-	int wait_tracking,
-	int use_inout,
-	int update_refresh)
+	int wait_tracking, int use_inout, int update_refresh, int toggle_audio)
 {
-	if(!get_edl()) return;
+	if( !get_edl() ) return;
 
 // Stop requires transferring the output buffer to a refresh buffer.
 	int do_stop = 0;
+	int resume = 0;
 //printf("PlayTransport::handle_transport 1 %d\n", command);
 	int prev_command = engine->command->command;
 	int prev_direction = engine->command->get_direction();
 	int prev_single_frame = engine->command->single_frame();
 
 // Dispatch command
-	switch(command)
-	{
-// Commands that play back
-		case FAST_REWIND:
-		case NORMAL_REWIND:
-		case SLOW_REWIND:
-		case SINGLE_FRAME_REWIND:
-		case SINGLE_FRAME_FWD:
-		case SLOW_FWD:
-		case NORMAL_FWD:
-		case FAST_FWD:
+	switch(command) {
+	case FAST_REWIND:	// Commands that play back
+	case NORMAL_REWIND:
+	case SLOW_REWIND:
+	case SINGLE_FRAME_REWIND:
+	case SINGLE_FRAME_FWD:
+	case SLOW_FWD:
+	case NORMAL_FWD:
+	case FAST_FWD:
+		if( prev_command == command && !prev_single_frame ) {
 // Same direction pressed twice.  Stop
-			if(prev_command == command &&
-				!prev_single_frame)
-			{
-				do_stop = 1;
-			}
-			else
-// Resume or change direction
-			if(prev_command != STOP &&
-				prev_command != COMMAND_NONE &&
-				prev_command != SINGLE_FRAME_FWD &&
-				prev_command != SINGLE_FRAME_REWIND)
-			{
-				engine->que->send_command(STOP,
-					CHANGE_NONE,
-					0,
-					0,
-					0,
-					0);
-				engine->interrupt_playback(wait_tracking);
-				engine->que->send_command(command,
-					CHANGE_NONE,
-					get_edl(),
-					1,
-					1,
-					use_inout);
-			}
-			else
-// Start from scratch
-			{
-				engine->que->send_command(command,
-					CHANGE_NONE,
-					get_edl(),
-					1,
-					0,
-					use_inout);
-			}
-			break;
-
-// Commands that stop
-		case STOP:
 			do_stop = 1;
 			break;
+		}
+// Resume or change direction
+		switch( prev_command ) {
+		default:
+			engine->que->send_command(STOP, CHANGE_NONE, 0, 0, 0, 0);
+			engine->interrupt_playback(wait_tracking);
+			resume = 1;
+// fall through
+		case STOP:
+		case COMMAND_NONE:
+		case SINGLE_FRAME_FWD:
+		case SINGLE_FRAME_REWIND:
+// Start from scratch
+			engine->que->send_command(command, CHANGE_NONE, get_edl(),
+				1, resume, use_inout, toggle_audio);
+			break;
+		}
+		break;
 
-		case REWIND:
-		case GOTO_END:
-			engine->que->send_command(STOP,
-				CHANGE_NONE,
-				0,
-				0,
-				0,
-				0);
+// Commands that stop
+	case STOP:
+		do_stop = 1;
+		break;
+
+	case REWIND:
+	case GOTO_END:
+		engine->que->send_command(STOP, CHANGE_NONE, 0, 0, 0, 0);
 			engine->interrupt_playback(wait_tracking);
 			break;
 	}
 
-	if(do_stop)
-	{
-		engine->que->send_command(STOP,
-			CHANGE_NONE,
-			0,
-			0,
-			0,
-			0);
+	if( do_stop ) {
+		engine->que->send_command(STOP, CHANGE_NONE, 0, 0, 0, 0);
 		engine->interrupt_playback(wait_tracking);
 // This is necessary to get an OpenGL output buffer
 // printf("PlayTransport::handle_transport 2 update_refresh=%d prev_command=%d prev_direction=%d\n",
 // update_refresh, prev_command, prev_direction);
-		if(!prev_single_frame &&
-			update_refresh &&
-			prev_command != STOP &&
-			prev_command != COMMAND_NONE)
-		{
-			engine->que->send_command(
-				(prev_direction == PLAY_FORWARD) ? SINGLE_FRAME_REWIND : SINGLE_FRAME_FWD,
-				CHANGE_NONE,
-				get_edl(),
-				1,
-				0,
-				0);
+		if( !prev_single_frame && update_refresh &&
+		    prev_command != STOP && prev_command != COMMAND_NONE ) {
+			int command = (prev_direction == PLAY_FORWARD) ?
+					SINGLE_FRAME_REWIND : SINGLE_FRAME_FWD;
+			engine->que->send_command(command,
+				CHANGE_NONE, get_edl(), 1, 0, 0);
 		}
 	}
 }
+
 
 EDL* PlayTransport::get_edl()
 {

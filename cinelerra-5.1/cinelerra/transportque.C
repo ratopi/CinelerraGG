@@ -52,6 +52,7 @@ void TransportCommand::reset()
 	infinite = 0;
 	realtime = 0;
 	resume = 0;
+	audio_toggle = 0;
 // Don't reset the change type for commands which don't perform the change
 	if(command != STOP) change_type = 0;
 	command = COMMAND_NONE;
@@ -85,6 +86,7 @@ void TransportCommand::copy_from(TransportCommand *command)
 	this->playbackstart = command->playbackstart;
 	this->realtime = command->realtime;
 	this->resume = command->resume;
+	this->audio_toggle = command->audio_toggle;
 }
 
 TransportCommand& TransportCommand::operator=(TransportCommand &command)
@@ -148,12 +150,9 @@ float TransportCommand::get_speed()
 }
 
 // Assume starting without pause
-void TransportCommand::set_playback_range(EDL *edl, int use_inout)
+void TransportCommand::set_playback_range(EDL *edl, int use_inout, int toggle_audio)
 {
 	if(!edl) edl = this->edl;
-
-
-
 
 	switch(command)
 	{
@@ -226,6 +225,7 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 			break;
 	}
 
+	audio_toggle = toggle_audio;
 }
 
 void TransportCommand::playback_range_adjust_inout()
@@ -275,12 +275,8 @@ TransportQue::~TransportQue()
 	delete output_lock;
 }
 
-int TransportQue::send_command(int command,
-		int change_type,
-		EDL *new_edl,
-		int realtime,
-		int resume,
-		int use_inout)
+int TransportQue::send_command(int command, int change_type, EDL *new_edl,
+		int realtime, int resume, int use_inout, int toggle_audio)
 {
 	input_lock->lock("TransportQue::send_command 1");
 	this->command.command = command;
@@ -307,7 +303,7 @@ int TransportQue::send_command(int command,
 		}
 
 // Set playback range
-		this->command.set_playback_range(new_edl, use_inout);
+		this->command.set_playback_range(new_edl, use_inout, toggle_audio);
 	}
 
 	input_lock->unlock();

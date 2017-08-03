@@ -80,7 +80,7 @@ void InterfacePrefs::create_objects()
 	x = x2;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Keyframe reticle:")));
-	y += 25;
+	y += title->get_h() + 5;
 	keyframe_reticle = new KeyframeReticle(pwindow, this, x, y,
 		&pwindow->thread->preferences->keyframe_reticle);
 	add_subwindow(keyframe_reticle);
@@ -505,7 +505,7 @@ int HairlineItem::handle_event()
 
 KeyframeReticle::KeyframeReticle(PreferencesWindow *pwindow,
 	InterfacePrefs *iface_prefs, int x, int y, int *output)
- : BC_PopupMenu(x, y, 175, hairline_to_string(*output))
+ : BC_PopupMenu(x, y, 220, hairline_to_string(*output))
 {
 	this->pwindow = pwindow;
 	this->iface_prefs = iface_prefs;

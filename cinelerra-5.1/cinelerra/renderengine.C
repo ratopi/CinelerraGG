@@ -189,11 +189,11 @@ void RenderEngine::get_duty()
 	do_video = 0;
 
 //printf("RenderEngine::get_duty %d\n", __LINE__);
-	if(!command->single_frame() &&
-		get_edl()->tracks->playable_audio_tracks() &&
-		get_edl()->session->audio_channels)
+	if( get_edl()->tracks->playable_audio_tracks() &&
+	    get_edl()->session->audio_channels )
 	{
-		do_audio = 1;
+		do_audio = !command->single_frame() ? 1 : 0;
+		if( command->audio_toggle ) do_audio = !do_audio;
 	}
 
 //printf("RenderEngine::get_duty %d\n", __LINE__);

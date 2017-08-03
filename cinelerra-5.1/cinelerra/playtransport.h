@@ -56,11 +56,9 @@ public:
 // of playback
 // update_refresh - causes a frame advance to be issued after STOP to update
 // the refresh frame.
-	void handle_transport(int command,
-		int wait_tracking = 0,
-		int use_inout = 0,
-		int update_refresh = 1);
-
+// toggle_audio - reverses audio playback enable in RenderEngine::get_duty
+	void handle_transport(int command, int wait_tracking=0,
+		int use_inout=0, int update_refresh=1, int toggle_audio=0);
 	int pause_transport();
 	int reset_transport();
 	int get_w();

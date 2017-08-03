@@ -617,7 +617,7 @@ int VScalingItem::handle_event()
 
 
 VScalingEquation::VScalingEquation(int x, int y, int *output)
- : BC_PopupMenu(x, y, 175, interpolation_to_string(*output))
+ : BC_PopupMenu(x, y, 240, interpolation_to_string(*output))
 {
 	this->output = output;
 }

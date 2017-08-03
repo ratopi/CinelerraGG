@@ -1121,7 +1121,7 @@ void RenderThread::run()
 
 
 #define WIDTH 480
-#define HEIGHT 455
+#define HEIGHT 480
 
 
 RenderWindow::RenderWindow(MWindow *mwindow,
@@ -1185,16 +1185,18 @@ void RenderWindow::create_objects()
 	if( is_image )
 		render->range_type = RANGE_1FRAME;
 
-	int x1 = x + title->get_w() + 20, x2 = x1 + 140;
+	int x1 = x + title->get_w() + 20;
 	add_subwindow(rangeproject = new RenderRangeProject(this,
 		render->range_type == RANGE_PROJECT, x1, y));
-	add_subwindow(range1frame = new RenderRange1Frame(this,
-		render->range_type == RANGE_1FRAME, x2, y));
 	y += 20;
 	add_subwindow(rangeselection = new RenderRangeSelection(this,
 		render->range_type == RANGE_SELECTION, x1, y));
+	y += 20;
 	add_subwindow(rangeinout = new RenderRangeInOut(this,
-		render->range_type == RANGE_INOUT, x2, y));
+		render->range_type == RANGE_INOUT, x1, y));
+	y += 20;
+	add_subwindow(range1frame = new RenderRange1Frame(this,
+		render->range_type == RANGE_1FRAME, x1, y));
 	y += 30;
 
 	if( is_image )
