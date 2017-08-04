@@ -314,7 +314,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	trap_sigsegv = defaults->get("TRAP_SIGSEGV", trap_sigsegv);
 	trap_sigintr = defaults->get("TRAP_SIGINTR", trap_sigintr);
 
-	strcpy(theme, DEFAULT_THEME);
+	strcpy(theme, _(DEFAULT_THEME));
 	strcpy(plugin_icons, DEFAULT_PICON);
 	defaults->get("THEME", theme);
 	defaults->get("PLUGIN_ICONS", plugin_icons);

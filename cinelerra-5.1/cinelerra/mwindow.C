@@ -1022,12 +1022,13 @@ void MWindow::init_theme()
 		fprintf(stderr, _("MWindow::init_theme: prefered theme %s not found.\n"),
 			 preferences->theme);
 
-	if( !theme_plugin && strcasecmp(preferences->theme, DEFAULT_THEME) ) {
+	const char *default_theme = _(DEFAULT_THEME);
+	if( !theme_plugin && strcasecmp(preferences->theme, default_theme) ) {
 		fprintf(stderr, _("MWindow::init_theme: trying default theme %s\n"),
-			DEFAULT_THEME);
+			default_theme);
 		for(int i = 0; i < plugindb->total && !theme_plugin; i++) {
 			if( plugindb->get(i)->theme &&
-			    !strcasecmp(DEFAULT_THEME, plugindb->get(i)->title) )
+			    !strcasecmp(default_theme, plugindb->get(i)->title) )
 				theme_plugin = plugindb->get(i);
 		}
 	}

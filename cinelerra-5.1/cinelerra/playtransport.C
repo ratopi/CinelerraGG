@@ -216,6 +216,9 @@ int PlayTransport::keypress_event()
 		case STOP:
 			command = NORMAL_FWD;
 			break;
+		default:
+			command = STOP;
+			break;
 		}
 		break;
 	default:

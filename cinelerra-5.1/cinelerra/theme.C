@@ -65,7 +65,7 @@ Theme::Theme()
 	window_border = 10;
 	widget_border = 5;
 	this->mwindow = 0;
-	theme_title = DEFAULT_THEME;
+	theme_title = _(DEFAULT_THEME);
 	data_buffer = 0;
 	contents_buffer = 0;
 	last_image = 0;
