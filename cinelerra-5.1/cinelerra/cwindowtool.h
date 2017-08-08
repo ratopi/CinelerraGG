@@ -267,6 +267,7 @@ public:
 	BC_Title *current;
 	CWindowCoord *radius;
 	BC_Title *red, *green, *blue, *y, *u, *v;
+	BC_Title *rgb_hex, *yuv_hex;
 	BC_SubWindow *sample;
 };
 

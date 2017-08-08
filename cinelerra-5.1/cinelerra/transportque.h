@@ -35,8 +35,12 @@ public:
 	~TransportCommand();
 
 	void reset();
+	static int single_frame(int command);
+	int single_frame();
 // Get the direction based on the command
+	static int get_direction(int command);
 	int get_direction();
+	static float get_speed(int command);
 	float get_speed();
 	void copy_from(TransportCommand *command);
 	TransportCommand& operator=(TransportCommand &command);
@@ -51,7 +55,6 @@ public:
 	void playback_range_project();
 	void playback_range_1frame();
 
-	int single_frame();
 	EDL* get_edl();
 	void delete_edl();
 	void new_edl();

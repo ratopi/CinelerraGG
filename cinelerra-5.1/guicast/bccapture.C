@@ -171,7 +171,7 @@ int BC_Capture::delete_data()
 
 // data is automatically freed by XDestroyImage
 		data = 0;
-		delete row_data;
+		delete [] row_data;
 	}
 	return 0;
 }

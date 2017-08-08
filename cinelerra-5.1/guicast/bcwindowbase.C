@@ -962,11 +962,14 @@ locking_message = event->xclient.message_type;
 //   event_names[event->type] : "Unknown");
 //}
 
-	if( active_grab && active_grab->grab_event(event) ) {
+	if( active_grab ) {
 		unlock_window();
-		return 0;
+		active_grab->lock_window("BC_WindowBase::dispatch_event 3");
+		result = active_grab->grab_event(event);
+		active_grab->unlock_window();
+		if( result ) return result;
+		lock_window("BC_WindowBase::dispatch_event 4");
 	}
-
 
 	switch(event->type) {
 	case ClientMessage:

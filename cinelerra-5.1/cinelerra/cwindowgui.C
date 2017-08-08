@@ -92,23 +92,28 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	this->mwindow = mwindow;
 	this->cwindow = cwindow;
 	affected_track = 0;
-	affected_x = 0;
-	affected_y = 0;
-	affected_z = 0;
+	affected_x = affected_y = affected_z = 0;
 	mask_keyframe = 0;
 	orig_mask_keyframe = new MaskAuto(0, 0);
 	affected_point = 0;
-	x_offset = 0;
-	y_offset = 0;
-	x_origin = 0;
-	y_origin = 0;
+	x_offset = y_offset = 0;
+	x_origin = y_origin = 0;
 	current_operation = CWINDOW_NONE;
 	tool_panel = 0;
-	translating_zoom = 0;
 	active = 0;
 	inactive = 0;
-	crop_translate = 0;
+	crop_handle = -1; crop_translate = 0;
+	crop_origin_x = crop_origin_y = 0;
+	crop_origin_x1 = crop_origin_y1 = 0;
+	crop_origin_x2 = crop_origin_y2 = 0;
 	eyedrop_visible = 0;
+	eyedrop_x = eyedrop_y = 0;
+	ruler_origin_x = ruler_origin_y = 0;
+	ruler_handle = -1; ruler_translate = 0;
+	center_x = center_y = center_z = 0;
+	control_in_x = control_in_y = 0;
+	control_out_x = control_out_y = 0;
+	translating_zoom = 0;
 	highlighted = 0;
 }
 

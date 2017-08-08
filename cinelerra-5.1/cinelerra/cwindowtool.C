@@ -461,11 +461,7 @@ void CWindowCropGUI::update()
 
 
 CWindowEyedropGUI::CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow,
- 	thread,
-	_(PROGRAM_NAME ": Color"),
-	200,
-	250)
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Color"), 220, 250)
 {
 }
 
@@ -476,9 +472,9 @@ CWindowEyedropGUI::~CWindowEyedropGUI()
 void CWindowEyedropGUI::create_objects()
 {
 	int margin = mwindow->theme->widget_border;
-	int x = margin;
-	int y = margin;
-	int x2 = 70;
+	int x = 10 + margin;
+	int y = 10 + margin;
+	int x2 = 70, x3 = x2 + 60;
 	lock_window("CWindowEyedropGUI::create_objects");
 	BC_Title *title0, *title1, *title2, *title3, *title4, *title5, *title6, *title7;
 	add_subwindow(title0 = new BC_Title(x, y,_("X,Y:")));
@@ -506,16 +502,17 @@ void CWindowEyedropGUI::create_objects()
 	radius->create_objects();
 	radius->set_boundaries((int64_t)0, (int64_t)255);
 
-
 	add_subwindow(red = new BC_Title(x2, title1->get_y(), "0"));
 	add_subwindow(green = new BC_Title(x2, title2->get_y(), "0"));
 	add_subwindow(blue = new BC_Title(x2, title3->get_y(), "0"));
+	add_subwindow(rgb_hex = new BC_Title(x3, red->get_y(), "#000000"));
 
 	add_subwindow(this->y = new BC_Title(x2, title4->get_y(), "0"));
 	add_subwindow(this->u = new BC_Title(x2, title5->get_y(), "0"));
 	add_subwindow(this->v = new BC_Title(x2, title6->get_y(), "0"));
+	add_subwindow(yuv_hex = new BC_Title(x3, this->y->get_y(), "#000000"));
 
-	y = title6->get_y() + this->v->get_h() + margin;
+	y = title6->get_y() + this->v->get_h() + 2*margin;
 	add_subwindow(sample = new BC_SubWindow(x, y, 50, 50));
 	update();
 	unlock_window();
@@ -531,25 +528,36 @@ void CWindowEyedropGUI::update()
 
 	radius->update((int64_t)mwindow->edl->session->eyedrop_radius);
 
-	red->update(mwindow->edl->local_session->red);
-	green->update(mwindow->edl->local_session->green);
-	blue->update(mwindow->edl->local_session->blue);
+	float r = mwindow->edl->local_session->red;
+	float g = mwindow->edl->local_session->green;
+	float b = mwindow->edl->local_session->blue;
+	red->update(r);
+	green->update(g);
+	blue->update(b);
+	int rx = 255*r + 0.5;  bclamp(rx,0,255);
+	int gx = 255*g + 0.5;  bclamp(gx,0,255);
+	int bx = 255*b + 0.5;  bclamp(bx,0,255);
+	char rgb_text[BCSTRLEN];
+	sprintf(rgb_text, "#%02x%02x%02x", rx, gx, bx);
+	rgb_hex->update(rgb_text);
 
 	float y, u, v;
 	YUV::rgb_to_yuv_f(mwindow->edl->local_session->red,
 		mwindow->edl->local_session->green,
 		mwindow->edl->local_session->blue,
-		y,
-		u,
-		v);
+		y, u, v);
 	this->y->update(y);
-	this->u->update(u);
-	this->v->update(v);
+	this->u->update(u);  u += 0.5;
+	this->v->update(v);  v += 0.5;
+	int yx = 255*y + 0.5;  bclamp(yx,0,255);
+	int ux = 255*u + 0.5;  bclamp(ux,0,255);
+	int vx = 255*v + 0.5;  bclamp(vx,0,255);
+	char yuv_text[BCSTRLEN];
+	sprintf(yuv_text, "#%02x%02x%02x", yx, ux, vx);
+	yuv_hex->update(yuv_text);
 
-	int red = (int)(CLIP(mwindow->edl->local_session->red, 0, 1) * 0xff);
-	int green = (int)(CLIP(mwindow->edl->local_session->green, 0, 1) * 0xff);
-	int blue = (int)(CLIP(mwindow->edl->local_session->blue, 0, 1) * 0xff);
-	sample->set_color((red << 16) | (green << 8) | blue);
+	int rgb = (rx << 16) | (gx << 8) | (bx << 0);
+	sample->set_color(rgb);
 	sample->draw_box(0, 0, sample->get_w(), sample->get_h());
 	sample->set_color(BLACK);
 	sample->draw_rectangle(0, 0, sample->get_w(), sample->get_h());

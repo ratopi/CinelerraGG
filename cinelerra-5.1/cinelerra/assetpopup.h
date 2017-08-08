@@ -240,6 +240,7 @@ public:
 	~AssetCopyWindow();
 
 	void create_objects();
+	int resize_event(int w, int h);
 
 	AssetCopyDialog *copy_dialog;
 	BC_ScrollTextBox *file_list;
@@ -281,6 +282,7 @@ public:
 	~AssetPasteWindow();
 
 	void create_objects();
+	int resize_event(int w, int h);
 
 	AssetPasteDialog *paste_dialog;
 	BC_ScrollTextBox *file_list;

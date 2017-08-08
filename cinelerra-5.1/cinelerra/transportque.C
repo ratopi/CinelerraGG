@@ -95,58 +95,68 @@ TransportCommand& TransportCommand::operator=(TransportCommand &command)
 	return *this;
 }
 
-int TransportCommand::single_frame()
+int TransportCommand::single_frame(int command)
 {
 	return (command == SINGLE_FRAME_FWD ||
 		command == SINGLE_FRAME_REWIND ||
 		command == CURRENT_FRAME);
 }
-
-
-int TransportCommand::get_direction()
+int TransportCommand::single_frame()
 {
-	switch(command)
-	{
-		case SINGLE_FRAME_FWD:
-		case NORMAL_FWD:
-		case FAST_FWD:
-		case SLOW_FWD:
-		case CURRENT_FRAME:
-			return PLAY_FORWARD;
+	return single_frame(command);
+}
 
-		case SINGLE_FRAME_REWIND:
-		case NORMAL_REWIND:
-		case FAST_REWIND:
-		case SLOW_REWIND:
-			return PLAY_REVERSE;
 
-		default:
-			break;
+int TransportCommand::get_direction(int command)
+{
+	switch(command) {
+	case SINGLE_FRAME_FWD:
+	case NORMAL_FWD:
+	case FAST_FWD:
+	case SLOW_FWD:
+	case CURRENT_FRAME:
+		return PLAY_FORWARD;
+
+	case SINGLE_FRAME_REWIND:
+	case NORMAL_REWIND:
+	case FAST_REWIND:
+	case SLOW_REWIND:
+		return PLAY_REVERSE;
+
+	default:
+		break;
 	}
 	return PLAY_FORWARD;
 }
-
-float TransportCommand::get_speed()
+int TransportCommand::get_direction()
 {
-	switch(command)
-	{
-		case SLOW_FWD:
-		case SLOW_REWIND:
-			return 0.5;
+	return get_direction(command);
+}
 
-		case NORMAL_FWD:
-		case NORMAL_REWIND:
-		case SINGLE_FRAME_FWD:
-		case SINGLE_FRAME_REWIND:
-		case CURRENT_FRAME:
-			return 1.;
+float TransportCommand::get_speed(int command)
+{
+	switch(command) {
+	case SLOW_FWD:
+	case SLOW_REWIND:
+		return 0.5;
 
-		case FAST_FWD:
-		case FAST_REWIND:
-			return 2.;
+	case NORMAL_FWD:
+	case NORMAL_REWIND:
+	case SINGLE_FRAME_FWD:
+	case SINGLE_FRAME_REWIND:
+	case CURRENT_FRAME:
+		return 1.;
+
+	case FAST_FWD:
+	case FAST_REWIND:
+		return 2.;
 	}
 
 	return 0.;
+}
+float TransportCommand::get_speed()
+{
+	return get_speed(command);
 }
 
 // Assume starting without pause
@@ -192,16 +202,12 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout, int toggle_au
 		case CURRENT_FRAME:
 		case SINGLE_FRAME_FWD:
 			start_position = edl->local_session->get_selectionstart(1);
-			end_position = start_position +
-				1.0 /
-				edl->session->frame_rate;
+			end_position = start_position + 1.0 / edl->session->frame_rate;
 			break;
 
 		case SINGLE_FRAME_REWIND:
-			start_position = edl->local_session->get_selectionend(1);
-			end_position = start_position -
-				1.0 /
-				edl->session->frame_rate;
+			end_position = edl->local_session->get_selectionend(1);
+			start_position = end_position - 1.0 / edl->session->frame_rate;
 			break;
 	}
 

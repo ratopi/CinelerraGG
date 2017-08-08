@@ -266,7 +266,7 @@ int CommonRender::get_boundaries(int64_t &current_render_length)
 		}
 	}
 
-	if(renderengine->command->single_frame())
+	if(renderengine->command->single_frame() && !renderengine->command->audio_toggle)
 		current_render_length = 1;
 
 	if(current_render_length < 0) current_render_length = 0;

@@ -148,7 +148,6 @@ public:
 // Origin for camera and projector operations during last button press
 	float center_x, center_y, center_z;
 	float control_in_x, control_in_y, control_out_x, control_out_y;
-	int current_tool;
 // Must recalculate the origin when pressing shift.
 // Switch toggle on and off to recalculate origin.
 	int translating_zoom;

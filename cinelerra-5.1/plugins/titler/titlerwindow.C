@@ -465,14 +465,24 @@ int TitleWindow::resize_event(int w, int h)
 
 int TitleWindow::grab_event(XEvent *event)
 {
+	switch( event->type ) {
+	case ButtonPress: break;
+	case ButtonRelease: break;
+	case MotionNotify: break;
+	default: return 0;
+	}
+
 	MWindow *mwindow = client->server->mwindow;
 	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
 	CWindowCanvas *canvas = cwindow_gui->canvas;
-	int cx, cy;  canvas->get_canvas()->get_relative_cursor_xy(cx, cy);
-	if( cx < mwindow->theme->ccanvas_x ) return 0;
-	if( cx >= mwindow->theme->ccanvas_x+mwindow->theme->ccanvas_w ) return 0;
-	if( cy < mwindow->theme->ccanvas_y ) return 0;
-	if( cy >= mwindow->theme->ccanvas_y+mwindow->theme->ccanvas_h ) return 0;
+	int cx, cy;  cwindow_gui->get_relative_cursor_xy(cx, cy);
+	cx -= mwindow->theme->ccanvas_x;
+	cy -= mwindow->theme->ccanvas_y;
+
+	if( !dragging ) {
+		if( cx < 0 || cx >= mwindow->theme->ccanvas_w ) return 0;
+		if( cy < 0 || cy >= mwindow->theme->ccanvas_h ) return 0;
+	}
 
 	switch( event->type ) {
 	case ButtonPress:
@@ -483,7 +493,8 @@ int TitleWindow::grab_event(XEvent *event)
 		dragging = 0;
 		return 1;
 	case MotionNotify:
-		if( dragging ) break;
+		if( !dragging ) return 0;
+		break;
 	default:
 		return 0;
 	}

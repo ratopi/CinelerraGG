@@ -567,8 +567,8 @@ int AudioALSA::write_buffer(char *buffer, int size)
 		timer->update();
 
 	AudioThread *audio_out = device->audio_out;
-	while(attempts < 2 && !done && !device->playback_interrupted)
-	{
+	while( count > 0 && attempts < 2 && !done ) {
+		if( device->playback_interrupted ) break;
 // Buffers written must be equal to period_time
 		audio_out->Thread::enable_cancel();
 		int ret = snd_pcm_avail_update(get_output());
@@ -586,6 +586,7 @@ int AudioALSA::write_buffer(char *buffer, int size)
 			if( ret > 0 ) ret = 0;
 		}
 		audio_out->Thread::disable_cancel();
+		if( device->playback_interrupted ) break;
 		if( ret == 0 ) continue;
 
 		if( ret > 0 ) {

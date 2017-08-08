@@ -257,6 +257,11 @@ void PlayTransport::handle_transport(int command,
 	int prev_command = engine->command->command;
 	int prev_direction = engine->command->get_direction();
 	int prev_single_frame = engine->command->single_frame();
+	int prev_audio = engine->command->audio_toggle ?
+		 !prev_single_frame : prev_single_frame;
+	int cur_single_frame = TransportCommand::single_frame(command);
+	int cur_audio = toggle_audio ?
+		 !cur_single_frame : cur_single_frame;
 
 // Dispatch command
 	switch(command) {
@@ -268,8 +273,10 @@ void PlayTransport::handle_transport(int command,
 	case SLOW_FWD:
 	case NORMAL_FWD:
 	case FAST_FWD:
-		if( prev_command == command && !prev_single_frame ) {
-// Same direction pressed twice.  Stop
+		if( !prev_single_frame &&
+		    prev_command == command &&
+		    cur_audio == prev_audio ) {
+// Same direction pressed twice and no change in audio state,  Stop
 			do_stop = 1;
 			break;
 		}

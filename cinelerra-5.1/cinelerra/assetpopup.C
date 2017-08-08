@@ -432,30 +432,30 @@ int AssetListCopy::handle_event()
 AssetCopyDialog::AssetCopyDialog(AssetListCopy *copy)
  : BC_DialogThread()
 {
-        this->copy = copy;
+	this->copy = copy;
 	copy_window = 0;
 }
 
 void AssetCopyDialog::start(char *text, int x, int y)
 {
-        close_window();
-        this->text = text;
+	close_window();
+	this->text = text;
 	this->x = x;  this->y = y;
 	BC_DialogThread::start();
 }
 
 AssetCopyDialog::~AssetCopyDialog()
 {
-        close_window();
+	close_window();
 }
 
 BC_Window* AssetCopyDialog::new_gui()
 {
-        BC_DisplayInfo display_info;
+	BC_DisplayInfo display_info;
 
-        copy_window = new AssetCopyWindow(this);
-        copy_window->create_objects();
-        return copy_window;
+	copy_window = new AssetCopyWindow(this);
+	copy_window->create_objects();
+	return copy_window;
 }
 
 void AssetCopyDialog::handle_done_event(int result)
@@ -465,16 +465,16 @@ void AssetCopyDialog::handle_done_event(int result)
 
 void AssetCopyDialog::handle_close_event(int result)
 {
-        copy_window = 0;
+	copy_window = 0;
 }
 
 
 AssetCopyWindow::AssetCopyWindow(AssetCopyDialog *copy_dialog)
  : BC_Window(_(PROGRAM_NAME ": Copy File List"),
 	copy_dialog->x - 500/2, copy_dialog->y - 200/2,
-	500, 200, 500, 200, 0, 0, 1)
+	500, 200, 500, 200, 1, 0, 1)
 {
-        this->copy_dialog = copy_dialog;
+	this->copy_dialog = copy_dialog;
 }
 
 AssetCopyWindow::~AssetCopyWindow()
@@ -496,9 +496,18 @@ void AssetCopyWindow::create_objects()
 	file_list->create_objects();
 
 	add_subwindow(new BC_OKButton(this));
-        show_window();
+	show_window();
 }
 
+int AssetCopyWindow::resize_event(int w, int h)
+{
+	int fx = file_list->get_x(), fy = file_list->get_y(), pad = 5;
+	int text_w = w - fx - 10;
+	int text_h = h - fy - BC_OKButton::calculate_h() - pad;
+	int text_rows = BC_TextBox::pixels_to_rows(this, MEDIUMFONT, text_h);
+	file_list->reposition_window(fx, fy, text_w, text_rows);
+	return 0;
+}
 
 AssetListPaste::AssetListPaste(MWindow *mwindow, AWindowGUI *gui)
  : BC_MenuItem(_("Paste file list"))
@@ -527,20 +536,20 @@ int AssetListPaste::handle_event()
 AssetPasteDialog::AssetPasteDialog(AssetListPaste *paste)
  : BC_DialogThread()
 {
-        this->paste = paste;
+	this->paste = paste;
 	paste_window = 0;
 }
 
 AssetPasteDialog::~AssetPasteDialog()
 {
-        close_window();
+	close_window();
 }
 
 BC_Window* AssetPasteDialog::new_gui()
 {
-        paste_window = new AssetPasteWindow(this);
-        paste_window->create_objects();
-        return paste_window;
+	paste_window = new AssetPasteWindow(this);
+	paste_window->create_objects();
+	return paste_window;
 }
 
 void AssetPasteDialog::handle_done_event(int result)
@@ -569,14 +578,14 @@ void AssetPasteDialog::handle_done_event(int result)
 	result = mwindow->load_filenames(&path_list, LOADMODE_RESOURCESONLY, 0);
 	mwindow->gui->unlock_window();
 	path_list.remove_all_objects();
-        mwindow->save_backup();
-        mwindow->restart_brender();
+	mwindow->save_backup();
+	mwindow->restart_brender();
 	mwindow->session->changes_made = 1;
 }
 
 void AssetPasteDialog::handle_close_event(int result)
 {
-        paste_window = 0;
+	paste_window = 0;
 }
 
 void AssetPasteDialog::start(int x, int y)
@@ -588,9 +597,9 @@ void AssetPasteDialog::start(int x, int y)
 AssetPasteWindow::AssetPasteWindow(AssetPasteDialog *paste_dialog)
  : BC_Window(_(PROGRAM_NAME ": Paste File List"),
 	paste_dialog->x - 500/2, paste_dialog->y - 200/2,
-	500, 200, 500, 200, 0, 0, 1)
+	500, 200, 500, 200, 1, 0, 1)
 {
-        this->paste_dialog = paste_dialog;
+	this->paste_dialog = paste_dialog;
 }
 
 AssetPasteWindow::~AssetPasteWindow()
@@ -610,6 +619,16 @@ void AssetPasteWindow::create_objects()
 	file_list->create_objects();
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
-        show_window();
+	show_window();
+}
+
+int AssetPasteWindow::resize_event(int w, int h)
+{
+	int fx = file_list->get_x(), fy = file_list->get_y(), pad = 5;
+	int text_w = w - fx - 10;
+	int text_h = h - fy - BC_OKButton::calculate_h() - pad;
+	int text_rows = BC_TextBox::pixels_to_rows(this, MEDIUMFONT, text_h);
+	file_list->reposition_window(fx, fy, text_w, text_rows);
+	return 0;
 }
 

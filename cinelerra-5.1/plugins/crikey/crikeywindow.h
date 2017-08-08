@@ -27,23 +27,47 @@
 class CriKey;
 class CriKeyWindow;
 class CriKeyNum;
+class CriKeyPointX;
+class CriKeyPointY;
 class CriKeyColorButton;
 class CriKeyColorPicker;
 class CriKeyDrawMode;
 class CriKeyDrawModeItem;
-class CriKeyKeyMode;
-class CriKeyKeyModeItem;
 class CriKeyThreshold;
+class CriKeyDrag;
+class CriKeyPoints;
+class CriKeyNewPoint;
+class CriKeyDelPoint;
+class CriKeyPointUp;
+class CriKeyPointDn;
+class CriKeyCurPoint;
+
 
 class CriKeyNum : public BC_TumbleTextBox
 {
 public:
 	CriKeyWindow *gui;
-	float *output;
-	int handle_event();
 
-	CriKeyNum(CriKeyWindow *gui, int x, int y, float &output);
+	CriKeyNum(CriKeyWindow *gui, int x, int y, float output);
 	~CriKeyNum();
+};
+class CriKeyPointX : public CriKeyNum
+{
+public:
+	CriKeyPointX(CriKeyWindow *gui, int x, int y, float output)
+	 : CriKeyNum(gui, x, y, output) {}
+	~CriKeyPointX() {}
+
+	int handle_event();
+};
+class CriKeyPointY : public CriKeyNum
+{
+public:
+	CriKeyPointY(CriKeyWindow *gui, int x, int y, float output)
+	 : CriKeyNum(gui, x, y, output) {}
+	~CriKeyPointY() {}
+
+	int handle_event();
 };
 
 class CriKeyColorButton : public BC_GenericButton
@@ -65,7 +89,7 @@ public:
 	void handle_done_event(int result);
 
 	CriKeyColorButton *color_button;
-	int color;
+	int color, orig_color;
 };
 
 class CriKeyDrawMode : public BC_PopupMenu
@@ -90,28 +114,6 @@ public:
 	int id;
 };
 
-class CriKeyKeyMode : public BC_PopupMenu
-{
-	const char *key_modes[KEY_MODES];
-public:
-	CriKeyKeyMode(CriKeyWindow *gui, int x, int y);
-
-	void create_objects();
-	void update(int mode, int send=1);
-	CriKeyWindow *gui;
-	int mode;
-};
-class CriKeyKeyModeItem : public BC_MenuItem
-{
-public:
-	CriKeyKeyModeItem(const char *text, int id)
-	: BC_MenuItem(text) { this->id = id; }
-
-	int handle_event();
-	CriKeyWindow *gui;
-	int id;
-};
-
 class CriKeyThreshold : public BC_FSlider
 {
 public:
@@ -129,6 +131,90 @@ public:
 	CriKeyWindow *gui;
 };
 
+class CriKeyPoints : public BC_ListBox
+{
+public:
+	CriKeyPoints(CriKeyWindow *gui, CriKey *plugin, int x, int y);
+	~CriKeyPoints();
+
+	int handle_event();
+	int selection_changed();
+	int column_resize_event();
+	ArrayList<BC_ListBoxItem*> cols[PT_SZ];
+	void clear();
+	void new_point(const char *ep, const char *xp, const char *yp, const char *tp);
+	void del_point(int i);
+	void set_point(int i, int c, float v);
+	void set_point(int i, int c, const char *cp);
+	int set_selected(int k);
+	void update_list();
+	void update(int k);
+
+
+	CriKeyWindow *gui;
+	CriKey *plugin;
+	const char *titles[PT_SZ];
+	int widths[PT_SZ];
+};
+
+class CriKeyNewPoint : public BC_GenericButton
+{
+public:
+	CriKeyNewPoint(CriKeyWindow *gui, CriKey *plugin, int x, int y);
+	~CriKeyNewPoint();
+
+	int handle_event();
+
+	CriKeyWindow *gui;
+	CriKey *plugin;
+};
+
+class CriKeyDelPoint : public BC_GenericButton
+{
+public:
+	CriKeyDelPoint(CriKeyWindow *gui, CriKey *plugin, int x, int y);
+	~CriKeyDelPoint();
+
+	int handle_event();
+
+	CriKey *plugin;
+	CriKeyWindow *gui;
+};
+
+class CriKeyPointUp : public BC_GenericButton
+{
+public:
+	CriKeyPointUp(CriKeyWindow *gui, int x, int y);
+	~CriKeyPointUp();
+
+	int handle_event();
+
+	CriKeyWindow *gui;
+};
+
+class CriKeyPointDn : public BC_GenericButton
+{
+public:
+	CriKeyPointDn(CriKeyWindow *gui, int x, int y);
+	~CriKeyPointDn();
+
+	int handle_event();
+
+	CriKeyWindow *gui;
+};
+
+class CriKeyCurPoint : public BC_Title
+{
+public:
+	CriKeyCurPoint(CriKeyWindow *gui, CriKey *plugin, int x, int y);
+	~CriKeyCurPoint();
+
+	void update(int n);
+
+	CriKey *plugin;
+	CriKeyWindow *gui;
+};
+
 class CriKeyWindow : public PluginClientWindow
 {
 public:
@@ -136,7 +222,6 @@ public:
 	~CriKeyWindow();
 
 	void create_objects();
-	void draw_key(int mode);
 	void update_color(int color);
 	void update_gui();
 	void start_color_thread();
@@ -146,15 +231,22 @@ public:
 	CriKey *plugin;
 	CriKeyThreshold *threshold;
 	CriKeyDrawMode *draw_mode;
-	CriKeyKeyMode *key_mode;
 
 	CriKeyColorButton *color_button;
 	CriKeyColorPicker *color_picker;
-	int color_x, color_y, key_x, key_y;
+	int color_x, color_y;
 	BC_Title *title_x, *title_y;
-	CriKeyNum *point_x, *point_y;
+	CriKeyPointX *point_x;
+	CriKeyPointY *point_y;
+	CriKeyNewPoint *new_point;
+	CriKeyDelPoint *del_point;
+	CriKeyPointUp *point_up;
+	CriKeyPointDn *point_dn;
+	CriKeyCurPoint *cur_point;
 	int dragging;
+	float last_x, last_y;
 	CriKeyDrag *drag;
+	CriKeyPoints *points;
 };
 
 #endif
