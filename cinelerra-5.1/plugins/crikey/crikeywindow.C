@@ -29,6 +29,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
+#include "mainerror.h"
 #include "mwindow.h"
 #include "plugin.h"
 #include "pluginserver.h"
@@ -171,8 +172,8 @@ CriKeyWindow::CriKeyWindow(CriKey *plugin)
 	this->plugin = plugin;
 	this->color_button = 0;
 	this->color_picker = 0;
-        this->title_x = 0;    this->point_x = 0;
-        this->title_y = 0;    this->point_y = 0;
+	this->title_x = 0;    this->point_x = 0;
+	this->title_y = 0;    this->point_y = 0;
 	this->new_point = 0;  this->del_point = 0;
 	this->point_up = 0;   this->point_dn = 0;
 	this->drag = 0;       this->dragging = 0;
@@ -225,16 +226,19 @@ void CriKeyWindow::create_objects()
 	x1 += del_point->get_w() + margin;
 	add_subwindow(point_dn = new CriKeyPointDn(this, x1, y));
 	y += point_y->get_h() + margin + 10;
+
 	add_subwindow(drag = new CriKeyDrag(this, x, y));
+	if( plugin->config.drag ) {
+		if( !grab(plugin->server->mwindow->cwindow->gui) )
+			eprintf("drag enabled, but compositor already grabbed\n");
+	}
+
 	x1 = x + drag->get_w() + margin + 20;
 	add_subwindow(cur_point = new CriKeyCurPoint(this, plugin, x1, y+3));
 	cur_point->update(plugin->config.selected);
 	y += drag->get_h() + margin;
 	add_subwindow(points = new CriKeyPoints(this, plugin, x, y));
 	points->update(plugin->config.selected);
-
-        if( plugin->config.drag )
-                grab(plugin->server->mwindow->cwindow->gui);
 
 	show_window(1);
 }
@@ -359,7 +363,7 @@ int CriKeyWindow::grab_event(XEvent *event)
 
 void CriKeyWindow::done_event(int result)
 {
-        ungrab(client->server->mwindow->cwindow->gui);
+	ungrab(client->server->mwindow->cwindow->gui);
 	if( color_picker ) color_picker->close_window();
 }
 
@@ -582,15 +586,19 @@ CriKeyDrag::CriKeyDrag(CriKeyWindow *gui, int x, int y)
 }
 int CriKeyDrag::handle_event()
 {
-        int value = get_value();
-        gui->plugin->config.drag = value;
 	CWindowGUI *cwindow_gui = gui->plugin->server->mwindow->cwindow->gui;
-        if( value )
-                gui->grab(cwindow_gui);
-        else
-                gui->ungrab(cwindow_gui);
-        gui->plugin->send_configure_change();
-        return 1;
+	int value = get_value();
+	if( value ) {
+		if( !gui->grab(cwindow_gui) ) {
+			update(value = 0);
+			flicker(10,50);
+		}
+	}
+	else
+		gui->ungrab(cwindow_gui);
+	gui->plugin->config.drag = value;
+	gui->plugin->send_configure_change();
+	return 1;
 }
 
 CriKeyNewPoint::CriKeyNewPoint(CriKeyWindow *gui, CriKey *plugin, int x, int y)

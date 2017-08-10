@@ -32,7 +32,9 @@
 #include "edlsession.h"
 #include "keys.h"
 #include "language.h"
+#include "mainerror.h"
 #include "mwindow.h"
+#include "mwindowgui.h"
 #include "plugin.h"
 #include "pluginserver.h"
 #include "theme.h"
@@ -255,10 +257,13 @@ void TitleWindow::create_objects()
 	int w1 = italic->get_w();
 	add_tool(bold = new TitleBold(client, this, x, y + 50));
 	if( bold->get_w() > w1 ) w1 = bold->get_w();
+
 	add_tool(drag = new TitleDrag(client, this, x, y + 80));
 	if( drag->get_w() > w1 ) w1 = drag->get_w();
-	if( client->config.drag )
-		grab(client->server->mwindow->cwindow->gui);
+	if( client->config.drag ) {
+		if( !grab(client->server->mwindow->cwindow->gui) )
+			eprintf("drag enabled, but compositor already grabbed\n");
+	}
 
 	x += w1 + margin;
 	add_tool(justify_title = new BC_Title(x, y, _("Justify:")));
@@ -1086,11 +1091,11 @@ int TitleText::handle_event()
 	if( text_len >= avail ) { // back off last utf8 char
 		char text[2*sizeof(client->config.wtext)];
 		strcpy(text, get_text());
-                text_len = avail;
-                while( text_len > 0 && (text[text_len-1] & 0xc0) == 0x80 )
-                        text[--text_len] = 0;
-                if( text_len > 0 )
-                        text[--text_len] = 0;
+		text_len = avail;
+		while( text_len > 0 && (text[text_len-1] & 0xc0) == 0x80 )
+			text[--text_len] = 0;
+		if( text_len > 0 )
+			text[--text_len] = 0;
 		update(text);
 	}
 	int len =  sizeof(client->config.wtext) / sizeof(wchar_t);
@@ -1379,11 +1384,16 @@ TitleDrag::TitleDrag(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleDrag::handle_event()
 {
 	int value = get_value();
-	client->config.drag = value;
-	if( value )
-		window->grab(client->server->mwindow->cwindow->gui);
+	CWindowGUI *cwindow_gui = client->server->mwindow->cwindow->gui;
+	if( value ) {
+		if( !window->grab(cwindow_gui) ) {
+			update(value = 0);
+			flicker(10,50);
+		}
+	}
 	else
-		window->ungrab(client->server->mwindow->cwindow->gui);
+		window->ungrab(cwindow_gui);
+	client->config.drag = value;
 	client->send_configure_change();
 	return 1;
 }
@@ -1665,13 +1675,12 @@ void TitlePngPopup::handle_done_event(int result)
 
 BC_Window *TitlePngPopup::new_gui()
 {
-        BC_DisplayInfo display_info;
-        int x = display_info.get_abs_cursor_x();
-        int y = display_info.get_abs_cursor_y();
+	MWindow *mwindow = client->server->mwindow;
+	int x, y;  mwindow->gui->get_abs_cursor_xy(x, y);
 
-	BC_Window *gui = new BrowseButtonWindow(client->server->mwindow->theme,
+	BC_Window *gui = new BrowseButtonWindow(mwindow->theme,
 		x-25, y-100, window, "", _("Png file"), _("Png path"), 0);
-        gui->create_objects();
+	gui->create_objects();
 	return gui;
 }
 
