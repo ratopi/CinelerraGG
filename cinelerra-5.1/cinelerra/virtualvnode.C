@@ -203,7 +203,8 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 	int64_t start_position_project = (int64_t)(start_position *
 		edl_rate /
 		frame_rate);
-	if(direction == PLAY_REVERSE) start_position_project--;
+	if(direction == PLAY_REVERSE && start_position_project > 0 )
+		start_position_project--;
 
 
 // speed curve

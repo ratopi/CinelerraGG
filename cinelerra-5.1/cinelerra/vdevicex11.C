@@ -137,64 +137,8 @@ int VDeviceX11::close_all()
 
 	if(output && output_frame)
 	{
-// Copy our output frame buffer to the canvas's permanent frame buffer.
-// They must be different buffers because the output frame is being written
-// while the user is redrawing the canvas frame buffer over and over.
-
-		int use_opengl = device->out_config->driver == PLAYBACK_X11_GL &&
-			output_frame->get_opengl_state() == VFrame::SCREEN;
-		int best_color_model = output_frame->get_color_model();
-
-// OpenGL does YUV->RGB in the compositing step
-		if(use_opengl)
-			best_color_model = BC_RGB888;
-
-		if(output->refresh_frame &&
-			(output->refresh_frame->get_w() != device->out_w ||
-			output->refresh_frame->get_h() != device->out_h ||
-			output->refresh_frame->get_color_model() != best_color_model))
-		{
-			delete output->refresh_frame;
-			output->refresh_frame = 0;
-		}
-
-		if(!output->refresh_frame)
-		{
-			output->refresh_frame = new VFrame(0, -1,
-				device->out_w, device->out_h,
-				best_color_model, -1);
-		}
-
-		if(use_opengl)
-		{
-			output->get_canvas()->unlock_window();
-			output->unlock_canvas();
-
-			output->mwindow->playback_3d->copy_from(output,
-				output->refresh_frame, output_frame, 0);
-			output->lock_canvas("VDeviceX11::close_all 2");
-			output->get_canvas()->lock_window("VDeviceX11::close_all 2");
-		}
-		else
-			output->refresh_frame->copy_from(output_frame);
-
-// // Update the status bug
-// 		if(!device->single_frame)
-// 		{
-// 			output->stop_video();
-// 		}
-// 		else
-// 		{
-// 			output->stop_single();
-// 		}
-
-// Draw the first refresh with new frame.
-// Doesn't work if video and openGL because OpenGL doesn't have
-// the output buffer for video.
-// Not necessary for any case if we mandate a frame advance after
-// every stop.
-		if(/* device->out_config->driver != PLAYBACK_X11_GL ||
-			*/ device->single_frame)
+		output->update_refresh(device, output_frame);
+		if( device->single_frame )
 			output->draw_refresh();
 	}
 

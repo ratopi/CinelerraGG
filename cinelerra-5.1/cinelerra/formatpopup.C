@@ -40,10 +40,9 @@ FormatPopup::FormatPopup(ArrayList<PluginServer*> *plugindb,
 
 void FormatPopup::create_objects()
 {
-	format_items.append(new BC_ListBoxItem(_(FFMPEG_NAME)));
-
 	if(!use_brender)
 	{
+		format_items.append(new BC_ListBoxItem(_(FFMPEG_NAME)));
 		format_items.append(new BC_ListBoxItem(_(AC3_NAME)));
 		format_items.append(new BC_ListBoxItem(_(AIFF_NAME)));
 		format_items.append(new BC_ListBoxItem(_(AU_NAME)));

@@ -6,7 +6,7 @@ pkgdesc="Cinelerra git://git.cinelerra-cv.org/goodguy/cinelerra.git ($pkgrel)"
 arch=('x86_64')
 url="http://www.cinelerra-cv.org"
 license=('GPL')
-depends=('xorg-server' 'xorg-server-utils' 'libpng' 'libxv' 'libva'
+depends=('xorg-server' 'libpng' 'libxv' 'libva'
          'libxft' 'freetype2' 'alsa-lib' 'inkscape' 'dvdauthor')
 makedepends=('yasm' 'nasm' 'cmake'
 	 'libxml2' 'perl-xml-libxml' 'perl-xml-parser')

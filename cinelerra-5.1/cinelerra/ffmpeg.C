@@ -395,12 +395,11 @@ int FFStream::decode(AVFrame *frame)
 
 int FFStream::load_filter(AVFrame *frame)
 {
+	av_frame_unref(frame);
 	int ret = av_buffersrc_add_frame_flags(buffersrc_ctx,
 			frame, AV_BUFFERSRC_FLAG_KEEP_REF);
-	if( ret < 0 ) {
-		av_frame_unref(frame);
+	if( ret < 0 )
 		eprintf(_("av_buffersrc_add_frame_flags failed\n"));
-	}
 	return ret;
 }
 
@@ -418,6 +417,7 @@ int FFStream::read_filter(AVFrame *frame)
 
 int FFStream::read_frame(AVFrame *frame)
 {
+	av_frame_unref(frame);
 	if( !filter_graph || !buffersrc_ctx || !buffersink_ctx )
 		return decode(frame);
 	if( !fframe && !(fframe=av_frame_alloc()) ) {

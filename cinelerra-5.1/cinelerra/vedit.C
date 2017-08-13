@@ -54,80 +54,30 @@ int VEdit::load_properties_derived(FileXML *xml)
 }
 
 Asset* VEdit::get_nested_asset(int64_t *source_position,
-	int64_t position,
-	int direction)
+		int64_t position, int direction)
 {
-	const int debug = 0;
-	Asset *result = 0;
+	double edit_frame_rate = nested_edl ?
+		nested_edl->session->frame_rate : asset->frame_rate;
 // Make position relative to edit
-	*source_position = position - startproject + startsource;
-
-if(debug) printf("VEdit::get_nested_asset %d %jd %jd %jd %jd\n",
-__LINE__, *source_position, position, startproject, startsource);
+	double edit_position = (position - startproject + startsource) *
+			edit_frame_rate / edl->session->frame_rate;
+	*source_position = Units::to_int64(edit_position);
+	if( !nested_edl ) return asset;
 
 // Descend into nested EDLs
-	if(nested_edl)
-	{
-// Convert position to nested EDL rate
-if(debug) printf("VEdit::get_nested_asset %d\n",
-__LINE__);
-		int64_t pos = *source_position;
-		if(direction == PLAY_REVERSE && pos > 0) --pos;
-		*source_position = Units::to_int64((double)pos *
-			nested_edl->session->frame_rate /
-			edl->session->frame_rate);
-		PlayableTracks *playable_tracks = new PlayableTracks(
-			nested_edl,
-			*source_position,
-			direction,
-			TRACK_VIDEO,
-			1);
-		if(playable_tracks->size())
-		{
-			VTrack *nested_track = (VTrack*)playable_tracks->get(0);
-			VEdit* nested_edit = (VEdit*)nested_track->edits->editof(
-				*source_position,
-				direction,
-				1);
-			if(nested_edit)
-			{
-				result = nested_edit->get_nested_asset(
-					source_position,
-					*source_position,
-					direction);
-			}
-		}
-
-		delete playable_tracks;
-if(debug) printf("VEdit::get_nested_asset %d\n",
-__LINE__);
-		return result;
-	}
-	else
-	{
-// Convert position to asset rate
-if(debug) printf("VEdit::get_nested_asset %d %jd %f %f\n",
-__LINE__,
-*source_position,
-asset->frame_rate,
-edl->session->frame_rate);
-		int64_t pos = *source_position;
-		if(direction == PLAY_REVERSE && pos > 0) --pos;
-		*source_position = Units::to_int64((double)pos *
-			asset->frame_rate /
-			edl->session->frame_rate);
-
-		return asset;
-	}
+	PlayableTracks playable_tracks(nested_edl,
+		*source_position, direction, TRACK_VIDEO, 1);
+	if( !playable_tracks.size() ) return 0;
+	VTrack *nested_track = (VTrack*)playable_tracks[0];
+	VEdit* nested_edit = (VEdit*)nested_track->edits->
+		editof(*source_position, direction, 1);
+	if( !nested_edit ) return  0;
+	return nested_edit->get_nested_asset(source_position,
+		*source_position, direction);
 }
 
-int VEdit::read_frame(VFrame *video_out,
-	int64_t input_position,
-	int direction,
-	CICache *cache,
-	int use_nudge,
-	int use_cache,
-	int use_asynchronous)
+int VEdit::read_frame(VFrame *video_out, int64_t input_position, int direction,
+		CICache *cache, int use_nudge, int use_cache, int use_asynchronous)
 {
 	File *file = 0;
 	int result = 0;
@@ -138,9 +88,7 @@ int VEdit::read_frame(VFrame *video_out,
 if(debug) printf("VEdit::read_frame %d source_position=%jd input_position=%jd\n",
   __LINE__, source_position, input_position);
 
-	Asset *asset = get_nested_asset(&source_position,
-		input_position,
-		direction);
+	Asset *asset = get_nested_asset(&source_position, input_position, direction);
 	if( !asset ) result = 1;
 
 if(debug) printf("VEdit::read_frame %d source_position=%jd input_position=%jd\n",
@@ -154,13 +102,8 @@ if(debug) printf("VEdit::read_frame %d path=%s source_position=%jd\n",
 __LINE__, asset->path, source_position);
 
 	if( !result ) {
-if(debug) printf("VEdit::read_frame %d\n", __LINE__);
-		source_position = (direction == PLAY_FORWARD) ?
-			source_position :
-			(source_position - 1);
-if(debug) printf("VEdit::read_frame %d %jd %jd\n",
-  __LINE__, input_position, source_position);
-
+		if(direction == PLAY_REVERSE && source_position > 0)
+			--source_position;
 		if(use_asynchronous)
 			file->start_video_decode_thread();
 		else

@@ -30,6 +30,8 @@
 #include "mwindowgui.h"
 #include "mutex.h"
 #include "mwindow.h"
+#include "playback3d.h"
+#include "videodevice.h"
 #include "vframe.h"
 
 
@@ -838,17 +840,40 @@ int Canvas::keypress_event(BC_WindowBase *caller)
 	return 1;
 }
 
+void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
+{
+	int best_color_model = output_frame->get_color_model();
+	int use_opengl =
+		device->out_config->driver == PLAYBACK_X11_GL &&
+		output_frame->get_opengl_state() == VFrame::SCREEN;
 
+// OpenGL does YUV->RGB in the compositing step
+	if( use_opengl )
+		best_color_model = BC_RGB888;
 
+	if( refresh_frame &&
+	   (refresh_frame->get_w() != device->out_w ||
+	    refresh_frame->get_h() != device->out_h ||
+	    refresh_frame->get_color_model() != best_color_model) ) {
+		delete refresh_frame;  refresh_frame = 0;
+	}
 
+	if( !refresh_frame ) {
+		refresh_frame =
+			new VFrame(device->out_w, device->out_h, best_color_model);
+	}
 
+	if( use_opengl ) {
+		get_canvas()->unlock_window();
+		unlock_canvas();
 
-
-
-
-
-
-
+		mwindow->playback_3d->copy_from(this, refresh_frame, output_frame, 0);
+		lock_canvas(" Canvas::output_refresh");
+		get_canvas()->lock_window(" Canvas::output_refresh");
+	}
+	else
+		refresh_frame->copy_from(output_frame);
+}
 
 
 

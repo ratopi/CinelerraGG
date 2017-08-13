@@ -1802,10 +1802,6 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 						show_plugin(plugin);
 					}
 				}
-				else
-				{
-					plugin->show = 0;
-				}
 
 				plugin = (Plugin*)plugin->next;
 			}
@@ -2952,7 +2948,7 @@ void MWindow::update_project(int load_mode)
 	const int debug = 0;
 
 	if(debug) PRINT_TRACE
-	restart_brender();
+	init_brender();
 	edl->tracks->update_y_pixels(theme);
 
 	if(debug) PRINT_TRACE

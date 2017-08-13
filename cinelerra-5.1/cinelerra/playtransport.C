@@ -313,16 +313,6 @@ void PlayTransport::handle_transport(int command,
 	if( do_stop ) {
 		engine->que->send_command(STOP, CHANGE_NONE, 0, 0, 0, 0);
 		engine->interrupt_playback(wait_tracking);
-// This is necessary to get an OpenGL output buffer
-// printf("PlayTransport::handle_transport 2 update_refresh=%d prev_command=%d prev_direction=%d\n",
-// update_refresh, prev_command, prev_direction);
-		if( !prev_single_frame && update_refresh &&
-		    prev_command != STOP && prev_command != COMMAND_NONE ) {
-			int command = (prev_direction == PLAY_FORWARD) ?
-					SINGLE_FRAME_REWIND : SINGLE_FRAME_FWD;
-			engine->que->send_command(command,
-				CHANGE_NONE, get_edl(), 1, 0, 0);
-		}
 	}
 }
 

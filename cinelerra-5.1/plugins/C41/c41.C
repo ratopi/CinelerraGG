@@ -707,21 +707,25 @@ int C41Effect::process_realtime(VFrame *input, VFrame *output)
 				if( row[2] > maxima_b ) maxima_b = row[2];
 			}
 		}
-		if( minima_r < 1e-6 ) minima_r = 1e-6;
-		if( minima_g < 1e-6 ) minima_g = 1e-6;
-		if( minima_b < 1e-6 ) minima_b = 1e-6;
 		values.min_r = minima_r;  values.max_r = maxima_r;
 		values.min_g = minima_g;  values.max_g = maxima_g;
 		values.min_b = minima_b;  values.max_b = maxima_b;
 		values.light = maxima_r < 1e-6 ? 1.0 : minima_r / maxima_r;
-		values.gamma_g = logf(maxima_r / minima_r) / logf(maxima_g / minima_g);
-		values.gamma_b = logf(maxima_r / minima_r) / logf(maxima_b / minima_b);
+		bclamp(minima_r, 1e-6, 1-1e-6);  bclamp(maxima_r, 1e-6, 1-1e-6);
+		bclamp(minima_g, 1e-6, 1-1e-6);  bclamp(maxima_g, 1e-6, 1-1e-6);
+		bclamp(minima_b, 1e-6, 1-1e-6);  bclamp(maxima_b, 1e-6, 1-1e-6);
+		float log_r = logf(maxima_r / minima_r);
+		float log_g = logf(maxima_g / minima_g);
+		float log_b = logf(maxima_b / minima_b);
+		if( log_g < 1e-6 ) log_g = 1e-6;
+		if( log_b < 1e-6 ) log_b = 1e-6;
+		values.gamma_g = log_r / log_g;
+		values.gamma_b = log_r / log_b;
 		values.shave_min_col = shave_min_col;
 		values.shave_max_col = shave_max_col;
 		values.shave_min_row = shave_min_row;
 		values.shave_max_row = shave_max_row;
-		values.coef1 = -1;
-		values.coef2 = -1;
+		values.coef1 = values.coef2 = -1;
 
 		// Update GUI
 		send_render_gui(&values);
@@ -764,20 +768,14 @@ int C41Effect::process_realtime(VFrame *input, VFrame *output)
 
 			// Calculate postprocessing coeficents
 			values.coef2 = minima_r;
-			if( minima_g < values.coef2 )
-				values.coef2 = minima_g;
-			if( minima_b < values.coef2 )
-				values.coef2 = minima_b;
+			if( minima_g < values.coef2 ) values.coef2 = minima_g;
+			if( minima_b < values.coef2 ) values.coef2 = minima_b;
 			values.coef1 = maxima_r;
-			if( maxima_g > values.coef1 )
-				values.coef1 = maxima_g;
-			if( maxima_b > values.coef1 )
-				values.coef1 = maxima_b;
-			// Try not to overflow RGB601
-			// (235 - 16) / 256 * 0.9
+			if( maxima_g > values.coef1 ) values.coef1 = maxima_g;
+			if( maxima_b > values.coef1 ) values.coef1 = maxima_b;
+			// Try not to overflow RGB601 (235 - 16) / 256 * 0.9
 			float den = values.coef1 - values.coef2;
-			if( fabs(den) < 1e-6 )
-				den = den < 0 ? -1e-6 : 1e-6;
+			if( fabs(den) < 1e-6 ) den = 1e-6;
 			values.coef1 = 0.770 / den;
 			values.coef2 = 0.065 - values.coef2 * values.coef1;
 			send_render_gui(&values);

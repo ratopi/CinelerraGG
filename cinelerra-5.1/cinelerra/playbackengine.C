@@ -351,11 +351,9 @@ void PlaybackEngine::run()
 {
 	start_lock->unlock();
 
-	do
-	{
+	while( !done ) {
 // Wait for current command to finish
 		que->output_lock->lock("PlaybackEngine::run");
-
 		wait_render_engine();
 
 // Read the new command
@@ -365,59 +363,56 @@ void PlaybackEngine::run()
 		command->copy_from(&que->command);
 		que->command.reset();
 		que->input_lock->unlock();
-
 //printf("PlaybackEngine::run 1 %d\n", command->command);
 
-		switch(command->command)
-		{
+		switch( command->command ) {
 // Parameter change only
-			case COMMAND_NONE:
-//				command->command = last_command;
-				perform_change();
-				break;
+		case COMMAND_NONE:
+//			command->command = last_command;
+			perform_change();
+			break;
 
-			case PAUSE:
-				init_cursor(0);
-				pause_lock->lock("PlaybackEngine::run");
-				stop_cursor();
-				break;
+		case PAUSE:
+			init_cursor(0);
+			pause_lock->lock("PlaybackEngine::run");
+			stop_cursor();
+			break;
 
-			case STOP:
+		case STOP:
 // No changing
-				break;
+			break;
 
-			case CURRENT_FRAME:
-				last_command = command->command;
-				perform_change();
-				arm_render_engine();
+		case CURRENT_FRAME:
+			last_command = command->command;
+			perform_change();
+			arm_render_engine();
 // Dispatch the command
-				start_render_engine();
-				break;
+			start_render_engine();
+			break;
 
-			default:
-				last_command = command->command;
-				is_playing_back = 1;
- 				if(command->command == SINGLE_FRAME_FWD ||
-					command->command == SINGLE_FRAME_REWIND)
-				{
- 					command->playbackstart = get_tracking_position();
-				}
+		case SINGLE_FRAME_FWD:
+		case SINGLE_FRAME_REWIND:
+			command->playbackstart = get_tracking_position();
+// fall through
+		default:
+			last_command = command->command;
+			is_playing_back = 1;
 
-				perform_change();
-				arm_render_engine();
+			perform_change();
+			arm_render_engine();
 
 // Start tracking after arming so the tracking position doesn't change.
 // The tracking for a single frame command occurs during PAUSE
-				init_tracking();
+			init_tracking();
 
 // Dispatch the command
-				start_render_engine();
-				break;
+			start_render_engine();
+			break;
 		}
 
 
 //printf("PlaybackEngine::run 100\n");
-	}while(!done);
+	}
 }
 
 

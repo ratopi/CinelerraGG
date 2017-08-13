@@ -105,54 +105,31 @@ CICache* VModule::get_cache()
 
 
 
-int VModule::import_frame(VFrame *output,
-	VEdit *current_edit,
-	int64_t input_position,
-	double frame_rate,
-	int direction,
-	int use_opengl)
+int VModule::import_frame(VFrame *output, VEdit *current_edit,
+	int64_t input_position, double frame_rate, int direction, int use_opengl)
 {
 	int64_t direction_position;
 // Translation of edit
-	float in_x;
-	float in_y;
-	float in_w;
-	float in_h;
-	float out_x;
-	float out_y;
-	float out_w;
-	float out_h;
+	float in_x, in_y, in_w, in_h;
+	float out_x, out_y, out_w, out_h;
 	int result = 0;
 	const int debug = 0;
 	double edl_rate = get_edl()->session->frame_rate;
 
 	int64_t input_position_project = Units::to_int64(input_position *
-		edl_rate /
-		frame_rate +
-		0.001);
-
-
-
-
-
-
+		edl_rate / frame_rate + 0.001);
 
 	if(!output) printf("VModule::import_frame %d output=%p\n", __LINE__, output);
 	//output->dump_params();
 
-
 	if(debug) printf("VModule::import_frame %d this=%p input_position=%lld direction=%d\n",
-		__LINE__,
-		this,
-		(long long)input_position,
-		direction);
+		__LINE__, this, (long long)input_position, direction);
 
 // Convert to position corrected for direction
 	direction_position = input_position;
-	if(direction == PLAY_REVERSE)
-	{
-		direction_position--;
-		input_position_project--;
+	if(direction == PLAY_REVERSE) {
+		if( direction_position > 0 ) direction_position--;
+		if( input_position_project > 0 ) input_position_project--;
 	}
 	if(!output) printf("VModule::import_frame %d output=%p\n", __LINE__, output);
 
@@ -168,28 +145,18 @@ int VModule::import_frame(VFrame *output,
 	}
 
 	if(!output) printf("VModule::import_frame %d output=%p x11_device=%p nested_edl=%p\n",
-		__LINE__,
-		output,
-		x11_device,
-		nested_edl);
-
+		__LINE__, output, x11_device, nested_edl);
 
 	if(debug) printf("VModule::import_frame %d current_edit=%p\n",
-		__LINE__,
-		current_edit);
-
+		__LINE__, current_edit);
 
 // Load frame into output
 
 // Create objects for nested EDL
-	if(current_edit &&
-		current_edit->nested_edl)
-	{
+	if(current_edit && current_edit->nested_edl) {
 		int command;
 		if(debug) printf("VModule::import_frame %d nested_edl=%p current_edit->nested_edl=%p\n",
-			__LINE__,
-			nested_edl,
-			current_edit->nested_edl);
+			__LINE__, nested_edl, current_edit->nested_edl);
 
 // Convert requested direction to command
 		if(renderengine->command->command == CURRENT_FRAME)

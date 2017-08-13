@@ -42,13 +42,14 @@
 #include <string.h>
 
 #if 0
-#define STRC printf("==new %jd from %p\n", n, __builtin_return_address(0));
-void *operator new(size_t n) { STRC void *vp = malloc(n); bzero(vp,n); return vp; }
-void operator delete(void *t) { free(t); }
-void operator delete(void *t,size_t n) { free(t); }
-void *operator new[](size_t n) { STRC void *vp = malloc(n); bzero(vp,n); return vp; }
-void operator delete[](void *t) { free(t); }
-void operator delete[](void *t,size_t n) { free(t); }
+#define STRC(v) printf("==new %p from %p sz %jd\n", v, __builtin_return_address(0), n)
+#define STRD(v) printf("==del %p from %p\n", v, __builtin_return_address(0))
+void *operator new(size_t n) { void *vp = malloc(n); STRC(vp); bzero(vp,n); return vp; }
+void operator delete(void *t) { STRD(t); free(t); }
+void operator delete(void *t,size_t n) { STRD(t); free(t); }
+void *operator new[](size_t n) { void *vp = malloc(n); STRC(vp); bzero(vp,n); return vp; }
+void operator delete[](void *t) { STRD(t); free(t); }
+void operator delete[](void *t,size_t n) { STRD(t); free(t); }
 #endif
 
 enum

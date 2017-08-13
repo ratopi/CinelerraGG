@@ -25,6 +25,7 @@
 #include "edl.inc"
 #include "guicast.h"
 #include "mwindow.inc"
+#include "videodevice.inc"
 
 // Output for all X11 video
 
@@ -141,7 +142,9 @@ public:
 	virtual int get_xscroll() { return 0; };
 	virtual int get_yscroll() { return 0; };
 	virtual float get_zoom() { return 0; };
-// Redraws the image
+// Updates the refresh_frame
+	void update_refresh(VideoDevice *device, VFrame *output_frame);
+// Redraws the refresh_frame
 	virtual void draw_refresh(int flush = 1) {};
 
 // Get top left offset of canvas relative to output.

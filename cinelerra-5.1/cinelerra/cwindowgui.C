@@ -386,7 +386,7 @@ void CWindowGUI::zoom_canvas(double value, int update_menu)
 		x = output_x - cx / zoom;
 		y = output_y - cy / zoom;
 	}
-	canvas->update_zoom((int)x, (int)y, zoom);
+	canvas->update_zoom((int)(x+0.5), (int)(y+0.5), zoom);
 
 	if( update_menu )
 		zoom_panel->update(value);
