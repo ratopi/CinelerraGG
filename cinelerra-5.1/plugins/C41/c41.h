@@ -175,8 +175,6 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void render_gui(void* data);
-	float fix_exepts(float ival);
-	float normalize_pixel(float ival);
 #if defined(C41_FAST_POW)
 	float myLog2(float i) __attribute__ ((optimize(0)));
 	float myPow2(float i) __attribute__ ((optimize(0)));

@@ -599,9 +599,9 @@ int C41Effect::process_realtime(VFrame *input, VFrame *output)
 		for( int i=0; i<frame_h; ++i ) {
 			float *row = rows[i], *tmp = tmp_rows[i];
 			for( int j=frame_w; --j>=0; row+=pix_len ) {
-				*tmp++ = fix_exepts(row[0]);
-				*tmp++ = fix_exepts(row[1]);
-				*tmp++ = fix_exepts(row[2]);
+				*tmp++ = bclip(row[0], 0, pix_max);
+				*tmp++ = bclip(row[1], 0, pix_max);
+				*tmp++ = bclip(row[2], 0, pix_max);
 			}
 		}
 
@@ -734,17 +734,17 @@ int C41Effect::process_realtime(VFrame *input, VFrame *output)
 	// Apply the transformation
 	if( config.active ) {
 		for( int i = 0; i < frame_h; i++ ) {
-			float *row = (float*)frame->get_rows()[i];
+			float *row = (float*)frame->get_rows()[i], v;
 			for( int j = 0; j < frame_w; j++, row += pix_len ) {
-				float r0 = row[0] >= 1e-6 ? row[0] : 1e-6;
-				float v0 = config.fix_min_r / r0 - config.fix_light;
-				row[0] = normalize_pixel(v0 - config.fix_light);
-				float r1 = row[1] >= 1e-6 ? row[1] : 1e-6;
-				float v1 = POWF((config.fix_min_g / r1), config.fix_gamma_g);
-				row[1] = normalize_pixel(v1 - config.fix_light);
-				float r2 = row[2] >= 1e-6 ? row[2] : 1e-6;
-				float v2 = POWF((config.fix_min_b / r2), config.fix_gamma_b);
-				row[2] = normalize_pixel(v2 - config.fix_light);
+				row[0] = row[0] < 1e-3 ? pix_max :
+					(v = config.fix_min_r / row[0],
+					 bclip(v -= config.fix_light, 0, pix_max));
+				row[1] = row[1] < 1e-3 ? pix_max :
+					(v = POWF((config.fix_min_g / row[1]), config.fix_gamma_g),
+					 bclip(v -= config.fix_light, 0, pix_max));
+				row[2] = row[2] < 1e-3 ? pix_max :
+					(v = POWF((config.fix_min_b / row[2]), config.fix_gamma_b),
+					 bclip(v -= config.fix_light, 0, pix_max));
 			}
 		}
 		if( config.compute_magic && !config.postproc ) {
@@ -828,26 +828,5 @@ int C41Effect::process_realtime(VFrame *input, VFrame *output)
 		frame = 0;
 
 	return 0;
-}
-
-float C41Effect::normalize_pixel(float ival)
-{
-	float val = fix_exepts(ival);
-
-	if( config.postproc )
-		val = config.fix_coef1 * val + config.fix_coef2;
-
-	CLAMP(val, 0., pix_max);
-	return val;
-}
-
-float C41Effect::fix_exepts(float ival)
-{
-	switch( fpclassify(ival) ) {
-	case FP_NAN:
-	case FP_SUBNORMAL: return 0;
-	case FP_INFINITE:  return ival < 0 ? 0 : pix_max;
-	}
-	return ival;
 }
 
