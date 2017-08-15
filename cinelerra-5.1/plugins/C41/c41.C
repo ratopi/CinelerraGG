@@ -545,6 +545,21 @@ float C41Effect::myPow(float a, float b)
 
 #endif
 
+void C41Effect::pix_fix(float &pix, float min, float gamma)
+{
+	float val = pix;
+	if( val >= 1e-3 ) {
+		val = min / val;
+		if( gamma != 1 ) val = POWF(val, gamma);
+		bclamp(val -= config.fix_light, 0, pix_max);
+	        if( config.postproc )
+			val = config.fix_coef1 * val + config.fix_coef2;
+	}
+	else
+		val = 1;
+	pix = val;
+}
+
 int C41Effect::process_realtime(VFrame *input, VFrame *output)
 {
 	load_configuration();
@@ -731,54 +746,49 @@ int C41Effect::process_realtime(VFrame *input, VFrame *output)
 		send_render_gui(&values);
 	}
 
+	if( config.compute_magic ) {
+		float minima_r = 50., minima_g = 50., minima_b = 50.;
+		float maxima_r = 0., maxima_g = 0., maxima_b = 0.;
+
+		for( int i = min_row; i < max_row; i++ ) {
+			float *row = (float*)frame->get_rows()[i];
+			row += 3 * shave_min_col;
+			for( int j = min_col; j < max_col; j++, row += 3 ) {
+				if( row[0] < minima_r ) minima_r = row[0];
+				if( row[0] > maxima_r ) maxima_r = row[0];
+
+				if( row[1] < minima_g ) minima_g = row[1];
+				if( row[1] > maxima_g ) maxima_g = row[1];
+
+				if( row[2] < minima_b ) minima_b = row[2];
+				if( row[2] > maxima_b ) maxima_b = row[2];
+			}
+		}
+
+		// Calculate postprocessing coeficents
+		values.coef2 = minima_r;
+		if( minima_g < values.coef2 ) values.coef2 = minima_g;
+		if( minima_b < values.coef2 ) values.coef2 = minima_b;
+		values.coef1 = maxima_r;
+		if( maxima_g > values.coef1 ) values.coef1 = maxima_g;
+		if( maxima_b > values.coef1 ) values.coef1 = maxima_b;
+		// Try not to overflow RGB601 (235 - 16) / 256 * 0.9
+		float den = values.coef1 - values.coef2;
+		if( fabs(den) < 1e-6 ) den = 1e-6;
+		values.coef1 = 0.770 / den;
+		values.coef2 = 0.065 - values.coef2 * values.coef1;
+		send_render_gui(&values);
+	}
+
 	// Apply the transformation
 	if( config.active ) {
 		for( int i = 0; i < frame_h; i++ ) {
-			float *row = (float*)frame->get_rows()[i], v;
+			float *row = (float*)frame->get_rows()[i];
 			for( int j = 0; j < frame_w; j++, row += pix_len ) {
-				row[0] = row[0] < 1e-3 ? pix_max :
-					(v = config.fix_min_r / row[0],
-					 bclip(v -= config.fix_light, 0, pix_max));
-				row[1] = row[1] < 1e-3 ? pix_max :
-					(v = POWF((config.fix_min_g / row[1]), config.fix_gamma_g),
-					 bclip(v -= config.fix_light, 0, pix_max));
-				row[2] = row[2] < 1e-3 ? pix_max :
-					(v = POWF((config.fix_min_b / row[2]), config.fix_gamma_b),
-					 bclip(v -= config.fix_light, 0, pix_max));
+				pix_fix(row[0], config.fix_min_r, 1);
+				pix_fix(row[1], config.fix_min_g, config.fix_gamma_g);
+				pix_fix(row[2], config.fix_min_b, config.fix_gamma_b);
 			}
-		}
-		if( config.compute_magic && !config.postproc ) {
-			float minima_r = 50., minima_g = 50., minima_b = 50.;
-			float maxima_r = 0., maxima_g = 0., maxima_b = 0.;
-
-			for( int i = min_row; i < max_row; i++ ) {
-				float *row = (float*)frame->get_rows()[i];
-				row += 3 * shave_min_col;
-				for( int j = min_col; j < max_col; j++, row += 3 ) {
-					if( row[0] < minima_r ) minima_r = row[0];
-					if( row[0] > maxima_r ) maxima_r = row[0];
-
-					if( row[1] < minima_g ) minima_g = row[1];
-					if( row[1] > maxima_g ) maxima_g = row[1];
-
-					if( row[2] < minima_b ) minima_b = row[2];
-					if( row[2] > maxima_b ) maxima_b = row[2];
-				}
-			}
-
-			// Calculate postprocessing coeficents
-			values.coef2 = minima_r;
-			if( minima_g < values.coef2 ) values.coef2 = minima_g;
-			if( minima_b < values.coef2 ) values.coef2 = minima_b;
-			values.coef1 = maxima_r;
-			if( maxima_g > values.coef1 ) values.coef1 = maxima_g;
-			if( maxima_b > values.coef1 ) values.coef1 = maxima_b;
-			// Try not to overflow RGB601 (235 - 16) / 256 * 0.9
-			float den = values.coef1 - values.coef2;
-			if( fabs(den) < 1e-6 ) den = 1e-6;
-			values.coef1 = 0.770 / den;
-			values.coef2 = 0.065 - values.coef2 * values.coef1;
-			send_render_gui(&values);
 		}
 	}
 

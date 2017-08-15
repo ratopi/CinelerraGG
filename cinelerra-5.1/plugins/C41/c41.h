@@ -180,6 +180,7 @@ public:
 	float myPow2(float i) __attribute__ ((optimize(0)));
 	float myPow(float a, float b);
 #endif
+	void pix_fix(float &pix, float min, float gamma);
 	VFrame *frame, *tmp_frame, *blurry_frame;
 	struct magic values;
 
