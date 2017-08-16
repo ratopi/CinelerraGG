@@ -795,11 +795,11 @@ int C41Effect::process_realtime(VFrame *input, VFrame *output)
 	if( config.show_box ) {
 		EDLSession *session = get_edlsession();
 		int line_w = bmax(session->output_w,session->output_h) / 600 + 1;
-		for( int j=0; j<line_w; ++j ) {
+		for( int k=0; k<line_w; ++k ) {
 			float **rows = (float **)frame->get_rows();
 			if( min_row < max_row - 1 ) {
-				float *row1 = (float *)rows[min_row+j];
-				float *row2 = (float *)rows[max_row-j - 1];
+				float *row1 = (float *)rows[min_row+k];
+				float *row2 = (float *)rows[max_row-k - 1];
 
 				for( int i = 0; i < frame_w; i++ ) {
 					for( int j = 0; j < 3; j++ ) {
@@ -816,8 +816,8 @@ int C41Effect::process_realtime(VFrame *input, VFrame *output)
 			}
 
 			if( min_col < max_col - 1 ) {
-				int pix1 = pix_len * min_col+j;
-				int pix2 = pix_len * (max_col-j - 1);
+				int pix1 = pix_len * (min_col+k);
+				int pix2 = pix_len * (max_col-k - 1);
 
 				for( int i = 0; i < frame_h; i++ ) {
 					float *row1 = rows[i] + pix1;
