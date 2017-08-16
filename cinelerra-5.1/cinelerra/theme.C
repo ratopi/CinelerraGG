@@ -66,8 +66,6 @@ Theme::Theme()
 	widget_border = 5;
 	this->mwindow = 0;
 	theme_title = _(DEFAULT_THEME);
-	data_buffer = 0;
-	contents_buffer = 0;
 	last_image = 0;
 	mtransport_margin = 0;
 	toggle_margin = 0;
@@ -187,11 +185,6 @@ Theme::~Theme()
 
 void Theme::flush_images()
 {
-	if(data_buffer) delete [] data_buffer;
-	if(contents_buffer) delete [] contents_buffer;
-	data_buffer = 0;
-	contents_buffer = 0;
-	contents.remove_all();
 }
 
 void Theme::initialize()

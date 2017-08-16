@@ -50,32 +50,32 @@ public:
 		const char *up_path,
 		const char *hi_path,
 		const char *dn_path,
-		const char *title = 0);
+		const char *title);
 	VFrame** new_button4(const char *overlay_path,
 		const char *up_path,
 		const char *hi_path,
 		const char *dn_path,
 		const char *disabled_path,
-		const char *title = 0);
+		const char *title);
 	VFrame** new_button(const char *overlay_path,
 		VFrame *up,
 		VFrame *hi,
 		VFrame *dn,
-		const char *title = 0);
+		const char *title);
 	VFrame** new_toggle(const char *overlay_path,
 		const char *up_path,
 		const char *hi_path,
 		const char *checked_path,
 		const char *dn_path,
 		const char *checkedhi_path,
-		const char *title = 0);
+		const char *title);
 	VFrame** new_toggle(const char *overlay_path,
 		VFrame *up,
 		VFrame *hi,
 		VFrame *checked,
 		VFrame *dn,
 		VFrame *checkedhi,
-		const char *title = 0);
+		const char *title);
 
 
 // The two main routines for creating images are new_image_set and new_image.

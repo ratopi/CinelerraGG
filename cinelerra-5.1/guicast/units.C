@@ -27,7 +27,6 @@
 #include <string.h>
 #include <ctype.h>
 
-float* DB::topower = 0;
 float* DB::topower_base = 0;
 int* Freq::freqtable = 0;
 
@@ -35,17 +34,10 @@ int* Freq::freqtable = 0;
 DB::DB(float infinitygain)
 {
 	this->infinitygain = infinitygain;
-	if(!topower) { // db to power table
-		topower_base = new float[(MAXGAIN - INFINITYGAIN) * 10 + 1];
-		topower = topower_base + -INFINITYGAIN * 10;
-		for(int i = INFINITYGAIN * 10; i <= MAXGAIN * 10; i++) {
-			topower[i] = pow(10, (float)i / 10 / 20);
-//printf("%f %f\n", (float)i/10, topower[i]);
-		}
-		topower[INFINITYGAIN * 10] = 0;   // infinity gain
-	}
-	db = 0;
+	this->db = 0;
+	this->topower = topower_base + -INFINITYGAIN * 10;
 }
+
 
 float DB::fromdb_table()
 {
@@ -85,7 +77,6 @@ float DB::todb(float power)
 
 Freq::Freq()
 {
-	if( !freqtable ) init_table();
 	freq = 0;
 }
 
@@ -94,30 +85,9 @@ Freq::Freq(const Freq& oldfreq)
 	this->freq = oldfreq.freq;
 }
 
-void Freq::init_table()
-{
-	freqtable = new int[TOTALFREQS + 1];
-// starting frequency
-  	double freq1 = 27.5, freq2 = 55;
-// Some number divisable by three.  This depends on the value of TOTALFREQS
-  	int scale = 105;
-
-  	freqtable[0] = 0;
-  	for(int i = 1, j = 0; i <= TOTALFREQS; i++, j++) {
-    		freqtable[i] = (int)(freq1 + (freq2 - freq1) / scale * j + 0.5);
-//printf("Freq::init_table %d\n", freqtable[i]);
-		if(j >= scale) {
-			freq1 = freq2;
-			freq2 *= 2;
-			j = 0;
-  		}
-	}
-}
-
 int Freq::fromfreq()
 {
 	int i = 0;
- 	if( !freqtable ) init_table();
   	while( i<TOTALFREQS && freqtable[i]<freq ) ++i;
   	return i;
 };
@@ -125,14 +95,12 @@ int Freq::fromfreq()
 int Freq::fromfreq(int index)
 {
 	int i = 0;
- 	if( !freqtable ) init_table();
   	while( i<TOTALFREQS && freqtable[i]<index ) ++i;
   	return i;
 };
 
 int Freq::tofreq(int index)
 {
-	if( !freqtable ) init_table();
 	if(index >= TOTALFREQS) index = TOTALFREQS - 1;
 	return freqtable[index];
 }
@@ -156,6 +124,35 @@ int Freq::operator=(const int newfreq) { freq = newfreq; return newfreq; }
 int Freq::operator!=(Freq &newfreq) { return freq != newfreq.freq; }
 int Freq::operator==(Freq &newfreq) { return freq == newfreq.freq; }
 int Freq::operator==(int newfreq) { return freq == newfreq; }
+
+
+
+void Units::init()
+{
+	DB::topower_base = new float[(MAXGAIN - INFINITYGAIN) * 10 + 1];
+	float *topower = DB::topower_base + -INFINITYGAIN * 10;
+	for(int i = INFINITYGAIN * 10; i <= MAXGAIN * 10; i++)
+		topower[i] = pow(10, (float)i / 10 / 20);
+	topower[INFINITYGAIN * 10] = 0;   // infinity gain
+
+	Freq::freqtable = new int[TOTALFREQS + 1];
+// starting frequency
+	double freq1 = 27.5, freq2 = 55;
+// Some number divisable by three.  This depends on the value of TOTALFREQS
+	int scale = 105;
+
+	Freq::freqtable[0] = 0;
+	for(int i = 1, j = 0; i <= TOTALFREQS; i++, j++) {
+		Freq::freqtable[i] = (int)(freq1 + (freq2 - freq1) / scale * j + 0.5);
+		if(j < scale) continue;
+		freq1 = freq2;  freq2 *= 2;  j = 0;
+	}
+}
+void Units::finit()
+{
+	delete [] DB::topower_base;  DB::topower_base = 0;
+	delete [] Freq::freqtable;   Freq::freqtable = 0;
+}
 
 // give text representation as time
 char* Units::totext(char *text, double seconds, int time_format,

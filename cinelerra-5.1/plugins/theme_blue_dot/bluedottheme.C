@@ -279,7 +279,8 @@ void BlueDotTheme::initialize()
 		resources->ok_images = new_button("ok.png",
 		"generic_up.png",
 		"generic_hi.png",
-		"generic_dn.png");
+		"generic_dn.png",
+		"ok_button");
 
 	new_button("ok.png",
 		"generic_up.png",
@@ -290,7 +291,8 @@ void BlueDotTheme::initialize()
 	resources->cancel_images = new_button("cancel.png",
 		"generic_up.png",
 		"generic_hi.png",
-		"generic_dn.png");
+		"generic_dn.png",
+		"cancel_button");
 
 	new_button("cancel.png",
 		"generic_up.png",
@@ -705,15 +707,15 @@ void BlueDotTheme::initialize()
 	new_button("nextlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "nextlabel");
 	new_button("outpoint.png", editpanel_up, editpanel_hi, editpanel_dn, "outbutton");
 //	outdelete_data = new_button("clearoutpoint.png", editpanel_up, editpanel_hi, editpanel_dn);   //Specific to BD
-	over_button = new_button("over.png", editpanel_up, editpanel_hi, editpanel_dn);
-	overwrite_data = new_button("overwrite.png", editpanel_up, editpanel_hi, editpanel_dn);
+	over_button = new_button("over.png", editpanel_up, editpanel_hi, editpanel_dn, "overbutton");
+	overwrite_data = new_button("overwrite.png", editpanel_up, editpanel_hi, editpanel_dn, "overwritebutton");
 	new_button("paste.png", editpanel_up, editpanel_hi, editpanel_dn, "paste");
 	new_button("prevlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "prevlabel");
 	new_button("nextedit.png", editpanel_up, editpanel_hi, editpanel_dn, "nextedit");
 	new_button("prevedit.png", editpanel_up, editpanel_hi, editpanel_dn, "prevedit");
 	new_button("redo.png", editpanel_up, editpanel_hi, editpanel_dn, "redo");
 	new_button("right_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "right_justify");
-	splice_data = new_button("splice.png", editpanel_up, editpanel_hi, editpanel_dn);
+	splice_data = new_button("splice.png", editpanel_up, editpanel_hi, editpanel_dn, "slicebutton");
 	new_button("toclip.png", editpanel_up, editpanel_hi, editpanel_dn, "toclip");
 	new_button("goto.png", editpanel_up, editpanel_hi, editpanel_dn, "goto");
 	new_button("top_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "top_justify");

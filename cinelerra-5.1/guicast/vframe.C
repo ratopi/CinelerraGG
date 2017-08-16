@@ -304,6 +304,11 @@ int VFrame::clear_objects(int do_opengl)
 		pbuffer = 0;
 	}
 
+#ifdef LEAKER
+if( memory_type != VFrame::SHARED )
+  printf("==del %p from %p\n", data, __builtin_return_address(0));
+#endif
+
 // Delete data
 	switch(memory_type)
 	{
@@ -522,6 +527,9 @@ int VFrame::allocate_data(unsigned char *data, int shmid,
 
 		if(!this->data)
 			printf("VFrame::allocate_data %dx%d: memory exhausted.\n", this->w, this->h);
+#ifdef LEAKER
+printf("==new %p from %p sz %d\n", this->data, __builtin_return_address(0), size);
+#endif
 
 //printf("VFrame::allocate_data %d %p data=%p %d %d\n", __LINE__, this, this->data, this->w, this->h);
 //if(size > 1000000) printf("VFrame::allocate_data %d\n", size);
@@ -930,12 +938,9 @@ int VFrame::clear_frame()
 void VFrame::rotate90()
 {
 // Allocate new frame
-	int new_w = h, new_h = w, new_bytes_per_line = bytes_per_pixel * new_w;
-	unsigned char *new_data = new unsigned char[calculate_data_size(new_w, new_h, new_bytes_per_line, color_model)];
-	unsigned char **new_rows = new unsigned char*[new_h];
-	for(int i = 0; i < new_h; i++)
-		new_rows[i] = &new_data[new_bytes_per_line * i];
-
+	int new_w = h, new_h = w;
+	VFrame new_frame(new_w, new_h, color_model);
+	unsigned char **new_rows = new_frame.get_rows();
 // Copy data
 	for(int in_y = 0, out_x = new_w - 1; in_y < h; in_y++, out_x--)
 	{
@@ -950,23 +955,34 @@ void VFrame::rotate90()
 	}
 
 // Swap frames
-	clear_objects(0);
+// swap memory
+	unsigned char *new_data = new_frame.data;
+	new_frame.data = data;
 	data = new_data;
+// swap rows
+	new_rows = new_frame.rows;
+	new_frame.rows = rows;
 	rows = new_rows;
-	bytes_per_line = new_bytes_per_line;
-	w = new_w;
-	h = new_h;
+// swap shmid
+	int new_shmid = new_frame.shmid;
+	new_frame.shmid = shmid;
+	shmid = new_shmid;
+// swap bytes_per_line
+	int new_bpl = new_frame.bytes_per_line;
+	new_frame.bytes_per_line = bytes_per_line;
+	bytes_per_line = new_bpl;
+	new_frame.clear_objects(0);
+
+	w = new_frame.w;
+	h = new_frame.h;
 }
 
 void VFrame::rotate270()
 {
 // Allocate new frame
-	int new_w = h, new_h = w, new_bytes_per_line = bytes_per_pixel * new_w;
-	unsigned char *new_data = new unsigned char[calculate_data_size(new_w, new_h, new_bytes_per_line, color_model)];
-	unsigned char **new_rows = new unsigned char*[new_h];
-	for(int i = 0; i < new_h; i++)
-		new_rows[i] = &new_data[new_bytes_per_line * i];
-
+	int new_w = h, new_h = w;
+	VFrame new_frame(new_w, new_h, color_model);
+	unsigned char **new_rows = new_frame.get_rows();
 // Copy data
 	for(int in_y = 0, out_x = 0; in_y < h; in_y++, out_x++)
 	{
@@ -981,12 +997,26 @@ void VFrame::rotate270()
 	}
 
 // Swap frames
-	clear_objects(0);
+// swap memory
+	unsigned char *new_data = new_frame.data;
+	new_frame.data = data;
 	data = new_data;
+// swap rows
+	new_rows = new_frame.rows;
+	new_frame.rows = rows;
 	rows = new_rows;
-	bytes_per_line = new_bytes_per_line;
-	w = new_w;
-	h = new_h;
+// swap shmid
+	int new_shmid = new_frame.shmid;
+	new_frame.shmid = shmid;
+	shmid = new_shmid;
+// swap bytes_per_line
+	int new_bpl = new_frame.bytes_per_line;
+	new_frame.bytes_per_line = bytes_per_line;
+	bytes_per_line = new_bpl;
+	new_frame.clear_objects(0);
+
+	w = new_frame.w;
+	h = new_frame.h;
 }
 
 void VFrame::flip_vert()

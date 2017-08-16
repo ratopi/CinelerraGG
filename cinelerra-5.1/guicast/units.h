@@ -75,8 +75,11 @@
 #define TIME_MS2 10
 #define TIME_MS2_TEXT _("Minutes:Seconds")
 
+class Units;
+
 class DB
 {
+	friend class Units;
 public:
 	DB(float infinitygain = INFINITYGAIN);
 	virtual ~DB() {};
@@ -98,16 +101,17 @@ public:
 	inline int operator==(DB &newdb) { return db == newdb.db; };
 	inline int operator==(int newdb) { return db == newdb; };
 
-	static float *topower, *topower_base;
+	float *topower;
 	float db;
 	float infinitygain;
  private:
-	static float *allocated;
+	static float *topower_base;
 };
 
 // Third octave frequency table
 class Freq
 {
+	friend class Units;
 public:
 	Freq();
 	Freq(const Freq& oldfreq);
@@ -143,6 +147,8 @@ class Units
 {
 public:
 	Units() {};
+	static void init();
+	static void finit();
 
 	static int timeformat_totype(char *tcf);
 

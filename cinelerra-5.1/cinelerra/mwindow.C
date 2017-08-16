@@ -297,6 +297,9 @@ MWindow::~MWindow()
 #endif
 	reset_caches();
 	dead_plugins->remove_all_objects();
+// must delete theme before destroying plugindb
+//  theme destructor will be deleted by delete_plugins
+	delete theme;           theme = 0;
 	delete_plugins();
 	finit_error();
 	keyframe_threads->remove_all_objects();
@@ -325,7 +328,6 @@ MWindow::~MWindow()
 	delete defaults;        defaults = 0;
 	delete assets;          assets = 0;
 	delete splash_window;   splash_window = 0;
-//	delete theme;           theme = 0;	// deleted by delete_plugins
 	if( !edl->Garbage::remove_user() ) edl = 0;
 	delete channeldb_buz;
 	delete channeldb_v4l2jpeg;
@@ -733,14 +735,14 @@ void MWindow::add_plugins(ArrayList<PluginServer*> &plugins)
 	plugins.remove_all();
 }
 
-void MWindow::init_plugin_tips(ArrayList<PluginServer*> &plugins)
+void MWindow::init_plugin_tips(ArrayList<PluginServer*> &plugins, const char *lang)
 {
 	const char *cfg_path = File::get_cindat_path();
 	char msg_path[BCTEXTLEN];  int txt = 0;
 	FILE *fp = 0;
 	if( BC_Resources::language[0] ) {
 		snprintf(msg_path, sizeof(msg_path), "%s/info/plugins.%s",
-			cfg_path, BC_Resources::language);
+			cfg_path, lang);
 		fp = fopen(msg_path, "r");
 	}
 	if( !fp ) {
@@ -2007,7 +2009,7 @@ void MWindow::create_objects(int want_gui,
 	if(debug) PRINT_TRACE
 	init_ladspa_plugins(this, preferences);
 	if(debug) PRINT_TRACE
-	init_plugin_tips(*plugindb);
+	init_plugin_tips(*plugindb, cin_lang);
 	if(splash_window)
 		splash_window->operation->update(_("Initializing GUI"));
 	if(debug) PRINT_TRACE

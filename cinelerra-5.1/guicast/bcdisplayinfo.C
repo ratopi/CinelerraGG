@@ -64,16 +64,16 @@ void BC_DisplayInfo::parse_geometry(char *geom, int *x, int *y, int *width, int 
 
 static void get_top_coords(Display *display, Window win, int &px,int &py, int &tx,int &ty)
 {
-	Window *pcwin;  unsigned int ncwin;
+	Window *pcwin = 0;  unsigned int ncwin = 0;
 	Window cwin = 0, pwin = 0, root = 0;
-	int nx=0, ny=0;
 	XQueryTree(display, win, &root, &pwin, &pcwin, &ncwin);
 	if( pcwin ) XFree(pcwin);
 	XTranslateCoordinates(display, pwin, root, 0,0, &px,&py, &cwin);
 //printf(" win=%lx, px/py=%d/%d\n", win, px,py);
 
+	int nx = px, ny = py;  pwin = win;
 	for( int i=5; --i>=0; ) {
-		win = pwin;
+		win = pwin;  root = 0;  pwin = 0;  pcwin = 0;  ncwin = 0;
 		XQueryTree(display, win, &root, &pwin, &pcwin, &ncwin);
 		if( pcwin ) XFree(pcwin);
 		if( pwin == root ) break;

@@ -362,9 +362,6 @@ public:
 	MWindow *mwindow;
 // Compressed images are loaded in here.
 	char *data_buffer;
-	char *contents_buffer;
-	ArrayList<char*> contents;
-	ArrayList<int> offsets;
 	char path[BCTEXTLEN];
 	char *last_image;
 	int last_offset;

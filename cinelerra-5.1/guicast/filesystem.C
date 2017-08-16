@@ -481,6 +481,7 @@ int FileSystem::scan_directory(const char *new_dir)
 				delete new_file;
 		}
 	}
+	closedir(dirstream);
 	return 0;
 }
 

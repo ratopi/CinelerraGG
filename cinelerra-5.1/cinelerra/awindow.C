@@ -53,6 +53,7 @@ AWindow::~AWindow()
 	delete asset_edit;
 	delete label_edit;
 	delete clip_edit;
+	delete effect_tip;
 }
 
 void AWindow::create_objects()

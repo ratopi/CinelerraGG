@@ -41,6 +41,7 @@ BC_Theme::BC_Theme()
 BC_Theme::~BC_Theme()
 {
 	image_sets.remove_all_objects();
+	contents.remove_all();
 }
 
 void BC_Theme::dump()

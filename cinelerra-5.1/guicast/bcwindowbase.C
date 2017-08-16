@@ -181,9 +181,10 @@ BC_WindowBase::~BC_WindowBase()
 		for( int i=sizeof(xfont)/sizeof(xfont[0]); --i>=0; )
 			XFreeFont(display, this->*xfont[i]);
 
-// bug in X causes XRenderExtensionInfo to be damaged if this is done here
-//  left to be done in XCloseDisplay by Xlib.
-#if defined(HAVE_XFT) && 0
+// past bug in X caused XRenderExtensionInfo to be damaged
+// if this is done here. left to be done in XCloseDisplay by Xlib.
+// works in more modern systems, and needed for leak testing.
+#if defined(HAVE_XFT) && defined(VALGRIND)
 		static void *BC_WindowBase::*xft_font[] = {
 			 &BC_WindowBase::smallfont_xft,
 			 &BC_WindowBase::mediumfont_xft,

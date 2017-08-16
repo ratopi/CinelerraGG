@@ -213,53 +213,61 @@ void SUV::initialize()
 		"loadmode_nested");
 
 
-
 	resources->filebox_icons_images = new_button("icons.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_icons");
 
 	resources->filebox_text_images = new_button("text.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_text");
 
 	resources->filebox_newfolder_images = new_button("folder.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_newfolder");
 
 	resources->filebox_rename_images = new_button("rename.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_rename");
 
 	resources->filebox_updir_images = new_button("updir.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_updir");
 
 	resources->filebox_delete_images = new_button("delete.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_delete");
 
 	resources->filebox_reload_images = new_button("reload.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_reload");
 
 
 	resources->filebox_descend_images = new_button("openfolder.png",
 		"filebox_bigbutton_up.png",
 		"filebox_bigbutton_hi.png",
-		"filebox_bigbutton_dn.png");
+		"filebox_bigbutton_dn.png",
+		"filebox_descend");
 
 	resources->usethis_button_images =
 		resources->ok_images = new_button("ok.png",
 		"filebox_bigbutton_up.png",
 		"filebox_bigbutton_hi.png",
-		"filebox_bigbutton_dn.png");
+		"filebox_bigbutton_dn.png",
+		"ok_button");
 
 	new_button("ok.png",
 		"new_bigbutton_up.png",
@@ -270,7 +278,8 @@ void SUV::initialize()
 	resources->cancel_images = new_button("cancel.png",
 		"filebox_bigbutton_up.png",
 		"filebox_bigbutton_hi.png",
-		"filebox_bigbutton_dn.png");
+		"filebox_bigbutton_dn.png",
+		"cancel_button");
 
 	new_button("cancel.png",
 		"new_bigbutton_up.png",
@@ -358,7 +367,8 @@ void SUV::initialize()
 		"editpanel_up.png",
 		"editpanel_hi.png",
 		"editpanel_dn.png",
-		"editpanel_hi.png");
+		"editpanel_hi.png",
+		"listbox_button");
 	resources->listbox_column = new_image_set(3,
 		"column_up.png",
 		"column_hi.png",
@@ -688,12 +698,12 @@ void SUV::initialize()
 	new_button("nextedit.png", editpanel_up, editpanel_hi, editpanel_dn, "nextedit");
 	new_button("prevedit.png", editpanel_up, editpanel_hi, editpanel_dn, "prevedit");
 	new_button("outpoint.png", editpanel_up, editpanel_hi, editpanel_dn, "outbutton");
-	over_button = new_button("over.png", editpanel_up, editpanel_hi, editpanel_dn);
-	overwrite_data = new_button("overwrite.png", editpanel_up, editpanel_hi, editpanel_dn);
+	over_button = new_button("over.png", editpanel_up, editpanel_hi, editpanel_dn, "overbutton");
+	overwrite_data = new_button("overwrite.png", editpanel_up, editpanel_hi, editpanel_dn, "overwritebutton");
 	new_button("paste.png", editpanel_up, editpanel_hi, editpanel_dn, "paste");
 	new_button("redo.png", editpanel_up, editpanel_hi, editpanel_dn, "redo");
 	new_button("right_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "right_justify");
-	splice_data = new_button("splice.png", editpanel_up, editpanel_hi, editpanel_dn);
+	splice_data = new_button("splice.png", editpanel_up, editpanel_hi, editpanel_dn, "slicebutton");
 	new_button("toclip.png", editpanel_up, editpanel_hi, editpanel_dn, "toclip");
 	new_button("goto.png", editpanel_up, editpanel_hi, editpanel_dn, "goto");
 	new_button("top_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "top_justify");

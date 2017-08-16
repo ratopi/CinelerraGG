@@ -330,6 +330,7 @@ public:
 	static const char *large_font_xft2;
 	static const char *big_font_xft2;
 	void init_font_defs(double scale);
+	void finit_font_defs();
 
 	VFrame **medium_7segment;
 
@@ -358,6 +359,39 @@ public:
 		char *input, int input_length, char *output, int output_length);
 	static int find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface);
 	static void dump_fonts(FILE *fp = stdout);
+
+// default images
+	static VFrame *default_type_to_icon[];
+	static VFrame *default_bar;
+	static VFrame *default_cancel_images[];
+	static VFrame *default_ok_images[];
+	static VFrame *default_usethis_images[];
+#if 0
+	static VFrame *default_checkbox_images[];
+	static VFrame *default_radial_images[];
+	static VFrame *default_label_images[];
+#endif
+	static VFrame *default_menuitem_data[];
+	static VFrame *default_menubar_data[];
+	static VFrame *default_menu_popup_bg;
+	static VFrame *default_menu_bar_bg;
+	static VFrame *default_check_image;
+	static VFrame *default_filebox_text_images[];
+	static VFrame *default_filebox_icons_images[];
+	static VFrame *default_filebox_updir_images[];
+	static VFrame *default_filebox_newfolder_images[];
+	static VFrame *default_filebox_rename_images[];
+	static VFrame *default_filebox_delete_images[];
+	static VFrame *default_filebox_reload_images[];
+	static VFrame *default_listbox_button[];
+	static VFrame *default_listbox_bg;
+	static VFrame *default_listbox_expand[];
+	static VFrame *default_listbox_column[];
+	static VFrame *default_listbox_up;
+	static VFrame *default_listbox_dn;
+	static VFrame *default_pot_images[];
+	static VFrame *default_progress_images[];
+	static VFrame *default_medium_7segment[];
 
 // Make VFrame use shm
 	int vframe_shm;

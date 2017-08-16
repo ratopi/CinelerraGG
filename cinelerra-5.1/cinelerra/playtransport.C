@@ -255,7 +255,6 @@ void PlayTransport::handle_transport(int command,
 	int resume = 0;
 //printf("PlayTransport::handle_transport 1 %d\n", command);
 	int prev_command = engine->command->command;
-	int prev_direction = engine->command->get_direction();
 	int prev_single_frame = engine->command->single_frame();
 	int prev_audio = engine->command->audio_toggle ?
 		 !prev_single_frame : prev_single_frame;

@@ -253,18 +253,13 @@ void BlondCVTheme::initialize()
 	resources->ok_images = new_button("ok.png",
 			"generic_up.png",
 			"generic_hi.png",
-			"generic_dn.png");
+			"generic_dn.png",
+			"ok_button");
 
 	resources->dirbox_margin = 50;
 	resources->filebox_margin = 101;
 	resources->file_color = 0x000000;
 	resources->directory_color = 0x0000ff;
-	resources->cancel_images = new_button("cancel.png",
-			"generic_up.png",
-			"generic_hi.png",
-			"generic_dn.png");
-
-
 
 // Record windows
 	rgui_batch = new_image("recordgui_batch.png");
@@ -276,44 +271,58 @@ void BlondCVTheme::initialize()
 	resources->filebox_icons_images = new_button("icons.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_icons");
 
 	resources->filebox_text_images = new_button("text.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_text");
 
 	resources->filebox_newfolder_images = new_button("folder.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_newfolder");
+
+	resources->filebox_rename_images = new_button("rename.png",
+		"fileboxbutton_up.png",
+		"fileboxbutton_hi.png",
+		"fileboxbutton_dn.png",
+		"filebox_rename");
 
 	resources->filebox_updir_images = new_button("updir.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_updir");
 
 	resources->filebox_delete_images = new_button("delete.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_delete");
 
 	resources->filebox_reload_images = new_button("reload.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
-		"fileboxbutton_dn.png");
+		"fileboxbutton_dn.png",
+		"filebox_reload");
 
 
 	resources->filebox_descend_images = new_button("openfolder.png",
 		"generic_up.png",
 		"generic_hi.png",
-		"generic_dn.png");
+		"generic_dn.png",
+		"filebox_descend");
 
 	resources->usethis_button_images =
 		resources->ok_images = new_button("ok.png",
 		"generic_up.png",
 		"generic_hi.png",
-		"generic_dn.png");
+		"generic_dn.png",
+		"ok_button");
 
 	new_button("ok.png",
 		"generic_up.png",
@@ -324,7 +333,8 @@ void BlondCVTheme::initialize()
 	resources->cancel_images = new_button("cancel.png",
 		"generic_up.png",
 		"generic_hi.png",
-		"generic_dn.png");
+		"generic_dn.png",
+		"cancel_button");
 
 	new_button("cancel.png",
 		"generic_up.png",
@@ -672,15 +682,15 @@ void BlondCVTheme::initialize()
 	new_button("middle_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "middle_justify");
 	new_button("nextlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "nextlabel");
 	new_button("outpoint.png", editpanel_up, editpanel_hi, editpanel_dn, "outbutton");
-	over_button = new_button("over.png", editpanel_up, editpanel_hi, editpanel_dn);
-	overwrite_data = new_button("overwrite.png", editpanel_up, editpanel_hi, editpanel_dn);
+	over_button = new_button("over.png", editpanel_up, editpanel_hi, editpanel_dn, "overbutton");
+	overwrite_data = new_button("overwrite.png", editpanel_up, editpanel_hi, editpanel_dn, "overwritebutton");
 	new_button("paste.png", editpanel_up, editpanel_hi, editpanel_dn, "paste");
 	new_button("prevlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "prevlabel");
         new_button("nextedit.png", editpanel_up, editpanel_hi, editpanel_dn, "nextedit");
         new_button("prevedit.png", editpanel_up, editpanel_hi, editpanel_dn, "prevedit");
 	new_button("redo.png", editpanel_up, editpanel_hi, editpanel_dn, "redo");
 	new_button("right_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "right_justify");
-	splice_data = new_button("splice.png", editpanel_up, editpanel_hi, editpanel_dn);
+	splice_data = new_button("splice.png", editpanel_up, editpanel_hi, editpanel_dn, "slicebutton");
 	new_button("toclip.png", editpanel_up, editpanel_hi, editpanel_dn, "toclip");
 	new_button("goto.png", editpanel_up, editpanel_hi, editpanel_dn, "goto");
 	new_button("top_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "top_justify");

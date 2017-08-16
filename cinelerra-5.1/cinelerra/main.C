@@ -35,13 +35,14 @@
 #include "pluginserver.h"
 #include "preferences.h"
 #include "renderfarmclient.h"
+#include "units.h"
 #include "versioninfo.h"
 
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
 
-#if 0
+#ifdef LEAKER
 #define STRC(v) printf("==new %p from %p sz %jd\n", v, __builtin_return_address(0), n)
 #define STRD(v) printf("==del %p from %p\n", v, __builtin_return_address(0))
 void *operator new(size_t n) { void *vp = malloc(n); STRC(vp); bzero(vp,n); return vp; }
@@ -117,6 +118,7 @@ int main(int argc, char *argv[])
 	batch_path[0] = 0;
 	deamon_path[0] = 0;
 	EDL::id_lock = new Mutex("EDL::id_lock");
+	Units::init();
 
 	File::init_cin_path();
 	const char *locale_path = File::get_locale_path();
@@ -406,6 +408,7 @@ DISABLE_BUFFER
 
 	filenames.remove_all_objects();
 	delete EDL::id_lock;  EDL::id_lock = 0;
+	Units::finit();
 
 	return 0;
 }

@@ -86,6 +86,7 @@ RenderEngine::~RenderEngine()
 	delete input_lock;
 	delete start_lock;
 	delete output_lock;
+	delete render_active;
 	delete interrupt_lock;
 	delete first_frame_lock;
 	delete config;

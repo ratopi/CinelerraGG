@@ -165,7 +165,7 @@ int C41Button::handle_event()
 
 
 C41BoxButton::C41BoxButton(C41Effect *plugin, C41Window *window, int x, int y)
- : BC_GenericButton(x, y, _("Apply box"))
+ : BC_GenericButton(x, y, _("Apply default box"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -267,11 +267,11 @@ C41Window::C41Window(C41Effect *plugin)
 	add_subwindow(gamma_b = new BC_Title(x + 80, y, "0.0000"));
 	y += 30;
 
-	add_subwindow(new BC_Title(x, y, _("Coef 1:")));
+	add_subwindow(new BC_Title(x, y, _("Contrast:")));
 	add_subwindow(coef1 = new BC_Title(x + 80, y, "0.0000"));
 	y += 30;
 
-	add_subwindow(new BC_Title(x, y, _("Coef 2:")));
+	add_subwindow(new BC_Title(x, y, _("Brightness:")));
 	add_subwindow(coef2 = new BC_Title(x + 80, y, "0.0000"));
 	y += 30;
 
@@ -334,12 +334,12 @@ C41Window::C41Window(C41Effect *plugin)
 		 &plugin->config.fix_gamma_b, x + 80, y));
 	y += 30;
 
-	add_subwindow(new BC_Title(x, y, _("Coef 1:")));
+	add_subwindow(new BC_Title(x, y, _("Contrast:")));
 	add_subwindow(fix_coef1 = new C41TextBox(plugin,
 		 &plugin->config.fix_coef1, x + 80, y));
 	y += 30;
 
-	add_subwindow(new BC_Title(x, y, _("Coef 2:")));
+	add_subwindow(new BC_Title(x, y, _("Brightness:")));
 	add_subwindow(fix_coef2 = new C41TextBox(plugin,
 		 &plugin->config.fix_coef2, x + 80, y));
 	y += 30;
@@ -793,40 +793,44 @@ int C41Effect::process_realtime(VFrame *input, VFrame *output)
 	}
 
 	if( config.show_box ) {
-		float **rows = (float **)frame->get_rows();
-		if( min_row < max_row - 1 ) {
-			float *row1 = (float *)rows[min_row];
-			float *row2 = (float *)rows[max_row - 1];
+		EDLSession *session = get_edlsession();
+		int line_w = bmax(session->output_w,session->output_h) / 600 + 1;
+		for( int j=0; j<line_w; ++j ) {
+			float **rows = (float **)frame->get_rows();
+			if( min_row < max_row - 1 ) {
+				float *row1 = (float *)rows[min_row+j];
+				float *row2 = (float *)rows[max_row-j - 1];
 
-			for( int i = 0; i < frame_w; i++ ) {
-				for( int j = 0; j < 3; j++ ) {
-					row1[j] = pix_max - row1[j];
-					row2[j] = pix_max - row2[j];
+				for( int i = 0; i < frame_w; i++ ) {
+					for( int j = 0; j < 3; j++ ) {
+						row1[j] = pix_max - row1[j];
+						row2[j] = pix_max - row2[j];
+					}
+					if( has_alpha ) {
+						row1[3] = pix_max;
+						row2[3] = pix_max;
+					}
+					row1 += pix_len;
+					row2 += pix_len;
 				}
-				if( has_alpha ) {
-					row1[3] = pix_max;
-					row2[3] = pix_max;
-				}
-				row1 += pix_len;
-				row2 += pix_len;
 			}
-		}
 
-		if( min_col < max_col - 1 ) {
-			int pix1 = pix_len * min_col;
-			int pix2 = pix_len * (max_col - 1);
+			if( min_col < max_col - 1 ) {
+				int pix1 = pix_len * min_col+j;
+				int pix2 = pix_len * (max_col-j - 1);
 
-			for( int i = 0; i < frame_h; i++ ) {
-				float *row1 = rows[i] + pix1;
-				float *row2 = rows[i] + pix2;
+				for( int i = 0; i < frame_h; i++ ) {
+					float *row1 = rows[i] + pix1;
+					float *row2 = rows[i] + pix2;
 
-				for( int j = 0; j < 3; j++ ) {
-					row1[j] = pix_max - row1[j];
-					row2[j] = pix_max - row2[j];
-				}
-				if( has_alpha ) {
-					row1[3] = pix_max;
-					row2[3] = pix_max;
+					for( int j = 0; j < 3; j++ ) {
+						row1[j] = pix_max - row1[j];
+						row2[j] = pix_max - row2[j];
+					}
+					if( has_alpha ) {
+						row1[3] = pix_max;
+						row2[3] = pix_max;
+					}
 				}
 			}
 		}
