@@ -360,38 +360,40 @@ public:
 	static int find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface);
 	static void dump_fonts(FILE *fp = stdout);
 
+	static void new_vframes(int n, VFrame *vframes[], ...);
+	static void del_vframes(VFrame *vframes[], int n);
 // default images
-	static VFrame *default_type_to_icon[];
+	static VFrame *default_type_to_icon[6];
 	static VFrame *default_bar;
-	static VFrame *default_cancel_images[];
-	static VFrame *default_ok_images[];
-	static VFrame *default_usethis_images[];
+	static VFrame *default_cancel_images[3];
+	static VFrame *default_ok_images[3];
+	static VFrame *default_usethis_images[3];
 #if 0
-	static VFrame *default_checkbox_images[];
-	static VFrame *default_radial_images[];
-	static VFrame *default_label_images[];
+	static VFrame *default_checkbox_images[5];
+	static VFrame *default_radial_images[5];
+	static VFrame *default_label_images[5];
 #endif
-	static VFrame *default_menuitem_data[];
-	static VFrame *default_menubar_data[];
+	static VFrame *default_menuitem_data[3];
+	static VFrame *default_menubar_data[3];
 	static VFrame *default_menu_popup_bg;
 	static VFrame *default_menu_bar_bg;
 	static VFrame *default_check_image;
-	static VFrame *default_filebox_text_images[];
-	static VFrame *default_filebox_icons_images[];
-	static VFrame *default_filebox_updir_images[];
-	static VFrame *default_filebox_newfolder_images[];
-	static VFrame *default_filebox_rename_images[];
-	static VFrame *default_filebox_delete_images[];
-	static VFrame *default_filebox_reload_images[];
-	static VFrame *default_listbox_button[];
+	static VFrame *default_filebox_text_images[3];
+	static VFrame *default_filebox_icons_images[3];
+	static VFrame *default_filebox_updir_images[3];
+	static VFrame *default_filebox_newfolder_images[3];
+	static VFrame *default_filebox_rename_images[3];
+	static VFrame *default_filebox_delete_images[3];
+	static VFrame *default_filebox_reload_images[3];
+	static VFrame *default_listbox_button[4];
 	static VFrame *default_listbox_bg;
-	static VFrame *default_listbox_expand[];
-	static VFrame *default_listbox_column[];
+	static VFrame *default_listbox_expand[5];
+	static VFrame *default_listbox_column[3];
 	static VFrame *default_listbox_up;
 	static VFrame *default_listbox_dn;
-	static VFrame *default_pot_images[];
-	static VFrame *default_progress_images[];
-	static VFrame *default_medium_7segment[];
+	static VFrame *default_pot_images[3];
+	static VFrame *default_progress_images[2];
+	static VFrame *default_medium_7segment[20];
 
 // Make VFrame use shm
 	int vframe_shm;

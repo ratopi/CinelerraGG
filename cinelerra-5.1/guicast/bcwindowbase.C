@@ -684,6 +684,15 @@ Display* BC_WindowBase::init_display(const char *display_name)
 			}
 		}
  	}
+
+	static int xsynch = -1;
+	if( xsynch < 0 ) {
+		const char *cp = getenv("CIN_XSYNCH");
+		xsynch = !cp ? 0 : atoi(cp);
+	}
+	if( xsynch > 0 )
+		XSynchronize(display, True);
+
 	return display;
 }
 

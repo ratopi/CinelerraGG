@@ -233,279 +233,46 @@ int BC_Resources::get_machine_cpus()
 	return cpus;
 }
 
-#include "images/file_folder_png.h"
-#include "images/file_unknown_png.h"
-#include "images/file_film_png.h"
-#include "images/file_sound_png.h"
-#include "images/file_label_png.h"
-#include "images/file_column_png.h"
-VFrame *BC_Resources::default_type_to_icon[] = {
-	new VFramePng(file_folder_png),
-	new VFramePng(file_unknown_png),
-	new VFramePng(file_film_png),
-	new VFramePng(file_sound_png),
-	new VFramePng(file_label_png),
-	new VFramePng(file_column_png)
-};
+void BC_Resources::new_vframes(int n, VFrame *vframes[], ...)
+{
+	va_list ap;
+	va_start(ap, vframes);
+	for( int i=0; i<n; ++i )
+		vframes[i] = va_arg(ap, VFrame *);
+	va_end(ap);
+}
 
-#include "images/bar_png.h"
-VFrame *BC_Resources::default_bar = new VFramePng(bar_png);
-
-#include "images/cancel_up_png.h"
-#include "images/cancel_hi_png.h"
-#include "images/cancel_dn_png.h"
-VFrame *BC_Resources::default_cancel_images[] = {
-	new VFramePng(cancel_up_png),
-	new VFramePng(cancel_hi_png),
-	new VFramePng(cancel_dn_png)
-};
-
-#include "images/ok_up_png.h"
-#include "images/ok_hi_png.h"
-#include "images/ok_dn_png.h"
-VFrame *BC_Resources::default_ok_images[] = {
-	new VFramePng(ok_up_png),
-	new VFramePng(ok_hi_png),
-	new VFramePng(ok_dn_png)
-};
-
-#include "images/usethis_up_png.h"
-#include "images/usethis_uphi_png.h"
-#include "images/usethis_dn_png.h"
-VFrame *BC_Resources::default_usethis_images[] = {
-	new VFramePng(usethis_up_png),
-	new VFramePng(usethis_uphi_png),
-	new VFramePng(usethis_dn_png)
-};
-
+VFrame *BC_Resources::default_type_to_icon[6] = { 0, };
+VFrame *BC_Resources::default_bar = 0;
+VFrame *BC_Resources::default_cancel_images[3] = { 0, };
+VFrame *BC_Resources::default_ok_images[3] = { 0, };
+VFrame *BC_Resources::default_usethis_images[3] = { 0, };
 #if 0
-#include "images/checkbox_checked_png.h"
-#include "images/checkbox_dn_png.h"
-#include "images/checkbox_checkedhi_png.h"
-#include "images/checkbox_up_png.h"
-#include "images/checkbox_hi_png.h"
-VFrame *BC_Resources::default_checkbox_images[] = {
-	new VFramePng(checkbox_up_png),
-	new VFramePng(checkbox_hi_png),
-	new VFramePng(checkbox_checked_png),
-	new VFramePng(checkbox_dn_png),
-	new VFramePng(checkbox_checkedhi_png)
-};
-
-#include "images/radial_checked_png.h"
-#include "images/radial_dn_png.h"
-#include "images/radial_checkedhi_png.h"
-#include "images/radial_up_png.h"
-#include "images/radial_hi_png.h"
-VFrame *BC_Resources::default_radial_images[] = {
-	new VFramePng(radial_up_png),
-	new VFramePng(radial_hi_png),
-	new VFramePng(radial_checked_png),
-	new VFramePng(radial_dn_png),
-	new VFramePng(radial_checkedhi_png)
-};
-
-VFrame *BC_Resources::default_label_images[] = {
-	new VFramePng(radial_up_png),
-	new VFramePng(radial_hi_png),
-	new VFramePng(radial_checked_png),
-	new VFramePng(radial_dn_png),
-	new VFramePng(radial_checkedhi_png)
-};
+VFrame *BC_Resources::default_checkbox_images[5] = { 0, };
+VFrame *BC_Resources::default_radial_images[5] = { 0, };
+VFrame *BC_Resources::default_label_images[5] = { 0, };
 #endif
-
-#include "images/menuitem_up_png.h"
-#include "images/menuitem_hi_png.h"
-#include "images/menuitem_dn_png.h"
-
-VFrame *BC_Resources::default_menuitem_data[] = {
-	new VFramePng(menuitem_up_png),
-	new VFramePng(menuitem_hi_png),
-	new VFramePng(menuitem_dn_png),
-};
-
-#include "images/menubar_up_png.h"
-#include "images/menubar_hi_png.h"
-#include "images/menubar_dn_png.h"
-VFrame *BC_Resources::default_menubar_data[] = {
-	new VFramePng(menubar_up_png),
-	new VFramePng(menubar_hi_png),
-	new VFramePng(menubar_dn_png),
-};
-
-#include "images/menu_popup_bg_png.h"
-VFrame *BC_Resources::default_menu_popup_bg = new VFramePng(menu_popup_bg_png);
-
-#include "images/menubar_bg_png.h"
-VFrame *BC_Resources::default_menu_bar_bg = new VFramePng(menubar_bg_png);
-
-#include "images/check_png.h"
-VFrame *BC_Resources::default_check_image = new VFramePng(check_png);
-
-#include "images/file_text_up_png.h"
-#include "images/file_text_hi_png.h"
-#include "images/file_text_dn_png.h"
-#include "images/file_icons_up_png.h"
-#include "images/file_icons_hi_png.h"
-#include "images/file_icons_dn_png.h"
-#include "images/file_newfolder_up_png.h"
-#include "images/file_newfolder_hi_png.h"
-#include "images/file_newfolder_dn_png.h"
-#include "images/file_rename_up_png.h"
-#include "images/file_rename_hi_png.h"
-#include "images/file_rename_dn_png.h"
-#include "images/file_updir_up_png.h"
-#include "images/file_updir_hi_png.h"
-#include "images/file_updir_dn_png.h"
-#include "images/file_delete_up_png.h"
-#include "images/file_delete_hi_png.h"
-#include "images/file_delete_dn_png.h"
-#include "images/file_reload_up_png.h"
-#include "images/file_reload_hi_png.h"
-#include "images/file_reload_dn_png.h"
-VFrame *BC_Resources::default_filebox_text_images[] = {
-	new VFramePng(file_text_up_png),
-	new VFramePng(file_text_hi_png),
-	new VFramePng(file_text_dn_png)
-};
-
-VFrame *BC_Resources::default_filebox_icons_images[] = {
-	new VFramePng(file_icons_up_png),
-	new VFramePng(file_icons_hi_png),
-	new VFramePng(file_icons_dn_png)
-};
-
-VFrame *BC_Resources::default_filebox_updir_images[] = {
-	new VFramePng(file_updir_up_png),
-	new VFramePng(file_updir_hi_png),
-	new VFramePng(file_updir_dn_png)
-};
-
-VFrame *BC_Resources::default_filebox_newfolder_images[] = {
-	new VFramePng(file_newfolder_up_png),
-	new VFramePng(file_newfolder_hi_png),
-	new VFramePng(file_newfolder_dn_png)
-};
-
-VFrame *BC_Resources::default_filebox_rename_images[] = {
-	new VFramePng(file_rename_up_png),
-	new VFramePng(file_rename_hi_png),
-	new VFramePng(file_rename_dn_png)
-};
-
-VFrame *BC_Resources::default_filebox_delete_images[] = {
-	new VFramePng(file_delete_up_png),
-	new VFramePng(file_delete_hi_png),
-	new VFramePng(file_delete_dn_png)
-};
-
-VFrame *BC_Resources::default_filebox_reload_images[] = {
-	new VFramePng(file_reload_up_png),
-	new VFramePng(file_reload_hi_png),
-	new VFramePng(file_reload_dn_png)
-};
-
-#include "images/listbox_button_dn_png.h"
-#include "images/listbox_button_hi_png.h"
-#include "images/listbox_button_up_png.h"
-#include "images/listbox_button_disabled_png.h"
-VFrame *BC_Resources::default_listbox_button[] = {
-	new VFramePng(listbox_button_up_png),
-	new VFramePng(listbox_button_hi_png),
-	new VFramePng(listbox_button_dn_png),
-	new VFramePng(listbox_button_disabled_png)
-};
-
-#include "images/menu_popup_bg_png.h"
+VFrame *BC_Resources::default_menuitem_data[3] = { 0, };
+VFrame *BC_Resources::default_menubar_data[3] = { 0, };
+VFrame *BC_Resources::default_menu_popup_bg = 0;
+VFrame *BC_Resources::default_menu_bar_bg = 0;
+VFrame *BC_Resources::default_check_image = 0;
+VFrame *BC_Resources::default_filebox_text_images[3] = { 0, };
+VFrame *BC_Resources::default_filebox_icons_images[3] = { 0, };
+VFrame *BC_Resources::default_filebox_updir_images[3] = { 0, };
+VFrame *BC_Resources::default_filebox_newfolder_images[3] = { 0, };
+VFrame *BC_Resources::default_filebox_rename_images[3] = { 0, };
+VFrame *BC_Resources::default_filebox_delete_images[3] = { 0, };
+VFrame *BC_Resources::default_filebox_reload_images[3] = { 0, };
+VFrame *BC_Resources::default_listbox_button[4] = { 0, };
 VFrame *BC_Resources::default_listbox_bg = 0;
-
-#include "images/listbox_expandchecked_png.h"
-#include "images/listbox_expandcheckedhi_png.h"
-#include "images/listbox_expanddn_png.h"
-#include "images/listbox_expandup_png.h"
-#include "images/listbox_expanduphi_png.h"
-VFrame *BC_Resources::default_listbox_expand[] = {
-	new VFramePng(listbox_expandup_png),
-	new VFramePng(listbox_expanduphi_png),
-	new VFramePng(listbox_expandchecked_png),
-	new VFramePng(listbox_expanddn_png),
-	new VFramePng(listbox_expandcheckedhi_png),
-};
-
-#include "images/listbox_columnup_png.h"
-#include "images/listbox_columnhi_png.h"
-#include "images/listbox_columndn_png.h"
-VFrame *BC_Resources::default_listbox_column[] = {
-	new VFramePng(listbox_columnup_png),
-	new VFramePng(listbox_columnhi_png),
-	new VFramePng(listbox_columndn_png)
-};
-
-#include "images/listbox_up_png.h"
-VFrame *BC_Resources::default_listbox_up = new VFramePng(listbox_up_png);
-
-#include "images/listbox_dn_png.h"
-VFrame *BC_Resources::default_listbox_dn = new VFramePng(listbox_dn_png);
-
-#include "images/pot_hi_png.h"
-#include "images/pot_up_png.h"
-#include "images/pot_dn_png.h"
-VFrame *BC_Resources::default_pot_images[] = {
-	new VFramePng(pot_up_png),
-	new VFramePng(pot_hi_png),
-	new VFramePng(pot_dn_png)
-};
-
-#include "images/progress_up_png.h"
-#include "images/progress_hi_png.h"
-VFrame *BC_Resources::default_progress_images[] = {
-	new VFramePng(progress_up_png),
-	new VFramePng(progress_hi_png)
-};
-
-#include "images/7seg_small/0_png.h"
-#include "images/7seg_small/1_png.h"
-#include "images/7seg_small/2_png.h"
-#include "images/7seg_small/3_png.h"
-#include "images/7seg_small/4_png.h"
-#include "images/7seg_small/5_png.h"
-#include "images/7seg_small/6_png.h"
-#include "images/7seg_small/7_png.h"
-#include "images/7seg_small/8_png.h"
-#include "images/7seg_small/9_png.h"
-#include "images/7seg_small/colon_png.h"
-#include "images/7seg_small/period_png.h"
-#include "images/7seg_small/a_png.h"
-#include "images/7seg_small/b_png.h"
-#include "images/7seg_small/c_png.h"
-#include "images/7seg_small/d_png.h"
-#include "images/7seg_small/e_png.h"
-#include "images/7seg_small/f_png.h"
-#include "images/7seg_small/space_png.h"
-#include "images/7seg_small/dash_png.h"
-VFrame *BC_Resources::default_medium_7segment[] = {
-	new VFramePng(_0_png),
-	new VFramePng(_1_png),
-	new VFramePng(_2_png),
-	new VFramePng(_3_png),
-	new VFramePng(_4_png),
-	new VFramePng(_5_png),
-	new VFramePng(_6_png),
-	new VFramePng(_7_png),
-	new VFramePng(_8_png),
-	new VFramePng(_9_png),
-	new VFramePng(colon_png),
-	new VFramePng(period_png),
-	new VFramePng(a_png),
-	new VFramePng(b_png),
-	new VFramePng(c_png),
-	new VFramePng(d_png),
-	new VFramePng(e_png),
-	new VFramePng(f_png),
-	new VFramePng(space_png),
-	new VFramePng(dash_png)
-};
-
+VFrame *BC_Resources::default_listbox_expand[5] = { 0, };
+VFrame *BC_Resources::default_listbox_column[3] = { 0, };
+VFrame *BC_Resources::default_listbox_up = 0;
+VFrame *BC_Resources::default_listbox_dn = 0;
+VFrame *BC_Resources::default_pot_images[3] = { 0, };
+VFrame *BC_Resources::default_progress_images[2] = { 0, };
+VFrame *BC_Resources::default_medium_7segment[20] = { 0, };
 
 BC_Resources::BC_Resources()
 {
@@ -535,6 +302,255 @@ BC_Resources::BC_Resources()
 	little_endian = (*(const u_int32_t*)"\01\0\0\0") & 1;
 	wide_encoding = little_endian ?  "UTF32LE" : "UTF32BE";
 	use_xvideo = 1;
+
+#include "images/file_folder_png.h"
+#include "images/file_unknown_png.h"
+#include "images/file_film_png.h"
+#include "images/file_sound_png.h"
+#include "images/file_label_png.h"
+#include "images/file_column_png.h"
+new_vframes(6,default_type_to_icon,
+	new VFramePng(file_folder_png),
+	new VFramePng(file_unknown_png),
+	new VFramePng(file_film_png),
+	new VFramePng(file_sound_png),
+	new VFramePng(file_label_png),
+	new VFramePng(file_column_png));
+
+#include "images/bar_png.h"
+	default_bar = new VFramePng(bar_png);
+
+#include "images/cancel_up_png.h"
+#include "images/cancel_hi_png.h"
+#include "images/cancel_dn_png.h"
+new_vframes(3,default_cancel_images,
+	new VFramePng(cancel_up_png),
+	new VFramePng(cancel_hi_png),
+	new VFramePng(cancel_dn_png));
+
+#include "images/ok_up_png.h"
+#include "images/ok_hi_png.h"
+#include "images/ok_dn_png.h"
+new_vframes(3,default_ok_images,
+	new VFramePng(ok_up_png),
+	new VFramePng(ok_hi_png),
+	new VFramePng(ok_dn_png));
+
+#include "images/usethis_up_png.h"
+#include "images/usethis_uphi_png.h"
+#include "images/usethis_dn_png.h"
+new_vframes(3,default_usethis_images,
+	new VFramePng(usethis_up_png),
+	new VFramePng(usethis_uphi_png),
+	new VFramePng(usethis_dn_png));
+
+#if 0
+#include "images/checkbox_checked_png.h"
+#include "images/checkbox_dn_png.h"
+#include "images/checkbox_checkedhi_png.h"
+#include "images/checkbox_up_png.h"
+#include "images/checkbox_hi_png.h"
+new_vframes(5,default_checkbox_images,
+	new VFramePng(checkbox_up_png),
+	new VFramePng(checkbox_hi_png),
+	new VFramePng(checkbox_checked_png),
+	new VFramePng(checkbox_dn_png),
+	new VFramePng(checkbox_checkedhi_png));
+
+#include "images/radial_checked_png.h"
+#include "images/radial_dn_png.h"
+#include "images/radial_checkedhi_png.h"
+#include "images/radial_up_png.h"
+#include "images/radial_hi_png.h"
+new_vframes(5,default_radial_images,
+	new VFramePng(radial_up_png),
+	new VFramePng(radial_hi_png),
+	new VFramePng(radial_checked_png),
+	new VFramePng(radial_dn_png),
+	new VFramePng(radial_checkedhi_png));
+
+new_vframes(5,default_label_images,
+	new VFramePng(radial_up_png),
+	new VFramePng(radial_hi_png),
+	new VFramePng(radial_checked_png),
+	new VFramePng(radial_dn_png),
+	new VFramePng(radial_checkedhi_png));
+#endif
+
+#include "images/menuitem_up_png.h"
+#include "images/menuitem_hi_png.h"
+#include "images/menuitem_dn_png.h"
+new_vframes(3,default_menuitem_data,
+	new VFramePng(menuitem_up_png),
+	new VFramePng(menuitem_hi_png),
+	new VFramePng(menuitem_dn_png));
+
+#include "images/menubar_up_png.h"
+#include "images/menubar_hi_png.h"
+#include "images/menubar_dn_png.h"
+new_vframes(3,default_menubar_data,
+	new VFramePng(menubar_up_png),
+	new VFramePng(menubar_hi_png),
+	new VFramePng(menubar_dn_png));
+
+#include "images/menu_popup_bg_png.h"
+	default_menu_popup_bg = new VFramePng(menu_popup_bg_png);
+
+#include "images/menubar_bg_png.h"
+	default_menu_bar_bg = new VFramePng(menubar_bg_png);
+
+#include "images/check_png.h"
+	default_check_image = new VFramePng(check_png);
+
+#include "images/file_text_up_png.h"
+#include "images/file_text_hi_png.h"
+#include "images/file_text_dn_png.h"
+#include "images/file_icons_up_png.h"
+#include "images/file_icons_hi_png.h"
+#include "images/file_icons_dn_png.h"
+#include "images/file_newfolder_up_png.h"
+#include "images/file_newfolder_hi_png.h"
+#include "images/file_newfolder_dn_png.h"
+#include "images/file_rename_up_png.h"
+#include "images/file_rename_hi_png.h"
+#include "images/file_rename_dn_png.h"
+#include "images/file_updir_up_png.h"
+#include "images/file_updir_hi_png.h"
+#include "images/file_updir_dn_png.h"
+#include "images/file_delete_up_png.h"
+#include "images/file_delete_hi_png.h"
+#include "images/file_delete_dn_png.h"
+#include "images/file_reload_up_png.h"
+#include "images/file_reload_hi_png.h"
+#include "images/file_reload_dn_png.h"
+new_vframes(3,default_filebox_text_images,
+	new VFramePng(file_text_up_png),
+	new VFramePng(file_text_hi_png),
+	new VFramePng(file_text_dn_png));
+
+new_vframes(3,default_filebox_icons_images,
+	new VFramePng(file_icons_up_png),
+	new VFramePng(file_icons_hi_png),
+	new VFramePng(file_icons_dn_png));
+
+new_vframes(3,default_filebox_updir_images,
+	new VFramePng(file_updir_up_png),
+	new VFramePng(file_updir_hi_png),
+	new VFramePng(file_updir_dn_png));
+
+new_vframes(3,default_filebox_newfolder_images,
+	new VFramePng(file_newfolder_up_png),
+	new VFramePng(file_newfolder_hi_png),
+	new VFramePng(file_newfolder_dn_png));
+
+new_vframes(3,default_filebox_rename_images,
+	new VFramePng(file_rename_up_png),
+	new VFramePng(file_rename_hi_png),
+	new VFramePng(file_rename_dn_png));
+
+new_vframes(3,default_filebox_delete_images,
+	new VFramePng(file_delete_up_png),
+	new VFramePng(file_delete_hi_png),
+	new VFramePng(file_delete_dn_png));
+
+new_vframes(3,default_filebox_reload_images,
+	new VFramePng(file_reload_up_png),
+	new VFramePng(file_reload_hi_png),
+	new VFramePng(file_reload_dn_png));
+
+#include "images/listbox_button_dn_png.h"
+#include "images/listbox_button_hi_png.h"
+#include "images/listbox_button_up_png.h"
+#include "images/listbox_button_disabled_png.h"
+new_vframes(4,default_listbox_button,
+	new VFramePng(listbox_button_up_png),
+	new VFramePng(listbox_button_hi_png),
+	new VFramePng(listbox_button_dn_png),
+	new VFramePng(listbox_button_disabled_png));
+
+default_listbox_bg = 0;
+
+#include "images/listbox_expandchecked_png.h"
+#include "images/listbox_expandcheckedhi_png.h"
+#include "images/listbox_expanddn_png.h"
+#include "images/listbox_expandup_png.h"
+#include "images/listbox_expanduphi_png.h"
+new_vframes(5,default_listbox_expand,
+	new VFramePng(listbox_expandup_png),
+	new VFramePng(listbox_expanduphi_png),
+	new VFramePng(listbox_expandchecked_png),
+	new VFramePng(listbox_expanddn_png),
+	new VFramePng(listbox_expandcheckedhi_png));
+
+#include "images/listbox_columnup_png.h"
+#include "images/listbox_columnhi_png.h"
+#include "images/listbox_columndn_png.h"
+new_vframes(3,default_listbox_column,
+	new VFramePng(listbox_columnup_png),
+	new VFramePng(listbox_columnhi_png),
+	new VFramePng(listbox_columndn_png));
+
+#include "images/listbox_up_png.h"
+	default_listbox_up = new VFramePng(listbox_up_png);
+
+#include "images/listbox_dn_png.h"
+	default_listbox_dn = new VFramePng(listbox_dn_png);
+
+#include "images/pot_hi_png.h"
+#include "images/pot_up_png.h"
+#include "images/pot_dn_png.h"
+new_vframes(3,default_pot_images,
+	new VFramePng(pot_up_png),
+	new VFramePng(pot_hi_png),
+	new VFramePng(pot_dn_png));
+
+#include "images/progress_up_png.h"
+#include "images/progress_hi_png.h"
+new_vframes(2,default_progress_images,
+	new VFramePng(progress_up_png),
+	new VFramePng(progress_hi_png));
+
+#include "images/7seg_small/0_png.h"
+#include "images/7seg_small/1_png.h"
+#include "images/7seg_small/2_png.h"
+#include "images/7seg_small/3_png.h"
+#include "images/7seg_small/4_png.h"
+#include "images/7seg_small/5_png.h"
+#include "images/7seg_small/6_png.h"
+#include "images/7seg_small/7_png.h"
+#include "images/7seg_small/8_png.h"
+#include "images/7seg_small/9_png.h"
+#include "images/7seg_small/colon_png.h"
+#include "images/7seg_small/period_png.h"
+#include "images/7seg_small/a_png.h"
+#include "images/7seg_small/b_png.h"
+#include "images/7seg_small/c_png.h"
+#include "images/7seg_small/d_png.h"
+#include "images/7seg_small/e_png.h"
+#include "images/7seg_small/f_png.h"
+#include "images/7seg_small/space_png.h"
+#include "images/7seg_small/dash_png.h"
+new_vframes(20,default_medium_7segment,
+	new VFramePng(_0_png),
+	new VFramePng(_1_png),
+	new VFramePng(_2_png),
+	new VFramePng(_3_png),
+	new VFramePng(_4_png),
+	new VFramePng(_5_png),
+	new VFramePng(_6_png),
+	new VFramePng(_7_png),
+	new VFramePng(_8_png),
+	new VFramePng(_9_png),
+	new VFramePng(colon_png),
+	new VFramePng(period_png),
+	new VFramePng(a_png),
+	new VFramePng(b_png),
+	new VFramePng(c_png),
+	new VFramePng(d_png),
+	new VFramePng(e_png),
+	new VFramePng(f_png),
+	new VFramePng(space_png),
+	new VFramePng(dash_png));
 
 	type_to_icon = default_type_to_icon;
 	bar_data = default_bar;
@@ -727,7 +743,7 @@ BC_Resources::BC_Resources()
 
 }
 
-static void del_vframes(VFrame **vframes, int n)
+void BC_Resources::del_vframes(VFrame *vframes[], int n)
 {
 	while( --n >= 0 ) delete vframes[n];
 }
