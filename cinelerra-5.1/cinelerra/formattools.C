@@ -793,7 +793,8 @@ int FormatFormat::handle_event()
 			asset->ff_audio_options[0] = 0;
 			asset->ff_video_options[0] = 0;
 			format->format_text->update(selection->get_text());
-			format->update_extension();
+			if( !format->use_brender )
+				format->update_extension();
 			format->close_format_windows();
 			if (format->path_recent) format->path_recent->
 				load_items(File::formattostr(format->asset->format));

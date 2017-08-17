@@ -36,6 +36,7 @@
 FilePNG::FilePNG(Asset *asset, File *file)
  : FileList(asset, file, "PNGLIST", ".png", FILE_PNG, FILE_PNG_LIST)
 {
+	native_cmodel = -1;
 }
 
 FilePNG::~FilePNG()
@@ -106,20 +107,15 @@ int FilePNG::can_copy_from(Asset *asset, int64_t position)
 
 int FilePNG::colormodel_supported(int colormodel)
 {
-	if (((colormodel == BC_RGBA8888) && (native_cmodel == BC_RGBA16161616))
-	    || ((colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA16161616))
-	    || (colormodel == BC_RGB888))
-	{
-	    return colormodel;
-	}
-	else if ((colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA8888))
-	{
-	    return BC_RGB888;
-	}
-	else
-	{
-	    return native_cmodel;
-	}
+	if( ((colormodel == BC_RGBA8888)  && (native_cmodel == BC_RGBA16161616)) ||
+	    ((colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA16161616)) ||
+	     (colormodel == BC_RGB888) || (colormodel == BC_RGBA8888) )
+		return colormodel;
+	if( (colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA8888) )
+		return BC_RGB888;
+	if( native_cmodel >= 0 )
+		return native_cmodel;
+	return asset->png_use_alpha ? BC_RGBA8888 : BC_RGB888;
 }
 
 
@@ -161,43 +157,20 @@ int FilePNG::read_frame_header(char *path)
 
 	asset->width = png_get_image_width(png_ptr, info_ptr);
 	asset->height = png_get_image_height(png_ptr, info_ptr);
-
 	asset->interlace_mode = ILACE_MODE_NOTINTERLACED;
-
 	color_type = png_get_color_type(png_ptr, info_ptr);
 	color_depth = png_get_bit_depth(png_ptr,info_ptr);
 
 	png_get_tRNS(png_ptr, info_ptr, NULL, &num_trans, NULL);
-
-	if (color_depth == 16)
-	{
-	    if (color_type & PNG_COLOR_MASK_ALPHA)
-	    {
-	        native_cmodel = BC_RGBA16161616;
-	    }
-	    else
-	    {
-	        native_cmodel = BC_RGB161616;
-	    }
-	}
-	else
-	if ((color_type & PNG_COLOR_MASK_ALPHA)
-	    || (num_trans > 0))
-	{
-	    native_cmodel = BC_RGBA8888;
-	}
-	else
-	{
-	    native_cmodel = BC_RGB888;
-	}
-
+	native_cmodel = color_depth == 16 ?
+	    ((color_type & PNG_COLOR_MASK_ALPHA) ?
+		BC_RGBA16161616 : BC_RGB161616) :
+	    ((color_type & PNG_COLOR_MASK_ALPHA) || (num_trans > 0) ?
+		BC_RGBA8888 : BC_RGB888);
 	asset->png_use_alpha = BC_CModels::has_alpha(native_cmodel) ? 1 : 0;
 
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 	fclose(stream);
-
-
-
 	return result;
 }
 
@@ -291,79 +264,70 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	int size = input->get_compressed_size();
 	input->set_compressed_size(0);
 
-
 	//printf("FilePNG::read_frame 1 %d %d\n", native_cmodel, output->get_color_model());
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	info_ptr = png_create_info_struct(png_ptr);
 	png_set_read_fn(png_ptr, input, (png_rw_ptr)read_function);
 	png_read_info(png_ptr, info_ptr);
 
- 	int png_color_type = png_get_color_type(png_ptr, info_ptr);
- 	if (png_color_type == PNG_COLOR_TYPE_GRAY ||
-         	png_color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
- 	{
- 		png_set_gray_to_rgb(png_ptr);
- 	}
+	int png_color_type = png_get_color_type(png_ptr, info_ptr);
+	if( png_color_type == PNG_COLOR_TYPE_GRAY ||
+	    png_color_type == PNG_COLOR_TYPE_GRAY_ALPHA )
+		png_set_gray_to_rgb(png_ptr);
 
 	colormodel = output->get_color_model();
 	color_type = png_get_color_type(png_ptr, info_ptr);
 	color_depth = png_get_bit_depth(png_ptr,info_ptr);
 
-	if (((native_cmodel == BC_RGBA16161616)||(native_cmodel == BC_RGB161616))
-	    && ((colormodel == BC_RGBA8888)||(colormodel == BC_RGB888)))
-	{
-	    png_set_strip_16(png_ptr);
+	int num_trans = 0;
+	png_get_tRNS(png_ptr, info_ptr, NULL, &num_trans, NULL);
+
+	native_cmodel = color_depth == 16 ?
+	    ((color_type & PNG_COLOR_MASK_ALPHA) ?
+		BC_RGBA16161616 : BC_RGB161616) :
+	    ((color_type & PNG_COLOR_MASK_ALPHA) || (num_trans > 0) ?
+		BC_RGBA8888 : BC_RGB888);
+
+	if( ((native_cmodel == BC_RGBA16161616) || (native_cmodel == BC_RGB161616)) &&
+	    ((colormodel == BC_RGBA8888) || (colormodel == BC_RGB888)) )
+		png_set_strip_16(png_ptr);
+
+// If we're dropping the alpha channel
+	if( !BC_CModels::has_alpha(colormodel) && BC_CModels::has_alpha(native_cmodel) ) {
+		png_color_16 my_background;
+		png_color_16p image_background;
+		memset(&my_background,0,sizeof(png_color_16));
+// use the background color of the image
+		if( png_get_bKGD(png_ptr, info_ptr, &image_background) )
+			png_set_background(png_ptr, image_background, PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
+		else
+// otherwise, use black
+			png_set_background(png_ptr, &my_background, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
 	}
+	else if( BC_CModels::has_alpha(colormodel) && !BC_CModels::has_alpha(native_cmodel) )
+// If we're adding the alpha channel, alpha = max pixel value
+		png_set_add_alpha(png_ptr, BC_CModels::calculate_max(colormodel), PNG_FILLER_AFTER);
 
-	/* If we're dropping the alpha channel, use the background color of the image
-	   otherwise, use black */
-	if (((native_cmodel == BC_RGBA16161616)||(native_cmodel == BC_RGBA8888))
-	    && ((colormodel == BC_RGB161616)||(colormodel == BC_RGB888)))
-	{
-	    png_color_16 my_background;
-	    png_color_16p image_background;
+// Little endian
+	if( (color_depth == 16) &&
+	    ((colormodel == BC_RGBA16161616) || (colormodel == BC_RGB161616)) )
+		png_set_swap(png_ptr);
 
-	    memset(&my_background,0,sizeof(png_color_16));
+	if( !(color_type & PNG_COLOR_MASK_COLOR) )
+		png_set_gray_to_rgb(png_ptr);
 
-	    if (png_get_bKGD(png_ptr, info_ptr, &image_background))
-	    {
-	        png_set_background(png_ptr, image_background, PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
-	    }
-	    else
-	    {
-	        png_set_background(png_ptr, &my_background, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-	    }
-	}
+	if( color_type & PNG_COLOR_MASK_PALETTE )
+		png_set_palette_to_rgb(png_ptr);
 
-	/* Little endian */
-	if ((color_depth == 16)
-	    &&((colormodel == BC_RGBA16161616)||(colormodel == BC_RGB161616)))
-	{
-	    png_set_swap(png_ptr);
-	}
+	if( color_depth <= 8 )
+		png_set_expand(png_ptr);
 
-	if (!(color_type & PNG_COLOR_MASK_COLOR))
-	{
-	    png_set_gray_to_rgb(png_ptr);
-	}
-
-	if (color_type & PNG_COLOR_MASK_PALETTE)
-	{
-	    png_set_palette_to_rgb(png_ptr);
-	}
-
-	if (color_depth <= 8)
-	{
-	    png_set_expand(png_ptr);
-	}
-
-/* read the image */
+// read the image
 	png_read_image(png_ptr, output->get_rows());
+
 //printf("FilePNG::read_frame 3\n");
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-
 	input->set_compressed_size(size);
-
 //printf("FilePNG::read_frame 4\n");
 	return result;
 }
@@ -405,8 +369,8 @@ PNGUnit::~PNGUnit()
 
 PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
+	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
 	200,
 	100)
 {
