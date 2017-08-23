@@ -253,10 +253,8 @@ int ClipPopupCopy::handle_event()
 		edl->copy(start, end, 1, 0, 0, &file, "", 1);
 		const char *file_string = file.string();
 		long file_length = strlen(file_string);
-		gui->get_clipboard()->to_clipboard(file_string, file_length,
-			SECONDARY_SELECTION);
-		gui->get_clipboard()->to_clipboard(file_string, file_length,
-			BC_PRIMARY_SELECTION);
+		gui->to_clipboard(file_string, file_length, SECONDARY_SELECTION);
+		gui->to_clipboard(file_string, file_length, BC_PRIMARY_SELECTION);
 	}
 	gui->unlock_window(); 
 	return 1;
@@ -354,10 +352,10 @@ int ClipPasteToFolder::handle_event()
 {
 	MWindowGUI *gui = mwindow->gui;
 	gui->lock_window("ClipPasteToFolder::handle_event 1");
-	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
+	int64_t len = gui->clipboard_len(BC_PRIMARY_SELECTION);
 	if( len ) {
 		char *string = new char[len + 1];
-		gui->get_clipboard()->from_clipboard(string, len, BC_PRIMARY_SELECTION);
+		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		const char *clip_header = "<EDL VERSION=";
 		if( !strncmp(clip_header, string, strlen(clip_header)) ) {
 			FileXML file;

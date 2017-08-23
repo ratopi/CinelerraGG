@@ -438,9 +438,7 @@ int KeyframePopupCopy::handle_event()
 		file.terminate_string();
 
 		mwindow->gui->lock_window();
-		mwindow->gui->get_clipboard()->to_clipboard(file.string,
-			strlen(file.string),
-			SECONDARY_SELECTION);
+		mwindow->gui->to_clipboard(file.string, strlen(file.string), SECONDARY_SELECTION);
 		mwindow->gui->unlock_window();
 
 	} else

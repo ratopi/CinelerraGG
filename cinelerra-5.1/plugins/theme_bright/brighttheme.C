@@ -116,8 +116,9 @@ void BrightTheme::initialize()
 	resources->text_border2_hi = 0x000000;
 	resources->text_border3_hi = 0x000000;
 	resources->text_border4 = 0x000000;
-	resources->text_inactive_highlight = 0xe0e0e0;
+	resources->text_inactive_highlight = 0xd0d0d0;
 	resources->text_highlight = 0xe0e0e0;
+	resources->text_selected_highlight = 0xf0e0e0;
 
 	resources->bg_color = 0xffffff;
 	resources->default_text_color = 0x000000;

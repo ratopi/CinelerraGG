@@ -64,7 +64,7 @@ public:
 	XEvent* get_event();
 	void set_repeat(BC_WindowBase *window, int64_t duration);
 	void unset_repeat(BC_WindowBase *window, int64_t duration);
-	int unset_all_repeaters(BC_WindowBase *window);
+	void unset_all_repeaters(BC_WindowBase *window);
 	void unlock_repeaters(int64_t duration);
 	void arm_repeat(int64_t duration);
 	void arm_completion(BC_WindowBase *window);

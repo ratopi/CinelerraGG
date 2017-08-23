@@ -658,6 +658,7 @@ new_vframes(20,default_medium_7segment,
 	text_border3_hi = LTPINK;
 	text_border4 = WHITE;
 	text_highlight = BLUE;
+	text_selected_highlight = SLBLUE;
 	text_inactive_highlight = MEGREY;
 
 	toggle_highlight_bg = 0;

@@ -425,10 +425,8 @@ void VWindow::copy()
 		const char *file_string = file.string();
 		long file_length = strlen(file_string);
 		mwindow->gui->lock_window();
-		mwindow->gui->get_clipboard()->to_clipboard(file_string, file_length,
-			SECONDARY_SELECTION);
-		mwindow->gui->get_clipboard()->to_clipboard(file_string, file_length,
-			BC_PRIMARY_SELECTION);
+		mwindow->gui->to_clipboard(file_string, file_length, BC_PRIMARY_SELECTION);
+		mwindow->gui->to_clipboard(file_string, file_length, SECONDARY_SELECTION);
 		mwindow->gui->unlock_window();
 	}
 }

@@ -176,6 +176,7 @@ int BC_TextBox::reset_parameters(int rows, int has_border, int font, int size)
 	xscroll = 0;
 	yscroll = 0;
 	dirty = 1;
+	selection_active = 0;
 	return 0;
 }
 
@@ -673,6 +674,8 @@ void BC_TextBox::draw(int flush)
 			    highlight_letter1 <= row_end ) {
 				int color = active && enabled && get_has_focus() ?
 					resources->text_highlight :
+				    selection_active ?
+					resources->text_selected_highlight :
 					resources->text_inactive_highlight;
 				if( unicode_active >= 0 )
 					color ^= LTBLUE;
@@ -2007,17 +2010,25 @@ void BC_TextBox::copy_selection(int clipboard_num)
 //printf(" BC_TextBox::copy_selection %d %d %d\n",highlight_letter1, highlight_letter2, clip_len);
 	char ctext[4*clip_len+4];
 	clip_len = text_update(&wtext[highlight_letter1],clip_len, ctext,4*clip_len+4);
-	get_clipboard()->to_clipboard(ctext, clip_len, clipboard_num);
+	to_clipboard(ctext, clip_len, clipboard_num);
+	selection_active = 1;
 }
 
+int BC_TextBox::selection_clear_event()
+{
+	if( !is_event_win() ) return 0;
+	selection_active = 0;
+	draw(1);
+	return 1;
+}
 
 void BC_TextBox::paste_selection(int clipboard_num)
 {
-	int len = get_clipboard()->clipboard_len(clipboard_num);
+	int len = clipboard_len(clipboard_num);
 	if( len > 0 )
 	{
 		char cstring[len];  wchar_t wstring[len];
-		get_clipboard()->from_clipboard(cstring, len, clipboard_num);  --len;
+		from_clipboard(cstring, len, clipboard_num);  --len;
 //printf("BC_TextBox::paste_selection %d '%*.*s'\n",len,len,len,cstring);
 		len = BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
 			cstring,len, (char *)wstring,(len+1)*sizeof(wchar_t)) / sizeof(wchar_t);

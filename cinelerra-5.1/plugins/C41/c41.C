@@ -430,6 +430,11 @@ C41Effect::C41Effect(PluginServer *server)
 	tmp_frame = 0;
 	blurry_frame = 0;
 	memset(&values, 0, sizeof(values));
+	shave_min_row = shave_max_row = 0;
+	shave_min_col = shave_max_col = 0;
+	min_col = max_col = 0;
+	min_row = max_row = 0;
+	pix_max = 0;  pix_len = 0;
 }
 
 C41Effect::~C41Effect()
@@ -752,7 +757,7 @@ int C41Effect::process_realtime(VFrame *input, VFrame *output)
 
 		for( int i = min_row; i < max_row; i++ ) {
 			float *row = (float*)frame->get_rows()[i];
-			row += 3 * shave_min_col;
+			row += 3 * min_col;
 			for( int j = min_col; j < max_col; j++, row += 3 ) {
 				if( row[0] < minima_r ) minima_r = row[0];
 				if( row[0] > maxima_r ) maxima_r = row[0];

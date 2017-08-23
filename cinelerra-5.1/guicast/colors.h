@@ -61,6 +61,7 @@
 #define DKGREY              0x4B4B4B
 
 #define BLOND               0xb4b487
+#define SLBLUE              0x6040c0
 
 #define MNGREY              0xe6e6e6
 #define FGGREY              0xe3e3e3

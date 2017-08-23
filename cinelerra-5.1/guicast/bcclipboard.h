@@ -30,46 +30,55 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 
-// The primary selection is filled by highlighting a region
-#define PRIMARY_SELECTION 0
-// The secondary selection is filled by copying
-#define SECONDARY_SELECTION 1
 
+enum {
+        CLIP_PRIMARY,		// XA_PRIMARY
+        CLIP_CLIPBOARD,		// Atom(CLIPBOARD)
+        CLIP_BUFFER0,		// XA_CUT_BUFFER0
+        CLIP_BUFFERS = CLIP_BUFFER0, // CUT_BUFFER api does not need storage
+};
+// loads CUT_BUFFER0 if window is closed while selection set
+
+// The primary selection is filled by highlighting a region
+#define PRIMARY_SELECTION CLIP_PRIMARY
+
+// The secondary selection is filled by copying (textbox Ctrl-C)
+#define SECONDARY_SELECTION CLIP_CLIPBOARD
 
 // Storage for guicast only
+#define BC_PRIMARY_SELECTION (CLIP_BUFFER0+2)
+
 // The secondary selection has never been reliable either in Cinelerra
-// or anything else.  We just use the guaranteed solution for any data not
-// intended for use outside Cinelerra.
-#define BC_PRIMARY_SELECTION 2
-
-
+// or anything else.  We just use the CUT_BUFFER2 solution for any data
+// not intended for use outside Cinelerra.
 
 class BC_Clipboard : public Thread
 {
 public:
-	BC_Clipboard(const char *display_name);
+	BC_Clipboard(BC_WindowBase *window);
 	~BC_Clipboard();
 
 	int start_clipboard();
 	void run();
 	int stop_clipboard();
+	int to_clipboard(BC_WindowBase *owner, const char *data, long len, int clipboard_num);
+	long from_clipboard(char *data, long maxlen, int clipboard_num);
 	long clipboard_len(int clipboard_num);
-	int to_clipboard(const char *data, long len, int clipboard_num);
-	int from_clipboard(char *data, long maxlen, int clipboard_num);
 
 private:
+	long from_clipboard(int clipboard_num, char *&bfr, long maxlen);
 	void handle_selectionrequest(XSelectionRequestEvent *request);
 	int handle_request_string(XSelectionRequestEvent *request);
 	int handle_request_targets(XSelectionRequestEvent *request);
 
+	BC_WindowBase *window;
 	Display *in_display, *out_display;
-	Atom completion_atom, primary, secondary;
-	Atom targets_atom;
-	Atom strtype_atom;
 	Window in_win, out_win;
-	char *data[2];
-	long length[2];
-	char display_name[BCTEXTLEN];
+	Atom xa_primary, clipboard, targets;
+	Atom completion_atom, string_type;
+
+	char *data_buffer[CLIP_BUFFERS];
+	int data_length[CLIP_BUFFERS];
 };
 
 #endif

@@ -73,10 +73,12 @@ static void get_top_coords(Display *display, Window win, int &px,int &py, int &t
 
 	int nx = px, ny = py;  pwin = win;
 	for( int i=5; --i>=0; ) {
-		win = pwin;  root = 0;  pwin = 0;  pcwin = 0;  ncwin = 0;
-		XQueryTree(display, win, &root, &pwin, &pcwin, &ncwin);
+		win = pwin;  pwin = 0;  pcwin = 0;  ncwin = 0;
+		Window rwin = 0;
+// XQuerytTree has been known to fail here
+		XQueryTree(display, win, &rwin, &pwin, &pcwin, &ncwin);
 		if( pcwin ) XFree(pcwin);
-		if( pwin == root ) break;
+		if( !rwin || rwin != root || pwin == root ) break;
 		XTranslateCoordinates(display, pwin, root, 0,0, &nx,&ny, &cwin);
 //printf(" win=%lx, nx/ny=%d/%d\n", win, nx,ny);
 	}

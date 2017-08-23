@@ -547,7 +547,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		get_atoms();
 
 #ifndef SINGLE_THREAD
-		clipboard = new BC_Clipboard(display_name);
+		clipboard = new BC_Clipboard(this);
 		clipboard->start_clipboard();
 #endif
 
@@ -1348,6 +1348,7 @@ locking_message = event->xclient.message_type;
 		cursor_y = event->xcrossing.y;
 		dispatch_cursor_enter();
 		break;
+
 	default:
 		break;
 	}
@@ -3695,6 +3696,38 @@ BC_Clipboard* BC_WindowBase::get_clipboard()
 	return top_level->clipboard;
 #endif
 }
+
+Atom BC_WindowBase::to_clipboard(const char *data, long len, int clipboard_num)
+{
+	return get_clipboard()->to_clipboard(this, data, len, clipboard_num);
+}
+
+long BC_WindowBase::from_clipboard(char *data, long maxlen, int clipboard_num)
+{
+	return get_clipboard()->from_clipboard(data, maxlen, clipboard_num);
+}
+
+long BC_WindowBase::clipboard_len(int clipboard_num)
+{
+	return get_clipboard()->clipboard_len(clipboard_num);
+}
+
+int BC_WindowBase::do_selection_clear(Window win)
+{
+	top_level->event_win = win;
+	return dispatch_selection_clear();
+}
+
+int BC_WindowBase::dispatch_selection_clear()
+{
+	int result = 0;
+	for( int i=0; i<subwindows->total && !result; ++i )
+		result = subwindows->values[i]->dispatch_selection_clear();
+	if( !result )
+		result = selection_clear_event();
+	return result;
+}
+
 
 void BC_WindowBase::get_relative_cursor_xy(int &x, int &y, int lock_window)
 {

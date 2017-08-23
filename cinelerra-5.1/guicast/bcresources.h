@@ -171,6 +171,7 @@ public:
 	int text_border4;
 	int text_highlight;
 	int text_inactive_highlight;
+	int text_selected_highlight;
 // Not used
 	int text_background_noborder;
 

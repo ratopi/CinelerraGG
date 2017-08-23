@@ -101,6 +101,7 @@ public:
 	int button_release_event();
 	int repeat_event(int64_t repeat_id);
 	int keypress_event();
+	int selection_clear_event();
 	int activate();
 	int deactivate();
 	const char* get_text();
@@ -218,6 +219,7 @@ private:
 	ArrayList<BC_ListBoxItem*> *suggestions;
 	BC_TextBoxSuggestions *suggestions_popup;
 	int suggestion_column;
+	int selection_active;
 };
 
 

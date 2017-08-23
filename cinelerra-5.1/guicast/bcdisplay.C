@@ -114,12 +114,9 @@ int BC_Display::is_first(BC_WindowBase *window)
 
 void BC_Display::dump_windows()
 {
-	for(int i = 0; i < windows.size(); i++)
-	{
-		printf("BC_Display::dump_windows %d window=%p window->win=%p\n",
-			i,
-			windows.get(i),
-			windows.get(i)->win);
+	for(int i = 0; i < windows.size(); i++) {
+		printf("BC_Display::dump_windows %d window=%p window->win=0x%08jx\n",
+			i, windows.get(i), windows.get(i)->win);
 	}
 }
 
@@ -128,7 +125,7 @@ void BC_Display::new_window(BC_WindowBase *window)
 //printf("BC_Display::new_window %d\n", __LINE__);
 	if(!clipboard)
 	{
-		clipboard = new BC_Clipboard("");
+		clipboard = new BC_Clipboard(window);
 		clipboard->start_clipboard();
 	}
 
@@ -335,7 +332,7 @@ void BC_Display::unset_repeat(BC_WindowBase *window, int64_t duration)
 	}
 }
 
-int BC_Display::unset_all_repeaters(BC_WindowBase *window)
+void BC_Display::unset_all_repeaters(BC_WindowBase *window)
 {
 	for(int i = 0; i < repeaters.total; i++)
 	{
@@ -384,7 +381,7 @@ void BC_Display::unlock_repeaters(int64_t duration)
 void BC_Display::lock_display(const char *location)
 {
 	pthread_mutex_lock(&BC_Display::display_lock);
-	int result = ++BC_Display::display_global->window_locked;
+	++BC_Display::display_global->window_locked;
 	pthread_mutex_unlock(&BC_Display::display_lock);
 
 //printf("BC_Display::lock_display %d %s result=%d\n", __LINE__, location, result);
@@ -394,13 +391,13 @@ void BC_Display::lock_display(const char *location)
 void BC_Display::unlock_display()
 {
 	pthread_mutex_lock(&BC_Display::display_lock);
-	int result = --BC_Display::display_global->window_locked;
+	--BC_Display::display_global->window_locked;
 //	if(BC_Display::display_global->window_locked < 0)
 //		BC_Display::display_global->window_locked = 0;
 	pthread_mutex_unlock(&BC_Display::display_lock);
 
 //printf("BC_Display::unlock_display %d result=%d\n", __LINE__, result);
-	/* if(result == 1) */ XUnlockDisplay(BC_Display::display_global->display);
+	XUnlockDisplay(BC_Display::display_global->display);
 }
 
 

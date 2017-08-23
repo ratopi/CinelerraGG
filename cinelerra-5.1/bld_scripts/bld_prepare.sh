@@ -24,9 +24,9 @@ case "$dir" in
     libavc1394 festival-devel libiec61883-devel flac-devel inkscape \
     libsndfile-devel libtheora-devel linux-firmware ivtv-firmware \
     libvorbis-devel texinfo xz-devel lzma-devel cmake udftools git \
-    autoconf automake rpm-build jbigkit-devel libvdpau-devel
-    yasm=yasm-1.2.0-7.fc21.x86_64.rpm
-    release=http://archives.fedoraproject.org/pub/fedora/linux/releases/21
+    autoconf automake rpm-build jbigkit-devel libvdpau-devel alsa-lib-devel
+    yasm=yasm-1.3.0-3.fc24.x86_64.rpm
+    release=http://archives.fedoraproject.org/pub/fedora/linux/releases/24
     url=$release/Everything/x86_64/os/Packages/y/$yasm
     wget -P /tmp $url
     yum -y install /tmp/$yasm

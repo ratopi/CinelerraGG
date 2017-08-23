@@ -1188,7 +1188,7 @@ void TitleMain::build_previews(TitleWindow *gui)
 			for( int i=0; i<font_number; ++i ) {
 				if( !strcasecmp(fonts[i]->displayname, font->displayname) ) {
 					if( pass == 1 ) {
-						font->image = fonts[i]->image;
+						font->image = new VFrame(*fonts[i]->image);
 					}
 					skip = 1;
 					break;

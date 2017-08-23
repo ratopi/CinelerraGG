@@ -427,10 +427,8 @@ int MWindow::copy(double start, double end)
 	edl->copy(start, end, 0, 0, 0, &file, "", 1);
 	const char *file_string = file.string();
 	long file_length = strlen(file_string);
-	gui->get_clipboard()->to_clipboard(file_string, file_length,
-		SECONDARY_SELECTION);
-	gui->get_clipboard()->to_clipboard(file_string, file_length,
-		BC_PRIMARY_SELECTION);
+	gui->to_clipboard(file_string, file_length, BC_PRIMARY_SELECTION);
+	gui->to_clipboard(file_string, file_length, SECONDARY_SELECTION);
 	save_backup();
 	return 0;
 }
@@ -443,10 +441,8 @@ int MWindow::copy_automation()
 	edl->tracks->copy_automation(start, end, &file, 0, 1);
 	const char *file_string = file.string();
 	long file_length = strlen(file_string);
-	gui->get_clipboard()->to_clipboard(file_string, file_length,
-		BC_PRIMARY_SELECTION);
-	gui->get_clipboard()->to_clipboard(file_string, file_length,
-		SECONDARY_SELECTION);
+	gui->to_clipboard(file_string, file_length, BC_PRIMARY_SELECTION);
+	gui->to_clipboard(file_string, file_length, SECONDARY_SELECTION);
 	return 0;
 }
 
@@ -458,10 +454,8 @@ int MWindow::copy_default_keyframe()
 	edl->tracks->copy_automation(start, end, &file, 1, 0);
 	const char *file_string = file.string();
 	long file_length = strlen(file_string);
-	gui->get_clipboard()->to_clipboard(file_string, file_length,
-		BC_PRIMARY_SELECTION);
-	gui->get_clipboard()->to_clipboard(file_string, file_length,
-		SECONDARY_SELECTION);
+	gui->to_clipboard(file_string, file_length, BC_PRIMARY_SELECTION);
+	gui->to_clipboard(file_string, file_length, SECONDARY_SELECTION);
 	return 0;
 }
 
@@ -1087,12 +1081,12 @@ void MWindow::paste()
 {
 	double start = edl->local_session->get_selectionstart();
 	//double end = edl->local_session->get_selectionend();
-	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
+	int64_t len = gui->clipboard_len(BC_PRIMARY_SELECTION);
 
 	if( len ) {
 		char *string = new char[len + 1];
 		undo->update_undo_before();
-		gui->get_clipboard()->from_clipboard(string, len, BC_PRIMARY_SELECTION);
+		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		FileXML file;
 		file.read_from_string(string);
 		clear(0);
@@ -1205,14 +1199,12 @@ if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
 
 int MWindow::paste_automation()
 {
-	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
+	int64_t len = gui->clipboard_len(BC_PRIMARY_SELECTION);
 
 	if( len ) {
 		undo->update_undo_before();
 		char *string = new char[len + 1];
-		gui->get_clipboard()->from_clipboard(string,
-			len,
-			BC_PRIMARY_SELECTION);
+		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		FileXML file;
 		file.read_from_string(string);
 
@@ -1238,14 +1230,12 @@ int MWindow::paste_automation()
 
 int MWindow::paste_default_keyframe()
 {
-	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
+	int64_t len = gui->clipboard_len(BC_PRIMARY_SELECTION);
 
 	if( len ) {
 		undo->update_undo_before();
 		char *string = new char[len + 1];
-		gui->get_clipboard()->from_clipboard(string,
-			len,
-			BC_PRIMARY_SELECTION);
+		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		FileXML file;
 		file.read_from_string(string);
 		double start = edl->local_session->get_selectionstart();

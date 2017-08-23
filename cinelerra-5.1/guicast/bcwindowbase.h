@@ -194,6 +194,7 @@ public:
 	virtual int drag_motion_event() { return 0; };
 	virtual int drag_stop_event() { return 0; };
 	virtual int uses_text() { return 0; };
+	virtual int selection_clear_event() { return 0; }
 // Only if opengl is enabled
 	virtual int expose_event() { return 0; };
 	virtual int grab_event(XEvent *event) { return 0; };
@@ -528,6 +529,9 @@ public:
    void restore_vm();
 #endif
 
+	Atom to_clipboard(const char *data, long len, int clipboard_num);
+	long from_clipboard(char *data, long maxlen, int clipboard_num);
+	long clipboard_len(int clipboard_num);
 
 	int test_keypress;
   	char keys_return[KEYPRESSLEN];
@@ -596,6 +600,8 @@ private:
 	void put_event(XEvent *event);
 // remove events queued for win
 	void dequeue_events(Window win);
+// clear selection
+	int do_selection_clear(Atom selection);
 
 // Recursive event dispatchers
 	int dispatch_resize_event(int w, int h);
@@ -616,6 +622,7 @@ private:
 	int dispatch_drag_motion();
 	int dispatch_drag_stop();
 	int dispatch_expose_event();
+	int dispatch_selection_clear();
 
 // Get the port ID for a color model or return -1 for failure
 	int grab_port_id(int color_model);
@@ -764,6 +771,8 @@ private:
 	Window rootwin;
 // windows previous events happened in
  	Window event_win, drag_win;
+// selection clear
+	Atom event_selection;
 	Visual *vis;
 	Colormap cmap;
 // Name of display
