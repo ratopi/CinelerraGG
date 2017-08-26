@@ -400,6 +400,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 		shbtn_prefs.append(new ShBtnPref(_("Online Help"), "$CIN_BROWSER https://cinelerra-cv.org/docs.php", 0));
 		shbtn_prefs.append(new ShBtnPref(_("Original Manual"), "$CIN_BROWSER file://$CIN_DAT/doc/cinelerra.html", 0));
 		shbtn_prefs.append(new ShBtnPref(_("Setting Shell Commands"), "$CIN_BROWSER file://$CIN_DAT/doc/ShellCmds.html", 0));
+		shbtn_prefs.append(new ShBtnPref(_("Shortcuts"), "$CIN_BROWSER file://$CIN_DAT/doc/shortcuts.html", 0));
 		shbtns_total = 0;
 	}
 	for( int i=0; i<shbtns_total; ++i ) {

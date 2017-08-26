@@ -763,6 +763,7 @@ void Tracks::move_effect(Plugin *plugin, PluginSet *plugin_set, int64_t position
 // update plugin position
 	plugin->startproject = position;
 	plugin->plugin_set = plugin_set;
+	plugin->edits = plugin_set;
 	src_plugin_set->track->optimize();
 }
 

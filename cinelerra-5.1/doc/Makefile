@@ -56,6 +56,7 @@ install:	all
 	cp -a ShellCmds.* $(TARGET_DIR)/.
 	cp -a cinelerra.html $(TARGET_DIR)/.
 	cp -a Features5.pdf $(TARGET_DIR)/.
+	cp -a shortcuts.html $(TARGET_DIR)/.
 
 clean:
 	rm -f $(OUTPUT) $(IMAGES)

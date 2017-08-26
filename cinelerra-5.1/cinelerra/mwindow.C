@@ -3615,7 +3615,8 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 	int result = file->open_file(preferences, asset, 1, 0);
 	if( !result && delete_tracks > 0 )
 		undo->update_undo_before();
-	if( !result && asset->video_data && asset->get_video_layers() > 0 ) {
+	int video_layers = asset->get_video_layers();
+	if( !result && asset->video_data && vstream < video_layers ) {
 		// try to get asset up to date, may fail
 		file->select_video_stream(asset, vstream);
 		// either way use what was/is there.
@@ -3671,7 +3672,7 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 	if( !result && asset->audio_data && asset->channels > 0 ) {
 		session->sample_rate = asset->get_sample_rate();
 		int64_t channel_mask = 0;
-		int astrm = !asset->video_data ? -1 :
+		int astrm = !asset->video_data || vstream >= video_layers ? -1 :
 			file->get_audio_for_video(vstream, astream, channel_mask);
 		if( astrm >= 0 ) file->select_audio_stream(asset, astrm);
 		if( astrm < 0 || !channel_mask ) channel_mask = (1<<asset->channels)-1;

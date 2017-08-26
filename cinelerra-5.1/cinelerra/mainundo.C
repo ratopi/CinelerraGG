@@ -228,6 +228,7 @@ int MainUndo::undo()
 
 //dump();
 	reset_creators();
+	mwindow->reset_caches();
 	return 0;
 }
 
@@ -283,6 +284,7 @@ int MainUndo::redo()
 		}
 	}
 	reset_creators();
+	mwindow->reset_caches();
 //dump();
 	return 0;
 }
