@@ -162,6 +162,9 @@ void AppearancePrefs::create_objects()
 	DeactivateFocusPolicy *focus_deactivate = new DeactivateFocusPolicy(pwindow, x1, y1);
 	add_subwindow(focus_deactivate);
 	y1 += focus_deactivate->get_h() + 5;
+	ForwardRenderDisplacement *displacement = new ForwardRenderDisplacement(pwindow, x1, y1);
+	add_subwindow(displacement);
+	y1 += displacement->get_h() + 5;
 	add_subwindow(thumbnails = new ViewThumbnails(x1, y1, pwindow));
 	if( y < y1 ) y = y1;
 }
@@ -465,6 +468,19 @@ int DeactivateFocusPolicy::handle_event()
 		pwindow->thread->preferences->textbox_focus_policy |= CLICK_DEACTIVATE;
 	else
 		pwindow->thread->preferences->textbox_focus_policy &= ~CLICK_DEACTIVATE;
+	return 1;
+}
+
+ForwardRenderDisplacement::ForwardRenderDisplacement(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->forward_render_displacement,
+	_("Forward render enable displacement"))
+{
+	this->pwindow = pwindow;
+}
+
+int ForwardRenderDisplacement::handle_event()
+{
+	pwindow->thread->preferences->forward_render_displacement = get_value();
 	return 1;
 }
 

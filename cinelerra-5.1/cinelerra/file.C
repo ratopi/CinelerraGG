@@ -1111,7 +1111,8 @@ int File::read_samples(Samples *samples, int64_t len)
 int File::read_frame(VFrame *frame, int is_thread)
 {
 	const int debug = 0;
-
+//printf("File::read_frame pos=%jd cache=%d 1frame=%d\n",
+// current_frame, use_cache, asset->single_frame);
 	if( debug ) PRINT_TRACE
 
 //printf("File::read_frame %d\n", __LINE__);

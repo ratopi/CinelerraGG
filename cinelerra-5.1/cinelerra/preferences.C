@@ -85,6 +85,7 @@ Preferences::Preferences()
 	bd_warn_root = 1;
 	popupmenu_btnup = 1;
 	textbox_focus_policy = 0;
+	forward_render_displacement = 0;
 	dvd_yuv420p_interlace = 0;
 
 // Default brender asset
@@ -199,6 +200,7 @@ void Preferences::copy_from(Preferences *that)
 	bd_warn_root = that->bd_warn_root;
 	popupmenu_btnup = that->popupmenu_btnup;
 	textbox_focus_policy = that->textbox_focus_policy;
+	forward_render_displacement = that->forward_render_displacement;
 	dvd_yuv420p_interlace = that->dvd_yuv420p_interlace;
 	renderfarm_nodes.remove_all_objects();
 	renderfarm_ports.remove_all();
@@ -352,6 +354,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	bd_warn_root = defaults->get("BD_WARN_ROOT", bd_warn_root);
 	popupmenu_btnup = defaults->get("POPUPMENU_BTNUP", popupmenu_btnup);
 	textbox_focus_policy = defaults->get("TEXTBOX_FOCUS_POLICY", textbox_focus_policy);
+	forward_render_displacement = defaults->get("FORWARD_RENDER_DISPLACEMENT", forward_render_displacement);
 	dvd_yuv420p_interlace = defaults->get("DVD_YUV420P_INTERLACE", dvd_yuv420p_interlace);
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
@@ -481,6 +484,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("BD_WARN_ROOT", bd_warn_root);
 	defaults->update("POPUPMENU_BTNUP", popupmenu_btnup);
 	defaults->update("TEXTBOX_FOCUS_POLICY", textbox_focus_policy);
+	defaults->update("FORWARD_RENDER_DISPLACEMENT", forward_render_displacement);
 	defaults->update("DVD_YUV420P_INTERLACE", dvd_yuv420p_interlace);
 	brender_asset->save_defaults(defaults, "BRENDER_", 1, 1, 1, 0, 0);
 	defaults->update("USE_BRENDER", use_brender);

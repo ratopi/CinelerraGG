@@ -392,7 +392,6 @@ void PlaybackEngine::run()
 
 		case SINGLE_FRAME_FWD:
 		case SINGLE_FRAME_REWIND:
-			command->playbackstart = get_tracking_position();
 // fall through
 		default:
 			last_command = command->command;

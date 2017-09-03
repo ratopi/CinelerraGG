@@ -53,6 +53,7 @@ void TransportCommand::reset()
 	realtime = 0;
 	resume = 0;
 	audio_toggle = 0;
+	displacement = 0;
 // Don't reset the change type for commands which don't perform the change
 	if(command != STOP) change_type = 0;
 	command = COMMAND_NONE;
@@ -87,6 +88,7 @@ void TransportCommand::copy_from(TransportCommand *command)
 	this->realtime = command->realtime;
 	this->resume = command->resume;
 	this->audio_toggle = command->audio_toggle;
+	this->displacement = command->displacement;
 }
 
 TransportCommand& TransportCommand::operator=(TransportCommand &command)
@@ -160,77 +162,74 @@ float TransportCommand::get_speed()
 }
 
 // Assume starting without pause
-void TransportCommand::set_playback_range(EDL *edl, int use_inout, int toggle_audio)
+void TransportCommand::set_playback_range(EDL *edl,
+	int use_inout, int toggle_audio, int use_displacement)
 {
 	if(!edl) edl = this->edl;
 
-	switch(command)
-	{
+	double length = edl->tracks->total_playable_length();
+	double frame_period = 1.0 / edl->session->frame_rate;
+	double start = edl->local_session->get_selectionstart(1);
+	double end = edl->local_session->get_selectionend(1);
+
+	displacement = 0;
+	if( use_inout ) {
+		if( edl->local_session->inpoint_valid() )
+			start_position = edl->local_session->get_inpoint();
+		if( edl->local_session->outpoint_valid() )
+			end_position = edl->local_session->get_outpoint();
+	}
+	else if( !EQUIV(start, end) ) {
+		start_position = start;
+		end_position = end;
+	}
+	else {
+		switch( command ) {
 		case SLOW_FWD:
 		case FAST_FWD:
-		case NORMAL_FWD:
-			start_position = edl->local_session->get_selectionstart(1);
-			if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
-				end_position = edl->tracks->total_playable_length();
-			else
-				end_position = edl->local_session->get_selectionend(1);
+		case NORMAL_FWD: {
+			start_position = start;
+			end_position = length;
 // this prevents a crash if start position is after the loop when playing forwards
- 		    if (edl->local_session->loop_playback &&
-				start_position > edl->local_session->loop_end)
- 			{
-				    start_position = edl->local_session->loop_start;
+			if( edl->local_session->loop_playback &&
+			    start_position > edl->local_session->loop_end ) {
+				start_position = edl->local_session->loop_start;
 			}
-			break;
+			break; }
 
 		case SLOW_REWIND:
 		case FAST_REWIND:
 		case NORMAL_REWIND:
-			end_position = edl->local_session->get_selectionend(1);
-			if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
-				start_position = 0;
-			else
-				start_position = edl->local_session->get_selectionstart(1);
-
+			end_position = end;
+			start_position = 0;
 // this prevents a crash if start position is before the loop when playing backwards
-			if (edl->local_session->loop_playback &&
-				end_position <= edl->local_session->loop_start)
-			{
+			if( edl->local_session->loop_playback &&
+			    end_position <= edl->local_session->loop_start ) {
 					end_position = edl->local_session->loop_end;
 			}
 			break;
 
 		case CURRENT_FRAME:
 		case SINGLE_FRAME_FWD:
-			start_position = edl->local_session->get_selectionstart(1);
-			end_position = start_position + 1.0 / edl->session->frame_rate;
+			start_position = start;
+			end_position = start_position + frame_period;
 			break;
 
 		case SINGLE_FRAME_REWIND:
-			end_position = edl->local_session->get_selectionend(1);
-			start_position = end_position - 1.0 / edl->session->frame_rate;
+			end_position = end;
+			start_position = end_position - frame_period;
 			break;
+		}
+
+		if( use_displacement && command != CURRENT_FRAME &&
+		    get_direction() == PLAY_FORWARD ) {
+			start_position += frame_period;
+			end_position += frame_period;
+			displacement = 1;
+		}
 	}
 
-
-	if(use_inout)
-	{
-		if(edl->local_session->inpoint_valid())
-			start_position = edl->local_session->get_inpoint();
-		if(edl->local_session->outpoint_valid())
-			end_position = edl->local_session->get_outpoint();
-	}
-
-	switch(get_direction())
-	{
-		case PLAY_FORWARD:
-			playbackstart = start_position;
-			break;
-
-		case PLAY_REVERSE:
-			playbackstart = end_position;
-			break;
-	}
-
+	playbackstart = get_direction() == PLAY_FORWARD ? start_position : end_position;
 	audio_toggle = toggle_audio;
 }
 
@@ -281,8 +280,9 @@ TransportQue::~TransportQue()
 	delete output_lock;
 }
 
-int TransportQue::send_command(int command, int change_type, EDL *new_edl,
-		int realtime, int resume, int use_inout, int toggle_audio)
+int TransportQue::send_command(int command, int change_type,
+		EDL *new_edl, int realtime, int resume,
+		int use_inout, int toggle_audio, int use_displacement)
 {
 	input_lock->lock("TransportQue::send_command 1");
 	this->command.command = command;
@@ -309,7 +309,8 @@ int TransportQue::send_command(int command, int change_type, EDL *new_edl,
 		}
 
 // Set playback range
-		this->command.set_playback_range(new_edl, use_inout, toggle_audio);
+		this->command.set_playback_range(new_edl,
+			use_inout, toggle_audio, use_displacement);
 	}
 
 	input_lock->unlock();

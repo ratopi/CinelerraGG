@@ -114,6 +114,8 @@ public:
 	int popupmenu_btnup;
 // textbox focus policy: click, leave
 	int textbox_focus_policy;
+// forward playback starts next frame, not this frame
+	int forward_render_displacement;
 // use dvd yuv420p interlace format
 	int dvd_yuv420p_interlace;
 

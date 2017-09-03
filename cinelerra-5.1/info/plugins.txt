@@ -1,7 +1,9 @@
 # plugin info
 #
 # Name of plugin followed by: and then description.
-#  Additional lines start with a blank/tab.
+#  Additional lines start with 2 tabs.
+#  Lines should be less than 70 characters long.
+#  For usage/readability, a period (.) creates space.
 #
 1080 to 480:	Extracts 2 1920x540 fields from 1920x1080
 		image, resizes them separately, and
@@ -663,7 +665,8 @@ Flash:		The video flashes when transitioning between segments.
 IrisSquare:	Video switches segments via a small rectangular view
 		that gradually grows to full size.
 Shape Wipe:	Wipe a specific shape across the video.  Available
-		shapes are: circle, clock, heart, tile2x2h, tile2x2v.
+		shapes are: burst, circle, clock, heart, specks, spiral,
+		tile2x2h, tile2x2v.
 Slide:		Image slides into view - can set: Left/Right/In/Out.
 Wipe:		Wipe the image across screen starting left or right.
 Zoom:		Zoom out video at X/Y magnification for some seconds.

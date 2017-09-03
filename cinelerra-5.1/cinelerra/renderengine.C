@@ -544,6 +544,12 @@ void RenderEngine::run()
 				}
 			}
 
+			if( playback_engine->is_playing_back && command->displacement ) {
+				double position = playback_engine->tracking_position -
+					1./command->get_edl()->session->frame_rate;
+				playback_engine->tracking_position = position >= 0 ? position : 0;
+			}
+
 			if(!interrupted) playback_engine->command->command = STOP;
 			playback_engine->stop_tracking();
 

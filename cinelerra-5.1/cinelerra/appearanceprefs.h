@@ -227,5 +227,13 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class ForwardRenderDisplacement : public BC_CheckBox
+{
+public:
+	ForwardRenderDisplacement(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 
 #endif

@@ -45,7 +45,8 @@ public:
 	void copy_from(TransportCommand *command);
 	TransportCommand& operator=(TransportCommand &command);
 // Get the range to play back from the EDL
-	void set_playback_range(EDL *edl=0, int use_inout=0, int toggle_audio=0);
+	void set_playback_range(EDL *edl=0,
+		int use_inout=0, int toggle_audio=0, int use_displacement=0);
 
 // Adjust playback range with in/out points for rendering
 	void playback_range_adjust_inout();
@@ -68,6 +69,8 @@ public:
 	int infinite;
 // Position used when starting playback
 	double playbackstart;
+// start position at this=0/next=1 frame
+	int displacement;
 // Send output to device
 	int realtime;
 // Use persistant starting point
@@ -94,7 +97,8 @@ public:
 // Persistent starting point
 		int resume = 0,
 		int use_inout = 0,
-		int toggle_audio = 0);
+		int toggle_audio = 0,
+		int use_displacement = 0);
 	void update_change_type(int change_type);
 
 	TransportCommand command;

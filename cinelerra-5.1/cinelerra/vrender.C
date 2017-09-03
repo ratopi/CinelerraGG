@@ -301,7 +301,7 @@ void VRender::run()
 // before we start dropping.
 	int64_t current_sample, start_sample, end_sample; // Absolute counts.
 	int64_t skip_countdown = VRENDER_THRESHOLD;    // frames remaining until drop
-	int64_t delay_countdown = VRENDER_THRESHOLD;  // Frames remaining until delay
+	int64_t delay_countdown = 0;  // Frames remaining until delay
 // Number of frames before next reconfigure
 	int64_t current_input_length;
 // Number of frames to skip.
@@ -354,11 +354,11 @@ void VRender::run()
 			current_sample = (int64_t)(renderengine->sync_position() *
 				renderengine->command->get_speed());
 // latest sample at which the frame can be shown.
-			end_sample = Units::tosamples(session_frame,
+			end_sample = Units::tosamples(session_frame + 1,
 				renderengine->get_edl()->session->sample_rate,
 				renderengine->get_edl()->session->frame_rate);
 // earliest sample by which the frame needs to be shown.
-			start_sample = Units::tosamples(session_frame - 1,
+			start_sample = Units::tosamples(session_frame,
 				renderengine->get_edl()->session->sample_rate,
 				renderengine->get_edl()->session->frame_rate);
 

@@ -282,7 +282,7 @@ void PlayTransport::handle_transport(int command,
 // Resume or change direction
 		switch( prev_command ) {
 		default:
-			engine->que->send_command(STOP, CHANGE_NONE, 0, 0, 0, 0);
+			engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
 			engine->interrupt_playback(wait_tracking);
 			resume = 1;
 // fall through
@@ -292,25 +292,22 @@ void PlayTransport::handle_transport(int command,
 		case SINGLE_FRAME_REWIND:
 // Start from scratch
 			engine->que->send_command(command, CHANGE_NONE, get_edl(),
-				1, resume, use_inout, toggle_audio);
+				1, resume, use_inout, toggle_audio,
+				mwindow->preferences->forward_render_displacement);
 			break;
 		}
 		break;
 
 // Commands that stop
 	case STOP:
-		do_stop = 1;
-		break;
-
 	case REWIND:
 	case GOTO_END:
-		engine->que->send_command(STOP, CHANGE_NONE, 0, 0, 0, 0);
-			engine->interrupt_playback(wait_tracking);
-			break;
+		do_stop = 1;
+		break;
 	}
 
 	if( do_stop ) {
-		engine->que->send_command(STOP, CHANGE_NONE, 0, 0, 0, 0);
+		engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
 		engine->interrupt_playback(wait_tracking);
 	}
 }
@@ -496,7 +493,7 @@ void PlayTransport::change_position(double position)
 // stop transport
 	if( prev_command != STOP && prev_command != COMMAND_NONE &&
 	    prev_command != SINGLE_FRAME_FWD && prev_command != SINGLE_FRAME_REWIND ) {
-		engine->que->send_command(STOP, CHANGE_NONE, 0, 0, 0, 0);
+		engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
 		engine->interrupt_playback(0);
 	}
 	mwindow->gui->lock_window("PlayTransport::change_position");
@@ -511,7 +508,7 @@ void PlayTransport::change_position(double position)
 	case NORMAL_FWD:
 	case FAST_FWD:
 		engine->que->send_command(prev_command, CHANGE_NONE,
-				get_edl(), 1, 1, using_inout);
+				get_edl(), 1, 1, using_inout, 0);
 	}
 }
 
