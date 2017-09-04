@@ -3,8 +3,8 @@
 # Name of plugin followed by: and then description.
 #  Additional lines start with 2 tabs.
 #  Lines should be less than 70 characters long.
+#123456789012345678901234567890123456789012345678901234567890123456789
 #  For usage/readability, a period (.) creates space.
-#
 1080 to 480:	Extracts 2 1920x540 fields from 1920x1080
 		image, resizes them separately, and
 		combines them to 1920x480 interlaced image.
@@ -156,6 +156,7 @@ Reroute:	Selectively transfer the alpha channel or the
 Reverse video:	Reverse media on the timeline in realtime.
 Rotate:		Rotate the video in degree increments around a
 		pivot point or reverse and flip the video.
+Rumbler:	Jiggle space and time at a given rate for dream-like video.
 SVG via Inkscape: Allow the manipulation of an SVG image with
 		Inkscape without having to exit the program.
 Scale:		Reduce or expand the image size depending on the ratio.

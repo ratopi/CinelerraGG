@@ -38,8 +38,8 @@ video_tools := blur decimate delayvideo denoisemjpeg denoisevideo downsample \
 	fieldframe flash framefield freezeframe greycstoration interpolatepixels \
 	interpolatevideo invertvideo linearblur loopvideo \
 	motion2 motionblur motion motion-cv motion-hv motion51 \
-	overlay radialblur reframe reframert reroute \
-	reversevideo seltempavg sharpen svg titler timeavg timefront \
+	overlay radialblur reframe reframert reroute reversevideo \
+	rumbler seltempavg sharpen svg titler timeavg timefront \
 	unsharp videoscope wave zoomblur
 
 plugin_dirs += blending

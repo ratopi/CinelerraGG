@@ -106,6 +106,7 @@ DIRS = \
 	rgb601 \
 	rgbshift \
 	rotate \
+	rumbler \
 	scale \
 	shapewipe \
 	sharpen \

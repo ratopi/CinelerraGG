@@ -906,7 +906,7 @@ case tag: { \
 		}
 	}
 
-	return 1;
+	return 0;
 }
 
 
@@ -919,7 +919,7 @@ int PerspectiveMain::handle_opengl()
 		config.x3, config.y3, config.x4, config.y4,
 		config.forward);
 	engine->set_opengl(0);
-	return 0;
 #endif
+	return 0;
 }
 
