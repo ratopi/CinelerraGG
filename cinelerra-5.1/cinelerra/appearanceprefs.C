@@ -473,7 +473,7 @@ int DeactivateFocusPolicy::handle_event()
 
 ForwardRenderDisplacement::ForwardRenderDisplacement(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, y, pwindow->thread->preferences->forward_render_displacement,
-	_("Forward render enable displacement"))
+	_("Always show next frame"))
 {
 	this->pwindow = pwindow;
 }

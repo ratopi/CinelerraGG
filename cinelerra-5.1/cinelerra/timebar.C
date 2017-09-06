@@ -430,7 +430,10 @@ void TimeBar::update(int flush)
 		double position = edl->local_session->get_selectionstart(1);
  		int64_t pixel = position_to_pixel(position);
 // Draw insertion point position.
- 		set_color(mwindow->theme->timebar_cursor_color);
+		int color = mwindow->theme->timebar_cursor_color;
+		if( mwindow->preferences->forward_render_displacement )
+			color ^= 0x00ffff;
+		set_color(color);
  		draw_line(pixel, 0, pixel, get_h());
  	}
 

@@ -511,7 +511,13 @@ int FFStream::seek(int64_t no, double rate)
 	double secs = pos < 0 ? 0. : pos / rate;
 	AVRational time_base = st->time_base;
 	int64_t tstmp = time_base.num > 0 ? secs * time_base.den/time_base.num : 0;
-	if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
+	if( !tstmp ) {
+		if( st->nb_index_entries > 0 ) tstmp = st->index_entries[0].timestamp;
+		else if( st->start_time != AV_NOPTS_VALUE ) tstmp = st->start_time;
+		else if( st->first_dts != AV_NOPTS_VALUE ) tstmp = st->first_dts;
+		else tstmp = INT64_MIN+1;
+	}
+	else if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
 	int idx = st->index;
 #if 0
 // seek all streams using the default timebase.
@@ -531,7 +537,9 @@ int FFStream::seek(int64_t no, double rate)
 	}
 	int ret = avformat_seek_file(fmt_ctx, st->index, -INT64_MAX, seek, INT64_MAX, flags);
 #else
-	int ret = av_seek_frame(fmt_ctx, idx, tstmp, AVSEEK_FLAG_ANY);
+// finds the first index frame below the target time
+	int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY;
+	int ret = av_seek_frame(fmt_ctx, idx, tstmp, flags);
 #endif
 	int retry = MAX_RETRY;
 	while( ret >= 0 ) {
