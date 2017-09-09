@@ -267,7 +267,7 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 // integrate position from start of edit.
 				double speed_position = edit_startsource;
 				FloatAutos *speed_autos = (FloatAutos*)track->automation->autos[AUTOMATION_SPEED];
-				speed_position += speed_autos->automation_intergal(edit_startproject,
+				speed_position += speed_autos->automation_integral(edit_startproject,
 						direction_position-edit_startproject, PLAY_FORWARD);
 //printf("VModule::import_frame %d %lld %lld\n", __LINE__, position, (int64_t)speed_position);
 				position = (int64_t)speed_position;

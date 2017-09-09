@@ -255,13 +255,12 @@ int BC_Clipboard::to_clipboard(BC_WindowBase *owner, const char *data, long len,
 
 	if( clipboard_num < CLIP_BUFFER0 ) {
 		char *bfr = data_buffer[clipboard_num];
-		if( data_length[clipboard_num] != len+1 ) {
-			delete [] bfr;  bfr = new char[len+1];
+		if( data_length[clipboard_num] != len ) {
+			delete [] bfr;  bfr = new char[len];
 			data_buffer[clipboard_num] = bfr;
-			data_length[clipboard_num] = len+1;
+			data_length[clipboard_num] = len;
 		}
 		memcpy(bfr, data, len);
-		bfr[len] = 0;
 		Atom selection = clipboard_num == CLIP_PRIMARY ? xa_primary : clipboard;
 // this is not supposed to be necessary according to the man page
 		Window cur = XGetSelectionOwner(out_display, selection);

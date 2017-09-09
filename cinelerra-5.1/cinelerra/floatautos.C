@@ -425,7 +425,7 @@ void FloatAutos::dump()
 	}
 }
 
-double FloatAutos::automation_intergal(int64_t start, int64_t length, int direction)
+double FloatAutos::automation_integral(int64_t start, int64_t length, int direction)
 {
 	if( direction == PLAY_REVERSE )
 		start -= length;
