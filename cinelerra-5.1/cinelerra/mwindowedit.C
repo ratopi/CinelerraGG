@@ -1084,7 +1084,7 @@ void MWindow::paste()
 	int64_t len = gui->clipboard_len(BC_PRIMARY_SELECTION);
 
 	if( len ) {
-		char *string = new char[len + 1];
+		char *string = new char[len];
 		undo->update_undo_before();
 		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		FileXML file;
@@ -1203,7 +1203,7 @@ int MWindow::paste_automation()
 
 	if( len ) {
 		undo->update_undo_before();
-		char *string = new char[len + 1];
+		char *string = new char[len];
 		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		FileXML file;
 		file.read_from_string(string);
@@ -1234,7 +1234,7 @@ int MWindow::paste_default_keyframe()
 
 	if( len ) {
 		undo->update_undo_before();
-		char *string = new char[len + 1];
+		char *string = new char[len];
 		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		FileXML file;
 		file.read_from_string(string);

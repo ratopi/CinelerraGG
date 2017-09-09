@@ -194,7 +194,7 @@ long BC_Clipboard::clipboard_len(int clipboard_num)
 	char *bfr;
 	long len = from_clipboard(clipboard_num, bfr, 0);
 	if( bfr ) XFree(bfr);
-	return len < 0 ? 0 : len;
+	return len < 0 ? 0 : len+1;
 }
 
 long BC_Clipboard::from_clipboard(int clipboard_num, char *&bfr, long maxlen)

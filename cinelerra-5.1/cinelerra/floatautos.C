@@ -424,3 +424,54 @@ void FloatAutos::dump()
 			FloatAuto::curve_name(((FloatAuto*)current)->curve_mode));
 	}
 }
+
+double FloatAutos::automation_intergal(int64_t start, int64_t length, int direction)
+{
+	if( direction == PLAY_REVERSE )
+		start -= length;
+	if( start < 0 ) {
+		length += start;
+		start = 0;
+	}
+	int64_t end = start + length;
+	double value = 0, track_length = track->get_length();
+	int64_t pos = start, len = track->to_units(track_length,0);
+	if( end > len ) end = len;
+	while( pos < end ) {
+		int64_t prev_pos = 0, next_pos = len;
+		FloatAuto *prev = 0, *next = 0;
+		prev = (FloatAuto*)get_prev_auto(pos, direction, (Auto* &)prev, 0);
+		if( prev ) prev_pos = prev->position;
+		next = (FloatAuto*)get_next_auto(pos, direction, (Auto* &)next, 0);
+		if( next ) next_pos = next->position;
+		if( !prev && !next ) prev = next = (FloatAuto*)default_auto;
+		else if( !prev ) prev = next;
+		else if( !next ) next = prev;
+
+		double dt = next_pos - prev_pos;
+		double t0 = (pos - prev_pos) / dt;
+		if( (pos = next_pos) > end ) pos = end;
+		double t1 = (pos - prev_pos) / dt;
+
+		double y0 = prev->get_value(), y1 = y0 + prev->get_control_out_value();
+		double y3 = next->get_value(), y2 = y3 + next->get_control_in_value();
+		if( y0 != y1 || y1 != y2 || y2 != y3 ) {
+// bezier definite integral t0..t1
+			double f4 = -y0/4 + 3*y1/4 - 3*y2/4 + y3/4;
+			double f3 = y0 - 2*y1 + y2;
+			double f2 = -3*y0/2 + 3*y1/2;
+			double f1 = y0, t = t0;
+			double t2 = t*t, t3 = t2*t, t4 = t3*t;
+			t0 = t4*f4 + t3*f3 + t2*f2 + t*f1;
+			t = t1;  t2 = t*t;  t3 = t2*t;  t4 = t3*t;
+			t1 = t4*f4 + t3*f3 + t2*f2 + t*f1;
+		}
+		else {
+			t0 *= y0;  t1 *= y0;
+		}
+		value += dt * (t1 - t0);
+	}
+
+	return value + 1e-6;
+}
+

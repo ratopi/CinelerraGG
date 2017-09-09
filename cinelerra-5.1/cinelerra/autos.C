@@ -204,7 +204,7 @@ Auto* Autos::get_prev_auto(int64_t position,
 			while(current && current->position > position) current = PREVIOUS;
 		}
 
-		if(!current)
+		if(!current && first && first->position <= position)
 		{
 			for(current = last;
 				current && current->position > position;
@@ -222,7 +222,7 @@ Auto* Autos::get_prev_auto(int64_t position,
 			while(current && current->position < position) current = NEXT;
 		}
 
-		if(!current)
+		if(!current && last && last->position >= position)
 		{
 			for(current = first;
 				current && current->position < position;
@@ -311,7 +311,7 @@ Auto* Autos::get_next_auto(int64_t position, int direction, Auto* &current, int 
 			while(current && current->position < position) current = NEXT;
 		}
 
-		if(!current)
+		if(!current && last && last->position > position)
 		{
 			for(current = first;
 				current && current->position <= position;
@@ -330,7 +330,7 @@ Auto* Autos::get_next_auto(int64_t position, int direction, Auto* &current, int 
 			while(current && current->position > position) current = PREVIOUS;
 		}
 
-		if(!current)
+		if(!current && first && first->position <= position)
 		{
 			for(current = last;
 				current && current->position > position;

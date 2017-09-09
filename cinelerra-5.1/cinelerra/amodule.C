@@ -282,15 +282,8 @@ speed_fragment_len);
 		FloatAuto *previous = 0;
 		FloatAuto *next = 0;
 		FloatAutos *speed_autos = (FloatAutos*)track->automation->autos[AUTOMATION_SPEED];
-		for(int64_t i = edit_startproject; i < start_project; i++)
-		{
-			double speed = speed_autos->get_value(i,
-				PLAY_FORWARD,
-				previous,
-				next);
-			speed_position += speed;
-		}
-
+		speed_position += speed_autos->automation_intergal(edit_startproject,
+				start_project-edit_startproject, PLAY_FORWARD);
 		speed_position1 = speed_position;
 
 

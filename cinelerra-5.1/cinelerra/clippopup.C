@@ -354,7 +354,7 @@ int ClipPasteToFolder::handle_event()
 	gui->lock_window("ClipPasteToFolder::handle_event 1");
 	int64_t len = gui->clipboard_len(BC_PRIMARY_SELECTION);
 	if( len ) {
-		char *string = new char[len + 1];
+		char *string = new char[len];
 		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		const char *clip_header = "<EDL VERSION=";
 		if( !strncmp(clip_header, string, strlen(clip_header)) ) {

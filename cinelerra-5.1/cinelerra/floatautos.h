@@ -63,6 +63,7 @@ public:
 		int64_t unit_end);
 
 	void set_automation_mode(int64_t start, int64_t end, int mode);
+	double automation_intergal(int64_t start, int64_t length, int direction);
 
 	void dump();
 	Auto* new_auto();
