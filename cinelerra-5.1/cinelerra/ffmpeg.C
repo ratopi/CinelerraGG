@@ -739,6 +739,7 @@ int FFAudioStream::load(int64_t pos, int len)
 			init_swr(frame->channels, frame->format, frame->sample_rate);
 			load_history(&frame->extended_data[0], frame->nb_samples);
 			curr_pos += frame->nb_samples;
+			i = 0;
 		}
 	}
 	if( end_pos > curr_pos ) {
@@ -868,7 +869,7 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 	}
 	for( int i=0; ret>=0 && !flushed && curr_pos<=pos && i<MAX_RETRY; ++i ) {
 		ret = read_frame(frame);
-		if( ret > 0 ) ++curr_pos;
+		if( ret > 0 ) { ++curr_pos;  i = 0; }
 	}
 	if( frame->format == AV_PIX_FMT_NONE || frame->width <= 0 || frame->height <= 0 )
 		ret = -1;
