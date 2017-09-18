@@ -463,7 +463,7 @@ if test "x$WANT_$1" != "xno" ; then
  if test "x$RESULT" = "xno" -a "x$PKG_$1" = "x"; then
   echo "=== want $1 Failed."
   WANT_$1=no
- else
+ elif test "x$WANT_$1" = "xauto" ; then
   WANT_$1=yes
  fi
 fi
@@ -520,6 +520,9 @@ CHECK_WANT([DL], [auto], [system has libdl], [
  CHECK_LIB([DL], [dl], [dlopen])])
 
 CHECK_WANT([EXR], [auto], [use exr], [])
+CHECK_WANT([FINDOBJECT], [no], [findobject=sys/sta/dyn], [
+ WANT_FINDOBJECT="$withval"
+])
 
 CHECK_WANT([NUMA], [auto], [system has libnuma], [
  CHECK_LIB([NUMA], [numa], [numa_alloc])])
@@ -680,6 +683,7 @@ echo "  using: with-config-dir = $WANT_CONFIG_DIR"
 echo "  using: with-browser = $WANT_CIN_BROWSER"
 echo "  using: with-plugin-dir = $WANT_PLUGIN_DIR"
 echo "  using: with-ladspa-dir = $WANT_LADSPA_DIR"
+echo "  using: with-findobject = $WANT_FINDOBJECT"
 echo ""
 echo "  using: single-user  = $WANT_CINBIN_BUILD"
 echo "  using: static-build = $WANT_STATIC_BUILD"

@@ -20,20 +20,28 @@
  */
 
 
-#ifndef FINDOBJECTWINDOW_H
-#define FINDOBJECTWINDOW_H
+#ifndef __FINDOBJECTWINDOW_H__
+#define __FINDOBJECTWINDOW_H__
 
 #include "guicast.h"
 #include "findobject.inc"
 
+class FindObjectLayer;
+class FindObjectScanFloat;
+class FindObjectScanFloatText;
+class FindObjectDrawBorder;
+class FindObjectDrawKeypoints;
+class FindObjectReplace;
+class FindObjectDrawObjectBorder;
+class FindObjectAlgorithm;
+class FindObjectBlend;
+class FindObjectWindow;
+
 class FindObjectLayer : public BC_TumbleTextBox
 {
 public:
-	FindObjectLayer(FindObjectMain *plugin,
-		FindObjectWindow *gui,
-		int x,
-		int y,
-		int *value);
+	FindObjectLayer(FindObjectMain *plugin, FindObjectWindow *gui,
+		int x, int y, int *value);
 	int handle_event();
 	static int calculate_w(FindObjectWindow *gui);
 	FindObjectMain *plugin;
@@ -41,71 +49,33 @@ public:
 	int *value;
 };
 
-class FindObjectGlobalRange : public BC_IPot
+class FindObjectScanFloat : public BC_FPot
 {
 public:
-	FindObjectGlobalRange(FindObjectMain *plugin,
-		int x,
-		int y,
-		int *value);
+	FindObjectScanFloat(FindObjectMain *plugin, FindObjectWindow *gui, int x, int y, float *value);
 	int handle_event();
 	FindObjectMain *plugin;
-	int *value;
-};
-
-class FindObjectBlockSize : public BC_FPot
-{
-public:
-	FindObjectBlockSize(FindObjectMain *plugin,
-		int x,
-		int y,
-		float *value);
-	int handle_event();
-	FindObjectMain *plugin;
+	FindObjectWindow *gui;
+	FindObjectScanFloatText *center_text;
 	float *value;
 };
 
-class FindObjectBlockCenterText;
-
-class FindObjectBlockCenter : public BC_FPot
+class FindObjectScanFloatText : public BC_TextBox
 {
 public:
-	FindObjectBlockCenter(FindObjectMain *plugin,
-		FindObjectWindow *gui,
-		int x,
-		int y,
-		float *value);
+	FindObjectScanFloatText(FindObjectMain *plugin, FindObjectWindow *gui, int x, int y, float *value);
 	int handle_event();
 	FindObjectWindow *gui;
 	FindObjectMain *plugin;
-	FindObjectBlockCenterText *center_text;
+	FindObjectScanFloat *center;
 	float *value;
 };
-
-class FindObjectBlockCenterText : public BC_TextBox
-{
-public:
-	FindObjectBlockCenterText(FindObjectMain *plugin,
-		FindObjectWindow *gui,
-		int x,
-		int y,
-		float *value);
-	int handle_event();
-	FindObjectWindow *gui;
-	FindObjectMain *plugin;
-	FindObjectBlockCenter *center;
-	float *value;
-};
-
 
 
 class FindObjectDrawBorder : public BC_CheckBox
 {
 public:
-	FindObjectDrawBorder(FindObjectMain *plugin,
-		FindObjectWindow *gui,
-		int x,
-		int y);
+	FindObjectDrawBorder(FindObjectMain *plugin, FindObjectWindow *gui, int x, int y);
 	int handle_event();
 	FindObjectMain *plugin;
 	FindObjectWindow *gui;
@@ -114,10 +84,7 @@ public:
 class FindObjectDrawKeypoints : public BC_CheckBox
 {
 public:
-	FindObjectDrawKeypoints(FindObjectMain *plugin,
-		FindObjectWindow *gui,
-		int x,
-		int y);
+	FindObjectDrawKeypoints(FindObjectMain *plugin, FindObjectWindow *gui, int x, int y);
 	int handle_event();
 	FindObjectMain *plugin;
 	FindObjectWindow *gui;
@@ -126,38 +93,25 @@ public:
 class FindObjectReplace : public BC_CheckBox
 {
 public:
-	FindObjectReplace(FindObjectMain *plugin,
-		FindObjectWindow *gui,
-		int x,
-		int y);
+	FindObjectReplace(FindObjectMain *plugin, FindObjectWindow *gui, int x, int y);
 	int handle_event();
 	FindObjectMain *plugin;
 	FindObjectWindow *gui;
 };
-
 
 class FindObjectDrawObjectBorder : public BC_CheckBox
 {
 public:
-	FindObjectDrawObjectBorder(FindObjectMain *plugin,
-		FindObjectWindow *gui,
-		int x,
-		int y);
+	FindObjectDrawObjectBorder(FindObjectMain *plugin, FindObjectWindow *gui, int x, int y);
 	int handle_event();
 	FindObjectMain *plugin;
 	FindObjectWindow *gui;
 };
 
-
-
-
 class FindObjectAlgorithm : public BC_PopupMenu
 {
 public:
-	FindObjectAlgorithm(FindObjectMain *plugin,
-		FindObjectWindow *gui,
-		int x,
-		int y);
+	FindObjectAlgorithm(FindObjectMain *plugin, FindObjectWindow *gui, int x, int y);
 	int handle_event();
 	void create_objects();
 	static int calculate_w(FindObjectWindow *gui);
@@ -167,50 +121,37 @@ public:
 	FindObjectWindow *gui;
 };
 
-
-class FindObjectCamParam : public BC_IPot
+class FindObjectUseFlann : public BC_CheckBox
 {
 public:
-	FindObjectCamParam(FindObjectMain *plugin,
-		int x,
-		int y,
-		int *value);
+	FindObjectUseFlann(FindObjectMain *plugin, FindObjectWindow *gui, int x, int y);
 	int handle_event();
 	FindObjectMain *plugin;
-	int *value;
+	FindObjectWindow *gui;
 };
-
 
 class FindObjectBlend : public BC_IPot
 {
 public:
-	FindObjectBlend(FindObjectMain *plugin,
-		int x,
-		int y,
-		int *value);
+	FindObjectBlend(FindObjectMain *plugin, int x, int y, int *value);
 	int handle_event();
 	FindObjectMain *plugin;
 	int *value;
 };
-
 
 class FindObjectWindow : public PluginClientWindow
 {
 public:
 	FindObjectWindow(FindObjectMain *plugin);
 	~FindObjectWindow();
-
 	void create_objects();
-	char* get_radius_title();
 
-	FindObjectGlobalRange *global_range_w;
-	FindObjectGlobalRange *global_range_h;
-	FindObjectBlockSize *global_block_w;
-	FindObjectBlockSize *global_block_h;
-	FindObjectBlockCenter *block_x;
-	FindObjectBlockCenter *block_y;
-	FindObjectBlockCenterText *block_x_text;
-	FindObjectBlockCenterText *block_y_text;
+	FindObjectAlgorithm *algorithm;
+	FindObjectUseFlann *use_flann;
+	FindObjectScanFloat *object_x, *object_y, *object_w, *object_h;
+	FindObjectScanFloatText *object_x_text, *object_y_text, *object_w_text, *object_h_text;
+	FindObjectScanFloat *scene_x, *scene_y, *scene_w, *scene_h;
+	FindObjectScanFloatText *scene_x_text, *scene_y_text, *scene_w_text, *scene_h_text;
 	FindObjectDrawKeypoints *draw_keypoints;
 	FindObjectDrawBorder *draw_border;
 	FindObjectReplace *replace_object;
@@ -218,19 +159,8 @@ public:
 	FindObjectLayer *object_layer;
 	FindObjectLayer *scene_layer;
 	FindObjectLayer *replace_layer;
-	FindObjectAlgorithm *algorithm;
-	FindObjectCamParam *vmin;
-	FindObjectCamParam *vmax;
-	FindObjectCamParam *smin;
 	FindObjectBlend *blend;
 	FindObjectMain *plugin;
 };
 
-
-
-
-
-#endif // FINDOBJECTWINDOW_H
-
-
-
+#endif

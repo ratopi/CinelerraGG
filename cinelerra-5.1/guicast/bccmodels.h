@@ -63,6 +63,8 @@ enum BC_CModel {
 	BC_YUV420PI     = 34,
 // only used in intermediate ffmpeg xfers
 	BC_AYUV16161616 = 35,
+	BC_GREY8        = 36,
+	BC_GREY16       = 37,
 };
 
 // Colormodels purely used by Quicktime are done in Quicktime.

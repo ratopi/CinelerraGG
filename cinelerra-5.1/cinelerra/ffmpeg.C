@@ -732,14 +732,13 @@ int FFAudioStream::load(int64_t pos, int len)
 	}
 	if( mbsz < len ) mbsz = len;
 	int64_t end_pos = pos + len;
-	int ret = 0;
-	for( int i=0; ret>=0 && !flushed && curr_pos<end_pos && i<MAX_RETRY; ++i ) {
+	int ret = 0, i = len / frame_sz + MAX_RETRY;
+	while( ret>=0 && !flushed && curr_pos<end_pos && --i>=0 ) {
 		ret = read_frame(frame);
-		if( ret > 0 ) {
+		if( ret > 0 && frame->nb_samples > 0 ) {
 			init_swr(frame->channels, frame->format, frame->sample_rate);
 			load_history(&frame->extended_data[0], frame->nb_samples);
 			curr_pos += frame->nb_samples;
-			i = 0;
 		}
 	}
 	if( end_pos > curr_pos ) {
@@ -867,9 +866,10 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 		fprintf(stderr, "FFVideoStream::load: av_frame_alloc failed\n");
 		return -1;
 	}
-	for( int i=0; ret>=0 && !flushed && curr_pos<=pos && i<MAX_RETRY; ++i ) {
+	int i = MAX_RETRY + pos - curr_pos;
+	while( ret>=0 && !flushed && curr_pos<=pos && --i>=0 ) {
 		ret = read_frame(frame);
-		if( ret > 0 ) { ++curr_pos;  i = 0; }
+		if( ret > 0 ) ++curr_pos;
 	}
 	if( frame->format == AV_PIX_FMT_NONE || frame->width <= 0 || frame->height <= 0 )
 		ret = -1;
@@ -2124,6 +2124,8 @@ int FFMPEG::decode_activate()
 				if( aidx >= 0 && ffaudio[aidx]->nudge != AV_NOPTS_VALUE ) continue;
 				if( astart_time < st->start_time )
 					astart_time = st->start_time;
+				ffaudio[aidx]->frame_sz =
+					avpar->frame_size < 128 ? 128 : avpar->frame_size;
 				break; }
 			default: break;
 			}

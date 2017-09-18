@@ -75,6 +75,8 @@ Downsample:	Reduce the sie of an image by throwing out data,
 Edge:		Display only the edges of the video throughout the image.
 Fields to frames: Reads frames at 2x the framerate, combining 2
 		input frames into 1 interlaced output frame.
+Find Object:	Locate a specific object in a scene and replace with 
+		another object.  This uses OpenCV thirdparty package.
 Flip:		Flip a portion of a video track from left to right,
 		up to down or vice versa.
 Frames to Fields: Extracts 2 interlaced fields stored in alternating

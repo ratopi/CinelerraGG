@@ -45,8 +45,7 @@ $(PLUGIN_DIR)/%/$(PLUGIN).png:	%.png
 	$(if $(wildcard $(dir $@)),,mkdir -p $(dir $@))
 	cp -a $< $@
 
-clean:
-	find \( -name core -o -name '*.o' -o -name '*.a' \) -exec rm -f {} \;
+clean::
 	rm -f $(OUTPUT)
 	rm -rf $(OBJDIR)
 

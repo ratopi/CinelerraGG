@@ -4,6 +4,9 @@ include $(TOPDIR)/global_config
 ifeq ($(WANT_DVB), yes)
 LIVEDVB = liveaudio livevideo
 endif
+ifneq ($(WANT_FINDOBJECT), no)
+FINDOBJECT = findobject
+endif
 
 # burn must come before any other effecttv plugin
 # colors must come before any plugin
@@ -51,6 +54,7 @@ DIRS = \
 	echo \
 	echocancel \
 	fieldframe \
+	$(FINDOBJECT) \
 	flash \
 	flip \
 	framefield \

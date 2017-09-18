@@ -22,9 +22,7 @@
 #ifndef FINDOBJECT_INC
 #define FINDOBJECT_INC
 
-
 class FindObjectConfig;
 class FindObjectMain;
-
 
 #endif

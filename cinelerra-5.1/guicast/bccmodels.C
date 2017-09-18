@@ -57,6 +57,8 @@ int BC_CModels::components(int colormodel)
 	case BC_RGBA_FLOAT:   return 4;
 	case BC_RGB_FLOATP:   return 3;
 	case BC_RGBA_FLOATP:  return 4;
+	case BC_GREY8:        return 1;
+	case BC_GREY16:       return 1;
 	}
 	return 0;
 }
@@ -91,6 +93,8 @@ int BC_CModels::calculate_pixelsize(int colormodel)
 	case BC_UYVA8888:     return 4;
 	case BC_RGB_FLOAT:    return 12;
 	case BC_RGBA_FLOAT:   return 16;
+	case BC_GREY8:        return 1;
+	case BC_GREY16:       return 2;
 // Planar
 	case BC_YUV420P:      return 1;
 	case BC_YUV420PI:     return 1;
@@ -126,6 +130,8 @@ int BC_CModels::calculate_max(int colormodel)
 	case BC_RGBA_FLOAT:   return 1;
 	case BC_RGB_FLOATP:   return 1;
 	case BC_RGBA_FLOATP:  return 1;
+	case BC_GREY8:        return 0xff;
+	case BC_GREY16:       return 0xffff;
 	}
 	return 0;
 }
@@ -245,6 +251,8 @@ int BC_CModels::is_yuv(int colormodel)
 	case BC_YUV444P:
 	case BC_YUV411P:
 	case BC_YUV410P:
+	case BC_GREY8:
+	case BC_GREY16:
 		return 1;
 	}
 	return 0;

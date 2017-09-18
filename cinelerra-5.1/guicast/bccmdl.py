@@ -322,6 +322,28 @@ base = {
     },
   },
 
+  "grey8": {
+    "i8": {
+      "r": " int32_t iy = *inp++, y = iy * 0x010101u, u = 0x80, v = 0x80;",
+      "w": " *out++ = y; (void)u; (void)v;",
+    },
+    "i16": {
+      "r": " int32_t iy = *inp++, y = iy * 0x010101u, u = 0x8000, v = 0x8000;",
+      "w": " *out++ = y>>8; (void)u; (void)v;",
+    },
+  },
+
+  "grey16": {
+    "i8": {
+      "r": " int32_t iy = *inp++, y = (iy<<8) | (iy>>8), u = 0x80, v = 0x80;",
+      "w": " *out++ = y<<8; (void)u; (void)v;",
+    },
+    "i16": {
+      "r": " int32_t iy = *inp++, y = (iy<<8) | (iy>>8), u = 0x8000, v = 0x8000;",
+      "w": " *out++ = y; (void)u; (void)v;",
+    },
+  },
+
   # alpha component
   "a8": {
     "i8": {
@@ -461,6 +483,9 @@ add_cmodel(32, "bc_rgb_floatp", "fp", "rgbfltp")
 add_cmodel(33, "bc_rgba_floatp", "fp", "rgbfltp", "afpp")
 add_cmodel(34, "bc_yuv420pi", "i8", "yuv420pi")
 
+add_cmodel(36, "bc_grey8", "i8", "grey8")
+add_cmodel(37, "bc_grey16", "i16", "grey16")
+
 specialize("bc_rgba8888", "bc_transparency", "XFER_rgba8888_to_transparency")
 
 ctype = {
@@ -500,7 +525,7 @@ def is_yuv(nm):
   return nm in [ "bc_yuv888", "bc_yuva8888", "bc_yuv161616", \
     "bc_yuva16161616", "bc_ayuv16161616", "bc_yuv422", "bc_uvy422", "bc_yuv101010", \
     "bc_vyu888", "bc_uyva8888", "bc_yuv420p", "bc_yuv420pi", "bc_yuv422p", \
-    "bc_yuv444p", "bc_yuv411p", "bc_yuv410p", ]
+    "bc_yuv444p", "bc_yuv411p", "bc_yuv410p", "bc_grey8", "bc_grey16" ]
 
 def is_planar(nm):
   return nm in [ "bc_yuv420p", "bc_yuv420pi", "bc_yuv422p", "bc_yuv444p", \

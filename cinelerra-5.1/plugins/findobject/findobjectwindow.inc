@@ -22,7 +22,16 @@
 #ifndef FINDOBJECTWINDOW_INC
 #define FINDOBJECTWINDOW_INC
 
+class FindObjectLayer;
+class FindObjectScanFloat;
+class FindObjectScanFloatText;
+class FindObjectDrawBorder;
+class FindObjectDrawKeypoints;
+class FindObjectReplace;
+class FindObjectDrawObjectBorder;
+class FindObjectAlgorithm;
+class FindObjectUseFlann;
+class FindObjectBlend;
 class FindObjectWindow;
-class FindObjectThread;
 
 #endif
