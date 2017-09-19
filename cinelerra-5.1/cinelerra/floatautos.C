@@ -455,10 +455,10 @@ double FloatAutos::automation_integral(int64_t start, int64_t length, int direct
 	if( end > len ) end = len;
 	while( pos < end ) {
 		int64_t prev_pos = 0, next_pos = len;
-		FloatAuto *prev = 0, *next = 0;
-		prev = (FloatAuto*)get_prev_auto(pos, direction, (Auto* &)prev, 0);
+		Auto *zprev = 0, *znext = 0;
+		FloatAuto *prev = (FloatAuto*)get_prev_auto(pos, direction, zprev, 0);
 		if( prev ) prev_pos = prev->position;
-		next = (FloatAuto*)get_next_auto(pos, direction, (Auto* &)next, 0);
+		FloatAuto *next = (FloatAuto*)get_next_auto(pos, direction, znext, 0);
 		if( next ) next_pos = next->position;
 		if( !prev && !next ) prev = next = (FloatAuto*)default_auto;
 		else if( !prev ) prev = next;
