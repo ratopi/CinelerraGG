@@ -60,6 +60,7 @@
 #include "patchbay.h"
 #include "playbackengine.h"
 #include "preferences.h"
+#include "proxy.h"
 #include "preferencesthread.h"
 #include "quit.h"
 #include "record.h"
@@ -203,6 +204,9 @@ void MainMenu::create_objects()
 
 	settingsmenu->add_item(new SetFormat(mwindow));
 	settingsmenu->add_item(preferences = new PreferencesMenuitem(mwindow));
+	ProxyMenuItem *proxy;
+	settingsmenu->add_item(proxy = new ProxyMenuItem(mwindow));
+	proxy->create_objects();
 	mwindow->preferences_thread = preferences->thread;
 	settingsmenu->add_item(labels_follow_edits = new LabelsFollowEdits(mwindow));
 	settingsmenu->add_item(plugins_follow_edits = new PluginsFollowEdits(mwindow));

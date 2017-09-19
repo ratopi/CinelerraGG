@@ -294,4 +294,11 @@ void MaskAutos::translate_masks(float translate_x, float translate_y)
 	}
 }
 
+void MaskAutos::set_proxy(int orig_scale, int new_scale)
+{
+	((MaskAuto *)default_auto)->scale_submasks(orig_scale, new_scale);
+	for( MaskAuto* current=(MaskAuto*)first; current; current=(MaskAuto*)NEXT ) {
+		current->scale_submasks(orig_scale, new_scale);
+	}
+}
 

@@ -60,9 +60,7 @@ public:
 	int total_submasks(int64_t position, int direction);
 // Translates all mask points
 	void translate_masks(float translate_x, float translate_y);
+	void set_proxy(int orig_scale, int new_scale);
 };
-
-
-
 
 #endif

@@ -54,7 +54,7 @@ int64_t Indexable::get_audio_samples()
 	return 0;
 }
 
-void Indexable::update_path(char *new_path)
+void Indexable::update_path(const char *new_path)
 {
 	strcpy(path, new_path);
 }

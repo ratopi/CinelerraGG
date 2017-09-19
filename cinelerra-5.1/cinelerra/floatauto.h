@@ -32,6 +32,7 @@ class FloatAuto;
 
 class FloatAuto : public Auto
 {
+	friend class FloatAutos;
 public:
 	FloatAuto() {};
 	FloatAuto(EDL *edl, FloatAutos *autos);

@@ -49,7 +49,7 @@ public:
 	virtual int64_t get_video_frames();
 
         void copy_indexable(Indexable *src);
-	void update_path(char *new_path);
+	void update_path(const char *new_path);
 	void update_index(Indexable *src);
 
 	IndexState *index_state;
