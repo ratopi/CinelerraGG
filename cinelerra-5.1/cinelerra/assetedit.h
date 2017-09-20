@@ -114,17 +114,6 @@ public:
 
 
 
-class AssetEditFormat : public FormatPopup
-{
-public:
-	AssetEditFormat(AssetEditWindow *fwindow, char* default_, int y);
-	~AssetEditFormat();
-
-	int handle_event();
-	AssetEditWindow *fwindow;
-};
-
-
 class AssetEditChannels : public BC_TumbleTextBox
 {
 public:

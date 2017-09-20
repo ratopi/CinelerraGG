@@ -20,7 +20,7 @@
  */
 
 #include "bcsignals.h"
-#include "file.inc"
+#include "file.h"
 #include "filesystem.h"
 #include "ffmpeg.h"
 #include "formatpopup.h"
@@ -29,43 +29,49 @@
 
 
 
-FormatPopup::FormatPopup(ArrayList<PluginServer*> *plugindb,
-	int x, int y, int use_brender)
+FormatPopup::FormatPopup(int x, int y, int do_audio, int do_video, int use_brender)
  : BC_ListBox(x, y, 200, 200, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
 {
 	this->plugindb = plugindb;
+	this->do_audio = do_audio;
+	this->do_video = do_video;
 	this->use_brender = use_brender;
 	set_tooltip(_("Change file format"));
 }
 
+void FormatPopup::post_item(int format)
+{
+	if( (do_audio && File::renders_audio(format)) ||
+	    (do_video && File::renders_video(format)) )
+		format_items.append(new BC_ListBoxItem(File::formattostr(format)));
+}
+
 void FormatPopup::create_objects()
 {
-	if(!use_brender)
-	{
-		format_items.append(new BC_ListBoxItem(_(FFMPEG_NAME)));
-		format_items.append(new BC_ListBoxItem(_(AC3_NAME)));
-		format_items.append(new BC_ListBoxItem(_(AIFF_NAME)));
-		format_items.append(new BC_ListBoxItem(_(AU_NAME)));
-		format_items.append(new BC_ListBoxItem(_(FLAC_NAME)));
-		format_items.append(new BC_ListBoxItem(_(JPEG_NAME)));
+	if(!use_brender) {
+		post_item(FILE_FFMPEG);
+		post_item(FILE_AC3);
+		post_item(FILE_AIFF);
+		post_item(FILE_AU);
+		post_item(FILE_FLAC);
+		post_item(FILE_JPEG);
 	}
 
-	format_items.append(new BC_ListBoxItem(_(JPEG_LIST_NAME)));
+	post_item(FILE_JPEG_LIST);
 
-	if(!use_brender)
-	{
+	if(!use_brender) {
 #ifdef HAVE_OPENEXR
-		format_items.append(new BC_ListBoxItem(_(EXR_NAME)));
-		format_items.append(new BC_ListBoxItem(_(EXR_LIST_NAME)));
+		post_item(FILE_EXR);
+		post_item(FILE_EXR_LIST);
 #endif
-		format_items.append(new BC_ListBoxItem(_(WAV_NAME)));
-		format_items.append(new BC_ListBoxItem(_(RAWDV_NAME)));
-		format_items.append(new BC_ListBoxItem(_(AMPEG_NAME)));
-		format_items.append(new BC_ListBoxItem(_(VMPEG_NAME)));
-		format_items.append(new BC_ListBoxItem(_(VORBIS_NAME)));
-		format_items.append(new BC_ListBoxItem(_(OGG_NAME)));
-		format_items.append(new BC_ListBoxItem(_(PCM_NAME)));
-		format_items.append(new BC_ListBoxItem(_(PNG_NAME)));
+		post_item(FILE_WAV);
+		post_item(FILE_RAWDV);
+		post_item(FILE_AMPEG);
+		post_item(FILE_VMPEG);
+		post_item(FILE_VORBIS);
+		post_item(FILE_OGG);
+		post_item(FILE_PCM);
+		post_item(FILE_PNG);
 	}
 
 	format_items.append(new BC_ListBoxItem(_(PNG_LIST_NAME)));

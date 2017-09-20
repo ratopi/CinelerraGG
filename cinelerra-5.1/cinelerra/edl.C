@@ -1061,8 +1061,7 @@ int EDL::dump(FILE *fp)
     			"  output_h: %d\n"
     			"  aspect_w: %f\n"
 			"  aspect_h: %f\n"
-			"  color_model: %d\n"
-			"  proxy_scale: %d\n",
+			"  color_model: %d\n",
 				session->video_channels,
 				session->video_tracks,
 				session->frame_rate,
@@ -1071,8 +1070,7 @@ int EDL::dump(FILE *fp)
     				session->output_h,
     				session->aspect_w,
     				session->aspect_h,
-				session->color_model,
-				session->proxy_scale);
+				session->color_model);
 
 		fprintf(fp," CLIPS\n");
 		fprintf(fp,"  total: %d\n", clips.total);

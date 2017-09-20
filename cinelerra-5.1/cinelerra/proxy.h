@@ -85,18 +85,29 @@ public:
 	int orig_scale;
 	int total_rendered;
 	int failed;
+	int use_scaler;
 	char *size_text[MAX_SIZES];
 	int size_factors[MAX_SIZES];
 	int total_sizes;
 };
 
-class ProxyReset : public BC_GenericButton
+class ProxyUseScaler : public BC_CheckBox
 {
 public:
-	ProxyReset(MWindow *mwindow, ProxyWindow *pwindow,
+	ProxyUseScaler(MWindow *mwindow, ProxyWindow *pwindow,
 		int x, int y);
+	void update();
 	int handle_event();
 	MWindow *mwindow;
+	ProxyWindow *pwindow;
+};
+
+class ProxyFormatTools : public FormatTools
+{
+public:
+	ProxyFormatTools(MWindow *mwindow, ProxyWindow *window, Asset *asset);
+
+	void update_format();
 	ProxyWindow *pwindow;
 };
 
@@ -105,6 +116,7 @@ class ProxyMenu : public BC_PopupMenu
 public:
 	ProxyMenu(MWindow *mwindow, ProxyWindow *pwindow,
 		int x, int y, int w, const char *text);
+	void update_sizes();
 	int handle_event();
 	MWindow *mwindow;
 	ProxyWindow *pwindow;
@@ -138,8 +150,8 @@ public:
 	ProxyThread *thread;
 	FormatTools *format_tools;
 	BC_Title *new_dimensions;
-	BC_PopupMenu *scale_factor;
-	ProxyReset *reset;
+	ProxyMenu *scale_factor;
+	ProxyUseScaler *use_scaler;
 };
 
 class ProxyFarm;

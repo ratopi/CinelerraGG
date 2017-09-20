@@ -246,7 +246,9 @@ public:
 // The minimum setting for cache_size should be bigger than 1MB.
 	int64_t get_memory_usage();
 
+	static int renders_video(int format);
 	static int renders_video(Asset *asset);
+	static int renders_audio(int format);
 	static int renders_audio(Asset *asset);
 // Get the extension for the filename
 	static const char* get_tag(int format);

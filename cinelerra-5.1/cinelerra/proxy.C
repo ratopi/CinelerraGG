@@ -79,8 +79,7 @@ ProxyThread::ProxyThread(MWindow *mwindow)
 }
 ProxyThread::~ProxyThread()
 {
-	for( int i=0; i<MAX_SIZES; ++i )
-		if( size_text[i] ) delete [] size_text[i];
+	for( int i=0; i<MAX_SIZES; ++i ) delete [] size_text[i];
 }
 
 BC_Window* ProxyThread::new_gui()
@@ -99,7 +98,6 @@ BC_Window* ProxyThread::new_gui()
 
 void ProxyThread::scale_to_text(char *string, int scale)
 {
-	calculate_sizes();
 	strcpy(string, size_text[0]);
 	for( int i = 0; i < total_sizes; i++ ) {
 		if( scale == size_factors[i] ) {
@@ -112,34 +110,33 @@ void ProxyThread::scale_to_text(char *string, int scale)
 
 void ProxyThread::calculate_sizes()
 {
-// delete old values
-	for( int i = 0; i < MAX_SIZES; i++ ) {
-		if( size_text[i] ) delete [] size_text[i];
+	for( int i=1; i<total_sizes; ++i ) {
+		delete [] size_text[i];
+		size_text[i] = 0;
+		size_factors[i] = 0;
 	}
-	bzero(size_text, sizeof(char*) * MAX_SIZES);
-	bzero(size_factors, sizeof(int) * MAX_SIZES);
+	total_sizes = 1;
 
 	int orig_w = mwindow->edl->session->output_w * orig_scale;
 	int orig_h = mwindow->edl->session->output_h * orig_scale;
-	total_sizes = 0;
-	
-	size_text[0] = cstrdup(_("Original size"));
-	size_factors[0] = 1;
-	
-	int current_factor = 2;
-	total_sizes = 1;
-	for( current_factor = 2; current_factor < MAX_SCALE; current_factor++ ) {
-		if( current_factor * (orig_w / current_factor) == orig_w &&
-			current_factor * (orig_h / current_factor) == orig_h ) {
-//printf("ProxyThread::calculate_sizes %d\n", current_factor);
-			char string[BCTEXTLEN];
-			sprintf(string, "1/%d", current_factor);
-			size_text[total_sizes] = cstrdup(string);
-			size_factors[total_sizes] = current_factor;
-			total_sizes++;
+
+	if( !use_scaler ) {
+		for( int i=2; i<MAX_SCALE; ++i ) {
+			if( (orig_w % i) != 0 ) continue;
+			if( (orig_h % i) != 0 ) continue;
+			size_factors[total_sizes++] = i;
 		}
-		
-		current_factor++;
+	}
+	else {
+		size_factors[total_sizes++] = 2;   size_factors[total_sizes++] = 3;
+		size_factors[total_sizes++] = 8;   size_factors[total_sizes++] = 12;
+		size_factors[total_sizes++] = 16;  size_factors[total_sizes++] = 24;
+		size_factors[total_sizes++] = 32;  size_factors[total_sizes++] = 36;
+	}
+	for( int i=1; i<total_sizes; ++i ) {
+		char string[BCTEXTLEN];
+		sprintf(string, "1/%d", size_factors[i]);
+		size_text[i] = cstrdup(string);
 	}
 }
 
@@ -147,9 +144,8 @@ void ProxyThread::handle_close_event(int result)
 {
 	asset->save_defaults(mwindow->defaults, "PROXY_", 1, 1, 0, 0, 0); 
 
-	if( !result ) {
+	if( !result )
 		to_proxy();
-	}
 }
 
 void ProxyThread::to_proxy()
@@ -172,125 +168,96 @@ void ProxyThread::to_proxy()
 	mwindow->save_backup();
 	mwindow->undo->update_undo_before(_("proxy"), this);
 
+	EDL *&edl = mwindow->edl;
+	EDLSession *&session = edl->session;
+	Assets *&assets = edl->assets;
+
 // revert project to original size from current size
-	if( mwindow->edl->session->proxy_scale > 1 ) {
-		for( orig_asset = mwindow->edl->assets->first;
-			orig_asset;
-			orig_asset = orig_asset->next ) {
+// remove all session proxy assets at the at the current proxy_scale
+	if( session->proxy_scale > 1 ) {
+		orig_asset = assets->first;
+		for( ; orig_asset; orig_asset=orig_asset->next ) {
 			char new_path[BCTEXTLEN];
-			to_proxy_path(new_path, orig_asset, mwindow->edl->session->proxy_scale);
-
-// test if proxy asset was already added to proxy assets
+			to_proxy_path(new_path, orig_asset, session->proxy_scale);
+			proxy_asset = assets->get_asset(new_path);
+			if( !proxy_asset ) continue;
+// test if proxy asset was already added to proxy_assets
 			int got_it = 0;
-			proxy_asset = 0;
-			for( int i = 0; i < proxy_assets.size(); i++ ) {
-				if( !strcmp(proxy_assets.get(i)->path, new_path) ) {
-					got_it = 1;
-					break;
-				}
-			}
-
+			for( int i = 0; !got_it && i<proxy_assets.size(); ++i )
+				got_it = !strcmp(proxy_assets[i]->path, new_path);
+			if( got_it ) continue;
 // add pointer to existing EDL asset if it exists
 // EDL won't delete it unless it's the same pointer.
-			if( !got_it ) {
-				proxy_asset = mwindow->edl->assets->get_asset(new_path);
-
-				if( proxy_asset ) {
-					proxy_assets.append(proxy_asset);
-					proxy_asset->Garbage::add_user();
-
-					orig_assets.append(orig_asset);
-					orig_asset->Garbage::add_user();
-				}
-
-			}
+			proxy_assets.append(proxy_asset);
+			proxy_asset->Garbage::add_user();
+			orig_assets.append(orig_asset);
+			orig_asset->Garbage::add_user();
 		}
 
 // convert from the proxy assets to the original assets
-		mwindow->set_proxy(1, &proxy_assets, &orig_assets);
+		mwindow->set_proxy(0, 1, &proxy_assets, &orig_assets);
 
 // remove the proxy assets
 		mwindow->remove_assets_from_project(0, 0, &proxy_assets, NULL);
-
-
-		for( int i = 0; i < proxy_assets.size(); i++ ) {
+		for( int i=0; i<proxy_assets.size(); ++i )
 			proxy_assets.get(i)->Garbage::remove_user();
-		}
 		proxy_assets.remove_all();
-
-		for( int i = 0; i < orig_assets.size(); i++ ) {
+		for( int i = 0; i < orig_assets.size(); i++ )
 			orig_assets.get(i)->Garbage::remove_user();
-		}
 		orig_assets.remove_all();
 	}
 
 // convert to new size if not original size
 	if( new_scale != 1 ) {
-		for( orig_asset = mwindow->edl->assets->first;
-			orig_asset;
-			orig_asset = orig_asset->next ) {
-			if( orig_asset->video_data ) {
-				char new_path[BCTEXTLEN];
-				to_proxy_path(new_path, orig_asset, new_scale);
+		orig_asset = assets->first;
+		for( ; orig_asset; orig_asset=orig_asset->next ) {
+			if( !orig_asset->video_data ) continue;
+			char new_path[BCTEXTLEN];
+			to_proxy_path(new_path, orig_asset, new_scale);
 // add to proxy_assets & orig_assets if it isn't already there.
-				int got_it = 0;
-				proxy_asset = 0;
-				for( int i = 0; i < proxy_assets.size(); i++ ) {
-					if( !strcmp(proxy_assets.get(i)->path, new_path) ) {
-						got_it = 1;
-						proxy_asset = (Asset*)proxy_assets.get(i);
-						break;
-					}
-				}
-
-				if( !got_it ) {
-					proxy_asset = new Asset;
+			int got_it = 0;
+			for( int i = 0; !got_it && i<proxy_assets.size(); ++i )
+				got_it = !strcmp(proxy_assets[i]->path, new_path);
+			if( !got_it ) {
+				proxy_asset = new Asset;
 // new compression parameters
-					proxy_asset->copy_format(asset, 0);
-					proxy_asset->update_path(new_path);
-					proxy_asset->audio_data = 0;
-					proxy_asset->video_data = 1;
-					proxy_asset->layers = 1;
-					proxy_asset->width = orig_asset->width / new_scale;
-					proxy_asset->height = orig_asset->height / new_scale;
-					proxy_asset->frame_rate = orig_asset->frame_rate;
-					proxy_asset->video_length = orig_asset->video_length;
-					
-					proxy_assets.append(proxy_asset);
-					orig_asset->add_user();
-					orig_assets.append(orig_asset);
-				}
+				proxy_asset->copy_format(asset, 0);
+				proxy_asset->update_path(new_path);
+				proxy_asset->audio_data = 0;
+				proxy_asset->video_data = 1;
+				proxy_asset->layers = 1;
+				proxy_asset->width = orig_asset->width / new_scale;
+				proxy_asset->actual_width = proxy_asset->width;
+				proxy_asset->height = orig_asset->height / new_scale;
+				proxy_asset->actual_height = proxy_asset->height;
+				proxy_asset->frame_rate = orig_asset->frame_rate;
+				proxy_asset->video_length = orig_asset->video_length;
+				proxy_assets.append(proxy_asset);
+				orig_asset->add_user();
+				orig_assets.append(orig_asset);
+			}
 
 // test if proxy file exists.
-				int exists = 0;
-				FILE *fd = fopen(new_path, "r");
-				if( fd ) {
-					got_it = 1;
-					exists = 1;
-					fclose(fd);
+			int exists = 0;
+			FILE *fd = fopen(new_path, "r");
+			if( fd ) {
+				exists = 1;
+				fclose(fd);
+				FileSystem fs;
+// got it if proxy file is newer than original.
+				got_it = fs.get_date(new_path) > fs.get_date(asset->path);
+			}
+			else
+				got_it = 0;
 
-					FileSystem fs;
-// test if proxy file is newer than original.
-					if( fs.get_date(new_path) < fs.get_date(asset->path) ) {
-						got_it = 0;
-					}
-				}
-				else {
-// proxy doesn't exist
-					got_it = 0;
-				}
+			if( !got_it ) {
+				if( exists ) // prompt user to overwrite
+					confirm_paths.append(cstrdup(new_path));
 
-				if( !got_it ) {
-// prompt user to overwrite
-					if( exists ) {
-						confirm_paths.append(cstrdup(new_path));
-					}
-
-					needed_assets.append(proxy_asset);
-					proxy_asset->add_user();
-					needed_orig_assets.append(orig_asset);
-					orig_asset->add_user();
-				}
+				needed_assets.append(proxy_asset);
+				proxy_asset->add_user();
+				needed_orig_assets.append(orig_asset);
+				orig_asset->add_user();
 //printf("ProxyThread::handle_close_event %d %s\n", __LINE__, new_path);
 			}
 		}
@@ -316,24 +283,20 @@ void ProxyThread::to_proxy()
 					start_progress(_("Creating proxy files..."), total_len);
 				total_rendered = 0;
 
-				ProxyFarm engine(mwindow, 
-					this, 
-					&needed_assets,
-					&needed_orig_assets);
+				ProxyFarm engine(mwindow, this,
+					&needed_assets, &needed_orig_assets);
 				engine.process_packages();
-
 printf("failed=%d canceled=%d\n", failed, progress->is_cancelled());
 
-	// stop progress bar
+// stop progress bar
 				canceled = progress->is_cancelled();
 				progress->stop_progress();
-				delete progress;
-				progress = 0;
+				delete progress;  progress = 0;
 
 				if( failed && !canceled ) {
-					ErrorBox error_box(PROGRAM_NAME ": Error",
-						mwindow->gui->get_abs_cursor_x(1),
-						mwindow->gui->get_abs_cursor_y(1));
+					int cx, cy;
+					mwindow->gui->get_abs_cursor_xy(cx, cy, 1);
+					ErrorBox error_box(PROGRAM_NAME ": Error", cx, cy);
 					error_box.create_objects(_("Error making proxy."));
 					error_box.raise_window();
 					error_box.run_window();
@@ -342,31 +305,22 @@ printf("failed=%d canceled=%d\n", failed, progress->is_cancelled());
 
 // resize project
 			if( !failed && !canceled ) {
-				mwindow->set_proxy(new_scale, &orig_assets, &proxy_assets);
+				mwindow->set_proxy(use_scaler, new_scale, &orig_assets, &proxy_assets);
 			}
 		}
 
-		for( int i = 0; i < proxy_assets.size(); i++ ) {
+		for( int i = 0; i < proxy_assets.size(); i++ )
 			proxy_assets.get(i)->Garbage::remove_user();
-		}
-
-		for( int i = 0; i < orig_assets.size(); i++ ) {
+		for( int i = 0; i < orig_assets.size(); i++ )
 			orig_assets.get(i)->Garbage::remove_user();
-		}
-
-		for( int i = 0; i < needed_assets.size(); i++ ) {
+		for( int i = 0; i < needed_assets.size(); i++ )
 			needed_assets.get(i)->Garbage::remove_user();
-		}
-
-		for( int i = 0; i < needed_orig_assets.size(); i++ ) {
+		for( int i = 0; i < needed_orig_assets.size(); i++ )
 			needed_orig_assets.get(i)->Garbage::remove_user();
-		}
 	}
 
 	mwindow->undo->update_undo_after(_("proxy"), LOAD_ALL);
-
 	mwindow->edl->Garbage::remove_user();
-
 	mwindow->restart_brender();
 
 	mwindow->gui->lock_window("ProxyThread::to_proxy");
@@ -444,44 +398,41 @@ ProxyWindow::~ProxyWindow()
 void ProxyWindow::create_objects()
 {
 	lock_window("ProxyWindow::create_objects");
-	
+
 	int margin = mwindow->theme->widget_border;
 	int x = margin;
 	int y = margin;
-	thread->orig_scale = 
-		thread->new_scale = 
-		mwindow->edl->session->proxy_scale;
-	
+	thread->use_scaler = mwindow->edl->session->proxy_use_scaler;
+	thread->orig_scale = mwindow->edl->session->proxy_scale;
+	thread->new_scale = thread->orig_scale;
+
 	BC_Title *text;
 	add_subwindow(text = new BC_Title(x, y, 
 		_("What size should the project\n"
 		  "be scaled to for editing?")));
 	y += text->get_h() * 2 + margin;
-	
-	
+
 	add_subwindow(text = new BC_Title(x, y, _("Scale factor:")));
 	x += text->get_w() + margin;
 
-
-	thread->calculate_sizes();
+	thread->size_text[0] = cstrdup(_("Original size"));
+	thread->size_factors[0] = 1;
+	thread->total_sizes = 1;
 	int popupmenu_w = BC_PopupMenu::calculate_w(get_text_width(MEDIUMFONT, thread->size_text[0]));
 	add_subwindow(scale_factor = new ProxyMenu(mwindow, this, x, y, popupmenu_w, ""));
-	for( int i = 0; i < thread->total_sizes; i++ ) {
-		scale_factor->add_item(new BC_MenuItem(thread->size_text[i]));
-	}
+	scale_factor->update_sizes();
 	x += scale_factor->get_w() + margin;
-	
+
 	ProxyTumbler *tumbler;
 	add_subwindow(tumbler = new ProxyTumbler(mwindow, this, x, y));
+	y += tumbler->get_h() + margin;
+	x = margin;
+	add_subwindow(use_scaler = new ProxyUseScaler(mwindow, this, x, y));
+	y += use_scaler->get_h() + margin;
+	y += 25;
 
 	x = margin;
-	y += tumbler->get_h() + margin;
-	ProxyReset *reset;
-	add_subwindow(reset = new ProxyReset(mwindow, this, x, y));
-	
-	y += reset->get_h() * 2 + margin;
-	x = margin;
-	add_subwindow(text = new BC_Title(x, y, _("New project dimensions: ")));
+	add_subwindow(text = new BC_Title(x, y, _("New media dimensions: ")));
 	x += text->get_w() + margin;
 	add_subwindow(new_dimensions = new BC_Title(x, y, ""));
 
@@ -489,16 +440,28 @@ void ProxyWindow::create_objects()
 	y += new_dimensions->get_h() * 2 + margin;
 
 
-	format_tools = new FormatTools(mwindow, this, thread->asset);
+	format_tools = new ProxyFormatTools(mwindow, this, thread->asset);
 	format_tools->create_objects(x, y, 0, 1, 0, 0, 0, 1, 0, 1, // skip the path
 		0, 0);
 
 	update();
-		
+
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window(1);
 	unlock_window();
+}
+
+ProxyFormatTools::ProxyFormatTools(MWindow *mwindow, ProxyWindow *pwindow, Asset *asset)
+ : FormatTools(mwindow, pwindow, asset)
+{
+	this->pwindow = pwindow;
+}
+
+void ProxyFormatTools::update_format()
+{
+        FormatTools::update_format();
+	pwindow->use_scaler->update();
 }
 
 void ProxyWindow::update()
@@ -515,19 +478,32 @@ void ProxyWindow::update()
 	new_dimensions->update(string);
 	thread->scale_to_text(string, thread->new_scale);
 	scale_factor->set_text(string);
+	use_scaler->update();
 }
 
 
-ProxyReset::ProxyReset(MWindow *mwindow, ProxyWindow *pwindow, int x, int y)
- : BC_GenericButton(x, y, _("Reset"))
+ProxyUseScaler::ProxyUseScaler(MWindow *mwindow, ProxyWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->use_scaler, _("Use scaler   (FFMPEG only)"))
 {
 	this->mwindow = mwindow;
 	this->pwindow = pwindow;
 }
 
-int ProxyReset::handle_event()
+void ProxyUseScaler::update()
 {
-	pwindow->thread->new_scale = pwindow->thread->orig_scale;
+	ProxyThread *thread = pwindow->thread;
+	if( thread->asset->format != FILE_FFMPEG ) thread->use_scaler = 0;
+	BC_CheckBox::update(thread->use_scaler);
+	int scaler_avail = thread->asset->format == FILE_FFMPEG ? 1 : 0;
+	if( !scaler_avail &&  enabled ) disable();
+	if( scaler_avail  && !enabled ) enable();
+}
+
+int ProxyUseScaler::handle_event()
+{
+	pwindow->thread->new_scale = 1;
+	pwindow->thread->use_scaler = get_value();
+	pwindow->scale_factor->update_sizes();
 	pwindow->update();
 	return 1;
 }
@@ -541,11 +517,22 @@ ProxyMenu::ProxyMenu(MWindow *mwindow, ProxyWindow *pwindow,
 	this->pwindow = pwindow;
 }
 
+void ProxyMenu::update_sizes()
+{
+	while( total_items() > 0 ) del_item(0);
+	ProxyThread *thread = pwindow->thread;
+	thread->calculate_sizes();
+	for( int i=0; i < thread->total_sizes; i++ )
+		add_item(new BC_MenuItem(thread->size_text[i]));
+}
+
 int ProxyMenu::handle_event()
 {
 	for( int i = 0; i < pwindow->thread->total_sizes; i++ ) {
 		if( !strcmp(get_text(), pwindow->thread->size_text[i]) ) {
 			pwindow->thread->new_scale = pwindow->thread->size_factors[i];
+			if( pwindow->thread->new_scale == 1 )
+				pwindow->thread->use_scaler = 0;
 			pwindow->update();
 			break;
 		}
@@ -634,21 +621,21 @@ void ProxyClient::process_package(LoadPackage *ptr)
 //		thread->failed = 1;
 		return;
 	}
-	
+
 	dst_file.set_processors(processors);
 	result = dst_file.open_file(preferences, package->proxy_asset, 0, 1);
 	if( result ) {
 		thread->failed = 1;
 		return;
 	}
-	
+
 	dst_file.start_video_thread(1, edl->session->color_model,
 			processors > 1 ? 2 : 1, 0);
-	
+
 	VFrame src_frame(0, -1,
 		package->orig_asset->width, package->orig_asset->height, 
 		edl->session->color_model, -1);
-	
+
 	OverlayFrame scaler(processors);
 
 	for( int64_t i = 0; i < package->orig_asset->video_length &&

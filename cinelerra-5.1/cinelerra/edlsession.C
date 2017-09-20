@@ -98,6 +98,7 @@ EDLSession::EDLSession(EDL *edl)
 	playback_buffer = 4096;
 	playback_cursor_visible = 0;
 	playback_preload = 0;
+	proxy_use_scaler = 0;
 	proxy_scale = 1;
 	decode_subtitles = 0;
 	subtitle_number = 0;
@@ -167,6 +168,7 @@ int EDLSession::need_rerender(EDLSession *ptr)
 		(subtitle_number != ptr->subtitle_number) ||
 		(interpolate_raw != ptr->interpolate_raw) ||
 		(white_balance_raw != ptr->white_balance_raw) ||
+		(proxy_use_scaler != ptr->proxy_use_scaler) ||
 		(proxy_scale != ptr->proxy_scale));
 }
 
@@ -182,6 +184,7 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 	    session->mpeg4_deblock != mpeg4_deblock ||
 	    session->decode_subtitles != decode_subtitles ||
 	    session->subtitle_number != subtitle_number ||
+	    session->proxy_use_scaler != proxy_use_scaler ||
 	    session->proxy_scale != proxy_scale )
 		*result = 0;
 
@@ -284,7 +287,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	delete playback_config;
 	playback_config = new PlaybackConfig;
 	playback_config->load_defaults(defaults);
-//	proxy_scale = defaults->get("PROXY_SCALE", 1);
 	real_time_playback = defaults->get("PLAYBACK_REALTIME", 0);
 	real_time_record = defaults->get("REALTIME_RECORD", 0);
 	record_positioning = defaults->get("RECORD_POSITIONING", 1);
@@ -426,7 +428,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("PLAYBACK_SOFTWARE_POSITION", playback_software_position);
 	playback_config->save_defaults(defaults);
 	defaults->update("PLAYBACK_REALTIME", real_time_playback);
-//	defaults->update("PROXY_SCALE", proxy_scale);
 	defaults->update("REALTIME_RECORD", real_time_record);
 	defaults->update("RECORD_POSITIONING", record_positioning);
 	defaults->update("RECORD_RAW_STREAM", record_raw_stream);
@@ -552,6 +553,7 @@ int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_
 	output_h = file->tag.get_property("OUTPUTH", output_h);
 	aspect_w = file->tag.get_property("ASPECTW", aspect_w);
 	aspect_h = file->tag.get_property("ASPECTH", aspect_h);
+	proxy_use_scaler = file->tag.get_property("PROXY_USE_SCALER", proxy_use_scaler);
 	proxy_scale = file->tag.get_property("PROXY_SCALE", proxy_scale);
 	return 0;
 }
@@ -742,6 +744,7 @@ int EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("OUTPUTH", output_h);
 	file->tag.set_property("ASPECTW", aspect_w);
 	file->tag.set_property("ASPECTH", aspect_h);
+	file->tag.set_property("PROXY_USE_SCALER", proxy_use_scaler);
 	file->tag.set_property("PROXY_SCALE", proxy_scale);
 	file->append_tag();
 	file->tag.set_title("/VIDEO");
@@ -881,6 +884,7 @@ int EDLSession::copy(EDLSession *session)
 	view_follows_playback = session->view_follows_playback;
 	vwindow_meter = session->vwindow_meter;
 	vwindow_zoom = session->vwindow_zoom;
+	proxy_use_scaler = session->proxy_use_scaler;
 	proxy_scale = session->proxy_scale;
 
 	subtitle_number = session->subtitle_number;
@@ -897,10 +901,10 @@ void EDLSession::dump()
 	printf("    audio_tracks=%d audio_channels=%d sample_rate=%jd\n"
 		"    video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f\n"
 		"    decode subtitles=%d subtitle_number=%d label_cells=%d program_no=%d\n"
-		"    proxy_scale=%d\n",
+		"    proxy_use_scaler=%d, proxy_scale=%d\n",
 		audio_tracks, audio_channels, sample_rate, video_tracks,
 		frame_rate, output_w, output_h, aspect_w, aspect_h,
 		decode_subtitles, subtitle_number, label_cells, program_no,
-		proxy_scale);
+		proxy_use_scaler, proxy_scale);
 }
 

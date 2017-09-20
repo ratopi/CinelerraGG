@@ -103,19 +103,17 @@ SET_TRACE
 	if(channels_tumbler) delete channels_tumbler;
 }
 
-void FormatTools::create_objects(int &init_x,
-						int &init_y,
-						int do_audio,    // Include support for audio
-						int do_video,   // Include support for video
-						int prompt_audio,  // Include checkbox for audio
-						int prompt_video,
-						int prompt_audio_channels,
-						int prompt_video_compression,
-						const char *locked_compressor,
-						int recording,
-						int *strategy,
-						int brender,
-						int horizontal_layout)
+void FormatTools::create_objects(
+		int &init_x, int &init_y,
+		int do_audio, int do_video,   // Include support for audio, video
+		int prompt_audio, int prompt_video, // Include checkbox for audio, video
+		int prompt_audio_channels,
+		int prompt_video_compression,
+		const char *locked_compressor,
+		int recording,
+		int *strategy,
+		int brender,
+		int horizontal_layout)
 {
 	int x = init_x;
 	int y = init_y;
@@ -770,7 +768,7 @@ int FormatVideo::handle_event()
 
 
 FormatFormat::FormatFormat(int x, int y, FormatTools *format)
- : FormatPopup(format->plugindb, x, y, format->use_brender)
+ : FormatPopup(x, y, format->do_audio, format->do_video, format->use_brender)
 {
 	this->format = format;
 }

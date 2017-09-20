@@ -31,15 +31,17 @@
 class FormatPopup : public BC_ListBox
 {
 public:
-	FormatPopup(ArrayList<PluginServer*> *plugindb, int x, int y,
+	FormatPopup(int x, int y,
+		int do_audio=1, int do_video=1,
 		int use_brender=0);  // Show formats useful in background rendering
 	~FormatPopup();
 
 	void create_objects();
+	void post_item(int format);
 	virtual int handle_event();  // user copies text to value here
 	ArrayList<PluginServer*> *plugindb;
 	ArrayList<BC_ListBoxItem*> format_items;
-	int use_brender;
+	int use_brender, do_audio, do_video;
 };
 
 

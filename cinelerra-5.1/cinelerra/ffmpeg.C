@@ -33,6 +33,7 @@
 #define AUDIO_INBUF_SIZE 0x10000
 #define VIDEO_REFILL_THRESH 0
 #define AUDIO_REFILL_THRESH 0x1000
+#define AUDIO_MIN_FRAME_SZ 128
 
 Mutex FFMPEG::fflock("FFMPEG::fflock");
 
@@ -588,6 +589,7 @@ FFAudioStream::FFAudioStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx)
 	channel0 = channels = 0;
 	sample_rate = 0;
 	mbsz = 0;
+	frame_sz = AUDIO_MIN_FRAME_SZ;
 	length = 0;
 	resample_context = 0;
 	swr_ichs = swr_ifmt = swr_irate = 0;
@@ -2113,7 +2115,8 @@ int FFMPEG::decode_activate()
 				if( st->start_time == AV_NOPTS_VALUE ) continue;
 				int vidx = ffvideo.size();
 				while( --vidx >= 0 && ffvideo[vidx]->fidx != i );
-				if( vidx >= 0 && ffvideo[vidx]->nudge != AV_NOPTS_VALUE ) continue;
+				if( vidx < 0 ) continue;
+				if( ffvideo[vidx]->nudge != AV_NOPTS_VALUE ) continue;
 				if( vstart_time < st->start_time )
 					vstart_time = st->start_time;
 				break; }
@@ -2121,11 +2124,12 @@ int FFMPEG::decode_activate()
 				if( st->start_time == AV_NOPTS_VALUE ) continue;
 				int aidx = ffaudio.size();
 				while( --aidx >= 0 && ffaudio[aidx]->fidx != i );
-				if( aidx >= 0 && ffaudio[aidx]->nudge != AV_NOPTS_VALUE ) continue;
+				if( aidx < 0 ) continue;
+				if( ffaudio[aidx]->frame_sz < avpar->frame_size )
+					ffaudio[aidx]->frame_sz = avpar->frame_size;
+				if( ffaudio[aidx]->nudge != AV_NOPTS_VALUE ) continue;
 				if( astart_time < st->start_time )
 					astart_time = st->start_time;
-				ffaudio[aidx]->frame_sz =
-					avpar->frame_size < 128 ? 128 : avpar->frame_size;
 				break; }
 			default: break;
 			}

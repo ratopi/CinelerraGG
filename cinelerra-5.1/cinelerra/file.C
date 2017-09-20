@@ -1394,10 +1394,9 @@ int64_t File::get_memory_usage()
 }
 
 
-int File::renders_video(Asset *asset)
+int File::renders_video(int format)
 {
-//printf("File::supports_video %d\n", format);
-	switch( asset->format ) {
+	switch( format ) {
 	case FILE_OGG:
 	case FILE_JPEG:
 	case FILE_JPEG_LIST:
@@ -1413,16 +1412,21 @@ int File::renders_video(Asset *asset)
 	case FILE_TIFF_LIST:
 	case FILE_VMPEG:
 	case FILE_RAWDV:
-		return 1;
         case FILE_FFMPEG:
-		return FileFFMPEG::renders_video(asset->fformat);
+		return 1;
 	}
 	return 0;
 }
-
-int File::renders_audio(Asset *asset)
+int File::renders_video(Asset *asset)
 {
-	switch( asset->format ) {
+	return asset->format == FILE_FFMPEG ?
+		FileFFMPEG::renders_video(asset->fformat) :
+		renders_video(asset->format);
+}
+
+int File::renders_audio(int format)
+{
+	switch( format ) {
 	case FILE_AC3:
 	case FILE_FLAC:
 	case FILE_PCM:
@@ -1434,11 +1438,16 @@ int File::renders_audio(Asset *asset)
 	case FILE_AIFF:
 	case FILE_SND:
 	case FILE_RAWDV:
-		return 1;
         case FILE_FFMPEG:
-		return FileFFMPEG::renders_audio(asset->fformat);
+		return 1;
 	}
 	return 0;
+}
+int File::renders_audio(Asset *asset)
+{
+	return asset->format == FILE_FFMPEG ?
+		FileFFMPEG::renders_audio(asset->fformat) :
+		renders_audio(asset->format);
 }
 
 int File::is_image_render(int format)

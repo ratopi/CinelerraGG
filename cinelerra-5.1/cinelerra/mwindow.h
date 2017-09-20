@@ -492,7 +492,7 @@ public:
 	int modify_edithandles();
 	int modify_pluginhandles();
 	void finish_modify_handles();
-        void set_proxy(int new_scale,
+        void set_proxy(int use_scaler, int new_scale,
                 ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets);
 
 	void dump_plugins(FILE *fp=stdout);

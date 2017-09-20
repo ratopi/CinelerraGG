@@ -871,26 +871,6 @@ AssetEditPath::~AssetEditPath() {}
 
 
 
-
-
-AssetEditFormat::AssetEditFormat(AssetEditWindow *fwindow, char* default_, int y)
- : FormatPopup(fwindow->mwindow->plugindb, 90, y)
-{
-	this->fwindow = fwindow;
-}
-AssetEditFormat::~AssetEditFormat()
-{
-}
-int AssetEditFormat::handle_event()
-{
-	Asset *asset = fwindow->asset_edit->changed_params;
-	asset->format = File::strtoformat(get_selection(0, 0)->get_text());
-	return 1;
-}
-
-
-
-
 DetailAssetButton::DetailAssetButton(AssetEditWindow *fwindow, int x, int y)
  : BC_GenericButton(x, y, _("Detail"))
 {

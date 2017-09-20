@@ -160,7 +160,7 @@ public:
 	int program_no;
 	int playback_software_position;
 // current settings are scaled this much from the original settings
-        int proxy_scale;
+        int proxy_use_scaler, proxy_scale;
 //	int playback_strategy;
 // Play audio in realtime priority
 	int real_time_playback;
