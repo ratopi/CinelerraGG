@@ -2566,12 +2566,11 @@ SET_TRACE
 SET_TRACE
 
 //printf("MWindow::show_plugin 1\n");
-	if(!done)
-	{
-		if(!plugin->track)
-		{
-			printf("MWindow::show_plugin track not defined.\n");
-		}
+	if( !done && !plugin->track ) {
+		printf("MWindow::show_plugin track not defined.\n");
+		done = 1;
+	}
+	if( !done ) {
 		PluginServer *server = scan_plugindb(plugin->title,
 			plugin->track->data_type);
 
@@ -2958,6 +2957,8 @@ void MWindow::update_project(int load_mode)
 	if(load_mode == LOADMODE_REPLACE ||
 		load_mode == LOADMODE_REPLACE_CONCATENATE)
 	{
+		edl->session->proxy_scale = 1;
+		edl->session->proxy_use_scaler = 0;
 		gui->load_panes();
 	}
 

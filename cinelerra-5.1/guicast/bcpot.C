@@ -460,7 +460,8 @@ const char*  BC_FPot::get_caption()
 
 float BC_FPot::get_percentage()
 {
-	return (value - minvalue) / (maxvalue - minvalue);
+	float range = maxvalue - minvalue;
+	return range > 0 ? (value - minvalue) / range : minvalue;
 }
 
 int BC_FPot::percentage_to_value(float percentage)
@@ -549,7 +550,8 @@ const char* BC_IPot::get_caption()
 
 float BC_IPot::get_percentage()
 {
-	return ((float)value - minvalue) / (maxvalue - minvalue);
+	float range = maxvalue - minvalue;
+	return range > 0 ? ((float)value - minvalue) / range : minvalue;
 }
 
 int BC_IPot::percentage_to_value(float percentage)
@@ -633,7 +635,8 @@ const char* BC_QPot::get_caption()
 
 float BC_QPot::get_percentage()
 {
-	return ((float)value - minvalue) / (maxvalue - minvalue);
+	float range = maxvalue - minvalue;
+	return range > 0 ? ((float)value - minvalue) / range : 0;
 }
 
 int BC_QPot::percentage_to_value(float percentage)
@@ -709,7 +712,8 @@ const char* BC_PercentagePot::get_caption()
 
 float BC_PercentagePot::get_percentage()
 {
-	return (value - minvalue) / (maxvalue - minvalue);
+	float range = maxvalue - minvalue;
+	return range > 0 ? (value - minvalue) / range : minvalue;
 }
 
 int BC_PercentagePot::percentage_to_value(float percentage)

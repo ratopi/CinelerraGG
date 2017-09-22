@@ -80,6 +80,7 @@ ProxyThread::ProxyThread(MWindow *mwindow)
 ProxyThread::~ProxyThread()
 {
 	for( int i=0; i<MAX_SIZES; ++i ) delete [] size_text[i];
+	asset->remove_user();
 }
 
 BC_Window* ProxyThread::new_gui()
@@ -121,9 +122,14 @@ void ProxyThread::calculate_sizes()
 	int orig_h = mwindow->edl->session->output_h * orig_scale;
 
 	if( !use_scaler ) {
+// w,h should stay even for yuv
+		int ow = orig_w, oh = orig_h;
+		if( BC_CModels::is_yuv(mwindow->edl->session->color_model) ) {
+			ow /= 2;  oh /= 2;
+		}
 		for( int i=2; i<MAX_SCALE; ++i ) {
-			if( (orig_w % i) != 0 ) continue;
-			if( (orig_h % i) != 0 ) continue;
+			if( (ow % i) != 0 ) continue;
+			if( (oh % i) != 0 ) continue;
 			size_factors[total_sizes++] = i;
 		}
 	}
@@ -131,7 +137,7 @@ void ProxyThread::calculate_sizes()
 		size_factors[total_sizes++] = 2;   size_factors[total_sizes++] = 3;
 		size_factors[total_sizes++] = 8;   size_factors[total_sizes++] = 12;
 		size_factors[total_sizes++] = 16;  size_factors[total_sizes++] = 24;
-		size_factors[total_sizes++] = 32;  size_factors[total_sizes++] = 36;
+		size_factors[total_sizes++] = 32;
 	}
 	for( int i=1; i<total_sizes; ++i ) {
 		char string[BCTEXTLEN];
@@ -227,8 +233,10 @@ void ProxyThread::to_proxy()
 				proxy_asset->video_data = 1;
 				proxy_asset->layers = 1;
 				proxy_asset->width = orig_asset->width / new_scale;
+				if( proxy_asset->width & 1 ) ++proxy_asset->width;
 				proxy_asset->actual_width = proxy_asset->width;
 				proxy_asset->height = orig_asset->height / new_scale;
+				if( proxy_asset->height & 1 ) ++proxy_asset->height;
 				proxy_asset->actual_height = proxy_asset->height;
 				proxy_asset->frame_rate = orig_asset->frame_rate;
 				proxy_asset->video_length = orig_asset->video_length;
@@ -473,8 +481,11 @@ void ProxyWindow::update()
 // thread->orig_scale, thread->new_scale);
 	int orig_w = mwindow->edl->session->output_w * thread->orig_scale;
 	int orig_h = mwindow->edl->session->output_h * thread->orig_scale;
-	sprintf(string, "%dx%d", 
-		orig_w / thread->new_scale, orig_h / thread->new_scale);
+	int new_w = orig_w / thread->new_scale;
+	if( new_w & 1 ) ++new_w;
+	int new_h = orig_h / thread->new_scale;
+	if( new_h & 1 ) ++new_h;
+	sprintf(string, "%dx%d", new_w, new_h);
 	new_dimensions->update(string);
 	thread->scale_to_text(string, thread->new_scale);
 	scale_factor->set_text(string);

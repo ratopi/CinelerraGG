@@ -69,28 +69,15 @@ int PluginAClientConfig::equivalent(PluginAClientConfig &that)
 // Need PluginServer to do this.
 void PluginAClientConfig::copy_from(PluginAClientConfig &that)
 {
-	if(total_ports != that.total_ports)
-	{
-		delete_objects();
-		total_ports = that.total_ports;
-		port_data = new LADSPA_Data[total_ports];
-		port_type = new int[total_ports];
-	}
-
-	for(int i = 0; i < total_ports; i++)
-	{
+	int n = bmin(total_ports, that.total_ports);
+	for( int i=0; i<n; ++i ) {
 		port_type[i] = that.port_type[i];
 		port_data[i] = that.port_data[i];
-//printf("PluginAClientConfig::copy_from 1 %f %f\n", port_data[i], that.port_data[i]);
 	}
-
 }
 
-void PluginAClientConfig::interpolate(PluginAClientConfig &prev,
-	PluginAClientConfig &next,
-	int64_t prev_frame,
-	int64_t next_frame,
-	int64_t current_frame)
+void PluginAClientConfig::interpolate(PluginAClientConfig &prev, PluginAClientConfig &next,
+	int64_t prev_frame, int64_t next_frame, int64_t current_frame)
 {
 	copy_from(prev);
 }
@@ -101,7 +88,6 @@ void PluginAClientConfig::initialize(PluginServer *server)
 
 	const LADSPA_Descriptor *lad_desc = server->lad_descriptor;
 	const LADSPA_PortDescriptor *port_desc = lad_desc->PortDescriptors;
-	const LADSPA_PortRangeHint *lad_hint = lad_desc->PortRangeHints;
 	int port_count = lad_desc->PortCount;
 	for(int i = 0; i < port_count; i++) {
 		if( !LADSPA_IS_PORT_INPUT(port_desc[i]) ) continue;
@@ -115,15 +101,14 @@ void PluginAClientConfig::initialize(PluginServer *server)
 	for(int port = 0, i = 0; i < port_count; i++) {
 		if( !LADSPA_IS_PORT_INPUT(port_desc[i]) ) continue;
 		if( !LADSPA_IS_PORT_CONTROL(port_desc[i]) ) continue;
+		const LADSPA_PortRangeHint *lad_hint = &lad_desc->PortRangeHints[i];
+		LADSPA_PortRangeHintDescriptor hint_desc = lad_hint->HintDescriptor;
 // Convert LAD default to default value
 		float value = 0.0;
-		LADSPA_PortRangeHintDescriptor hint_desc = lad_hint->HintDescriptor;
 
 // Store type of port for GUI use
 		port_type[port] = PORT_NORMAL;
-		if( LADSPA_IS_HINT_SAMPLE_RATE(hint_desc) /* &&
-		    LADSPA_IS_HINT_BOUNDED_ABOVE(hint_desc) &&
-		    LADSPA_IS_HINT_BOUNDED_BELOW(hint_desc) */ ) // LAD frequency table
+		if( LADSPA_IS_HINT_SAMPLE_RATE(hint_desc) )
 			port_type[port] = PORT_FREQ_INDEX;
 		else if(LADSPA_IS_HINT_TOGGLED(hint_desc))
 			port_type[port] = PORT_TOGGLE;
@@ -138,8 +123,7 @@ void PluginAClientConfig::initialize(PluginServer *server)
 		else if( LADSPA_IS_HINT_DEFAULT_100(hint_desc) )
 			value = 100.0;
 		else if( LADSPA_IS_HINT_DEFAULT_440(hint_desc) )
-			value = port_type[port] == PORT_FREQ_INDEX ?
-				 440.0 / 44100 : 440.0;
+			value = 440.0;
 		else if( LADSPA_IS_HINT_DEFAULT_MAXIMUM(hint_desc) )
 			value = lad_hint->UpperBound;
 		else if( LADSPA_IS_HINT_DEFAULT_MINIMUM(hint_desc) )
@@ -493,7 +477,7 @@ void PluginAClientLAD::read_data(KeyFrame *keyframe)
 	char string[BCTEXTLEN];
 
 	input.set_shared_input(keyframe->get_data(), strlen(keyframe->get_data()));
-	config.initialize(server);
+	if( !config.port_data ) config.initialize(server);
 
 	while(! input.read_tag() ) {
 //printf("PluginAClientLAD::read_data %s\n", input.tag.get_title());
@@ -539,6 +523,10 @@ void PluginAClientLAD::delete_plugin()
 void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 {
 	int need_reconfigure = !lad_instance ? 1 : 0;
+	if( !config.port_data ) {
+		config.initialize(server);
+		need_reconfigure = 1;
+	}
 	if(buffer_allocation && buffer_allocation < size) {
 		delete_buffers();
 		need_reconfigure = 1;

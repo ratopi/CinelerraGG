@@ -337,14 +337,8 @@ int PluginClient::show_gui()
 	thread->start();
 	thread->init_complete->lock("PluginClient::show_gui");
 // Must wait before sending any hide_gui
-	if(thread->window)
-	{
-		thread->window->init_wait();
-	}
-	else
-	{
-		return 1;
-	}
+	if( !thread->window ) return 1;
+	thread->window->init_wait();
 	return 0;
 }
 
