@@ -3313,7 +3313,8 @@ void MWindow::dump_exe(FILE *fp)
 	char mtime[256];
 	strftime(mtime, sizeof(mtime), "%F %T", tm);
 	fprintf(fp,"mtime: %s\n", mtime);
-
+#if 0
+// people hit ctl-c waiting for this
 	int fd = open(proc_path,O_RDONLY+O_NONBLOCK);
 	if( fd < 0 ) { fprintf(fp,"open: %m\n"); return; }
 	uint8_t *bfr = 0;
@@ -3338,6 +3339,7 @@ void MWindow::dump_exe(FILE *fp)
 	for( int i=0; i<20; ++i ) fprintf(fp, "%02x", digest[i]);
 	if( ret < 0 ) fprintf(fp, " (ret %d)", ret);
 	if( pos < st.st_size ) fprintf(fp, " (pos %jd)", pos);
+#endif
 	fprintf(fp, "\n");
 }
 

@@ -160,7 +160,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 
 	PLUGIN_CLASS_MEMBERS(PluginAClientConfig)
-
+	char title[BCSTRLEN];
 
 	static char* lad_to_string(char *string, const char *input);
 	static char* lad_to_upper(char *string, const char *input);

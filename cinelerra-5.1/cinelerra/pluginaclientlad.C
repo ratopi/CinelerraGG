@@ -69,8 +69,13 @@ int PluginAClientConfig::equivalent(PluginAClientConfig &that)
 // Need PluginServer to do this.
 void PluginAClientConfig::copy_from(PluginAClientConfig &that)
 {
-	int n = bmin(total_ports, that.total_ports);
-	for( int i=0; i<n; ++i ) {
+	if( total_ports != that.total_ports ) {
+		delete_objects();
+		total_ports = that.total_ports;
+		port_data = new LADSPA_Data[total_ports];
+		port_type = new int[total_ports];
+	}
+	for( int i=0; i<total_ports; ++i ) {
 		port_type[i] = that.port_type[i];
 		port_data[i] = that.port_data[i];
 	}
@@ -348,6 +353,7 @@ PluginAClientLAD::PluginAClientLAD(PluginServer *server)
 	total_outbuffers = 0;
 	buffer_allocation = 0;
 	lad_instance = 0;
+	snprintf(title, sizeof(title), "L_%s", server->lad_descriptor->Name);
 }
 
 PluginAClientLAD::~PluginAClientLAD()
@@ -400,7 +406,7 @@ int PluginAClientLAD::get_outchannels()
 
 const char* PluginAClientLAD::plugin_title()
 {
-	return (char*)server->lad_descriptor->Name;
+	return title;
 }
 
 int PluginAClientLAD::uses_gui()

@@ -64,15 +64,12 @@ MainErrorGUI::~MainErrorGUI()
 
 void MainErrorGUI::create_objects()
 {
-SET_TRACE
 
 	BC_Button *button;
 	add_subwindow(button = new BC_OKButton(this));
 	int x = 10, y = 10;
-SET_TRACE
 	add_subwindow(title = new BC_Title(x, y, _("The following errors occurred:")));
 	y += title->get_h() + 5;
-SET_TRACE
 	add_subwindow(list = new BC_ListBox(x,
                 y,
                 get_w() - 20,
@@ -87,9 +84,7 @@ SET_TRACE
                 LISTBOX_SINGLE,  // Select one item or multiple items
                 ICON_LEFT,        // Position of icon relative to text of each item
                 0));
-SET_TRACE
 	show_window();
-SET_TRACE
 }
 
 int MainErrorGUI::resize_event(int w, int h)
@@ -149,8 +144,7 @@ void MainError::append_error(const char *string)
 	{
 		char *out_ptr = string2;
 // Indent remaining lines
-		if(!first_line)
-		{
+		if( !first_line ) {
 			*out_ptr++ = ' ';
 			*out_ptr++ = ' ';
 		}
@@ -164,8 +158,7 @@ void MainError::append_error(const char *string)
 
 		errors.append(new BC_ListBoxItem(string2));
 
-		if(*in_ptr == '\n')
-		{
+		if( *in_ptr == '\n' ) {
 			in_ptr++;
 			first_line = 0;
 		}
@@ -174,56 +167,36 @@ void MainError::append_error(const char *string)
 
 void MainError::show_error_local(const char *string)
 {
-SET_TRACE
 // assume user won't get to closing the GUI here
 	lock_window("MainError::show_error_local");
-SET_TRACE
-	if(get_gui())
-	{
-SET_TRACE
+	if( get_gui() ) {
 		MainErrorGUI *gui = (MainErrorGUI*)get_gui();
 		gui->lock_window("MainError::show_error_local");
-SET_TRACE
 		append_error(string);
-SET_TRACE
-		gui->list->update(&errors,
-			0,
-			0,
-			1,
-			gui->list->get_xposition(),
-			gui->list->get_yposition(),
+		gui->list->update(&errors, 0, 0, 1,
+			gui->list->get_xposition(), gui->list->get_yposition(),
 			gui->list->get_highlighted_item(),  // Flat index of item cursor is over
 			0,     // set all autoplace flags to 1
 			1);
-SET_TRACE
+		gui->raise_window(1);
 		gui->unlock_window();
-		unlock_window();
-SET_TRACE
-		start();
-SET_TRACE
 	}
-	else
-	{
-		unlock_window();
-SET_TRACE
+	else {
 		errors.remove_all_objects();
-SET_TRACE
 		append_error(string);
-SET_TRACE
 		start();
-SET_TRACE
 	}
+	unlock_window();
 }
 
 
 void MainError::show_error(const char *string)
 {
-	if(main_error)
+	if( main_error )
 		main_error->show_error_local(string);
-	else
-	{
+	else {
 		printf("%s", string);
-		if(string[strlen(string) - 1] != '\n')
+		if( string[strlen(string) - 1] != '\n' )
 			printf("\n");
 	}
 }
