@@ -49,7 +49,7 @@ void LensConfig::reset()
 	aspect = 1.0;
 	radius = 1.0;
 	mode = SPHERICAL_SHRINK;
-	interp = INTERP_BILINEAR;
+	interp = INTERP_DEFAULT;
 	center_x = 50.0;
 	center_y = 50.0;
 	draw_guides = 0;
@@ -392,6 +392,7 @@ LensInterp::LensInterp(LensMain *plugin, int x, int y)
 
 void LensInterp::create_objects()
 {
+	add_item(new LensInterpItem(_("Default"), LensConfig::INTERP_DEFAULT));
 	add_item(new LensInterpItem(_("Nearest"), LensConfig::INTERP_NEAREST));
 	add_item(new LensInterpItem(_("BiLinear"), LensConfig::INTERP_BILINEAR));
 	add_item(new LensInterpItem(_("BiCubic"), LensConfig::INTERP_BICUBIC));
@@ -714,31 +715,22 @@ int LensMain::process_buffer(VFrame *frame,
 	int64_t start_position,
 	double frame_rate)
 {
-	VFrame *input;
 	load_configuration();
+	int use_opengl = config.interp != LensConfig::INTERP_DEFAULT ? 0 :
+		get_use_opengl();
+	VFrame *input = use_opengl ? frame :
+		new_temp(frame->get_w(), frame->get_h(), frame->get_color_model());
+	read_frame(input, 0, start_position, frame_rate, use_opengl);
 
-	if( get_use_opengl() ) {
-		input = frame;
-	}
-	else {
-		input = new_temp(frame->get_w(), frame->get_h(), frame->get_color_model());
-	}
-
-	read_frame(input,
-		0,
-		start_position,
-		frame_rate,
-		get_use_opengl());
-
-
-	if( get_use_opengl() ) {
+	if( use_opengl ) {
 		run_opengl();
 		return 0;
 	}
-	else {
-		if( !engine ) engine = new LensEngine(this);
-		engine->process_packages();
-		if( config.draw_guides ) {
+
+	if( !engine ) engine = new LensEngine(this);
+	engine->process_packages();
+
+	if( config.draw_guides ) {
 // Draw center
 #define CENTER_H 20
 #define CENTER_W 20
@@ -767,32 +759,29 @@ int LensMain::process_buffer(VFrame *frame,
 	} \
 }
 
-			int w = get_output()->get_w();
-			int h = get_output()->get_h();
-			int center_x = (int)(config.center_x * w / 100);
-			int center_y = (int)(config.center_y * h / 100);
-			switch( get_output()->get_color_model() )
-			{
-				case BC_RGB_FLOAT:
-					DRAW_GUIDES(3, float, 1.0)
-					break;
-				case BC_RGBA_FLOAT:
-					DRAW_GUIDES(4, float, 1.0)
-					break;
-				case BC_RGB888:
-					DRAW_GUIDES(3, unsigned char, 0xff)
-					break;
-				case BC_RGBA8888:
-					DRAW_GUIDES(4, unsigned char, 0xff)
-					break;
-				case BC_YUV888:
-					DRAW_GUIDES(3, unsigned char, 0xff)
-					break;
-				case BC_YUVA8888:
-					DRAW_GUIDES(4, unsigned char, 0xff)
-					break;
-			}
-
+		int w = get_output()->get_w();
+		int h = get_output()->get_h();
+		int center_x = (int)(config.center_x * w / 100);
+		int center_y = (int)(config.center_y * h / 100);
+		switch( get_output()->get_color_model() ) {
+		case BC_RGB_FLOAT:
+			DRAW_GUIDES(3, float, 1.0)
+			break;
+		case BC_RGBA_FLOAT:
+			DRAW_GUIDES(4, float, 1.0)
+			break;
+		case BC_RGB888:
+			DRAW_GUIDES(3, unsigned char, 0xff)
+			break;
+		case BC_RGBA8888:
+			DRAW_GUIDES(4, unsigned char, 0xff)
+			break;
+		case BC_YUV888:
+			DRAW_GUIDES(3, unsigned char, 0xff)
+			break;
+		case BC_YUVA8888:
+			DRAW_GUIDES(4, unsigned char, 0xff)
+			break;
 		}
 	}
 
@@ -1175,6 +1164,7 @@ int LensMain::handle_opengl()
 			break; \
 		} \
 		break; \
+	case LensConfig::INTERP_DEFAULT: \
 	case LensConfig::INTERP_BILINEAR: \
 		switch( icolor_model ) { \
 		case BC_RGB888: \
