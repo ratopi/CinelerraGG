@@ -41,18 +41,13 @@ class LensText;
 class LensSlider : public BC_FSlider
 {
 public:
-	LensSlider(LensMain *client,
-		LensGUI *gui,
-		LensText *text,
-		float *output,
-		int x,
-		int y,
-		float min,
-		float max);
+	LensSlider(LensMain *plugin, LensGUI *gui,
+		LensText *text, float *output, int x, int y,
+		float min, float max);
 	int handle_event();
 
 	LensGUI *gui;
-	LensMain *client;
+	LensMain *plugin;
 	LensText *text;
 	float *output;
 };
@@ -60,16 +55,12 @@ public:
 class LensText : public BC_TextBox
 {
 public:
-	LensText(LensMain *client,
-		LensGUI *gui,
-		LensSlider *slider,
-		float *output,
-		int x,
-		int y);
+	LensText(LensMain *plugin, LensGUI *gui,
+		LensSlider *slider, float *output, int x, int y);
 	int handle_event();
 
 	LensGUI *gui;
-	LensMain *client;
+	LensMain *plugin;
 	LensSlider *slider;
 	float *output;
 };
@@ -78,25 +69,52 @@ public:
 class LensToggle : public BC_CheckBox
 {
 public:
-	LensToggle(LensMain *client,
-		int *output,
-		int x,
-		int y,
+	LensToggle(LensMain *plugin, int *output, int x, int y,
 		const char *text);
 	int handle_event();
 
-	LensMain *client;
+	LensMain *plugin;
 	int *output;
+};
+
+
+class LensInterpItem : public BC_MenuItem
+{
+public:
+	LensInterpItem(const char *text, int id);
+
+	int handle_event();
+	int id;
+};
+
+class LensInterp : public BC_PopupMenu
+{
+public:
+	LensInterp(LensMain *plugin, int x, int y);
+	void create_objects();
+	void set_value(int id);
+	int get_value();
+
+	LensMain *plugin;
+	int value;
+};
+
+
+class LensReset : public BC_GenericButton
+{
+public:
+	LensReset(LensMain *plugin, LensGUI *gui, int x, int y);
+	int handle_event();
+
+	LensMain *plugin;
+	LensGUI *gui;
 };
 
 
 class LensMode : public BC_PopupMenu
 {
 public:
-	LensMode(LensMain *plugin,
-		LensGUI *gui,
-		int x,
-		int y);
+	LensMode(LensMain *plugin, LensGUI *gui, int x, int y);
 	int handle_event();
 	void create_objects();
 	static int calculate_w(LensGUI *gui);
@@ -111,11 +129,7 @@ public:
 class LensPresets : public BC_PopupMenu
 {
 public:
-	LensPresets(LensMain *plugin,
-		LensGUI *gui,
-		int x,
-		int y,
-		int w);
+	LensPresets(LensMain *plugin, LensGUI *gui, int x, int y, int w);
 	int handle_event();
 	void create_objects();
 	int from_text(LensMain *plugin, char *text);
@@ -128,10 +142,7 @@ public:
 class LensSavePreset : public BC_GenericButton
 {
 public:
-	LensSavePreset(LensMain *plugin,
-		LensGUI *gui,
-		int x,
-		int y);
+	LensSavePreset(LensMain *plugin, LensGUI *gui, int x, int y);
 	int handle_event();
 	LensMain *plugin;
 	LensGUI *gui;
@@ -140,10 +151,7 @@ public:
 class LensDeletePreset : public BC_GenericButton
 {
 public:
-	LensDeletePreset(LensMain *plugin,
-		LensGUI *gui,
-		int x,
-		int y);
+	LensDeletePreset(LensMain *plugin, LensGUI *gui, int x, int y);
 	int handle_event();
 	LensMain *plugin;
 	LensGUI *gui;
@@ -152,11 +160,7 @@ public:
 class LensPresetText : public BC_TextBox
 {
 public:
-	LensPresetText(LensMain *plugin,
-		LensGUI *gui,
-		int x,
-		int y,
-		int w);
+	LensPresetText(LensMain *plugin, LensGUI *gui, int x, int y, int w);
 	int handle_event();
 	LensMain *plugin;
 	LensGUI *gui;
@@ -165,12 +169,13 @@ public:
 class LensGUI : public PluginClientWindow
 {
 public:
-	LensGUI(LensMain *client);
+	LensGUI(LensMain *plugin);
 	~LensGUI();
 
 	void create_objects();
+	void update_gui();
 
-	LensMain *client;
+	LensMain *plugin;
 	LensSlider *fov_slider[FOV_CHANNELS];
 	LensText *fov_text[FOV_CHANNELS];
 	LensSlider *aspect_slider;
@@ -182,6 +187,8 @@ public:
 	LensSlider *centery_slider;
 	LensText *centery_text;
 	LensMode *mode;
+	LensInterp *interp;
+	LensReset *reset;
 //	LensPresets *presets;
 //	LensSavePreset *save_preset;
 //	LensDeletePreset *delete_preset;
@@ -194,13 +201,11 @@ class LensConfig
 {
 public:
 	LensConfig();
+	void reset();
 	int equivalent(LensConfig &that);
 	void copy_from(LensConfig &that);
-	void interpolate(LensConfig &prev,
-		LensConfig &next,
-		int64_t prev_frame,
-		int64_t next_frame,
-		int64_t current_frame);
+	void interpolate(LensConfig &prev, LensConfig &next,
+		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 	void boundaries();
 	float fov[FOV_CHANNELS];
 	int lock;
@@ -209,13 +214,17 @@ public:
 	float center_x;
 	float center_y;
 	int draw_guides;
-	int mode;
-	enum
-	{
-		SHRINK,
-		STRETCH,
+	int mode, interp;
+	enum {
+		SPHERICAL_SHRINK,
+		SPHERICAL_STRETCH,
 		RECTILINEAR_SHRINK,
 		RECTILINEAR_STRETCH
+	};
+	enum {
+		INTERP_NEAREST,
+		INTERP_BILINEAR,
+		INTERP_BICUBIC,
 	};
 };
 
@@ -247,8 +256,8 @@ public:
 	LensUnit(LensEngine *engine, LensMain *plugin);
 	~LensUnit();
 	void process_package(LoadPackage *package);
-	void process_stretch(LensPackage *pkg);
-	void process_shrink(LensPackage *pkg);
+	void process_spherical_stretch(LensPackage *pkg);
+	void process_spherical_shrink(LensPackage *pkg);
 	void process_rectilinear_stretch(LensPackage *pkg);
 	void process_rectilinear_shrink(LensPackage *pkg);
 	LensEngine *engine;
@@ -267,6 +276,7 @@ public:
 
 	LensMain *plugin;
 };
+
 
 class LensMain : public PluginVClient
 {

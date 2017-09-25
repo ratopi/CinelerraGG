@@ -25,6 +25,7 @@
 #endif
 
 #include "affine.h"
+#include "interp.h"
 #include "clip.h"
 #include "vframe.h"
 
@@ -429,7 +430,6 @@ void AffineUnit::process_package(LoadPackage *package)
 		float xinc, yinc, winc;
 		AffineMatrix m, im;
 		float ttx = 0, tty = 0;
-		int itx = 0, ity = 0;
 		int tx1 = 0, ty1 = 0, tx2 = 0, ty2 = 0;
 
 		if(reverse) {
@@ -555,172 +555,15 @@ void AffineUnit::process_package(LoadPackage *package)
 //printf("AffineUnit::process_package %d %d %d %d %d\n",
 // __LINE__, min_in_x, max_in_x, min_in_y, max_in_y);
 
-#define CUBIC_ROW(in_row, chroma_offset) ( !in_row ? 0 : transform_cubic(dx, \
-		cp>=min_in_x && cp<max_in_x ? in_row[cp*comps]-chroma_offset : 0, \
-		c0>=min_in_x && c0<max_in_x ? in_row[c0*comps]-chroma_offset : 0, \
-		c1>=min_in_x && c1<max_in_x ? in_row[c1*comps]-chroma_offset : 0, \
-		c2>=min_in_x && c2<max_in_x ? in_row[c2*comps]-chroma_offset : 0) )
-
-
-#define DO_CUBIC(tag, components, type, temp_type, chroma_offset, max) \
+#define DO_INTERP(tag, interp, components, type, temp_type, chroma, max) \
 case tag: { \
     type **inp_rows = (type**)server->input->get_rows(); \
     type **out_rows = (type**)server->output->get_rows(); \
     float round_factor = sizeof(type) < 4 ? 0.5 : 0; \
-    int comps = components; \
+    INTERP_SETUP(inp_rows, max, min_in_x,min_in_y, max_in_x,max_in_y); \
+ \
     for( int y=ty1; y<ty2; ++y ) { \
         type *out_row = (type*)out_rows[y]; \
- \
-        int x1 = tx1, x2 = tx2; \
-        if( x1 < min_out_x ) x1 = min_out_x; \
-        if( x2 > max_out_x ) x2 = max_out_x; \
-        tx = xinc * x1 + m.values[0][1] * (y + pivot_offset_y) + m.values[0][2] \
-            + pivot_offset_x * xinc; \
-        ty = yinc * x1 + m.values[1][1] * (y + pivot_offset_y) + m.values[1][2] \
-            + pivot_offset_x * yinc; \
-        tw = winc * x1 + m.values[2][1] * (y + pivot_offset_y) + m.values[2][2] \
-            + pivot_offset_x * winc; \
-        type *out = out_row + x1 * comps; \
-        for( int x=x1; x<x2; ++x ) { \
-/* Normalize homogeneous coords */ \
-            if( tw == 0.0 ) { ttx = 0.0; tty = 0.0; } \
-            else { ttx = tx / tw; tty = ty / tw; } \
-            itx = (int)ttx;  ity = (int)tty; \
-/* the fractional error */ \
-            float dx = ttx - itx, dy = tty - ity; \
-            if( dx < 0 ) dx += 1; \
-            if( dy < 0 ) dy += 1; \
-/* row/col index */ \
-            int cp = itx-1, c0 = itx+0, c1 = itx+1, c2 = itx+2; \
-            int rp = ity-1, r0 = ity+0, r1 = ity+1, r2 = ity+2; \
-            type *rpp, *r0p, *r1p, *r2p; \
-            rpp = rp>=min_in_y && rp<max_in_y ? inp_rows[rp] : 0; \
-            r0p = r0>=min_in_y && r0<max_in_y ? inp_rows[r0] : 0; \
-            r1p = r1>=min_in_y && r1<max_in_y ? inp_rows[r1] : 0; \
-            r2p = r2>=min_in_y && r2<max_in_y ? inp_rows[r2] : 0; \
-            temp_type r, g, b, a; \
-            r = (temp_type)(transform_cubic(dy, \
-                CUBIC_ROW(rpp, 0x0), CUBIC_ROW(r0p, 0x0), \
-                CUBIC_ROW(r1p, 0x0), CUBIC_ROW(r2p, 0x0)) \
-                + round_factor); \
-            if(rpp) ++rpp;  if(r0p) ++r0p;  if(r1p) ++r1p;  if(r2p) ++r2p; \
-            g = (temp_type)(transform_cubic(dy, \
-                CUBIC_ROW(rpp, chroma_offset), CUBIC_ROW(r0p, chroma_offset), \
-                CUBIC_ROW(r1p, chroma_offset), CUBIC_ROW(r2p, chroma_offset)) \
-                + round_factor) + chroma_offset; \
-            if(rpp) ++rpp;  if(r0p) ++r0p;  if(r1p) ++r1p;  if(r2p) ++r2p; \
-            b = (temp_type)(transform_cubic(dy, \
-                CUBIC_ROW(rpp, chroma_offset), CUBIC_ROW(r0p, chroma_offset), \
-                CUBIC_ROW(r1p, chroma_offset), CUBIC_ROW(r2p, chroma_offset)) \
-                + round_factor) + chroma_offset; \
-            if( components == 4 ) { \
-                if(rpp) ++rpp;  if(r0p) ++r0p;  if(r1p) ++r1p;  if(r2p) ++r2p; \
-                a = (temp_type)(transform_cubic(dy, \
-                    CUBIC_ROW(rpp, 0x0), CUBIC_ROW(r0p, 0x0), \
-                    CUBIC_ROW(r1p, 0x0), CUBIC_ROW(r2p, 0x0)) \
-                    + round_factor); \
-            } \
-            if( sizeof(type) < 4 ) { \
-                *out++ = CLIP(r, 0, max); \
-                *out++ = CLIP(g, 0, max); \
-                *out++ = CLIP(b, 0, max); \
-                if( components == 4 ) *out++ = CLIP(a, 0, max); \
-            } \
-            else { \
-                *out++ = r; \
-                *out++ = g; \
-                *out++ = b; \
-                if( components == 4 ) *out++ = a; \
-            } \
- \
-/*  increment the transformed coordinates  */ \
-            tx += xinc;  ty += yinc;  tw += winc; \
-        } \
-    } \
-} break
-
-#define LINEAR_ROW(in_row, chroma_offset) ( !in_row ? 0 : transform_linear(dx, \
-		c0>=min_in_x && c0<max_in_x ? in_row[c0*comps]-chroma_offset : 0, \
-		c1>=min_in_x && c1<max_in_x ? in_row[c1*comps]-chroma_offset : 0) )
-
-#define DO_LINEAR(tag, components, type, temp_type, chroma_offset, max) \
-case tag: { \
-    type **inp_rows = (type**)server->input->get_rows(); \
-    type **out_rows = (type**)server->output->get_rows(); \
-    int comps = components; \
-    float round_factor = sizeof(type) < 4 ? 0.5 : 0; \
-    for( int y=ty1; y<ty2; ++y ) { \
-        type *out_row = (type*)out_rows[y]; \
- \
-        int x1 = tx1, x2 = tx2; \
-        if( x1 < min_out_x ) x1 = min_out_x; \
-        if( x2 > max_out_x ) x2 = max_out_x; \
-        tx = xinc * x1 + m.values[0][1] * (y + pivot_offset_y) + m.values[0][2] \
-            + pivot_offset_x * xinc; \
-        ty = yinc * x1 + m.values[1][1] * (y + pivot_offset_y) + m.values[1][2] \
-            + pivot_offset_x * yinc; \
-        tw = winc * x1 + m.values[2][1] * (y + pivot_offset_y) + m.values[2][2] \
-            + pivot_offset_x * winc; \
-        type *out = out_row + x1 * comps; \
-        for( int x=x1; x<x2; ++x ) { \
-/* Normalize homogeneous coords */ \
-            if( tw == 0.0 ) { ttx = 0.0; tty = 0.0; } \
-            else { ttx = tx / tw; tty = ty / tw; } \
-            itx = (int)ttx;  ity = (int)tty; \
-/* the fractional error */ \
-            float dx = ttx - itx, dy = tty - ity; \
-            if( dx < 0 ) dx += 1; \
-            if( dy < 0 ) dy += 1; \
-/* row/col index */ \
-            int c0 = itx+0, c1 = itx+1; \
-            int r0 = ity+0, r1 = ity+1; \
-            type *r0p, *r1p; \
-            r0p = r0>=min_in_y && r0<max_in_y ? inp_rows[r0] : 0; \
-            r1p = r1>=min_in_y && r1<max_in_y ? inp_rows[r1] : 0; \
-            temp_type r, g, b, a; \
-            r = (temp_type)(transform_linear(dy, \
-                LINEAR_ROW(r0p, 0x0), LINEAR_ROW(r1p, 0x0)) \
-                + round_factor); \
-            if(r0p) ++r0p;  if(r1p) ++r1p; \
-            g = (temp_type)(transform_linear(dy, \
-                LINEAR_ROW(r0p, chroma_offset), LINEAR_ROW(r1p, chroma_offset)) \
-                + round_factor) + chroma_offset; \
-            if(r0p) ++r0p;  if(r1p) ++r1p; \
-            b = (temp_type)(transform_linear(dy, \
-                LINEAR_ROW(r0p, chroma_offset), LINEAR_ROW(r1p, chroma_offset)) \
-                + round_factor) + chroma_offset; \
-            if( components == 4 ) { \
-                if(r0p) ++r0p;  if(r1p) ++r1p; \
-                a = (temp_type)(transform_linear(dy, \
-                    LINEAR_ROW(r0p, 0x0), LINEAR_ROW(r1p, 0x0)) \
-                    + round_factor); \
-            } \
-            if( sizeof(type) < 4 ) { \
-                *out++ = CLIP(r, 0, max); \
-                *out++ = CLIP(g, 0, max); \
-                *out++ = CLIP(b, 0, max); \
-                if( components == 4 ) *out++ = CLIP(a, 0, max); \
-            } \
-            else { \
-                *out++ = r; \
-                *out++ = g; \
-                *out++ = b; \
-                if( components == 4 ) *out++ = a; \
-            } \
- \
-/*  increment the transformed coordinates  */ \
-            tx += xinc;  ty += yinc;  tw += winc; \
-        } \
-    } \
-} break
-
-#define DO_NEAREST(tag, components, type, temp_type, chroma_offset, max) \
-case tag: { \
-    type **inp_rows = (type**)server->input->get_rows(); \
-    type **out_rows = (type**)server->output->get_rows(); \
-    for( int y=ty1; y<ty2; ++y ) { \
-        type *out_row = (type*)out_rows[y]; \
- \
         int x1 = tx1, x2 = tx2; \
         if( x1 < min_out_x ) x1 = min_out_x; \
         if( x2 > max_out_x ) x2 = max_out_x; \
@@ -731,25 +574,21 @@ case tag: { \
         tw = winc * x1 + m.values[2][1] * (y + pivot_offset_y) + m.values[2][2] \
             + pivot_offset_x * winc; \
         type *out = out_row + x1 * components; \
+ \
         for( int x=x1; x<x2; ++x ) { \
 /* Normalize homogeneous coords */ \
             if( tw == 0.0 ) { ttx = 0.0; tty = 0.0; } \
             else { ttx = tx / tw; tty = ty / tw; } \
-            itx = (int)ttx;  ity = (int)tty; \
-/* row/col index */ \
-            type *rp = ity>=min_in_y && ity<max_in_y ? inp_rows[ity] : 0; \
-            temp_type r, g, b, a; \
-            r = (temp_type)( rp && itx>=min_in_x && itx<max_in_x ? rp[itx*components] : 0 ); \
-            if(rp) ++rp; \
-            g = (temp_type)( rp && itx>=min_in_x && itx<max_in_x ? rp[itx*components] : 0 ); \
-            if(rp) ++rp; \
-            b = (temp_type)( rp && itx>=min_in_x && itx<max_in_x ? rp[itx*components] : 0 ); \
+            interp##_SETUP(type, components, ttx, tty); \
+            *out++ = ((temp_type)interp##_interp(0, 0) + round_factor); \
+            interp##_next(); \
+            *out++ = ((temp_type)interp##_interp(chroma, chroma) + round_factor); \
+            interp##_next(); \
+            *out++ = ((temp_type)interp##_interp(chroma, chroma) + round_factor); \
             if( components == 4 ) { \
-                if(rp) ++rp; \
-                a = (temp_type)( rp && itx>=min_in_x && itx<max_in_x ? rp[itx*components] : 0 ); \
+                interp##_next(); \
+                *out++ = ((temp_type)interp##_interp(0, 0) + round_factor); \
             } \
-            *out++ = r;  *out++ = g;  *out++ = b; \
-            if( components == 4 ) *out++ = a; \
  \
 /*  increment the transformed coordinates  */ \
             tx += xinc;  ty += yinc;  tw += winc; \
@@ -763,45 +602,45 @@ case tag: { \
 		switch( server->interpolation ) {
 		case AffineEngine::AF_NEAREST:
 			switch( server->input->get_color_model() ) {
-			DO_NEAREST( BC_RGB_FLOAT, 3, float, float, 0x0, 1.0);
-			DO_NEAREST( BC_RGB888, 3, unsigned char, int, 0x0, 0xff);
-			DO_NEAREST( BC_RGBA_FLOAT, 4, float, float, 0x0, 1.0);
-			DO_NEAREST( BC_RGBA8888, 4, unsigned char, int, 0x0, 0xff);
-			DO_NEAREST( BC_YUV888, 3, unsigned char, int, 0x80, 0xff);
-			DO_NEAREST( BC_YUVA8888, 4, unsigned char, int, 0x80, 0xff);
-			DO_NEAREST( BC_RGB161616, 3, uint16_t, int, 0x0, 0xffff);
-			DO_NEAREST( BC_RGBA16161616, 4, uint16_t, int, 0x0, 0xffff);
-			DO_NEAREST( BC_YUV161616, 3, uint16_t, int, 0x8000, 0xffff);
-			DO_NEAREST( BC_YUVA16161616, 4, uint16_t, int, 0x8000, 0xffff);
+			DO_INTERP( BC_RGB_FLOAT, nearest, 3, float, float, 0x0, 1.0);
+			DO_INTERP( BC_RGB888, nearest, 3, unsigned char, int, 0x0, 0xff);
+			DO_INTERP( BC_RGBA_FLOAT, nearest, 4, float, float, 0x0, 1.0);
+			DO_INTERP( BC_RGBA8888, nearest, 4, unsigned char, int, 0x0, 0xff);
+			DO_INTERP( BC_YUV888, nearest, 3, unsigned char, int, 0x80, 0xff);
+			DO_INTERP( BC_YUVA8888, nearest, 4, unsigned char, int, 0x80, 0xff);
+			DO_INTERP( BC_RGB161616, nearest, 3, uint16_t, int, 0x0, 0xffff);
+			DO_INTERP( BC_RGBA16161616, nearest, 4, uint16_t, int, 0x0, 0xffff);
+			DO_INTERP( BC_YUV161616, nearest, 3, uint16_t, int, 0x8000, 0xffff);
+			DO_INTERP( BC_YUVA16161616, nearest, 4, uint16_t, int, 0x8000, 0xffff);
 			}
 			break;
 		case AffineEngine::AF_LINEAR:
 			switch( server->input->get_color_model() ) {
-			DO_LINEAR( BC_RGB_FLOAT, 3, float, float, 0x0, 1.0);
-			DO_LINEAR( BC_RGB888, 3, unsigned char, int, 0x0, 0xff);
-			DO_LINEAR( BC_RGBA_FLOAT, 4, float, float, 0x0, 1.0);
-			DO_LINEAR( BC_RGBA8888, 4, unsigned char, int, 0x0, 0xff);
-			DO_LINEAR( BC_YUV888, 3, unsigned char, int, 0x80, 0xff);
-			DO_LINEAR( BC_YUVA8888, 4, unsigned char, int, 0x80, 0xff);
-			DO_LINEAR( BC_RGB161616, 3, uint16_t, int, 0x0, 0xffff);
-			DO_LINEAR( BC_RGBA16161616, 4, uint16_t, int, 0x0, 0xffff);
-			DO_LINEAR( BC_YUV161616, 3, uint16_t, int, 0x8000, 0xffff);
-			DO_LINEAR( BC_YUVA16161616, 4, uint16_t, int, 0x8000, 0xffff);
+			DO_INTERP( BC_RGB_FLOAT, bi_linear, 3, float, float, 0x0, 1.0);
+			DO_INTERP( BC_RGB888, bi_linear, 3, unsigned char, int, 0x0, 0xff);
+			DO_INTERP( BC_RGBA_FLOAT, bi_linear, 4, float, float, 0x0, 1.0);
+			DO_INTERP( BC_RGBA8888, bi_linear, 4, unsigned char, int, 0x0, 0xff);
+			DO_INTERP( BC_YUV888, bi_linear, 3, unsigned char, int, 0x80, 0xff);
+			DO_INTERP( BC_YUVA8888, bi_linear, 4, unsigned char, int, 0x80, 0xff);
+			DO_INTERP( BC_RGB161616, bi_linear, 3, uint16_t, int, 0x0, 0xffff);
+			DO_INTERP( BC_RGBA16161616, bi_linear, 4, uint16_t, int, 0x0, 0xffff);
+			DO_INTERP( BC_YUV161616, bi_linear, 3, uint16_t, int, 0x8000, 0xffff);
+			DO_INTERP( BC_YUVA16161616, bi_linear, 4, uint16_t, int, 0x8000, 0xffff);
 			}
 			break;
 		default:
 		case AffineEngine::AF_CUBIC:
 			switch( server->input->get_color_model() ) {
-			DO_CUBIC( BC_RGB_FLOAT, 3, float, float, 0x0, 1.0);
-			DO_CUBIC( BC_RGB888, 3, unsigned char, int, 0x0, 0xff);
-			DO_CUBIC( BC_RGBA_FLOAT, 4, float, float, 0x0, 1.0);
-			DO_CUBIC( BC_RGBA8888, 4, unsigned char, int, 0x0, 0xff);
-			DO_CUBIC( BC_YUV888, 3, unsigned char, int, 0x80, 0xff);
-			DO_CUBIC( BC_YUVA8888, 4, unsigned char, int, 0x80, 0xff);
-			DO_CUBIC( BC_RGB161616, 3, uint16_t, int, 0x0, 0xffff);
-			DO_CUBIC( BC_RGBA16161616, 4, uint16_t, int, 0x0, 0xffff);
-			DO_CUBIC( BC_YUV161616, 3, uint16_t, int, 0x8000, 0xffff);
-			DO_CUBIC( BC_YUVA16161616, 4, uint16_t, int, 0x8000, 0xffff);
+			DO_INTERP( BC_RGB_FLOAT, bi_cubic, 3, float, float, 0x0, 1.0);
+			DO_INTERP( BC_RGB888, bi_cubic, 3, unsigned char, int, 0x0, 0xff);
+			DO_INTERP( BC_RGBA_FLOAT, bi_cubic, 4, float, float, 0x0, 1.0);
+			DO_INTERP( BC_RGBA8888, bi_cubic, 4, unsigned char, int, 0x0, 0xff);
+			DO_INTERP( BC_YUV888, bi_cubic, 3, unsigned char, int, 0x80, 0xff);
+			DO_INTERP( BC_YUVA8888, bi_cubic, 4, unsigned char, int, 0x80, 0xff);
+			DO_INTERP( BC_RGB161616, bi_cubic, 3, uint16_t, int, 0x0, 0xffff);
+			DO_INTERP( BC_RGBA16161616, bi_cubic, 4, uint16_t, int, 0x0, 0xffff);
+			DO_INTERP( BC_YUV161616, bi_cubic, 3, uint16_t, int, 0x8000, 0xffff);
+			DO_INTERP( BC_YUVA16161616, bi_cubic, 4, uint16_t, int, 0x8000, 0xffff);
 			}
 			break;
 		}
