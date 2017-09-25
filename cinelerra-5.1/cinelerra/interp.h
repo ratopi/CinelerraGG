@@ -33,7 +33,7 @@ static inline float in_clip(float mx, float ofs, float v)
 
 static inline float interp_linear(float dx, float p1, float p2)
 {
-        return p1 * (1-dx) + p2 * dx;
+	return p1 * (1-dx) + p2 * dx;
 }
 
 static inline float interp_cubic(float dx, float p0, float p1, float p2, float p3)
@@ -65,7 +65,7 @@ static inline float interp_cubic(float dx, float p0, float p1, float p2, float p
 
 #define bi_linear_SETUP(typ, components, tx, ty) \
 	float dx = (tx)-0.5, dy = (ty)-0.5; \
-	int itx = (tx), ity = (ty), in_comps = (components); \
+	int itx = dx, ity = dy, in_comps = (components); \
 	if( (dx -= itx) < 0 ) dx += 1; \
 	if( (dy -= ity) < 0 ) dy += 1; \
 	int c0 = itx+0, c1 = itx+1, r0 = ity+0, r1 = ity+1; \
