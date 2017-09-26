@@ -22,51 +22,51 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "language.h"
-#include "findobject.h"
-#include "findobjectwindow.h"
+#include "findobj.h"
+#include "findobjwindow.h"
 #include "theme.h"
 
 
-FindObjectWindow::FindObjectWindow(FindObjectMain *plugin)
+FindObjWindow::FindObjWindow(FindObjMain *plugin)
  : PluginClientWindow(plugin, 340, 660, 340, 660, 0)
 {
 	this->plugin = plugin;
 }
 
-FindObjectWindow::~FindObjectWindow()
+FindObjWindow::~FindObjWindow()
 {
 }
 
-void FindObjectWindow::create_objects()
+void FindObjWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = x, x2 = get_w()/2;
 	plugin->load_configuration();
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x1, y, _("Algorithm:")));
-	add_subwindow(algorithm = new FindObjectAlgorithm(plugin, this,
+	add_subwindow(algorithm = new FindObjAlgorithm(plugin, this,
 		x1 + title->get_w() + 10, y));
 	algorithm->create_objects();
 	y += algorithm->get_h() + plugin->get_theme()->widget_border;
 
-	add_subwindow(use_flann = new FindObjectUseFlann(plugin, this, x, y));
+	add_subwindow(use_flann = new FindObjUseFlann(plugin, this, x, y));
 	y += use_flann->get_h() + plugin->get_theme()->widget_border + 20;
 
 	int x0 = x + 200;
 	add_subwindow(title = new BC_Title(x, y, _("Output/scene layer:")));
-	scene_layer = new FindObjectLayer(plugin, this, x0, y,
+	scene_layer = new FindObjLayer(plugin, this, x0, y,
 		&plugin->config.scene_layer);
 	scene_layer->create_objects();
 	y += scene_layer->get_h() + plugin->get_theme()->widget_border;
 
 	add_subwindow(title = new BC_Title(x, y, _("Object layer:")));
-	object_layer = new FindObjectLayer(plugin, this, x0, y,
+	object_layer = new FindObjLayer(plugin, this, x0, y,
 		&plugin->config.object_layer);
 	object_layer->create_objects();
 	y += object_layer->get_h() + plugin->get_theme()->widget_border;
 
 	add_subwindow(title = new BC_Title(x, y, _("Replacement object layer:")));
-	replace_layer = new FindObjectLayer(plugin, this, x0, y,
+	replace_layer = new FindObjLayer(plugin, this, x0, y,
 		&plugin->config.replace_layer);
 	replace_layer->create_objects();
 	y += replace_layer->get_h() + plugin->get_theme()->widget_border + 10;
@@ -77,9 +77,9 @@ void FindObjectWindow::create_objects()
 	int y1 = y;
 	add_subwindow(new BC_Title(x1, y + 10, _("Scene X:")));
 	y += title->get_h() + 15;
-	add_subwindow(scene_x = new FindObjectScanFloat(plugin, this,
+	add_subwindow(scene_x = new FindObjScanFloat(plugin, this,
 		x1, y, &plugin->config.scene_x));
-	add_subwindow(scene_x_text = new FindObjectScanFloatText(plugin, this,
+	add_subwindow(scene_x_text = new FindObjScanFloatText(plugin, this,
 		x1 + scene_x->get_w() + 10, y + 10, &plugin->config.scene_x));
 	scene_x->center_text = scene_x_text;
 	scene_x_text->center = scene_x;
@@ -87,9 +87,9 @@ void FindObjectWindow::create_objects()
 	y += 40;
 	add_subwindow(title = new BC_Title(x1, y + 10, _("Scene Y:")));
 	y += title->get_h() + 15;
-	add_subwindow(scene_y = new FindObjectScanFloat(plugin, this,
+	add_subwindow(scene_y = new FindObjScanFloat(plugin, this,
 		x1, y, &plugin->config.scene_y));
-	add_subwindow(scene_y_text = new FindObjectScanFloatText(plugin, this,
+	add_subwindow(scene_y_text = new FindObjScanFloatText(plugin, this,
 		x1 + scene_y->get_w() + 10, y + 10, &plugin->config.scene_y));
 	scene_y->center_text = scene_y_text;
 	scene_y_text->center = scene_y;
@@ -97,9 +97,9 @@ void FindObjectWindow::create_objects()
 	y += 40;
 	add_subwindow(new BC_Title(x1, y + 10, _("Scene W:")));
 	y += title->get_h() + 15;
-	add_subwindow(scene_w = new FindObjectScanFloat(plugin, this,
+	add_subwindow(scene_w = new FindObjScanFloat(plugin, this,
 		x1, y, &plugin->config.scene_w));
-	add_subwindow(scene_w_text = new FindObjectScanFloatText(plugin, this,
+	add_subwindow(scene_w_text = new FindObjScanFloatText(plugin, this,
 		x1 + scene_w->get_w() + 10, y + 10, &plugin->config.scene_w));
 	scene_w->center_text = scene_w_text;
 	scene_w_text->center = scene_w;
@@ -107,9 +107,9 @@ void FindObjectWindow::create_objects()
 	y += 40;
 	add_subwindow(title = new BC_Title(x1, y + 10, _("Scene H:")));
 	y += title->get_h() + 15;
-	add_subwindow(scene_h = new FindObjectScanFloat(plugin, this,
+	add_subwindow(scene_h = new FindObjScanFloat(plugin, this,
 		x1, y, &plugin->config.scene_h));
-	add_subwindow(scene_h_text = new FindObjectScanFloatText(plugin, this,
+	add_subwindow(scene_h_text = new FindObjScanFloatText(plugin, this,
 		x1 + scene_h->get_w() + 10, y + 10,
 		&plugin->config.scene_h));
 	scene_h->center_text = scene_h_text;
@@ -118,9 +118,9 @@ void FindObjectWindow::create_objects()
 	y = y1;
 	add_subwindow(new BC_Title(x2, y + 10, _("Object X:")));
 	y += title->get_h() + 15;
-	add_subwindow(object_x = new FindObjectScanFloat(plugin, this,
+	add_subwindow(object_x = new FindObjScanFloat(plugin, this,
 		x2, y, &plugin->config.object_x));
-	add_subwindow(object_x_text = new FindObjectScanFloatText(plugin, this,
+	add_subwindow(object_x_text = new FindObjScanFloatText(plugin, this,
 		x2 + object_x->get_w() + 10, y + 10, &plugin->config.object_x));
 	object_x->center_text = object_x_text;
 	object_x_text->center = object_x;
@@ -128,9 +128,9 @@ void FindObjectWindow::create_objects()
 	y += 40;
 	add_subwindow(title = new BC_Title(x2, y + 10, _("Object Y:")));
 	y += title->get_h() + 15;
-	add_subwindow(object_y = new FindObjectScanFloat(plugin, this,
+	add_subwindow(object_y = new FindObjScanFloat(plugin, this,
 		x2, y, &plugin->config.object_y));
-	add_subwindow(object_y_text = new FindObjectScanFloatText(plugin, this,
+	add_subwindow(object_y_text = new FindObjScanFloatText(plugin, this,
 		x2 + object_y->get_w() + 10, y + 10, &plugin->config.object_y));
 	object_y->center_text = object_y_text;
 	object_y_text->center = object_y;
@@ -138,9 +138,9 @@ void FindObjectWindow::create_objects()
 	y += 40;
 	add_subwindow(new BC_Title(x2, y + 10, _("Object W:")));
 	y += title->get_h() + 15;
-	add_subwindow(object_w = new FindObjectScanFloat(plugin, this,
+	add_subwindow(object_w = new FindObjScanFloat(plugin, this,
 		x2, y, &plugin->config.object_w));
-	add_subwindow(object_w_text = new FindObjectScanFloatText(plugin, this,
+	add_subwindow(object_w_text = new FindObjScanFloatText(plugin, this,
 		x2 + object_w->get_w() + 10, y + 10, &plugin->config.object_w));
 	object_w->center_text = object_w_text;
 	object_w_text->center = object_w;
@@ -148,26 +148,26 @@ void FindObjectWindow::create_objects()
 	y += 40;
 	add_subwindow(title = new BC_Title(x2, y + 10, _("Object H:")));
 	y += title->get_h() + 15;
-	add_subwindow(object_h = new FindObjectScanFloat(plugin, this,
+	add_subwindow(object_h = new FindObjScanFloat(plugin, this,
 		x2, y, &plugin->config.object_h));
-	add_subwindow(object_h_text = new FindObjectScanFloatText(plugin, this,
+	add_subwindow(object_h_text = new FindObjScanFloatText(plugin, this,
 		x2 + object_h->get_w() + 10, y + 10,
 		&plugin->config.object_h));
 	object_h->center_text = object_h_text;
 	object_h_text->center = object_h;
 
 	y += 40 + 15;
-	add_subwindow(draw_keypoints = new FindObjectDrawKeypoints(plugin, this, x, y));
+	add_subwindow(draw_keypoints = new FindObjDrawKeypoints(plugin, this, x, y));
 	y += draw_keypoints->get_h() + plugin->get_theme()->widget_border;
-	add_subwindow(draw_border = new FindObjectDrawBorder(plugin, this, x, y));
+	add_subwindow(draw_border = new FindObjDrawBorder(plugin, this, x, y));
 	y += draw_border->get_h() + plugin->get_theme()->widget_border;
-	add_subwindow(replace_object = new FindObjectReplace(plugin, this, x, y));
+	add_subwindow(replace_object = new FindObjReplace(plugin, this, x, y));
 	y += replace_object->get_h() + plugin->get_theme()->widget_border;
-	add_subwindow(draw_object_border = new FindObjectDrawObjectBorder(plugin, this, x, y));
+	add_subwindow(draw_object_border = new FindObjDrawObjectBorder(plugin, this, x, y));
 	y += draw_object_border->get_h() + plugin->get_theme()->widget_border;
 
 	add_subwindow(title = new BC_Title(x, y + 10, _("Object blend amount:")));
-	add_subwindow(blend = new FindObjectBlend(plugin,
+	add_subwindow(blend = new FindObjBlend(plugin,
 		x + title->get_w() + plugin->get_theme()->widget_border, y,
 		&plugin->config.blend));
 	y += blend->get_h();
@@ -176,7 +176,7 @@ void FindObjectWindow::create_objects()
 }
 
 
-FindObjectScanFloat::FindObjectScanFloat(FindObjectMain *plugin, FindObjectWindow *gui,
+FindObjScanFloat::FindObjScanFloat(FindObjMain *plugin, FindObjWindow *gui,
 	int x, int y, float *value)
  : BC_FPot(x, y, *value, (float)0, (float)100)
 {
@@ -187,7 +187,7 @@ FindObjectScanFloat::FindObjectScanFloat(FindObjectMain *plugin, FindObjectWindo
 	set_precision(0.1);
 }
 
-int FindObjectScanFloat::handle_event()
+int FindObjScanFloat::handle_event()
 {
 	*value = get_value();
 	center_text->update(*value);
@@ -196,7 +196,7 @@ int FindObjectScanFloat::handle_event()
 }
 
 
-FindObjectScanFloatText::FindObjectScanFloatText(FindObjectMain *plugin, FindObjectWindow *gui,
+FindObjScanFloatText::FindObjScanFloatText(FindObjMain *plugin, FindObjWindow *gui,
 	int x, int y, float *value)
  : BC_TextBox(x, y, 75, 1, *value)
 {
@@ -207,7 +207,7 @@ FindObjectScanFloatText::FindObjectScanFloatText(FindObjectMain *plugin, FindObj
 	set_precision(1);
 }
 
-int FindObjectScanFloatText::handle_event()
+int FindObjScanFloatText::handle_event()
 {
 	*value = atof(get_text());
 	center->update(*value);
@@ -216,7 +216,7 @@ int FindObjectScanFloatText::handle_event()
 }
 
 
-FindObjectDrawBorder::FindObjectDrawBorder(FindObjectMain *plugin, FindObjectWindow *gui,
+FindObjDrawBorder::FindObjDrawBorder(FindObjMain *plugin, FindObjWindow *gui,
 	int x, int y)
  : BC_CheckBox(x, y, plugin->config.draw_border, _("Draw border"))
 {
@@ -224,7 +224,7 @@ FindObjectDrawBorder::FindObjectDrawBorder(FindObjectMain *plugin, FindObjectWin
 	this->plugin = plugin;
 }
 
-int FindObjectDrawBorder::handle_event()
+int FindObjDrawBorder::handle_event()
 {
 	plugin->config.draw_border = get_value();
 	plugin->send_configure_change();
@@ -232,7 +232,7 @@ int FindObjectDrawBorder::handle_event()
 }
 
 
-FindObjectDrawKeypoints::FindObjectDrawKeypoints(FindObjectMain *plugin, FindObjectWindow *gui,
+FindObjDrawKeypoints::FindObjDrawKeypoints(FindObjMain *plugin, FindObjWindow *gui,
 	int x, int y)
  : BC_CheckBox(x, y, plugin->config.draw_keypoints, _("Draw keypoints"))
 {
@@ -240,7 +240,7 @@ FindObjectDrawKeypoints::FindObjectDrawKeypoints(FindObjectMain *plugin, FindObj
 	this->plugin = plugin;
 }
 
-int FindObjectDrawKeypoints::handle_event()
+int FindObjDrawKeypoints::handle_event()
 {
 	plugin->config.draw_keypoints = get_value();
 	plugin->send_configure_change();
@@ -248,7 +248,7 @@ int FindObjectDrawKeypoints::handle_event()
 }
 
 
-FindObjectReplace::FindObjectReplace(FindObjectMain *plugin, FindObjectWindow *gui,
+FindObjReplace::FindObjReplace(FindObjMain *plugin, FindObjWindow *gui,
 	int x, int y)
  : BC_CheckBox(x, y, plugin->config.replace_object, _("Replace object"))
 {
@@ -256,7 +256,7 @@ FindObjectReplace::FindObjectReplace(FindObjectMain *plugin, FindObjectWindow *g
 	this->plugin = plugin;
 }
 
-int FindObjectReplace::handle_event()
+int FindObjReplace::handle_event()
 {
 	plugin->config.replace_object = get_value();
 	plugin->send_configure_change();
@@ -264,7 +264,7 @@ int FindObjectReplace::handle_event()
 }
 
 
-FindObjectDrawObjectBorder::FindObjectDrawObjectBorder(FindObjectMain *plugin, FindObjectWindow *gui,
+FindObjDrawObjectBorder::FindObjDrawObjectBorder(FindObjMain *plugin, FindObjWindow *gui,
 	int x, int y)
  : BC_CheckBox(x, y, plugin->config.draw_object_border, _("Draw object border"))
 {
@@ -272,7 +272,7 @@ FindObjectDrawObjectBorder::FindObjectDrawObjectBorder(FindObjectMain *plugin, F
 	this->plugin = plugin;
 }
 
-int FindObjectDrawObjectBorder::handle_event()
+int FindObjDrawObjectBorder::handle_event()
 {
 	plugin->config.draw_object_border = get_value();
 	plugin->send_configure_change();
@@ -280,21 +280,21 @@ int FindObjectDrawObjectBorder::handle_event()
 }
 
 
-FindObjectAlgorithm::FindObjectAlgorithm(FindObjectMain *plugin, FindObjectWindow *gui, int x, int y)
+FindObjAlgorithm::FindObjAlgorithm(FindObjMain *plugin, FindObjWindow *gui, int x, int y)
  : BC_PopupMenu(x, y, calculate_w(gui), to_text(plugin->config.algorithm))
 {
 	this->plugin = plugin;
 	this->gui = gui;
 }
 
-int FindObjectAlgorithm::handle_event()
+int FindObjAlgorithm::handle_event()
 {
 	plugin->config.algorithm = from_text(get_text());
 	plugin->send_configure_change();
 	return 1;
 }
 
-void FindObjectAlgorithm::create_objects()
+void FindObjAlgorithm::create_objects()
 {
 	add_item(new BC_MenuItem(to_text(NO_ALGORITHM)));
 #ifdef _SIFT
@@ -314,7 +314,7 @@ void FindObjectAlgorithm::create_objects()
 #endif
 }
 
-int FindObjectAlgorithm::from_text(char *text)
+int FindObjAlgorithm::from_text(char *text)
 {
 #ifdef _SIFT
 	if(!strcmp(text, _("SIFT"))) return ALGORITHM_SIFT;
@@ -334,7 +334,7 @@ int FindObjectAlgorithm::from_text(char *text)
 	return NO_ALGORITHM;
 }
 
-char* FindObjectAlgorithm::to_text(int mode)
+char* FindObjAlgorithm::to_text(int mode)
 {
 	switch( mode ) {
 #ifdef _SIFT
@@ -356,7 +356,7 @@ char* FindObjectAlgorithm::to_text(int mode)
 	return _("Don't Calculate");
 }
 
-int FindObjectAlgorithm::calculate_w(FindObjectWindow *gui)
+int FindObjAlgorithm::calculate_w(FindObjWindow *gui)
 {
 	int result = 0;
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(NO_ALGORITHM)));
@@ -379,7 +379,7 @@ int FindObjectAlgorithm::calculate_w(FindObjectWindow *gui)
 }
 
 
-FindObjectUseFlann::FindObjectUseFlann(FindObjectMain *plugin, FindObjectWindow *gui,
+FindObjUseFlann::FindObjUseFlann(FindObjMain *plugin, FindObjWindow *gui,
 	int x, int y)
  : BC_CheckBox(x, y, plugin->config.use_flann, _("Use FLANN"))
 {
@@ -387,7 +387,7 @@ FindObjectUseFlann::FindObjectUseFlann(FindObjectMain *plugin, FindObjectWindow 
 	this->plugin = plugin;
 }
 
-int FindObjectUseFlann::handle_event()
+int FindObjUseFlann::handle_event()
 {
 	plugin->config.use_flann = get_value();
 	plugin->send_configure_change();
@@ -395,7 +395,7 @@ int FindObjectUseFlann::handle_event()
 }
 
 
-FindObjectLayer::FindObjectLayer(FindObjectMain *plugin, FindObjectWindow *gui,
+FindObjLayer::FindObjLayer(FindObjMain *plugin, FindObjWindow *gui,
 	int x, int y, int *value)
  : BC_TumbleTextBox(gui, *value, MIN_LAYER, MAX_LAYER, x, y, calculate_w(gui))
 {
@@ -404,14 +404,14 @@ FindObjectLayer::FindObjectLayer(FindObjectMain *plugin, FindObjectWindow *gui,
 	this->value = value;
 }
 
-int FindObjectLayer::handle_event()
+int FindObjLayer::handle_event()
 {
 	*value = atoi(get_text());
 	plugin->send_configure_change();
 	return 1;
 }
 
-int FindObjectLayer::calculate_w(FindObjectWindow *gui)
+int FindObjLayer::calculate_w(FindObjWindow *gui)
 {
 	int result = 0;
 	result = gui->get_text_width(MEDIUMFONT, "000");
@@ -419,7 +419,7 @@ int FindObjectLayer::calculate_w(FindObjectWindow *gui)
 }
 
 
-FindObjectBlend::FindObjectBlend(FindObjectMain *plugin,
+FindObjBlend::FindObjBlend(FindObjMain *plugin,
 	int x,
 	int y,
 	int *value)
@@ -433,7 +433,7 @@ FindObjectBlend::FindObjectBlend(FindObjectMain *plugin,
 	this->value = value;
 }
 
-int FindObjectBlend::handle_event()
+int FindObjBlend::handle_event()
 {
 	*value = (int)get_value();
 	plugin->send_configure_change();

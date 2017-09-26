@@ -520,8 +520,8 @@ CHECK_WANT([DL], [auto], [system has libdl], [
  CHECK_LIB([DL], [dl], [dlopen])])
 
 CHECK_WANT([EXR], [auto], [use exr], [])
-CHECK_WANT([FINDOBJECT], [no], [findobject=sys/sta/dyn], [
- WANT_FINDOBJECT="$withval"
+CHECK_WANT([OPENCV], [no], [opencv=sys/sta/dyn,git/tar=url], [
+ WANT_OPENCV="$withval"
 ])
 
 CHECK_WANT([NUMA], [auto], [system has libnuma], [
@@ -683,7 +683,7 @@ echo "  using: with-config-dir = $WANT_CONFIG_DIR"
 echo "  using: with-browser = $WANT_CIN_BROWSER"
 echo "  using: with-plugin-dir = $WANT_PLUGIN_DIR"
 echo "  using: with-ladspa-dir = $WANT_LADSPA_DIR"
-echo "  using: with-findobject = $WANT_FINDOBJECT"
+echo "  using: with-opencv = $WANT_OPENCV"
 echo ""
 echo "  using: single-user  = $WANT_CINBIN_BUILD"
 echo "  using: static-build = $WANT_STATIC_BUILD"

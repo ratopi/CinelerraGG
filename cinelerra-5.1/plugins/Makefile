@@ -4,8 +4,11 @@ include $(TOPDIR)/global_config
 ifeq ($(WANT_DVB), yes)
 LIVEDVB = liveaudio livevideo
 endif
-ifneq ($(WANT_FINDOBJECT), no)
-FINDOBJECT = findobject
+ifneq ($(WANT_OPENCV), no)
+want_var:=$(WANT_OPENCV)
+include $(TOPDIR)/opencv_build
+OPENCV_OBJS := findobj flowobj gaborobj moveobj
+$(OPENCV_OBJS): opencv
 endif
 
 # burn must come before any other effecttv plugin
@@ -13,7 +16,7 @@ endif
 # parametric must come before fourier plugins
 # motion must come before perspective
 
-DIRS = \
+DIRS = $(OPENCV_OBJS) \
 	1080to480 \
 	1080to540 \
 	720to480 \
@@ -54,7 +57,6 @@ DIRS = \
 	echo \
 	echocancel \
 	fieldframe \
-	$(FINDOBJECT) \
 	flash \
 	flip \
 	framefield \

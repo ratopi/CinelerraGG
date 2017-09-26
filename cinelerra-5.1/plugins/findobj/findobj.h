@@ -26,8 +26,8 @@
 
 
 
-#ifndef FINDOBJECT_H
-#define FINDOBJECT_H
+#ifndef FINDOBJ_H
+#define FINDOBJ_H
 
 //#include "config.h"
 
@@ -40,7 +40,7 @@
 #include "bchash.inc"
 #include "filexml.inc"
 #include "keyframe.inc"
-#include "findobject.inc"
+#include "findobj.inc"
 #include "overlayframe.inc"
 #include "pluginvclient.h"
 #include "vframe.inc"
@@ -88,14 +88,14 @@ using namespace cvflann;
 #define ALGORITHM_AKAZE 4
 #define ALGORITHM_BRISK 5
 
-class FindObjectConfig
+class FindObjConfig
 {
 public:
-	FindObjectConfig();
+	FindObjConfig();
 
-	int equivalent(FindObjectConfig &that);
-	void copy_from(FindObjectConfig &that);
-	void interpolate(FindObjectConfig &prev, FindObjectConfig &next,
+	int equivalent(FindObjConfig &that);
+	void copy_from(FindObjConfig &that);
+	void interpolate(FindObjConfig &prev, FindObjConfig &next,
 		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 	void boundaries();
 
@@ -114,11 +114,11 @@ public:
 	int blend;
 };
 
-class FindObjectMain : public PluginVClient
+class FindObjMain : public PluginVClient
 {
 public:
-	FindObjectMain(PluginServer *server);
-	~FindObjectMain();
+	FindObjMain(PluginServer *server);
+	~FindObjMain();
 
 	int process_buffer(VFrame **frame, int64_t start_position, double frame_rate);
 #ifdef _SIFT
@@ -145,7 +145,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 
-	PLUGIN_CLASS_MEMBERS2(FindObjectConfig)
+	PLUGIN_CLASS_MEMBERS2(FindObjConfig)
 
 	AffineEngine *affine;
 	OverlayFrame *overlayer;

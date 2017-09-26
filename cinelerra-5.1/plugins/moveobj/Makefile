@@ -9,7 +9,7 @@ OBJS := \
 	$(OBJDIR)/moveobj.o \
 	$(OBJDIR)/moveobjwindow.o \
 
-want_var:=$(WANT_FINDOBJECT)
+want_var:=$(WANT_OPENCV)
 include $(TOPDIR)/opencv_build
 include $(TOPDIR)/plugin_config
 

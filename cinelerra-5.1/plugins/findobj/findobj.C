@@ -23,8 +23,8 @@
 #include "clip.h"
 #include "filexml.h"
 #include "language.h"
-#include "findobject.h"
-#include "findobjectwindow.h"
+#include "findobj.h"
+#include "findobjwindow.h"
 #include "mutex.h"
 #include "overlayframe.h"
 
@@ -32,9 +32,9 @@
 #include <exception>
 #include <unistd.h>
 
-REGISTER_PLUGIN(FindObjectMain)
+REGISTER_PLUGIN(FindObjMain)
 
-FindObjectConfig::FindObjectConfig()
+FindObjConfig::FindObjConfig()
 {
 	algorithm = NO_ALGORITHM;
 	use_flann = 1;
@@ -52,7 +52,7 @@ FindObjectConfig::FindObjectConfig()
 	blend = 100;
 }
 
-void FindObjectConfig::boundaries()
+void FindObjConfig::boundaries()
 {
 	bclamp(object_x, 0, 100);  bclamp(object_y, 0, 100);
 	bclamp(object_w, 0, 100);  bclamp(object_h, 0, 100);
@@ -64,7 +64,7 @@ void FindObjectConfig::boundaries()
 	bclamp(blend, MIN_BLEND, MAX_BLEND);
 }
 
-int FindObjectConfig::equivalent(FindObjectConfig &that)
+int FindObjConfig::equivalent(FindObjConfig &that)
 {
 	int result =
 		algorithm == that.algorithm &&
@@ -84,7 +84,7 @@ int FindObjectConfig::equivalent(FindObjectConfig &that)
         return result;
 }
 
-void FindObjectConfig::copy_from(FindObjectConfig &that)
+void FindObjConfig::copy_from(FindObjConfig &that)
 {
 	algorithm = that.algorithm;
 	use_flann = that.use_flann;
@@ -102,14 +102,14 @@ void FindObjectConfig::copy_from(FindObjectConfig &that)
 	blend = that.blend;
 }
 
-void FindObjectConfig::interpolate(FindObjectConfig &prev, FindObjectConfig &next,
+void FindObjConfig::interpolate(FindObjConfig &prev, FindObjConfig &next,
 	int64_t prev_frame, int64_t next_frame, int64_t current_frame)
 {
 	copy_from(prev);
 }
 
 
-FindObjectMain::FindObjectMain(PluginServer *server)
+FindObjMain::FindObjMain(PluginServer *server)
  : PluginVClient(server)
 {
         affine = 0;
@@ -139,26 +139,26 @@ FindObjectMain::FindObjectMain(PluginServer *server)
         init_border = 1;
 }
 
-FindObjectMain::~FindObjectMain()
+FindObjMain::~FindObjMain()
 {
 	delete affine;
 	delete overlayer;
 }
 
-const char* FindObjectMain::plugin_title() { return _("Find Object"); }
-int FindObjectMain::is_realtime() { return 1; }
-int FindObjectMain::is_multichannel() { return 1; }
+const char* FindObjMain::plugin_title() { return _("Find Object"); }
+int FindObjMain::is_realtime() { return 1; }
+int FindObjMain::is_multichannel() { return 1; }
 
-NEW_WINDOW_MACRO(FindObjectMain, FindObjectWindow)
-LOAD_CONFIGURATION_MACRO(FindObjectMain, FindObjectConfig)
+NEW_WINDOW_MACRO(FindObjMain, FindObjWindow)
+LOAD_CONFIGURATION_MACRO(FindObjMain, FindObjConfig)
 
-void FindObjectMain::update_gui()
+void FindObjMain::update_gui()
 {
 	if( !thread ) return;
 	if( !load_configuration() ) return;
-	FindObjectWindow *window = (FindObjectWindow*)thread->window;
-	window->lock_window("FindObjectMain::update_gui");
-	window->algorithm->set_text(FindObjectAlgorithm::to_text(config.algorithm));
+	FindObjWindow *window = (FindObjWindow*)thread->window;
+	window->lock_window("FindObjMain::update_gui");
+	window->algorithm->set_text(FindObjAlgorithm::to_text(config.algorithm));
 	window->use_flann->update(config.use_flann);
 	window->object_x->update(config.object_x);
 	window->object_x_text->update((float)config.object_x);
@@ -188,13 +188,13 @@ void FindObjectMain::update_gui()
 	window->unlock_window();
 }
 
-void FindObjectMain::save_data(KeyFrame *keyframe)
+void FindObjMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
 // cause data to be stored directly in text
 	output.set_shared_output(keyframe->get_data(), MESSAGESIZE);
-	output.tag.set_title("FINDOBJECT");
+	output.tag.set_title("FINDOBJ");
 	output.tag.set_property("ALGORITHM", config.algorithm);
 	output.tag.set_property("USE_FLANN", config.use_flann);
 	output.tag.set_property("OBJECT_X", config.object_x);
@@ -214,13 +214,13 @@ void FindObjectMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("SCENE_LAYER", config.scene_layer);
 	output.tag.set_property("BLEND", config.blend);
 	output.append_tag();
-	output.tag.set_title("/FINDOBJECT");
+	output.tag.set_title("/FINDOBJ");
 	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 }
 
-void FindObjectMain::read_data(KeyFrame *keyframe)
+void FindObjMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
@@ -229,7 +229,7 @@ void FindObjectMain::read_data(KeyFrame *keyframe)
 	int result = 0;
 
 	while( !(result = input.read_tag()) ) {
-		if( input.tag.title_is("FINDOBJECT") ) {
+		if( input.tag.title_is("FINDOBJ") ) {
 			config.algorithm = input.tag.get_property("ALGORITHM", config.algorithm);
 			config.use_flann = input.tag.get_property("USE_FLANN", config.use_flann);
 			config.object_x = input.tag.get_property("OBJECT_X", config.object_x);
@@ -254,12 +254,12 @@ void FindObjectMain::read_data(KeyFrame *keyframe)
 	config.boundaries();
 }
 
-void FindObjectMain::draw_line(VFrame *vframe, int x1, int y1, int x2, int y2)
+void FindObjMain::draw_line(VFrame *vframe, int x1, int y1, int x2, int y2)
 {
 	vframe->draw_line(x1, y1, x2, y2);
 }
 
-void FindObjectMain::draw_rect(VFrame *vframe, int x1, int y1, int x2, int y2)
+void FindObjMain::draw_rect(VFrame *vframe, int x1, int y1, int x2, int y2)
 {
 	draw_line(vframe, x1, y1, x2, y1);
 	draw_line(vframe, x2, y1 + 1, x2, y2);
@@ -267,7 +267,7 @@ void FindObjectMain::draw_rect(VFrame *vframe, int x1, int y1, int x2, int y2)
 	draw_line(vframe, x1, y2 - 1, x1, y1 + 1);
 }
 
-void FindObjectMain::draw_circle(VFrame *vframe, int x, int y, int r)
+void FindObjMain::draw_circle(VFrame *vframe, int x, int y, int r)
 {
 	int x1 = x-r, x2 = x+r;
 	int y1 = y-r, y2 = y+r;
@@ -277,7 +277,7 @@ void FindObjectMain::draw_circle(VFrame *vframe, int x, int y, int r)
 	vframe->draw_smooth(x,y2, x1,y2, x1,y);
 }
 
-void FindObjectMain::filter_matches(ptV &p1, ptV &p2, double ratio)
+void FindObjMain::filter_matches(ptV &p1, ptV &p2, double ratio)
 {
 	DMatches::iterator it;
 	for( it=pairs.begin(); it!=pairs.end(); ++it ) { 
@@ -289,7 +289,7 @@ void FindObjectMain::filter_matches(ptV &p1, ptV &p2, double ratio)
 	}
 }
 
-void FindObjectMain::to_mat(Mat &mat, int mcols, int mrows,
+void FindObjMain::to_mat(Mat &mat, int mcols, int mrows,
 	VFrame *inp, int ix,int iy, BC_CModel mcolor_model)
 {
 	int mcomp = BC_CModels::components(mcolor_model);
@@ -316,7 +316,7 @@ void FindObjectMain::to_mat(Mat &mat, int mcols, int mrows,
 //	vfrm.write_png(vfn);
 }
 
-void FindObjectMain::detect(Mat &mat, KeyPointV &keypts,Mat &descrs)
+void FindObjMain::detect(Mat &mat, KeyPointV &keypts,Mat &descrs)
 {
 	keypts.clear();
 	descrs.release();
@@ -325,7 +325,7 @@ void FindObjectMain::detect(Mat &mat, KeyPointV &keypts,Mat &descrs)
 	} catch(std::exception e) { printf(_("detector exception: %s\n"), e.what()); }
 }
 
-void FindObjectMain::match()
+void FindObjMain::match()
 {
 	pairs.clear();
 	try {
@@ -333,7 +333,7 @@ void FindObjectMain::match()
 	} catch(std::exception e) { printf(_("match execption: %s\n"), e.what()); }
 }
 
-Ptr<DescriptorMatcher> FindObjectMain::flann_kdtree_matcher()
+Ptr<DescriptorMatcher> FindObjMain::flann_kdtree_matcher()
 { // trees=5
 	const Ptr<flann::IndexParams>& indexParams =
 		makePtr<flann::KDTreeIndexParams>(5);
@@ -341,7 +341,7 @@ Ptr<DescriptorMatcher> FindObjectMain::flann_kdtree_matcher()
 		makePtr<flann::SearchParams>();
 	return makePtr<FlannBasedMatcher>(indexParams, searchParams);
 }
-Ptr<DescriptorMatcher> FindObjectMain::flann_lshidx_matcher()
+Ptr<DescriptorMatcher> FindObjMain::flann_lshidx_matcher()
 { // table_number = 6#12, key_size = 12#20, multi_probe_level = 1#2
 	const Ptr<flann::IndexParams>& indexParams =
 		makePtr<flann::LshIndexParams>(6, 12, 1);
@@ -349,17 +349,17 @@ Ptr<DescriptorMatcher> FindObjectMain::flann_lshidx_matcher()
 		makePtr<flann::SearchParams>();
 	return makePtr<FlannBasedMatcher>(indexParams, searchParams);
 }
-Ptr<DescriptorMatcher> FindObjectMain::bf_matcher_norm_l2()
+Ptr<DescriptorMatcher> FindObjMain::bf_matcher_norm_l2()
 {
 	return BFMatcher::create(NORM_L2);
 }
-Ptr<DescriptorMatcher> FindObjectMain::bf_matcher_norm_hamming()
+Ptr<DescriptorMatcher> FindObjMain::bf_matcher_norm_hamming()
 {
 	return BFMatcher::create(NORM_HAMMING);
 }
 
 #ifdef _SIFT
-void FindObjectMain::set_sift()
+void FindObjMain::set_sift()
 {
 	cvmodel = BC_GREY8;
 	detector = SIFT::create();
@@ -368,7 +368,7 @@ void FindObjectMain::set_sift()
 }
 #endif
 #ifdef _SURF
-void FindObjectMain::set_surf()
+void FindObjMain::set_surf()
 {
 	cvmodel = BC_GREY8;
 	detector = SURF::create(800);
@@ -377,7 +377,7 @@ void FindObjectMain::set_surf()
 }
 #endif
 #ifdef _ORB
-void FindObjectMain::set_orb()
+void FindObjMain::set_orb()
 {
 	cvmodel = BC_GREY8;
 	detector = ORB::create();
@@ -386,7 +386,7 @@ void FindObjectMain::set_orb()
 }
 #endif
 #ifdef _AKAZE
-void FindObjectMain::set_akaze()
+void FindObjMain::set_akaze()
 {
 	cvmodel = BC_GREY8;
 	detector = AKAZE::create();
@@ -395,7 +395,7 @@ void FindObjectMain::set_akaze()
 }
 #endif
 #ifdef _BRISK
-void FindObjectMain::set_brisk()
+void FindObjMain::set_brisk()
 {
 	cvmodel = BC_GREY8;
 	detector = BRISK::create();
@@ -404,7 +404,7 @@ void FindObjectMain::set_brisk()
 }
 #endif
 
-void FindObjectMain::process_match()
+void FindObjMain::process_match()
 {
 	if( config.algorithm == NO_ALGORITHM ) return;
 	if( !config.replace_object &&
@@ -467,7 +467,7 @@ void FindObjectMain::process_match()
 // dst[0].x,dst[0].y, dst[1].x,dst[1].y, dst[2].x,dst[2].y, dst[3].x,dst[3].y);
 }
 
-int FindObjectMain::process_buffer(VFrame **frame, int64_t start_position, double frame_rate)
+int FindObjMain::process_buffer(VFrame **frame, int64_t start_position, double frame_rate)
 {
 	int prev_algorithm = config.algorithm;
 	int prev_use_flann = config.use_flann;

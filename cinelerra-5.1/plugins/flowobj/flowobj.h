@@ -17,11 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MOVEOBJ_H
-#define MOVEOBJ_H
+#ifndef FLOWOBJ_H
+#define FLOWOBJ_H
 
-#include "affine.inc"
 #include "pluginvclient.h"
+#include "loadbalance.h"
+#include "overlayframe.h"
 
 #include "opencv2/core/types.hpp"
 #include "opencv2/core/mat.hpp"
@@ -41,14 +42,21 @@ using namespace cv;
 using namespace videostab;
 #endif
 
-class MoveObjConfig
+class FlowObjConfig;
+class FlowObjRemapPackage;
+class FlowObjRemapEngine;
+class FlowObjRemapUnit;
+class FlowObj;
+
+
+class FlowObjConfig
 {
 public:
-	MoveObjConfig();
+	FlowObjConfig();
 
-	int equivalent(MoveObjConfig &that);
-	void copy_from(MoveObjConfig &that);
-	void interpolate(MoveObjConfig &prev, MoveObjConfig &next, 
+	int equivalent(FlowObjConfig &that);
+	void copy_from(FlowObjConfig &that);
+	void interpolate(FlowObjConfig &prev, FlowObjConfig &next, 
 		long prev_frame, long next_frame, long current_frame);
 	void limits();
 	int draw_vectors;
@@ -59,23 +67,64 @@ public:
 	int search_radius;
 };
 
-class MoveObj : public PluginVClient
+class FlowObjRemapPackage : public LoadPackage
 {
 public:
-	MoveObj(PluginServer *server);
-	~MoveObj();
+	FlowObjRemapPackage();
+
+	int row1, row2;
+};
+
+class FlowObjRemapEngine : public LoadServer
+{
+public:
+	FlowObjRemapEngine(FlowObj *plugin, int cpus);
+	~FlowObjRemapEngine();
+
+	void init_packages();
+	LoadClient* new_client();
+	LoadPackage* new_package();
+
+	FlowObj *plugin;
+};
+
+class FlowObjRemapUnit : public LoadClient
+{
+public:
+	FlowObjRemapUnit(FlowObjRemapEngine *engine, FlowObj *plugin);
+	~FlowObjRemapUnit();
+
+        void process_package(LoadPackage *pkg);
+        void process_remap(FlowObjRemapPackage *pkg);
+
+        FlowObjRemapEngine *engine;
+        FlowObj *plugin;
+};
+
+class FlowObj : public PluginVClient
+{
+public:
+	FlowObj(PluginServer *server);
+	~FlowObj();
 // required for all realtime plugins
-	PLUGIN_CLASS_MEMBERS2(MoveObjConfig)
+	PLUGIN_CLASS_MEMBERS2(FlowObjConfig)
 	int is_realtime();
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	int process_buffer(VFrame *frame, int64_t start_position, double frame_rate);
-	AffineEngine *affine;
 	void to_mat(Mat &mat, int mcols, int mrows,
 		VFrame *inp, int ix,int iy, int mcolor_model);
+	void from_mat(VFrame *out, int ox, int oy, int ow, int oh,
+		Mat &mat, int mcolor_model);
 
 	long prev_position, next_position;
+	int width, height, color_model;
+	VFrame *input, *output, *accum;
+
+	Mat *flow_mat;
+        FlowObjRemapEngine *flow_engine;
+	OverlayFrame *overlay;
 
 //opencv
         typedef vector<Point2f> ptV;

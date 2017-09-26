@@ -18,20 +18,19 @@
  * 
  */
 
-#include "affine.h"
 #include "clip.h"
 #include "filexml.h"
-#include "moveobj.h"
-#include "moveobjwindow.h"
+#include "flowobj.h"
+#include "flowobjwindow.h"
 #include "language.h"
 #include "transportque.inc"
 
-REGISTER_PLUGIN(MoveObj)
+REGISTER_PLUGIN(FlowObj)
 
 #define MAX_COUNT 250
 #define WIN_SIZE 20
 
-MoveObjConfig::MoveObjConfig()
+FlowObjConfig::FlowObjConfig()
 {
 	draw_vectors = 0;
 	do_stabilization = 1;
@@ -40,7 +39,7 @@ MoveObjConfig::MoveObjConfig()
 	settling_speed = 5;
 }
 
-int MoveObjConfig::equivalent(MoveObjConfig &that)
+int FlowObjConfig::equivalent(FlowObjConfig &that)
 {
 	return draw_vectors == that.draw_vectors &&
 		do_stabilization == that.do_stabilization &&
@@ -49,7 +48,7 @@ int MoveObjConfig::equivalent(MoveObjConfig &that)
 		settling_speed == that.settling_speed;
 }
 
-void MoveObjConfig::copy_from(MoveObjConfig &that)
+void FlowObjConfig::copy_from(FlowObjConfig &that)
 {
 	draw_vectors = that.draw_vectors;
 	do_stabilization = that.do_stabilization;
@@ -58,13 +57,13 @@ void MoveObjConfig::copy_from(MoveObjConfig &that)
 	settling_speed = that.settling_speed;
 }
 
-void MoveObjConfig::interpolate( MoveObjConfig &prev, MoveObjConfig &next, 
+void FlowObjConfig::interpolate( FlowObjConfig &prev, FlowObjConfig &next, 
 	long prev_frame, long next_frame, long current_frame)
 {
 	copy_from(next);
 }
 
-void MoveObjConfig::limits()
+void FlowObjConfig::limits()
 {
 	bclamp(block_size, 5, 100);
 	bclamp(search_radius, 1, 100);
@@ -72,10 +71,12 @@ void MoveObjConfig::limits()
 }
 
 
-MoveObj::MoveObj(PluginServer *server)
+FlowObj::FlowObj(PluginServer *server)
  : PluginVClient(server)
 {
-	affine = 0;
+	flow_engine = 0;
+	overlay = 0;
+	accum = 0;
 	prev_position = next_position = -1;
 	x_accum = y_accum = 0;
 	angle_accum = 0;
@@ -83,26 +84,27 @@ MoveObj::MoveObj(PluginServer *server)
 	next_corners = 0;
 }
 
-MoveObj::~MoveObj()
+FlowObj::~FlowObj()
 {
-	delete affine;
+	delete flow_engine;
+	delete overlay;
 	delete prev_corners;
 	delete next_corners;
 }
 
-const char* MoveObj::plugin_title() { return N_("MoveObj"); }
-int MoveObj::is_realtime() { return 1; }
+const char* FlowObj::plugin_title() { return N_("FlowObj"); }
+int FlowObj::is_realtime() { return 1; }
 
-NEW_WINDOW_MACRO(MoveObj, MoveObjWindow);
-LOAD_CONFIGURATION_MACRO(MoveObj, MoveObjConfig)
+NEW_WINDOW_MACRO(FlowObj, FlowObjWindow);
+LOAD_CONFIGURATION_MACRO(FlowObj, FlowObjConfig)
 
-void MoveObj::save_data(KeyFrame *keyframe)
+void FlowObj::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
 // cause data to be stored directly in text
 	output.set_shared_output(keyframe->get_data(), MESSAGESIZE);
-	output.tag.set_title("MOVEOBJ");
+	output.tag.set_title("FLOWOBJ");
 	output.tag.set_property("DRAW_VECTORS", config.draw_vectors);
 	output.tag.set_property("DO_STABILIZATION", config.do_stabilization);
 	output.tag.set_property("BLOCK_SIZE", config.block_size);
@@ -110,20 +112,20 @@ void MoveObj::save_data(KeyFrame *keyframe)
 	output.tag.set_property("SETTLING_SPEED", config.settling_speed);
 	output.append_tag();
 	output.append_newline();
-	output.tag.set_title("/MOVEOBJ");
+	output.tag.set_title("/FLOWOBJ");
 	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 }
 
-void MoveObj::read_data(KeyFrame *keyframe)
+void FlowObj::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 	input.set_shared_input(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	while( !(result = input.read_tag()) ) {
-		if( input.tag.title_is("MOVEOBJ") ) {
+		if( input.tag.title_is("FLOWOBJ") ) {
 			config.draw_vectors = input.tag.get_property("DRAW_VECTORS", config.draw_vectors);
 			config.do_stabilization = input.tag.get_property("DO_STABILIZATION", config.do_stabilization);
 			config.block_size = input.tag.get_property("BLOCK_SIZE", config.block_size);
@@ -131,17 +133,17 @@ void MoveObj::read_data(KeyFrame *keyframe)
 			config.settling_speed = input.tag.get_property("SETTLING_SPEED", config.settling_speed);
 			config.limits();
 		}
-		else if( input.tag.title_is("/MOVEOBJ") )
+		else if( input.tag.title_is("/FLOWOBJ") )
 			result = 1;
 	}
 }
 
-void MoveObj::update_gui()
+void FlowObj::update_gui()
 {
 	if( !thread ) return;
 	if( !load_configuration() ) return;
-	thread->window->lock_window("MoveObj::update_gui");
-	MoveObjWindow *window = (MoveObjWindow*)thread->window;
+	thread->window->lock_window("FlowObj::update_gui");
+	FlowObjWindow *window = (FlowObjWindow*)thread->window;
 
 	window->vectors->update(config.draw_vectors);
 	window->do_stabilization->update(config.do_stabilization);
@@ -152,7 +154,7 @@ void MoveObj::update_gui()
 	thread->window->unlock_window();
 }
 
-void MoveObj::to_mat(Mat &mat, int mcols, int mrows,
+void FlowObj::to_mat(Mat &mat, int mcols, int mrows,
 	VFrame *inp, int ix,int iy, int mcolor_model)
 {
 	int mcomp = BC_CModels::components(mcolor_model);
@@ -170,30 +172,44 @@ void MoveObj::to_mat(Mat &mat, int mcols, int mrows,
 	uint8_t *mat_rows[mrows];
 	for( int y=0; y<mrows; ++y ) mat_rows[y] = mat.ptr(y);
 	uint8_t **inp_rows = inp->get_rows();
-	int ibpl = inp->get_bytes_per_line(), obpl = mcols * mbpp;
+	int ibpl = inp->get_bytes_per_line(), mbpl = mcols * mbpp;
 	int icolor_model = inp->get_color_model();
-	BC_CModels::transfer(mat_rows, mcolor_model, 0,0, mcols,mrows, obpl,
+	BC_CModels::transfer(mat_rows, mcolor_model, 0,0, mcols,mrows, mbpl,
 		inp_rows, icolor_model, ix,iy, mcols,mrows, ibpl, 0);
 //	VFrame vfrm(mat_rows[0], -1, mcols,mrows, mcolor_model, mat_rows[1]-mat_rows[0]);
-//	static int vfrm_no = 0; char vfn[64]; sprintf(vfn,"/tmp/dat/%06d.png", vfrm_no++);
+//	static int vfrm_no = 0; char vfn[64]; sprintf(vfn,"/tmp/idat/%06d.png", vfrm_no++);
 //	vfrm.write_png(vfn);
 }
 
-int MoveObj::process_buffer(VFrame *frame, int64_t start_position, double frame_rate)
+void FlowObj::from_mat(VFrame *out, int ox, int oy, int ow, int oh, Mat &mat, int mcolor_model)
+{
+	int mbpp = BC_CModels::calculate_pixelsize(mcolor_model);
+	int mrows = mat.rows, mcols = mat.cols;
+	uint8_t *mat_rows[mrows];
+	for( int y=0; y<mrows; ++y ) mat_rows[y] = mat.ptr(y);
+	uint8_t **out_rows = out->get_rows();
+	int obpl = out->get_bytes_per_line(), mbpl = mcols * mbpp;
+	int ocolor_model = out->get_color_model();
+	BC_CModels::transfer(out_rows, ocolor_model, ox,oy, ow,oh, obpl,
+		mat_rows, mcolor_model, 0,0, mcols,mrows, mbpl,  0);
+//	static int vfrm_no = 0; char vfn[64]; sprintf(vfn,"/tmp/odat/%06d.png", vfrm_no++);
+//	out->write_png(vfn);
+}
+
+
+int FlowObj::process_buffer(VFrame *frame, int64_t start_position, double frame_rate)
 {
 
 	//int need_reconfigure =
 	load_configuration();
-	VFrame *input = get_input(0), *output = get_output(0);
-	int w = input->get_w(), h = input->get_h();
-	int color_model = input->get_color_model();
+	input = get_input(0);
+	output = get_output(0);
+	width = input->get_w();
+	height = input->get_h();
+	color_model = input->get_color_model();
 
 	if( accum_matrix.empty() ) {
 		accum_matrix = Mat::eye(3,3, CV_64F);
-	}
-	if( !affine ) {
-		int cpus1 = PluginClient::get_project_smp() + 1;
-		affine = new AffineEngine(cpus1, cpus1);
 	}
 	if( !prev_corners ) prev_corners = new ptV();
 	if( !next_corners ) next_corners = new ptV();
@@ -233,7 +249,7 @@ int MoveObj::process_buffer(VFrame *frame, int64_t start_position, double frame_
 // load previous image
 	if( actual_previous_number >= 0 ) {
 		read_frame(input, 0, actual_previous_number, frame_rate, 0);
-		to_mat(prev_mat, w,h, input, 0,0, BC_GREY8);
+		to_mat(prev_mat, width,height, input, 0,0, BC_GREY8);
 	}
 
 	if( skip_current || prev_position != actual_previous_number ) {
@@ -244,9 +260,10 @@ int MoveObj::process_buffer(VFrame *frame, int64_t start_position, double frame_
 
 // load next image
 	next_position = start_position;
-	VFrame *iframe = !config.do_stabilization ? input : new_temp(w,h, color_model);
+	VFrame *iframe = new_temp(width,height, color_model);
 	read_frame(iframe, 0, start_position, frame_rate, 0);
-	to_mat(next_mat, w,h, iframe, 0,0, BC_GREY8);
+	input = iframe;
+	to_mat(next_mat, width,height, iframe, 0,0, BC_GREY8);
 
 	int corner_count = MAX_COUNT;
 	int block_size = config.block_size;
@@ -258,96 +275,147 @@ int MoveObj::process_buffer(VFrame *frame, int64_t start_position, double frame_
 		0,           // use_harris
 		0.04);       // k
 
-	ptV pt1, pt2;
 	if( !next_mat.empty() && next_corners->size() > 3 ) {
 		cornerSubPix(next_mat, *next_corners, Size(WIN_SIZE, WIN_SIZE), Size(-1,-1),
 			cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
 	}
+
+	Mat flow;
 	if( !prev_mat.empty() && prev_corners->size() > 3 ) {
 // optical flow
-		Mat st, err;
-		ptV &prev = *prev_corners, &next = *next_corners;
-		calcOpticalFlowPyrLK(prev_mat, next_mat, prev, next,
-			st, err, Size(WIN_SIZE, WIN_SIZE), 5, 
-			cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3), 0);
-		float fails = 0.5 * w + 1;
-		uint8_t *stp = st.ptr<uint8_t>();
-		float *errp = err.ptr<float>();
-		for( int i=0,n=next_corners->size(); i<n; ++i ) {
-			if( stp[i] == 0 || errp[i] > fails ) continue;
-			pt1.push_back(next[i]);  
-			pt2.push_back(prev[i]);
-		}
+		calcOpticalFlowFarneback(prev_mat, next_mat, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
 	}
 
-	int points = pt1.size();
-	if( points > 0 && !skip_current ) {
-		if( config.draw_vectors ) {
-			int sz = bmin(w,h) / 222 + 2;
-			for( int i = 0; i < points; ++i )
-				iframe->draw_arrow(pt1[i].x,pt1[i].y, pt2[i].x,pt2[i].y, sz);
+	if( config.do_stabilization && !flow.empty() ) {
+		if( !flow_engine )
+			flow_engine = new FlowObjRemapEngine(this, PluginClient::smp);
+		flow_mat = &flow;
+		flow_engine->process_packages();
+	}
+	else
+		output->copy_from(input);
+
+	if( config.settling_speed > 0 ) {
+		if( accum && (accum->get_color_model() != color_model ||
+		    accum->get_w() != width || accum->get_h() != height) ) {
+			delete accum;  accum = 0;
 		}
-#ifdef _RANSAC
-// ransac
-		int ninliers = 0;
-		Mat_<float> translationM =
-			estimateGlobalMotionRansac(pt1, pt2, MM_TRANSLATION, 
-				RansacParams::default2dMotion(MM_TRANSLATION),
-				0, &ninliers);
-		Mat_<float> rotationM =
-			estimateGlobalMotionRansac(pt1, pt2, MM_ROTATION, 
-				RansacParams::default2dMotion(MM_ROTATION),
-				0, &ninliers);
-
-		double temp[9];
-		Mat temp_matrix = Mat(3, 3, CV_64F, temp);
-		for( int i=0; i<9; ++i )
-			temp[i] = i == 2 || i == 5 ?
-				translationM(i / 3, i % 3) :
-				rotationM(i / 3, i % 3);
-		accum_matrix = temp_matrix * accum_matrix;
-#else
-// homography
-
-		Mat M1(1, points, CV_32FC2, &pt1[0].x);  
-		Mat M2(1, points, CV_32FC2, &pt2[0].x);  
-
-//M2 = H*M1 , old = H*current  
-		Mat H = findHomography(M1, M2, CV_RANSAC, 2);
-		if( !H.dims || !H.rows || !H.cols )
-			printf("MoveObj::process_buffer %d: Find Homography Fail!\n", __LINE__);  
-		else
-			accum_matrix = H * accum_matrix;
-#endif
+		if( !accum ) {
+			accum = new VFrame(width, height, color_model);
+			accum->clear_frame();
+		}
+		if( !overlay )
+			overlay = new OverlayFrame(PluginClient::smp + 1);
+		float alpha = 1 - config.settling_speed/100.;
+		overlay->overlay(accum, output,
+			0,0, width,height, 0,0, width, height,
+       			alpha, TRANSFER_NORMAL, NEAREST_NEIGHBOR);
+		output->copy_from(accum);
 	}
 
-	double *amat = accum_matrix.ptr<double>();
-// deglitch
-//	if( EQUIV(amat[0], 0) )	{
-//printf("MoveObj::process_buffer %d\n", __LINE__);
-//		accum_matrix = Mat::eye(3,3, CV_64F);
-// 	}
-
-	if( config.do_stabilization ) {
-		Mat identity = Mat::eye(3,3, CV_64F);
- 		double w0 = config.settling_speed/100., w1 = 1.-w0;
-// interpolate with identity matrix
-		accum_matrix = w0*identity + w1*accum_matrix;
-
-		AffineMatrix matrix;
-		for( int i=0,k=0; i<3; ++i )
-			for( int j=0; j<3; ++j )
-				matrix.values[i][j] = amat[k++];
-
-//printf("MoveObj::process_buffer %d %jd matrix=\n", __LINE__, start_position);
-//matrix.dump();
-
-		affine->set_matrix(&matrix);
-// iframe is always temp, if we get here
-		output->clear_frame();
-		affine->process(output, iframe, 0, AffineEngine::TRANSFORM,
-			0,0, w,0, w,h, 0,h, 1);
+	if( !flow.empty() && config.draw_vectors ) {
+		output->set_pixel_color(GREEN);
+		int nv = 24; float s = 2;
+		int gw = width/nv + 1, gh = height/nv + 1;
+		int sz = bmin(width,height) / 200 + 4;
+		for( int y=gh/2; y<height; y+=gh ) {
+			Point2f *row = (Point2f *)flow.ptr(y);
+			for( int x=gw/2; x<width; x+=gw ) {
+				Point2f *ds = row + x;
+				float x0 = x+.5, x1 = x+s*ds->x, y0 = y+.5, y1 = y+s*ds->y;
+				output->draw_arrow(x0,y0, x1,y1, sz);
+			}
+		}
 	}
 
 	return 0;
 }
+
+
+FlowObjRemapPackage::FlowObjRemapPackage()
+ : LoadPackage()
+{
+}
+
+FlowObjRemapUnit::FlowObjRemapUnit(FlowObjRemapEngine *engine, FlowObj *plugin)
+ : LoadClient(engine)
+{
+        this->plugin = plugin;
+}
+
+FlowObjRemapUnit::~FlowObjRemapUnit()
+{
+}
+
+void FlowObjRemapUnit::process_package(LoadPackage *package)
+{
+	FlowObjRemapPackage *pkg = (FlowObjRemapPackage*)package;
+	process_remap(pkg);
+}
+
+void FlowObjRemapUnit::process_remap(FlowObjRemapPackage *pkg)
+{
+	int row1 = pkg->row1;
+	int row2 = pkg->row2;
+	int w = plugin->width, h = plugin->height;
+	int w1 = w-1, h1 = h-1;
+	int color_model = plugin->color_model;
+	int bpp = BC_CModels::calculate_pixelsize(color_model);
+
+#define FLOW_OBJ_REMAP(type, components) { \
+	unsigned char **in_rows = plugin->input->get_rows(); \
+	type **out_rows = (type**)plugin->output->get_rows(); \
+ \
+        for( int y=row1; y<row2; ++y ) { \
+		Point2f *ipt = (Point2f *)plugin->flow_mat->ptr(y); \
+		type *out_row = out_rows[y]; \
+                for( int x=0; x<w; ++x,++ipt ) { \
+			int ix = x - ipt->x, iy = y - ipt->y; \
+			bclamp(ix, 0, w1);  bclamp(iy, 0, h1); \
+			type *inp_row = (type *)(in_rows[iy] + ix*bpp); \
+			for( int i=0; i<components; ++i ) \
+				*out_row++ = *inp_row++; \
+		} \
+	} \
+}
+	switch( color_model ) {
+	case BC_RGB888:     FLOW_OBJ_REMAP(unsigned char, 3);  break;
+	case BC_RGBA8888:   FLOW_OBJ_REMAP(unsigned char, 4);  break;
+	case BC_RGB_FLOAT:  FLOW_OBJ_REMAP(float, 3);          break;
+	case BC_RGBA_FLOAT: FLOW_OBJ_REMAP(float, 4);          break;
+	case BC_YUV888:     FLOW_OBJ_REMAP(unsigned char, 3);  break;
+	case BC_YUVA8888:   FLOW_OBJ_REMAP(unsigned char, 4);  break;
+	}
+}
+
+
+FlowObjRemapEngine::FlowObjRemapEngine(FlowObj *plugin, int cpus)
+ : LoadServer(cpus+1, cpus+1)
+{
+	this->plugin = plugin;
+}
+
+FlowObjRemapEngine::~FlowObjRemapEngine()
+{
+}
+
+void FlowObjRemapEngine::init_packages()
+{
+	int row1 = 0, row2 = 0, n = LoadServer::get_total_packages();
+	for( int i=0; i<n; row1=row2 ) {
+		FlowObjRemapPackage *package = (FlowObjRemapPackage*)LoadServer::get_package(i);
+		row2 = plugin->get_input()->get_h() * ++i / n;
+		package->row1 = row1;  package->row2 = row2;
+	}
+}
+
+LoadClient* FlowObjRemapEngine::new_client()
+{
+	return new FlowObjRemapUnit(this, plugin);
+}
+
+LoadPackage* FlowObjRemapEngine::new_package()
+{
+	return new FlowObjRemapPackage();
+}
+

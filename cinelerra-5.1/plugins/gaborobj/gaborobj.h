@@ -17,11 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MOVEOBJ_H
-#define MOVEOBJ_H
+#ifndef GABOROBJ_H
+#define GABOROBJ_H
 
-#include "affine.inc"
 #include "pluginvclient.h"
+#include "loadbalance.h"
+#include "mutex.inc"
 
 #include "opencv2/core/types.hpp"
 #include "opencv2/core/mat.hpp"
@@ -33,59 +34,79 @@
 using namespace std;
 using namespace cv;
 
-//#define _RANSAC
-#ifdef _RANSAC
-#include <opencv2/videostab/motion_core.hpp>
-#include <opencv2/videostab/global_motion.hpp>
 
-using namespace videostab;
-#endif
+class GaborObjConfig;
+class GaborObj;
 
-class MoveObjConfig
+
+class GaborObjConfig
 {
 public:
-	MoveObjConfig();
+	GaborObjConfig();
 
-	int equivalent(MoveObjConfig &that);
-	void copy_from(MoveObjConfig &that);
-	void interpolate(MoveObjConfig &prev, MoveObjConfig &next, 
+	int equivalent(GaborObjConfig &that);
+	void copy_from(GaborObjConfig &that);
+	void interpolate(GaborObjConfig &prev, GaborObjConfig &next, 
 		long prev_frame, long next_frame, long current_frame);
 	void limits();
-	int draw_vectors;
-	int do_stabilization;
-	int settling_speed;
-// percent
-	int block_size;
-	int search_radius;
 };
 
-class MoveObj : public PluginVClient
+class GaborObjFilterPackage : public LoadPackage
 {
 public:
-	MoveObj(PluginServer *server);
-	~MoveObj();
-// required for all realtime plugins
-	PLUGIN_CLASS_MEMBERS2(MoveObjConfig)
+	GaborObjFilterPackage();
+	int i;
+};
+
+class GaborObjFilterEngine : public LoadServer
+{
+public:
+	GaborObjFilterEngine(GaborObj *plugin, int cpus);
+	~GaborObjFilterEngine();
+
+	void init_packages();
+	LoadClient* new_client();
+	LoadPackage* new_package();
+
+	GaborObj *plugin;
+};
+
+class GaborObjFilterUnit : public LoadClient
+{
+public:
+	GaborObjFilterUnit(GaborObjFilterEngine *engine, GaborObj *plugin);
+	~GaborObjFilterUnit();
+
+        void process_package(LoadPackage *pkg);
+        void process_filter(GaborObjFilterPackage *pkg);
+
+        GaborObjFilterEngine *engine;
+        GaborObj *plugin;
+};
+
+class GaborObj : public PluginVClient
+{
+public:
+	GaborObj(PluginServer *server);
+	~GaborObj();
+	PLUGIN_CLASS_MEMBERS2(GaborObjConfig)
 	int is_realtime();
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	int process_buffer(VFrame *frame, int64_t start_position, double frame_rate);
-	AffineEngine *affine;
 	void to_mat(Mat &mat, int mcols, int mrows,
 		VFrame *inp, int ix,int iy, int mcolor_model);
+	void from_mat(VFrame *out, int ox, int oy, int ow, int oh,
+		Mat &mat, int mcolor_model);
 
-	long prev_position, next_position;
+	int width, height, color_model;
+	VFrame *input, *output, *accum;
+	::Mutex *remap_lock;
 
-//opencv
-        typedef vector<Point2f> ptV;
-
-        BC_CModel cvmodel;
-	Mat accum_matrix;
-	double accum_matrix_mem[9];
-	double x_accum, y_accum, angle_accum;
-	Mat prev_mat, next_mat;
-	ptV *prev_corners, *next_corners;
+	Mat next_img;
+	vector<Mat> filters;
+	GaborObjFilterEngine *gabor_engine;
 };
 
 #endif
