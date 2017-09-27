@@ -1,5 +1,6 @@
 export TOPDIR ?= $(CURDIR)/..
 include $(TOPDIR)/global_config
+default: all
 
 ifeq ($(WANT_DVB), yes)
 LIVEDVB = liveaudio livevideo

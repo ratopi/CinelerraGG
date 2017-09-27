@@ -396,9 +396,7 @@ int FFStream::decode(AVFrame *frame)
 
 int FFStream::load_filter(AVFrame *frame)
 {
-	av_frame_unref(frame);
-	int ret = av_buffersrc_add_frame_flags(buffersrc_ctx,
-			frame, AV_BUFFERSRC_FLAG_KEEP_REF);
+	int ret = av_buffersrc_add_frame_flags(buffersrc_ctx, frame, 0);
 	if( ret < 0 )
 		eprintf(_("av_buffersrc_add_frame_flags failed\n"));
 	return ret;
