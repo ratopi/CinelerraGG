@@ -385,7 +385,7 @@ int MainSession::load_defaults(BC_Hash *defaults)
 //printf("MainSession::load_defaults 1\n");
 
 // Other windows
-	afolders_w = defaults->get("ABINS_W", 140);
+	afolders_w = defaults->get("ABINS_W", 200);
 	rwindow_x = defaults->get("RWINDOW_X", rwindow_x);
 	rwindow_y = defaults->get("RWINDOW_Y", rwindow_y);
 	rwindow_w = defaults->get("RWINDOW_W", rwindow_w);

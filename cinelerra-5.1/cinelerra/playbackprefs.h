@@ -32,7 +32,6 @@ class PlaybackRealTime;
 class PlaybackMap51_2;
 class VideoAsynchronous;
 class VideoEveryFrame;
-class PlaybackDeblock;
 class PlaybackPreload;
 class PlaybackInterpolateRaw;
 class PlaybackWhiteBalanceRaw;
@@ -69,7 +68,6 @@ public:
 
 	PlaybackConfig *playback_config;
 	BC_Title *framerate_title;
-	PlaybackDeblock *mpeg4_deblock;
 	PlaybackInterpolateRaw *interpolate_raw;
 	PlaybackWhiteBalanceRaw *white_balance_raw;
 	VideoAsynchronous *asynchronous;
@@ -155,14 +153,6 @@ public:
 	int handle_event();
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback_prefs;
-};
-
-class PlaybackDeblock : public BC_CheckBox
-{
-public:
-	PlaybackDeblock(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
 };
 
 class PlaybackPreload : public BC_TextBox

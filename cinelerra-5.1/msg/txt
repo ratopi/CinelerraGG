@@ -10,6 +10,11 @@ For usage help, refer to the following:
 Cinfinity icons selected in Preferences (Creative Common
   By https://creativecommons.org/licenses/by/3.0/)
 .
+September 2017 New Features of note:
+  Proxy Editing added to Settings pulldown.
+  OpenCV optional compile with 4 plugins now available.
+  New Rumbler "dream-like" plugin added.
+  Always Show Next Frame seeking option in Preferences.
 August 2017 New Features of note:
   Specks, Burst, Spiral transition wipes are new.
   C41 plugin updated for negative images to photos.
@@ -18,9 +23,7 @@ August 2017 New Features of note:
 July 2017 New Features of note:
   Cinfinity icons added along with a Preferences choice.
   Perspective plugin improvements with more versatility.
-  Info on plugins with a short description added.
   Copy/Paste within and across instances enhancements.
-  Ffmpeg seek changes for ffmpeg non-stream type files.
 June 2017 New Features of note:
   CriKey does edgedetect, chroma key, and interpolation.
   Faststart option added for Mp4 and QT ffmpeg format.

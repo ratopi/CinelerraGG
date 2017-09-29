@@ -141,7 +141,6 @@ public:
 	int white_balance_raw;
 // labels follow edits during editing
 	int labels_follow_edits;
-	int mpeg4_deblock;
 	int plugins_follow_edits;
 // For main menu plugin attaching,
 // // attach 1 standalone on the first track and share it with other tracks
@@ -160,7 +159,11 @@ public:
 	int program_no;
 	int playback_software_position;
 // current settings are scaled this much from the original settings
-        int proxy_use_scaler, proxy_scale;
+        int proxy_scale;
+// upscale geom from proxy to session on read in
+        int proxy_use_scaler;
+// automatically rescale assets when loaded
+        int proxy_auto_scale;
 //	int playback_strategy;
 // Play audio in realtime priority
 	int real_time_playback;

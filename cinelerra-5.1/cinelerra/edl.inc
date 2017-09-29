@@ -62,8 +62,9 @@ class EDL;
 #define AW_LABEL_FOLDER       4
 #define AW_CLIP_FOLDER        5
 #define AW_MEDIA_FOLDER       6
-#define AW_USER_FOLDER        7
-#define AWINDOW_FOLDERS       8
+#define AW_PROXY_FOLDER       7
+#define AW_USER_FOLDER        8
+#define AWINDOW_FOLDERS       9
 
 
 #define AWINDOW_MODES 2

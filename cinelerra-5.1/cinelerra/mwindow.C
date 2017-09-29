@@ -89,6 +89,7 @@
 #include "pluginserver.h"
 #include "pluginset.h"
 #include "preferences.h"
+#include "proxy.h"
 #include "record.h"
 #include "recordmonitor.h"
 #include "recordlabel.h"
@@ -1494,14 +1495,10 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 				if(load_mode != LOADMODE_RESOURCESONLY)
 				{
-SET_TRACE
 					RecordLabels *labels = edl->session->label_cells ?
 						new RecordLabels(new_file) : 0;
-SET_TRACE
 					asset_to_edl(new_edl, new_asset, labels);
-SET_TRACE
 					new_edls.append(new_edl);
-SET_TRACE
 					new_asset->Garbage::remove_user();
 					delete labels;
 					new_asset = 0;
@@ -1817,6 +1814,9 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 	    ( load_mode == LOADMODE_REPLACE ||
 	      load_mode == LOADMODE_REPLACE_CONCATENATE ) ) {
 		select_asset(0, 0);
+		edl->session->proxy_scale = 1;
+		edl->session->proxy_use_scaler = 0;
+		edl->session->proxy_auto_scale = 0;
 		edl->local_session->preview_start = 0;
 		edl->local_session->preview_end = edl->tracks->total_playable_length();
 		edl->local_session->loop_playback = 0;
@@ -1825,6 +1825,27 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 		set_brender_active(0, 0);
 		fit_selection();
 		goto_start();
+	}
+
+	if( ( edl->session->proxy_auto_scale && edl->session->proxy_scale != 1 ) &&
+	    ( load_mode != LOADMODE_REPLACE && load_mode != LOADMODE_REPLACE_CONCATENATE ) ) {
+		ArrayList<Indexable *> orig_idxbls;
+		for( int i=0; i<new_assets.size(); ++i )
+			orig_idxbls.append(new_assets.get(i));
+		for( int i=0; i<new_edls.size(); ++i ) {
+			EDL *new_edl = new_edls[i];
+			for( Track *track=new_edl->tracks->first; track; track=track->next ) {
+				if( track->data_type != TRACK_VIDEO ) continue;
+				for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+					Indexable *idxbl = (Indexable *)edit->asset;
+					if( !idxbl ) continue;
+					if( !idxbl->have_video() ) continue;
+					if( edit->channel != 0 ) continue; // first layer only
+					orig_idxbls.append(edit->asset);
+				}
+			}
+		}
+		render_proxy(orig_idxbls);
 	}
 
 // need to update undo before project, since mwindow is unlocked & a new load
@@ -1871,8 +1892,35 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 	return 0;
 }
 
+void MWindow::render_proxy(ArrayList<Indexable *> &new_idxbls)
+{
+	Asset *format_asset = new Asset;
+	format_asset->format = FILE_FFMPEG;
+	format_asset->load_defaults(defaults, "PROXY_", 1, 1, 0, 0, 0);
+	ProxyRender proxy_render(this, format_asset);
+	int new_scale = edl->session->proxy_scale;
+	int use_scaler = edl->session->proxy_use_scaler;
 
+	for( int i=0; i<new_idxbls.size(); ++i ) {
+		Indexable *orig = new_idxbls.get(i);
+		Asset *proxy = proxy_render.add_original(orig, new_scale);
+		if( !proxy ) continue;
+		FileSystem fs;
+		int exists = fs.get_size(proxy->path) > 0 ? 1 : 0;
+		int got_it = exists && // if proxy exists, and is newer than orig
+		    fs.get_date(proxy->path) > fs.get_date(orig->path) ? 1 : 0;
+		if( got_it ) continue;
+		proxy_render.add_needed(orig, proxy);
+	}
 
+// render needed proxies
+	int result = proxy_render.create_needed_proxies(new_scale);
+	if( !result ) {
+		add_proxy(use_scaler,
+			&proxy_render.orig_idxbls, &proxy_render.orig_proxies);
+	}
+	format_asset->remove_user();
+}
 
 void MWindow::test_plugins(EDL *new_edl, char *path)
 {
@@ -1985,7 +2033,6 @@ void MWindow::create_objects(int want_gui,
 	int want_new,
 	char *config_path)
 {
-	FileSystem fs;
 	const int debug = 0;
 	if(debug) PRINT_TRACE
 
@@ -2957,8 +3004,6 @@ void MWindow::update_project(int load_mode)
 	if(load_mode == LOADMODE_REPLACE ||
 		load_mode == LOADMODE_REPLACE_CONCATENATE)
 	{
-		edl->session->proxy_scale = 1;
-		edl->session->proxy_use_scaler = 0;
 		gui->load_panes();
 	}
 

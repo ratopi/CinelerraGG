@@ -492,8 +492,13 @@ public:
 	int modify_edithandles();
 	int modify_pluginhandles();
 	void finish_modify_handles();
-        void set_proxy(int use_scaler, int new_scale,
-                ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets);
+	void set_proxy(int use_scaler, int new_scale, int auto_scale,
+		ArrayList<Indexable*> *orig_assets,
+		ArrayList<Indexable*> *proxy_assets);
+	void add_proxy(int use_scaler,
+		ArrayList<Indexable*> *orig_assets,
+		ArrayList<Indexable*> *proxy_assets);
+	void render_proxy(ArrayList<Indexable *> &new_idxbls);
 
 	void dump_plugins(FILE *fp=stdout);
 	void dump_edl(FILE *fp=stdout);

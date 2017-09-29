@@ -87,7 +87,6 @@ EDLSession::EDLSession(EDL *edl)
 	interpolate_raw = 1;
 	white_balance_raw = 1;
 	labels_follow_edits = 1;
-	mpeg4_deblock = 1;
 	plugins_follow_edits = 1;
 	single_standalone = 1;
 	meter_format = METER_DB;
@@ -98,8 +97,9 @@ EDLSession::EDLSession(EDL *edl)
 	playback_buffer = 4096;
 	playback_cursor_visible = 0;
 	playback_preload = 0;
-	proxy_use_scaler = 0;
 	proxy_scale = 1;
+	proxy_use_scaler = 0;
+	proxy_auto_scale = 1;
 	decode_subtitles = 0;
 	subtitle_number = 0;
 	label_cells = 0;
@@ -167,9 +167,7 @@ int EDLSession::need_rerender(EDLSession *ptr)
 		(decode_subtitles != ptr->decode_subtitles) ||
 		(subtitle_number != ptr->subtitle_number) ||
 		(interpolate_raw != ptr->interpolate_raw) ||
-		(white_balance_raw != ptr->white_balance_raw) ||
-		(proxy_use_scaler != ptr->proxy_use_scaler) ||
-		(proxy_scale != ptr->proxy_scale));
+		(white_balance_raw != ptr->white_balance_raw));
 }
 
 void EDLSession::equivalent_output(EDLSession *session, double *result)
@@ -181,11 +179,10 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 	    session->interpolation_type != interpolation_type ||
 	    session->interpolate_raw != interpolate_raw ||
 	    session->white_balance_raw != white_balance_raw ||
-	    session->mpeg4_deblock != mpeg4_deblock ||
 	    session->decode_subtitles != decode_subtitles ||
 	    session->subtitle_number != subtitle_number ||
-	    session->proxy_use_scaler != proxy_use_scaler ||
-	    session->proxy_scale != proxy_scale )
+	    session->proxy_scale != proxy_scale ||
+	    session->proxy_use_scaler != proxy_use_scaler )
 		*result = 0;
 
 // If it's before the current brender_start, render extra data.
@@ -279,7 +276,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	meter_format = defaults->get("METER_FORMAT", METER_DB);
 	min_meter_db = defaults->get("MIN_METER_DB", -85);
 	max_meter_db = defaults->get("MAX_METER_DB", 6);
-	mpeg4_deblock = defaults->get("MPEG4_DEBLOCK", mpeg4_deblock);
 	output_w = defaults->get("OUTPUTW", output_w);
 	output_h = defaults->get("OUTPUTH", output_h);
 	playback_buffer = defaults->get("PLAYBACK_BUFFER", 4096);
@@ -421,7 +417,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("METER_FORMAT", meter_format);
 	defaults->update("MIN_METER_DB", min_meter_db);
 	defaults->update("MAX_METER_DB", max_meter_db);
-	defaults->update("MPEG4_DEBLOCK", mpeg4_deblock);
 	defaults->update("OUTPUTW", output_w);
 	defaults->update("OUTPUTH", output_h);
 	defaults->update("PLAYBACK_BUFFER", playback_buffer);
@@ -553,8 +548,9 @@ int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_
 	output_h = file->tag.get_property("OUTPUTH", output_h);
 	aspect_w = file->tag.get_property("ASPECTW", aspect_w);
 	aspect_h = file->tag.get_property("ASPECTH", aspect_h);
-	proxy_use_scaler = file->tag.get_property("PROXY_USE_SCALER", proxy_use_scaler);
 	proxy_scale = file->tag.get_property("PROXY_SCALE", proxy_scale);
+	proxy_use_scaler = file->tag.get_property("PROXY_USE_SCALER", proxy_use_scaler);
+	proxy_auto_scale = file->tag.get_property("PROXY_AUTO_SCALE", proxy_auto_scale);
 	return 0;
 }
 
@@ -628,7 +624,6 @@ int EDLSession::load_xml(FileXML *file,
 		folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
 		highlighted_track = file->tag.get_property("HIGHLIGHTED_TRACK", 0);
 		labels_follow_edits = file->tag.get_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
-		mpeg4_deblock = file->tag.get_property("MPEG4_DEBLOCK", mpeg4_deblock);
 		plugins_follow_edits = file->tag.get_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 		single_standalone = file->tag.get_property("SINGLE_STANDALONE", single_standalone);
 		playback_preload = file->tag.get_property("PLAYBACK_PRELOAD", playback_preload);
@@ -692,7 +687,6 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("FOLDERLIST_FORMAT", folderlist_format);
 	file->tag.set_property("HIGHLIGHTED_TRACK", highlighted_track);
 	file->tag.set_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
-	file->tag.set_property("MPEG4_DEBLOCK", mpeg4_deblock);
 	file->tag.set_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	file->tag.set_property("SINGLE_STANDALONE", single_standalone);
 	file->tag.set_property("PLAYBACK_PRELOAD", playback_preload);
@@ -744,8 +738,9 @@ int EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("OUTPUTH", output_h);
 	file->tag.set_property("ASPECTW", aspect_w);
 	file->tag.set_property("ASPECTH", aspect_h);
-	file->tag.set_property("PROXY_USE_SCALER", proxy_use_scaler);
 	file->tag.set_property("PROXY_SCALE", proxy_scale);
+	file->tag.set_property("PROXY_USE_SCALER", proxy_use_scaler);
+	file->tag.set_property("PROXY_AUTO_SCALE", proxy_auto_scale);
 	file->append_tag();
 	file->tag.set_title("/VIDEO");
 	file->append_tag();
@@ -841,7 +836,6 @@ int EDLSession::copy(EDLSession *session)
 	meter_format = session->meter_format;
 	min_meter_db = session->min_meter_db;
 	max_meter_db = session->max_meter_db;
-	mpeg4_deblock = session->mpeg4_deblock;
 	output_w = session->output_w;
 	output_h = session->output_h;
 	playback_buffer = session->playback_buffer;
@@ -884,8 +878,9 @@ int EDLSession::copy(EDLSession *session)
 	view_follows_playback = session->view_follows_playback;
 	vwindow_meter = session->vwindow_meter;
 	vwindow_zoom = session->vwindow_zoom;
-	proxy_use_scaler = session->proxy_use_scaler;
 	proxy_scale = session->proxy_scale;
+	proxy_use_scaler = session->proxy_use_scaler;
+	proxy_auto_scale = session->proxy_auto_scale;
 
 	subtitle_number = session->subtitle_number;
 	decode_subtitles = session->decode_subtitles;
@@ -901,10 +896,10 @@ void EDLSession::dump()
 	printf("    audio_tracks=%d audio_channels=%d sample_rate=%jd\n"
 		"    video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f\n"
 		"    decode subtitles=%d subtitle_number=%d label_cells=%d program_no=%d\n"
-		"    proxy_use_scaler=%d, proxy_scale=%d\n",
+		"    proxy_scale=%d\n proxy_use_scaler=%d, proxy_auto_scale=%d\n",
 		audio_tracks, audio_channels, sample_rate, video_tracks,
 		frame_rate, output_w, output_h, aspect_w, aspect_h,
 		decode_subtitles, subtitle_number, label_cells, program_no,
-		proxy_use_scaler, proxy_scale);
+		proxy_scale, proxy_use_scaler, proxy_auto_scale);
 }
 

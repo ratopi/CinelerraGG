@@ -2274,14 +2274,16 @@ void MWindow::remap_audio(int pattern)
 	}
 }
 
-void MWindow::set_proxy(int use_scaler, int new_scale,
-        ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets)
+void MWindow::set_proxy(int use_scaler, int new_scale, int auto_scale,
+		ArrayList<Indexable*> *orig_assets,
+		ArrayList<Indexable*> *proxy_assets)
 {
 	int orig_use_scaler = edl->session->proxy_use_scaler;
 	int orig_scale = edl->session->proxy_scale;
 // rescale to full size asset in read_frame
 	edl->session->proxy_use_scaler = use_scaler;
 	edl->session->proxy_scale = new_scale;
+	edl->session->proxy_auto_scale = auto_scale;
 
 	if( use_scaler ) {
 		for( int i=0; i<proxy_assets->size(); ++i ) {
@@ -2320,8 +2322,39 @@ void MWindow::set_proxy(int use_scaler, int new_scale,
 	}
 
 // change original assets to proxy assets
-	for( int i=0; i<proxy_assets->size(); i++ ) {
+	int awindow_folder = use_scaler || new_scale != 1 ? AW_PROXY_FOLDER : AW_MEDIA_FOLDER;
+	for( int i=0,n=proxy_assets->size(); i<n; ++i ) {
 		Asset *proxy_asset = edl->assets->update((Asset *)proxy_assets->get(i));
+		proxy_asset->awindow_folder = awindow_folder;
+// replace track contents
+		for( Track *track = edl->tracks->first; track; track = track->next ) {
+			if( track->data_type != TRACK_VIDEO ) continue;
+			for( Edit *edit = track->edits->first; edit; edit = edit->next ) {
+				if( !edit->asset ) continue;
+				if( !strcmp(edit->asset->path, orig_assets->get(i)->path) ) {
+					edit->asset = proxy_asset;
+				}
+			}
+		}
+	}
+}
+
+void MWindow::add_proxy(int use_scaler,
+		ArrayList<Indexable*> *orig_assets,
+		ArrayList<Indexable*> *proxy_assets)
+{
+	if( use_scaler ) {
+		for( int i=0,n=proxy_assets->size(); i<n; ++i ) {
+			Asset *proxy_asset = (Asset *)proxy_assets->get(i);
+			proxy_asset->width = orig_assets->get(i)->get_w();
+			proxy_asset->height = orig_assets->get(i)->get_h();
+		}
+	}
+
+// change original assets to proxy assets
+	for( int i=0,n=proxy_assets->size(); i<n; ++i ) {
+		Asset *proxy_asset = edl->assets->update((Asset *)proxy_assets->get(i));
+		proxy_asset->awindow_folder = AW_PROXY_FOLDER;
 // replace track contents
 		for( Track *track = edl->tracks->first; track; track = track->next ) {
 			if( track->data_type != TRACK_VIDEO ) continue;

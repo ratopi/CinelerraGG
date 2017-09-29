@@ -26,12 +26,15 @@
 #include "arraylist.h"
 #include "asset.h"
 #include "bcdialog.h"
+#include "cache.inc"
+#include "file.inc"
 #include "formattools.inc"
 #include "loadbalance.h"
 #include "mutex.inc"
 #include "mwindow.inc"
+#include "renderengine.inc"
 
-class ProxyThread;
+class ProxyDialog;
 class ProxyWindow;
 
 #define MAX_SIZES 16
@@ -45,7 +48,7 @@ public:
 	void create_objects();
 
 	MWindow *mwindow;
-	ProxyThread *thread;
+	ProxyDialog *dialog;
 };
 
 class FromProxyMenuItem : public BC_MenuItem
@@ -57,35 +60,59 @@ public:
 	MWindow *mwindow;
 };
 
-class ProxyThread : public BC_DialogThread
+
+class ProxyRender
 {
 public:
-	ProxyThread(MWindow *mwindow);
-	~ProxyThread();
-	BC_Window* new_gui();
-	void handle_close_event(int result);
-	static void to_proxy_path(char *new_path, Asset *asset, int scale);
-	static void from_proxy_path(char *new_path, Asset *asset, int scale);
-	void from_proxy();
-	void to_proxy();
+	ProxyRender(MWindow *mwindow, Asset *format_asset);
+	~ProxyRender();
+	void to_proxy_path(char *new_path, Indexable *indexable, int scale);
+	void from_proxy_path(char *new_path, Asset *asset, int scale);
+
+	ArrayList<Indexable *> orig_idxbls;   // originals which match the proxy assets
+	ArrayList<Indexable *> orig_proxies;  // proxy assets
+	Asset *add_original(Indexable *idxbl, int new_scale);
+	ArrayList<Indexable *> needed_idxbls; // originals which match the needed_assets
+	ArrayList<Asset *> needed_proxies;    // assets which must be created
+	void add_needed(Indexable *idxbl, Asset *proxy);
+
+	int create_needed_proxies(int new_scale);
 // increment the frame count by 1
 	void update_progress();
 // if user canceled progress bar
 	int is_canceled();
+
+	MWindow *mwindow;
+	Asset *format_asset;
+	MainProgressBar *progress;
+	Mutex *counter_lock;
+	int total_rendered;
+	int failed, canceled;
+};
+
+class ProxyDialog : public BC_DialogThread
+{
+public:
+	ProxyDialog(MWindow *mwindow);
+	~ProxyDialog();
+	BC_Window* new_gui();
+	void handle_close_event(int result);
+
+	void from_proxy();
+	void to_proxy();
 // calculate possible sizes based on the original size
 	void calculate_sizes();
 	void scale_to_text(char *string, int scale);
 
 	MWindow *mwindow;
 	ProxyWindow *gui;
-	MainProgressBar *progress;
-	Mutex *counter_lock;
 	Asset *asset;
+	ProxyRender *proxy_render;
+
 	int new_scale;
 	int orig_scale;
-	int total_rendered;
-	int failed;
 	int use_scaler;
+	int auto_scale;
 	char *size_text[MAX_SIZES];
 	int size_factors[MAX_SIZES];
 	int total_sizes;
@@ -94,11 +121,20 @@ public:
 class ProxyUseScaler : public BC_CheckBox
 {
 public:
-	ProxyUseScaler(MWindow *mwindow, ProxyWindow *pwindow,
-		int x, int y);
+	ProxyUseScaler(ProxyWindow *pwindow, int x, int y);
 	void update();
 	int handle_event();
-	MWindow *mwindow;
+
+	ProxyWindow *pwindow;
+};
+
+class ProxyAutoScale : public BC_CheckBox
+{
+public:
+	ProxyAutoScale(ProxyWindow *pwindow, int x, int y);
+	void update();
+	int handle_event();
+
 	ProxyWindow *pwindow;
 };
 
@@ -139,7 +175,7 @@ public:
 class ProxyWindow : public BC_Window
 {
 public:
-	ProxyWindow(MWindow *mwindow, ProxyThread *thread,
+	ProxyWindow(MWindow *mwindow, ProxyDialog *dialog,
 		int x, int y);
 	~ProxyWindow();
 
@@ -147,11 +183,12 @@ public:
 	void update();
 
 	MWindow *mwindow;
-	ProxyThread *thread;
+	ProxyDialog *dialog;
 	FormatTools *format_tools;
 	BC_Title *new_dimensions;
 	ProxyMenu *scale_factor;
 	ProxyUseScaler *use_scaler;
+	ProxyAutoScale *auto_scale;
 };
 
 class ProxyFarm;
@@ -160,36 +197,39 @@ class ProxyPackage : public LoadPackage
 {
 public:
 	ProxyPackage();
-	Asset *orig_asset;
+	Indexable *orig_idxbl;
 	Asset *proxy_asset;
 };
 
 class ProxyClient : public LoadClient
 {
 public:
-	ProxyClient(MWindow *mwindow, ProxyThread *thread,
-		ProxyFarm *server);
+	ProxyClient(MWindow *mwindow, ProxyRender *proxy_render, ProxyFarm *server);
+	~ProxyClient();
 	void process_package(LoadPackage *package);
 
 	MWindow *mwindow;
-	ProxyThread *thread;
+	ProxyRender *proxy_render;
+	RenderEngine *render_engine;
+	CICache *video_cache;
+	File *src_file;
 };
 
 
 class ProxyFarm : public LoadServer
 {
 public:
-	ProxyFarm(MWindow *mwindow, ProxyThread *thread, 
-		ArrayList<Asset*> *proxy_assets, ArrayList<Asset*> *orig_assets);
+	ProxyFarm(MWindow *mwindow, ProxyRender *proxy_render, 
+		ArrayList<Indexable*> *orig_idxbls, ArrayList<Asset*> *proxy_assets);
 	
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
 	
 	MWindow *mwindow;
-	ProxyThread *thread;
+	ProxyRender *proxy_render;
+	ArrayList<Indexable*> *orig_idxbls;
 	ArrayList<Asset*> *proxy_assets;
-	ArrayList<Asset*> *orig_assets;
 };
 
 #endif

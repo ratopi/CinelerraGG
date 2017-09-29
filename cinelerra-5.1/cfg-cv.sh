@@ -75,8 +75,8 @@ export MJPEG_CFLAGS="-I$THIRDPARTY/mjpegtools-2.1.0/. \
   -I$THIRDPARTY/mjpegtools-2.1.0/lavtools \
   -I$THIRDPARTY/mjpegtools-2.1.0/utils"
 
-export LIBX264_CFLAGS="-I$THIRDPARTY/x264-20151229/."
-export LIBX264_LIBS="-L$THIRDPARTY/x264-20151229/. -lx264"
+export LIBX264_CFLAGS="-I$THIRDPARTY/x264-snapshot-20160220-2245-stable/."
+export LIBX264_LIBS="-L$THIRDPARTY/x264-snapshot-20160220-2245-stable/. -lx264"
 
 for f in $MJPEG_LIBS $LIBX264_LIBS; do
   LIBS=`echo "$LIBS" | sed -e "s;[ ]*\<$f\>[ ]*; ;"`

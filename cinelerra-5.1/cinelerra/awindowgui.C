@@ -76,7 +76,8 @@ const char *AWindowGUI::folder_names[] =
 	N_("Labels"),
 	N_("Clips"),
 	N_("Media"),
-	N_("User")
+	N_("Proxy"),
+	N_("User"),
 };
 
 
@@ -582,6 +583,7 @@ SET_TRACE
 	folders.append(new AssetPicon(mwindow, this, AW_VTRANSITION_FOLDER, 1));
 	folders.append(new AssetPicon(mwindow, this, AW_LABEL_FOLDER, 1));
 	folders.append(new AssetPicon(mwindow, this, AW_CLIP_FOLDER, 1));
+	folders.append(new AssetPicon(mwindow, this, AW_PROXY_FOLDER, 1));
 	folders.append(new AssetPicon(mwindow, this, AW_MEDIA_FOLDER, 1));
 
 	create_label_folder();
@@ -970,7 +972,7 @@ void AWindowGUI::update_folder_list()
 //	printf("AWindowGUI::update_folder_list %s\n", folders.values[i]->get_text());
 
 // Delete excess
-	for( int i = folders.total - 1; i >= 0; i-- ) {
+	for( int i=folders.total; --i>=0; ) {
 		AssetPicon *picon = (AssetPicon*)folders.values[i];
 		if( !picon->in_use && !picon->persistent ) {
 			delete picon;
@@ -1295,10 +1297,12 @@ void AWindowGUI::filter_displayed_assets()
 	}
 
 	// Ensure the current folder icon is highlighted
-	for( int i = 0; i < folders.total; i++ )
-		folders.values[i]->set_selected(0);
-
-	folders.values[mwindow->edl->session->awindow_folder]->set_selected(1);
+	int selected_folder = mwindow->edl->session->awindow_folder;
+	for( int i = 0; i < folders.total; i++ ) {
+		AssetPicon *folder_item = (AssetPicon *)folders.values[i];
+		int selected = folder_item->foldernum == selected_folder ? 1 : 0;
+		folder_item->set_selected(selected);
+	}
 }
 
 
@@ -1569,6 +1573,7 @@ int AWindowAssets::button_press_event()
 			gui->cliplist_menu->activate_menu();
 			break;
 		case AW_MEDIA_FOLDER:
+		case AW_PROXY_FOLDER:
 			gui->assetlist_menu->update_titles();
 			gui->assetlist_menu->activate_menu();
 			break;

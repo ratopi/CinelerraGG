@@ -75,14 +75,18 @@ Downsample:	Reduce the sie of an image by throwing out data,
 Edge:		Display only the edges of the video throughout the image.
 Fields to frames: Reads frames at 2x the framerate, combining 2
 		input frames into 1 interlaced output frame.
-Find Object:	Locate a specific object in a scene and replace with 
+FindObj:	Locate a specific object in a scene and replace with 
 		another object.  This uses OpenCV thirdparty package.
 Flip:		Flip a portion of a video track from left to right,
 		up to down or vice versa.
+FlowObj:	Retards image motion as shown with optical flow. Uses
+		the OpenCV thirdparty package.
 Frames to Fields: Extracts 2 interlaced fields stored in alternating
 		lines & outputs them as full frames.
 Freeze Frame:	Lowest numbered frame in highlighted area will play
 		in the entire region.
+GaborObj:	Creates an interesting fractalius-like image effect.
+		Uses the OpenCV thirdparty package.
 Gamma:		Converts the logarithmic colors to linear colors
 		using gamma and maximum value.
 Gradient:	Overlays a smooth color gradient on top of every
@@ -128,6 +132,7 @@ MotionCV:	Motion tracking/stabilization from the community
 		version of cinelerra.
 MotionHV:	Motion tracking/stabilization from the original
 		author of cinelerra.
+MoveObj:	Move and stabilize object using OpenCV 3rd party pkg.
 Oil Painting:	Makes video tracks appear as a painting.
 Overlay:	Combine tracks via an overlayer that puts images on
 		top of a bottom layer.
@@ -290,7 +295,8 @@ F_mcdeint:	Applies motion compensating deinterlacing.
 F_mestimate:	Generate motion vectors.
 F_mpdecimate:	Remove near-duplicate frames.
 F_negate:	Negates input video.
-F_nlmeans:	Non-local means denoiser.
+F_nlmeans:	Non-local means denoiser. An example usage is for the
+		recovery of VHS tapes which look bad.
 F_noise:	Adds noise to the video.
 		Through the settings you can
 		select the variables of the noise
