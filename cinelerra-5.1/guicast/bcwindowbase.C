@@ -530,22 +530,9 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 			size_hints.x = this->x;
 			size_hints.y = this->y;
 		}
-
-		char *txlist[2];
-		txlist[0] = this->title;
-		txlist[1] = 0;
-		XTextProperty titleprop;
-		if(options & WINDOW_UTF8)
-			Xutf8TextListToTextProperty(display, txlist,  1,
-				XUTF8StringStyle, &titleprop);
-		else
-			XmbTextListToTextProperty(display, txlist, 1,
-				XStdICCTextStyle, &titleprop);
-		XSetWMProperties(display, win, &titleprop, &titleprop,
-			0, 0, &size_hints, 0, 0);
-		XFree(titleprop.value);
+		XSetWMProperties(display, win, 0, 0, 0, 0, &size_hints, 0, 0);
 		get_atoms();
-
+		set_title(title);
 #ifndef SINGLE_THREAD
 		clipboard = new BC_Clipboard(this);
 		clipboard->start_clipboard();
@@ -4124,39 +4111,30 @@ void BC_WindowBase::put_title(const char *text)
 	*cp = 0;
 }
 
-void BC_WindowBase::set_title(const char *text)
+void BC_WindowBase::set_title(const char *text, int utf8)
 {
+// utf8>0: wm + net_wm, utf8=0: wm only,  utf<0: net_wm only
 	put_title(_(text));
-
-	char *txlist[2];
-	txlist[0] = this->title;
-	txlist[1] = 0;
-
-	XTextProperty titleprop;
-	XmbTextListToTextProperty(top_level->display, txlist, 1,
-		XStdICCTextStyle, &titleprop);
-	XSetWMName(top_level->display, top_level->win, &titleprop);
-	XSetWMIconName(top_level->display, top_level->win, &titleprop);
-	XFree(titleprop.value);
-
-	flush();
-}
-
-void BC_WindowBase::set_utf8title(const char *text)
-{
-	XTextProperty titleprop;
-	char *txlist[2];
-
-	strcpy(this->title, text);
-	txlist[0] = this->title;
-	txlist[1] = 0;
-
-	Xutf8TextListToTextProperty(top_level->display, txlist,  1,
-		XUTF8StringStyle, &titleprop);
-	XSetWMName(top_level->display, top_level->win, &titleprop);
-	XSetWMIconName(top_level->display, top_level->win, &titleprop);
-	XFree(titleprop.value);
-
+	const unsigned char *wm_title = (const unsigned char *)title;
+	int title_len = strlen((const char *)title);
+	if( utf8 >= 0 ) {
+		Atom xa_wm_name = XA_WM_NAME;
+		Atom xa_icon_name = XA_WM_ICON_NAME;
+		Atom xa_string = XA_STRING;
+		XChangeProperty(display, win, xa_wm_name, xa_string, 8,
+				PropModeReplace, wm_title, title_len);
+		XChangeProperty(display, win, xa_icon_name, xa_string, 8,
+				PropModeReplace, wm_title, title_len);
+	}
+	if( utf8 != 0 ) {
+		Atom xa_net_wm_name = XInternAtom(display, "_NET_WM_NAME", True);
+		Atom xa_net_icon_name = XInternAtom(display, "_NET_WM_ICON_NAME", True);
+		Atom xa_utf8_string = XInternAtom(display, "UTF8_STRING", True);
+		XChangeProperty(display, win, xa_net_wm_name, xa_utf8_string, 8,
+					PropModeReplace, wm_title, title_len);
+		XChangeProperty(display, win, xa_net_icon_name, xa_utf8_string, 8,
+					PropModeReplace, wm_title, title_len);
+	}
 	flush();
 }
 

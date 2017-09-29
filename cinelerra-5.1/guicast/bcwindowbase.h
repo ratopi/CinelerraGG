@@ -450,9 +450,8 @@ public:
 	void set_background(VFrame *bitmap);
 // Change the window title.
 	void put_title(const char *text);
-	void set_title(const char *text);
+	void set_title(const char *text, int utf8=1);
 	const char *get_title();
-	void set_utf8title(const char *text);
 // Change the window title.  The title is translated internally.
 	void start_video();
 	void stop_video();
