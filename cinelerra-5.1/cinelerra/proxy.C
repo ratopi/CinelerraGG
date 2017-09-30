@@ -351,9 +351,7 @@ Asset *ProxyRender::add_original(Indexable *idxbl, int new_scale)
 		proxy->video_length = idxbl->get_video_frames();
 		edl_assets->append(proxy);
 	}
-	else {
-		proxy->add_user();
-	}
+	proxy->add_user();
 	orig_proxies.append(proxy);
 	idxbl->add_user();
 	orig_idxbls.append(idxbl);
