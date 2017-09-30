@@ -177,13 +177,13 @@ void ProxyDialog::to_proxy()
 		for( ; orig_asset; orig_asset=orig_asset->next ) {
 			char new_path[BCTEXTLEN];
 			proxy_render.to_proxy_path(new_path, orig_asset, proxy_scale);
-			Asset *proxy_asset = edl->assets->get_asset(new_path);
-			if( !proxy_asset ) continue;
 // test if proxy asset was already added to proxy_assets
 			int got_it = 0;
 			for( int i = 0; !got_it && i<proxy_assets.size(); ++i )
 				got_it = !strcmp(proxy_assets[i]->path, new_path);
 			if( got_it ) continue;
+			Asset *proxy_asset = edl->assets->get_asset(new_path);
+			if( !proxy_asset ) continue;
 // add pointer to existing EDL asset if it exists
 // EDL won't delete it unless it's the same pointer.
 			proxy_assets.append(proxy_asset);
@@ -197,8 +197,12 @@ void ProxyDialog::to_proxy()
 		mwindow->set_proxy(0, 1, proxy_auto_scale, &proxy_assets, &orig_idxbls);
 
 // remove the references
-		for( int i=0; i<proxy_assets.size(); ++i )
-			proxy_assets[i]->remove_user();
+		for( int i=0; i<proxy_assets.size(); ++i ) {
+			Asset *proxy = (Asset *) proxy_assets[i];
+			proxy->width = proxy->actual_width;
+			proxy->height = proxy->actual_height;
+			proxy->remove_user();
+		}
 		proxy_assets.remove_all();
 		for( int i = 0; i < orig_idxbls.size(); i++ )
 			orig_idxbls[i]->remove_user();
@@ -328,26 +332,31 @@ Asset *ProxyRender::add_original(Indexable *idxbl, int new_scale)
 	for( int i = 0; !got_it && i<orig_proxies.size(); ++i )
 		got_it = !strcmp(orig_proxies[i]->path, new_path);
 	if( got_it ) return 0;
-
-// new proxy asset
-	Asset *proxy = new Asset;
+	Assets *edl_assets = mwindow->edl->assets;
+	Asset *proxy = edl_assets->get_asset(new_path);
+	if( !proxy ) {
+		proxy = new Asset(new_path);
 // new compression parameters
-	proxy->copy_format(format_asset, 0);
-	proxy->update_path(new_path);
-	proxy->audio_data = 0;
-	proxy->video_data = 1;
-	proxy->layers = 1;
-	proxy->width = idxbl->get_w() / new_scale;
-	if( proxy->width & 1 ) ++proxy->width;
-	proxy->actual_width = proxy->width;
-	proxy->height = idxbl->get_h() / new_scale;
-	if( proxy->height & 1 ) ++proxy->height;
-	proxy->actual_height = proxy->height;
-	proxy->frame_rate = idxbl->get_frame_rate();
-	proxy->video_length = idxbl->get_video_frames();
+		proxy->copy_format(format_asset, 0);
+		proxy->audio_data = 0;
+		proxy->video_data = 1;
+		proxy->layers = 1;
+		proxy->width = idxbl->get_w() / new_scale;
+		if( proxy->width & 1 ) ++proxy->width;
+		proxy->actual_width = proxy->width;
+		proxy->height = idxbl->get_h() / new_scale;
+		if( proxy->height & 1 ) ++proxy->height;
+		proxy->actual_height = proxy->height;
+		proxy->frame_rate = idxbl->get_frame_rate();
+		proxy->video_length = idxbl->get_video_frames();
+		edl_assets->append(proxy);
+	}
+	else {
+		proxy->add_user();
+	}
 	orig_proxies.append(proxy);
-	orig_idxbls.append(idxbl);
 	idxbl->add_user();
+	orig_idxbls.append(idxbl);
 	return proxy;
 }
 
