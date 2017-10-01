@@ -338,6 +338,7 @@ Asset *ProxyRender::add_original(Indexable *idxbl, int new_scale)
 		proxy = new Asset(new_path);
 // new compression parameters
 		proxy->copy_format(format_asset, 0);
+		proxy->awindow_folder = AW_PROXY_FOLDER;
 		proxy->audio_data = 0;
 		proxy->video_data = 1;
 		proxy->layers = 1;
@@ -673,7 +674,8 @@ void ProxyClient::process_package(LoadPackage *ptr)
 	Asset *proxy = package->proxy_asset;
 //printf("%s %s\n", orig->path, proxy->path);
 	VRender *vrender = 0;
-	int processors = 1, result = 0;
+	int jobs = proxy_render->needed_proxies.size();
+	int processors = preferences->project_smp / jobs + 1, result = 0;
 
 	if( orig->is_asset ) {
 		src_file = new File;

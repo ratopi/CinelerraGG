@@ -623,6 +623,9 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				{
 				// This works like this: CUT edit, INSERT edit at final position, keyframes also follow
 				// FIXME: there should be a GUI way to tell whenever user also wants to move autos or not
+// this is all screwed up
+//  inserts defaults/bogus everywhere
+#if 0
 // Copy keyframes
 					FileXML temp;
 					AutoConf temp_autoconf;
@@ -655,7 +658,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 						dest_track->automation->paste(position_a,
 							source_length, 1.0, &temp, 0, 1,
 							&temp_autoconf);
-
+#endif
 // Insert new edit
 					Edit *dest_edit = dest_track->edits->shift(position_i,
 						source_length);

@@ -1845,7 +1845,9 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				}
 			}
 		}
+		gui->unlock_window(); // to update progress bar
 		render_proxy(orig_idxbls);
+		gui->lock_window("MWindow::load_filenames");
 	}
 
 // need to update undo before project, since mwindow is unlocked & a new load
