@@ -642,8 +642,7 @@ new_vframes(20,default_medium_7segment,
 	menu_item_text = BLACK;
 	menu_highlighted_fontcolor = BLACK;
 	progress_text = BLACK;
-
-
+	grab_input_focus = 1;
 
 	text_default = BLACK;
 	highlight_inverse = WHITE ^ BLUE;

@@ -51,7 +51,7 @@
 #define MAX_SCALE 16
 
 ProxyMenuItem::ProxyMenuItem(MWindow *mwindow)
- : BC_MenuItem(_("Proxy settings..."),  _("Alt-P"), 'p')
+ : BC_MenuItem(_("Proxy settings..."),  _("Alt-r"), 'r')
 {
 	this->mwindow = mwindow;
 	set_alt();

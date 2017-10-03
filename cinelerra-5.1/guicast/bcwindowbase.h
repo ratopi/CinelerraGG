@@ -674,6 +674,8 @@ private:
 	int video_on;
 // Event handler completion
 	int done, done_set, window_running;
+// Enter/Leave notify state
+	int cursor_entered;
 // Return value of event handler
 	int return_value;
 // Motion event compression

@@ -110,6 +110,8 @@ public:
 	int warn_indexes;
 	int warn_version;
 	int bd_warn_root;
+// grab input focus on enter notify
+	int grab_input_focus;
 // popup menus activate on button release
 	int popupmenu_btnup;
 // textbox focus policy: click, leave
@@ -118,6 +120,8 @@ public:
 	int forward_render_displacement;
 // use dvd yuv420p interlace format
 	int dvd_yuv420p_interlace;
+// highlight inversion color
+	int highlight_inverse;
 
 // Default positions for channels
 	int channel_positions[MAXCHANNELS * MAXCHANNELS];

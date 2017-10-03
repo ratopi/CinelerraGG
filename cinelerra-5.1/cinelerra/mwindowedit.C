@@ -512,11 +512,14 @@ void MWindow::crop_video()
 
 void MWindow::cut()
 {
-	undo->update_undo_before();
-
 	double start = edl->local_session->get_selectionstart();
 	double end = edl->local_session->get_selectionend();
+	cut(start, end);
+}
 
+void MWindow::cut(double start, double end, double new_position)
+{
+	undo->update_undo_before();
 	copy(start, end);
 	edl->clear(start, end,
 		edl->session->labels_follow_edits,
@@ -527,13 +530,52 @@ void MWindow::cut()
 	edl->optimize();
 	save_backup();
 	undo->update_undo_after(_("cut"), LOAD_EDITS | LOAD_TIMEBAR);
-
+	if( new_position >= 0 ) {
+		edl->local_session->set_selectionstart(new_position);
+		edl->local_session->set_selectionend(new_position);
+	}
 	restart_brender();
 	update_plugin_guis();
 	gui->update(1, 2, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
 	cwindow->playback_engine->que->
 		send_command(CURRENT_FRAME, CHANGE_EDL, edl, 1);
+}
+
+void MWindow::snap_left_edit()
+{
+	double start_pos = edl->local_session->get_selectionstart();
+	double position = edl->prev_edit(start_pos);
+	if( position < start_pos )
+		cut(position, start_pos, position);
+}
+
+void MWindow::snap_right_edit()
+{
+	double end_pos = edl->local_session->get_selectionend();
+	double position = edl->next_edit(end_pos);
+	if( end_pos < position )
+		cut(end_pos, position, end_pos);
+}
+
+void MWindow::snap_left_label()
+{
+	double start_pos = edl->local_session->get_selectionstart();
+	Label *left_label = edl->labels->prev_label(start_pos);
+	if( !left_label ) return;
+	double position = left_label->position;
+	if( position < start_pos )
+		cut(position, start_pos, position);
+}
+
+void MWindow::snap_right_label()
+{
+	double end_pos = edl->local_session->get_selectionend();
+	Label *right_label = edl->labels->next_label(end_pos);
+	if( !right_label ) return;
+	double position = right_label->position;
+	if( end_pos < position )
+		cut(end_pos, position, end_pos);
 }
 
 int MWindow::cut_automation()

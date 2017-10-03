@@ -132,6 +132,9 @@ public:
 // Add assets from the src to the destination
 	void update_assets(EDL *src);
 	void optimize();
+// return next/prev edit starting from position
+	double next_edit(double position);
+	double prev_edit(double position);
 // Debug
 	int dump(FILE *fp=stdout);
 	static int next_id();

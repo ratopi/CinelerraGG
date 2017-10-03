@@ -1277,7 +1277,7 @@ void TrackCanvas::draw_highlight_rectangle(int x, int y, int w, int h)
 	h = MIN(h, get_h() + 20);
 	if(w > 0 && h > 0)
 	{
-		set_color(WHITE);
+		set_color(mwindow->preferences->highlight_inverse);
 		set_inverse();
 		//draw_rectangle(x, y, w, h);
 		draw_rectangle(x + 1, y + 1, w - 2, h - 2);
@@ -1339,7 +1339,7 @@ void TrackCanvas::draw_highlight_insertion(int x, int y, int w, int h)
 	}
 	w = MIN(w, get_w() + 20);
 	h = MIN(h, get_h() + 20);
-	set_color(WHITE);
+	set_color(mwindow->preferences->highlight_inverse);
 	set_inverse();
 	draw_rectangle(x, y, w, h);
 	draw_rectangle(x + 1, y + 1, w - 2, h - 2);
@@ -4658,6 +4658,7 @@ int TrackCanvas::button_press_event()
 	int result = 0;
 	int cursor_x, cursor_y;
 	int new_cursor;
+	double start_position = mwindow->edl->local_session->get_selectionstart(1);
 
 	cursor_x = get_cursor_x();
 	cursor_y = get_cursor_y();
@@ -4812,6 +4813,23 @@ int TrackCanvas::button_press_event()
 			gui->show_cursor(1);
 			gui->zoombar->update();
 			gui->flash_canvas(1);
+		}
+	}
+// if snapping to selection point
+	if( gui->ctrl_down() && gui->alt_down() ) {
+		switch( mwindow->session->current_operation ) {
+		case DRAG_EDITHANDLE1:
+			mwindow->session->drag_position = start_position;
+			mwindow->session->current_operation = NO_OPERATION;
+			drag_scroll = 0;
+			end_edithandle_selection();
+			break;
+		case DRAG_PLUGINHANDLE1:
+			mwindow->session->drag_position = start_position;
+			mwindow->session->current_operation = NO_OPERATION;
+			drag_scroll = 0;
+			end_pluginhandle_selection();
+			break;
 		}
 	}
 	return result;

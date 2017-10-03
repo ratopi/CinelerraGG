@@ -139,7 +139,8 @@ public:
 
 // color for progress text
 	int progress_text;
-
+// set focus on enter
+	int grab_input_focus;
 
 	int menu_highlighted_fontcolor;
 

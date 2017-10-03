@@ -896,6 +896,7 @@ void MWindow::init_preferences()
 	}
 	BC_WindowBase::get_resources()->popupmenu_btnup = preferences->popupmenu_btnup;
 	BC_WindowBase::get_resources()->textbox_focus_policy = preferences->textbox_focus_policy;
+	BC_WindowBase::get_resources()->grab_input_focus = preferences->grab_input_focus;
 }
 
 void MWindow::clean_indexes()

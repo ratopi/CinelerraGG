@@ -139,6 +139,13 @@ void AppearancePrefs::create_objects()
 	add_subwindow(seconds = new TimeFormatSeconds(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_SECONDS,
 		x, y));
+	x = x0;
+	y += 35;
+	add_subwindow(title = new BC_Title(x, y, _("Highlighting Inversion color:")));
+	x += title->get_w() + margin;
+	char hex_color[BCSTRLEN];
+	sprintf(hex_color, "%06x", preferences->highlight_inverse);
+        add_subwindow(new HighlightInverseColor(pwindow, x, y, hex_color));
 	y += 35;
 
 	UseTipWindow *tip_win = new UseTipWindow(pwindow, x1, y1);
@@ -156,6 +163,9 @@ void AppearancePrefs::create_objects()
 	PopupMenuBtnup *pop_win = new PopupMenuBtnup(pwindow, x1, y1);
 	add_subwindow(pop_win);
 	y1 += pop_win->get_h() + 5;
+	GrabFocusPolicy *grab_input_focus = new GrabFocusPolicy(pwindow, x1, y1);
+	add_subwindow(grab_input_focus);
+	y1 += grab_input_focus->get_h() + 5;
 	ActivateFocusPolicy *focus_activate = new ActivateFocusPolicy(pwindow, x1, y1);
 	add_subwindow(focus_activate);
 	y1 += focus_activate->get_h() + 5;
@@ -439,6 +449,19 @@ int PopupMenuBtnup::handle_event()
 	return 1;
 }
 
+GrabFocusPolicy::GrabFocusPolicy(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, (pwindow->thread->preferences->grab_input_focus) != 0,
+	_("Set Input Focus when window entered"))
+{
+	this->pwindow = pwindow;
+}
+
+int GrabFocusPolicy::handle_event()
+{
+	pwindow->thread->preferences->grab_input_focus = get_value();
+	return 1;
+}
+
 ActivateFocusPolicy::ActivateFocusPolicy(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, y, (pwindow->thread->preferences->textbox_focus_policy & CLICK_ACTIVATE) != 0,
 	_("Click to activate text focus"))
@@ -481,6 +504,20 @@ ForwardRenderDisplacement::ForwardRenderDisplacement(PreferencesWindow *pwindow,
 int ForwardRenderDisplacement::handle_event()
 {
 	pwindow->thread->preferences->forward_render_displacement = get_value();
+	return 1;
+}
+
+HighlightInverseColor::HighlightInverseColor(PreferencesWindow *pwindow, int x, int y, const char *hex)
+ : BC_TextBox(x, y, 80, 1, hex)
+{
+	this->pwindow = pwindow;
+}
+
+int HighlightInverseColor::handle_event()
+{
+	int inverse_color = strtoul(get_text(),0,16);
+	inverse_color &= 0xffffff;
+	pwindow->thread->preferences->highlight_inverse = inverse_color;
 	return 1;
 }
 

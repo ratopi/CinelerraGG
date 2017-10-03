@@ -26,6 +26,7 @@
 #include "maincursor.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "preferences.h"
 #include "timelinepane.h"
 #include "trackcanvas.h"
 
@@ -132,7 +133,7 @@ void MainCursor::draw(int do_plugintoggles)
 //printf("MainCursor::draw 2\n");
 	}
 
-	pane->canvas->set_color(WHITE);
+	pane->canvas->set_color(mwindow->preferences->highlight_inverse);
 	pane->canvas->set_inverse();
 	pane->canvas->draw_box(pixel1, 0, pixel2 - pixel1 + 1, pane->canvas->get_h());
 	pane->canvas->set_opaque();

@@ -211,6 +211,14 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class GrabFocusPolicy : public BC_CheckBox
+{
+public:
+	GrabFocusPolicy(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 class ActivateFocusPolicy : public BC_CheckBox
 {
 public:
@@ -235,5 +243,12 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class HighlightInverseColor : public BC_TextBox
+{
+public:
+	HighlightInverseColor(PreferencesWindow *pwindow, int x, int y, const char *hex);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
 
 #endif

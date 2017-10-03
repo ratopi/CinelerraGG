@@ -296,6 +296,7 @@ int BC_WindowBase::initialize()
 	active_menubar = 0;
 	active_popup_menu = 0;
 	active_subwindow = 0;
+	cursor_entered = 0;
 	pixmap = 0;
 	bg_pixmap = 0;
 	_7segment_pixmaps = 0;
@@ -1325,11 +1326,20 @@ locking_message = event->xclient.message_type;
 		break;
 
 	case LeaveNotify:
+		if( cursor_entered && event->xcrossing.window == win ) {
+			cursor_entered = 0;
+		}
 		event_win = event->xany.window;
 		dispatch_cursor_leave();
 		break;
 
 	case EnterNotify:
+		if( !cursor_entered && event->xcrossing.window == win ) {
+			if( !event->xcrossing.focus && get_resources()->grab_input_focus ) {
+				XSetInputFocus(display, win, RevertToParent, CurrentTime);
+			}
+			cursor_entered = 1;
+		}
 		event_win = event->xany.window;
 		cursor_x = event->xcrossing.x;
 		cursor_y = event->xcrossing.y;

@@ -323,6 +323,12 @@ public:
 	void copy();
 	int copy(double start, double end);
 	void cut();
+	void cut(double start, double end, double new_position=-1);
+// snap off edit from current position to handle/label
+	void snap_left_edit();
+	void snap_right_edit();
+	void snap_left_label();
+	void snap_right_label();
 
 // Calculate aspect ratio from pixel counts
 	static int create_aspect_ratio(float &w, float &h, int width, int height);

@@ -356,6 +356,7 @@ void SWindowGUI::set_script_pos(int64_t entry_no, int text_no)
 
 int SWindowGUI::load_selection(int pos, int row)
 {
+	if( pos < 0 || pos >= script.size() ) return 1;
 	ScriptLines *texts = script[pos];
 	char *rp = texts->get_text_row(row);
 	if( !rp || *rp == '=' || *rp == '*' || *rp=='\n' ) return 1;

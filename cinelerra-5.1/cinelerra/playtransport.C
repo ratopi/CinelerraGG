@@ -193,12 +193,13 @@ int PlayTransport::keypress_event()
 
 	int toggle_audio = subwindow->shift_down() ? 1 : 0;
 	int use_inout = subwindow->ctrl_down() ? 1 : 0;
+	int alt_key = subwindow->alt_down() ? 1 : 0;
 	int command = -1, prev_command = engine->command->command;
 	using_inout = use_inout;
 	subwindow->unlock_window();
 
+	result = 0;
 	switch( key ) {
-	case 'k':
 	case KPINS:	command = STOP;			break;
 	case KPPLUS:	command = FAST_REWIND;		break;
 	case KP6:	command = NORMAL_REWIND;	break;
@@ -221,12 +222,38 @@ int PlayTransport::keypress_event()
 			break;
 		}
 		break;
-	default:
-		result = 0;
+	case 'u': case 'U':
+		if( alt_key ) command = SINGLE_FRAME_REWIND;
+		break;
+	case 'i': case 'I':
+		if( alt_key ) command = SLOW_REWIND;
+		break;
+	case 'o': case 'O':
+		if( alt_key ) command = NORMAL_REWIND;
+		break;
+	case 'p': case 'P':
+		if( alt_key ) command = FAST_REWIND;
+		break;
+	case 'j': case 'J':
+		if( alt_key ) command = SINGLE_FRAME_FWD;
+		break;
+	case 'k': case 'K':
+		if( alt_key ) command = SLOW_FWD;
+		break;
+	case 'l': case 'L':
+		if( alt_key ) command = NORMAL_FWD;
+		break;
+	case ':': case ';':
+		if( alt_key ) command = FAST_FWD;
+		break;
+	case 'm': case 'M':
+		if( alt_key ) command = STOP;
 		break;
 	}
-	if( command >= 0 )
+	if( command >= 0 ) {
 		handle_transport(command, 0, use_inout, 1, toggle_audio);
+		result = 1;
+	}
 
 	subwindow->lock_window("PlayTransport::keypress_event 5");
 	return result;

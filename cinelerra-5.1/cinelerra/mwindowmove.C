@@ -595,13 +595,10 @@ int MWindow::next_label(int shift_down)
 		TimelinePane *pane = gui->get_focused_pane();
 		if(edl->local_session->get_selectionend(1) >=
 			(double)edl->local_session->view_start[pane->number] *
-				edl->local_session->zoom_sample /
-				edl->session->sample_rate +
+				edl->local_session->zoom_sample / edl->session->sample_rate +
 				pane->canvas->time_visible() ||
 			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start[pane->number] *
-				edl->local_session->zoom_sample /
-				edl->session->sample_rate)
-		{
+				edl->local_session->zoom_sample / edl->session->sample_rate) {
 			samplemovement((int64_t)(edl->local_session->get_selectionend(1) *
 				edl->session->sample_rate /
 				edl->local_session->zoom_sample -
@@ -650,14 +647,10 @@ int MWindow::prev_label(int shift_down)
 		update_plugin_guis();
 		TimelinePane *pane = gui->get_focused_pane();
 		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start[pane->number] *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate +
-			pane->canvas->time_visible()
-		||
+			edl->local_session->zoom_sample / edl->session->sample_rate +
+			pane->canvas->time_visible() ||
 			edl->local_session->get_selectionstart(1) < edl->local_session->view_start[pane->number] *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate)
-		{
+			edl->local_session->zoom_sample / edl->session->sample_rate ) {
 			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) *
 				edl->session->sample_rate /
 				edl->local_session->zoom_sample -
@@ -686,40 +679,11 @@ int MWindow::prev_label(int shift_down)
 }
 
 
-
-
-
-
 int MWindow::next_edit_handle(int shift_down)
 {
 	double position = edl->local_session->get_selectionend(1);
-	Units::fix_double(&position);
-	double new_position = INFINITY;
-
-	double max_rate = edl->get_frame_rate();
-	int sample_rate = edl->get_sample_rate();
-	if( sample_rate > max_rate ) max_rate = sample_rate;
-	double min_movement = max_rate > 0 ? 1. / max_rate : 1e-6;
-
-// Test for edit handles after cursor position
-	for (Track *track = edl->tracks->first; track; track = track->next)
-	{
-		if (track->record)
-		{
-			for (Edit *edit = track->edits->first; edit; edit = edit->next)
-			{
-				double edit_end = track->from_units(edit->startproject + edit->length);
-				Units::fix_double(&edit_end);
-				if( fabs(edit_end-position) < min_movement ) continue;
-				if (edit_end > position && edit_end < new_position)
-					new_position = edit_end;
-			}
-		}
-	}
-
-	if(new_position != INFINITY)
-	{
-
+	double new_position = edl->next_edit(position);
+	if(new_position != INFINITY) {
 		edl->local_session->set_selectionend(new_position);
 //printf("MWindow::next_edit_handle %d\n", shift_down);
 		if(!shift_down)
@@ -766,33 +730,9 @@ int MWindow::next_edit_handle(int shift_down)
 int MWindow::prev_edit_handle(int shift_down)
 {
 	double position = edl->local_session->get_selectionstart(1);
-	double new_position = -1;
-	Units::fix_double(&position);
+	double new_position = edl->prev_edit(position);
 
-	double max_rate = edl->get_frame_rate();
-	int sample_rate = edl->get_sample_rate();
-	if( sample_rate > max_rate ) max_rate = sample_rate;
-	double min_movement = max_rate > 0 ? 1. / max_rate : 1e-6;
-
-// Test for edit handles before cursor position
-	for (Track *track = edl->tracks->first; track; track = track->next)
-	{
-		if (track->record)
-		{
-			for (Edit *edit = track->edits->first; edit; edit = edit->next)
-			{
-				double edit_end = track->from_units(edit->startproject);
-				Units::fix_double(&edit_end);
-				if( fabs(edit_end-position) < min_movement ) continue;
-				if (edit_end < position && edit_end > new_position)
-					new_position = edit_end;
-			}
-		}
-	}
-
-	if(new_position != -1)
-	{
-
+	if(new_position != -1) {
 		edl->local_session->set_selectionstart(new_position);
 //printf("MWindow::next_edit_handle %d\n", shift_down);
 		if(!shift_down)
