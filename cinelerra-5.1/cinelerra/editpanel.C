@@ -339,7 +339,7 @@ void EditPanel::toggle_label()
 void EditPanel::prev_label()
 {
 	int shift_down = subwindow->shift_down();
-	int snap = subwindow->ctrl_down() && subwindow->ctrl_down();
+	int snap = subwindow->ctrl_down() && subwindow->alt_down();
 
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
 	int have_subwindow_lock =
@@ -369,7 +369,7 @@ void EditPanel::prev_label()
 void EditPanel::next_label()
 {
 	int shift_down = subwindow->shift_down();
-	int snap = subwindow->ctrl_down() && subwindow->ctrl_down();
+	int snap = subwindow->ctrl_down() && subwindow->alt_down();
 
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
 	int have_subwindow_lock =
@@ -401,7 +401,7 @@ void EditPanel::next_label()
 void EditPanel::prev_edit()
 {
 	int shift_down = subwindow->shift_down();
-	int snap = subwindow->ctrl_down() && subwindow->ctrl_down();
+	int snap = subwindow->ctrl_down() && subwindow->alt_down();
 
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
 	int have_subwindow_lock =
@@ -431,7 +431,7 @@ void EditPanel::prev_edit()
 void EditPanel::next_edit()
 {
 	int shift_down = subwindow->shift_down();
-	int snap = subwindow->ctrl_down() && subwindow->ctrl_down();
+	int snap = subwindow->ctrl_down() && subwindow->alt_down();
 
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
 	int have_subwindow_lock =
