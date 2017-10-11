@@ -211,6 +211,13 @@ int PreferencesThread::apply_settings()
 		(*this_aconfig != *aconfig) || (*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1, edl);
 
+	if( preferences->highlight_inverse != mwindow->preferences->highlight_inverse ) {
+		mwindow->gui->lock_window("PreferencesThread::apply_settings 0");
+		mwindow->gui->hide_cursor(0);
+		mwindow->gui->unlock_window();
+		redraw_overlays = 1;
+	}
+
 	if( strcmp(preferences->theme, mwindow->preferences->theme) != 0 )
 		mwindow->restart_status = -1; // reload, need new bcresources
 	if( strcmp(preferences->plugin_icons, mwindow->preferences->plugin_icons) != 0 )
@@ -292,6 +299,7 @@ int PreferencesThread::apply_settings()
 	if(redraw_overlays)
 	{
 		mwindow->gui->lock_window("PreferencesThread::apply_settings 2");
+		mwindow->gui->show_cursor(0);
 		mwindow->gui->draw_overlays(1);
 		mwindow->gui->unlock_window();
 	}

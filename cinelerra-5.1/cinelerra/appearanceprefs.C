@@ -516,7 +516,12 @@ HighlightInverseColor::HighlightInverseColor(PreferencesWindow *pwindow, int x, 
 int HighlightInverseColor::handle_event()
 {
 	int inverse_color = strtoul(get_text(),0,16);
-	inverse_color &= 0xffffff;
+	if( (inverse_color &= 0xffffff) == 0 ) {
+		inverse_color = 0xffffff;
+		char string[BCSTRLEN];
+		sprintf(string,"%06x", inverse_color);
+		update(string);
+	}
 	pwindow->thread->preferences->highlight_inverse = inverse_color;
 	return 1;
 }

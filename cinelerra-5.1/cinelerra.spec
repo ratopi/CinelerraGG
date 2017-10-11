@@ -1,6 +1,13 @@
-%define ver 20170930
+%define ver 20171011
+%define cin cinelerra
 Summary: Multimedia Editing and construction
-Name: cinelerra
+
+%if 0%{?hidepth}
+%define xbit 10bit
+%define xcfg --enable-x265_hidepth --with-exec-name=cinx
+%endif
+
+Name: %{cin}%{xbit}
 Version: 5.1
 Release: %{ver}
 License: GPL
@@ -9,7 +16,7 @@ URL: http://cinelerra-cv.org/
 
 # Obtained from :
 # git clone git://git.cinelerra.org/goodguy/cinelerra.git cinelerra5
-Source0: cinelerra-%{version}-%{ver}.tar.bz2
+Source0: %{cin}-%{version}-%{ver}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %if 0%{?fedora}%{?centos}
@@ -58,10 +65,11 @@ BuildRequires: zlib-devel
 Multimedia editing and construction
 
 %prep
-%setup
+%define _buildsubdir %{cin}-%{version}
+%setup -q -n %{cin}-%{version}
 %build
 ./autogen.sh
-%configure
+%configure %{xcfg}
 %{__make}
 
 %install

@@ -1791,7 +1791,11 @@ int BC_ListBox::select_next(int skip,
 void BC_ListBox::clamp_positions()
 {
 	items_w = get_items_width();
+	if( xscroll_orientation & SCROLL_STRETCH )
+		items_w += view_w / 4;
 	items_h = get_items_height(data, columns);
+	if( yscroll_orientation & SCROLL_STRETCH )
+		items_h += view_h / 4;
 
 	if(yposition < 0) yposition = 0;
 	else
@@ -2230,7 +2234,7 @@ int BC_ListBox::reposition_item(ArrayList<BC_ListBoxItem*> *data,
 void BC_ListBox::move_selection(ArrayList<BC_ListBoxItem*> *dst,
 	ArrayList<BC_ListBoxItem*> *src)
 {
-	for(int i = 0; i < src[master_column].total; i++)
+	for(int i = 0; i < src[master_column].total; )
 	{
 		BC_ListBoxItem *item = src[master_column].values[i];
 
@@ -2242,14 +2246,15 @@ void BC_ListBox::move_selection(ArrayList<BC_ListBoxItem*> *dst,
 				dst[j].append(src[j].values[i]);
 				src[j].remove_number(i);
 			}
+			continue;
 		}
-		else
 // Descend into sublist
 		if(item->get_sublist())
 		{
 			move_selection(dst,
 				item->get_sublist());
 		}
+		++i;
 	}
 }
 
@@ -2261,7 +2266,7 @@ int BC_ListBox::put_selection(ArrayList<BC_ListBoxItem*> *data,
 	int temp = -1;
 	if(!counter) counter = &temp;
 
-	if(destination < 0)
+	if(destination < 0 || destination >= data[master_column].total)
 	{
 		for(int j = 0; j < columns; j++)
 		{
@@ -2451,6 +2456,7 @@ int BC_ListBox::repeat_event(int64_t duration)
 				return rectangle_scroll_event();
 			break;
 
+		case DRAG_ITEM:
 		case SELECT:
 			if(duration == get_resources()->scroll_repeat)
 				return select_scroll_event();
@@ -3708,6 +3714,7 @@ int BC_ListBox::drag_start_event()
 					}
 
 					current_operation = DRAG_ITEM;
+					set_repeat(get_resources()->scroll_repeat);
 					return 1;
 				}
 			}
@@ -3785,6 +3792,7 @@ int BC_ListBox::drag_stop_event()
 	switch(current_operation)
 	{
 		case DRAG_ITEM:
+			unset_repeat(get_resources()->scroll_repeat);
 // Inside window boundary
 			if(top_level->cursor_x > 0 &&
 				top_level->cursor_x < gui->get_w() - drag_popup->get_w() / 2 &&
@@ -3813,22 +3821,15 @@ int BC_ListBox::drag_stop_event()
 // Move rows
 				if(process_drag)
 				{
-// Get destination
-					int destination = highlighted_item = item_to_index(data,
-						highlighted_ptr);
-//printf("BC_ListBox::drag_stop_event 1 %p %d\n", highlighted_ptr, destination);
-
 // Move selected items from data to temporary
 					ArrayList<BC_ListBoxItem*> *src_items =
 						new ArrayList<BC_ListBoxItem*>[columns];
-
 					move_selection(src_items, data);
-
+// Get destination
+					int destination = highlighted_item = item_to_index(data,
+						highlighted_ptr);
 // Insert items from temporary to data
-					put_selection(data,
-						src_items,
-						destination);
-
+					put_selection(data, src_items, destination);
 
 					delete [] src_items;
 					set_autoplacement(data, 0, 1);
