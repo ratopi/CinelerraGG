@@ -136,9 +136,9 @@ int AssetVIcon::get_vy()
 	return lbox->get_item_y(picon) + lbox->get_title_h();
 }
 
+
 AssetPicon::AssetPicon(MWindow *mwindow,
-	AWindowGUI *gui,
-	Indexable *indexable)
+	AWindowGUI *gui, Indexable *indexable)
  : BC_ListBoxItem()
 {
 	reset();
@@ -150,8 +150,7 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 }
 
 AssetPicon::AssetPicon(MWindow *mwindow,
-	AWindowGUI *gui,
-	EDL *edl)
+	AWindowGUI *gui, EDL *edl)
  : BC_ListBoxItem()
 {
 	reset();
@@ -164,7 +163,9 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 
 AssetPicon::AssetPicon(MWindow *mwindow,
 	AWindowGUI *gui, int folder, int persist)
- : BC_ListBoxItem(_(AWindowGUI::folder_names[folder]), gui->folder_icon)
+ : BC_ListBoxItem(_(AWindowGUI::folder_names[folder]),
+	folder>=0 && folder<AWINDOW_FOLDERS ?
+		gui->folder_icons[folder]: gui->folder_icon)
 {
 	reset();
 	foldernum = folder;
@@ -174,18 +175,7 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 }
 
 AssetPicon::AssetPicon(MWindow *mwindow,
-	AWindowGUI *gui, const char *folder_name, int folder_num)
- : BC_ListBoxItem(folder_name, gui->folder_icon)
-{
-	reset();
-	foldernum = folder_num;
-	this->mwindow = mwindow;
-	this->gui = gui;
-}
-
-AssetPicon::AssetPicon(MWindow *mwindow,
-	AWindowGUI *gui,
-	PluginServer *plugin)
+	AWindowGUI *gui, PluginServer *plugin)
  : BC_ListBoxItem()
 {
 	reset();
@@ -194,10 +184,8 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 	this->plugin = plugin;
 }
 
-
 AssetPicon::AssetPicon(MWindow *mwindow,
-	AWindowGUI *gui,
-	Label *label)
+	AWindowGUI *gui, Label *label)
  : BC_ListBoxItem()
 {
 	reset();
@@ -445,19 +433,19 @@ AWindowGUI::~AWindowGUI()
 	displayed_assets[1].remove_all_objects();
 
 	delete vicon_thread;
-	delete file_icon;         delete file_res;
-	delete audio_icon;        delete audio_res;
-	delete video_icon;        delete video_res;
-	delete folder_icon;       delete folder_res;
-	delete clip_icon;         delete clip_res;
-	delete label_icon;        delete label_res;
-	delete atransition_icon;  delete atrans_res;
-	delete vtransition_icon;  delete vtrans_res;
-	delete aeffect_icon;      delete aeffect_res;
-	delete veffect_icon;      delete veffect_res;
-	delete ladspa_icon;       delete ladspa_res;
-	delete ff_aud_icon;       delete ff_aud_res;
-	delete ff_vid_icon;       delete ff_vid_res;
+	delete file_icon;
+	delete audio_icon;
+	delete video_icon;
+	delete folder_icon;
+	delete clip_icon;
+	delete label_icon;
+	delete atransition_icon;
+	delete vtransition_icon;
+	delete aeffect_icon;
+	delete veffect_icon;
+	delete ladspa_icon;
+	delete ff_aud_icon;
+	delete ff_vid_icon;
 	delete newfolder_thread;
 	delete asset_menu;
 	delete clip_menu;
@@ -485,7 +473,15 @@ bool AWindowGUI::protected_pixmap(BC_Pixmap *icon)
 		icon == aeffect_icon ||
 		icon == ladspa_icon ||
 		icon == ff_aud_icon ||
-		icon == ff_vid_icon;
+		icon == ff_vid_icon ||
+		icon == aeffect_folder_icon ||
+		icon == veffect_folder_icon ||
+		icon == atransition_folder_icon ||
+		icon == vtransition_folder_icon ||
+		icon == label_folder_icon ||
+		icon == clip_folder_icon ||
+		icon == media_folder_icon ||
+		icon == proxy_folder_icon;
 }
 
 VFrame *AWindowGUI::get_picon(const char *name, const char *plugin_icons)
@@ -504,26 +500,23 @@ VFrame *AWindowGUI::get_picon(const char *name)
 	return vframe;
 }
 
-VFrame *AWindowGUI::resource_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn, int idx)
+void AWindowGUI::resource_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn, int idx)
 {
-	VFrame *ret = vfrm = get_picon(fn);
-	if( !ret ) vfrm = BC_WindowBase::get_resources()->type_to_icon[idx];
+	vfrm = get_picon(fn);
+	if( !vfrm ) vfrm = BC_WindowBase::get_resources()->type_to_icon[idx];
 	icon = new BC_Pixmap(this, vfrm, PIXMAP_ALPHA);
-	return ret;
 }
-VFrame *AWindowGUI::theme_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn)
+void AWindowGUI::theme_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn)
 {
-	VFrame *ret = vfrm = get_picon(fn);
-	if( !ret ) vfrm = mwindow->theme->get_image(fn);
+	vfrm = get_picon(fn);
+	if( !vfrm ) vfrm = mwindow->theme->get_image(fn);
 	icon = new BC_Pixmap(this, vfrm, PIXMAP_ALPHA);
-	return ret;
 }
-VFrame *AWindowGUI::plugin_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn, unsigned char *png)
+void AWindowGUI::plugin_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn, unsigned char *png)
 {
-	VFrame *ret = vfrm = get_picon(fn);
-	if( !ret ) vfrm = new VFramePng(png);
+	vfrm = get_picon(fn);
+	if( !vfrm ) vfrm = new VFramePng(png);
 	icon = new BC_Pixmap(this, vfrm, PIXMAP_ALPHA);
-	return vfrm;
 }
 
 void AWindowGUI::create_objects()
@@ -534,21 +527,39 @@ void AWindowGUI::create_objects()
 
 	set_icon(mwindow->theme->get_image("awindow_icon"));
 
-	file_res    = resource_icon(file_vframe,   file_icon,   "film_icon",   ICON_UNKNOWN);
-	folder_res  = resource_icon(folder_vframe, folder_icon, "folder_icon", ICON_FOLDER);
-	audio_res   = resource_icon(audio_vframe,  audio_icon,  "audio_icon",  ICON_SOUND);
-	video_res   = resource_icon(video_vframe,  video_icon,  "video_icon",  ICON_FILM);
-	label_res   = resource_icon(label_vframe,  label_icon,  "label_icon",  ICON_LABEL);
+	resource_icon(file_vframe,   file_icon,   "film_icon",   ICON_UNKNOWN);
+	resource_icon(folder_vframe, folder_icon, "folder_icon", ICON_FOLDER);
+	resource_icon(audio_vframe,  audio_icon,  "audio_icon",  ICON_SOUND);
+	resource_icon(video_vframe,  video_icon,  "video_icon",  ICON_FILM);
+	resource_icon(label_vframe,  label_icon,  "label_icon",  ICON_LABEL);
 
-	clip_res    = theme_icon(clip_vframe,        clip_icon,        "clip_icon");
-	atrans_res  = theme_icon(atransition_vframe, atransition_icon, "atransition_icon");
-	vtrans_res  = theme_icon(vtransition_vframe, vtransition_icon, "vtransition_icon");
-	aeffect_res = theme_icon(aeffect_vframe,     aeffect_icon,     "aeffect_icon");
-	veffect_res = theme_icon(veffect_vframe,     veffect_icon,     "veffect_icon");
+	theme_icon(aeffect_folder_vframe,      aeffect_folder_icon,     "aeffect_folder");
+	theme_icon(atransition_folder_vframe,  atransition_folder_icon, "atransition_folder");
+	theme_icon(clip_folder_vframe,         clip_folder_icon,        "clip_folder");
+	theme_icon(label_folder_vframe,        label_folder_icon,       "label_folder");
+	theme_icon(media_folder_vframe,        media_folder_icon,       "media_folder");
+	theme_icon(proxy_folder_vframe,        proxy_folder_icon,       "proxy_folder");
+	theme_icon(veffect_folder_vframe,      veffect_folder_icon,     "veffect_folder");
+	theme_icon(vtransition_folder_vframe,  vtransition_folder_icon, "vtransition_folder");
 
-	ladspa_res  = plugin_icon(ladspa_vframe, ladspa_icon, "lad_picon", lad_picon_png);
-	ff_aud_res  = plugin_icon(ff_aud_vframe, ff_aud_icon, "ff_audio",  ff_audio_png);
-	ff_vid_res  = plugin_icon(ff_vid_vframe, ff_vid_icon, "ff_video",  ff_video_png);
+	folder_icons[AW_AEFFECT_FOLDER] = aeffect_folder_icon;
+	folder_icons[AW_VEFFECT_FOLDER] = veffect_folder_icon;
+	folder_icons[AW_ATRANSITION_FOLDER] = atransition_folder_icon;
+	folder_icons[AW_VTRANSITION_FOLDER] = vtransition_folder_icon;
+	folder_icons[AW_LABEL_FOLDER] = label_folder_icon;
+	folder_icons[AW_CLIP_FOLDER] = clip_folder_icon;
+	folder_icons[AW_MEDIA_FOLDER] = media_folder_icon;
+	folder_icons[AW_PROXY_FOLDER] = proxy_folder_icon;
+
+	theme_icon(clip_vframe,        clip_icon,        "clip_icon");
+	theme_icon(atransition_vframe, atransition_icon, "atransition_icon");
+	theme_icon(vtransition_vframe, vtransition_icon, "vtransition_icon");
+	theme_icon(aeffect_vframe,     aeffect_icon,     "aeffect_icon");
+	theme_icon(veffect_vframe,     veffect_icon,     "veffect_icon");
+
+	plugin_icon(ladspa_vframe, ladspa_icon, "lad_picon", lad_picon_png);
+	plugin_icon(ff_aud_vframe, ff_aud_icon, "ff_audio",  ff_audio_png);
+	plugin_icon(ff_vid_vframe, ff_vid_icon, "ff_video",  ff_video_png);
 
 // Mandatory folders
 	folders.append(new AssetPicon(mwindow, this, AW_AEFFECT_FOLDER, 1));
@@ -894,7 +905,7 @@ void AWindowGUI::update_folder_list()
 	stop_vicon_drawing();
 	for( int i = 0; i < folders.total; i++ ) {
 		AssetPicon *picon = (AssetPicon*)folders.values[i];
-		picon->in_use--;
+		picon->in_use = 0;
 	}
 
 // Search assets for folders
@@ -967,7 +978,7 @@ void AWindowGUI::update_asset_list()
 {
 	for( int i = 0; i < assets.total; i++ ) {
 		AssetPicon *picon = (AssetPicon*)assets.values[i];
-		picon->in_use--;
+		picon->in_use = 0;
 	}
 
 // Synchronize EDL clips
@@ -1106,6 +1117,12 @@ void AWindowGUI::sort_assets()
 		sort_picons(&assets);
 	}
 
+	update_assets();
+}
+
+void AWindowGUI::sort_folders()
+{
+	sort_picons(&folders);
 	update_assets();
 }
 

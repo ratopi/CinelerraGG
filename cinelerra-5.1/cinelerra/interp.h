@@ -26,9 +26,9 @@
  }
 */
 
-static inline float in_clip(float mx, float ofs, float v)
+static inline float in_clip(float v, float mx)
 {
-	return (v+=ofs) < 0 ? 0 : v > mx ? mx : v;
+	return v < 0 ? 0 : v > mx ? mx : v;
 }
 
 static inline float interp_linear(float dx, float p1, float p2)
@@ -55,10 +55,10 @@ static inline float interp_cubic(float dx, float p0, float p1, float p2, float p
 	int c0 = itx+0, r0 = ity+0; \
 	typ *r0p = r0>=in_min_y && r0<in_max_y ? ((typ**)interp_rows)[r0] : 0
 
-#define NEAREST_ROW(in_row, ofs, bg) (!in_row ? bg : ( \
+#define NEAREST_ROW(in_row, ofs, bg) (!in_row ? bg - ofs : ( \
 	(c0>=in_min_x && c0<in_max_x ? in_row[c0*in_comps] : bg) - ofs))
 
-#define nearest_interp(ofs, bg) in_clip(in_max, ofs, NEAREST_ROW(r0p, ofs, bg))
+#define nearest_interp(ofs, bg) in_clip(NEAREST_ROW(r0p, ofs, bg) + ofs, in_max)
 
 #define nearest_next(s) { if(r0p) ++r0p; }
 
@@ -72,12 +72,12 @@ static inline float interp_cubic(float dx, float p0, float p1, float p2, float p
 	typ *r0p = r0>=in_min_y && r0<in_max_y ? ((typ**)interp_rows)[r0] : 0; \
 	typ *r1p = r1>=in_min_y && r1<in_max_y ? ((typ**)interp_rows)[r1] : 0
 
-#define LINEAR_ROW(in_row, ofs, bg) (!in_row ? bg : interp_linear(dx, \
+#define LINEAR_ROW(in_row, ofs, bg) (!in_row ? bg - ofs : interp_linear(dx, \
 	(c0>=in_min_x && c0<in_max_x ? in_row[c0*in_comps] : bg) - ofs, \
 	(c1>=in_min_x && c1<in_max_x ? in_row[c1*in_comps] : bg) - ofs))
 
-#define bi_linear_interp(ofs, bg) in_clip(in_max, ofs, interp_linear(dy, \
-	LINEAR_ROW(r0p, ofs, bg), LINEAR_ROW(r1p, ofs, bg)))
+#define bi_linear_interp(ofs, bg) in_clip(interp_linear(dy, \
+	LINEAR_ROW(r0p, ofs, bg), LINEAR_ROW(r1p, ofs, bg)) + ofs, in_max)
 
 #define bi_linear_next(s) { if(r0p) ++r0p;  if(r1p) ++r1p; }
 
@@ -94,15 +94,15 @@ static inline float interp_cubic(float dx, float p0, float p1, float p2, float p
 	typ *r1p = r1>=in_min_y && r1<in_max_y ? ((typ**)interp_rows)[r1] : 0; \
 	typ *r2p = r2>=in_min_y && r2<in_max_y ? ((typ**)interp_rows)[r2] : 0
 
-#define CUBIC_ROW(in_row, ofs, bg) (!in_row ? bg : interp_cubic(dx, \
+#define CUBIC_ROW(in_row, ofs, bg) (!in_row ? bg - ofs : interp_cubic(dx, \
 	(cp>=in_min_x && cp<in_max_x ? in_row[cp*in_comps] : bg) - ofs, \
 	(c0>=in_min_x && c0<in_max_x ? in_row[c0*in_comps] : bg) - ofs, \
 	(c1>=in_min_x && c1<in_max_x ? in_row[c1*in_comps] : bg) - ofs, \
 	(c2>=in_min_x && c2<in_max_x ? in_row[c2*in_comps] : bg) - ofs))
 
-#define bi_cubic_interp(ofs, bg) in_clip(in_max, ofs, interp_cubic(dy, \
+#define bi_cubic_interp(ofs, bg) in_clip(interp_cubic(dy, \
 	CUBIC_ROW(rpp, ofs, bg), CUBIC_ROW(r0p, ofs, bg), \
-	CUBIC_ROW(r1p, ofs, bg), CUBIC_ROW(r2p, ofs, bg)))
+	CUBIC_ROW(r1p, ofs, bg), CUBIC_ROW(r2p, ofs, bg)) + ofs, in_max)
 
 #define bi_cubic_next(s) { if(rpp) ++rpp;  if(r0p) ++r0p;  if(r1p) ++r1p;  if(r2p) ++r2p; }
 

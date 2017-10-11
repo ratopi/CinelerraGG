@@ -37,6 +37,16 @@ public:
 	FolderListMenu *menu;
 };
 
+class FolderListSort : public BC_MenuItem
+{
+public:
+	FolderListSort(MWindow *mwindow, FolderListMenu *menu);
+
+	int handle_event();
+	MWindow *mwindow;
+	FolderListMenu *menu;
+};
+
 class FolderListMenu : public BC_PopupMenu
 {
 public:

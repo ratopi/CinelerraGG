@@ -413,7 +413,7 @@ public:
 // ====================================== cursor selection type
 
 	double selection_midpoint;        // division between current ends
-
+	int snapped;			// drag handle snapping
 };
 
 #endif

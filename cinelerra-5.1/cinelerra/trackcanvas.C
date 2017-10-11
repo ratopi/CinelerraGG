@@ -46,6 +46,7 @@
 #include "keyframepopup.h"
 #include "keyframes.h"
 #include "keys.h"
+#include "labels.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "maincursor.h"
@@ -109,6 +110,7 @@ TrackCanvas::TrackCanvas(MWindow *mwindow,
 	render_timer = new Timer;
 	hourglass_enabled = 0;
 	timebar_position = -1;
+	snapped = 0;
 }
 
 TrackCanvas::~TrackCanvas()
@@ -1763,7 +1765,7 @@ void TrackCanvas::draw_drag_handle()
 			mwindow->edl->local_session->zoom_sample -
 			mwindow->edl->local_session->view_start[pane->number]);
 //printf("TrackCanvas::draw_drag_handle 2 %d %jd\n", pane->number, pixel1);
-		set_color(GREEN);
+		set_color(!snapped ? GREEN : (snapped=0, YELLOW));
 		set_inverse();
 //printf("TrackCanvas::draw_drag_handle 3\n");
 		draw_line(pixel1, 0, pixel1, get_h());
@@ -3472,15 +3474,46 @@ int TrackCanvas::deactivate()
 void TrackCanvas::update_drag_handle()
 {
 	double new_position;
+	int cursor_x = get_cursor_x();
 
 	new_position =
-		(double)(get_cursor_x() +
+		(double)(cursor_x +
 		mwindow->edl->local_session->view_start[pane->number]) *
 		mwindow->edl->local_session->zoom_sample /
 		mwindow->edl->session->sample_rate;
+
 	new_position =
 		mwindow->edl->align_to_frame(new_position, 0);
 
+	if( ctrl_down() && alt_down() ) {
+#define snapper(v) do { \
+	double pos = (v); \
+	if( pos < 0 ) break; \
+	double dist = fabs(new_position - pos); \
+	if( dist >= snap_min ) break; \
+	snap_position = pos;  snap_min = dist; \
+} while(0)
+		double snap_position = new_position;
+		double snap_min = DBL_MAX;
+		if( mwindow->edl->local_session->inpoint_valid() )
+			snapper(mwindow->edl->local_session->get_inpoint());
+		if( mwindow->edl->local_session->outpoint_valid() )
+			snapper(mwindow->edl->local_session->get_outpoint());
+		snapper(mwindow->edl->prev_edit(new_position));
+		snapper(mwindow->edl->next_edit(new_position));
+		Label *prev_label = mwindow->edl->labels->prev_label(new_position);
+		if( prev_label ) snapper(prev_label->position);
+		Label *next_label = mwindow->edl->labels->next_label(new_position);
+		if( next_label ) snapper(next_label->position);
+		int snap_x = snap_position * mwindow->edl->session->sample_rate /
+			mwindow->edl->local_session->zoom_sample -
+			mwindow->edl->local_session->view_start[pane->number];
+		if( abs(snap_x - cursor_x) < HANDLE_W ) {
+			snapped = 1;
+			new_position = snap_position;
+		}
+#undef snapper
+	}
 
 	if(new_position != mwindow->session->drag_position)
 	{
@@ -4658,7 +4691,6 @@ int TrackCanvas::button_press_event()
 	int result = 0;
 	int cursor_x, cursor_y;
 	int new_cursor;
-	double start_position = mwindow->edl->local_session->get_selectionstart(1);
 
 	cursor_x = get_cursor_x();
 	cursor_y = get_cursor_y();
@@ -4815,23 +4847,7 @@ int TrackCanvas::button_press_event()
 			gui->flash_canvas(1);
 		}
 	}
-// if snapping to selection point
-	if( gui->ctrl_down() && gui->alt_down() ) {
-		switch( mwindow->session->current_operation ) {
-		case DRAG_EDITHANDLE1:
-			mwindow->session->drag_position = start_position;
-			mwindow->session->current_operation = NO_OPERATION;
-			drag_scroll = 0;
-			end_edithandle_selection();
-			break;
-		case DRAG_PLUGINHANDLE1:
-			mwindow->session->drag_position = start_position;
-			mwindow->session->current_operation = NO_OPERATION;
-			drag_scroll = 0;
-			end_pluginhandle_selection();
-			break;
-		}
-	}
+
 	return result;
 }
 

@@ -883,25 +883,13 @@ int BC_FileBox::delete_tables()
 
 BC_Pixmap* BC_FileBox::get_icon(char *path, int is_dir)
 {
-	char *suffix = strrchr(path, '.');
+	if( is_dir ) return icons[ICON_FOLDER];
 	int icon_type = ICON_UNKNOWN;
-
-	if(is_dir) return icons[ICON_FOLDER];
-
-	if(suffix)
-	{
-		suffix++;
-		if(*suffix != 0)
-		{
-			for(int i = 0; i < TOTAL_SUFFIXES; i++)
-			{
-				if(!strcasecmp(suffix, BC_WindowBase::get_resources()->suffix_to_type[i].suffix))
-				{
-					icon_type = BC_WindowBase::get_resources()->suffix_to_type[i].icon_type;
-					break;
-				}
-			}
-		}
+	char *suffix = strrchr(path, '.');
+	if( suffix && *++suffix ) {
+		suffix_to_type_t *stp = &BC_WindowBase::get_resources()->suffix_to_type[0];
+		while( stp->suffix && strcasecmp(stp->suffix, suffix) ) ++stp;
+		if( stp->icon_type ) icon_type = stp->icon_type;
 	}
 
 	return icons[icon_type];

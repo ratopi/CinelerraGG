@@ -683,7 +683,7 @@ int MWindow::next_edit_handle(int shift_down)
 {
 	double position = edl->local_session->get_selectionend(1);
 	double new_position = edl->next_edit(position);
-	if(new_position != INFINITY) {
+	if( new_position < edl->tracks->total_length() ) {
 		edl->local_session->set_selectionend(new_position);
 //printf("MWindow::next_edit_handle %d\n", shift_down);
 		if(!shift_down)

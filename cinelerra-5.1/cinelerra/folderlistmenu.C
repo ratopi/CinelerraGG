@@ -42,16 +42,15 @@ FolderListMenu::~FolderListMenu()
 void FolderListMenu::create_objects()
 {
 	add_item(format = new FolderListFormat(mwindow, this));
+	add_item(new FolderListSort(mwindow, this));
 	update_titles();
 }
-
 
 void FolderListMenu::update_titles()
 {
 	format->set_text(mwindow->edl->session->folderlist_format == FOLDERS_TEXT ?
 		(char*)_("Display icons") : (char*)_("Display text"));
 }
-
 
 
 FolderListFormat::FolderListFormat(MWindow *mwindow, FolderListMenu *menu)
@@ -76,6 +75,20 @@ int FolderListFormat::handle_event()
 		mwindow->edl->session->folderlist_format, 1);
 	menu->update_titles();
 
+	return 1;
+}
+
+
+FolderListSort::FolderListSort(MWindow *mwindow, FolderListMenu *menu)
+ : BC_MenuItem(_("Sort items"))
+{
+	this->mwindow = mwindow;
+	this->menu = menu;
+}
+
+int FolderListSort::handle_event()
+{
+	mwindow->awindow->gui->sort_folders();
 	return 1;
 }
 

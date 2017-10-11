@@ -1552,7 +1552,7 @@ void EDL::append_vwindow_edl(EDL *edl, int increase_counter)
 double EDL::next_edit(double position)
 {
 	Units::fix_double(&position);
-	double new_position = INFINITY;
+	double new_position = tracks->total_length();
 
 	double max_rate = get_frame_rate();
 	int sample_rate = get_sample_rate();
