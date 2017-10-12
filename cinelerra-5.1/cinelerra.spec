@@ -7,7 +7,7 @@ Summary: Multimedia Editing and construction
 %define xcfg --enable-x265_hidepth --with-exec-name=cinx
 %endif
 
-Name: %{cin}%{xbit}
+Name: %{cin}%{?xbit}
 Version: 5.1
 Release: %{ver}
 License: GPL
@@ -69,7 +69,7 @@ Multimedia editing and construction
 %setup -q -n %{cin}-%{version}
 %build
 ./autogen.sh
-%configure %{xcfg}
+%configure %{?xcfg}
 %{__make}
 
 %install

@@ -101,6 +101,13 @@ void PluginFClientConfig::initialize(const char *name)
 			append(fopt);
 		}
 	}
+	if( (ffilt->filter->flags & AVFILTER_FLAG_SLICE_THREADS) != 0 ) {
+		opt = av_opt_find(ffilt->fctx, "threads", NULL, 0, 0);
+		if( opt ) {
+			PluginFClient_Opt *fopt = new PluginFClient_Opt(this, opt);
+			append(fopt);
+		}
+	}
 }
 
 int PluginFClientConfig::update()
@@ -616,6 +623,13 @@ void PluginFClient::save_data(KeyFrame *keyframe)
 			av_freep(&buf);
 		}
 	}
+	if( (config.ffilt->filter->flags & AVFILTER_FLAG_SLICE_THREADS) != 0 ) {
+		uint8_t *buf = 0;
+		if( av_opt_get(config.ffilt->fctx, "threads", 0, &buf) >= 0 && buf ) {
+			output.tag.set_property("threads", (const char *)buf);
+			av_freep(&buf);
+		}
+	}
 
 	output.append_tag();
 	output.terminate_string();
@@ -624,7 +638,7 @@ void PluginFClient::save_data(KeyFrame *keyframe)
 void PluginFClient::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	char string[BCTEXTLEN], value[BCTEXTLEN];
+	char string[BCTEXTLEN];
 	input.set_shared_input(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	while( !input.read_tag() ) {
@@ -635,9 +649,12 @@ void PluginFClient::read_data(KeyFrame *keyframe)
 			void *obj = config.filter_config();
 			const AVOption *opt = NULL;
 			while( (opt=av_opt_next(obj, opt)) != 0 ) {
-				to_upper(string, opt->name);
-				if( !input.tag.get_property(string, value) ) continue;
-				av_opt_set(obj, opt->name, value, 0);
+				const char *v = input.tag.get_property(opt->name);
+				if( v ) av_opt_set(obj, opt->name, v, 0);
+			}
+			if( (config.ffilt->filter->flags & AVFILTER_FLAG_SLICE_THREADS) != 0 ) {
+				const char *v = input.tag.get_property("threads");
+				if( v ) av_opt_set(config.ffilt->fctx, "threads", v, 0);
 			}
 		}
 	}
@@ -985,23 +1002,35 @@ PluginFClient_Opt::~PluginFClient_Opt()
 	delete item_value;
 }
 
+const char *PluginFClientConfig::get(const char *name)
+{
+	uint8_t *bp = 0;
+	if( av_opt_get(filter_config(), name, 0, &bp) >= 0 ||
+	    av_opt_get(ffilt->fctx, name, 0, &bp) >= 0 )
+		return (const char *)bp;
+	return 0;
+}
 char *PluginFClient_Opt::get(char *vp, int sz)
 {
-	char *ret = 0;
-	void *obj = filter_config();
-	uint8_t *bp = 0;
-	if( av_opt_get(obj, opt->name, 0, &bp) >= 0 && bp != 0 ) {
-		const char *val = (const char *)bp;
-		ret = sz >= 0 ? strncpy(vp,val,sz) : strcpy(vp, val);
-		if( sz > 0 ) vp[sz-1] = 0;
-		av_freep(&bp);
+	const char *val = conf->get(opt->name);
+	if( val ) {
+		strncpy(vp, val, sz);
+		vp[sz-1] = 0;
 	}
-	return ret;
+	else
+		vp = 0;
+	av_freep(&val);
+	return vp;
+}
+
+void PluginFClientConfig::set(const char *name, const char *val)
+{
+	if( av_opt_set(filter_config(), name, val, 0) < 0 )
+		av_opt_set(ffilt->fctx, name, val, 0);
 }
 void PluginFClient_Opt::set(const char *val)
 {
-	void *obj = filter_config();
-	av_opt_set(obj , opt->name, val, 0);
+	conf->set(opt->name, val);
 }
 
 void PluginFFilter::uninit()
@@ -1060,9 +1089,16 @@ int PluginFFilter::init(const char *name, PluginFClientConfig *conf)
 	static int inst = 0;
 	char inst_name[BCSTRLEN];
 	sprintf(inst_name,"%s_%d", name, ++inst);
-	graph->thread_type = 0;
-	graph->nb_threads  = 1;
+	if( conf && (filter->flags & AVFILTER_FLAG_SLICE_THREADS) != 0 ) {
+		graph->thread_type = AVFILTER_THREAD_SLICE;
+		graph->nb_threads  = atoi(conf->get("threads"));
+	}
+	else {
+		graph->thread_type = 0;
+		graph->nb_threads  = 0;
+	}
 	fctx = avfilter_graph_alloc_filter(graph, filter, inst_name);
+	fctx->thread_type = graph->thread_type; // bug in avfilter
 	if( !fctx ) return AVERROR(ENOMEM);
 	if( conf ) {
 		AVDictionary *opts = 0;

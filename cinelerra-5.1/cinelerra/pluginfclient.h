@@ -97,7 +97,10 @@ public:
 	PluginFFilter *ffilt;
 	void *filter_config() { return ffilt->filter_config(); }
 	const AVClass *filter_class() { return ffilt->filter_class(); }
+	PluginFClient_Opt *get(int i) { return ArrayList<PluginFClient_Opt *>::get(i); }
 
+	const char *get(const char *name);
+	void set(const char *name, const char *val);
 	void copy_from(PluginFClientConfig &that);
 	int equivalent(PluginFClientConfig &that);
 	void interpolate(PluginFClientConfig &prev, PluginFClientConfig &next,

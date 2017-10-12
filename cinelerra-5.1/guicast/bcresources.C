@@ -201,6 +201,7 @@ suffix_to_type_t BC_Resources::suffix_to_type[] =
     { "ifo", ICON_FILM },
     { "jpeg", ICON_FILM },
     { "jpg", ICON_FILM },
+    { "m2t", ICON_FILM },
     { "m2ts", ICON_FILM },
     { "m2v", ICON_FILM },
     { "m4v", ICON_FILM },
