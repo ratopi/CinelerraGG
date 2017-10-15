@@ -9,7 +9,7 @@ AC_LANG_C
 AC_PROG_CXX
 
 CFG_CFLAGS+=" -fno-omit-frame-pointer -fno-math-errno -fno-signed-zeros"
-CFG_CFLAGS+=" -pthread -Wall -Wno-unused-result"
+CFG_CFLAGS+=" -pthread -Wall -Wno-unused-result -Wno-format-truncation"
 CFG_CFLAGS+=" -D__STDC_CONSTANT_MACROS"
 CFG_CFLAGS+=" -D__STDC_LIMIT_MACROS"
 CFG_CFLAGS+=" -DPNG_SKIP_SETJMP_CHECK=1"
@@ -33,6 +33,7 @@ CHECK_WITH([plugin-dir],[plugin install dir],[PLUGIN_DIR],[auto])
 CHECK_WITH([ladspa-dir],[ladspa install dir],[LADSPA_DIR],[auto])
 CHECK_WITH([config-dir],[.bcast config dir],[CONFIG_DIR],[$$HOME/.bcast5])
 CHECK_WITH([browser],[cin_browser path],[CIN_BROWSER],[firefox])
+CHECK_WITH([git-ffmpeg],[git ffmpeg using url],[GIT_FFMPEG],[no])
 
 if test "x$WANT_CINBIN_BUILD" = "xyes"; then
   WANT_LOCALE_DIR='$$CIN_LIB/locale'
@@ -135,6 +136,10 @@ PKG_3RD([ffmpeg],[yes],
     libavfilter/libavfilter.a \
     libswresample/libswresample.a ],
   [ . ])
+
+if test "x$WANT_GIT_FFMPEG" != "xno" ; then
+  ver_ffmpeg="ffmpeg.git"
+fi
 
 PKG_3RD([fftw],[auto],
   [fftw-3.3.6-pl2],
@@ -684,6 +689,7 @@ echo "  using: with-browser = $WANT_CIN_BROWSER"
 echo "  using: with-plugin-dir = $WANT_PLUGIN_DIR"
 echo "  using: with-ladspa-dir = $WANT_LADSPA_DIR"
 echo "  using: with-opencv = $WANT_OPENCV"
+echo "  using: with-git-ffmpeg = $WANT_GIT_FFMPEG"
 echo ""
 echo "  using: single-user  = $WANT_CINBIN_BUILD"
 echo "  using: static-build = $WANT_STATIC_BUILD"
@@ -826,3 +832,6 @@ if test "x$HAVE_tiff" = "xyes"; then
   fi
 fi
 
+if test "x$WANT_GIT_FFMPEG" != "xno"; then
+echo "ffmpeg.git := $WANT_GIT_FFMPEG"
+fi

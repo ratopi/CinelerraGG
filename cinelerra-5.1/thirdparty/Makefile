@@ -42,15 +42,16 @@ pkg-config=$(BLD)/$(1).configure
 pkg-built=$(BLD)/$(1).built
 
 ext=$(lastword $(subst ., ,$(1)))
-tarball=$(lastword $(sort $(wildcard src/$(1)*.tar.*)))
+tarball=$(if $($(1).git),$(1).git,$(lastword $(sort $(wildcard src/$(1)*.tar.*))))
 unpack=$(call unpack_$(call ext,$(1)),$(1))
+unpack_git=git clone $($(1)) $(1)
 unpack_gz=tar -xzf $(1)
 unpack_bz2=tar -xjf $(1)
 unpack_xz=tar -xJf $(1)
 bld_depends=$(if $(ver_$(1)),$(call pkg-built,$(1)))
 bld_path=$(ver_$(1))/$(2)
 inc_path=$(inc_$(1))
-ld_path=$(if $(ver_$(1)),-L$(call bld_path,$(1),$(2)))
+ld_path=$(if $(ver_$(1)),-L$(call bld_path,$(1),$(2)) $(lib_$(1)))
 
 #$(eval $(call std-build,pkg,deps...))
 #$(pkg.cflags) added as CFLAGS+=$(cflags) to pkg.vars
@@ -71,7 +72,7 @@ $(1)-clean:
 
 $(call pkg-source,$(1)):
 	$(call unpack,$(call tarball,$(1))) \
-	$(foreach pch,$(sort $(wildcard src/$(1).patch*)),
+	$(foreach pch,$(sort $(wildcard src/$(notdir $(ver_$(1))).patch*)),
 		patch -d $(1)* -p1 < $(pch))
 	touch $$@
 
@@ -129,6 +130,7 @@ ffmpeg.cfg_params= \
 		$(call inc_path,twolame,libtwolame) \
 		$(call inc_path,lame,include) \
 		$(call inc_path,openjpeg,src/lib/openjp2) \
+		$(call inc_path,libogg,include) \
 		$(call inc_path,libvorbis,include) \
 		$(call inc_path,libtheora,include) \
 		$(call inc_path,libvpx) \
@@ -140,18 +142,19 @@ ffmpeg.cfg_params= \
 		$(call inc_path,fdk,libSYS) \
 		$(call inc_path,fdk,libSYS/include)" \
 	--extra-cxxflags="-D__STDC_CONSTANT_MACROS" \
-	--extra-libs="\
-		$(call ld_path,faad2,libfaad/.libs) \
-		$(call ld_path,faac,libfaac/.libs) \
+	--pkg-config=true \
+	--extra-libs="-Wl,--start-group \
 		$(call ld_path,twolame,libtwolame/.libs) \
 		$(call ld_path,lame,libmp3lame/.libs) \
 		$(call ld_path,openjpeg,bin) \
+		$(call ld_path,libogg,lib/.libs) \
 		$(call ld_path,libvorbis,lib/.libs) \
 		$(call ld_path,libtheora,lib/.libs) \
 		$(call ld_path,libvpx) \
 		$(call ld_path,x264) \
 		$(call ld_path,x265) \
 		$(call ld_path,fdk,.libs) \
+		-Wl,--end-group -lm -lstdc++ -pthread \
 		$(EXTRA_LIBS)" $(FFMPEG_EXTRA_CFG) \
 
 cmake_config=echo "exec cmake \$$$$@ $(1)" > ./configure; chmod +x ./configure;
