@@ -99,6 +99,7 @@ public:
 
 	int driver;
 	int out_channel;
+	int use_direct_x11;
 
 // X11 options
 	char x11_host[BCTEXTLEN];

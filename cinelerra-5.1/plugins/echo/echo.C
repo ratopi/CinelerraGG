@@ -25,7 +25,7 @@
 #include "bchash.h"
 #include "filexml.h"
 #include "language.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "samples.h"
 #include "echo.h"
 #include "theme.h"

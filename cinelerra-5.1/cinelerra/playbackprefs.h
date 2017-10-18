@@ -30,7 +30,7 @@ class PlaybackViewFollows;
 class PlaybackSoftwareTimer;
 class PlaybackRealTime;
 class PlaybackMap51_2;
-class VideoAsynchronous;
+//class VideoAsynchronous;
 class VideoEveryFrame;
 class PlaybackPreload;
 class PlaybackInterpolateRaw;
@@ -70,7 +70,7 @@ public:
 	BC_Title *framerate_title;
 	PlaybackInterpolateRaw *interpolate_raw;
 	PlaybackWhiteBalanceRaw *white_balance_raw;
-	VideoAsynchronous *asynchronous;
+//	VideoAsynchronous *asynchronous;
 
 	BC_Title *vdevice_title;
 	PlaybackAudioOffset *audio_offset;
@@ -127,6 +127,14 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+// class VideoAsynchronous : public BC_CheckBox
+// {
+// public:
+// 	VideoAsynchronous(PreferencesWindow *pwindow, int x, int y);
+// 	int handle_event();
+// 	PreferencesWindow *pwindow;
+// };
+
 class PlaybackMap51_2 : public BC_CheckBox
 {
 public:
@@ -135,14 +143,6 @@ public:
 	int handle_event();
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback_prefs;
-};
-
-class VideoAsynchronous : public BC_CheckBox
-{
-public:
-	VideoAsynchronous(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
 };
 
 class VideoEveryFrame : public BC_CheckBox

@@ -237,6 +237,12 @@ public:
 	int plugindialog_sharedattach_x, plugindialog_sharedattach_y;
 	int plugindialog_moduleattach_x, plugindialog_moduleattach_y;
 
+	int presets_list_x, presets_list_y, presets_list_w, presets_list_h;
+	int presets_text_x, presets_text_y, presets_text_w;
+	int presets_delete_x, presets_delete_y;
+	int presets_save_x, presets_save_y;
+	int presets_apply_x, presets_apply_y;
+
 	int keyframe_list_x, keyframe_list_y, keyframe_list_w, keyframe_list_h;
 	int keyframe_text_x, keyframe_text_y, keyframe_text_w, keyframe_text_h;
 	int keyframe_value_x, keyframe_value_y, keyframe_value_w, keyframe_value_h;
@@ -287,6 +293,7 @@ public:
 	int window_border;
 	int widget_border;
 	int clock_bg_color;
+	int clock_fg_color;
 	int use_commercials;
 
 // Bitmaps

@@ -20,7 +20,7 @@
  */
 
 #include "clip.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "floatauto.h"

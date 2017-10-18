@@ -25,7 +25,7 @@
 #define PROGRESS_UP 0
 #define PROGRESS_HI 1
 
-#include "colors.h"
+#include "bccolors.h"
 #include "fonts.h"
 #include "bcprogress.h"
 #include "bcpixmap.h"

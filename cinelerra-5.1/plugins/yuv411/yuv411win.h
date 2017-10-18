@@ -6,7 +6,7 @@
 #include "mutex.h"
 #include "pluginvclient.h"
 #include "bctitle.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "fonts.h"
 
 class yuv411Toggle;

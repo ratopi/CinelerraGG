@@ -75,6 +75,7 @@
 #include "samples.h"
 #include "vframe.h"
 
+//static int temp_debug = 0;
 //suppress noref warning
 void *vorbis0_ov_callbacks[] = {
  &OV_CALLBACKS_DEFAULT, &OV_CALLBACKS_NOCLOSE,
@@ -99,8 +100,10 @@ File::~File()
 		format_completion->unlock();
 	}
 
-	if( temp_frame ) delete temp_frame;
-
+	if( temp_frame ) {
+//printf("File::~File %d temp_debug=%d\n", __LINE__, --temp_debug);
+		delete temp_frame;
+	}
 
 	close_file(0);
 
@@ -298,7 +301,6 @@ void File::set_white_balance_raw(int value)
 	this->white_balance_raw = value;
 }
 
-
 void File::set_cache_frames(int value)
 {
 // caching only done locally
@@ -319,7 +321,7 @@ int File::purge_cache()
 
 int File::delete_oldest()
 {
-// caching only done locally
+// return the number of bytes freed
 	return frame_cache->delete_oldest();
 }
 
@@ -473,8 +475,6 @@ int File::open_file(Preferences *preferences,
 	this->rd = rd;
 	this->wr = wr;
 	file = 0;
-
-	if( debug ) printf("File::open_file %d\n", __LINE__);
 
 	if( debug ) printf("File::open_file %p %d\n", this, __LINE__);
 
@@ -1113,14 +1113,7 @@ int File::read_frame(VFrame *frame, int is_thread)
 	const int debug = 0;
 //printf("File::read_frame pos=%jd cache=%d 1frame=%d\n",
 // current_frame, use_cache, asset->single_frame);
-	if( debug ) PRINT_TRACE
-
-//printf("File::read_frame %d\n", __LINE__);
-
 	if( video_thread && !is_thread ) return video_thread->read_frame(frame);
-
-//printf("File::read_frame %d\n", __LINE__);
-	if( debug ) PRINT_TRACE
 	if( !file ) return 1;
 	if( debug ) PRINT_TRACE
 	int result = 0;
@@ -1128,6 +1121,7 @@ int File::read_frame(VFrame *frame, int is_thread)
 	int advance_position = 1;
 	int cache_active = use_cache || asset->single_frame ? 1 : 0;
 	int64_t cache_position = !asset->single_frame ? current_frame : -1;
+
 // Test cache
 	if( cache_active && frame_cache->get_frame(frame, cache_position,
 			current_layer, asset->frame_rate) ) {
@@ -1138,8 +1132,9 @@ int File::read_frame(VFrame *frame, int is_thread)
 // Need temp
 	else if( frame->get_color_model() != BC_COMPRESSED &&
 		(supported_colormodel != frame->get_color_model() ||
-		frame->get_w() != asset->width ||
-		frame->get_h() != asset->height) ) {
+		(!file->can_scale_input() &&
+			(frame->get_w() != asset->width ||
+			 frame->get_h() != asset->height))) ) {
 
 //			printf("File::read_frame %d\n", __LINE__);
 // Can't advance position here because it needs to be added to cache
@@ -1150,14 +1145,8 @@ int File::read_frame(VFrame *frame, int is_thread)
 			}
 		}
 
-//			printf("File::read_frame %d\n", __LINE__);
 		if( !temp_frame ) {
-			temp_frame = new VFrame(0,
-				-1,
-				asset->width,
-				asset->height,
-				supported_colormodel,
-				-1);
+			temp_frame = new VFrame(asset->width, asset->height, supported_colormodel);
 		}
 
 //			printf("File::read_frame %d\n", __LINE__);
@@ -1191,10 +1180,7 @@ int File::read_frame(VFrame *frame, int is_thread)
 	return 0;
 }
 
-int File::can_copy_from(Asset *asset,
-	int64_t position,
-	int output_w,
-	int output_h)
+int File::can_copy_from(Asset *asset, int64_t position, int output_w, int output_h)
 {
 	if( asset && file ) {
 		return asset->width == output_w &&

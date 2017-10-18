@@ -84,8 +84,7 @@ int New::handle_event()
 
 void New::create_new_edl()
 {
-	if(!new_edl)
-	{
+	if( !new_edl ) {
 		new_edl = new EDL;
 		new_edl->create_objects();
 		new_edl->load_defaults(mwindow->defaults);
@@ -96,12 +95,9 @@ void New::create_new_edl()
 int New::create_new_project()
 {
 	mwindow->cwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE,
-		0,
-		0);
+		CHANGE_NONE, 0, 0);
 
-	for(int i = 0; i < mwindow->vwindows.size(); i++)
-	{
+	for( int i=0; i<mwindow->vwindows.size(); ++i ) {
 		VWindow *vwindow = mwindow->vwindows.get(i);
 		if( !vwindow->is_running() ) continue;
 		vwindow->playback_engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
@@ -112,8 +108,6 @@ int New::create_new_project()
 
 	mwindow->gui->lock_window();
 	mwindow->reset_caches();
-
-
 
 	memcpy(new_edl->session->achannel_positions,
 		&mwindow->preferences->channel_positions[
@@ -152,8 +146,6 @@ NewThread::~NewThread()
 	close_window();
 }
 
-
-
 BC_Window* NewThread::new_gui()
 {
 	mwindow->edl->save_defaults(mwindow->defaults);
@@ -170,28 +162,21 @@ BC_Window* NewThread::new_gui()
 	return nwindow;
 }
 
-
-
 void NewThread::handle_close_event(int result)
 {
-
 	if( !new_project->new_edl ) return;
 	new_project->new_edl->save_defaults(mwindow->defaults);
 	mwindow->defaults->save();
 
-	if(result)
-	{
+	if( result ) {
 // Aborted
 		if( !new_project->new_edl->Garbage::remove_user() )
 			new_project->new_edl = 0;
 	}
-	else
-	{
+	else {
 		new_project->create_new_project();
 	}
 }
-
-
 
 int NewThread::load_defaults()
 {
@@ -207,8 +192,7 @@ int NewThread::save_defaults()
 
 int NewThread::update_aspect()
 {
-	if(auto_aspect)
-	{
+	if( auto_aspect ) {
 		char string[BCTEXTLEN];
 		mwindow->create_aspect_ratio(new_project->new_edl->session->aspect_w,
 			new_project->new_edl->session->aspect_h,
@@ -221,8 +205,6 @@ int NewThread::update_aspect()
 	}
 	return 0;
 }
-
-
 
 
 NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
@@ -238,7 +220,7 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 NewWindow::~NewWindow()
 {
 	lock_window("NewWindow::~NewWindow");
-	if(format_presets) delete format_presets;
+	if( format_presets ) delete format_presets;
 	unlock_window();
 }
 
@@ -260,8 +242,6 @@ void NewWindow::create_objects()
 	format_presets->create_objects();
 	x = format_presets->x;
 	y = format_presets->y;
-
-
 
 	y += 40;
 	y1 = y;
@@ -365,10 +345,7 @@ void NewWindow::create_objects()
 	add_subwindow(aspect_h_text = new NewAspectH(this, "", x1, y));
 	x1 += aspect_h_text->get_w();
 	add_subwindow(new AspectPulldown(mwindow,
-		aspect_w_text,
-		aspect_h_text,
-		x1,
-		y));
+		aspect_w_text, aspect_h_text, x1, y));
 
 	x1 = aspect_w_text->get_x();
 	y += aspect_w_text->get_h() + 5;
@@ -419,11 +396,6 @@ int NewWindow::update()
 }
 
 
-
-
-
-
-
 NewPresets::NewPresets(MWindow *mwindow, NewWindow *gui, int x, int y)
  : FormatPresets(mwindow, gui, 0, x, y)
 {
@@ -443,7 +415,6 @@ EDL* NewPresets::get_edl()
 {
 	return new_gui->new_edl;
 }
-
 
 
 NewATracks::NewATracks(NewWindow *nwindow, const char *text, int x, int y)
@@ -478,6 +449,7 @@ int NewATracksTumbler::handle_down_event()
 	return 1;
 }
 
+
 NewAChannels::NewAChannels(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
@@ -489,6 +461,7 @@ int NewAChannels::handle_event()
 	nwindow->new_edl->session->audio_channels = atol(get_text());
 	return 1;
 }
+
 
 NewAChannelsTumbler::NewAChannelsTumbler(NewWindow *nwindow, int x, int y)
  : BC_Tumbler(x, y)
@@ -523,18 +496,10 @@ int NewSampleRate::handle_event()
 	return 1;
 }
 
+
 SampleRatePulldown::SampleRatePulldown(MWindow *mwindow, BC_TextBox *output, int x, int y)
- : BC_ListBox(x,
- 	y,
-	100,
-	200,
-	LISTBOX_TEXT,
-	&mwindow->theme->sample_rates,
-	0,
-	0,
-	1,
-	0,
-	1)
+ : BC_ListBox(x, y, 100, 200, LISTBOX_TEXT,
+	&mwindow->theme->sample_rates, 0, 0, 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->output = output;
@@ -548,19 +513,6 @@ int SampleRatePulldown::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 NewVTracks::NewVTracks(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
@@ -572,6 +524,7 @@ int NewVTracks::handle_event()
 	nwindow->new_edl->session->video_tracks = atol(get_text());
 	return 1;
 }
+
 
 NewVTracksTumbler::NewVTracksTumbler(NewWindow *nwindow, int x, int y)
  : BC_Tumbler(x, y)
@@ -593,6 +546,7 @@ int NewVTracksTumbler::handle_down_event()
 	return 1;
 }
 
+
 NewVChannels::NewVChannels(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
@@ -604,6 +558,7 @@ int NewVChannels::handle_event()
 	nwindow->new_edl->session->video_channels = atol(get_text());
 	return 1;
 }
+
 
 NewVChannelsTumbler::NewVChannelsTumbler(NewWindow *nwindow, int x, int y)
  : BC_Tumbler(x, y)
@@ -625,6 +580,7 @@ int NewVChannelsTumbler::handle_down_event()
 	return 1;
 }
 
+
 NewFrameRate::NewFrameRate(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
@@ -637,21 +593,11 @@ int NewFrameRate::handle_event()
 	return 1;
 }
 
+
 FrameRatePulldown::FrameRatePulldown(MWindow *mwindow,
-	BC_TextBox *output,
-	int x,
-	int y)
- : BC_ListBox(x,
- 	y,
-	100,
-	200,
-	LISTBOX_TEXT,
-	&mwindow->theme->frame_rates,
-	0,
-	0,
-	1,
-	0,
-	1)
+	BC_TextBox *output, int x, int y)
+ : BC_ListBox(x, y, 150, 250, LISTBOX_TEXT,
+	&mwindow->theme->frame_rates, 0, 0, 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->output = output;
@@ -665,26 +611,15 @@ int FrameRatePulldown::handle_event()
 }
 
 FrameSizePulldown::FrameSizePulldown(Theme *theme,
-		BC_TextBox *output_w,
-		BC_TextBox *output_h,
-		int x,
-		int y)
- : BC_ListBox(x,
- 	y,
-	100,
-	250,
-	LISTBOX_TEXT,
-	&theme->frame_sizes,
-	0,
-	0,
-	1,
-	0,
-	1)
+		BC_TextBox *output_w, BC_TextBox *output_h, int x, int y)
+ : BC_ListBox(x, y, 150, 250, LISTBOX_TEXT,
+	&theme->frame_sizes, 0, 0, 1, 0, 1)
 {
 	this->theme = theme;
 	this->output_w = output_w;
 	this->output_h = output_h;
 }
+
 int FrameSizePulldown::handle_event()
 {
 	char *text = get_selection(0, 0)->get_text();
@@ -694,8 +629,7 @@ int FrameSizePulldown::handle_event()
 
 	strcpy(string, text);
 	ptr = strrchr(string, 'x');
-	if(ptr)
-	{
+	if( ptr ) {
 		ptr++;
 		h = atol(ptr);
 
@@ -709,6 +643,7 @@ int FrameSizePulldown::handle_event()
 	return 1;
 }
 
+
 NewOutputW::NewOutputW(NewWindow *nwindow, int x, int y)
  : BC_TextBox(x, y, 70, 1, nwindow->new_edl->session->output_w)
 {
@@ -720,6 +655,7 @@ int NewOutputW::handle_event()
 	nwindow->new_thread->update_aspect();
 	return 1;
 }
+
 
 NewOutputH::NewOutputH(NewWindow *nwindow, int x, int y)
  : BC_TextBox(x, y, 70, 1, nwindow->new_edl->session->output_h)
@@ -733,6 +669,7 @@ int NewOutputH::handle_event()
 	return 1;
 }
 
+
 NewAspectW::NewAspectW(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 70, 1, text)
 {
@@ -744,6 +681,7 @@ int NewAspectW::handle_event()
 	nwindow->new_edl->session->aspect_w = atof(get_text());
 	return 1;
 }
+
 
 NewAspectH::NewAspectH(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 70, 1, text)
@@ -757,27 +695,17 @@ int NewAspectH::handle_event()
 	return 1;
 }
 
+
 AspectPulldown::AspectPulldown(MWindow *mwindow,
-		BC_TextBox *output_w,
-		BC_TextBox *output_h,
-		int x,
-		int y)
- : BC_ListBox(x,
- 	y,
-	100,
-	200,
-	LISTBOX_TEXT,
-	&mwindow->theme->aspect_ratios,
-	0,
-	0,
-	1,
-	0,
-	1)
+		BC_TextBox *output_w, BC_TextBox *output_h, int x, int y)
+ : BC_ListBox(x, y, 100, 200, LISTBOX_TEXT,
+	&mwindow->theme->aspect_ratios, 0, 0, 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->output_w = output_w;
 	this->output_h = output_h;
 }
+
 int AspectPulldown::handle_event()
 {
 	char *text = get_selection(0, 0)->get_text();
@@ -787,8 +715,7 @@ int AspectPulldown::handle_event()
 
 	strcpy(string, text);
 	ptr = strrchr(string, ':');
-	if(ptr)
-	{
+	if( ptr ) {
 		ptr++;
 		h = atof(ptr);
 
@@ -802,6 +729,7 @@ int AspectPulldown::handle_event()
 	return 1;
 }
 
+
 ColormodelItem::ColormodelItem(const char *text, int value)
  : BC_ListBoxItem(text)
 {
@@ -809,21 +737,9 @@ ColormodelItem::ColormodelItem(const char *text, int value)
 }
 
 ColormodelPulldown::ColormodelPulldown(MWindow *mwindow,
-		BC_TextBox *output_text,
-		int *output_value,
-		int x,
-		int y)
- : BC_ListBox(x,
- 	y,
-	200,
-	150,
-	LISTBOX_TEXT,
-	(ArrayList<BC_ListBoxItem*>*)&mwindow->colormodels,
-	0,
-	0,
-	1,
-	0,
-	1)
+		BC_TextBox *output_text, int *output_value, int x, int y)
+ : BC_ListBox(x, y, 200, 150, LISTBOX_TEXT,
+	(ArrayList<BC_ListBoxItem*>*)&mwindow->colormodels, 0, 0, 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->output_text = output_text;
@@ -840,8 +756,8 @@ int ColormodelPulldown::handle_event()
 
 const char* ColormodelPulldown::colormodel_to_text()
 {
-	for(int i = 0; i < mwindow->colormodels.total; i++)
-		if(mwindow->colormodels.values[i]->value == *output_value)
+	for( int i=0; i<mwindow->colormodels.total; ++i )
+		if( mwindow->colormodels.values[i]->value == *output_value )
 			return mwindow->colormodels.values[i]->get_text();
 	return _("Unknown");
 }
@@ -910,12 +826,6 @@ int NewAspectAuto::handle_event()
 }
 
 
-
-
-
-
-
-
 NewSwapExtents::NewSwapExtents(MWindow *mwindow, NewWindow *gui, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("swap_extents"))
 {
@@ -935,7 +845,4 @@ int NewSwapExtents::handle_event()
 	gui->new_thread->update_aspect();
 	return 1;
 }
-
-
-
 

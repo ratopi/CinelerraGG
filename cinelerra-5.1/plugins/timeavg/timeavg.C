@@ -24,7 +24,7 @@
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "timeavg.h"
 #include "timeavgwindow.h"
 #include "transportque.h"

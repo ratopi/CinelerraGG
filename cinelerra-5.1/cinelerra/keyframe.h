@@ -66,9 +66,7 @@ public:
 // extra text in a newly allocated string
 	void get_contents(BC_Hash *ptr, char **text, char **extra);
 // Update a single parameter or the anonymous text depending on which argument is nonzero
-	void update_parameter(BC_Hash *params,
-		const char *text,
-		char *extra);
+	void update_parameter(BC_Hash *params, const char *text, const char *extra);
 
 private:
 	char data[MESSAGESIZE];

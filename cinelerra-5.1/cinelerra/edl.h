@@ -189,6 +189,7 @@ public:
 		int clear_labels,
 		int clear_plugins,
 		int edit_autos);
+	void deglitch(double position);
 // Insert the asset at a point in the EDL
 	void insert_asset(Asset *asset,
 		EDL *nested_edl,

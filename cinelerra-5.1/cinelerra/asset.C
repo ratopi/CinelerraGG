@@ -134,6 +134,8 @@ int Asset::init_values()
 
 	tiff_cmodel = 0;
 	tiff_compression = 0;
+	mov_sphere = 0;
+	jpeg_sphere = 0;
 
 	use_header = 1;
 	id = EDL::next_id();
@@ -271,6 +273,10 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 	tiff_cmodel = asset->tiff_cmodel;
 	tiff_compression = asset->tiff_compression;
+	
+	
+	mov_sphere = asset->mov_sphere;
+	jpeg_sphere = asset->jpeg_sphere;
 }
 
 int64_t Asset::get_index_offset(int channel)
@@ -360,7 +366,9 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 			interlace_fixmethod     == asset.interlace_fixmethod &&
 			width == asset.width &&
 			height == asset.height &&
-			!strcmp(vcodec, asset.vcodec));
+			!strcmp(vcodec, asset.vcodec) &&
+			mov_sphere == asset.mov_sphere &&
+			jpeg_sphere == asset.jpeg_sphere);
 		if(result && format == FILE_FFMPEG)
 			result = !strcmp(ff_video_options, asset.ff_video_options) &&
 				ff_video_bitrate == asset.ff_video_bitrate &&
@@ -506,6 +514,8 @@ int Asset::read_video(FileXML *file)
 	file->tag.get_property("VCODEC", vcodec);
 
 	video_length = file->tag.get_property("VIDEO_LENGTH", (int64_t)0);
+	mov_sphere = file->tag.get_property("MOV_SPHERE", 0);
+	jpeg_sphere = file->tag.get_property("JPEG_SPHERE", 0);
 	single_frame = file->tag.get_property("SINGLE_FRAME", (int64_t)0);
 
 	interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIX",0);
@@ -661,6 +671,8 @@ int Asset::write_video(FileXML *file)
 		file->tag.set_property("VCODEC", vcodec);
 
 	file->tag.set_property("VIDEO_LENGTH", video_length);
+	file->tag.set_property("MOV_SPHERE", mov_sphere);
+	file->tag.set_property("JPEG_SPHERE", jpeg_sphere);
 	file->tag.set_property("SINGLE_FRAME", single_frame);
 
 	file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
@@ -825,6 +837,8 @@ void Asset::load_defaults(BC_Hash *defaults,
 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
+	mov_sphere = GET_DEFAULT("MOV_SPHERE", mov_sphere);
+	jpeg_sphere = GET_DEFAULT("JPEG_SPHERE", jpeg_sphere);
 	boundaries();
 }
 
@@ -912,7 +926,15 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
 		UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 		UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
+
+
+
+		UPDATE_DEFAULT("MOV_SPHERE", mov_sphere);
+		UPDATE_DEFAULT("JPEG_SPHERE", jpeg_sphere);
 	}
+
+
+
 
 	if(do_bits)
 	{
@@ -978,6 +1000,7 @@ int Asset::dump(FILE *fp)
 		video_data, layers, program, frame_rate, width, height,
 		vcodec, aspect_ratio,string);
 	fprintf(fp,"   video_length %jd repeat %d\n", video_length, single_frame);
+	printf("   mov_sphere=%d jpeg_sphere=%d\n", mov_sphere, jpeg_sphere);
 	return 0;
 }
 

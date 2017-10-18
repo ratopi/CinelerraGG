@@ -230,6 +230,8 @@ int Record::load_defaults()
 	video_zoom = defaults->get("RECORD_VIDEO_Z", (float)1);
 	picture->load_defaults();
 	reverse_interlace = defaults->get("REVERSE_INTERLACE", 0);
+	do_cursor = defaults->get("RECORD_CURSOR", 0);
+	do_big_cursor = defaults->get("RECORD_BIG_CURSOR", 0);
 	for( int i=0; i<MAXCHANNELS; ++i ) {
 		sprintf(string, "RECORD_DCOFFSET_%d", i);
 		dc_offset[i] = defaults->get(string, 0);
@@ -266,6 +268,8 @@ int Record::save_defaults()
 	defaults->update("RECORD_VIDEO_Z", video_zoom);
 	picture->save_defaults();
 	defaults->update("REVERSE_INTERLACE", reverse_interlace);
+	defaults->update("RECORD_CURSOR", do_cursor);
+	defaults->update("RECORD_BIG_CURSOR", do_big_cursor);
 	for( int i=0; i<MAXCHANNELS; ++i ) {
 		sprintf(string, "RECORD_DCOFFSET_%d", i);
 		defaults->update(string, dc_offset[i]);
@@ -401,7 +405,7 @@ void Record::run()
 			mwindow->undo->update_undo_before();
 // For pasting, clear the active region
 			if(load_mode == LOADMODE_PASTE)
-				mwindow->clear(0);
+				mwindow->clear(0, 1);
 			int loadmode = load_mode == LOADMODE_RESOURCESONLY ?
 				LOADMODE_ASSETSONLY : load_mode;
 			mwindow->paste_edls(&new_edls, loadmode, 0, -1,
@@ -437,9 +441,10 @@ void Record::run()
 void Record::stop(int wait)
 {
 	stop_operation();
-	if( wait && running() )
+	if( record_gui )
 		record_gui->set_done(1);
-	join();
+	if( wait )
+		join();
 	window_lock->lock("Record::stop");
 	delete record_thread;   record_thread = 0;
 	delete record_monitor;  record_monitor = 0;
@@ -995,6 +1000,7 @@ void Record::open_video_input()
 		master_channel->copy_usage(vdevice->channel);
 		picture->copy_usage(vdevice->picture);
 		vdevice->set_field_order(reverse_interlace);
+		vdevice->set_do_cursor(do_cursor, do_big_cursor);
 		vdevice->set_adevice(adevice);
 		if( adevice ) adevice->set_vdevice(vdevice);
 		set_dev_channel(get_current_channel());
@@ -1207,11 +1213,15 @@ void Record::set_power_off(int value)
 	record_gui->power_off->update(value);
 }
 
-int Record::set_video_picture()
+void Record::set_video_picture()
 {
 	if( default_asset->video_data && vdevice )
 		vdevice->set_picture(picture);
-	return 0;
+}
+
+void Record::set_do_cursor()
+{
+	vdevice->set_do_cursor(do_cursor, do_big_cursor);
 }
 
 void Record::set_translation(int x, int y)

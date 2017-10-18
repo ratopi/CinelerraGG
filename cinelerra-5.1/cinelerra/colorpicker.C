@@ -21,6 +21,7 @@
 
 #include "bcbutton.h"
 #include "bccapture.h"
+#include "bccolors.h"
 #include "bcdisplayinfo.h"
 #include "colorpicker.h"
 #include "condition.h"
@@ -28,7 +29,7 @@
 #include "language.h"
 #include "mutex.h"
 #include "mwindow.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "vframe.h"
 
 #include <string.h>

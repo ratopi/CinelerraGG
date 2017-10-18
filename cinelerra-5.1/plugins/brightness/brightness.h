@@ -27,7 +27,7 @@ class BrightnessMain;
 
 #include "brightnesswindow.h"
 #include "loadbalance.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "pluginvclient.h"
 
 class BrightnessConfig

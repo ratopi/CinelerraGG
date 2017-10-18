@@ -116,15 +116,15 @@ EDLSession::EDLSession(EDL *edl)
 	record_write_length = 131072;
 	record_realtime_toc = 1;
 
-        safe_regions = 0;
+	safe_regions = 0;
 	sample_rate = 48000;
-        scrub_speed = 2.;
-        show_assets = 1;
-        show_titles = 1;
+	scrub_speed = 2.;
+	show_assets = 1;
+	show_titles = 1;
 	test_playback_edits = 1;
 	time_format = TIME_HMSF;
-        nudge_format = 1;
-        tool_window = 0;
+	nudge_format = 1;
+	tool_window = 0;
 	for(int i = 0; i < MAXCHANNELS; i++) {
 		vchannel_x[i] = 64*i;
 		vchannel_y[i] = 0;
@@ -133,13 +133,13 @@ EDLSession::EDLSession(EDL *edl)
 	aconfig_in = new AudioInConfig;
 	vconfig_in = new VideoInConfig;
 	recording_format = new Asset;
-        video_every_frame = 0;
-        video_asynchronous = 0;
+	video_every_frame = 0;
+//	video_asynchronous = 0;
 	video_tracks = 1;
 	video_write_length = 30;
-        view_follows_playback = 1;
-        vwindow_meter = 0;
-        vwindow_zoom = 1.;
+	view_follows_playback = 1;
+	vwindow_meter = 0;
+	vwindow_zoom = 1.;
 
 	playback_config = new PlaybackConfig;
 }
@@ -159,7 +159,7 @@ int EDLSession::need_rerender(EDLSession *ptr)
 	return ((playback_preload != ptr->playback_preload) ||
 		(interpolation_type != ptr->interpolation_type) ||
 		(video_every_frame != ptr->video_every_frame) ||
-		(video_asynchronous != ptr->video_asynchronous) ||
+//		(video_asynchronous != ptr->video_asynchronous) ||
 		(real_time_playback != ptr->real_time_playback) ||
 		(playback_software_position != ptr->playback_software_position) ||
 		(test_playback_edits != ptr->test_playback_edits) ||
@@ -167,7 +167,9 @@ int EDLSession::need_rerender(EDLSession *ptr)
 		(decode_subtitles != ptr->decode_subtitles) ||
 		(subtitle_number != ptr->subtitle_number) ||
 		(interpolate_raw != ptr->interpolate_raw) ||
-		(white_balance_raw != ptr->white_balance_raw));
+		(white_balance_raw != ptr->white_balance_raw) ||
+		(proxy_scale != ptr->proxy_scale) ||
+	    	(proxy_use_scaler != ptr->proxy_use_scaler));
 }
 
 void EDLSession::equivalent_output(EDLSession *session, double *result)
@@ -328,7 +330,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	}
 	video_channels = defaults->get("VCHANNELS", video_channels);
 	video_every_frame = defaults->get("VIDEO_EVERY_FRAME", 0);
-	video_asynchronous = defaults->get("VIDEO_ASYNCHRONOUS", 0);
+//	video_asynchronous = defaults->get("VIDEO_ASYNCHRONOUS", 0);
 	video_tracks = defaults->get("VTRACKS", video_tracks);
 	video_write_length = defaults->get("VIDEO_WRITE_LENGTH", 30);
 	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", 1);
@@ -441,7 +443,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("SAFE_REGIONS", safe_regions);
 	defaults->update("SAMPLERATE", sample_rate);
 	defaults->update("SCRUB_SPEED", scrub_speed);
-    	defaults->update("SI_USEDURATION",si_useduration);
+	defaults->update("SI_USEDURATION",si_useduration);
 	defaults->update("SI_DURATION",si_duration);
 	defaults->update("SHOW_ASSETS", show_assets);
 	defaults->update("SHOW_TITLES", show_titles);
@@ -458,7 +460,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	}
 	defaults->update("VCHANNELS", video_channels);
 	defaults->update("VIDEO_EVERY_FRAME", video_every_frame);
-	defaults->update("VIDEO_ASYNCHRONOUS", video_asynchronous);
+//	defaults->update("VIDEO_ASYNCHRONOUS", video_asynchronous);
 	defaults->update("VTRACKS", video_tracks);
 	defaults->update("VIDEO_WRITE_LENGTH", video_write_length);
 	defaults->update("VIEW_FOLLOWS_PLAYBACK", view_follows_playback);
@@ -723,7 +725,7 @@ int EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("COLORMODEL", string);
 	ilacemode_to_xmltext(string, interlace_mode);
 	file->tag.set_property("INTERLACE_MODE",string);
-    file->tag.set_property("CHANNELS", video_channels);
+	file->tag.set_property("CHANNELS", video_channels);
 	for(int i = 0; i < video_channels; i++)
 	{
 		sprintf(string, "VCHANNEL_X_%d", i);
@@ -872,7 +874,7 @@ int EDLSession::copy(EDLSession *session)
 	video_channels = session->video_channels;
 	*vconfig_in = *session->vconfig_in;
 	video_every_frame = session->video_every_frame;
-	video_asynchronous = session->video_asynchronous;
+//	video_asynchronous = session->video_asynchronous;
 	video_tracks = session->video_tracks;
 	video_write_length = session->video_write_length;
 	view_follows_playback = session->view_follows_playback;

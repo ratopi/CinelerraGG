@@ -34,7 +34,7 @@ class Color3WayEngine;
 
 #include "color3waywindow.h"
 #include "condition.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "guicast.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"

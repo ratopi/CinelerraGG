@@ -1050,6 +1050,18 @@ void VFrame::flip_horiz()
 
 int VFrame::copy_from(VFrame *frame)
 {
+	if(this->w != frame->get_w() ||
+		this->h != frame->get_h())
+	{
+		printf("VFrame::copy_from %d sizes differ src %dx%d != dst %dx%d\n",
+			__LINE__,
+			frame->get_w(),
+			frame->get_h(),
+			get_w(),
+			get_h());
+		return 1;
+	}
+
 	int w = MIN(this->w, frame->get_w());
 	int h = MIN(this->h, frame->get_h());
 	timestamp = frame->timestamp;
@@ -1660,6 +1672,7 @@ void VFrame::smooth_draw(int x1, int y1, int x2, int y2, int x3, int y3)
 	}
 }
 
+
 void VFrame::draw_rect(int x1, int y1, int x2, int y2)
 {
 	draw_line(x1, y1, x2, y1);
@@ -1667,6 +1680,52 @@ void VFrame::draw_rect(int x1, int y1, int x2, int y2)
 	draw_line(x2 - 1, y2, x1, y2);
 	draw_line(x1, y2 - 1, x1, y1 + 1);
 }
+
+
+void VFrame::draw_oval(int x1, int y1, int x2, int y2)
+{
+	int w = x2 - x1;
+	int h = y2 - y1;
+	int center_x = (x2 + x1) / 2;
+	int center_y = (y2 + y1) / 2;
+	int x_table[h / 2];
+
+//printf("VFrame::draw_oval %d %d %d %d %d\n", __LINE__, x1, y1, x2, y2);
+
+	for(int i = 0; i < h / 2; i++) {
+// A^2 = -(B^2) + C^2
+		x_table[i] = (int)(sqrt(-SQR(h / 2 - i) + SQR(h / 2)) * w / h);
+//printf("VFrame::draw_oval %d i=%d x=%d\n", __LINE__, i, x_table[i]);
+	}
+
+	for(int i = 0; i < h / 2 - 1; i++) {
+		int x3 = x_table[i];
+		int x4 = x_table[i + 1];
+
+		if(x4 > x3 + 1) {
+			for(int j = x3; j < x4; j++) {
+				draw_pixel(center_x + j, y1 + i);
+				draw_pixel(center_x - j, y1 + i);
+				draw_pixel(center_x + j, y2 - i - 1);
+				draw_pixel(center_x - j, y2 - i - 1);
+			}
+		}
+		else {
+			draw_pixel(center_x + x3, y1 + i);
+			draw_pixel(center_x - x3, y1 + i);
+			draw_pixel(center_x + x3, y2 - i - 1);
+			draw_pixel(center_x - x3, y2 - i - 1);
+		}
+	}
+	
+	draw_pixel(center_x, y1);
+	draw_pixel(center_x, y2 - 1);
+ 	draw_pixel(x1, center_y);
+ 	draw_pixel(x2 - 1, center_y);
+ 	draw_pixel(x1, center_y - 1);
+ 	draw_pixel(x2 - 1, center_y - 1);
+}
+
 
 void VFrame::draw_arrow(int x1, int y1, int x2, int y2, int sz)
 {

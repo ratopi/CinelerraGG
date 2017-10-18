@@ -50,7 +50,7 @@ public:
 	void set_hotkey_text(const char *text);
 	int set_shift(int value = 1);
 	int set_alt(int value = 1);
-	void set_ctrl(int value);
+	void set_ctrl(int value = 1);
 
 	int deactivate_submenus(BC_MenuPopup *exclude);
 	int activate_submenu();

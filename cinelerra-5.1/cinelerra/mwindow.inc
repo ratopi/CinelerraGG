@@ -26,7 +26,10 @@
 #define DEFAULT_THEME "UnFlat"
 #define DEFAULT_PICON "cinfinity"
 #define CONFIG_FILE "Cinelerra_rc"
+// user presets
 #define PRESETS_FILE "Cinelerra_presets"
+// factory presets
+#define FACTORY_FILE "Cinelerra_factory"
 #define PICTURE_FILE "Cinelerra_picture"
 #define PLUGIN_FILE "Cinelerra_plugins"
 #define LADSPA_FILE "ladspa_plugins."

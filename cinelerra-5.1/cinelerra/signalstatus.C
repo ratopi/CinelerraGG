@@ -1,7 +1,7 @@
 #ifdef HAVE_DVB
 
 #include "bctitle.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "devicedvbinput.h"
 #include "fonts.h"
 #include "signalstatus.h"

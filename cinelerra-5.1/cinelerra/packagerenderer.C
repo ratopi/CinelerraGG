@@ -158,15 +158,8 @@ void PackageRenderer::create_output()
 		strncpy(asset->path, package->path, sizeof(asset->path));
 
 	file = new File;
-
 	file->set_processors(preferences->processors);
-
-//printf("PackageRenderer::create_output %d\n", __LINE__);
-	result = file->open_file(preferences,
-					asset,
-					0,
-					1);
-//printf("PackageRenderer::create_output %d %d\n", __LINE__, result);
+	result = file->open_file(preferences, asset, 0, 1);
 
 	if(result && mwindow)
 	{
@@ -251,7 +244,12 @@ void PackageRenderer::create_engine()
 		direct_frame_copying = 0;
 
 
-//printf("PackageRenderer::create_engine %d\n", __LINE__);
+//printf("PackageRenderer::create_engine %d video_write_length=%d\n", __LINE__, video_write_length);
+// starting frames are corrupted if video_write_length > 2.  Work around it, for now.
+		if(video_write_length > 2)
+		{
+			video_write_length = 2;
+		}
 		file->start_video_thread(video_write_length,
 			command->get_edl()->session->color_model,
 			preferences->processors > 1 ? 2 : 1,
@@ -416,7 +414,8 @@ void PackageRenderer::do_video()
 					VFrame *preview_output;
 
 					video_device->new_output_buffer(&preview_output,
-						command->get_edl()->session->color_model);
+						command->get_edl()->session->color_model,
+						command->get_edl());
 
 					preview_output->copy_from(video_output_ptr);
 					video_device->write_buffer(preview_output,
@@ -742,6 +741,7 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 //printf("Render::direct_frame_copy 2\n");
 
 		if(!package->use_brender)
+		{
 			error |= ((VEdit*)playable_edit)->read_frame(compressed_output,
 				video_position,
 				PLAY_FORWARD,
@@ -749,7 +749,9 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 				1,
 				0,
 				0);
-
+//printf("Render::direct_frame_copy %d %d\n", __LINE__, compressed_output->get_compressed_size());
+		}
+		
 
 		if(!error && video_preroll > 0)
 		{

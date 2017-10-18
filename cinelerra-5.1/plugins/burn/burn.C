@@ -24,7 +24,7 @@
 #include "effecttv.h"
 #include "filexml.h"
 #include "language.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "burn.h"
 #include "burnwindow.h"
 

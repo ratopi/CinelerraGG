@@ -26,7 +26,7 @@
 #include "holo.h"
 #include "holowindow.h"
 #include "language.h"
-#include "cicolors.h"
+#include "bccolors.h"
 
 #include <stdint.h>
 #include <stdio.h>

@@ -28,7 +28,7 @@ class YUVMain;
 class YUVEngine;
 
 #include "bcbase.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "yuvwindow.h"
 #include "pluginvclient.h"
 

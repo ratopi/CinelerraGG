@@ -27,7 +27,7 @@
 #include "bistogramconfig.h"
 #include "bistogramwindow.inc"
 #include "loadbalance.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "pluginvclient.h"
 
 

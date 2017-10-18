@@ -22,6 +22,7 @@
 #include "bcsignals.h"
 #include "channeldb.h"
 #include "channelpicker.h"
+#include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "formattools.h"
@@ -37,6 +38,7 @@
 #include "preferencesthread.h"
 #include "recordconfig.h"
 #include "recordprefs.h"
+#include "theme.h"
 #include <string.h>
 
 
@@ -94,6 +96,7 @@ void VDevicePrefs::reset_objects()
 	firewire_path = 0;
 	fields_title = 0;
 	device_fields = 0;
+	use_direct_x11 = 0;
 
 	channel_picker = 0;
 }
@@ -181,6 +184,7 @@ int VDevicePrefs::delete_objects()
 	delete dvb_adapter_device;
 	delete follow_video_config;
 	delete dvb_adapter_title;
+	delete use_direct_x11;
 
 	delete port_title;
 
@@ -196,6 +200,13 @@ int VDevicePrefs::delete_objects()
 	reset_objects();
 	driver = -1;
 	return 0;
+}
+
+int VDevicePrefs::get_h()
+{
+	int margin = pwindow->mwindow->theme->widget_border;
+	return BC_Title::calculate_h(dialog, "X", MEDIUMFONT) + margin +
+		BC_TextBox::calculate_h(dialog, MEDIUMFONT, 1, 1);
 }
 
 void VDevicePrefs::create_dvb_objs()
@@ -332,7 +343,7 @@ int VDevicePrefs::create_v4l2jpeg_objs()
 	char *output_char = &pwindow->thread->edl->session->vconfig_in->v4l2jpeg_in_device[0];
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
-	x1 += max(device_title->get_w(),device_text->get_w()) + 5;
+	x1 += bmax(device_title->get_w(),device_text->get_w()) + 5;
 	int *output_int = &pwindow->thread->edl->session->vconfig_in->v4l2jpeg_in_fields;
 	fields_title = new BC_Title(x1, y, _("Fields:"), MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(fields_title);
@@ -373,7 +384,6 @@ int VDevicePrefs::create_x11_objs()
 {
 	char *output_char;
 	BC_Resources *resources = BC_WindowBase::get_resources();
-	int x1 = x + menu->get_w() + 5;
 	output_char = out_config->x11_host;
 	const char *x11_display;
 	switch( pwindow->thread->current_dialog ) {
@@ -385,9 +395,21 @@ int VDevicePrefs::create_x11_objs()
 		x11_display = _("Default B Display:");  break;
 		break;
 	}
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, x11_display,
+	int x1 = menu->get_x() + menu->get_w() + 10;
+	int y1 = menu->get_y();
+	if( driver == PLAYBACK_X11 ) y1 -= 10;
+	dialog->add_subwindow(device_title = new BC_Title(x1, y1+4, x11_display,
 			MEDIUMFONT, resources->text_default));
-	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
+	int x2 = x1 + device_title->get_w() + 10, dy = device_title->get_h();
+	dialog->add_subwindow(device_text = new VDeviceTextBox(x2, y1, output_char));
+	if( driver == PLAYBACK_X11 ) {
+		int y2 = device_text->get_h();
+		if( dy < y2 ) dy = y2;
+		y1 += dy + 5;
+		use_direct_x11 = new BC_CheckBox(x1, y1,
+			&out_config->use_direct_x11, _("use direct x11 render if possible"));
+		dialog->add_subwindow(use_direct_x11);
+	}
 	return 0;
 }
 

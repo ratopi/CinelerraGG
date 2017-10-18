@@ -24,7 +24,7 @@
 
 #include "bcbitmap.inc"
 #include "bcsubwindow.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "fonts.h"
 #include "vframe.inc"
 
@@ -143,6 +143,7 @@ public:
 		int font = MEDIUMFONT,
 		int color = -1);
 	virtual int handle_event();
+	static int calculate_h(BC_WindowBase *gui, int font=MEDIUMFONT);
 
 	static void calculate_extents(BC_WindowBase *gui, int *w, int *h,
 		const char *caption="", int font=MEDIUMFONT);

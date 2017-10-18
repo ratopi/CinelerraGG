@@ -1,5 +1,5 @@
 
-#include "colors.h"
+#include "bccolors.h"
 #include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"

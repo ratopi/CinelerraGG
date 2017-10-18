@@ -19,7 +19,7 @@
  */
 
 #include "affine.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "clip.h"
 #include "filexml.h"
 #include "language.h"

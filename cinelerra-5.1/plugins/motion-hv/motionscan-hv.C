@@ -22,6 +22,7 @@
 #include "affine.h"
 #include "bcsignals.h"
 #include "clip.h"
+#include "motioncache-hv.h"
 #include "motionscan-hv.h"
 #include "mutex.h"
 #include "vframe.h"
@@ -208,23 +209,24 @@ total_clients, total_packages
 )
 {
 	test_match = 1;
-	downsampled_previous = 0;
-	downsampled_current = 0;
 	rotated_current = 0;
 	rotater = 0;
+	downsample_cache = 0;
+	shared_downsample = 0;
 }
 
 MotionHVScan::~MotionHVScan()
 {
-	delete downsampled_previous;
-	delete downsampled_current;
-	if(rotated_current)
-	{
-		for(int i = 0; i < total_rotated; i++)
-		{
+	if(downsample_cache && !shared_downsample) {
+		delete downsample_cache;
+		downsample_cache = 0;
+		shared_downsample = 0;
+	}
+
+	if(rotated_current) {
+		for(int i = 0; i < total_rotated; i++) {
 			delete rotated_current[i];
 		}
-
 		delete [] rotated_current;
 	}
 	delete rotater;
@@ -366,106 +368,12 @@ void MotionHVScan::set_test_match(int value)
 	this->test_match = value;
 }
 
-
-
-
-#define DOWNSAMPLE(type, temp_type, components, max) \
-{ \
-	temp_type r; \
-	temp_type g; \
-	temp_type b; \
-	temp_type a; \
-	type **in_rows = (type**)src->get_rows(); \
-	type **out_rows = (type**)dst->get_rows(); \
- \
-	for(int i = 0; i < h; i += downsample) \
-	{ \
-		int y1 = MAX(i, 0); \
-		int y2 = MIN(i + downsample, h); \
- \
- \
-		for(int j = 0; \
-			j < w; \
-			j += downsample) \
-		{ \
-			int x1 = MAX(j, 0); \
-			int x2 = MIN(j + downsample, w); \
- \
-			temp_type scale = (x2 - x1) * (y2 - y1); \
-			if(x2 > x1 && y2 > y1) \
-			{ \
- \
-/* Read in values */ \
-				r = 0; \
-				g = 0; \
-				b = 0; \
-				if(components == 4) a = 0; \
- \
-				for(int k = y1; k < y2; k++) \
-				{ \
-					type *row = in_rows[k] + x1 * components; \
-					for(int l = x1; l < x2; l++) \
-					{ \
-						r += *row++; \
-						g += *row++; \
-						b += *row++; \
-						if(components == 4) a += *row++; \
-					} \
-				} \
- \
-/* Write average */ \
-				r /= scale; \
-				g /= scale; \
-				b /= scale; \
-				if(components == 4) a /= scale; \
- \
-				type *row = out_rows[y1 / downsample] + \
-					x1 / downsample * components; \
-				*row++ = r; \
-				*row++ = g; \
-				*row++ = b; \
-				if(components == 4) *row++ = a; \
-			} \
-		} \
-/*printf("DOWNSAMPLE 3 %d\n", i);*/ \
-	} \
-}
-
-
-
-
-void MotionHVScan::downsample_frame(VFrame *dst,
-	VFrame *src,
-	int downsample)
+void MotionHVScan::set_cache(MotionHVCache *cache)
 {
-	int h = src->get_h();
-	int w = src->get_w();
-
-//PRINT_TRACE
-//printf("downsample=%d w=%d h=%d dst=%d %d\n", downsample, w, h, dst->get_w(), dst->get_h());
-	switch(src->get_color_model())
-	{
-		case BC_RGB888:
-			DOWNSAMPLE(uint8_t, int64_t, 3, 0xff)
-			break;
-		case BC_RGB_FLOAT:
-			DOWNSAMPLE(float, float, 3, 1.0)
-			break;
-		case BC_RGBA8888:
-			DOWNSAMPLE(uint8_t, int64_t, 4, 0xff)
-			break;
-		case BC_RGBA_FLOAT:
-			DOWNSAMPLE(float, float, 4, 1.0)
-			break;
-		case BC_YUV888:
-			DOWNSAMPLE(uint8_t, int64_t, 3, 0xff)
-			break;
-		case BC_YUVA8888:
-			DOWNSAMPLE(uint8_t, int64_t, 4, 0xff)
-			break;
-	}
-//PRINT_TRACE
+	this->downsample_cache = cache;
+	shared_downsample = 1;
 }
+
 
 double MotionHVScan::step_to_angle(int step, double center)
 {
@@ -557,51 +465,29 @@ void MotionHVScan::pixel_search(int &x_result, int &y_result, double &r_result)
 
 	if(current_downsample > 1)
 	{
-		if(!downsampled_previous ||
-			downsampled_previous->get_w() != downsampled_prev_w ||
-			downsampled_previous->get_h() != downsampled_prev_h)
+		if(!downsample_cache)
 		{
-			delete downsampled_previous;
-			downsampled_previous = new VFrame();
-			downsampled_previous->set_use_shm(0);
-			downsampled_previous->reallocate(0,
-				-1,
-				0,
-				0,
-				0,
-				downsampled_prev_w + 1,
-				downsampled_prev_h + 1,
-				previous_frame_arg->get_color_model(),
-				-1);
-		}
-
-		if(!downsampled_current ||
-			downsampled_current->get_w() != downsampled_current_w ||
-			downsampled_current->get_h() != downsampled_current_h)
-		{
-			delete downsampled_current;
-			downsampled_current = new VFrame();
-			downsampled_current->set_use_shm(0);
-			downsampled_current->reallocate(0,
-				-1,
-				0,
-				0,
-				0,
-				downsampled_current_w + 1,
-				downsampled_current_h + 1,
-				current_frame_arg->get_color_model(),
-				-1);
+			downsample_cache = new MotionHVCache();
+			shared_downsample = 0;
 		}
 
 
-		downsample_frame(downsampled_previous,
-			previous_frame_arg,
-			current_downsample);
-		downsample_frame(downsampled_current,
-			current_frame_arg,
-			current_downsample);
-		previous_frame = downsampled_previous;
-		current_frame = downsampled_current;
+		if(!shared_downsample)
+		{
+			downsample_cache->clear();
+		}
+
+		previous_frame = downsample_cache->get_image(current_downsample, 
+			1,
+			downsampled_prev_w,
+			downsampled_prev_h,
+			previous_frame_arg);
+		current_frame = downsample_cache->get_image(current_downsample, 
+			0,
+			downsampled_current_w,
+			downsampled_current_h,
+			current_frame_arg);
+
 
 	}
 	else

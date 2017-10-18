@@ -24,7 +24,7 @@
 #include "autos.h"
 #include "atrack.inc"
 #include "bcsignals.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"

@@ -19,7 +19,7 @@
  *
  */
 
-#include "cicolors.h"
+#include "bccolors.h"
 
 #include <stdio.h>
 

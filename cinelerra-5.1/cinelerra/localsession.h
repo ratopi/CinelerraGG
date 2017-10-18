@@ -109,6 +109,8 @@ public:
 
 // Eye dropper
 	float red, green, blue;
+	float red_max, green_max, blue_max;
+	int use_max;
 private:
 // The reason why selection ranges and inpoints have to be separate:
 // The selection position has to change to set new in points.

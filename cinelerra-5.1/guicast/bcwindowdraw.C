@@ -28,7 +28,7 @@
 #include "bctimer.h"
 #include "bcwindowbase.h"
 #include "clip.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "cursors.h"
 #include "fonts.h"
 #include "vframe.h"
@@ -947,7 +947,7 @@ void BC_WindowBase::draw_bitmap(BC_Bitmap *bitmap,
 // Hide cursor if video enabled
 	update_video_cursor();
 
-//printf("BC_WindowBase::draw_bitmap 1\n");
+//printf("BC_WindowBase::draw_bitmap %d dest_y=%d\n", __LINE__, dest_y);
 	if(dest_w <= 0 || dest_h <= 0)
 	{
 // Use hardware scaling to canvas dimensions if proper color model.

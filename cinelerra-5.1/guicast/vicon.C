@@ -2,7 +2,7 @@
 
 #include "bctimer.h"
 #include "bcwindow.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "keys.h"
 #include "mutex.h"
 #include "condition.h"

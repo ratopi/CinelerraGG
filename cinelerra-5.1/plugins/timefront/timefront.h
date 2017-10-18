@@ -34,7 +34,7 @@ class TimeFrontServer;
 #include "guicast.h"
 #include "loadbalance.h"
 #include "overlayframe.inc"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "pluginvclient.h"
 #include "thread.h"
 #include "vframe.inc"

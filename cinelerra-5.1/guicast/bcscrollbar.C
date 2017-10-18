@@ -23,7 +23,7 @@
 #include "bcresources.h"
 #include "bcscrollbar.h"
 #include "clip.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "vframe.h"
 
 #include <string.h>

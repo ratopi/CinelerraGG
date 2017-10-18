@@ -328,6 +328,8 @@ int FFStream::decode_activate()
 				if( decoder->capabilities & AV_CODEC_CAP_DR1 )
 					avctx->flags |= CODEC_FLAG_EMU_EDGE;
 				avcodec_parameters_to_context(avctx, st->codecpar);
+				if( !av_dict_get(copts, "threads", NULL, 0) )
+					avctx->thread_count = ffmpeg->ff_cpus();
 				ret = avcodec_open2(avctx, decoder, &copts);
 			}
 			if( ret >= 0 ) {
@@ -2001,6 +2003,8 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 		av_dict_set(&sopts, "cin_bitrate", 0, 0);
 		av_dict_set(&sopts, "cin_quality", 0, 0);
 
+		if( !av_dict_get(sopts, "threads", NULL, 0) )
+			ctx->thread_count = ff_cpus();
 		ret = avcodec_open2(ctx, codec, &sopts);
 		if( ret >= 0 ) {
 			ret = avcodec_parameters_from_context(st->codecpar, ctx);
@@ -2682,6 +2686,8 @@ int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
 		}
 		if( ret >= 0 ) {
 			avcodec_parameters_to_context(avctx, st->codecpar);
+			if( !av_dict_get(copts, "threads", NULL, 0) )
+				avctx->thread_count = ff_cpus();
 			ret = avcodec_open2(avctx, decoder, &copts);
 		}
 		av_dict_free(&copts);

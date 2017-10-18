@@ -121,8 +121,8 @@ int CacheBase::delete_oldest()
 			oldest = current;
 	}
 	if( oldest && oldest->position >= 0 ) {
+		result = oldest->get_size();
 		del_item(oldest);
-		result = 1;
 	}
 	lock->unlock();
 	return result;

@@ -27,7 +27,7 @@
 #include "bcscrollbar.h"
 #include "bcsubwindow.h"
 #include "bctoggle.h"
-#include "colors.h"
+#include "bccolors.h"
 
 #define BCPOPUPLISTBOX_W 25
 #define BCPOPUPLISTBOX_H 25

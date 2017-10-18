@@ -26,7 +26,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "loadbalance.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "pluginvclient.h"
 #include "fonts.h"
 #include "scopewindow.h"

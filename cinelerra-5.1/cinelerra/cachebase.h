@@ -78,7 +78,8 @@ public:
 // Called when done with the item returned by get_.
 // Ignore if item was 0.
 	void unlock();
-// delete oldest member, returns 1 if item deleted or 0 if none found
+// Delete oldest item.  
+// Return number of bytes freed if successful.  Return 0 if nothing to delete.
 	int delete_oldest();
 // Calculate current size of cache in bytes
 	int64_t get_memory_usage();

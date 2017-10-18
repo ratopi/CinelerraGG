@@ -18,7 +18,7 @@
  *
  */
 #include "c41.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "clip.h"
 #include "edlsession.h"
 #include "filexml.h"

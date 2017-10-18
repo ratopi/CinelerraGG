@@ -998,7 +998,9 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 	switch(driver)
 	{
 		case PLAYBACK_X11:
-			return BC_RGB888;
+//			return BC_RGB888;
+// the direct X11 color model requires scaling in the codec
+			return BC_BGR8888;
 		case PLAYBACK_X11_XV:
 		case PLAYBACK_ASYNCHRONOUS:
  			return zmpeg3_cmdl(asset->vmpeg_cmodel) > 0 ?

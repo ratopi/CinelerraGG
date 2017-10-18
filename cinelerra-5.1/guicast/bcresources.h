@@ -306,31 +306,31 @@ public:
 	double font_scale, icon_scale;
 
 // fonts
-	static const char *small_font;
-	static const char *medium_font;
-	static const char *large_font;
-	static const char *big_font;
-// Backup of fonts in case the first choices don't exist
-	static const char *small_font2;
-	static const char *medium_font2;
-	static const char *large_font2;
-	static const char *big_font2;
+	static const char *small_font, *small_font2;
+	static const char *medium_font, *medium_font2;
+	static const char *large_font, *large_font2;
+	static const char *big_font, *big_font2;
+	static const char *clock_font, *clock_font2;
 
 	static const char *small_fontset;
 	static const char *medium_fontset;
 	static const char *large_fontset;
 	static const char *big_fontset;
+	static const char *clock_fontset;
 
 	static const char *small_font_xft, *small_b_font_xft;
 	static const char *medium_font_xft, *medium_b_font_xft;
 	static const char *large_font_xft, *large_b_font_xft;
 	static const char *big_font_xft, *big_b_font_xft;
+	static const char *clock_font_xft, *clock_b_font_xft;
 
 // Backup of fonts in case the first choices don't exist
 	static const char *small_font_xft2;
 	static const char *medium_font_xft2;
 	static const char *large_font_xft2;
 	static const char *big_font_xft2;
+	static const char *clock_font_xft2;
+
 	void init_font_defs(double scale);
 	void finit_font_defs();
 

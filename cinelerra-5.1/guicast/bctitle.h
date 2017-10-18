@@ -23,7 +23,7 @@
 #define BCTITLE_H
 
 #include "bcsubwindow.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "fonts.h"
 
 class BC_Title : public BC_SubWindow

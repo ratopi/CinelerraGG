@@ -21,7 +21,7 @@
 
 
 #include "bctheme.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "language.h"
 #include "mainsession.h"
 #include "mutex.h"

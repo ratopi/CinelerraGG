@@ -19,7 +19,7 @@
  */
 
 #include "bcsignals.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "clip.h"
 #include "cursors.h"
 #include "language.h"

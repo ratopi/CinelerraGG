@@ -133,10 +133,10 @@ int VRender::process_buffer(int64_t input_position,
 	int use_brender = 0;
 	int result = 0;
 	int use_cache = renderengine->command->single_frame();
-	int use_asynchronous =
-		renderengine->command->realtime &&
-		renderengine->get_edl()->session->video_every_frame &&
-		renderengine->get_edl()->session->video_asynchronous;
+// 	int use_asynchronous = 
+// 		renderengine->command->realtime && 
+// 		renderengine->get_edl()->session->video_every_frame &&
+// 		renderengine->get_edl()->session->video_asynchronous;
 	const int debug = 0;
 
 // Determine the rendering strategy for this frame.
@@ -151,7 +151,9 @@ int VRender::process_buffer(int64_t input_position,
 // Get output buffer from device
 	if(renderengine->command->realtime && !renderengine->is_nested)
 	{
-		renderengine->video->new_output_buffer(&video_out, colormodel);
+		renderengine->video->new_output_buffer(&video_out, 
+			colormodel, 
+			renderengine->get_edl());
 	}
 
 	if(debug) printf("VRender::process_buffer %d video_out=%p\n", __LINE__, video_out);
@@ -177,9 +179,9 @@ int VRender::process_buffer(int64_t input_position,
 					corrected_position--;
 
 // Cache single frames only
-				if(use_asynchronous)
-					file->start_video_decode_thread();
-				else
+//				if(use_asynchronous)
+//					file->start_video_decode_thread();
+//				else
 					file->stop_video_thread();
 				if(use_cache) file->set_cache_frames(1);
 				int64_t normalized_position = (int64_t)(corrected_position *
@@ -206,7 +208,8 @@ int VRender::process_buffer(int64_t input_position,
 				renderengine->get_vcache(),
 				1,
 				use_cache,
-				use_asynchronous);
+				0);
+//				use_asynchronous);
 			if(debug) printf("VRender::process_buffer %d\n", __LINE__);
 		}
 
@@ -267,8 +270,7 @@ int VRender::get_colormodel(VEdit *playable_edit,
 				current_position,
 				renderengine->command->get_direction());
 		}
-// ffmpeg files are side effected by color_model, affects colorspace,color_range
-		if( asset && asset->format != FILE_FFMPEG )
+		if( asset )
 		{
 			file = renderengine->get_vcache()->check_out(asset,
 				renderengine->get_edl());
@@ -276,8 +278,12 @@ int VRender::get_colormodel(VEdit *playable_edit,
 			if(file)
 			{
 				colormodel = file->get_best_colormodel(driver);
+//printf("VRender::get_colormodel %d driver=%d colormodel=%d\n", __LINE__, driver, colormodel);
 				renderengine->get_vcache()->check_in(asset);
 			}
+// ffmpeg files are side effected by color_model, affects colorspace,color_range
+//			if( asset->format == FILE_FFMPEG && !BC_CModels::is_yuv(colormodel) )
+//				colormodel = BC_BGR8888;
 		}
 	}
 

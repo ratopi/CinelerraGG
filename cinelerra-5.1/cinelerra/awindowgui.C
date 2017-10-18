@@ -1806,21 +1806,21 @@ int AWindowDeleteProject::handle_event()
 	return 1;
 }
 
-AWindowInfo::AWindowInfo(MWindow *mwindow, AWindowGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->infoasset_data)
-{
-	this->mwindow = mwindow;
-	this->gui = gui;
-	set_tooltip(_("Edit information on asset"));
-}
-
-int AWindowInfo::handle_event()
-{
-	int cur_x, cur_y;
-	gui->get_abs_cursor_xy(cur_x, cur_y, 0);
-	gui->awindow->asset_edit->edit_asset(gui->selected_asset(), cur_x, cur_y);
-	return 1;
-}
+// AWindowInfo::AWindowInfo(MWindow *mwindow, AWindowGUI *gui, int x, int y)
+//  : BC_Button(x, y, mwindow->theme->infoasset_data)
+// {
+// 	this->mwindow = mwindow;
+// 	this->gui = gui;
+// 	set_tooltip(_("Edit information on asset"));
+// }
+// 
+// int AWindowInfo::handle_event()
+// {
+// 	int cur_x, cur_y;
+// 	gui->get_abs_cursor_xy(cur_x, cur_y, 0);
+// 	gui->awindow->asset_edit->edit_asset(gui->selected_asset(), cur_x, cur_y);
+// 	return 1;
+// }
 
 AWindowRedrawIndex::AWindowRedrawIndex(MWindow *mwindow, AWindowGUI *gui, int x, int y)
  : BC_Button(x, y, mwindow->theme->redrawindex_data)
@@ -2020,5 +2020,4 @@ int AWindowListSort::handle_event()
 	gui->sort_assets();
 	return 1;
 }
-
 

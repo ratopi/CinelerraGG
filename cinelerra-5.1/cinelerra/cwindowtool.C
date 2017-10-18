@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008-2014 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2008-2017 Adam Williams <broadcast at earthling dot net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +22,7 @@
 #include <stdint.h>
 
 #include "automation.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "clip.h"
 #include "condition.h"
 #include "cpanel.h"
@@ -461,7 +460,7 @@ void CWindowCropGUI::update()
 
 
 CWindowEyedropGUI::CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Color"), 220, 250)
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Color"), 220, 290)
 {
 }
 
@@ -514,6 +513,8 @@ void CWindowEyedropGUI::create_objects()
 
 	y = title6->get_y() + this->v->get_h() + 2*margin;
 	add_subwindow(sample = new BC_SubWindow(x, y, 50, 50));
+	y += sample->get_h() + margin;
+	add_subwindow(use_max = new CWindowEyedropCheckBox(mwindow, this, x, y));
 	update();
 	unlock_window();
 }
@@ -528,27 +529,28 @@ void CWindowEyedropGUI::update()
 
 	radius->update((int64_t)mwindow->edl->session->eyedrop_radius);
 
-	float r = mwindow->edl->local_session->red;
-	float g = mwindow->edl->local_session->green;
-	float b = mwindow->edl->local_session->blue;
-	red->update(r);
-	green->update(g);
-	blue->update(b);
+	LocalSession *local_session = mwindow->edl->local_session;
+	int use_max = local_session->use_max;
+	float r = use_max ? local_session->red_max : local_session->red;
+	float g = use_max ? local_session->green_max : local_session->green;
+	float b = use_max ? local_session->blue_max : local_session->blue;
+	this->red->update(r);
+	this->green->update(g);
+	this->blue->update(b);
+
 	int rx = 255*r + 0.5;  bclamp(rx,0,255);
 	int gx = 255*g + 0.5;  bclamp(gx,0,255);
 	int bx = 255*b + 0.5;  bclamp(bx,0,255);
 	char rgb_text[BCSTRLEN];
 	sprintf(rgb_text, "#%02x%02x%02x", rx, gx, bx);
 	rgb_hex->update(rgb_text);
-
+	
 	float y, u, v;
-	YUV::rgb_to_yuv_f(mwindow->edl->local_session->red,
-		mwindow->edl->local_session->green,
-		mwindow->edl->local_session->blue,
-		y, u, v);
+	YUV::rgb_to_yuv_f(r, g, b, y, u, v);
 	this->y->update(y);
 	this->u->update(u);  u += 0.5;
 	this->v->update(v);  v += 0.5;
+
 	int yx = 255*y + 0.5;  bclamp(yx,0,255);
 	int ux = 255*u + 0.5;  bclamp(ux,0,255);
 	int vx = 255*v + 0.5;  bclamp(vx,0,255);
@@ -686,6 +688,23 @@ int CWindowCurveToggle::handle_event()
 		gui->update_preview();
 	}
 
+	return 1;
+}
+
+
+CWindowEyedropCheckBox::CWindowEyedropCheckBox(MWindow *mwindow, 
+	CWindowEyedropGUI *gui, int x, int y)
+ : BC_CheckBox(x, y, mwindow->edl->local_session->use_max, _("Use maximum"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+
+int CWindowEyedropCheckBox::handle_event()
+{
+	mwindow->edl->local_session->use_max = get_value();
+	
+	gui->update();
 	return 1;
 }
 

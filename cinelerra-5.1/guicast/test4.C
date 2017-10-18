@@ -13,7 +13,7 @@
 
 #include "bcwindow.h"
 #include "bcsignals.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "fonts.h"
 #include "thread.h"
 #include "vframe.h"

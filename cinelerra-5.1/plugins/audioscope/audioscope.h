@@ -29,7 +29,7 @@
 
 #include "bchash.inc"
 #include "bctimer.inc"
-#include "colors.h"
+#include "bccolors.h"
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"

@@ -808,12 +808,23 @@ void EDL::set_outpoint(double position)
 	}
 }
 
+void EDL::deglitch(double position)
+{
+	if( !session->cursor_on_frames ) return;
+	Track *current_track = tracks->first; 
+	for( ; current_track; current_track=current_track->next ) {
+		if( !current_track->record ) continue;
+		if( current_track->data_type != TRACK_AUDIO ) continue;
+		ATrack *atrack = (ATrack*)current_track;
+		atrack->deglitch(position, 
+			session->labels_follow_edits, 
+			session->plugins_follow_edits, 
+			session->autos_follow_edits);
+	}
+}
 
-int EDL::clear(double start,
-	double end,
-	int clear_labels,
-	int clear_plugins,
-	int edit_autos)
+int EDL::clear(double start, double end,
+	int clear_labels, int clear_plugins, int edit_autos)
 {
 	if(start == end)
 	{

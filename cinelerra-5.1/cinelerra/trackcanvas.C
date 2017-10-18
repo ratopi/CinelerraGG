@@ -26,7 +26,7 @@
 #include "bcsignals.h"
 #include "bctimer.h"
 #include "clip.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "cplayback.h"
 #include "cursors.h"
 #include "cwindowgui.h"
@@ -4431,7 +4431,7 @@ int TrackCanvas::do_tracks(int cursor_x, int cursor_y, int button_press)
 		int64_t track_x, track_y, track_w, track_h;
 		track_dimensions(track, track_x, track_y, track_w, track_h);
 
-		if(button_press && get_buttonpress() == 3 &&
+		if(button_press && get_buttonpress() == RIGHT_BUTTON &&
 			cursor_y >= track_y && cursor_y < track_y + track_h) {
 			gui->edit_menu->update(track, 0);
 			gui->edit_menu->activate_menu();

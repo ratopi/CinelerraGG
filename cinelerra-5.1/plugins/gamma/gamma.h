@@ -27,7 +27,7 @@ class GammaMain;
 
 #include "gammawindow.h"
 #include "loadbalance.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "guicast.h"
 #include "pluginvclient.h"
 #include "thread.h"

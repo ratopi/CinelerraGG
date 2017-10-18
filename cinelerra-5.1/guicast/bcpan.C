@@ -24,7 +24,7 @@
 #include "bcpopup.h"
 #include "bcresources.h"
 #include "clip.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "fonts.h"
 #include "rotateframe.h"
 #include "units.h"

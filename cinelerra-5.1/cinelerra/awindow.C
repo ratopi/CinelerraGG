@@ -35,7 +35,6 @@ AWindow::AWindow(MWindow *mwindow)
 	this->mwindow = mwindow;
 	current_folder[0] = 0;
 	asset_remove = 0;
-	asset_edit = 0;
 	clip_edit = 0;
 	label_edit = 0;
 }
@@ -49,8 +48,8 @@ AWindow::~AWindow()
 		gui->unlock_window();
 	}
 	Thread::join();
+	asset_editors.remove_all_objects();
 	delete asset_remove;
-	delete asset_edit;
 	delete label_edit;
 	delete clip_edit;
 	delete effect_tip;
@@ -62,7 +61,6 @@ void AWindow::create_objects()
 	gui->create_objects();
 	gui->async_update_assets();
 	asset_remove = new AssetRemoveThread(mwindow);
-	asset_edit = new AssetEdit(mwindow);
 	clip_edit = new ClipEdit(mwindow, this, 0);
 	label_edit = new LabelEdit(mwindow, this, 0);
 	effect_tip = new EffectTipDialog(mwindow, this);
@@ -75,6 +73,21 @@ int AWindow::save_defaults(BC_Hash *defaults)
 int AWindow::load_defaults(BC_Hash *defaults)
 {
 	return gui->load_defaults(defaults);
+}
+
+
+AssetEdit *AWindow::get_asset_editor()
+{
+	AssetEdit *asset_edit = 0;
+	for( int i=0; !asset_edit && i<asset_editors.size(); ++i ) {
+		AssetEdit *thread = asset_editors[i];
+		if( !thread->running() ) asset_edit = thread;
+	}
+	if( !asset_edit ) {
+		asset_edit = new AssetEdit(mwindow);
+		asset_editors.append(asset_edit);
+	}
+	return asset_edit;
 }
 
 

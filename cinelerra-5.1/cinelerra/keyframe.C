@@ -139,8 +139,7 @@ void KeyFrame::get_contents(BC_Hash *ptr, char **text, char **extra)
 }
 
 void KeyFrame::update_parameter(BC_Hash *params,
-	const char *text,
-	char *extra)
+	const char *text, const char *extra)
 {
 	FileXML output;
 	FileXML input;

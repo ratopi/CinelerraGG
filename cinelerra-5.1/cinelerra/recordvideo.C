@@ -196,6 +196,7 @@ void RecordVideo::run()
 		VideoDevice *vdevice = record->vdevice;
 		VFrame *capture_frame = get_buffer();
 		vdevice->set_field_order(record->reverse_interlace);
+		record->set_do_cursor();
 // Capture a frame
 		grab_result = read_buffer(capture_frame);
 		if( done ) break;

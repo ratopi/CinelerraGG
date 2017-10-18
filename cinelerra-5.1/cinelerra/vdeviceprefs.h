@@ -61,7 +61,7 @@ public:
 	int initialize(int creation /* = 0 */);
 	int delete_objects();
 	void reset_objects();
-	static int max(int a,int b) { return a>b ? a : b; }
+	int get_h();
 
 	PreferencesWindow *pwindow;
 	PreferencesDialog *dialog;
@@ -84,6 +84,7 @@ private:
 	BC_Title *device_title;
 	BC_Title *port_title;
 	BC_CheckBox *follow_video_config;
+	BC_CheckBox *use_direct_x11;
 	BC_Title *channel_title;
 	BC_Title *output_title;
 	BC_Title *syt_title;

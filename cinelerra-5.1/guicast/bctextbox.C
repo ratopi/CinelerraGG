@@ -24,11 +24,12 @@
 #include "bcsignals.h"
 #include "bctextbox.h"
 #include "clip.h"
-#include "colors.h"
+#include "bccolors.h"
 #include <ctype.h>
 #include "cursors.h"
 #include "filesystem.h"
 #include "keys.h"
+#include "language.h"
 #include <math.h>
 #include "bctimer.h"
 #include "vframe.h"
@@ -133,6 +134,7 @@ BC_TextBox::~BC_TextBox()
 	delete suggestions_popup;
 	suggestions->remove_all_objects();
 	delete suggestions;
+	delete menu;
 	delete [] wtext;
 	if( size > 0 )
 		delete [] text;
@@ -175,6 +177,7 @@ int BC_TextBox::reset_parameters(int rows, int has_border, int font, int size)
 	separators = 0;
 	xscroll = 0;
 	yscroll = 0;
+	menu = 0;
 	dirty = 1;
 	selection_active = 0;
 	return 0;
@@ -247,6 +250,7 @@ int BC_TextBox::text_update(const wchar_t *wcp, int wsz, char *tcp, int tsz)
 
 int BC_TextBox::initialize()
 {
+
 	if (!skip_cursor)
 		skip_cursor = new Timer;
 	skip_cursor->update();
@@ -288,6 +292,10 @@ int BC_TextBox::initialize()
 	draw(0);
 	set_cursor(IBEAM_CURSOR, 0, 0);
 	show_window(0);
+
+	add_subwindow(menu = new BC_TextMenu(this));
+	menu->create_objects();
+
 	return 0;
 }
 
@@ -779,12 +787,10 @@ int BC_TextBox::button_press_event()
 	const int debug = 0;
 
 	if(!enabled) return 0;
-	if(get_buttonpress() != WHEEL_UP &&
-		get_buttonpress() != WHEEL_DOWN &&
-		get_buttonpress() != LEFT_BUTTON &&
-		get_buttonpress() != MIDDLE_BUTTON) return 0;
-
-
+// 	if(get_buttonpress() != WHEEL_UP &&
+// 		get_buttonpress() != WHEEL_DOWN &&
+// 		get_buttonpress() != LEFT_BUTTON &&
+// 		get_buttonpress() != MIDDLE_BUTTON) return 0;
 
 	if(debug) printf("BC_TextBox::button_press_event %d\n", __LINE__);
 
@@ -820,6 +826,11 @@ int BC_TextBox::button_press_event()
 			text_y = MAX(text_y, min_y);
 			text_y = MIN(text_y, top_margin);
 			update_scroll = 1;
+		}
+		else
+		if(get_buttonpress() == RIGHT_BUTTON)
+		{
+			menu->activate_menu();
 		}
 		else
 		{
@@ -1608,29 +1619,15 @@ int BC_TextBox::keypress_event()
 			if( ctrl_down() ) {
 				switch( get_keypress() ) {
 				case 'c': case 'C': {
-					if(highlight_letter1 != highlight_letter2) {
-						copy_selection(SECONDARY_SELECTION);
-						result = 1;
-					}
+					result = copy(0);
 					break; }
 				case 'v': case 'V': {
-					paste_selection(SECONDARY_SELECTION);
-					find_ibeam(1);
-					if(keypress_draw) draw(1);
+					result = paste(0);
 					dispatch_event = 1;
-					result = 1;
 					break; }
 				case 'x': case 'X': {
-					if(highlight_letter1 != highlight_letter2) {
-						copy_selection(SECONDARY_SELECTION);
-						delete_selection(highlight_letter1, highlight_letter2, wtext_len);
-						highlight_letter2 = ibeam_letter = highlight_letter1;
-					}
-
-					find_ibeam(1);
-					if(keypress_draw) draw(1);
+					result = cut(0);
 					dispatch_event = 1;
-					result = 1;
 					break; }
 				case 'u': case 'U': {
 					if( shift_down() ) {
@@ -1658,6 +1655,53 @@ int BC_TextBox::keypress_event()
 		result = 1;
 
 	return result;
+}
+
+
+int BC_TextBox::cut(int do_update)
+{
+	if( highlight_letter1 != highlight_letter2 ) {
+		int wtext_len = wtext_update();
+		copy_selection(SECONDARY_SELECTION);
+		delete_selection(highlight_letter1, highlight_letter2, wtext_len);
+		highlight_letter2 = ibeam_letter = highlight_letter1;
+	}
+
+	find_ibeam(1);
+	if( keypress_draw )
+		draw(1);
+	
+	if( do_update ) {
+		skip_cursor->update();
+		handle_event();
+	}
+	return 1;
+}
+
+int BC_TextBox::copy(int do_update)
+{
+	int result = 0;
+	if( highlight_letter1 != highlight_letter2 ) {
+		copy_selection(SECONDARY_SELECTION);
+		result = 1;
+		if( do_update ) {
+			skip_cursor->update();
+		}
+	}
+	return result;
+}
+
+int BC_TextBox::paste(int do_update)
+{
+	paste_selection(SECONDARY_SELECTION);
+	find_ibeam(1);
+	if( keypress_draw )
+		draw(1);
+	if( do_update ) {
+		skip_cursor->update();
+		handle_event();
+	}
+	return 1;
 }
 
 
@@ -2842,6 +2886,66 @@ void BC_TumbleTextBox::set_boundaries(float min, float max)
 {
 	tumbler->set_boundaries(min, max);
 }
+
+
+
+BC_TextMenu::BC_TextMenu(BC_TextBox *textbox)
+ : BC_PopupMenu(0, 0, 0, "", 0)
+{
+	this->textbox = textbox;
+}
+
+BC_TextMenu::~BC_TextMenu()
+{
+}
+
+void BC_TextMenu::create_objects()
+{
+	add_item(new BC_TextMenuCut(this));
+	add_item(new BC_TextMenuCopy(this));
+	add_item(new BC_TextMenuPaste(this));
+}
+
+
+BC_TextMenuCut::BC_TextMenuCut(BC_TextMenu *menu) 
+ : BC_MenuItem(_("Cut"))
+{
+	this->menu = menu;
+}
+
+int BC_TextMenuCut::handle_event()
+{
+	menu->textbox->cut(1);
+	
+	return 0;
+}
+
+
+BC_TextMenuCopy::BC_TextMenuCopy(BC_TextMenu *menu) 
+ : BC_MenuItem(_("Copy"))
+{
+	this->menu = menu;
+}
+
+int BC_TextMenuCopy::handle_event()
+{
+	menu->textbox->copy(1);
+	return 0;
+}
+
+
+BC_TextMenuPaste::BC_TextMenuPaste(BC_TextMenu *menu) 
+ : BC_MenuItem(_("Paste"))
+{
+	this->menu = menu;
+}
+
+int BC_TextMenuPaste::handle_event()
+{
+	menu->textbox->paste(1);
+	return 0;
+}
+
 
 void BC_TumbleTextBox::set_tooltip(const char *text)
 {

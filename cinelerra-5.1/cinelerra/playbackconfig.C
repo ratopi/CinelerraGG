@@ -239,7 +239,7 @@ const char *VideoOutConfig::default_video_device = "/dev/video0";
 
 VideoOutConfig::VideoOutConfig()
 {
-	driver = PLAYBACK_X11_XV;
+	driver = PLAYBACK_X11;
 	x11_host[0] = 0;
 	x11_use_fields = USE_NO_FIELDS;
 
@@ -259,6 +259,7 @@ VideoOutConfig::VideoOutConfig()
 	contrast = 32768;
 	whiteness = 32768;
 	out_channel = -1;
+	use_direct_x11 = 1;
 }
 
 VideoOutConfig::~VideoOutConfig()
@@ -276,6 +277,7 @@ int VideoOutConfig::operator==(VideoOutConfig &that)
 	return (driver == that.driver) &&
 		!strcmp(x11_host, that.x11_host) &&
 		(x11_use_fields == that.x11_use_fields) &&
+		(use_direct_x11 == that.use_direct_x11) &&
 		(brightness == that.brightness) &&
 		(hue == that.hue) &&
 		(color == that.color) &&
@@ -309,6 +311,7 @@ void VideoOutConfig::copy_from(VideoOutConfig *src)
 	this->driver = src->driver;
 	strcpy(this->x11_host, src->x11_host);
 	this->x11_use_fields = src->x11_use_fields;
+	this->use_direct_x11 = src->use_direct_x11;
 
 	firewire_channel = src->firewire_channel;
 	firewire_port = src->firewire_port;

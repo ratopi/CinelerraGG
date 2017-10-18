@@ -27,7 +27,7 @@
 #include "histogramconfig.h"
 #include "histogramwindow.inc"
 #include "loadbalance.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "pluginvclient.h"
 
 

@@ -32,7 +32,7 @@
 #include "bcwindowbase.inc"
 #include "bcbitmap.inc"
 #include "bccmodels.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "condition.h"
 #include "linklist.h"
 #include "mutex.h"

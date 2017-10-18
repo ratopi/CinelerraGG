@@ -22,7 +22,7 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
 #include "bcslider.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "fonts.h"
 #include "keys.h"
 #include "units.h"

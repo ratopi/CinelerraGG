@@ -26,7 +26,7 @@
 #include "bcpopupmenu.h"
 #include "bcresources.h"
 #include "bcsignals.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "fonts.h"
 #include <string.h>
 #include "vframe.h"

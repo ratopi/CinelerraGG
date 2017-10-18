@@ -27,7 +27,7 @@
 #include "bcsignals.h"
 #include "bcsynchronous.h"
 #include "bcwindowbase.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "bccmodels.h"
 #include "cstrdup.h"
 #include "fonts.h"
@@ -72,10 +72,14 @@ static const char *def_big_font =
   "-*-bitstream charter-bold-r-normal-*-*-0-%d-%d-p-0-iso8859-1"; // 160
 static const char *def_big_font2 =
   "-*-nimbus sans l-bold-r-normal-*-*-0-%d-%d-p-0-iso8859-1";     // 160
+static const char *def_clock_font = "-*-helvetica-bold-r-normal-*-%d-*";      // 16
+static const char *def_clock_font2 = "-*-helvetica-bold-r-normal-*-%d-*";     // 18
 static const char *def_small_fontset =  "-*-helvetica-medium-r-normal-*-%d-*";// 10
 static const char *def_medium_fontset = "-*-helvetica-bold-r-normal-*-%d-*";  // 14
 static const char *def_large_fontset =  "-*-helvetica-bold-r-normal-*-%d-*";  // 18
 static const char *def_big_fontset =    "-*-helvetica-bold-r-normal-*-%d-*";  // 24
+static const char *def_clock_fontset = "-*-helvetica-bold-r-normal-*-%d-*";   // 16
+
 static const char *def_small_font_xft = "Sans:pixelsize=%.4f";           // 10.6667
 static const char *def_small_b_font_xft = "Sans:bold:pixelsize=%.4f";    // 10.6667
 static const char *def_medium_font_xft = "Sans:pixelsize=%.4f";          // 13.3333
@@ -84,6 +88,7 @@ static const char *def_large_font_xft = "Sans:pixelsize=%.4f";           // 21.3
 static const char *def_large_b_font_xft = "Sans:bold:pixelsize=%.4f";    // 21.3333
 static const char *def_big_font_xft = "Sans:pixelsize=37.3333";          // 37.3333
 static const char *def_big_b_font_xft = "Sans:bold:pixelsize=37.33333";  // 37.3333
+static const char *def_clock_font_xft = "Sans:pixelsize=16";             // 16
 
 #define default_font_xft2 "-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*"
 
@@ -95,10 +100,13 @@ const char* BC_Resources::large_font = 0;
 const char* BC_Resources::large_font2 = 0;
 const char* BC_Resources::big_font = 0;
 const char* BC_Resources::big_font2 = 0;
+const char* BC_Resources::clock_font = 0;
+const char* BC_Resources::clock_font2 = 0;
 const char* BC_Resources::small_fontset = 0;
 const char* BC_Resources::medium_fontset = 0;
 const char* BC_Resources::large_fontset = 0;
 const char* BC_Resources::big_fontset = 0;
+const char* BC_Resources::clock_fontset = 0;
 const char* BC_Resources::small_font_xft = 0;
 const char* BC_Resources::small_font_xft2 = 0;
 const char* BC_Resources::small_b_font_xft = 0;
@@ -111,6 +119,8 @@ const char* BC_Resources::large_b_font_xft = 0;
 const char* BC_Resources::big_font_xft = 0;
 const char* BC_Resources::big_font_xft2 = 0;
 const char* BC_Resources::big_b_font_xft = 0;
+const char* BC_Resources::clock_font_xft = 0;
+const char* BC_Resources::clock_font_xft2 = 0;
 
 #define def_font(v, s...) do { sprintf(string,def_##v,s); v = cstrdup(string); } while(0)
 #define set_font(v, s) do { sprintf(string, "%s", s); v = cstrdup(string); } while(0)
@@ -125,11 +135,14 @@ void BC_Resources::init_font_defs(double scale)
 	def_font(large_font,       iround(scale*18));
 	def_font(large_font2,      iround(scale*20));
 	def_font(big_font,         iround(scale*160), iround(scale*160));
-	def_font(big_font2,        iround(scale*160), iround(scale*160));
+	def_font(big_font2,        iround(scale*16), iround(scale*16));
+	def_font(clock_font,       iround(scale*16), iround(scale*16));
+	def_font(clock_font2,      iround(scale*16), iround(scale*16));
 	def_font(small_fontset,    iround(scale*10));
 	def_font(medium_fontset,   iround(scale*14));
 	def_font(large_fontset,    iround(scale*18));
 	def_font(big_fontset,      iround(scale*24));
+	def_font(clock_fontset,    iround(scale*16));
 	def_font(small_font_xft,   (scale*10.6667));
 	def_font(small_b_font_xft, (scale*10.6667));
 	def_font(medium_font_xft,  (scale*13.3333));
@@ -138,11 +151,13 @@ void BC_Resources::init_font_defs(double scale)
 	def_font(large_b_font_xft, (scale*21.3333));
 	def_font(big_font_xft,     (scale*37.3333));
 	def_font(big_b_font_xft,   (scale*37.3333));
+	def_font(clock_font_xft,   (scale*16));
 
 	set_font(small_font_xft2,  default_font_xft2);
 	set_font(medium_font_xft2, default_font_xft2);
 	set_font(large_font_xft2,  default_font_xft2);
 	set_font(big_font_xft2,    default_font_xft2);
+	set_font(clock_font_xft2,  default_font_xft2);
 }
 void BC_Resources::finit_font_defs()
 {
@@ -154,10 +169,13 @@ void BC_Resources::finit_font_defs()
 	delete [] large_font2;
 	delete [] big_font;
 	delete [] big_font2;
+	delete [] clock_font;
+	delete [] clock_font2;
 	delete [] small_fontset;
 	delete [] medium_fontset;
 	delete [] large_fontset;
 	delete [] big_fontset;
+	delete [] clock_fontset;
 	delete [] small_font_xft;
 	delete [] small_b_font_xft;
 	delete [] medium_font_xft;
@@ -166,11 +184,13 @@ void BC_Resources::finit_font_defs()
 	delete [] large_b_font_xft;
 	delete [] big_font_xft;
 	delete [] big_b_font_xft;
+	delete [] clock_font_xft;
 
 	delete [] small_font_xft2;
 	delete [] medium_font_xft2;
 	delete [] large_font_xft2;
 	delete [] big_font_xft2;
+	delete [] clock_font_xft2;
 }
 
 

@@ -1150,17 +1150,9 @@ int Track::copy_assets(double start,
 }
 
 
-
-
-
-int Track::clear(double start,
-	double end,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
-	int edit_autos,
-	int convert_units,
-	Edits *trim_edits)
+int Track::clear(double start, double end,
+	int edit_edits, int edit_labels, int edit_plugins,
+	int edit_autos, int convert_units, Edits *trim_edits)
 {
 // Edits::move_auto calls this routine after the units are converted to the track
 // format.

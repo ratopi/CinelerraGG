@@ -22,7 +22,7 @@
 #ifndef EFFECTTV_H
 #define EFFECTTV_H
 
-#include "cicolors.h"
+#include "bccolors.h"
 #include "vframe.inc"
 #include <stdint.h>
 

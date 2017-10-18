@@ -123,6 +123,7 @@ public:
 		int edit_plugins,
 		int edit_autos,
 		Edits *trim_edits);
+	void deglitch(int64_t position);
 	virtual int optimize();
 
 	virtual int clone_derived(Edit* new_edit, Edit* old_edit) { return 0; }

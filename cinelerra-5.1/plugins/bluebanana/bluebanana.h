@@ -29,7 +29,7 @@ class BluebananaThread;
 #include "bluebananaconfig.h"
 #include "bluebananawindow.h"
 #include "loadbalance.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "pluginvclient.h"
 
 #define SELECT_LOOKUP_SIZE 1024

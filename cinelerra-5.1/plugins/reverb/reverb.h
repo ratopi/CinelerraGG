@@ -65,8 +65,8 @@ public:
 	~Reverb();
 
 	void update_gui();
-	int load_from_file(char *data);
-	int save_to_file(char *data);
+//	int load_from_file(char *data);
+//	int save_to_file(char *data);
 
 // data for reverb
 	char config_directory[1024];

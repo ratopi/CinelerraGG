@@ -28,7 +28,7 @@
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bcwindowbase.h"
-#include "colors.h"
+#include "bccolors.h"
 
 #include <string.h>
 

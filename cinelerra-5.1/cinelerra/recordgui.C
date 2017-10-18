@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2008-2017 Adam Williams <broadcast at earthling dot net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,7 +116,6 @@ RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
 
 RecordGUI::~RecordGUI()
 {
-TRACE("RecordGUI::~RecordGUI 1");
 	delete status_thread;
 	delete batch_source;
 	delete batch_mode;
@@ -126,7 +125,6 @@ TRACE("RecordGUI::~RecordGUI 1");
 	delete batch_start;
 	delete batch_duration;
 	delete load_mode;
-TRACE("RecordGUI::~RecordGUI 2");
 }
 
 
@@ -1611,6 +1609,4 @@ int RecordGUIResetTranslation::handle_event()
 	gui->set_translation(0, 0, 1);
 	return 1;
 }
-
-
 

@@ -141,7 +141,8 @@ int ClipPopupInfo::handle_event()
 	popup->gui->get_abs_cursor_xy(cur_x, cur_y, 0);
 
 	if( mwindow->session->drag_assets->total ) {
-		mwindow->awindow->asset_edit->edit_asset(
+		AssetEdit *asset_edit = mwindow->awindow->get_asset_editor();
+		asset_edit->edit_asset(
 			mwindow->session->drag_assets->values[0], cur_x, cur_y);
 	}
 	else

@@ -167,7 +167,7 @@ InterpolatePixelsMain::~InterpolatePixelsMain()
 	delete engine;
 }
 
-const char* InterpolatePixelsMain::plugin_title() { return _("Interpolate Pixels"); }
+const char* InterpolatePixelsMain::plugin_title() { return _("Interpolate Bayer"); }
 int InterpolatePixelsMain::is_realtime() { return 1; }
 
 
@@ -400,6 +400,13 @@ void InterpolatePixelsUnit::process_package(LoadPackage *package)
 	float color_matrix[9];
 	memcpy(color_matrix, server->color_matrix, sizeof(color_matrix));
 
+// printf("InterpolatePixelsUnit::process_package %d color_matrix=", __LINE__);
+// for(int i = 0; i < 9; i++)
+// {
+// 	printf("%f ", color_matrix[i]);
+// }
+// printf("\n");
+
 	y1 = MAX(y1, 1);
 	y2 = MIN(y2, h - 1);
 
@@ -451,9 +458,14 @@ void InterpolatePixelsUnit::process_package(LoadPackage *package)
 					b = current_row[BLUE];
 				}
 
-				out_row[0] = r * color_matrix[0] + g * color_matrix[1] + b * color_matrix[2];
-				out_row[1] = r * color_matrix[3] + g * color_matrix[4] + b * color_matrix[5];
-				out_row[2] = r * color_matrix[6] + g * color_matrix[7] + b * color_matrix[8];
+// 				out_row[0] = r * color_matrix[0] + g * color_matrix[1] + b * color_matrix[2];
+// 				out_row[1] = r * color_matrix[3] + g * color_matrix[4] + b * color_matrix[5];
+// 				out_row[2] = r * color_matrix[6] + g * color_matrix[7] + b * color_matrix[8];
+
+				out_row[0] = r;
+				out_row[1] = g;
+				out_row[2] = b;
+
 				prev_row += components;
 				current_row += components;
 				next_row += components;
@@ -486,9 +498,14 @@ void InterpolatePixelsUnit::process_package(LoadPackage *package)
 					b = (prev_row[BLUE] + next_row[BLUE]) / 2;
 				}
 
-				out_row[0] = r * color_matrix[0] + g * color_matrix[1] + b * color_matrix[2];
-				out_row[1] = r * color_matrix[3] + g * color_matrix[4] + b * color_matrix[5];
-				out_row[2] = r * color_matrix[6] + g * color_matrix[7] + b * color_matrix[8];
+//				out_row[0] = r * color_matrix[0] + g * color_matrix[1] + b * color_matrix[2];
+//				out_row[1] = r * color_matrix[3] + g * color_matrix[4] + b * color_matrix[5];
+//				out_row[2] = r * color_matrix[6] + g * color_matrix[7] + b * color_matrix[8];
+
+				out_row[0] = r;
+				out_row[1] = g;
+				out_row[2] = b;
+
 				prev_row += components;
 				current_row += components;
 				next_row += components;
@@ -514,6 +531,10 @@ void InterpolatePixelsEngine::init_packages()
 	char string[BCTEXTLEN];
 	string[0] = 0;
 	plugin->get_output()->get_params()->get("DCRAW_MATRIX", string);
+
+// printf("InterpolatePixelsEngine::init_packages %d\n", __LINE__);
+// plugin->get_output()->dump_params();
+
 	sscanf(string,
 		"%f %f %f %f %f %f %f %f %f",
 		&color_matrix[0],

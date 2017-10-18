@@ -16,6 +16,7 @@ OBJS = \
 	$(OBJDIR)/bcbitmap.o \
 	$(OBJDIR)/bcbutton.o \
 	$(OBJDIR)/bccapture.o \
+	$(OBJDIR)/bccolors.o \
 	$(OBJDIR)/bccmodels.o \
 	$(OBJDIR)/bccounter.o \
 	$(OBJDIR)/bcclipboard.o \

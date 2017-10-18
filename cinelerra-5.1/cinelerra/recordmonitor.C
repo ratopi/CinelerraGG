@@ -79,55 +79,36 @@ void RecordMonitor::create_objects()
 	mwindow->session->rwindow_fullscreen = 0;
 
 	if( !record->default_asset->video_data )
-		min_w = MeterPanel::get_meters_width(
-			mwindow->theme,
+		min_w = MeterPanel::get_meters_width(mwindow->theme,
 			record->default_asset->channels, 1);
 
-
-
-//SET_TRACE
 	window = new RecordMonitorGUI(mwindow, record, this, min_w);
-//SET_TRACE
 	window->create_objects();
-//SET_TRACE
 
 	if( record->default_asset->video_data ) {
 // Configure the output for record monitoring
 		VideoOutConfig config;
-//SET_TRACE
 		device = new VideoDevice;
-//SET_TRACE
-
-
 
 // Override default device for X11 drivers
 		if(mwindow->edl->session->playback_config->vconfig->driver ==
 			PLAYBACK_X11_XV) config.driver = PLAYBACK_X11_XV;
 		config.x11_use_fields = 0;
-
-//SET_TRACE
-
 		device->open_output(&config,
 			record->default_asset->frame_rate,
 			record->default_asset->width,
 			record->default_asset->height,
 			window->canvas, 0);
-//SET_TRACE
 
 		scope_thread = new RecordScopeThread(mwindow, this);
 
-		if(mwindow->session->record_scope)
-		{
+		if(mwindow->session->record_scope) {
 			scope_thread->start();
 		}
 
-
 		thread = new RecordMonitorThread(mwindow, record, this);
-//SET_TRACE
 		thread->start_playback();
-//SET_TRACE
 	}
-//SET_TRACE
 
 	Thread::start();
 }
@@ -273,6 +254,8 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 	reverse_interlace = 0;
 	meters = 0;
 	canvas = 0;
+	cursor_toggle = 0;
+	big_cursor_toggle = 0;
 	current_operation = MONITOR_NONE;
 	signal_status = 0;
 }
@@ -284,19 +267,15 @@ RecordMonitorGUI::~RecordMonitorGUI()
 	delete signal_status;
 #endif
 	delete canvas;
-	if( bitmap ) delete bitmap;
+	delete cursor_toggle;
+	delete big_cursor_toggle;
+	delete bitmap;
 	if( channel_picker ) delete channel_picker;
 #ifdef HAVE_FIREWIRE
-	if( avc1394transport_thread )
-		delete avc1394transport_thread;
-	if( avc ) {
-		delete avc;
-	}
-	if( avc1394_transport ) {
-		delete avc1394_transport;
-	}
-	if( avc1394transport_title )
-		delete avc1394transport_title;
+	delete avc1394transport_thread;
+	delete avc;
+	delete avc1394_transport;
+	delete avc1394transport_title;
 #endif
 	unlock_window();
 }
@@ -312,8 +291,9 @@ void RecordMonitorGUI::create_objects()
 			driver == VIDEO4LINUX2MPEG ||
 			driver == CAPTURE_JPEG_WEBCAM ||
 			driver == CAPTURE_YUYV_WEBCAM);
+	int do_cursor = driver == SCREENCAPTURE;
 	int do_scopes = do_channel || driver == SCREENCAPTURE;
-	int do_interlace = (driver == VIDEO4LINUX2JPEG);
+	int do_interlace = driver == VIDEO4LINUX2JPEG;
 	int background_done = 0;
 	int do_audio = record->default_asset->audio_data;
 	int do_video = record->default_asset->video_data;
@@ -399,11 +379,21 @@ void RecordMonitorGUI::create_objects()
 			x += reverse_interlace->get_w() + mwindow->theme->widget_border;
 		}
 
-		if(do_scopes)
-		{
+		if( do_scopes ) {
 			scope_toggle = new ScopeEnable(mwindow, thread, x, y);
 			add_subwindow(scope_toggle);
 			x += scope_toggle->get_w() + mwindow->theme->widget_border;
+		}
+
+		if( do_cursor ) {
+			add_subwindow(cursor_toggle = new DoCursor(record,
+				x, 
+				y));
+			x += cursor_toggle->get_w() + mwindow->theme->widget_border;
+			add_subwindow(big_cursor_toggle = new DoBigCursor(record,
+				x, 
+				y));
+			x += big_cursor_toggle->get_w() + mwindow->theme->widget_border;
 		}
 
 		add_subwindow(monitor_menu = new BC_PopupMenu(0, 0, 0, "", 0));
@@ -469,10 +459,8 @@ int RecordMonitorGUI::button_release_event()
 
 int RecordMonitorGUI::cursor_motion_event()
 {
-//SET_TRACE
 	if( canvas && canvas->get_canvas() ) {
 		canvas->get_canvas()->unhide_cursor();
-//SET_TRACE
 		return canvas->cursor_motion_event();
 	}
 	return 0;
@@ -588,11 +576,25 @@ int RecordMonitorGUI::resize_event(int w, int h)
 	}
 #endif
 
-	if(channel_picker) channel_picker->reposition();
-	if(reverse_interlace) reverse_interlace->reposition_window(reverse_interlace->get_x(),
-		reverse_interlace->get_y());
-	if(canvas && do_video)
-	{
+	
+	if( channel_picker ) {
+		channel_picker->reposition();
+	}
+	if( reverse_interlace ) {
+		reverse_interlace->reposition_window(
+			reverse_interlace->get_x(),
+			reverse_interlace->get_y());
+	}
+	if( cursor_toggle ) {
+		cursor_toggle->reposition_window(
+			cursor_toggle->get_x(),
+			cursor_toggle->get_y());
+		big_cursor_toggle->reposition_window(
+			big_cursor_toggle->get_x(),
+			big_cursor_toggle->get_y());
+	}
+
+	if( canvas && do_video ) {
 		canvas->reposition_window(0,
 			mwindow->theme->rmonitor_canvas_x,
 			mwindow->theme->rmonitor_canvas_y,
@@ -600,14 +602,14 @@ int RecordMonitorGUI::resize_event(int w, int h)
 			mwindow->theme->rmonitor_canvas_h);
 	}
 
-	if(do_meters) {
+	if( do_meters ) {
 		meters->reposition_window(mwindow->theme->rmonitor_meter_x,
 			mwindow->theme->rmonitor_meter_y,
 			do_video ? -1 : mwindow->theme->rmonitor_meter_w,
 			mwindow->theme->rmonitor_meter_h);
 		meters->set_meters(record->default_asset->channels,1);
 	}
-	else if(meters) {
+	else if( meters ) {
 		meters->set_meters(0,0);
 	}
 
@@ -664,6 +666,41 @@ int RecordMonitorGUI::create_bitmap()
 	}
 	return 0;
 }
+
+
+DoCursor::DoCursor(Record *record, int x, int y)
+ : BC_CheckBox(x, y, record->do_cursor, _("Record cursor"))
+{
+	this->record = record;
+}
+
+DoCursor::~DoCursor()
+{
+}
+
+int DoCursor::handle_event()
+{
+	record->do_cursor = get_value();
+	return 0;
+}
+
+
+DoBigCursor::DoBigCursor(Record *record, int x, int y)
+ : BC_CheckBox(x, y, record->do_big_cursor, _("Big cursor"))
+{
+	this->record = record;
+}
+
+DoBigCursor::~DoBigCursor()
+{
+}
+
+int DoBigCursor::handle_event()
+{
+	record->do_big_cursor = get_value();
+	return 0;
+}
+
 
 void RecordMonitorGUI::enable_signal_status(int enable)
 {
@@ -1079,7 +1116,9 @@ int RecordMonitorThread::render_frame()
 
 void RecordMonitorThread::new_output_frame()
 {
-	record_monitor->device->new_output_buffer(&output_frame, output_colormodel);
+	record_monitor->device->new_output_buffer(&output_frame, 
+		output_colormodel,
+		record->edl);
 }
 
 void RecordMonitorThread::

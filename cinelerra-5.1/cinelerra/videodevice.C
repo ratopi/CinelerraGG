@@ -190,6 +190,8 @@ int VideoDevice::initialize()
 	single_frame = 0;
 	channel_changed = 0;
 	picture_changed = 0;
+	odd_field_first = 0;
+	do_cursor = 0;
 	return 0;
 }
 
@@ -492,6 +494,21 @@ int VideoDevice::set_field_order(int odd_field_first)
 	return 0;
 }
 
+void VideoDevice::set_do_cursor(int do_cursor, int do_big_cursor)
+{
+	int cursor_scale = 0;
+	if(do_cursor)
+	{
+		cursor_scale = 1;
+		if(do_big_cursor)
+		{
+			cursor_scale = 2;
+		}
+	}
+
+	this->do_cursor = cursor_scale;
+}
+
 int VideoDevice::set_channel(Channel *channel)
 {
 	int result = 0;
@@ -697,10 +714,10 @@ void VideoDevice::goose_input()
 	if(input_base) input_base->goose_input();
 }
 
-void VideoDevice::new_output_buffer(VFrame **output, int colormodel)
+void VideoDevice::new_output_buffer(VFrame **output, int colormodel, EDL *edl)
 {
 	if(!output_base) return;
-	output_base->new_output_buffer(output, colormodel);
+	output_base->new_output_buffer(output, colormodel, edl);
 }
 
 

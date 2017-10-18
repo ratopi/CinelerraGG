@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2008-2017 Adam Williams <broadcast at earthling dot net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -332,8 +332,8 @@ void Canvas::get_transfers(EDL *edl,
 	float &canvas_x1, float &canvas_y1, float &canvas_x2, float &canvas_y2,
 	int canvas_w, int canvas_h)
 {
-// printf("Canvas::get_transfers %d %d\n", canvas_w,
-// 		canvas_h);
+//printf("Canvas::get_transfers %d canvas_w=%d canvas_h=%d\n", 
+// __LINE__,  canvas_w, canvas_h);
 // automatic canvas size detection
 	if(canvas_w < 0) canvas_w = get_canvas()->get_w();
 	if(canvas_h < 0) canvas_h = get_canvas()->get_h();
@@ -430,6 +430,11 @@ void Canvas::get_transfers(EDL *edl,
 			{
 				out_h = (int)(out_w / edl->get_aspect_ratio() + 0.5);
 				canvas_y1 = canvas_h / 2 - out_h / 2;
+// printf("Canvas::get_transfers %d canvas_h=%d out_h=%f canvas_y1=%f\n",
+// __LINE__,
+// canvas_h,
+// out_h,
+// canvas_y1);
 			}
 			canvas_x2 = canvas_x1 + out_w;
 			canvas_y2 = canvas_y1 + out_h;
@@ -459,7 +464,8 @@ void Canvas::get_transfers(EDL *edl,
 	canvas_y1 = MAX(0, canvas_y1);
 	canvas_x2 = MAX(canvas_x1, canvas_x2);
 	canvas_y2 = MAX(canvas_y1, canvas_y2);
-// printf("Canvas::get_transfers 2 %f,%f %f,%f -> %f,%f %f,%f\n",
+// printf("Canvas::get_transfers %d %f,%f %f,%f -> %f,%f %f,%f\n",
+// __LINE__,
 // output_x1,
 // output_y1,
 // output_x2,
@@ -853,8 +859,8 @@ void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
 
 	if( refresh_frame &&
 	   (refresh_frame->get_w() != device->out_w ||
-	    refresh_frame->get_h() != device->out_h ||
-	    refresh_frame->get_color_model() != best_color_model) ) {
+	    refresh_frame->get_h() != device->out_h ) ) {
+// x11 direct render uses BC_BGR8888, use tranfer_from to remap
 		delete refresh_frame;  refresh_frame = 0;
 	}
 
@@ -872,7 +878,7 @@ void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
 		get_canvas()->lock_window(" Canvas::output_refresh");
 	}
 	else
-		refresh_frame->copy_from(output_frame);
+		refresh_frame->transfer_from(output_frame);
 }
 
 

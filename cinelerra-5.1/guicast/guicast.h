@@ -55,7 +55,7 @@
 #include "bctoggle.h"
 #include "bctumble.h"
 #include "bcwindow.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "fonts.h"
 #include "bctimer.h"
 #include "errorbox.h"

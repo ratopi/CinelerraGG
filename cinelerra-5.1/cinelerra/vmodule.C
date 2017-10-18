@@ -230,11 +230,8 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 	{
 		File *file = 0;
 
-		if(debug) printf("VModule::import_frame %d cache=%p\n",
-			__LINE__,
-			get_cache());
-		if(current_edit->asset)
-		{
+//printf("VModule::import_frame %d cache=%p\n", __LINE__, get_cache());
+		if( current_edit->asset ) {
 			get_cache()->age();
 			file = get_cache()->check_out(current_edit->asset,
 				get_edl());
@@ -307,18 +304,19 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 
 			int use_cache = renderengine &&
 				renderengine->command->single_frame();
-			int use_asynchronous = !use_cache && renderengine &&
+//			int use_asynchronous = !use_cache &&
+//				renderengine &&
 // Try to make rendering go faster.
 // But converts some formats to YUV420, which may degrade input format.
-//				renderengine->command->realtime &&
-				renderengine->get_edl()->session->video_asynchronous;
+////				renderengine->command->realtime &&
+//				renderengine->get_edl()->session->video_asynchronous;
 
 			if(file)
 			{
 				if(debug) printf("VModule::import_frame %d\n", __LINE__);
-				if(use_asynchronous)
-					file->start_video_decode_thread();
-				else
+//				if(use_asynchronous)
+//					file->start_video_decode_thread();
+//				else
 					file->stop_video_thread();
 
 				int64_t normalized_position = Units::to_int64(position *
@@ -445,7 +443,7 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 				!EQUIV(in_w, asset_w) ||
 				!EQUIV(in_h, asset_h))
 			{
-				if(debug) printf("VModule::import_frame %d file -> temp -> output\n", __LINE__);
+//printf("VModule::import_frame %d file -> temp -> output\n", __LINE__);
 
 
 
@@ -725,7 +723,13 @@ output->get_opengl_state(),
 						get_edl()->session->interpolation_type);
 				}
 				result = 1;
+				
 				output->copy_stacks((*input));
+				
+				
+//printf("VModule::import_frame %d\n", __LINE__); 
+//(*input)->dump_params();
+//output->dump_params();
 			}
 			else
 // file -> output
@@ -880,6 +884,11 @@ current_cmodel);
 			}
 			result = 1;
 		}
+
+// 		printf("VModule::import_frame %d cache=%p\n", 
+// 			__LINE__,
+// 			get_cache());
+
 	}
 	else
 // Source is silence

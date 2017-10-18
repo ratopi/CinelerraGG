@@ -25,7 +25,7 @@
 
 #include "arraylist.h"
 #include "bccmodels.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "clip.h"
 #include "edlsession.h"
 #include "filexml.h"

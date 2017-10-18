@@ -120,7 +120,8 @@ int MotionHVConfig::equivalent(MotionHVConfig &that)
 		track_frame == that.track_frame &&
 		bottom_is_master == that.bottom_is_master &&
 		horizontal_only == that.horizontal_only &&
-		vertical_only == that.vertical_only;
+		vertical_only == that.vertical_only &&
+		tracking_type == that.tracking_type;
 }
 
 void MotionHVConfig::copy_from(MotionHVConfig &that)

@@ -25,7 +25,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "pluginvclient.h"
 #include "swapframes.h"
 #include "vframe.h"

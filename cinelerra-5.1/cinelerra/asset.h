@@ -150,6 +150,7 @@ public:
 	char vcodec[BCTEXTLEN];
 
 // Length in frames
+// -1 means a still photo
 	int64_t video_length;
 
 
@@ -225,6 +226,9 @@ public:
 	int tiff_compression;
 
 	int ac3_bitrate;
+
+// Insert tag for spherical playback
+	int mov_sphere, jpeg_sphere;
 
 // Image file sequences.  Background rendering doesn't want to write a
 // sequence header but instead wants to start the sequence numbering at a certain

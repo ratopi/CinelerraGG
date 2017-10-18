@@ -24,7 +24,7 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
 #include "bcwindow.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "fonts.h"
 #include "vframe.h"
 #include <string.h>

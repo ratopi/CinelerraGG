@@ -22,16 +22,19 @@
 #include "adeviceprefs.h"
 #include "audioalsa.h"
 #include "audiodevice.inc"
+#include "bcsignals.h"
 #include "bitspopup.h"
 #include "edl.h"
 #include "language.h"
+#include "mwindow.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "recordconfig.h"
+#include "theme.h"
 #include <string.h>
 
-#define DEVICE_H 50
+//#define DEVICE_H 50
 
 ADevicePrefs::ADevicePrefs(int x, int y, PreferencesWindow *pwindow, PreferencesDialog *dialog,
 	AudioOutConfig *out_config, AudioInConfig *in_config, int mode)
@@ -141,7 +144,14 @@ int ADevicePrefs::initialize(int creation)
 
 int ADevicePrefs::get_h(int recording)
 {
-	return !recording ? DEVICE_H + 30 : DEVICE_H;
+	int margin = pwindow->mwindow->theme->widget_border;
+	int result = BC_Title::calculate_h(dialog, "X", MEDIUMFONT) + margin +
+		BC_TextBox::calculate_h(dialog, MEDIUMFONT, 1, 1);
+	if( !recording ) {
+		result += BC_CheckBox::calculate_h(dialog) + margin;
+	}
+
+	return result;
 }
 
 int ADevicePrefs::delete_objects()
@@ -261,6 +271,7 @@ int ADevicePrefs::create_oss_objs()
 {
 	char *output_char = 0;
 	int *output_int = 0;
+	int margin = pwindow->mwindow->theme->widget_border;
 	int y1 = y;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
@@ -279,7 +290,7 @@ int ADevicePrefs::create_oss_objs()
 			break;
 		}
 		dialog->add_subwindow(oss_enable[i] = new OSSEnable(x1, y1 + 20, output_int));
-		x1 += oss_enable[i]->get_w() + 5;
+		x1 += oss_enable[i]->get_w() + margin;
 #endif
 		switch(mode) {
 		case MODEPLAY:
@@ -299,10 +310,10 @@ int ADevicePrefs::create_oss_objs()
 			dialog->add_subwindow(path_title);
 		}
 
-		oss_path[i] = new ADeviceTextBox(x1, y1 + 20, output_char);
+		oss_path[i] = new ADeviceTextBox(
+			x1, y1 + path_title->get_h() + margin, output_char);
 		dialog->add_subwindow(oss_path[i]);
-
-		x1 += oss_path[i]->get_w() + 5;
+		x1 += oss_path[i]->get_w() + margin;
 		if(i == 0) {
 			switch(mode) {
 			case MODEPLAY:
@@ -318,14 +329,15 @@ int ADevicePrefs::create_oss_objs()
 			bits_title = new BC_Title(x1, y, _("Bits:"),
 					MEDIUMFONT, resources->text_default);
 			dialog->add_subwindow(bits_title);
-			oss_bits = new BitsPopup(dialog, x1, y1 + 20, output_int,
-				0, 0, 0, 0, 1);
+			oss_bits = new BitsPopup(dialog,
+				x1, y1 + bits_title->get_h() + margin, 
+				output_int, 0, 0, 0, 0, 1);
 			oss_bits->create_objects();
 		}
 
-		x1 += oss_bits->get_w() + 5;
-		y1 += DEVICE_H;
-break;  // apparently, 'i' must be zero
+		x1 += oss_bits->get_w() + margin;
+//		y1 += DEVICE_H;
+		break;
 	}
 
 	return 0;
@@ -336,15 +348,15 @@ int ADevicePrefs::create_alsa_objs()
 #ifdef HAVE_ALSA
 	char *output_char = 0;
 	int *output_int = 0;
-	int y1 = y;
+	int margin = pwindow->mwindow->theme->widget_border;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
-	int x1 = x + menu->get_w() + 5;
+	int x1 = x + menu->get_w() + margin;
+	int y1 = y;
 
 	ArrayList<char*> *alsa_titles = new ArrayList<char*>;
 	alsa_titles->set_array_delete();
 	AudioALSA::list_devices(alsa_titles, 0, mode);
-
 
 	alsa_drivers = new ArrayList<BC_ListBoxItem*>;
 	for(int i = 0; i < alsa_titles->total; i++)
@@ -366,7 +378,9 @@ int ADevicePrefs::create_alsa_objs()
 	path_title = new BC_Title(x1, y, _("Device:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(path_title);
-	alsa_device = new ALSADevice(dialog, x1, y1 + 20, output_char, alsa_drivers);
+	y1 += path_title->get_h() + margin;
+	alsa_device = new ALSADevice(dialog,
+		x1, y1, output_char, alsa_drivers);
 	alsa_device->create_objects();
 	int x2 = x1;
 
@@ -385,10 +399,12 @@ int ADevicePrefs::create_alsa_objs()
 	bits_title = new BC_Title(x1, y, _("Bits:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(bits_title);
-	alsa_bits = new BitsPopup(dialog, x1, y1 + 20, output_int, 0, 0, 0, 0, 1);
+	y1 = y + bits_title->get_h() + margin;
+	alsa_bits = new BitsPopup(dialog,
+			x1, y1, output_int, 0, 0, 0, 0, 1);
 	alsa_bits->create_objects();
 
-	y1 += alsa_bits->get_h() + 20 + 5;
+	y1 += alsa_bits->get_h();
 	x1 = x2;
 
 	if(mode == MODEPLAY) {
@@ -615,13 +631,13 @@ ADriverMenu::~ADriverMenu()
 
 void ADriverMenu::create_objects()
 {
+#ifdef HAVE_ALSA
+	add_item(new ADriverItem(this, AUDIO_ALSA_TITLE, AUDIO_ALSA));
+#endif
+
 #ifdef HAVE_OSS
 	add_item(new ADriverItem(this, AUDIO_OSS_TITLE, AUDIO_OSS));
 	add_item(new ADriverItem(this, AUDIO_OSS_ENVY24_TITLE, AUDIO_OSS_ENVY24));
-#endif
-
-#ifdef HAVE_ALSA
-	add_item(new ADriverItem(this, AUDIO_ALSA_TITLE, AUDIO_ALSA));
 #endif
 
 #ifdef HAVE_ESOUND

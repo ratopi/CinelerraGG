@@ -338,33 +338,13 @@ int FileFFMPEG::colormodel_supported(int colormodel)
 int FileFFMPEG::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(driver) {
-	case PLAYBACK_X11:
-		return BC_RGB888;
-	case PLAYBACK_X11_XV:
-	case PLAYBACK_ASYNCHRONOUS:
-		return BC_YUV888;
-	case PLAYBACK_X11_GL:
-		return BC_YUV888;
-	case PLAYBACK_DV1394:
-	case PLAYBACK_FIREWIRE:
-		return BC_YUV422P;
-	case VIDEO4LINUX2:
-		return BC_RGB888;
-	case VIDEO4LINUX2JPEG:
-		return BC_COMPRESSED;
-	case CAPTURE_DVB:
-	case VIDEO4LINUX2MPEG:
-		return BC_YUV422P;
-	case CAPTURE_JPEG_WEBCAM:
-		return BC_COMPRESSED;
-	case CAPTURE_YUYV_WEBCAM:
-		return BC_YUV422;
-	case CAPTURE_FIREWIRE:
-	case CAPTURE_IEC61883:
-		return BC_YUV422P;
+// the direct X11 color model requires scaling in the codec
+	case PLAYBACK_X11: return BC_BGR8888;
+//	case PLAYBACK_X11: return BC_RGB888;
+	case PLAYBACK_X11_GL: return BC_RGB888;
 	}
 
-	return BC_RGB888;
+	return BC_YUV420P;
 }
 
 int FileFFMPEG::can_render(const char *fformat, const char *type)

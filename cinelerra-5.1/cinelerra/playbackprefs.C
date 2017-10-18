@@ -68,30 +68,19 @@ void PlaybackPrefs::create_objects()
 
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
-	//int margin = mwindow->theme->widget_border;
+	int margin = mwindow->theme->widget_border;
 
 // Audio
-	add_subwindow(new BC_Title(x,
-		y,
-		_("Audio Out"),
-		LARGEFONT));
-
-
-	y += get_text_height(LARGEFONT) + 5;
-
-
 	BC_Title *title1, *title2;
+	add_subwindow(title1 = new BC_Title(x, y, _("Audio Out"), LARGEFONT));
+	y += title1->get_h() + margin;
 	add_subwindow(title2 = new BC_Title(x, y, _("Playback buffer samples:"), MEDIUMFONT));
-	x2 = MAX(title2->get_w(), title2->get_w()) + 10;
+	x2 = title2->get_x() + title2->get_w() + margin;
 
 SET_TRACE
 	sprintf(string, "%d", playback_config->aconfig->fragment_size);
 	PlaybackModuleFragment *menu;
-	add_subwindow(menu = new PlaybackModuleFragment(x2,
-		y,
-		pwindow,
-		this,
-		string));
+	add_subwindow(menu = new PlaybackModuleFragment(x2, y, pwindow, this, string));
 	menu->add_item(new BC_MenuItem("1024"));
 	menu->add_item(new BC_MenuItem("2048"));
 	menu->add_item(new BC_MenuItem("4096"));
@@ -141,26 +130,29 @@ SET_TRACE
 
 
 // Video
- 	y += audio_device->get_h();
+ 	y += audio_device->get_h(0) + margin;
 
 SET_TRACE
-	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	add_subwindow(new BC_Bar(x, y, 	get_w() - x * 2));
 	y += 5;
 
 SET_TRACE
-	add_subwindow(new BC_Title(x, y, _("Video Out"), LARGEFONT));
-	y += 30;
+	add_subwindow(title1 = new BC_Title(x, y, _("Video Out"), LARGEFONT));
+	y += title1->get_h() + margin;
 
 SET_TRACE
 	add_subwindow(window = new VideoEveryFrame(pwindow, this, x, y));
-
-	add_subwindow(new BC_Title(x + 200, y + 5, _("Framerate achieved:")));
-	add_subwindow(framerate_title = new BC_Title(x + 350, y + 5, "--", MEDIUMFONT, RED));
+	int x1 = x + window->get_w() + 30;
+	const char *txt = _("Framerate achieved:");
+	int y1 = y + (window->get_h() - BC_Title::calculate_h(this, txt)) / 2;
+	add_subwindow(title1 = new BC_Title(x1, y1, txt));
+	x1 += title1->get_w() + margin;
+	add_subwindow(framerate_title = new BC_Title(x1, y1, _("--"), MEDIUMFONT, RED));
 	draw_framerate(0);
-	y += window->get_h() + 5;
+	y += window->get_h() + 2*margin;
 
-	add_subwindow(asynchronous = new VideoAsynchronous(pwindow, x, y));
-	y += asynchronous->get_h() + 10;
+//	add_subwindow(asynchronous = new VideoAsynchronous(pwindow, x, y));
+//	y += asynchronous->get_h() + 10;
 
 SET_TRACE
  	add_subwindow(title1 = new BC_Title(x, y, _("Scaling equation: Enlarge / Reduce ")));
@@ -174,14 +166,13 @@ SET_TRACE
 
 	add_subwindow(title1 = new BC_Title(x, y, _("DVD Subtitle to display:")));
 	PlaybackSubtitleNumber *subtitle_number;
-	subtitle_number = new PlaybackSubtitleNumber(x + title1->get_w() + 10,
-		y,
-		pwindow,
-		this);
+	x1 = x + title1->get_w() + margin;
+	subtitle_number = new PlaybackSubtitleNumber(x1, y, pwindow, this);
 	subtitle_number->create_objects();
 
 	x2 = x + title1->get_w() + 10 + subtitle_number->get_w() + 30;
 	PlaybackSubtitle *subtitle_toggle;
+	x1 += subtitle_number->get_w() + margin;
 	add_subwindow(subtitle_toggle = new PlaybackSubtitle(x2, y, pwindow, this));
 	y += subtitle_toggle->get_h();
 
@@ -197,18 +188,18 @@ SET_TRACE
 
 	add_subwindow(interpolate_raw = new PlaybackInterpolateRaw( x, y,
 		pwindow, this));
-	y += interpolate_raw->get_h();
+	y += interpolate_raw->get_h() + margin;
 
-	add_subwindow(white_balance_raw = new PlaybackWhiteBalanceRaw( x, y,
+ 	add_subwindow(white_balance_raw = new PlaybackWhiteBalanceRaw(x, y,
 		pwindow, this));
-	y += white_balance_raw->get_h() + 10;
-	if(!pwindow->thread->edl->session->interpolate_raw)
-		white_balance_raw->disable();
+ 	if(!pwindow->thread->edl->session->interpolate_raw) 
+ 		white_balance_raw->disable();
+	y += white_balance_raw->get_h() + margin;
 
-	y += white_balance_raw->get_h() + 5;
 	add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
-	video_device = new VDevicePrefs(x + vdevice_title->get_w() + 10, y,
-		pwindow, this, playback_config->vconfig, 0, MODEPLAY);
+	y += vdevice_title->get_h() + margin;
+	video_device = new VDevicePrefs(x, y, pwindow, this,
+		playback_config->vconfig, 0, MODEPLAY);
 	video_device->initialize(0);
 }
 
@@ -327,7 +318,7 @@ PlaybackInterpolateRaw::PlaybackInterpolateRaw( int x, int y,
 int PlaybackInterpolateRaw::handle_event()
 {
 	pwindow->thread->edl->session->interpolate_raw = get_value();
-	if(!pwindow->thread->edl->session->interpolate_raw) {
+	if( !pwindow->thread->edl->session->interpolate_raw ) {
 		playback->white_balance_raw->update(0, 0);
 		playback->white_balance_raw->disable();
 	}
@@ -337,7 +328,6 @@ int PlaybackInterpolateRaw::handle_event()
 	}
 	return 1;
 }
-
 
 PlaybackWhiteBalanceRaw::PlaybackWhiteBalanceRaw( int x, int y,
 		PreferencesWindow *pwindow, PlaybackPrefs *playback)
@@ -358,23 +348,22 @@ int PlaybackWhiteBalanceRaw::handle_event()
 	return 1;
 }
 
-
-VideoAsynchronous::VideoAsynchronous(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y,
-	pwindow->thread->edl->session->video_every_frame &&
-		pwindow->thread->edl->session->video_asynchronous,
-	_("Decode frames asynchronously"))
-{
-	this->pwindow = pwindow;
-	if(!pwindow->thread->edl->session->video_every_frame)
-		disable();
-}
-
-int VideoAsynchronous::handle_event()
-{
-	pwindow->thread->edl->session->video_asynchronous = get_value();
-	return 1;
-}
+// VideoAsynchronous::VideoAsynchronous(PreferencesWindow *pwindow, int x, int y)
+//  : BC_CheckBox(x, y,
+// 	pwindow->thread->edl->session->video_every_frame &&
+// 		pwindow->thread->edl->session->video_asynchronous,
+// 	_("Decode frames asynchronously"))
+// {
+// 	this->pwindow = pwindow;
+// 	if(!pwindow->thread->edl->session->video_every_frame)
+// 		disable();
+// }
+// 
+// int VideoAsynchronous::handle_event()
+// {
+// 	pwindow->thread->edl->session->video_asynchronous = get_value();
+// 	return 1;
+// }
 
 
 VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow,
@@ -388,14 +377,14 @@ VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow,
 int VideoEveryFrame::handle_event()
 {
 	pwindow->thread->edl->session->video_every_frame = get_value();
-	if(!pwindow->thread->edl->session->video_every_frame) {
-		playback_prefs->asynchronous->update(0, 0);
-		playback_prefs->asynchronous->disable();
-	}
-	else {
-		playback_prefs->asynchronous->update(pwindow->thread->edl->session->video_asynchronous, 0);
-		playback_prefs->asynchronous->enable();
-	}
+//	if(!pwindow->thread->edl->session->video_every_frame) {
+//		playback_prefs->asynchronous->update(0, 0);
+//		playback_prefs->asynchronous->disable();
+//	}
+//	else {
+//		playback_prefs->asynchronous->update(pwindow->thread->edl->session->video_asynchronous, 0);
+//		playback_prefs->asynchronous->enable();
+//	}
 	return 1;
 }
 

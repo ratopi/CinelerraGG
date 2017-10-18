@@ -23,7 +23,7 @@ colors := brightness bluebanana C41 color3way colorbalance huesaturation \
 	gamma gradient histogram histogram_bezier threshold
 
 plugin_dirs += exotic
-exotic := aging burn dot holo oil edge
+exotic := aging burn dot holo oil edge spherecam
 
 plugin_dirs += audio_tools
 audio_tools := audioscope cdripper compressor dcoffset delayaudio \

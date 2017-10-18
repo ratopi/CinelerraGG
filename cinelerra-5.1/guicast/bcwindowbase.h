@@ -743,19 +743,17 @@ private:
 
 
 // Font sets
-    XFontSet smallfontset, mediumfontset, largefontset, bigfontset, curr_fontset;
-
+	XFontSet smallfontset, mediumfontset, largefontset, bigfontset, clockfontset;
+	XFontSet curr_fontset;
 // Fonts
 	int current_font;
-	XFontStruct *smallfont, *mediumfont, *largefont, *bigfont;
-
+	XFontStruct *smallfont, *mediumfont, *largefont, *bigfont, *clockfont;
 // Must be void so users don't need to include the wrong libpng version.
-	void *smallfont_xft, *mediumfont_xft, *largefont_xft, *bigfont_xft;
-
+	void *smallfont_xft, *mediumfont_xft, *largefont_xft, *bigfont_xft, *clockfont_xft;
+	void *bold_smallfont_xft, *bold_mediumfont_xft, *bold_largefont_xft;
 
 	int line_width;
 	int line_dashes;
-	void *bold_largefont_xft, *bold_mediumfont_xft, *bold_smallfont_xft;
 	int64_t current_color;
 // Coordinate of drag start
 	int drag_x, drag_y;

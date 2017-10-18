@@ -22,7 +22,7 @@
 #include "awindowgui.h"
 #include "bcsignals.h"
 #include "clip.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "cwindowgui.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -85,6 +85,7 @@ Theme::Theme()
 	play_h = 22;
 	title_h = 23;
 	clock_bg_color = BLACK;
+	clock_fg_color = GREEN;
 	assetedit_color = YELLOW;
 	const char *cp = getenv("BC_USE_COMMERCIALS");
 	use_commercials = !cp ? 0 : atoi(cp);
@@ -264,43 +265,20 @@ void Theme::build_menus()
 
 	frame_sizes.append(new BC_ListBoxItem("128x96"));
 	frame_sizes.append(new BC_ListBoxItem("160x120"));
-	frame_sizes.append(new BC_ListBoxItem("176x144"));
-	frame_sizes.append(new BC_ListBoxItem("240x180"));
-	frame_sizes.append(new BC_ListBoxItem("320x200"));
 	frame_sizes.append(new BC_ListBoxItem("320x240"));
-	frame_sizes.append(new BC_ListBoxItem("352x288"));
 	frame_sizes.append(new BC_ListBoxItem("360x240"));
 	frame_sizes.append(new BC_ListBoxItem("400x300"));
-	frame_sizes.append(new BC_ListBoxItem("424x318"));
-	frame_sizes.append(new BC_ListBoxItem("512x384"));
-	frame_sizes.append(new BC_ListBoxItem("640x350"));
+	frame_sizes.append(new BC_ListBoxItem("640x400"));
 	frame_sizes.append(new BC_ListBoxItem("640x480"));
-	frame_sizes.append(new BC_ListBoxItem("704x576"));
 	frame_sizes.append(new BC_ListBoxItem("720x480"));
-	frame_sizes.append(new BC_ListBoxItem("720x576"));
 	frame_sizes.append(new BC_ListBoxItem("800x600"));
-	frame_sizes.append(new BC_ListBoxItem("852x480"));
-	frame_sizes.append(new BC_ListBoxItem("852x480"));
-	frame_sizes.append(new BC_ListBoxItem("960x540"));
-	frame_sizes.append(new BC_ListBoxItem("960x1080"));
 	frame_sizes.append(new BC_ListBoxItem("1024x768"));
 	frame_sizes.append(new BC_ListBoxItem("1280x720"));
 	frame_sizes.append(new BC_ListBoxItem("1280x1024"));
-	frame_sizes.append(new BC_ListBoxItem("1368x768"));
-	frame_sizes.append(new BC_ListBoxItem("1408x1152"));
-	frame_sizes.append(new BC_ListBoxItem("1600x1024"));
 	frame_sizes.append(new BC_ListBoxItem("1600x1200"));
 	frame_sizes.append(new BC_ListBoxItem("1920x1080"));
-	frame_sizes.append(new BC_ListBoxItem("1920x1088"));
-	frame_sizes.append(new BC_ListBoxItem("1920x1200"));
-	frame_sizes.append(new BC_ListBoxItem("2048x1536"));
-	frame_sizes.append(new BC_ListBoxItem("2560x1600"));
-	frame_sizes.append(new BC_ListBoxItem("2560x2048"));
-	frame_sizes.append(new BC_ListBoxItem("3200x2048"));
-	frame_sizes.append(new BC_ListBoxItem("3840x2400"));
-	frame_sizes.append(new BC_ListBoxItem("5120x4096"));
-	frame_sizes.append(new BC_ListBoxItem("6400x4096"));
-	frame_sizes.append(new BC_ListBoxItem("7680x4800"));
+	frame_sizes.append(new BC_ListBoxItem("3840x2160"));
+	frame_sizes.append(new BC_ListBoxItem("4096x1720"));
 
 	sample_rates.append(new BC_ListBoxItem("8000"));
 	sample_rates.append(new BC_ListBoxItem("16000"));
@@ -311,6 +289,7 @@ void Theme::build_menus()
 	sample_rates.append(new BC_ListBoxItem("96000"));
 	sample_rates.append(new BC_ListBoxItem("192000"));
 
+	frame_rates.append(new BC_ListBoxItem("0.25"));
 	frame_rates.append(new BC_ListBoxItem("1"));
 	frame_rates.append(new BC_ListBoxItem("5"));
 	frame_rates.append(new BC_ListBoxItem("10"));
@@ -324,6 +303,9 @@ void Theme::build_menus()
 	frame_rates.append(new BC_ListBoxItem("50"));
 	frame_rates.append(new BC_ListBoxItem("59.94"));
 	frame_rates.append(new BC_ListBoxItem("60"));
+	frame_rates.append(new BC_ListBoxItem("100"));
+	frame_rates.append(new BC_ListBoxItem("120"));
+	frame_rates.append(new BC_ListBoxItem("1000"));
 
 	char string[BCTEXTLEN];
 	for(int i = 1; i < 17; i++)
@@ -592,9 +574,9 @@ void Theme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mbuttons_y = gui->menu_h() + 1;
 	mbuttons_w = gui->menu_w();
 	mbuttons_h = get_image("mbutton_bg")->get_h();
-	mclock_x = 10;
-	mclock_y = mbuttons_y - 1 + mbuttons_h + widget_border;
-	mclock_w = get_image("clock_bg")->get_w() - 40;
+	mclock_x = window_border - 5;
+	mclock_y = mbuttons_y - 1 + mbuttons_h;
+	mclock_w = get_image("clock_bg")->get_w() - 20;
 	mclock_h = get_image("clock_bg")->get_h();
 	mtimebar_x = get_image("patchbay_bg")->get_w();
 	mtimebar_y = mbuttons_y - 1 + mbuttons_h;
@@ -1175,40 +1157,106 @@ void Theme::get_plugindialog_sizes()
 
 void Theme::get_keyframedialog_sizes(KeyFrameWindow *gui)
 {
-	int x = widget_border;
-	int y = window_border +
-		BC_Title::calculate_h(gui, "P", LARGEFONT) +
+	int x = window_border;
+	int y = window_border + 
+		BC_Title::calculate_h(gui, "P", LARGEFONT) + 
+		widget_border;
+
+	presets_list_x = x;
+	presets_list_y = y;
+#ifdef EDIT_KEYFRAME
+	presets_list_w = mwindow->session->keyframedialog_w / 2 - 
+		widget_border - 
+		window_border;
+#else
+	presets_list_w = mwindow->session->keyframedialog_w - 
+		presets_list_x -
+		window_border;
+#endif
+	presets_list_h = mwindow->session->keyframedialog_h - 
+		BC_OKButton::calculate_h() - 
+		presets_list_y -
+		widget_border -
+		widget_border -
+		BC_Title::calculate_h(gui, "P") - 
+		widget_border -
+		BC_TextBox::calculate_h(gui, 
+			MEDIUMFONT, 
+			1, 
+			1) -
+		widget_border -
+		(BC_GenericButton::calculate_h() + widget_border) * 3 - 
+		window_border;
+	y += presets_list_h + widget_border + widget_border + BC_Title::calculate_h(gui, "P");
+	presets_text_x = x;
+	presets_text_y = y;
+	presets_text_w = presets_list_w;
+	y += BC_TextBox::calculate_h(gui, 
+		MEDIUMFONT, 
+		1, 
+		1) + widget_border;
+
+	presets_delete_x = presets_text_x;
+	presets_delete_y = y;
+	y += BC_GenericButton::calculate_h() + widget_border;
+
+	presets_save_x = presets_text_x;
+	presets_save_y = y;
+	y += BC_GenericButton::calculate_h() + widget_border;
+
+	presets_apply_x = presets_text_x;
+	presets_apply_y = y;
+	y += BC_GenericButton::calculate_h();
+
+#ifdef EDIT_KEYFRAME
+	x = mwindow->session->keyframedialog_w / 2 + widget_border;
+	y = window_border + 
+		BC_Title::calculate_h(gui, "P", LARGEFONT) + 
 		widget_border;
 
 	keyframe_list_x = x;
 	keyframe_list_y = y;
-	keyframe_list_w = mwindow->session->keyframedialog_w - widget_border * 2;
-	keyframe_list_h = mwindow->session->keyframedialog_h - widget_border -
-		widget_border - keyframe_list_y - BC_Title::calculate_h(gui, "P") -
-		widget_border - BC_TextBox::calculate_h(gui, MEDIUMFONT, 1, 1) -
-		widget_border - BC_Title::calculate_h(gui, "P") -
-		widget_border - BC_OKButton::calculate_h() -
+	keyframe_list_w = mwindow->session->keyframedialog_w / 2 - 
+		widget_border - 
+		window_border;
+	keyframe_list_h = mwindow->session->keyframedialog_h - 
+		keyframe_list_y -
+		widget_border -
+		widget_border -
+		BC_Title::calculate_h(gui, "P") -
+		widget_border - 
+		BC_TextBox::calculate_h(gui,
+			MEDIUMFONT,
+			1,
+			1) -
+		widget_border - 
+		BC_Title::calculate_h(gui, "P") -
+		widget_border -
+		BC_OKButton::calculate_h() - 
 		window_border;
 // 	keyframe_text_x = keyframe_list_x + keyframe_list_w + widget_border;
 // 	keyframe_text_y = y;
 // 	keyframe_text_w = mwindow->session->keyframedialog_w - keyframe_text_x - window_border;
-// 	y += BC_TextBox::calculate_h(gui,
-// 		MEDIUMFONT,
-// 		1,
+// 	y += BC_TextBox::calculate_h(gui, 
+// 		MEDIUMFONT, 
+// 		1, 
 // 		1) + widget_border;
-//
+// 
 
  	y += keyframe_list_h + BC_Title::calculate_h(gui, "P") + widget_border + widget_border;
 	keyframe_value_x = keyframe_list_x;
 	keyframe_value_y = y;
 	keyframe_value_w = keyframe_list_w;
-	y += BC_TextBox::calculate_h(gui,
-		MEDIUMFONT,
-		1,
+	y += BC_TextBox::calculate_h(gui, 
+		MEDIUMFONT, 
+		1, 
 		1) + widget_border;
 
 	keyframe_all_x = keyframe_value_x;
 	keyframe_all_y = y;
+
+#endif
+
 }
 
 

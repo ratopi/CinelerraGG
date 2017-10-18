@@ -26,7 +26,7 @@ class ColorBalanceMain;
 
 #include "colorbalancewindow.h"
 #include "condition.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "guicast.h"
 #include "pluginvclient.h"
 #include "thread.h"

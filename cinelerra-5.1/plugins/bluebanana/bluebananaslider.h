@@ -21,7 +21,7 @@
 #ifndef BLUEBANANASLIDER_H
 #define BLUEBANANASLIDER_H
 
-#include "cicolors.h"
+#include "bccolors.h"
 #include "pluginvclient.h"
 #include "bluebanana.h"
 #include "bluebananawindow.h"

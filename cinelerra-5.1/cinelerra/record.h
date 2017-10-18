@@ -147,7 +147,8 @@ public:
 	void set_play_gain(double gain);
 	void set_video_monitoring(int mode);
 	void stop_operation();
-	int set_video_picture();
+	void set_video_picture();
+	void set_do_cursor();
 // Set screencapture translation
 	void set_translation(int x, int y);
 
@@ -283,6 +284,9 @@ public:
 	float video_zoom;
 // Reverse the interlace in the video window display only
 	int reverse_interlace;
+// record the cursor for screencapture
+	int do_cursor;
+	int do_big_cursor;
 // Color model for uncompressed device interface
 	int color_model;
 // Picture quality and parameters the device supports

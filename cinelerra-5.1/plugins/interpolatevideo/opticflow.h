@@ -24,6 +24,7 @@
 
 #include "interpolatevideo.inc"
 #include "loadbalance.h"
+#include "motioncache-hv.inc"
 #include "motionscan-hv.inc"
 #include "opticflow.inc"
 
@@ -57,7 +58,7 @@ public:
 	OpticFlowUnit(OpticFlow *server);
 	~OpticFlowUnit();
 	void process_package(LoadPackage *package);
-	MotionScan *motion;
+	MotionHVScan *motion;
 	OpticFlow *server;
 };
 
@@ -73,6 +74,7 @@ public:
 	LoadClient* new_client();
 	LoadPackage* new_package();
 	InterpolateVideo *plugin;
+	MotionHVCache *downsample_cache;
 };
 
 

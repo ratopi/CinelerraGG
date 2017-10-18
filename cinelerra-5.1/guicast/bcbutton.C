@@ -23,7 +23,7 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
 #include "bcsignals.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "fonts.h"
 #include "keys.h"
 #include "language.h"

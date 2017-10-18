@@ -30,7 +30,7 @@
 #include "language.h"
 #include "loadbalance.h"
 #include "playback3d.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 

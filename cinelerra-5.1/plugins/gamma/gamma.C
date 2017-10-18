@@ -25,7 +25,7 @@
 #include "gamma.h"
 #include "bchash.h"
 #include "language.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "../interpolate/aggregated.h"
 #include "playback3d.h"
 #include "workarounds.h"

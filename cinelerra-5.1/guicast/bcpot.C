@@ -21,7 +21,7 @@
 
 #include "bcpot.h"
 #include "bcresources.h"
-#include "colors.h"
+#include "bccolors.h"
 #include "keys.h"
 #include "units.h"
 #include "vframe.h"

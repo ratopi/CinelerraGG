@@ -24,7 +24,7 @@
 
 #include "arraylist.h"
 #include "bcpixmap.inc"
-#include "colors.h"
+#include "bccolors.h"
 #include "vframe.h"
 
 

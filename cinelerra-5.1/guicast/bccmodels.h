@@ -128,7 +128,6 @@ public:
 			int in_x, int in_y, int in_w, int in_h, int in_rowspan,
 		int bg_color);
 
-	static void init_yuv();
 	static int bc_to_x(int color_model);
 	static void bcxfer_stop_slicers();
 };

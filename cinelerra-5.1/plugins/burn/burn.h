@@ -28,7 +28,7 @@ class BurnMain;
 #include "effecttv.inc"
 #include "loadbalance.h"
 #include "mutex.h"
-#include "cicolors.inc"
+#include "bccolors.inc"
 #include "pluginvclient.h"
 #include "burnwindow.h"
 #include <sys/types.h>

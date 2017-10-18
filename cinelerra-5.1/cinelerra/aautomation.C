@@ -21,7 +21,7 @@
 
 #include "aautomation.h"
 #include "atrack.inc"
-#include "colors.h"
+#include "bccolors.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "floatauto.h"

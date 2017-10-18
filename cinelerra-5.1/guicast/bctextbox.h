@@ -23,6 +23,8 @@
 #define BCTEXTBOX_H
 
 #include "bclistbox.h"
+#include "bcmenuitem.h"
+#include "bcpopupmenu.h"
 #include "bcsubwindow.h"
 #include "bctumble.h"
 #include "fonts.h"
@@ -39,7 +41,7 @@ class BC_TextBoxSuggestions;
 class BC_ScrollTextBoxXScroll;
 class BC_ScrollTextBoxYScroll;
 class BC_ScrollTextBoxText;
-
+class BC_TextMenu;
 
 class BC_TextBox : public BC_SubWindow
 {
@@ -118,6 +120,10 @@ public:
 
 	int reposition_window(int x, int y, int w = -1, int rows = -1);
 	int uses_text();
+	int cut(int do_update);
+	int copy(int do_update);
+	int paste(int do_update);
+	
 	static int calculate_h(BC_WindowBase *gui, int font, int has_border, int rows);
 	static int calculate_row_h(int rows, BC_WindowBase *parent_window, int has_border = 1, int font = MEDIUMFONT);
 	static int pixels_to_rows(BC_WindowBase *window, int font, int pixels);
@@ -157,6 +163,7 @@ public:
 	BC_ScrollTextBoxYScroll *yscroll;
 private:
 	int reset_parameters(int rows, int has_border, int font, int size);
+	BC_TextMenu *menu;
 	void draw(int flush);
 	void draw_border();
 	void draw_cursor();
@@ -460,6 +467,42 @@ public:
 	int handle_event();
 	int button_press_event();
 	BC_TumbleTextBox *popup;
+};
+
+
+class BC_TextMenu : public BC_PopupMenu
+{
+public:
+	BC_TextMenu(BC_TextBox *textbox);
+	~BC_TextMenu();
+	
+	void create_objects();
+	
+	BC_TextBox *textbox;
+};
+
+class BC_TextMenuCut : public BC_MenuItem
+{
+public:
+	BC_TextMenuCut(BC_TextMenu *menu);
+	int handle_event();
+	BC_TextMenu *menu;
+};
+
+class BC_TextMenuCopy : public BC_MenuItem
+{
+public:
+	BC_TextMenuCopy(BC_TextMenu *menu);
+	int handle_event();
+	BC_TextMenu *menu;
+};
+
+class BC_TextMenuPaste : public BC_MenuItem
+{
+public:
+	BC_TextMenuPaste(BC_TextMenu *menu);
+	int handle_event();
+	BC_TextMenu *menu;
 };
 
 

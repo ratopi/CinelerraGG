@@ -50,6 +50,7 @@ public:
 	int write_frames(VFrame ***frames,int len);
 	int read_samples(double *buffer,int64_t len);
 	int read_frame(VFrame *frame);
+	int can_scale_input() { return 1; }
 	int64_t get_memory_usage(void);
 	int colormodel_supported(int colormodel);
 	static int get_best_colormodel(Asset *asset, int driver);

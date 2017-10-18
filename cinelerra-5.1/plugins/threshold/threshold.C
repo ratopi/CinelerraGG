@@ -27,7 +27,7 @@
 #include "filexml.h"
 #include "histogramengine.h"
 #include "language.h"
-#include "cicolors.h"
+#include "bccolors.h"
 #include "threshold.h"
 #include "thresholdwindow.h"
 #include "vframe.h"

@@ -4505,43 +4505,39 @@ void BC_ListBox::draw_title(int number)
 			image_number = 2;
 	}
 
-	int column_offset = get_column_offset(number) - xposition + LISTBOX_BORDER;
-	int column_width = get_column_width(number, 1);
 	gui->draw_3segmenth(get_column_offset(number) - xposition + LISTBOX_BORDER,
 		LISTBOX_BORDER,
 		get_column_width(number, 1) + get_resources()->listbox_title_overlap,
 		column_bg[image_number]);
 
-// Column title sort order
-	if(number == sort_column)
-	{
-		BC_Pixmap *src;
-		if(sort_order == SORT_ASCENDING)
-			src = column_sort_dn;
-		else
-			src = column_sort_up;
+	int title_x = -xposition + get_column_offset(number) + 
+		LISTBOX_MARGIN + LISTBOX_BORDER;
+	title_x += get_resources()->listbox_title_margin;
 
-		int x = column_offset +
-			column_width -
-			LISTBOX_BORDER;
-		if(x > items_w) x = items_w;
-		x -= 5 + src->get_w();
+	gui->set_color(get_resources()->listbox_title_color);
+	gui->draw_text(title_x, 
+		LISTBOX_MARGIN + LISTBOX_BORDER + get_text_ascent(MEDIUMFONT), 
+		column_titles[number]);
+
+// Column sort order
+	if(number == sort_column) {
+		BC_Pixmap *src = sort_order == SORT_ASCENDING ?
+			column_sort_dn : column_sort_up;
+
+//		int column_offset = get_column_offset(number) - xposition + LISTBOX_BORDER;
+//		int column_width = get_column_width(number, 1);
+// 		int toggle_x = column_offset + column_width - LISTBOX_BORDER;
+// 		if( toggle_x > items_w ) toggle_x = items_w;
+// 		toggle_x -= 5 + src->get_w();
+
+		int x = title_x + 
+			get_text_width(MEDIUMFONT, column_titles[number]) +
+			LISTBOX_MARGIN;
+		
 		gui->draw_pixmap(src,
 			x,
 			title_h / 2 - src->get_h() / 2 + LISTBOX_BORDER);
 	}
-
-
-	int x = -xposition +
-		get_column_offset(number) +
-		LISTBOX_MARGIN +
-		LISTBOX_BORDER;
-	x += get_resources()->listbox_title_margin;
-
-	gui->set_color(get_resources()->listbox_title_color);
-	gui->draw_text(x,
-		LISTBOX_MARGIN + LISTBOX_BORDER + get_text_ascent(MEDIUMFONT),
-		_(column_titles[number]));
 }
 
 int BC_ListBox::draw_titles(int flash)

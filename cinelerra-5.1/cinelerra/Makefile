@@ -59,7 +59,6 @@ OBJS = \
 	$(OBJDIR)/channel.o \
 	$(OBJDIR)/channelpicker.o \
 	$(OBJDIR)/chantables.o \
-	$(OBJDIR)/cicolors.o \
 	$(OBJDIR)/clipedit.o \
 	$(OBJDIR)/clippopup.o \
 	$(OBJDIR)/colorpicker.o \
@@ -230,6 +229,7 @@ OBJS = \
 	$(OBJDIR)/pluginvclient.o \
 	$(OBJDIR)/preferences.o \
 	$(OBJDIR)/preferencesthread.o \
+	$(OBJDIR)/presets.o \
 	$(OBJDIR)/probeprefs.o \
 	$(OBJDIR)/proxy.o \
 	$(OBJDIR)/question.o \
