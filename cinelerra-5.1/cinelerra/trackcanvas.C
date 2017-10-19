@@ -4507,10 +4507,12 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 							mwindow->edl->local_session->zoom_sample /
 							mwindow->edl->session->sample_rate;
 
+						int cx, cy;
+						get_abs_cursor_xy(cx, cy);
+						cx -= mwindow->theme->get_image("clip_icon")->get_w() / 2,
+						cy -= mwindow->theme->get_image("clip_icon")->get_h() / 2;
 						gui->drag_popup = new BC_DragWindow(gui,
-							mwindow->theme->get_image("clip_icon") /*,
-							get_abs_cursor_x(0) - mwindow->theme->get_image("clip_icon")->get_w() / 2,
-							get_abs_cursor_y(0) - mwindow->theme->get_image("clip_icon")->get_h() / 2 */);
+							mwindow->theme->get_image("clip_icon"), cx, cy);
 
 						result = 1;
 					}
@@ -4619,19 +4621,22 @@ int TrackCanvas::do_plugins(int cursor_x, int cursor_y, int drag_start,
 							frame = mwindow->theme->get_image("veffect_icon");
 						}
 					}
-
-					gui->drag_popup = new BC_DragWindow(gui, frame /*,
-						get_abs_cursor_x(0) - frame->get_w() / 2,
-						get_abs_cursor_y(0) - frame->get_h() / 2 */);
+					int cx, cy;
+					get_abs_cursor_xy(cx, cy);
+					cx -= frame->get_w() / 2;
+					cy -= frame->get_h() / 2;
+					gui->drag_popup = new BC_DragWindow(gui, frame, cx, cy);
 						break; }
 
 				case PLUGIN_SHAREDPLUGIN:
-				case PLUGIN_SHAREDMODULE:
-					gui->drag_popup = new BC_DragWindow(gui,
-						mwindow->theme->get_image("clip_icon") /*,
-						get_abs_cursor_x(0) - mwindow->theme->get_image("clip_icon")->get_w() / 2,
-						get_abs_cursor_y(0) - mwindow->theme->get_image("clip_icon")->get_h() / 2 */);
-					break;
+				case PLUGIN_SHAREDMODULE: {
+					VFrame *frame = mwindow->theme->get_image("clip_icon");
+					int cx, cy;
+					get_abs_cursor_xy(cx, cy);
+					cx -= frame->get_w() / 2;
+					cy -= frame->get_h() / 2;
+					gui->drag_popup = new BC_DragWindow(gui, frame, cx, cy);
+					break; }
 				}
 
 				result = 1;

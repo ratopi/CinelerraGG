@@ -53,8 +53,8 @@ KeyFrameThread::KeyFrameThread(MWindow *mwindow)
 	is_factory = 0;
 	preset_text[0] = 0;
 	window_title[0] = 0;
-	column_titles[0] = (char*)"Parameter";
-	column_titles[1] = (char*)"Value";
+	column_titles[0] = (char*)_("Parameter");
+	column_titles[1] = (char*)_("Value");
 	column_width[0] = 0;
 	column_width[1] = 0;
 	presets_data = new ArrayList<BC_ListBoxItem*>;
@@ -147,7 +147,7 @@ void KeyFrameThread::start_window(Plugin *plugin, KeyFrame *keyframe)
 		this->keyframe = keyframe;
 		this->plugin = plugin;
 		plugin->calculate_title(plugin_title, 0);
-		sprintf(window_title, PROGRAM_NAME ": %s Keyframe", plugin_title);
+		sprintf(window_title, _("%s: %s Keyframe"), _(PROGRAM_NAME), plugin_title);
 
 // Load all the presets from disk
 		char path[BCTEXTLEN];
@@ -479,11 +479,8 @@ void KeyFrameWindow::create_objects()
 
 
 	add_subwindow(title1 = new BC_Title(theme->keyframe_list_x,
-		theme->keyframe_list_y - 
-			BC_Title::calculate_h(this, (char*)"Py", LARGEFONT) - 
-			theme->widget_border,
-		_("Keyframe parameters:"),
-		LARGEFONT));
+		theme->keyframe_list_y - BC_Title::calculate_h(this, (char*)_("Py"), LARGEFONT) - 
+			theme->widget_border, _("Keyframe parameters:"), LARGEFONT));
 	add_subwindow(keyframe_list = new KeyFrameList(thread,
 		this,
 		theme->keyframe_list_x,
@@ -499,57 +496,31 @@ void KeyFrameWindow::create_objects()
 // 		theme->keyframe_text_y,
 // 		theme->keyframe_text_w));
 	add_subwindow(title3 = new BC_Title(theme->keyframe_value_x,
-		theme->keyframe_value_y - BC_Title::calculate_h(this, (char*)"P") - theme->widget_border,
-		_("Edit value:")));
-	add_subwindow(value_text = new KeyFrameValue(thread,
-		this,
-		theme->keyframe_value_x,
-		theme->keyframe_value_y,
-		theme->keyframe_value_w));
-	add_subwindow(all_toggle = new KeyFrameAll(thread,
-		this, 
-		theme->keyframe_all_x,
-		theme->keyframe_all_y));
+		theme->keyframe_value_y - BC_Title::calculate_h(this, (char*)"P") -
+			theme->widget_border, _("Edit value:")));
+	add_subwindow(value_text = new KeyFrameValue(thread, this,
+		theme->keyframe_value_x, theme->keyframe_value_y, theme->keyframe_value_w));
+	add_subwindow(all_toggle = new KeyFrameAll(thread, this, 
+		theme->keyframe_all_x, theme->keyframe_all_y));
 
 #endif
-
-
-
-	add_subwindow(title4 = new BC_Title(theme->presets_list_x,
-		theme->presets_list_y - 
-			BC_Title::calculate_h(this, (char*)"Py", LARGEFONT) - 
-			theme->widget_border,
-		_("Presets:"),
-		LARGEFONT));
-	add_subwindow(preset_list = new KeyFramePresetsList(thread,
-		this,
-		theme->presets_list_x,
-		theme->presets_list_y,
-		theme->presets_list_w, 
-		theme->presets_list_h));
+	add_subwindow(title4 = new BC_Title(theme->presets_list_x, theme->presets_list_y - 
+			BC_Title::calculate_h(this, (char*)_("Py"), LARGEFONT) - 
+			theme->widget_border, _("Presets:"), LARGEFONT));
+	add_subwindow(preset_list = new KeyFramePresetsList(thread, this,
+		theme->presets_list_x, theme->presets_list_y,
+		theme->presets_list_w, theme->presets_list_h));
 	add_subwindow(title5 = new BC_Title(theme->presets_text_x,
 		theme->presets_text_y - BC_Title::calculate_h(this, (char*)"P") - theme->widget_border,
 		_("Preset title:")));
-	add_subwindow(preset_text = new KeyFramePresetsText(thread,
-		this,
-		theme->presets_text_x,
-		theme->presets_text_y,
-		theme->presets_text_w));
-	add_subwindow(delete_preset = new KeyFramePresetsDelete(thread,
-		this,
-		theme->presets_delete_x,
-		theme->presets_delete_y));
-	add_subwindow(save_preset = new KeyFramePresetsSave(thread,
-		this,
-		theme->presets_save_x,
-		theme->presets_save_y));
-	add_subwindow(apply_preset = new KeyFramePresetsApply(thread,
-		this,
-		theme->presets_apply_x,
-		theme->presets_apply_y));
-
-
-
+	add_subwindow(preset_text = new KeyFramePresetsText(thread, this,
+		theme->presets_text_x, theme->presets_text_y, theme->presets_text_w));
+	add_subwindow(delete_preset = new KeyFramePresetsDelete(thread, this,
+		theme->presets_delete_x, theme->presets_delete_y));
+	add_subwindow(save_preset = new KeyFramePresetsSave(thread, this,
+		theme->presets_save_x, theme->presets_save_y));
+	add_subwindow(apply_preset = new KeyFramePresetsApply(thread, this,
+		theme->presets_apply_x, theme->presets_apply_y));
 
 	add_subwindow(new KeyFramePresetsOK(thread, this));
 	add_subwindow(new BC_CancelButton(this));
@@ -634,23 +605,13 @@ int KeyFrameWindow::resize_event(int w, int h)
 
 
 KeyFrameList::KeyFrameList(KeyFrameThread *thread,
-	KeyFrameWindow *window,
-	int x,
-	int y,
-	int w, 
-	int h)
- : BC_ListBox(x, 
-		y, 
-		w, 
-		h,
-		LISTBOX_TEXT,
-		thread->keyframe_data,
-		thread->column_titles,
-		thread->column_width,
-		KEYFRAME_COLUMNS)
+	KeyFrameWindow *window, int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h, LISTBOX_TEXT, thread->keyframe_data,
+	thread->column_titles, thread->column_width, KEYFRAME_COLUMNS)
 {
 	this->thread = thread;
 	this->window = window;
+	set_master_column(1, 0);
 }
 
 int KeyFrameList::selection_changed()

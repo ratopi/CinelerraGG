@@ -415,11 +415,11 @@ int CPanelZoom::handle_event()
 int CPanelZoom::set_shown(int shown)
 {
 	if( shown ) {
-		show_window();
+		show();
 		update(gui->subwindow->canvas->get_zoom());
 	}
 	else
-		hide_window();
+		hide();
 	return 1;
 }
 

@@ -95,31 +95,28 @@ int VDeviceX11::open_input()
 // create overlay
 	device->mwindow->gui->lock_window("VDeviceX11::close_all");
 
-	screencap_border[0] = new BC_Popup(device->mwindow->gui, 
+	screencap_border[0] = new BC_Popup(device->mwindow->gui,
 			device->input_x - SCREENCAP_PIXELS, device->input_y - SCREENCAP_PIXELS,
 			device->in_config->w + SCREENCAP_PIXELS * 2, SCREENCAP_PIXELS,
 			SCREENCAP_COLOR, 1);
-	screencap_border[1] = new BC_Popup(device->mwindow->gui, 
+	screencap_border[1] = new BC_Popup(device->mwindow->gui,
 			device->input_x - SCREENCAP_PIXELS, device->input_y,
 			SCREENCAP_PIXELS, device->in_config->h,
 			SCREENCAP_COLOR, 1);
-	screencap_border[2] = new BC_Popup(device->mwindow->gui, 
+	screencap_border[2] = new BC_Popup(device->mwindow->gui,
 			device->input_x - SCREENCAP_PIXELS, device->input_y + device->in_config->h,
 			device->in_config->w + SCREENCAP_PIXELS * 2, SCREENCAP_PIXELS,
 			SCREENCAP_COLOR, 1);
-	screencap_border[3] = new BC_Popup(device->mwindow->gui, 
+	screencap_border[3] = new BC_Popup(device->mwindow->gui,
 			device->input_x + device->in_config->w, device->input_y,
 			SCREENCAP_PIXELS, device->in_config->h,
 			SCREENCAP_COLOR, 1);
+usleep(500000);	// avoids a bug in gnome-shell 2017/10/19
 
-	for( int i=0; i<SCREENCAP_BORDERS; ++i ) {
-		BC_Popup *box = screencap_border[i];
-		box->set_bg_color(SCREENCAP_COLOR);
-		box->clear_box(0, 0, box->get_w(), box->get_h());
-		box->flash(0);
-		box->show_window();
-	}
+	for( int i=0; i<SCREENCAP_BORDERS; ++i )
+		screencap_border[i]->show_window(0);
 
+	device->mwindow->gui->flush();
 	device->mwindow->gui->unlock_window();
 
 	return 0;

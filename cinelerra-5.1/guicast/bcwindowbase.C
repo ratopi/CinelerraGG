@@ -385,22 +385,10 @@ int BC_WindowBase::initialize()
 			FocusChangeMask
 
 
-int BC_WindowBase::create_window(BC_WindowBase *parent_window,
-				const char *title,
-				int x,
-				int y,
-				int w,
-				int h,
-				int minw,
-				int minh,
-				int allow_resize,
-				int private_color,
-				int hide,
-				int bg_color,
-				const char *display_name,
-				int window_type,
-				BC_Pixmap *bg_pixmap,
-				int group_it)
+int BC_WindowBase::create_window(BC_WindowBase *parent_window, const char *title,
+		int x, int y, int w, int h, int minw, int minh, int allow_resize,
+		int private_color, int hide, int bg_color, const char *display_name,
+		int window_type, BC_Pixmap *bg_pixmap, int group_it)
 {
 	XSetWindowAttributes attr;
 	unsigned long mask;

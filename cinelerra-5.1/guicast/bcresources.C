@@ -59,6 +59,7 @@ char BC_Resources::region[LEN_LANG] = {0};
 char BC_Resources::encoding[LEN_ENCOD] = {0};
 const char *BC_Resources::wide_encoding = 0;
 ArrayList<BC_FontEntry*> *BC_Resources::fontlist = 0;
+int BC_Resources::font_debug = 0;
 const char *BC_Resources::fc_properties[] = { FC_SLANT, FC_WEIGHT, FC_WIDTH };
 #define LEN_FCPROP (sizeof(BC_Resources::fc_properties) / sizeof(const char*))
 
@@ -88,7 +89,7 @@ static const char *def_large_font_xft = "Sans:pixelsize=%.4f";           // 21.3
 static const char *def_large_b_font_xft = "Sans:bold:pixelsize=%.4f";    // 21.3333
 static const char *def_big_font_xft = "Sans:pixelsize=37.3333";          // 37.3333
 static const char *def_big_b_font_xft = "Sans:bold:pixelsize=37.33333";  // 37.3333
-static const char *def_clock_font_xft = "Sans:pixelsize=16";             // 16
+static const char *def_clock_font_xft = "Sans:pixelsize=%.4f";           // 16
 
 #define default_font_xft2 "-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*"
 
@@ -136,8 +137,8 @@ void BC_Resources::init_font_defs(double scale)
 	def_font(large_font2,      iround(scale*20));
 	def_font(big_font,         iround(scale*160), iround(scale*160));
 	def_font(big_font2,        iround(scale*16), iround(scale*16));
-	def_font(clock_font,       iround(scale*16), iround(scale*16));
-	def_font(clock_font2,      iround(scale*16), iround(scale*16));
+	def_font(clock_font,       iround(scale*16));
+	def_font(clock_font2,      iround(scale*18));
 	def_font(small_fontset,    iround(scale*10));
 	def_font(medium_fontset,   iround(scale*14));
 	def_font(large_fontset,    iround(scale*18));
@@ -151,7 +152,7 @@ void BC_Resources::init_font_defs(double scale)
 	def_font(large_b_font_xft, (scale*21.3333));
 	def_font(big_font_xft,     (scale*37.3333));
 	def_font(big_b_font_xft,   (scale*37.3333));
-	def_font(clock_font_xft,   (scale*16));
+	def_font(clock_font_xft,   (scale*16.));
 
 	set_font(small_font_xft2,  default_font_xft2);
 	set_font(medium_font_xft2, default_font_xft2);
@@ -344,7 +345,9 @@ BC_Resources::BC_Resources()
 	synchronous = 0;
 	vframe_shm = 0;
 	double default_scale = 1.0; // display_size/1000.;
-	char *env = getenv("BC_FONT_SCALE");
+	char *env = getenv("BC_FONT_DEBUG");
+	font_debug = env ? atoi(env) : 0;
+	env = getenv("BC_FONT_SCALE");
 	font_scale = env ? atof(env) : default_scale;
 	if( font_scale <= 0 ) font_scale = 1;
 	init_font_defs(font_scale);
@@ -966,17 +969,23 @@ int BC_Resources::init_fontconfig(const char *search_path)
 
 	char find_command[BCTEXTLEN];
 	char *fp = find_command, *ep = fp+sizeof(find_command)-1;
-	fp += snprintf(fp, ep-fp, "find '%s'", search_path);
+	fp += snprintf(fp, ep-fp, "%s", "find");
 	const char *bc_font_path = getenv("BC_FONT_PATH");
+// if BC_FONT_PATH starts with ':', omit default path
+	if( !(bc_font_path && bc_font_path[0] == ':') )
+		fp += snprintf(fp, ep-fp, " '%s'", search_path);
 	if( bc_font_path ) {
 		const char *path = bc_font_path;
-		for( int len=0; *path; path+=len ) {
-	                const char *cp = strchr(path,':');
-			len = !cp ? strlen(path) : cp-path;
+		while( *path ) {
 			char font_path[BCTEXTLEN];
-			memcpy(font_path, path, len);  font_path[len] = 0;
-			if( cp ) ++len;
-			fp += snprintf(fp, ep-fp, " '%s'", font_path);
+	                const char *cp = strchr(path,':');
+			int len = !cp ? strlen(path) : cp-path;
+			if( len > 0 ) {
+				memcpy(font_path, path, len);
+				font_path[len] = 0;  path += len;
+				fp += snprintf(fp, ep-fp, " '%s'", font_path);
+			}
+			if( cp ) ++path;
 		}
         }
 	fp += snprintf(fp, ep-fp, " -name 'fonts.scale' -print -exec cat {} \\;");
@@ -1123,11 +1132,16 @@ int BC_Resources::init_fontconfig(const char *search_path)
 			entry->style |= FL_WIDTH_NORMAL;
 
 		fontlist->append(entry);
+		if( font_debug )
+			dump_font_entry(stdout, "font 0: ", entry);
+
 //		printf("TitleMain::build_fonts %s: success\n",	entry->path);
 //printf("TitleMain::build_fonts 2\n");
 	}
 	pclose(in);
 
+	if( bc_font_path && bc_font_path[0] == ':' )
+		return 0;
 
 // Load all the fonts from fontconfig
 	FcPattern *pat;
@@ -1335,6 +1349,8 @@ int BC_Resources::init_fontconfig(const char *search_path)
 
 		}
 		fontlist->append(entry);
+		if( font_debug )
+			dump_font_entry(stdout, "font 1: ", entry);
 	}
 
 	FcFontSetDestroy(fs);
@@ -1544,6 +1560,8 @@ int BC_Resources::init_fontconfig(const char *search_path)
 			strcpy(entry->displayname, entry->family);
 		}
 		fontlist->append(entry);
+		if( font_debug )
+			dump_font_entry(stdout, "font 2: ", entry);
 	}
 	FcFontSetDestroy(fs);
 	return 0;
@@ -1753,13 +1771,16 @@ FcPattern* BC_Resources::find_similar_font(FT_ULong char_code, FcPattern *oldfon
 
 void BC_Resources::dump_fonts(FILE *fp)
 {
-	for( int i=0; i<fontlist->total; ++i ) {
-		BC_FontEntry *ep = fontlist->values[i];
-		fprintf(fp,"%s = %s\n",ep->displayname,ep->path);
-		fprintf(fp,"  %s:%s:%s:%s:%s:%s:%d:%d:%d:%d:%d:%s:%d:%s:%s:%d\n",
-			ep->foundry, ep->family, ep->weight, ep->slant, ep->swidth, ep->adstyle,
-			ep->pixelsize, ep->pointsize, ep->xres, ep->yres, ep->style, ep->spacing,
-			ep->avg_width, ep->registry, ep->encoding, ep->fixed_style);
-	}
+	for( int i=0; i<fontlist->total; ++i )
+		dump_font_entry(fp, "", fontlist->values[i]);
+}
+
+void BC_Resources::dump_font_entry(FILE *fp, const char *cp,  BC_FontEntry *ep)
+{
+	fprintf(fp,"%s%s = %s\n",cp,ep->displayname,ep->path);
+	fprintf(fp,"  %s:%s:%s:%s:%s:%s:%d:%d:%d:%d:%d:%s:%d:%s:%s:%d\n",
+		ep->foundry, ep->family, ep->weight, ep->slant, ep->swidth, ep->adstyle,
+		ep->pixelsize, ep->pointsize, ep->xres, ep->yres, ep->style, ep->spacing,
+		ep->avg_width, ep->registry, ep->encoding, ep->fixed_style);
 }
 

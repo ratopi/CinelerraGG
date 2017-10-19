@@ -176,6 +176,10 @@ public:
 	char *get_caption();
 	int handle_event();
 	int set_shown(int shown);
+	int show_window(int flush=1) { return 0; }
+	int hide_window(int flush=1) { return 0; }
+	int show(int flush=1) { return BC_SubWindow::show_window(flush); }
+	int hide(int flush=1) { return BC_SubWindow::hide_window(flush); }
 	void update(float zoom);
 	MWindow *mwindow;
 	CPanel *gui;

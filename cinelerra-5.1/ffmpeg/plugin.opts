@@ -30,7 +30,7 @@ aloop
 #amix
 #amovie
 #anequalizer
-anoisesrc
+#anoisesrc
 #anull
 #anullsink
 #anullsrc

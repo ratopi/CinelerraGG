@@ -304,7 +304,6 @@ public:
 	int directory_color;
 	int file_color;
 	double font_scale, icon_scale;
-
 // fonts
 	static const char *small_font, *small_font2;
 	static const char *medium_font, *medium_font2;
@@ -360,7 +359,9 @@ public:
 	static size_t encode(const char *from_enc, const char *to_enc,
 		char *input, int input_length, char *output, int output_length);
 	static int find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface);
+	static int font_debug;
 	static void dump_fonts(FILE *fp = stdout);
+	static void dump_font_entry(FILE *fp, const char *cp,  BC_FontEntry *ep);
 
 	static void new_vframes(int n, VFrame *vframes[], ...);
 	static void del_vframes(VFrame *vframes[], int n);

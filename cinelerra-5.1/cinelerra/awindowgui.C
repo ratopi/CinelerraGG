@@ -1453,7 +1453,7 @@ AWindowAssets::AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, in
 		0,                // If this listbox is a popup window
 		LISTBOX_MULTIPLE, // Select one item or multiple items
 		ICON_TOP,         // Position of icon relative to text of each item
-		1)                // Allow drag
+		-1)               // Allow drags, require shift for scrolling
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

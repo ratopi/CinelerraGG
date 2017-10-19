@@ -294,6 +294,10 @@ void GlyphUnit::process_package(LoadPackage *package)
 {
 	GlyphPackage *pkg = (GlyphPackage*)package;
 	TitleGlyph *glyph = pkg->glyph;
+	BC_Resources *resources =  BC_WindowBase::get_resources();
+	if( resources->font_debug )
+		printf("GlyphUnit load glyph (%s) %04x, '%c'\n", glyph->font->displayname,
+			(unsigned)glyph->char_code, (unsigned)glyph->char_code);
 	int result = 0;
 	char new_path[BCTEXTLEN];
 	if( plugin->load_freetype_face(freetype_library, freetype_face, glyph->font->path) ) {
@@ -311,7 +315,6 @@ void GlyphUnit::process_package(LoadPackage *package)
 		if( gindex == 0 ) {
 printf("GlyphUnit::process_package 1 glyph not found (%s) %04x, '%c'\n",
  glyph->font->displayname, (unsigned)glyph->char_code, (unsigned)glyph->char_code);
-			BC_Resources *resources =  BC_WindowBase::get_resources();
 			// Search replacement font
 			if( resources->find_font_by_char(glyph->char_code, new_path, freetype_face) ) {
 				plugin->load_freetype_face(freetype_library,
@@ -1151,7 +1154,8 @@ NEW_WINDOW_MACRO(TitleMain, TitleWindow);
 
 void TitleMain::build_previews(TitleWindow *gui)
 {
-	ArrayList<BC_FontEntry*>&fonts = *gui->get_resources()->fontlist;
+	BC_Resources *resources =  BC_WindowBase::get_resources();
+	ArrayList<BC_FontEntry*>&fonts = *resources->fontlist;
 
 	for( int font_number=0; font_number<fonts.size(); ++font_number ) {
 		BC_FontEntry *font = fonts.get(font_number);
@@ -1166,7 +1170,7 @@ void TitleMain::build_previews(TitleWindow *gui)
 	char new_path[BCTEXTLEN];
 	int text_height = gui->get_text_height(LARGEFONT);
 	int max_height = 3*text_height/2, max_width = 2 * max_height;
-	int text_color = BC_WindowBase::get_resources()->default_text_color;
+	int text_color = resources->default_text_color;
 	int r = (text_color >> 16) & 0xff;
 	int g = (text_color >> 8) & 0xff;
 	int b = text_color & 0xff;
@@ -1179,6 +1183,8 @@ void TitleMain::build_previews(TitleWindow *gui)
 	int total_w = 0;
 	int total_h = 0;
 	for( int pass=0; pass<2; ++pass ) {
+		if( resources->font_debug )
+			printf("Titler: build previews pass %d\n",pass);
 //printf("TitleMain::build_previews %d %d %d\n",
 //__LINE__, text_height, total_h);
 		for( int font_number=0; font_number<fonts.size(); ++font_number ) {
@@ -1196,6 +1202,8 @@ void TitleMain::build_previews(TitleWindow *gui)
 			}
 
 			if( skip ) continue;
+			if( resources->font_debug )
+				printf("Titler: preview %s = %s\n",font->displayname, font->path);
 			if( pass > 0 ) {
 				font->image = new VFrame;
 				font->image->set_use_shm(0);
@@ -1353,7 +1361,7 @@ int TitleMain::load_freetype_face(FT_Library &freetype_library,
 
 int TitleMain::load_font(BC_FontEntry *font)
 {
-	if( load_freetype_face(freetype_library,freetype_face, font->path) ) return 1;
+	if( !font || load_freetype_face(freetype_library,freetype_face, font->path) ) return 1;
 	strcpy(text_font, font->displayname);
 	return 0;
 }

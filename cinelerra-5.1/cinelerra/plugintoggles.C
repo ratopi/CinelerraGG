@@ -28,15 +28,12 @@
 
 
 PluginOn::PluginOn(MWindow *mwindow, int x, int y, Plugin *plugin)
- : BC_Toggle(x,
- 		y,
-		mwindow->theme->get_image_set("plugin_on"),
-		plugin->on)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("plugin_on"), plugin->on)
 {
 	this->mwindow = mwindow;
 	this->plugin = plugin;
 	in_use = 1;
-	set_tooltip(_("On"));
+	set_tooltip(plugin->on ? _("Turn Off") : _("Turn On"));
 }
 
 int PluginOn::calculate_w(MWindow *mwindow)
@@ -47,6 +44,7 @@ int PluginOn::calculate_w(MWindow *mwindow)
 void PluginOn::update(int x, int y, Plugin *plugin)
 {
 	BC_Toggle::set_value(plugin->on, 0);
+	set_tooltip(plugin->on ? _("Turn Off") : _("Turn On"));
 	reposition_window(x, y);
 	this->plugin = plugin;
 	in_use = 1;
@@ -55,6 +53,7 @@ void PluginOn::update(int x, int y, Plugin *plugin)
 int PluginOn::handle_event()
 {
 	plugin->on = get_value();
+	set_tooltip(plugin->on ? _("Turn Off") : _("Turn On"));
 	unlock_window();
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);

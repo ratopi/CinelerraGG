@@ -25,32 +25,14 @@
 #include "vframe.h"
 #include <unistd.h>
 
-// Icon has to be offset so the cursor isn't directly over it.
-// The cursor has to be over the target window for X to detect the right window.
-#define DRAG_OFFSET_X 16
-#define DRAG_OFFSET_Y 16
-
 BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
-	BC_Pixmap *pixmap /*,
-	int icon_x,
-	int icon_y */)
- : BC_Popup(parent_window,
-// 	icon_x,
-//	icon_y,
-	parent_window->get_abs_cursor_x(0) + DRAG_OFFSET_X,
-	parent_window->get_abs_cursor_y(0) + DRAG_OFFSET_Y,
-	pixmap->get_w(),
-	pixmap->get_h(),
-	-1,
-	0,
-	pixmap)
+	BC_Pixmap *pixmap, int icon_x, int icon_y)
+ : BC_Popup(parent_window, icon_x, icon_y, pixmap->get_w(), pixmap->get_h(),
+	-1, 0, pixmap)
 {
-	temp_frame = 0;
 	drag_pixmap = 0;
-//	init_x = icon_x;
-//	init_y = icon_y;
-	init_x = parent_window->get_abs_cursor_x(0) + DRAG_OFFSET_X;
-	init_y = parent_window->get_abs_cursor_y(0) + DRAG_OFFSET_Y;
+	init_x = icon_x;
+	init_y = icon_y;
 	end_x = BC_INFINITY;
 	end_y = BC_INFINITY;
 	icon_offset_x = init_x - parent_window->get_abs_cursor_x(0);
@@ -61,26 +43,12 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 
 
 BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
-	VFrame *frame /*,
-	int icon_x,
-	int icon_y */)
- : BC_Popup(parent_window,
-// 	icon_x,
-//	icon_y,
-	parent_window->get_abs_cursor_x(0) + DRAG_OFFSET_X,
-	parent_window->get_abs_cursor_y(0) + DRAG_OFFSET_Y,
-	frame->get_w(),
-	frame->get_h(),
-	-1,
-	0,
-	prepare_frame(frame, parent_window))
+	VFrame *frame, int icon_x, int icon_y)
+ : BC_Popup(parent_window, icon_x, icon_y, frame->get_w(), frame->get_h(),
+	-1, 0, prepare_frame(frame, parent_window))
 {
-	delete temp_frame;  // created in prepare_frame inside constructor
-	temp_frame = 0;
-//	init_x = icon_x;
-//	init_y = icon_y;
-	init_x = parent_window->get_abs_cursor_x(0) + DRAG_OFFSET_X;
-	init_y = parent_window->get_abs_cursor_y(0) + DRAG_OFFSET_Y;
+	init_x = icon_x;
+	init_y = icon_y;
 	end_x = BC_INFINITY;
 	end_y = BC_INFINITY;
 	icon_offset_x = init_x - parent_window->get_abs_cursor_x(0);
@@ -99,13 +67,8 @@ int BC_DragWindow::get_init_x(BC_WindowBase *parent_window, int icon_x)
 	int output_x, temp = 0;
 	Window tempwin;
 	XTranslateCoordinates(parent_window->top_level->display,
-		parent_window->win,
-		parent_window->top_level->rootwin,
-		icon_x,
-		temp,
-		&output_x,
-		&temp,
-		&tempwin);
+		parent_window->win, parent_window->top_level->rootwin,
+		icon_x, temp, &output_x, &temp, &tempwin);
 	return output_x;
 }
 
@@ -114,22 +77,16 @@ int BC_DragWindow::get_init_y(BC_WindowBase *parent_window, int icon_y)
 	int output_y, temp = 0;
 	Window tempwin;
 	XTranslateCoordinates(parent_window->top_level->display,
-		parent_window->win,
-		parent_window->top_level->rootwin,
-		temp,
-		icon_y,
-		&temp,
-		&output_y,
-		&tempwin);
+		parent_window->win, parent_window->top_level->rootwin,
+		temp, icon_y, &temp, &output_y, &tempwin);
 	return output_y;
 }
 
 int BC_DragWindow::cursor_motion_event()
 {
-	reposition_window(get_abs_cursor_x(0) + icon_offset_x,
-		get_abs_cursor_y(0) + icon_offset_y,
-		get_w(),
-		get_h());
+	int cx, cy;
+	get_abs_cursor_xy(cx, cy);
+	reposition_window(cx + icon_offset_x, cy + icon_offset_y, get_w(), get_h());
 	flush();
 	return 1;
 }
@@ -148,21 +105,16 @@ int BC_DragWindow::drag_failure_event()
 {
 	if(!do_animation) return 0;
 
-	if(end_x == BC_INFINITY)
-	{
+	if(end_x == BC_INFINITY) {
 		end_x = get_x();
 		end_y = get_y();
 	}
 
-	for(int i = 0; i < 10; i++)
-	{
+	for(int i = 0; i < 10; i++) {
 		int new_x = end_x + (init_x - end_x) * i / 10;
 		int new_y = end_y + (init_y - end_y) * i / 10;
 
-		reposition_window(new_x,
-			new_y,
-			get_w(),
-			get_h());
+		reposition_window(new_x, new_y, get_w(), get_h());
 		flush();
 		usleep(1000);
 	}
@@ -176,38 +128,28 @@ void BC_DragWindow::set_animation(int value)
 
 BC_Pixmap *BC_DragWindow::prepare_frame(VFrame *frame, BC_WindowBase *parent_window)
 {
-	temp_frame = 0;
+	VFrame *temp_frame = 0;
+	int tw = frame->get_w(), th = frame->get_h();
 
-	if(frame->get_color_model() == BC_RGBA8888)
-	{
-		temp_frame = new VFrame(*frame);
+	if( frame->get_color_model() != BC_RGBA8888 ) {
+		temp_frame = new VFrame(tw, th, BC_RGBA8888);
+		temp_frame->transfer_from(frame);
 	}
 	else
-	{
-		temp_frame = new VFrame;
-		temp_frame->set_use_shm(0);
-		temp_frame->reallocate(0,
-					-1,
-					0,
-					0,
-					0,
-					frame->get_w(),
-					frame->get_h(),
-					BC_RGBA8888,
-					-1);
+		temp_frame = new VFrame(*frame);
 
-		BC_CModels::transfer(temp_frame->get_rows(), frame->get_rows(),
-			0, 0, 0, 0, 0, 0,
-			0, 0, frame->get_w(), frame->get_h(),
-			0, 0, temp_frame->get_w(), temp_frame->get_h(),
-			frame->get_color_model(), temp_frame->get_color_model(),
-			0, frame->get_w(), temp_frame->get_w());
+	int tx = tw/2, ty = th/2, tx1 = tx-1, ty1 = ty-1, tx2 = tx+2, ty2 = ty+2;
+	int bpp = BC_CModels::calculate_pixelsize(temp_frame->get_color_model());
+	unsigned char **rows = temp_frame->get_rows();
+	for( int y=ty1; y<ty2; ++y ) {
+		for( int x=tx1; x<tx2; ++x ) {
+			unsigned char *rp = rows[y] + x*bpp;
+			rp[3] = 0; // alpha of center pixels = 0
+		}
 	}
-	temp_frame->get_rows()[(temp_frame->get_h() / 2)][(temp_frame->get_w() / 2) * 4 + 3] = 0;
-	drag_pixmap = new BC_Pixmap(parent_window,
-			temp_frame,
-			PIXMAP_ALPHA);
+	drag_pixmap = new BC_Pixmap(parent_window, temp_frame, PIXMAP_ALPHA);
 
+	delete temp_frame;
 	return drag_pixmap;
 }
 
