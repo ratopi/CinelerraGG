@@ -86,6 +86,11 @@ void InterfacePrefs::create_objects()
 	add_subwindow(keyframe_reticle);
 	keyframe_reticle->create_objects();
 
+	y += 30;
+	add_subwindow(title = new BC_Title(x, y, _("Snapshot path:")));
+	y += title->get_h() + 5;
+	add_subwindow(snapshot_path = new SnapshotPathText(pwindow, this, x, y, get_w()-x-30));
+
 	x = x0;  y = y2;
 	add_subwindow(new BC_Title(x, y, _("Clicking on edit boundaries does what:")));
 	y += 25;
@@ -601,6 +606,25 @@ PrefsYUV420P_DVDlace::PrefsYUV420P_DVDlace(PreferencesWindow *pwindow,
 int PrefsYUV420P_DVDlace::handle_event()
 {
 	pwindow->thread->preferences->dvd_yuv420p_interlace = get_value();
+	return 1;
+}
+
+
+SnapshotPathText::SnapshotPathText(PreferencesWindow *pwindow,
+	InterfacePrefs *subwindow, int x, int y, int w)
+ : BC_TextBox(x, y, w, 1, pwindow->thread->preferences->snapshot_path)
+{
+	this->pwindow = pwindow;
+	this->subwindow = subwindow;
+}
+
+SnapshotPathText::~SnapshotPathText()
+{
+}
+
+int SnapshotPathText::handle_event()
+{
+	strcpy(pwindow->thread->preferences->snapshot_path, get_text());
 	return 1;
 }
 

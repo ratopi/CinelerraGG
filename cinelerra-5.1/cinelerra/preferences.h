@@ -95,6 +95,8 @@ public:
 	char theme[BCTEXTLEN];
 // plugin icon set
 	char plugin_icons[BCTEXTLEN];
+// snapshot directory path
+	char snapshot_path[BCTEXTLEN];
 	double render_preroll;
 	int brender_preroll;
 	int force_uniprocessor;

@@ -324,9 +324,9 @@ BC_ListBox::BC_ListBox(int x, int y, int w, int h,
 	popup_w = w;
 	popup_h = h;
 
-	for( int i = 0; i < 3; i++ ) column_bg[i] = 0;
-	for( int i = 0; i < 4; i++ ) button_images[i] = 0;
-	for( int i = 0; i < 5; i++ ) toggle_images[i] = 0;
+	for( int i=0; i<3; ++i ) column_bg[i] = 0;
+	for( int i=0; i<4; ++i ) button_images[i] = 0;
+	for( int i=0; i<5; ++i ) toggle_images[i] = 0;
 
 	column_sort_up = 0;
 	column_sort_dn = 0;
@@ -376,9 +376,9 @@ BC_ListBox::~BC_ListBox()
 	if( bg_pixmap ) delete bg_pixmap;
 	if( xscrollbar ) delete xscrollbar;
 	if( yscrollbar ) delete yscrollbar;
-	for( int i = 0; i < 3; i++ ) delete column_bg[i];
-	for( int i = 0; i < 4; i++ ) delete button_images[i];
-	for( int i = 0; i < 5; i++ ) delete toggle_images[i];
+	for( int i=0; i<3; ++i ) delete column_bg[i];
+	for( int i=0; i<4; ++i ) delete button_images[i];
+	for( int i=0; i<5; ++i ) delete toggle_images[i];
 	if( column_sort_up ) delete column_sort_up;
 	if( column_sort_dn ) delete column_sort_dn;
 
@@ -407,7 +407,7 @@ void BC_ListBox::reset_query()
 
 int BC_ListBox::evaluate_query(char *string)
 {
-	for( int i = 0; i < data[search_column].size(); i++ ) {
+	for( int i=0; i<data[search_column].size(); ++i ) {
 		if( strcmp(string, data[search_column].get(i)->text) <= 0 &&
 		    data[search_column].get(i)->searchable ) {
 			return i;
@@ -430,8 +430,8 @@ int BC_ListBox::query_list()
 
 	if( done ) {
 // Deselect all
-		for( int i = 0; i < data[0].total; i++ ) {
-			for( int j = 0; j < columns; j++ ) {
+		for( int i=0; i<data[0].total; ++i ) {
+			for( int j=0; j<columns; ++j ) {
 				if( data[j].values[i]->selected ) prev_selection = i;
 				data[j].values[i]->selected = 0;
 			}
@@ -440,7 +440,7 @@ int BC_ListBox::query_list()
 // Select one
 		if( prev_selection != result )
 			selection_changed = 1;
-		for( int j = 0; j < columns; j++ ) {
+		for( int j=0; j<columns; ++j ) {
 			data[j].values[result]->selected = 1;
 		}
 		center_selection(result);
@@ -453,7 +453,7 @@ void BC_ListBox::init_column_width()
 {
 	if( !column_width && data ) {
 		int widest = 5, wd;
-		for( int i = 0; i < data[0].total; i++ ) {
+		for( int i=0; i<data[0].total; ++i ) {
 			wd = get_text_w(data[0].values[i]);
 			if( wd > widest ) widest = wd;
 		}
@@ -465,7 +465,7 @@ int BC_ListBox::initialize()
 {
 	if( is_popup ) {
 		if( use_button ) {
-			for( int i = 0; i < 4; ++i ) {
+			for( int i=0; i<4; ++i ) {
 				button_images[i] = new BC_Pixmap(parent_window,
 					BC_WindowBase::get_resources()->listbox_button[i],
 					PIXMAP_ALPHA);
@@ -483,12 +483,12 @@ int BC_ListBox::initialize()
 		current_operation = NO_OPERATION;
 	}
 
-	for( int i = 0; i < 3; i++ ) {
+	for( int i=0; i<3; ++i ) {
 		column_bg[i] = new BC_Pixmap(parent_window,
 			get_resources()->listbox_column[i],
 			PIXMAP_ALPHA);
 	}
-	for( int i = 0; i < 5; i++ ) {
+	for( int i=0; i<5; ++i ) {
 		toggle_images[i] = new BC_Pixmap(parent_window,
 			get_resources()->listbox_expand[i],
 			PIXMAP_ALPHA);
@@ -592,7 +592,7 @@ void BC_ListBox::calculate_last_coords_recursive(
 	int *next_text_y,
 	int top_level)
 {
-	for( int i = 0; i < data[0].size(); i++ ) {
+	for( int i=0; i<data[0].size(); ++i ) {
 		int current_text_y = 0;
 		int current_icon_x = 0;
 		int current_icon_y = 0;
@@ -643,7 +643,7 @@ void BC_ListBox::calculate_item_coords_recursive(
 // get maximum height of an icon
 	row_height = get_text_height(MEDIUMFONT);
 	if( temp_display_format == LISTBOX_ICON_LIST ) {
-		for( int i = 0; i < data[0].size(); i++ ) {
+		for( int i=0; i<data[0].size(); ++i ) {
 			if( data[0].get(i)->icon ) {
 				if( data[0].get(i)->icon->get_h() > row_height )
 					row_height = data[0].get(i)->icon->get_h();
@@ -654,7 +654,7 @@ void BC_ListBox::calculate_item_coords_recursive(
 
 // Set up items which need autoplacement.
 // Should fill icons down and then across
-	for( int i = 0; i < data[0].size(); i++ ) {
+	for( int i=0; i<data[0].size(); ++i ) {
 // Don't increase y unless the row requires autoplacing.
 		int total_autoplaced_columns = 0;
 
@@ -687,7 +687,7 @@ void BC_ListBox::calculate_item_coords_recursive(
 		int next_text_x = 0;
 		row_ascent = row_descent = 0;
 // row_height still holds icon max height
-		for( int j = 0; j < columns; j++ ) {
+		for( int j=0; j<columns; ++j ) {
 			BC_ListBoxItem *item = data[j].get(i);
 			if( item->autoplace_text ) {
 				display_format = LISTBOX_TEXT;
@@ -911,8 +911,8 @@ int BC_ListBox::get_items_width()
 	int widest = 0;
 
 	if( display_format == LISTBOX_ICONS ) {
-		for( int i = 0; i < columns; i++ ) {
-			for( int j = 0; j < data[i].total; j++ ) {
+		for( int i=0; i<columns; ++i ) {
+			for( int j=0; j<data[i].total; ++j ) {
 				int x1, x, y, w, h;
 				BC_ListBoxItem *item = data[i].values[j];
 				x1 = item->icon_x;
@@ -949,7 +949,7 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data, int columns,
 		top_level = 1;
 	}
 
-	for( int j = 0; j < (data ? data[master_column].total : 0); j++ ) {
+	for( int j=0; j<(data?data[master_column].total:0); ++j ) {
 		int x, y, w, h;
 		BC_ListBoxItem *item = data[master_column].values[j];
 
@@ -1014,7 +1014,7 @@ void BC_ListBox::expand_item(BC_ListBoxItem *item, int expand)
 void BC_ListBox::collapse_recursive(ArrayList<BC_ListBoxItem*> *data,
 		int master_column)
 {
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		BC_ListBoxItem *item = data[master_column].values[i];
 		if( item->get_sublist() && item->expand ) {
 			item->expand = 0;
@@ -1027,8 +1027,8 @@ void BC_ListBox::set_autoplacement(ArrayList<BC_ListBoxItem*> *data,
 	int do_icons,
 	int do_text)
 {
-	for( int i = 0; i < data[0].total; i++ ) {
-		for( int j = 0; j < columns; j++ ) {
+	for( int i=0; i<data[0].total; ++i ) {
+		for( int j=0; j<columns; ++j ) {
 			if( do_icons ) data[j].values[i]->autoplace_icon = 1;
 			if( do_text ) data[j].values[i]->autoplace_text = 1;
 		}
@@ -1101,13 +1101,13 @@ int BC_ListBox::get_column_offset(int column)
 void BC_ListBox::column_width_boundaries()
 {
 	if( column_width ) {
-		for( int i = 0; i < columns; i++ ) {
+		for( int i=0; i<columns; ++i ) {
 			if( column_width[i] < MIN_COLUMN_WIDTH )
 				 column_width[i] = MIN_COLUMN_WIDTH;
 		}
 	}
 	else {
-		for( int i = 0; i < columns; i++ ) {
+		for( int i=0; i<columns; ++i ) {
 			if( default_column_width[i] < MIN_COLUMN_WIDTH )
 				 default_column_width[i] = MIN_COLUMN_WIDTH;
 		}
@@ -1212,7 +1212,7 @@ BC_ListBoxItem* BC_ListBox::get_selection_recursive(ArrayList<BC_ListBoxItem*> *
 {
 	if( !data ) return 0;
 
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		BC_ListBoxItem *item = data[master_column].values[i];
 		if( item->selected ) {
 //printf("BC_ListBox::get_selection_recursive %d\n", __LINE__);
@@ -1247,7 +1247,7 @@ int BC_ListBox::get_selection_number_recursive(ArrayList<BC_ListBoxItem*> *data,
 	if( !data ) return 0;
 	if( !counter ) counter = &temp;
 
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		(*counter)++;
 		BC_ListBoxItem *item = data[master_column].values[i];
 		if( item->selected ) {
@@ -1275,7 +1275,7 @@ int BC_ListBox::set_selection_mode(int mode)
 void BC_ListBox::delete_columns()
 {
 	if( column_titles ) {
-		for( int i = 0; i < columns; i++ ) {
+		for( int i=0; i<columns; ++i ) {
 			delete [] column_titles[i];
 		}
 		delete [] column_titles;
@@ -1299,14 +1299,14 @@ void BC_ListBox::set_columns(const char **column_titles, int *column_width, int 
 	delete_columns();
 	if( column_titles ) {
 		this->column_titles = new char*[columns];
-		for( int i = 0; i < columns; i++ ) {
+		for( int i=0; i<columns; ++i ) {
 			this->column_titles[i] = new char[strlen(column_titles[i]) + 1];
 			strcpy(this->column_titles[i], column_titles[i]);
 		}
 	}
 	if( column_width ) {
 		this->column_width = new int[columns];
-		for( int i = 0; i < columns; i++ ) {
+		for( int i=0; i<columns; ++i ) {
 			this->column_width[i] = column_width[i];
 		}
 	}
@@ -1385,7 +1385,7 @@ int BC_ListBox::select_previous(int skip, BC_ListBoxItem *selected_item, int *co
 // Scan backwards to item pointer.  Then count visible items to get
 // destination.  No wraparound.
 	do {
-		for( int i = data[master_column].total - 1; i >= 0; i-- ) {
+		for( int i=data[master_column].total-1; i>=0; --i ) {
 			BC_ListBoxItem *current_item = data[master_column].values[i];
 			if( current_item->get_sublist() &&
 			    current_item->get_expand() ) {
@@ -1398,7 +1398,7 @@ int BC_ListBox::select_previous(int skip, BC_ListBoxItem *selected_item, int *co
 			if( *got_first ) {
 				(*counter)++;
 				if( (*counter) >= skip ) {
-					for( int j = 0; j < columns; j++ )
+					for( int j=0; j<columns; ++j )
 						data[j].values[i]->selected = 1;
 					(*got_second) = 1;
 					return item_to_index(this->data, current_item);
@@ -1406,7 +1406,7 @@ int BC_ListBox::select_previous(int skip, BC_ListBoxItem *selected_item, int *co
 			}
 			else {
 				if( current_item->selected ) {
-					for( int j = 0; j < columns; j++ )
+					for( int j=0; j<columns; ++j )
 						data[j].values[i]->selected = 0;
 					(*got_first) = 1;
 					(*counter)++;
@@ -1421,7 +1421,7 @@ int BC_ListBox::select_previous(int skip, BC_ListBoxItem *selected_item, int *co
 			(*got_first) = 1;
 			current_item = data[master_column].values[0];
 
-			for( int j = 0; j < columns; j++ )
+			for( int j=0; j<columns; ++j )
 				data[j].values[0]->selected = 1;
 			(*got_second) = 1;
 			return item_to_index(this->data, current_item);
@@ -1454,7 +1454,7 @@ int BC_ListBox::select_next(int skip, BC_ListBoxItem *selected_item, int *counte
 // Scan forwards to currently selected item pointer.
 // Then count visible items to get destination.  No wraparound.
 	do {
-		for( int i = 0; i < data[master_column].total; i++ ) {
+		for( int i=0; i<data[master_column].total; ++i ) {
 			BC_ListBoxItem *current_item = data[master_column].values[i];
 
 // Select next item once the number items after the currently selected item
@@ -1462,7 +1462,7 @@ int BC_ListBox::select_next(int skip, BC_ListBoxItem *selected_item, int *counte
 			if( *got_first ) {
 				(*counter)++;
 				if( (*counter) >= skip ) {
-					for( int j = 0; j < columns; j++ )
+					for( int j=0; j<columns; ++j )
 						data[j].values[i]->selected = 1;
 					(*got_second) = 1;
 					return item_to_index(this->data, current_item);
@@ -1471,7 +1471,7 @@ int BC_ListBox::select_next(int skip, BC_ListBoxItem *selected_item, int *counte
 			else {
 // Got currently selected item.  Deselect it.
 				if( current_item->selected ) {
-					for( int j = 0; j < columns; j++ )
+					for( int j=0; j<columns; ++j )
 						data[j].values[i]->selected = 0;
 					(*got_first) = 1;
 					(*counter)++;
@@ -1497,7 +1497,7 @@ int BC_ListBox::select_next(int skip, BC_ListBoxItem *selected_item, int *counte
 				(*got_first) = 1;
 				current_item = data[master_column].values[0];
 
-				for( int j = 0; j < columns; j++ )
+				for( int j=0; j<columns; ++j )
 					data[j].values[0]->selected = 1;
 				(*got_second) = 1;
 			}
@@ -1507,7 +1507,7 @@ int BC_ListBox::select_next(int skip, BC_ListBoxItem *selected_item, int *counte
 				int current_row = data[master_column].total - 1;
 				current_item = data[master_column].values[current_row];
 
-				for( int j = 0; j < columns; j++ )
+				for( int j=0; j<columns; ++j )
 					data[j].values[current_row]->selected = 1;
 				(*got_second) = 1;
 			}
@@ -1551,7 +1551,7 @@ int BC_ListBox::center_selection(int selection,
 	if( !data ) data = this->data;
 	if( !counter ) counter = &temp;
 
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		(*counter)++;
 
 // Got it
@@ -1634,7 +1634,7 @@ int BC_ListBox::get_scrollbars()
 	view_w = popup_w - 4;
 
 // Create scrollbars as needed
-	for( int i = 0; i < 2; i++ ) {
+	for( int i=0; i<2; ++i ) {
 		if( w_needed > view_w ) {
 			need_xscroll = 1;
 			view_h = popup_h -
@@ -1823,8 +1823,8 @@ int BC_ListBox::select_rectangle(ArrayList<BC_ListBoxItem*> *data,
 		int x1, int y1, int x2, int y2)
 {
 	int result = 0;
-	for( int i = 0; i < data[master_column].total; i++ ) {
-		for( int j = 0; j < columns; j++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
+		for( int j=0; j<columns; ++j ) {
 			BC_ListBoxItem *item = data[j].values[i];
 			if( display_format == LISTBOX_ICONS ) {
 				int icon_x, icon_y, icon_w, icon_h;
@@ -1884,7 +1884,7 @@ int BC_ListBox::reposition_item(ArrayList<BC_ListBoxItem*> *data,
 	int temp = -1;
 	if( !counter ) counter = &temp;
 
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		BC_ListBoxItem *item = data[master_column].values[i];
 		(*counter)++;
 		if( (*counter) == selection_number ) {
@@ -1900,12 +1900,12 @@ int BC_ListBox::reposition_item(ArrayList<BC_ListBoxItem*> *data,
 void BC_ListBox::move_selection(ArrayList<BC_ListBoxItem*> *dst,
 	ArrayList<BC_ListBoxItem*> *src)
 {
-	for( int i = 0; i < src[master_column].total;  ) {
+	for( int i=0; i<src[master_column].total;  ) {
 		BC_ListBoxItem *item = src[master_column].values[i];
 
 // Move item to dst
 		if( item->selected ) {
-			for( int j = 0; j < columns; j++ ) {
+			for( int j=0; j<columns; ++j ) {
 				dst[j].append(src[j].values[i]);
 				src[j].remove_number(i);
 			}
@@ -1927,19 +1927,19 @@ int BC_ListBox::put_selection(ArrayList<BC_ListBoxItem*> *data,
 	if( !counter ) counter = &temp;
 
 	if( destination < 0 || destination >= data[master_column].total ) {
-		for( int j = 0; j < columns; j++ ) {
-			for( int i = 0; i < src[j].total; i++ ) {
+		for( int j=0; j<columns; ++j ) {
+			for( int i=0; i<src[j].total; ++i ) {
 				data[j].append(src[j].values[i]);
 			}
 		}
 		return 1;
 	}
 	else
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		(*counter)++;
 		if( (*counter) == destination ) {
-			for( int j = 0; j < columns; j++ ) {
-				for( int k = 0; k < src[j].total; k++ ) {
+			for( int j=0; j<columns; ++j ) {
+				for( int k=0; k<src[j].total; ++k ) {
 					data[j].insert(src[j].values[k], destination + k);
 				}
 			}
@@ -1966,9 +1966,9 @@ int BC_ListBox::item_to_index(ArrayList<BC_ListBoxItem*> *data,
 	int temp = -1;
 	if( !counter ) counter = &temp;
 
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		(*counter)++;
-		for( int j = 0; j < columns; j++ ) {
+		for( int j=0; j<columns; ++j ) {
 			BC_ListBoxItem *new_item = data[j].values[i];
 //printf("BC_ListBox::item_to_index 1 %d %d %p\n", j, i, new_item);
 			if( new_item == item ) {
@@ -1993,7 +1993,7 @@ BC_ListBoxItem* BC_ListBox::index_to_item(ArrayList<BC_ListBoxItem*> *data,
 {
 	int temp = -1;
 	if( !counter ) counter = &temp;
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		(*counter)++;
 		if( (*counter) == number ) {
 			return data[column].values[i];
@@ -2017,7 +2017,7 @@ int BC_ListBox::get_cursor_item(ArrayList<BC_ListBoxItem*> *data, int cursor_x, 
 
 // Icons are not treed
 	if( display_format == LISTBOX_ICONS ) {
-		for( int j = data[master_column].total - 1; j >= 0; j-- ) {
+		for( int j=data[master_column].total-1; j>=0; --j ) {
 			int icon_x, icon_y, icon_w, icon_h;
 			int text_x, text_y, text_w, text_h;
 			BC_ListBoxItem *item = data[master_column].values[j];
@@ -2045,7 +2045,7 @@ int BC_ListBox::get_cursor_item(ArrayList<BC_ListBoxItem*> *data, int cursor_x, 
 		    	(cursor_y > get_title_h() + LISTBOX_BORDER &&
 			 cursor_y < gui->get_h())) ) {
 // Search table for cursor obstruction
-			for( int i = 0; i < data[master_column].total; i++ ) {
+			for( int i=0; i<data[master_column].total; ++i ) {
 				BC_ListBoxItem *item = data[master_column].values[i];
 				(*counter)++;
 
@@ -2156,7 +2156,7 @@ int BC_ListBox::cursor_leave_event()
 		highlighted_ptr = 0;
 		highlighted_title = -1;
 		int redraw_toggles = 0;
-		for( int i = 0; i < expanders.total; i++ )
+		for( int i=0; i<expanders.total; ++i )
 			expanders.values[i]->cursor_leave_event(&redraw_toggles);
 
 		draw_items(1);
@@ -2170,7 +2170,7 @@ int BC_ListBox::get_first_selection(ArrayList<BC_ListBoxItem*> *data, int *resul
 	int temp = -1;
 	if( !result ) result = &temp;
 
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		BC_ListBoxItem *item = data[master_column].values[i];
 		(*result)++;
 		if( item->selected ) return (*result);
@@ -2189,7 +2189,7 @@ int BC_ListBox::get_total_items(ArrayList<BC_ListBoxItem*> *data,
 	int temp = 0;
 	if( !result ) result = &temp;
 
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		(*result)++;
 		if( data[master_column].values[i]->get_sublist() )
 			get_total_items(data[master_column].values[i]->get_sublist(),
@@ -2211,7 +2211,7 @@ int BC_ListBox::get_last_selection(ArrayList<BC_ListBoxItem*> *data,
 		top_level = 1;
 	}
 
-	for( int i = data[master_column].total - 1; i >= 0; i-- ) {
+	for( int i=data[master_column].total-1; i>=0; --i ) {
 		BC_ListBoxItem *item = data[master_column].values[i];
 		(*result)++;
 		if( item->selected ) {
@@ -2239,10 +2239,10 @@ void BC_ListBox::select_range(ArrayList<BC_ListBoxItem*> *data,
 	int temp = -1;
 	if( !current ) current = &temp;
 
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		(*current)++;
 		if( (*current) >= start && (*current) < end ) {
-			for( int j = 0; j < columns; j++ )
+			for( int j=0; j<columns; ++j )
 				data[j].values[i]->selected = 1;
 		}
 		BC_ListBoxItem *item = data[master_column].values[i];
@@ -2285,14 +2285,14 @@ int BC_ListBox::toggle_item_selection(ArrayList<BC_ListBoxItem*> *data,
 	int temp = -1;
 	if( !counter ) counter = &temp;
 
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		BC_ListBoxItem *item = data[master_column].values[i];
 		(*counter)++;
 		if( (*counter) == selection_number ) {
 // Get new value for selection
 			int selected = !item->selected;
 // Set row
-			for( int j = 0; j < columns; j++ )
+			for( int j=0; j<columns; ++j )
 				data[j].values[i]->selected = selected;
 			return 1;
 		}
@@ -2311,8 +2311,8 @@ int BC_ListBox::toggle_item_selection(ArrayList<BC_ListBoxItem*> *data,
 
 void BC_ListBox::set_all_selected(ArrayList<BC_ListBoxItem*> *data, int value)
 {
-	for( int i = 0; i < data[master_column].total; i++ ) {
-		for( int j = 0; j < columns; j++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
+		for( int j=0; j<columns; ++j ) {
 			BC_ListBoxItem *item = data[j].values[i];
 			item->selected = value;
 		}
@@ -2328,10 +2328,10 @@ void BC_ListBox::set_selected(ArrayList<BC_ListBoxItem*> *data,
 {
 	int temp = -1;
 	if( !counter ) counter = &temp;
-	for( int i = 0; i < data[master_column].total && (*counter) != item_number; i++ ) {
+	for( int i=0; i<data[master_column].total&&(*counter)!=item_number; ++i ) {
 		(*counter)++;
 		if( (*counter) == item_number ) {
-			for( int j = 0; j < columns; j++ ) {
+			for( int j=0; j<columns; ++j ) {
 				BC_ListBoxItem *item = data[j].values[i];
 				item->selected = value;
 			}
@@ -2352,18 +2352,18 @@ int BC_ListBox::update_selection(ArrayList<BC_ListBoxItem*> *data,
 	int result = 0;
 	if( !counter ) counter = &temp;
 
-	for( int i = 0; i < data[master_column].total; i++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
 		BC_ListBoxItem *item = data[master_column].values[i];
 		(*counter)++;
 		if( (*counter) == selection_number && !item->selected ) {
 			result = 1;
-			for( int j = 0; j < columns; j++ )
+			for( int j=0; j<columns; ++j )
 				data[j].values[i]->selected = 1;
 		}
 		else
 		if( (*counter) != selection_number && item->selected ) {
 			result = 1;
-			for( int j = 0; j < columns; j++ )
+			for( int j=0; j<columns; ++j )
 				data[j].values[i]->selected = 0;
 		}
 		if( item->get_sublist() )
@@ -2377,8 +2377,8 @@ int BC_ListBox::update_selection(ArrayList<BC_ListBoxItem*> *data,
 void BC_ListBox::promote_selections(ArrayList<BC_ListBoxItem*> *data,
 		int old_value, int new_value)
 {
-	for( int i = 0; i < data[master_column].total; i++ ) {
-		for( int j = 0; j < columns; j++ ) {
+	for( int i=0; i<data[master_column].total; ++i ) {
+		for( int j=0; j<columns; ++j ) {
 			BC_ListBoxItem *item = data[j].values[i];
 			if( item->selected == old_value ) item->selected = new_value;
 		}
@@ -2730,7 +2730,7 @@ int BC_ListBox::button_release_event()
 
 	case EXPAND_DN: {
 		int redraw_toggles = 0;
-		for( int i = 0; i < expanders.total && !result; i++ ) {
+		for( int i=0; i<expanders.total&&!result; ++i ) {
 			if( expanders.values[i]->button_release_event(&redraw_toggles) ) {
 				result = 1;
 			}
@@ -2778,7 +2778,7 @@ int BC_ListBox::test_column_divisions(int cursor_x, int cursor_y, int &new_curso
 	if( gui && column_titles &&
 	    cursor_y >= 0 && cursor_y < get_title_h() &&
 	    cursor_x >= 0 && cursor_x < gui->get_w() ) {
-		for( int i = 1; i < columns; i++ ) {
+		for( int i=1; i<columns; ++i ) {
 			if( cursor_x >= -xposition + get_column_offset(i) - 5 &&
 			    cursor_x <  -xposition + get_column_offset(i) +
 					get_resources()->listbox_title_hotspot ) {
@@ -2801,7 +2801,7 @@ int BC_ListBox::test_column_titles(int cursor_x, int cursor_y)
 	if( gui && column_titles &&
 	    cursor_y >= 0 && cursor_y < get_title_h() &&
 	    cursor_x >= 0 && cursor_x < gui->get_w() ) {
-		for( int i = 0; i < columns; i++ ) {
+		for( int i=0; i<columns; ++i ) {
 			if( cursor_x >= -xposition + get_column_offset(i) &&
 				(cursor_x < -xposition + get_column_offset(i + 1) ||
 					i == columns - 1) ) {
@@ -2820,7 +2820,7 @@ int BC_ListBox::test_column_titles(int cursor_x, int cursor_y)
 
 int BC_ListBox::test_expanders()
 {
-	for( int i = 0; i < expanders.total; i++ ) {
+	for( int i=0; i<expanders.total; ++i ) {
 		if( expanders.values[i]->button_press_event() ) {
 			current_operation = EXPAND_DN;
 			draw_toggles(1);
@@ -3006,7 +3006,7 @@ int BC_ListBox::cursor_motion_event()
 
 	case EXPAND_DN: {
 		int redraw_toggles = 0;
-		for( int i = 0; i < expanders.total && !result; i++ ) {
+		for( int i=0; i<expanders.total&&!result; ++i ) {
 			result = expanders.values[i]->cursor_motion_event(
 				&redraw_toggles);
 		}
@@ -3040,7 +3040,7 @@ int BC_ListBox::cursor_motion_event()
 			if( highlighted_division < 0 && highlighted_title < 0 &&
 			    (display_format == LISTBOX_TEXT ||
 			     display_format == LISTBOX_ICON_LIST) ) {
-				for( int i = 0; i < expanders.total; i++ ) {
+				for( int i=0; i<expanders.total; ++i ) {
 					expanders.values[i]->cursor_motion_event(
 						&redraw_toggles);
 				}
@@ -3590,7 +3590,7 @@ int BC_ListBox::draw_items(int flush, int draw_bg)
 			clear_listbox(2, 2 + title_h, view_w, view_h);
 
 			set_font(MEDIUMFONT);
-			for( int i = 0; i < data[master_column].size(); i++ ) {
+			for( int i=0; i<data[master_column].size(); ++i ) {
 				BC_ListBoxItem *item = data[master_column].get(i);
 				if( get_item_x(item) >= -get_item_w(item) &&
 				    get_item_x(item) < view_w &&
@@ -3646,7 +3646,7 @@ int BC_ListBox::draw_items(int flush, int draw_bg)
 // Draw one column at a time so text overruns don't go into the next column
 // clear column backgrounds
 			int current_toggle = 0;
-			for( int j = 0; j < columns; j++ ) {
+			for( int j=0; j<columns; ++j ) {
 				clear_listbox(LISTBOX_BORDER + get_column_offset(j) - xposition,
 					LISTBOX_BORDER + title_h,
 					get_column_width(j, 1),
@@ -3700,7 +3700,7 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 
 // Search for a branch and make room for toggle if there is one
 	if( column == 0 ) {
-		for( int i = 0; i < data[column].size(); i++ ) {
+		for( int i=0; i<data[column].size(); ++i ) {
 			if( data[column].get(i)->get_sublist() ) {
 				subindent = BC_WindowBase::get_resources()->listbox_expand[0]->get_w();
 				break;
@@ -3709,7 +3709,7 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 	}
 
 	row_height = row_ascent = row_descent = 0;
-	for( int i = 0; i < data[column].total; i++ ) {
+	for( int i=0; i<data[column].total; ++i ) {
 		BC_ListBoxItem *item = data[column].values[i];
 		int ht = get_text_h(item);
 		if( ht > row_height ) row_height = ht;
@@ -3719,7 +3719,7 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 		if( dt > row_descent ) row_ascent = bl;
 	}
 
-	for( int i = 0; i < data[column].size(); i++ ) {
+	for( int i=0; i<data[column].size(); ++i ) {
 // Draw a row
 		BC_ListBoxItem *item = data[column].values[i];
 		BC_ListBoxItem *first_item = data[master_column].values[i];
@@ -3877,7 +3877,7 @@ int BC_ListBox::draw_titles(int flash)
 	    (display_format == LISTBOX_TEXT ||
 	     display_format == LISTBOX_ICON_LIST) ) {
 //printf("BC_ListBox::draw_titles 1 %d\n", highlighted_title);
-		for( int i = 0; i < columns; i++ ) {
+		for( int i=0; i<columns; ++i ) {
 			if( i != highlighted_title )
 				draw_title(i);
 		}
@@ -3894,7 +3894,7 @@ int BC_ListBox::draw_titles(int flash)
 
 void BC_ListBox::draw_toggles(int flash)
 {
-	for( int i = 0; i < expanders.total; i++ )
+	for( int i=0; i<expanders.total; ++i )
 		expanders.values[i]->draw(0);
 
 //printf("BC_ListBox::draw_toggles 1 %d\n", flash);
@@ -3931,10 +3931,10 @@ void BC_ListBox::dump(ArrayList<BC_ListBoxItem*> *data, int columns,
 		printf("BC_ListBox::dump 1\n");
 	}
 
-	for( int i = 0; i < data[master_column].total; i++ ) {
-		for( int k = 0; k < indent; k++ )
+	for( int i=0; i<data[master_column].total; ++i ) {
+		for( int k=0; k<indent; ++k )
 			printf(" ");
-		for( int j = 0; j < columns; j++ ) {
+		for( int j=0; j<columns; ++j ) {
 			BC_ListBoxItem *item = data[j].values[i];
 			printf("%d,%d,%d=%s ",
 				item->get_text_x(), item->get_text_y(),

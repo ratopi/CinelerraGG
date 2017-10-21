@@ -29,6 +29,9 @@
 #include "plugindialog.inc"
 #include "resizetrackthread.inc"
 
+#define SNAPSHOT_PNG  0
+#define SNAPSHOT_JPEG 1
+#define SNAPSHOT_TIFF 2
 
 class EditPopupResize;
 class EditPopupMatchSize;
@@ -36,6 +39,9 @@ class EditPopupTitleText;
 class EditPopupTitleWindow;
 class EditPopupTitleButton;
 class EditPopupTitleButtonRes;
+class EditSnapshot;
+class SnapshotSubMenu;
+class SnapshotMenuItem;
 
 class EditPopup : public BC_PopupMenu
 {
@@ -177,5 +183,34 @@ public:
 };
 
 
+class EditSnapshot : public BC_MenuItem
+{
+public:
+	EditSnapshot(MWindow *mwindow, EditPopup *popup);
+	~EditSnapshot();
+
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
+class SnapshotSubMenu : public BC_SubMenu
+{
+public:
+	SnapshotSubMenu(EditSnapshot *edit_snapshot);
+	~SnapshotSubMenu();
+
+	EditSnapshot *edit_snapshot;
+};
+
+class SnapshotMenuItem : public BC_MenuItem
+{
+public:
+	SnapshotMenuItem(SnapshotSubMenu *submenu, const char *text, int mode);
+	~SnapshotMenuItem();
+
+	int handle_event();
+	SnapshotSubMenu *submenu;
+	int mode;
+};
 
 #endif

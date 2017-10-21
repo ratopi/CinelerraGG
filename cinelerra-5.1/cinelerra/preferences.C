@@ -69,6 +69,7 @@ Preferences::Preferences()
 	trap_sigintr = 1;
 	theme[0] = 0;
 	plugin_icons[0] = 0;
+	strcpy(snapshot_path, "/tmp");
 	use_renderfarm = 0;
 	force_uniprocessor = 0;
 	renderfarm_port = DEAMON_PORT;
@@ -177,6 +178,7 @@ void Preferences::copy_from(Preferences *that)
 	keyframe_reticle = that->keyframe_reticle;
 	strcpy(theme, that->theme);
 	strcpy(plugin_icons, that->plugin_icons);
+	strcpy(snapshot_path, that->snapshot_path);
 
 	use_tipwindow = that->use_tipwindow;
 	scan_commercials = that->scan_commercials;
@@ -324,6 +326,8 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	strcpy(plugin_icons, DEFAULT_PICON);
 	defaults->get("THEME", theme);
 	defaults->get("PLUGIN_ICONS", plugin_icons);
+	strcpy(snapshot_path, "/tmp");
+	defaults->get("SNAPSHOT_PATH", snapshot_path);
 
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -472,7 +476,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("TRAP_SIGINTR", trap_sigintr);
 	defaults->update("THEME", theme);
 	defaults->update("PLUGIN_ICONS", plugin_icons);
-
+	defaults->update("SNAPSHOT_PATH", snapshot_path);
 
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{

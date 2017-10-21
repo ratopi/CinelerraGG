@@ -62,6 +62,7 @@ public:
 	PrefsFileProbes *file_probes;
 	PrefsTrapSigSEGV *trap_segv;
 	PrefsTrapSigINTR *trap_intr;
+	SnapshotPathText *snapshot_path;
 };
 
 
@@ -273,5 +274,16 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class SnapshotPathText : public BC_TextBox
+{
+public:
+	SnapshotPathText(PreferencesWindow *pwindow,
+		InterfacePrefs *subwindow, int x, int y, int w);
+	~SnapshotPathText();
+
+	int handle_event();
+	PreferencesWindow *pwindow;
+	InterfacePrefs *subwindow;
+};
 
 #endif

@@ -44,5 +44,6 @@ class PrefsTrapSigSEGV;
 class PrefsTrapSigINTR;
 class PrefsFileProbes;
 class PrefsYUV420P_DVDlace;
+class SnapshotPathText;
 
 #endif
