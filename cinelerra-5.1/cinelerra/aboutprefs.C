@@ -29,7 +29,10 @@
 #include "vframe.h"
 #include "versioninfo.h"
 
-
+#ifndef COMPILEDATE
+#define COMPILEDATE "built: " __DATE__ " " __TIME__
+#endif
+const char *AboutPrefs::build_timestamp = COMPILEDATE;
 
 AboutPrefs::AboutPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
@@ -121,12 +124,9 @@ void AboutPrefs::create_objects()
 	draw_text(x, y, license3);
 	y += get_text_height(MEDIUMFONT, license3);
 
-#ifndef COMPILEDATE
-#define COMPILEDATE "built: " __DATE__ " " __TIME__
-#endif
-	draw_text(x, y, COMPILEDATE);
+	draw_text(x, y, build_timestamp);
 #if defined(REPOMAINTXT)
-	y += get_text_height(MEDIUMFONT, COMPILEDATE);
+	y += get_text_height(MEDIUMFONT, build_timestamp);
 	draw_text(x, y, REPOMAINTXT);
 #endif
 

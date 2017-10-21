@@ -36,7 +36,9 @@
 // D_: msgid decorated as: qual_id#msg_id explicitly
 // see po/xlat.sh for details
 
+#ifndef MSGQUAL
 #define MSGQUAL 0
+#endif
 // qualifier from MSGQUAL
 #define C_(msgid) ((MSGQUAL)? msgqual(MSGQUAL,msgid) : gettext(msgid))
 // qualifier from msgid

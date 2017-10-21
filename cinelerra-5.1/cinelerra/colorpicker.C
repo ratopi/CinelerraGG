@@ -35,9 +35,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#undef MSGQUAL
-#define MSGQUAL "colorpicker"
-
 #define PALETTE_DATA "palette.dat"
 
 ColorPicker::ColorPicker(int do_alpha, const char *title)

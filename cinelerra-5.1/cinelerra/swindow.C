@@ -114,7 +114,7 @@ int SWindowLoadFile::handle_event()
 }
 
 SWindowSaveFile::SWindowSaveFile(SWindowGUI *gui, int x, int y)
- : BC_GenericButton(x, y, _("Save"))
+ : BC_GenericButton(x, y, C_("Save"))
 {
 	this->sw_gui = gui;
 }

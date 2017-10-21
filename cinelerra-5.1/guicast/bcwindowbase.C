@@ -177,6 +177,7 @@ BC_WindowBase::~BC_WindowBase()
 			 &BC_WindowBase::mediumfont,
 			 &BC_WindowBase::largefont,
 			 &BC_WindowBase::bigfont,
+			 &BC_WindowBase::clockfont,
 		};
 		for( int i=sizeof(xfont)/sizeof(xfont[0]); --i>=0; )
 			XFreeFont(display, this->*xfont[i]);
@@ -193,6 +194,7 @@ BC_WindowBase::~BC_WindowBase()
 			 &BC_WindowBase::bold_smallfont_xft,
 			 &BC_WindowBase::bold_mediumfont_xft,
 			 &BC_WindowBase::bold_largefont_xft,
+			 &BC_WindowBase::clockfont_xft,
 		};
 		for( int i=sizeof(xft_font)/sizeof(xft_font[0]); --i>=0; ) {
 			XftFont *xft = (XftFont *)(this->*xft_font[i]);

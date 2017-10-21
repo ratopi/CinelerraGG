@@ -18,6 +18,7 @@
  *
  */
 
+#include "aboutprefs.h"
 #include "asset.h"
 #include "assets.h"
 #include "atrack.h"
@@ -3400,7 +3401,7 @@ void MWindow::trap_hook(FILE *fp, void *vp)
 	mwindow->dump_edl(fp);
 	fprintf(fp, "\nUNDO:\n");
 	mwindow->dump_undo(fp);
-	fprintf(fp, "\nEXE:\n");
+	fprintf(fp, "\nEXE: %s\n", AboutPrefs::build_timestamp);
 	mwindow->dump_exe(fp);
 }
 

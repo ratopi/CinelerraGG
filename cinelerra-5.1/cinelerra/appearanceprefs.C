@@ -33,12 +33,6 @@
 #include "theme.h"
 
 
-#define MOVE_ALL_EDITS_TITLE N_("Drag all following edits")
-#define MOVE_ONE_EDIT_TITLE N_("Drag only one edit")
-#define MOVE_NO_EDITS_TITLE N_("Drag source only")
-#define MOVE_EDITS_DISABLED_TITLE N_("No effect")
-
-
 AppearancePrefs::AppearancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {

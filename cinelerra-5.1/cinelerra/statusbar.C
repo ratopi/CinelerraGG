@@ -112,7 +112,7 @@ void StatusBar::show_message(const char *text, int color)
 void StatusBar::reset_default_message()
 {
 	status_color = -1;
-	strcpy(default_msg, _("Welcome to cinelerra"));
+	strcpy(default_msg, _("Welcome to Cinelerra."));
 }
 void StatusBar::update_default_message()
 {

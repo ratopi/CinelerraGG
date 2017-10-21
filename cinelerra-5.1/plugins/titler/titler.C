@@ -25,7 +25,6 @@
 // Additional support for UTF-8 by
 // Paolo Rampino aka Akirad <info at tuttoainternet.it>
 
-
 #include "asset.h"
 #include "bccmodels.h"
 #include "bcsignals.h"
@@ -1145,7 +1144,7 @@ TitleMain::~TitleMain()
 	delete outline_engine;
 }
 
-const char* TitleMain::plugin_title() { return _("Title"); }
+const char* TitleMain::plugin_title() { return C_("Title"); }
 int TitleMain::is_realtime() { return 1; }
 int TitleMain::is_synthesis() { return 1; }
 

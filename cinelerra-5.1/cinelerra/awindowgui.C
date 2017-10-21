@@ -392,19 +392,40 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 {
 	this->mwindow = mwindow;
 	this->awindow = awindow;
-	file_icon = 0;
-	audio_icon = 0;
-	video_icon = 0;
-	folder_icon = 0;
-	clip_icon = 0;
-	label_icon = 0;
-	atransition_icon = 0;  atransition_vframe = 0;
-	vtransition_icon = 0;  vtransition_vframe = 0;
-	aeffect_icon = 0;      aeffect_vframe = 0;
-	ladspa_icon = 0;       ladspa_vframe = 0;
-	veffect_icon = 0;      veffect_vframe = 0;
-	ff_aud_icon = 0;       ff_aud_vframe = 0;
-	ff_vid_icon = 0;       ff_vid_vframe = 0;
+
+	file_vframe = 0;		file_icon = 0;
+	folder_vframe = 0;		folder_icon = 0;
+	audio_vframe = 0;		audio_icon = 0;
+	video_vframe = 0;		video_icon = 0;
+	label_vframe = 0;		label_icon = 0;
+
+	atransition_vframe = 0;		atransition_icon = 0;
+	vtransition_vframe = 0;		vtransition_icon = 0;
+	aeffect_vframe = 0;		aeffect_icon = 0;
+	ladspa_vframe = 0;		ladspa_icon = 0;
+	veffect_vframe = 0;		veffect_icon = 0;
+	ff_aud_vframe = 0;		ff_aud_icon = 0;
+	ff_vid_vframe = 0;		ff_vid_icon = 0;
+
+	aeffect_folder_vframe = 0;	aeffect_folder_icon = 0;
+	atransition_folder_vframe = 0;	atransition_folder_icon = 0;
+	clip_folder_vframe = 0;		clip_folder_icon = 0;
+	label_folder_vframe = 0;	label_folder_icon = 0;
+	media_folder_vframe = 0;	media_folder_icon = 0;
+	proxy_folder_vframe = 0;	proxy_folder_icon = 0;
+	veffect_folder_vframe = 0;	veffect_folder_icon = 0;
+	vtransition_folder_vframe = 0;	vtransition_folder_icon = 0;
+
+	ladspa_vframe = 0;		ladspa_icon = 0;
+	ff_aud_vframe = 0;		ff_aud_icon = 0;
+	ff_vid_vframe = 0;		ff_vid_icon = 0;
+
+	clip_vframe = 0;		clip_icon = 0;
+	atransition_vframe = 0;		atransition_icon = 0;
+	vtransition_vframe = 0;		vtransition_icon = 0;
+	aeffect_vframe = 0;		aeffect_icon = 0;
+	veffect_vframe = 0;		veffect_icon = 0;
+
 	plugin_visibility = ((uint64_t)1<<(8*sizeof(uint64_t)-1))-1;
 	newfolder_thread = 0;
 	asset_menu = 0;
@@ -433,20 +454,8 @@ AWindowGUI::~AWindowGUI()
 	displayed_assets[1].remove_all_objects();
 
 	delete vicon_thread;
-	delete file_icon;
-	delete audio_icon;
-	delete video_icon;
-	delete folder_icon;
-	delete clip_icon;
-	delete label_icon;
-	delete atransition_icon;
-	delete vtransition_icon;
-	delete aeffect_icon;
-	delete veffect_icon;
-	delete ladspa_icon;
-	delete ff_aud_icon;
-	delete ff_vid_icon;
 	delete newfolder_thread;
+
 	delete asset_menu;
 	delete clip_menu;
 	delete label_menu;
@@ -457,6 +466,28 @@ AWindowGUI::~AWindowGUI()
 	delete folderlist_menu;
 	delete temp_picon;
 	delete remove_plugin;
+
+	delete file_vframe;		delete file_icon;
+	delete folder_vframe;		delete folder_icon;
+	delete audio_vframe;		delete audio_icon;
+	delete video_vframe;		delete video_icon;
+	delete label_vframe;		delete label_icon;
+	delete clip_vframe;		delete clip_icon;
+	delete aeffect_folder_vframe;	delete aeffect_folder_icon;
+	delete atransition_folder_vframe; delete atransition_folder_icon;
+	delete veffect_folder_vframe;	delete veffect_folder_icon;
+	delete vtransition_folder_vframe; delete vtransition_folder_icon;
+	delete clip_folder_vframe;	delete clip_folder_icon;
+	delete label_folder_vframe;	delete label_folder_icon;
+	delete media_folder_vframe;	delete media_folder_icon;
+	delete proxy_folder_vframe;	delete proxy_folder_icon;
+	delete ladspa_vframe;		delete ladspa_icon;
+	delete ff_aud_vframe;		delete ff_aud_icon;
+	delete ff_vid_vframe;		delete ff_vid_icon;
+	delete atransition_vframe;	delete atransition_icon;
+	delete vtransition_vframe;	delete vtransition_icon;
+	delete aeffect_vframe;		delete aeffect_icon;
+	delete veffect_vframe;		delete veffect_icon;
 }
 
 bool AWindowGUI::protected_pixmap(BC_Pixmap *icon)
@@ -576,22 +607,16 @@ void AWindowGUI::create_objects()
 	mwindow->theme->get_awindow_sizes(this);
 	load_defaults(mwindow->defaults);
 
-	add_subwindow(asset_list = new AWindowAssets(mwindow,
-		this,
- 		mwindow->theme->alist_x,
-	    	mwindow->theme->alist_y,
-    		mwindow->theme->alist_w,
-    		mwindow->theme->alist_h));
+	add_subwindow(asset_list = new AWindowAssets(mwindow, this,
+		mwindow->theme->alist_x, mwindow->theme->alist_y,
+		mwindow->theme->alist_w, mwindow->theme->alist_h));
 
 	vicon_thread = new VIconThread(asset_list);
 	vicon_thread->start();
 
-	add_subwindow(divider = new AWindowDivider(mwindow,
-		this,
-		mwindow->theme->adivider_x,
-		mwindow->theme->adivider_y,
-		mwindow->theme->adivider_w,
-		mwindow->theme->adivider_h));
+	add_subwindow(divider = new AWindowDivider(mwindow, this,
+		mwindow->theme->adivider_x, mwindow->theme->adivider_y,
+		mwindow->theme->adivider_w, mwindow->theme->adivider_h));
 
 	divider->set_cursor(HSEPARATE_CURSOR, 0, 0);
 
@@ -771,8 +796,8 @@ void AWindowRemovePluginGUI::create_objects()
 	add_subwindow(title);
 	y += title->get_h() + 5;
 	list = new BC_ListBox(x, y,
-                get_w() - 20, ok_button->get_y() - y - 5, LISTBOX_TEXT, &plugin_list,
-                0, 0, 1, 0, 0, LISTBOX_SINGLE, ICON_LEFT, 0);
+		get_w() - 20, ok_button->get_y() - y - 5, LISTBOX_TEXT, &plugin_list,
+		0, 0, 1, 0, 0, LISTBOX_SINGLE, ICON_LEFT, 0);
 	add_subwindow(list);
 	show_window();
 }
@@ -1116,13 +1141,15 @@ void AWindowGUI::sort_assets()
 	default:
 		sort_picons(&assets);
 	}
-
+// reset xyposition
+	asset_list->update_format(asset_list->get_format(), 0);
 	update_assets();
 }
 
 void AWindowGUI::sort_folders()
 {
 	sort_picons(&folders);
+	folder_list->update_format(folder_list->get_format(), 0);
 	update_assets();
 }
 
@@ -1926,13 +1953,13 @@ AddPluginItem::AddPluginItem(AddTools *menu, char const *text, int idx)
 	this->idx = idx;
 	uint64_t msk = (uint64_t)1 << idx, vis = menu->gui->plugin_visibility;
 	int chk = (msk & vis) ? 1 : 0;
-        set_checked(chk);
+	set_checked(chk);
 }
 
 int AddPluginItem::handle_event()
 {
-        int chk = get_checked() ^ 1;
-        set_checked(chk);
+	int chk = get_checked() ^ 1;
+	set_checked(chk);
 	uint64_t msk = (uint64_t)1 << idx, vis = menu->gui->plugin_visibility;
 	menu->gui->plugin_visibility = chk ? vis | msk : vis & ~msk;
 	menu->gui->update_effects();
@@ -2004,8 +2031,8 @@ int AWindowListFormat::handle_event()
 
 void AWindowListFormat::update()
 {
-        set_text(mwindow->edl->session->assetlist_format == ASSETS_TEXT ?
-                (char*)_("Display icons") : (char*)_("Display text"));
+	set_text(mwindow->edl->session->assetlist_format == ASSETS_TEXT ?
+		(char*)_("Display icons") : (char*)_("Display text"));
 }
 
 AWindowListSort::AWindowListSort(MWindow *mwindow, AWindowGUI *gui)

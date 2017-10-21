@@ -55,6 +55,11 @@ ProxyMenuItem::ProxyMenuItem(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
 	set_alt();
+	dialog = 0;
+}
+ProxyMenuItem::~ProxyMenuItem()
+{
+	delete dialog;
 }
 
 void ProxyMenuItem::create_objects()

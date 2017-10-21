@@ -25,7 +25,8 @@ done | while read f ; do
 #   code C_("xxx") [... code _("yyy")]
 #to:
 #   code D_("qual_id#xxx") [... code D_("qual_id#yyy")]
-  sed -n "$f" > "$cin_dir/$f" -f - <<<'1,1{x; s/.*/_("/; x}
+  bn=${f##*/}; fn=${bn%.*}
+  sed -n "$f" > "$cin_dir/$f" -f - <<<'1,1{x; s/.*/D_("'$fn'#/; x}; t n1
 :n1 s/^\(#define MSGQUAL[ 	]\)/\1/; t n4
 :n2 s/\<C_("/\
 /; t n3; P; d; n; b n1

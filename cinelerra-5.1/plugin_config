@@ -52,8 +52,8 @@ clean::
 wc:
 	cat *.C *.h | wc
 
-$(OBJS):
-	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
+$(OBJDIR)/%.o:          %.C
+	$(CXX) `cat $(OBJDIR)/c_flags` '-DMSGQUAL="$*"' -c $< -o $@
 
 val-%:
 	@echo $($(subst val-,,$@))

@@ -40,10 +40,10 @@ N_("Drag source only")
 N_("No effect")
 #endif
 
-#define MOVE_ALL_EDITS_TITLE "Drag all following edits"
-#define MOVE_ONE_EDIT_TITLE "Drag only one edit"
-#define MOVE_NO_EDITS_TITLE "Drag source only"
-#define MOVE_EDITS_DISABLED_TITLE "No effect"
+#define MOVE_ALL_EDITS_TITLE N_("Drag all following edits")
+#define MOVE_ONE_EDIT_TITLE N_("Drag only one edit")
+#define MOVE_NO_EDITS_TITLE N_("Drag source only")
+#define MOVE_EDITS_DISABLED_TITLE N_("No effect")
 
 InterfacePrefs::InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)

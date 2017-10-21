@@ -445,7 +445,7 @@ tags:
 
 
 $(OBJDIR)/%.o:		%.C
-	$(CXX) `cat $(OBJDIR)/c_flags` -c $< -o $@
+	$(CXX) `cat $(OBJDIR)/c_flags` '-DMSGQUAL="$*"' -c $< -o $@
 
 $(OBJDIR)/sha1.o:	sha1.C sha1.h
 	$(CXX) `cat $(OBJDIR)/c_flags` -O3 -c $< -o $@

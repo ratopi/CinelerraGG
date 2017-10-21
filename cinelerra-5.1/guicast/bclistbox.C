@@ -3688,19 +3688,26 @@ int BC_ListBox::drag_start_event()
 				{
 					int cx, cy;
 					get_abs_cursor_xy(cx, cy);
-					cx -= item_return->icon_vframe->get_w() / 2,
-					cy -= item_return->icon_vframe->get_h() / 2;
-					if( item_return->icon_vframe )
+					if( item_return->icon_vframe ) {
+						cx -= item_return->icon_vframe->get_w() / 2,
+						cy -= item_return->icon_vframe->get_h() / 2;
 						drag_popup = new BC_DragWindow(this,
 							item_return->icon_vframe, cx, cy);
+					}
 					else
 // this probably works not!
-					if( item_return->icon )
+					if( item_return->icon ) {
+						cx -= item_return->icon->get_w() / 2,
+						cy -= item_return->icon->get_h() / 2;
 						drag_popup = new BC_DragWindow(this,
 							item_return->icon, cx, cy);
-					else
+					}
+					else {
+						cx -= drag_icon_vframe->get_w() / 2,
+						cy -= drag_icon_vframe->get_h() / 2;
 						drag_popup = new BC_DragWindow(this,
 							drag_icon_vframe, cx, cy);
+					}
 					current_operation = DRAG_ITEM;
 // require shift down for scrolling
 					if( allow_drag < 0 && shift_down() )

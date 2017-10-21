@@ -147,7 +147,7 @@ SET_TRACE
 	int y1 = y + (window->get_h() - BC_Title::calculate_h(this, txt)) / 2;
 	add_subwindow(title1 = new BC_Title(x1, y1, txt));
 	x1 += title1->get_w() + margin;
-	add_subwindow(framerate_title = new BC_Title(x1, y1, _("--"), MEDIUMFONT, RED));
+	add_subwindow(framerate_title = new BC_Title(x1, y1, "--", MEDIUMFONT, RED));
 	draw_framerate(0);
 	y += window->get_h() + 2*margin;
 

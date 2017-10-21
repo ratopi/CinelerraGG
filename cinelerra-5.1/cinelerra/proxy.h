@@ -43,6 +43,7 @@ class ProxyMenuItem : public BC_MenuItem
 {
 public:
 	ProxyMenuItem(MWindow *mwindow);
+	~ProxyMenuItem();
 
 	int handle_event();
 	void create_objects();

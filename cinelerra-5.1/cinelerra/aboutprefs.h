@@ -31,8 +31,7 @@ public:
 	AboutPrefs(MWindow *mwindow, PreferencesWindow *pwindow);
 	~AboutPrefs();
 
-
-
+	static const char *build_timestamp;
 	void create_objects();
 	ArrayList<BC_ListBoxItem*> about;
 };
