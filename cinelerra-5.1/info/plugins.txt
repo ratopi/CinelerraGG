@@ -96,7 +96,8 @@ Histogram:	Shows the number of occurrences of each color on a
 Histogram Bezier: Uses a Bezier curve (parametric) on the histogram plot.
 HolographgicTV:	Holographic tv effect.
 Hue saturation:	Use to change hue, saturation and value parameters.
-Interpolate Pixels: Works only for float color models.
+Interpolate Bayer: Uses Bayer filter algorithm to interpolate (estimate)
+		missing color information.
 Interpolate Video: Create illusion of higher frame rate video of low
 		framesrates by averaging over time.
 Inverse Telecine: Effective deinterlacing tool for use on a video
@@ -180,6 +181,7 @@ Selective Temporal Averaging: Smooths out non-moving areas of a video
 Sharpen:	Sharpen the video, either the luminance, horizontal,
 		or interlace.
 ShiftInterlace:	Shift the interlace lines using odd or even.
+Sphere Cam:	Converts a fisheye image into a panoramic projection.
 Swap Frames:	Swap frames with 0-1, 2-3, 4-5... or 1-2, 3-4, 5-6...
 Swap channels:	Swap R,G,B,Alpha with another color channel.
 Threshold:	Converts the image to pure luminance and replaces

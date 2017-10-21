@@ -1814,7 +1814,7 @@ int BC_WindowBase::show_tooltip(const char *text, int x, int y, int w, int h)
 	if( wy >= (y1-=h) ) wy = y1;
 // avoid tip under cursor (flickers)
 	int abs_x, abs_y;
-	get_abs_cursor_xy(abs_x,abs_y, 0);
+	get_abs_cursor(abs_x,abs_y, 0);
 	if( wx < abs_x && abs_x < wx+w && wy < abs_y && abs_y < wy+h ) {
 		if( wx-abs_x < wy-abs_y )
 			wx = abs_x+1;
@@ -3742,13 +3742,13 @@ int BC_WindowBase::dispatch_selection_clear()
 }
 
 
-void BC_WindowBase::get_relative_cursor_xy(int &x, int &y, int lock_window)
+void BC_WindowBase::get_relative_cursor(int &x, int &y, int lock_window)
 {
 	int abs_x, abs_y, win_x, win_y;
 	unsigned int temp_mask;
 	Window temp_win;
 
-	if(lock_window) this->lock_window("BC_WindowBase::get_relative_cursor_xy");
+	if(lock_window) this->lock_window("BC_WindowBase::get_relative_cursor");
 	XQueryPointer(top_level->display, top_level->win,
 	   &temp_win, &temp_win, &abs_x, &abs_y, &win_x, &win_y,
 	   &temp_mask);
@@ -3760,23 +3760,23 @@ void BC_WindowBase::get_relative_cursor_xy(int &x, int &y, int lock_window)
 int BC_WindowBase::get_relative_cursor_x(int lock_window)
 {
 	int x, y;
-	get_relative_cursor_xy(x, y, lock_window);
+	get_relative_cursor(x, y, lock_window);
 	return x;
 }
 int BC_WindowBase::get_relative_cursor_y(int lock_window)
 {
 	int x, y;
-	get_relative_cursor_xy(x, y, lock_window);
+	get_relative_cursor(x, y, lock_window);
 	return y;
 }
 
-void BC_WindowBase::get_abs_cursor_xy(int &abs_x, int &abs_y, int lock_window)
+void BC_WindowBase::get_abs_cursor(int &abs_x, int &abs_y, int lock_window)
 {
 	int win_x, win_y;
 	unsigned int temp_mask;
 	Window temp_win;
 
-	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor_xy");
+	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor");
 	XQueryPointer(top_level->display, top_level->win,
 		&temp_win, &temp_win, &abs_x, &abs_y, &win_x, &win_y,
 		&temp_mask);
@@ -3785,20 +3785,20 @@ void BC_WindowBase::get_abs_cursor_xy(int &abs_x, int &abs_y, int lock_window)
 int BC_WindowBase::get_abs_cursor_x(int lock_window)
 {
 	int abs_x, abs_y;
-	get_abs_cursor_xy(abs_x, abs_y, lock_window);
+	get_abs_cursor(abs_x, abs_y, lock_window);
 	return abs_x;
 }
 int BC_WindowBase::get_abs_cursor_y(int lock_window)
 {
 	int abs_x, abs_y;
-	get_abs_cursor_xy(abs_x, abs_y, lock_window);
+	get_abs_cursor(abs_x, abs_y, lock_window);
 	return abs_y;
 }
 
-void BC_WindowBase::get_pop_cursor_xy(int &px, int &py, int lock_window)
+void BC_WindowBase::get_pop_cursor(int &px, int &py, int lock_window)
 {
 	int margin = 100;
-	get_abs_cursor_xy(px, py, lock_window);
+	get_abs_cursor(px, py, lock_window);
 	if( px < margin ) px = margin;
 	if( py < margin ) py = margin;
 	int wd = get_screen_w(lock_window,-1) - margin;
@@ -3809,13 +3809,13 @@ void BC_WindowBase::get_pop_cursor_xy(int &px, int &py, int lock_window)
 int BC_WindowBase::get_pop_cursor_x(int lock_window)
 {
 	int px, py;
-	get_pop_cursor_xy(px, py, lock_window);
+	get_pop_cursor(px, py, lock_window);
 	return px;
 }
 int BC_WindowBase::get_pop_cursor_y(int lock_window)
 {
 	int px, py;
-	get_pop_cursor_xy(px, py, lock_window);
+	get_pop_cursor(px, py, lock_window);
 	return py;
 }
 
@@ -3853,7 +3853,7 @@ int BC_WindowBase::get_cursor_over_window()
 int BC_WindowBase::cursor_above()
 {
 	int rx, ry;
-	get_relative_cursor_xy(rx, ry);
+	get_relative_cursor(rx, ry);
 	return rx < 0 || rx >= get_w() ||
 		ry < 0 || ry >= get_h() ? 0 : 1;
 }

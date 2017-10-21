@@ -97,7 +97,7 @@ int LabelGUI::button_press_event()
 	if( this->is_event_win() && get_buttonpress() == 3 ) {
 		if( label ) {
 			int cur_x, cur_y;
-			get_abs_cursor_xy(cur_x, cur_y, 0);
+			get_abs_cursor(cur_x, cur_y, 0);
 			timebar->label_edit->start(label, cur_x, cur_y);
 		}
 		result = 1;

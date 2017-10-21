@@ -138,7 +138,7 @@ ClipPopupInfo::~ClipPopupInfo()
 int ClipPopupInfo::handle_event()
 {
 	int cur_x, cur_y;
-	popup->gui->get_abs_cursor_xy(cur_x, cur_y, 0);
+	popup->gui->get_abs_cursor(cur_x, cur_y, 0);
 
 	if( mwindow->session->drag_assets->total ) {
 		AssetEdit *asset_edit = mwindow->awindow->get_asset_editor();

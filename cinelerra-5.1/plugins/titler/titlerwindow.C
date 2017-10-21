@@ -480,7 +480,7 @@ int TitleWindow::grab_event(XEvent *event)
 	MWindow *mwindow = client->server->mwindow;
 	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
 	CWindowCanvas *canvas = cwindow_gui->canvas;
-	int cx, cy;  cwindow_gui->get_relative_cursor_xy(cx, cy);
+	int cx, cy;  cwindow_gui->get_relative_cursor(cx, cy);
 	cx -= mwindow->theme->ccanvas_x;
 	cy -= mwindow->theme->ccanvas_y;
 
@@ -1572,7 +1572,7 @@ int TitleCurSubMenuItem::handle_event()
 	switch( popup_type ) {
 	case POPUP_FONT: {
 		int px, py;
-		window->get_pop_cursor_xy(px ,py);
+		window->get_pop_cursor(px ,py);
 		window->fonts_popup->activate(px, py, 300,200);
 		return 1; }
 	case POPUP_COLOR: {
@@ -1676,7 +1676,7 @@ void TitlePngPopup::handle_done_event(int result)
 BC_Window *TitlePngPopup::new_gui()
 {
 	MWindow *mwindow = client->server->mwindow;
-	int x, y;  mwindow->gui->get_abs_cursor_xy(x, y);
+	int x, y;  mwindow->gui->get_abs_cursor(x, y);
 
 	BC_Window *gui = new BrowseButtonWindow(mwindow->theme,
 		x-25, y-100, window, "", _("Png file"), _("Png path"), 0);

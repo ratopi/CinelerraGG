@@ -282,13 +282,13 @@ public:
 	int get_screen_x(int lock_display, int screen);
 	int get_screen_y(int lock_display, int screen);
 // Get current position
-	void get_abs_cursor_xy(int &abs_x, int &abs_y, int lock_window=0);
+	void get_abs_cursor(int &abs_x, int &abs_y, int lock_window=0);
 	int get_abs_cursor_x(int lock_window=0);
 	int get_abs_cursor_y(int lock_window=0);
-	void get_pop_cursor_xy(int &px, int &py, int lock_window=0);
+	void get_pop_cursor(int &px, int &py, int lock_window=0);
 	int get_pop_cursor_x(int lock_window=0);
 	int get_pop_cursor_y(int lock_window=0);
-	void get_relative_cursor_xy(int &x, int &y, int lock_window=0);
+	void get_relative_cursor(int &x, int &y, int lock_window=0);
 	int get_relative_cursor_x(int lock_window=0);
 	int get_relative_cursor_y(int lock_window=0);
 	void get_root_coordinates(int x, int y, int *abs_x, int *abs_y);

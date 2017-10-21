@@ -85,7 +85,7 @@ int BC_DragWindow::get_init_y(BC_WindowBase *parent_window, int icon_y)
 int BC_DragWindow::cursor_motion_event()
 {
 	int cx, cy;
-	get_abs_cursor_xy(cx, cy);
+	get_abs_cursor(cx, cy);
 	reposition_window(cx + icon_offset_x, cy + icon_offset_y, get_w(), get_h());
 	flush();
 	return 1;

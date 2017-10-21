@@ -99,7 +99,7 @@ BC_Window* ProxyDialog::new_gui()
 	asset->load_defaults(mwindow->defaults, "PROXY_", 1, 1, 0, 0, 0);
 	mwindow->gui->lock_window("ProxyDialog::new_gui");
 	int cx, cy;
-	mwindow->gui->get_abs_cursor_xy(cx, cy);
+	mwindow->gui->get_abs_cursor(cx, cy);
 	gui = new ProxyWindow(mwindow, this, cx - WIDTH/2, cy - HEIGHT/2);
 	gui->create_objects();
 	mwindow->gui->unlock_window();

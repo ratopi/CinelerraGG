@@ -1844,7 +1844,7 @@ int AWindowDeleteProject::handle_event()
 // int AWindowInfo::handle_event()
 // {
 // 	int cur_x, cur_y;
-// 	gui->get_abs_cursor_xy(cur_x, cur_y, 0);
+// 	gui->get_abs_cursor(cur_x, cur_y, 0);
 // 	gui->awindow->asset_edit->edit_asset(gui->selected_asset(), cur_x, cur_y);
 // 	return 1;
 // }

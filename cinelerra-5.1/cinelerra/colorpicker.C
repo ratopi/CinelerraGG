@@ -313,7 +313,7 @@ int ColorWindow::handle_event()
 void ColorWindow::get_screen_sample()
 {
 	int cx, cy;
-	get_abs_cursor_xy(cx, cy);
+	get_abs_cursor(cx, cy);
 	BC_Capture capture_bitmap(1, 1, 0);
 	VFrame vframe(1,1,BC_RGB888);
 	capture_bitmap.capture_frame(&vframe, cx,cy);

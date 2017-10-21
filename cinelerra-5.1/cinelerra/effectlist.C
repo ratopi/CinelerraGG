@@ -111,7 +111,7 @@ int EffectTipItem::handle_event()
 		const char *info = result->plugin->tip;
 		if( !info ) info = _("No info available");
 		int cur_x, cur_y;
-		gui->get_abs_cursor_xy(cur_x, cur_y, 0);
+		gui->get_abs_cursor(cur_x, cur_y, 0);
 		gui->awindow->effect_tip->start(cur_x, cur_y,
 			result->plugin->title, info);
 	}

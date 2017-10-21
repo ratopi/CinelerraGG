@@ -202,7 +202,7 @@ int BC_MenuItem::dispatch_button_release(int &redraw)
 
 	if( !result && menu_popup->cursor_inside() ) {
 		int cursor_x, cursor_y;
-		menu_popup->get_popup()->get_relative_cursor_xy(cursor_x, cursor_y);
+		menu_popup->get_popup()->get_relative_cursor(cursor_x, cursor_y);
 		if( cursor_x >= 0 && cursor_x < menu_popup->get_w() &&
 			cursor_y >= y && cursor_y < y + h ) {
 			if(menu_bar)
@@ -232,7 +232,7 @@ int BC_MenuItem::dispatch_motion_event(int &redraw)
 
 	if( !result && menu_popup->cursor_inside() ) {
 		int cursor_x, cursor_y;
-		menu_popup->get_popup()->get_relative_cursor_xy(cursor_x, cursor_y);
+		menu_popup->get_popup()->get_relative_cursor(cursor_x, cursor_y);
 		if( cursor_x >= 0 && cursor_x < menu_popup->get_w() &&
 			cursor_y >= y && cursor_y < y + h) {
 // Highlight the item

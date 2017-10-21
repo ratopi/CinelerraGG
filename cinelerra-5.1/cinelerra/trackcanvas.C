@@ -4508,7 +4508,7 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 							mwindow->edl->session->sample_rate;
 
 						int cx, cy;
-						get_abs_cursor_xy(cx, cy);
+						get_abs_cursor(cx, cy);
 						cx -= mwindow->theme->get_image("clip_icon")->get_w() / 2,
 						cy -= mwindow->theme->get_image("clip_icon")->get_h() / 2;
 						gui->drag_popup = new BC_DragWindow(gui,
@@ -4622,7 +4622,7 @@ int TrackCanvas::do_plugins(int cursor_x, int cursor_y, int drag_start,
 						}
 					}
 					int cx, cy;
-					get_abs_cursor_xy(cx, cy);
+					get_abs_cursor(cx, cy);
 					cx -= frame->get_w() / 2;
 					cy -= frame->get_h() / 2;
 					gui->drag_popup = new BC_DragWindow(gui, frame, cx, cy);
@@ -4632,7 +4632,7 @@ int TrackCanvas::do_plugins(int cursor_x, int cursor_y, int drag_start,
 				case PLUGIN_SHAREDMODULE: {
 					VFrame *frame = mwindow->theme->get_image("clip_icon");
 					int cx, cy;
-					get_abs_cursor_xy(cx, cy);
+					get_abs_cursor(cx, cy);
 					cx -= frame->get_w() / 2;
 					cy -= frame->get_h() / 2;
 					gui->drag_popup = new BC_DragWindow(gui, frame, cx, cy);

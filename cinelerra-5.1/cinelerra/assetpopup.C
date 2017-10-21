@@ -145,7 +145,7 @@ AssetPopupInfo::~AssetPopupInfo()
 int AssetPopupInfo::handle_event()
 {
 	int cur_x, cur_y;
-	popup->gui->get_abs_cursor_xy(cur_x, cur_y);
+	popup->gui->get_abs_cursor(cur_x, cur_y);
 	if( mwindow->session->drag_assets->size() ) {
 		AssetEdit *asset_edit = mwindow->awindow->get_asset_editor();
 		asset_edit->edit_asset(
@@ -413,7 +413,7 @@ int AssetListCopy::handle_event()
 	}
 	*cp = 0;
 	int cur_x, cur_y;
-	gui->get_abs_cursor_xy(cur_x, cur_y, 0);
+	gui->get_abs_cursor(cur_x, cur_y, 0);
 	gui->unlock_window(); 
 
 	if( n ) {
@@ -527,7 +527,7 @@ int AssetListPaste::handle_event()
 	else
 		paste_dialog->close_window();
 	int cur_x, cur_y;
-	gui->get_abs_cursor_xy(cur_x, cur_y, 0);
+	gui->get_abs_cursor(cur_x, cur_y, 0);
 	paste_dialog->start(cur_x, cur_y);
 	return 1;
 }

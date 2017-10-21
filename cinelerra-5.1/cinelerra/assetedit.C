@@ -561,7 +561,7 @@ void AssetEditWindow::create_objects()
 void AssetEditWindow::show_info_detail()
 {
 	int cur_x, cur_y;
-	get_abs_cursor_xy(cur_x, cur_y, 0);
+	get_abs_cursor(cur_x, cur_y, 0);
 	detail_dialog->start((Asset*)asset_edit->indexable, cur_x, cur_y);
 }
 

@@ -271,7 +271,7 @@ void Render::start_interactive()
 	}
 	else if( in_progress ) {
 		int cx, cy;
-		mwindow->gui->get_abs_cursor_xy(cx, cy, 1);
+		mwindow->gui->get_abs_cursor(cx, cy, 1);
 		ErrorBox error_box(_(PROGRAM_NAME ": Error"), cx, cy);
 		error_box.create_objects(_("Already rendering"));
 		error_box.raise_window();
@@ -295,7 +295,7 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 	}
 	else if( in_progress ) {
 		int cx, cy;
-		mwindow->gui->get_abs_cursor_xy(cx, cy, 1);
+		mwindow->gui->get_abs_cursor(cx, cy, 1);
 		ErrorBox error_box(_(PROGRAM_NAME ": Error"), cx, cy);
 		error_box.create_objects("Already rendering");
 		error_box.raise_window();
@@ -394,7 +394,7 @@ void Render::handle_close_event(int result)
 	}
 	if( err_msg ) {
 		int cx, cy;
-		mwindow->gui->get_abs_cursor_xy(cx, cy, 1);
+		mwindow->gui->get_abs_cursor(cx, cy, 1);
 		ErrorBox error_box(_(PROGRAM_NAME ": Error"),cx, cy);
 		error_box.create_objects(err_msg);
 		error_box.raise_window();
@@ -930,7 +930,7 @@ if(debug) printf("Render::render %d\n", __LINE__);
 			{
 if(debug) printf("Render::render %d\n", __LINE__);
 				int cx, cy;
-				mwindow->gui->get_abs_cursor_xy(cx, cy, 1);
+				mwindow->gui->get_abs_cursor(cx, cy, 1);
 				ErrorBox error_box(_(PROGRAM_NAME ": Error"), cx, cy);
 				error_box.create_objects(_("Error rendering data."));
 				error_box.raise_window();

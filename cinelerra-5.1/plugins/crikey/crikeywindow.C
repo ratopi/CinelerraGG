@@ -255,7 +255,7 @@ int CriKeyWindow::grab_event(XEvent *event)
 	MWindow *mwindow = plugin->server->mwindow;
 	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
 	CWindowCanvas *canvas = cwindow_gui->canvas;
-	int cx, cy;  cwindow_gui->get_relative_cursor_xy(cx, cy);
+	int cx, cy;  cwindow_gui->get_relative_cursor(cx, cy);
 	cx -= mwindow->theme->ccanvas_x;
 	cy -= mwindow->theme->ccanvas_y;
 
