@@ -242,7 +242,6 @@ suffix_to_type_t BC_Resources::suffix_to_type[] =
     { "mkv", ICON_FILM },
     { "mov", ICON_FILM },
     { "mp4", ICON_FILM },
-    { "m4p", ICON_FILM },
     { "mpe", ICON_FILM },
     { "mpeg", ICON_FILM },
     { "mpg", ICON_FILM },

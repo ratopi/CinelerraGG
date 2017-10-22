@@ -859,7 +859,8 @@ void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
 
 	if( refresh_frame &&
 	   (refresh_frame->get_w() != device->out_w ||
-	    refresh_frame->get_h() != device->out_h ) ) {
+	    refresh_frame->get_h() != device->out_h ||
+	    refresh_frame->get_color_model() != best_color_model ) ) {
 // x11 direct render uses BC_BGR8888, use tranfer_from to remap
 		delete refresh_frame;  refresh_frame = 0;
 	}

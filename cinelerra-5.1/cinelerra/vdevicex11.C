@@ -236,11 +236,11 @@ int VDeviceX11::get_display_colormodel(int file_colormodel)
 
 	if( device->out_config->driver == PLAYBACK_X11_GL ) {
 		if( file_colormodel == BC_RGB888 ||
-			file_colormodel == BC_RGBA8888 ||
-			file_colormodel == BC_YUV888 ||
-			file_colormodel == BC_YUVA8888 ||
-			file_colormodel == BC_RGB_FLOAT ||
-			file_colormodel == BC_RGBA_FLOAT ) {
+		    file_colormodel == BC_RGBA8888 ||
+		    file_colormodel == BC_YUV888 ||
+		    file_colormodel == BC_YUVA8888 ||
+		    file_colormodel == BC_RGB_FLOAT ||
+		    file_colormodel == BC_RGBA_FLOAT ) {
 			return file_colormodel;
 		}
 		
@@ -255,13 +255,6 @@ int VDeviceX11::get_display_colormodel(int file_colormodel)
 			result = file_colormodel;
 			break;
 		}
-	}
-
-// 2 more colormodels are supported by OpenGL
-	if( device->out_config->driver == PLAYBACK_X11_GL ) {
-		if( file_colormodel == BC_RGB_FLOAT ||
-		    file_colormodel == BC_RGBA_FLOAT )
-			result = file_colormodel;
 	}
 
 	if( result < 0 ) {
