@@ -18,7 +18,7 @@
 #include "timeentry.h"
 
 const char * RecordBatches::
-batch_titles[] = {
+default_batch_titles[] = {
 	N_("On"), N_("Path"), N_("News"), N_("Start time"),
 	N_("Duration"), N_("Source"), N_("Mode")
 };
@@ -37,6 +37,7 @@ load_defaults(ChannelDB * channeldb, Record * record)
 	early_margin = defaults->get("RECORD_EARLY_MARGIN", early_margin);
 	late_margin = defaults->get("RECORD_LATE_MARGIN", late_margin);
 	for(int i = 0; i < BATCH_COLUMNS; i++) {
+		batch_titles[i] = _(default_batch_titles[i]);
 		sprintf(string, "BATCH_COLUMNWIDTH_%d", i);
 		column_widths[i] = defaults->get(string, default_columnwidth[i]);
 	}

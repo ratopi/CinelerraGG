@@ -122,8 +122,9 @@ public:
 	ExportEDLPathText *path_textbox;
 	BC_RecentList *path_recent;
 	ExportEDLWindowTrackList *track_list;
-
 	ArrayList<BC_ListBoxItem*> items_tracks[2];
+	const char *list_titles[2];
+	int list_widths[2];
 
 	MWindow *mwindow;
 };
@@ -146,11 +147,7 @@ class ExportEDLWindowTrackList : public BC_ListBox
 {
 public:
 	ExportEDLWindowTrackList(ExportEDLWindow *window,
-		int x,
-		int y,
-		int w,
-		int h,
-		ArrayList<BC_ListBoxItem*> *track_list);
+		int x, int y, int w, int h);
 
 	int handle_event();
 	ExportEDLWindow *window;

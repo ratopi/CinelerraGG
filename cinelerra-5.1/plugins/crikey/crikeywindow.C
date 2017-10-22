@@ -619,7 +619,7 @@ int CriKeyNewPoint::handle_event()
 }
 
 CriKeyDelPoint::CriKeyDelPoint(CriKeyWindow *gui, CriKey *plugin, int x, int y)
- : BC_GenericButton(x, y, 80, _("Del"))
+ : BC_GenericButton(x, y, 80, C_("Del"))
 {
 	this->gui = gui;
 	this->plugin = plugin;

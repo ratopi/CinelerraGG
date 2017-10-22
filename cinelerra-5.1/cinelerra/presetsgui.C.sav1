@@ -332,7 +332,7 @@ PresetsSave::PresetsSave(PresetsThread *thread,
 	PresetsWindow *window,
 	int x,
 	int y)
-: BC_GenericButton(x, y, _("Save"))
+: BC_GenericButton(x, y, C_("Save"))
 {
 	this->thread = thread;
 	this->window = window;

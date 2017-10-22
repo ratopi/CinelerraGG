@@ -18,14 +18,15 @@ class RecordBatchesGUI;
 class RecordBatches
 {
 public:
-	static const char* batch_titles[];
-	static const int default_columnwidth[];
 	RecordBatchesGUI *gui;
 	MWindow *mwindow;
 //  Don't want to interrupt recording to edit a different batch.
 	int current_item; // Current batch being recorded.
 	int editing_item; // Current batch being edited.
 	int batch_active;
+	static const char* default_batch_titles[];
+	const char *batch_titles[BATCH_COLUMNS];
+	static const int default_columnwidth[];
 	int column_widths[BATCH_COLUMNS];
 	ArrayList<BC_ListBoxItem*> data[BATCH_COLUMNS];
 	ArrayList<Batch*> batches;

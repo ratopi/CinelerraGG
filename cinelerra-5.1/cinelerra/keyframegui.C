@@ -479,7 +479,7 @@ void KeyFrameWindow::create_objects()
 
 
 	add_subwindow(title1 = new BC_Title(theme->keyframe_list_x,
-		theme->keyframe_list_y - BC_Title::calculate_h(this, (char*)_("Py"), LARGEFONT) - 
+		theme->keyframe_list_y - BC_Title::calculate_h(this, (char*)"Py", LARGEFONT) - 
 			theme->widget_border, _("Keyframe parameters:"), LARGEFONT));
 	add_subwindow(keyframe_list = new KeyFrameList(thread,
 		this,
@@ -505,7 +505,7 @@ void KeyFrameWindow::create_objects()
 
 #endif
 	add_subwindow(title4 = new BC_Title(theme->presets_list_x, theme->presets_list_y - 
-			BC_Title::calculate_h(this, (char*)_("Py"), LARGEFONT) - 
+			BC_Title::calculate_h(this, (char*)"Py", LARGEFONT) - 
 			theme->widget_border, _("Presets:"), LARGEFONT));
 	add_subwindow(preset_list = new KeyFramePresetsList(thread, this,
 		theme->presets_list_x, theme->presets_list_y,
@@ -796,7 +796,7 @@ KeyFramePresetsSave::KeyFramePresetsSave(KeyFrameThread *thread,
 	KeyFrameWindow *window,
 	int x,
 	int y)
-: BC_GenericButton(x, y, _("Save"))
+: BC_GenericButton(x, y, C_("Save"))
 {
 	this->thread = thread;
 	this->window = window;

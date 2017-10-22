@@ -56,7 +56,7 @@ public:
 		TOTAL_COLUMNS
 	};
 
-	ArrayList<BC_ListBoxItem*> nodes[4];
+	ArrayList<BC_ListBoxItem*> nodes[TOTAL_COLUMNS];
 	PrefsRenderFarmEditNode *edit_node;
 	PrefsRenderFarmPort *edit_port;
 	PrefsRenderFarmNodes *node_list;
@@ -238,6 +238,10 @@ public:
 	int handle_event();
 	int selection_changed();
 	int column_resize_event();
+	void update_list();
+
+	const char *titles[PerformancePrefs::TOTAL_COLUMNS];
+	int widths[PerformancePrefs::TOTAL_COLUMNS];
 
 	PreferencesWindow *pwindow;
 	PerformancePrefs *subwindow;

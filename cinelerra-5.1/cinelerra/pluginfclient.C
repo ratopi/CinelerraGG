@@ -836,6 +836,11 @@ int PluginFAClient::process_buffer(int64_t size, Samples **buffer, int64_t start
 	if( ret >= 0 ) {
 		in_channels = get_inchannels();
 		out_channels = get_outchannels();
+		frame->nb_samples = size;
+		frame->format = AV_SAMPLE_FMT_FLTP;
+		frame->channel_layout = (1<<in_channels)-1;
+		frame->sample_rate = sample_rate;
+		frame->pts = local_to_edl(filter_position);
 	}
 
 	int retry = 10;
@@ -846,11 +851,6 @@ int PluginFAClient::process_buffer(int64_t size, Samples **buffer, int64_t start
 		for( int i=0; i<total_in; ++i )
 			read_samples(buffer[i], i, sample_rate, filter_position, size);
 		filter_position += size;
-		frame->nb_samples = size;
-		frame->format = AV_SAMPLE_FMT_FLTP;
-		frame->channel_layout = (1<<in_channels)-1;
-		frame->sample_rate = sample_rate;
-		frame->pts = local_to_edl(filter_position);
 		ret = av_frame_get_buffer(frame, 0);
 		if( ret < 0 ) break;
 		float **in_buffers = (float **)&frame->extended_data[0];

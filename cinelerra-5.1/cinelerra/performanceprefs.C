@@ -274,7 +274,7 @@ void PerformancePrefs::generate_node_list()
 	}
 }
 
-static const char *titles[] =
+static const char *default_titles[] =
 {
 	N_("On"),
 	N_("Hostname"),
@@ -282,7 +282,7 @@ static const char *titles[] =
 	N_("Framerate")
 };
 
-static int widths[] =
+static int default_widths[] =
 {
 	30,
 	150,
@@ -293,13 +293,13 @@ static int widths[] =
 
 void PerformancePrefs::update_node_list()
 {
-	node_list->update(nodes,
-						titles,
-						widths,
-						TOTAL_COLUMNS,
-						node_list->get_xposition(),
-						node_list->get_yposition(),
-						node_list->get_selection_number(0, 0));
+	node_list->update_list();
+}
+
+void PrefsRenderFarmNodes::update_list()
+{
+	update(subwindow->nodes, titles, widths, PerformancePrefs::TOTAL_COLUMNS,
+		get_xposition(), get_yposition(), get_selection_number(0, 0));
 }
 
 
@@ -546,19 +546,18 @@ int PrefsRenderFarmPort::handle_event()
 
 
 PrefsRenderFarmNodes::PrefsRenderFarmNodes(PreferencesWindow *pwindow,
-	PerformancePrefs *subwindow,
-	int x,
-	int y)
- : BC_ListBox(x,
-		y,
-		340,
-		230,
+	PerformancePrefs *subwindow, int x, int y)
+ : BC_ListBox(x, y, 340, 230,
 		LISTBOX_TEXT,                         // Display text list or icons
 		subwindow->nodes,
-		titles,
-		widths,
-		4)
+		0, //default_titles,
+		0, //default_widths,
+		PerformancePrefs::TOTAL_COLUMNS)
 {
+	for( int i=0; i<PerformancePrefs::TOTAL_COLUMNS; ++i ) {
+		titles[i] = _(default_titles[i]);
+		widths[i] = default_widths[i];
+	}
 	this->subwindow = subwindow;
 	this->pwindow = pwindow;
 }
@@ -568,7 +567,7 @@ PrefsRenderFarmNodes::~PrefsRenderFarmNodes()
 
 int PrefsRenderFarmNodes::column_resize_event()
 {
-	for(int i = 0; i < 3; i++)
+	for( int i=0; i<PerformancePrefs::TOTAL_COLUMNS; ++i )
 		widths[i] = get_column_width(i);
 	return 1;
 }

@@ -337,7 +337,7 @@ ChanSearchGUI::ChanSearchGUI(ChanSearch *cswindow)
 	search_columns[1] = 1;
 	search_columns[2] = 2;
 	search_column_titles[0] = _("Source");
-	search_column_titles[1] = _("Title");
+	search_column_titles[1] = C_("Title");
 	search_column_titles[2] = _("Start time");
 	search_column_widths[0] = 120;
 	search_column_widths[2] = 120;

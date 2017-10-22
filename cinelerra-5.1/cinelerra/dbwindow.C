@@ -588,7 +588,7 @@ DbWindowGUI(DbWindow *dwindow)
 	search_column_titles[col_id] = _("Id");
 	search_column_titles[col_length] = _("length");
 	search_column_titles[col_source] = _("Source");
-	search_column_titles[col_title] = _("Title");
+	search_column_titles[col_title] = C_("Title");
 	search_column_titles[col_start_time] = _("Start time");
 	search_column_titles[col_access_time] = _("Access time");
 	search_column_titles[col_access_count] = _("count");

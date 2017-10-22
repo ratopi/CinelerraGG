@@ -325,33 +325,31 @@ void ExportEDL::run()
 #define WIDTH 410
 #define HEIGHT 400
 
-static const char *list_titles[] =
+static const char *default_list_titles[] =
 {
 	N_("No."),
 	N_("Track name")
 };
 
-
-static int list_widths[] =
+static int default_list_widths[] =
 {
 	40,
 	200
 };
 
+
 ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportEDLAsset *exportasset)
  : BC_Window(_(PROGRAM_NAME ": Export EDL"),
  	mwindow->gui->get_screen_w(1, 0) / 2 - WIDTH / 2,
 	mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2,
- 	WIDTH,
-	HEIGHT,
-	(int)BC_INFINITY,
-	(int)BC_INFINITY,
-	0,
-	0,
-	1)
+ 	WIDTH, HEIGHT, (int)BC_INFINITY, (int)BC_INFINITY, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->exportasset = exportasset;
+	for( int i=0; i<2; ++i ) {
+		list_titles[i] = _(default_list_titles[i]);
+		list_widths[i] = default_list_widths[i];
+	}
 }
 
 ExportEDLWindow::~ExportEDLWindow()
@@ -411,7 +409,7 @@ void ExportEDLWindow::create_objects()
 	}
 
 
-	add_subwindow(track_list = new ExportEDLWindowTrackList(this, x, y, 400, 200, items_tracks));
+	add_subwindow(track_list = new ExportEDLWindowTrackList(this, x, y, 400, 200));
 
 	y += 5 + track_list->get_h();
 	add_subwindow(new BC_Title(x, y, _("Currently only CMX 3600 format is supported")));
@@ -439,19 +437,11 @@ int ExportEDLPathText::handle_event()
 }
 
 ExportEDLWindowTrackList::ExportEDLWindowTrackList(ExportEDLWindow *window,
-	int x,
-	int y,
-	int w,
-	int h,
-	ArrayList<BC_ListBoxItem*> *track_list)
- : BC_ListBox(x,
- 		y,
-		w,
-		h,
-		LISTBOX_TEXT,
-		track_list,
-		list_titles,
-		list_widths,
+	int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h, LISTBOX_TEXT,
+		window->items_tracks,
+		window->list_titles,
+		window->list_widths,
 		2)
 {
 	this->window = window;
