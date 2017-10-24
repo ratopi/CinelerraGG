@@ -50,8 +50,9 @@ unpack_bz2=tar -xjf $(1)
 unpack_xz=tar -xJf $(1)
 bld_depends=$(if $(ver_$(1)),$(call pkg-built,$(1)))
 bld_path=$(ver_$(1))/$(2)
-inc_path=$(inc_$(1))
-ld_path=$(if $(ver_$(1)),-L$(call bld_path,$(1),$(2)) $(lib_$(1)))
+if_pkg=$(if $(ver_$(1)),$(2))
+inc_path=$(call if_pkg,$(1),$(inc_$(1)))
+ld_path=$(call if_pkg,$(1),-L$(call bld_path,$(1),$(2)) $(lib_$(1)))
 
 #$(eval $(call std-build,pkg,deps...))
 #$(pkg.cflags) added as CFLAGS+=$(cflags) to pkg.vars
@@ -114,19 +115,17 @@ ffmpeg.cfg_params= \
 	--enable-pthreads --enable-gpl \
 	--disable-ffserver --disable-ffplay \
 	--disable-vaapi \
-	--enable-libfdk-aac \
-	--enable-libtwolame \
-	--enable-libopenjpeg \
-	--enable-libmp3lame \
-	--enable-libvorbis \
-	--enable-libtheora \
-	--enable-libvpx \
-	--enable-libx264 \
-	--enable-libx265 \
+	$(call if_pkg,fdk,--enable-libfdk-aac) \
+	$(call if_pkg,twolame,--enable-libtwolame) \
+	$(call if_pkg,openjpeg,--enable-libopenjpeg) \
+	$(call if_pkg,lame,--enable-libmp3lame) \
+	$(call if_pkg,libvorbis,--enable-libvorbis) \
+	$(call if_pkg,libtheora,--enable-libtheora) \
+	$(call if_pkg,libvpx,--enable-libvpx) \
+	$(call if_pkg,x264,--enable-libx264) \
+	$(call if_pkg,x265,--enable-libx265) \
 	--enable-nonfree \
 	--extra-cflags="\
-		$(call inc_path,faad2,include) \
-		$(call inc_path,faac,include) \
 		$(call inc_path,twolame,libtwolame) \
 		$(call inc_path,lame,include) \
 		$(call inc_path,openjpeg,src/lib/openjp2) \

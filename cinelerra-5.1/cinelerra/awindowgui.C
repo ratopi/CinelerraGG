@@ -553,7 +553,7 @@ void AWindowGUI::plugin_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn, un
 void AWindowGUI::create_objects()
 {
 	lock_window("AWindowGUI::create_objects");
-	asset_titles[0] = _("Title");
+	asset_titles[0] = C_("Title");
 	asset_titles[1] = _("Comments");
 
 	set_icon(mwindow->theme->get_image("awindow_icon"));
@@ -1222,7 +1222,7 @@ void AWindowGUI::sort_picons(ArrayList<BC_ListBoxItem*> *src)
 void AWindowGUI::filter_displayed_assets()
 {
 	//allow_iconlisting = 1;
-	asset_titles[0] = _("Title");
+	asset_titles[0] = C_("Title");
 	asset_titles[1] = _("Comments");
 
 	switch( mwindow->edl->session->awindow_folder ) {
@@ -1241,7 +1241,7 @@ void AWindowGUI::filter_displayed_assets()
 	case AW_LABEL_FOLDER:
 		copy_picons(displayed_assets, &labellist, AW_NO_FOLDER);
 		asset_titles[0] = _("Time Stamps");
-		asset_titles[1] = _("Title");
+		asset_titles[1] = C_("Title");
 		//allow_iconlisting = 0;
 		break;
 	default:

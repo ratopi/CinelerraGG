@@ -200,6 +200,7 @@ while( is_recording ) {
 				else {
 					--input_buffer_count;
 					printf("AudioDevice::run_input: buffer overflow\n");
+					result = 1;
 				}
 				ibfr = &input[input_buffer_in];
 				ibfr->size = 0;
@@ -208,7 +209,7 @@ while( is_recording ) {
 			buffer_lock->unlock();
 			polling_lock->unlock();
 		}
-		else {
+		if( result ) {
 			perror("AudioDevice::run_input");
 			usleep(250000);
 		}

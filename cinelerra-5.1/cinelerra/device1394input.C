@@ -126,58 +126,52 @@ int Device1394Input::open(const char *path,
 
 
 // Initialize grabbing
-	if(fd < 0)
-	{
-		if((fd = ::open(path, O_RDWR)) < 0)
-		{
-			printf("Device1394Input::open %s: %s\n", path, strerror(errno));
-		}
-		else
-		{
+	if(fd < 0 && (fd = ::open(path, O_RDWR)) < 0) {
+		printf("Device1394Input::open %s: %s\n", path, strerror(errno));
+		result = 1;
+	}
+	if( !result ) {
 #define CIP_N_NTSC   68000000
 #define CIP_D_NTSC 1068000000
-
 #define CIP_N_PAL  1
 #define CIP_D_PAL 16
-
-			struct dv1394_init init =
-			{
-				api_version: DV1394_API_VERSION,
-				channel: (unsigned int)channel,
-				n_frames: (unsigned int)length,
-				format: is_pal ? DV1394_PAL: DV1394_NTSC,
-				cip_n: 0,
-				cip_d: 0,
-				syt_offset: 0
-			};
-			if(ioctl(fd, DV1394_IOC_INIT, &init) < 0)
-			{
-				printf("Device1394Input::open DV1394_IOC_INIT: %s\n", strerror(errno));
-			}
-
-			input_buffer = (unsigned char*)mmap(0,
-              	length * buffer_size,
-                PROT_READ | PROT_WRITE,
-              	MAP_SHARED,
-              	fd,
-              	0);
-
-			if(ioctl(fd, DV1394_IOC_START_RECEIVE, 0) < 0)
-			{
-				perror("Device1394Input::open DV1394_START_RECEIVE");
-			}
+		struct dv1394_init init = {
+			api_version: DV1394_API_VERSION,
+			channel: (unsigned int)channel,
+			n_frames: (unsigned int)length,
+			format: is_pal ? DV1394_PAL: DV1394_NTSC,
+			cip_n: 0,
+			cip_d: 0,
+			syt_offset: 0
+		};
+		if(ioctl(fd, DV1394_IOC_INIT, &init) < 0) {
+			printf("Device1394Input::open DV1394_IOC_INIT: %s\n", strerror(errno));
+			result = 1;
 		}
+	}
+	if( !result ) {
+		input_buffer = (unsigned char*)mmap(0, length * buffer_size,
+			PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+		if( input_buffer == MAP_FAILED ) {
+			perror("Device1394Input::open mmap");
+			input_buffer = 0;
+			result = 1;
+		}
+	}
+	if( !result ) {
+		if(ioctl(fd, DV1394_IOC_START_RECEIVE, 0) < 0) {
+			perror("Device1394Input::open DV1394_START_RECEIVE");
+			result = 1;
+		}
+	}
 
-
-
+	if( !result ) {
 		buffer = new char*[total_buffers];
 		buffer_valid = new int[total_buffers];
 		bzero(buffer_valid, sizeof(int) * total_buffers);
-		for(int i = 0; i < total_buffers; i++)
-		{
+		for(int i = 0; i < total_buffers; i++) {
 			buffer[i] = new char[DV_PAL_SIZE];
 		}
-
 
 		audio_buffer = new char[INPUT_SAMPLES * 2 * channels];
 		audio_lock = new Condition(0, "Device1394Input::audio_lock");
@@ -195,24 +189,28 @@ void Device1394Input::run()
 {
 	while(!done)
 	{
+		int ret = 0;
 // Wait for frame to arrive
 		struct dv1394_status status;
 printf("Device1394Input::run %d done=%d\n", __LINE__, done);
 
 		Thread::enable_cancel();
-		if(ioctl(fd, DV1394_IOC_WAIT_FRAMES, 1))
-		{
+		if(ioctl(fd, DV1394_IOC_WAIT_FRAMES, 1)) {
 			perror("Device1394Input::run DV1394_IOC_WAIT_FRAMES");
-			sleep(1);
+			ret = 1;
 		}
-		else
-		if(ioctl(fd, DV1394_IOC_GET_STATUS, &status))
-		{
+		else if(ioctl(fd, DV1394_IOC_GET_STATUS, &status)) {
 			perror("Device1394Input::run DV1394_IOC_GET_STATUS");
+			ret = 1;
 		}
+		else if( !input_buffer ) {
+			fprintf(stderr, "Device1394Input::run !input_buffer");
+			ret = 1;
+		}
+		if( ret )
+			sleep(1);
 		Thread::disable_cancel();
-
-
+		if( ret ) continue;
 
 		buffer_lock->lock("Device1394Input::run 1");
 

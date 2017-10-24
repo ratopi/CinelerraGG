@@ -512,7 +512,7 @@ char* TimeFrontRate::to_text(int shape)
 		case TimeFrontConfig::LOG:
 			return _("Log");
 		default:
-			return _("Square");
+			return C_("Square");
 	}
 }
 int TimeFrontRate::from_text(char *text)
