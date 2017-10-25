@@ -519,15 +519,21 @@ VFrame *AWindowGUI::get_picon(const char *name, const char *plugin_icons)
 {
 	char png_path[BCTEXTLEN];
 	char *pp = png_path, *ep = pp + sizeof(png_path)-1;
-	snprintf(pp, ep-pp, "%s/picon_%s/%s.png",
+	snprintf(pp, ep-pp, "%s/picon/%s/%s.png",
 		File::get_plugin_path(), plugin_icons, name);
+	if( access(png_path, R_OK) ) return 0;
 	return VFramePng::vframe_png(png_path,0,0);
 }
 
 VFrame *AWindowGUI::get_picon(const char *name)
 {
 	VFrame *vframe = get_picon(name, mwindow->preferences->plugin_icons);
-	if( !vframe ) vframe = get_picon(name, DEFAULT_PICON);
+	if( !vframe ) {
+		char png_name[BCSTRLEN], *pp = png_name, *ep = pp + sizeof(png_name)-1;
+		snprintf(pp, ep-pp, "%s.png", name);
+		unsigned char *data = mwindow->theme->get_image_data(png_name);
+		if( data ) vframe = new VFramePng(data, 0.);
+	}
 	return vframe;
 }
 
@@ -839,17 +845,19 @@ void AWindowRemovePlugin::handle_close_event(int result)
 		snprintf(index_path, sizeof(index_path), "%s/%s",
 			mwindow->preferences->plugin_dir, PLUGIN_FILE);
 		remove(index_path);
+		char picon_path[BCTEXTLEN];
 		FileSystem fs;
-		fs.update(File::get_plugin_path());
+		snprintf(picon_path, sizeof(picon_path), "%s/picon",
+			File::get_plugin_path());
+		char png_name[BCSTRLEN], png_path[BCTEXTLEN];
+		plugin->get_plugin_png_name(png_name);
+		fs.update(picon_path);
 		for( int i=0; i<fs.dir_list.total; ++i ) {
 			char *fs_path = fs.dir_list[i]->path;
 			if( !fs.is_dir(fs_path) ) continue;
-			char *cp = strrchr(fs_path,'/');
-			cp = !cp ? fs_path : cp+1;
-			if( strncmp("picon_", cp, 6) ) continue;
-			char png_path[BCTEXTLEN];
-			if( !plugin->get_plugin_png_path(png_path, cp+6) )
-				remove(png_path);
+			snprintf(png_path, sizeof(picon_path), "%s/%s",
+				fs_path, png_name);
+			remove(png_path);
 		}
 		delete plugin;  plugin = 0;
 		awindow->gui->async_update_assets();

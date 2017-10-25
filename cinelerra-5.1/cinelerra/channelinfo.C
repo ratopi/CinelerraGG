@@ -262,9 +262,9 @@ void ChanSearchGUI::create_objects()
 	int pady = BC_TextBox::calculate_h(this, MEDIUMFONT, 0, 1) + 5;
 	int padx = BC_Title::calculate_w(this, (char*)"X", MEDIUMFONT);
 	int x = padx/2, y = pady/4;
-	text_x = x;  text_y = y;
 	BC_Title *title = new BC_Title(text_x, text_y, _("Text:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);  x += title->get_w();
+	text_x = x;  text_y = y;
 	search_text = new ChanSearchText(this, x, y, get_w()-x-10);
 	add_subwindow(search_text);
 	x = padx;  y += pady + 5;

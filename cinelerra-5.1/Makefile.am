@@ -36,7 +36,11 @@ binstall:	install-recursive
 		> "bin/applications/$(WANT_CIN).desktop"
 	cp -a image/cin.svg "bin/pixmaps/$(WANT_CIN)".svg
 	cp -a image/cin.xpm "bin/pixmaps/$(WANT_CIN)".xpm
-	for d in picon*; do cp -a $$d/. bin/plugins/$$d/.; done
+	mkdir -p bin/plugins/picon/cinfinity
+	for d in picon/*; do \
+	  if [ $$d = picon/cinfinity ]; then continue; fi; \
+	  cp -a $$d bin/plugins/picon/.; \
+	done
 	cp -a db/utils/new_db "bin/cin_db"
 
 buninstall:

@@ -8,8 +8,6 @@ $(shell mkdir -p $(OBJDIR))
 
 PLUGIN_DIR := $(BINDIR)/plugins
 OUTPUT_DIR = $(PLUGIN_DIR)/$($(PLUGIN))
-PLUGIN_PNGS = $(wildcard picon_*.png)
-OUTPUT_PNGS = $(foreach png,$(PLUGIN_PNGS), $(PLUGIN_DIR)/$(basename $(png))/$(PLUGIN).png)
 OUTPUT = $(OUTPUT_DIR)/$(PLUGIN).plugin
 OUTPUT_G = $(OBJDIR)/$(PLUGIN).debuginfo
 
@@ -18,7 +16,7 @@ $(shell echo $(LFLAGS) > $(OBJDIR)/l_flags)
 
 ifeq ($(OUTPUT_THEME),)
 
-$(OUTPUT): $(OBJS) $(OUTPUT_DIR) $(OUTPUT_PNGS) $(OUTPUT_BINS)
+$(OUTPUT): $(OBJS) $(OUTPUT_DIR) $(OUTPUT_BINS)
 	$(LDLINKER) -o $(OUTPUT) $(OBJS) $(OUTPUT_BINS) `cat $(OBJDIR)/l_flags`
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT) $(OUTPUT_G))
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
@@ -40,10 +38,6 @@ endif
 
 $(OUTPUT_DIR):
 	mkdir -p $@
-
-$(PLUGIN_DIR)/%/$(PLUGIN).png:	%.png
-	$(if $(wildcard $(dir $@)),,mkdir -p $(dir $@))
-	cp -a $< $@
 
 clean::
 	rm -f $(OUTPUT)

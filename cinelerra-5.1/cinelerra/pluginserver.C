@@ -1222,17 +1222,24 @@ Theme* PluginServer::get_theme()
 }
 
 
-int PluginServer::get_plugin_png_path(char *png_path, const char *plugin_icons)
+void PluginServer::get_plugin_png_name(char *png_name)
 {
-	char *pp = png_path, *ep = pp + BCTEXTLEN-1;
-	pp += snprintf(pp, ep-pp, "%s/picon_%s/",
-		File::get_plugin_path(), plugin_icons);
+	char *pp = png_name, *ep = pp + BCSTRLEN-1;
 	char *cp = strrchr(path, '/');
 	cp = !cp ? path : cp+1;
 	char *sp = strrchr(cp, '.');
 	if( !sp ) sp = cp+strlen(cp);
 	while( pp < ep && cp < sp ) *pp++ = *cp++;
 	snprintf(pp, ep-pp, ".png");
+}
+
+int PluginServer::get_plugin_png_path(char *png_path, const char *plugin_icons)
+{
+	char png_name[BCSTRLEN];
+	get_plugin_png_name(png_name);
+	char *pp = png_path, *ep = pp + BCTEXTLEN-1;
+	pp += snprintf(pp, ep-pp, "%s/picon_%s/%s",
+		File::get_plugin_path(), plugin_icons, png_name);
 	return access(png_path,R_OK) ? 1 : 0;
 }
 
@@ -1246,8 +1253,12 @@ int PluginServer::get_plugin_png_path(char *png_path)
 VFrame *PluginServer::get_plugin_images()
 {
 	char png_path[BCTEXTLEN];
-	if( get_plugin_png_path(png_path) ) return 0;
-	return VFramePng::vframe_png(png_path,0,0);
+	if( !get_plugin_png_path(png_path) )
+		return VFramePng::vframe_png(png_path,0,0);
+	char png_name[BCSTRLEN];
+	get_plugin_png_name(png_name);
+	unsigned char *data = mwindow->theme->get_image_data(png_name);
+	return data ? new VFramePng(data, 0.) : 0;
 }
 
 VFrame *PluginServer::get_picon()

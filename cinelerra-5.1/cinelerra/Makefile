@@ -456,7 +456,7 @@ $(DCRAW): dcraw.C
 
 $(THEME_DATA):
 	cd $(OBJDIR) && \
-	$(GUICAST)/$(OBJDIR)/bootstrap theme_data.o $(CINELERRA)/data/mode_*.png
+	$(GUICAST)/$(OBJDIR)/bootstrap theme_data.o $(TOPDIR)/picon/cinfinity/*.png
 
 val-%:
 	@echo $($(subst val-,,$@))

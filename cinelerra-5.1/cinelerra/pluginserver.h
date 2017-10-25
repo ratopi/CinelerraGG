@@ -125,6 +125,7 @@ public:
 			EDL *edl, Plugin *plugin);
 // close the plugin
 	int close_plugin();
+	void get_plugin_png_name(char *png_name);
 	int get_plugin_png_path(char *png_path, const char *plugin_icons);
 	int get_plugin_png_path(char *png_path);
 	void dump(FILE *fp=stdout);
