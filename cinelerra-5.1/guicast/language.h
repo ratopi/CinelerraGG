@@ -28,19 +28,17 @@
 #define _(msgid) gettext(msgid)
 #define gettext_noop(msgid) msgid
 #define N_(msgid) gettext_noop(msgid)
+#define _str(i)#i
+#define str_(s)_str(s)
 
 // for contextual use:
-//  #undef MSGQUAL
-//  #define MSGQUAL "qual_id"
+//  #define MSGQUAL qual_id
 // C_: msgid decorated as: MSGQUAL#msg_id implicitly
 // D_: msgid decorated as: qual_id#msg_id explicitly
 // see po/xlat.sh for details
-
-#ifndef MSGQUAL
-#define MSGQUAL 0
-#endif
+//
 // qualifier from MSGQUAL
-#define C_(msgid) ((MSGQUAL)? msgqual(MSGQUAL,msgid) : gettext(msgid))
+#define C_(msgid) msgqual(str_(MSGQUAL),msgid)
 // qualifier from msgid
 #define D_(msgid) msgtext(msgid)
 
@@ -48,7 +46,7 @@ static inline char *msgtext(const char *msgid)
 {
   char *msgstr = gettext(msgid);
   if( msgstr == msgid ) {
-    for( char *cp=msgstr; *cp!=0; ) if( *cp++ == '#' ) return cp;
+    for( char *cp=msgstr; *cp!=0; ) if( *cp++ == '#' ) return gettext(cp);
     msgstr = (char*) msgid;
   }
   return msgstr;
@@ -56,6 +54,7 @@ static inline char *msgtext(const char *msgid)
 
 static inline char *msgqual(const char *msgqual,const char *msgid)
 {
+  if( !msgqual || *msgqual ) return gettext(msgid);
   char msg[strlen(msgid) + strlen(msgqual) + 2], *cp = msg;
   for( const char *bp=msgqual; *bp!=0; *cp++=*bp++ );
   *cp++ = '#';

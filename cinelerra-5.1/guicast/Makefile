@@ -118,7 +118,7 @@ install:
 $(LIBOBJS) $(OBJS) $(CUTOBJ):
 
 $(OBJDIR)/%.o:          %.C
-	$(CXX) `cat $(OBJDIR)/c_flags` '-DMSGQUAL="$*"' -c $< -o $@
+	$(CXX) `cat $(OBJDIR)/c_flags` -DMSGQUAL=$* -c $< -o $@
 
 $(OBJDIR)/bootstrap: bootstrap.c
 $(OBJDIR)/pngtoh: pngtoh.c

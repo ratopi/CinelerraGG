@@ -47,7 +47,7 @@ wc:
 	cat *.C *.h | wc
 
 $(OBJDIR)/%.o:          %.C
-	$(CXX) `cat $(OBJDIR)/c_flags` '-DMSGQUAL="$*"' -c $< -o $@
+	$(CXX) `cat $(OBJDIR)/c_flags` -DMSGQUAL=$* -c $< -o $@
 
 val-%:
 	@echo $($(subst val-,,$@))

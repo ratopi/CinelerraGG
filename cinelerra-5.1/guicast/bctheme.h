@@ -106,9 +106,6 @@ public:
 // Verify all images have been used after initialization.
 	void check_used();
 
-
-
-
 	void dump();
 	BC_Resources* get_resources();
 
@@ -123,13 +120,20 @@ private:
 	ArrayList<BC_ThemeSet*> image_sets;
 
 // Compressed images are loaded in here.
-	char *data_ptr;
-	char *contents_ptr;
-	ArrayList<char*> contents;
-	ArrayList<unsigned char*> pointers;
-	ArrayList<int> used;
-	char *last_image;
-	unsigned char *last_pointer;
+	class image_item {
+	public:
+		char *name;
+		unsigned char *data;
+		int used;
+
+		image_item(char *nm, unsigned char *dp) {
+			name = nm;  data = dp;  used = 0;
+		}
+	} *last_image;
+	int images_dirty;
+	ArrayList<image_item *> images;
+
+	static int images_cmpr(const void *ap, const void *bp);
 };
 
 class BC_ThemeSet

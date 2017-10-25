@@ -23,7 +23,10 @@ clean:
 install:
 	for dir in $(SUBDIRS); do $(MAKE) -C $$dir install; done
 	cp -a COPYING README models Cinelerra_factory ffmpeg msg info tips bin/.
-	for d in picon*; do cp -a $$d/. bin/plugins/$$d/.; done
+	mkdir -p bin/plugins/picon/cinfinity; for d in picon/*; do \
+	  if [ $$d = picon/cinfinity ]; then continue; fi; \
+	  cp -a $$d bin/plugins/picon/.; \
+	done
 
 rebuild:
 	$(MAKE) -C guicast clean

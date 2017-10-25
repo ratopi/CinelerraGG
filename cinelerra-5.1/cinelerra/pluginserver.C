@@ -1238,7 +1238,7 @@ int PluginServer::get_plugin_png_path(char *png_path, const char *plugin_icons)
 	char png_name[BCSTRLEN];
 	get_plugin_png_name(png_name);
 	char *pp = png_path, *ep = pp + BCTEXTLEN-1;
-	pp += snprintf(pp, ep-pp, "%s/picon_%s/%s",
+	pp += snprintf(pp, ep-pp, "%s/picon/%s/%s",
 		File::get_plugin_path(), plugin_icons, png_name);
 	return access(png_path,R_OK) ? 1 : 0;
 }

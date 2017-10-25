@@ -1033,6 +1033,10 @@ locking_message = event->xclient.message_type;
 		break;
 
 	case ButtonPress:
+		if(motion_events)
+		{
+			dispatch_motion_event();
+		}
 		get_key_masks(event->xbutton.state);
 		cursor_x = event->xbutton.x;
 		cursor_y = event->xbutton.y;
@@ -1077,6 +1081,10 @@ locking_message = event->xclient.message_type;
 		break;
 
 	case ButtonRelease:
+		if(motion_events)
+		{
+			dispatch_motion_event();
+		}
 		get_key_masks(event->xbutton.state);
 		button_number = event->xbutton.button;
 		event_win = event->xany.window;
