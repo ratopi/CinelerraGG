@@ -635,6 +635,12 @@ void BrightTheme::initialize()
 		"shbtn_hi.png",
 		"shbtn_dn.png");
 
+	new_image_set("preset_edit",
+		3,
+		"preset_edit0.png",
+		"preset_edit1.png",
+		"preset_edit2.png");
+
 	new_image_set("histogram_carrot",
 		5,
 		"histogram_carrot_up.png",

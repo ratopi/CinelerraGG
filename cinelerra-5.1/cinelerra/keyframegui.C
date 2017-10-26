@@ -119,11 +119,14 @@ void KeyFrameThread::update_values()
 			keyframe_data[0].append(new BC_ListBoxItem(hash.get_key(i)));
 			keyframe_data[1].append(new BC_ListBoxItem(hash.get_value(i)));
 		}
-		keyframe_data[0].append(new BC_ListBoxItem((char*)"TEXT"));
-		keyframe_data[1].append(new BC_ListBoxItem(text));
-		keyframe_data[0].append(new BC_ListBoxItem((char*)"DATA"));
-		keyframe_data[1].append(new BC_ListBoxItem(data));
-		
+		if( text ) {
+			keyframe_data[0].append(new BC_ListBoxItem((char*)"TEXT"));
+			keyframe_data[1].append(new BC_ListBoxItem(text));
+		}
+		if( data ) {
+			keyframe_data[0].append(new BC_ListBoxItem((char*)"DATA"));
+			keyframe_data[1].append(new BC_ListBoxItem(data));
+		}
 		delete [] text;
 		delete [] data;
 	}

@@ -326,14 +326,15 @@ void ViewPluginIcons::create_objects()
 	add_item(new ViewPluginIconItem(this, DEFAULT_PICON));
 	FileSystem fs;
 	const char *plugin_path = File::get_plugin_path();
-	if( fs.update(plugin_path) ) return;
+	char picon_path[BCTEXTLEN];
+	snprintf(picon_path,sizeof(picon_path)-1,"%s/picon", plugin_path);
+	if( fs.update(picon_path) ) return;
 	for( int i=0; i<fs.dir_list.total; ++i ) {
 		char *fs_path = fs.dir_list[i]->path;
 		if( !fs.is_dir(fs_path) ) continue;
 		char *cp = strrchr(fs_path,'/');
 		cp = !cp ? fs_path : cp+1;
-		if( strncmp("picon_", cp, 6) ) continue;
-		if( !strcmp(cp += 6,DEFAULT_PICON) ) continue;
+		if( !strcmp(cp,DEFAULT_PICON) ) continue;
 		add_item(new ViewPluginIconItem(this, cp));
 	}
 }

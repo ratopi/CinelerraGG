@@ -90,6 +90,12 @@ int BC_DragWindow::cursor_motion_event()
 	flush();
 	return 1;
 }
+int BC_DragWindow::button_release_event()
+{
+	cursor_motion_event();
+	sync();
+	return BC_WindowBase::button_release_event();
+}
 
 int BC_DragWindow::get_offset_x()
 {

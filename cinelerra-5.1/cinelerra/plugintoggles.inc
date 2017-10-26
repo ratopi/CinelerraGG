@@ -27,7 +27,7 @@
 
 class PluginOn;
 class PluginShow;
-
+class PluginPresetEdit;
 
 
 #endif

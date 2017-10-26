@@ -41,7 +41,6 @@ public:
 };
 
 
-
 class PluginShow : public BC_Toggle
 {
 public:
@@ -55,6 +54,16 @@ public:
 };
 
 
-
+class PluginPresetEdit : public BC_Button
+{
+public:
+	PluginPresetEdit(MWindow *mwindow, int x, int y, Plugin *plugin);
+	MWindow *mwindow;
+	static int calculate_w(MWindow *mwindow);
+	void update(int x, int y, Plugin *plugin);
+	int handle_event();
+	int in_use;
+	Plugin *plugin;
+};
 
 #endif

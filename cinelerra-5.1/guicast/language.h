@@ -54,7 +54,7 @@ static inline char *msgtext(const char *msgid)
 
 static inline char *msgqual(const char *msgqual,const char *msgid)
 {
-  if( !msgqual || *msgqual ) return gettext(msgid);
+  if( !msgqual || !*msgqual ) return gettext(msgid);
   char msg[strlen(msgid) + strlen(msgqual) + 2], *cp = msg;
   for( const char *bp=msgqual; *bp!=0; *cp++=*bp++ );
   *cp++ = '#';

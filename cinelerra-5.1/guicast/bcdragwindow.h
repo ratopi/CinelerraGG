@@ -33,6 +33,7 @@ public:
 	~BC_DragWindow();
 
 	int cursor_motion_event();
+	int button_release_event();
 	int drag_failure_event();
 	int get_offset_x();
 	int get_offset_y();

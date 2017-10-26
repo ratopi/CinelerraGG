@@ -100,7 +100,31 @@ int PluginShow::handle_event()
 	return 1;
 }
 
+PluginPresetEdit::PluginPresetEdit(MWindow *mwindow, int x, int y, Plugin *plugin)
+ : BC_Button(x, y, mwindow->theme->get_image_set("preset_edit"))
+{
+	this->mwindow = mwindow;
+	this->plugin = plugin;
+	in_use = 1;
+	set_tooltip(_("Preset Edit"));
+}
 
+int PluginPresetEdit::handle_event()
+{
+	mwindow->show_keyframe_gui(plugin);
+	return 1;
+}
 
+int PluginPresetEdit::calculate_w(MWindow *mwindow)
+{
+	VFrame **images = mwindow->theme->get_image_set("preset_edit");
+	return images[0]->get_w();
+}
 
+void PluginPresetEdit::update(int x, int y, Plugin *plugin)
+{
+	reposition_window(x, y);
+	this->plugin = plugin;
+	in_use = 1;
+}
 

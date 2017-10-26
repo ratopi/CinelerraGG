@@ -398,6 +398,7 @@ public:
 // Plugin toggle interfaces
 	ArrayList<PluginOn*> plugin_on_toggles;
 	ArrayList<PluginShow*> plugin_show_toggles;
+	ArrayList<PluginPresetEdit*> preset_edit_buttons;
 
 	static int auto_operations[];
 // event handlers

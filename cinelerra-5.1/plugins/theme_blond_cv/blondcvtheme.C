@@ -649,6 +649,12 @@ void BlondCVTheme::initialize()
 		"shbtn_hi.png",
 		"shbtn_dn.png");
 
+	new_image_set("preset_edit",
+		3,
+		"preset_edit0.png",
+		"preset_edit1.png",
+		"preset_edit2.png");
+
 	statusbar_cancel_data = new_image_set(3,
 		"statusbar_cancel_up.png",
 		"statusbar_cancel_hi.png",

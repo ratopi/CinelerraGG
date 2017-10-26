@@ -1596,13 +1596,15 @@ void TrackCanvas::draw_plugins()
 	char string[BCTEXTLEN];
 	int current_on = 0;
 	int current_show = 0;
-
+	int current_preset = 0;
 
 //	if(!mwindow->edl->session->show_assets) goto done;
 
 	for(int i = 0; i < plugin_on_toggles.total; i++)
 		plugin_on_toggles.values[i]->in_use = 0;
 	for(int i = 0; i < plugin_show_toggles.total; i++)
+		plugin_show_toggles.values[i]->in_use = 0;
+	for(int i = 0; i < preset_edit_buttons.total; i++)
 		plugin_show_toggles.values[i]->in_use = 0;
 
 
@@ -1711,9 +1713,21 @@ void TrackCanvas::draw_plugins()
 								}
 								current_show++;
 							}
-
-
-
+							toggle_x -= PluginPresetEdit::calculate_w(mwindow) + 10;
+							if(toggle_x > min_x)
+							{
+								if(current_preset >= preset_edit_buttons.total)
+								{
+									PluginPresetEdit *preset_edit = new PluginPresetEdit(mwindow, toggle_x, toggle_y, plugin);
+									add_subwindow(preset_edit);
+									preset_edit_buttons.append(preset_edit);
+								}
+								else
+								{
+									preset_edit_buttons.values[current_preset]->update(toggle_x, toggle_y, plugin);
+								}
+								current_preset++;
+							}
 						}
 					}
 				}
@@ -1723,6 +1737,10 @@ void TrackCanvas::draw_plugins()
 
 // Remove unused toggles
 
+	while(current_preset < preset_edit_buttons.total)
+	{
+		preset_edit_buttons.remove_object_number(current_preset);
+	}
 	while(current_show < plugin_show_toggles.total)
 	{
 		plugin_show_toggles.remove_object_number(current_show);
@@ -1732,7 +1750,6 @@ void TrackCanvas::draw_plugins()
 	{
 		plugin_on_toggles.remove_object_number(current_on);
 	}
-
 }
 
 void TrackCanvas::refresh_plugintoggles()
@@ -1746,6 +1763,11 @@ void TrackCanvas::refresh_plugintoggles()
 	{
 		PluginShow *show = plugin_show_toggles.values[i];
 		show->reposition_window(show->get_x(), show->get_y());
+	}
+	for(int i = 0; i < preset_edit_buttons.total; i++)
+	{
+		PluginPresetEdit *preset_edit = preset_edit_buttons.values[i];
+		preset_edit->reposition_window(preset_edit->get_x(), preset_edit->get_y());
 	}
 }
 
