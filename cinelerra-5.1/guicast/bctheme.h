@@ -101,7 +101,7 @@ public:
 	BC_ThemeSet* get_image_set_object(const char *title);
 
 // Loads compressed data into temporary
-	unsigned char* get_image_data(const char *title);
+	unsigned char* get_image_data(const char *title, int log_errs=1);
 
 // Verify all images have been used after initialization.
 	void check_used();

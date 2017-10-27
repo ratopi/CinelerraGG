@@ -93,7 +93,7 @@ int BC_DragWindow::drag_failure_event()
 
 		reposition_window(new_x, new_y, get_w(), get_h());
 		flush();
-		usleep(1000);
+		usleep(250000/10);
 	}
 	return 0;
 }

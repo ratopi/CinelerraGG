@@ -479,7 +479,7 @@ int PluginDialog::resize_event(int w, int h)
 
 int PluginDialog::attach_new(int number)
 {
-	if(number > -1 && number < standalone_data.total)
+	if(number >= 0 && number < plugindb.size())
 	{
 		strcpy(thread->plugin_title, plugindb.values[number]->title);
 		thread->plugin_type = PLUGIN_STANDALONE;         // type is plugin
@@ -489,7 +489,7 @@ int PluginDialog::attach_new(int number)
 
 int PluginDialog::attach_shared(int number)
 {
-	if(number > -1 && number < shared_data.total)
+	if(number >= 0 && number < plugin_locations.size())
 	{
 		thread->plugin_type = PLUGIN_SHAREDPLUGIN;         // type is shared plugin
 		thread->shared_location = *(plugin_locations.values[number]); // copy location
@@ -499,7 +499,7 @@ int PluginDialog::attach_shared(int number)
 
 int PluginDialog::attach_module(int number)
 {
-	if(number > -1 && number < module_data.total)
+	if(number >= 0 && number < module_locations.size())
 	{
 //		title->update(module_data.values[number]->get_text());
 		thread->plugin_type = PLUGIN_SHAREDMODULE;         // type is module
@@ -576,14 +576,14 @@ int PluginDialogNew::handle_event()
 }
 int PluginDialogNew::selection_changed()
 {
-	dialog->selected_available = get_selection_number(0, 0);
-
-
+	int no = get_selection_number(0, 0);
+	dialog->selected_available = no >= 0 && no < dialog->standalone_data.size() ?
+		((PluginDialogListItem *)dialog->standalone_data[no])->item_no : -1;
 	dialog->shared_list->set_all_selected(&dialog->shared_data, 0);
 	dialog->shared_list->draw_items(1);
+	dialog->selected_shared = -1;
 	dialog->module_list->set_all_selected(&dialog->module_data, 0);
 	dialog->module_list->draw_items(1);
-	dialog->selected_shared = -1;
 	dialog->selected_modules = -1;
 	return 1;
 }
@@ -753,8 +753,8 @@ void PluginDialog::load_plugin_list(int redraw)
 
 	for( int i=0; i<plugindb.total; ++i ) {
 		const char *title = plugindb.values[i]->title;
-		if( text && text[0] && !strstr(title, text) ) continue;
-		standalone_data.append(new BC_ListBoxItem(title));
+		if( text && text[0] && !strcasestr(title, text) ) continue;
+		standalone_data.append(new PluginDialogListItem(title, i));
 	}
 
 	if( redraw )

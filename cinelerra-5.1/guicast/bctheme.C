@@ -417,7 +417,7 @@ int BC_Theme::images_cmpr(const void *ap, const void *bp)
         return strcasecmp(a->name, b->name);
 }
 
-unsigned char* BC_Theme::get_image_data(const char *name)
+unsigned char* BC_Theme::get_image_data(const char *name, int log_errs)
 {
 	if( images_dirty ) {
 		images_dirty = 0;
@@ -443,7 +443,8 @@ unsigned char* BC_Theme::get_image_data(const char *name)
                 if( n > 0 ) l = m; else r = m;
         }
 
-	fprintf(stderr, _("Theme::get_image: %s not found.\n"), name);
+	if( log_errs )
+		fprintf(stderr, _("Theme::get_image: %s not found.\n"), name);
 	return 0;
 }
 

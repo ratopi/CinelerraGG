@@ -13,7 +13,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.0 r9654"
-   width="880"
+   width="1004"
    height="77"
    sodipodi:docname="preferences_bg.svg">
   <metadata
@@ -365,11 +365,11 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1366"
-     inkscape:window-height="693"
+     inkscape:window-height="696"
      id="namedview4"
      showgrid="false"
-     inkscape:zoom="1"
-     inkscape:cx="487.04185"
+     inkscape:zoom="1.5746667"
+     inkscape:cx="687.02157"
      inkscape:cy="25.329944"
      inkscape:window-x="0"
      inkscape:window-y="24"
@@ -378,13 +378,13 @@
   <rect
      style="fill:#333333;fill-opacity:1;stroke:none"
      id="rect3611"
-     width="880"
+     width="1004"
      height="77"
      x="0"
      y="0" />
   <path
      style="fill:#4d4d4d;fill-opacity:1;stroke:none"
-     d="m -1,28 0,50 880,0 0,-50 -880,0 z"
+     d="m 0,27 0,50 1004,0 0,-50 L 0,27 z"
      id="rect2818"
      sodipodi:nodetypes="ccccc"
      inkscape:connector-curvature="0" />
@@ -398,7 +398,7 @@
   <path
      sodipodi:nodetypes="ccccc"
      id="path3042"
-     d="m 0,26 0,1 880,0 0,-1 -880,0 z"
+     d="m 0,26 0,1 1004,0 0,-1 L 0,26 z"
      style="fill:#989898;fill-opacity:1;stroke:none"
      inkscape:connector-curvature="0" />
 </svg>

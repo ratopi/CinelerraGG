@@ -1257,7 +1257,7 @@ VFrame *PluginServer::get_plugin_images()
 		return VFramePng::vframe_png(png_path,0,0);
 	char png_name[BCSTRLEN];
 	get_plugin_png_name(png_name);
-	unsigned char *data = mwindow->theme->get_image_data(png_name);
+	unsigned char *data = mwindow->theme->get_image_data(png_name, 0);
 	return data ? new VFramePng(data, 0.) : 0;
 }
 

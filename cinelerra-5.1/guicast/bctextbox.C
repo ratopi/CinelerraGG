@@ -191,8 +191,9 @@ int BC_TextBox::tstrlen()
 
 int BC_TextBox::tstrcmp(const char *cp)
 {
-	if( !tsize ) return strcmp(text, cp);
-	return strncmp(text, cp, tsize);
+	const char *tp = get_text();
+	if( !tsize ) return strcmp(tp, cp);
+	return strncmp(tp, cp, tsize);
 }
 
 char *BC_TextBox::tstrcpy(const char *cp)

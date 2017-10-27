@@ -381,9 +381,10 @@ void PresetsDBPlugin::delete_keyframe(const char *title)
 {
 	for( int i=0; i<keyframes.size(); ++i ) {
 		PresetsDBKeyframe *keyframe = keyframes[i];
-		if( !strcasecmp(keyframe->title, title) && !keyframe->is_factory )
-		    keyframes.remove_object_number(i);
+		if( !strcasecmp(keyframe->title, title) && !keyframe->is_factory ) {
+			keyframes.remove_object_number(i);
 			return;
+		}
 	}
 }
 

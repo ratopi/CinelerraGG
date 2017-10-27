@@ -326,16 +326,17 @@ public:
 
 	int handle_event();
 	void create_objects();
+	int get_w();
+	int get_h();
+	void reposition_window(int x, int y, int w);
+	const char *get_text();
+	void clear();
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
 	int x, y;
 	BC_Title *text_title;
 	BC_TextBox *text_box;
-	int get_w();
-	int get_h();
-	void reposition_window(int x, int y, int w);
-	const char *get_text();
 };
 
 class AWindowNewFolder : public BC_Button

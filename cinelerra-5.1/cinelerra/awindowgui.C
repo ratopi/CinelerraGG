@@ -436,6 +436,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	labellist_menu = 0;
 	folderlist_menu = 0;
 	temp_picon = 0;
+	search_text = 0;
 	allow_iconlisting = 1;
 	remove_plugin = 0;
 	vicon_thread = 0;
@@ -465,6 +466,7 @@ AWindowGUI::~AWindowGUI()
 	delete cliplist_menu;
 	delete labellist_menu;
 	delete folderlist_menu;
+	delete search_text;
 	delete temp_picon;
 	delete remove_plugin;
 
@@ -943,7 +945,6 @@ void AWindowGUI::async_update_assets()
 
 void AWindowGUI::update_folder_list()
 {
-	stop_vicon_drawing();
 	for( int i = 0; i < folders.total; i++ ) {
 		AssetPicon *picon = (AssetPicon*)folders.values[i];
 		picon->in_use = 0;
@@ -981,8 +982,6 @@ void AWindowGUI::update_folder_list()
 			folders.remove_number(i);
 		}
 	}
-
-	start_vicon_drawing();
 }
 
 void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
@@ -1198,7 +1197,9 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 		    (picon->indexable && picon->indexable->awindow_folder == folder) ||
 		    (picon->edl && picon->edl->local_session->awindow_folder == folder) ) {
 			const char *text = search_text->get_text();
-			if( text && text[0] && !strstr(picon->get_text(), text) ) continue;
+			int hidden = text && text[0] && !strcasestr(picon->get_text(), text);
+			if( picon->vicon ) picon->vicon->hidden = hidden;
+			if( hidden ) continue;
 			BC_ListBoxItem *item2, *item1;
 			dst[0].append(item1 = picon);
 			if( picon->edl )
@@ -1279,10 +1280,14 @@ void AWindowGUI::filter_displayed_assets()
 
 void AWindowGUI::update_assets()
 {
+	stop_vicon_drawing();
 	update_folder_list();
 	update_asset_list();
 	labellist.remove_all_objects();
 	create_label_folder();
+
+	if( displayed_folder != mwindow->edl->session->awindow_folder )
+		search_text->clear();
 	filter_displayed_assets();
 
 	if( mwindow->edl->session->folderlist_format != folder_list->get_format() ) {
@@ -1307,6 +1312,7 @@ void AWindowGUI::update_assets()
 	asset_list->center_selection();
 
 	flush();
+	start_vicon_drawing();
 	return;
 }
 
@@ -1744,11 +1750,13 @@ int AWindowAssets::drag_stop_event()
 
 	lock_window("AWindowAssets::drag_stop_event");
 
-	if( result ) get_drag_popup()->set_animation(0);
+	if( result )
+		get_drag_popup()->set_animation(0);
 
 	BC_ListBox::drag_stop_event();
-	mwindow->session->current_operation = ::NO_OPERATION; // since NO_OPERATION is also defined in listbox, we have to reach for global scope...
-	return 0;
+// since NO_OPERATION is also defined in listbox, we have to reach for global scope...
+	mwindow->session->current_operation = ::NO_OPERATION;
+	return 1;
 }
 
 int AWindowAssets::column_resize_event()
@@ -1826,6 +1834,11 @@ void AWindowSearchText::reposition_window(int x, int y, int w)
 const char *AWindowSearchText::get_text()
 {
 	return text_box->get_text();
+}
+
+void AWindowSearchText::clear()
+{
+	text_box->update("");
 }
 
 AWindowNewFolder::AWindowNewFolder(MWindow *mwindow, AWindowGUI *gui, int x, int y)

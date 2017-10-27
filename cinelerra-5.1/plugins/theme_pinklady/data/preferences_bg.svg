@@ -13,9 +13,9 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.0 r9654"
-   width="880"
+   width="1004"
    height="77"
-   sodipodi:docname="preferences_bg.svg">
+   sodipodi:docname="preferences_bgPINKLADY.svg">
   <metadata
      id="metadata8">
     <rdf:RDF>
@@ -365,41 +365,43 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1366"
-     inkscape:window-height="693"
+     inkscape:window-height="696"
      id="namedview4"
      showgrid="false"
-     inkscape:zoom="0.5"
-     inkscape:cx="486.66113"
+     inkscape:zoom="1.5746667"
+     inkscape:cx="789.38827"
      inkscape:cy="25.329944"
      inkscape:window-x="0"
      inkscape:window-y="24"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2"
-     inkscape:showpageshadow="false" />
+     inkscape:current-layer="svg2" />
   <rect
      style="fill:#ffb1d0;fill-opacity:1;stroke:none"
      id="rect3611"
-     width="880"
+     width="1004"
      height="77"
      x="0"
-     y="0" />
+     y="0"
+     inkscape:export-filename="/home/dell/Рабочий стол/новая папка 2/preferences_bgPINKLADY.png"
+     inkscape:export-xdpi="90"
+     inkscape:export-ydpi="90" />
   <path
      style="fill:#d46a95;fill-opacity:1;stroke:none"
-     d="M 0,27 0,77 880,77 880,27 0,27 z"
+     d="m 0,27 0,50 1004,0 0,-50 L 0,27 z"
      id="rect2818"
      sodipodi:nodetypes="ccccc"
      inkscape:connector-curvature="0" />
   <rect
      style="fill:none;stroke:none"
      id="rect2818-5"
-     width="141.23457"
+     width="130"
      height="100"
-     x="456.82379"
+     x="420.48553"
      y="10.160921" />
   <path
      sodipodi:nodetypes="ccccc"
      id="path3042"
-     d="m 0,26 0,1 880,0 0,-1 -880,0 z"
+     d="m 0,26 0,1 1004,0 0,-1 L 0,26 z"
      style="fill:#78216f;fill-opacity:1;stroke:none"
      inkscape:connector-curvature="0" />
 </svg>

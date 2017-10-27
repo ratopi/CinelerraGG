@@ -17,6 +17,7 @@ VIcon(int vw, int vh, double rate)
 	this->age = 0;
 	this->seq_no = 0;
 	this->in_use = 1;
+	this->hidden = 0;
 }
 
 VIcon::
@@ -132,6 +133,7 @@ int ViewPopup::button_press_event()
 bool VIconThread::
 visible(VIcon *vicon, int x, int y)
 {
+	if( vicon->hidden ) return false;
 	int y0 = 0;
 	int my = y + vicon->vh;
 	if( my <= y0 ) return false;

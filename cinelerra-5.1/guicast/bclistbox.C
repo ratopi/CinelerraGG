@@ -2443,6 +2443,14 @@ int BC_ListBox::button_press_event()
 			if( debug ) printf("BC_ListBox::button_press_event %d\n", __LINE__);
 		}
 
+		if( current_operation != NO_OPERATION ) {
+			switch( current_operation ) {
+			case DRAG_ITEM:
+			case COLUMN_DRAG:
+				return drag_stop_event();
+			}
+		}
+
 // Wheel mouse pressed
 		if( get_buttonpress() == 4 ) {
 			if( current_operation == NO_OPERATION ) {
@@ -3208,6 +3216,7 @@ int BC_ListBox::drag_motion_event()
 
 int BC_ListBox::drag_stop_event()
 {
+	int result = 0;
 	switch( current_operation ) {
 	case DRAG_ITEM:
 		unset_repeat(get_resources()->scroll_repeat);
@@ -3248,13 +3257,8 @@ int BC_ListBox::drag_stop_event()
 		}
 		else
 			drag_popup->drag_failure_event();
-
-		delete drag_popup;
-		flush();
-		drag_popup = 0;
-		current_operation = NO_OPERATION;
-		new_value = 0;
-		return 1;
+		result = 1;
+		break;
 
 	case COLUMN_DRAG:
 		if( dragged_title != highlighted_title ) {
@@ -3264,13 +3268,18 @@ int BC_ListBox::drag_stop_event()
 			else
 				drag_popup->drag_failure_event();
 		}
+		result = 1;
+	}
+
+	if( result ) {
 		current_operation = NO_OPERATION;
 		delete drag_popup;
 		flush();
 		drag_popup = 0;
-		return 1;
+		new_value = 0;
 	}
-	return 0;
+
+	return result;
 }
 
 BC_DragWindow* BC_ListBox::get_drag_popup()

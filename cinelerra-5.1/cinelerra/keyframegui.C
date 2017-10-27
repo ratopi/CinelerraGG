@@ -149,6 +149,7 @@ void KeyFrameThread::start_window(Plugin *plugin, KeyFrame *keyframe)
 		if( !mwindow->edl->tracks->plugin_exists(plugin) ) return;
 		this->keyframe = keyframe;
 		this->plugin = plugin;
+		this->preset_text[0] = 0;
 		plugin->calculate_title(plugin_title, 0);
 		sprintf(window_title, _("%s: %s Keyframe"), _(PROGRAM_NAME), plugin_title);
 

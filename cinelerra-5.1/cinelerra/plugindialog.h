@@ -88,6 +88,14 @@ public:
 	int single_standalone;
 };
 
+class PluginDialogListItem : public BC_ListBoxItem
+{
+public:
+	PluginDialogListItem(const char *item, int n)
+	 : BC_ListBoxItem(item), item_no(n) {}
+	int item_no;
+};
+
 class PluginDialog : public BC_Window
 {
 public:
