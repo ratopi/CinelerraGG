@@ -686,7 +686,7 @@ void SUV::initialize()
 		"scope_toggle");
 
 	new_button("picture.png", editpanel_up, editpanel_hi, editpanel_dn, "picture");
-	new_button("histogram.png", editpanel_up, editpanel_hi, editpanel_dn, "histogram");
+	new_button("histogram_img.png", editpanel_up, editpanel_hi, editpanel_dn, "histogram_img");
 
 
 	new_button("copy.png", editpanel_up, editpanel_hi, editpanel_dn, "copy");

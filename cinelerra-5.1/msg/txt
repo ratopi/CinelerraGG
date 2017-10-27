@@ -6,10 +6,20 @@ For usage help, refer to the following:
   https://cinelerra-cv.org/five/Features5.pdf
   http://beccatoria.dreamwidth.org/144288.html#cutid2
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
-.
 Cinfinity icons selected in Preferences (Creative Common
   By https://creativecommons.org/licenses/by/3.0/)
 .
+October 2017 New Features of note:
+  HV7 mods merged in to include X11 Direct playback for
+   large format files and Presets for plugins with edit.
+  Multiple windows available now for multiple assets.
+  Many more new icons for ffmpeg plugins + others.
+  Alternative shortcut keys for computers without numpad.
+  Snap/Cut editing and snap while dragging stickiness.
+  Snapshot capability for single frame png, jpg, or tiff.
+  Preference for Set Input Focus when window entered.
+  Upgraded Russian translation provided by Igor.
+  Search box in the Resources window to narrow choices.
 September 2017 New Features of note:
   Proxy Editing added to Settings pulldown.
   OpenCV optional compile with 4 plugins now available.

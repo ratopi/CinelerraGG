@@ -26,6 +26,7 @@ class PluginDialogTextBox;
 class PluginDialogDetach;
 class PluginDialogNew;
 class PluginDialogShared;
+class PluginDialogSearchText;
 class PluginDialogModules;
 class PluginDialogAttachNew;
 class PluginDialogChangeNew;
@@ -104,6 +105,7 @@ public:
 	int attach_module(int number);
 	void save_settings();
 	int resize_event(int w, int h);
+	void load_plugin_list(int redraw);
 
 	BC_Title *standalone_title;
 	PluginDialogNew *standalone_list;
@@ -112,7 +114,7 @@ public:
 	BC_Title *module_title;
 	PluginDialogModules *module_list;
 	PluginDialogSingle *single_standalone;
-
+	PluginDialogSearchText *search_text;
 
 	PluginDialogThru *thru;
 
@@ -236,6 +238,14 @@ public:
 	PluginDialog *dialog;
 };
 
+class PluginDialogSearchText : public BC_TextBox
+{
+public:
+	PluginDialogSearchText(PluginDialog *dialog, int x, int y, int w);
+	int handle_event();
+
+	PluginDialog *dialog;
+};
 
 /*
  * class PluginDialogAttachShared : public BC_GenericButton

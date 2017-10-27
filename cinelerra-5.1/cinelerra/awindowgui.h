@@ -179,6 +179,7 @@ public:
 	AWindowAssets *asset_list;
 	AWindowFolders *folder_list;
 	AWindowDivider *divider;
+	AWindowSearchText *search_text;
 
 // Store data to speed up responses
 // Persistant data for listboxes
@@ -307,6 +308,34 @@ public:
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
+};
+
+class AWindowSearchTextBox : public BC_TextBox
+{
+public:
+	AWindowSearchTextBox(AWindowSearchText *search_text, int x, int y, int w);
+	int handle_event();
+
+	AWindowSearchText *search_text;
+};
+
+class AWindowSearchText
+{
+public:
+	AWindowSearchText(MWindow *mwindow, AWindowGUI *gui, int x, int y);
+
+	int handle_event();
+	void create_objects();
+
+	MWindow *mwindow;
+	AWindowGUI *gui;
+	int x, y;
+	BC_Title *text_title;
+	BC_TextBox *text_box;
+	int get_w();
+	int get_h();
+	void reposition_window(int x, int y, int w);
+	const char *get_text();
 };
 
 class AWindowNewFolder : public BC_Button

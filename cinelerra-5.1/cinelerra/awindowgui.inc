@@ -30,6 +30,8 @@ class AWindowRemovePlugin;
 class AWindowGUI;
 class AWindowAssets;
 class AWindowDivider;
+class AWindowSearchTextBox;
+class AWindowSearchText;
 class AWindowFolders;
 class AWindowNewFolder;
 class AWindowDeleteFolder;

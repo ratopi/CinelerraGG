@@ -277,8 +277,6 @@ void PluginDialog::create_objects()
 		thread->data_type);
 
 // Construct listbox items
-	for(int i = 0; i < plugindb.total; i++)
-		standalone_data.append(new BC_ListBoxItem(_(plugindb.values[i]->title)));
 	for(int i = 0; i < plugin_locations.total; i++)
 	{
 		Track *track = mwindow->edl->tracks->number(plugin_locations.values[i]->module);
@@ -309,12 +307,15 @@ void PluginDialog::create_objects()
 	add_subwindow(standalone_title = new BC_Title(mwindow->theme->plugindialog_new_x,
 		mwindow->theme->plugindialog_new_y - 20,
 		_("Plugins:")));
+	int x1 = mwindow->theme->plugindialog_new_x, y1 = mwindow->theme->plugindialog_new_y;
+	int w1 = mwindow->theme->plugindialog_new_w, h1 = mwindow->theme->plugindialog_new_h;
+	add_subwindow(search_text = new PluginDialogSearchText(this, x1, y1, w1));
+	int dy = search_text->get_h() + 10;
+	y1 += dy;  h1 -= dy;
+	load_plugin_list(0);
+
 	add_subwindow(standalone_list = new PluginDialogNew(this,
-		&standalone_data,
-		mwindow->theme->plugindialog_new_x,
-		mwindow->theme->plugindialog_new_y,
-		mwindow->theme->plugindialog_new_w,
-		mwindow->theme->plugindialog_new_h));
+		&standalone_data, x1, y1, w1, h1));
 //
 // 	if(thread->plugin)
 // 		add_subwindow(standalone_change = new PluginDialogChangeNew(mwindow,
@@ -421,20 +422,19 @@ int PluginDialog::resize_event(int w, int h)
 
 	standalone_title->reposition_window(mwindow->theme->plugindialog_new_x,
 		mwindow->theme->plugindialog_new_y - 20);
-	standalone_list->reposition_window(mwindow->theme->plugindialog_new_x,
-		mwindow->theme->plugindialog_new_y,
-		mwindow->theme->plugindialog_new_w,
-		mwindow->theme->plugindialog_new_h);
+	int x1 = mwindow->theme->plugindialog_new_x, y1 = mwindow->theme->plugindialog_new_y;
+	int w1 = mwindow->theme->plugindialog_new_w, h1 = mwindow->theme->plugindialog_new_h;
+	search_text->reposition_window(x1, y1, w1);
+	int dy = search_text->get_h() + 10;
+	y1 += dy;  h1 -= dy;
+	standalone_list->reposition_window(x1, y1, w1, h1);
+
 // 	if(standalone_attach)
 // 		standalone_attach->reposition_window(mwindow->theme->plugindialog_newattach_x,
 // 			mwindow->theme->plugindialog_newattach_y);
 // 	else
 // 		standalone_change->reposition_window(mwindow->theme->plugindialog_newattach_x,
 // 			mwindow->theme->plugindialog_newattach_y);
-
-
-
-
 
 	shared_title->reposition_window(mwindow->theme->plugindialog_shared_x,
 		mwindow->theme->plugindialog_shared_y - 20);
@@ -559,19 +559,12 @@ void PluginDialog::save_settings()
 
 PluginDialogNew::PluginDialogNew(PluginDialog *dialog,
 	ArrayList<BC_ListBoxItem*> *standalone_data,
-	int x,
-	int y,
-	int w,
-	int h)
- : BC_ListBox(x,
- 	y,
-	w,
-	h,
-	LISTBOX_TEXT,
-	standalone_data)
+	int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h, LISTBOX_TEXT, standalone_data)
 {
 	this->dialog = dialog;
 }
+
 PluginDialogNew::~PluginDialogNew() { }
 int PluginDialogNew::handle_event()
 {
@@ -753,6 +746,32 @@ int PluginDialogModules::selection_changed()
 	return 1;
 }
 
+void PluginDialog::load_plugin_list(int redraw)
+{
+	standalone_data.remove_all_objects();
+	const char *text = search_text->get_text();
+
+	for( int i=0; i<plugindb.total; ++i ) {
+		const char *title = plugindb.values[i]->title;
+		if( text && text[0] && !strstr(title, text) ) continue;
+		standalone_data.append(new BC_ListBoxItem(title));
+	}
+
+	if( redraw )
+		standalone_list->draw_items(1);
+}
+
+PluginDialogSearchText::PluginDialogSearchText(PluginDialog *dialog, int x, int y, int w)
+ : BC_TextBox(x, y, w, 1, "")
+{
+	this->dialog = dialog;
+}
+
+int PluginDialogSearchText::handle_event()
+{
+	dialog->load_plugin_list(1);
+	return 1;
+}
 
 PluginDialogSingle::PluginDialogSingle(PluginDialog *dialog, int x, int y)
  : BC_CheckBox(x,

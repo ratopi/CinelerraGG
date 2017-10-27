@@ -20,40 +20,39 @@
  */
 
 #include "bcdragwindow.h"
+#include "bcbitmap.h"
 #include "bcpixmap.h"
 
 #include "vframe.h"
 #include <unistd.h>
 
 BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
-	BC_Pixmap *pixmap, int icon_x, int icon_y)
- : BC_Popup(parent_window, icon_x, icon_y, pixmap->get_w(), pixmap->get_h(),
-	-1, 0, pixmap)
+	BC_Pixmap *pixmap, int center_x, int center_y)
+ : BC_Popup(parent_window,
+	center_x - pixmap->get_w() / 2, center_y - pixmap->get_h() / 2,
+	pixmap->get_w(), pixmap->get_h(), -1, 0,
+	prepare_pixmap(pixmap, parent_window))
 {
 	drag_pixmap = 0;
-	init_x = icon_x;
-	init_y = icon_y;
+	init_x = get_x();
+	init_y = get_y();
 	end_x = BC_INFINITY;
 	end_y = BC_INFINITY;
-	icon_offset_x = init_x - parent_window->get_abs_cursor_x(0);
-	icon_offset_y = init_y - parent_window->get_abs_cursor_y(0);
-//printf("BC_DragWindow::BC_DragWindow 1 %d %d\n", icon_offset_x, icon_offset_y);
 	do_animation = 1;
 }
 
 
 BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
-	VFrame *frame, int icon_x, int icon_y)
- : BC_Popup(parent_window, icon_x, icon_y, frame->get_w(), frame->get_h(),
-	-1, 0, prepare_frame(frame, parent_window))
+	VFrame *frame, int center_x, int center_y)
+ : BC_Popup(parent_window,
+	center_x - frame->get_w() / 2, center_y - frame->get_h() / 2,
+	frame->get_w(), frame->get_h(), -1, 0,
+	prepare_frame(frame, parent_window))
 {
-	init_x = icon_x;
-	init_y = icon_y;
+	init_x = get_x();
+	init_y = get_y();
 	end_x = BC_INFINITY;
 	end_y = BC_INFINITY;
-	icon_offset_x = init_x - parent_window->get_abs_cursor_x(0);
-	icon_offset_y = init_y - parent_window->get_abs_cursor_y(0);
-//printf("BC_DragWindow::BC_DragWindow 1 %d %d\n", icon_offset_x, icon_offset_y);
 	do_animation = 1;
 }
 
@@ -62,31 +61,13 @@ BC_DragWindow::~BC_DragWindow()
 	delete drag_pixmap;
 }
 
-int BC_DragWindow::get_init_x(BC_WindowBase *parent_window, int icon_x)
-{
-	int output_x, temp = 0;
-	Window tempwin;
-	XTranslateCoordinates(parent_window->top_level->display,
-		parent_window->win, parent_window->top_level->rootwin,
-		icon_x, temp, &output_x, &temp, &tempwin);
-	return output_x;
-}
-
-int BC_DragWindow::get_init_y(BC_WindowBase *parent_window, int icon_y)
-{
-	int output_y, temp = 0;
-	Window tempwin;
-	XTranslateCoordinates(parent_window->top_level->display,
-		parent_window->win, parent_window->top_level->rootwin,
-		temp, icon_y, &temp, &output_y, &tempwin);
-	return output_y;
-}
-
 int BC_DragWindow::cursor_motion_event()
 {
 	int cx, cy;
 	get_abs_cursor(cx, cy);
-	reposition_window(cx + icon_offset_x, cy + icon_offset_y, get_w(), get_h());
+	cx -= get_w() / 2;
+	cy -= get_h() / 2;
+	reposition_window(cx, cy, get_w(), get_h());
 	flush();
 	return 1;
 }
@@ -95,16 +76,6 @@ int BC_DragWindow::button_release_event()
 	cursor_motion_event();
 	sync();
 	return BC_WindowBase::button_release_event();
-}
-
-int BC_DragWindow::get_offset_x()
-{
-	return icon_offset_x;
-}
-
-int BC_DragWindow::get_offset_y()
-{
-	return icon_offset_y;
 }
 
 int BC_DragWindow::drag_failure_event()
@@ -134,15 +105,13 @@ void BC_DragWindow::set_animation(int value)
 
 BC_Pixmap *BC_DragWindow::prepare_frame(VFrame *frame, BC_WindowBase *parent_window)
 {
-	VFrame *temp_frame = 0;
+	VFrame *temp_frame = frame;
 	int tw = frame->get_w(), th = frame->get_h();
 
 	if( frame->get_color_model() != BC_RGBA8888 ) {
 		temp_frame = new VFrame(tw, th, BC_RGBA8888);
 		temp_frame->transfer_from(frame);
 	}
-	else
-		temp_frame = new VFrame(*frame);
 
 	int tx = tw/2, ty = th/2, tx1 = tx-1, ty1 = ty-1, tx2 = tx+2, ty2 = ty+2;
 	int bpp = BC_CModels::calculate_pixelsize(temp_frame->get_color_model());
@@ -155,8 +124,18 @@ BC_Pixmap *BC_DragWindow::prepare_frame(VFrame *frame, BC_WindowBase *parent_win
 	}
 	drag_pixmap = new BC_Pixmap(parent_window, temp_frame, PIXMAP_ALPHA);
 
-	delete temp_frame;
+	if( temp_frame != frame )
+		delete temp_frame;
 	return drag_pixmap;
 }
 
+BC_Pixmap *BC_DragWindow::prepare_pixmap(BC_Pixmap *pixmap, BC_WindowBase *parent_window)
+{
+	int pix_w = pixmap->get_w(), pix_h = pixmap->get_h();
+	BC_Bitmap bitmap(parent_window, pix_w, pix_h, BC_RGB888, 0);
+	Pixmap xpixmap = pixmap->get_pixmap();
+	VFrame frame(pix_w, pix_h, BC_RGB888);
+	bitmap.read_drawable(xpixmap, 0,0,&frame);
+	return prepare_frame(&frame, parent_window);
+}
 

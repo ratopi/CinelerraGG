@@ -526,10 +526,10 @@ void HULKTHEME::initialize()
 	setformat_w = get_image("setformat_bg")->get_w();
 	setformat_h = get_image("setformat_bg")->get_h();
 	setformat_x1 = 15;
-	setformat_x2 = 100;
+	setformat_x2 = 110;
 
 	setformat_x3 = 315;
-	setformat_x4 = 415;
+	setformat_x4 = 425;
 	setformat_y1 = 20;
 	setformat_y2 = 85;
 	setformat_y3 = 125;
@@ -699,7 +699,7 @@ void HULKTHEME::initialize()
 		"scope_toggle");
 
 	new_button("picture.png", editpanel_up, editpanel_hi, editpanel_dn, "picture");
-	new_button("histogram.png", editpanel_up, editpanel_hi, editpanel_dn, "histogram");
+	new_button("histogram_img.png", editpanel_up, editpanel_hi, editpanel_dn, "histogram_img");
 
 
 	new_button("copy.png", editpanel_up, editpanel_hi, editpanel_dn, "copy");

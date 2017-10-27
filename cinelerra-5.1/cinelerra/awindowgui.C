@@ -25,10 +25,11 @@
 #include "assets.h"
 #include "awindowgui.h"
 #include "awindow.h"
+#include "bccmodels.h"
 #include "bcsignals.h"
 #include "bchash.h"
 #include "cache.h"
-#include "bccmodels.h"
+#include "clip.h"
 #include "clippopup.h"
 #include "cursors.h"
 #include "cwindowgui.h"
@@ -613,9 +614,13 @@ void AWindowGUI::create_objects()
 	mwindow->theme->get_awindow_sizes(this);
 	load_defaults(mwindow->defaults);
 
-	add_subwindow(asset_list = new AWindowAssets(mwindow, this,
-		mwindow->theme->alist_x, mwindow->theme->alist_y,
-		mwindow->theme->alist_w, mwindow->theme->alist_h));
+	int x1 = mwindow->theme->alist_x, y1 = mwindow->theme->alist_y + 5;
+	int w1 = mwindow->theme->alist_w, h1 = mwindow->theme->alist_h;
+	search_text = new AWindowSearchText(mwindow, this, x1, y1);
+	search_text->create_objects();
+	int dy = search_text->get_h() + 10;
+	y1 += dy;  h1 -= dy;
+	add_subwindow(asset_list = new AWindowAssets(mwindow, this, x1, y1, w1, h1));
 
 	vicon_thread = new VIconThread(asset_list);
 	vicon_thread->start();
@@ -713,9 +718,12 @@ int AWindowGUI::translation_event()
 
 void AWindowGUI::reposition_objects()
 {
-	asset_list->reposition_window(
-		mwindow->theme->alist_x, mwindow->theme->alist_y,
-		mwindow->theme->alist_w, mwindow->theme->alist_h);
+	int x1 = mwindow->theme->alist_x, y1 = mwindow->theme->alist_y + 5;
+	int w1 = mwindow->theme->alist_w, h1 = mwindow->theme->alist_h;
+	search_text->reposition_window(x1, y1, w1);
+	int dy = search_text->get_h() + 10;
+	y1 += dy;  h1 -= dy;
+	asset_list->reposition_window(x1, y1, w1, h1);
 	divider->reposition_window(
 		mwindow->theme->adivider_x, mwindow->theme->adivider_y,
 		mwindow->theme->adivider_w, mwindow->theme->adivider_h);
@@ -1189,6 +1197,8 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 		if( folder < 0 ||
 		    (picon->indexable && picon->indexable->awindow_folder == folder) ||
 		    (picon->edl && picon->edl->local_session->awindow_folder == folder) ) {
+			const char *text = search_text->get_text();
+			if( text && text[0] && !strstr(picon->get_text(), text) ) continue;
 			BC_ListBoxItem *item2, *item1;
 			dst[0].append(item1 = picon);
 			if( picon->edl )
@@ -1198,8 +1208,8 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 				dst[1].append(item2 = new BC_ListBoxItem(picon->label->textstr));
 			else
 				dst[1].append(item2 = new BC_ListBoxItem(""));
-			item1->set_autoplace_text(1);
-			item2->set_autoplace_text(1);
+			item1->set_autoplace_text(1);  item1->set_autoplace_icon(1);
+			item2->set_autoplace_text(1);  item2->set_autoplace_icon(1);
 		}
 	}
 }
@@ -1760,16 +1770,63 @@ int AWindowAssets::focus_out_event()
 	return BC_ListBox::focus_out_event();
 }
 
+AWindowSearchTextBox::AWindowSearchTextBox(AWindowSearchText *search_text, int x, int y, int w)
+ : BC_TextBox(x, y, w, 1, "")
+{
+	this->search_text = search_text;
+}
 
+int AWindowSearchTextBox::handle_event()
+{
+	return search_text->handle_event();
+}
 
+AWindowSearchText::AWindowSearchText(MWindow *mwindow, AWindowGUI *gui, int x, int y)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	this->x = x;
+	this->y = y;
+}
 
+void AWindowSearchText::create_objects()
+{
+	int x1 = x, y1 = y, margin = 10;
+	gui->add_subwindow(text_title = new BC_Title(x1, y1, _("Search:")));
+	x1 += text_title->get_w() + margin;
+	int w1 = gui->get_w() - x1 - 2*margin;
+	gui->add_subwindow(text_box = new AWindowSearchTextBox(this, x1, y1, w1));
+}
 
+int AWindowSearchText::handle_event()
+{
+	gui->async_update_assets();
+	return 1;
+}
 
+int AWindowSearchText::get_w()
+{
+	return text_box->get_w() + text_title->get_w() + 10;
+}
 
+int AWindowSearchText::get_h()
+{
+	return bmax(text_box->get_h(),text_title->get_h());
+}
 
+void AWindowSearchText::reposition_window(int x, int y, int w)
+{
+	int x1 = x, y1 = y, margin = 10;
+	text_title->reposition_window(x1, y1);
+	x1 += text_title->get_w() + margin;
+	int w1 = gui->get_w() - x1 - 2*margin;
+	text_box->reposition_window(x1, y1, w1);
+}
 
-
-
+const char *AWindowSearchText::get_text()
+{
+	return text_box->get_text();
+}
 
 AWindowNewFolder::AWindowNewFolder(MWindow *mwindow, AWindowGUI *gui, int x, int y)
  : BC_Button(x, y, mwindow->theme->newbin_data)
