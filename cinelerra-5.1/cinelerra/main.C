@@ -18,6 +18,7 @@
  *
  */
 
+#include "aboutprefs.h"
 #include "arraylist.h"
 #include "batchrender.h"
 #include "bcsignals.h"
@@ -265,7 +266,6 @@ int main(int argc, char *argv[])
 		operation == DO_USAGE ||
 		operation == DO_BATCHRENDER) {
 
-		fprintf(stderr, PROGRAM_NAME " " CINELERRA_VERSION);
 #ifndef REPOMAINTXT
 #define REPOMAINTXT ""
 #endif
@@ -275,13 +275,13 @@ int main(int argc, char *argv[])
 #ifndef COPYRIGHTTEXT2
 #define COPYRIGHTTEXT2 ""
 #endif
-#ifndef COMPILEDATE
-#define COMPILEDATE ""
-#endif
-		fprintf(stderr, REPOMAINTXT COPYRIGHTTEXT1 COPYRIGHTTEXT2 COMPILEDATE
-			PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
+		fprintf(stderr, "%s %s - %s\n%s",
+			PROGRAM_NAME,CINELERRA_VERSION, AboutPrefs::build_timestamp,
+			REPOMAINTXT COPYRIGHTTEXT1 COPYRIGHTTEXT2);
+		fprintf(stderr, "%s is free software, covered by the GNU General Public License,\n"
 			"and you are welcome to change it and/or distribute copies of it under\n"
-			"certain conditions. There is absolutely no warranty for " PROGRAM_NAME ".\n\n");
+			"certain conditions. There is absolutely no warranty for %s.\n\n",
+			PROGRAM_NAME, PROGRAM_NAME);
 	}
 
 	switch(operation)

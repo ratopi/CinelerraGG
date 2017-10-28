@@ -297,25 +297,25 @@ void AssetPicon::create_objects()
 				else {
 					gui->lock_window("AssetPicon::create_objects 2");
 					icon = gui->video_icon;
-					icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];
+					icon_vframe = gui->video_vframe;
 				}
 			}
 			else {
 				icon = gui->video_icon;
-				icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];
+				icon_vframe = gui->video_vframe;
 			}
 		}
 		else
 		if( asset->audio_data ) {
 			icon = gui->audio_icon;
-			icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_SOUND];
+			icon_vframe = gui->audio_vframe;
 		}
 
 	}
 	else
 	if( indexable && !indexable->is_asset ) {
 		icon = gui->video_icon;
-		icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];
+		icon_vframe = gui->video_vframe;
 	}
 	else
 	if( edl ) {
@@ -373,9 +373,7 @@ void AssetPicon::create_objects()
 			      mwindow->edl->session->frames_per_foot);
 		set_text(name);
 		icon = gui->label_icon;
-		icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_LABEL];
-		set_icon(icon);
-		set_icon_vframe(icon_vframe);
+		icon_vframe = gui->label_vframe;
 	}
 	if( !icon ) {
 		icon = gui->file_icon;
@@ -616,9 +614,9 @@ void AWindowGUI::create_objects()
 	mwindow->theme->get_awindow_sizes(this);
 	load_defaults(mwindow->defaults);
 
-	int x1 = mwindow->theme->alist_x, y1 = mwindow->theme->alist_y + 5;
+	int x1 = mwindow->theme->alist_x, y1 = mwindow->theme->alist_y;
 	int w1 = mwindow->theme->alist_w, h1 = mwindow->theme->alist_h;
-	search_text = new AWindowSearchText(mwindow, this, x1, y1);
+	search_text = new AWindowSearchText(mwindow, this, x1, y1+5);
 	search_text->create_objects();
 	int dy = search_text->get_h() + 10;
 	y1 += dy;  h1 -= dy;
@@ -720,9 +718,9 @@ int AWindowGUI::translation_event()
 
 void AWindowGUI::reposition_objects()
 {
-	int x1 = mwindow->theme->alist_x, y1 = mwindow->theme->alist_y + 5;
+	int x1 = mwindow->theme->alist_x, y1 = mwindow->theme->alist_y;
 	int w1 = mwindow->theme->alist_w, h1 = mwindow->theme->alist_h;
-	search_text->reposition_window(x1, y1, w1);
+	search_text->reposition_window(x1, y1+5, w1);
 	int dy = search_text->get_h() + 10;
 	y1 += dy;  h1 -= dy;
 	asset_list->reposition_window(x1, y1, w1, h1);
@@ -837,6 +835,7 @@ void AWindowRemovePlugin::handle_close_event(int result)
 {
 	if( !result ) {
 		printf(_("remove %s\n"), plugin->path);
+		awindow->gui->lock_window("AWindowRemovePlugin::handle_close_event");
 		ArrayList<BC_ListBoxItem*> *folder =
 			plugin->audio ? plugin->transition ?
 				&awindow->gui->atransitions :
@@ -846,14 +845,14 @@ void AWindowRemovePlugin::handle_close_event(int result)
 				&awindow->gui->veffects :
 			0;
 		if( folder ) remove_plugin(plugin, *folder);
+		MWindow *mwindow = awindow->mwindow;
+		awindow->gui->unlock_window();
 		char plugin_path[BCTEXTLEN];
 		strcpy(plugin_path, plugin->path);
-		MWindow *mwindow = awindow->mwindow;
 		mwindow->plugindb->remove(plugin);
 		remove(plugin_path);
 		char index_path[BCTEXTLEN];
-		snprintf(index_path, sizeof(index_path), "%s/%s",
-			mwindow->preferences->plugin_dir, PLUGIN_FILE);
+		mwindow->create_defaults_path(index_path, PLUGIN_FILE);
 		remove(index_path);
 		char picon_path[BCTEXTLEN];
 		FileSystem fs;
