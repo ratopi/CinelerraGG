@@ -402,9 +402,9 @@ void BC_TextBox::set_suggestions(ArrayList<char*> *suggestions, int column)
 // Show the highlighted text
 		if( suggestions->size() == 1 ) {
 			highlight_letter1 = wtext_update();
-			text_update(wtext,wlen, text,tsize);
+			int len = text_update(wtext,wlen, text,tsize);
 			char *current_suggestion = suggestions->get(0);
-			int col = highlight_letter1 - suggestion_column;
+			int col = len - suggestion_column;
 			if( col < 0 ) col = 0;
 			char *cur = current_suggestion + col;
 			tstrcat(cur);
@@ -2078,6 +2078,7 @@ void BC_TextBox::paste_selection(int clipboard_num)
 		len = BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
 			cstring,len, (char *)wstring,(len+1)*sizeof(wchar_t)) / sizeof(wchar_t);
 		insert_text(wstring, len);
+		last_keypress = 0;
 	}
 }
 

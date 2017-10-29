@@ -29,6 +29,7 @@
 #include "bcsignals.h"
 #include "bchash.h"
 #include "cache.h"
+#include "cstrdup.h"
 #include "clip.h"
 #include "clippopup.h"
 #include "cursors.h"
@@ -1196,7 +1197,7 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 		    (picon->indexable && picon->indexable->awindow_folder == folder) ||
 		    (picon->edl && picon->edl->local_session->awindow_folder == folder) ) {
 			const char *text = search_text->get_text();
-			int hidden = text && text[0] && !strcasestr(picon->get_text(), text);
+			int hidden = text && text[0] && !bstrcasestr(picon->get_text(), text);
 			if( picon->vicon ) picon->vicon->hidden = hidden;
 			if( hidden ) continue;
 			BC_ListBoxItem *item2, *item1;

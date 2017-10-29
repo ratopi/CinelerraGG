@@ -20,6 +20,7 @@
  */
 
 #include "condition.h"
+#include "cstrdup.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
@@ -753,7 +754,7 @@ void PluginDialog::load_plugin_list(int redraw)
 
 	for( int i=0; i<plugindb.total; ++i ) {
 		const char *title = plugindb.values[i]->title;
-		if( text && text[0] && !strcasestr(title, text) ) continue;
+		if( text && text[0] && !bstrcasestr(title, text) ) continue;
 		standalone_data.append(new PluginDialogListItem(title, i));
 	}
 

@@ -60,7 +60,7 @@ static inline char *msgqual(const char *msgqual,const char *msgid)
   *cp++ = '#';
   for( const char *bp=msgid; *bp!=0; *cp++=*bp++ );
   *cp = 0;
-  if( (cp=gettext(msg)) == msg ) cp = (char*)msgid;
+  if( (cp=gettext(msg)) == msg ) cp = gettext(msgid);
   return cp;
 }
 

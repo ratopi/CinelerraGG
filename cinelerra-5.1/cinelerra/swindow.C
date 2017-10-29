@@ -743,7 +743,7 @@ void ScriptEntry::set_text(char *text, int isz)
 
 int ScriptEntry::handle_event()
 {
-	if( sw_gui->get_button_down() &&
+	if( ttext && sw_gui->get_button_down() &&
 	    sw_gui->get_buttonpress() == 1 &&
 	    sw_gui->get_triple_click() ) {
 		int ibeam = get_ibeam_letter(), row = 0;
@@ -795,6 +795,8 @@ void SWindowGUI::load_script()
 		return;
 	}
 	load_script(fp);
+	script_text_no = -1;
+	load_selection(script_entry_no=0, 0);
 }
 
 void SWindowGUI::load_script(FILE *fp)
@@ -816,7 +818,6 @@ void SWindowGUI::load_script(FILE *fp)
 	script_scroll->update_length(script.size(), script_entry_no, hw, 0);
 	script_position->update(script_entry_no);
 	script_position->set_boundaries((int64_t)0, (int64_t)script.size()-1);
-
 	fclose(fp);
 }
 
@@ -835,9 +836,11 @@ void SWindowGUI::save_spumux_data()
 	for( Track *track=tracks->first; track; track=track->next ) {
 		if( track->data_type != TRACK_SUBTITLE ) continue;
 		if( !track->record ) continue;
-		char *cp = track_title;
-		for( char *bp=track->title; *bp; ++bp,++cp )
-			*cp = !isalnum(*bp) ? '_' : *bp;
+		char *cp = track_title, *ep = cp+sizeof(track_title)-6;
+		for( const char *bp=track->title; cp<ep && *bp!=0; ) {
+			int b = butf8(bp), c = !iswalnum(b) ? '_' : b;
+			butf8(c, cp);
+		}
 		*cp = 0;
 		snprintf(ext,len,"-%s.udvd",track_title);
 		FILE *fp = fopen(filename, "w");
