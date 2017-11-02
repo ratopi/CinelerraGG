@@ -33,7 +33,6 @@
 BC_Theme::BC_Theme()
 {
 	last_image = 0;
-	images_dirty = 0;
 }
 
 BC_Theme::~BC_Theme()
@@ -397,6 +396,7 @@ void BC_Theme::set_data(unsigned char *ptr)
 	int hdr_sz = *(int*)ptr - sizeof(int);
 	unsigned char *cp = ptr + sizeof(int);
 	unsigned char *dp = cp + hdr_sz;
+	int start_item = images.size();
 
 	while( cp < dp ) {
 		char *nm = (char *)cp;
@@ -408,7 +408,9 @@ void BC_Theme::set_data(unsigned char *ptr)
 		cp += sizeof(unsigned);
 	}
 
-	images_dirty = 1;
+	int items = images.size() - start_item;
+	data_items.append(items);
+	qsort(&images[start_item], items, sizeof(images[0]), images_cmpr);
 }
 
 int BC_Theme::images_cmpr(const void *ap, const void *bp)
@@ -419,29 +421,29 @@ int BC_Theme::images_cmpr(const void *ap, const void *bp)
 
 unsigned char* BC_Theme::get_image_data(const char *name, int log_errs)
 {
-	if( images_dirty ) {
-		images_dirty = 0;
-		qsort(&images[0], images.size(), sizeof(images[0]), images_cmpr);
-		last_image = 0;
-	}
-
 // Image is the same as the last one
 	if( last_image && !strcasecmp(last_image->name, name) )
 		return last_image->data;
 
-// Search for image anew.
-        int l = -1, r = images.size();
-	int m = 0, n = -1;
-        while( r-l > 1 ) {
-                m = (l + r) / 2;
-                image_item *item = images[m];
-                if( !(n=strcasecmp(name, item->name)) ) {
-			item->used = 1;
-			last_image = item;
-			return item->data;
+// look forwards thru data sets for name
+	int start_item = 0;
+	for( int i=0,n=data_items.size(); i<n; ++i ) {
+		int end_item = start_item + data_items[i];
+		int r = end_item, l = start_item-1;
+// binary search for image
+		int m = 0, v = -1;
+		while( r-l > 1 ) {
+			m = (l + r) / 2;
+			image_item *item = images[m];
+			if( !(v=strcasecmp(name, item->name)) ) {
+				item->used = 1;
+				last_image = item;
+				return item->data;
+			}
+			if( v > 0 ) l = m; else r = m;
 		}
-                if( n > 0 ) l = m; else r = m;
-        }
+		start_item = end_item;
+	}
 
 	if( log_errs )
 		fprintf(stderr, _("Theme::get_image: %s not found.\n"), name);

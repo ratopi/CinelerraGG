@@ -1091,7 +1091,6 @@ void BlondCVTheme::build_icons()
 	new_image("cwindow_icon", "heroine_icon.png");
 	new_image("awindow_icon", "heroine_icon.png");
 	new_image("record_icon", "heroine_icon.png");
-	new_image("clip_icon", "clip_icon.png");
 }
 
 

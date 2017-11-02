@@ -130,8 +130,9 @@ private:
 			name = nm;  data = dp;  used = 0;
 		}
 	} *last_image;
-	int images_dirty;
+
 	ArrayList<image_item *> images;
+	ArrayList<int> data_items;
 
 	static int images_cmpr(const void *ap, const void *bp);
 };

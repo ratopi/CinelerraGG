@@ -322,7 +322,7 @@ void AssetPicon::create_objects()
 	if( edl ) {
 		set_text(strcpy(name, edl->local_session->clip_title));
 		icon = gui->clip_icon;
-		icon_vframe = mwindow->theme->get_image("clip_icon");
+		icon_vframe = gui->clip_vframe;
 	}
 	else
 	if( plugin ) {
