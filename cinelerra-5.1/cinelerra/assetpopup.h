@@ -54,6 +54,7 @@ public:
 	AssetPopupBuildIndex *index;
 	AssetPopupView *view;
 	AssetPopupViewWindow *view_window;
+	AssetPopupMixer *mixer;
 	AWindowListFormat *format;
 };
 
@@ -113,6 +114,18 @@ class AssetPopupViewWindow : public BC_MenuItem
 public:
 	AssetPopupViewWindow(MWindow *mwindow, AssetPopup *popup);
 	~AssetPopupViewWindow();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AssetPopup *popup;
+};
+
+class AssetPopupMixer : public BC_MenuItem
+{
+public:
+	AssetPopupMixer(MWindow *mwindow, AssetPopup *popup);
+	~AssetPopupMixer();
 
 	int handle_event();
 

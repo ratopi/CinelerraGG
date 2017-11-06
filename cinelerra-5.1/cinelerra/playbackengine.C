@@ -425,3 +425,68 @@ void PlaybackEngine::stop_playback()
 	renderengine_lock->unlock();
 }
 
+
+void PlaybackEngine::issue_command(EDL *edl, int command, int wait_tracking,
+		int use_inout, int update_refresh, int toggle_audio)
+{
+//printf("PlayTransport::handle_transport 1 %d\n", command);
+// Stop requires transferring the output buffer to a refresh buffer.
+	int do_stop = 0, resume = 0;
+	int prev_command = this->command->command;
+	int prev_single_frame = this->command->single_frame();
+	int prev_audio = this->command->audio_toggle ?
+		 !prev_single_frame : prev_single_frame;
+	int cur_single_frame = TransportCommand::single_frame(command);
+	int cur_audio = toggle_audio ?
+		 !cur_single_frame : cur_single_frame;
+
+// Dispatch command
+	switch(command) {
+	case FAST_REWIND:	// Commands that play back
+	case NORMAL_REWIND:
+	case SLOW_REWIND:
+	case SINGLE_FRAME_REWIND:
+	case SINGLE_FRAME_FWD:
+	case SLOW_FWD:
+	case NORMAL_FWD:
+	case FAST_FWD:
+		if( !prev_single_frame &&
+		    prev_command == command &&
+		    cur_audio == prev_audio ) {
+// Same direction pressed twice and no change in audio state,  Stop
+			do_stop = 1;
+			break;
+		}
+// Resume or change direction
+		switch( prev_command ) {
+		default:
+			que->send_command(STOP, CHANGE_NONE, 0, 0);
+			interrupt_playback(wait_tracking);
+			resume = 1;
+// fall through
+		case STOP:
+		case COMMAND_NONE:
+		case SINGLE_FRAME_FWD:
+		case SINGLE_FRAME_REWIND:
+// Start from scratch
+			que->send_command(command, CHANGE_NONE, edl,
+				1, resume, use_inout, toggle_audio,
+				mwindow->preferences->forward_render_displacement);
+			break;
+		}
+		break;
+
+// Commands that stop
+	case STOP:
+	case REWIND:
+	case GOTO_END:
+		do_stop = 1;
+		break;
+	}
+
+	if( do_stop ) {
+		que->send_command(STOP, CHANGE_NONE, 0, 0);
+		interrupt_playback(wait_tracking);
+	}
+}
+

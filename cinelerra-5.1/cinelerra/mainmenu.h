@@ -43,6 +43,7 @@ class KeyframeCurveTypeMenu;
 class KeyframeCurveTypeItem;
 class SplitX;
 class SplitY;
+class MixerViewer;
 
 
 #include "arraylist.h"
@@ -146,6 +147,7 @@ public:
 	ShowLWindow *show_lwindow;
 	SplitX *split_x;
 	SplitY *split_y;
+	MixerViewer *mixer_viewer;
 };
 
 // ========================================= edit
@@ -683,6 +685,14 @@ class SplitY : public BC_MenuItem
 {
 public:
 	SplitY(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class MixerViewer : public BC_MenuItem
+{
+public:
+	MixerViewer(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

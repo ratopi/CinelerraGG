@@ -293,7 +293,7 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 			}
 			else
 			{
-				max_position = Units::to_int64(nested_edl->tracks->total_playable_length() *
+				max_position = Units::to_int64(nested_edl->tracks->total_length() *
 					frame_rate - 1);
 			}
 

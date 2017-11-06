@@ -491,15 +491,18 @@ double Tracks::total_playable_length()
 	double total = 0;
 	for(Track *current = first; current; current = NEXT)
 	{
-		double length = current->get_length();
-		if(length > total) total = length;
+		if( current->play )
+		{
+			double length = current->get_length();
+			if(length > total) total = length;
+		}
 	}
 	return total;
 }
 
 double Tracks::total_recordable_length()
 {
-	double total = 0;
+	double total = -1;
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->record)
@@ -516,7 +519,8 @@ double Tracks::total_length()
 	double total = 0;
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->get_length() > total) total = current->get_length();
+		double length = current->get_length();
+		if(length > total) total = length;
 	}
 	return total;
 }

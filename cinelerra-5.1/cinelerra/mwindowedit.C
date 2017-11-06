@@ -1092,7 +1092,7 @@ void MWindow::overwrite(EDL *source)
 	}
 
 	source->copy(src_start, src_start + overwrite_len,
-		1, 0, 0, &file, "", 1);
+		0, 0, 0, &file, "", 1);
 
 // HACK around paste_edl get_start/endselection on its own
 // so we need to clear only when not using both io points
@@ -1330,7 +1330,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 	if( !new_edls->total ) return 0;
 
 //PRINT_TRACE
-//	double original_length = edl->tracks->total_playable_length();
+//	double original_length = edl->tracks->total_length();
 //	double original_preview_end = edl->local_session->preview_end;
 //PRINT_TRACE
 
@@ -1344,6 +1344,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 		edl = new EDL;
 		edl->create_objects();
 		edl->copy_session(new_edls->values[0]);
+		edl->copy_mixers(new_edls->values[0]);
 		gui->mainmenu->update_toggles(0);
 		gui->unlock_window();
 		gwindow->gui->update_toggles(1);
@@ -1605,7 +1606,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 // Fix preview range
 //	if( EQUIV(original_length, original_preview_end) )
 //	{
-//		edl->local_session->preview_end = edl->tracks->total_playable_length();
+//		edl->local_session->preview_end = edl->tracks->total_length();
 //	}
 
 // Start examining next batch of index files

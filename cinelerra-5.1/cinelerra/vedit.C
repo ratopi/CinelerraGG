@@ -147,7 +147,7 @@ int64_t VEdit::get_source_end(int64_t default_)
 
 	if(nested_edl)
 	{
-		return (int64_t)(nested_edl->tracks->total_playable_length() *
+		return (int64_t)(nested_edl->tracks->total_length() *
 			edl->session->frame_rate + 0.5);
 	}
 

@@ -90,7 +90,7 @@ RenderEngine::~RenderEngine()
 	delete interrupt_lock;
 	delete first_frame_lock;
 	delete config;
-	edl->Garbage::remove_user();
+	if( edl ) edl->Garbage::remove_user();
 }
 
 EDL* RenderEngine::get_edl()

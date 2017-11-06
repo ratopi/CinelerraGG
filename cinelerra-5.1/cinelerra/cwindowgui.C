@@ -829,7 +829,7 @@ int CWindowSlider::handle_event()
 
 void CWindowSlider::set_position()
 {
-	double new_length = mwindow->edl->tracks->total_playable_length();
+	double new_length = mwindow->edl->tracks->total_length();
 // 	if(mwindow->edl->local_session->preview_end <= 0 ||
 // 		mwindow->edl->local_session->preview_end > new_length)
 // 		mwindow->edl->local_session->preview_end = new_length;

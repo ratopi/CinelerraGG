@@ -522,8 +522,8 @@ double TimeBar::get_edl_length()
 	edl_length = 0;
 
 	if( get_edl() ) {
-//printf("TimeBar::get_edl_length 1 %f\n", get_edl()->tracks->total_playable_length());
-		edl_length = get_edl()->tracks->total_playable_length();
+//printf("TimeBar::get_edl_length 1 %f\n", get_edl()->tracks->total_length());
+		edl_length = get_edl()->tracks->total_length();
 	}
 
 //printf("TimeBar::get_edl_length 2\n");

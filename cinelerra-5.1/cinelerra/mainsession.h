@@ -173,7 +173,8 @@ public:
 	int cwindow_fullscreen;
 	int rwindow_fullscreen;
 	int vwindow_fullscreen;
-
+	int zwindow_fullscreen;
+	int selected_zwindow;
 
 	double actual_frame_rate;
 

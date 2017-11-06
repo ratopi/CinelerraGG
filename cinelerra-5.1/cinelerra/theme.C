@@ -238,6 +238,8 @@ void Theme::initialize()
 	new_image("awindow_icon", "heroine_icon.png");
 	new_image("record_icon", "heroine_icon.png");
 	new_image("clip_icon", "clip_icon.png");
+	new_image_set("mixpatch_data", 5, "mixpatch_up.png", "mixpatch_hi.png",
+		"mixpatch_checked.png", "mixpatch_dn.png", "mixpatch_checkedhi.png");
 
 
 	new_image("aeffect_icon", "aeffect_icon.png");
@@ -951,8 +953,8 @@ void Theme::get_vwindow_sizes(VWindowGUI *gui)
 			widget_border;
 
 		vdivision_x = 280;
-		vtime_x = vdivision_x;
-		vtime_y = vedit_y + 20;
+		vtime_x = vedit_x + 20; //vdivision_x;
+		vtime_y = vedit_y + 30; //+ 20;
 	}
 	else
 	{

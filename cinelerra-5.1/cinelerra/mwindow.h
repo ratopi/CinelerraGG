@@ -95,6 +95,7 @@
 #include "videowindow.inc"
 #include "vpatchgui.h"
 #include "vwindow.inc"
+#include "zwindow.inc"
 #include "wwindow.inc"
 #include "wavecache.inc"
 
@@ -203,8 +204,15 @@ public:
 	void dump_plugindb(FILE *fp);
 	void stop_playback(int wait=0);
 
-
-
+	void queue_mixers(EDL *edl, int command, int wait_tracking,
+		int use_inout, int update_refresh, int toggle_audio);
+	void stop_mixers();
+	ZWindow *get_mixer(Mixer *&mixer);
+	void del_mixer(ZWindow *zwindow);
+	int mixer_track_active(Track *track);
+	void update_mixer_tracks();
+	void start_mixer();
+	int select_zwindow(ZWindow *zwindow);
 
 	int load_filenames(ArrayList<char*> *filenames,
 		int load_mode = LOADMODE_REPLACE,
@@ -494,6 +502,7 @@ public:
 	FloatAuto* get_float_auto(PatchGUI *patch,int idx);
 	IntAuto* get_int_auto(PatchGUI *patch,int idx);
 	PanAuto* get_pan_auto(PatchGUI *patch);
+	PatchGUI *get_patchgui(Track *track);
 
 	int modify_edithandles();
 	int modify_pluginhandles();
@@ -600,6 +609,9 @@ public:
 // Viewer
 	Mutex *vwindows_lock;
 	ArrayList<VWindow*> vwindows;
+// Mixer
+	Mutex *zwindows_lock;
+	ArrayList<ZWindow*> zwindows;
 // Asset manager
 	AWindow *awindow;
 // Automation window

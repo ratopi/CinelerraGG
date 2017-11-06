@@ -40,6 +40,7 @@ class DrawPatch;
 class MutePatch;
 class ExpandPatch;
 class NudgePatch;
+class MixPatch;
 
 class PatchGUI
 {
@@ -69,7 +70,7 @@ public:
 // Used by update routines so non-existent track doesn't need to be dereferenced
 // to know it doesn't match the current EDL.
 	int track_id;
-	int data_type;
+	int data_type, mixer;
 	int x, y;
 // Don't synchronize the fader if this is true.
 	int change_source;
@@ -83,6 +84,7 @@ public:
 	MutePatch *mute;
 	ExpandPatch *expand;
 	NudgePatch *nudge;
+	MixPatch *mix;
 	char string_return[BCTEXTLEN];
 };
 
@@ -176,6 +178,18 @@ public:
 	void update();
 	void set_value(int64_t value);
 	int64_t calculate_increment();
+
+	MWindow *mwindow;
+	PatchGUI *patch;
+};
+
+class MixPatch : public BC_Toggle
+{
+public:
+	MixPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	~MixPatch();
+	int handle_event();
+	void update(int v);
 
 	MWindow *mwindow;
 	PatchGUI *patch;

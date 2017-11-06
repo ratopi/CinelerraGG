@@ -50,6 +50,7 @@
 #include "theme.inc"
 #include "tracks.inc"
 #include "vedit.inc"
+#include "zwindow.h"
 
 // Loading and saving are built on load and copy except for automation:
 
@@ -110,6 +111,7 @@ public:
 	int copy_all(EDL *edl);
 	void copy_assets(EDL *edl);
 	void copy_clips(EDL *edl);
+	void copy_mixers(EDL *edl);
 // Copy pan and fade settings from edl
 	void synchronize_params(EDL *edl);
 // Determine if the positions are equivalent if they're within half a frame
@@ -245,6 +247,7 @@ public:
 	ArrayList<EDL*> vwindow_edls;
 // is the vwindow_edl shared and therefore should not be deleted in destructor
 //	int vwindow_edl_shared;
+	Mixers mixers;
 
 // Media files
 // Shared between all EDLs

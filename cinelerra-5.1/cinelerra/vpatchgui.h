@@ -138,5 +138,11 @@ public:
 	int handle_event();
 };
 
+class VMixPatch : public MixPatch
+{
+public:
+	VMixPatch(MWindow *mwindow, VPatchGUI *patch, int x, int y);
+	~VMixPatch();
+};
 
 #endif

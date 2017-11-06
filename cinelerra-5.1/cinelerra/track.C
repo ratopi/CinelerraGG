@@ -66,6 +66,7 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	track_w = edl->session->output_w;
 	track_h = edl->session->output_h;
 	id = EDL::next_id();
+	mixer_id = -1;
 }
 
 Track::~Track()
@@ -87,6 +88,7 @@ int Track::copy_settings(Track *track)
 	this->gang = track->gang;
 	this->record = track->record;
 	this->nudge = track->nudge;
+	this->mixer_id = track->mixer_id;
 	this->play = track->play;
 	this->track_w = track->track_w;
 	this->track_h = track->track_h;
@@ -321,6 +323,7 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 	gang = file->tag.get_property("GANG", gang);
 	draw = file->tag.get_property("DRAW", draw);
 	nudge = file->tag.get_property("NUDGE", nudge);
+	mixer_id = file->tag.get_property("MIXER_ID", mixer_id);
 	expand_view = file->tag.get_property("EXPAND", expand_view);
 	track_w = file->tag.get_property("TRACK_W", track_w);
 	track_h = file->tag.get_property("TRACK_H", track_h);
@@ -1068,6 +1071,7 @@ int Track::copy(double start,
 	file->tag.set_title("TRACK");
 	file->tag.set_property("RECORD", record);
 	file->tag.set_property("NUDGE", nudge);
+	file->tag.set_property("MIXER_ID", mixer_id);
 	file->tag.set_property("PLAY", play);
 	file->tag.set_property("GANG", gang);
 	file->tag.set_property("DRAW", draw);
@@ -1864,5 +1868,16 @@ int Track::plugin_exists(Plugin *plugin)
 
 
 	return 0;
+}
+
+int Track::get_mixer_id()
+{
+	if( mixer_id < 0 ) {
+		int v = 0;
+		for( Track *track=tracks->first; track!=0; track=track->next )
+			if( track->mixer_id > v ) v = track->mixer_id;
+		mixer_id = v + 1;
+	}
+	return mixer_id;
 }
 

@@ -190,8 +190,10 @@ GWindowColorButton::GWindowColorButton(GWindowToggle *auto_toggle, int x, int y,
 {
 	this->auto_toggle = auto_toggle;
 	this->color = 0;
-	for( int i=0; i<3; ++i )
+	for( int i=0; i<3; ++i ) {
 		vframes[i] = new VFrame(w, w, BC_RGBA8888, -1);
+		vframes[i]->clear_frame();
+	}
 }
 
 GWindowColorButton::~GWindowColorButton()

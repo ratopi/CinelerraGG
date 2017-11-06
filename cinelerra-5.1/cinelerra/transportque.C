@@ -184,6 +184,9 @@ void TransportCommand::set_playback_range(EDL *edl,
 		end_position = end;
 	}
 	else {
+// starting play at or past end, play to end of media (for mixers)
+		if( start >= length )
+			length = edl->tracks->total_length();
 		switch( command ) {
 		case SLOW_FWD:
 		case FAST_FWD:
@@ -251,8 +254,11 @@ void TransportCommand::playback_range_inout()
 
 	if(edl->local_session->outpoint_valid())
 		end_position = edl->local_session->get_outpoint();
-	else
+	else {
 		end_position = edl->tracks->total_playable_length();
+		if( start_position >= end_position )
+			end_position = edl->tracks->total_length();
+	}
 }
 
 void TransportCommand::playback_range_project()

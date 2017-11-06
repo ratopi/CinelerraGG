@@ -2236,6 +2236,23 @@ void MWindowGUI::draw_trackmovement()
 }
 
 
+void MWindowGUI::update_mixers(Track *track, int v)
+{
+	for( int i=0; i<TOTAL_PANES;  ++i ) {
+		if( !pane[i] ) continue;
+		PatchBay *patchbay = pane[i]->patchbay;
+		if( !patchbay ) continue;
+		for( int j=0; j<patchbay->patches.total; ++j ) {
+			PatchGUI *patchgui = patchbay->patches.values[j];
+			if( !patchgui->mix ) continue;
+			if( !track || patchgui->track == track ) {
+				patchgui->mix->update(v>=0 ? v :
+					mwindow->mixer_track_active(patchgui->track));
+			}
+		}
+	}
+}
+
 PaneButton::PaneButton(MWindow *mwindow, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("pane"))
 {

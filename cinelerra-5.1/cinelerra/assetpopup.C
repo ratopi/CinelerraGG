@@ -44,6 +44,7 @@
 #include "tracks.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
+#include "zwindow.h"
 
 
 AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
@@ -67,6 +68,7 @@ void AssetPopup::create_objects()
 	add_item(index = new AssetPopupBuildIndex(mwindow, this));
 	add_item(view = new AssetPopupView(mwindow, this));
 	add_item(view_window = new AssetPopupViewWindow(mwindow, this));
+	add_item(mixer = new AssetPopupMixer(mwindow, this));
 	add_item(new AssetPopupPaste(mwindow, this));
 	add_item(menu_item = new BC_MenuItem(_("Match...")));
 	menu_item->add_submenu(submenu = new BC_SubMenu());
@@ -256,6 +258,44 @@ int AssetPopupViewWindow::handle_event()
 	return 1;
 }
 
+AssetPopupMixer::AssetPopupMixer(MWindow *mwindow, AssetPopup *popup)
+ : BC_MenuItem(_("Open Mixers"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+
+AssetPopupMixer::~AssetPopupMixer()
+{
+}
+
+int AssetPopupMixer::handle_event()
+{
+	mwindow->select_zwindow(0);
+	for( int i=0; i<mwindow->session->drag_assets->total; ++i ) {
+		Indexable *indexable = mwindow->session->drag_assets->values[i];
+		ArrayList<Indexable*> new_assets;
+		new_assets.append(indexable);
+		Track *track = mwindow->edl->tracks->last;
+		mwindow->load_assets(&new_assets, -1, LOADMODE_NEW_TRACKS, 0, 0, 0, 0, 0, 0);
+		track = !track ? mwindow->edl->tracks->first : track->next;
+		Mixer *mixer = 0;
+		ZWindow *zwindow = mwindow->get_mixer(mixer);
+		while( track ) {
+			track->play = track->record = 0;
+			mixer->mixer_ids.append(track->get_mixer_id());
+			track = track->next;
+		}
+		char *path = indexable->path;
+		char *tp = strrchr(path, '/');
+		if( !tp ) tp = path; else ++tp;
+		zwindow->set_title(tp);
+		zwindow->start();
+	}
+        mwindow->queue_mixers(mwindow->edl,CURRENT_FRAME,0,0,1,0);
+	mwindow->resync_guis();
+	return 1;
+}
 
 AssetPopupPaste::AssetPopupPaste(MWindow *mwindow, AssetPopup *popup)
  : BC_MenuItem(_("Paste"))

@@ -105,6 +105,7 @@
 #include "theme.h"
 #include "threadloader.h"
 #include "timebar.h"
+#include "timelinepane.h"
 #include "tipwindow.h"
 #include "trackcanvas.h"
 #include "track.h"
@@ -124,6 +125,8 @@
 #include "wavecache.h"
 #include "wwindow.h"
 #include "zoombar.h"
+#include "zwindow.h"
+#include "zwindowgui.h"
 #include "exportedl.h"
 
 #include "defaultformats.h"
@@ -182,6 +185,7 @@ MWindow::MWindow()
 	plugin_gui_lock = new Mutex("MWindow::plugin_gui_lock");
 	dead_plugin_lock = new Mutex("MWindow::dead_plugin_lock");
 	vwindows_lock = new Mutex("MWindow::vwindows_lock");
+	zwindows_lock = new Mutex("MWindow::zwindows_lock");
 	brender_lock = new Mutex("MWindow::brender_lock");
 	keyframe_gui_lock = new Mutex("MWindow::keyframe_gui_lock");
 
@@ -274,6 +278,7 @@ MWindow::~MWindow()
 	if( twindow && twindow->is_running() ) twindow->close_window();
 	if( wwindow && wwindow->is_running() ) wwindow->close_window();
 	vwindows.remove_all_objects();
+	zwindows.remove_all_objects();
 	gui->close(0);
 	if( awindow ) awindow->join();
 	if( cwindow ) cwindow->join();
@@ -294,6 +299,7 @@ MWindow::~MWindow()
 	close_gui(twindow);
 	close_gui(wwindow);
 	vwindows.remove_all_objects();
+	zwindows.remove_all_objects();
 	gui->close(0);
 	join();
 #endif
@@ -338,6 +344,7 @@ MWindow::~MWindow()
 	delete dead_plugin_lock;
 	delete plugin_gui_lock;
 	delete vwindows_lock;
+	delete zwindows_lock;
 	delete brender_lock;
 	delete keyframe_gui_lock;
 	colormodels.remove_all_objects();
@@ -1118,6 +1125,154 @@ VWindow *MWindow::get_viewer(int start_it, int idx)
 	return vwindow;
 }
 
+ZWindow *MWindow::get_mixer(Mixer *&mixer)
+{
+	zwindows_lock->lock("MWindow::get_mixer");
+	if( !mixer ) mixer = edl->mixers.new_mixer();
+	ZWindow *zwindow = 0;
+	for( int i=0; !zwindow && i<zwindows.size(); ++i )
+		if( !zwindows[i]->is_running() ) zwindow = zwindows[i];
+	if( !zwindow )
+		zwindows.append(zwindow = new ZWindow(this));
+	zwindow->idx = mixer->idx;
+	zwindows_lock->unlock();
+	return zwindow;
+}
+
+void MWindow::del_mixer(ZWindow *zwindow)
+{
+	zwindows_lock->lock("MWindow::del_mixer 0");
+	edl->mixers.del_mixer(zwindow->idx);
+	zwindow->idx = -1;
+	if( session->selected_zwindow >= 0 ) {
+		int i = zwindows.number_of(zwindow);
+		if( i >= 0 && i < session->selected_zwindow )
+			--session->selected_zwindow;
+		else if( i == session->selected_zwindow )
+			session->selected_zwindow = -1;
+	}
+	zwindows_lock->unlock();
+	gui->lock_window("MWindow::del_mixer 1");
+	gui->update_mixers(0, -1);
+	gui->unlock_window();
+}
+
+void MWindow::start_mixer()
+{
+	Mixer *mixer = 0;
+	ZWindow *zwindow = get_mixer(mixer);
+	const char *title = 0;
+
+	for( Track *track=edl->tracks->first; track!=0; track=track->next ) {
+		PatchGUI *patchgui = get_patchgui(track);
+		if( !patchgui || !patchgui->mixer ) continue;
+		mixer->mixer_ids.append(track->get_mixer_id());
+		if( !title ) title = track->title;
+	}
+
+	session->selected_zwindow = -1;
+	gui->lock_window("MWindow::start_mixer");
+	gui->update_mixers(0, 0);
+	gui->unlock_window();
+
+	zwindow->set_title(title);
+	zwindow->start();
+	queue_mixers(edl,CURRENT_FRAME,0,0,1,0);
+}
+
+int MWindow::mixer_track_active(Track *track)
+{
+	int i = session->selected_zwindow;
+	if( i < 0 || i >= zwindows.size() ) return 0;
+	ZWindow *zwindow = zwindows[i];
+	Mixer *mixer = edl->mixers.get_mixer(zwindow->idx);
+	if( !mixer ) return 0;
+	int n = mixer->mixer_ids.number_of(track->get_mixer_id());
+	return n >= 0 ? 1 : 0;
+}
+
+void MWindow::update_mixer_tracks()
+{
+	zwindows_lock->lock("MixPatch::handle_event");
+	int i = session->selected_zwindow;
+	if( i >= 0 && i < zwindows.size() ) {
+		ZWindow *zwindow = zwindows[i];
+		zwindow->update_mixer_ids();
+	}
+	zwindows_lock->unlock();
+}
+
+void MWindow::queue_mixers(EDL *edl, int command, int wait_tracking,
+		int use_inout, int update_refresh, int toggle_audio)
+{
+	zwindows_lock->lock("MWindow::queue_mixers");
+	for( int vidx=0; vidx<zwindows.size(); ++vidx ) {
+		ZWindow *zwindow = zwindows[vidx];
+		if( !zwindow->running() ) continue;
+		Mixer *mixer = edl->mixers.get_mixer(zwindow->idx);
+		if( !mixer || !mixer->mixer_ids.size() ) continue;
+		int k = -1;
+		for( Track *track = edl->tracks->first; k<0 && track!=0; track=track->next ) {
+			if( track->data_type != TRACK_VIDEO ) continue;
+			int mixer_id = track->get_mixer_id();
+			k = mixer->mixer_ids.size();
+			while( --k >= 0 && mixer_id != mixer->mixer_ids[k] );
+		}
+		if( k < 0 ) continue;
+		EDL *mixer_edl = new EDL(this->edl);
+		mixer_edl->create_objects();
+		mixer_edl->copy_all(edl);
+		mixer_edl->remove_vwindow_edls();
+		for( Track *track = mixer_edl->tracks->first; track!=0; track=track->next ) {
+			k = mixer->mixer_ids.size();
+			while( --k >= 0 && track->get_mixer_id() != mixer->mixer_ids[k] );
+			if( k >= 0 ) {
+				track->record = 1;
+				track->play = track->data_type == TRACK_VIDEO ? 1 : 0;
+			}
+			else
+				track->record = track->play = 0;
+		}
+		zwindow->change_source(mixer_edl);
+		zwindow->issue_command(command,
+			wait_tracking, use_inout, update_refresh, toggle_audio);
+	}
+	zwindows_lock->unlock();
+}
+
+void MWindow::stop_mixers()
+{
+	for( int vidx=0; vidx<zwindows.size(); ++vidx ) {
+		ZWindow *zwindow = zwindows[vidx];
+		if( !zwindow->running() ) continue;
+		zwindow->issue_command(STOP, 0, 0, 0, 0);
+	}
+}
+
+int MWindow::select_zwindow(ZWindow *zwindow)
+{
+	int ret = 0, n = zwindows.number_of(zwindow);
+	if( session->selected_zwindow != n ) {
+		session->selected_zwindow = n;
+		for( int i=0; i<zwindows.size(); ++i ) {
+			ZWindow *zwindow = zwindows[i];
+			if( !zwindow->running() ) continue;
+			ZWindowGUI *zgui = zwindow->zgui;
+			zgui->lock_window("MWindow::select_zwindow 0");
+			zwindow->highlighted = i == n ? 1 : 0;
+			if( zgui->draw_overlays() )
+				zgui->canvas->get_canvas()->flash(1);
+			zgui->unlock_window();
+		}
+		ret = 1;
+		gui->lock_window("MWindow::select_window 1");
+		gui->update_mixers(0, -1);
+		gui->unlock_window();
+	}
+	return ret;
+}
+
+
 void MWindow::init_cache()
 {
 	audio_cache = new CICache(preferences);
@@ -1417,6 +1572,11 @@ void MWindow::stop_playback(int wait)
 		VWindow *vwindow = vwindows[i];
 		if( !vwindow->is_running() ) continue;
 		vwindow->playback_engine->stop_playback();
+	}
+	for(int i = 0; i < zwindows.size(); i++) {
+		ZWindow *zwindow = zwindows[i];
+		if( !zwindow->is_running() ) continue;
+		zwindow->zgui->playback_engine->stop_playback();
 	}
 	if( locked ) gui->lock_window("MWindow::stop_playback");
 }
@@ -1820,7 +1980,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 		edl->session->proxy_use_scaler = 0;
 		edl->session->proxy_auto_scale = 0;
 		edl->local_session->preview_start = 0;
-		edl->local_session->preview_end = edl->tracks->total_playable_length();
+		edl->local_session->preview_end = edl->tracks->total_length();
 		edl->local_session->loop_playback = 0;
 		edl->local_session->set_selectionstart(0);
 		edl->local_session->set_selectionend(0);
@@ -2504,6 +2664,7 @@ void MWindow::sync_parameters(int change_type)
 	}
 	else
 	{
+		queue_mixers(edl,CURRENT_FRAME,0,0,1,0);
 		cwindow->playback_engine->que->send_command(CURRENT_FRAME,
 							change_type,
 							edl,
@@ -3022,8 +3183,8 @@ void MWindow::update_project(int load_mode)
 	if(debug) PRINT_TRACE
 
 // Close all the vwindows
-	if(load_mode == LOADMODE_REPLACE ||
-		load_mode == LOADMODE_REPLACE_CONCATENATE) {
+	if( load_mode == LOADMODE_REPLACE ||
+	    load_mode == LOADMODE_REPLACE_CONCATENATE ) {
 		if(debug) PRINT_TRACE
 		int first_vwindow = 0;
 		if(session->show_vwindow) first_vwindow = 1;
@@ -3041,13 +3202,28 @@ void MWindow::update_project(int load_mode)
 			vwindow->close_window();
 		}
 		if(debug) PRINT_TRACE
+		select_zwindow(0);
+		for( int i=0; i<zwindows.size(); ++i ) {
+			ZWindow *zwindow = zwindows[i];
+			if( !zwindow->is_running() ) continue;
+			zwindow->close_window();
+		}
+
+		for( int i=0; i<edl->mixers.size(); ++i ) {
+			Mixer *mixer = edl->mixers[i];
+			ZWindow *zwindow = get_mixer(mixer);
+			zwindow->set_title(mixer->title);
+			zwindow->start();
+		}
 	}
-	else if(vwindows.size()) {
-		VWindow *vwindow = vwindows[DEFAULT_VWINDOW];
-		if( vwindow->is_running() ) {
-			vwindow->gui->lock_window("MWindow::update_project");
-			vwindow->update(1);
-			vwindow->gui->unlock_window();
+	else {
+		if(vwindows.size()) {
+			VWindow *vwindow = vwindows[DEFAULT_VWINDOW];
+			if( vwindow->is_running() ) {
+				vwindow->gui->lock_window("MWindow::update_project");
+				vwindow->update(1);
+				vwindow->gui->unlock_window();
+			}
 		}
 	}
 
@@ -3066,6 +3242,7 @@ void MWindow::update_project(int load_mode)
 	if(debug) PRINT_TRACE
 
 	gui->lock_window("MWindow::update_project");
+	gui->update_mixers(0, 0);
 	gui->flush();
 	if(debug) PRINT_TRACE
 }
@@ -3198,6 +3375,8 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 
 void MWindow::reset_caches()
 {
+	gui->resource_thread->get_video_source(0);
+	gui->resource_thread->get_audio_source(0);
 	frame_cache->remove_all();
 	wave_cache->remove_all();
 	audio_cache->remove_all();
@@ -3838,4 +4017,19 @@ PanAuto* MWindow::get_pan_auto(PatchGUI *patch)
 	return (PanAuto*)ptr->get_prev_auto( (long)unit_position, PLAY_FORWARD, current);
 }
 
+PatchGUI *MWindow::get_patchgui(Track *track)
+{
+	PatchGUI *patchgui = 0;
+	TimelinePane **panes = gui->pane;
+        for( int i=0; i<TOTAL_PANES && !patchgui; ++i ) {
+                if( !panes[i] ) continue;
+                PatchBay *patchbay = panes[i]->patchbay;
+                if( !patchbay ) continue;
+                for( int j=0; j<patchbay->patches.total && !patchgui; ++j ) {
+                        if( patchbay->patches.values[j]->track == track )
+                                patchgui = patchbay->patches.values[j];
+                }
+        }
+        return patchgui;
+}
 

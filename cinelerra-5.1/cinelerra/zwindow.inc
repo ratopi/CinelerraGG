@@ -19,28 +19,11 @@
  *
  */
 
-#ifndef ASSETPOPUP_INC
-#define ASSETPOPUP_INC
+#ifndef __ZWINDOW_INC__
+#define __ZWINDOW_INC__
 
-class AssetPopup;
-class AssetPopupInfo;
-class AssetPopupSort;
-class AssetPopupBuildIndex;
-class AssetPopupView;
-class AssetPopupViewWindow;
-class AssetPopupMixer;
-class AssetPopupPaste;
-class AssetMatchSize;
-class AssetMatchRate;
-class AssetMatchAll;
-class AssetPopupProjectRemove;
-class AssetPopupDiskRemove;
-class AssetListMenu;
-class AssetListCopy;
-class AssetCopyDialog;
-class AssetCopyWindow;
-class AssetListPaste;
-class AssetPasteDialog;
-class AssetPasteWindow;
+class Mixer;
+class Mixers;
+class ZWindow;
 
 #endif

@@ -98,6 +98,7 @@ int Tracking::stop_playback()
 //		Thread::cancel();
 		Thread::join();
 
+		mwindow->stop_mixers();
 // Final position is updated continuously during playback
 // Get final position
 		double position = get_tracking_position();

@@ -49,6 +49,7 @@ public:
 	static int get_transport_width(MWindow *mwindow);
 	int flip_vertical(int vertical, int &x, int &y);
 	int keypress_event();
+	int do_keypress(int key);
 // Abstract TransportQue::send_command.
 // wait_tracking - causes stop to wail until the final tracking position
 // is updated before returning
@@ -65,6 +66,7 @@ public:
 // Get the EDL to play back with default to mwindow->edl
 	virtual EDL* get_edl();
 	void change_position(double position);
+	virtual int is_vwindow() { return 0; }
 
 // playback parameters
 	int reverse;

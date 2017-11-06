@@ -51,6 +51,7 @@
 #include "statusbar.inc"
 #include "swindow.inc"
 #include "timelinepane.inc"
+#include "track.inc"
 #include "trackcanvas.inc"
 #include "trackscroll.inc"
 #include "transitionpopup.inc"
@@ -127,6 +128,7 @@ public:
 	void set_playing_back(int value);
 	void set_editing_mode(int flush);
 	void set_meter_format(int mode, int min, int max);
+	void update_mixers(Track *track, int v);
 
 	int translation_event();
 	int resize_event(int w, int h);          // handle a resize event

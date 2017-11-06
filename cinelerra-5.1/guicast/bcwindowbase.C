@@ -431,7 +431,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window, const char *title
 	else
 		this->display_name[0] = 0;
 
-	put_title(_(title));
+	put_title(title);
 	if(bg_pixmap) shared_bg_pixmap = 1;
 
 	subwindows = new BC_SubWindowList;
@@ -4148,7 +4148,7 @@ void BC_WindowBase::put_title(const char *text)
 void BC_WindowBase::set_title(const char *text, int utf8)
 {
 // utf8>0: wm + net_wm, utf8=0: wm only,  utf<0: net_wm only
-	put_title(_(text));
+	put_title(text);
 	const unsigned char *wm_title = (const unsigned char *)title;
 	int title_len = strlen((const char *)title);
 	if( utf8 >= 0 ) {

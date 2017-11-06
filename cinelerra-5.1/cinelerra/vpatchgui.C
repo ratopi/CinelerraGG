@@ -40,11 +40,9 @@
 #include "trackcanvas.h"
 #include "vpatchgui.h"
 #include "vtrack.h"
+#include "vwindow.h"
 
 #include <string.h>
-
-
-
 
 
 VPatchGUI::VPatchGUI(MWindow *mwindow, PatchBay *patchbay, VTrack *track, int x, int y)
@@ -58,8 +56,8 @@ VPatchGUI::VPatchGUI(MWindow *mwindow, PatchBay *patchbay, VTrack *track, int x,
 
 VPatchGUI::~VPatchGUI()
 {
-	if(fade) delete fade;
-	if(mode) delete mode;
+	if( fade ) delete fade;
+	if( mode ) delete mode;
 }
 
 void VPatchGUI::create_objects()
@@ -72,20 +70,16 @@ int VPatchGUI::reposition(int x, int y)
 	//int x1 = 0;
 	int y1 = PatchGUI::reposition(x, y);
 
-	if(fade) fade->reposition_window(fade->get_x(),
-		y1 + y);
-
+	if( fade )
+		fade->reposition_window(fade->get_x(), y1+y);
 	y1 += mwindow->theme->fade_h;
-
-	if(mode) mode->reposition_window(mode->get_x(),
-		y1 + y);
-
-	if(nudge) nudge->reposition_window(nudge->get_x(),
-		y1 + y);
-
-
+	if( mix )
+		mix->reposition_window(mix->get_x(), y1+y);
+	if( mode )
+		mode->reposition_window(mode->get_x(), y1+y);
+	if( nudge )
+		nudge->reposition_window(nudge->get_x(), y1+y);
 	y1 += mwindow->theme->mode_h;
-
 	return y1;
 }
 
@@ -95,68 +89,51 @@ int VPatchGUI::update(int x, int y)
 	int x1 = 0;
 	int y1 = PatchGUI::update(x, y);
 
-	if(fade)
-	{
-		if(h - y1 < mwindow->theme->fade_h)
-		{
+	if( fade ) {
+		if( h - y1 < mwindow->theme->fade_h ) {
 			delete fade;
 			fade = 0;
 		}
-		else
-		{
+		else {
 			fade->update(fade->get_w(), mwindow->get_float_auto(this, AUTOMATION_FADE)->get_value(),
 				     mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
 				     mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
 		}
 	}
 	else
-	if(h - y1 >= mwindow->theme->fade_h)
-	{
-		patchbay->add_subwindow(fade = new VFadePatch(mwindow,
-			this,
-			x1 + x,
-			y1 + y,
+	if( h - y1 >= mwindow->theme->fade_h ) {
+		patchbay->add_subwindow(fade = new VFadePatch(mwindow, this, x1+x, y1+y,
 			patchbay->get_w() - 10));
 	}
 	y1 += mwindow->theme->fade_h;
 
-	if(mode)
-	{
-		if(h - y1 < mwindow->theme->mode_h)
-		{
-			delete mode;
-			mode = 0;
-			delete nudge;
-			nudge = 0;
+	if( mode ) {
+		if( h - y1 < mwindow->theme->mode_h ) {
+			delete mix;    mix = 0;
+			delete mode;   mode = 0;
+			delete nudge;  nudge = 0;
 		}
-		else
-		{
+		else {
+			if( mwindow->session->selected_zwindow >= 0 ) {
+				int v = mwindow->mixer_track_active(track);
+				mix->update(v);
+			}
 			mode->update(mwindow->get_int_auto(this, AUTOMATION_MODE)->value);
 			nudge->update();
 		}
 	}
 	else
-	if(h - y1 >= mwindow->theme->mode_h)
-	{
-		patchbay->add_subwindow(mode = new VModePatch(mwindow,
-			this,
-			x1 + x,
-			y1 + y));
+	if( h - y1 >= mwindow->theme->mode_h ) {
+		patchbay->add_subwindow(mix = new VMixPatch(mwindow, this, x1+x, y1+y+5));
+		x1 += mix->get_w();
+		patchbay->add_subwindow(mode = new VModePatch(mwindow, this, x1+x, y1+y));
 		mode->create_objects();
-		x1 += mode->get_w() + 10;
-		patchbay->add_subwindow(nudge = new NudgePatch(mwindow,
-			this,
-			x1 + x,
-			y1 + y,
-			patchbay->get_w() - x1 - 10));
+		x1 += mode->get_w();
+		patchbay->add_subwindow(nudge = new NudgePatch(mwindow, this, x1+x, y1+y,
+			patchbay->get_w() - x1-x - 10));
 	}
 
-
-
-
-
 	y1 += mwindow->theme->mode_h;
-
 	return y1;
 }
 
@@ -164,8 +141,7 @@ int VPatchGUI::update(int x, int y)
 
 void VPatchGUI::synchronize_fade(float value_change)
 {
-	if(fade && !change_source)
-	{
+	if( fade && !change_source ) {
 		fade->update(Units::to_int64(fade->get_value() + value_change));
 		fade->update_edl();
 	}
@@ -203,8 +179,7 @@ float VFadePatch::update_edl()
 
 int VFadePatch::handle_event()
 {
-	if(shift_down())
-	{
+	if( shift_down() ) {
 		update(100);
 		set_tooltip(get_caption());
 	}
@@ -213,7 +188,7 @@ int VFadePatch::handle_event()
 
 	float change = update_edl();
 
-	if(patch->track->gang && patch->track->record)
+	if( patch->track->gang && patch->track->record )
 		patch->patchbay->synchronize_faders(change, TRACK_VIDEO, patch->track);
 
 	patch->change_source = 0;
@@ -223,8 +198,7 @@ int VFadePatch::handle_event()
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 	mwindow->gui->lock_window("VFadePatch::handle_event");
-	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_FADE])
-	{
+	if( mwindow->edl->session->auto_conf->autos[AUTOMATION_FADE] ) {
 		mwindow->gui->draw_overlays(1);
 	}
 	return 1;
@@ -271,9 +245,6 @@ int VKeyFadeValue::handle_event()
 }
 
 
-
-
-
 VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
  : BC_PopupMenu(x, y, patch->patchbay->mode_icons[0]->get_w() + 20,
 	"", 1, mwindow->theme->get_image_set("mode_popup", 0), 10)
@@ -297,10 +268,10 @@ VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch)
 int VModePatch::handle_event()
 {
 // Set menu items
-//	for(int i = 0; i < total_items(); i++)
+//	for( int i = 0; i < total_items(); i++ )
 //	{
 //		VModePatchItem *item = (VModePatchItem*)get_item(i);
-//		if(item->mode == mode)
+//		if( item->mode == mode )
 //			item->set_checked(1);
 //		else
 //			item->set_checked(0);
@@ -322,8 +293,7 @@ int VModePatch::handle_event()
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MODE])
-	{
+	if( mwindow->edl->session->auto_conf->autos[AUTOMATION_MODE] ) {
 		mwindow->gui->draw_overlays(1);
 	}
 	mwindow->session->changes_made = 1;
@@ -377,8 +347,7 @@ void VModePatch::create_objects()
 void VModePatch::update(int mode)
 {
 	set_icon(patch->patchbay->mode_to_icon(mode));
-	for(int i = 0; i < total_items(); i++)
-	{
+	for( int i = 0; i < total_items(); i++ ) {
 		VModePatchItem *item = (VModePatchItem*)get_item(i);
 		item->set_checked(item->mode == mode);
 		VModePatchSubMenu *submenu = (VModePatchSubMenu *)item->get_submenu();
@@ -394,7 +363,7 @@ void VModePatch::update(int mode)
 
 const char* VModePatch::mode_to_text(int mode)
 {
-	switch(mode) {
+	switch( mode ) {
 	case TRANSFER_NORMAL:		return _("Normal");
 	case TRANSFER_ADDITION:		return _("Addition");
 	case TRANSFER_SUBTRACT:		return _("Subtract");
@@ -436,7 +405,7 @@ VModePatchItem::VModePatchItem(VModePatch *popup, const char *text, int mode)
 {
 	this->popup = popup;
 	this->mode = mode;
-	if(this->mode == popup->mode) set_checked(1);
+	if( this->mode == popup->mode ) set_checked(1);
 }
 
 int VModePatchItem::handle_event()
@@ -463,7 +432,7 @@ VModeSubMenuItem::VModeSubMenuItem(VModePatchSubMenu *submenu, const char *text,
 	this->submenu = submenu;
 	this->mode = mode;
 	VModePatch *popup = submenu->mode_item->popup;
-	if(this->mode == popup->mode) set_checked(1);
+	if( this->mode == popup->mode ) set_checked(1);
 }
 VModeSubMenuItem::~VModeSubMenuItem()
 {
@@ -500,4 +469,13 @@ int VKeyModePatch::handle_event()
 }
 
 
+VMixPatch::VMixPatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
+ : MixPatch(mwindow, patch, x, y)
+{
+	set_tooltip(_("Mixer"));
+}
+
+VMixPatch::~VMixPatch()
+{
+}
 

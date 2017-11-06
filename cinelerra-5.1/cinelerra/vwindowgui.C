@@ -879,7 +879,7 @@ void VWindowGUI::update_points()
 
 //printf("VWindowGUI::update_points 2\n");
 	long pixel = (long)((double)edl->local_session->in_point /
-		edl->tracks->total_playable_length() *
+		edl->tracks->total_length() *
 		(mwindow->theme->vtimebar_w -
 			2 *
 			mwindow->theme->in_point[0]->get_w())) +
@@ -931,7 +931,7 @@ void VWindowGUI::update_points()
 //printf("VWindowGUI::update_points 10\n");
 
 	pixel = (long)((double)edl->local_session->out_point /
-		(edl->tracks->total_playable_length() + 0.5) *
+		(edl->tracks->total_length() + 0.5) *
 		(mwindow->theme->vtimebar_w -
 			2 *
 			mwindow->theme->in_point[0]->get_w())) +

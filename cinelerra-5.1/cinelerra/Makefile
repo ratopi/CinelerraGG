@@ -333,6 +333,8 @@ OBJS = \
 	$(OBJDIR)/wwindow.o \
 	$(OBJDIR)/zoombar.o \
 	$(OBJDIR)/zoompanel.o \
+	$(OBJDIR)/zwindow.o \
+	$(OBJDIR)/zwindowgui.o \
 
 #	$(OBJDIR)/renderfarmfsclient.o \
 #	$(OBJDIR)/renderfarmfsserver.o \

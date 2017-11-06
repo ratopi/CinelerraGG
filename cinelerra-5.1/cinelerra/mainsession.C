@@ -60,6 +60,8 @@ MainSession::MainSession(MWindow *mwindow)
 	cwindow_fullscreen = 0;
 	rwindow_fullscreen = 0;
 	vwindow_fullscreen = 0;
+	zwindow_fullscreen = 0;
+	selected_zwindow = -1;
 	actual_frame_rate = 0;
 	window_config = 0;
 	a_x11_host[0] = 0;

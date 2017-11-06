@@ -233,6 +233,7 @@ void CWindow::update(int position,
 
 	if(position)
 	{
+		mwindow->queue_mixers(mwindow->edl, CURRENT_FRAME,1,0,1,0);
 		playback_engine->que->send_command(CURRENT_FRAME,
 			CHANGE_NONE,
 			mwindow->edl,

@@ -181,6 +181,7 @@ public:
 	EDL* get_edl();
 	void goto_start();
 	void goto_end();
+	int is_vwindow() { return 1; }
 
 	VWindowGUI *gui;
 };

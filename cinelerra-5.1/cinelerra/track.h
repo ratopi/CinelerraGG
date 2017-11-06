@@ -69,6 +69,7 @@ public:
 	virtual int load_header(FileXML *file, uint32_t load_flags) { return 0; };
 	virtual int load_derived(FileXML *file, uint32_t load_flags) { return 0; };
 	void equivalent_output(Track *track, double *result);
+	int get_mixer_id();
 
 	virtual void copy_from(Track *track);
 	Track& operator=(Track& track);
@@ -173,9 +174,6 @@ public:
 	int plugin_used(int64_t position, int64_t direction);
 
 
-
-
-
 	virtual int copy_settings(Track *track);
 	void shift_keyframes(int64_t position, int64_t length);
 	void shift_effects(int64_t position, int64_t length, int edit_autos);
@@ -211,23 +209,6 @@ public:
 	int64_t nudge;
 // TRACK_AUDIO or TRACK_VIDEO
 	int data_type;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	int load_automation(FileXML *file);
@@ -374,9 +355,7 @@ public:
 	int pixel;   // pixel position from top of track view
 // Dimensions of this track if video
 	int track_w, track_h;
-
-
-
+	int mixer_id;
 
 private:
 // Identification of the track

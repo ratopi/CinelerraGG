@@ -32,6 +32,7 @@
 #include "intautos.h"
 #include "language.h"
 #include "localsession.h"
+#include "mainsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -40,20 +41,11 @@
 #include "patchbay.h"
 #include "theme.h"
 #include "trackcanvas.h"
+#include "zwindow.h"
 
-
-
-
-APatchGUI::APatchGUI(MWindow *mwindow,
-	PatchBay *patchbay,
-	ATrack *track,
-	int x,
-	int y)
- : PatchGUI(mwindow,
- 	patchbay,
-	track,
-	x,
-	y)
+APatchGUI::APatchGUI(MWindow *mwindow, PatchBay *patchbay,
+		ATrack *track, int x, int y)
+ : PatchGUI(mwindow, patchbay, track, x, y)
 {
 	data_type = TRACK_AUDIO;
 	this->atrack = track;
@@ -64,9 +56,9 @@ APatchGUI::APatchGUI(MWindow *mwindow,
 
 APatchGUI::~APatchGUI()
 {
-	if(fade) delete fade;
-	if(meter) delete meter;
-	if(pan) delete pan;
+	if( fade ) delete fade;
+	if( meter ) delete meter;
+	if( pan ) delete pan;
 }
 
 void APatchGUI::create_objects()
@@ -78,23 +70,20 @@ int APatchGUI::reposition(int x, int y)
 {
 	int y1 = PatchGUI::reposition(x, y);
 
-	if(fade) fade->reposition_window(fade->get_x(),
-		y1 + y);
+	if( fade )
+		fade->reposition_window(fade->get_x(), y1+y);
 	y1 += mwindow->theme->fade_h;
-
-	if(meter) meter->reposition_window(meter->get_x(),
-		y1 + y,
-		-1,
-		meter->get_w());
+	if( meter )
+		meter->reposition_window(meter->get_x(), y1+y, -1, meter->get_w());
 	y1 += mwindow->theme->meter_h;
-
-	if(pan) pan->reposition_window(pan->get_x(),
-		y1 + y);
-
-	if(nudge) nudge->reposition_window(nudge->get_x(),
-		y1 + y);
-
+	if( mix )
+		mix->reposition_window(mix->get_x(), y1+y);
+	if( pan )
+		pan->reposition_window(pan->get_x(), y1+y);
+	if( nudge )
+		nudge->reposition_window(nudge->get_x(), y1+y);
 	y1 += mwindow->theme->pan_h;
+
 	return y1;
 }
 
@@ -104,109 +93,78 @@ int APatchGUI::update(int x, int y)
 	int x1 = 0;
 	int y1 = PatchGUI::update(x, y);
 
-	if(fade)
-	{
-		if(h - y1 < mwindow->theme->fade_h)
-		{
+	if( fade ) {
+		if( h - y1 < mwindow->theme->fade_h ) {
 			delete fade;
 			fade = 0;
 		}
-		else
-		{
+		else {
 			FloatAuto *previous = 0, *next = 0;
 			double unit_position = mwindow->edl->local_session->get_selectionstart(1);
 			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 			unit_position = atrack->to_units(unit_position, 0);
 			FloatAutos *ptr = (FloatAutos*)atrack->automation->autos[AUTOMATION_FADE];
-			float value = ptr->get_value(
-				(long)unit_position,
-				PLAY_FORWARD,
-				previous,
-				next);
-			fade->update(fade->get_w(),
-				     value,
+			float value = ptr->get_value((long)unit_position, PLAY_FORWARD, previous, next);
+			fade->update(fade->get_w(), value,
 				     mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
 				     mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
 		}
 	}
 	else
-	if(h - y1 >= mwindow->theme->fade_h)
-	{
-		patchbay->add_subwindow(fade = new AFadePatch(mwindow,
-			this,
-			x1 + x,
-			y1 + y,
+	if( h - y1 >= mwindow->theme->fade_h ) {
+		patchbay->add_subwindow(fade = new AFadePatch(mwindow, this, x1+x, y1+y,
 			patchbay->get_w() - 10));
 	}
 	y1 += mwindow->theme->fade_h;
 
-	if(meter)
-	{
-		if(h - y1 < mwindow->theme->meter_h)
-		{
-			delete meter;
-			meter = 0;
+	if( meter ) {
+		if( h - y1 < mwindow->theme->meter_h ) {
+			delete meter;  meter = 0;
 		}
 	}
 	else
-	if(h - y1 >= mwindow->theme->meter_h)
-	{
-		patchbay->add_subwindow(meter = new AMeterPatch(mwindow,
-			this,
-			x1 + x,
-			y1 + y));
+	if( h - y1 >= mwindow->theme->meter_h ) {
+		patchbay->add_subwindow(meter = new AMeterPatch(mwindow, this, x1+x, y1+y));
 	}
 	y1 += mwindow->theme->meter_h;
-	x1 += 10;
 
-	if(pan)
-	{
-		if(h - y1 < mwindow->theme->pan_h)
-		{
-			delete pan;
-			pan = 0;
-			delete nudge;
-			nudge = 0;
+	if( pan ) {
+		if( h - y1 < mwindow->theme->pan_h ) {
+			delete mix;    mix = 0;
+			delete pan;    pan = 0;
+			delete nudge;  nudge = 0;
 		}
-		else
-		{
-			if(pan->get_total_values() != mwindow->edl->session->audio_channels)
-			{
+		else {
+			if( mwindow->session->selected_zwindow >= 0 ) {
+				int v = mwindow->mixer_track_active(track);
+				mix->update(v);
+			}
+			if( pan->get_total_values() != mwindow->edl->session->audio_channels ) {
 				pan->change_channels(mwindow->edl->session->audio_channels,
 					mwindow->edl->session->achannel_positions);
 			}
-			else
-			{
+			else {
 				int handle_x, handle_y;
 				PanAuto *previous = 0, *next = 0;
 				double unit_position = mwindow->edl->local_session->get_selectionstart(1);
 				unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 				unit_position = atrack->to_units(unit_position, 0);
 				PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
-				ptr->get_handle(handle_x,
-					handle_y,
-					(long)unit_position,
-					PLAY_FORWARD,
-					previous,
-					next);
+				ptr->get_handle(handle_x, handle_y, (long)unit_position,
+						PLAY_FORWARD, previous, next);
 				pan->update(handle_x, handle_y);
 			}
 			nudge->update();
 		}
 	}
 	else
-	if(h - y1 >= mwindow->theme->pan_h)
-	{
-		patchbay->add_subwindow(pan = new APanPatch(mwindow,
-			this,
-			x1 + x,
-			y1 + y));
-		x1 += pan->get_w() + 10;
-		patchbay->add_subwindow(nudge = new NudgePatch(mwindow,
-			this,
-			x1 + x,
-			y1 + y,
-			patchbay->get_w() - x1 - 10));
+	if( h - y1 >= mwindow->theme->pan_h ) {
+		patchbay->add_subwindow(mix = new AMixPatch(mwindow, this, x1+x, y1+y+5));
+		x1 += mix->get_w() + 10;
+		patchbay->add_subwindow(pan = new APanPatch(mwindow, this, x1+x, y1+y));
+		x1 += pan->get_w() + 20;
+		patchbay->add_subwindow(nudge = new NudgePatch(mwindow, this, x1+x, y1+y,
+				patchbay->get_w() - x1-x - 10));
 	}
 	y1 += mwindow->theme->pan_h;
 
@@ -215,8 +173,7 @@ int APatchGUI::update(int x, int y)
 
 void APatchGUI::synchronize_fade(float value_change)
 {
-	if(fade && !change_source)
-	{
+	if( fade && !change_source ) {
 		fade->update(fade->get_value() + value_change);
 		fade->update_edl();
 	}
@@ -256,22 +213,20 @@ float AFadePatch::update_edl()
 
 int AFadePatch::handle_event()
 {
-	if(shift_down())
-	{
+	if( shift_down() ) {
 		update(0.0);
 		set_tooltip(get_caption());
 	}
 
 	patch->change_source = 1;
 	float change = update_edl();
-	if(patch->track->gang && patch->track->record)
+	if( patch->track->gang && patch->track->record )
 		patch->patchbay->synchronize_faders(change, TRACK_AUDIO, patch->track);
 	patch->change_source = 0;
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_FADE])
-	{
+	if( mwindow->edl->session->auto_conf->autos[AUTOMATION_FADE] ) {
 		mwindow->gui->draw_overlays(1);
 	}
 	return 1;
@@ -349,8 +304,7 @@ int APanPatch::handle_event()
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(need_undo && mwindow->edl->session->auto_conf->autos[AUTOMATION_PAN])
-	{
+	if( need_undo && mwindow->edl->session->auto_conf->autos[AUTOMATION_PAN] ) {
 		mwindow->gui->draw_overlays(1);
 	}
 	return 1;
@@ -378,15 +332,9 @@ int AKeyPanPatch::handle_event()
 
 
 AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
- : BC_Meter(x,
-			y,
-			METER_HORIZ,
-			patch->patchbay->get_w() - 10,
-			mwindow->edl->session->min_meter_db,
-			mwindow->edl->session->max_meter_db,
-			mwindow->edl->session->meter_format,
-			0,
-			-1)
+ : BC_Meter(x, y, METER_HORIZ, patch->patchbay->get_w() - 10,
+	mwindow->edl->session->min_meter_db, mwindow->edl->session->max_meter_db,
+	mwindow->edl->session->meter_format, 0, -1)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -396,12 +344,21 @@ AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
 
 int AMeterPatch::button_press_event()
 {
-	if(cursor_inside() && is_event_win() && get_buttonpress() == 1)
-	{
+	if( cursor_inside() && is_event_win() && get_buttonpress() == 1 ) {
 		mwindow->reset_meters();
 		return 1;
 	}
 
 	return 0;
+}
+
+AMixPatch::AMixPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
+ : MixPatch(mwindow, patch, x, y)
+{
+	set_tooltip(_("Mixer"));
+}
+
+AMixPatch::~AMixPatch()
+{
 }
 

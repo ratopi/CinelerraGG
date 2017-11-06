@@ -229,22 +229,6 @@ KeyframePopupShow::~KeyframePopupShow()
 {
 }
 
-PatchGUI *KeyframePopupShow::get_patchgui(Track *track)
-{
-	PatchGUI *patchgui = 0;
-	TimelinePane **panes = mwindow->gui->pane;
-	for( int i=0; i<TOTAL_PANES && !patchgui; ++i ) {
-		if( !panes[i] ) continue;
-		PatchBay *patchbay = panes[i]->patchbay;
-		if( !patchbay ) continue;
-		for( int j=0; j<patchbay->patches.total && !patchgui; ++j ) {
-			if( patchbay->patches.values[j]->track == track )
-				patchgui = patchbay->patches.values[j];
-		}
-	}
-	return patchgui;
-}
-
 int KeyframePopupShow::handle_event()
 {
 	MWindowGUI *mgui = mwindow->gui;
@@ -280,7 +264,7 @@ int KeyframePopupShow::handle_event()
 
 		default: {
 			show_window = 0;
-			PatchGUI *patchgui = get_patchgui(popup->keyframe_automation->track);
+			PatchGUI *patchgui = mwindow->get_patchgui(popup->keyframe_automation->track);
 			if( !patchgui ) break;
 
 			switch( popup->keyframe_autos->autoidx ) {

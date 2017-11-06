@@ -42,7 +42,7 @@
 #include "tracks.h"
 #include "transportque.h"
 #include "vframe.h"
-
+#include "zwindow.h"
 
 
 PatchGUI::PatchGUI(MWindow *mwindow,
@@ -65,22 +65,24 @@ PatchGUI::PatchGUI(MWindow *mwindow,
 	mute = 0;
 	expand = 0;
 	nudge = 0;
+	mix = 0;
 	change_source = 0;
-	track_id = -1;
-	if(track) track_id = track->get_id();
+	track_id = track ? track->get_id() : -1;
+	mixer = 0;
 }
 
 PatchGUI::~PatchGUI()
 {
-	if(title) delete title;
-	if(record) delete record;
-	if(play) delete play;
-//	if(automate) delete automate;
-	if(gang) delete gang;
-	if(draw) delete draw;
-	if(mute) delete mute;
-	if(expand) delete expand;
-	if(nudge) delete nudge;
+	delete title;
+	delete record;
+	delete play;
+//	delete automate;
+	delete gang;
+	delete draw;
+	delete mute;
+	delete expand;
+	delete nudge;
+	delete mix;
 }
 
 void PatchGUI::create_objects()
@@ -789,5 +791,34 @@ void NudgePatch::update()
 }
 
 
+MixPatch::MixPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("mixpatch_data"),
+	patch->mixer, "", 0, 0, 0)
+{
+	this->mwindow = mwindow;
+	this->patch = patch;
+}
 
+MixPatch::~MixPatch()
+{
+}
+
+int MixPatch::handle_event()
+{
+	int v = patch->track ? get_value() : 0;
+	if( patch->mixer != v ) {
+		if( patch->track )
+			mwindow->gui->update_mixers(patch->track, v);
+		else
+			update(v);
+		mwindow->update_mixer_tracks();
+	}
+	return 1;
+}
+
+void MixPatch::update(int v)
+{
+	patch->mixer = v;
+	BC_Toggle::update(v);
+}
 

@@ -281,7 +281,7 @@ void MenuEffectThread::run()
 
 	if(mwindow->edl->local_session->get_selectionend() ==
 		mwindow->edl->local_session->get_selectionstart())
-		total_end = mwindow->edl->tracks->total_playable_length();
+		total_end = mwindow->edl->tracks->total_length();
 	else
 		total_end = mwindow->edl->local_session->get_selectionend();
 

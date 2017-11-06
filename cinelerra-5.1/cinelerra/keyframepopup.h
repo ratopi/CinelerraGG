@@ -99,7 +99,6 @@ class KeyframePopupShow : public BC_MenuItem
 public:
 	KeyframePopupShow(MWindow *mwindow, KeyframePopup *popup);
 	~KeyframePopupShow();
-	PatchGUI *get_patchgui(Track *track);
 	int handle_event();
 
 	MWindow *mwindow;

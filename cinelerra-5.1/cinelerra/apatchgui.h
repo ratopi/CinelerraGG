@@ -107,4 +107,11 @@ public:
 	APatchGUI *patch;
 };
 
+class AMixPatch : public MixPatch
+{
+public:
+	AMixPatch(MWindow *mwindow, APatchGUI *patch, int x, int y);
+	~AMixPatch();
+};
+
 #endif

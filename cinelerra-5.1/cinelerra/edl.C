@@ -240,6 +240,7 @@ int EDL::load_xml(FileXML *file,
 			for(int i = 0; i < clips.size(); i++)
 				clips.get(i)->Garbage::remove_user();
 			clips.remove_all();
+			mixers.remove_all_objects();
 		}
 
 		if(load_flags & LOAD_TIMEBAR)
@@ -297,6 +298,14 @@ int EDL::load_xml(FileXML *file,
 					char folder[BCTEXTLEN];
 					strcpy(folder, file->read_text());
 					new_folder(folder);
+				}
+				else
+				if(file->tag.title_is("MIXERS"))
+				{
+					if((load_flags & LOAD_SESSION))
+						mixers.load(file);
+					else
+						result = file->skip_tag();
 				}
 				else
 				if(file->tag.title_is("ASSETS"))
@@ -413,6 +422,7 @@ int EDL::copy_all(EDL *edl)
 	copy_session(edl);
 	copy_assets(edl);
 	copy_clips(edl);
+	copy_mixers(edl);
 	tracks->copy_from(edl->tracks);
 	labels->copy_from(edl->labels);
 	return 0;
@@ -454,6 +464,12 @@ void EDL::copy_assets(EDL *edl)
 	{
 		assets->copy_from(edl->assets);
 	}
+}
+
+void EDL::copy_mixers(EDL *edl)
+{
+	if(this == edl) return;
+	mixers.copy_from(edl->mixers);
 }
 
 void EDL::copy_session(EDL *edl, int session_only)
@@ -629,6 +645,7 @@ int EDL::copy(double start,
 					output_path,
 					1,
 					0);
+			mixers.save(file);
 		}
 
 		file->append_newline();
@@ -1147,7 +1164,7 @@ void EDL::insert_asset(Asset *asset,
 
 	if(new_nested_edl)
 	{
-		length = new_nested_edl->tracks->total_playable_length();
+		length = new_nested_edl->tracks->total_length();
 		layers = 1;
 		channels = new_nested_edl->session->audio_channels;
 	}
@@ -1479,7 +1496,7 @@ int EDL::get_sample_rate()
 
 int64_t EDL::get_audio_samples()
 {
-	return (int64_t)(tracks->total_playable_length() *
+	return (int64_t)(tracks->total_length() *
 		session->sample_rate);
 }
 
@@ -1516,7 +1533,7 @@ int EDL::get_video_layers()
 
 int64_t EDL::get_video_frames()
 {
-	return (int64_t)(tracks->total_playable_length() *
+	return (int64_t)(tracks->total_length() *
 		session->frame_rate);
 }
 
