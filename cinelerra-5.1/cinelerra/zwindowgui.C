@@ -32,11 +32,8 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "playbackengine.h"
-#include "playtransport.h"
-#include "renderengine.h"
 #include "theme.h"
 #include "tracks.h"
-#include "transportque.h"
 #include "zwindow.h"
 #include "zwindowgui.h"
 

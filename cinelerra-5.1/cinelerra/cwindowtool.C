@@ -789,16 +789,13 @@ void CWindowCameraGUI::create_objects()
 
 void CWindowCameraGUI::update_preview()
 {
-	mwindow->restart_brender();
-	mwindow->sync_parameters(CHANGE_PARAMS);
-
-	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-			CHANGE_NONE,
-			mwindow->edl,
-			1);
 	mwindow->gui->lock_window("CWindowCameraGUI::update_preview");
+	mwindow->restart_brender();
 	mwindow->gui->draw_overlays(1);
+	mwindow->sync_parameters(CHANGE_PARAMS);
 	mwindow->gui->unlock_window();
+	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
+			CHANGE_NONE, mwindow->edl, 1);
 	mwindow->cwindow->gui->lock_window("CWindowCameraGUI::update_preview");
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	mwindow->cwindow->gui->unlock_window();
@@ -1237,16 +1234,13 @@ void CWindowProjectorGUI::create_objects()
 
 void CWindowProjectorGUI::update_preview()
 {
+	mwindow->gui->lock_window("CWindowProjectorGUI::update_preview");
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
-	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-			CHANGE_NONE,
-			mwindow->edl,
-			1);
-	// TODO: really need to lock the main window??
-	mwindow->gui->lock_window("CWindowProjectorGUI::update_preview");
 	mwindow->gui->draw_overlays(1);
 	mwindow->gui->unlock_window();
+	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
+			CHANGE_NONE, mwindow->edl, 1);
 	mwindow->cwindow->gui->lock_window("CWindowProjectorGUI::update_preview");
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	mwindow->cwindow->gui->unlock_window();
@@ -2264,12 +2258,13 @@ void CWindowMaskGUI::handle_event()
 
 void CWindowMaskGUI::update_preview()
 {
+	mwindow->gui->lock_window("CWindowMaskGUI::update_preview");
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
+	mwindow->gui->draw_overlays(1);
+	mwindow->gui->unlock_window();
 	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-			CHANGE_NONE,
-			mwindow->edl,
-			1);
+			CHANGE_NONE, mwindow->edl, 1);
 	mwindow->cwindow->gui->lock_window("CWindowMaskGUI::update_preview");
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	mwindow->cwindow->gui->unlock_window();

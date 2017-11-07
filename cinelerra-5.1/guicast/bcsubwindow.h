@@ -28,9 +28,7 @@
 class BC_SubWindow : public BC_WindowBase
 {
 public:
-	BC_SubWindow(int x, int y, int w, int h,
-			int bg_color=-1,
-			int opts=0);
+	BC_SubWindow(int x, int y, int w, int h, int bg_color=-1);
 	virtual ~BC_SubWindow();
 
 	virtual int initialize();

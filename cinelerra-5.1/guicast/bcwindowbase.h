@@ -129,7 +129,7 @@ public:
 class BC_WindowBase : public trace_info
 {
 public:
-	BC_WindowBase(int opts=0);
+	BC_WindowBase();
 	virtual ~BC_WindowBase();
 
 	friend class BC_Bar;
@@ -738,7 +738,6 @@ private:
 // Popup window for tooltip
 	BC_Popup *tooltip_popup;
 // If this subwindow has already shown a tooltip since the last EnterNotify
-	int options;
 	int flash_enabled;
 
 

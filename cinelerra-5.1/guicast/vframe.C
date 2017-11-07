@@ -499,27 +499,29 @@ int VFrame::allocate_data(unsigned char *data, int shmid,
 	}
 	else {
 		memory_type = VFrame::PRIVATE;
+		this->data = 0;
 		int size = calculate_data_size(this->w, this->h,
 			this->bytes_per_line, this->color_model);
 		if(BC_WindowBase::get_resources()->use_vframe_shm() && use_shm) {
 			this->shmid = shmget(IPC_PRIVATE, size, IPC_CREAT | 0777);
-			if(this->shmid < 0) {
-				printf("VFrame::allocate_data %d could not allocate shared memory\n", __LINE__);
-			}
-
-			this->data = (unsigned char*)shmat(this->shmid, NULL, 0);
-//printf("VFrame::allocate_data %d %d %d\n", __LINE__, size, this->shmid);
-
-//printf("VFrame::allocate_data %d %p\n", __LINE__, this->data);
+			if( this->shmid >= 0 ) {
+				this->data = (unsigned char*)shmat(this->shmid, NULL, 0);
+//printf("VFrame::allocate_data %d %d %d %p\n", __LINE__, size, this->shmid, this->data);
 // This causes it to automatically delete when the program exits.
-			shmctl(this->shmid, IPC_RMID, 0);
+				shmctl(this->shmid, IPC_RMID, 0);
+			}
+			else {
+				printf("VFrame::allocate_data %d could not allocate"
+					" shared memory, %dx%d (model %d) size=0x%08x\n",
+					__LINE__, w, h, color_model, size);
+				BC_Trace::dump_shm_stats(stdout);
+			}
 		}
-		else {
 // Have to use malloc for libpng
-//printf("==vframe %d from %p\n", size, __builtin_return_address(0));
+		if( !data ) {
 			this->data = (unsigned char *)malloc(size);
+			this->shmid = -1;
 		}
-
 // Memory check
 // if(this->w * this->h > 1500 * 1100)
 // printf("VFrame::allocate_data 2 this=%p w=%d h=%d this->data=%p\n",

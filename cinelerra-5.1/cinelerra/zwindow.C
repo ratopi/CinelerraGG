@@ -72,6 +72,7 @@ void Mixers::del_mixer(int idx)
 
 void Mixer::set_title(const char *tp)
 {
+	if( tp == title ) return;
 	strncpy(title, tp, sizeof(title));
 	title[sizeof(title)-1] = 0;
 }
@@ -249,8 +250,9 @@ void ZWindow::set_title(const char *tp)
 	char *cp = title, *ep = cp + sizeof(title)-1;
 	cp += snprintf(title, ep-cp, _("Mixer %d"), idx);
 	if( tp ) cp += snprintf(cp, ep-cp, ": %s", tp);
+	else tp = title;
 	Mixer *mixer = mwindow->edl->mixers.get_mixer(idx);
-	if( mixer && tp != mixer->title ) mixer->set_title(tp);
+	if( mixer ) mixer->set_title(title);
 }
 
 void ZWindow::reposition(int x, int y, int w, int h)

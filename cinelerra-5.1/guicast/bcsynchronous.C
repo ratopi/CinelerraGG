@@ -158,12 +158,9 @@ void BC_Synchronous::quit()
 {
 	if( !is_started ) return;
 	is_started = 0;
-	BC_SynchronousCommand *command = new_command();
+	BC_SynchronousCommand *command = BC_Synchronous::new_command();
 	command->command = BC_SynchronousCommand::QUIT;
-	command_lock->lock("BC_Synchronous::quit");
-	commands.append(command);
-	command_lock->unlock();
-	next_command->unlock();
+	send_garbage(command);
 	command->command_done->lock("BC_Synchronous::quit");
 	delete command;
 }
@@ -218,7 +215,8 @@ void BC_Synchronous::handle_command_base(BC_SynchronousCommand *command)
 
 	case BC_SynchronousCommand::DELETE_WINDOW:
 		delete_window_sync(command);
-		break;
+		command->command_done->unlock();
+		return;
 
 	case BC_SynchronousCommand::DELETE_PIXMAP:
 		delete_pixmap_sync(command);
@@ -367,7 +365,7 @@ void BC_Synchronous::dump_shader(unsigned int handle)
 void BC_Synchronous::delete_window(BC_WindowBase *window)
 {
 #ifdef HAVE_GL
-	BC_SynchronousCommand *command = new_command();
+	BC_SynchronousCommand *command = BC_Synchronous::new_command();
 	command->command = BC_SynchronousCommand::DELETE_WINDOW;
 	command->window_id = window->get_id();
 	command->display = window->get_display();
@@ -376,6 +374,8 @@ void BC_Synchronous::delete_window(BC_WindowBase *window)
 	command->glx_context = window->glx_win_context;
 
 	send_garbage(command);
+	command->command_done->lock("BC_Synchronous::quit");
+	delete command;
 #endif
 }
 
@@ -384,7 +384,7 @@ void BC_Synchronous::delete_window_sync(BC_SynchronousCommand *command)
 #ifdef HAVE_GL
 	int window_id = command->window_id;
 	Display *display = command->display;
-	Window win = command->win;
+//	Window win = command->win;
 	GLXWindow glx_win = command->glx_win;
 	GLXContext glx_context = command->glx_context;
 	XLockDisplay(display);
@@ -435,10 +435,12 @@ void BC_Synchronous::delete_window_sync(BC_SynchronousCommand *command)
 
 	table_lock->unlock();
 
-	XDestroyWindow(display, win);
+	glXMakeContextCurrent(display, None, None, 0);
 	if( glx_context )
 		glXDestroyContext(display, glx_context);
-	command->command_done->unlock();
+// causes xerror BadWindow (invalid Window parameter)
+//	XDestroyWindow(display, glx_win);
+// win destroyed in bcwindowbase
 	XUnlockDisplay(display);
 #endif
 }
@@ -446,7 +448,7 @@ void BC_Synchronous::delete_window_sync(BC_SynchronousCommand *command)
 void BC_Synchronous::delete_display(BC_WindowBase *window)
 {
 #ifdef HAVE_GL
-	BC_SynchronousCommand *command = new_command();
+	BC_SynchronousCommand *command = BC_Synchronous::new_command();
 	command->command = BC_SynchronousCommand::DELETE_DISPLAY;
 	command->display = window->get_display();
 
@@ -520,7 +522,7 @@ void BC_Synchronous::release_pbuffer(int window_id, GLXPbuffer pbuffer)
 void BC_Synchronous::delete_pixmap(BC_WindowBase *window,
 	GLXPixmap glx_pixmap, GLXContext glx_context)
 {
-	BC_SynchronousCommand *command = new_command();
+	BC_SynchronousCommand *command = BC_Synchronous::new_command();
 	command->command = BC_SynchronousCommand::DELETE_PIXMAP;
 	command->window_id = window->get_id();
 	command->display = window->get_display();

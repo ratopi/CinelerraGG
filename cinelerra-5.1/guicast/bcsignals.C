@@ -208,6 +208,7 @@ static void signal_entry(int signum)
 	BC_Trace::dump_traces();
 	BC_Trace::dump_locks();
 	BC_Trace::dump_buffers();
+	BC_Trace::dump_shm_stats();
 	BC_Trace::delete_temps();
 
 // Call user defined signal handler
@@ -354,7 +355,9 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 	signal(SIGINT, SIG_DFL);
 	// gotta be root, or the dump is worthless
 	int uid = getuid();
-	if( uid != 0 ) return;
+// it is not necessary to be root if ptrace is allowed via:
+// echo 0 > /proc/sys/kernel/yama/ptrace_scope (usually set to 1)
+//	if( uid != 0 ) return;
 	ucontext_t *uc = (ucontext_t *)sc;
 	int pid = getpid(), tid = gettid();
 	struct sigcontext *c = (struct sigcontext *)&uc->uc_mcontext;
@@ -391,6 +394,7 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 	fprintf(fp,"\nTRACES:\n");   BC_Trace::dump_traces(fp);
 	fprintf(fp,"\nLOCKS:\n");    BC_Trace::dump_locks(fp);
 	fprintf(fp,"\nBUFFERS:\n");  BC_Trace::dump_buffers(fp);
+	fprintf(fp,"\nSHMMEM:\n");   BC_Trace::dump_shm_stats(fp);
 	if( BC_Signals::trap_hook ) {
 		fprintf(fp,"\nMAIN HOOK:\n");
 		BC_Signals::trap_hook(fp, BC_Signals::trap_data);

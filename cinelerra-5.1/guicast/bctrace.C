@@ -399,3 +399,49 @@ void BC_Trace::dump_threads(FILE *fp)
 }
 
 
+void BC_Trace::dump_shm_stat(const char *fn, FILE *fp)
+{
+	char path[BCTEXTLEN];
+	sprintf(path, "/proc/sys/kernel/%s",fn);
+	FILE *sfp = fopen(path,"r");
+	if( !sfp ) return;
+	uint64_t v = 0;
+	fscanf(sfp, "%ju", &v);
+	fclose(sfp);
+	fprintf(fp, "%s = %ju\n", fn, v);
+}
+
+void BC_Trace::dump_shm_stats(FILE *fp)
+{
+	dump_shm_stat("shmall", fp);
+	dump_shm_stat("shmmax", fp);
+	dump_shm_stat("shmmni", fp);
+	FILE *sfp = fopen("/proc/sysvipc/shm","r");
+	if( !sfp ) return;
+	char line[BCTEXTLEN];
+	int pid = getpid();
+	if( !fgets(line,sizeof(line), sfp) ) return;
+	int64_t used = 0, other = 0;
+	int n_used = 0, n_other = 0;
+	while( fgets(line,sizeof(line), sfp) ) {
+		int key, shmid, perms, cpid, lpid, uid, gid, cuid, cgid;
+		int64_t size, nattch, atime, dtime, ctime, rss, swap;
+		if( sscanf(line,
+			"%d %d %o %ju %u %u %ju %u %u %u %u %ju %ju %ju %ju %ju",
+			&key, &shmid, &perms, &size, &cpid, &lpid, &nattch,
+			&uid, &gid, &cuid, &cgid, &atime, &dtime, &ctime,
+			&rss, &swap) != 16 ) break;
+		if( cpid == pid ) {
+			used += size;
+			++n_used;
+		}
+		else {
+			other += size;
+			++n_other;
+		}
+	}
+	fclose(sfp);
+	fprintf(fp, "shmused = %jd (%d items)\n", used, n_used);
+	fprintf(fp, "shmother = %jd (%d items)\n", other, n_other);
+}
+

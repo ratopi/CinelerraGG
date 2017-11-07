@@ -283,6 +283,9 @@ int AssetPopupMixer::handle_event()
 		ZWindow *zwindow = mwindow->get_mixer(mixer);
 		while( track ) {
 			track->play = track->record = 0;
+			if( track->data_type == TRACK_VIDEO ) {
+				sprintf(track->title, _("Mixer %d"), zwindow->idx);
+			}
 			mixer->mixer_ids.append(track->get_mixer_id());
 			track = track->next;
 		}

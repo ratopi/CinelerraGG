@@ -48,6 +48,9 @@ public:
 	static void dump_locks(FILE *fp=stdout);
 	static void dump_buffers(FILE *fp=stdout);
 	static void dump_threads(FILE *fp=stdout);
+
+	static void dump_shm_stat(const char *fn, FILE *fp=stdout);
+	static void dump_shm_stats(FILE *fp=stdout);
 };
 
 class bc_trace_list : public List<trace_item> {

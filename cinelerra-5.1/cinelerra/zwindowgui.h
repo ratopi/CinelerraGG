@@ -25,7 +25,9 @@
 #include "bcwindow.h"
 #include "canvas.h"
 #include "mwindow.h"
-#include "renderengine.inc"
+#include "playbackengine.inc"
+#include "zwindow.inc"
+#include "zwindowgui.inc"
 
 class ZWindowGUI;
 class ZWindowCanvas;
@@ -53,9 +55,7 @@ public:
 	ZWindow *zwindow;
 	ZWindowCanvas *canvas;
 
-	TransportCommand *command;
 	PlaybackEngine *playback_engine;
-	RenderEngine *render_engine;
 	int highlighted;
 };
 

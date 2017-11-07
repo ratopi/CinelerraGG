@@ -31,11 +31,6 @@ class BC_WindowList;
 // Milliseconds before cursor disappears during video playback
 #define VIDEO_CURSOR_TIMEOUT 2000
 
-// Window options
-#define WINDOW_UTF8	0x0001
-//used to flag top_level window in glx_window / glXCreateWindow
-#define GLX_DISPLAY	0x0002
-
 // mouse wheel
 #define WHEEL_UP 4
 #define WHEEL_DOWN 5

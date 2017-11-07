@@ -85,9 +85,8 @@ Window XGroupLeader = 0;
 Mutex BC_KeyboardHandlerLock::keyboard_listener_mutex("keyboard_listener",0);
 ArrayList<BC_KeyboardHandler*> BC_KeyboardHandler::listeners;
 
-BC_WindowBase::BC_WindowBase(int opts)
+BC_WindowBase::BC_WindowBase()
 {
-	this->options = opts;
 //printf("BC_WindowBase::BC_WindowBase 1\n");
 	BC_WindowBase::initialize();
 }
@@ -147,13 +146,13 @@ BC_WindowBase::~BC_WindowBase()
 
 	delete pixmap;
 
+//printf("delete glx=%08x, win=%08x %s\n", (unsigned)glx_win, (unsigned)win, title);
 #ifdef HAVE_GL
-	if( get_resources()->get_synchronous() &&
-		(top_level->options & GLX_WINDOW) && glx_win != 0 )
+	if( get_resources()->get_synchronous() && glx_win != 0 ) {
 		get_resources()->get_synchronous()->delete_window(this);
-	else
+	}
 #endif
-		XDestroyWindow(top_level->display, win);
+	XDestroyWindow(top_level->display, win);
 
 	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
 	if(icon_pixmap) delete icon_pixmap;
@@ -213,28 +212,15 @@ BC_WindowBase::~BC_WindowBase()
 			XvUngrabPort(display, xvideo_port_id, CurrentTime);
 
 		unlock_window();
-// Can't close display if another thread is waiting for events.
-// Synchronous thread must delete display it owns a GLX_WINDOW
 // Must be last reference to display.
-#ifndef SINGLE_THREAD
-#ifdef HAVE_GL
-		if( (options & GLX_DISPLAY) != 0 && get_resources()->get_synchronous() ) {
-			printf(_("BC_WindowBase::~BC_WindowBase window deleted but opengl deletion is not\n"
-				"implemented for BC_Pixmap.\n"));
-			get_resources()->get_synchronous()->delete_display(this);
-		}
-		else
-#endif
-		{
 // _XftDisplayInfo needs a lock.
-			get_resources()->create_window_lock->lock("BC_WindowBase::~BC_WindowBase");
-			XCloseDisplay(display);
-			get_resources()->create_window_lock->unlock();
-		}
+		get_resources()->create_window_lock->lock("BC_WindowBase::~BC_WindowBase");
+		XCloseDisplay(display);
+		get_resources()->create_window_lock->unlock();
+
 // clipboard uses a different display connection
 		clipboard->stop_clipboard();
 		delete clipboard;
-#endif // SINGLE_THREAD
 	}
 
 	resize_history.remove_all_objects();

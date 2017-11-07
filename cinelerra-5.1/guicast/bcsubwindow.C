@@ -23,8 +23,7 @@
 
 
 
-BC_SubWindow::BC_SubWindow(int x, int y, int w, int h, int bg_color, int opts)
- : BC_WindowBase(opts)
+BC_SubWindow::BC_SubWindow(int x, int y, int w, int h, int bg_color)
 {
 	this->x = x;
 	this->y = y;

@@ -182,7 +182,6 @@ void BC_WindowBase::sync_unlock()
 GLXWindow BC_WindowBase::glx_window()
 {
 	if( !glx_win ) {
-		top_level->options |= GLX_DISPLAY;
 		glx_win = glXCreateWindow(top_level->display, top_level->glx_fb_config, win, 0);
 	}
 	return glx_win;

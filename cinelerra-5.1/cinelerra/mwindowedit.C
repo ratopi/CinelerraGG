@@ -545,6 +545,7 @@ void MWindow::cut(double start, double end, double new_position)
 	update_plugin_guis();
 	gui->update(1, 2, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
+	awindow->gui->async_update_assets();
 	cwindow->playback_engine->que->
 		send_command(CURRENT_FRAME, CHANGE_EDL, edl, 1);
 }
@@ -894,6 +895,8 @@ void MWindow::finish_modify_handles()
 	sync_parameters(CHANGE_EDL);
 	update_plugin_guis();
 	gui->update(1, 2, 1, 1, 1, 1, 0);
+// label list can be modified
+	awindow->gui->async_update_assets();
 	cwindow->update(1, 0, 0, 0, 1);
 }
 
@@ -1910,6 +1913,7 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 	save_backup();
 	update_plugin_states();
 	update_plugin_guis();
+	awindow->gui->async_update_assets();
 	restart_brender();
 	gui->update(1, 2, 1, 1, 1, 1, 1);
 	cwindow->update(1, 1, 1, 1, 1);
@@ -2174,6 +2178,7 @@ void MWindow::trim_selection()
 	update_plugin_guis();
 	gui->update(1, 2, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
+	awindow->gui->async_update_assets();
 	restart_brender();
 	cwindow->playback_engine->que->
 		send_command(CURRENT_FRAME, CHANGE_EDL, edl, 1);

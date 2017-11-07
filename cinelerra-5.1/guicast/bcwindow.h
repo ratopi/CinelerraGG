@@ -28,20 +28,11 @@ class BC_Window : public BC_WindowBase
 {
 	static char default_x11_host[BCTEXTLEN];
 public:
-	BC_Window(const char *title,
-				int x,
-				int y,
-				int w,
-				int h,
-				int minw = -1,
-				int minh = -1,
-				int allow_resize = 1,
-				int private_color = 0,
-				int hide = 0,
-				int bg_color = -1,
-				const char *display_name = 0,
-				int group_it = 1,
-				int options = 0);
+	BC_Window(const char *title, int x, int y, int w, int h,
+		int minw = -1, int minh = -1, int allow_resize = 1,
+		int private_color = 0, int hide = 0, int bg_color = -1,
+		const char *display_name = 0, int group_it = 1);
+
 	virtual ~BC_Window();
 
 	static void set_default_x11_host(const char *host);
