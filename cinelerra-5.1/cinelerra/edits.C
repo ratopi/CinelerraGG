@@ -385,19 +385,20 @@ int Edits::optimize()
 
 		for(current = first; !result && current && current->next; ) {
 			Edit *next_edit = current->next;
-
 // printf("Edits::optimize %d %lld=%lld %d=%d %p=%p %p=%p\n",
 // __LINE__, current->startsource + current->length, next_edit->startsource,
 // current->channel, next_edit->channel, current->asset, next_edit->asset,
 // current->nested_edl, next_edit->nested_edl);
 
+// both edges are not hard edges
 // both edits are silence & not a plugin
 // source channels are identical, assets are identical
-	   		if( (current->silence() && next_edit->silence() && !current->is_plugin) ||
+			if( !current->hard_right && !next_edit->hard_left && (
+			    (current->silence() && next_edit->silence() && !current->is_plugin) ||
 			    (current->startsource + current->length == next_edit->startsource &&
 		       	     current->channel == next_edit->channel &&
 			     current->asset == next_edit->asset &&
-			     current->nested_edl == next_edit->nested_edl)) {
+			     current->nested_edl == next_edit->nested_edl)) ) {
 //printf("Edits::optimize %d\n", __LINE__);
         			current->length += next_edit->length;
         			remove(next_edit);

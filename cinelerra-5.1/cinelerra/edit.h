@@ -132,7 +132,8 @@ public:
 // User defined title for timeline
 	char user_title[BCTEXTLEN];
 	int is_plugin;
-
+// edge cannot be optimized
+	int hard_left, hard_right;
 
 // Transition if one is present at the beginning of this edit
 // This stores the length of the transition
@@ -150,15 +151,6 @@ public:
 
 // Parent EDL of this edit
 	EDL *edl;
-
-
-
-
-
-
-
-
-
 
 
 // ============================= initialization

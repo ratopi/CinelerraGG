@@ -1771,6 +1771,36 @@ void TrackCanvas::refresh_plugintoggles()
 	}
 }
 
+void TrackCanvas::draw_hard_edges()
+{
+	int64_t x, y, w, h;
+
+//	if(!mwindow->edl->session->show_assets) return;
+
+	for(Track *track = mwindow->edl->tracks->first; track; track = track->next) {
+		for(Edit *edit = track->edits->first; edit; edit = edit->next) {
+			if( !edit->hard_left && !edit->hard_right ) continue;
+			edit_dimensions(edit, x, y, w, h);
+			set_color(GREEN);
+			set_opaque();    int y1 = y+h-1;
+			if( edit->hard_left ) {
+				ArrayList<int> xpt, ypt;
+				xpt.append(x);              ypt.append(y1);
+				xpt.append(x+HANDLE_W);     ypt.append(y1);
+				xpt.append(x);              ypt.append(y1-HANDLE_H);
+				fill_polygon(&xpt, &ypt);
+			}
+			if( edit->hard_right ) {
+				ArrayList<int> xpt, ypt;   int x1 = x+w-1;
+				xpt.append(x1);            ypt.append(y1);
+				xpt.append(x1-HANDLE_W);   ypt.append(y1);
+				xpt.append(x1);            ypt.append(y1-HANDLE_H);
+				fill_polygon(&xpt, &ypt);
+			}
+		}
+	}
+}
+
 void TrackCanvas::draw_inout_points()
 {
 }
@@ -3442,6 +3472,7 @@ void TrackCanvas::draw_overlays()
 
 // Plugins
 	draw_plugins();
+	draw_hard_edges();
 
 // Loop points
 	draw_loop_points();
@@ -4301,53 +4332,58 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 	int &rerender, int &update_overlay, int &new_cursor, int &update_cursor)
 {
 	Edit *edit_result = 0;
-	int handle_result = 0;
+	int handle_result = -1;
 	int result = 0;
 
-	if(!mwindow->edl->session->show_assets) return 0;
+	if( !mwindow->edl->session->show_assets ) return 0;
 
-	for(Track *track = mwindow->edl->tracks->first;
-		track && !result;
-		track = track->next) {
-		for(Edit *edit = track->edits->first;
-			edit && !result;
-			edit = edit->next) {
+	for( Track *track=mwindow->edl->tracks->first; track && !result; track=track->next) {
+		for( Edit *edit=track->edits->first; edit && !result; edit=edit->next ) {
 			int64_t edit_x, edit_y, edit_w, edit_h;
 			edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
 
-			if(cursor_x >= edit_x && cursor_x <= edit_x + edit_w &&
-				cursor_y >= edit_y && cursor_y < edit_y + edit_h) {
-				if(cursor_x < edit_x + HANDLE_W) {
+			if( cursor_x >= edit_x && cursor_x <= edit_x + edit_w &&
+				cursor_y >= edit_y && cursor_y < edit_y + edit_h ) {
+				if( cursor_x < edit_x + HANDLE_W ) {
 					edit_result = edit;
 					handle_result = 0;
-					result = 1;
+					if( cursor_y >= edit_y+edit_h - HANDLE_W ) {
+						new_cursor = DOWNLEFT_RESIZE;
+						if( button_press == LEFT_BUTTON )
+							result = -1;
+					}
+					else
+						result = 1;
 				}
-				else if(cursor_x >= edit_x + edit_w - HANDLE_W) {
+				else if( cursor_x >= edit_x + edit_w - HANDLE_W ) {
 					edit_result = edit;
 					handle_result = 1;
-					result = 1;
-				}
-				else {
-					result = 0;
+					if( cursor_y >= edit_y+edit_h - HANDLE_W ) {
+						new_cursor = DOWNRIGHT_RESIZE;
+						if( button_press == LEFT_BUTTON )
+							result = -1;
+					}
+					else
+						result = 1;
 				}
 			}
 		}
 	}
 
 	update_cursor = 1;
-	if(result) {
+	if( result > 0 ) {
 		double position = 0;
-		if(handle_result == 0) {
+		if( handle_result == 0 ) {
 			position = edit_result->track->from_units(edit_result->startproject);
 			new_cursor = LEFT_CURSOR;
 		}
-		else if(handle_result == 1) {
+		else if( handle_result == 1 ) {
 			position = edit_result->track->from_units(edit_result->startproject + edit_result->length);
 			new_cursor = RIGHT_CURSOR;
 		}
 
 // Reposition cursor
-		if(button_press) {
+		if( button_press ) {
 			mwindow->session->drag_edit = edit_result;
 			mwindow->session->drag_handle = handle_result;
 			mwindow->session->drag_button = get_buttonpress() - 1;
@@ -4360,6 +4396,43 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 			rerender = start_selection(position);
 			update_overlay = 1;
 		}
+	}
+	else if( result <  0) {
+		mwindow->undo->update_undo_before();
+		if( !shift_down() ) {
+			if( handle_result == 0 )
+				edit_result->hard_left = !edit_result->hard_left;
+			else if( handle_result == 1 )
+				edit_result->hard_right = !edit_result->hard_right;
+		}
+		else {
+			int status = handle_result == 0 ? edit_result->hard_left :
+				     handle_result == 1 ? edit_result->hard_right : 0;
+			int new_status = !status;
+			int64_t edit_edge = edit_result->startproject;
+			if( handle_result == 1 ) edit_edge += edit_result->length;
+			double edge_position = edit_result->track->from_units(edit_edge);
+			for( Track *track=mwindow->edl->tracks->first; track!=0; track=track->next ) {
+				int64_t track_position = track->to_units(edge_position, 1);
+				Edit *left_edit = track->edits->editof(track_position, PLAY_FORWARD, 0);
+				if( left_edit ) {
+					int64_t left_edge = left_edit->startproject;
+					double left_position = track->from_units(left_edge);
+					if( EQUIV(edge_position, left_position) )
+						left_edit->hard_left = new_status;
+				}
+				Edit *right_edit = track->edits->editof(track_position, PLAY_REVERSE, 0);
+				if( right_edit ) {
+					int64_t right_edge = right_edit->startproject + right_edit->length;
+					double right_position = track->from_units(right_edge);
+					if( EQUIV(edge_position, right_position) )
+						right_edit->hard_right = new_status;
+				}
+			}
+		}
+		rerender = update_overlay = 1;
+		mwindow->undo->update_undo_after(_("hard_edge"), LOAD_EDITS);
+		result = 1;
 	}
 
 	return result;

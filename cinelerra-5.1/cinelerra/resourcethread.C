@@ -164,7 +164,7 @@ ResourceThread::ResourceThread(MWindow *mwindow, MWindowGUI *gui)
 	temp_picon = 0;
 	temp_picon2 = 0;
 	draw_lock = new Condition(0, "ResourceThread::draw_lock", 0);
-//	interrupted_lock = new Condition(0, "ResourceThread::interrupted_lock", 0);
+	source_lock = new Condition(1, "ResourceThread::source_lock", 0);
 	item_lock = new Mutex("ResourceThread::item_lock");
 	audio_buffer = 0;
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -186,7 +186,7 @@ ResourceThread::~ResourceThread()
 {
 	stop();
 	delete draw_lock;
-//	delete interrupted_lock;
+	delete source_lock;
 	delete item_lock;
 	delete temp_picon;
 	delete temp_picon2;
@@ -298,7 +298,7 @@ void ResourceThread::run()
 	{
 
 		draw_lock->lock("ResourceThread::run");
-
+		source_lock->lock("ResourceThread::run");
 		while(!interrupted)
 		{
 // Pull off item
@@ -329,6 +329,7 @@ void ResourceThread::run()
 		get_audio_source(0);
 		get_video_source(0);
 		mwindow->age_caches();
+		source_lock->unlock();
 	}
 }
 

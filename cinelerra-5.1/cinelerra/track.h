@@ -90,36 +90,22 @@ public:
 	void get_source_dimensions(double position, int &w, int &h);
 
 // Editing
-	void insert_asset(Asset *asset,
-		EDL *nested_edl,
-		double length,
-		double position,
-		int track_number);
-	Plugin* insert_effect(const char *title,
-		SharedLocation *shared_location,
-		KeyFrame *keyframe,
-		PluginSet *plugin_set,
-		double start,
-		double length,
-		int plugin_type);
-	void insert_plugin_set(Track *track,
-		int64_t position,
-		int64_t min_length,
-		int edit_autos);
+	void insert_asset(Asset *asset, EDL *nested_edl,
+		double length, double position, int track_number);
+	Plugin* insert_effect(const char *title, SharedLocation *shared_location,
+		KeyFrame *keyframe, PluginSet *plugin_set,
+		double start, double length, int plugin_type);
+	void insert_plugin_set(Track *track, int64_t position,
+		int64_t min_length, int edit_autos);
 	void detach_effect(Plugin *plugin);
 // Insert a track from another EDL
-	void insert_track(Track *track,
-		double position,
-		int replace_default,
-		int edit_plugins,
-		int edit_autos,
+	void insert_track(Track *track, double position,
+		int replace_default, int edit_plugins, int edit_autos,
 // Pad pasted sections to a minimum of this length.
 		double edl_length);
 	void shuffle_edits(double start, double end, int first_track);
 	void reverse_edits(double start, double end, int first_track);
-	void align_edits(double start,
-		double end,
-		ArrayList<double> *times);
+	void align_edits(double start, double end, ArrayList<double> *times);
 // Optimize editing
 	void optimize();
 	int is_muted(int64_t position, int direction);  // Test muting status
@@ -137,20 +123,14 @@ public:
 	virtual double from_units(int64_t position);
 
 
-
 // Positions are identical for handle modifications
     virtual int identical(int64_t sample1, int64_t sample2) { return 0; };
 
 // Get the plugin belonging to the set.
 	Plugin* get_current_plugin(double position,
-		int plugin_set,
-		int direction,
-		int convert_units,
-		int use_nudge);
+		int plugin_set, int direction, int convert_units, int use_nudge);
 	Plugin* get_current_transition(double position,
-		int direction,
-		int convert_units,
-		int use_nudge);
+		int direction, int convert_units, int use_nudge);
 
 // detach shared effects referencing module
 	void detach_shared_effects(int module);
@@ -159,13 +139,11 @@ public:
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
 // Used by PlayableTracks::is_playable.
-	int is_synthesis(int64_t position,
-		int direction);
+	int is_synthesis(int64_t position, int direction);
 
 // Used by PlayableTracks::is_playable
 // Returns 1 if the track is in the output boundaries.
-	virtual int is_playable(int64_t position,
-		int direction);
+	virtual int is_playable(int64_t position, int direction);
 
 // Test direct copy conditions common to all the rendering routines
 	virtual int direct_copy_possible(int64_t start, int direction, int use_nudge);
@@ -177,12 +155,8 @@ public:
 	virtual int copy_settings(Track *track);
 	void shift_keyframes(int64_t position, int64_t length);
 	void shift_effects(int64_t position, int64_t length, int edit_autos);
-	void change_plugins(SharedLocation &old_location,
-		SharedLocation &new_location,
-		int do_swap);
-	void change_modules(int old_location,
-		int new_location,
-		int do_swap);
+	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);
+	void change_modules(int old_location, int new_location, int do_swap);
 	int plugin_exists(Plugin *plugin);
 
 	EDL *edl;
@@ -217,8 +191,6 @@ public:
 	virtual int change_channels(int oldchannels, int newchannels) { return 0; };
 	virtual int dump(FILE *fp);
 
-
-
 // ===================================== editing
 	int copy(double start, double end,
 		FileXML *file, const char *output_path = "");
@@ -226,64 +198,43 @@ public:
 		double end,
 		ArrayList<Asset*> *asset_list);
 	virtual int copy_derived(int64_t start, int64_t end, FileXML *file) { return 0; };
-	virtual int paste_derived(int64_t start, int64_t end, int64_t total_length, FileXML *file, int &current_channel) { return 0; };
-	int clear(double start,
-		double end,
-		int edit_edits,
-		int edit_labels,
-		int clear_plugins,
-		int edit_autos,
-		int convert_units,
-		Edits *trim_edits);
+	virtual int paste_derived(int64_t start, int64_t end,
+		int64_t total_length, FileXML *file, int &current_channel) { return 0; };
+	int blade(double position);
+	int clear(double start, double end,
+		int edit_edits, int edit_labels, int clear_plugins,
+		int edit_autos, int convert_units, Edits *trim_edits);
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
-	void clear_automation(double selectionstart,
-		double selectionend,
+	void clear_automation(double selectionstart, double selectionend,
 		int shift_autos   /* = 1 */,
 		int default_only  /* = 0 */);
-	void set_automation_mode(double selectionstart,
-		double selectionend,
+	void set_automation_mode(double selectionstart, double selectionend,
 		int mode);
 	virtual int clear_automation_derived(AutoConf *auto_conf,
-		double selectionstart,
-		double selectionend,
+		double selectionstart, double selectionend,
 		int shift_autos = 1) { return 0; };
 	virtual int clear_derived(double start,
 		double end) { return 0; };
 
-	int copy_automation(double selectionstart,
-		double selectionend,
-		FileXML *file,
-		int default_only,
-		int active_only);
+	int copy_automation(double selectionstart, double selectionend,
+		FileXML *file, int default_only, int active_only);
 	virtual int copy_automation_derived(AutoConf *auto_conf,
-		double selectionstart,
-		double selectionend,
+		double selectionstart, double selectionend,
 		FileXML *file) { return 0; };
-	int paste_automation(double selectionstart,
-		double total_length,
-		double frame_rate,
-		int64_t sample_rate,
-		FileXML *file,
-		int default_only,
-		int active_only);
-	virtual int paste_automation_derived(double selectionstart,
-		double selectionend,
-		double total_length,
-		FileXML *file,
-		int shift_autos,
-		int &current_pan) { return 0; };
+	int paste_automation(double selectionstart, double total_length,
+		double frame_rate, int64_t sample_rate, FileXML *file,
+		int default_only, int active_only);
+	virtual int paste_automation_derived(double selectionstart, double selectionend,
+		double total_length, FileXML *file, int shift_autos, int &current_pan) { return 0; };
 	int paste_auto_silence(double start, double end);
 	virtual int paste_auto_silence_derived(int64_t start, int64_t end) { return 0; };
 	int scale_time(float rate_scale, int scale_edits, int scale_autos, int64_t start, int64_t end);
 	virtual int scale_time_derived(float rate_scale, int scale_edits, int scale_autos, int64_t start, int64_t end) { return 0; };
 	int purge_asset(Asset *asset);
 	int asset_used(Asset *asset);
-	int clear_handle(double start,
-		double end,
-		int clear_labels,
-		int clear_plugins,
-		int edit_autos,
+	int clear_handle(double start, double end,
+		int clear_labels, int clear_plugins, int edit_autos,
 		double &distance);
 	int paste_silence(double start, double end, int edit_plugins, int edit_autos);
 	virtual int select_translation(int cursor_x, int cursor_y) { return 0; };  // select video coordinates for frame

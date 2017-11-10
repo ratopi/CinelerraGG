@@ -1153,6 +1153,15 @@ int Track::copy_assets(double start,
 	return 0;
 }
 
+int Track::blade(double position)
+{
+	int64_t start = to_units(position, 1);
+	Edit *edit = edits->split_edit(start);
+	if( !edit ) return 1;
+	edit->hard_left = 1;
+	if( edit->previous ) edit->previous->hard_right = 1;
+	return 0;
+}
 
 int Track::clear(double start, double end,
 	int edit_edits, int edit_labels, int edit_plugins,

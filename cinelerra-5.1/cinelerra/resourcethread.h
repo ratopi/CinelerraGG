@@ -159,7 +159,7 @@ public:
 	MWindow *mwindow;
 	MWindowGUI *gui;
 	Condition *draw_lock;
-//	Condition *interrupted_lock;
+	Condition *source_lock;
 	Mutex *item_lock;
 	ArrayList<ResourceThreadItem*> items;
 	int interrupted;

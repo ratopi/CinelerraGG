@@ -32,7 +32,9 @@
 
 BC_Theme::BC_Theme()
 {
-	last_image = 0;
+	last_image_data = 0;
+	last_image_set = 0;
+	image_sets_start = -1;
 }
 
 BC_Theme::~BC_Theme()
@@ -43,11 +45,15 @@ BC_Theme::~BC_Theme()
 
 void BC_Theme::dump()
 {
-	printf("BC_Theme::dump 1 image_sets=%d images=%d\n",
-		image_sets.size(), images.size());
+	printf("BC_Theme::dump 1 images=%d\n", images.size());
 	for( int i=0; i<images.size(); ++i ) {
-		image_item *item = images[i];
-		printf("    %s %p\n", item->name, item->data);
+		BC_ImageData *image_data = images[i];
+		printf("%4d. %s %p\n", i, image_data->name, image_data->data);
+	}
+	printf("BC_Theme::dump 2 image_sets=%d\n", image_sets.size());
+	for( int i=0; i<image_sets.size(); ++i ) {
+		BC_ThemeSet *image_set = image_sets[i];
+		printf("%4d. %s %p\n", i, image_set->title, image_set->data[0]);
 	}
 }
 
@@ -64,7 +70,7 @@ VFrame* BC_Theme::new_image(const char *title, const char *path)
 
 	BC_ThemeSet *result = new BC_ThemeSet(1, 0, title);
 	result->data[0] = new VFramePng(get_image_data(path));
-	image_sets.append(result);
+	add_image_set(result);
 	return result->data[0];
 }
 
@@ -85,7 +91,7 @@ VFrame** BC_Theme::new_image_set(const char *title, int total, va_list *args)
 	if( existing_image_set ) return existing_image_set;
 
 	BC_ThemeSet *result = new BC_ThemeSet(total, 1, title);
-	image_sets.append(result);
+	add_image_set(result);
 	for( int i=0; i<total; ++i ) {
 		char *path = va_arg(*args, char*);
 		result->data[i] = new_image(path);
@@ -103,7 +109,7 @@ VFrame** BC_Theme::new_image_set_images(const char *title, int total, ...)
 	}
 
 	BC_ThemeSet *result = new BC_ThemeSet(total, 0, title);
-	image_sets.append(result);
+	add_image_set(result);
 	for( int i=0; i<total; ++i ) {
 		result->data[i] = va_arg(list, VFrame*);
 	}
@@ -131,21 +137,64 @@ VFrame** BC_Theme::new_image_set(int total, ...)
 	return result;
 }
 
+void BC_Theme::add_image_set(BC_ThemeSet *image_set)
+{
+	image_sets.append(image_set);
+	if( image_sets_start >= 0 ) {
+		printf("BC_Theme::add_image_set image_sets unsorted, lookups degraded\n");
+		image_sets_start = -1;
+	}
+}
+
+int BC_Theme::image_set_cmpr(const void *ap, const void *bp)
+{
+	BC_ThemeSet*a = *(BC_ThemeSet**)ap, *b = *(BC_ThemeSet**)bp;
+        return strcmp(a->title, b->title);
+}
+
+void BC_Theme::sort_image_sets()
+{
+	if( image_sets_start >= 0 ) return;
+	qsort(&image_sets[0], image_sets.size(), sizeof(image_sets[0]), image_set_cmpr);
+// skip over un-titled image sets
+	int i = 0, n = image_sets.size();
+	while( i<n && !image_sets[i]->title[0] ) ++i;
+	image_sets_start = i;
+}
+
 BC_ThemeSet* BC_Theme::get_image_set_object(const char *title)
 {
-// compare title[0],title[1] for faster prefix test
-	const unsigned char *bp = (const unsigned char*)title;
-	unsigned short tval = bp[0];
-	if( tval ) tval |= (bp[1] << 8);
+	if( last_image_set && !strcmp(title,last_image_set->title) )
+		return last_image_set;
 
-	for( int i=0; i<image_sets.size(); ++i ) {
-		const char *tp = image_sets[i]->title;
-		bp = (const unsigned char *) tp;
-		unsigned short val = bp[0];
-		if( val ) val |= (bp[1] << 8);
-		if( val != tval ) continue;
-		if( !strcmp(tp, title) ) return image_sets[i];
+	if( image_sets_start >= 0 ) {
+// binary search for image set
+		int r = image_sets.size(), l = image_sets_start-1;
+		int m = 0, v = -1;
+		while( r-l > 1 ) {
+			m = (l + r) / 2;
+			BC_ThemeSet *image_set = image_sets[m];
+			if( !(v=strcmp(title, image_set->title)) )
+				return last_image_set = image_set;
+			if( v > 0 ) l = m; else r = m;
+		}
 	}
+	else {
+// compare title[0],title[1] for faster prefix test
+		const unsigned char *tp = (const unsigned char*)title;
+		unsigned short tval = tp[0];
+		if( tval ) tval |= (tp[1] << 8);
+
+		for( int i=0; i<image_sets.size(); ++i ) {
+			tp = (const unsigned char *)image_sets[i]->title;
+			unsigned short val = tp[0];
+			if( val ) val |= (tp[1] << 8);
+			if( val != tval ) continue;
+			if( !strcmp((const char *)tp, title) )
+				return last_image_set = image_sets[i];
+		}
+	}
+
 	return 0;
 }
 
@@ -211,7 +260,7 @@ VFrame** BC_Theme::new_button(const char *overlay_path,
 {
 	VFramePng default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(3, 1, title ? title : "");
-	if( title ) image_sets.append(result);
+	if( title ) add_image_set(result);
 
 	result->data[0] = new_image(up_path);
 	result->data[1] = new_image(hi_path);
@@ -232,7 +281,7 @@ VFrame** BC_Theme::new_button4(const char *overlay_path,
 {
 	VFramePng default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(4, 1, title ? title : "");
-	if( title ) image_sets.append(result);
+	if( title ) add_image_set(result);
 
 	result->data[0] = new_image(up_path);
 	result->data[1] = new_image(hi_path);
@@ -253,7 +302,7 @@ VFrame** BC_Theme::new_button(const char *overlay_path,
 {
 	VFramePng default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(3, 0, title ? title : "");
-	if( title ) image_sets.append(result);
+	if( title ) add_image_set(result);
 
 	result->data[0] = new VFrame(*up);
 	result->data[1] = new VFrame(*hi);
@@ -274,7 +323,7 @@ VFrame** BC_Theme::new_toggle(const char *overlay_path,
 {
 	VFramePng default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(5, 1, title ? title : "");
-	if( title ) image_sets.append(result);
+	if( title ) add_image_set(result);
 
 	result->data[0] = new_image(up_path);
 	result->data[1] = new_image(hi_path);
@@ -296,7 +345,7 @@ VFrame** BC_Theme::new_toggle(const char *overlay_path,
 {
 	VFramePng default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(5, 0, title ? title : "");
-	if( title ) image_sets.append(result);
+	if( title ) add_image_set(result);
 
 	result->data[0] = new VFrame(*up);
 	result->data[1] = new VFrame(*hi);
@@ -404,7 +453,7 @@ void BC_Theme::set_data(unsigned char *ptr)
 		if( cp + sizeof(unsigned) > dp ) break;
 		unsigned ofs = 0;
 		for( int i=sizeof(unsigned); --i>=0; ofs|=cp[i] ) ofs <<= 8;
-		images.append(new image_item(nm, dp+ofs));
+		images.append(new BC_ImageData(nm, dp+ofs));
 		cp += sizeof(unsigned);
 	}
 
@@ -415,15 +464,15 @@ void BC_Theme::set_data(unsigned char *ptr)
 
 int BC_Theme::images_cmpr(const void *ap, const void *bp)
 {
-	image_item *a = *(image_item**)ap, *b = *(image_item**)bp;
-        return strcasecmp(a->name, b->name);
+	BC_ImageData *a = *(BC_ImageData**)ap, *b = *(BC_ImageData**)bp;
+        return strcmp(a->name, b->name);
 }
 
 unsigned char* BC_Theme::get_image_data(const char *name, int log_errs)
 {
 // Image is the same as the last one
-	if( last_image && !strcasecmp(last_image->name, name) )
-		return last_image->data;
+	if( last_image_data && !strcasecmp(last_image_data->name, name) )
+		return last_image_data->data;
 
 // look forwards thru data sets for name
 	int start_item = 0;
@@ -434,11 +483,11 @@ unsigned char* BC_Theme::get_image_data(const char *name, int log_errs)
 		int m = 0, v = -1;
 		while( r-l > 1 ) {
 			m = (l + r) / 2;
-			image_item *item = images[m];
-			if( !(v=strcasecmp(name, item->name)) ) {
-				item->used = 1;
-				last_image = item;
-				return item->data;
+			BC_ImageData *image_data = images[m];
+			if( !(v=strcasecmp(name, image_data->name)) ) {
+				image_data->used = 1;
+				last_image_data = image_data;
+				return image_data->data;
 			}
 			if( v > 0 ) l = m; else r = m;
 		}

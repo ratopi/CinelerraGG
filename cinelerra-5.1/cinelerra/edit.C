@@ -83,6 +83,8 @@ void Edit::reset()
 	user_title[0] = 0;
 	nested_edl = 0;
 	is_plugin = 0;
+	hard_left = 0;
+	hard_right = 0;
 }
 
 Indexable* Edit::get_source()
@@ -136,6 +138,8 @@ int Edit::copy(int64_t start,
 			file->tag.set_property("STARTSOURCE", startsource_in_selection);
 			file->tag.set_property("CHANNEL", (int64_t)channel);
 			file->tag.set_property("LENGTH", length_in_selection);
+			file->tag.set_property("HARD_LEFT", hard_left);
+			file->tag.set_property("HARD_RIGHT", hard_right);
 			if(user_title[0]) file->tag.set_property("USER_TITLE", user_title);
 //printf("Edit::copy 5\n");
 
@@ -240,6 +244,8 @@ void Edit::copy_from(Edit *edit)
 	this->startsource = edit->startsource;
 	this->startproject = edit->startproject;
 	this->length = edit->length;
+	this->hard_left = edit->hard_left;
+	this->hard_right = edit->hard_right;
 	strcpy (this->user_title, edit->user_title);
 
 	if(edit->transition)
@@ -315,6 +321,8 @@ int Edit::identical(Edit &edit)
 		this->startsource == edit.startsource &&
 		this->startproject == edit.startproject &&
 		this->length == edit.length &&
+		this->hard_left == edit.hard_left &&
+		this->hard_right == edit.hard_right &&
 		this->transition == edit.transition &&
 		this->channel == edit.channel);
 	return result;
@@ -372,8 +380,8 @@ int Edit::dump(FILE *fp)
 		fprintf(fp,"      TRANSITION %p\n", transition);
 		transition->dump(fp);
 	}
-	fprintf(fp,"      startsource %jd startproject %jd length %jd\n",
-		startsource, startproject, length); fflush(fp);
+	fprintf(fp,"      startsource %jd startproject %jd hard lt/rt %d/%d length %jd\n",
+		startsource, startproject, hard_left, hard_right, length); fflush(fp);
 	return 0;
 }
 
@@ -381,6 +389,8 @@ int Edit::load_properties(FileXML *file, int64_t &startproject)
 {
 	startsource = file->tag.get_property("STARTSOURCE", (int64_t)0);
 	length = file->tag.get_property("LENGTH", (int64_t)0);
+	hard_left = file->tag.get_property("HARD_LEFT", (int64_t)0);
+	hard_right = file->tag.get_property("HARD_RIGHT", (int64_t)0);
 	user_title[0] = 0;
 	file->tag.get_property("USER_TITLE", user_title);
 	this->startproject = startproject;

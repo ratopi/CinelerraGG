@@ -119,16 +119,8 @@ void VTrack::set_default_title()
 
 int64_t VTrack::to_units(double position, int round)
 {
-	if(round)
-	{
-		return Units::round(position * edl->session->frame_rate);
-	}
-	else
-	{
-// Kludge for rounding errors, just on a smaller scale than formal rounding
-		position *= edl->session->frame_rate;
-		return Units::to_int64(position);
-	}
+	return round ? Units::round(position * edl->session->frame_rate) :
+		Units::to_int64(position * edl->session->frame_rate + 1e-6);
 }
 
 double VTrack::to_doubleunits(double position)

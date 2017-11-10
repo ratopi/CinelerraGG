@@ -331,6 +331,7 @@ public:
 	void copy();
 	int copy(double start, double end);
 	void cut();
+	void blade(double position);
 	void cut(double start, double end, double new_position=-1);
 // snap off edit from current position to handle/label
 	void snap_left_edit();

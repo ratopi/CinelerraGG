@@ -1070,8 +1070,8 @@ void MWindow::init_theme()
 	theme->build_menus();
 	init_menus();
 
+	theme->sort_image_sets();
 	theme->check_used();
-
 //printf("MWindow::init_theme %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 }
 
@@ -1565,18 +1565,19 @@ void MWindow::stop_playback(int wait)
 {
 	int locked  = gui->get_window_lock();
 	if( locked ) gui->unlock_window();
+	gui->stop_drawing();
 
-	cwindow->playback_engine->stop_playback();
+	cwindow->stop_playback();
 
 	for(int i = 0; i < vwindows.size(); i++) {
 		VWindow *vwindow = vwindows[i];
 		if( !vwindow->is_running() ) continue;
-		vwindow->playback_engine->stop_playback();
+		vwindow->stop_playback();
 	}
 	for(int i = 0; i < zwindows.size(); i++) {
 		ZWindow *zwindow = zwindows[i];
 		if( !zwindow->is_running() ) continue;
-		zwindow->zgui->playback_engine->stop_playback();
+		zwindow->stop_playback();
 	}
 	if( locked ) gui->lock_window("MWindow::stop_playback");
 }
@@ -3375,35 +3376,47 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 
 void MWindow::reset_caches()
 {
-	gui->resource_thread->get_video_source(0);
-	gui->resource_thread->get_audio_source(0);
+	stop_playback(1);
+	int locked  = gui->get_window_lock();
+	if( locked ) gui->unlock_window();
+	gui->resource_thread->stop_draw(1);
+	gui->resource_thread->source_lock->lock("MWindow::reset_caches");
 	frame_cache->remove_all();
 	wave_cache->remove_all();
 	audio_cache->remove_all();
 	video_cache->remove_all();
-	if( cwindow->playback_engine && cwindow->playback_engine->audio_cache )
-		cwindow->playback_engine->audio_cache->remove_all();
-	if( cwindow->playback_engine && cwindow->playback_engine->video_cache )
-		cwindow->playback_engine->video_cache->remove_all();
-
+	gui->resource_thread->source_lock->unlock();
+	if( locked ) gui->lock_window("MWindow::reset_caches");
+	if( cwindow->playback_engine ) {
+		if( cwindow->playback_engine->audio_cache )
+			cwindow->playback_engine->audio_cache->remove_all();
+		if( cwindow->playback_engine->video_cache )
+			cwindow->playback_engine->video_cache->remove_all();
+	}
 	for(int i = 0; i < vwindows.size(); i++) {
 		VWindow *vwindow = vwindows[i];
 		if( !vwindow->is_running() ) continue;
-		if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
+		if( !vwindow->playback_engine ) continue;
+		if( vwindow->playback_engine->audio_cache )
 			vwindow->playback_engine->audio_cache->remove_all();
-		if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
+		if( vwindow->playback_engine->video_cache )
 			vwindow->playback_engine->video_cache->remove_all();
 	}
 }
 
 void MWindow::remove_asset_from_caches(Asset *asset)
 {
-	gui->resource_thread->get_video_source(0);
-	gui->resource_thread->get_audio_source(0);
+	stop_playback(1);
+	int locked  = gui->get_window_lock();
+	if( locked ) gui->unlock_window();
+	gui->resource_thread->stop_draw(1);
+	gui->resource_thread->source_lock->lock("MWindow::remove_asset_from_caches");
 	frame_cache->remove_asset(asset);
 	wave_cache->remove_asset(asset);
 	audio_cache->delete_entry(asset);
 	video_cache->delete_entry(asset);
+	gui->resource_thread->source_lock->unlock();
+	if( locked ) gui->lock_window("MWindow::remove_asset_from_caches");
 	if( cwindow->playback_engine && cwindow->playback_engine->audio_cache )
 		cwindow->playback_engine->audio_cache->delete_entry(asset);
 	if( cwindow->playback_engine && cwindow->playback_engine->video_cache )
@@ -3411,9 +3424,10 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 	for(int i = 0; i < vwindows.size(); i++) {
 		VWindow *vwindow = vwindows[i];
 		if( !vwindow->is_running() ) continue;
-		if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
+		if( !vwindow->playback_engine ) continue;
+		if( vwindow->playback_engine->audio_cache )
 			vwindow->playback_engine->audio_cache->delete_entry(asset);
-		if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
+		if( vwindow->playback_engine->video_cache )
 			vwindow->playback_engine->video_cache->delete_entry(asset);
 	}
 }

@@ -29,8 +29,18 @@
 #include <stdarg.h>
 
 class BC_ThemeSet;
+class BC_ImageData;
 
+class BC_ImageData {
+public:
+	char *name;
+	unsigned char *data;
+	int used;
 
+	BC_ImageData(char *nm, unsigned char *dp) {
+		name = nm;  data = dp;  used = 0;
+	}
+};
 
 
 class BC_Theme
@@ -105,6 +115,7 @@ public:
 
 // Verify all images have been used after initialization.
 	void check_used();
+	void sort_image_sets();
 
 	void dump();
 	BC_Resources* get_resources();
@@ -118,22 +129,15 @@ private:
 // Decompressed image storage.
 // Sets of images.
 	ArrayList<BC_ThemeSet*> image_sets;
+	BC_ThemeSet *last_image_set;
+	int image_sets_start;
+	static int image_set_cmpr(const void *ap, const void *bp);
+	void add_image_set(BC_ThemeSet *image_set);
 
 // Compressed images are loaded in here.
-	class image_item {
-	public:
-		char *name;
-		unsigned char *data;
-		int used;
-
-		image_item(char *nm, unsigned char *dp) {
-			name = nm;  data = dp;  used = 0;
-		}
-	} *last_image;
-
-	ArrayList<image_item *> images;
 	ArrayList<int> data_items;
-
+	ArrayList<BC_ImageData *> images;
+	BC_ImageData *last_image_data;
 	static int images_cmpr(const void *ap, const void *bp);
 };
 

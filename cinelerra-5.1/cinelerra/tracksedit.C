@@ -47,6 +47,15 @@
 #include "vtrack.h"
 #include <string.h>
 
+int Tracks::blade(double position)
+{
+	for( Track *track=first; track!=0; track=track->next ) {
+		if( !track->record ) continue;
+		track->blade(position);
+	}
+	return 0;
+}
+
 int Tracks::clear(double start, double end, int clear_plugins, int edit_autos)
 {
 	Track *current_track;

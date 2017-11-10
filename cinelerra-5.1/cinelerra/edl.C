@@ -840,6 +840,11 @@ void EDL::deglitch(double position)
 	}
 }
 
+int EDL::blade(double position)
+{
+	return tracks->blade(align_to_frame(position,0));
+}
+
 int EDL::clear(double start, double end,
 	int clear_labels, int clear_plugins, int edit_autos)
 {

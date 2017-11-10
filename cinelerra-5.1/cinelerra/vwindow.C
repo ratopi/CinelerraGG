@@ -340,9 +340,13 @@ void VWindow::update_position(int change_type,
 	}
 }
 
-
-
-
+void VWindow::stop_playback()
+{
+	int locked = gui->get_window_lock();
+	if( locked ) gui->unlock_window();
+	playback_engine->interrupt_playback(1);
+	if( locked ) gui->lock_window("VWindow::stop_playback");
+}
 
 int VWindow::update_position(double position)
 {

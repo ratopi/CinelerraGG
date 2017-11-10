@@ -69,6 +69,7 @@ public:
 	void show_window();
 	void hide_window();
 	int update_position(double position);
+	void stop_playback();
 
 	int destination;
 	MWindow *mwindow;

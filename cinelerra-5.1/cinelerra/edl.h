@@ -186,6 +186,7 @@ public:
 		int edit_autos);
 	void remove_from_project(ArrayList<Indexable*> *assets);
 	void remove_from_project(ArrayList<EDL*> *clips);
+	int blade(double position);
 	int clear(double start,
 		double end,
 		int clear_labels,

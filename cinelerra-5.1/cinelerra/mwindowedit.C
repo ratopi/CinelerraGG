@@ -520,7 +520,26 @@ void MWindow::cut()
 {
 	double start = edl->local_session->get_selectionstart();
 	double end = edl->local_session->get_selectionend();
-	cut(start, end);
+	if( EQUIV(start,end) )
+		blade(start);
+	else
+		cut(start, end);
+}
+
+void MWindow::blade(double position)
+{
+	undo->update_undo_before();
+	edl->blade(position);
+	edl->optimize();
+	save_backup();
+	undo->update_undo_after(_("blade"), LOAD_EDITS | LOAD_TIMEBAR);
+	restart_brender();
+	update_plugin_guis();
+	gui->update(1, 2, 1, 1, 1, 1, 0);
+	cwindow->update(1, 0, 0, 0, 1);
+	awindow->gui->async_update_assets();
+	cwindow->playback_engine->que->
+		send_command(CURRENT_FRAME, CHANGE_EDL, edl, 1);
 }
 
 void MWindow::cut(double start, double end, double new_position)

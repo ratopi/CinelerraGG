@@ -76,7 +76,7 @@ public:
 	void delete_source(int do_main_edl, int update_gui);
 	void goto_start();
 	void goto_end();
-
+	void stop_playback();
 
 	VTracking *playback_cursor;
 

@@ -139,10 +139,8 @@ void ATrack::set_default_title()
 
 int64_t ATrack::to_units(double position, int round)
 {
-	if(round)
-		return Units::round(position * edl->session->sample_rate);
-	else
-		return Units::to_int64(position * edl->session->sample_rate);
+	return round ? Units::round(position * edl->session->sample_rate) :
+		Units::to_int64(position * edl->session->sample_rate + 1e-6);
 }
 
 double ATrack::to_doubleunits(double position)

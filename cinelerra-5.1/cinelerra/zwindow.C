@@ -222,6 +222,14 @@ void ZWindow::change_source(EDL *edl)
 	}
 }
 
+void ZWindow::stop_playback()
+{
+	int locked = zgui->get_window_lock();
+	if( locked ) zgui->unlock_window();
+	zgui->playback_engine->interrupt_playback(1);
+	if( locked ) zgui->lock_window("ZWindow::stop_playback");
+}
+
 void ZWindow::issue_command(int command, int wait_tracking,
 		int use_inout, int update_refresh, int toggle_audio)
 {

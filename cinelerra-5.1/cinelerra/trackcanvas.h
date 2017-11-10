@@ -103,6 +103,7 @@ public:
 		int64_t edit_w,
 		int64_t edit_h);
 	void draw_automation();
+	void draw_hard_edges();
 	void draw_inout_points();
 	void draw_auto(Auto *current,
 		int x,

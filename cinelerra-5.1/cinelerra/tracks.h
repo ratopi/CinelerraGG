@@ -176,6 +176,7 @@ public:
 		double start,
 		double end,
 		int all);
+	int blade(double position);
 	int clear(double start, double end, int clear_plugins, int edit_autos);
 	void clear_automation(double selectionstart,
 		double selectionend);
