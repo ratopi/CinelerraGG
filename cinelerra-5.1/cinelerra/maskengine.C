@@ -370,22 +370,14 @@ SET_TRACE
 SET_TRACE
 		if(temp &&
 			(temp->get_w() != oversampled_package_w ||
-			temp->get_h() != oversampled_package_h))
-		{
-			delete temp;
-			temp = 0;
+			temp->get_h() != oversampled_package_h)) {
+			delete temp;  temp = 0;
 		}
 //printf("MaskUnit::process_package 1\n");
 
 SET_TRACE
-		if(!temp)
-		{
-			temp = new VFrame(0,
-				-1,
-				oversampled_package_w,
-				oversampled_package_h,
-				BC_A8,
-				-1);
+		if(!temp) {
+			temp = new VFrame(oversampled_package_w, oversampled_package_h, BC_A8, 0);
 		}
 
 SET_TRACE
@@ -868,18 +860,10 @@ SET_TRACE
 		recalculate = 1;
 		if(!mask)
 		{
-			mask = new VFrame(0,
-					-1,
-					output->get_w(),
-					output->get_h(),
-					new_color_model,
-					-1);
-			temp_mask = new VFrame(0,
-					-1,
-					output->get_w(),
-					output->get_h(),
-					new_color_model,
-					-1);
+			mask = new VFrame(output->get_w(), output->get_h(),
+					new_color_model, 0);
+			temp_mask = new VFrame(output->get_w(), output->get_h(),
+					new_color_model, 0);
 		}
 		if(new_feather > 0)
 			temp_mask->clear_frame();
@@ -934,19 +918,15 @@ void MaskEngine::init_packages()
 {
 SET_TRACE
 //printf("MaskEngine::init_packages 1\n");
-	int division = (int)((float)output->get_h() / (get_total_packages() / 2) + 0.5);
-	if(division < 1) division = 1;
-
+	int x0 = 0, y0 = 0, i = 0, n = get_total_packages();
+	int out_w = output->get_w(), out_h = output->get_h();
 SET_TRACE
-	for(int i = 0; i < get_total_packages(); i++)
-	{
-		MaskPackage *ptr = (MaskPackage*)get_package(i);
-
-		ptr->start_y = output->get_h() * i / get_total_packages();
-		ptr->end_y = output->get_h() * (i + 1) / get_total_packages();
-
-		ptr->start_x = output->get_w() * i / get_total_packages();
-		ptr->end_x = output->get_w() * (i + 1) / get_total_packages();
+	while( i < n ) {
+		MaskPackage *ptr = (MaskPackage*)get_package(i++);
+		int x1 = (out_w * i) / n, y1 = (out_h * i) / n;
+		ptr->start_x = x0;  ptr->end_x = x1;
+		ptr->start_y = y0;  ptr->end_y = y1;
+		x0 = x1;  y0 = y1;
 	}
 SET_TRACE
 //printf("MaskEngine::init_packages 2\n");

@@ -357,7 +357,7 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 
 		if(!temp)
 		{
-			temp = new VFrame(0, -1, width, height, source_cmodel, -1);
+			temp = new VFrame(width, height, source_cmodel, 0);
 		}
 		output_frame = temp;
 	}

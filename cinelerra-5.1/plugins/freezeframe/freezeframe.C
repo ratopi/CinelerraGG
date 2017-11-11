@@ -258,12 +258,8 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 	if(!first_frame && config.enabled)
 	{
 		if(!first_frame)
-			first_frame = new VFrame(0,
-				-1,
-				frame->get_w(),
-				frame->get_h(),
-				frame->get_color_model(),
-				-1);
+			first_frame = new VFrame(frame->get_w(), frame->get_h(),
+				frame->get_color_model(), 0);
 //printf("FreezeFrameMain::process_buffer 1 %jd\n", first_frame_position);
 		read_frame(first_frame,
 				0,

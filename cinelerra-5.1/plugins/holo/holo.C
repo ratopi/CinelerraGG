@@ -195,10 +195,8 @@ total = 0;
 	{
 		case 0:
 /* step 1: grab frame-1 to buffer-1 */
-// 			tmp = new VFrame(0,
-// 				input_ptr->get_w(),
-// 				input_ptr->get_h(),
-// 				project_color_model);
+// 			tmp = new VFrame(input_ptr->get_w(),input_ptr->get_h(),
+// 				project_color_model, 0);
 			bgimage->copy_from(input_ptr);
 			break;
 
@@ -247,12 +245,8 @@ int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		if(!effecttv)
 		{
 			effecttv = new EffectTV(input_ptr->get_w(), input_ptr->get_h());
-			bgimage = new VFrame(0,
-				-1,
-				input_ptr->get_w(),
-				input_ptr->get_h(),
-				input_ptr->get_color_model(),
-				-1);
+			bgimage = new VFrame(input_ptr->get_w(), input_ptr->get_h(),
+				input_ptr->get_color_model(), 0);
 
 			for(int i = 0; i < 256; i++)
 			{

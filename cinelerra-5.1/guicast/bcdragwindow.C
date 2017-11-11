@@ -109,7 +109,7 @@ BC_Pixmap *BC_DragWindow::prepare_frame(VFrame *frame, BC_WindowBase *parent_win
 	int tw = frame->get_w(), th = frame->get_h();
 
 	if( frame->get_color_model() != BC_RGBA8888 ) {
-		temp_frame = new VFrame(tw, th, BC_RGBA8888);
+		temp_frame = new VFrame(tw, th, BC_RGBA8888, 0);
 		temp_frame->transfer_from(frame);
 	}
 

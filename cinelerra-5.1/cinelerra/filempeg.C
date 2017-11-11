@@ -1325,12 +1325,8 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 
 						if(!temp_frame)
 						{
-							temp_frame = new VFrame(0,
-								-1,
-								temp_w,
-								temp_h,
-								output_cmodel,
-								-1);
+							temp_frame = new VFrame(temp_w, temp_h,
+									output_cmodel, 0);
 						}
 
 						BC_CModels::transfer(temp_frame->get_rows(),
@@ -1376,12 +1372,8 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 //printf("FileMPEG::write_frames %d\n", __LINE__);sleep(1);
 						if(!temp_frame)
 						{
-							temp_frame = new VFrame(0,
-								-1,
-								asset->width,
-								asset->height,
-								output_cmodel,
-								-1);
+							temp_frame = new VFrame(asset->width, asset->height,
+										output_cmodel, 0);
 						}
 
 // printf("FileMPEG::write_frames %d temp_frame=%p %p %p %p frame=%p %p %p %p color_model=%p %p\n",

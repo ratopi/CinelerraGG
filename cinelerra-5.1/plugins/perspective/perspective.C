@@ -836,7 +836,7 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 			}
 		}
 		if( !temp )
-			temp = new VFrame(need_w, need_h, color_model);
+			temp = new VFrame(need_w, need_h, color_model, 0);
 		break;
 	}
 	switch( config.mode ) {

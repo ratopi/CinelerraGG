@@ -452,12 +452,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 
 	if(!temp_picon)
 	{
-		temp_picon = new VFrame(0,
-			-1,
-			source_w,
-			source_h,
-			source_cmodel,
-			-1);
+		temp_picon = new VFrame(source_w, source_h, source_cmodel, 0);
 	}
 
 // Get temporary to copy cached frame to
@@ -471,12 +466,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 
 	if(!temp_picon2)
 	{
-		temp_picon2 = new VFrame(0,
-			-1,
-			item->picon_w,
-			item->picon_h,
-			BC_RGB888,
-			-1);
+		temp_picon2 = new VFrame( item->picon_w, item->picon_h, BC_RGB888, 0);
 	}
 
 
@@ -489,17 +479,12 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	Asset *asset = 0;
 
 	picon_frame = mwindow->frame_cache->get_frame_ptr(item->position,
-		item->layer,
-		item->frame_rate,
-		BC_RGB888,
-		item->picon_w,
-		item->picon_h,
-		source_id);
+		item->layer, item->frame_rate, BC_RGB888,
+		item->picon_w, item->picon_h, source_id);
 //printf("search cache %ld,%d,%f,%dx%d,%d = %p\n",
 //  item->position, item->layer, item->frame_rate,
 //  item->picon_w, item->picon_h, source_id, picon_frame);
-	if( picon_frame )
-	{
+	if( picon_frame ) {
 		temp_picon2->copy_from(picon_frame);
 // Unlock the get_frame_ptr command
 		mwindow->frame_cache->unlock();
@@ -542,48 +527,22 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 
 	if(need_conversion)
 	{
-		picon_frame = new VFrame(0,
-			-1,
-			item->picon_w,
-			item->picon_h,
-			BC_RGB888,
-			-1);
-		BC_CModels::transfer(picon_frame->get_rows(),
-			temp_picon->get_rows(),
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			temp_picon->get_w(),
-			temp_picon->get_h(),
-			0,
-			0,
-			picon_frame->get_w(),
-			picon_frame->get_h(),
-			source_cmodel,
-			BC_RGB888,
-			0,
+		picon_frame = new VFrame(item->picon_w, item->picon_h, BC_RGB888, 0);
+		BC_CModels::transfer(picon_frame->get_rows(), temp_picon->get_rows(),
+			0, 0, 0,  0, 0, 0,
+			0, 0, temp_picon->get_w(), temp_picon->get_h(),
+			0, 0, picon_frame->get_w(), picon_frame->get_h(),
+			source_cmodel, BC_RGB888, 0,
 			temp_picon->get_bytes_per_line(),
 			picon_frame->get_bytes_per_line());
 		temp_picon2->copy_from(picon_frame);
-		mwindow->frame_cache->put_frame(picon_frame,
-			item->position,
-			item->layer,
-			mwindow->edl->session->frame_rate,
-			0,
-			item->indexable);
+		mwindow->frame_cache->put_frame(picon_frame, item->position, item->layer,
+			mwindow->edl->session->frame_rate, 0, item->indexable);
 	}
 
 // Allow escape here
 	if(interrupted)
-	{
 		return;
-	}
-
 
 // Draw the picon
 	mwindow->gui->lock_window("ResourceThread::do_video");

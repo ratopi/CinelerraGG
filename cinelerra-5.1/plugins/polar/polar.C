@@ -354,12 +354,9 @@ int PolarEffect::process_realtime(VFrame *input, VFrame *output)
 	{
 		if(input->get_rows()[0] == output->get_rows()[0])
 		{
-			if(!temp_frame) temp_frame = new VFrame(0,
-				-1,
-				input->get_w(),
-				input->get_h(),
-				input->get_color_model(),
-				-1);
+			if(!temp_frame)
+				temp_frame = new VFrame(input->get_w(), input->get_h(),
+					input->get_color_model(), 0);
 			temp_frame->copy_from(input);
 			this->input = temp_frame;
 		}

@@ -186,21 +186,9 @@ VFrame* MotionHVCache::get_image(int ratio,
 
 
 //PRINT_TRACE
-	VFrame *result = new VFrame();
-	result->set_use_shm(0);
-	result->reallocate(0, 
-		-1,
-		0,
-		0,
-		0,
-		downsampled_w + 1, 
-		downsampled_h + 1, 
-		src->get_color_model(), 
-		-1);
-	downsample_frame(result, 
-		src, 
-		ratio);
-	
+	VFrame *result =
+		new VFrame(downsampled_w+1, downsampled_h+1, src->get_color_model(), 0);
+	downsample_frame(result, src, ratio);
 	
 	MotionHVCacheItem *item = new MotionHVCacheItem();
 	item->image = result;

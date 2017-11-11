@@ -558,7 +558,7 @@ int CriKey::process_buffer(VFrame *frame, int64_t start_position, double frame_r
 		delete dst;  dst = 0;
         }
         if( !dst )
-		dst = new VFrame(w, h, BC_A8);
+		dst = new VFrame(w, h, BC_A8, 0);
 	dst->clear_frame();
 
 	if( !engine )
@@ -578,7 +578,7 @@ int CriKey::process_buffer(VFrame *frame, int64_t start_position, double frame_r
 			delete msk;  msk = 0;
 		}
 		if( !msk )
-			msk = new VFrame(w, h, BC_A8);
+			msk = new VFrame(w, h, BC_A8, 0);
 		memset(msk->get_data(), 0xff, msk->get_data_size());
 
 		FillRegion fill_region(dst, msk);

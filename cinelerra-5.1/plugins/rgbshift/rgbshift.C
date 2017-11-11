@@ -342,7 +342,7 @@ int RGBShiftEffect::process_realtime(VFrame *input, VFrame *output)
 			delete temp_frame;  temp_frame = 0;
 		}
 		if( !temp_frame )
-			temp_frame = new VFrame(w, h, color_model);
+			temp_frame = new VFrame(w, h, color_model, 0);
 		frame = temp_frame;
 		if( color_model != input->get_color_model() )
 			BC_CModels::transfer(frame->get_rows(), input->get_rows(),

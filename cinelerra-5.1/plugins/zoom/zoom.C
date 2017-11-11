@@ -253,41 +253,22 @@ int ZoomMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	if(is_before)
 	{
-		if(!temp) temp = new VFrame(outgoing->get_w(),
-			outgoing->get_h(),
-			outgoing->get_color_model());
+		if(!temp) temp = new VFrame(outgoing->get_w(), outgoing->get_h(),
+			outgoing->get_color_model(), 0);
 		temp->clear_frame();
-		overlayer->overlay(temp,
-			outgoing,
-			in_x,
-			in_y,
-			in_x + in_w,
-			in_y + in_h,
-			0,
-			0,
-			temp->get_w(),
-			temp->get_h(),
-			1.0,
-			TRANSFER_REPLACE,
-			CUBIC_LINEAR);
+		overlayer->overlay(temp, outgoing,
+			in_x, in_y, in_x + in_w, in_y + in_h,
+			0, 0, temp->get_w(), temp->get_h(),
+			1.0, TRANSFER_REPLACE, CUBIC_LINEAR);
 		outgoing->copy_from(temp);
 	}
 	else
 	{
 		outgoing->clear_frame();
-		overlayer->overlay(outgoing,
-			incoming,
-			in_x,
-			in_y,
-			in_x + in_w,
-			in_y + in_h,
-			0,
-			0,
-			temp->get_w(),
-			temp->get_h(),
-			1.0,
-			TRANSFER_REPLACE,
-			CUBIC_LINEAR);
+		overlayer->overlay(outgoing, incoming,
+			in_x, in_y, in_x + in_w, in_y + in_h,
+			0, 0, temp->get_w(), temp->get_h(),
+			1.0, TRANSFER_REPLACE, CUBIC_LINEAR);
 	}
 
 	return 0;

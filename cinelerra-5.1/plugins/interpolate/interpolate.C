@@ -278,7 +278,7 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 			delete out_temp;  out_temp = 0;
 		}
 		if( !out_temp )
-			out_temp = new VFrame(0, -1, w, h, active_model, -1);
+			out_temp = new VFrame(w, h, active_model, 0);
 		out_frame = out_temp;
 	}
 

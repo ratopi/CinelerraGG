@@ -57,7 +57,7 @@
 #include <string.h>
 
 #define NEW_VFRAME \
-new VFrame(0, -1, default_data.get_w(), default_data.get_h(), BC_RGBA8888, -1)
+new VFrame(default_data.get_w(), default_data.get_h(), BC_RGBA8888)
 
 Theme::Theme()
  : BC_Theme()

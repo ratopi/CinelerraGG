@@ -689,12 +689,9 @@ int GradientMain::process_buffer(VFrame *frame,
 		gradient = 0;
 	}
 
-	if(!gradient) gradient = new VFrame(0,
-		-1,
-		input->get_w(),
-		input->get_h(),
-		gradient_cmodel,
-		-1);
+	if(!gradient)
+		gradient = new VFrame(input->get_w(), input->get_h(),
+			gradient_cmodel, 0);
 
 	if(!engine) engine = new GradientServer(this,
 		get_project_smp() + 1,

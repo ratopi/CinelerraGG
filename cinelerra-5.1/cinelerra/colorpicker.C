@@ -578,7 +578,7 @@ PaletteWheelValue::~PaletteWheelValue()
 
 void PaletteWheelValue::create_objects()
 {
-	frame = new VFrame(0, -1, get_w(), get_h(), BC_RGB888, -1);
+	frame = new VFrame(get_w(), get_h(), BC_RGB888);
 	draw(window->hsv.h, window->hsv.s, window->hsv.v);
 	flash();
 }

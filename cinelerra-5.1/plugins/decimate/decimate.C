@@ -708,14 +708,9 @@ int Decimate::process_buffer(VFrame *frame,
 
 	if(!frames[0])
 	{
-		for(int i = 0; i < TOTAL_FRAMES; i++)
-		{
-			frames[i] = new VFrame(0,
-				-1,
-				frame->get_w(),
-				frame->get_h(),
-				frame->get_color_model(),
-				-1);
+		for(int i = 0; i < TOTAL_FRAMES; i++) {
+			frames[i] = new VFrame(frame->get_w(), frame->get_h(),
+					frame->get_color_model(), 0);
 		}
 	}
 

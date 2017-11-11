@@ -106,7 +106,7 @@ VFrame *AssetVIcon::frame()
 			delete temp;  temp = 0;
 		}
 		if( !temp )
-			temp = new VFrame(asset->width, asset->height, BC_RGB888);
+			temp = new VFrame(asset->width, asset->height, BC_RGB888, 0);
 		int ww = picon->gui->vicon_thread->view_w;
 		int hh = picon->gui->vicon_thread->view_h;
 		while( seq_no >= images.size() ) {

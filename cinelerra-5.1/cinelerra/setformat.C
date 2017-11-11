@@ -621,12 +621,11 @@ SetChannelsCanvas::SetChannelsCanvas(MWindow *mwindow,
 	this->mwindow = mwindow;
 	active_channel = -1;
 	box_r = mwindow->theme->channel_position_data->get_w() / 2;
-	temp_picon = new VFrame(0,
-		-1,
+	temp_picon = new VFrame(
 		mwindow->theme->channel_position_data->get_w(),
 		mwindow->theme->channel_position_data->get_h(),
 		mwindow->theme->channel_position_data->get_color_model(),
-		-1);
+		0);
 	rotater = new RotateFrame(mwindow->preferences->processors,
 		mwindow->theme->channel_position_data->get_w(),
 		mwindow->theme->channel_position_data->get_h());

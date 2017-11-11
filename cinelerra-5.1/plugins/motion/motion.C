@@ -364,7 +364,7 @@ void MotionMain::allocate_temp(int w, int h, int color_model)
 		temp_frame = 0;
 	}
 	if( !temp_frame )
-		temp_frame = new VFrame(w, h, color_model);
+		temp_frame = new VFrame(w, h, color_model, 0);
 }
 
 void MotionMain::process_global()
@@ -733,16 +733,16 @@ printf("MotionMain::process_buffer 2 rename tracking file: %s to %s\n",
 // The center of the search area is fixed in compensate mode or
 // the user value + the accumulation vector in track mode.
 		if( !prev_global_ref )
-			prev_global_ref = new VFrame(w, h, color_model);
+			prev_global_ref = new VFrame(w, h, color_model, 0);
 		if( !current_global_ref )
-			current_global_ref = new VFrame(w, h, color_model);
+			current_global_ref = new VFrame(w, h, color_model, 0);
 
 // Global loads the current target frame into the src and
 // writes it to the dst frame with desired translation.
 		if( !global_target_src )
-			global_target_src = new VFrame(w, h, color_model);
+			global_target_src = new VFrame(w, h, color_model, 0);
 		if( !global_target_dst )
-			global_target_dst = new VFrame(w, h, color_model);
+			global_target_dst = new VFrame(w, h, color_model, 0);
 
 // Load the global frames
 		if( need_reload ) {
@@ -762,10 +762,10 @@ printf("MotionMain::process_buffer 2 rename tracking file: %s to %s\n",
 // The center of the search area is always the user value + the accumulation
 // vector.
 			if( !prev_rotate_ref )
-				prev_rotate_ref = new VFrame(w, h, color_model);
+				prev_rotate_ref = new VFrame(w, h, color_model, 0);
 // The current global reference is the current rotation reference.
 			if( !current_rotate_ref )
-				current_rotate_ref = new VFrame(w, h, color_model);
+				current_rotate_ref = new VFrame(w, h, color_model, 0);
 			current_rotate_ref->copy_from(current_global_ref);
 
 // The global target destination is copied to the rotation target source
@@ -774,9 +774,9 @@ printf("MotionMain::process_buffer 2 rename tracking file: %s to %s\n",
 // if we're tracking.
 // The pivot is fixed to the user position if we're compensating.
 			if( !rotate_target_src )
-				rotate_target_src = new VFrame(w, h, color_model);
+				rotate_target_src = new VFrame(w, h, color_model, 0);
 			if( !rotate_target_dst )
-				rotate_target_dst = new VFrame(w, h, color_model);
+				rotate_target_dst = new VFrame(w, h, color_model, 0);
 		}
 	}
 // Rotation only
@@ -784,16 +784,16 @@ printf("MotionMain::process_buffer 2 rename tracking file: %s to %s\n",
 // Rotation reads the previous reference frame and compares it with current
 // reference frame.
 		if( !prev_rotate_ref )
-			prev_rotate_ref = new VFrame(w, h, color_model);
+			prev_rotate_ref = new VFrame(w, h, color_model, 0);
 		if( !current_rotate_ref )
-			current_rotate_ref = new VFrame(w, h, color_model);
+			current_rotate_ref = new VFrame(w, h, color_model, 0);
 
 // Rotation loads target frame to temporary, rotates it, and writes it to the
 // target frame.  The pivot is always fixed.
 		if( !rotate_target_src )
-			rotate_target_src = new VFrame(w, h, color_model);
+			rotate_target_src = new VFrame(w, h, color_model, 0);
 		if( !rotate_target_dst )
-			rotate_target_dst = new VFrame(w, h, color_model);
+			rotate_target_dst = new VFrame(w, h, color_model, 0);
 
 
 // Load the rotate frames
@@ -1255,12 +1255,11 @@ void RotateScanUnit::process_package(LoadPackage *package)
 
 		if( !rotater )
 			rotater = new AffineEngine(1, 1);
-		if( !temp ) temp = new VFrame(0,
-			-1,
-			server->previous_frame->get_w(),
-			server->previous_frame->get_h(),
-			color_model,
-			-1);
+		if( !temp )
+			temp = new VFrame(
+				server->previous_frame->get_w(),
+				server->previous_frame->get_h(),
+				color_model, 0);
 //printf("RotateScanUnit::process_package %d\n", __LINE__);
 
 

@@ -566,12 +566,8 @@ SET_TRACE
 	this->output = frame;
 
 
-	if(!temp) temp = new VFrame(0,
-		-1,
-		frame->get_w(),
-		frame->get_h(),
-		frame->get_color_model(),
-		-1);
+	if(!temp) temp = new VFrame(frame->get_w(), frame->get_h(),
+		frame->get_color_model(), 0);
 	temp->copy_from(frame);
 	this->input = temp;
 

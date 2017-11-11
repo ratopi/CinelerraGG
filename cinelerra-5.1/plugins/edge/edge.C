@@ -135,7 +135,7 @@ int Edge::process_buffer(VFrame *frame, int64_t start_position, double frame_rat
 		delete dst;  dst = 0;
 	}
 	if( !dst )
-		dst = new VFrame(0, -1, w, h, color_model, -1);
+		dst = new VFrame(w, h, color_model, 0);
 
 	if( !engine )
 		engine = new EdgeEngine(this,

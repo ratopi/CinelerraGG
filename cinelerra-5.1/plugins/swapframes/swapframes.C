@@ -301,12 +301,9 @@ int SwapFrames::process_buffer(VFrame *frame,
 	if(new_position > prev_frame + 1)
 	{
 //printf("SwapFrames::process_buffer %d\n", __LINE__);
-		if(!buffer) buffer = new VFrame(0,
-			-1,
-			frame->get_w(),
-			frame->get_h(),
-			frame->get_color_model(),
-			-1);
+		if(!buffer)
+			buffer = new VFrame(frame->get_w(), frame->get_h(),
+				frame->get_color_model(), 0);
 		buffer_position = new_position - 1;
 		read_frame(buffer,
 			0,

@@ -237,7 +237,7 @@ int _1080to480Main::process_realtime(VFrame *input, VFrame *output)
 	load_configuration();
 	if(!temp)
 	{
-		temp = new VFrame(input->get_w(), input->get_h(), input->get_color_model());
+		temp = new VFrame(input->get_w(), input->get_h(), input->get_color_model(), 0);
 		temp->clear_frame();
 	}
 

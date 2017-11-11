@@ -602,17 +602,9 @@ printf("MotionHVScan::pixel_search %d range fail range2=%f\n", __LINE__, range2)
 // rotated_current[i]);
 			if(!rotated_current[i])
 			{
-				rotated_current[i] = new VFrame();
-				rotated_current[i]->set_use_shm(0);
-				rotated_current[i]->reallocate(0,
-					-1,
-					0,
-					0,
-					0,
-					downsampled_current_w + 1,
-					downsampled_current_h + 1,
-					current_frame_arg->get_color_model(),
-					-1);
+				rotated_current[i] =
+					new VFrame(downsampled_current_w+1, downsampled_current_h+1,
+						current_frame_arg->get_color_model(), 0);
 //printf("MotionHVScan::pixel_search %d\n", __LINE__);
 			}
 

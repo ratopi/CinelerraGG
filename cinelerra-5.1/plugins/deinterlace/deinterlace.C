@@ -378,10 +378,8 @@ int DeInterlaceMain::process_buffer(VFrame *frame,
 	temp = frame;
 
 // 	if(!temp)
-// 		temp = new VFrame(0,
-// 			frame->get_w(),
-// 			frame->get_h(),
-// 			frame->get_color_model());
+// 		temp = new VFrame(frame->get_w(), frame->get_h(),
+// 			frame->get_color_model(), 0);
 
 	switch(config.mode)
 	{

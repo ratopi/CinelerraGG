@@ -408,8 +408,8 @@ int Overlay::process_buffer(VFrame **frame,
 
 	if( --layers > 0 ) {	// need 2 layers to do overlay
 		if( !temp )
-			temp = new VFrame(0, -1, frame[0]->get_w(), frame[0]->get_h(),
-					frame[0]->get_color_model(), -1);
+			temp = new VFrame(frame[0]->get_w(), frame[0]->get_h(),
+					frame[0]->get_color_model(), 0);
 
 		while( --layers >= 0 ) {
 			current_layer += step;

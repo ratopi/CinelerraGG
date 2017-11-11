@@ -146,9 +146,7 @@ void SceneNode::render(VFrame *frame, int do_camera)
 // Render everything into a temporary, then overlay the temporary
 // 		if(!EQUIV(ry, 0) || get_flip())
 // 		{
-		temp = new VFrame(image->get_w(),
-			image->get_h(),
-			image->get_color_model());
+		temp = new VFrame(image->get_w(), image->get_h(), image->get_color_model(), 0);
 //		}
 		if(debug) printf("SceneNode::render %d\n", __LINE__);
 
@@ -169,14 +167,9 @@ void SceneNode::render(VFrame *frame, int do_camera)
 		VFrame *src = temp;
 		if(!EQUIV(ry, 0))
 		{
-			src = temp2 = new VFrame(image->get_w(),
-				image->get_h(),
-				image->get_color_model());
-			if(!scene->affine) scene->affine =
-				new AffineEngine(scene->cpus, scene->cpus);
-			scene->affine->rotate(temp2,
-				temp,
-				ry);
+			src = temp2 = new VFrame(image->get_w(), image->get_h(), image->get_color_model(), 0);
+			if(!scene->affine) scene->affine = new AffineEngine(scene->cpus, scene->cpus);
+			scene->affine->rotate(temp2, temp, ry);
 			if(debug) printf("SceneNode::render %d ry=%f\n", __LINE__, ry);
 		}
 
@@ -185,13 +178,7 @@ void SceneNode::render(VFrame *frame, int do_camera)
 			src->flip_horiz();
 
 		if(debug) printf("SceneNode::render %d src=%p x=%f y=%f sx=%f sy=%f\n",
-			__LINE__,
-			src,
-			x,
-			y,
-			sx,
-			sy);
-
+			__LINE__, src, x, y, sx, sy); 
 // Overlay on the output frame
 		if(!scene->overlayer) scene->overlayer = new OverlayFrame(scene->cpus);
 

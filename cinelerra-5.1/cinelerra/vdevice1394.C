@@ -254,12 +254,7 @@ void VDevice1394::new_output_buffer(VFrame **output,
 				user_frame = new VFrame;
 				break;
 			default:
-				user_frame = new VFrame(0,
-					-1,
-					device->out_w,
-					device->out_h,
-					colormodel,
-					-1);
+				user_frame = new VFrame(device->out_w, device->out_h, colormodel);
 				break;
 		}
 	}

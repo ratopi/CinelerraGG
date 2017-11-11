@@ -214,12 +214,9 @@ void FileThread::run()
 //printf("FileThread::run %d\n", __LINE__);
 				if(!local_frame->frame)
 				{
-					local_frame->frame = new VFrame(0,
-						-1,
-						file->asset->width,
-						file->asset->height,
-						supported_colormodel,
-						-1);
+					local_frame->frame =
+						new VFrame(file->asset->width, file->asset->height,
+							supported_colormodel, 0);
 				}
 
 // Read it
@@ -454,12 +451,8 @@ int FileThread::start_writing(long buffer_size,
 					else
 					{
 						video_buffer[buffer][layer][frame] =
-							new VFrame(0,
-								-1,
-								file->asset->width,
-								file->asset->height,
-								color_model,
-								-1);
+							new VFrame( file->asset->width, file->asset->height,
+								color_model, -1);
 // printf("FileThread::start_writing %d %d %d %d %p\n",
 // __LINE__,
 // buffer,

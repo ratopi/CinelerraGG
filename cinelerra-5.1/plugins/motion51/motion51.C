@@ -502,7 +502,7 @@ VFrame* Motion51Main::new_temp(VFrame *&tmp, VFrame *ref)
 		delete tmp; tmp = 0;
 	}
 	if( !tmp )
-		tmp = new VFrame(0, -1, ref->get_w(), ref->get_h(), ref->get_color_model(), -1);
+		tmp = new VFrame(ref->get_w(), ref->get_h(), ref->get_color_model(), 0);
 	return tmp;
 }
 

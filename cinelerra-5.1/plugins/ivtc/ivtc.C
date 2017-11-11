@@ -165,18 +165,12 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	int pattern_position = (PluginClient::source_position +	config.frame_offset) % 5;
 
 //printf("IVTCMain::process_realtime %d %d\n", pattern_position, config.first_field);
-	if(!temp_frame[0]) temp_frame[0] = new VFrame(0,
-		-1,
-		input_ptr->get_w(),
-		input_ptr->get_h(),
-		input_ptr->get_color_model(),
-		-1);
-	if(!temp_frame[1]) temp_frame[1] = new VFrame(0,
-		-1,
-		input_ptr->get_w(),
-		input_ptr->get_h(),
-		input_ptr->get_color_model(),
-		-1);
+	if(!temp_frame[0])
+		temp_frame[0] = new VFrame(input_ptr->get_w(), input_ptr->get_h(),
+			input_ptr->get_color_model(), 0);
+	if(!temp_frame[1])
+		temp_frame[1] = new VFrame(input_ptr->get_w(), input_ptr->get_h(),
+			input_ptr->get_color_model(), 0);
 
 	int row_size = VFrame::calculate_bytes_per_pixel(input_ptr->get_color_model()) * input_ptr->get_w();
 	this->input = input_ptr;

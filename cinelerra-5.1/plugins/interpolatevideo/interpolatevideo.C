@@ -777,12 +777,8 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 	{
 		for(int i = 0; i < 2; i++)
 		{
-			frames[i] = new VFrame(0,
-				-1,
-				frame->get_w(),
-				frame->get_h(),
-				frame->get_color_model(),
-				-1);
+			frames[i] = new VFrame(frame->get_w(), frame->get_h(),
+				frame->get_color_model(), 0);
 		}
 	}
 //printf("InterpolateVideo::process_buffer 1 %lld %lld\n", range_start, range_end);

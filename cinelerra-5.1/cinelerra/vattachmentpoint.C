@@ -74,12 +74,7 @@ void VAttachmentPoint::new_buffer_vector(int width, int height, int colormodel)
 		buffer_vector = new VFrame*[virtual_plugins.total];
 		for(int i = 0; i < virtual_plugins.total; i++)
 		{
-			buffer_vector[i] = new VFrame(0,
-				-1,
-				width,
-				height,
-				colormodel,
-				-1);
+			buffer_vector[i] = new VFrame(width, height, colormodel);
 		}
 	}
 }

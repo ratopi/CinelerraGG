@@ -216,8 +216,8 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	native_cmodel = asset->png_use_alpha ? BC_RGBA8888 : BC_RGB888;
 	if(frame->get_color_model() != native_cmodel)
 	{
-		if(!png_unit->temp_frame) png_unit->temp_frame = new VFrame(0,
-			-1, asset->width, asset->height, native_cmodel, -1);
+		if(!png_unit->temp_frame) png_unit->temp_frame =
+			new VFrame(asset->width, asset->height, native_cmodel, 0);
 
 		png_unit->temp_frame->transfer_from(frame);
 		output_frame = png_unit->temp_frame;

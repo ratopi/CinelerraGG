@@ -194,7 +194,7 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 			close(fd);
 			if( ofrm && ofrm->get_color_model() != output->get_color_model() ) {
 				VFrame *vfrm = new VFrame(ofrm->get_w(), ofrm->get_h(),
-					output->get_color_model());
+					output->get_color_model(), 0);
 				vfrm->transfer_from(ofrm);
 				delete ofrm;  ofrm = vfrm;
 			}

@@ -438,7 +438,7 @@ void MotionMain2::allocate_temp(int w, int h, int color_model)
 		temp_frame = 0;
 	}
 	if(!temp_frame)
-		temp_frame = new VFrame(w, h, color_model);
+		temp_frame = new VFrame(w, h, color_model, 0);
 }
 
 
@@ -833,16 +833,16 @@ printf("MotionMain2::process_buffer 1 start_position=%jd\n", start_position);
 // The center of the search area is fixed in compensate mode or
 // the user value + the accumulation vector in track mode.
 		if(!prev_global_ref)
-			prev_global_ref = new VFrame(w, h, color_model);
+			prev_global_ref = new VFrame(w, h, color_model, 0);
 		if(!current_global_ref)
-			current_global_ref = new VFrame(w, h, color_model);
+			current_global_ref = new VFrame(w, h, color_model, 0);
 
 // Global loads the current target frame into the src and
 // writes it to the dst frame with desired translation.
 		if(!global_target_src)
-			global_target_src = new VFrame(w, h, color_model);
+			global_target_src = new VFrame(w, h, color_model, 0);
 		if(!global_target_dst)
-			global_target_dst = new VFrame(w, h, color_model);
+			global_target_dst = new VFrame(w, h, color_model, 0);
 
 
 // Load the global frames

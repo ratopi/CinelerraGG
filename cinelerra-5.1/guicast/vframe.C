@@ -139,6 +139,8 @@ VFrame::VFrame(VFrame &frame)
 VFrame::VFrame(int w, int h, int color_model, long bytes_per_line)
 {
 	reset_parameters(1);
+//  use bytes_per_line == 0 to allocate default unshared
+	if( !bytes_per_line ) { bytes_per_line = -1;  use_shm = 0; }
 	params = new BC_Hash;
 	allocate_data(data, -1, 0, 0, 0, w, h,
 		color_model, bytes_per_line);
@@ -836,7 +838,7 @@ int VFrame::write_png(const char *path)
 			bc_cmodel = BC_RGBA8888;
 			png_cmodel = PNG_COLOR_TYPE_RGB_ALPHA;
 		}
-		vframe = new VFrame(get_w(), get_h(), bc_cmodel, -1);
+		vframe = new VFrame(get_w(), get_h(), bc_cmodel, 0);
 		vframe->transfer_from(this);
 		break;
 	}

@@ -214,7 +214,7 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 // Create new frames
 				for( ; i < config.frames; i++)
 				{
-					history2[i] = new VFrame(w, h, color_model);
+					history2[i] = new VFrame(w, h, color_model, 0);
 					history_frame2[i] = -0x7fffffff;
 					history_valid2[i] = 0;
 				}
@@ -231,7 +231,7 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 		{
 			history = new VFrame*[config.frames];
 			for(int i = 0; i < config.frames; i++)
-				history[i] = new VFrame(w, h, color_model);
+				history[i] = new VFrame(w, h, color_model, 0);
 			history_size = config.frames;
 			history_frame = new int64_t[config.frames];
 			bzero(history_frame, sizeof(int64_t) * config.frames);

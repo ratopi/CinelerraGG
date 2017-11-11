@@ -166,7 +166,7 @@ int yuv411Main::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			temp_frame = 0;
 		}
 		if( !temp_frame )
-			temp_frame = new VFrame(w, h, colormodel);
+			temp_frame = new VFrame(w, h, colormodel, 0);
     		if( input_ptr == output_ptr ) {
 			temp_frame->copy_from(input_ptr);
 			input_ptr = temp_frame;

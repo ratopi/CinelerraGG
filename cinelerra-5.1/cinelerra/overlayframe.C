@@ -313,8 +313,8 @@ int OverlayFrame::overlay(VFrame *output, VFrame *input,
 		}
 
 		if(!temp_frame) {
-			temp_frame = new VFrame(0, -1, temp_w, temp_h,
-				input->get_color_model(), -1);
+			temp_frame =
+				new VFrame(temp_w, temp_h, input->get_color_model(), 0);
 		}
 
 		temp_frame->clear_frame();

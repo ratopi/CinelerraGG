@@ -512,12 +512,8 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		}
 		if(!tiff_unit->temp)
 		{
-			tiff_unit->temp = new VFrame(0,
-				-1,
-				asset->width,
-				asset->height,
-				color_model,
-				-1);
+			tiff_unit->temp =
+				new VFrame(asset->width, asset->height, color_model, 0);
 		}
 
 		BC_CModels::transfer(tiff_unit->temp->get_rows(),

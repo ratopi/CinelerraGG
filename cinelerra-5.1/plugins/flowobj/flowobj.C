@@ -301,7 +301,7 @@ int FlowObj::process_buffer(VFrame *frame, int64_t start_position, double frame_
 			delete accum;  accum = 0;
 		}
 		if( !accum ) {
-			accum = new VFrame(width, height, color_model);
+			accum = new VFrame(width, height, color_model, 0);
 			accum->clear_frame();
 		}
 		if( !overlay )

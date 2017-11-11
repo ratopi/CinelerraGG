@@ -644,13 +644,7 @@ void Device1394Output::write_frame(VFrame *input)
 				int h = input->get_h();
 // Default to NTSC if unknown
 				if(h != 480 && h != 576) h = 480;
-
-				temp_frame2 = new VFrame(0,
-					-1,
-					720,
-					h,
-					BC_YUV422,
-					-1);
+				temp_frame2 = new VFrame(720, h, BC_YUV422, 0);
 
 			}
 

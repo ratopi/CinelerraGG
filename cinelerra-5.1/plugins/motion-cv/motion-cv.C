@@ -342,7 +342,7 @@ void MotionCVMain::allocate_temp(int w, int h, int color_model)
 		temp_frame = 0;
 	}
 	if( !temp_frame )
-		temp_frame = new VFrame(w, h, color_model);
+		temp_frame = new VFrame(w, h, color_model, 0);
 }
 
 void MotionCVMain::process_global()

@@ -1464,7 +1464,7 @@ void TitleMain::draw_background()
 			delete bg_frame;  bg_frame = 0;
 		}
 		if( !bg_frame )
-			bg_frame = new VFrame(0, -1, bw, bh, output_model, -1);
+			bg_frame = new VFrame(bw, bh, output_model);
 		int64_t position = get_source_position() - get_source_start();
 		if( !read_background(bg_frame, position, output_model) ) {
 			if( !overlay_frame )
@@ -1607,7 +1607,8 @@ VFrame *TitleMain::add_image(const char *path)
 	VFrame *vframe = get_image(path);
 	if( !vframe && (vframe=VFramePng::vframe_png(path)) != 0 ) {
 		if( vframe->get_color_model() != text_model ) {
-			VFrame *frame = new VFrame(vframe->get_w(), vframe->get_h(), text_model);
+			VFrame *frame = new VFrame(vframe->get_w(), vframe->get_h(),
+				text_model, 0);
 			frame->transfer_from(vframe);  delete vframe;
 			vframe = frame;
 		}

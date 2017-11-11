@@ -1146,7 +1146,7 @@ int File::read_frame(VFrame *frame, int is_thread)
 		}
 
 		if( !temp_frame ) {
-			temp_frame = new VFrame(asset->width, asset->height, supported_colormodel);
+			temp_frame = new VFrame(asset->width, asset->height, supported_colormodel, 0);
 		}
 
 //			printf("File::read_frame %d\n", __LINE__);

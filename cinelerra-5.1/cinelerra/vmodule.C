@@ -478,12 +478,9 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 
 				if(!(*input))
 				{
-					(*input) = new VFrame(0,
-						-1,
-						asset_w,
-						asset_h,
-						get_edl()->session->color_model,
-						-1);
+					(*input) =
+						new VFrame(asset_w, asset_h,
+							get_edl()->session->color_model);
 				}
 
 
@@ -989,12 +986,9 @@ int VModule::render(VFrame *output,
 // Load incoming frame
 		if(!(*transition_input))
 		{
-			(*transition_input) = new VFrame(0,
-				-1,
-				track->track_w,
-				track->track_h,
-				get_edl()->session->color_model,
-				-1);
+			(*transition_input) =
+				new VFrame(track->track_w, track->track_h,
+					get_edl()->session->color_model);
 		}
 
 		(*transition_input)->copy_stacks(output);

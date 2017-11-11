@@ -157,7 +157,7 @@ int FileDB::read_frame(VFrame *frame)
 	}
 	VFrame *fp = frame->get_w() == swidth && frame->get_h() == sheight &&
 			frame->get_color_model() == BC_YUV420P ? frame :
-		!vframe ? (vframe = new VFrame(swidth,sheight,BC_YUV420P)) :
+		!vframe ? (vframe = new VFrame(swidth,sheight,BC_YUV420P,0)) :
 		vframe;
 	if( !result ) {
 		if( frame_id < 0 )

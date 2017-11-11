@@ -765,10 +765,8 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 {
 	VFrame **outframes = frame;
 	VFrame *(framelist[1024]);
-	framelist[0] = new VFrame (
-		outframes[0]->get_w(),
-		outframes[0]->get_h(),
-		outframes[0]->get_color_model());
+	framelist[0] = new VFrame (outframes[0]->get_w(), outframes[0]->get_h(),
+			outframes[0]->get_color_model(), 0);
 	read_frame(framelist[0],
 		0,
 		start_position,
@@ -798,11 +796,8 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 	{
 		need_reconfigure = 0;
 
-		if(!gradient) gradient = new VFrame(
-			outframes[0]->get_w(),
-			outframes[0]->get_h(),
-			BC_A8);
-
+		if(!gradient)
+			gradient = new VFrame( outframes[0]->get_w(), outframes[0]->get_h(), BC_A8, 0); 
 
 		if (config.shape != TimeFrontConfig::OTHERTRACK &&
 		    config.shape != TimeFrontConfig::ALPHA)
@@ -816,10 +811,8 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 	}
 	if (config.shape == TimeFrontConfig::ALPHA)
 	{
-		if(!gradient) gradient = new VFrame(
-			outframes[0]->get_w(),
-			outframes[0]->get_h(),
-			BC_A8);
+		if(!gradient)
+			gradient = new VFrame(outframes[0]->get_w(), outframes[0]->get_h(), BC_A8, 0);
 		VFrame *tfframe = framelist[0];
 		switch (tfframe->get_color_model())
 		{
@@ -844,10 +837,8 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 	} else
 	if (config.shape == TimeFrontConfig::OTHERTRACK)
 	{
-		if(!gradient) gradient = new VFrame(
-			outframes[0]->get_w(),
-			outframes[0]->get_h(),
-			BC_A8);
+		if(!gradient)
+			gradient = new VFrame(outframes[0]->get_w(), outframes[0]->get_h(), BC_A8, 0);
 		VFrame *tfframe = outframes[1];
 		read_frame(tfframe,
 			1,
@@ -912,10 +903,8 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 	{
 		for (int i = 1; i <= config.frame_range; i++)
 		{
-			framelist[i] = new VFrame (
-				outframes[0]->get_w(),
-				outframes[0]->get_h(),
-				outframes[0]->get_color_model());
+			framelist[i] = new VFrame (outframes[0]->get_w(), outframes[0]->get_h(),
+					outframes[0]->get_color_model(), 0);
 
 			read_frame(framelist[i],
 				0,
