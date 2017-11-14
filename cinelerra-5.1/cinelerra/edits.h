@@ -111,6 +111,8 @@ public:
 	Edit* get_playable_edit(int64_t position, int use_nudge);
 //	int64_t total_length();
 	int64_t length();         // end position of last edit
+// audio edit shorter than .5 frames is a glitch
+	int is_glitch(Edit *edit);
 
 // ==================================== editing
 
@@ -123,7 +125,6 @@ public:
 		int edit_plugins,
 		int edit_autos,
 		Edits *trim_edits);
-	void deglitch(int64_t position);
 	virtual int optimize();
 
 	virtual int clone_derived(Edit* new_edit, Edit* old_edit) { return 0; }

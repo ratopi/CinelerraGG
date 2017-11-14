@@ -33,8 +33,6 @@
 #include "track.h"
 
 
-
-
 class ATrack : public Track
 {
 public:
@@ -58,33 +56,15 @@ public:
 	double to_doubleunits(double position);
 	double from_units(int64_t position);
 
-
-
-
-
-
-
-
 // ====================================== initialization
 	int create_derived_objs(int flash);
 
-
-
-
 // ===================================== editing
 	int paste_derived(int64_t start, int64_t end, int64_t total_length, FileXML *xml, int &current_channel);
-
-
 	int modify_handles(int64_t oldposition, int64_t newposition, int currentend);
-	void deglitch(double position, 
-		int edit_labels,
-		int edit_plugins,
-		int edit_autos);
 
 	int64_t length();
-//	int get_dimensions(double &view_start,
-//		double &view_units,
-//		double &zoom_units);
+//	int get_dimensions(double &view_start, double &view_units, double &zoom_units);
 };
 
 #endif

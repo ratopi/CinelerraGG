@@ -237,10 +237,8 @@ MWindow::MWindow()
 MWindow::~MWindow()
 {
 	run_lock->lock("MWindow::~MWindow");
-	stop_playback(1);
 	in_destructor = 1;
 //printf("MWindow::~MWindow %d\n", __LINE__);
-	gui->stop_drawing();
 	gui->remote_control->deactivate();
 	gui->record->stop();
 #ifdef HAVE_DVB
@@ -1563,23 +1561,20 @@ int MWindow::put_commercial()
 
 void MWindow::stop_playback(int wait)
 {
-	int locked  = gui->get_window_lock();
-	if( locked ) gui->unlock_window();
 	gui->stop_drawing();
 
-	cwindow->stop_playback();
+	cwindow->stop_playback(wait);
 
 	for(int i = 0; i < vwindows.size(); i++) {
 		VWindow *vwindow = vwindows[i];
 		if( !vwindow->is_running() ) continue;
-		vwindow->stop_playback();
+		vwindow->stop_playback(wait);
 	}
 	for(int i = 0; i < zwindows.size(); i++) {
 		ZWindow *zwindow = zwindows[i];
 		if( !zwindow->is_running() ) continue;
-		zwindow->stop_playback();
+		zwindow->stop_playback(wait);
 	}
-	if( locked ) gui->lock_window("MWindow::stop_playback");
 }
 
 int MWindow::load_filenames(ArrayList<char*> *filenames,
@@ -1597,7 +1592,9 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Need to stop playback since tracking depends on the EDL not getting
 // deleted.
+	gui->unlock_window();
 	stop_playback(1);
+	gui->lock_window("MWindow::load_filenames 0");
 
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 	undo->update_undo_before();
@@ -3376,17 +3373,10 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 
 void MWindow::reset_caches()
 {
-	stop_playback(1);
-	int locked  = gui->get_window_lock();
-	if( locked ) gui->unlock_window();
-	gui->resource_thread->stop_draw(1);
-	gui->resource_thread->source_lock->lock("MWindow::reset_caches");
 	frame_cache->remove_all();
 	wave_cache->remove_all();
 	audio_cache->remove_all();
 	video_cache->remove_all();
-	gui->resource_thread->source_lock->unlock();
-	if( locked ) gui->lock_window("MWindow::reset_caches");
 	if( cwindow->playback_engine ) {
 		if( cwindow->playback_engine->audio_cache )
 			cwindow->playback_engine->audio_cache->remove_all();
@@ -3406,17 +3396,10 @@ void MWindow::reset_caches()
 
 void MWindow::remove_asset_from_caches(Asset *asset)
 {
-	stop_playback(1);
-	int locked  = gui->get_window_lock();
-	if( locked ) gui->unlock_window();
-	gui->resource_thread->stop_draw(1);
-	gui->resource_thread->source_lock->lock("MWindow::remove_asset_from_caches");
 	frame_cache->remove_asset(asset);
 	wave_cache->remove_asset(asset);
 	audio_cache->delete_entry(asset);
 	video_cache->delete_entry(asset);
-	gui->resource_thread->source_lock->unlock();
-	if( locked ) gui->lock_window("MWindow::remove_asset_from_caches");
 	if( cwindow->playback_engine && cwindow->playback_engine->audio_cache )
 		cwindow->playback_engine->audio_cache->delete_entry(asset);
 	if( cwindow->playback_engine && cwindow->playback_engine->video_cache )

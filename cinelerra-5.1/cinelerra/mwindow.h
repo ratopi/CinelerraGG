@@ -202,7 +202,7 @@ public:
 	static int plugin_exists(const char *plugin_path, ArrayList<PluginServer*> &plugins);
 	static int plugin_exists(char *plugin_path);
 	void dump_plugindb(FILE *fp);
-	void stop_playback(int wait=0);
+	void stop_playback(int wait);
 
 	void queue_mixers(EDL *edl, int command, int wait_tracking,
 		int use_inout, int update_refresh, int toggle_audio);
@@ -324,7 +324,7 @@ public:
 // Clears active region in EDL.
 // If clear_handle, edit boundaries are cleared if the range is 0.
 // Called by paste, record, menueffects, render, and CWindow drop.
-	void clear(int clear_handle, int deglitch);
+	void clear(int clear_handle);
 	void clear_labels();
 	int clear_labels(double start, double end);
 	void concatenate_tracks();

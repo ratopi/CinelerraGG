@@ -1260,6 +1260,7 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 // Need to tabulate every vertex in persistent memory because
 // gluTessVertex doesn't copy them.
 			ArrayList<GLdouble*> coords;
+			coords.set_array_delete();
 			for(int i = 0; i < points->total; i++)
 			{
 				MaskPoint *point1 = points->values[i];

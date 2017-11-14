@@ -295,24 +295,19 @@ void Edits::resample(double old_rate, double new_rate)
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+int Edits::is_glitch(Edit *edit)
+{
+	if( track->data_type != TRACK_AUDIO ) return 0;
+	int64_t threshold = edl->session->frame_rate > 0 ?
+		0.5 * edl->session->sample_rate / edl->session->frame_rate : 0;
+// audio edit shorter than .5 frames is a glitch
+	return edit->length < threshold ? 1 : 0;
+}
 
 int Edits::optimize()
 {
 	int result = 1;
 	Edit *current;
-
 
 //printf("Edits::optimize %d\n", __LINE__);
 // Sort edits by starting point
@@ -379,43 +374,55 @@ int Edits::optimize()
 			current = next;
 		}
 
-//printf("Edits::optimize %d result=%d\n", __LINE__, result);
-// merge same files or transitions
-		if(track->data_type == TRACK_SUBTITLE ) continue;
-
-		for(current = first; !result && current && current->next; ) {
-			Edit *next_edit = current->next;
-// printf("Edits::optimize %d %lld=%lld %d=%d %p=%p %p=%p\n",
-// __LINE__, current->startsource + current->length, next_edit->startsource,
-// current->channel, next_edit->channel, current->asset, next_edit->asset,
-// current->nested_edl, next_edit->nested_edl);
-
+// merge same files or transitions, and deglitch
+		if( !result && track->data_type != TRACK_SUBTITLE ) {
+			current = first;
+			if( current && !current->hard_right &&
+			    current->next && !current->next->hard_left &&
+			    is_glitch(current) ) {
+// if the first edit is a glitch, change it to silence
+				current->asset = 0;
+				current->nested_edl = 0;
+			}
+			Edit *next_edit = 0;
+			for( ; current && (next_edit=current->next); current=NEXT ) {
 // both edges are not hard edges
+				if( current->hard_right || next_edit->hard_left ) continue;
+// next edit is a glitch
+				if( is_glitch(next_edit) )
+					break;
 // both edits are silence & not a plugin
-// source channels are identical, assets are identical
-			if( !current->hard_right && !next_edit->hard_left && (
-			    (current->silence() && next_edit->silence() && !current->is_plugin) ||
-			    (current->startsource + current->length == next_edit->startsource &&
-		       	     current->channel == next_edit->channel &&
-			     current->asset == next_edit->asset &&
-			     current->nested_edl == next_edit->nested_edl)) ) {
-//printf("Edits::optimize %d\n", __LINE__);
-        			current->length += next_edit->length;
-        			remove(next_edit);
-        			result = 1;
-				break;
-        		}
-
-	    		current = current->next;
+				if( !current->is_plugin && current->silence() &&
+				    !next_edit->is_plugin && next_edit->silence() )
+					break;
+// source channels are identical & assets are identical
+				if( !result && current->channel == next_edit->channel &&
+				    current->asset == next_edit->asset &&
+				    current->nested_edl == next_edit->nested_edl ) {
+//  and stop and start in the same frame
+					int64_t current_end = current->startsource + current->length;
+					int64_t next_start = next_edit->startsource;
+					if( current_end == next_start ||
+					    EQUIV(edl->frame_align(track->from_units(current_end), 1),
+						  edl->frame_align(track->from_units(next_start), 1)) )
+						break;
+				}
+			}
+			if( next_edit ) {
+				int64_t current_start = current->startproject;
+				int64_t next_end = next_edit->startproject + next_edit->length;
+				current->length = next_end - current_start;
+				remove(next_edit);
+				result = 1;
+			}
 		}
 
-		if(last && last->silence() && !last->transition ) {
+		if( last && last->silence() && !last->transition ) {
 			delete last;
 			result = 1;
 		}
 	}
 
-//track->dump();
 	return 0;
 }
 
@@ -593,7 +600,7 @@ void Edits::clear(int64_t start, int64_t end)
 		end = this->length();
 	}
 
-	if(edit1 != edit2)
+	if( edit1 && edit2 && edit1 != edit2)
 	{
 // in different edits
 
@@ -843,125 +850,4 @@ void Edits::shift_effects_recursive(int64_t position, int64_t length, int edit_a
 {
 	track->shift_effects(position, length, edit_autos);
 }
-
-// only used for audio but also used for plugins which inherit from Edits
-void Edits::deglitch(int64_t position)
-{
-// range from the splice junk appears
-	int64_t threshold = (int64_t)((double)edl->session->sample_rate / 
-		edl->session->frame_rate) / 2;
-	Edit *current = 0;
-
-// the last edit before the splice
-	Edit *edit1 = 0;
-	if(first)
-	{
-		for(current = first; current; current = NEXT)
-		{
-			if(current->startproject + current->length >= position - threshold)
-			{
-				edit1 = current;
-				break;
-			}
-		}
-
-// ignore if it ends after the splice
-		if(current && current->startproject + current->length >= position)
-		{
-			edit1 = 0;
-		}
-	}
-
-// the first edit after the splice
-	Edit *edit2 = 0;
-	if(last)
-	{
-		for(current = last; current; current = PREVIOUS)
-		{
-			if(current->startproject < position + threshold)
-			{
-				edit2 = current;
-				break;
-			}
-		}
-
-	// ignore if it starts before the splice
-		if(current && current->startproject < position)
-		{
-			edit2 = 0;
-		}
-	}
-
-
-
-
-// printf("Edits::deglitch %d position=%ld edit1=%p edit2=%p\n", __LINE__,
-// position, 
-// edit1, 
-// edit2);
-// delete junk between the edits
-	if(edit1 != edit2)
-	{
-		if(edit1 != 0)
-		{
-// end the starting edit later
-			current = edit1->next;
-			while(current != 0 &&
-				current != edit2 &&
-				current->startproject < position)
-			{
-				Edit* next = NEXT;
-
-				edit1->length += current->length;
-				remove(current);
-
-				current = next;
-			}
-		}
-		
-		if(edit2 != 0)
-		{
-// start the ending edit earlier
-			current = edit2->previous;
-			while(current != 0 && 
-				current != edit1 &&
-				current->startproject >= position)
-			{
-				Edit *previous = PREVIOUS;
-
-				int64_t length = current->length;
-//printf("Edits::deglitch %d length=%ld\n", __LINE__, length);
-				if(!edit2->silence() && 
-					length > edit2->startsource)
-				{
-					length = edit2->startsource;
-				}
-
-				// shift edit2 by using material from its source
-				edit2->startproject -= length;
-				edit2->startsource -= length;
-				// assume enough is at the end
-				edit2->length += length;
-
-				// shift edit2 & its source earlier by remainder
-				if(length < current->length)
-				{
-					int64_t remainder = current->length - length;
-					edit2->startproject -= remainder;
-					// assume enough is at the end
-					edit2->length += remainder;
-				}
-
-				remove(current);
-
-
-				current = previous;
-			}
-		}
-	}
-	
-}
-
-
-
 

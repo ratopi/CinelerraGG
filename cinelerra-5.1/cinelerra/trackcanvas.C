@@ -512,6 +512,7 @@ int64_t TrackCanvas::drop_edit_position(int *is_insertion, Edit *moved_edit, int
 	int cursor_x = get_relative_cursor_x();
 	double zoom_scale = (double)mwindow->edl->session->sample_rate / mwindow->edl->local_session->zoom_sample;
 	double drop_time = (cursor_x + mwindow->edl->local_session->view_start[pane->number]) / zoom_scale;
+	drop_time = mwindow->edl->align_to_frame(drop_time, 0);
 	// we use cursor position for affinity calculations
 	int64_t cursor_position = track->to_units(drop_time, 0);
 	if( cursor_position <= 0 ) {
@@ -520,7 +521,7 @@ int64_t TrackCanvas::drop_edit_position(int *is_insertion, Edit *moved_edit, int
 	}
 	if( moved_edit )  // relative cursor position depends upon drop point
  		drop_time -= mwindow->session->drag_position - moved_edit->track->from_units(moved_edit->startproject);
-	int64_t drop_position = track->to_units(drop_time, 1);
+	int64_t drop_position = track->to_units(drop_time, 0);
 	if( !moved_edit )  // for clips and assets acts as they were grabbed in the middle
 		drop_position -= moved_edit_length / 2;
 	Edit *last_edit = track->edits->last;
@@ -587,6 +588,7 @@ int64_t TrackCanvas::drop_plugin_position(PluginSet *plugin_set, Plugin *moved_p
 	int cursor_x = get_relative_cursor_x();
 	double zoom_scale = (double)mwindow->edl->session->sample_rate / mwindow->edl->local_session->zoom_sample;
 	double drop_time = (cursor_x + mwindow->edl->local_session->view_start[pane->number]) / zoom_scale;
+	drop_time = mwindow->edl->align_to_frame(drop_time, 0);
 	// we use cursor position for affinity calculations
 	int64_t cursor_position = track->to_units(drop_time, 0);
 	if( cursor_position <= 0 ) return 0;
@@ -2178,7 +2180,7 @@ void TrackCanvas::draw_keyframe_reticle()
 				if( !autos ) continue;
 				for( Auto *auto_keyframe=autos->first; auto_keyframe;
 				     auto_keyframe = auto_keyframe->next ) {
-					draw_hairline(auto_keyframe, GREEN);
+					draw_hairline(auto_keyframe, BLUE);
 				}
 			}
 
@@ -4418,15 +4420,21 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 				if( left_edit ) {
 					int64_t left_edge = left_edit->startproject;
 					double left_position = track->from_units(left_edge);
-					if( EQUIV(edge_position, left_position) )
+					if( EQUIV(edge_position, left_position) ) {
 						left_edit->hard_left = new_status;
+						if( left_edit->previous )
+							left_edit->previous->hard_right = new_status;
+					}
 				}
 				Edit *right_edit = track->edits->editof(track_position, PLAY_REVERSE, 0);
 				if( right_edit ) {
 					int64_t right_edge = right_edit->startproject + right_edit->length;
 					double right_position = track->from_units(right_edge);
-					if( EQUIV(edge_position, right_position) )
+					if( EQUIV(edge_position, right_position) ) {
 						right_edit->hard_right = new_status;
+						if( right_edit->next )
+							right_edit->next->hard_left = new_status;
+					}
 				}
 			}
 		}

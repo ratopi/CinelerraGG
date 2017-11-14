@@ -70,7 +70,7 @@ public:
 	void handle_done_event(int result);
 	void handle_close_event(int result);
 	void change_source(EDL *edl);
-	void stop_playback();
+	void stop_playback(int wait);
 	void issue_command(int command, int wait_tracking,
 		int use_inout, int update_refresh, int toggle_audio);
 	void update_mixer_ids();

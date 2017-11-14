@@ -94,18 +94,7 @@ void New::create_new_edl()
 
 int New::create_new_project()
 {
-	mwindow->cwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 0, 0);
-
-	for( int i=0; i<mwindow->vwindows.size(); ++i ) {
-		VWindow *vwindow = mwindow->vwindows.get(i);
-		if( !vwindow->is_running() ) continue;
-		vwindow->playback_engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
-		vwindow->playback_engine->interrupt_playback(0);
-	}
-
-	mwindow->cwindow->playback_engine->interrupt_playback(0);
-
+	mwindow->stop_playback(0);
 	mwindow->gui->lock_window();
 	mwindow->reset_caches();
 

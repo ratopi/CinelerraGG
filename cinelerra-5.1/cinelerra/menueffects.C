@@ -516,7 +516,7 @@ void MenuEffectThread::run()
 
 		mwindow->undo->update_undo_before("", 0);
 		if(load_mode == LOADMODE_PASTE)
-			mwindow->clear(0, 1);
+			mwindow->clear(0);
 
 		mwindow->load_assets(&assets, -1, load_mode, 0, 0,
 			mwindow->edl->session->labels_follow_edits,

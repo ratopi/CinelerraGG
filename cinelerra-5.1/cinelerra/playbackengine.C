@@ -415,10 +415,10 @@ void PlaybackEngine::run()
 }
 
 
-void PlaybackEngine::stop_playback()
+void PlaybackEngine::stop_playback(int wait)
 {
 	que->send_command(STOP, CHANGE_NONE, 0, 0);
-	interrupt_playback(1);
+	interrupt_playback(wait);
 	renderengine_lock->lock("PlaybackEngine::stop_playback");
 	if(render_engine)
 		render_engine->wait_done();

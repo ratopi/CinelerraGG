@@ -215,12 +215,9 @@ void CWindow::calculate_affected_autos(FloatAuto **x_auto,
 	}
 }
 
-void CWindow::stop_playback()
+void CWindow::stop_playback(int wait)
 {
-	int locked = gui->get_window_lock();
-	if( locked ) gui->unlock_window();
-	playback_engine->interrupt_playback(1);
-	if( locked ) gui->lock_window("CWindow::stop_playback");
+	playback_engine->stop_playback(wait);
 }
 
 void CWindow::run()

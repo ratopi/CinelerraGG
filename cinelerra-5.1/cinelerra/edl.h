@@ -95,7 +95,9 @@ public:
 		int direction,
 		PlayableTracks *playable_tracks);
 
-// Convert position to frames if cursor alignment is enabled
+// Convert position to frame boundry times
+	double frame_align(double position, int round);
+// frame align if cursor alignment is enabled
 	double align_to_frame(double position, int round);
 
 // increase track w/h to at least session w/h

@@ -71,6 +71,7 @@ SubMask::SubMask(MaskAuto *keyframe)
 
 SubMask::~SubMask()
 {
+	points.remove_all_objects();
 }
 
 int SubMask::equivalent(SubMask& ptr)

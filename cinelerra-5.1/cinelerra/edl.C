@@ -825,24 +825,9 @@ void EDL::set_outpoint(double position)
 	}
 }
 
-void EDL::deglitch(double position)
-{
-	if( !session->cursor_on_frames ) return;
-	Track *current_track = tracks->first; 
-	for( ; current_track; current_track=current_track->next ) {
-		if( !current_track->record ) continue;
-		if( current_track->data_type != TRACK_AUDIO ) continue;
-		ATrack *atrack = (ATrack*)current_track;
-		atrack->deglitch(position, 
-			session->labels_follow_edits, 
-			session->plugins_follow_edits, 
-			session->autos_follow_edits);
-	}
-}
-
 int EDL::blade(double position)
 {
-	return tracks->blade(align_to_frame(position,0));
+	return tracks->blade(position);
 }
 
 int EDL::clear(double start, double end,
@@ -1334,15 +1319,20 @@ void EDL::get_shared_tracks(Track *track,
 	}
 }
 
-// Convert position to frames if cursor alignment is enabled
+// aligned frame time
+double EDL::frame_align(double position, int round)
+{
+	double frame_pos = position * session->frame_rate;
+	frame_pos = (int64_t)(frame_pos + (round ? 0.5 : 1e-6));
+	position = frame_pos / session->frame_rate;
+	return position;
+}
+
+// Convert position to frames if alignment is enabled.
 double EDL::align_to_frame(double position, int round)
 {
-	if( session->cursor_on_frames && session->frame_rate > 0 ) {
-		double frame_no = position * session->frame_rate;
-		int64_t frame_pos = frame_no + (round ? 0.5 : 1e-6);
-		double pos = frame_pos / session->frame_rate;
-		if( !EQUIV(pos, position) ) position = pos;
-	}
+	if( session->cursor_on_frames )
+		position = frame_align(position, round);
 	return position;
 }
 

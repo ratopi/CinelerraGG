@@ -1155,7 +1155,7 @@ int Track::copy_assets(double start,
 
 int Track::blade(double position)
 {
-	int64_t start = to_units(position, 1);
+	int64_t start = to_units(position, 0);
 	Edit *edit = edits->split_edit(start);
 	if( !edit ) return 1;
 	edit->hard_left = 1;
