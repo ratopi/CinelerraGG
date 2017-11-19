@@ -206,6 +206,7 @@ BC_Window* ZWindow::new_gui()
 
 void ZWindow::handle_done_event(int result)
 {
+	mwindow->del_mixer(this);
 }
 void ZWindow::handle_close_event(int result)
 {
@@ -218,7 +219,7 @@ void ZWindow::change_source(EDL *edl)
 		this->edl->remove_user();
 	this->edl = edl;
 	if( edl != 0 ) {
-		zgui->playback_engine->que->send_command(CURRENT_FRAME, CHANGE_ALL, edl, 1);
+		zgui->playback_engine->refresh_frame(CHANGE_ALL, edl);
 	}
 }
 
@@ -252,17 +253,18 @@ void ZWindow::update_mixer_ids()
 
 void ZWindow::set_title(const char *tp)
 {
+	Mixer *mixer = mwindow->edl->mixers.get_mixer(idx);
+	if( mixer ) mixer->set_title(tp);
 	char *cp = title, *ep = cp + sizeof(title)-1;
 	cp += snprintf(title, ep-cp, _("Mixer %d"), idx);
 	if( tp ) cp += snprintf(cp, ep-cp, ": %s", tp);
-	else tp = title;
-	Mixer *mixer = mwindow->edl->mixers.get_mixer(idx);
-	if( mixer ) mixer->set_title(title);
+	*cp = 0;
 }
 
 void ZWindow::reposition(int x, int y, int w, int h)
 {
 	Mixer *mixer = mwindow->edl->mixers.get_mixer(idx);
-	if( mixer ) mixer->reposition(x, y, w, h);
+	if( !mixer ) return;
+	mixer->reposition(x, y, w, h);
 }
 

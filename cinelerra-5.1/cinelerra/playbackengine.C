@@ -490,3 +490,8 @@ void PlaybackEngine::issue_command(EDL *edl, int command, int wait_tracking,
 	}
 }
 
+void PlaybackEngine::refresh_frame(int change_type, EDL *edl)
+{
+	que->send_command(CURRENT_FRAME, change_type, edl, 1);
+}
+

@@ -84,6 +84,7 @@ public:
 	void stop_playback(int wait);
 	void issue_command(EDL *edl, int command, int wait_tracking,
 		int use_inout, int update_refresh, int toggle_audio);
+	void refresh_frame(int change_type, EDL *edl);
 
 // Maintain caches through console changes
 	CICache *audio_cache, *video_cache;

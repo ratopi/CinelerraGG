@@ -131,6 +131,7 @@ VFrame::VFrame(VFrame &frame)
 {
 	reset_parameters(1);
 	params = new BC_Hash;
+	use_shm = frame.use_shm;
 	allocate_data(0, -1, 0, 0, 0, frame.w, frame.h,
 		frame.color_model, frame.bytes_per_line);
 	copy_from(&frame);
@@ -504,7 +505,8 @@ int VFrame::allocate_data(unsigned char *data, int shmid,
 		this->data = 0;
 		int size = calculate_data_size(this->w, this->h,
 			this->bytes_per_line, this->color_model);
-		if(BC_WindowBase::get_resources()->use_vframe_shm() && use_shm) {
+		if( use_shm && size >= SHM_MIN_SIZE &&
+		    BC_WindowBase::get_resources()->use_vframe_shm() ) {
 			this->shmid = shmget(IPC_PRIVATE, size, IPC_CREAT | 0777);
 			if( this->shmid >= 0 ) {
 				this->data = (unsigned char*)shmat(this->shmid, NULL, 0);
@@ -520,7 +522,7 @@ int VFrame::allocate_data(unsigned char *data, int shmid,
 			}
 		}
 // Have to use malloc for libpng
-		if( !data ) {
+		if( !this->data ) {
 			this->data = (unsigned char *)malloc(size);
 			this->shmid = -1;
 		}

@@ -601,7 +601,7 @@ int FrameRatePulldown::handle_event()
 
 FrameSizePulldown::FrameSizePulldown(Theme *theme,
 		BC_TextBox *output_w, BC_TextBox *output_h, int x, int y)
- : BC_ListBox(x, y, 150, 250, LISTBOX_TEXT,
+ : BC_ListBox(x, y, 180, 250, LISTBOX_TEXT,
 	&theme->frame_sizes, 0, 0, 1, 0, 1)
 {
 	this->theme = theme;

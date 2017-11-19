@@ -42,6 +42,12 @@
 
 ChromaKeyConfig::ChromaKeyConfig ()
 {
+	reset();
+}
+
+void ChromaKeyConfig::reset()
+
+{
   red = 0.0;
   green = 1.0;
   blue = 0.0;
@@ -187,6 +193,8 @@ ChromaKeyWindow::create_objects ()
   add_subwindow (use_colorpicker =
 		 new ChromaKeyUseColorPicker (plugin, this, x, y));
   y += use_colorpicker->get_h() + 10;
+
+  add_subwindow (new ChromaKeyReset (plugin, this, x2+240, y));
   add_subwindow (show_mask = new ChromaKeyShowMask (plugin, x2, y));
 	y += show_mask->get_h() + 5;
 
@@ -462,6 +470,21 @@ ChromaKeyShowMask::handle_event ()
 {
   plugin->config.show_mask = get_value ();
   plugin->send_configure_change ();
+  return 1;
+}
+
+ChromaKeyReset::ChromaKeyReset (ChromaKeyHSV *plugin, ChromaKeyWindow *gui, int x, int y)
+ :BC_GenericButton(x, y, _("Reset"))
+{
+  this->plugin = plugin;
+  this->gui = gui;
+}
+
+int ChromaKeyReset::handle_event ()
+{
+  plugin->config.reset();
+  gui->update_gui();
+  plugin->send_configure_change();
   return 1;
 }
 
@@ -1003,22 +1026,27 @@ void ChromaKeyHSV::update_gui()
 		load_configuration();
 		ChromaKeyWindow *window = (ChromaKeyWindow*)thread->window;
 		window->lock_window();
-		window->min_brightness->update(config.min_brightness);
-		window->max_brightness->update(config.max_brightness);
-		window->saturation->update(config.saturation);
-		window->min_saturation->update(config.min_saturation);
-		window->tolerance->update(config.tolerance);
-		window->in_slope->update(config.in_slope);
-		window->out_slope->update(config.out_slope);
-		window->alpha_offset->update(config.alpha_offset);
-		window->spill_threshold->update(config.spill_threshold);
-		window->spill_amount->update(config.spill_amount);
-		window->show_mask->update(config.show_mask);
-		window->update_sample();
+		window->update_gui();
 		window->unlock_window();
 	}
 }
 
+void ChromaKeyWindow::update_gui()
+{
+	ChromaKeyConfig &config = plugin->config;
+	min_brightness->update(config.min_brightness);
+	max_brightness->update(config.max_brightness);
+	saturation->update(config.saturation);
+	min_saturation->update(config.min_saturation);
+	tolerance->update(config.tolerance);
+	in_slope->update(config.in_slope);
+	out_slope->update(config.out_slope);
+	alpha_offset->update(config.alpha_offset);
+	spill_threshold->update(config.spill_threshold);
+	spill_amount->update(config.spill_amount);
+	show_mask->update(config.show_mask);
+	update_sample();
+}
 
 
 

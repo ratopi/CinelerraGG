@@ -257,6 +257,7 @@ void MainMenu::create_objects()
 	windowmenu->add_item(split_x = new SplitX(mwindow));
 	windowmenu->add_item(split_y = new SplitY(mwindow));
 	windowmenu->add_item(mixer_viewer = new MixerViewer(mwindow));
+	windowmenu->add_item(new TileMixers(mwindow));
 	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1,_("Ctrl-P"),'p'));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile left"),0));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile right"),1));
@@ -1537,6 +1538,19 @@ MixerViewer::MixerViewer(MWindow *mwindow)
 int MixerViewer::handle_event()
 {
 	mwindow->start_mixer();
+	return 1;
+}
+
+TileMixers::TileMixers(MWindow *mwindow)
+ : BC_MenuItem(_("Tile mixers"), "Alt-t", 't')
+{
+	this->mwindow = mwindow;
+	set_alt();
+}
+
+int TileMixers::handle_event()
+{
+	mwindow->tile_mixers();
 	return 1;
 }
 

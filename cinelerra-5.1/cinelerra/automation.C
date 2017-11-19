@@ -41,6 +41,7 @@ int Automation::autogrouptypes_fixedrange[] =
 	0,
 	0,
 	0,
+	0,
 	1
 };
 

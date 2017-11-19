@@ -317,10 +317,7 @@ int PreferencesThread::apply_settings()
 //printf("PreferencesThread::apply_settings 1\n");
 // This doesn't stop and restart, only reloads the assets before
 // the next play command.
-		mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-			CHANGE_ALL,
-			mwindow->edl,
-			1);
+		mwindow->cwindow->refresh_frame(CHANGE_ALL, mwindow->edl);
 //printf("PreferencesThread::apply_settings 10\n");
 	}
 

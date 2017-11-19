@@ -39,9 +39,13 @@
 
 
 
-
-
 ChromaKeyConfig::ChromaKeyConfig()
+{
+       reset();
+}
+
+void ChromaKeyConfig::reset()
+
 {
 	red = 0.0;
 	green = 0.0;
@@ -147,6 +151,9 @@ void ChromaKeyWindow::create_objects()
 	y += 30;
 	add_subwindow(use_colorpicker = new ChromaKeyUseColorPicker(plugin, this, x1, y));
 
+	y += use_colorpicker->get_h() + 10;
+	add_subwindow(new ChromaKeyReset(plugin, this, x, y));
+
 	color_thread = new ChromaKeyColorThread(plugin, this);
 
 	update_sample();
@@ -246,7 +253,6 @@ int ChromaKeySlope::handle_event()
 	return 1;
 }
 
-
 ChromaKeyUseValue::ChromaKeyUseValue(ChromaKey *plugin, int x, int y)
  : BC_CheckBox(x, y, plugin->config.use_value, _("Use value"))
 {
@@ -259,6 +265,20 @@ int ChromaKeyUseValue::handle_event()
 	return 1;
 }
 
+ChromaKeyReset::ChromaKeyReset(ChromaKey *plugin, ChromaKeyWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int ChromaKeyReset::handle_event()
+{
+	plugin->config.reset();
+	gui->update_gui();
+	plugin->send_configure_change();
+	return 1;
+}
 
 ChromaKeyUseColorPicker::ChromaKeyUseColorPicker(ChromaKey *plugin,
 	ChromaKeyWindow *gui,
@@ -630,13 +650,18 @@ void ChromaKey::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		((ChromaKeyWindow*)thread->window)->threshold->update(config.threshold);
-		((ChromaKeyWindow*)thread->window)->slope->update(config.slope);
-		((ChromaKeyWindow*)thread->window)->use_value->update(config.use_value);
-		((ChromaKeyWindow*)thread->window)->update_sample();
-
+		((ChromaKeyWindow *)(thread->window))->update_gui();
 		thread->window->unlock_window();
 	}
+}
+
+void ChromaKeyWindow::update_gui()
+{
+	ChromaKeyConfig &config = plugin->config;
+	threshold->update(config.threshold);
+	slope->update(config.slope);
+	use_value->update(config.use_value);
+	update_sample();
 }
 
 int ChromaKey::handle_opengl()

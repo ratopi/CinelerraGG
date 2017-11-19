@@ -271,6 +271,8 @@ AssetPopupMixer::~AssetPopupMixer()
 
 int AssetPopupMixer::handle_event()
 {
+	ArrayList<ZWindow *>new_mixers;
+
 	mwindow->select_zwindow(0);
 	for( int i=0; i<mwindow->session->drag_assets->total; ++i ) {
 		Indexable *indexable = mwindow->session->drag_assets->values[i];
@@ -293,9 +295,14 @@ int AssetPopupMixer::handle_event()
 		char *tp = strrchr(path, '/');
 		if( !tp ) tp = path; else ++tp;
 		zwindow->set_title(tp);
-		zwindow->start();
+		new_mixers.append(zwindow);
 	}
-        mwindow->queue_mixers(mwindow->edl,CURRENT_FRAME,0,0,1,0);
+
+	mwindow->tile_mixers();
+	for( int i=0; i<new_mixers.size(); ++i )
+		new_mixers[i]->start();
+
+	mwindow->refresh_mixers();
 	mwindow->resync_guis();
 	return 1;
 }

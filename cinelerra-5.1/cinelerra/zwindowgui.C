@@ -38,8 +38,8 @@
 #include "zwindowgui.h"
 
 ZWindowGUI::ZWindowGUI(MWindow *mwindow, ZWindow *zwindow, Mixer *mixer)
- : BC_Window(mixer->title, mixer->x, mixer->y, mixer->w, mixer->h,
-	100, 100, 1, 1, 0)
+ : BC_Window(zwindow->title, mixer->x, mixer->y, mixer->w, mixer->h,
+	100, 75, 1, 1, 0)
 {
 	this->mwindow = mwindow;
 	this->zwindow = zwindow;
@@ -76,16 +76,13 @@ int ZWindowGUI::resize_event(int w, int h)
 	BC_WindowBase::resize_event(w, h);
 	return 1;
 }
-
 int ZWindowGUI::translation_event()
 {
-	zwindow->reposition(get_x(), get_y(), get_w(), get_h());
-	return 0;
+	return resize_event(get_w(),get_h());
 }
 
 int ZWindowGUI::close_event()
 {
-	mwindow->del_mixer(zwindow);
 	set_done(0);
 	return 1;
 }

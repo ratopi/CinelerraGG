@@ -178,10 +178,17 @@ void MWindow::fit_autos(int doall)
 		switch (i)
 		{
 		case AUTOGROUPTYPE_AUDIO_FADE:
-		case AUTOGROUPTYPE_VIDEO_FADE:
-			if (range < 0.1) {
+			if (range < 1) {
 				min = MIN(min, edl->local_session->automation_mins[i]);
 				max = MAX(max, edl->local_session->automation_maxs[i]);
+				if( min >= max-0.1 ) { min = -80.0; min = 6.0; }
+			}
+			break;
+		case AUTOGROUPTYPE_VIDEO_FADE:
+			if (range < 1) {
+				min = MIN(min, edl->local_session->automation_mins[i]);
+				max = MAX(max, edl->local_session->automation_maxs[i]);
+				if( min >= max-0.1 ) { min = 0.0; min = 100.0; }
 			}
 			break;
 		case AUTOGROUPTYPE_ZOOM:
@@ -198,9 +205,10 @@ void MWindow::fit_autos(int doall)
 			break;
 		case AUTOGROUPTYPE_X:
 		case AUTOGROUPTYPE_Y:
-			if (range < 5) {
-				min = floor((min+max)/2) - 50;
-				max = floor((min+max)/2) + 50;
+			if (range < 1) {
+				float scale = bmin(edl->session->output_w, edl->session->output_h);
+				min = floor((min+max)/2) - 0.5*scale;
+				max = floor((min+max)/2) + 0.5*scale;
 			}
 			break;
 		}

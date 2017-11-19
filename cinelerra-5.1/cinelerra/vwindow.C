@@ -328,10 +328,7 @@ void VWindow::update_position(int change_type,
 	{
 //printf("VWindow::update_position %d\n", __LINE__);
 //edl->dump();
-		playback_engine->que->send_command(CURRENT_FRAME,
-			change_type,
-			edl,
-			1);
+		playback_engine->refresh_frame(change_type, edl);
 
 		double position = edl->local_session->get_selectionstart(1);
 		if(lock_window) gui->lock_window("VWindow::update_position");

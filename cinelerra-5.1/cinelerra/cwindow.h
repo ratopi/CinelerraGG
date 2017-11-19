@@ -27,6 +27,7 @@
 #include "cplayback.inc"
 #include "ctracking.inc"
 #include "cwindowgui.inc"
+#include "edl.inc"
 #include "floatauto.inc"
 #include "mwindow.inc"
 #include "remotecontrol.h"
@@ -70,6 +71,8 @@ public:
 	void hide_window();
 	int update_position(double position);
 	void stop_playback(int wait);
+	void refresh_frame(int change_type);
+	void refresh_frame(int change_type, EDL *edl);
 
 	int destination;
 	MWindow *mwindow;

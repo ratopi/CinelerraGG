@@ -408,6 +408,14 @@ public:
 	MWindow *mwindow;
 };
 
+class TileMixers : public BC_MenuItem
+{
+public:
+	TileMixers(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
 // ======================================== audio
 
 class AddAudioTrack : public BC_MenuItem

@@ -45,7 +45,7 @@ class ChromaKeyConfig
 {
 public:
 	ChromaKeyConfig();
-
+	void reset();
 	void copy_from(ChromaKeyConfig &src);
 	int equivalent(ChromaKeyConfig &src);
 	void interpolate(ChromaKeyConfig &prev,
@@ -89,6 +89,16 @@ public:
 	ChromaKeyHSV *plugin;
 	ChromaKeyWindow *gui;
 };
+
+class ChromaKeyReset : public BC_GenericButton
+{
+public:
+	ChromaKeyReset(ChromaKeyHSV *plugin, ChromaKeyWindow *gui, int x, int y);
+	int handle_event();
+	ChromaKeyHSV *plugin;
+	ChromaKeyWindow *gui;
+};
+
 
 
 class ChromaKeyMinBrightness : public BC_FSlider
@@ -209,6 +219,7 @@ public:
 
 	void create_objects();
 	void update_sample();
+	void update_gui();
 	void done_event(int result);
 
 	ChromaKeyColor *color;
@@ -224,6 +235,7 @@ public:
 	ChromaKeySpillThreshold *spill_threshold;
 	ChromaKeySpillAmount *spill_amount;
 	ChromaKeyShowMask *show_mask;
+	ChromaKeyReset *reset;
 	BC_SubWindow *sample;
 	ChromaKeyHSV *plugin;
 	ChromaKeyColorThread *color_thread;

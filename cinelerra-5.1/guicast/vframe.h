@@ -34,7 +34,7 @@
 
 // Maximum number of prev or next effects to be pushed onto the stacks.
 #define MAX_STACK_ELEMENTS 255
-
+#define SHM_MIN_SIZE 2048
 
 // Scene graph for 3D models
 // Defined by the subclass

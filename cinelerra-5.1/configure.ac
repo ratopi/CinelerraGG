@@ -453,6 +453,8 @@ CHECK_LIB([fdk], [fdk-aac], [faacDecInit])
 CHECK_HEADERS([fdk], [fdk headers], [fdk-aac/genericStds.h])
 CHECK_LIB([jbig], [jbig], [jbg_dec_init])
 CHECK_LIB([vdpau], [vdpau], [vdp_device_create_x11])
+CHECK_LIB([opus], [opus], [opus_multistream_decoder_create])
+CHECK_HEADERS([opus], [libopus headers], [opus/opus_multistream.h])
 
 #if test "x$HAVE_mjpegtools" = "xyes"; then
 #CFG_CFLAGS+=" -I/usr/include/mjpegtools"
@@ -710,6 +712,12 @@ if test "x$HAVE_DL" = "xyes"; then
   EXTRA_LIBS+=' -ldl'
   FFMPEG_EXTRA_CFG+=' --extra-ldflags="-ldl"'
 fi
+if test "x$HAVE_opus" = "xyes"; then
+  EXTRA_LIBS+=' -lopus'
+  CFG_CFLAGS+=' -I/usr/include/opus'
+  FFMPEG_EXTRA_CFG+=' --enable-libopus'
+fi
+
 AC_SUBST(EXTRA_LIBS)
 AC_SUBST(FFMPEG_EXTRA_CFG)
 AC_SUBST(WANT_X264_HIDEPTH)
@@ -835,4 +843,7 @@ fi
 
 if test "x$WANT_GIT_FFMPEG" != "xno"; then
 echo "ffmpeg.git := $WANT_GIT_FFMPEG"
+fi
+if test "x$HAVE_opus" = "xyes"; then
+echo 'ffmpeg.cflags+=" -I/usr/include/opus"'
 fi

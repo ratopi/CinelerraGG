@@ -234,11 +234,7 @@ void CWindow::update(int position,
 
 	if(position)
 	{
-		mwindow->queue_mixers(mwindow->edl, CURRENT_FRAME,1,0,1,0);
-		playback_engine->que->send_command(CURRENT_FRAME,
-			CHANGE_NONE,
-			mwindow->edl,
-			1);
+		refresh_frame(CHANGE_NONE);
 	}
 
 	gui->lock_window("CWindow::update 2");
@@ -309,8 +305,16 @@ int CWindow::update_position(double position)
 	return 1;
 }
 
+void CWindow::refresh_frame(int change_type, EDL *edl)
+{
+	mwindow->refresh_mixers();
+	playback_engine->refresh_frame(change_type, edl);
+}
 
-
+void CWindow::refresh_frame(int change_type)
+{
+	refresh_frame(change_type, mwindow->edl);
+}
 
 CWindowRemoteHandler::
 CWindowRemoteHandler(RemoteControl *remote_control)

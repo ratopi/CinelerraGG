@@ -206,13 +206,16 @@ public:
 
 	void queue_mixers(EDL *edl, int command, int wait_tracking,
 		int use_inout, int update_refresh, int toggle_audio);
+	void refresh_mixers();
 	void stop_mixers();
+	void close_mixers();
 	ZWindow *get_mixer(Mixer *&mixer);
 	void del_mixer(ZWindow *zwindow);
 	int mixer_track_active(Track *track);
 	void update_mixer_tracks();
 	void start_mixer();
 	int select_zwindow(ZWindow *zwindow);
+	void tile_mixers();
 
 	int load_filenames(ArrayList<char*> *filenames,
 		int load_mode = LOADMODE_REPLACE,

@@ -39,7 +39,7 @@ class ChromaKeyConfig
 {
 public:
 	ChromaKeyConfig();
-
+	void reset();
 	void copy_from(ChromaKeyConfig &src);
 	int equivalent(ChromaKeyConfig &src);
 	void interpolate(ChromaKeyConfig &prev,
@@ -93,6 +93,15 @@ public:
 	ChromaKey *plugin;
 };
 
+class ChromaKeyReset : public BC_GenericButton
+{
+public:
+	ChromaKeyReset(ChromaKey *plugin, ChromaKeyWindow *gui, int x, int y);
+	int handle_event();
+	ChromaKey *plugin;
+	ChromaKeyWindow *gui;
+};
+
 class ChromaKeyUseColorPicker : public BC_GenericButton
 {
 public:
@@ -120,6 +129,7 @@ public:
 	~ChromaKeyWindow();
 
 	void create_objects();
+	void update_gui();
 	void update_sample();
 	void done_event(int result);
 
@@ -128,6 +138,7 @@ public:
 	ChromaKeyUseValue *use_value;
 	ChromaKeyUseColorPicker *use_colorpicker;
 	ChromaKeySlope *slope;
+	ChromaKeyReset *reset;
 	BC_SubWindow *sample;
 	ChromaKey *plugin;
 	ChromaKeyColorThread *color_thread;

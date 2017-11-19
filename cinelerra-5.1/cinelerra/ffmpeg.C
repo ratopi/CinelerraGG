@@ -690,6 +690,7 @@ int FFAudioStream::decode_frame(AVFrame *frame)
 int FFAudioStream::encode_activate()
 {
 	if( writing >= 0 ) return writing;
+	if( !avctx->codec ) return writing = 0;
 	frame_sz = avctx->codec->capabilities & CODEC_CAP_VARIABLE_FRAME_SIZE ?
 		10000 : avctx->frame_size;
 	return FFStream::encode_activate();

@@ -250,6 +250,7 @@ MWindow::~MWindow()
 	delete render;          render = 0;
 	commit_commercial();
 	if( commercials && !commercials->remove_user() ) commercials = 0;
+	close_mixers();
 
 // Save defaults for open plugins
 	plugin_gui_lock->lock("MWindow::~MWindow");
@@ -1129,7 +1130,7 @@ ZWindow *MWindow::get_mixer(Mixer *&mixer)
 	if( !mixer ) mixer = edl->mixers.new_mixer();
 	ZWindow *zwindow = 0;
 	for( int i=0; !zwindow && i<zwindows.size(); ++i )
-		if( !zwindows[i]->is_running() ) zwindow = zwindows[i];
+		if( zwindows[i]->idx < 0 ) zwindow = zwindows[i];
 	if( !zwindow )
 		zwindows.append(zwindow = new ZWindow(this));
 	zwindow->idx = mixer->idx;
@@ -1175,7 +1176,7 @@ void MWindow::start_mixer()
 
 	zwindow->set_title(title);
 	zwindow->start();
-	queue_mixers(edl,CURRENT_FRAME,0,0,1,0);
+	refresh_mixers();
 }
 
 int MWindow::mixer_track_active(Track *track)
@@ -1206,7 +1207,7 @@ void MWindow::queue_mixers(EDL *edl, int command, int wait_tracking,
 	zwindows_lock->lock("MWindow::queue_mixers");
 	for( int vidx=0; vidx<zwindows.size(); ++vidx ) {
 		ZWindow *zwindow = zwindows[vidx];
-		if( !zwindow->running() ) continue;
+		if( zwindow->idx < 0 ) continue;
 		Mixer *mixer = edl->mixers.get_mixer(zwindow->idx);
 		if( !mixer || !mixer->mixer_ids.size() ) continue;
 		int k = -1;
@@ -1238,12 +1239,36 @@ void MWindow::queue_mixers(EDL *edl, int command, int wait_tracking,
 	zwindows_lock->unlock();
 }
 
+void MWindow::refresh_mixers()
+{
+	queue_mixers(edl,CURRENT_FRAME,0,0,1,0);
+}
+
 void MWindow::stop_mixers()
 {
 	for( int vidx=0; vidx<zwindows.size(); ++vidx ) {
 		ZWindow *zwindow = zwindows[vidx];
-		if( !zwindow->running() ) continue;
+		if( zwindow->idx < 0 ) continue;
 		zwindow->issue_command(STOP, 0, 0, 0, 0);
+	}
+}
+
+void MWindow::close_mixers()
+{
+	zwindows_lock->lock("MWindow::close_mixers");
+	for( int i=0; i<zwindows.size(); ++i ) {
+		ZWindow *zwindow = zwindows[i];
+		if( zwindow->idx < 0 ) continue;
+		ZWindowGUI *zgui = zwindow->zgui;
+		zgui->lock_window("MWindow::select_zwindow 0");
+		zgui->set_done(0);
+		zgui->unlock_window();
+	}
+	zwindows_lock->unlock();
+	for( int i=0; i<zwindows.size(); ++i ) {
+		ZWindow *zwindow = zwindows[i];
+		if( zwindow->idx < 0 ) continue;
+		zwindow->close_window();
 	}
 }
 
@@ -1254,7 +1279,7 @@ int MWindow::select_zwindow(ZWindow *zwindow)
 		session->selected_zwindow = n;
 		for( int i=0; i<zwindows.size(); ++i ) {
 			ZWindow *zwindow = zwindows[i];
-			if( !zwindow->running() ) continue;
+			if( zwindow->idx < 0 ) continue;
 			ZWindowGUI *zgui = zwindow->zgui;
 			zgui->lock_window("MWindow::select_zwindow 0");
 			zwindow->highlighted = i == n ? 1 : 0;
@@ -1268,6 +1293,61 @@ int MWindow::select_zwindow(ZWindow *zwindow)
 		gui->unlock_window();
 	}
 	return ret;
+}
+
+void MWindow::tile_mixers()
+{
+	int nz = 0;
+	for( int i=0; i<zwindows.size(); ++i ) {
+		ZWindow *zwindow = zwindows[i];
+		if( zwindow->idx < 0 ) continue;
+		++nz;
+	}
+	if( !nz ) return;
+	int zn = ceil(sqrt(nz));
+	int x1 = 1 + gui->get_x(), x2 = cwindow->gui->get_x();
+	int y1 = 1, y2 = gui->get_y();
+	int rw = gui->get_root_w(0), rh = gui->get_root_h(0);
+	if( x1 < 0 ) x1 = 0;
+	if( y1 < 0 ) y1 = 0;
+	if( x2 > rw ) x2 = rw;
+	if( y2 > rh ) y2 = rh;
+	int dx = x2 - x1, dy = y2 - y1;
+	int zw = dx / zn;
+	int lt = BC_DisplayInfo::get_left_border();
+	int top = BC_DisplayInfo::get_top_border();
+	int bw = lt + BC_DisplayInfo::get_right_border();  // borders
+	int bh = top + BC_DisplayInfo::get_bottom_border();
+	int zx = 0, zy = 0;  // window origins
+	int mw = 10+10, mh = 10+10; // canvas margins
+	int rsz = 0, n = 0, dz = 0;
+	int ow = edl->session->output_w, oh = edl->session->output_h;
+	for( int i=0; i<zwindows.size(); ++i ) {
+		ZWindow *zwindow = zwindows[i];
+		if( zwindow->idx < 0 ) continue;
+		int ww = zw - bw, hh = (ww - mw) * oh / ow + mh, zh = hh + bh;
+		if( rsz < hh ) rsz = hh;
+		int xx = zx + x1, yy = zy + y1;
+		int mx = x2 - zw, my = y2 - zh;
+		if( xx > mx ) xx = mx;
+		if( yy > my ) yy = my;
+		xx += lt + dz;  yy += top + dz;
+		zwindow->reposition(xx,yy, ww,hh);
+		if( zwindow->running() ) {
+			ZWindowGUI *gui = (ZWindowGUI *)zwindow->get_gui();
+			gui->lock_window("MWindow::tile_mixers");
+			gui->BC_WindowBase::reposition_window(xx,yy, ww,hh);
+			gui->unlock_window();
+		}
+		if( ++n >= zn ) {
+			n = 0;  rsz += bh;
+			if( (zy += rsz) > (dy - rsz) ) dz += 10;
+			rsz = 0;
+			zx = 0;
+		}
+		else
+			zx += zw;
+	}
 }
 
 
@@ -1572,7 +1652,7 @@ void MWindow::stop_playback(int wait)
 	}
 	for(int i = 0; i < zwindows.size(); i++) {
 		ZWindow *zwindow = zwindows[i];
-		if( !zwindow->is_running() ) continue;
+		if( zwindow->idx < 0 ) continue;
 		zwindow->stop_playback(wait);
 	}
 }
@@ -2662,11 +2742,7 @@ void MWindow::sync_parameters(int change_type)
 	}
 	else
 	{
-		queue_mixers(edl,CURRENT_FRAME,0,0,1,0);
-		cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-							change_type,
-							edl,
-							1);
+		cwindow->refresh_frame(change_type);
 	}
 }
 
@@ -3201,11 +3277,7 @@ void MWindow::update_project(int load_mode)
 		}
 		if(debug) PRINT_TRACE
 		select_zwindow(0);
-		for( int i=0; i<zwindows.size(); ++i ) {
-			ZWindow *zwindow = zwindows[i];
-			if( !zwindow->is_running() ) continue;
-			zwindow->close_window();
-		}
+		close_mixers();
 
 		for( int i=0; i<edl->mixers.size(); ++i ) {
 			Mixer *mixer = edl->mixers[i];
@@ -3231,10 +3303,7 @@ void MWindow::update_project(int load_mode)
 	cwindow->gui->unlock_window();
 
 	if(debug) PRINT_TRACE
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-		CHANGE_ALL,
-		edl,
-		1);
+	cwindow->refresh_frame(CHANGE_ALL);
 
 	awindow->gui->async_update_assets();
 	if(debug) PRINT_TRACE

@@ -3178,10 +3178,7 @@ int CWindowCanvas::cursor_motion_event()
 		gui->unlock_window();
 		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
-		gui->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-			CHANGE_NONE,
-			mwindow->edl,
-			1);
+		mwindow->cwindow->refresh_frame(CHANGE_NONE);
 		if(!redraw) gui->update_tool();
 		gui->lock_window("CWindowCanvas::cursor_motion_event 2");
 	}
@@ -3270,10 +3267,7 @@ int CWindowCanvas::button_press_event()
 
 		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
-		gui->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-			CHANGE_NONE,
-			mwindow->edl,
-			1);
+		mwindow->cwindow->refresh_frame(CHANGE_NONE);
 		if(!redraw) gui->update_tool();
 		gui->lock_window("CWindowCanvas::button_press_event 2");
 	}
