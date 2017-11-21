@@ -46,6 +46,12 @@ REGISTER_PLUGIN(GradientMain)
 
 GradientConfig::GradientConfig()
 {
+	reset();
+}
+
+void GradientConfig::reset()
+
+{
 	angle = 0;
 	in_radius = 0;
 	out_radius = 100;
@@ -211,6 +217,8 @@ void GradientWindow::create_objects()
 	BC_Title *title2;
 	add_subwindow(title2 = new BC_Title(x, y, _("Outer radius:")));
 
+	add_subwindow(reset = new GradientReset(plugin, this, x, y+100));
+
 	y = y1;
 	x += MAX(title1->get_w(), title2->get_w()) + margin;
 
@@ -224,7 +232,6 @@ void GradientWindow::create_objects()
 	y1 = y;
 	add_subwindow(in_color = new GradientInColorButton(plugin, this, x, y));
 	y += COLOR_H + margin;
-
 
 	add_subwindow(out_color = new GradientOutColorButton(plugin, this, x, y));
 	x += MAX(in_color->get_w(), out_color->get_w()) + margin;
@@ -252,6 +259,7 @@ void GradientWindow::create_objects()
 		COLOR_W + 4,
 		COLOR_H + 4,
 		1);
+
 
 	show_window();
 }
@@ -537,7 +545,20 @@ int GradientOutColorButton::handle_event()
 	return 1;
 }
 
+GradientReset::GradientReset(GradientMain *plugin, GradientWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
 
+int GradientReset::handle_event()
+{
+	plugin->config.reset();
+	window->update_gui();
+	plugin->send_configure_change();
+	return 1;
+}
 
 GradientInColorThread::GradientInColorThread(GradientMain *plugin,
 	GradientWindow *window)
@@ -724,32 +745,32 @@ int GradientMain::process_buffer(VFrame *frame,
 
 void GradientMain::update_gui()
 {
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			((GradientWindow*)thread->window)->lock_window("GradientMain::update_gui");
-			((GradientWindow*)thread->window)->rate->set_text(GradientRate::to_text(config.rate));
-			((GradientWindow*)thread->window)->in_radius->update(config.in_radius);
-			((GradientWindow*)thread->window)->out_radius->update(config.out_radius);
-			((GradientWindow*)thread->window)->shape->set_text(GradientShape::to_text(config.shape));
-			if(((GradientWindow*)thread->window)->angle)
-				((GradientWindow*)thread->window)->angle->update(config.angle);
-			if(((GradientWindow*)thread->window)->center_x)
-				((GradientWindow*)thread->window)->center_x->update(config.center_x);
-			if(((GradientWindow*)thread->window)->center_y)
-				((GradientWindow*)thread->window)->center_y->update(config.center_y);
-			((GradientWindow*)thread->window)->update_in_color();
-			((GradientWindow*)thread->window)->update_out_color();
-			((GradientWindow*)thread->window)->update_shape();
-			((GradientWindow*)thread->window)->unlock_window();
-			((GradientWindow*)thread->window)->in_color_thread->update_gui(config.get_in_color(), config.in_a);
-			((GradientWindow*)thread->window)->out_color_thread->update_gui(config.get_out_color(), config.out_a);
-		}
-	}
+	if( !thread ) return;
+	if( !load_configuration() ) return;
+	((GradientWindow*)thread->window)->lock_window("GradientMain::update_gui");
+	GradientWindow *window = (GradientWindow *)thread->window;
+	window->update_gui();
+	window->unlock_window();
 }
 
-
+void GradientWindow::update_gui()
+{
+	GradientConfig &config = plugin->config;
+	rate->set_text(GradientRate::to_text(config.rate));
+	in_radius->update(config.in_radius);
+	out_radius->update(config.out_radius);
+	shape->set_text(GradientShape::to_text(config.shape));
+	if( angle ) angle->update(config.angle);
+	if( center_x ) center_x->update(config.center_x);
+	if( center_y ) center_y->update(config.center_y);
+	update_in_color();
+	update_out_color();
+	update_shape();
+	unlock_window();
+	in_color_thread->update_gui(config.get_in_color(), config.in_a);
+	out_color_thread->update_gui(config.get_out_color(), config.out_a);
+	lock_window("GradientWindow::update_gui");
+}
 
 
 void GradientMain::save_data(KeyFrame *keyframe)

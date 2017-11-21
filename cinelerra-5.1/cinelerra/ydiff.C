@@ -2,8 +2,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
+#include <pthread.h>
+#include <signal.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/XShm.h>
 
 extern "C" {
 #include "libavfilter/buffersrc.h"
@@ -20,116 +31,200 @@ extern "C" {
 #include "libswscale/swscale.h"
 }
 
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-
 int done = 0;
+int64_t tm = 0, tn = 0;
 
 void sigint(int n)
 {
   done = 1;
 }
 
-
-void dst_exit(GtkWidget *widget, gpointer data)
+class gg_window
 {
-   exit(0);
+public:
+  gg_window(Display *display, int x, int y, int w, int h);
+  ~gg_window();
+  Display *display;
+  Window win;
+  GC gc;
+  int x, y, w, h;
+  void show();
+  void hide();
+};
+
+gg_window::gg_window(Display *display, int x, int y, int w, int h)
+{
+  this->display = display;
+  this->x = x;  this->y = y;
+  this->w = w;  this->h = h;
+
+  Window root = DefaultRootWindow(display);
+  Screen *screen = DefaultScreenOfDisplay(display);
+  Visual *visual = DefaultVisualOfScreen(screen);
+  int depth = DefaultDepthOfScreen(screen);
+  int border = 0;
+  unsigned long gcmask = GCGraphicsExposures;
+  XGCValues gcvalues;
+  gcvalues.graphics_exposures = 0;
+  gc = XCreateGC(display, root, gcmask, &gcvalues);
+
+  XSetWindowAttributes attributes;
+  attributes.background_pixel = BlackPixel(display, DefaultScreen(display));
+  attributes.border_pixel = WhitePixel(display, DefaultScreen(display));
+  attributes.event_mask =
+    EnterWindowMask | LeaveWindowMask |
+    ButtonPressMask | ButtonReleaseMask |
+    PointerMotionMask | FocusChangeMask;
+  int valueMask = CWBackPixel | CWBorderPixel | CWEventMask;
+  this->win = XCreateWindow(display, root, x, y, w, h, border, depth,
+      InputOutput, visual, valueMask, &attributes);
 }
 
-class gtk_window {
+gg_window::~gg_window()
+{
+  XFreeGC(display, gc);
+  XDestroyWindow(display, win);
+}
+
+void gg_window::show()
+{
+  XMapWindow(display,win);
+  XFlush(display);
+}
+void gg_window::hide()
+{
+  XUnmapWindow(display,win);
+  XFlush(display);
+}
+
+class gg_ximage
+{
 public:
-  gtk_window(int width, int height);
-  ~gtk_window();
+  Display *display;
+  XShmSegmentInfo shm_info;
+  XImage *ximage;
+  int w, h;
+  unsigned char *data;
+  int shm, sz;
+  uint32_t lsb[3];
+  gg_ximage(Display *display, int w, int h, int shm);
+  ~gg_ximage();
 
-  GdkVisual *visual;
-  GtkWidget *window;
-  GtkWidget *image;
-  GtkWidget *panel_hbox;
-  GdkImage  *img0, *img1;
-  GdkPixbuf *pbuf0, *pbuf1;
-  unsigned char *bfr, *bfrs, *bfr0, *bfr1;
-  unsigned char **rows, **row0, **row1;
-  uint64_t flip_bfrs, flip_rows;
-  int width, height, linesize;
-  int done;
+  void put_image(gg_window &gw);
+};
 
+gg_ximage::gg_ximage(Display *display, int w, int h, int shm)
+{
+  this->display = display;
+  this->w = w;  this->h = h;
+  this->shm = shm;
+
+  ximage = 0;  sz = 0;  data = 0;
+  Screen *screen = DefaultScreenOfDisplay(display);
+  Visual *visual = DefaultVisualOfScreen(screen);
+  int depth = DefaultDepthOfScreen(screen);
+
+  if( shm ) {
+    ximage = XShmCreateImage(display, visual, depth, ZPixmap, (char*)NULL, &shm_info, w, h);
+// Create shared memory
+    sz = h * ximage->bytes_per_line;
+    shm_info.shmid = shmget(IPC_PRIVATE, sz + 8, IPC_CREAT | 0777);
+    if(shm_info.shmid < 0) perror("shmget");
+    data = (unsigned char *)shmat(shm_info.shmid, NULL, 0);
+// This causes it to automatically delete when the program exits.
+    shmctl(shm_info.shmid, IPC_RMID, 0);
+    ximage->data = shm_info.shmaddr = (char*)data;
+    shm_info.readOnly = 0;
+// Get the real parameters
+    if(!XShmAttach(display, &shm_info)) perror("XShmAttach");
+  }
+  else {
+      ximage = XCreateImage(display, visual, depth, ZPixmap, 0, (char*)data, w, h, 8, 0);
+      sz = h * ximage->bytes_per_line;
+      data = new unsigned char[sz+8];
+  }
+  memset(data, 0, sz);
+  ximage->data = (char*) data;
+  lsb[0] = ximage->red_mask & ~(ximage->red_mask<<1);
+  lsb[1] = ximage->green_mask & ~(ximage->green_mask<<1);
+  lsb[2] = ximage->blue_mask & ~(ximage->blue_mask<<1);
+}
+
+gg_ximage::~gg_ximage()
+{
+  if( shm ) {
+    data = 0;
+    ximage->data = 0;
+    XDestroyImage(ximage);
+    XShmDetach(display, &shm_info);
+    XFlush(display);
+    shmdt(shm_info.shmaddr);
+  }
+  else {
+    delete [] data;
+    data = 0;
+    ximage->data = 0;
+    XDestroyImage(ximage);
+  }
+}
+
+void gg_ximage::put_image(gg_window &gw)
+{
+  Display *display = gw.display;
+  Window win = gw.win;
+  GC gc = gw.gc;
+  if( shm )
+    XShmPutImage(display, win, gc, ximage, 0,0, 0,0,w,h, 0);
+  else
+    XPutImage(display, win, gc, ximage, 0,0, 0,0,w,h); 
+  XFlush(display);
+}
+
+class gg_thread
+{
+public:
   pthread_t tid;
+  gg_window &gw;
+  gg_ximage *imgs[2], *img;
+  int active, done;
+  gg_thread(gg_window &gw, int shm) ;
+  ~gg_thread();
+
   static void *entry(void *t);
   void start();
   void *run();
-  uint8_t *next_bfr();
-  void post();
+  void join();
+  void post(gg_ximage *ip);
+  gg_ximage *next_img();
 
   pthread_mutex_t draw;
   void draw_lock() { pthread_mutex_lock(&draw); }
   void draw_unlock() { pthread_mutex_unlock(&draw); }
 };
 
-gtk_window::gtk_window(int width, int height)
+gg_thread::gg_thread(gg_window &gw, int shm)
+ : gw(gw)
 {
-  this->width = width;
-  this->height = height;
-  this->linesize = width*3;
-  visual = gdk_visual_get_system();
-  window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_signal_connect(GTK_OBJECT(window),"destroy",
-     GTK_SIGNAL_FUNC(dst_exit),NULL);
-  gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_NONE);
-  /* try for shared image bfr, only seems to work with gtk_rgb */
-  img0 = gdk_image_new(GDK_IMAGE_SHARED, visual, width, height);
-  pbuf0 = gdk_pixbuf_new_from_data((const guchar *)img0->mem,
-     GDK_COLORSPACE_RGB,FALSE,8,width,height,linesize,NULL,NULL);
-  bfr0 = gdk_pixbuf_get_pixels(pbuf0);
-  memset(bfr0,0,height*linesize);
-  image = gtk_image_new_from_pixbuf(pbuf0);
-  /* double buffered */
-  img1 = gdk_image_new(GDK_IMAGE_SHARED, visual, width, height);
-  pbuf1 = gdk_pixbuf_new_from_data((const guchar *)img1->mem,
-     GDK_COLORSPACE_RGB,FALSE,8,width,height,linesize,NULL,NULL);
-  bfr1 = gdk_pixbuf_get_pixels(pbuf1);
-  memset(bfr1,0,height*linesize);
-
-  row0 = new unsigned char *[height];
-  row1 = new unsigned char *[height];
-
-  for( int i=0; i<height; ++i ) {
-    row0[i] = bfr0 + i*linesize;
-    row1[i] = bfr1 + i*linesize;
-  }
-  bfrs = bfr0;
-  rows = row0;
-
-  flip_bfrs = ((uint64_t)bfr0 ^ (uint64_t)bfr1);
-  flip_rows = ((uint64_t)row0 ^ (uint64_t)row1);
+  imgs[0] = new gg_ximage(gw.display, gw.w, gw.h, shm);
+  imgs[1] = new gg_ximage(gw.display, gw.w, gw.h, shm);
+  done = -1;
+  img = 0;  active = 0;
   pthread_mutex_init(&draw, 0);
-  post();
-  
-  panel_hbox = gtk_hbox_new(FALSE,0);
-  gtk_container_add(GTK_CONTAINER(window), panel_hbox);
-  /* pack image into panel */
-  gtk_box_pack_start(GTK_BOX(panel_hbox), image, TRUE, TRUE, 0);
-  gtk_widget_show_all(window);
 }
 
-gtk_window::~gtk_window()
+gg_thread::~gg_thread()
 {
-  gdk_flush();
-  gtk_widget_destroy(window);
-  g_object_unref(pbuf0);
-  g_object_unref(img0);
-  g_object_unref(pbuf1);
-  g_object_unref(img1);
-  delete [] row0;
-  delete [] row1;
+  delete imgs[0];
+  delete imgs[1];
   pthread_mutex_destroy(&draw);
 }
 
-void *gtk_window::entry(void *t)
+void *gg_thread::entry(void *t)
 {
-  return ((gtk_window*)t)->run();
+  return ((gg_thread*)t)->run();
 }
 
-void gtk_window::start()
+void gg_thread::start()
 {
   pthread_attr_t attr;
   pthread_attr_init(&attr);
@@ -138,37 +233,46 @@ void gtk_window::start()
   pthread_create(&tid, &attr, &entry, this);
   pthread_attr_destroy(&attr);
 }
+void gg_thread::join()
+{
+  done = 1;
+  pthread_join(tid, 0);
+}
 
-void *gtk_window::run()
+void *gg_thread::run()
 {
   while( !done ) {
-    if( !gtk_events_pending() ) {
-      if( !bfr ) { usleep(10000);  continue; }
-      GdkGC *blk = image->style->black_gc;
-      gdk_draw_rgb_image(image->window,blk, 0,0,width,height,
-         GDK_RGB_DITHER_NONE,bfr,linesize);
-      gdk_flush();
-      unsigned long *fbfrs = (unsigned long *)&bfrs;  *fbfrs ^= flip_bfrs;
-      unsigned long *frows = (unsigned long *)&rows;  *frows ^= flip_rows;
-      bfr = 0;
-      draw_unlock();
+    if( XPending(gw.display) ) {
+      XEvent xev;
+      XNextEvent(gw.display, &xev);
+      switch( xev.type ) {
+      case KeyPress:
+      case KeyRelease:
+      case ButtonPress:
+      case Expose:
+        break;
+      }
+      continue;
     }
-    else
-      gtk_main_iteration();
-  }
 
+    if( !img ) { usleep(10000);  continue; }
+    img->put_image(gw);
+    img = 0;
+    draw_unlock();
+  }
   return (void*)0;
 }
 
-uint8_t *gtk_window::next_bfr()
+gg_ximage *gg_thread::next_img()
 {
-  return bfrs;
+  gg_ximage *ip = imgs[active];
+  active ^= 1;
+  return ip;
 }
 
-void gtk_window::post()
+void gg_thread::post(gg_ximage *ip)
 {
-  draw_lock();
-  bfr = bfrs;
+  this->img = ip;
 }
 
 
@@ -305,27 +409,42 @@ AVFrame *ffcmpr::read_frame()
   return 0;
 }
 
-static int diff_frame(AVFrame *afrm, AVFrame *bfrm, uint8_t *fp, int w, int h)
+static int diff_frame(AVFrame *afrm, AVFrame *bfrm, gg_ximage *ximg, int w, int h)
 {
   int n = 0, m = 0;
   uint8_t *arow = afrm->data[0];
   uint8_t *brow = bfrm->data[0];
+  uint8_t *frow = ximg->data;
   int asz = afrm->linesize[0], bsz = afrm->linesize[0];
-  int rsz = w * 3;
-  for( int y=h; --y>=0; arow+=asz, brow+=bsz ) {
-    uint8_t *ap = arow, *bp = brow;
-    for( int x=rsz; --x>=0; ++ap,++bp ) {
-      int d = *ap - *bp, v = d + 128;
-      if( v > 255 ) v = 255;
-      else if( v < 0 ) v = 0;
-      *fp++ = v;
-      m += d;
-      if( d < 0 ) d = -d;
-      n += d;
+  XImage *ximage = ximg->ximage;
+  int fsz = ximage->bytes_per_line;
+  int rsz = w, bpp = (ximage->bits_per_pixel+7)/8;
+  uint32_t *lsb = ximg->lsb;
+
+  for( int y=h; --y>=0; arow+=asz, brow+=bsz, frow+=fsz ) {
+    uint8_t *ap = arow, *bp = brow, *fp = frow;
+    for( int x=rsz; --x>=0; ) {
+      uint32_t rgb = 0;  uint8_t *rp = fp;
+      for( int i=0; i<3; ++i ) {
+        int d = *ap++ - *bp++;
+        int v = d + 128;
+        if( v > 255 ) v = 255;
+        else if( v < 0 ) v = 0;
+        rgb |= v * lsb[i];
+        m += d;
+        if( d < 0 ) d = -d;
+        n += d;
+      }
+      if( ximage->byte_order == MSBFirst )
+        for( int i=3; --i>=0; ) *rp++ = rgb>>(8*i);
+      else
+        for( int i=0; i<3; ++i ) *rp++ = rgb>>(8*i);
+      fp += bpp;
     }
   }
   int sz = h*rsz;
   printf("%d %d %d %f", sz, m, n, (double)n/sz);
+  tm += m;  tn += n;
   return n;
 }
 
@@ -333,9 +452,12 @@ int main(int ac, char **av)
 {
   int ret;
   setbuf(stdout,NULL);
-
-  gtk_set_locale();
-  gtk_init(&ac, &av);
+  XInitThreads();
+  Display *display = XOpenDisplay(getenv("DISPLAY"));
+  if( !display ) {
+    fprintf(stderr,"Unable to open display\n");
+    exit(1);
+  }
 
   ffcmpr a, b;
   if( a.open_decoder(av[1],0) ) return 1;
@@ -381,9 +503,10 @@ int main(int ac, char **av)
   AVFrame *bfrm = av_frame_alloc();
   av_image_alloc(bfrm->data, bfrm->linesize,
      b.width, b.height, AV_PIX_FMT_RGB24, 1);
-
-  gtk_window gw(a.width, a.height);
-  gw.start();
+{ gg_window gw(display, 10,10, a.width,a.height);
+  gw.show();
+  gg_thread thr(gw, 1);
+  thr.start();
 
   int64_t err = 0;
   int frm_no = 0;
@@ -402,11 +525,12 @@ int main(int ac, char **av)
        afrm->data, afrm->linesize);
     sws_scale(b_cvt, bp->data, bp->linesize, 0, bp->height,
        bfrm->data, bfrm->linesize);
-    uint8_t *fbfr = gw.next_bfr();
-    ret = diff_frame(afrm, bfrm, fbfr, ap->width, ap->height);
+    thr.draw_lock();
+    gg_ximage *fimg = thr.next_img();
+    ret = diff_frame(afrm, bfrm, fimg, ap->width, ap->height);
+    thr.post(fimg);
     err += ret;  ++frm_no;
     printf("  %d\n",frm_no);
-    gw.post();
   }
 
   av_freep(&afrm->data);
@@ -416,6 +540,11 @@ int main(int ac, char **av)
   
   b.close_decoder();
   a.close_decoder();
+
+  thr.join();
+  gw.hide(); }
+  XCloseDisplay(display);
+  printf("\n%jd %jd\n", tm, tn);
   return 0;
 }
 

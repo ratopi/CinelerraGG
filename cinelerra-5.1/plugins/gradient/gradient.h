@@ -48,6 +48,7 @@ public:
 	GradientConfig();
 
 	int equivalent(GradientConfig &that);
+	void reset();
 	void copy_from(GradientConfig &that);
 	void interpolate(GradientConfig &prev,
 		GradientConfig &next,
@@ -170,6 +171,15 @@ public:
 	GradientWindow *window;
 };
 
+class GradientReset : public BC_GenericButton
+{
+public:
+	GradientReset(GradientMain *plugin, GradientWindow *window, int x, int y);
+	int handle_event();
+	GradientMain *plugin;
+	GradientWindow *window;
+};
+
 
 class GradientInColorThread : public ColorPicker
 {
@@ -201,6 +211,7 @@ public:
 	void create_objects();
 	void update_in_color();
 	void update_out_color();
+	void update_gui();
 	void update_shape();
 	void done_event(int result);
 
@@ -211,6 +222,7 @@ public:
 	GradientOutRadius *out_radius;
 	GradientInColorButton *in_color;
 	GradientOutColorButton *out_color;
+	GradientReset *reset;
 	GradientInColorThread *in_color_thread;
 	GradientOutColorThread *out_color_thread;
 	GradientShape *shape;

@@ -1,0 +1,13 @@
+webm libvpx-vp9
+bitrate=1024k
+minrate=512k
+maxrate=1485k
+crf=32
+tile-columns=2
+# gop can have an adverse affect on seeks
+g=240
+threads=8
+quality=good
+speed=4
+# Frederic Roenitz credited for opts and manual work
+# for more information see Feature5.pdf section 3.4

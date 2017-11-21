@@ -433,7 +433,7 @@ $(BDWRITE):	$(BDWOBJS) $(LIBRARIES)
 
 ydiff:	ydiff.C $(LIBRARIES)
 	@echo g++ -o $@ ydiff.C
-	@g++ `pkg-config --cflags --libs gtk+-2.0` $(CFLAGS) ydiff.C -o $@ $(LIBS)
+	@g++ $(CFLAGS) ydiff.C -o $@ $(LIBS)
 
 clean:
 	rm -rf $(OBJDIR)
