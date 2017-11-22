@@ -74,6 +74,7 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 #include "zoombar.h"
+#include "zwindow.h"
 #include "automation.h"
 #include "maskautos.h"
 
@@ -1874,8 +1875,9 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 {
 	calling_window_gui->unlock_window();
 	stop_playback(0);
+	close_mixers();
 
-	cwindow->gui->lock_window("MWindow::redo_entry");
+	cwindow->gui->lock_window("MWindow::redo_entry 1");
 	for( int i = 0; i < vwindows.size(); i++ ) {
 		if( vwindows.get(i)->is_running() ) {
 			if( calling_window_gui != vwindows.get(i)->gui ) {
@@ -1883,23 +1885,19 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 			}
 		}
 	}
-	gui->lock_window();
+	gui->lock_window("MWindow::redo_entry 3");
 
 	undo->redo();
 
 	save_backup();
+	restart_brender();
 	update_plugin_states();
 	update_plugin_guis();
-	awindow->gui->async_update_assets();
-	restart_brender();
+
 	gui->update(1, 2, 1, 1, 1, 1, 1);
+	gui->unlock_window();
 	cwindow->update(1, 1, 1, 1, 1);
-
-	if( calling_window_gui != cwindow->gui )
-		cwindow->gui->unlock_window();
-	if( calling_window_gui != gui )
-		gui->unlock_window();
-
+	cwindow->gui->unlock_window();
 
 	for( int i = 0; i < vwindows.size(); i++ ) {
 		if( vwindows.get(i)->is_running() ) {
@@ -1909,7 +1907,14 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 		}
 	}
 
+	if( calling_window_gui != gui )
+		gui->unlock_window();
+
+	open_mixers();
+	awindow->gui->async_update_assets();
+
 	cwindow->refresh_frame(CHANGE_ALL);
+	calling_window_gui->lock_window("MWindow::redo_entry 4");
 }
 
 
@@ -2160,6 +2165,7 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 {
 	calling_window_gui->unlock_window();
 	stop_playback(0);
+	close_mixers();
 
 	cwindow->gui->lock_window("MWindow::undo_entry 1");
 	for( int i = 0; i < vwindows.size(); i++ ) {
@@ -2196,6 +2202,7 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 
 	awindow->gui->async_update_assets();
 
+	open_mixers();
 	cwindow->refresh_frame(CHANGE_ALL);
 	calling_window_gui->lock_window("MWindow::undo_entry 4");
 }

@@ -209,6 +209,7 @@ public:
 	void refresh_mixers();
 	void stop_mixers();
 	void close_mixers();
+	void open_mixers();
 	ZWindow *get_mixer(Mixer *&mixer);
 	void del_mixer(ZWindow *zwindow);
 	int mixer_track_active(Track *track);
@@ -248,6 +249,7 @@ public:
 	int move_right(int64_t distance = 0);
 	void move_up(int64_t distance = 0);
 	void move_down(int64_t distance = 0);
+	int find_selection(double position, int scroll_display = 0);
 
 // seek to labels
 // shift_down must be passed by the caller because different windows call
@@ -257,6 +259,8 @@ public:
 // seek to edit handles
 	int next_edit_handle(int shift_down);
 	int prev_edit_handle(int shift_down);
+// seek to keyframes
+	int nearest_plugin_keyframe(int shift_down, int dir);
 // offset is pixels to add to track_start
 	void trackmovement(int offset, int pane_number);
 // view_start is pixels

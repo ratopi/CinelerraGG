@@ -384,9 +384,8 @@ int SnapshotMenuItem::handle_event()
 	static const char *exts[] = { "png", "jpg", "tif" };
 	time_t tt;     time(&tt);
 	struct tm tm;  localtime_r(&tt,&tm);
-	sprintf(filename,"%s/snap_%04d%02d%02d-%02d%02d%02d.%s",
-		preferences->snapshot_path,
-		1900+tm.tm_year,1+tm.tm_mon,tm.tm_mday,
+	snprintf(filename,sizeof(filename),"%s/snap_%04d%02d%02d-%02d%02d%02d.%s",
+		preferences->snapshot_path, 1900+tm.tm_year,1+tm.tm_mon,tm.tm_mday,
 		tm.tm_hour,tm.tm_min,tm.tm_sec, exts[mode]);
 	int fw = edl->get_w(), fh = edl->get_h();
 	int fcolor_model = edl->session->color_model;

@@ -20,6 +20,7 @@
  */
 
 #include "automation.h"
+#include "autos.h"
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
@@ -27,6 +28,7 @@
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "keyframe.h"
 #include "labels.h"
 #include "localsession.h"
 #include "maincursor.h"
@@ -38,11 +40,13 @@
 #include "patchbay.h"
 #include "playbackengine.h"
 #include "plugin.h"
+#include "pluginset.h"
 #include "resourcethread.h"
 #include "samplescroll.h"
 #include "theme.h"
 #include "trackcanvas.h"
 #include "tracks.h"
+#include "track.h"
 #include "transportque.h"
 #include "zoombar.h"
 
@@ -581,215 +585,136 @@ void MWindow::select_all()
 
 int MWindow::next_label(int shift_down)
 {
-	double cursor_position = edl->local_session->get_selectionstart(1);
-	Label *current = edl->labels->next_label(cursor_position);
-	double position = !current ? -1 : current->position;
-
+	double position = edl->local_session->get_selectionend(1);
+	double total_length = edl->tracks->total_length();
+	Label *current = edl->labels->next_label(position);
+	double new_position = current ? current->position : total_length;
 // last playback endpoints as fake label positions
 	double playback_start = edl->local_session->playback_start;
 	double playback_end = edl->local_session->playback_end;
-	if( playback_start > cursor_position && ( position < 0 || playback_start < position ) )
-		position = playback_start;
-	else if( playback_end > cursor_position && ( position < 0 || playback_end < position ) )
-		position = playback_end;
-
-	if( position >= 0 ) {
-		edl->local_session->set_selectionend(position);
-		if(!shift_down)
-			edl->local_session->set_selectionstart(
-				edl->local_session->get_selectionend(1));
-
-		update_plugin_guis();
-		TimelinePane *pane = gui->get_focused_pane();
-		if(edl->local_session->get_selectionend(1) >=
-			(double)edl->local_session->view_start[pane->number] *
-				edl->local_session->zoom_sample / edl->session->sample_rate +
-				pane->canvas->time_visible() ||
-			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start[pane->number] *
-				edl->local_session->zoom_sample / edl->session->sample_rate) {
-			samplemovement((int64_t)(edl->local_session->get_selectionend(1) *
-				edl->session->sample_rate /
-				edl->local_session->zoom_sample -
-				pane->canvas->get_w() /
-				2),
-				pane->number);
-			cwindow->update(1, 0, 0, 0, 0);
-		}
-		else
-		{
-			gui->update_patchbay();
-			gui->update_timebar(0);
-			gui->hide_cursor(0);
-			gui->draw_cursor(0);
-			gui->zoombar->update();
-			gui->flash_canvas(1);
-			cwindow->update(1, 0, 0, 0, 1);
-		}
-	}
-	else
-	{
-		goto_end();
-	}
-	return 0;
+	if( playback_start > position && playback_start < new_position )
+		new_position = playback_start;
+	else if( playback_end > position && playback_end < new_position )
+		new_position = playback_end;
+	if( new_position > total_length )
+		new_position = total_length;
+	edl->local_session->set_selectionend(new_position);
+//printf("MWindow::next_edit_handle %d\n", shift_down);
+	if( !shift_down )
+		edl->local_session->set_selectionstart(new_position);
+	return find_selection(new_position);
 }
 
 int MWindow::prev_label(int shift_down)
 {
-	double cursor_position = edl->local_session->get_selectionstart(1);
-	Label *current = edl->labels->prev_label(cursor_position);
-	double position = !current ? -1 : current->position;
-
+	double position = edl->local_session->get_selectionstart(1);
+	Label *current = edl->labels->prev_label(position);
+	double new_position = current ? current->position : 0;
 // last playback endpoints as fake label positions
 	double playback_start = edl->local_session->playback_start;
 	double playback_end = edl->local_session->playback_end;
-	if( playback_end < cursor_position && ( position < 0 || playback_end > position ) )
-		position = playback_end;
-	else if( playback_start < cursor_position && ( position < 0 || playback_start > position ) )
-		position = playback_start;
-
-	if( position >= 0 ) {
-		edl->local_session->set_selectionstart(position);
-		if(!shift_down)
-			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
-
-		update_plugin_guis();
-		TimelinePane *pane = gui->get_focused_pane();
-		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start[pane->number] *
-			edl->local_session->zoom_sample / edl->session->sample_rate +
-			pane->canvas->time_visible() ||
-			edl->local_session->get_selectionstart(1) < edl->local_session->view_start[pane->number] *
-			edl->local_session->zoom_sample / edl->session->sample_rate ) {
-			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) *
-				edl->session->sample_rate /
-				edl->local_session->zoom_sample -
-				pane->canvas->get_w() /
-				2),
-				pane->number);
-			cwindow->update(1, 0, 0, 0, 0);
-		}
-		else
-// Don't scroll the display
-		{
-			gui->update_patchbay();
-			gui->update_timebar(0);
-			gui->hide_cursor(0);
-			gui->draw_cursor(0);
-			gui->zoombar->update();
-			gui->flash_canvas(1);
-			cwindow->update(1, 0, 0, 0, 1);
-		}
-	}
-	else
-	{
-		goto_start();
-	}
-	return 0;
+	if( playback_end < position && playback_end > new_position )
+		new_position = playback_end;
+	else if( playback_start < position && playback_start > new_position )
+		new_position = playback_start;
+	if( new_position < 0 )
+		new_position = 0;
+	edl->local_session->set_selectionstart(new_position);
+//printf("MWindow::next_edit_handle %d\n", shift_down);
+	if( !shift_down )
+		edl->local_session->set_selectionend(new_position);
+	return find_selection(new_position);
 }
-
 
 int MWindow::next_edit_handle(int shift_down)
 {
 	double position = edl->local_session->get_selectionend(1);
 	double new_position = edl->next_edit(position);
-	if( new_position < edl->tracks->total_length() ) {
-		edl->local_session->set_selectionend(new_position);
+	double total_length = edl->tracks->total_length();
+	if( new_position >= total_length )
+		new_position = total_length;
+	edl->local_session->set_selectionend(new_position);
 //printf("MWindow::next_edit_handle %d\n", shift_down);
-		if(!shift_down)
-			edl->local_session->set_selectionstart(
-				edl->local_session->get_selectionend(1));
-
-		update_plugin_guis();
-		TimelinePane *pane = gui->get_focused_pane();
-		if(edl->local_session->get_selectionend(1) >=
-			(double)edl->local_session->view_start[pane->number] *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate +
-			pane->canvas->time_visible() ||
-			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start[pane->number] *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate)
-		{
-			samplemovement((int64_t)(edl->local_session->get_selectionend(1) *
-				edl->session->sample_rate /
-				edl->local_session->zoom_sample -
-				pane->canvas->get_w() /
-				2),
-				pane->number);
-			cwindow->update(1, 0, 0, 0, 0);
-		}
-		else
-		{
-			gui->update_patchbay();
-			gui->update_timebar(0);
-			gui->hide_cursor(0);
-			gui->draw_cursor(0);
-			gui->zoombar->update();
-			gui->flash_canvas(1);
-			cwindow->update(1, 0, 0, 0, 1);
-		}
-	}
-	else
-	{
-		goto_end();
-	}
-	return 0;
+	if( !shift_down )
+		edl->local_session->set_selectionstart(new_position);
+	return find_selection(new_position);
 }
 
 int MWindow::prev_edit_handle(int shift_down)
 {
 	double position = edl->local_session->get_selectionstart(1);
 	double new_position = edl->prev_edit(position);
+	if( new_position < 0 )
+		new_position = 0;
+	edl->local_session->set_selectionstart(new_position);
+	if( !shift_down )
+		edl->local_session->set_selectionend(new_position);
+	return find_selection(new_position);
+}
 
-	if(new_position != -1) {
-		edl->local_session->set_selectionstart(new_position);
-//printf("MWindow::next_edit_handle %d\n", shift_down);
-		if(!shift_down)
-			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
-
-		update_plugin_guis();
-// Scroll the display
-		TimelinePane *pane = gui->get_focused_pane();
-		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start[pane->number] *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate +
-			pane->canvas->time_visible()
-		||
-			edl->local_session->get_selectionstart(1) < edl->local_session->view_start[pane->number] *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate)
-		{
-			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) *
-				edl->session->sample_rate /
-				edl->local_session->zoom_sample -
-				pane->canvas->get_w() /
-				2),
-				pane->number);
-			cwindow->update(1, 0, 0, 0, 0);
-		}
-		else
-// Don't scroll the display
-		{
-			gui->update_patchbay();
-			gui->update_timebar(0);
-			gui->hide_cursor(0);
-			gui->draw_cursor(0);
-			gui->zoombar->update();
-			gui->flash_canvas(1);
-			cwindow->update(1, 0, 0, 0, 1);
+int MWindow::nearest_plugin_keyframe(int shift_down, int dir)
+{
+	KeyFrame *keyframe = 0;
+	double start = edl->local_session->get_selectionstart(1);
+	double end = edl->local_session->get_selectionend(1);
+	double position = dir == PLAY_FORWARD ? end : start, new_position = 0;
+	for( Track *track=edl->tracks->first; track; track=track->next ) {
+		if( !track->record ) continue;
+		for( int i=0; i<track->plugin_set.size(); ++i ) {
+			PluginSet *plugin_set = track->plugin_set[i];
+			int64_t pos = track->to_units(position, 0);
+			KeyFrame *key = plugin_set->nearest_keyframe(pos, dir);
+			if( !key ) continue;
+			double key_position = track->from_units(key->position);
+			if( keyframe && (dir == PLAY_FORWARD ?
+				key_position >= new_position :
+				new_position >= key_position ) ) continue;
+			keyframe = key;  new_position = key_position;
 		}
 	}
+
+	new_position = keyframe ?
+		keyframe->autos->track->from_units(keyframe->position) :
+		dir == PLAY_FORWARD ? edl->tracks->total_length() : 0;
+
+	if( !shift_down )
+		start = end = new_position;
+	else if( dir == PLAY_FORWARD )
+		end = new_position;
 	else
-	{
-		goto_start();
+		start = new_position;
+
+	edl->local_session->set_selectionstart(start);
+	edl->local_session->set_selectionend(end);
+	return find_selection(new_position);
+}
+
+int MWindow::find_selection(double position, int scroll_display)
+{
+	update_plugin_guis();
+	TimelinePane *pane = gui->get_focused_pane();
+	double pixel_zoom = (double)edl->session->sample_rate / edl->local_session->zoom_sample;
+	if( !scroll_display ) {
+		double timeline_start = edl->local_session->view_start[pane->number] / pixel_zoom;
+		double timeline_end = timeline_start + pane->canvas->time_visible();
+		if( position >= timeline_end || position < timeline_start )
+			scroll_display = 1;
+	}
+	if( scroll_display ) {
+		samplemovement((int64_t)(position * pixel_zoom - pane->canvas->get_w() / 2), pane->number);
+		cwindow->update(1, 0, 0, 0, 0);
+	}
+	else {
+		gui->update_patchbay();
+		gui->update_timebar(0);
+		gui->hide_cursor(0);
+		gui->draw_cursor(0);
+		gui->zoombar->update();
+		gui->flash_canvas(1);
+		cwindow->update(1, 0, 0, 0, 1);
 	}
 	return 0;
 }
-
-
-
-
-
-
 
 
 int MWindow::expand_y()
@@ -875,5 +800,4 @@ void MWindow::split_y()
 	gui->show_window();
 	gui->resource_thread->start_draw();
 }
-
 

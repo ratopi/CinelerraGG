@@ -1168,6 +1168,16 @@ int MWindowGUI::keypress_event()
 		result = 1;
 		break;
 
+	case 'k': case 'K':
+		if( alt_down() ) break;
+		unlock_window();
+		mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+		lock_window("MWindowGUI::keypress_event 1");
+		mwindow->nearest_plugin_keyframe(shift_down(),
+			!ctrl_down() ? PLAY_FORWARD : PLAY_REVERSE);
+		result = 1;
+		break;
+
 	case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8':
 		if( !alt_down() || shift_down() ) break;

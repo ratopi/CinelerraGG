@@ -683,9 +683,7 @@ int BC_FileBox::get_listbox_w()
 
 int BC_FileBox::get_listbox_h(int y)
 {
-	int result = get_h() -
-		y -
-		h_padding;
+	int result = get_h() - y - h_padding - 10;
 	if(want_directory)
 		result -= BC_WindowBase::get_resources()->dirbox_margin;
 	else

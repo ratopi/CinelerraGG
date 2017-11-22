@@ -61,6 +61,7 @@ public:
 	int64_t plugin_change_duration(int64_t input_position,
 		int64_t input_length,
 		int reverse);
+	KeyFrame *nearest_keyframe(int64_t pos, int dir);
 	void shift_effects(int64_t start, int64_t length, int edit_autos);
 	Edit* insert_edit_after(Edit *previous_edit);
 	Edit* create_edit();

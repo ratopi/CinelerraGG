@@ -1,14 +1,14 @@
-webm libvpx-vp9
+matroska libvpx-vp9
 # 20171119-2100
 # based on https://developers.google.com/media/vp9/settings/vod/
 # for explanations see Feature5.pdf section 3
-# 1280x720 (24, 25 or 30 frames per second)
-bitrate=1024k
-minrate=512k
-maxrate=1485k
-tile-columns=2
+# 3840x2160 (24, 25 or 30 frames per second)
+bitrate=12000k
+minrate=6000k
+maxrate=17400k
+tile-columns=4
 g=240
-threads=8
+threads=24
 quality=good
-crf=32
+crf=15
 speed=4

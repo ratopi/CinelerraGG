@@ -449,8 +449,12 @@ tags:
 $(OBJDIR)/%.o:		%.C
 	$(CXX) `cat $(OBJDIR)/c_flags` -DMSGQUAL=$* -c $< -o $@
 
+$(OBJDIR)/fileexr.o:	fileexr.C
+	$(CXX) `cat $(OBJDIR)/c_flags` -Wno-deprecated -DMSGQUAL=$* -c $< -o $@
+
 $(OBJDIR)/sha1.o:	sha1.C sha1.h
 	$(CXX) `cat $(OBJDIR)/c_flags` -O3 -c $< -o $@
+
 
 $(DCRAW): dcraw.C
 	$(CXX) `cat $(OBJDIR)/c_flags` $(if $(findstring -ggdb,$(CFLAGS)),,-O4) -DNODEPS -DLOCALTIME \

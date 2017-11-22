@@ -28,6 +28,7 @@
 #include "pluginautos.h"
 #include "pluginset.h"
 #include "track.h"
+#include "transportque.inc"
 
 #include <string.h>
 
@@ -171,6 +172,15 @@ Edit* PluginSet::insert_edit_after(Edit *previous_edit)
 	return (Edit*)current;
 }
 
+KeyFrame *PluginSet::nearest_keyframe(int64_t pos, int dir)
+{
+	Plugin *plugin = (Plugin*)editof(pos, dir, 0);
+	if( !plugin ) return 0;
+	KeyFrame *keyframe = (KeyFrame *)(dir == PLAY_FORWARD ?
+		plugin->keyframes->nearest_after(pos) :
+		plugin->keyframes->nearest_before(pos));
+	return keyframe;
+}
 
 int PluginSet::get_number()
 {

@@ -703,22 +703,14 @@ Auto* Autos::autoof(int64_t position)
 Auto* Autos::nearest_before(int64_t position)
 {
 	Auto *current;
-
-	for(current = last; current && current->position >= position; current = PREVIOUS)
-	{ ; }
-
-
+	for(current = last; current && current->position >= position; current = PREVIOUS);
 	return current;     // return 0 on failure
 }
 
 Auto* Autos::nearest_after(int64_t position)
 {
 	Auto *current;
-
-	for(current = first; current && current->position <= position; current = NEXT)
-	{ ; }
-
-
+	for(current = first; current && current->position <= position; current = NEXT);
 	return current;     // return 0 on failure
 }
 

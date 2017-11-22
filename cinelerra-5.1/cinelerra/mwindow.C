@@ -1272,6 +1272,17 @@ void MWindow::close_mixers()
 	}
 }
 
+void MWindow::open_mixers()
+{
+	for( int i=0; i<edl->mixers.size(); ++i ) {
+		Mixer *mixer = edl->mixers[i];
+		ZWindow *zwindow = get_mixer(mixer);
+		zwindow->set_title(mixer->title);
+		zwindow->start();
+	}
+        refresh_mixers();
+}
+
 int MWindow::select_zwindow(ZWindow *zwindow)
 {
 	int ret = 0, n = zwindows.number_of(zwindow);
@@ -1349,7 +1360,6 @@ void MWindow::tile_mixers()
 			zx += zw;
 	}
 }
-
 
 void MWindow::init_cache()
 {
