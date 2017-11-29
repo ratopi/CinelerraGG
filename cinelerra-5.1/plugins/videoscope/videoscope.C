@@ -20,6 +20,7 @@
  */
 
 #include "bcdisplayinfo.h"
+#include "bccolors.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -83,7 +84,6 @@ public:
 	VideoScopeUnit(VideoScopeEffect *plugin, VideoScopeEngine *server);
 	void process_package(LoadPackage *package);
 	VideoScopeEffect *plugin;
-	YUV yuv;
 };
 
 class VideoScopeEngine : public LoadServer
@@ -416,21 +416,13 @@ static void draw_point(unsigned char **rows,
 			{ \
 				if(sizeof(type) == 2) \
 				{ \
-					yuv.yuv_to_rgb_16(r, \
-						g, \
-						b, \
-						in_pixel[0], \
-						in_pixel[1], \
-						in_pixel[2]); \
+					YUV::yuv.yuv_to_rgb_16(r, g, b, \
+						in_pixel[0], in_pixel[1], in_pixel[2]); \
 				} \
 				else \
 				{ \
-					yuv.yuv_to_rgb_8(r, \
-						g, \
-						b, \
-						in_pixel[0], \
-						in_pixel[1], \
-						in_pixel[2]); \
+					YUV::yuv.yuv_to_rgb_8(r, g, b, \
+						in_pixel[0], in_pixel[1], in_pixel[2]); \
 				} \
 			} \
 			else \

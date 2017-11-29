@@ -68,8 +68,7 @@ public:
 	int update_position(double position);
 	void set_inpoint();
 	void set_outpoint();
-	void clear_inpoint();
-	void clear_outpoint();
+	void unset_inoutpoint();
 	void copy();
 	void splice_selection();
 	void overwrite_selection();

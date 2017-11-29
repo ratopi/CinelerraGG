@@ -104,7 +104,6 @@ public:
 
 	unsigned int noisepattern[256];
 	VFrame *bgimage, *tmp;
-	YUV *yuv;
 	int total;
 };
 

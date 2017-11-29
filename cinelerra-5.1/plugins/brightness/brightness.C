@@ -77,8 +77,6 @@ void BrightnessConfig::interpolate(BrightnessConfig &prev,
 
 
 
-YUV BrightnessMain::yuv;
-
 BrightnessMain::BrightnessMain(PluginServer *server)
  : PluginVClient(server)
 {
@@ -447,7 +445,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 						b = input_row[j * components + 2]; \
 						if(max == 0xff) \
 						{ \
-							BrightnessMain::yuv.rgb_to_yuv_8( \
+							YUV::yuv.rgb_to_yuv_8( \
 								r,  \
 								g,  \
 								b,  \
@@ -457,7 +455,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 						} \
 						else \
 						{ \
-							BrightnessMain::yuv.rgb_to_yuv_16( \
+							YUV::yuv.rgb_to_yuv_16( \
 								r,  \
 								g,  \
 								b,  \
@@ -482,7 +480,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 					{ \
 						if(max == 0xff) \
 						{ \
-							BrightnessMain::yuv.yuv_to_rgb_8( \
+							YUV::yuv.yuv_to_rgb_8( \
 								r,  \
 								g,  \
 								b,  \
@@ -492,7 +490,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 						} \
 						else \
 						{ \
-							BrightnessMain::yuv.yuv_to_rgb_16( \
+							YUV::yuv.yuv_to_rgb_16( \
 								r,  \
 								g,  \
 								b,  \
@@ -597,24 +595,9 @@ void BrightnessUnit::process_package(LoadPackage *package)
 					r = input_row[j * components]; \
 					g = input_row[j * components + 1]; \
 					b = input_row[j * components + 2]; \
-					YUV::rgb_to_yuv_f( \
-						r,  \
-						g,  \
-						b,  \
-						y,  \
-						u,  \
-						v); \
- \
+					YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v); \
 					y = y * contrast + offset; \
- \
- \
-					YUV::yuv_to_rgb_f( \
-						r,  \
-						g,  \
-						b,  \
-						y,  \
-						u,  \
-						v); \
+					YUV::yuv.yuv_to_rgb_f(r, g, b, y, u, v); \
 					input_row[j * components] = r; \
 					input_row[j * components + 1] = g; \
 					input_row[j * components + 2] = b; \

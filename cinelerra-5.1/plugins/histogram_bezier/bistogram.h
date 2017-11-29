@@ -68,7 +68,6 @@ public:
 
 
 
-	YUV yuv;
 	VFrame *input, *output;
 	HistogramEngine *engine;
 	int *lookup[HISTOGRAM_MODES];

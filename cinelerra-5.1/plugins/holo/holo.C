@@ -60,24 +60,17 @@ HoloMain::HoloMain(PluginServer *server)
 	effecttv = 0;
 	bgimage = 0;
 	do_reconfigure = 1;
-	yuv = new YUV;
-
 }
 
 HoloMain::~HoloMain()
 {
-
-
-
-	if(effecttv)
-	{
+	if(effecttv) {
 		delete holo_server;
 		delete effecttv;
 	}
 
 	if(bgimage)
 		delete bgimage;
-	delete yuv;
 }
 
 const char* HoloMain::plugin_title() { return _("HolographicTV"); }
@@ -361,7 +354,7 @@ if(sizeof(type) == 2) \
 		int r = (int)src[0] >> 8; \
 		int g = (int)src[1] >> 8; \
 		int b = (int)src[2] >> 8; \
-		plugin->yuv->yuv_to_rgb_8(r, g, b); \
+		YUV::yuv.yuv_to_rgb_8(r, g, b); \
 		dest = (r << 16) | (g << 8) | b; \
 	} \
 	else \
@@ -378,7 +371,7 @@ else \
 		int r = (int)src[0]; \
 		int g = (int)src[1]; \
 		int b = (int)src[2]; \
-		plugin->yuv->yuv_to_rgb_8(r, g, b); \
+		YUV::yuv.yuv_to_rgb_8(r, g, b); \
 		dest = (r << 16) | (g << 8) | b; \
 	} \
 	else \
@@ -435,7 +428,7 @@ else \
 					if(g > 255) g = 255; \
 					if(b > 255) b = 255; \
  \
- 					if(is_yuv) plugin->yuv->rgb_to_yuv_8(r, g, b); \
+ 					if(is_yuv) YUV::yuv.rgb_to_yuv_8(r, g, b); \
 					if(sizeof(type) == 4) \
 					{ \
 						dest[0] = (type)r / 0xff; \
@@ -502,7 +495,7 @@ else \
 					if(g > 255) g = 255; \
 					if(b > 255) b = 255; \
  \
- 					if(is_yuv) plugin->yuv->rgb_to_yuv_8(r, g, b); \
+ 					if(is_yuv) YUV::yuv.rgb_to_yuv_8(r, g, b); \
 					if(sizeof(type) == 4) \
 					{ \
 						dest[0] = (type)r / 0xff; \

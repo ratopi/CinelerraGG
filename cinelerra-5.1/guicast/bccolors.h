@@ -29,167 +29,299 @@
 
 #include <stdint.h>
 
+// bt601 coefs originaly used
 // Compression coefficients straight out of jpeglib
-#define R_TO_Y    0.29900
-#define G_TO_Y    0.58700
-#define B_TO_Y    0.11400
+#define R_TO_Y	0.29900
+#define G_TO_Y	0.58700
+#define B_TO_Y	0.11400
 
-#define R_TO_U    -0.16874
-#define G_TO_U    -0.33126
-#define B_TO_U    0.50000
+#define R_TO_U	-0.16874
+#define G_TO_U	-0.33126
+#define B_TO_U	0.50000
 
-#define R_TO_V    0.50000
-#define G_TO_V    -0.41869
-#define B_TO_V    -0.08131
+#define R_TO_V	0.50000
+#define G_TO_V	-0.41869
+#define B_TO_V	-0.08131
 
 // Decompression coefficients straight out of jpeglib
-#define V_TO_R    1.40200
-#define V_TO_G    -0.71414
+#define V_TO_R	1.40200
+#define V_TO_G	-0.71414
 
-#define U_TO_G    -0.34414
-#define U_TO_B    1.77200
+#define U_TO_G	-0.34414
+#define U_TO_B	1.77200
 
+/*
+Digital YCbCr is derived from analog RGB as follows:
+RGB are 0..1 (gamma corrected supposedly),
+normalized equations:
+Y  Py =   Kr * R  +  Kg * G  +  Kb * B
+U  Pb = - 0.5*Kr/(1-Kb)*R - 0.5*Kg/(1-Kb)*G + 0.5*B
+V  Pr =   0.5*R - 0.5*Kg/(1-Kr)*G - 0.5*Kb/(1-Kr)*B
+inverse:
+   R = Py + Pr * 2*(1-Kr)
+   G = Py - Pr * 2*Kr*(1-Kr)/Kg - Pb * 2*Kb*(1-Kb)/Kg
+   B = Py                       + Pb * 2*(1-Kb)
+
+bt601, white vector= Kr=0.299,Kg=0.587,Kb=0.114
+   Py = + 0.299000*R + 0.587000*G + 0.114000*B
+   Pb = - 0.168736*R - 0.331264*G + 0.500000*B
+   Pr = + 0.500000*R - 0.418698*G - 0.081312*B
+inverse:
+   R  = Py + 1.402000*Pr
+   G  = Py - 0.714136*Pr - 0.344136*Pb
+   B  = Py               + 1.772000*Pb
+
+equations zeroed at (0,128,128), range (255,255,255)
+bt.601  0..255
+   Y  = 0   + 0.299000*R + 0.587000*G + 0.114000*B
+   Cb = 128 - 0.168736*R - 0.331264*G + 0.500000*B
+   Cr = 128 + 0.500000*R - 0.418698*G - 0.081312*B
+inverse:
+   R  = Y + 1.402000*(Cr-128)
+   G  = Y - 0.714136*(Cr-128) - 0.344136*(Cb-128)
+   B  = Y                     + 1.772000*(Cb-128)
+
+equations zeroed at (16,128,128), range (219,224,224)
+Y,Cb,Cr = (16,128,128) + (219*Py,224*Pb,224*Pr)
+
+bt.601  16..235
+   Y  = 16  + 0.256788*R + 0.504129*G + 0.097906*B
+   Cb = 128 - 0.148227*R - 0.290992*G + 0.439216*B
+   Cr = 128 + 0.439216*R - 0.367789*G - 0.071426*B
+inverse:
+   R  = (Y-16)*1.164384 + 1.596027*(Cr-128)
+   G  = (Y-16)*1.164384 - 0.812968*(Cr-128) - 0.391762*(Cb-128)
+   B  = (Y-16)*1.164384                     + 2.017232*(Cb-128)
+
+bt.709, white vector= Kr=0.2126,Kg=0.7152,Kb=0.0722
+   Py = + 0.212600*R + 0.715200*G + 0.072200*B
+   Pb = - 0.114572*R - 0.385428*G + 0.500000*B
+   Pr = + 0.500000*R - 0.454153*G - 0.045847*B
+
+equations zeroed at (0,128,128), range (255,255,255)
+bt.709  0..255
+   Y  = 0   + 0.212600*R + 0.715200*G + 0.072200*B 
+   Cb = 128 - 0.114572*R - 0.385428*G + 0.500000*B
+   Cr = 128 + 0.500000*R - 0.454153*G - 0.045847*B
+inverse:
+   R = Y + 1.574800*(Cr-128)
+   G = Y - 0.468124*(Cr-128) - 0.187324*(Cb-128)
+   B = Y                     + 1.855600*(Cb-128)
+
+equations zeroed at (16,128,128), range (219,224,224)
+Y,Cb,Cr = (16,128,128) + (219*Py,224*Pb,224*Pr)
+   Y  = 16  + 0.182586*R + 0.614231*G + 0.062007*B
+   Cb = 128 - 0.100644*R - 0.338572*G + 0.439216*B
+   Cr = 128 + 0.439216*R - 0.398942*G - 0.040276*B
+inverse:
+   R = (Y-16)*1.164384 + 1.792741*(Cr-128)
+   G = (Y-16)*1.164384 - 0.532909*(Cr-128) - 0.213249*(Cb-128)
+   B = (Y-16)*1.164384                     + 2.112402*(Cb-128)
+
+*/
+// white vector normalized, so:
+//  Kg = 1 - Kr - Kb
+
+#define BT601_Kr 0.299
+#define BT601_Kb 0.114
+
+#define BT709_Kr 0.2126
+#define BT709_Kb 0.0722
+
+#define BT2020_Kr 0.2627
+#define BT2020_Kb 0.0593
 
 class YUV
 {
+	int mpeg, yzero, uvzero;
+	int ymin8, ymax8, ymin16, ymax16;
+	int uvmin8, uvmax8, uvmin16, uvmax16;
+	double Kr, Kg, Kb;
+	float yminf, ymaxf, yrangef;
+	float uvminf, uvmaxf, uvrangef;
+	float r_to_y, g_to_y, b_to_y;
+	float r_to_u, g_to_u, b_to_u;
+	float r_to_v, g_to_v, b_to_v;
+	float v_to_r, v_to_g;
+	float u_to_g, u_to_b;
+	int *tab;
+	float *tabf;
+
+	void init(double Kr, double Kb, int mpeg);
+	void init_tables(int len,
+		int *rtoy, int *rtou, int *rtov,
+		int *gtoy, int *gtou, int *gtov,
+		int *btoy, int *btou, int *btov,
+		int *ytab, int *vtor, int *vtog, int *utog, int *utob);
+	void init_tables(int len,
+		float *vtorf, float *vtogf, float *utogf, float *utobf);
+
+// dont use pointers,
+//  offsets do not require indirect access
+#define rtoy16 (tab+0x00000)
+#define gtoy16 (tab+0x10000)
+#define btoy16 (tab+0x20000)
+#define rtou16 (tab+0x30000)
+#define gtou16 (tab+0x40000)
+#define btou16 (tab+0x50000)
+#define rtov16 (tab+0x60000)
+#define gtov16 (tab+0x70000)
+#define btov16 (tab+0x80000)
+#define ytab16 (tab+0x90000)
+#define vtor16 (tab+0xa0000)
+#define vtog16 (tab+0xb0000)
+#define utog16 (tab+0xc0000)
+#define utob16 (tab+0xd0000)
+
+#define rtoy8 (tab+0xe0000)
+#define gtoy8 (tab+0xe0100)
+#define btoy8 (tab+0xe0200)
+#define rtou8 (tab+0xe0300)
+#define gtou8 (tab+0xe0400)
+#define btou8 (tab+0xe0500)
+#define rtov8 (tab+0xe0600)
+#define gtov8 (tab+0xe0700)
+#define btov8 (tab+0xe0800)
+#define ytab8 (tab+0xe0900)
+#define vtor8 (tab+0xe0a00)
+#define vtog8 (tab+0xe0b00)
+#define utog8 (tab+0xe0c00)
+#define utob8 (tab+0xe0d00)
+
+#define vtor16f (tabf+0x00000)
+#define vtog16f (tabf+0x10000)
+#define utog16f (tabf+0x20000)
+#define utob16f (tabf+0x30000)
+
+#define vtor8f (tabf+0x40000)
+#define vtog8f (tabf+0x40100)
+#define utog8f (tabf+0x40200)
+#define utob8f (tabf+0x40300)
+
+#define	bc_always_inline __attribute__ ((__always_inline__)) inline
+
 public:
 	YUV();
 	~YUV();
+	void yuv_set_colors(int color_space, int color_range);
+	inline int is_mpeg() { return mpeg; }
+
 	static YUV yuv;
 
-	inline void rgb_to_yuv_8(int &y, int &u, int &v)
-	{
-		int r = y;
-		int g = u;
-		int b = v;
-		y = (rtoy_tab_8[r] + gtoy_tab_8[g] + btoy_tab_8[b]) >> 8;
-		u = (rtou_tab_8[r] + gtou_tab_8[g] + btou_tab_8[b]) >> 8;
-		v = (rtov_tab_8[r] + gtov_tab_8[g] + btov_tab_8[b]) >> 8;
-	};
+#define YUV_rgb_to_yuv_8(r,g,b, y,u,v) \
+	y = (rtoy8[r] + gtoy8[g] + btoy8[b] + yzero)  >> 16; \
+	u = (rtou8[r] + gtou8[g] + btou8[b] + uvzero) >> 16; \
+	v = (rtov8[r] + gtov8[g] + btov8[b] + uvzero) >> 16
 
-	inline void rgb_to_yuv_8(int r, int g, int b, int &y, int &u, int &v)
-	{
-		y = (rtoy_tab_8[r] + gtoy_tab_8[g] + btoy_tab_8[b]) >> 8;
-		u = (rtou_tab_8[r] + gtou_tab_8[g] + btou_tab_8[b]) >> 8;
-		v = (rtov_tab_8[r] + gtov_tab_8[g] + btov_tab_8[b]) >> 8;
-	};
+	bc_always_inline void rgb_to_yuv_8(int r, int g, int b, int &y, int &u, int &v) {
+		YUV_rgb_to_yuv_8(r,g,b, y,u,v);
+	}
+	bc_always_inline void rgb_to_yuv_8(int r, int g, int b, uint8_t &y, uint8_t &u, uint8_t &v) {
+		YUV_rgb_to_yuv_8(r,g,b, y,u,v);
+	}
+	bc_always_inline void rgb_to_yuv_8(int &y, int &u, int &v) {
+		int r = y, g = u, b = v;  YUV_rgb_to_yuv_8(r, g, b, y, u, v);
+	}
 
-	inline void rgb_to_yuv_8(int r, int g, int b, unsigned char &y, unsigned char &u, unsigned char &v)
-	{
-		y = (rtoy_tab_8[r] + gtoy_tab_8[g] + btoy_tab_8[b]) >> 8;
-		u = (rtou_tab_8[r] + gtou_tab_8[g] + btou_tab_8[b]) >> 8;
-		v = (rtov_tab_8[r] + gtov_tab_8[g] + btov_tab_8[b]) >> 8;
-	};
+#define YUV_rgb_to_yuv_16(r,g,b, y,u,v) \
+	y = (rtoy16[r] + gtoy16[g] + btoy16[b] + yzero)  >> 8; \
+	u = (rtou16[r] + gtou16[g] + btou16[b] + uvzero) >> 8; \
+	v = (rtov16[r] + gtov16[g] + btov16[b] + uvzero) >> 8
 
-	static inline void rgb_to_yuv_f(float r, float g, float b, float &y, float &u, float &v)
-	{
-		y = r * R_TO_Y + g * G_TO_Y + b * B_TO_Y;
-		u = r * R_TO_U + g * G_TO_U + b * B_TO_U;
-		v = r * R_TO_V + g * G_TO_V + b * B_TO_V;
-	};
+	bc_always_inline void rgb_to_yuv_16(int r, int g, int b, int &y, int &u, int &v) {
+		YUV_rgb_to_yuv_16(r,g,b, y,u,v);
+	}
+	bc_always_inline void rgb_to_yuv_16(int r, int g, int b, uint16_t &y, uint16_t &u, uint16_t &v) {
+		YUV_rgb_to_yuv_16(r,g,b, y,u,v);
+	}
+	bc_always_inline void rgb_to_yuv_16(int &y, int &u, int &v) {
+		int r = y, g = u, b = v;
+		YUV_rgb_to_yuv_16(r, g, b, y, u, v);
+	}
 
-	inline void rgb_to_yuv_16(int r, int g, int b, int &y, int &u, int &v)
-	{
-		y = (rtoy_tab_16[r] + gtoy_tab_16[g] + btoy_tab_16[b]) >> 8;
-		u = (rtou_tab_16[r] + gtou_tab_16[g] + btou_tab_16[b]) >> 8;
-		v = (rtov_tab_16[r] + gtov_tab_16[g] + btov_tab_16[b]) >> 8;
-	};
+	bc_always_inline void rgb_to_yuv_f(float r, float g, float b, float &y, float &u, float &v) {
+		y = r * r_to_y + g * g_to_y + b * b_to_y + yminf;
+		u = r * r_to_u + g * g_to_u + b * b_to_u + uvminf;
+		v = r * r_to_v + g * g_to_v + b * b_to_v + uvminf;
+	}
+	bc_always_inline void rgb_to_yuv_8(float r, float g, float b, int &y, int &u, int &v) {
+		float fy, fu, fv;  rgb_to_yuv_f(r, g, b, fy, fu, fv);
+		int iy = fy * 0x100, iu = fu * 0x100, iv = fv * 0x100;
+		CLAMP(iy, ymin8, ymax8);
+		CLAMP(iu, uvmin8, uvmax8); CLAMP(iv, uvmin8, uvmax8);
+		y = iy;  u = iu;  v = iv;
+	}
+	bc_always_inline void rgb_to_yuv_16(float r, float g, float b,
+			int &y, int &u, int &v) {
+		float fy, fu, fv;  rgb_to_yuv_f(r, g, b, fy, fu, fv);
+		int iy = fy * 0x10000, iu = fu * 0x10000, iv = fv * 0x10000;
+		CLAMP(iy, ymin16, ymax16);
+		CLAMP(iu, uvmin16, uvmax16); CLAMP(iv, uvmin16, uvmax16);
+		y = iy;  u = iu;  v = iv;
+	}
 
-// For easier programming.  Doesn't do anything.
-	inline void rgb_to_yuv_8(float r, float g, float b, float &y, float &u, float &v)
-	{
-	};
+#define YUV_yuv_to_rgb_8(r,g,b, y,u,v) \
+	r = (ytab8[y] + vtor8[v]) >> 16; \
+	g = (ytab8[y] + utog8[u] + vtog8[v]) >> 16; \
+	b = (ytab8[y] + utob8[u]) >> 16
 
-	inline void rgb_to_yuv_16(float r, float g, float b, float &y, float &u, float &v)
-	{
-	};
+	bc_always_inline void yuv_to_rgb_8(int &r, int &g, int &b, int y, int u, int v) {
+		YUV_yuv_to_rgb_8(r,g,b, y,u,v);
+		CLAMP(r, 0, 0xff); CLAMP(g, 0, 0xff); CLAMP(b, 0, 0xff);
+	}
+	bc_always_inline void yuv_to_rgb_8(uint8_t &r, uint8_t &g, uint8_t &b, int y, int u, int v) {
+		YUV_yuv_to_rgb_8(r,g,b, y,u,v);
+	}
+	bc_always_inline void yuv_to_rgb_8(int &r, int &g, int &b) {
+		int y = r, u = g, v = b;  YUV_yuv_to_rgb_8(r,g,b, y,u,v);
+		CLAMP(r, 0, 0xff); CLAMP(g, 0, 0xff); CLAMP(b, 0, 0xff);
+	}
+	bc_always_inline void yuv_to_rgb_8(float &r, float &g, float &b, int y, int u, int v) {
+		int ir, ig, ib;  YUV_yuv_to_rgb_8(ir,ig,ib, y,u,v);
+		float s = 1/255.f;  r = s*ir;  g = s*ig;  b = s*ib;
+	}
 
-	static inline void rgb_to_yuv_f(int r, int g, int b, int &y, int &u, int &v)
-	{
-	};
+#define YUV_yuv_to_rgb_16(r,g,b, y,u,v) \
+	r = (ytab16[y] + vtor16[v]) >> 8; \
+	g = (ytab16[y] + utog16[u] + vtog16[v]) >> 8; \
+	b = (ytab16[y] + utob16[u]) >> 8
 
-	inline void yuv_to_rgb_8(int &r, int &g, int &b)
-	{
-		int y = r;
-		int u = g;
-		int v = b;
-		y = (y << 8) | y;
-		r = (y + vtor_tab_8[v]) >> 8;
-		g = (y + utog_tab_8[u] + vtog_tab_8[v]) >> 8;
-		b = (y + utob_tab_8[u]) >> 8;
+	bc_always_inline void yuv_to_rgb_16(int &r, int &g, int &b, int y, int u, int v) {
+		YUV_yuv_to_rgb_16(r,g,b, y,u,v);
+		CLAMP(r, 0, 0xffff); CLAMP(g, 0, 0xffff); CLAMP(b, 0, 0xffff);
+	}
+	bc_always_inline void yuv_to_rgb_16(uint16_t &r, uint16_t &g, uint16_t &b, int y, int u, int v) {
+		YUV_yuv_to_rgb_16(r,g,b, y,u,v);
+	}
+	bc_always_inline void yuv_to_rgb_16(int &r, int &g, int &b) {
+		int y = r, u = g, v = b;  YUV_yuv_to_rgb_16(r,g,b, y,u,v);
+		CLAMP(r, 0, 0xffff); CLAMP(g, 0, 0xffff); CLAMP(b, 0, 0xffff);
+	}
+	bc_always_inline void yuv_to_rgb_16(float &r, float &g, float &b, int y, int u, int v) {
+		int ir, ig, ib;  YUV_yuv_to_rgb_16(ir,ig,ib, y,u,v);
+		float s = 1/65535.f;  r = s*ir;  g = s*ig;  b = s*ib;
+	}
 
-		CLAMP(r, 0, 0xff);
-		CLAMP(g, 0, 0xff);
-		CLAMP(b, 0, 0xff);
-	};
-	inline void yuv_to_rgb_8(int &r, int &g, int &b, int y, int u, int v)
-	{
-		y = (y << 8) | y;
-		r = (y + vtor_tab_8[v]) >> 8;
-		g = (y + utog_tab_8[u] + vtog_tab_8[v]) >> 8;
-		b = (y + utob_tab_8[u]) >> 8;
-
-		CLAMP(r, 0, 0xff);
-		CLAMP(g, 0, 0xff);
-		CLAMP(b, 0, 0xff);
-	};
-
-	static inline void yuv_to_rgb_f(float &r, float &g, float &b, float y, float u, float v)
-	{
-		r = y + V_TO_R * v;
-		g = y + U_TO_G * u + V_TO_G * v;
-		b = y + U_TO_B * u;
-	};
-
-	inline void rgb_to_yuv_16(int r, int g, int b, uint16_t &y, uint16_t &u, uint16_t &v)
-	{
-		y = (rtoy_tab_16[r] + gtoy_tab_16[g] + btoy_tab_16[b]) >> 8;
-		u = (rtou_tab_16[r] + gtou_tab_16[g] + btou_tab_16[b]) >> 8;
-		v = (rtov_tab_16[r] + gtov_tab_16[g] + btov_tab_16[b]) >> 8;
-	};
-
-	inline void yuv_to_rgb_16(int &r, int &g, int &b, int y, int u, int v)
-	{
-		y = (y << 8) | y;
-		r = (y + vtor_tab_16[v]) >> 8;
-		g = (y + utog_tab_16[u] + vtog_tab_16[v]) >> 8;
-		b = (y + utob_tab_16[u]) >> 8;
-
-		CLAMP(r, 0, 0xffff);
-		CLAMP(g, 0, 0xffff);
-		CLAMP(b, 0, 0xffff);
-	};
-
-// For easier programming.  Doesn't do anything.
-	inline void yuv_to_rgb_8(float &r, float &g, float &b, float y, float u, float v)
-	{
-	};
+	bc_always_inline void yuv_to_rgb_f(float &r, float &g, float &b, float y, float u, float v) {
+		y = (y-yminf) / yrangef;
+		u = u-uvminf;  v = v-uvminf;
+		r = y + v_to_r * v;
+		g = u + u_to_g * u + v_to_g * v;
+		b = y + u_to_b * u;
+	}
 
 // For easier programming.  Doesn't do anything.
-	inline void yuv_to_rgb_16(float &r, float &g, float &b, float y, float u, float v)
-	{
-	};
-
-	static inline void yuv_to_rgb_f(int &r, int &g, int &b, int y, int u, int v)
-	{
-	};
-
-private:
-	int rtoy_tab_8[0x100], gtoy_tab_8[0x100], btoy_tab_8[0x100];
-	int rtou_tab_8[0x100], gtou_tab_8[0x100], btou_tab_8[0x100];
-	int rtov_tab_8[0x100], gtov_tab_8[0x100], btov_tab_8[0x100];
-
-	int vtor_tab_8[0x100], vtog_tab_8[0x100];
-	int utog_tab_8[0x100], utob_tab_8[0x100];
-	int *vtor_8, *vtog_8, *utog_8, *utob_8;
-
-	int rtoy_tab_16[0x10000], gtoy_tab_16[0x10000], btoy_tab_16[0x10000];
-	int rtou_tab_16[0x10000], gtou_tab_16[0x10000], btou_tab_16[0x10000];
-	int rtov_tab_16[0x10000], gtov_tab_16[0x10000], btov_tab_16[0x10000];
-
-	int vtor_tab_16[0x10000], vtog_tab_16[0x10000];
-	int utog_tab_16[0x10000], utob_tab_16[0x10000];
-	int *vtor_16, *vtog_16, *utog_16, *utob_16;
+// unused cases in macro expansions, mismatched argument types
+	inline void yuv_to_rgb_8(float &r, float &g, float &b, float y, float u, float v) {}
+	inline void yuv_to_rgb_16(float &r, float &g, float &b, float y, float u, float v) {}
+	inline void yuv_to_rgb_f(int &r, int &g, int &b, int y, int u, int v) {}
+	inline void yuv_to_rgb_f(uint8_t &r, uint8_t &g, uint8_t &b, int y, int u, int v) {}
+	inline void yuv_to_rgb_f(uint16_t &r, uint16_t &g, uint16_t &b, int y, int u, int v) {}
+	inline void rgb_to_yuv_8(float r, float g, float b, float &y, float &u, float &v) {}
+	inline void rgb_to_yuv_16(float r, float g, float b, float &y, float &u, float &v) {}
+	inline void rgb_to_yuv_f(int &r, int &g, int &b, int y, int u, int v) {}
+	inline void rgb_to_yuv_f(uint8_t &r, uint8_t &g, uint8_t &b, int y, int u, int v) {}
+	inline void rgb_to_yuv_f(uint16_t &r, uint16_t &g, uint16_t &b, int y, int u, int v) {}
 };
 
 
@@ -197,7 +329,7 @@ class HSV
 {
 public:
 	HSV();
-    ~HSV();
+	~HSV();
 
 // All units are 0 - 1
 	static int rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v);
@@ -213,50 +345,50 @@ public:
 
 
 // standard colors
-#define BLACK               0x000000
-#define WHITE               0xFFFFFF
+#define BLACK	0x000000
+#define WHITE	0xFFFFFF
 
-#define LTBLUE              0x9090FF
-#define BLUE                0x0000FF
-#define DKBLUE              0x000090
+#define LTBLUE	0x9090FF
+#define BLUE	0x0000FF
+#define DKBLUE	0x000090
 
-#define LTPINK              0xFFC0C0
-#define PINK                0xFF8080
-#define RED                 0xFF0000
+#define LTPINK	0xFFC0C0
+#define PINK	0xFF8080
+#define RED	0xFF0000
 
-#define LTGREEN             0xC0FFC0
-#define GREEN               0x00FF00
-#define DKGREEN             0x009000
+#define LTGREEN	0xC0FFC0
+#define GREEN	0x00FF00
+#define DKGREEN	0x009000
 
-#define YELLOW              0xFFFF00
-#define LTYELLOW            0xFFFFA0
-#define MEYELLOW            0xFFFF00
-#define MDYELLOW            0xFFFFD2
-#define DKYELLOW            0xFFFFB4
+#define YELLOW	0xFFFF00
+#define LTYELLOW 0xFFFFA0
+#define MEYELLOW 0xFFFF00
+#define MDYELLOW 0xFFFFD2
+#define DKYELLOW 0xFFFFB4
 
-#define LTCYAN              0x00CBCB
-#define MECYAN              0x009696
-#define MDCYAN              0x007E7E
-#define DKCYAN              0x004949
+#define LTCYAN	0x00CBCB
+#define MECYAN	0x009696
+#define MDCYAN	0x007E7E
+#define DKCYAN	0x004949
 
-#define LTPURPLE            0xFFC0FF
-#define MEPURPLE            0xFF00FF
-#define MDPURPLE            0xC000C0
-#define DKPURPLE            0xA000A0
+#define LTPURPLE 0xFFC0FF
+#define MEPURPLE 0xFF00FF
+#define MDPURPLE 0xC000C0
+#define DKPURPLE 0xA000A0
 
-#define LTGREY              0xE0E0E0
-#define MEGREY              0xAFAFAF
-#define DMGREY              0x999999
-#define MDGREY              0x7D7D7D
-#define DKGREY              0x4B4B4B
+#define LTGREY	0xE0E0E0
+#define MEGREY	0xAFAFAF
+#define DMGREY	0x999999
+#define MDGREY	0x7D7D7D
+#define DKGREY	0x4B4B4B
 
-#define BLOND               0xb4b487
-#define SLBLUE              0x6040c0
+#define BLOND	0xb4b487
+#define SLBLUE	0x6040c0
 
-#define MNGREY              0xe6e6e6
-#define FGGREY              0xe3e3e3
-#define MNBLUE              0x003cff
-#define ORANGE              0xffdd76
-#define FTGREY              0xbcbcbc
+#define MNGREY	0xe6e6e6
+#define FGGREY	0xe3e3e3
+#define MNBLUE	0x003cff
+#define ORANGE	0xffdd76
+#define FTGREY	0xbcbcbc
 
 #endif

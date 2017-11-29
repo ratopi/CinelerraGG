@@ -204,9 +204,7 @@ Color3WayUnit::Color3WayUnit(Color3WayMain *plugin,
 	 	float b; \
 		if(is_yuv) \
 		{ \
-			YUV::yuv_to_rgb_f(r, \
-				g, \
-				b, \
+			YUV::yuv.yuv_to_rgb_f(r, g, b, \
 				(float)in[0] / max, \
 				(float)in[1] / max - 0.5, \
 				(float)in[2] / max - 0.5); \
@@ -225,7 +223,7 @@ Color3WayUnit::Color3WayUnit(Color3WayMain *plugin,
 		if(is_yuv) \
 		{ \
 			float y, u, v; \
-			YUV::rgb_to_yuv_f(r, g, b, y, u, v); \
+			YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v); \
 			r = y; \
 			g = u + 0.5; \
 			b = v + 0.5; \

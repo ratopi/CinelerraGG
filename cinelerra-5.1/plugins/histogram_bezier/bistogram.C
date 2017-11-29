@@ -649,7 +649,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 				y = (row[0] << 8) | row[0];
 				u = (row[1] << 8) | row[1];
 				v = (row[2] << 8) | row[2];
-				plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
+				YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v);
 				HISTOGRAM_TAIL(3)
 				break;
 			case BC_RGBA8888:
@@ -671,7 +671,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 				y = (row[0] << 8) | row[0];
 				u = (row[1] << 8) | row[1];
 				v = (row[2] << 8) | row[2];
-				plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
+				YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v);
 				HISTOGRAM_TAIL(4)
 				break;
 			case BC_RGB161616:
@@ -686,7 +686,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 				y = row[0];
 				u = row[1];
 				v = row[2];
-				plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
+				YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v);
 				HISTOGRAM_TAIL(3)
 				break;
 			case BC_RGBA16161616:
@@ -701,7 +701,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 				y = row[0];
 				u = row[1];
 				v = row[2];
-				plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
+				YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v);
 				HISTOGRAM_TAIL(4)
 				break;
 		}
@@ -752,7 +752,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 				v = row[2]; \
 			} \
  \
-			plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v); \
+			YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v); \
  \
 /* Look up in RGB domain */ \
 			r = lookup_r[r]; \
@@ -760,7 +760,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 			b = lookup_b[b]; \
  \
 /* Convert to 16 bit YUV */ \
-			plugin->yuv.rgb_to_yuv_16(r, g, b, y, u, v); \
+			YUV::yuv.rgb_to_yuv_16(r, g, b, y, u, v); \
  \
 			if(max == 0xff) \
 			{ \

@@ -62,8 +62,6 @@ BurnMain::BurnMain(PluginServer *server)
 	burn_server = 0;
 	buffer = 0;
 	effecttv = 0;
-	yuv = new YUV;
-
 }
 
 BurnMain::~BurnMain()
@@ -73,7 +71,6 @@ BurnMain::~BurnMain()
 	if(buffer) delete [] buffer;
 	if(burn_server) delete burn_server;
 	if(effecttv) delete effecttv;
-	if(yuv) delete yuv;
 }
 
 const char* BurnMain::plugin_title() { return _("BurningTV"); }
@@ -287,7 +284,7 @@ BurnClient::BurnClient(BurnServer *server)
 				b1 = plugin->palette[0][plugin->buffer[i]]; \
 				b2 = plugin->palette[1][plugin->buffer[i]]; \
 				b3 = plugin->palette[2][plugin->buffer[i]]; \
-				if(is_yuv) plugin->yuv->yuv_to_rgb_8(a1, a2, a3); \
+				if(is_yuv) YUV::yuv.yuv_to_rgb_8(a1, a2, a3); \
 				a1 += b1; \
 				a2 += b2; \
 				a3 += b3; \
@@ -302,7 +299,7 @@ BurnClient::BurnClient(BurnServer *server)
 					CLAMP(a1, 0, 0xff); \
 					CLAMP(a2, 0, 0xff); \
 					CLAMP(a3, 0, 0xff); \
-					plugin->yuv->rgb_to_yuv_8(a1, a2, a3); \
+					YUV::yuv.rgb_to_yuv_8(a1, a2, a3); \
 				} \
 				rows[0][i * components + 0] = a1 | (a1 << 8); \
 				rows[0][i * components + 1] = a2 | (a2 << 8); \
@@ -316,7 +313,7 @@ BurnClient::BurnClient(BurnServer *server)
 				b1 = plugin->palette[0][plugin->buffer[i]]; \
 				b2 = plugin->palette[1][plugin->buffer[i]]; \
 				b3 = plugin->palette[2][plugin->buffer[i]]; \
-				if(is_yuv) plugin->yuv->yuv_to_rgb_8(a1, a2, a3); \
+				if(is_yuv) YUV::yuv.yuv_to_rgb_8(a1, a2, a3); \
 				a1 += b1; \
 				a2 += b2; \
 				a3 += b3; \
@@ -331,7 +328,7 @@ BurnClient::BurnClient(BurnServer *server)
 					CLAMP(a1, 0, 0xff); \
 					CLAMP(a2, 0, 0xff); \
 					CLAMP(a3, 0, 0xff); \
-					plugin->yuv->rgb_to_yuv_8(a1, a2, a3); \
+					YUV::yuv.rgb_to_yuv_8(a1, a2, a3); \
 				} \
 				rows[0][i * components + 0] = a1; \
 				rows[0][i * components + 1] = a2; \

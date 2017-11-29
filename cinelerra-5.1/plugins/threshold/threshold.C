@@ -316,7 +316,7 @@ int ThresholdMain::handle_opengl()
 			float y_mid,  u_mid,  v_mid;
 			float y_high, u_high, v_high;
 
-			YUV::rgb_to_yuv_f((float)config.low_color.r / 0xff,
+			YUV::yuv.rgb_to_yuv_f((float)config.low_color.r / 0xff,
 					  (float)config.low_color.g / 0xff,
 					  (float)config.low_color.b / 0xff,
 					  y_low,
@@ -324,7 +324,7 @@ int ThresholdMain::handle_opengl()
 					  v_low);
 			u_low += 0.5;
 			v_low += 0.5;
-			YUV::rgb_to_yuv_f((float)config.mid_color.r / 0xff,
+			YUV::yuv.rgb_to_yuv_f((float)config.mid_color.r / 0xff,
 					  (float)config.mid_color.g / 0xff,
 					  (float)config.mid_color.b / 0xff,
 					  y_mid,
@@ -332,7 +332,7 @@ int ThresholdMain::handle_opengl()
 					  v_mid);
 			u_mid += 0.5;
 			v_mid += 0.5;
-			YUV::rgb_to_yuv_f((float)config.high_color.r / 0xff,
+			YUV::yuv.rgb_to_yuv_f((float)config.high_color.r / 0xff,
 					  (float)config.high_color.g / 0xff,
 					  (float)config.high_color.b / 0xff,
 					  y_high,
@@ -456,25 +456,22 @@ inline uint16_t scale_to_range(int v)
 	return v << 8 | v;
 }
 
-static inline void rgb_to_yuv(YUV & yuv,
-			      unsigned char   r, unsigned char   g, unsigned char   b,
+static inline void rgb_to_yuv(unsigned char   r, unsigned char   g, unsigned char   b,
 			      unsigned char & y, unsigned char & u, unsigned char & v)
 {
-	yuv.rgb_to_yuv_8(r, g, b, y, u, v);
+	YUV::yuv.rgb_to_yuv_8(r, g, b, y, u, v);
 }
 
-static inline void rgb_to_yuv(YUV & yuv,
-			      float   r, float   g, float   b,
+static inline void rgb_to_yuv(float   r, float   g, float   b,
 			      float & y, float & u, float & v)
 {
-	yuv.rgb_to_yuv_f(r, g, b, y, u, v);
+	YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v);
 }
 
-static inline void rgb_to_yuv(YUV & yuv,
-			      uint16_t   r, uint16_t   g, uint16_t   b,
+static inline void rgb_to_yuv(uint16_t   r, uint16_t   g, uint16_t   b,
 			      uint16_t & y, uint16_t & u, uint16_t & v)
 {
-	yuv.rgb_to_yuv_16(r, g, b, y, u, v);
+	YUV::yuv.rgb_to_yuv_16(r, g, b, y, u, v);
 }
 
 template<typename TYPE, int COMPONENTS, bool USE_YUV>
@@ -509,9 +506,9 @@ void ThresholdUnit::render_data(LoadPackage *package)
 
 	if (USE_YUV)
 	{
-		rgb_to_yuv(*server->yuv, r_low,  g_low,  b_low,  y_low,  u_low,  v_low);
-		rgb_to_yuv(*server->yuv, r_mid,  g_mid,  b_mid,  y_mid,  u_mid,  v_mid);
-		rgb_to_yuv(*server->yuv, r_high, g_high, b_high, y_high, u_high, v_high);
+		rgb_to_yuv(r_low,  g_low,  b_low,  y_low,  u_low,  v_low);
+		rgb_to_yuv(r_mid,  g_mid,  b_mid,  y_mid,  u_mid,  v_mid);
+		rgb_to_yuv(r_high, g_high, b_high, y_high, u_high, v_high);
 	}
 
 	for(int i = pkg->start; i < pkg->end; i++)
@@ -631,12 +628,10 @@ ThresholdEngine::ThresholdEngine(ThresholdMain *plugin)
  	plugin->get_project_smp() + 1)
 {
 	this->plugin = plugin;
-	yuv = new YUV;
 }
 
 ThresholdEngine::~ThresholdEngine()
 {
-	delete yuv;
 }
 
 void ThresholdEngine::process_packages(VFrame *data)

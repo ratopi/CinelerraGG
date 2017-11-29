@@ -1317,12 +1317,10 @@ int File::bytes_per_sample(int bits)
 }
 
 
-
-
-
-int File::get_best_colormodel(int driver)
+int File::get_best_colormodel(int driver, int vstream)
 {
-	return get_best_colormodel(asset, driver);
+	return file ? file->get_best_colormodel(driver, vstream) :
+		get_best_colormodel(asset, driver);
 }
 
 int File::get_best_colormodel(Asset *asset, int driver)

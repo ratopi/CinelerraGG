@@ -1,100 +1,4 @@
 
-// Compression coefficients straight out of jpeglib
-#define R_TO_Y    0.29900
-#define G_TO_Y    0.58700
-#define B_TO_Y    0.11400
-
-#define R_TO_U    -0.16874
-#define G_TO_U    -0.33126
-#define B_TO_U    0.50000
-
-#define R_TO_V    0.50000
-#define G_TO_V    -0.41869
-#define B_TO_V    -0.08131
-
-// Decompression coefficients straight out of jpeglib
-#define V_TO_R    1.40200
-#define V_TO_G    -0.71414
-
-#define U_TO_G    -0.34414
-#define U_TO_B    1.77200
-
-int BC_Xfer::rtoy_tab[0x100], BC_Xfer::gtoy_tab[0x100], BC_Xfer::btoy_tab[0x100];
-int BC_Xfer::rtou_tab[0x100], BC_Xfer::gtou_tab[0x100], BC_Xfer::btou_tab[0x100];
-int BC_Xfer::rtov_tab[0x100], BC_Xfer::gtov_tab[0x100], BC_Xfer::btov_tab[0x100];
-int BC_Xfer::vtor_tab[0x100], BC_Xfer::vtog_tab[0x100];
-int BC_Xfer::utog_tab[0x100], BC_Xfer::utob_tab[0x100];
-float BC_Xfer::vtor_float_tab[0x100], BC_Xfer::vtog_float_tab[0x100];
-float BC_Xfer::utog_float_tab[0x100], BC_Xfer::utob_float_tab[0x100];
-int BC_Xfer::rtoy_tab16[0x10000], BC_Xfer::gtoy_tab16[0x10000], BC_Xfer::btoy_tab16[0x10000];
-int BC_Xfer::rtou_tab16[0x10000], BC_Xfer::gtou_tab16[0x10000], BC_Xfer::btou_tab16[0x10000];
-int BC_Xfer::rtov_tab16[0x10000], BC_Xfer::gtov_tab16[0x10000], BC_Xfer::btov_tab16[0x10000];
-int BC_Xfer::vtor_tab16[0x10000], BC_Xfer::vtog_tab16[0x10000];
-int BC_Xfer::utog_tab16[0x10000], BC_Xfer::utob_tab16[0x10000];
-float BC_Xfer::v16tor_float_tab[0x10000], BC_Xfer::v16tog_float_tab[0x10000];
-float BC_Xfer::u16tog_float_tab[0x10000], BC_Xfer::u16tob_float_tab[0x10000];
-
-BC_Xfer::Tables BC_Xfer::tables;
-
-void BC_Xfer::init()
-{
-	for( int i=0; i<0x100; ++i ) {
-		rtoy_tab[i] = (int)(R_TO_Y * 0x10000 * i);
-		rtou_tab[i] = (int)(R_TO_U * 0x10000 * i);
-		rtov_tab[i] = (int)(R_TO_V * 0x10000 * i);
-
-		gtoy_tab[i] = (int)(G_TO_Y * 0x10000 * i);
-		gtou_tab[i] = (int)(G_TO_U * 0x10000 * i);
-		gtov_tab[i] = (int)(G_TO_V * 0x10000 * i);
-
-		btoy_tab[i] = (int)(B_TO_Y * 0x10000 * i);
-		btou_tab[i] = (int)(B_TO_U * 0x10000 * i) + 0x800000;
-		btov_tab[i] = (int)(B_TO_V * 0x10000 * i) + 0x800000;
-	}
-
-	for( int i=0; i<0x10000; ++i ) {
-		rtoy_tab16[i] = (int)(R_TO_Y * 0x100 * i);
-		rtou_tab16[i] = (int)(R_TO_U * 0x100 * i);
-		rtov_tab16[i] = (int)(R_TO_V * 0x100 * i);
-
-		gtoy_tab16[i] = (int)(G_TO_Y * 0x100 * i);
-		gtou_tab16[i] = (int)(G_TO_U * 0x100 * i);
-		gtov_tab16[i] = (int)(G_TO_V * 0x100 * i);
-
-		btoy_tab16[i] = (int)(B_TO_Y * 0x100 * i);
-		btou_tab16[i] = (int)(B_TO_U * 0x100 * i) + 0x800000;
-		btov_tab16[i] = (int)(B_TO_V * 0x100 * i) + 0x800000;
-	}
-
-	for( int i=-0x80; i<0x80; ++i ) {
-		vtor_tab[i+0x80] = (int)(V_TO_R * 0x10000 * i);
-		vtog_tab[i+0x80] = (int)(V_TO_G * 0x10000 * i);
-		utog_tab[i+0x80] = (int)(U_TO_G * 0x10000 * i);
-		utob_tab[i+0x80] = (int)(U_TO_B * 0x10000 * i);
-	}
-
-	for( int i=-0x80; i<0x80; ++i ) {
-		vtor_float_tab[i+0x80] = V_TO_R * i / 0xff;
-		vtog_float_tab[i+0x80] = V_TO_G * i / 0xff;
-		utog_float_tab[i+0x80] = U_TO_G * i / 0xff;
-		utob_float_tab[i+0x80] = U_TO_B * i / 0xff;
-	}
-
-	for( int i=-0x8000; i<0x8000; ++i ) {
-		vtor_tab16[i+0x8000] = (int)(V_TO_R * 0x100 * i);
-		vtog_tab16[i+0x8000] = (int)(V_TO_G * 0x100 * i);
-		utog_tab16[i+0x8000] = (int)(U_TO_G * 0x100 * i);
-		utob_tab16[i+0x8000] = (int)(U_TO_B * 0x100 * i);
-	}
-
-	for( int i=-0x8000; i<0x8000; ++i ) {
-		v16tor_float_tab[i+0x8000] = V_TO_R * i / 0xffff;
-		v16tog_float_tab[i+0x8000] = V_TO_G * i / 0xffff;
-		u16tog_float_tab[i+0x8000] = U_TO_G * i / 0xffff;
-		u16tob_float_tab[i+0x8000] = U_TO_B * i / 0xffff;
-	}
-}
-
 void BC_Xfer::init(
 	uint8_t **output_rows, int out_colormodel, int out_x, int out_y, int out_w, int out_h,
 		uint8_t *out_yp, uint8_t *out_up, uint8_t *out_vp, uint8_t *out_ap, int out_rowspan,
@@ -143,6 +47,8 @@ void BC_Xfer::init(
 	switch( in_colormodel ) {
 	case BC_RGB_FLOATP:
 	case BC_RGBA_FLOATP:
+		if( !BC_CModels::has_alpha(out_colormodel) )
+			this->in_colormodel = BC_RGB_FLOATP;
 		in_rowspan = in_w * sizeof(float);
 		break;
 	}

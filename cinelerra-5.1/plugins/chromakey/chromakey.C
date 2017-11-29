@@ -389,7 +389,6 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 
 
 #define OUTER_VARIABLES(plugin) \
-	YUV yuv; \
 	float value = RGB_TO_VALUE(plugin->config.red, \
 		plugin->config.green, \
 		plugin->config.blue); \
@@ -400,7 +399,9 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 	float g_key = plugin->config.green; \
 	float b_key = plugin->config.blue; \
 	int y_key, u_key, v_key; \
-	yuv.rgb_to_yuv_8((int)(r_key * 0xff), (int)(g_key * 0xff), (int)(b_key * 0xff), y_key, u_key, v_key); \
+	YUV::yuv.rgb_to_yuv_8( \
+		(int)(r_key * 0xff), (int)(g_key * 0xff), (int)(b_key * 0xff), \
+		y_key, u_key, v_key); \
 	float run = plugin->config.slope / 100; \
 	float threshold_run = threshold + run;
 

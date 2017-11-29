@@ -640,15 +640,11 @@ void VWindowEditing::set_outpoint()
 	vwindow->set_outpoint();
 }
 
-void VWindowEditing::clear_inpoint()
+void VWindowEditing::unset_inoutpoint()
 {
-	vwindow->clear_inpoint();
+	vwindow->unset_inoutpoint();
 }
 
-void VWindowEditing::clear_outpoint()
-{
-	vwindow->clear_outpoint();
-}
 
 void VWindowEditing::to_clip()
 {

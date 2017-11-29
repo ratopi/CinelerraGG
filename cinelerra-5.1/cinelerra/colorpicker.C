@@ -862,7 +862,7 @@ int PaletteCb::handle_event()
 void ColorWindow::update_rgb(float r, float g, float b)
 {
 	{ float y, u, v;
-	YUV::rgb_to_yuv_f(r, g, b, y, u, v);
+	YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v);
 	u += 0.5;  v += 0.5;
 	bclamp(y, 0, 1);    yuv.y = y;
 	bclamp(u, 0, 1);    yuv.u = u;
@@ -878,7 +878,7 @@ void ColorWindow::update_yuv(float y, float u, float v)
 {
 	u -= 0.5;  v -= 0.5;
 	{ float r, g, b;
-	YUV::yuv_to_rgb_f(r, g, b, y, u, v);
+	YUV::yuv.yuv_to_rgb_f(r, g, b, y, u, v);
 	bclamp(r, 0, 1);   rgb.r = r;
 	bclamp(g, 0, 1);   rgb.g = g;
 	bclamp(b, 0, 1);   rgb.b = b;
@@ -897,7 +897,7 @@ void ColorWindow::update_hsv(float h, float s, float v)
 	bclamp(g, 0, 1);   rgb.g = g;
 	bclamp(b, 0, 1);   rgb.b = b;
 	float y, u, v;
-	YUV::rgb_to_yuv_f(r, g, b, y, u, v);
+	YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v);
 	u += 0.5;  v += 0.5;
 	bclamp(y, 0, 1);   yuv.y = y;
 	bclamp(u, 0, 1);   yuv.u = u;

@@ -43,5 +43,11 @@ class BD_WarnRoot;
 class PopupMenuBtnup;
 class ActivateFocusPolicy;
 class DeactivateFocusPolicy;
+class ForwardRenderDisplacement;
+class HighlightInverseColor;
+class YuvColorSpace;
+class YuvColorSpaceItem;
+class YuvColorRange;
+class YuvColorRangeItem;
 
 #endif

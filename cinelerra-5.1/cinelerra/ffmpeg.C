@@ -2533,6 +2533,10 @@ int FFMPEG::ff_video_pid(int stream)
 	return ffvideo[stream]->st->id;
 }
 
+int FFMPEG::ff_video_mpeg_color_range(int stream)
+{
+	return ffvideo[stream]->st->codecpar->color_range == AVCOL_RANGE_MPEG ? 1 : 0;
+}
 
 int FFMPEG::ff_cpus()
 {

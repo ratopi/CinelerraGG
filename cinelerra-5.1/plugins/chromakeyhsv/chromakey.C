@@ -703,7 +703,7 @@ void ChromaKeyUnit::process_chromakey(int components,
 	    		float y = r;
 	    		float u = g;
 	    		float v = b;
-	    		YUV::yuv_to_rgb_f (r, g, b, y, u - 0.5, v - 0.5);
+	    		YUV::yuv.yuv_to_rgb_f (r, g, b, y, u - 0.5, v - 0.5);
 	    	}
 
 	  		HSV::rgb_to_hsv (r, g, b, h, s, v);
@@ -797,7 +797,7 @@ void ChromaKeyUnit::process_chromakey(int components,
 		  float y;
 		  float u;
 		  float v;
-		  YUV::rgb_to_yuv_f (r, g, b, y, u, v);
+		  YUV::yuv.rgb_to_yuv_f (r, g, b, y, u, v);
 	      CLAMP (y, 0, 1.0);
 	      CLAMP (u, 0, 1.0);
 	      CLAMP (v, 0, 1.0);

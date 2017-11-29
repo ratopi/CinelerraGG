@@ -22,65 +22,6 @@ static inline float fclp(float v, const int n) {
 ZTYP(int);
 ZTYP(float);
 
-// All variables are unsigned
-// y -> 24 bits u, v, -> 8 bits r, g, b -> 8 bits
-#define YUV_TO_RGB(y, u, v, r, g, b) \
-{ \
-	(r) = ((y + vtor_tab[v]) >> 16); \
-	(g) = ((y + utog_tab[u] + vtog_tab[v]) >> 16); \
-	(b) = ((y + utob_tab[u]) >> 16); \
-	CLAMP(r, 0, 0xff); CLAMP(g, 0, 0xff); CLAMP(b, 0, 0xff); \
-}
-
-// y -> 0 - 1 float
-// u, v, -> 8 bits
-// r, g, b -> float
-#define YUV_TO_FLOAT(y, u, v, r, g, b) \
-{ \
-	(r) = y + vtor_float_tab[v]; \
-	(g) = y + utog_float_tab[u] + vtog_float_tab[v]; \
-	(b) = y + utob_float_tab[u]; \
-}
-
-// y -> 0 - 1 float
-// u, v, -> 16 bits
-// r, g, b -> float
-#define YUV16_TO_RGB_FLOAT(y, u, v, r, g, b) \
-{ \
-	(r) = y + v16tor_float_tab[v]; \
-	(g) = y + u16tog_float_tab[u] + v16tog_float_tab[v]; \
-	(b) = y + u16tob_float_tab[u]; \
-}
-
-// y -> 24 bits   u, v-> 16 bits
-#define YUV_TO_RGB16(y, u, v, r, g, b) \
-{ \
-	(r) = ((y + vtor_tab16[v]) >> 8); \
-	(g) = ((y + utog_tab16[u] + vtog_tab16[v]) >> 8); \
-	(b) = ((y + utob_tab16[u]) >> 8); \
-	CLAMP(r, 0, 0xffff); CLAMP(g, 0, 0xffff); CLAMP(b, 0, 0xffff); \
-}
-
-
-
-
-#define RGB_TO_YUV(y, u, v, r, g, b) \
-{ \
-	y = ((rtoy_tab[r] + gtoy_tab[g] + btoy_tab[b]) >> 16); \
-	u = ((rtou_tab[r] + gtou_tab[g] + btou_tab[b]) >> 16); \
-	v = ((rtov_tab[r] + gtov_tab[g] + btov_tab[b]) >> 16); \
-	CLAMP(y, 0, 0xff); CLAMP(u, 0, 0xff); CLAMP(v, 0, 0xff); \
-}
-
-// r, g, b -> 16 bits
-#define RGB_TO_YUV16(y, u, v, r, g, b) \
-{ \
-	y = ((rtoy_tab16[r] + gtoy_tab16[g] + btoy_tab16[b]) >> 8); \
-	u = ((rtou_tab16[r] + gtou_tab16[g] + btou_tab16[b]) >> 8); \
-	v = ((rtov_tab16[r] + gtov_tab16[g] + btov_tab16[b]) >> 8); \
-	CLAMP(y, 0, 0xffff); CLAMP(u, 0, 0xffff); CLAMP(v, 0, 0xffff); \
-}
-
 
 #define xfer_flat_row_out(oty_t) \
   for( unsigned i=y0; i<y1; ++i ) { \
@@ -317,23 +258,6 @@ public:
     ~SlicerList();
   };
   static SlicerList slicers;
-
-  static void init();
-  static class Tables { public: Tables() { init(); } } tables;
-  static int rtoy_tab[0x100], gtoy_tab[0x100], btoy_tab[0x100];
-  static int rtou_tab[0x100], gtou_tab[0x100], btou_tab[0x100];
-  static int rtov_tab[0x100], gtov_tab[0x100], btov_tab[0x100];
-  static int vtor_tab[0x100], vtog_tab[0x100];
-  static int utog_tab[0x100], utob_tab[0x100];
-  static float vtor_float_tab[0x100], vtog_float_tab[0x100];
-  static float utog_float_tab[0x100], utob_float_tab[0x100];
-  static int rtoy_tab16[0x10000], gtoy_tab16[0x10000], btoy_tab16[0x10000];
-  static int rtou_tab16[0x10000], gtou_tab16[0x10000], btou_tab16[0x10000];
-  static int rtov_tab16[0x10000], gtov_tab16[0x10000], btov_tab16[0x10000];
-  static int vtor_tab16[0x10000], vtog_tab16[0x10000];
-  static int utog_tab16[0x10000], utob_tab16[0x10000];
-  static float v16tor_float_tab[0x10000], v16tog_float_tab[0x10000];
-  static float u16tog_float_tab[0x10000], u16tob_float_tab[0x10000];
 
   void init(
     uint8_t **output_rows, int out_colormodel, int out_x, int out_y, int out_w, int out_h,

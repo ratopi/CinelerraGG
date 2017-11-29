@@ -142,6 +142,20 @@ void AppearancePrefs::create_objects()
         add_subwindow(new HighlightInverseColor(pwindow, x, y, hex_color));
 	y += 35;
 
+	x = x0;
+	add_subwindow(title = new BC_Title(x, y, _("YUV color space:")));
+	x += title->get_w() + margin;
+	add_subwindow(yuv_color_space = new YuvColorSpace(x, y, pwindow));
+	yuv_color_space->create_objects();
+	y += yuv_color_space->get_h() + 5;
+
+	x = x0;
+	add_subwindow(title = new BC_Title(x, y, _("YUV color range:")));
+	x += title->get_w() + margin;
+	add_subwindow(yuv_color_range = new YuvColorRange(x, y, pwindow));
+	yuv_color_range->create_objects();
+	y += yuv_color_range->get_h() + 5;
+
 	UseTipWindow *tip_win = new UseTipWindow(pwindow, x1, y1);
 	add_subwindow(tip_win);
 	y1 += tip_win->get_h() + 5;
@@ -519,5 +533,91 @@ int HighlightInverseColor::handle_event()
 	}
 	pwindow->thread->preferences->highlight_inverse = inverse_color;
 	return 1;
+}
+
+
+const char *YuvColorSpace::color_space[] = {
+	N_("BT601"),
+	N_("BT709"),
+};
+
+YuvColorSpace::YuvColorSpace(int x, int y, PreferencesWindow *pwindow)
+ : BC_PopupMenu(x, y, 100,
+	_(color_space[pwindow->thread->preferences->yuv_color_space]), 1)
+{
+	this->pwindow = pwindow;
+}
+YuvColorSpace::~YuvColorSpace()
+{
+}
+
+void YuvColorSpace::create_objects()
+{
+	for( int id=0,nid=sizeof(color_space)/sizeof(color_space[0]); id<nid; ++id )
+		add_item(new YuvColorSpaceItem(this, _(color_space[id]), id));
+	handle_event();
+}
+
+int YuvColorSpace::handle_event()
+{
+	set_text(color_space[pwindow->thread->preferences->yuv_color_space]);
+	return 1;
+}
+
+YuvColorSpaceItem::YuvColorSpaceItem(YuvColorSpace *popup, const char *text, int id)
+ : BC_MenuItem(text)
+{
+	this->popup = popup;
+	this->id = id;
+}
+
+int YuvColorSpaceItem::handle_event()
+{
+	popup->set_text(get_text());
+	popup->pwindow->thread->preferences->yuv_color_space = id;
+	return popup->handle_event();
+}
+
+
+const char *YuvColorRange::color_range[] = {
+	N_("JPEG"),
+	N_("MPEG"),
+};
+
+YuvColorRange::YuvColorRange(int x, int y, PreferencesWindow *pwindow)
+ : BC_PopupMenu(x, y, 100,
+	_(color_range[pwindow->thread->preferences->yuv_color_range]), 1)
+{
+	this->pwindow = pwindow;
+}
+YuvColorRange::~YuvColorRange()
+{
+}
+
+void YuvColorRange::create_objects()
+{
+	for( int id=0,nid=sizeof(color_range)/sizeof(color_range[0]); id<nid; ++id )
+		add_item(new YuvColorRangeItem(this, _(color_range[id]), id));
+	handle_event();
+}
+
+int YuvColorRange::handle_event()
+{
+	set_text(color_range[pwindow->thread->preferences->yuv_color_range]);
+	return 1;
+}
+
+YuvColorRangeItem::YuvColorRangeItem(YuvColorRange *popup, const char *text, int id)
+ : BC_MenuItem(text)
+{
+	this->popup = popup;
+	this->id = id;
+}
+
+int YuvColorRangeItem::handle_event()
+{
+	popup->set_text(get_text());
+	popup->pwindow->thread->preferences->yuv_color_range = id;
+	return popup->handle_event();
 }
 

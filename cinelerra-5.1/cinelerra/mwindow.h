@@ -352,8 +352,6 @@ public:
 	static void create_defaults_path(char *string, const char *config_file);
 
 	void delete_folder(char *folder);
-	void delete_inpoint();
-	void delete_outpoint();
 
 	void delete_track();
 	void delete_track(Track *track);
@@ -482,6 +480,7 @@ public:
 	void toggle_editing_mode();
 	void set_inpoint(int is_mwindow);
 	void set_outpoint(int is_mwindow);
+	void unset_inoutpoint(int is_mwindow);
 	void splice(EDL *source);
 	void toggle_loop_playback();
 	void trim_selection();

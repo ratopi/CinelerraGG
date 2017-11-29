@@ -131,6 +131,7 @@ public:
 // Set points and labels
 	void set_inpoint(double position);
 	void set_outpoint(double position);
+	void unset_inoutpoint();
 // Redraw resources during index builds
 	void set_index_file(Indexable *indexable);
 // Add assets from the src to the destination

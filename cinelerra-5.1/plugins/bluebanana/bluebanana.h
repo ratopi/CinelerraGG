@@ -94,7 +94,6 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(BluebananaConfig);
 
-	YUV yuv;
 	VFrame *frame;
 	BluebananaEngine *engine;
         int ants_counter;

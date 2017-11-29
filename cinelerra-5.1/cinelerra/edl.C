@@ -825,6 +825,12 @@ void EDL::set_outpoint(double position)
 	}
 }
 
+void EDL::unset_inoutpoint()
+{
+	local_session->unset_inpoint();
+	local_session->unset_outpoint();
+}
+
 int EDL::blade(double position)
 {
 	return tracks->blade(position);

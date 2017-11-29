@@ -90,6 +90,8 @@ Preferences::Preferences()
 	forward_render_displacement = 0;
 	dvd_yuv420p_interlace = 0;
 	highlight_inverse = 0xffffff;
+	yuv_color_space = 0; // bt601
+	yuv_color_range = 0; // jpeg
 
 // Default brender asset
 	brender_asset = new Asset;
@@ -208,6 +210,8 @@ void Preferences::copy_from(Preferences *that)
 	forward_render_displacement = that->forward_render_displacement;
 	dvd_yuv420p_interlace = that->dvd_yuv420p_interlace;
 	highlight_inverse = that->highlight_inverse;
+	yuv_color_space = that->yuv_color_space;
+	yuv_color_range = that->yuv_color_range;
 	renderfarm_nodes.remove_all_objects();
 	renderfarm_ports.remove_all();
 	renderfarm_enabled.remove_all();
@@ -366,6 +370,8 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	forward_render_displacement = defaults->get("FORWARD_RENDER_DISPLACEMENT", forward_render_displacement);
 	dvd_yuv420p_interlace = defaults->get("DVD_YUV420P_INTERLACE", dvd_yuv420p_interlace);
 	highlight_inverse = defaults->get("HIGHLIGHT_INVERSE", highlight_inverse);
+	yuv_color_space = defaults->get("YUV_COLOR_SPACE", yuv_color_space);
+	yuv_color_range = defaults->get("YUV_COLOR_RANGE", yuv_color_range);
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
 	cache_size = defaults->get("CACHE_SIZE", cache_size);
@@ -498,6 +504,8 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("FORWARD_RENDER_DISPLACEMENT", forward_render_displacement);
 	defaults->update("DVD_YUV420P_INTERLACE", dvd_yuv420p_interlace);
 	defaults->update("HIGHLIGHT_INVERSE", highlight_inverse);
+	defaults->update("YUV_COLOR_SPACE", yuv_color_space);
+	defaults->update("YUV_COLOR_RANGE", yuv_color_range);
 	brender_asset->save_defaults(defaults, "BRENDER_", 1, 1, 1, 0, 0);
 	defaults->update("USE_BRENDER", use_brender);
 	defaults->update("BRENDER_FRAGMENT", brender_fragment);

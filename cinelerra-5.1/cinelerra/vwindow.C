@@ -384,22 +384,12 @@ void VWindow::set_outpoint()
 	}
 }
 
-void VWindow::clear_inpoint()
+void VWindow::unset_inoutpoint()
 {
 	EDL *edl = get_edl();
 	if(edl)
 	{
-		edl->local_session->unset_inpoint();
-		gui->timebar->update(1);
-	}
-}
-
-void VWindow::clear_outpoint()
-{
-	EDL *edl = get_edl();
-	if(edl)
-	{
-		edl->local_session->unset_outpoint();
+		edl->unset_inoutpoint();
 		gui->timebar->update(1);
 	}
 }

@@ -546,7 +546,7 @@ void CWindowEyedropGUI::update()
 	rgb_hex->update(rgb_text);
 	
 	float y, u, v;
-	YUV::rgb_to_yuv_f(r, g, b, y, u, v);
+	YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v);
 	this->y->update(y);
 	this->u->update(u);  u += 0.5;
 	this->v->update(v);  v += 0.5;
@@ -1662,6 +1662,9 @@ int CWindowMaskDelete::handle_event()
 		temp_keyframe.copy_data(keyframe);
 // Update parameter
 		SubMask *submask = temp_keyframe.get_submask(mwindow->edl->session->cwindow_mask);
+		if( shift_down() )
+			submask->points.remove_all_objects();
+
 		for(int i = mwindow->cwindow->gui->affected_point;
 			i < submask->points.total - 1;
 			i++)
@@ -1683,6 +1686,8 @@ int CWindowMaskDelete::handle_event()
 			current; )
 		{
 			SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
+			if( shift_down() )
+				submask->points.remove_all_objects();
 
 			for(int i = mwindow->cwindow->gui->affected_point;
 				i < submask->points.total - 1;

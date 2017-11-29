@@ -35,6 +35,7 @@ public:
 	static void get_parameters(BC_WindowBase *parent_window,Asset *asset,
 	   BC_WindowBase *&format_window,int audio_options,int video_options);
 	static int check_sig(Asset *asset);
+	int get_best_colormodel(int driver, int vstream);
 	int get_video_info(int track, int &pid, double &framerate,
 		int &width, int &height, char *title=0);
 	int get_audio_for_video(int vstream, int astream, int64_t &channel_mask);

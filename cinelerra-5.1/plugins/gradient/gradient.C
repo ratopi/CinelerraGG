@@ -983,14 +983,14 @@ int GradientMain::handle_opengl()
 			{
 				float in1, in2, in3, in4;
 				float out1, out2, out3, out4;
-				YUV::rgb_to_yuv_f((float)config.in_r / 0xff,
+				YUV::yuv.rgb_to_yuv_f((float)config.in_r / 0xff,
 					(float)config.in_g / 0xff,
 					(float)config.in_b / 0xff,
 					in1,
 					in2,
 					in3);
 				in4 = (float)config.in_a / 0xff;
-				YUV::rgb_to_yuv_f((float)config.out_r / 0xff,
+				YUV::yuv.rgb_to_yuv_f((float)config.out_r / 0xff,
 					(float)config.out_g / 0xff,
 					(float)config.out_b / 0xff,
 					out1,

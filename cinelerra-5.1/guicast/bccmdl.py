@@ -3,12 +3,12 @@
 base = {
   "rgb8": {
     "i8": {
-      "r": " uint32_t in = *inp, r = ((in>>6)&3)*0x55u, g = ((in>>3)&7)*0x24u, b = (in&7)*0x24u;",
+      "r": " uint32_t in = *inp; int r = ((in>>6)&3)*0x55u, g = ((in>>3)&7)*0x24u, b = (in&7)*0x24u;",
       "w": " uint32_t ot = (r&0xc0u) | ((g>>2)&0x38u) | ((b>>5)&0x07u);\n" +
            " *out++ = ot;",
     },
     "i16": {
-      "r": " uint32_t in = *inp, r = ((in>>6)&3)*0x5555u, g = ((in>>3)&7)*0x2492u, b = (in&7)*0x2492u;",
+      "r": " uint32_t in = *inp; int r = ((in>>6)&3)*0x5555u, g = ((in>>3)&7)*0x2492u, b = (in&7)*0x2492u;",
       "w": " uint32_t ot = ((r>>8)&0xc0u) | ((g>>10) & 0x38u) >> 2) | ((b>>13)&0x07u);\n" +
            " *out++ = ot;",
     },
@@ -44,7 +44,8 @@ base = {
       "w": " *out++ = r; *out++ = g; *out++ = b;",
     },
     "i16": {
-      "r": " int r = *inp++*0x101u, g = *inp++*0x101u, b = *inp++*0x101u;",
+      "r": " int r = *inp++, g = *inp++, b = *inp++;\n" +
+           " r = (r<<8) | r;  g = (g<<8) | g;  b = (b<<8) | b;",
       "w": " *out++ = r>>8; *out++ = g>>8; *out++ = b>>8;",
     },
     "fp": {
@@ -55,7 +56,7 @@ base = {
   "rgb161616": {
     "i8": {
       "r": " int r = *inp++>>8, g = *inp++>>8, b = *inp++>>8;",
-      "w": " *out++ = r*0x101u; *out++ = g*0x101u; *out++ = b*0x101u;",
+      "w": " *out++ = (r<<8) | r;  *out++ = (g<<8) | g;  *out++ = (b<<8) | b;"
     },
     "i16": {
       "r": " int r = *inp++, g = *inp++, b = *inp++;",
@@ -107,8 +108,9 @@ base = {
       "w": " *out++ = b; *out++ = g; *out++ = r;",
     },
     "i16": {
-      "r": " int b = *inp++*0x101u, g = *inp++*0x101u, r = *inp++*0x101u;",
-      "w": " *out.16++ = b>>8; *out.16++ = g>>8; *out.16++ = r>>8;",
+      "r": " int b = *inp++, g = *inp++, r = *inp++;\n" +
+           " b = (b<<8) | b;  g = (g<<8) | g;  r = (r<<8) | r;",
+      "w": " *out++ = b>>8; *out++ = g>>8; *out++ = r>>8;",
     },
     "fp": {
       "r": " float b = fclp(*inp++,256), g=fclp(*inp++,256), r = fclp(*inp++,256);",
@@ -121,7 +123,8 @@ base = {
       "w": " *out++ = b; *out++ = g; *out++ = r; ++out;",
     },
     "i16": {
-      "r": " int b = *inp++*0x101u, g = *inp++*0x101u, r = *inp++*0x101u;",
+      "r": " int b = *inp++, g = *inp++, r = *inp++;\n" +
+           " b = (b<<8) | b;  g = (g<<8) | g;  r = (r<<8) | r;",
       "w": " *out++ = b>>8; *out++ = g>>8; *out++ = r>>8; ++out;",
     },
     "fp": {
@@ -132,7 +135,7 @@ base = {
   "bgr161616": {
     "i8": {
       "r": " int b = *inp++>>8, g = *inp++>>8, r = *inp++>>8;",
-      "w": " *out++ = b*0x101u; *out++ = g*0x101u; *out++ = r*0x101u;",
+      "w": " *out++ = (r<<8) | r;  *out++ = (g<<8) | g;  *out++ = (b<<8) | b;"
     },
     "i16": {
       "r": " int b = *inp++, g = *inp++, r = *inp++;",
@@ -160,33 +163,33 @@ base = {
 
   "yuv888": {
     "i8": {
-      "r": " int32_t y = *inp++*0x010101u, u = *inp++, v = *inp++;",
+      "r": " int32_t y = *inp++, u = *inp++, v = *inp++;",
       "w": " *out++ = y; *out++ = u; *out++ = v;",
     },
     "i16": {
-      "r": " int32_t y = *inp++*0x010101u, u = *inp++<<8, v = *inp++<<8;",
+      "r": " int32_t iy = *inp++, y = (iy<<8) | iy, u = *inp++<<8, v = *inp++<<8;",
       "w": " *out++ = y>>8; *out++ = u>>8; *out++ = v>>8;",
     },
   },
   "yuv161616": {
     "i8": {
-      "r": " int32_t iy = *inp++, y = (iy<<8) | (iy>>8), u = *inp++>>8, v = *inp++>>8;",
-      "w": " *out++ = y<<8; *out++ = u<<8; *out++ = v<<8;",
+      "r": " int32_t y = *inp++>>8, u = *inp++>>8, v = *inp++>>8;",
+      "w": " *out++ = (y<<8) | y; *out++ = u<<8; *out++ = v<<8;",
     },
     "i16": {
-      "r": " int32_t iy = *inp++, y = (iy<<8) | (iy>>8), u = *inp++, v = *inp++;",
+      "r": " int32_t y = *inp++, u = *inp++, v = *inp++;",
       "w": " *out++ = y; *out++ = u; *out++ = v;",
     },
   },
 
   "yuyv8888": {
     "i8": {
-      "r": " int32_t iy = inp[(j&1)<<1], y = iy*0x010101u, u = inp[1], v = inp[3];",
+      "r": " int32_t y = inp[(j&1)<<1], u = inp[1], v = inp[3];",
       "w": " if( !(j&1) ) { *out++ = y; *out = u; out[2] = v; }\n" +
            " else { *out++ = u; *out++= y; *out++ = v; }",
     },
     "i16": {
-      "r": " int32_t iy = inp[(j&1)<<1], y = iy*0x010101u, u = inp[1]<<8, v = inp[3]<<8;",
+      "r": " int32_t iy = inp[(j&1)<<1], y = (iy<<8) | iy, u = inp[1]<<8, v = inp[3]<<8;",
       "w": " if( !(j&1) ) { *out++ = y>>8; *out = u>>8; out[2] = v>>8; }\n" +
            " else { *out++ = u>>8; *out++= y>>8; *out++ = v>>8; }",
     },
@@ -194,12 +197,12 @@ base = {
 
   "uyvy8888": {
     "i8": {
-      "r": " int32_t u = inp[0], iy = inp[((j&1)<<1)+1], y = iy*0x010101u, v = inp[2];",
+      "r": " int32_t u = inp[0], y = inp[((j&1)<<1)+1], v = inp[2];",
       "w": " if( !(j&1) ) { *out++ = u; *out++ = y; *out++ = v; *out = y; }\n" +
            " else { *out++= y; }",
     },
     "i16": {
-      "r": " int32_t u = inp[0]<<8, iy = inp[((j&1)<<1)+1], y = iy*0x010101u, v = inp[2]<<8;",
+      "r": " int32_t u = inp[0]<<8, iy = inp[((j&1)<<1)+1], y = (iy<<8) | iy, v = inp[2]<<8;",
       "w": " if( !(j&1) ) { *out++ = u>>8; *out++ = y>>8; *out++ = v>>8; *out = y>>8; }\n" +
            " else { *out++= y>>8; }",
     },
@@ -208,13 +211,13 @@ base = {
   "yuv10101010": {
     "i8": {
       "r": " uint32_t it = *(uint32_t*)inp;\n" +
-           " int32_t y = ((it>>22)&0x3ffu)*0x4010u, u = (it>>14)&0xffu, v = (it>>4)&0xffu;",
+           " int32_t y = (it>>24)&0xffu, u = (it>>14)&0xffu, v = (it>>4)&0xffu;",
       "w": " uint32_t ot = (y<<24) | (u<<14) | (v<<4);\n" +
            " *(uint32_t*)out = ot; out += sizeof(uint32_t)/sizeof(*out);",
     },
     "i16": {
       "r": " uint32_t it = *(uint32_t*)inp;\n" +
-           " int32_t y = ((it>>22)&0x3ffu)*0x4010u, u = (it>>6)&0xffc0u, v = (it<<4)&0xffc0u;",
+           " int32_t y = (it>>16)&0xffc0u, u = (it>>6)&0xffc0u, v = (it<<4)&0xffc0u;",
       "w": " uint32_t ot = ((y&0xffc0u)<<16) | ((u&0xffc0u)<<6) | ((v&0xffc0u)>>4);\n" +
            " *(uint32_t*)out = ot; out += sizeof(uint32_t)/sizeof(*out);",
     },
@@ -222,87 +225,87 @@ base = {
 
   "vyu888": {
     "i8": {
-      "r": " int32_t v = *inp++, y = *inp++*0x010101u, u = *inp++;",
+      "r": " int32_t v = *inp++, y = *inp++, u = *inp++;",
       "w": " *out++ = v; *out++ = y; *out++ = u;",
     },
     "i16": {
-      "r": " int32_t v = *inp++<<8, y = *inp++*0x010101u, u = *inp++<<8;",
+      "r": " int32_t v = *inp++<<8, iy = *inp++, y = (iy<<8) | iy, u = *inp++<<8;",
       "w": " *out++ = v>>8; *out++ = y>>8; *out++ = u>>8;",
     },
   },
 
   "uyv888": {
     "i8": {
-      "r": " int32_t u = *inp++, y = *inp++*0x010101u, v = *inp++;",
+      "r": " int32_t u = *inp++, y = *inp++, v = *inp++;",
       "w": " *out++ = u; *out++ = y; *out++ = v;",
     },
     "i16": {
-      "r": " int32_t u = *inp++<<8, y = *inp++*0x010101u, v = *inp++<<8;",
+      "r": " int32_t u = *inp++<<8, iy = *inp++, y = (iy<<8) | iy, v = *inp++<<8;",
       "w": " *out++ = u>>8; *out++ = y>>8; *out++ = v>>8;",
     },
   },
 
   "yuv420p": {
     "i8": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip, v = *vip;",
+      "r": " int32_t y = *yip, u = *uip, v = *vip;",
       "w": " yop[j] = y;  uop[j/2] = u;  vop[j/2] = v;",
     },
     "i16": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip<<8, v = *vip<<8;",
+      "r": " int32_t iy = *yip, y = (iy<<8) | iy, u = *uip<<8, v = *vip<<8;",
       "w": " yop[j] = y>>8;  uop[j/2] = u>>8;  vop[j/2] = v>>8;",
     },
   },
   "yuv420pi": {
     "i8": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip, v = *vip;",
+      "r": " int32_t y = *yip, u = *uip, v = *vip;",
       "w": " yop[j] = y;  uop[j/2] = u;  vop[j/2] = v;",
     },
     "i16": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip<<8, v = *vip<<8;",
+      "r": " int32_t iy = *yip, y = (iy<<8) | iy, u = *uip<<8, v = *vip<<8;",
       "w": " yop[j] = y>>8;  uop[j/2] = u>>8;  vop[j/2] = v>>8;",
     },
   },
 
   "yuv422p": {
     "i8": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip, v = *vip;",
+      "r": " int32_t y = *yip, u = *uip, v = *vip;",
       "w": " yop[j] = y;  uop[j/2] = u;  vop[j/2] = v;",
     },
     "i16": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip<<8, v = *vip<<8;",
+      "r": " int32_t iy = *yip, y = (iy<<8) | iy, u = *uip<<8, v = *vip<<8;",
       "w": " yop[j] = y>>8;  uop[j/2] = u>>8;  vop[j/2] = v>>8;",
     },
   },
 
   "yuv444p": {
     "i8": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip, v = *vip;",
+      "r": " int32_t y = *yip, u = *uip, v = *vip;",
       "w": " yop[j] = y;  uop[j] = u;  vop[j] = v;",
     },
     "i16": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip<<8, v = *vip<<8;",
+      "r": " int32_t iy = *yip, y = (iy<<8) | iy, u = *uip<<8, v = *vip<<8;",
       "w": " yop[j] = y>>8;  uop[j] = u>>8;  vop[j] = v>>8;",
     },
   },
 
   "yuv411p": {
     "i8": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip, v = *vip;",
+      "r": " int32_t y = *yip, u = *uip, v = *vip;",
       "w": " yop[j] = y;  uop[j/4] = u;  vop[j/4] = v;",
     },
     "i16": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip<<8, v = *vip<<8;",
+      "r": " int32_t iy = *yip, y = (iy<<8) | iy, u = *uip<<8, v = *vip<<8;",
       "w": " yop[j] = y>>8;  uop[j/4] = u>>8;  vop[j/4] = v>>8;",
     },
   },
 
   "yuv410p": {
     "i8": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip, v = *vip;",
+      "r": " int32_t y = *yip, u = *uip, v = *vip;",
       "w": " yop[j] = y;  uop[j/4] = u;  vop[j/4] = v;",
     },
     "i16": {
-      "r": " int32_t y = *yip*0x010101u, u = *uip<<8, v = *vip<<8;",
+      "r": " int32_t iy = *yip, y = (iy<<8) | iy, u = *uip<<8, v = *vip<<8;",
       "w": " yop[j] = y>>8;  uop[j/4] = u>>8;  vop[j/4] = v>>8;",
     },
   },
@@ -324,22 +327,22 @@ base = {
 
   "grey8": {
     "i8": {
-      "r": " int32_t iy = *inp++, y = iy * 0x010101u, u = 0x80, v = 0x80;",
+      "r": " int32_t y = *inp++, u = 0x80, v = 0x80;",
       "w": " *out++ = y; (void)u; (void)v;",
     },
     "i16": {
-      "r": " int32_t iy = *inp++, y = iy * 0x010101u, u = 0x8000, v = 0x8000;",
+      "r": " int32_t iy = *inp++, y = (iy<<8) | iy, u = 0x8000, v = 0x8000;",
       "w": " *out++ = y>>8; (void)u; (void)v;",
     },
   },
 
   "grey16": {
     "i8": {
-      "r": " int32_t iy = *inp++, y = (iy<<8) | (iy>>8), u = 0x80, v = 0x80;",
-      "w": " *out++ = y<<8; (void)u; (void)v;",
+      "r": " int32_t y = *inp++>>8, u = 0x80, v = 0x80;",
+      "w": " *out++ = (y<<8) | y; (void)u; (void)v;",
     },
     "i16": {
-      "r": " int32_t iy = *inp++, y = (iy<<8) | (iy>>8), u = 0x8000, v = 0x8000;",
+      "r": " int32_t y = *inp++, u = 0x8000, v = 0x8000;",
       "w": " *out++ = y; (void)u; (void)v;",
     },
   },
@@ -351,7 +354,7 @@ base = {
       "w": " *out++ = a;",
     },
     "i16": {
-      "r": " z_int a = *inp++<<8;",
+      "r": " z_int a = *inp++; a = (a<<8) | a;",
       "w": " *out++ = a>>8;",
     },
     "fp": {
@@ -362,7 +365,7 @@ base = {
   "a16": {
     "i8": {
       "r": " z_int a = *inp++>>8;",
-      "w": " *out++ = a<<8;",
+      "w": " *out++ = (a<<8) | a;",
     },
     "i16": {
       "r": " z_int a = *inp++;",
@@ -558,9 +561,9 @@ def gen_xfer_fn(fr_cmdl, to_cmdl):
   if( is_float(to_cmdl) and is_yuv(fr_cmdl) ):
     for ic in layout[fr_cmdl]: print "%s" % (base[ic][ityp]['r']),
     if( ityp == "i8" ):
-      print "\n float fy = y/16777215.f, r, g, b; YUV_TO_FLOAT(fy, u, v, r, g, b);",
+      print "\n float r, g, b; YUV::yuv.yuv_to_rgb_8(r, g, b, y, u, v);",
     elif( ityp == "i16" ):
-      print "\n float fy = y/16777215.f, r, g, b; YUV16_TO_RGB_FLOAT(fy, u, v, r, g, b);",
+      print "\n float r, g, b; YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v);",
     if( has_alpha(fr_cmdl) or has_alpha(to_cmdl) ):
       if( not has_alpha(fr_cmdl) ):
         print " z_float fa = 1;",
@@ -576,19 +579,14 @@ def gen_xfer_fn(fr_cmdl, to_cmdl):
   # xfer
   if( is_rgb(fr_cmdl) and is_yuv(to_cmdl) ):
     if( otyp == "i8" ):
-      print " int32_t y, u, v;  RGB_TO_YUV(y, u, v, r, g, b);"
+      print " int32_t y, u, v;  YUV::yuv.rgb_to_yuv_8(r, g, b, y, u, v);"
     elif( otyp == "i16" ):
-      print " int32_t y, u, v;  RGB_TO_YUV16(y, u, v, r, g, b);"
+      print " int32_t y, u, v;  YUV::yuv.rgb_to_yuv_16(r, g, b, y, u, v);"
   elif( is_yuv(fr_cmdl) and is_rgb(to_cmdl)):
     if( otyp == "i8" ):
-      print " int32_t r, g, b;  YUV_TO_RGB(y, u, v, r, g, b);"
+      print " int32_t r, g, b;  YUV::yuv.yuv_to_rgb_8(r, g, b, y, u, v);"
     elif( otyp == "i16" ):
-      print " int32_t r, g, b;  YUV_TO_RGB16(y, u, v, r, g, b);"
-  elif( is_yuv(fr_cmdl) and is_yuv(to_cmdl) ):
-    if( otyp == "i8" ):
-      print " y >>= 16;",
-    elif( otyp == "i16" ):
-      print " y >>= 8;",
+      print " int32_t r, g, b;  YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v);"
   # blend
   if( has_bgcolor(fr_cmdl,to_cmdl) ):
     print "%s" % (base["bbg"][otyp])

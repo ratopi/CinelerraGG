@@ -228,7 +228,7 @@ public:
 // allocated.
 // Get best colormodel to translate for hardware accelerated playback.
 // Called by VRender.
-	int get_best_colormodel(int driver);
+	int get_best_colormodel(int driver, int vstream=-1);
 // Get best colormodel for hardware accelerated recording.
 // Called by VideoDevice.
 	static int get_best_colormodel(Asset *asset, int driver);

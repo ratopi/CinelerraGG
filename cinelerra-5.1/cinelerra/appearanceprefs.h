@@ -47,6 +47,8 @@ public:
 	TimeFormatFeet *feet;
 	TimeFormatSeconds *seconds;
 	ViewThumbnails *thumbnails;
+	YuvColorSpace *yuv_color_space;
+	YuvColorRange *yuv_color_range;
 };
 
 
@@ -249,6 +251,50 @@ public:
 	HighlightInverseColor(PreferencesWindow *pwindow, int x, int y, const char *hex);
 	int handle_event();
 	PreferencesWindow *pwindow;
+};
+
+class YuvColorSpace : public BC_PopupMenu
+{
+	static const char *color_space[2];
+public:
+	YuvColorSpace(int x, int y, PreferencesWindow *pwindow);
+	~YuvColorSpace();
+
+	void create_objects();
+	int handle_event();
+
+	PreferencesWindow *pwindow;
+};
+
+class YuvColorSpaceItem : public BC_MenuItem
+{
+public:
+	YuvColorSpaceItem(YuvColorSpace *popup, const char *text, int id);
+	int handle_event();
+	YuvColorSpace *popup;
+	int id;
+};
+
+class YuvColorRange : public BC_PopupMenu
+{
+	static const char *color_range[2];
+public:
+	YuvColorRange(int x, int y, PreferencesWindow *pwindow);
+	~YuvColorRange();
+
+	void create_objects();
+	int handle_event();
+
+	PreferencesWindow *pwindow;
+};
+
+class YuvColorRangeItem : public BC_MenuItem
+{
+public:
+	YuvColorRangeItem(YuvColorRange *popup, const char *text, int id);
+	int handle_event();
+	YuvColorRange *popup;
+	int id;
 };
 
 #endif

@@ -73,8 +73,7 @@ public:
 
 
 	BrightnessEngine *engine;
-    int redo_buffers;
-	static YUV yuv;
+	int redo_buffers;
 
 	VFrame *input, *output;
 };

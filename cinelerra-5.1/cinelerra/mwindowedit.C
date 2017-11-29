@@ -631,19 +631,6 @@ int MWindow::cut_default_keyframe()
 }
 
 
-void MWindow::delete_inpoint()
-{
-	edl->local_session->unset_inpoint();
-	save_backup();
-}
-
-void MWindow::delete_outpoint()
-{
-	edl->local_session->unset_outpoint();
-	save_backup();
-}
-
-
 void MWindow::delete_track()
 {
 	if( edl->tracks->last )
@@ -1976,6 +1963,30 @@ void MWindow::set_outpoint(int is_mwindow)
 
 	if( is_mwindow ) {
 		cwindow->gui->lock_window("MWindow::set_outpoint 2");
+	}
+	cwindow->gui->timebar->update(1);
+	if( is_mwindow ) {
+		cwindow->gui->unlock_window();
+	}
+}
+
+void MWindow::unset_inoutpoint(int is_mwindow)
+{
+	undo->update_undo_before();
+	edl->unset_inoutpoint();
+	save_backup();
+	undo->update_undo_after(_("clear in/out"), LOAD_TIMEBAR);
+
+	if( !is_mwindow ) {
+		gui->lock_window("MWindow::unset_inoutpoint 1");
+	}
+	gui->update_timebar(1);
+	if( !is_mwindow ) {
+		gui->unlock_window();
+	}
+
+	if( is_mwindow ) {
+		cwindow->gui->lock_window("MWindow::unset_inoutpoint 2");
 	}
 	cwindow->gui->timebar->update(1);
 	if( is_mwindow ) {

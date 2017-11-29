@@ -255,7 +255,7 @@ void CriKeyConfig::set_target(int is_yuv, int color, float *target)
 	float b = ((color>> 0) & 0xff) / 255.0f;
 	if( is_yuv ) {
 		float y, u, v;
-		YUV::rgb_to_yuv_f(r,g,b, y,u,v);
+		YUV::yuv.rgb_to_yuv_f(r,g,b, y,u,v);
 		target[0] = y;
 		target[1] = u + 0.5f;
 		target[2] = v + 0.5f;
@@ -273,7 +273,7 @@ void CriKeyConfig::set_color(int is_yuv, float *target, int &color)
 	float b = target[2];
 	if( is_yuv ) {
 		float y = r, u = g-0.5f, v = b-0.5f;
-		YUV::yuv_to_rgb_f(y,u,v, r,g,b);
+		YUV::yuv.yuv_to_rgb_f(y,u,v, r,g,b);
 	}
 	int ir = r >= 1 ? 0xff : r < 0 ? 0 : (int)(r * 256);
 	int ig = g >= 1 ? 0xff : g < 0 ? 0 : (int)(g * 256);

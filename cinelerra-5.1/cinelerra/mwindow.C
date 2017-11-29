@@ -904,6 +904,7 @@ void MWindow::init_preferences()
 	BC_WindowBase::get_resources()->popupmenu_btnup = preferences->popupmenu_btnup;
 	BC_WindowBase::get_resources()->textbox_focus_policy = preferences->textbox_focus_policy;
 	BC_WindowBase::get_resources()->grab_input_focus = preferences->grab_input_focus;
+	YUV::yuv.yuv_set_colors(preferences->yuv_color_space, preferences->yuv_color_range);
 }
 
 void MWindow::clean_indexes()
@@ -2068,7 +2069,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 		edl->session->proxy_use_scaler = 0;
 		edl->session->proxy_auto_scale = 0;
 		edl->local_session->preview_start = 0;
-		edl->local_session->preview_end = edl->tracks->total_length();
+		edl->local_session->preview_end = 0;
 		edl->local_session->loop_playback = 0;
 		edl->local_session->set_selectionstart(0);
 		edl->local_session->set_selectionend(0);

@@ -211,6 +211,14 @@ int PreferencesThread::apply_settings()
 		(*this_aconfig != *aconfig) || (*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1, edl);
 
+	if( preferences->yuv_color_space != mwindow->preferences->yuv_color_space ||
+	    preferences->yuv_color_range != mwindow->preferences->yuv_color_range ) {
+		YUV::yuv.yuv_set_colors(
+			preferences->yuv_color_space,
+			preferences->yuv_color_range);
+		rerender = 1;
+	}
+
 	if( preferences->highlight_inverse != mwindow->preferences->highlight_inverse ) {
 		mwindow->gui->lock_window("PreferencesThread::apply_settings 0");
 		mwindow->gui->hide_cursor(0);

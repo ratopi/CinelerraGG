@@ -247,53 +247,42 @@ int VRender::get_use_vconsole(VEdit **playable_edit,
 }
 
 
-int VRender::get_colormodel(VEdit *playable_edit,
-	int use_vconsole, int use_brender)
+int VRender::get_colormodel(VEdit *playable_edit, int use_vconsole, int use_brender)
 {
+	EDL *edl = renderengine->get_edl();
 	int colormodel = renderengine->get_edl()->session->color_model;
-
-	if(!use_vconsole && !renderengine->command->single_frame())
-	{
+	VideoOutConfig *vconfig = renderengine->config->vconfig;
+// check for playback: no plugins, not single frame
+	if( !use_vconsole && !renderengine->command->single_frame() ) {
 // Get best colormodel supported by the file
-		int driver = renderengine->config->vconfig->driver;
-		File *file;
-		Asset *asset;
-
-		if(use_brender)
-		{
-			asset = renderengine->preferences->brender_asset;
-		}
-		else
-		{
-			int64_t source_position = 0;
-			asset = playable_edit->get_nested_asset(&source_position,
-				current_position,
+// colormodel yuv/rgb affects mpeg/jpeg color range,
+// dont mix them or loose color acccuracy
+		int64_t source_position = 0;
+		Asset *asset = use_brender ?
+			renderengine->preferences->brender_asset :
+			playable_edit->get_nested_asset(&source_position, current_position,
 				renderengine->command->get_direction());
-		}
-		if( asset )
-		{
-			file = renderengine->get_vcache()->check_out(asset,
-				renderengine->get_edl());
-
-			if(file)
-			{
-				colormodel = file->get_best_colormodel(driver);
-//printf("VRender::get_colormodel %d driver=%d colormodel=%d\n", __LINE__, driver, colormodel);
+		if( asset ) {
+			File *file = renderengine->get_vcache()->check_out(asset, edl);
+			if( file ) {
+// damn the color range, full speed ahead
+				if( vconfig->driver == PLAYBACK_X11 && vconfig->use_direct_x11 &&
+				    file->colormodel_supported(BC_BGR8888) == BC_BGR8888 )
+					colormodel = BC_BGR8888;
+				else {
+// file favorite colormodel may mismatch rgb/yuv
+					int vstream = playable_edit->channel;
+					int best_colormodel = file->get_best_colormodel(vconfig->driver, vstream);
+					if( BC_CModels::is_yuv(best_colormodel) == BC_CModels::is_yuv(colormodel) )
+						colormodel = best_colormodel;
+				}
 				renderengine->get_vcache()->check_in(asset);
 			}
-// ffmpeg files are side effected by color_model, affects colorspace,color_range
-//			if( asset->format == FILE_FFMPEG && !BC_CModels::is_yuv(colormodel) )
-//				colormodel = BC_BGR8888;
 		}
 	}
 
 	return colormodel;
 }
-
-
-
-
-
 
 
 void VRender::run()

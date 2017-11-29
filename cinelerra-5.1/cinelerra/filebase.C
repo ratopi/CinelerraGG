@@ -245,6 +245,11 @@ void FileBase::get_mode(char *mode, int rd, int wr)
 	}
 }
 
+int FileBase::get_best_colormodel(int driver, int vstream)
+{
+	return File::get_best_colormodel(asset, driver);
+}
+
 
 // ======================================= audio codecs
 

@@ -75,6 +75,8 @@ public:
 	virtual int check_header() { return 0; }  // Test file to see if it is of this type.
 	virtual int reset_parameters_derived() { return 0; }
 	virtual int read_header() { return 1; }   // WAV files for getting header
+	virtual int get_best_colormodel(int driver, int vstream);
+
 	virtual int open_file(int rd, int wr) { return 1; }
 	virtual int close_file();
 	virtual int close_file_derived() { return 0; }

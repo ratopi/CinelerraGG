@@ -124,6 +124,9 @@ public:
 	int dvd_yuv420p_interlace;
 // highlight inversion color
 	int highlight_inverse;
+// yuv color space/range
+ 	int yuv_color_space;
+	int yuv_color_range;
 
 // Default positions for channels
 	int channel_positions[MAXCHANNELS * MAXCHANNELS];

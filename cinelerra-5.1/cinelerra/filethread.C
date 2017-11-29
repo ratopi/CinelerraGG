@@ -197,7 +197,7 @@ void FileThread::run()
 				file->set_layer(local_layer, 1);
 				file->set_video_position(local_position, 1);
 		 		int supported_colormodel =
-					file->get_best_colormodel(PLAYBACK_ASYNCHRONOUS);
+					file->get_best_colormodel(PLAYBACK_ASYNCHRONOUS, local_layer);
 				if(debug) PRINT_TRACE
 
 

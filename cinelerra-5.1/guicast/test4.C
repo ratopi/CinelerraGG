@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "bcwindowbase.h"
 #include "bcwindow.h"
 #include "bcsignals.h"
 #include "bccolors.h"
@@ -81,7 +82,7 @@ const char *cmdl[] = {
  "yuv422p", "rgb888", "rgba8888", "rgb161616", "rgba16161616", "yuv888", "yuva8888", "yuv161616",
  "yuva16161616", "yuv411p", "uvy422", "yuv422", "argb8888", "abgr8888", "a8", "a16",
  "yuv101010", "vyu888", "uyva8888", "yuv444p", "yuv410p", "rgb_float", "rgba_float", "a_float",
- "rgb_floatp", "rgba_floatp", "yuv420pi",
+ "rgb_floatp", "rgba_floatp", "yuv420pi", "ayuv16161616", "grey8", "grey16",
 };
 
 void write_pgm(uint8_t *tp, int w, int h, const char *fmt, ...)
@@ -124,16 +125,17 @@ int main(int ac, char **av)
 	close(fd);
 	int w = ifrm.get_w(), h = ifrm.get_h();
 	TestWindow test_window(100, 100, w, h);
-	for( int fr_cmdl=1; fr_cmdl<=34; ++fr_cmdl ) {
+	for( int fr_cmdl=1; fr_cmdl<=37; ++fr_cmdl ) {
 		if( fr_cmdl == BC_TRANSPARENCY || fr_cmdl == BC_COMPRESSED ) continue;
 		if( fr_cmdl == BC_A8 || fr_cmdl == BC_A16 ) continue;
 		if( fr_cmdl == BC_A_FLOAT || fr_cmdl == 8 ) continue;
 		VFrame afrm(w, h, fr_cmdl, -1);
 		afrm.transfer_from(&ifrm, 0);
-		for( int to_cmdl=1; to_cmdl<=32; ++to_cmdl ) {
+		for( int to_cmdl=1; to_cmdl<=37; ++to_cmdl ) {
 			if( to_cmdl == BC_TRANSPARENCY || to_cmdl == BC_COMPRESSED ) continue;
 			if( to_cmdl == BC_A8 || to_cmdl == BC_A16 ) continue;
 			if( to_cmdl == BC_A_FLOAT || to_cmdl == 8 ) continue;
+			printf("xfer_%s_to_%s\n", cmdl[fr_cmdl],cmdl[to_cmdl]);
 			VFrame bfrm(w, h, to_cmdl, -1);
 			bfrm.transfer_from(&afrm, 0);
 			test_window.draw(&bfrm);

@@ -646,14 +646,9 @@ void EditPanel::set_outpoint()
 	mwindow->set_outpoint(1);
 }
 
-void EditPanel::clear_inpoint()
+void EditPanel::unset_inoutpoint()
 {
-	mwindow->delete_inpoint();
-}
-
-void EditPanel::clear_outpoint()
-{
-	mwindow->delete_outpoint();
+	mwindow->unset_inoutpoint(1);
 }
 
 
@@ -679,6 +674,11 @@ int EditInPoint::keypress_event()
 		panel->set_inpoint();
 		return 1;
 	}
+	if(ctrl_down() && get_keypress() == 't')
+	{
+		panel->unset_inoutpoint();
+		return 1;
+	}
 	return 0;
 }
 
@@ -702,6 +702,11 @@ int EditOutPoint::keypress_event()
 	if(get_keypress() == ']')
 	{
 		panel->set_outpoint();
+		return 1;
+	}
+	if(ctrl_down() && get_keypress() == 't')
+	{
+		panel->unset_inoutpoint();
 		return 1;
 	}
 	return 0;

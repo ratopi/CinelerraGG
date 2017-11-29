@@ -177,7 +177,7 @@ void GammaUnit::process_package(LoadPackage *package)
 				y /= 0xff;
 				u = (float)((u - 0x80) / 0xff);
 				v = (float)((v - 0x80) / 0xff);
-				YUV::yuv_to_rgb_f(r, g, b, y, u, v);
+				YUV::yuv.yuv_to_rgb_f(r, g, b, y, u, v);
 				HISTOGRAM_TAIL(3)
 				break;
 			case BC_YUVA8888:
@@ -188,7 +188,7 @@ void GammaUnit::process_package(LoadPackage *package)
 				y /= 0xff;
 				u = (float)((u - 0x80) / 0xff);
 				v = (float)((v - 0x80) / 0xff);
-				YUV::yuv_to_rgb_f(r, g, b, y, u, v);
+				YUV::yuv.yuv_to_rgb_f(r, g, b, y, u, v);
 				HISTOGRAM_TAIL(4)
 				break;
 		}
@@ -275,9 +275,9 @@ void GammaUnit::process_package(LoadPackage *package)
 				y /= 0xff;
 				u = (float)((u - 0x80) / 0xff);
 				v = (float)((v - 0x80) / 0xff);
-				YUV::yuv_to_rgb_f(r, g, b, y, u, v);
+				YUV::yuv.yuv_to_rgb_f(r, g, b, y, u, v);
 				GAMMA_MID
-				YUV::rgb_to_yuv_f(r, g, b, y, u, v);
+				YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v);
 				y *= 0xff;
 				u = u * 0xff + 0x80;
 				v = v * 0xff + 0x80;
@@ -294,9 +294,9 @@ void GammaUnit::process_package(LoadPackage *package)
 				y /= 0xff;
 				u = (float)((u - 0x80) / 0xff);
 				v = (float)((v - 0x80) / 0xff);
-				YUV::yuv_to_rgb_f(r, g, b, y, u, v);
+				YUV::yuv.yuv_to_rgb_f(r, g, b, y, u, v);
 				GAMMA_MID
-				YUV::rgb_to_yuv_f(r, g, b, y, u, v);
+				YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v);
 				y *= 0xff;
 				u = u * 0xff + 0x80;
 				v = v * 0xff + 0x80;
