@@ -9,6 +9,15 @@ For usage help, refer to the following:
 Cinfinity icons selected in Preferences (Creative Common
   By https://creativecommons.org/licenses/by/3.0/)
 .
+November 2017 New Features of note:
+  Mixer Viewer for multiple media/cameras was added.
+  Blade cut and hard edges are now available.
+  Additional opts video/audio files provided by Frederic.
+  Reset button added to chromkay, chromakeyhsv & gradient.
+  Factory preset for Rule of Thirds added for f_drawgrid.
+  Hotkeys for keyframe positioning and delete in/out.
+  Single button press to delete the entire mask.
+  Colorspace and Color range improvement with choices.
 October 2017 New Features of note:
   HV7 mods merged in to include X11 Direct playback for
    large format files and Presets for plugins with edit.
