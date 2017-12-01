@@ -39,7 +39,6 @@ EffectTV::EffectTV(int w, int h)
 	diff = new unsigned char[w * h];
 	diff2 = new unsigned char[w * h];
 	yuv_init();
-	yuv = new YUV;
 }
 
 EffectTV::~EffectTV()
@@ -47,7 +46,6 @@ EffectTV::~EffectTV()
 	delete [] background;
 	delete [] diff;
 	delete [] diff2;
-	delete yuv;
 }
 
 

@@ -284,7 +284,6 @@ public:
 	void process_package(LoadPackage *package);
 	GradientServer *server;
 	GradientMain *plugin;
-	YUV yuv;
 };
 
 class GradientServer : public LoadServer

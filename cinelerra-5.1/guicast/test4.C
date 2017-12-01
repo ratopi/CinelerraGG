@@ -111,6 +111,32 @@ void write_ppm(uint8_t *tp, int w, int h, const char *fmt, ...)
   }
 }
 
+int64_t tm = 0, tn = 0;
+
+static int diff_vframe(VFrame &afrm, VFrame &bfrm)
+{
+  int n = 0, m = 0;
+  int w = afrm.get_w(), h = afrm.get_h();
+  uint8_t **arows = afrm.get_rows();
+  uint8_t **brows = bfrm.get_rows();
+
+  for( int y=0; y<h; ++y ) {
+    uint8_t *ap = arows[y], *bp = brows[y];
+    for( int x=0; x<w; ++x ) {
+      for( int i=0; i<3; ++i ) {
+        int d = *ap++ - *bp++;
+        m += d;
+        if( d < 0 ) d = -d;
+        n += d;
+      }
+    }
+  }
+  int sz = h*w*3;
+  printf(" %d %d %f", m, n, (double)n/sz);
+  tm += m;  tn += n;
+  return n;
+}
+
 int main(int ac, char **av)
 {
 	BC_Signals signals;
@@ -135,17 +161,18 @@ int main(int ac, char **av)
 			if( to_cmdl == BC_TRANSPARENCY || to_cmdl == BC_COMPRESSED ) continue;
 			if( to_cmdl == BC_A8 || to_cmdl == BC_A16 ) continue;
 			if( to_cmdl == BC_A_FLOAT || to_cmdl == 8 ) continue;
-			printf("xfer_%s_to_%s\n", cmdl[fr_cmdl],cmdl[to_cmdl]);
+			printf("xfer_%s_to_%s ", cmdl[fr_cmdl],cmdl[to_cmdl]);
 			VFrame bfrm(w, h, to_cmdl, -1);
 			bfrm.transfer_from(&afrm, 0);
 			test_window.draw(&bfrm);
 			VFrame cfrm(w, h, BC_RGB888, -1);
 			cfrm.transfer_from(&bfrm, 0);
-			printf("xfer_%s_to_%s\n",cmdl[fr_cmdl],cmdl[to_cmdl]);
 			test_window.show_text(50,50, "xfer_%s_to_%s",cmdl[fr_cmdl],cmdl[to_cmdl]);
-//			write_ppm(cfrm.get_data(), w,h, "/tmp/test/xfer_%s_to_%s.pgm",
-//				cmdl[fr_cmdl],cmdl[to_cmdl]);
+			write_ppm(cfrm.get_data(), w,h, "/tmp/test/xfer_%s_to_%s.pgm",
+				cmdl[fr_cmdl],cmdl[to_cmdl]);
+			diff_vframe(ifrm, cfrm);
 //			usleep(100000);
+			printf("\n");
 		}
 	}
 	test_window.close_window();

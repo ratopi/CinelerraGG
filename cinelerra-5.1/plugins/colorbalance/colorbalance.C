@@ -19,6 +19,7 @@
  *
  */
 
+#include "bccolors.h"
 #include "filexml.h"
 #include "clip.h"
 #include "colorbalance.h"
@@ -259,7 +260,7 @@ printf("PROCESS_F %f\n", cyan_f); \
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
-				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8,
+				PROCESS(YUV::yuv.yuv_to_rgb_8, YUV::yuv.rgb_to_yuv_8,
 					r_lookup_8, g_lookup_8, b_lookup_8,
 					unsigned char, 0xff, 3, 0);
 				break;
@@ -269,7 +270,7 @@ printf("PROCESS_F %f\n", cyan_f); \
 				break;
 
 			case BC_YUV888:
-				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8,
+				PROCESS(YUV::yuv.yuv_to_rgb_8, YUV::yuv.rgb_to_yuv_8,
 					r_lookup_8, g_lookup_8, b_lookup_8,
 					unsigned char, 0xff, 3, 1);
 				break;
@@ -279,25 +280,25 @@ printf("PROCESS_F %f\n", cyan_f); \
 				break;
 
 			case BC_RGBA8888:
-				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8,
+				PROCESS(YUV::yuv.yuv_to_rgb_8, YUV::yuv.rgb_to_yuv_8,
 					r_lookup_8, g_lookup_8, b_lookup_8,
 					unsigned char, 0xff, 4, 0);
 				break;
 
 			case BC_YUVA8888:
-				PROCESS(yuv.yuv_to_rgb_8, yuv.rgb_to_yuv_8,
+				PROCESS(YUV::yuv.yuv_to_rgb_8, YUV::yuv.rgb_to_yuv_8,
 					r_lookup_8, g_lookup_8, b_lookup_8,
 					unsigned char, 0xff, 4, 1);
 				break;
 
 			case BC_YUV161616:
-				PROCESS(yuv.yuv_to_rgb_16, yuv.rgb_to_yuv_16,
+				PROCESS(YUV::yuv.yuv_to_rgb_16, YUV::yuv.rgb_to_yuv_16,
 					r_lookup_16, g_lookup_16, b_lookup_16,
 					u_int16_t, 0xffff, 3, 1);
 				break;
 
 			case BC_YUVA16161616:
-				PROCESS(yuv.yuv_to_rgb_16, yuv.rgb_to_yuv_16,
+				PROCESS(YUV::yuv.yuv_to_rgb_16, YUV::yuv.rgb_to_yuv_16,
 					r_lookup_16, g_lookup_16, b_lookup_16,
 					u_int16_t, 0xffff, 4, 1);
 				break;

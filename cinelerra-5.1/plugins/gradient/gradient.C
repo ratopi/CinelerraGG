@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "bccolors.h"
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -1327,14 +1328,14 @@ void GradientUnit::process_package(LoadPackage *package)
 		{
 			int in1, in2, in3, in4;
 			int out1, out2, out3, out4;
-			yuv.rgb_to_yuv_8(plugin->config.in_r,
+			YUV::yuv.rgb_to_yuv_8(plugin->config.in_r,
 				plugin->config.in_g,
 				plugin->config.in_b,
 				in1,
 				in2,
 				in3);
 			in4 = plugin->config.in_a;
-			yuv.rgb_to_yuv_8(plugin->config.out_r,
+			YUV::yuv.rgb_to_yuv_8(plugin->config.out_r,
 				plugin->config.out_g,
 				plugin->config.out_b,
 				out1,
@@ -1349,14 +1350,14 @@ void GradientUnit::process_package(LoadPackage *package)
 		{
 			int in1, in2, in3, in4;
 			int out1, out2, out3, out4;
-			yuv.rgb_to_yuv_8(plugin->config.in_r,
+			YUV::yuv.rgb_to_yuv_8(plugin->config.in_r,
 				plugin->config.in_g,
 				plugin->config.in_b,
 				in1,
 				in2,
 				in3);
 			in4 = plugin->config.in_a;
-			yuv.rgb_to_yuv_8(plugin->config.out_r,
+			YUV::yuv.rgb_to_yuv_8(plugin->config.out_r,
 				plugin->config.out_g,
 				plugin->config.out_b,
 				out1,

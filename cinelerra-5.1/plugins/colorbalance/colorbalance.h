@@ -71,7 +71,6 @@ public:
 	int last_frame;
 	Condition input_lock, output_lock;
 	VFrame *input, *output;
-	YUV yuv;
 	float cyan_f, magenta_f, yellow_f;
 };
 

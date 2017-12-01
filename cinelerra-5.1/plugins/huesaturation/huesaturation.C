@@ -19,6 +19,7 @@
  *
  */
 
+#include "bccolors.h"
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -128,7 +129,6 @@ public:
 	HueUnit(HueEffect *plugin, HueEngine *server);
 	void process_package(LoadPackage *package);
 	HueEffect *plugin;
-	YUV yuv;
 };
 
 class HueEffect : public PluginVClient
@@ -399,9 +399,9 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
 				u = (int)in_row[1]; \
 				v = (int)in_row[2]; \
 				if(max == 0xffff) \
-					yuv.yuv_to_rgb_16(r_i, g_i, b_i, y, u, v); \
+					YUV::yuv.yuv_to_rgb_16(r_i, g_i, b_i, y, u, v); \
 				else \
-					yuv.yuv_to_rgb_8(r_i, g_i, b_i, y, u, v); \
+					YUV::yuv.yuv_to_rgb_8(r_i, g_i, b_i, y, u, v); \
 				HSV::rgb_to_hsv((float)r_i / max, \
 					(float)g_i / max, \
 					(float)b_i / max, \

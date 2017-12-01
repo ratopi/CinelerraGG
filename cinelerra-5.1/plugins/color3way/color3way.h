@@ -80,7 +80,6 @@ public:
 	Color3WayUnit(Color3WayMain *plugin, Color3WayEngine *server);
 	void process_package(LoadPackage *package);
 	Color3WayMain *plugin;
-	YUV yuv;
 };
 
 class Color3WayEngine : public LoadServer

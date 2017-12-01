@@ -193,7 +193,7 @@ void ScopeUnit::draw_point(unsigned char **rows,
 	u_in,  \
 	v_in) \
 { \
-	yuv.yuv_to_rgb_f(r, g, b, (float)y_in / 255, (float)(u_in - 0x80) / 255, (float)(v_in - 0x80) / 255); \
+	YUV::yuv.yuv_to_rgb_f(r, g, b, (float)y_in / 255, (float)(u_in - 0x80) / 255, (float)(v_in - 0x80) / 255); \
 	HSV::rgb_to_hsv(r,  \
 		g,  \
 		b,  \
@@ -209,8 +209,6 @@ void ScopeUnit::process_package(LoadPackage *package)
 {
 	ScopePackage *pkg = (ScopePackage*)package;
 
-
-	YUV yuv;
 	float r, g, b;
 	float h, s, v;
 	int x, y;

@@ -241,8 +241,8 @@ public:
 
 	bc_always_inline void rgb_to_yuv_f(float r, float g, float b, float &y, float &u, float &v) {
 		y = r * r_to_y + g * g_to_y + b * b_to_y + yminf;
-		u = r * r_to_u + g * g_to_u + b * b_to_u + uvminf;
-		v = r * r_to_v + g * g_to_v + b * b_to_v + uvminf;
+		u = r * r_to_u + g * g_to_u + b * b_to_u;
+		v = r * r_to_v + g * g_to_v + b * b_to_v;
 	}
 	bc_always_inline void rgb_to_yuv_8(float r, float g, float b, int &y, int &u, int &v) {
 		float fy, fu, fv;  rgb_to_yuv_f(r, g, b, fy, fu, fv);
@@ -304,9 +304,8 @@ public:
 
 	bc_always_inline void yuv_to_rgb_f(float &r, float &g, float &b, float y, float u, float v) {
 		y = (y-yminf) / yrangef;
-		u = u-uvminf;  v = v-uvminf;
 		r = y + v_to_r * v;
-		g = u + u_to_g * u + v_to_g * v;
+		g = y + u_to_g * u + v_to_g * v;
 		b = y + u_to_b * u;
 	}
 

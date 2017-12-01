@@ -82,7 +82,6 @@ public:
 	VFrame **output, **input;
 	int last_frame;
 	Mutex input_lock, output_lock;
-    YUV yuv;
 };
 
 

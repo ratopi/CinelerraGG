@@ -275,7 +275,6 @@ public:
 	void process_package(LoadPackage *package);
 	TimeFrontServer *server;
 	TimeFrontMain *plugin;
-	YUV yuv;
 };
 
 class TimeFrontServer : public LoadServer
