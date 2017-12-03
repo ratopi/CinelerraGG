@@ -1,7 +1,7 @@
 Source: cin
 Section: video
 Priority: optional
-Standards-Version: 5.1.20171130
+Standards-Version: 5.1.20171202
 Maintainer: mailing list <cinelerra@lists.cinelerra-cv.org>
 Homepage: http://www.cinelerra-cv.org/
 Build-Depends: nasm, yasm, g++, gdb, build-essential, e2fsprogs,

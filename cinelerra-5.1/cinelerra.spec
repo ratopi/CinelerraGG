@@ -1,4 +1,4 @@
-%define ver 20171130
+%define ver 20171202
 %define cin cinelerra
 Summary: Multimedia Editing and construction
 
