@@ -23,6 +23,7 @@
 #define PLAYBACK3D_H
 
 #include "arraylist.h"
+#include "bccolors.h"
 #include "bcpixmap.inc"
 #include "bcsynchronous.h"
 #include "bcwindowbase.inc"
@@ -39,21 +40,43 @@
 
 
 
+// use static presets YUV in bccolors.h
+#define BC_GL_MATRIX(shader, mat) \
+	glUniformMatrix3fv(glGetUniformLocation(shader, #mat), 1, 0, YUV::mat)
+
+#define BC_GL_YMINF(shader,mat) \
+	glUniform1f(glGetUniformLocation(shader, "yminf"), YUV::mat[9])
+
+#define BC_GL_RGB_TO_YUV(shader) do { \
+	BC_GL_MATRIX(shader, rgb_to_yuv_matrix); \
+	BC_GL_YMINF(shader, rgb_to_yuv_matrix); \
+} while(0)
+
+#define BC_GL_YUV_TO_RGB(shader) do { \
+	BC_GL_MATRIX(shader, yuv_to_rgb_matrix); \
+	BC_GL_YMINF(shader, yuv_to_rgb_matrix); \
+} while(0)
+
+#define BC_GL_COLORS(shader) do { \
+	BC_GL_MATRIX(shader, yuv_to_rgb_matrix); \
+	BC_GL_MATRIX(shader, rgb_to_yuv_matrix); \
+	BC_GL_YMINF(shader, rgb_to_yuv_matrix); \
+} while(0)
+
+
+#define bc_gl_yuv_to_rgb "uniform mat3 yuv_to_rgb_matrix;\n"
+#define bc_gl_rgb_to_yuv "uniform mat3 rgb_to_yuv_matrix;\n"
+#define bc_gl_yminf      "uniform float yminf;\n"
+#define bc_gl_colors bc_gl_yuv_to_rgb bc_gl_rgb_to_yuv bc_gl_yminf
 
 // Macros for useful fragment shaders
 #define YUV_TO_RGB_FRAG(PIXEL) \
-	PIXEL ".gb -= vec2(0.5, 0.5);\n" \
- 	PIXEL ".rgb = mat3(\n" \
- 	"	 1, 	  1,		1, \n" \
- 	"	 0, 	  -0.34414, 1.77200, \n" \
- 	"	 1.40200, -0.71414, 0) * " PIXEL ".rgb;\n"
+	PIXEL ".rgb -= vec3(yminf, 0.5, 0.5);\n" \
+	PIXEL ".rgb = yuv_to_rgb_matrix * " PIXEL ".rgb;\n"
 
 #define RGB_TO_YUV_FRAG(PIXEL) \
- 	PIXEL ".rgb = mat3(\n" \
- 	"	 0.29900, -0.16874, 0.50000, \n" \
- 	"	 0.58700, -0.33126, -0.41869, \n" \
- 	"	 0.11400, 0.50000,  -0.08131) * " PIXEL ".rgb;\n" \
-	PIXEL ".gb += vec2(0.5, 0.5);\n"
+	PIXEL ".rgb = rgb_to_yuv_matrix * " PIXEL ".rgb;\n" \
+	PIXEL ".rgb += vec3(yminf, 0.5, 0.5);\n"
 
 #define RGB_TO_HSV_FRAG(PIXEL) \
 	"{\n" \
@@ -162,8 +185,6 @@
 	"" PIXEL ".g = g;\n" \
 	"" PIXEL ".b = b;\n" \
 	"}\n"
-
-
 
 class Playback3DCommand : public BC_SynchronousCommand
 {

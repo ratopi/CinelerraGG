@@ -19,11 +19,13 @@
  *
  */
 
+#include "brightness.h"
+#include "bccolors.h"
+#include "bchash.h"
 #include "clip.h"
 #include "filexml.h"
-#include "brightness.h"
-#include "bchash.h"
 #include "language.h"
+#include "playback3d.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -182,16 +184,11 @@ int BrightnessMain::handle_opengl()
 		"uniform float brightness;\n"
 		"uniform float contrast;\n"
 		"uniform float offset;\n"
+		"uniform mat3 yuv_to_rgb_matrix;\n"
+		"uniform mat3 rgb_to_yuv_matrix;\n"
+
 		"void main()\n"
 		"{\n"
- 		"	const mat3 yuv_to_rgb_matrix = mat3(\n"
- 		"		1,       1,        1, \n"
- 		"		0,       -0.34414, 1.77200, \n"
- 		"		1.40200, -0.71414, 0);\n"
- 		"	const mat3 rgb_to_yuv_matrix = mat3(\n"
- 		"		0.29900, -0.16874, 0.50000, \n"
- 		"		0.58700, -0.33126, -0.41869, \n"
- 		"		0.11400, 0.50000,  -0.08131);\n"
 		"	vec4 rgba = texture2D(tex, gl_TexCoord[0].st);\n"
 		"	rgba.rgb = rgb_to_yuv_matrix * rgba.rgb;\n"
 		"	rgba.r += brightness;\n"
@@ -202,36 +199,13 @@ int BrightnessMain::handle_opengl()
 
 	get_output()->to_texture();
 	get_output()->enable_opengl();
+	int need_matrix = 0;
+	const char *brightness_frag = BC_CModels::is_yuv(get_output()->get_color_model()) ?
+		(config.luma ? (need_matrix = 0, brightness_yuvluma_frag) : brightness_yuv_frag) :
+		(config.luma ? (need_matrix = 1, brightness_rgbluma_frag) : brightness_rgb_frag) ;
 
-	unsigned int shader_id = 0;
-	switch(get_output()->get_color_model())
-	{
-		case BC_YUV888:
-		case BC_YUVA8888:
-			if(config.luma)
-				shader_id = VFrame::make_shader(0,
-					brightness_yuvluma_frag,
-					0);
-			else
-				shader_id = VFrame::make_shader(0,
-					brightness_yuv_frag,
-					0);
-			break;
-		default:
-			if(config.luma)
-				shader_id = VFrame::make_shader(0,
-					brightness_rgbluma_frag,
-					0);
-			else
-				shader_id = VFrame::make_shader(0,
-					brightness_rgb_frag,
-					0);
-			break;
-	}
-
-
-	if(shader_id > 0)
-	{
+	unsigned int shader_id = VFrame::make_shader(0, brightness_frag, 0);
+	if( shader_id > 0 ) {
 		glUseProgram(shader_id);
 		glUniform1i(glGetUniformLocation(shader_id, "tex"), 0);
 		glUniform1f(glGetUniformLocation(shader_id, "brightness"), config.brightness / 100);
@@ -241,6 +215,10 @@ int BrightnessMain::handle_opengl()
 		glUniform1f(glGetUniformLocation(shader_id, "contrast"), contrast);
 		float offset = 0.5 - contrast / 2;
 		glUniform1f(glGetUniformLocation(shader_id, "offset"), offset);
+		if( need_matrix ) {
+			BC_GL_MATRIX(shader_id, yuv_to_rgb_matrix);
+			BC_GL_MATRIX(shader_id, rgb_to_yuv_matrix);
+		}
 	}
 
 	get_output()->init_screen();

@@ -327,19 +327,19 @@ int InterpolatePixelsMain::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
-	const char *shader_stack[] = { 0, 0, 0 };
-	int current_shader = 0;
-	INTERPOLATE_COMPILE(shader_stack, current_shader)
-	unsigned int frag = VFrame::make_shader(0,
-					shader_stack[0],
-					0);
-	if(frag > 0)
-	{
-		glUseProgram(frag);
-		glUniform1i(glGetUniformLocation(frag, "tex"), 0);
-		INTERPOLATE_UNIFORMS(frag)
-	}
+        const char *shader_stack[16];
+        memset(shader_stack,0, sizeof(shader_stack));
+        int current_shader = 0;
 
+	INTERPOLATE_COMPILE(shader_stack, current_shader);
+
+	shader_stack[current_shader] = 0;
+	unsigned int shader = VFrame::make_shader(shader_stack);
+	if( shader > 0 ) {
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+		INTERPOLATE_UNIFORMS(shader);
+	}
 
 	get_output()->init_screen();
 	get_output()->bind_texture(0);

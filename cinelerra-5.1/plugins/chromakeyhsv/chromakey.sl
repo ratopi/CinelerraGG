@@ -41,10 +41,10 @@ void main()
 
 /* Hue wrap */
 	if(color2.r <= hue_key - tolerance_in * 180.0)
-		color2.r += 360;
+		color2.r += 360.0;
 	else
 	if(color2.r >= hue_key + tolerance_in * 180.0)
-		color2.r -= 360;
+		color2.r -= 360.0;
 
 /* Hue is completely out of range */
 	if (tolerance == 0.0)

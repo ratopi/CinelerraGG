@@ -108,25 +108,20 @@ int DissolveMain::handle_opengl()
 	src->bind_texture(0);
 	dst->bind_texture(1);
 
-	const char *shader_stack[] = { 0, 0, 0 };
-	int current_shader = 0;
-	shader_stack[current_shader++] = blend_dissolve;
-
-	unsigned int shader_id = VFrame::make_shader(0,
-		shader_stack[0], shader_stack[1], shader_stack[2], 0);
-
-	glUseProgram(shader_id);
-	glUniform1f(glGetUniformLocation(shader_id, "fade"), fade);
-	glUniform1i(glGetUniformLocation(shader_id, "src_tex"), 0);
-	glUniform1i(glGetUniformLocation(shader_id, "dst_tex"), 1);
-	if(BC_CModels::is_yuv(dst->get_color_model()))
-		glUniform3f(glGetUniformLocation(shader_id, "chroma_offset"), 0.0, 0.5, 0.5);
-	else
-		glUniform3f(glGetUniformLocation(shader_id, "chroma_offset"), 0.0, 0.0, 0.0);
-	glUniform2f(glGetUniformLocation(shader_id, "dst_tex_dimensions"),
-		(float)dst->get_texture_w(),
-		(float)dst->get_texture_h());
-
+	unsigned int shader = VFrame::make_shader(0, blend_dissolve, 0);
+	if( shader > 0 ) {
+		glUseProgram(shader);
+		glUniform1f(glGetUniformLocation(shader, "fade"), fade);
+		glUniform1i(glGetUniformLocation(shader, "src_tex"), 0);
+		glUniform1i(glGetUniformLocation(shader, "dst_tex"), 1);
+		if(BC_CModels::is_yuv(dst->get_color_model()))
+			glUniform3f(glGetUniformLocation(shader, "chroma_offset"), 0.0, 0.5, 0.5);
+		else
+			glUniform3f(glGetUniformLocation(shader, "chroma_offset"), 0.0, 0.0, 0.0);
+		glUniform2f(glGetUniformLocation(shader, "dst_tex_dimensions"),
+			(float)dst->get_texture_w(),
+			(float)dst->get_texture_h());
+	}
 	glDisable(GL_BLEND);
 	src->draw_texture();
 	glUseProgram(0);

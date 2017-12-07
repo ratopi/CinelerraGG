@@ -27,10 +27,6 @@
 #include "language.h"
 #include "playback3d.h"
 
-#include "aggregated.h"
-#include "../interpolate/aggregated.h"
-#include "../gamma/aggregated.h"
-
 #include <stdio.h>
 #include <string.h>
 
@@ -183,12 +179,13 @@ Color3WayUnit::Color3WayUnit(Color3WayMain *plugin,
 	r = r + TOTAL_TRANSFER(r, r_factor); \
 	g = g + TOTAL_TRANSFER(g, g_factor); \
 	b = b + TOTAL_TRANSFER(b, b_factor); \
+	r = CLAMP(r,0,1); g = CLAMP(g,0,1); b = CLAMP(b,0,1); \
 /* Apply saturation/value */ \
 	float h, s, v; \
 	HSV::rgb_to_hsv(r, g, b, h, s, v); \
 	v += TOTAL_TRANSFER(v, v_factor); \
 	s += TOTAL_TRANSFER(s, s_factor); \
-	s = MAX(s, 0); \
+	s = CLAMP(s,0,1); v = CLAMP(v,0,1); \
 	HSV::hsv_to_rgb(r, g, b, h, s, v);
 
 
@@ -196,52 +193,35 @@ Color3WayUnit::Color3WayUnit(Color3WayMain *plugin,
 { \
 	type *in = (type*)plugin->get_input()->get_rows()[i]; \
 	type *out = (type*)plugin->get_input()->get_rows()[i]; \
-	for(int j = 0; j < w; j++) \
-	{ \
+	for(int j = 0; j < w; j++) { \
 /* Convert to RGB float */ \
-	 	float r; \
-	 	float g; \
-	 	float b; \
-		if(is_yuv) \
-		{ \
-			YUV::yuv.yuv_to_rgb_f(r, g, b, \
-				(float)in[0] / max, \
-				(float)in[1] / max - 0.5, \
-				(float)in[2] / max - 0.5); \
-			in += 3; \
+		float r, g, b; \
+		if( !is_yuv ) { \
+			r = (float)in[0] / max; \
+			g = (float)in[1] / max; \
+			b = (float)in[2] / max; \
 		} \
 		else \
-		{ \
-		 	r = (float)*in++ / max; \
-		 	g = (float)*in++ / max; \
-		 	b = (float)*in++ / max; \
-		} \
+			YUV::yuv.yuv_to_rgb_f(r, g, b, in[0], in[1], in[2]); \
  \
 		PROCESS_PIXEL(r, g, b) \
  \
+		if( !is_yuv ) { \
 /* Convert to project colormodel */ \
-		if(is_yuv) \
-		{ \
-			float y, u, v; \
-			YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v); \
-			r = y; \
-			g = u + 0.5; \
-			b = v + 0.5; \
+			if(max == 0xff) { \
+				CLAMP(r, 0, 1); \
+				CLAMP(g, 0, 1); \
+				CLAMP(b, 0, 1); \
+			} \
+			out[0] = (type)(r * max); \
+			out[1] = (type)(g * max); \
+			out[2] = (type)(b * max); \
 		} \
-		if(max == 0xff) \
-		{ \
-			CLAMP(r, 0, 1); \
-			CLAMP(g, 0, 1); \
-			CLAMP(b, 0, 1); \
-		} \
-		*out++ = (type)(r * max); \
-		*out++ = (type)(g * max); \
-		*out++ = (type)(b * max); \
-		if(components == 4) \
-		{ \
-			in++; \
-			out++; \
-		} \
+		else \
+			YUV::yuv.rgb_to_yuv_f(r, g, b, out[0], out[1], out[2]); \
+ \
+		in  += components; \
+		out += components; \
 	} \
 }
 
@@ -493,10 +473,7 @@ int Color3WayMain::process_buffer(VFrame *frame,
 	get_aggregation(&aggregate_interpolate,
 		&aggregate_gamma);
 
-
-
 	engine->process_packages();
-
 
 	return 0;
 }
@@ -619,69 +596,5 @@ void Color3WayMain::get_aggregation(int *aggregate_interpolate,
 		*aggregate_gamma = 1;
 	}
 }
-
-int Color3WayMain::handle_opengl()
-{
-#ifdef HAVE_GL
-
-	get_output()->to_texture();
-	get_output()->enable_opengl();
-
-	unsigned int shader = 0;
-	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-	int current_shader = 0;
-	int aggregate_interpolate = 0;
-	int aggregate_gamma = 0;
-
-	get_aggregation(&aggregate_interpolate,
-		&aggregate_gamma);
-
-printf("Color3WayMain::handle_opengl %d %d\n", aggregate_interpolate, aggregate_gamma);
-	if(aggregate_interpolate)
-		INTERPOLATE_COMPILE(shader_stack, current_shader)
-
-	if(aggregate_gamma)
-		GAMMA_COMPILE(shader_stack, current_shader, aggregate_interpolate)
-
-	COLORBALANCE_COMPILE(shader_stack,
-		current_shader,
-		aggregate_gamma || aggregate_interpolate)
-
-	shader = VFrame::make_shader(0,
-		shader_stack[0],
-		shader_stack[1],
-		shader_stack[2],
-		shader_stack[3],
-		shader_stack[4],
-		shader_stack[5],
-		shader_stack[6],
-		shader_stack[7],
-		0);
-
-	if(shader > 0)
-	{
-		glUseProgram(shader);
-		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-
-		if(aggregate_interpolate) INTERPOLATE_UNIFORMS(shader);
-		if(aggregate_gamma) GAMMA_UNIFORMS(shader);
-
-		COLORBALANCE_UNIFORMS(shader);
-
-	}
-
-	get_output()->init_screen();
-	get_output()->bind_texture(0);
-	get_output()->draw_texture();
-	glUseProgram(0);
-	get_output()->set_opengl_state(VFrame::SCREEN);
-#endif
-	return 0;
-}
-
-
-
-
-
 
 

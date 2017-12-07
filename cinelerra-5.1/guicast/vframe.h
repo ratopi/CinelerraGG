@@ -130,6 +130,7 @@ public:
 
 // direct copy with no alpha
 	int copy_from(VFrame *frame);
+	int copy_vframe(VFrame *src);
 // BC_CModels::transfer
 	int transfer_from(VFrame *frame, int bg_color, int in_x, int in_y, int in_w, int in_h);
 	int transfer_from(VFrame *frame, int bg_color=0) {
@@ -296,11 +297,12 @@ public:
 // Adds the program with put_shader.
 // Returns the program handle.
 // Requires a null terminated argument list of shaders to link together.
+// if fragments is not NULL, it is a a zero terminated list of frags
+// if fragments is NULL, then a zero terminated list of va_args frags
 // At least one shader argument must have a main() function.  make_shader
 // replaces all the main() functions with unique functions and calls them in
 // sequence, so multiple independant shaders can be linked.
-// x is a placeholder for va_arg and should be 0.
-	static unsigned int make_shader(int x, ...);
+	static unsigned int make_shader(const char **fragments, ...);
 	static void dump_shader(int shader_id);
 
 // Because OpenGL is faster if multiple effects are combined, we need

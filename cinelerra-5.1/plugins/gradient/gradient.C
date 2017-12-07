@@ -895,132 +895,125 @@ int GradientMain::handle_opengl()
 		"}\n";
 
 
-	const char *shader_stack[5] = { 0, 0, 0, 0, 0 };
-	shader_stack[0] = head_frag;
+	const char *shader_stack[16];
+	memset(shader_stack,0, sizeof(shader_stack));
+	int current_shader = 0;
 
-	switch(config.shape)
-	{
-		case GradientConfig::LINEAR:
-			shader_stack[1] = linear_shape;
-			break;
+	shader_stack[current_shader++] = head_frag;
 
-		default:
-			shader_stack[1] = radial_shape;
-			break;
+	const char *shape_frag = 0;
+	switch( config.shape ) {
+	case GradientConfig::LINEAR:
+		shape_frag = linear_shape;
+		break;
+	default:
+		shape_frag = radial_shape;
+		break;
 	}
+	if( shape_frag )
+		shader_stack[current_shader++] = shape_frag;
 
-	switch(config.rate)
-	{
-		case GradientConfig::LINEAR:
-			shader_stack[2] = linear_rate;
-			break;
-		case GradientConfig::LOG:
-			shader_stack[2] = log_rate;
-			break;
-		case GradientConfig::SQUARE:
-			shader_stack[2] = square_rate;
-			break;
+	const char *rate_frag = 0;
+	switch(config.rate) {
+	case GradientConfig::LINEAR:
+		rate_frag = linear_rate;
+		break;
+	case GradientConfig::LOG:
+		rate_frag = log_rate;
+		break;
+	case GradientConfig::SQUARE:
+		rate_frag = square_rate;
+		break;
 	}
+	if( rate_frag )
+		shader_stack[current_shader++] = rate_frag;
 
-	shader_stack[3] = tail_frag;
+	shader_stack[current_shader++] = tail_frag;
+
 // Force frame to create texture without copying to it if full alpha.
-	if(config.in_a >= 0xff &&
-		config.out_a >= 0xff)
+	 if( config.in_a >= 0xff && config.out_a >= 0xff )
 		get_output()->set_opengl_state(VFrame::TEXTURE);
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
 	get_output()->bind_texture(0);
 
-	unsigned int frag = VFrame::make_shader(0,
-		shader_stack[0],
-		shader_stack[1],
-		shader_stack[2],
-		shader_stack[3],
-		0);
-
-	if(frag)
-	{
-		glUseProgram(frag);
+	shader_stack[current_shader] = 0;
+	unsigned int shader = VFrame::make_shader(shader_stack);
+	if( shader > 0 ) {
+		glUseProgram(shader);
 		float w = get_output()->get_w();
 		float h = get_output()->get_h();
 		float texture_w = get_output()->get_texture_w();
 		float texture_h = get_output()->get_texture_h();
-		glUniform1i(glGetUniformLocation(frag, "tex"), 0);
-		glUniform1f(glGetUniformLocation(frag, "half_w"), w / 2 / texture_w);
-		glUniform1f(glGetUniformLocation(frag, "half_h"), h / 2 / texture_h);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+		glUniform1f(glGetUniformLocation(shader, "half_w"), w / 2 / texture_w);
+		glUniform1f(glGetUniformLocation(shader, "half_h"), h / 2 / texture_h);
 		if(config.shape == GradientConfig::LINEAR)
 		{
-			glUniform1f(glGetUniformLocation(frag, "center_x"),
+			glUniform1f(glGetUniformLocation(shader, "center_x"),
 				w / 2 / texture_w);
-			glUniform1f(glGetUniformLocation(frag, "center_y"),
+			glUniform1f(glGetUniformLocation(shader, "center_y"),
 				h / 2 / texture_h);
 		}
 		else
 		{
-			glUniform1f(glGetUniformLocation(frag, "center_x"),
+			glUniform1f(glGetUniformLocation(shader, "center_x"),
 				(float)config.center_x * w / 100 / texture_w);
-			glUniform1f(glGetUniformLocation(frag, "center_y"),
+			glUniform1f(glGetUniformLocation(shader, "center_y"),
 				(float)config.center_y * h / 100 / texture_h);
 		}
 		float gradient_size = hypotf(w / texture_w, h / texture_h);
-		glUniform1f(glGetUniformLocation(frag, "half_gradient_size"),
+		glUniform1f(glGetUniformLocation(shader, "half_gradient_size"),
 			gradient_size / 2);
-		glUniform1f(glGetUniformLocation(frag, "sin_angle"),
+		glUniform1f(glGetUniformLocation(shader, "sin_angle"),
 			sin(config.angle * (M_PI / 180)));
-		glUniform1f(glGetUniformLocation(frag, "cos_angle"),
+		glUniform1f(glGetUniformLocation(shader, "cos_angle"),
 			cos(config.angle * (M_PI / 180)));
 		float in_radius = (float)config.in_radius / 100 * gradient_size;
-		glUniform1f(glGetUniformLocation(frag, "in_radius"), in_radius);
+		glUniform1f(glGetUniformLocation(shader, "in_radius"), in_radius);
 		float out_radius = (float)config.out_radius / 100 * gradient_size;
-		glUniform1f(glGetUniformLocation(frag, "out_radius"), out_radius);
-		glUniform1f(glGetUniformLocation(frag, "radius_diff"),
+		glUniform1f(glGetUniformLocation(shader, "out_radius"), out_radius);
+		glUniform1f(glGetUniformLocation(shader, "radius_diff"),
 			out_radius - in_radius);
 
-		switch(get_output()->get_color_model())
-		{
-			case BC_YUV888:
-			case BC_YUVA8888:
-			{
-				float in1, in2, in3, in4;
-				float out1, out2, out3, out4;
-				YUV::yuv.rgb_to_yuv_f((float)config.in_r / 0xff,
-					(float)config.in_g / 0xff,
-					(float)config.in_b / 0xff,
-					in1,
-					in2,
-					in3);
+		switch(get_output()->get_color_model()) {
+		case BC_YUV888:
+		case BC_YUVA8888: {
+			float in1, in2, in3, in4;
+			float out1, out2, out3, out4;
+			YUV::yuv.rgb_to_yuv_f(
+				(float)config.in_r / 0xff,
+				(float)config.in_g / 0xff,
+				(float)config.in_b / 0xff,
+				in1, in2, in3);
 				in4 = (float)config.in_a / 0xff;
-				YUV::yuv.rgb_to_yuv_f((float)config.out_r / 0xff,
-					(float)config.out_g / 0xff,
-					(float)config.out_b / 0xff,
-					out1,
-					out2,
-					out3);
-				in2 += 0.5;
-				in3 += 0.5;
-				out2 += 0.5;
-				out3 += 0.5;
-				out4 = (float)config.out_a / 0xff;
-				glUniform4f(glGetUniformLocation(frag, "out_color"),
-					out1, out2, out3, out4);
-				glUniform4f(glGetUniformLocation(frag, "in_color"),
-					in1, in2, in3, in4);
-				break;
-			}
+			YUV::yuv.rgb_to_yuv_f(
+				(float)config.out_r / 0xff,
+				(float)config.out_g / 0xff,
+				(float)config.out_b / 0xff,
+				out1, out2, out3);
+			in2 += 0.5;   in3 += 0.5;
+			out2 += 0.5;  out3 += 0.5;
+			out4 = (float)config.out_a / 0xff;
+			glUniform4f(glGetUniformLocation(shader, "out_color"),
+				out1, out2, out3, out4);
+			glUniform4f(glGetUniformLocation(shader, "in_color"),
+				in1, in2, in3, in4);
+			break; }
 
-			default:
-				glUniform4f(glGetUniformLocation(frag, "out_color"),
-					(float)config.out_r / 0xff,
-					(float)config.out_g / 0xff,
-					(float)config.out_b / 0xff,
-					(float)config.out_a / 0xff);
-				glUniform4f(glGetUniformLocation(frag, "in_color"),
-					(float)config.in_r / 0xff,
-					(float)config.in_g / 0xff,
-					(float)config.in_b / 0xff,
-					(float)config.in_a / 0xff);
-				break;
+		default:
+			glUniform4f(glGetUniformLocation(shader, "out_color"),
+				(float)config.out_r / 0xff,
+				(float)config.out_g / 0xff,
+				(float)config.out_b / 0xff,
+				(float)config.out_a / 0xff);
+			glUniform4f(glGetUniformLocation(shader, "in_color"),
+				(float)config.in_r / 0xff,
+				(float)config.in_g / 0xff,
+				(float)config.in_b / 0xff,
+				(float)config.in_a / 0xff);
+			break;
 		}
 	}
 
@@ -1033,22 +1026,10 @@ int GradientMain::handle_opengl()
 }
 
 
-
-
-
-
-
-
-
-
-
 GradientPackage::GradientPackage()
  : LoadPackage()
 {
 }
-
-
-
 
 GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
  : LoadClient(server)
@@ -1056,8 +1037,6 @@ GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
 	this->plugin = plugin;
 	this->server = server;
 }
-
-
 
 
 static float calculate_opacity(float mag,

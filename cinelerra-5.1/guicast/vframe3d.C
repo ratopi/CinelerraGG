@@ -336,127 +336,83 @@ static int print_error(char *source, unsigned int object, int is_program)
 
 
 
+// call as:
+//    make_shader(0, frag1, .., fragn, 0);
+// or make_shader(fragments);
 
-
-unsigned int VFrame::make_shader(int x, ...)
+unsigned int VFrame::make_shader(const char **fragments, ...)
 {
 	unsigned int result = 0;
 #ifdef HAVE_GL
 // Construct single source file out of arguments
-	char *complete_program = 0;
-	int complete_size = 0;
-	int current_shader = 0;
+	char *program = 0;
+	int nb_mains = 0;
 
-	va_list list;
-	va_start(list, x);
-
-	while(1)
-	{
-		char *text = va_arg(list, char*);
-		if(!text) break;
-
-// Replace one occurrance in each source of main() with a unique id.
-		char main_replacement[BCTEXTLEN];
-		sprintf(main_replacement, "main%03d()", current_shader);
-//printf("VFrame::make_shader %s %s\n", text, main_replacement);
-		char *source_replacement = new char[strlen(text) + strlen(main_replacement) + 1];
-		char *ptr = strstr(text, "main()");
-
-		if(ptr)
-		{
-			memcpy(source_replacement, text, ptr - text);
-			source_replacement[ptr - text] = 0;
-			strcat(source_replacement, main_replacement);
-			ptr += strlen("main()");
-			strcat(source_replacement, ptr);
-			current_shader++;
-		}
-		else
-		{
-			memcpy(source_replacement, text, strlen(text));
-			source_replacement[strlen(text)] = 0;
-		}
-
-		if(!complete_program)
-		{
-			complete_size = strlen(source_replacement) + 1;
-			complete_program = (char*)malloc(complete_size);
-			strcpy(complete_program, source_replacement);
-		}
-		else
-		{
-			complete_size += strlen(source_replacement);
-			complete_program = (char*)realloc(complete_program, complete_size);
-			strcat(complete_program, source_replacement);
-		}
-
-		delete [] source_replacement;
+	int nb_frags = 1;
+	if( !fragments ) {
+		va_list list;  va_start(list, fragments);
+		while( va_arg(list, char*) != 0 ) ++nb_frags;
+		va_end(list);
 	}
-	va_end(list);
-
-// Add main() function which calls all the unique main replacements in order
-	char main_function[BCTEXTLEN];
-	sprintf(main_function,
-		"\n"
-		"void main()\n"
-		"{\n");
-
-	for(int i = 0; i < current_shader; i++)
-	{
-		char main_replacement[BCTEXTLEN];
-		sprintf(main_replacement, "\tmain%03d();\n", i);
-		strcat(main_function, main_replacement);
+	const char *frags[nb_frags], *text = 0;
+	if( !fragments ) {
+		va_list list;  va_start(list, fragments);
+		for( int i=0; i<nb_frags; ++i ) frags[i] = va_arg(list, char*);
+		va_end(list);
+		fragments = frags;
 	}
 
-	strcat(main_function, "}\n");
-	if(!complete_program)
-	{
-		complete_size = strlen(main_function) + 1;
-		complete_program = (char*)malloc(complete_size);
-		strcpy(complete_program, main_function);
+	while( (text = *fragments++) ) {
+		char src[strlen(text) + BCSTRLEN + 1];
+		const char *tp = strstr(text, "main()");
+		if( tp ) {
+// Replace main() with a mainxxx()
+			char mainxxx[BCSTRLEN], *sp = src;
+			sprintf(mainxxx, "main%03d()", nb_mains++);
+			int n = tp - text;
+			memcpy(sp, text, n);  sp += n;
+			n = strlen(mainxxx);
+			memcpy(sp, mainxxx, n);  sp += n;
+			tp += strlen("main()");
+			strcpy(sp, tp);
+			text = src;
+		}
+
+		char *new_program = !program ? cstrdup(text) :
+			cstrcat(2, program, text);
+		delete [] program;  program = new_program;
 	}
-	else
-	{
-		complete_size += strlen(main_function);
-		complete_program = (char*)realloc(complete_program, complete_size);
-		strcat(complete_program, main_function);
-	}
 
-
-
-
+// Add main() which calls mainxxx() in order
+	char main_program[BCTEXTLEN], *cp = main_program;
+	cp += sprintf(cp, "\nvoid main() {\n");
+	for( int i=0; i < nb_mains; ++i )
+		cp += sprintf(cp, "\tmain%03d();\n", i);
+	cp += sprintf(cp, "}\n");
+	cp = !program ? cstrdup(main_program) :
+		cstrcat(2, program, main_program);
+	delete [] program;  program = cp;
 
 	int got_it = 0;
-	result = BC_WindowBase::get_synchronous()->get_shader(complete_program,
-		&got_it);
-
-	if(!got_it)
-	{
+	result = BC_WindowBase::get_synchronous()->get_shader(program, &got_it);
+	if( !got_it ) {
 		result = glCreateProgram();
-
-		unsigned int shader;
-		shader = glCreateShader(GL_FRAGMENT_SHADER);
-		const GLchar *text_ptr = complete_program;
+		unsigned int shader = glCreateShader(GL_FRAGMENT_SHADER);
+		const GLchar *text_ptr = program;
 		glShaderSource(shader, 1, &text_ptr, NULL);
 		glCompileShader(shader);
-		int error = print_error(complete_program, shader, 0);
+		int error = print_error(program, shader, 0);
 		glAttachShader(result, shader);
 		glDeleteShader(shader);
-
 		glLinkProgram(result);
-		if(!error) error = print_error(complete_program, result, 1);
-
-
-// printf("BC_WindowBase::make_shader: shader=%d window_id=%d\n",
-// result,
+		if( !error )
+			error = print_error(program, result, 1);
+//printf("BC_WindowBase::make_shader: shader=%d window_id=%d\n", result,
 // BC_WindowBase::get_synchronous()->current_window->get_id());
-		BC_WindowBase::get_synchronous()->put_shader(result, complete_program);
+		BC_WindowBase::get_synchronous()->put_shader(result, program);
 	}
 
-//printf("VFrame::make_shader\n%s\n", complete_program);
-	free(complete_program);
-	complete_program = NULL;
-
+//printf("VFrame::make_shader\n%s\n", program);
 #endif
 	return result;
 }

@@ -126,6 +126,8 @@ int HSV::hsv_to_yuv(int &y, int &u, int &v, float h, float s, float va, int max)
 
 
 YUV YUV::yuv;
+float YUV::rgb_to_yuv_matrix[10];
+float YUV::yuv_to_rgb_matrix[10];
 
 YUV::YUV()
 {
@@ -140,13 +142,14 @@ void YUV::yuv_set_colors(int color_space, int color_range)
 	int mpeg;
 	switch( color_space ) {
 	default:
-	case 0: kr = BT601_Kr;  kb = BT601_Kb;  break;
-	case 1: kr = BT709_Kr;  kb = BT709_Kb;  break;
+	case BC_COLORS_BT601:  kr = BT601_Kr;   kb = BT601_Kb;   break;
+	case BC_COLORS_BT709:  kr = BT709_Kr;   kb = BT709_Kb;   break;
+	case BC_COLORS_BT2020: kr = BT2020_Kr;  kb = BT2020_Kb;  break;
 	}
 	switch( color_range ) {
 	default:
-	case 0: mpeg = 0;  break;
-	case 1: mpeg = 1;  break;
+	case BC_COLORS_JPEG: mpeg = 0;  break;
+	case BC_COLORS_MPEG: mpeg = 1;  break;
 	}
 	init(kr, kb, mpeg);
 }
@@ -219,6 +222,29 @@ void YUV::init(double Kr, double Kb, int mpeg)
 		vtor8f, vtog8f, utog8f, utob8f);
 	init_tables(0x10000,
 		vtor16f, vtog16f, utog16f, utob16f);
+
+	rgb_to_yuv_matrix[0] = r_to_y;
+	rgb_to_yuv_matrix[1] = r_to_u;
+	rgb_to_yuv_matrix[2] = r_to_v;
+	rgb_to_yuv_matrix[3] = g_to_y;
+	rgb_to_yuv_matrix[4] = g_to_u;
+	rgb_to_yuv_matrix[5] = g_to_v;
+	rgb_to_yuv_matrix[6] = b_to_y;
+	rgb_to_yuv_matrix[7] = b_to_u;
+	rgb_to_yuv_matrix[8] = b_to_v;
+	rgb_to_yuv_matrix[9] = yminf;
+
+	float yscale = 1.f / yrangef;
+	yuv_to_rgb_matrix[0] = yscale;
+	yuv_to_rgb_matrix[1] = yscale;
+	yuv_to_rgb_matrix[2] = yscale;
+	yuv_to_rgb_matrix[3] = 0;
+	yuv_to_rgb_matrix[4] = u_to_g;
+	yuv_to_rgb_matrix[5] = u_to_b;
+	yuv_to_rgb_matrix[6] = v_to_r;
+	yuv_to_rgb_matrix[7] = v_to_g;
+	yuv_to_rgb_matrix[8] = 0;
+	yuv_to_rgb_matrix[9] = yminf;
 }
 
 void YUV::init_tables(int len,

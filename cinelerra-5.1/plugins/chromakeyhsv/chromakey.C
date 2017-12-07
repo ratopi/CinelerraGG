@@ -686,25 +686,19 @@ void ChromaKeyUnit::process_chromakey(int components,
 
     	for (int j = 0; j < w; j++)
 		{
-			float a = 1;
-
-			float r = (float) row[0] / max;
-			float g = (float) row[1] / max;
-			float b = (float) row[2] / max;
+			float r, g, b, a = 1;
+			if (!use_yuv) {
+				r = (float) row[0] / max;
+				g = (float) row[1] / max;
+				b = (float) row[2] / max;
+			}
+			else
+	    		YUV::yuv.yuv_to_rgb_f (r, g, b, row[0], row[1], row[2]);
 
 			float h, s, v;
 
 			float av = 1, ah = 1, as = 1, avm = 1;
 			bool has_match = true;
-
-			if (use_yuv)
-	    	{
-/* Convert pixel to RGB float */
-	    		float y = r;
-	    		float u = g;
-	    		float v = b;
-	    		YUV::yuv.yuv_to_rgb_f (r, g, b, y, u - 0.5, v - 0.5);
-	    	}
 
 	  		HSV::rgb_to_hsv (r, g, b, h, s, v);
 
@@ -712,10 +706,10 @@ void ChromaKeyUnit::process_chromakey(int components,
 
 /* Hue wrap */
 			if(h <= hue_key - tolerance_in * 180.0)
-				h += 360;
+				h += 360.0;
 			else
 			if(h >= hue_key + tolerance_in * 180.0)
-				h -= 360;
+				h -= 360.0;
 
 
 			if (tolerance == 0)
@@ -792,29 +786,14 @@ void ChromaKeyUnit::process_chromakey(int components,
 
 	      HSV::hsv_to_rgb (r, g, b, h, s, v);
 
-	      if (use_yuv)
-		{
-		  float y;
-		  float u;
-		  float v;
-		  YUV::yuv.rgb_to_yuv_f (r, g, b, y, u, v);
-	      CLAMP (y, 0, 1.0);
-	      CLAMP (u, 0, 1.0);
-	      CLAMP (v, 0, 1.0);
-		  row[0] = (component_type) ((float) y * max);
-		  row[1] = (component_type) ((float) (u + 0.5) * max);
-		  row[2] = (component_type) ((float) (v + 0.5) * max);
+		if (!use_yuv) {
+			row[0] = (component_type) ((float) r * max);
+			row[1] = (component_type) ((float) g * max);
+			row[2] = (component_type) ((float) b * max);
 		}
-	      else
-		{
-	      CLAMP (r, 0, 1.0);
-	      CLAMP (g, 0, 1.0);
-	      CLAMP (b, 0, 1.0);
-		  row[0] = (component_type) ((float) r * max);
-		  row[1] = (component_type) ((float) g * max);
-		  row[2] = (component_type) ((float) b * max);
-		}
-	    }
+		else
+			YUV::yuv.rgb_to_yuv_f(r, g, b, row[0], row[1], row[2]);
+	  }
 
 	  a += alpha_offset;
 	  CLAMP (a, 0.0, 1.0);
@@ -1059,16 +1038,21 @@ int ChromaKeyHSV::handle_opengl()
 
 	static const char *yuv_shader =
 		"const vec3 black = vec3(0.0, 0.5, 0.5);\n"
+		"uniform mat3 yuv_to_rgb_matrix;\n"
+		"uniform mat3 rgb_to_yuv_matrix;\n"
+		"uniform float yminf;\n"
 		"\n"
 		"vec4 yuv_to_rgb(vec4 color)\n"
 		"{\n"
-			YUV_TO_RGB_FRAG("color")
+		"	color.rgb -= vec3(yminf, 0.5, 0.5);\n"
+		"	color.rgb = yuv_to_rgb_matrix * color.rgb;\n"
 		"	return color;\n"
 		"}\n"
 		"\n"
 		"vec4 rgb_to_yuv(vec4 color)\n"
 		"{\n"
-			RGB_TO_YUV_FRAG("color")
+		"	color.rgb = rgb_to_yuv_matrix * color.rgb;\n"
+		"	color.rgb += vec3(yminf, 0.5, 0.5);\n"
 		"	return color;\n"
 		"}\n";
 
@@ -1116,77 +1100,57 @@ int ChromaKeyHSV::handle_opengl()
 		"	return vec4(color.rgb, min(color.a, color2.a));"
 		"}\n";
 
-	extern unsigned char _binary_chromakey_sl_start[];
-	static const char *shader = (char*)_binary_chromakey_sl_start;
-
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
 
-	const char* shader_stack[] = { 0, 0, 0, 0, 0 };
+        const char *shader_stack[16];
+        memset(shader_stack,0, sizeof(shader_stack));
+        int current_shader = 0;
 
-	switch(get_output()->get_color_model())
-	{
-		case BC_YUV888:
-		case BC_YUVA8888:
-			shader_stack[0] = yuv_shader;
-			shader_stack[1] = hsv_shader;
-			if(config.show_mask)
-				shader_stack[2] = show_yuvmask_shader;
-			else
-				shader_stack[2] = nomask_shader;
-			shader_stack[3] = shader;
-			break;
+	shader_stack[current_shader++] = \
+		 !BC_CModels::is_yuv(get_output()->get_color_model()) ?
+			rgb_shader : yuv_shader;
+	shader_stack[current_shader++] = hsv_shader;
+	shader_stack[current_shader++] = !config.show_mask ? nomask_shader :
+		 !BC_CModels::is_yuv(get_output()->get_color_model()) ?
+			show_rgbmask_shader : show_yuvmask_shader ;
+	extern unsigned char _binary_chromakey_sl_start[];
+	static const char *shader_frag = (char*)_binary_chromakey_sl_start;
+	shader_stack[current_shader++] = shader_frag;
 
-		default:
-			shader_stack[0] = rgb_shader;
-			shader_stack[1] = hsv_shader;
-			if(config.show_mask)
-				shader_stack[2] = show_rgbmask_shader;
-			else
-				shader_stack[2] = nomask_shader;
-			shader_stack[3] = shader;
-			break;
+	shader_stack[current_shader] = 0;
+	unsigned int shader = VFrame::make_shader(shader_stack);
+	if( shader > 0 ) {
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+		glUniform1f(glGetUniformLocation(shader, "red"), red);
+		glUniform1f(glGetUniformLocation(shader, "green"), green);
+		glUniform1f(glGetUniformLocation(shader, "blue"), blue);
+		glUniform1f(glGetUniformLocation(shader, "in_slope"), in_slope);
+		glUniform1f(glGetUniformLocation(shader, "out_slope"), out_slope);
+		glUniform1f(glGetUniformLocation(shader, "tolerance"), tolerance);
+		glUniform1f(glGetUniformLocation(shader, "tolerance_in"), tolerance_in);
+		glUniform1f(glGetUniformLocation(shader, "tolerance_out"), tolerance_out);
+		glUniform1f(glGetUniformLocation(shader, "sat"), sat);
+		glUniform1f(glGetUniformLocation(shader, "min_s"), min_s);
+		glUniform1f(glGetUniformLocation(shader, "min_s_in"), min_s_in);
+		glUniform1f(glGetUniformLocation(shader, "min_s_out"), min_s_out);
+		glUniform1f(glGetUniformLocation(shader, "min_v"), min_v);
+		glUniform1f(glGetUniformLocation(shader, "min_v_in"), min_v_in);
+		glUniform1f(glGetUniformLocation(shader, "min_v_out"), min_v_out);
+		glUniform1f(glGetUniformLocation(shader, "max_v"), max_v);
+		glUniform1f(glGetUniformLocation(shader, "max_v_in"), max_v_in);
+		glUniform1f(glGetUniformLocation(shader, "max_v_out"), max_v_out);
+		glUniform1f(glGetUniformLocation(shader, "spill_threshold"), spill_threshold);
+		glUniform1f(glGetUniformLocation(shader, "spill_amount"), spill_amount);
+		glUniform1f(glGetUniformLocation(shader, "alpha_offset"), alpha_offset);
+		glUniform1f(glGetUniformLocation(shader, "hue_key"), hue_key);
+		glUniform1f(glGetUniformLocation(shader, "saturation_key"), saturation_key);
+		glUniform1f(glGetUniformLocation(shader, "value_key"), value_key);
+		if( BC_CModels::is_yuv(get_output()->get_color_model()) )
+			BC_GL_COLORS(shader);
 	}
-
-
-	unsigned int frag = VFrame::make_shader(0,
-		shader_stack[0],
-		shader_stack[1],
-		shader_stack[2],
-		shader_stack[3],
-		0);
-
-	if(frag)
-	{
-		glUseProgram(frag);
-		glUniform1i(glGetUniformLocation(frag, "tex"), 0);
-		glUniform1f(glGetUniformLocation(frag, "red"), red);
-		glUniform1f(glGetUniformLocation(frag, "green"), green);
-		glUniform1f(glGetUniformLocation(frag, "blue"), blue);
-		glUniform1f(glGetUniformLocation(frag, "in_slope"), in_slope);
-		glUniform1f(glGetUniformLocation(frag, "out_slope"), out_slope);
-		glUniform1f(glGetUniformLocation(frag, "tolerance"), tolerance);
-		glUniform1f(glGetUniformLocation(frag, "tolerance_in"), tolerance_in);
-		glUniform1f(glGetUniformLocation(frag, "tolerance_out"), tolerance_out);
-		glUniform1f(glGetUniformLocation(frag, "sat"), sat);
-		glUniform1f(glGetUniformLocation(frag, "min_s"), min_s);
-		glUniform1f(glGetUniformLocation(frag, "min_s_in"), min_s_in);
-		glUniform1f(glGetUniformLocation(frag, "min_s_out"), min_s_out);
-		glUniform1f(glGetUniformLocation(frag, "min_v"), min_v);
-		glUniform1f(glGetUniformLocation(frag, "min_v_in"), min_v_in);
-		glUniform1f(glGetUniformLocation(frag, "min_v_out"), min_v_out);
-		glUniform1f(glGetUniformLocation(frag, "max_v"), max_v);
-		glUniform1f(glGetUniformLocation(frag, "max_v_in"), max_v_in);
-		glUniform1f(glGetUniformLocation(frag, "max_v_out"), max_v_out);
-		glUniform1f(glGetUniformLocation(frag, "spill_threshold"), spill_threshold);
-		glUniform1f(glGetUniformLocation(frag, "spill_amount"), spill_amount);
-		glUniform1f(glGetUniformLocation(frag, "alpha_offset"), alpha_offset);
-		glUniform1f(glGetUniformLocation(frag, "hue_key"), hue_key);
-		glUniform1f(glGetUniformLocation(frag, "saturation_key"), saturation_key);
-		glUniform1f(glGetUniformLocation(frag, "value_key"), value_key);
-	}
-
 
 	get_output()->bind_texture(0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

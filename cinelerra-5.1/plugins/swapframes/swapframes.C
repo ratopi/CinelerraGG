@@ -333,8 +333,3 @@ int SwapFrames::process_buffer(VFrame *frame,
 	return 0;
 }
 
-int SwapFrames::handle_opengl()
-{
-	return 0;
-}
-

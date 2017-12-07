@@ -497,13 +497,13 @@ int SwapMain::handle_opengl()
 	get_output()->clear_pbuffer();
 	get_output()->bind_texture(0);
 
-	unsigned int shader_id = VFrame::make_shader(0,
-		output_frag,
-		0);
-	glUseProgram(shader_id);
-	glUniform1i(glGetUniformLocation(shader_id, "tex"), 0);
-	glUniform1f(glGetUniformLocation(shader_id, "chroma_offset"),
-		BC_CModels::is_yuv(get_output()->get_color_model()) ? 0.5 : 0.0);
+	unsigned int shader = VFrame::make_shader(0, output_frag, 0);
+	if( shader > 0 ) {
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+		glUniform1f(glGetUniformLocation(shader, "chroma_offset"),
+			BC_CModels::is_yuv(get_output()->get_color_model()) ? 0.5 : 0.0);
+	}
 
 	get_output()->draw_texture();
 	glUseProgram(0);

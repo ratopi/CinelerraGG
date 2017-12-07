@@ -22,6 +22,7 @@
 #ifndef DIFFKEY_H
 #define DIFFKEY_H
 
+#include "bccolors.h"
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -31,7 +32,7 @@
 #include "loadbalance.h"
 #include "bccolors.h"
 #include "pluginvclient.h"
-
+#include "playback3d.h"
 
 #include <string.h>
 
@@ -450,8 +451,9 @@ int DiffKey::handle_opengl()
 		"	float difference = abs(foreground.r - background.r);\n";
 
 	static const char *rgb_value =
-		"	float difference = abs(dot(foreground.rgb, vec3(0.29900, 0.58700, 0.11400)) - \n"
-		"						dot(background.rgb, vec3(0.29900, 0.58700, 0.11400)));\n";
+		"	float difference = abs("
+		"		dot(foreground.rgb, rgb_to_yuv_matrix[0]) - "
+		"		dot(background.rgb, rgb_to_yuv_matrix[0]));\n";
 
 	static const char *diffkey_tail =
 		"	vec4 result;\n"
@@ -466,10 +468,6 @@ int DiffKey::handle_opengl()
 		"	gl_FragColor = result;\n"
 		"}\n";
 
-
-
-
-
 	top_frame->enable_opengl();
 	top_frame->init_screen();
 
@@ -479,46 +477,27 @@ int DiffKey::handle_opengl()
 	top_frame->enable_opengl();
 	top_frame->init_screen();
 
-	unsigned int shader_id = 0;
-	if(config.do_value)
-	{
-		if(BC_CModels::is_yuv(top_frame->get_color_model()))
-			shader_id = VFrame::make_shader(0,
-				diffkey_head,
-				yuv_value,
-				diffkey_tail,
-				0);
-		else
-			shader_id = VFrame::make_shader(0,
-				diffkey_head,
-				rgb_value,
-				diffkey_tail,
-				0);
-	}
-	else
-	{
-			shader_id = VFrame::make_shader(0,
-				diffkey_head,
-				colorcube,
-				diffkey_tail,
-				0);
-	}
+	int need_color_matrix = 0;
+	const char *shader_frag = !config.do_value ? colorcube :
+		BC_CModels::is_yuv(top_frame->get_color_model()) ?
+			yuv_value : (need_color_matrix = 1, rgb_value);
 
-
-
+	unsigned int shader = VFrame::make_shader(0,
+				diffkey_head, shader_frag, diffkey_tail, 0);
 	DIFFKEY_VARS(this)
 
 	bottom_frame->bind_texture(1);
 	top_frame->bind_texture(0);
 
-	if(shader_id > 0)
-	{
-		glUseProgram(shader_id);
-		glUniform1i(glGetUniformLocation(shader_id, "tex_fg"), 0);
-		glUniform1i(glGetUniformLocation(shader_id, "tex_bg"), 1);
-		glUniform1f(glGetUniformLocation(shader_id, "threshold"), threshold);
-		glUniform1f(glGetUniformLocation(shader_id, "pad"), pad);
-		glUniform1f(glGetUniformLocation(shader_id, "threshold_pad"), threshold_pad);
+	if( shader > 0 ) {
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex_fg"), 0);
+		glUniform1i(glGetUniformLocation(shader, "tex_bg"), 1);
+		glUniform1f(glGetUniformLocation(shader, "threshold"), threshold);
+		glUniform1f(glGetUniformLocation(shader, "pad"), pad);
+		glUniform1f(glGetUniformLocation(shader, "threshold_pad"), threshold_pad);
+		if( need_color_matrix )
+			BC_GL_MATRIX(shader, rgb_to_yuv_matrix);
 	}
 
 	if(BC_CModels::components(get_output()->get_color_model()) == 3)
@@ -531,11 +510,14 @@ int DiffKey::handle_opengl()
 	top_frame->draw_texture();
 	glUseProgram(0);
 	top_frame->set_opengl_state(VFrame::SCREEN);
-// Fastest way to discard output
-	bottom_frame->set_opengl_state(VFrame::TEXTURE);
 	glDisable(GL_BLEND);
 
+// does not work, fails in playback3d
+// Fastest way to discard output
+//	bottom_frame->set_opengl_state(VFrame::TEXTURE);
 
+// kludge ahead
+	top_frame->screen_to_ram();
 #endif
 	return 0;
 }
@@ -598,8 +580,7 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
 	DiffKey *plugin = engine->plugin;
 	int w = plugin->top_frame->get_w();
 
-#define RGB_TO_VALUE(r, g, b) \
-((r) * R_TO_Y + (g) * G_TO_Y + (b) * B_TO_Y)
+#define RGB_TO_VALUE(r, g, b) YUV::yuv.rgb_to_y_f((r),(g),(b))
 
 
 #define DIFFKEY_MACRO(type, components, max, chroma_offset) \

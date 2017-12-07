@@ -403,27 +403,23 @@ int ColorBalanceMain::test_boundary(float &value)
 
 int ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float difference)
 {
-	if(thread && config.lock_params)
-    {
-	    if(slider != ((ColorBalanceWindow*)thread->window)->cyan)
-        {
-        	config.cyan += difference;
-            test_boundary(config.cyan);
-        	((ColorBalanceWindow*)thread->window)->cyan->update((int64_t)config.cyan);
-        }
-	    if(slider != ((ColorBalanceWindow*)thread->window)->magenta)
-        {
-        	config.magenta += difference;
-            test_boundary(config.magenta);
-        	((ColorBalanceWindow*)thread->window)->magenta->update((int64_t)config.magenta);
-        }
-	    if(slider != ((ColorBalanceWindow*)thread->window)->yellow)
-        {
-        	config.yellow += difference;
-            test_boundary(config.yellow);
-        	((ColorBalanceWindow*)thread->window)->yellow->update((int64_t)config.yellow);
-        }
-    }
+	if(thread && config.lock_params) {
+		if(slider != ((ColorBalanceWindow*)thread->window)->cyan) {
+			config.cyan += difference;
+			test_boundary(config.cyan);
+			((ColorBalanceWindow*)thread->window)->cyan->update((int64_t)config.cyan);
+		}
+		if(slider != ((ColorBalanceWindow*)thread->window)->magenta) {
+			config.magenta += difference;
+			test_boundary(config.magenta);
+			((ColorBalanceWindow*)thread->window)->magenta->update((int64_t)config.magenta);
+		}
+		if(slider != ((ColorBalanceWindow*)thread->window)->yellow) {
+			config.yellow += difference;
+			test_boundary(config.yellow);
+			((ColorBalanceWindow*)thread->window)->yellow->update((int64_t)config.yellow);
+		}
+	}
 	return 0;
 }
 
@@ -605,9 +601,14 @@ int ColorBalanceMain::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
-	unsigned int shader = 0;
-	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-	int current_shader = 0;
+        const char *shader_stack[16];
+        memset(shader_stack,0, sizeof(shader_stack));
+        int current_shader = 0;
+
+	int need_color_matrix = BC_CModels::is_yuv(get_output()->get_color_model()) ? 1 : 0;
+	if( need_color_matrix )
+		shader_stack[current_shader++] = bc_gl_colors;
+
 	int aggregate_interpolate = 0;
 	int aggregate_gamma = 0;
 
@@ -616,28 +617,18 @@ int ColorBalanceMain::handle_opengl()
 
 //printf("ColorBalanceMain::handle_opengl %d %d\n", aggregate_interpolate, aggregate_gamma);
 	if(aggregate_interpolate)
-		INTERPOLATE_COMPILE(shader_stack, current_shader)
+		INTERPOLATE_COMPILE(shader_stack, current_shader);
 
 	if(aggregate_gamma)
-		GAMMA_COMPILE(shader_stack, current_shader, aggregate_interpolate)
+		GAMMA_COMPILE(shader_stack, current_shader,
+			aggregate_interpolate);
 
-	COLORBALANCE_COMPILE(shader_stack,
-		current_shader,
-		aggregate_gamma || aggregate_interpolate)
+	COLORBALANCE_COMPILE(shader_stack, current_shader,
+		aggregate_gamma || aggregate_interpolate);
 
-	shader = VFrame::make_shader(0,
-		shader_stack[0],
-		shader_stack[1],
-		shader_stack[2],
-		shader_stack[3],
-		shader_stack[4],
-		shader_stack[5],
-		shader_stack[6],
-		shader_stack[7],
-		0);
-
-	if(shader > 0)
-	{
+	shader_stack[current_shader] = 0;
+        unsigned int shader = VFrame::make_shader(shader_stack);
+	if( shader > 0 ) {
 		glUseProgram(shader);
 		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
 
@@ -645,7 +636,7 @@ int ColorBalanceMain::handle_opengl()
 		if(aggregate_gamma) GAMMA_UNIFORMS(shader);
 
 		COLORBALANCE_UNIFORMS(shader);
-
+		if( need_color_matrix ) BC_GL_COLORS(shader);
 	}
 
 	get_output()->init_screen();

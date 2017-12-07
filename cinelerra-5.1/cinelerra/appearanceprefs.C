@@ -539,6 +539,7 @@ int HighlightInverseColor::handle_event()
 const char *YuvColorSpace::color_space[] = {
 	N_("BT601"),
 	N_("BT709"),
+	N_("BT2020"),
 };
 
 YuvColorSpace::YuvColorSpace(int x, int y, PreferencesWindow *pwindow)

@@ -22,17 +22,17 @@
 #include <string>
 #include <string.h>
 
+#include "threshold.h"
+#include "bccolors.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "histogramengine.h"
 #include "language.h"
-#include "bccolors.h"
-#include "threshold.h"
+#include "playback3d.h"
 #include "thresholdwindow.h"
 #include "vframe.h"
 
-;
 using ::std::string;
 
 
@@ -259,10 +259,12 @@ int ThresholdMain::handle_opengl()
 		"uniform vec4 low_color;\n"
 		"uniform vec4 mid_color;\n"
 		"uniform vec4 high_color;\n"
+		"uniform mat3 rgb_to_yuv_matrix;\n"
+		"uniform float yminf;\n"
 		"void main()\n"
 		"{\n"
 		"	vec4 pixel = texture2D(tex, gl_TexCoord[0].st);\n"
-		"	float v = dot(pixel.rgb, vec3(0.299, 0.587, 0.114));\n"
+		"	float v = dot(pixel.rgb, rgb_to_yuv_matrix[0]) + yminf;\n"
 		"	if(v < min)\n"
 		"		pixel = low_color;\n"
 		"	else if(v < max)\n"
@@ -294,78 +296,67 @@ int ThresholdMain::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
-	unsigned int shader = 0;
 	int color_model = get_output()->get_color_model();
 	bool is_yuv = BC_CModels::is_yuv(color_model);
 	bool has_alpha = BC_CModels::has_alpha(color_model);
-	if(is_yuv)
-		shader = VFrame::make_shader(0, yuv_shader, 0);
-	else
-		shader = VFrame::make_shader(0, rgb_shader, 0);
-
-	if(shader > 0)
-	{
+	unsigned int shader = VFrame::make_shader(0, is_yuv ? yuv_shader : rgb_shader, 0);
+	if( shader > 0 ) {
 		glUseProgram(shader);
 		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
 		glUniform1f(glGetUniformLocation(shader, "min"), config.min);
 		glUniform1f(glGetUniformLocation(shader, "max"), config.max);
 
-		if (is_yuv)
-		{
+		if (is_yuv) {
 			float y_low,  u_low,  v_low;
 			float y_mid,  u_mid,  v_mid;
 			float y_high, u_high, v_high;
 
-			YUV::yuv.rgb_to_yuv_f((float)config.low_color.r / 0xff,
-					  (float)config.low_color.g / 0xff,
-					  (float)config.low_color.b / 0xff,
-					  y_low,
-					  u_low,
-					  v_low);
-			u_low += 0.5;
-			v_low += 0.5;
-			YUV::yuv.rgb_to_yuv_f((float)config.mid_color.r / 0xff,
-					  (float)config.mid_color.g / 0xff,
-					  (float)config.mid_color.b / 0xff,
-					  y_mid,
-					  u_mid,
-					  v_mid);
-			u_mid += 0.5;
-			v_mid += 0.5;
-			YUV::yuv.rgb_to_yuv_f((float)config.high_color.r / 0xff,
-					  (float)config.high_color.g / 0xff,
-					  (float)config.high_color.b / 0xff,
-					  y_high,
-					  u_high,
-					  v_high);
-			u_high += 0.5;
-			v_high += 0.5;
+			YUV::yuv.rgb_to_yuv_f(
+					(float)config.low_color.r / 0xff,
+					(float)config.low_color.g / 0xff,
+					(float)config.low_color.b / 0xff,
+					y_low, u_low, v_low);
+			u_low += 0.5;  v_low += 0.5;
+			YUV::yuv.rgb_to_yuv_f(
+					(float)config.mid_color.r / 0xff,
+					(float)config.mid_color.g / 0xff,
+					(float)config.mid_color.b / 0xff,
+					y_mid, u_mid, v_mid);
+			u_mid += 0.5;  v_mid += 0.5;
+			YUV::yuv.rgb_to_yuv_f(
+					(float)config.high_color.r / 0xff,
+					(float)config.high_color.g / 0xff,
+					(float)config.high_color.b / 0xff,
+					y_high, u_high, v_high);
+			u_high += 0.5;  v_high += 0.5;
 
 			glUniform4f(glGetUniformLocation(shader, "low_color"),
-				    y_low, u_low, v_low,
-				    has_alpha ? (float)config.low_color.a / 0xff : 1.0);
+					y_low, u_low, v_low,
+					has_alpha ? (float)config.low_color.a / 0xff : 1.0);
 			glUniform4f(glGetUniformLocation(shader, "mid_color"),
-				    y_mid, u_mid, v_mid,
-				    has_alpha ? (float)config.mid_color.a / 0xff : 1.0);
+					y_mid, u_mid, v_mid,
+					has_alpha ? (float)config.mid_color.a / 0xff : 1.0);
 			glUniform4f(glGetUniformLocation(shader, "high_color"),
-				    y_high, u_high, v_high,
-				    has_alpha ? (float)config.high_color.a / 0xff : 1.0);
-		} else {
+					y_high, u_high, v_high,
+					has_alpha ? (float)config.high_color.a / 0xff : 1.0);
+		}
+		else {
 			glUniform4f(glGetUniformLocation(shader, "low_color"),
-				    (float)config.low_color.r / 0xff,
-				    (float)config.low_color.g / 0xff,
-				    (float)config.low_color.b / 0xff,
-				    has_alpha ? (float)config.low_color.a / 0xff : 1.0);
+					(float)config.low_color.r / 0xff,
+					(float)config.low_color.g / 0xff,
+					(float)config.low_color.b / 0xff,
+					has_alpha ? (float)config.low_color.a / 0xff : 1.0);
 			glUniform4f(glGetUniformLocation(shader, "mid_color"),
-				    (float)config.mid_color.r / 0xff,
-				    (float)config.mid_color.g / 0xff,
-				    (float)config.mid_color.b / 0xff,
-				    has_alpha ? (float)config.mid_color.a / 0xff : 1.0);
+					(float)config.mid_color.r / 0xff,
+					(float)config.mid_color.g / 0xff,
+					(float)config.mid_color.b / 0xff,
+					has_alpha ? (float)config.mid_color.a / 0xff : 1.0);
 			glUniform4f(glGetUniformLocation(shader, "high_color"),
-				    (float)config.high_color.r / 0xff,
-				    (float)config.high_color.g / 0xff,
-				    (float)config.high_color.b / 0xff,
-				    has_alpha ? (float)config.high_color.a / 0xff : 1.0);
+					(float)config.high_color.r / 0xff,
+					(float)config.high_color.g / 0xff,
+					(float)config.high_color.b / 0xff,
+					has_alpha ? (float)config.high_color.a / 0xff : 1.0);
+			BC_GL_RGB_TO_YUV(shader);
 		}
 	}
 

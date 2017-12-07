@@ -349,10 +349,7 @@ int InvertVideoEffect::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
-	unsigned int frag_shader = 0;
-	frag_shader = VFrame::make_shader(0,
-		invert_frag,
-		0);
+	unsigned int frag_shader = VFrame::make_shader(0, invert_frag, 0);
 	glUseProgram(frag_shader);
 	glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
 	glUniform1i(glGetUniformLocation(frag_shader, "do_r"), config.r);

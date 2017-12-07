@@ -302,6 +302,10 @@ void YUVEffect::read_data(KeyFrame *keyframe)
 					y = temp_type((float)y * y_scale + round); \
 					u = temp_type((float)(u - (max / 2 + 1)) * u_scale + round) + (max / 2 + 1); \
 					v = temp_type((float)(v - (max / 2 + 1)) * v_scale + round) + (max / 2 + 1); \
+ \
+					CLAMP(y, 0, max); \
+					CLAMP(u, 0, max); \
+					CLAMP(v, 0, max); \
 				} \
 				else \
 				{ \

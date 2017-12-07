@@ -49,9 +49,9 @@ static const char *colorbalance_yuv_shader =
 	"void main()\n"
 	"{\n"
 	"	gl_FragColor = colorbalance_get_pixel();\n"
-	YUV_TO_RGB_FRAG("gl_FragColor")
+		YUV_TO_RGB_FRAG("gl_FragColor")
 	"	gl_FragColor.rgb *= colorbalance_scale;\n"
-	RGB_TO_YUV_FRAG("gl_FragColor")
+		RGB_TO_YUV_FRAG("gl_FragColor")
 	"}\n";
 
 static const char *colorbalance_yuv_preserve_shader =
@@ -60,34 +60,27 @@ static const char *colorbalance_yuv_preserve_shader =
 	"{\n"
 	"	gl_FragColor = colorbalance_get_pixel();\n"
 	"	float y = gl_FragColor.r;\n"
-	YUV_TO_RGB_FRAG("gl_FragColor")
+		YUV_TO_RGB_FRAG("gl_FragColor")
 	"	gl_FragColor.rgb *= colorbalance_scale.rgb;\n"
-	RGB_TO_YUV_FRAG("gl_FragColor")
+		RGB_TO_YUV_FRAG("gl_FragColor")
 	"	gl_FragColor.r = y;\n"
 	"}\n";
 
-#define COLORBALANCE_COMPILE(shader_stack, current_shader, aggregate_prev) \
-{ \
-	if(aggregate_prev) \
-		shader_stack[current_shader++] = colorbalance_get_pixel1; \
-	else \
-		shader_stack[current_shader++] = colorbalance_get_pixel2; \
-	if(BC_CModels::is_yuv(get_output()->get_color_model())) \
-	{\
-		if(get_output()->get_params()->get("COLORBALANCE_PRESERVE", (int)0)) \
-			shader_stack[current_shader++] = colorbalance_yuv_preserve_shader; \
-		else \
-			shader_stack[current_shader++] = colorbalance_yuv_shader; \
-	} \
-	else \
-		shader_stack[current_shader++] = colorbalance_rgb_shader; \
-}
+#define COLORBALANCE_COMPILE(shader_stack, current_shader, aggregate_prev) do { \
+	shader_stack[current_shader++] = \
+		aggregate_prev ? colorbalance_get_pixel1 : colorbalance_get_pixel2; \
+	shader_stack[current_shader++] = \
+		!BC_CModels::is_yuv(get_output()->get_color_model()) ? colorbalance_rgb_shader : \
+			get_output()->get_params()->get("COLORBALANCE_PRESERVE", (int)0) ? \
+			colorbalance_yuv_preserve_shader : colorbalance_yuv_shader ; \
+} while(0)
 
-#define COLORBALANCE_UNIFORMS(shader) \
+#define COLORBALANCE_UNIFORMS(shader) do { \
 	glUniform3f(glGetUniformLocation(shader, "colorbalance_scale"),  \
 		get_output()->get_params()->get("COLORBALANCE_CYAN", (float)1), \
 		get_output()->get_params()->get("COLORBALANCE_MAGENTA", (float)1), \
-		get_output()->get_params()->get("COLORBALANCE_YELLOW", (float)1));
+		get_output()->get_params()->get("COLORBALANCE_YELLOW", (float)1)); \
+} while(0)
 
 #endif
 

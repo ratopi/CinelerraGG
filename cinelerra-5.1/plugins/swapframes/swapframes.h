@@ -106,7 +106,6 @@ public:
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS(SwapFramesConfig)
 

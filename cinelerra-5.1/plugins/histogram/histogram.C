@@ -625,8 +625,14 @@ int HistogramMain::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
-	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	int current_shader = 0;
+        const char *shader_stack[16];
+        memset(shader_stack,0, sizeof(shader_stack));
+        int current_shader = 0;
+
+        int need_color_matrix = BC_CModels::is_yuv(get_output()->get_color_model()) ? 1 : 0;
+        if( need_color_matrix )
+                shader_stack[current_shader++] = bc_gl_colors;
+
 	int aggregate_interpolation = 0;
 	int aggregate_gamma = 0;
 	int aggregate_colorbalance = 0;
@@ -671,64 +677,34 @@ int HistogramMain::handle_opengl()
 	if(!strcmp(get_output()->get_prev_effect(0), _("Color Balance")))
 		aggregate_colorbalance = 1;
 
+	if( BC_CModels::is_yuv(get_output()->get_color_model()) )
+		shader_stack[current_shader++] = bc_gl_colors;
 
 // The order of processing is fixed by this sequence
 	if(aggregate_interpolation)
-		INTERPOLATE_COMPILE(shader_stack,
-			current_shader)
+		INTERPOLATE_COMPILE(shader_stack, current_shader);
 
 	if(aggregate_gamma)
-		GAMMA_COMPILE(shader_stack,
-			current_shader,
-			aggregate_interpolation)
+		GAMMA_COMPILE(shader_stack, current_shader,
+			aggregate_interpolation);
 
 	if(aggregate_colorbalance)
-		COLORBALANCE_COMPILE(shader_stack,
-			current_shader,
-			aggregate_interpolation || aggregate_gamma)
+		COLORBALANCE_COMPILE(shader_stack, current_shader,
+			aggregate_interpolation || aggregate_gamma);
 
+	shader_stack[current_shader++] = 
+		aggregate_interpolation || aggregate_gamma || aggregate_colorbalance ?
+			histogram_get_pixel1 : histogram_get_pixel2;
 
-	if(aggregate_interpolation || aggregate_gamma || aggregate_colorbalance)
-		shader_stack[current_shader++] = histogram_get_pixel1;
-	else
-		shader_stack[current_shader++] = histogram_get_pixel2;
+	shader_stack[current_shader++] = head_frag;
+	shader_stack[current_shader++] = BC_CModels::is_yuv(get_output()->get_color_model()) ?
+			get_yuv_frag : get_rgb_frag;
+	shader_stack[current_shader++] = apply_histogram_frag;
+	shader_stack[current_shader++] = BC_CModels::is_yuv(get_output()->get_color_model()) ?
+			put_yuv_frag : put_rgb_frag;
 
-	unsigned int shader = 0;
-	switch(get_output()->get_color_model())
-	{
-		case BC_YUV888:
-		case BC_YUVA8888:
-			shader_stack[current_shader++] = head_frag;
-			shader_stack[current_shader++] = get_yuv_frag;
-			shader_stack[current_shader++] = apply_histogram_frag;
-			shader_stack[current_shader++] = put_yuv_frag;
-			break;
-		default:
-			shader_stack[current_shader++] = head_frag;
-			shader_stack[current_shader++] = get_rgb_frag;
-			shader_stack[current_shader++] = apply_histogram_frag;
-			shader_stack[current_shader++] = put_rgb_frag;
-			break;
-	}
-
-	shader = VFrame::make_shader(0,
-		shader_stack[0],
-		shader_stack[1],
-		shader_stack[2],
-		shader_stack[3],
-		shader_stack[4],
-		shader_stack[5],
-		shader_stack[6],
-		shader_stack[7],
-		shader_stack[8],
-		shader_stack[9],
-		shader_stack[10],
-		shader_stack[11],
-		shader_stack[12],
-		shader_stack[13],
-		shader_stack[14],
-		shader_stack[15],
-		0);
+	shader_stack[current_shader] = 0;
+	unsigned int shader = VFrame::make_shader(shader_stack);
 
 // printf("HistogramMain::handle_opengl %d %d %d %d shader=%d\n",
 // aggregate_interpolation,
@@ -763,14 +739,15 @@ int HistogramMain::handle_opengl()
 	{
 		glUseProgram(shader);
 		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-		if(aggregate_gamma) GAMMA_UNIFORMS(shader)
-		if(aggregate_interpolation) INTERPOLATE_UNIFORMS(shader)
-		if(aggregate_colorbalance) COLORBALANCE_UNIFORMS(shader)
+		if(aggregate_gamma) GAMMA_UNIFORMS(shader);
+		if(aggregate_interpolation) INTERPOLATE_UNIFORMS(shader);
+		if(aggregate_colorbalance) COLORBALANCE_UNIFORMS(shader);
 		glUniform4fv(glGetUniformLocation(shader, "low_input"), 1, low_input);
 		glUniform4fv(glGetUniformLocation(shader, "high_input"), 1, high_input);
 		glUniform4fv(glGetUniformLocation(shader, "gamma"), 1, gamma);
 		glUniform4fv(glGetUniformLocation(shader, "low_output"), 1, low_output);
 		glUniform4fv(glGetUniformLocation(shader, "output_scale"), 1, output_scale);
+		if( need_color_matrix ) BC_GL_COLORS(shader);
 	}
 
 	get_output()->init_screen();

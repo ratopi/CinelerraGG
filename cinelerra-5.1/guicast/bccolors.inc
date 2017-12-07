@@ -25,5 +25,11 @@
 
 class YUV;
 
+#define BC_COLORS_BT601 0
+#define BC_COLORS_BT709 1
+#define BC_COLORS_BT2020 2
+
+#define BC_COLORS_JPEG 0
+#define BC_COLORS_MPEG 1
 
 #endif

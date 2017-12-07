@@ -491,9 +491,7 @@ void AffineUnit::process_package(LoadPackage *package)
 
 			server->output->to_texture();
 			server->output->enable_opengl();
-			unsigned int frag_shader = VFrame::make_shader(0,
-					affine_frag,
-					0);
+			unsigned int frag_shader = VFrame::make_shader(0, affine_frag, 0);
 			if( frag_shader > 0 ) {
 				glUseProgram(frag_shader);
 				glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);

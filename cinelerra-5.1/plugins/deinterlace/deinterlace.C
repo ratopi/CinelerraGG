@@ -28,22 +28,11 @@
 #include "language.h"
 #include "vframe.h"
 
-
-
-
-
-
-
-
-
 #include <stdint.h>
 #include <string.h>
 
 
 REGISTER_PLUGIN(DeInterlaceMain)
-
-
-
 
 DeInterlaceConfig::DeInterlaceConfig()
 {
@@ -456,63 +445,62 @@ int DeInterlaceMain::handle_opengl()
 	get_output()->enable_opengl();
 	get_output()->init_screen();
 
-	const char *shader_stack[] = { 0, 0, 0 };
-	shader_stack[0] = head_frag;
+	if( config.mode != DEINTERLACE_NONE ) {
+		const char *shader_stack[16];
+		memset(shader_stack,0, sizeof(shader_stack));
+		int current_shader = 0;
 
-	float double_line_h = 2.0 / get_output()->get_texture_h();
-	float line_h = 1.0 / get_output()->get_texture_h();
-	float y_offset = 0.0;
-	switch(config.mode)
-	{
+		shader_stack[current_shader++] = head_frag;
+
+		float double_line_h = 2.0 / get_output()->get_texture_h();
+		float line_h = 1.0 / get_output()->get_texture_h();
+		float y_offset = 0.0;
+		const char *shader_frag = 0;
+
+		switch(config.mode) {
 		case DEINTERLACE_EVEN:
-			shader_stack[1] = line_double_frag;
+			shader_frag = line_double_frag;
 			break;
 		case DEINTERLACE_ODD:
-			shader_stack[1] = line_double_frag;
+			shader_frag = line_double_frag;
 			y_offset += 1.0;
 			break;
 
 		case DEINTERLACE_AVG:
-			shader_stack[1] = line_avg_frag;
+			shader_frag = line_avg_frag;
 			break;
 
 		case DEINTERLACE_AVG_EVEN:
-			shader_stack[1] = field_avg_frag;
+			shader_frag = field_avg_frag;
 			break;
 
 		case DEINTERLACE_AVG_ODD:
-			shader_stack[1] = field_avg_frag;
+			shader_frag = field_avg_frag;
 			y_offset += 1.0;
 			break;
 
 		case DEINTERLACE_SWAP_EVEN:
-			shader_stack[1] = line_swap_frag;
+			shader_frag = line_swap_frag;
 			break;
 
 		case DEINTERLACE_SWAP_ODD:
-			shader_stack[1] = line_swap_frag;
+			shader_frag = line_swap_frag;
 			y_offset += 1.0;
 			break;
-	}
+		}
+		if( shader_frag )
+			shader_stack[current_shader++] = shader_frag;
 
-	y_offset /= get_output()->get_texture_h();
-
-	shader_stack[2] = tail_frag;
-
-	if(config.mode != DEINTERLACE_NONE)
-	{
-		unsigned int frag = VFrame::make_shader(0,
-			shader_stack[0],
-			shader_stack[1],
-			shader_stack[2],
-			0);
-		if(frag)
-		{
-			glUseProgram(frag);
-			glUniform1i(glGetUniformLocation(frag, "tex"), 0);
-			glUniform1f(glGetUniformLocation(frag, "line_h"), line_h);
-			glUniform1f(glGetUniformLocation(frag, "double_line_h"), double_line_h);
-			glUniform1f(glGetUniformLocation(frag, "y_offset"), y_offset);
+		shader_stack[current_shader++] = tail_frag;
+		shader_stack[current_shader] = 0;
+		unsigned int shader = VFrame::make_shader(shader_stack);
+		if( shader > 0 ) {
+			y_offset /= get_output()->get_texture_h();
+			glUseProgram(shader);
+			glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+			glUniform1f(glGetUniformLocation(shader, "line_h"), line_h);
+			glUniform1f(glGetUniformLocation(shader, "double_line_h"), double_line_h);
+			glUniform1f(glGetUniformLocation(shader, "y_offset"), y_offset);
 		}
 	}
 

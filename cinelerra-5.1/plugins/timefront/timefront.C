@@ -746,11 +746,12 @@ int TimeFrontMain::is_synthesis()
 		{ \
 			unsigned int choice = invertion gradient_row[j]; \
 			{ \
-				out_row[0] = framelist[choice]->get_rows()[i][j * components + 0]; \
-				out_row[1] = framelist[choice]->get_rows()[i][j * components + 1]; \
-				out_row[2] = framelist[choice]->get_rows()[i][j * components + 2]; \
+				type *in_row = (type *)framelist[choice]->get_rows()[i]; \
+				out_row[0] = in_row[j * components + 0]; \
+				out_row[1] = in_row[j * components + 1]; \
+				out_row[2] = in_row[j * components + 2]; \
 				if (components == 4) \
-					out_row[3] = framelist[choice]->get_rows()[i][j * components + 3]; \
+					out_row[3] = in_row[j * components + 3]; \
 			} \
 			out_row += components; \
 		} \

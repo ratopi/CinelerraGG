@@ -255,7 +255,7 @@ public:
 
 class YuvColorSpace : public BC_PopupMenu
 {
-	static const char *color_space[2];
+	static const char *color_space[3];
 public:
 	YuvColorSpace(int x, int y, PreferencesWindow *pwindow);
 	~YuvColorSpace();

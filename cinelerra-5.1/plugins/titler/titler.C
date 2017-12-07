@@ -543,7 +543,7 @@ TitleUnit::TitleUnit(TitleMain *plugin, TitleEngine *server)
 static void get_mask_colors(int rgb, int color_model, int &rr, int &gg, int &bb)
 {
 	int r = 0xff & (rgb>>16), g = 0xff & (rgb>>8), b = 0xff & (rgb>>0);
-	if( BC_CModels::is_yuv(color_model) ) bc_rgb2yuv(r,g,b, r,g,b);
+	if( BC_CModels::is_yuv(color_model) ) YUV::yuv.rgb_to_yuv_8(r,g,b);
 	rr = r;  gg = g; bb = b;
 }
 

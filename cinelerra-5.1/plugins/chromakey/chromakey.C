@@ -19,6 +19,7 @@
  *
  */
 
+#include "bccolors.h"
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "chromakey.h"
@@ -384,9 +385,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
  	//float max_hue = h + plugin->config.threshold * 360 / 100;
 
 
-#define RGB_TO_VALUE(r, g, b) \
-((r) * R_TO_Y + (g) * G_TO_Y + (b) * B_TO_Y)
-
+#define RGB_TO_VALUE(r, g, b) YUV::yuv.rgb_to_y_f((r),(g),(b))
 
 #define OUTER_VARIABLES(plugin) \
 	float value = RGB_TO_VALUE(plugin->config.red, \
@@ -688,9 +687,11 @@ int ChromaKey::handle_opengl()
 		"}\n";
 
 	static const char *get_rgbvalue_frag =
+		"uniform mat3 rgb_to_yuv_matrix;\n"
+		"uniform float yminf;\n"
 		"float get_value(vec4 color)\n"
 		"{\n"
-		"	return dot(color.rgb, vec3(0.29900, 0.58700, 0.11400));\n"
+		"	return dot(color.rgb, rgb_to_yuv_matrix[0]) + yminf;\n"
 		"}\n";
 
 	static const char *value_frag =
@@ -734,64 +735,56 @@ int ChromaKey::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
-	const char *shader_stack[] = { 0, 0, 0, 0, 0 };
-	int current_shader = 0;
 
+        const char *shader_stack[16];
+        memset(shader_stack,0, sizeof(shader_stack));
+        int current_shader = 0;
 	shader_stack[current_shader++] = uniform_frag;
-	switch(get_output()->get_color_model())
-	{
-		case BC_YUV888:
-		case BC_YUVA8888:
-			if(config.use_value)
-			{
-				shader_stack[current_shader++] = get_yuvvalue_frag;
-				shader_stack[current_shader++] = value_frag;
-			}
-			else
-			{
-				shader_stack[current_shader++] = cube_frag;
-			}
-			break;
 
-		default:
-			if(config.use_value)
-			{
-				shader_stack[current_shader++] = get_rgbvalue_frag;
-				shader_stack[current_shader++] = value_frag;
-			}
-			else
-			{
-				shader_stack[current_shader++] = cube_frag;
-			}
-			break;
+	switch(get_output()->get_color_model()) {
+	case BC_YUV888:
+	case BC_YUVA8888:
+		if( config.use_value ) {
+			shader_stack[current_shader++] = get_yuvvalue_frag;
+			shader_stack[current_shader++] = value_frag;
+		}
+		else {
+			shader_stack[current_shader++] = cube_frag;
+		}
+		break;
+
+	default:
+		if(config.use_value) {
+			shader_stack[current_shader++] = get_rgbvalue_frag;
+			shader_stack[current_shader++] = value_frag;
+		}
+		else {
+			shader_stack[current_shader++] = cube_frag;
+		}
+		break;
 	}
 SET_TRACE
 
-	unsigned int frag = VFrame::make_shader(0,
-		shader_stack[0],
-		shader_stack[1],
-		shader_stack[2],
-		shader_stack[3],
-		0);
-	get_output()->bind_texture(0);
-
-	if(frag)
-	{
-		glUseProgram(frag);
-		glUniform1i(glGetUniformLocation(frag, "tex"), 0);
-		glUniform1f(glGetUniformLocation(frag, "min_v"), min_v);
-		glUniform1f(glGetUniformLocation(frag, "max_v"), max_v);
-		glUniform1f(glGetUniformLocation(frag, "run"), run);
-		glUniform1f(glGetUniformLocation(frag, "threshold"), threshold);
-		glUniform1f(glGetUniformLocation(frag, "threshold_run"), threshold_run);
+	shader_stack[current_shader] = 0;
+	unsigned int shader = VFrame::make_shader(shader_stack);
+	if( shader > 0 ) {
+		get_output()->bind_texture(0);
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+		glUniform1f(glGetUniformLocation(shader, "min_v"), min_v);
+		glUniform1f(glGetUniformLocation(shader, "max_v"), max_v);
+		glUniform1f(glGetUniformLocation(shader, "run"), run);
+		glUniform1f(glGetUniformLocation(shader, "threshold"), threshold);
+		glUniform1f(glGetUniformLocation(shader, "threshold_run"), threshold_run);
 		if(get_output()->get_color_model() != BC_YUV888 &&
 			get_output()->get_color_model() != BC_YUVA8888)
-			glUniform3f(glGetUniformLocation(frag, "key"),
+			glUniform3f(glGetUniformLocation(shader, "key"),
 				r_key, g_key, b_key);
 		else
-			glUniform3f(glGetUniformLocation(frag, "key"),
+			glUniform3f(glGetUniformLocation(shader, "key"),
 				(float)y_key / 0xff, (float)u_key / 0xff, (float)v_key / 0xff);
-
+		if(config.use_value)
+			BC_GL_RGB_TO_YUV(shader);
 	}
 SET_TRACE
 

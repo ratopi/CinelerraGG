@@ -72,29 +72,16 @@ static const char *gamma_yuv_frag =
 	"	gl_FragColor = pixel;\n"
 	"}\n";
 
-#define GAMMA_COMPILE(shader_stack, current_shader, aggregate_interpolation) \
-{ \
-	if(aggregate_interpolation) \
-		shader_stack[current_shader++] = gamma_get_pixel1; \
-	else \
-		shader_stack[current_shader++] = gamma_get_pixel2; \
- \
-	switch(get_output()->get_color_model()) \
-	{ \
-		case BC_YUV888: \
-		case BC_YUVA8888: \
-			shader_stack[current_shader++] = gamma_pow_frag; \
-			shader_stack[current_shader++] = gamma_yuv_frag; \
-			break; \
-		default: \
-			shader_stack[current_shader++] = gamma_pow_frag; \
-			shader_stack[current_shader++] = gamma_rgb_frag; \
-			break; \
-	} \
-}
+#define GAMMA_COMPILE(shader_stack, current_shader, aggregate_interpolation) do { \
+	shader_stack[current_shader++] = \
+		 (aggregate_interpolation) ? gamma_get_pixel1 : gamma_get_pixel2; \
+	shader_stack[current_shader++] = gamma_pow_frag; \
+	shader_stack[current_shader++] = \
+		!BC_CModels::is_yuv(get_output()->get_color_model()) ? \
+			gamma_rgb_frag : gamma_yuv_frag; \
+} while(0)
 
-#define GAMMA_UNIFORMS(frag) \
-{ \
+#define GAMMA_UNIFORMS(frag) do { \
 	float gamma = get_output()->get_params()->get("GAMMA_GAMMA", (float)1); \
 	float max = get_output()->get_params()->get("GAMMA_MAX", (float)1) * gamma; \
 	gamma -= 1.0; \
@@ -102,11 +89,6 @@ static const char *gamma_yuv_frag =
 	glUniform1f(glGetUniformLocation(frag, "gamma_scale"), scale); \
 	glUniform1f(glGetUniformLocation(frag, "gamma_gamma"), gamma); \
 	glUniform1f(glGetUniformLocation(frag, "gamma_max"), max); \
-printf("GAMMA_UNIFORMS %f %f\n", max, gamma); \
-}
-
-
-
-
+} while(0)
 
 #endif

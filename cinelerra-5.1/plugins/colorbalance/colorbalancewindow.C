@@ -87,18 +87,11 @@ void ColorBalanceWindow::update()
 
 ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client,
 	float *output, int x, int y)
- : BC_ISlider(x,
- 	y,
-	0,
-	200,
-	200,
-	-1000,
-	1000,
-	(int)*output)
+ : BC_ISlider(x, y, 0, 200, 200, -1000, 1000, (int)*output)
 {
 	this->client = client;
 	this->output = output;
-    old_value = *output;
+	old_value = *output;
 }
 
 ColorBalanceSlider::~ColorBalanceSlider()
@@ -109,7 +102,7 @@ int ColorBalanceSlider::handle_event()
 {
 	float difference = get_value() - *output;
 	*output = get_value();
-    client->synchronize_params(this, difference);
+	client->synchronize_params(this, difference);
 	client->send_configure_change();
 	return 1;
 }

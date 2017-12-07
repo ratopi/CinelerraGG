@@ -24,31 +24,12 @@
 
 // Duplicate filename in guicast
 
+#include "bccolors.inc"
 #include "clip.h"
 #include "vframe.inc"
 
 #include <stdint.h>
 
-// bt601 coefs originaly used
-// Compression coefficients straight out of jpeglib
-#define R_TO_Y	0.29900
-#define G_TO_Y	0.58700
-#define B_TO_Y	0.11400
-
-#define R_TO_U	-0.16874
-#define G_TO_U	-0.33126
-#define B_TO_U	0.50000
-
-#define R_TO_V	0.50000
-#define G_TO_V	-0.41869
-#define B_TO_V	-0.08131
-
-// Decompression coefficients straight out of jpeglib
-#define V_TO_R	1.40200
-#define V_TO_G	-0.71414
-
-#define U_TO_G	-0.34414
-#define U_TO_B	1.77200
 
 /*
 Digital YCbCr is derived from analog RGB as follows:
@@ -198,8 +179,6 @@ class YUV
 #define utog8f (tabf+0x40200)
 #define utob8f (tabf+0x40300)
 
-#define	bc_always_inline __attribute__ ((__always_inline__)) inline
-
 public:
 	YUV();
 	~YUV();
@@ -207,11 +186,13 @@ public:
 	inline int is_mpeg() { return mpeg; }
 
 	static YUV yuv;
+	static float rgb_to_yuv_matrix[10];
+	static float yuv_to_rgb_matrix[10];
 
 #define YUV_rgb_to_yuv_8(r,g,b, y,u,v) \
-	y = (rtoy8[r] + gtoy8[g] + btoy8[b] + yzero)  >> 16; \
-	u = (rtou8[r] + gtou8[g] + btou8[b] + uvzero) >> 16; \
-	v = (rtov8[r] + gtov8[g] + btov8[b] + uvzero) >> 16
+	y = iclip((rtoy8[r] + gtoy8[g] + btoy8[b] +  yzero) >> 16,  ymin8,  ymax8); \
+	u = iclip((rtou8[r] + gtou8[g] + btou8[b] + uvzero) >> 16, uvmin8, uvmax8); \
+	v = iclip((rtov8[r] + gtov8[g] + btov8[b] + uvzero) >> 16, uvmin8, uvmax8)
 
 	bc_always_inline void rgb_to_yuv_8(int r, int g, int b, int &y, int &u, int &v) {
 		YUV_rgb_to_yuv_8(r,g,b, y,u,v);
@@ -224,9 +205,9 @@ public:
 	}
 
 #define YUV_rgb_to_yuv_16(r,g,b, y,u,v) \
-	y = (rtoy16[r] + gtoy16[g] + btoy16[b] + yzero)  >> 8; \
-	u = (rtou16[r] + gtou16[g] + btou16[b] + uvzero) >> 8; \
-	v = (rtov16[r] + gtov16[g] + btov16[b] + uvzero) >> 8
+	y = iclip((rtoy16[r] + gtoy16[g] + btoy16[b] +  yzero) >> 8,  ymin16,  ymax16); \
+	u = iclip((rtou16[r] + gtou16[g] + btou16[b] + uvzero) >> 8, uvmin16, uvmax16); \
+	v = iclip((rtov16[r] + gtov16[g] + btov16[b] + uvzero) >> 8, uvmin16, uvmax16)
 
 	bc_always_inline void rgb_to_yuv_16(int r, int g, int b, int &y, int &u, int &v) {
 		YUV_rgb_to_yuv_16(r,g,b, y,u,v);
@@ -244,58 +225,51 @@ public:
 		u = r * r_to_u + g * g_to_u + b * b_to_u;
 		v = r * r_to_v + g * g_to_v + b * b_to_v;
 	}
-	bc_always_inline void rgb_to_yuv_8(float r, float g, float b, int &y, int &u, int &v) {
-		float fy, fu, fv;  rgb_to_yuv_f(r, g, b, fy, fu, fv);
-		int iy = fy * 0x100, iu = fu * 0x100, iv = fv * 0x100;
-		CLAMP(iy, ymin8, ymax8);
-		CLAMP(iu, uvmin8, uvmax8); CLAMP(iv, uvmin8, uvmax8);
-		y = iy;  u = iu;  v = iv;
+	bc_always_inline void rgb_to_yuv_f(float r, float g, float b, uint8_t &y, uint8_t &u, uint8_t &v) {
+		int ir = iclip(r*0x100, 0, 0xff);
+		int ig = iclip(g*0x100, 0, 0xff);
+		int ib = iclip(b*0x100, 0, 0xff);
+		rgb_to_yuv_8(ir,ig,ib, y,u,v);
 	}
-	bc_always_inline void rgb_to_yuv_16(float r, float g, float b,
-			int &y, int &u, int &v) {
-		float fy, fu, fv;  rgb_to_yuv_f(r, g, b, fy, fu, fv);
-		int iy = fy * 0x10000, iu = fu * 0x10000, iv = fv * 0x10000;
-		CLAMP(iy, ymin16, ymax16);
-		CLAMP(iu, uvmin16, uvmax16); CLAMP(iv, uvmin16, uvmax16);
-		y = iy;  u = iu;  v = iv;
+	bc_always_inline void rgb_to_yuv_f(float r, float g, float b, uint16_t &y, uint16_t &u, uint16_t &v) {
+		int ir = iclip(r*0x10000, 0, 0xffff);
+		int ig = iclip(g*0x10000, 0, 0xffff);
+		int ib = iclip(b*0x10000, 0, 0xffff);
+		rgb_to_yuv_16(ir,ig,ib, y,u,v);
 	}
 
 #define YUV_yuv_to_rgb_8(r,g,b, y,u,v) \
-	r = (ytab8[y] + vtor8[v]) >> 16; \
-	g = (ytab8[y] + utog8[u] + vtog8[v]) >> 16; \
-	b = (ytab8[y] + utob8[u]) >> 16
+	r = iclip((ytab8[y] + vtor8[v]) >> 16, 0, 0xff); \
+	g = iclip((ytab8[y] + utog8[u] + vtog8[v]) >> 16, 0, 0xff); \
+	b = iclip((ytab8[y] + utob8[u]) >> 16, 0, 0xff)
 
 	bc_always_inline void yuv_to_rgb_8(int &r, int &g, int &b, int y, int u, int v) {
 		YUV_yuv_to_rgb_8(r,g,b, y,u,v);
-		CLAMP(r, 0, 0xff); CLAMP(g, 0, 0xff); CLAMP(b, 0, 0xff);
 	}
 	bc_always_inline void yuv_to_rgb_8(uint8_t &r, uint8_t &g, uint8_t &b, int y, int u, int v) {
 		YUV_yuv_to_rgb_8(r,g,b, y,u,v);
 	}
 	bc_always_inline void yuv_to_rgb_8(int &r, int &g, int &b) {
 		int y = r, u = g, v = b;  YUV_yuv_to_rgb_8(r,g,b, y,u,v);
-		CLAMP(r, 0, 0xff); CLAMP(g, 0, 0xff); CLAMP(b, 0, 0xff);
 	}
 	bc_always_inline void yuv_to_rgb_8(float &r, float &g, float &b, int y, int u, int v) {
-		int ir, ig, ib;  YUV_yuv_to_rgb_8(ir,ig,ib, y,u,v);
+		int ir, ig, ib;  yuv_to_rgb_8(ir,ig,ib, y,u,v);
 		float s = 1/255.f;  r = s*ir;  g = s*ig;  b = s*ib;
 	}
 
 #define YUV_yuv_to_rgb_16(r,g,b, y,u,v) \
-	r = (ytab16[y] + vtor16[v]) >> 8; \
-	g = (ytab16[y] + utog16[u] + vtog16[v]) >> 8; \
-	b = (ytab16[y] + utob16[u]) >> 8
+	r = iclip((ytab16[y] + vtor16[v]) >> 8, 0, 0xffff); \
+	g = iclip((ytab16[y] + utog16[u] + vtog16[v]) >> 8, 0, 0xffff); \
+	b = iclip((ytab16[y] + utob16[u]) >> 8, 0, 0xffff)
 
 	bc_always_inline void yuv_to_rgb_16(int &r, int &g, int &b, int y, int u, int v) {
 		YUV_yuv_to_rgb_16(r,g,b, y,u,v);
-		CLAMP(r, 0, 0xffff); CLAMP(g, 0, 0xffff); CLAMP(b, 0, 0xffff);
 	}
 	bc_always_inline void yuv_to_rgb_16(uint16_t &r, uint16_t &g, uint16_t &b, int y, int u, int v) {
 		YUV_yuv_to_rgb_16(r,g,b, y,u,v);
 	}
 	bc_always_inline void yuv_to_rgb_16(int &r, int &g, int &b) {
 		int y = r, u = g, v = b;  YUV_yuv_to_rgb_16(r,g,b, y,u,v);
-		CLAMP(r, 0, 0xffff); CLAMP(g, 0, 0xffff); CLAMP(b, 0, 0xffff);
 	}
 	bc_always_inline void yuv_to_rgb_16(float &r, float &g, float &b, int y, int u, int v) {
 		int ir, ig, ib;  YUV_yuv_to_rgb_16(ir,ig,ib, y,u,v);
@@ -308,19 +282,36 @@ public:
 		g = y + u_to_g * u + v_to_g * v;
 		b = y + u_to_b * u;
 	}
+	bc_always_inline void yuv_to_rgb_f(float &r, float &g, float &b, uint8_t &y, uint8_t &u, uint8_t &v) {
+		yuv_to_rgb_8(r,g,b, y,u,v);
+	}
+	bc_always_inline void yuv_to_rgb_f(float &r, float &g, float &b, uint16_t &y, uint16_t &u, uint16_t &v) {
+		yuv_to_rgb_16(r,g,b, y,u,v);
+	}
+
+	bc_always_inline int rgb_to_y_8(int r, int g, int b) {
+		return (rtoy8[r] + gtoy8[g] + btoy8[b] + yzero) >> 16;
+	}
+	bc_always_inline int rgb_to_y_16(int r, int g, int b) {
+		return (rtoy16[r] + gtoy16[g] + btoy16[b] + yzero) >> 8;
+	}
+	bc_always_inline float rgb_to_y_f(float r, float g, float b) {
+		return r * r_to_y + g * g_to_y + b * b_to_y + yminf;
+	}
 
 // For easier programming.  Doesn't do anything.
 // unused cases in macro expansions, mismatched argument types
 	inline void yuv_to_rgb_8(float &r, float &g, float &b, float y, float u, float v) {}
 	inline void yuv_to_rgb_16(float &r, float &g, float &b, float y, float u, float v) {}
 	inline void yuv_to_rgb_f(int &r, int &g, int &b, int y, int u, int v) {}
-	inline void yuv_to_rgb_f(uint8_t &r, uint8_t &g, uint8_t &b, int y, int u, int v) {}
+	inline void yuv_to_rgb_f(uint8_t &r, uint8_t &g, uint8_t &b, int&y, int u, int v) {}
 	inline void yuv_to_rgb_f(uint16_t &r, uint16_t &g, uint16_t &b, int y, int u, int v) {}
+
 	inline void rgb_to_yuv_8(float r, float g, float b, float &y, float &u, float &v) {}
 	inline void rgb_to_yuv_16(float r, float g, float b, float &y, float &u, float &v) {}
-	inline void rgb_to_yuv_f(int &r, int &g, int &b, int y, int u, int v) {}
-	inline void rgb_to_yuv_f(uint8_t &r, uint8_t &g, uint8_t &b, int y, int u, int v) {}
-	inline void rgb_to_yuv_f(uint16_t &r, uint16_t &g, uint16_t &b, int y, int u, int v) {}
+	inline void rgb_to_yuv_f(int r, int g, int b, int &y, int &u, int &v) {}
+	inline void rgb_to_yuv_f(uint8_t r, uint8_t g, uint8_t b, int &y, int &u, int &v) {}
+	inline void rgb_to_yuv_f(uint16_t r, uint16_t g, uint16_t b, int &y, int &u, int &v) {}
 };
 
 

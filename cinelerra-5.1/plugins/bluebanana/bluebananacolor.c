@@ -398,6 +398,10 @@ static inline void HSpV_to_RGB(float H, float Sp, float V, float &R, float &G, f
 
 static inline void HSpV_correct_RGB(float H, float Sp, float &V, float &R, float &G, float &B){
   float vp = Sp<0.f?0.f:(fabs(V)+HSpV_SATURATION_BIAS)*Sp*HSpV_SATURATION_ISCALE;
+#define R_TO_Y (Kr)
+#define G_TO_Y (Kg)
+#define B_TO_Y (Kb)
+
   int i = (int)H;
   switch(i){
   default:

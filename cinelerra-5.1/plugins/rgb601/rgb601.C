@@ -353,24 +353,22 @@ int RGB601Main::handle_opengl()
 	get_output()->bind_texture(0);
 
 	unsigned int frag_shader = 0;
-	switch(get_output()->get_color_model())
-	{
-		case BC_YUV888:
-		case BC_YUVA8888:
-			frag_shader = VFrame::make_shader(0,
-				config.direction == 1 ? yuv_fwd_frag : yuv_rev_frag,
-				0);
+	switch( get_output()->get_color_model() ) {
+	case BC_YUV888:
+	case BC_YUVA8888:
+		frag_shader = VFrame::make_shader(0,
+			config.direction == 1 ? yuv_fwd_frag : yuv_rev_frag,
+			0);
 		break;
 
-		default:
-			frag_shader = VFrame::make_shader(0,
-				config.direction == 1 ? rgb_fwd_frag : rgb_rev_frag,
-				0);
+	default:
+		frag_shader = VFrame::make_shader(0,
+			config.direction == 1 ? rgb_fwd_frag : rgb_rev_frag,
+			0);
 		break;
 	}
 
-	if(frag_shader)
-	{
+	if( frag_shader > 0 ) {
 		glUseProgram(frag_shader);
 		glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
 	}

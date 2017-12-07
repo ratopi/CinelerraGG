@@ -342,9 +342,9 @@ int FileFFMPEG::get_best_colormodel(int driver, int vstream)
 	int is_mpeg = !ff ? 0 : ff->ff_video_mpeg_color_range(vstream);
 
 	switch(driver) {
-	case PLAYBACK_X11: return is_mpeg ? BC_YUV888 : BC_RGB888;
+	case PLAYBACK_X11:
+	case PLAYBACK_X11_GL: return is_mpeg ? BC_YUV888 : BC_RGB888;
 	case PLAYBACK_X11_XV: return BC_YUV420P;
-	case PLAYBACK_X11_GL: return BC_RGB_FLOAT;
 	}
 
 	return BC_RGB888;
@@ -354,9 +354,9 @@ int FileFFMPEG::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(driver) {
 // the direct X11 color model requires scaling in the codec
-	case PLAYBACK_X11: return BC_RGB888;
+	case PLAYBACK_X11:
+	case PLAYBACK_X11_GL: return BC_RGB888;
 	case PLAYBACK_X11_XV: return BC_YUV420P;
-	case PLAYBACK_X11_GL: return BC_RGB_FLOAT;
 	}
 
 	return BC_YUV420P;

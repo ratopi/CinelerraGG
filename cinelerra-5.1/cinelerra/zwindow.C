@@ -73,7 +73,7 @@ void Mixers::del_mixer(int idx)
 void Mixer::set_title(const char *tp)
 {
 	if( tp == title ) return;
-	strncpy(title, tp, sizeof(title));
+	strncpy(title, !tp ? "" : tp, sizeof(title));
 	title[sizeof(title)-1] = 0;
 }
 

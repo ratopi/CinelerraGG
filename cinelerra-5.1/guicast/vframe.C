@@ -134,8 +134,9 @@ VFrame::VFrame(VFrame &frame)
 	use_shm = frame.use_shm;
 	allocate_data(0, -1, 0, 0, 0, frame.w, frame.h,
 		frame.color_model, frame.bytes_per_line);
-	copy_from(&frame);
+	copy_vframe(&frame);
 }
+
 
 VFrame::VFrame(int w, int h, int color_model, long bytes_per_line)
 {
@@ -1027,14 +1028,12 @@ void VFrame::rotate270()
 
 void VFrame::flip_vert()
 {
-	unsigned char *temp = new unsigned char[bytes_per_line];
-	for(int i = 0, j = h - 1; i < j; i++, j--)
-	{
+	unsigned char temp[bytes_per_line];
+	for( int i=0, j=h; --j>i; ++i ) {
 		memcpy(temp, rows[j], bytes_per_line);
 		memcpy(rows[j], rows[i], bytes_per_line);
 		memcpy(rows[i], temp, bytes_per_line);
 	}
-	delete [] temp;
 }
 
 void VFrame::flip_horiz()
@@ -1118,18 +1117,19 @@ int VFrame::copy_from(VFrame *frame)
 			break;
 	}
 
-	params->copy_from(frame->params);
 	return 0;
 }
 
 int VFrame::transfer_from(VFrame *that, int bg_color, int in_x, int in_y, int in_w, int in_h)
 {
+	timestamp = that->timestamp;
+	copy_params(that);
+
 	if( this->get_color_model() == that->get_color_model() &&
 	    this->get_w() == that->get_w() && this->get_h() == that->get_h() &&
 	    this->get_bytes_per_line() == that->get_bytes_per_line() )
 		return this->copy_from(that);
 
-	timestamp = that->timestamp;
 #if 0
 	BC_CModels::transfer(
 		this->get_rows(), that->get_rows(),	     // Packed data out/in
@@ -1170,7 +1170,6 @@ int VFrame::transfer_from(VFrame *that, int bg_color, int in_x, int in_y, int in
 			that->get_bytes_per_line(),
 		bg_color);
 #endif
-	params->copy_from(that->params);
 	return 0;
 }
 
@@ -1269,20 +1268,18 @@ void VFrame::copy_stacks(VFrame *src)
 {
 	clear_stacks();
 
-	for(int i = 0; i < src->next_effects.total; i++)
-	{
-		char *ptr;
-		next_effects.append(ptr = new char[strlen(src->next_effects.values[i]) + 1]);
-		strcpy(ptr, src->next_effects.values[i]);
-	}
-	for(int i = 0; i < src->prev_effects.total; i++)
-	{
-		char *ptr;
-		prev_effects.append(ptr = new char[strlen(src->prev_effects.values[i]) + 1]);
-		strcpy(ptr, src->prev_effects.values[i]);
-	}
+	for( int i=0; i < src->next_effects.total; ++i )
+		next_effects.append(cstrdup(src->next_effects[i]));
+	for( int i=0; i < src->prev_effects.total; ++i )
+		prev_effects.append(cstrdup(src->prev_effects[i]));
 
 	copy_params(src);
+}
+
+int VFrame::copy_vframe(VFrame *frame)
+{
+	copy_stacks(frame);
+	return copy_from(frame);
 }
 
 int VFrame::equal_stacks(VFrame *src)
@@ -1337,7 +1334,7 @@ void VFrame::set_pixel_color(int rgb)
 	int ir = 0xff & (pixel_rgb >> 16);
 	int ig = 0xff & (pixel_rgb >> 8);
 	int ib = 0xff & (pixel_rgb >> 0);
-	bc_rgb2yuv(ir,ig,ib, ir,ig,ib);
+	YUV::yuv.rgb_to_yuv_8(ir, ig, ib);
 	pixel_yuv =  (ir<<16) | (ig<<8) | (ib<<0);
 }
 

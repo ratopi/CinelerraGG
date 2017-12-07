@@ -718,7 +718,6 @@ int FrameField::handle_opengl()
 		get_output()->enable_opengl();
 	}
 
-	unsigned int frag = 0;
 	float y_offset = 0.0;
 	if(field_number == 0)
 	{
@@ -738,48 +737,39 @@ int FrameField::handle_opengl()
 		get_output()->get_h(),
 		get_output()->get_color_model());
 
+	const char *shader_stack[16];
+	memset(shader_stack,0, sizeof(shader_stack));
+	int current_shader = 0;
 
-	const char *shaders[3] = { 0, 0, 0 };
-	shaders[0] = field_frag;
-
+	shader_stack[current_shader++] = field_frag;
 
 // Aggregate with other effect
 //printf("FrameField::handle_opengl %s\n", get_output()->get_next_effect());
-	if(aggregate_rgb601)
-	{
-		if(rgb601_direction == 1)
-		{
-			if(BC_CModels::is_yuv(get_output()->get_color_model()))
-				shaders[1] = yuv_to_601_frag;
-			else
-				shaders[1] = rgb_to_601_frag;
-		}
-		else
-		if(rgb601_direction == 2)
-		{
-			if(BC_CModels::is_yuv(get_output()->get_color_model()))
-				shaders[1] = _601_to_yuv_frag;
-			else
-				shaders[1] = _601_to_rgb_frag;
+	if( aggregate_rgb601 ) {
+		switch( rgb601_direction ) {
+		case 1:
+			shader_stack[current_shader++] =
+				BC_CModels::is_yuv(get_output()->get_color_model()) ?
+					 yuv_to_601_frag : rgb_to_601_frag;
+			break;
+		case 2:
+			shader_stack[current_shader++] =
+				BC_CModels::is_yuv(get_output()->get_color_model()) ?
+					_601_to_yuv_frag : _601_to_rgb_frag;
+			break;
 		}
 	}
 
-
-
-	frag = VFrame::make_shader(0, shaders[0], shaders[1], shaders[2], 0);
-
-
-	if(frag)
-	{
-		glUseProgram(frag);
-		glUniform1i(glGetUniformLocation(frag, "tex"), 0);
-		glUniform1f(glGetUniformLocation(frag, "double_line_h"),
+	shader_stack[current_shader] = 0;
+	unsigned int shader = VFrame::make_shader(shader_stack);
+	if( shader > 0 ) {
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+		glUniform1f(glGetUniformLocation(shader, "double_line_h"),
 			2.0 / src_texture->get_texture_h());
-		glUniform1f(glGetUniformLocation(frag, "y_offset"),
+		glUniform1f(glGetUniformLocation(shader, "y_offset"),
 			y_offset / src_texture->get_texture_h());
 	}
-
-
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

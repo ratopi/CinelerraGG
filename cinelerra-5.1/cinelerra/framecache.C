@@ -123,14 +123,8 @@ int FrameCache::get_frame(VFrame *frame,
 // 				result->data->get_w(),
 // 				frame->get_w());
 
-
+// no context data since keyframe updates may vary input
 			frame->copy_from(result->data);
-
-
-// This would have copied the color matrix for interpolate, but
-// required the same plugin stack as the reader.
-//			frame->copy_stacks(result->data);
-			frame->copy_params(result->data);
 		}
 		result->age = get_age();
 	}

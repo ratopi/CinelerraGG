@@ -947,15 +947,14 @@ int LensMain::handle_opengl()
 		"uniform vec2 center_coord;\n"
 		"uniform vec4 border_color;\n"
 		"uniform vec4 r;\n"
-		"uniform float radius;\n"
 		"void main()\n"
 		"{\n"
 		"	vec2 outcoord = gl_TexCoord[0].st * texture_extents;\n"
 		"	vec2 coord_diff = outcoord - center_coord;\n"
 		"	float z = sqrt(coord_diff.x * coord_diff.x +\n"
 		"					coord_diff.y * coord_diff.y);\n"
-		"	vec4 radius1 = (vec4(z, z, z, z) / r) * 2.0 * radius;\n"
-		"	vec4 z_in = r * atan(radius1) / (3.14159 / 2.0);\n"
+		"	vec4 radius1 = vec4(z, z, z, z) / r;\n"
+		"	vec4 z_in = r * tan(radius1) / (3.14159 / 2.0);\n"
 		"\n"
 		"	float angle;\n"
 		"	if( coord_diff.x == 0.0 )\n"
@@ -992,29 +991,29 @@ int LensMain::handle_opengl()
 
 	get_output()->to_texture();
 	get_output()->enable_opengl();
-	unsigned int frag_shader = 0;
 
-	switch( config.mode )
-	{
+	unsigned int shader = 0;
+	const char *shader_frag = 0;
+	switch( config.mode ) {
 	case LensConfig::SPHERICAL_SHRINK:
-		frag_shader = VFrame::make_shader(0, shrink_frag, 0);
+		shader_frag = shrink_frag;
 		break;
 	case LensConfig::SPHERICAL_STRETCH:
-		frag_shader = VFrame::make_shader(0, stretch_frag, 0);
+		shader_frag = stretch_frag;
 		break;
 	case LensConfig::RECTILINEAR_STRETCH:
-		frag_shader = VFrame::make_shader(0, rectilinear_stretch_frag, 0);
+		shader_frag = rectilinear_stretch_frag;
 		break;
 	case LensConfig::RECTILINEAR_SHRINK:
-		frag_shader = VFrame::make_shader(0, rectilinear_shrink_frag, 0);
+		shader_frag = rectilinear_shrink_frag;
 		break;
 	}
-
-	if( frag_shader > 0 ) {
+	if( shader_frag )
+		shader = VFrame::make_shader(0, shader_frag, 0);
+	if( shader > 0 ) {
 		float border_color[] = { 0, 0, 0, 0 };
 		if( BC_CModels::is_yuv(get_output()->get_color_model()) ) {
-			border_color[1] = 0.5;
-			border_color[2] = 0.5;
+			border_color[1] = border_color[2] = 0.5;
 		}
 
 		double x_factor = config.aspect;
@@ -1022,18 +1021,18 @@ int LensMain::handle_opengl()
 		if( x_factor < 1 ) x_factor = 1;
 		if( y_factor < 1 ) y_factor = 1;
 
-		glUseProgram(frag_shader);
-		glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
-		glUniform2f(glGetUniformLocation(frag_shader, "aspect"),
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+		glUniform2f(glGetUniformLocation(shader, "aspect"),
 			x_factor,
 			y_factor);
-		glUniform2f(glGetUniformLocation(frag_shader, "center_coord"),
+		glUniform2f(glGetUniformLocation(shader, "center_coord"),
 				(GLfloat)get_input()->get_w() * config.center_x / 100.0,
 				(GLfloat)get_input()->get_h() * config.center_y / 100.0);
-		glUniform2f(glGetUniformLocation(frag_shader, "texture_extents"),
+		glUniform2f(glGetUniformLocation(shader, "texture_extents"),
 				(GLfloat)get_input()->get_texture_w(),
 				(GLfloat)get_input()->get_texture_h());
-		glUniform2f(glGetUniformLocation(frag_shader, "image_extents"),
+		glUniform2f(glGetUniformLocation(shader, "image_extents"),
 				(GLfloat)get_input()->get_w(),
 				(GLfloat)get_input()->get_h());
 
@@ -1042,59 +1041,54 @@ int LensMain::handle_opengl()
 		float *fov = config.fov;
 		float dim;
 		float max_z;
-		switch( config.mode )
-		{
-			case LensConfig::SPHERICAL_SHRINK:
-				dim = MAX(width, height) * config.radius;
-				max_z = dim * sqrt(2.0) / 2;
-				glUniform4fv(glGetUniformLocation(frag_shader, "border_color"),
-						1,
-						(GLfloat*)border_color);
-				glUniform4f(glGetUniformLocation(frag_shader, "max_z"),
+		switch( config.mode ) {
+		case LensConfig::SPHERICAL_SHRINK:
+			dim = MAX(width, height) * config.radius;
+			max_z = dim * sqrt(2.0) / 2;
+			glUniform4fv(glGetUniformLocation(shader, "border_color"),
+					1, (GLfloat*)border_color);
+			glUniform4f(glGetUniformLocation(shader, "max_z"),
 					max_z / fov[0],
 					max_z / fov[1],
 					max_z / fov[2],
 					max_z / fov[3]);
-				glUniform4f(glGetUniformLocation(frag_shader, "r"),
+			glUniform4f(glGetUniformLocation(shader, "r"),
 					(max_z / fov[0]) * 2 / M_PI,
 					(max_z / fov[1]) * 2 / M_PI,
 					(max_z / fov[2]) * 2 / M_PI,
 					(max_z / fov[3]) * 2 / M_PI);
-				break;
+			break;
 
-			case LensConfig::SPHERICAL_STRETCH:
-				dim = MAX(width, height) * config.radius;
-				max_z = dim * sqrt(2.0) / 2;
-				glUniform4f(glGetUniformLocation(frag_shader, "r"),
+		case LensConfig::SPHERICAL_STRETCH:
+			dim = MAX(width, height) * config.radius;
+			max_z = dim * sqrt(2.0) / 2;
+			glUniform4f(glGetUniformLocation(shader, "r"),
 					max_z / M_PI / (fov[0] / 2.0),
 					max_z / M_PI / (fov[1] / 2.0),
 					max_z / M_PI / (fov[2] / 2.0),
 					max_z / M_PI / (fov[3] / 2.0));
-				break;
+			break;
 
-			case LensConfig::RECTILINEAR_STRETCH:
-				max_z = sqrt(SQR(width) + SQR(height)) / 2;
-				glUniform4f(glGetUniformLocation(frag_shader, "r"),
+		case LensConfig::RECTILINEAR_STRETCH:
+			max_z = sqrt(SQR(width) + SQR(height)) / 2;
+			glUniform4f(glGetUniformLocation(shader, "r"),
 					max_z / M_PI / (fov[0] / 2.0),
 					max_z / M_PI / (fov[1] / 2.0),
 					max_z / M_PI / (fov[2] / 2.0),
 					max_z / M_PI / (fov[3] / 2.0));
-				glUniform1f(glGetUniformLocation(frag_shader, "radius"),
+			glUniform1f(glGetUniformLocation(shader, "radius"),
 					config.radius);
-				break;
+			break;
 
-			case LensConfig::RECTILINEAR_SHRINK:
-				max_z = sqrt(SQR(width) + SQR(height)) / 2;
-				glUniform4f(glGetUniformLocation(frag_shader, "r"),
-					max_z / M_PI / (fov[0] / 2.0),
-					max_z / M_PI / (fov[1] / 2.0),
-					max_z / M_PI / (fov[2] / 2.0),
-					max_z / M_PI / (fov[3] / 2.0));
-				glUniform1f(glGetUniformLocation(frag_shader, "radius"),
-					config.radius);
-				break;
+		case LensConfig::RECTILINEAR_SHRINK:
+			max_z = MAX(width, height) / 2 * config.radius;
+			glUniform4f(glGetUniformLocation(shader, "r"),
+					max_z / fov[0],
+					max_z / fov[1],
+					max_z / fov[2],
+					max_z / fov[3]);
+			break;
 		}
-
 
 		get_output()->init_screen();
 		get_output()->bind_texture(0);
@@ -1103,7 +1097,6 @@ int LensMain::handle_opengl()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		get_output()->draw_texture();
 		glUseProgram(0);
-
 
 		if( config.draw_guides ) {
 			int w = get_output()->get_w();

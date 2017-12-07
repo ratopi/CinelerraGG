@@ -573,43 +573,30 @@ int GammaMain::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
+        const char *shader_stack[16];
+        memset(shader_stack,0, sizeof(shader_stack));
+        int current_shader = 0;
 
-	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-	int current_shader = 0;
-
+	int need_color_matrix = BC_CModels::is_yuv(get_output()->get_color_model()) ? 1 : 0;
+	if( need_color_matrix )
+		shader_stack[current_shader++] = bc_gl_colors;
 
 // Aggregate with interpolate
-	int aggregate = 0;
-	if(prev_effect_is(_("Interpolate Pixels")))
-	{
-		aggregate = 1;
-		INTERPOLATE_COMPILE(shader_stack, current_shader)
-	}
+	int aggregate = prev_effect_is(_("Interpolate Pixels")) ? 1 : 0;
+	if( aggregate )
+		INTERPOLATE_COMPILE(shader_stack, current_shader);
 
 	GAMMA_COMPILE(shader_stack, current_shader, aggregate);
 
-	unsigned int shader = VFrame::make_shader(0,
-				shader_stack[0],
-				shader_stack[1],
-				shader_stack[2],
-				shader_stack[3],
-				shader_stack[4],
-				shader_stack[5],
-				shader_stack[6],
-				shader_stack[7],
-				0);
-
-
-	if(shader > 0)
-	{
+	shader_stack[current_shader] = 0;
+	unsigned int shader = VFrame::make_shader(shader_stack);
+	if( shader > 0 ) {
 		glUseProgram(shader);
 		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-
 		if(aggregate)
-		{
-			INTERPOLATE_UNIFORMS(shader)
-		}
-		GAMMA_UNIFORMS(shader)
+			INTERPOLATE_UNIFORMS(shader);
+		GAMMA_UNIFORMS(shader);
+		if( need_color_matrix ) BC_GL_COLORS(shader);
 	}
 
 	get_output()->init_screen();

@@ -677,38 +677,26 @@ int HueEffect::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
-	unsigned int frag_shader = 0;
-	switch(get_output()->get_color_model())
-	{
-		case BC_YUV888:
-		case BC_YUVA8888:
-// This is a lousy approximation but good enough for the masker.
-			if(EQUIV(config.hue, 0))
-				frag_shader = VFrame::make_shader(0,
-					yuv_saturation_frag,
-					0);
-			else
-				frag_shader = VFrame::make_shader(0,
-					yuv_frag,
-					0);
-			break;
-		default:
-			frag_shader = VFrame::make_shader(0,
-				rgb_frag,
-				0);
-			break;
-	}
+	const char *shader_stack[16];
+	memset(shader_stack,0, sizeof(shader_stack));
+	int current_shader = 0;
 
+	int need_color_matrix = BC_CModels::is_yuv(get_output()->get_color_model()) ? 1 : 0;
+	if( need_color_matrix ) shader_stack[current_shader++] = bc_gl_colors;
+	shader_stack[current_shader++] = !need_color_matrix ? rgb_frag :
+		EQUIV(config.hue, 0) ? yuv_saturation_frag: yuv_frag ;
 
-	if(frag_shader > 0)
-	{
-		glUseProgram(frag_shader);
-		glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
-		glUniform1f(glGetUniformLocation(frag_shader, "h_offset"), config.hue);
-		glUniform1f(glGetUniformLocation(frag_shader, "s_offset"),
+	shader_stack[current_shader] = 0;
+        unsigned int shader = VFrame::make_shader(shader_stack);
+	if(shader > 0) {
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+		glUniform1f(glGetUniformLocation(shader, "h_offset"), config.hue);
+		glUniform1f(glGetUniformLocation(shader, "s_offset"),
 			((float)config.saturation - MINSATURATION) / MAXSATURATION);
-		glUniform1f(glGetUniformLocation(frag_shader, "v_offset"),
+		glUniform1f(glGetUniformLocation(shader, "v_offset"),
 			((float)config.value - MINVALUE) / MAXVALUE);
+		if( need_color_matrix ) BC_GL_COLORS(shader);
 	}
 
 	get_output()->init_screen();

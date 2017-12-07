@@ -19,8 +19,9 @@
  *
  */
 
-#include "clip.h"
+#include "bccolors.h"
 #include "bchash.h"
+#include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
@@ -498,8 +499,7 @@ void TimeAvgMain::reset_accum(int w, int h, int color_model)
 	}
 }
 
-#define RGB_TO_VALUE(r, g, b) \
-((r) * R_TO_Y + (g) * G_TO_Y + (b) * B_TO_Y)
+#define RGB_TO_VALUE(r, g, b) YUV::yuv.rgb_to_y_f((r),(g),(b))
 
 // Only AVERAGE and ACCUMULATE use this
 #define SUBTRACT_ACCUM(type, \

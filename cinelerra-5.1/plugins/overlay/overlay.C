@@ -593,29 +593,26 @@ static const char * const overlay_shaders[TRANSFER_TYPES] = {
 		dst->init_screen();
         	src->bind_texture(0);
 	        dst->bind_texture(1);
-		const char *shader_stack[] = { 0, 0, 0 };
+
+		const char *shader_stack[16];
+		memset(shader_stack,0, sizeof(shader_stack));
 		int current_shader = 0;
 
 		shader_stack[current_shader++] = get_pixels_frag;
 		shader_stack[current_shader++] = overlay_shaders[config.mode];
 		shader_stack[current_shader++] = put_pixels_frag;
-
-		unsigned int shader_id = 0;
-		shader_id = VFrame::make_shader(0,
-			shader_stack[0],
-			shader_stack[1],
-			shader_stack[2],
-			0);
-
-		glUseProgram(shader_id);
-		glUniform1i(glGetUniformLocation(shader_id, "src_tex"), 0);
-		glUniform1i(glGetUniformLocation(shader_id, "dst_tex"), 1);
-		glUniform2f(glGetUniformLocation(shader_id, "dst_tex_dimensions"),
-				(float)dst->get_texture_w(), (float)dst->get_texture_h());
-		float chroma_offset = BC_CModels::is_yuv(dst->get_color_model()) ? 0.5 : 0.0;
-		glUniform3f(glGetUniformLocation(shader_id, "chroma_offset"),
-				0.0, chroma_offset, chroma_offset);
-
+		shader_stack[current_shader] = 0;
+	        unsigned int shader = VFrame::make_shader(shader_stack);
+		if( shader > 0 ) {
+			glUseProgram(shader);
+			glUniform1i(glGetUniformLocation(shader, "src_tex"), 0);
+			glUniform1i(glGetUniformLocation(shader, "dst_tex"), 1);
+			glUniform2f(glGetUniformLocation(shader, "dst_tex_dimensions"),
+					(float)dst->get_texture_w(), (float)dst->get_texture_h());
+			float chroma_offset = BC_CModels::is_yuv(dst->get_color_model()) ? 0.5 : 0.0;
+			glUniform3f(glGetUniformLocation(shader, "chroma_offset"),
+					0.0, chroma_offset, chroma_offset);
+		}
 		src->draw_texture();
 		glUseProgram(0);
 

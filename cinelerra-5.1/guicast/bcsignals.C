@@ -109,6 +109,53 @@ static void bc_copy_textfile(int lines, FILE *ofp, const char *fmt,...)
 	fclose(ifp);
 }
 
+static void bc_list_openfiles(int lines, FILE *ofp, const char *fmt,...)
+{
+	va_list ap;    va_start(ap, fmt);
+	char bfr[BCTEXTLEN];  vsnprintf(bfr, sizeof(bfr), fmt, ap);
+	va_end(ap);
+	DIR *dir  = opendir(bfr);
+	if( !dir ) return;
+	struct dirent64 *dent;
+	while( --lines >= 0 && (dent = readdir64(dir)) ) {
+		const char *fn = dent->d_name;
+		fprintf(ofp, "%s", fn);
+		char path[BCTEXTLEN], link[BCTEXTLEN];
+		struct stat st;
+		snprintf(path, sizeof(path), "%s/%s", bfr, fn);
+		if( !stat(path,&st) ) {
+			int typ = 0;
+			if( S_ISREG(st.st_mode) )       typ = ' ';
+			else if( S_ISDIR(st.st_mode) )  typ = 'd';
+			else if( S_ISBLK(st.st_mode) )  typ = 'b';
+			else if( S_ISCHR(st.st_mode) )  typ = 'c';
+			else if( S_ISFIFO(st.st_mode) ) typ = 'f';
+			else if( S_ISLNK(st.st_mode) )  typ = 'l';
+			else if( S_ISSOCK(st.st_mode) ) typ = 's';
+			if( typ ) fprintf(ofp, "\t%c", typ);
+			fprintf(ofp, "\tsize %jd", st.st_size);
+			int len = readlink(path, link, sizeof(link)-1);
+			if( len > 0 ) {
+				link[len] = 0;
+				fprintf(ofp, "\t-> %s", link);
+			}
+		}
+		snprintf(path, sizeof(path), "%sinfo/%s", bfr, fn);
+		FILE *fp = fopen(path,"r");  int64_t pos;
+		if( fp ) {
+			while( fgets(link, sizeof(link), fp) ) {
+				if( sscanf(link, "pos:%jd", &pos) == 1 ) {
+					fprintf(ofp, "\tpos: %jd", pos);
+					break;
+				}
+			}
+			fclose(fp);
+		}
+		fprintf(ofp, "\n");
+	}
+	closedir(dir);
+}
+
 // Can't use Mutex because it would be recursive
 static pthread_mutex_t *handler_lock = 0;
 
@@ -401,6 +448,8 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 	}
 	fprintf(fp,"\nVERSION:\n");  bc_copy_textfile(INT_MAX, fp,"/proc/version");
 	fprintf(fp,"\nMEMINFO:\n");  bc_copy_textfile(INT_MAX, fp,"/proc/meminfo");
+	fprintf(fp,"\nSTATUS:\n");   bc_copy_textfile(INT_MAX, fp,"/proc/%d/status",pid);
+	fprintf(fp,"\nFD:\n");	     bc_list_openfiles(INT_MAX, fp,"/proc/%d/fd", pid);
 	fprintf(fp,"\nMAPS:\n");     bc_copy_textfile(INT_MAX, fp,"/proc/%d/maps",pid);
 	char proc_mem[64];
 	if( tid > 0 && tid != pid )
