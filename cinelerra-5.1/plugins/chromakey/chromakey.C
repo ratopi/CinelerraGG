@@ -687,11 +687,11 @@ int ChromaKey::handle_opengl()
 		"}\n";
 
 	static const char *get_rgbvalue_frag =
-		"uniform mat3 rgb_to_yuv_matrix;\n"
+		"uniform vec3 rgb_to_y_vector;\n"
 		"uniform float yminf;\n"
 		"float get_value(vec4 color)\n"
 		"{\n"
-		"	return dot(color.rgb, rgb_to_yuv_matrix[0]) + yminf;\n"
+		"	return dot(color.rgb, rgb_to_y_vector) + yminf;\n"
 		"}\n";
 
 	static const char *value_frag =
@@ -784,7 +784,7 @@ SET_TRACE
 			glUniform3f(glGetUniformLocation(shader, "key"),
 				(float)y_key / 0xff, (float)u_key / 0xff, (float)v_key / 0xff);
 		if(config.use_value)
-			BC_GL_RGB_TO_YUV(shader);
+			BC_GL_RGB_TO_Y(shader);
 	}
 SET_TRACE
 

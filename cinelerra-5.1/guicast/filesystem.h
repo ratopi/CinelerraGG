@@ -31,8 +31,7 @@ class FileItem
 public:
 	FileItem();
 	FileItem(char *path, char *name, int is_dir,
-		int64_t size, int month, int day, int year,
-		int64_t calendar_time, int item_no=-1);
+		int64_t size, time_t mtime, int item_no=-1);
 	~FileItem();
 
 	int set_path(char *path);
@@ -47,10 +46,7 @@ public:
 	char *name;
 	int is_dir;
 	int64_t size;
-	int month;
-	int day;
-	int year;
-	int64_t calendar_time;
+	time_t mtime;
 	int item_no;
 };
 

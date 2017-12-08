@@ -471,7 +471,7 @@ int BC_Theme::images_cmpr(const void *ap, const void *bp)
 unsigned char* BC_Theme::get_image_data(const char *name, int log_errs)
 {
 // Image is the same as the last one
-	if( last_image_data && !strcasecmp(last_image_data->name, name) )
+	if( last_image_data && !strcmp(last_image_data->name, name) )
 		return last_image_data->data;
 
 // look forwards thru data sets for name
@@ -484,7 +484,7 @@ unsigned char* BC_Theme::get_image_data(const char *name, int log_errs)
 		while( r-l > 1 ) {
 			m = (l + r) / 2;
 			BC_ImageData *image_data = images[m];
-			if( !(v=strcasecmp(name, image_data->name)) ) {
+			if( !(v=strcmp(name, image_data->name)) ) {
 				image_data->used = 1;
 				last_image_data = image_data;
 				return image_data->data;

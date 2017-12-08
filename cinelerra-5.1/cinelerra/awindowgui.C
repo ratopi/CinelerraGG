@@ -222,6 +222,7 @@ void AssetPicon::reset()
 	icon_vframe = 0;
 	vicon = 0;
 	in_use = 1;
+	mtime = 0;
 	id = 0;
 	persistent = 0;
 }
@@ -311,7 +312,8 @@ void AssetPicon::create_objects()
 			icon = gui->audio_icon;
 			icon_vframe = gui->audio_vframe;
 		}
-
+		struct stat st;
+		mtime = !stat(asset->path, &st) ? st.st_mtime : 0;
 	}
 	else
 	if( indexable && !indexable->is_asset ) {
@@ -1135,7 +1137,7 @@ void AWindowGUI::update_picon(Indexable *indexable)
 	}
 }
 
-void AWindowGUI::sort_assets()
+void AWindowGUI::sort_assets(int use_mtime)
 {
 	switch( mwindow->edl->session->awindow_folder ) {
 	case AW_AEFFECT_FOLDER:
@@ -1154,7 +1156,7 @@ void AWindowGUI::sort_assets()
 		sort_picons(&labellist);
 		break;
 	default:
-		sort_picons(&assets);
+		sort_picons(&assets, use_mtime);
 	}
 // reset xyposition
 	asset_list->update_format(asset_list->get_format(), 0);
@@ -1207,6 +1209,14 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 			else
 			if( picon->label && picon->label->textstr )
 				dst[1].append(item2 = new BC_ListBoxItem(picon->label->textstr));
+			else if( picon->mtime ) {
+				char date_time[BCSTRLEN];
+				struct tm stm;  localtime_r(&picon->mtime, &stm);
+				sprintf(date_time,"%04d.%02d.%02d %02d:%02d:%02d",
+					 stm.tm_year+1900, stm.tm_mon+1, stm.tm_mday,
+					 stm.tm_hour, stm.tm_min, stm.tm_sec);
+				dst[1].append(item2 = new BC_ListBoxItem(date_time));
+			}
 			else
 				dst[1].append(item2 = new BC_ListBoxItem(""));
 			item1->set_autoplace_text(1);  item1->set_autoplace_icon(1);
@@ -1215,24 +1225,27 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 	}
 }
 
-void AWindowGUI::sort_picons(ArrayList<BC_ListBoxItem*> *src)
+void AWindowGUI::sort_picons(ArrayList<BC_ListBoxItem*> *src, int use_mtime)
 {
-	int done = 0;
-	while(!done)
-	{
+	int done = 0, changed = 0;
+	while( !done ) {
 		done = 1;
-		for( int i = 0; i < src->total - 1; i++ ) {
-			BC_ListBoxItem *item1 = src->values[i];
-			BC_ListBoxItem *item2 = src->values[i + 1];
-			item1->set_autoplace_icon(1);
-			item2->set_autoplace_icon(1);
-			item1->set_autoplace_text(1);
-			item2->set_autoplace_text(1);
-			if( strcmp(item1->get_text(), item2->get_text()) > 0 ) {
+		for( int i=0; i<src->total-1; ++i ) {
+			AssetPicon *item1 = (AssetPicon *)src->values[i];
+			AssetPicon *item2 = (AssetPicon *)src->values[i + 1];
+			if( use_mtime ? item1->mtime > item2->mtime :
+			    strcmp(item1->get_text(), item2->get_text()) > 0 ) {
 				src->values[i + 1] = item1;
 				src->values[i] = item2;
-				done = 0;
+				done = 0;  changed = 1;
 			}
+		}
+	}
+	if( changed ) {
+		for( int i=0; i<src->total; ++i ) {
+			AssetPicon *item = (AssetPicon *)src->values[i];
+			item->set_autoplace_icon(1);
+			item->set_autoplace_text(1);
 		}
 	}
 }
@@ -2122,7 +2135,7 @@ AWindowListSort::AWindowListSort(MWindow *mwindow, AWindowGUI *gui)
 
 int AWindowListSort::handle_event()
 {
-	gui->sort_assets();
+	gui->sort_assets(0);
 	return 1;
 }
 

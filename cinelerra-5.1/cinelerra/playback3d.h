@@ -43,29 +43,37 @@
 // use static presets YUV in bccolors.h
 #define BC_GL_MATRIX(shader, mat) \
 	glUniformMatrix3fv(glGetUniformLocation(shader, #mat), 1, 0, YUV::mat)
+#define BC_GL_VECTOR(shader, vec) \
+	glUniform3fv(glGetUniformLocation(shader, #vec), 1, YUV::vec)
 
-#define BC_GL_YMINF(shader,mat) \
-	glUniform1f(glGetUniformLocation(shader, "yminf"), YUV::mat[9])
+#define BC_GL_YMINF(shader) \
+	glUniform1f(glGetUniformLocation(shader, "yminf"), YUV::yuv.get_yminf())
 
 #define BC_GL_RGB_TO_YUV(shader) do { \
 	BC_GL_MATRIX(shader, rgb_to_yuv_matrix); \
-	BC_GL_YMINF(shader, rgb_to_yuv_matrix); \
+	BC_GL_YMINF(shader); \
+} while(0)
+
+#define BC_GL_RGB_TO_Y(shader) do { \
+	BC_GL_VECTOR(shader, rgb_to_y_vector); \
+	BC_GL_YMINF(shader); \
 } while(0)
 
 #define BC_GL_YUV_TO_RGB(shader) do { \
 	BC_GL_MATRIX(shader, yuv_to_rgb_matrix); \
-	BC_GL_YMINF(shader, yuv_to_rgb_matrix); \
+	BC_GL_YMINF(shader); \
 } while(0)
 
 #define BC_GL_COLORS(shader) do { \
 	BC_GL_MATRIX(shader, yuv_to_rgb_matrix); \
 	BC_GL_MATRIX(shader, rgb_to_yuv_matrix); \
-	BC_GL_YMINF(shader, rgb_to_yuv_matrix); \
+	BC_GL_YMINF(shader); \
 } while(0)
 
 
 #define bc_gl_yuv_to_rgb "uniform mat3 yuv_to_rgb_matrix;\n"
 #define bc_gl_rgb_to_yuv "uniform mat3 rgb_to_yuv_matrix;\n"
+#define bc_gl_rgb_to_y   "uniform vec3 rgb_to_y_vector;\n"
 #define bc_gl_yminf      "uniform float yminf;\n"
 #define bc_gl_colors bc_gl_yuv_to_rgb bc_gl_rgb_to_yuv bc_gl_yminf
 

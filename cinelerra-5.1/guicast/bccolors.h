@@ -186,8 +186,10 @@ public:
 	inline int is_mpeg() { return mpeg; }
 
 	static YUV yuv;
-	static float rgb_to_yuv_matrix[10];
-	static float yuv_to_rgb_matrix[10];
+	static float yuv_to_rgb_matrix[9];
+	static float rgb_to_yuv_matrix[9];
+	static float rgb_to_y_vector[3];
+	inline float get_yminf() { return yminf; }
 
 #define YUV_rgb_to_yuv_8(r,g,b, y,u,v) \
 	y = iclip((rtoy8[r] + gtoy8[g] + btoy8[b] +  yzero) >> 16,  ymin8,  ymax8); \

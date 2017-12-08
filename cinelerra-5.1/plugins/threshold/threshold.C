@@ -259,12 +259,12 @@ int ThresholdMain::handle_opengl()
 		"uniform vec4 low_color;\n"
 		"uniform vec4 mid_color;\n"
 		"uniform vec4 high_color;\n"
-		"uniform mat3 rgb_to_yuv_matrix;\n"
+		"uniform vec3 rgb_to_y_vector;\n"
 		"uniform float yminf;\n"
 		"void main()\n"
 		"{\n"
 		"	vec4 pixel = texture2D(tex, gl_TexCoord[0].st);\n"
-		"	float v = dot(pixel.rgb, rgb_to_yuv_matrix[0]) + yminf;\n"
+		"	float v = dot(pixel.rgb, rgb_to_y_vector) + yminf;\n"
 		"	if(v < min)\n"
 		"		pixel = low_color;\n"
 		"	else if(v < max)\n"
@@ -356,7 +356,7 @@ int ThresholdMain::handle_opengl()
 					(float)config.high_color.g / 0xff,
 					(float)config.high_color.b / 0xff,
 					has_alpha ? (float)config.high_color.a / 0xff : 1.0);
-			BC_GL_RGB_TO_YUV(shader);
+			BC_GL_RGB_TO_Y(shader);
 		}
 	}
 

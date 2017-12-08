@@ -44,8 +44,7 @@ FileItem::FileItem()
 }
 
 FileItem::FileItem(char *path, char *name, int is_dir,
-	int64_t size, int month, int day, int year,
-	int64_t calendar_time, int item_no)
+	int64_t size, time_t mtime, int item_no)
 {
 	this->path = new char[strlen(path)];
 	this->name = new char[strlen(name)];
@@ -53,10 +52,7 @@ FileItem::FileItem(char *path, char *name, int is_dir,
 	if(this->name) strcpy(this->name, name);
 	this->is_dir = is_dir;
 	this->size = size;
-	this->month = month;
-	this->day = day;
-	this->year = year;
-	this->calendar_time = calendar_time;
+	this->mtime = mtime;
 	this->item_no = item_no;
 }
 
@@ -73,10 +69,7 @@ int FileItem::reset()
 	name = 0;
 	is_dir = 0;
 	size = 0;
-	month = 0;
-	day = 0;
-	year = 0;
-	calendar_time = 0;
+	mtime = 0;
 	item_no = -1;
 	return 0;
 }
@@ -206,18 +199,18 @@ int FileSystem::date_ascending(const void *ptr1, const void *ptr2)
 {
 	FileItem *item1 = *(FileItem**)ptr1;
 	FileItem *item2 = *(FileItem**)ptr2;
-	return item1->calendar_time == item2->calendar_time ?
+	return item1->mtime == item2->mtime ?
 		item1->item_no - item2->item_no :
-		item1->calendar_time > item2->calendar_time;
+		item1->mtime > item2->mtime;
 }
 
 int FileSystem::date_descending(const void *ptr1, const void *ptr2)
 {
 	FileItem *item1 = *(FileItem**)ptr1;
 	FileItem *item2 = *(FileItem**)ptr2;
-	return item2->calendar_time == item1->calendar_time ?
+	return item2->mtime == item1->mtime ?
 		item2->item_no - item1->item_no :
-		item2->calendar_time > item1->calendar_time;
+		item2->mtime > item1->mtime;
 }
 
 int FileSystem::ext_ascending(const void *ptr1, const void *ptr2)
@@ -449,11 +442,7 @@ int FileSystem::scan_directory(const char *new_dir)
 			if(!stat(full_path, &ostat))
 			{
 				new_file->size = ostat.st_size;
-				struct tm *mod_time = localtime(&(ostat.st_mtime));
-				new_file->month = mod_time->tm_mon + 1;
-				new_file->day = mod_time->tm_mday;
-				new_file->year = mod_time->tm_year + 1900;
-				new_file->calendar_time = ostat.st_mtime;
+				new_file->mtime = ostat.st_mtime;
 
 				if(S_ISDIR(ostat.st_mode))
 				{

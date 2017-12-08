@@ -452,8 +452,8 @@ int DiffKey::handle_opengl()
 
 	static const char *rgb_value =
 		"	float difference = abs("
-		"		dot(foreground.rgb, rgb_to_yuv_matrix[0]) - "
-		"		dot(background.rgb, rgb_to_yuv_matrix[0]));\n";
+		"		dot(foreground.rgb, rgb_to_y_vector) - "
+		"		dot(background.rgb, rgb_to_y_vector));\n";
 
 	static const char *diffkey_tail =
 		"	vec4 result;\n"
@@ -468,22 +468,28 @@ int DiffKey::handle_opengl()
 		"	gl_FragColor = result;\n"
 		"}\n";
 
-	top_frame->enable_opengl();
-	top_frame->init_screen();
-
 	top_frame->to_texture();
 	bottom_frame->to_texture();
 
 	top_frame->enable_opengl();
 	top_frame->init_screen();
 
-	int need_color_matrix = 0;
+	const char *shader_stack[16];
+	memset(shader_stack,0, sizeof(shader_stack));
+	int current_shader = 0;
+
+	int need_rgb_to_y = 0;
 	const char *shader_frag = !config.do_value ? colorcube :
 		BC_CModels::is_yuv(top_frame->get_color_model()) ?
-			yuv_value : (need_color_matrix = 1, rgb_value);
+			yuv_value : (need_rgb_to_y = 1, rgb_value);
+	if( need_rgb_to_y )
+		shader_stack[current_shader++] = bc_gl_rgb_to_y;
+	shader_stack[current_shader++] = diffkey_head;
+	shader_stack[current_shader++] = shader_frag;
+	shader_stack[current_shader++] = diffkey_tail;
 
-	unsigned int shader = VFrame::make_shader(0,
-				diffkey_head, shader_frag, diffkey_tail, 0);
+	shader_stack[current_shader] = 0;
+	unsigned int shader = VFrame::make_shader(shader_stack);
 	DIFFKEY_VARS(this)
 
 	bottom_frame->bind_texture(1);
@@ -496,8 +502,8 @@ int DiffKey::handle_opengl()
 		glUniform1f(glGetUniformLocation(shader, "threshold"), threshold);
 		glUniform1f(glGetUniformLocation(shader, "pad"), pad);
 		glUniform1f(glGetUniformLocation(shader, "threshold_pad"), threshold_pad);
-		if( need_color_matrix )
-			BC_GL_MATRIX(shader, rgb_to_yuv_matrix);
+		if( need_rgb_to_y )
+			BC_GL_MATRIX(shader, rgb_to_y_vector);
 	}
 
 	if(BC_CModels::components(get_output()->get_color_model()) == 3)
@@ -511,10 +517,8 @@ int DiffKey::handle_opengl()
 	glUseProgram(0);
 	top_frame->set_opengl_state(VFrame::SCREEN);
 	glDisable(GL_BLEND);
-
-// does not work, fails in playback3d
 // Fastest way to discard output
-//	bottom_frame->set_opengl_state(VFrame::TEXTURE);
+	bottom_frame->set_opengl_state(VFrame::UNKNOWN);
 
 // kludge ahead
 	top_frame->screen_to_ram();

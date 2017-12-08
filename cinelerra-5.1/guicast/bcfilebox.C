@@ -835,15 +835,11 @@ int BC_FileBox::create_tables()
 // Date entry
 		if(!is_dir || 1)
 		{
-			static const char *month_text[13] = { "Nul",
-				"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-				"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-			};
-			sprintf(string,
-				"%s %d, %d",
-				month_text[file_item->month],
-				file_item->day,
-				file_item->year);
+			struct tm mod_time;
+			localtime_r(&file_item->mtime, &mod_time);
+			sprintf(string, "%04d.%02d.%02d  %02d:%02d:%02d",
+				mod_time.tm_year+1900, mod_time.tm_mon+1, mod_time.tm_mday,
+				mod_time.tm_hour, mod_time.tm_min, mod_time.tm_sec);
 			new_item = new BC_ListBoxItem(string, get_resources()->file_color);
 		}
 		else

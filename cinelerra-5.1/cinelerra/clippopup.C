@@ -167,7 +167,7 @@ ClipPopupSort::~ClipPopupSort()
 
 int ClipPopupSort::handle_event()
 {
-	mwindow->awindow->gui->sort_assets();
+	mwindow->awindow->gui->sort_assets(0);
 	return 1;
 }
 

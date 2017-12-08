@@ -126,8 +126,9 @@ int HSV::hsv_to_yuv(int &y, int &u, int &v, float h, float s, float va, int max)
 
 
 YUV YUV::yuv;
-float YUV::rgb_to_yuv_matrix[10];
-float YUV::yuv_to_rgb_matrix[10];
+float YUV::yuv_to_rgb_matrix[9];
+float YUV::rgb_to_yuv_matrix[9];
+float YUV::rgb_to_y_vector[3];
 
 YUV::YUV()
 {
@@ -232,7 +233,10 @@ void YUV::init(double Kr, double Kb, int mpeg)
 	rgb_to_yuv_matrix[6] = b_to_y;
 	rgb_to_yuv_matrix[7] = b_to_u;
 	rgb_to_yuv_matrix[8] = b_to_v;
-	rgb_to_yuv_matrix[9] = yminf;
+
+	rgb_to_y_vector[0] = r_to_y;
+	rgb_to_y_vector[1] = g_to_y;
+	rgb_to_y_vector[2] = b_to_y;
 
 	float yscale = 1.f / yrangef;
 	yuv_to_rgb_matrix[0] = yscale;
@@ -244,7 +248,6 @@ void YUV::init(double Kr, double Kb, int mpeg)
 	yuv_to_rgb_matrix[6] = v_to_r;
 	yuv_to_rgb_matrix[7] = v_to_g;
 	yuv_to_rgb_matrix[8] = 0;
-	yuv_to_rgb_matrix[9] = yminf;
 }
 
 void YUV::init_tables(int len,

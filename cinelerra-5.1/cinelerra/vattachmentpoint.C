@@ -126,11 +126,13 @@ void VAttachmentPoint::render(VFrame *output,
 		}
 //printf("VAttachmentPoint::render 3\n");
 // Need to copy PBuffer if OpenGL, regardless of use_opengl
-		if( buffer_vector[buffer_number]->get_opengl_state() == VFrame::RAM ) {
+		int opengl_state = buffer_vector[buffer_number]->get_opengl_state();
+		if( opengl_state == VFrame::RAM ) {
 			output->copy_from(buffer_vector[buffer_number]);
 			output->set_opengl_state(VFrame::RAM);
 		}
-		else if(renderengine && renderengine->video) {
+		else if( opengl_state != VFrame::UNKNOWN &&
+			 renderengine && renderengine->video) {
 // Need to copy PBuffer to texture
 // printf("VAttachmentPoint::render temp=%p output=%p\n",
 // buffer_vector[buffer_number],

@@ -649,7 +649,7 @@ void SUV::initialize()
 	new_button("center_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "center_justify");
 	new_button("channel.png", editpanel_up, editpanel_hi, editpanel_dn, "channel");
 
-	new_toggle("histogram.png",
+	new_toggle("histogram_toggle.png",
 		editpanel_up,
 		editpanel_hi,
 		editpanel_checked,

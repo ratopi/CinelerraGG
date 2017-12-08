@@ -71,7 +71,7 @@ public:
 	EDL *edl;
 
 	int in_use;
-
+	time_t mtime;
 
 	int persistent;
 	PluginServer *plugin;
@@ -138,7 +138,7 @@ public:
 	int keypress_event();
 	void async_update_assets();     // Sends update asset event
 	void update_effects();
-	void sort_assets();
+	void sort_assets(int use_mtime);
 	void sort_folders();
 	void reposition_objects();
 	static int folder_number(const char *name);
@@ -155,7 +155,7 @@ public:
 	void create_label_folder();
 	void copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 		ArrayList<BC_ListBoxItem*> *src, int folder);
-	void sort_picons(ArrayList<BC_ListBoxItem*> *src);
+	void sort_picons(ArrayList<BC_ListBoxItem*> *src, int use_mtime=0);
 // Return the selected asset in asset_list
 	Indexable* selected_asset();
 	PluginServer* selected_plugin();

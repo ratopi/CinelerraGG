@@ -71,11 +71,23 @@ public:
 	AssetPopup *popup;
 };
 
-class AssetPopupSort : public BC_MenuItem
+class AssetPopupSortNames : public BC_MenuItem
 {
 public:
-	AssetPopupSort(MWindow *mwindow, AssetPopup *popup);
-	~AssetPopupSort();
+	AssetPopupSortNames(MWindow *mwindow, AssetPopup *popup);
+	~AssetPopupSortNames();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AssetPopup *popup;
+};
+
+class AssetPopupSortTimes : public BC_MenuItem
+{
+public:
+	AssetPopupSortTimes(MWindow *mwindow, AssetPopup *popup);
+	~AssetPopupSortTimes();
 
 	int handle_event();
 
