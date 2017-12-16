@@ -196,7 +196,7 @@ int FileCR2::get_best_colormodel(Asset *asset, int driver)
 // int64_t FileCR2::get_memory_usage()
 // {
 // 	int64_t result = asset->width * asset->height * sizeof(float) * 3;
-//printf("FileCR2::get_memory_usage %d " _LD "\n", __LINE__, result);
+//printf("FileCR2::get_memory_usage %d %jd\n", __LINE__, result);
 // 	return result;
 // }
 

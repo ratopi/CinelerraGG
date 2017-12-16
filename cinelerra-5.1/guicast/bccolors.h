@@ -188,7 +188,7 @@ public:
 	static YUV yuv;
 	static float yuv_to_rgb_matrix[9];
 	static float rgb_to_yuv_matrix[9];
-	static float rgb_to_y_vector[3];
+	static float *const rgb_to_y_vector;
 	inline float get_yminf() { return yminf; }
 
 #define YUV_rgb_to_yuv_8(r,g,b, y,u,v) \

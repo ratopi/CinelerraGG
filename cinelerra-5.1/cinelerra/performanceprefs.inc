@@ -28,8 +28,6 @@ class PrefsBRenderFragment;
 class PrefsRenderPreroll;
 class PrefsBRenderPreroll;
 class PrefsForceUniprocessor;
-class PrefsTrapSigSEGV;
-class PrefsTrapSigINTR;
 class PrefsFFMPEGMarkerIndecies;
 class PrefsRenderFarm;
 class PrefsRenderFarmConsolidate;

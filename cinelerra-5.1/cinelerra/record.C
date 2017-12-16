@@ -702,8 +702,7 @@ const char* Record::current_mode()
 
 double Record::current_display_position()
 {
-//printf("Record::current_display_position "
-//  _LD " " _LD "\n", total_samples, total_frames)
+//printf("Record::current_display_position "%jd %jd\n", total_samples, total_frames);
 	double result = -1.;
 	Asset *asset = default_asset;
 	if( writing_file ) {

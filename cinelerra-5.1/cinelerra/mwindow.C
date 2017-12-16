@@ -3352,6 +3352,7 @@ void MWindow::rebuild_indices()
 				asset->reset_audio();
 			}
 			asset->reset_video();
+			remove_asset_from_caches(asset);
 //			File file; // re-probe the asset
 //			file.open_file(preferences, asset, 1, 0);
 		}

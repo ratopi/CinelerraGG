@@ -126,10 +126,8 @@ void Resample::resample_chunk(Samples *input_buffer,
 	int num_used;
 	int i, j, k;
 	double *input = input_buffer->get_data();
-//printf("Resample::resample_chunk %d in_len=" _LD " input_size=%d\n",
-//__LINE__,
-//in_len,
-//input_size);
+//printf("Resample::resample_chunk %d in_len=%jd input_size=%d\n",
+// __LINE__, in_len, input_size);
 
   	intratio = (fabs(resample_ratio - floor(.5 + resample_ratio)) < .0001);
 	fcn = .90 / resample_ratio;
@@ -273,10 +271,8 @@ int Resample::resample(Samples *output,
 	int result = 0;
 
 
-// printf("Resample::resample 1 output_position=" _LD " out_position=" _LD " out_len=" _LD "\n",
-// output_position,
-// out_position,
-// out_len);
+//printf("Resample::resample 1 output_position=%jd out_position=%jd out_len=%jd\n",
+// output_position, out_position, out_len);
 // Changed position
 	if(labs(this->output_position - out_position) > 0 ||
 		direction != this->direction)

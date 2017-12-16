@@ -786,7 +786,7 @@ int FileMPEG::toc_nail(void *vp, int track)
 	if( mpeg->get_video_info(track, pid, framerate, width, height) ) return 1;
 	if( pid < 0 || framerate <= 0 ) return 1;
 	double position = framenum / framerate;
-//printf("t%d/%03x f"_LD", %dx%d %dx%d\n",track,pid,framenum,mw,mh,width,height);
+//printf("t%d/%03x f%jd, %dx%d %dx%d\n",track,pid,framenum,mw,mh,width,height);
 	MWindow::commercials->get_frame(file, pid, position, tdat, mw, mh, width, height);
 	return 0;
 }

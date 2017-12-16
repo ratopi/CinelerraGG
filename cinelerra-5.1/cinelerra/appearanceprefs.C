@@ -135,6 +135,12 @@ void AppearancePrefs::create_objects()
 		x, y));
 	x = x0;
 	y += 35;
+	add_subwindow(new BC_Bar(5, y, 	get_w()/2 - 30));
+	y += 15;
+
+	add_subwindow(new BC_Title(x, y, _("Color:"), LARGEFONT,
+		resources->text_default));
+	y += 35;
 	add_subwindow(title = new BC_Title(x, y, _("Highlighting Inversion color:")));
 	x += title->get_w() + margin;
 	char hex_color[BCSTRLEN];

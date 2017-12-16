@@ -280,7 +280,8 @@ int VFrame::reset_parameters(int do_opengl)
 	timestamp = -1.;
 	is_keyframe = 0;
 	draw_point = 0;
-	set_pixel_color(BLACK);
+	pixel_rgb = 0x000000; // BLACK
+	pixel_yuv = 0x008080;
 	stipple = 0;
 
 	if(do_opengl)

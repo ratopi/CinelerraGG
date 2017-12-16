@@ -128,7 +128,7 @@ int HSV::hsv_to_yuv(int &y, int &u, int &v, float h, float s, float va, int max)
 YUV YUV::yuv;
 float YUV::yuv_to_rgb_matrix[9];
 float YUV::rgb_to_yuv_matrix[9];
-float YUV::rgb_to_y_vector[3];
+float *const YUV::rgb_to_y_vector = YUV::rgb_to_yuv_matrix;
 
 YUV::YUV()
 {
@@ -225,28 +225,24 @@ void YUV::init(double Kr, double Kb, int mpeg)
 		vtor16f, vtog16f, utog16f, utob16f);
 
 	rgb_to_yuv_matrix[0] = r_to_y;
-	rgb_to_yuv_matrix[1] = r_to_u;
-	rgb_to_yuv_matrix[2] = r_to_v;
-	rgb_to_yuv_matrix[3] = g_to_y;
+	rgb_to_yuv_matrix[1] = g_to_y;
+	rgb_to_yuv_matrix[2] = b_to_y;
+	rgb_to_yuv_matrix[3] = r_to_u;
 	rgb_to_yuv_matrix[4] = g_to_u;
-	rgb_to_yuv_matrix[5] = g_to_v;
-	rgb_to_yuv_matrix[6] = b_to_y;
-	rgb_to_yuv_matrix[7] = b_to_u;
+	rgb_to_yuv_matrix[5] = b_to_u;
+	rgb_to_yuv_matrix[6] = r_to_v;
+	rgb_to_yuv_matrix[7] = g_to_v;
 	rgb_to_yuv_matrix[8] = b_to_v;
-
-	rgb_to_y_vector[0] = r_to_y;
-	rgb_to_y_vector[1] = g_to_y;
-	rgb_to_y_vector[2] = b_to_y;
 
 	float yscale = 1.f / yrangef;
 	yuv_to_rgb_matrix[0] = yscale;
-	yuv_to_rgb_matrix[1] = yscale;
-	yuv_to_rgb_matrix[2] = yscale;
-	yuv_to_rgb_matrix[3] = 0;
+	yuv_to_rgb_matrix[1] = 0;
+	yuv_to_rgb_matrix[2] = v_to_r;
+	yuv_to_rgb_matrix[3] = yscale;
 	yuv_to_rgb_matrix[4] = u_to_g;
-	yuv_to_rgb_matrix[5] = u_to_b;
-	yuv_to_rgb_matrix[6] = v_to_r;
-	yuv_to_rgb_matrix[7] = v_to_g;
+	yuv_to_rgb_matrix[5] = v_to_g;
+	yuv_to_rgb_matrix[6] = yscale;
+	yuv_to_rgb_matrix[7] = u_to_b;
 	yuv_to_rgb_matrix[8] = 0;
 }
 

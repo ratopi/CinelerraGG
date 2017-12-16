@@ -676,17 +676,11 @@ void TrackCanvas::test_timer()
 
 void TrackCanvas::draw_indexes(Indexable *indexable)
 {
+	IndexState *index_state = indexable->index_state;
 // Don't redraw raw samples
-	IndexState *index_state = 0;
-	index_state = indexable->index_state;
-
-
 	if(index_state->index_zoom > mwindow->edl->local_session->zoom_sample)
 		return;
-
-
 	draw_resources(0, 1, indexable);
-
 	draw_overlays();
 	flash(0);
 }

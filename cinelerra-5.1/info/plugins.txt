@@ -91,6 +91,7 @@ Gamma:		Converts the logarithmic colors to linear colors
 		using gamma and maximum value.
 Gradient:	Overlays a smooth color gradient on top of every
 		video frame.
+HistEq:		Remap colors using blended histogram weights.
 Histogram:	Shows the number of occurrences of each color on a
 		histogram plot.
 Histogram Bezier: Uses a Bezier curve (parametric) on the histogram plot.

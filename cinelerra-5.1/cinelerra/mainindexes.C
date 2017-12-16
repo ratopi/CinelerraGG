@@ -74,8 +74,7 @@ void MainIndexes::add_next_asset(File *file, Indexable *indexable)
 SET_TRACE
 // Test current asset
 	IndexFile indexfile(mwindow, indexable);
-	IndexState *index_state = 0;
-	index_state = indexable->index_state;
+	IndexState *index_state = indexable->index_state;
 
 SET_TRACE
 	int ret = indexfile.open_index();

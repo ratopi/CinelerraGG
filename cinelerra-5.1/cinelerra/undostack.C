@@ -506,7 +506,7 @@ void UndoStackItem::set_data(char *data)
 			new_size,
 			&this->data_size,
 			0);
-//printf("UndoStackItem::set_data 2 " _LD "\n", timer.get_difference());
+//printf("UndoStackItem::set_data 2 %jd\n", timer.get_difference());
 
 // Testing
 // FILE *test1 = fopen("/tmp/undo1", "w");

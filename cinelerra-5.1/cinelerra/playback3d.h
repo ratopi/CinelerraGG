@@ -42,7 +42,7 @@
 
 // use static presets YUV in bccolors.h
 #define BC_GL_MATRIX(shader, mat) \
-	glUniformMatrix3fv(glGetUniformLocation(shader, #mat), 1, 0, YUV::mat)
+	glUniformMatrix3fv(glGetUniformLocation(shader, #mat), 1, 1, YUV::mat)
 #define BC_GL_VECTOR(shader, vec) \
 	glUniform3fv(glGetUniformLocation(shader, #vec), 1, YUV::vec)
 

@@ -448,7 +448,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 
 	if(!temp_picon)
 	{
-		temp_picon = new VFrame(source_w, source_h, source_cmodel, 0);
+		temp_picon = new VFrame(0, -1, source_w, source_h, source_cmodel, -1);
 	}
 
 // Get temporary to copy cached frame to

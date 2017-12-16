@@ -677,9 +677,6 @@ int HistogramMain::handle_opengl()
 	if(!strcmp(get_output()->get_prev_effect(0), _("Color Balance")))
 		aggregate_colorbalance = 1;
 
-	if( BC_CModels::is_yuv(get_output()->get_color_model()) )
-		shader_stack[current_shader++] = bc_gl_colors;
-
 // The order of processing is fixed by this sequence
 	if(aggregate_interpolation)
 		INTERPOLATE_COMPILE(shader_stack, current_shader);

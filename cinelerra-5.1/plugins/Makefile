@@ -67,6 +67,7 @@ DIRS = $(OPENCV_OBJS) \
 	gamma \
 	gradient \
 	graphic \
+	histeq \
 	histogram \
 	histogram_bezier \
 	holo \

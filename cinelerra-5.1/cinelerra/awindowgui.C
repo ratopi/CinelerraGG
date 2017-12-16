@@ -106,14 +106,14 @@ VFrame *AssetVIcon::frame()
 			delete temp;  temp = 0;
 		}
 		if( !temp )
-			temp = new VFrame(asset->width, asset->height, BC_RGB888, 0);
+			temp = new VFrame(0, -1, asset->width, asset->height, BC_RGB888, -1);
 		int ww = picon->gui->vicon_thread->view_w;
 		int hh = picon->gui->vicon_thread->view_h;
 		while( seq_no >= images.size() ) {
 			file->set_layer(0);
 			int64_t pos = images.size() / picon->gui->vicon_thread->refresh_rate * frame_rate;
 			file->set_video_position(pos,0);
-			file->read_frame(temp);
+			if( file->read_frame(temp) ) temp->clear_frame();
 			add_image(temp, ww, hh, BC_RGB8);
 		}
 		mwindow->video_cache->check_in(asset);

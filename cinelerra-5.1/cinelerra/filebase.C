@@ -42,25 +42,19 @@ FileBase::FileBase(Asset *asset, File *file)
 FileBase::~FileBase()
 {
 	close_file();
-	if(row_pointers_in) delete [] row_pointers_in;
-	if(row_pointers_out) delete [] row_pointers_out;
-	if(float_buffer) delete [] float_buffer;
 }
 
 int FileBase::close_file()
 {
-	if(row_pointers_in) delete [] row_pointers_in;
-	if(row_pointers_out) delete [] row_pointers_out;
-	if(float_buffer) delete [] float_buffer;
+	delete [] row_pointers_in;   row_pointers_in = 0;
+	delete [] row_pointers_out;  row_pointers_out = 0;
+	delete [] float_buffer;      float_buffer = 0;
 
-
-	if(pcm_history)
-	{
+	if( pcm_history ) {
 		for(int i = 0; i < history_channels; i++)
 			delete [] pcm_history[i];
-		delete [] pcm_history;
+		delete [] pcm_history;  pcm_history = 0;
 	}
-
 
 	close_file_derived();
 	reset_parameters();
@@ -72,8 +66,7 @@ void FileBase::update_pcm_history(int64_t len)
 	decode_start = 0;
 	decode_len = 0;
 
-	if(!pcm_history)
-	{
+	if( !pcm_history ) {
 		history_channels = asset->channels;
 		pcm_history = new double*[history_channels];
 		for(int i = 0; i < history_channels; i++)
