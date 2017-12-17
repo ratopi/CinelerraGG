@@ -91,13 +91,6 @@ SET_TRACE
 	next_lock->unlock();
 }
 
-void MainIndexes::delete_current_sources()
-{
-	for(int i = 0; i < current_indexables.size(); i++)
-		current_indexables.get(i)->Garbage::remove_user();
-	current_indexables.remove_all();
-}
-
 void MainIndexes::start_loop()
 {
 	interrupt_flag = 0;
@@ -140,8 +133,6 @@ void MainIndexes::interrupt_build()
 
 void MainIndexes::load_next_sources()
 {
-	delete_current_sources();
-
 // Transfer from new list
 	next_lock->lock("MainIndexes::load_next_sources");
 	for(int i = 0; i < next_indexables.size(); i++)
@@ -166,13 +157,14 @@ void MainIndexes::run()
 
 // test index of each indexable
 		MainProgressBar *progress = 0;
-		int total_sources = current_indexables.size();
 
-		for( int i = 0; i < total_sources && !interrupt_flag; ++i ) {
+		next_lock->lock("MainIndexes::run");
+		for( int i=0; i<current_indexables.size() && !interrupt_flag; ++i ) {
 			Indexable *indexable = current_indexables[i];
 			IndexState *index_state = indexable->index_state;
 // if status is known, no probe
 			if( index_state->index_status != INDEX_NOTTESTED ) continue;
+			next_lock->unlock();
 
 			IndexFile indexfile(mwindow, indexable);
 			int ret = indexfile.open_index();
@@ -195,7 +187,13 @@ void MainIndexes::run()
 			indexfile.create_index(progress);
 			if( progress->is_cancelled() )
 				interrupt_flag = 1;
+			next_lock->lock("MainIndexes::run");
 		}
+
+		for( int i=0; i<current_indexables.size(); ++i )
+			current_indexables[i]->remove_user();
+		current_indexables.remove_all();
+		next_lock->unlock();
 
 		if(progress) {	// progress box is only created when an index is built
 			if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 3");

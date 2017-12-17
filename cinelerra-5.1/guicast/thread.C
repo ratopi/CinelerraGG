@@ -65,8 +65,8 @@ void* Thread::entrypoint(void *parameters)
 	thread->run();
 	thread->finished = true;
 	if( !thread->synchronous ) {
-		if( !thread->cancelled ) TheList::dbg_del(thread->tid);
 		if( thread->autodelete ) delete thread;
+		else if( !thread->cancelled ) TheList::dbg_del(thread->tid);
 		else thread->tid = ((pthread_t)-1);
 	}
 	return NULL;
@@ -106,9 +106,13 @@ void Thread::start()
 			perror("Thread::start pthread_attr_setinheritsched");
 	}
 
+// autodelete may delete this immediately after create
+	int autodelete = this->autodelete;
+
 	pthread_create(&tid, &attr, Thread::entrypoint, this);
 
-	TheList::dbg_add(tid, owner, typeid(*this).name());
+	if( !autodelete )
+		TheList::dbg_add(tid, owner, typeid(*this).name());
 }
 
 int Thread::cancel()

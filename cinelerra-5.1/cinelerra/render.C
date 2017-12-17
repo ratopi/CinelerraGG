@@ -255,9 +255,7 @@ Render::~Render()
 	delete package_lock;
 	delete counter_lock;
 	delete completion;
-// May be owned by someone else.  This is owned by mwindow, so we don't care
-// about deletion.
-//	delete preferences;
+	delete preferences;
 	delete progress_timer;
 	if( asset ) asset->Garbage::remove_user();
 	delete thread;
@@ -314,13 +312,11 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs,
 	mode = Render::BATCH;
 	batch_cancelled = 0;
 	this->jobs = jobs;
-	this->preferences = preferences;
+	this->preferences = new Preferences;
+	this->preferences->copy_from(preferences);
 
 	completion->reset();
-PRINT_TRACE
 	thread->run();
-PRINT_TRACE
-	this->preferences = 0;
 }
 
 
@@ -715,14 +711,11 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 	render->progress = 0;
 	render->result = 0;
 
-	if(mwindow)
-	{
-		if(!render->preferences)
+	if( mwindow ) {
+		if( !render->preferences )
 			render->preferences = new Preferences;
-
 		render->preferences->copy_from(mwindow->preferences);
 	}
-
 
 // Create rendering command
 	TransportCommand *command = new TransportCommand;
@@ -1135,6 +1128,9 @@ RenderWindow::RenderWindow(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->render = render;
 	this->asset = asset;
+	render_format = 0;
+	loadmode = 0;
+	renderprofile = 0;
 	rangeproject = 0;
 	rangeselection = 0;
 	rangeinout = 0;
@@ -1143,15 +1139,11 @@ RenderWindow::RenderWindow(MWindow *mwindow,
 
 RenderWindow::~RenderWindow()
 {
-SET_TRACE
 	lock_window("RenderWindow::~RenderWindow");
-SET_TRACE
 	delete render_format;
-SET_TRACE
 	delete loadmode;
-SET_TRACE
+	delete renderprofile;
 	unlock_window();
-SET_TRACE
 }
 
 

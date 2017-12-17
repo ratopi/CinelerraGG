@@ -46,7 +46,10 @@ AssetRemoveWindow::AssetRemoveWindow(MWindow *mwindow)
 
 AssetRemoveWindow::~AssetRemoveWindow()
 {
-	delete data;
+	if( data ) {
+		data->remove_all_objects();
+		delete data;
+	}
 }
 
 void AssetRemoveWindow::create_objects()

@@ -47,7 +47,6 @@ public:
 	void run();
 	void interrupt_build();
 	void load_next_sources();
-	void delete_current_sources();
 
 	ArrayList<Indexable*> current_indexables;
 	ArrayList<Indexable*> next_indexables;

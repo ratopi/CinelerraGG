@@ -40,12 +40,13 @@ public:
 	void wait() { Thread::join(); delete this; }
 	static void removeFile(const char *path) {
 		RemoveFile *rf = new RemoveFile(path,1);
-		rf->run();
+		rf->start();
 	}
 	static void removeFileWait(const char *path) {
 		if( ::access(path, F_OK) ) return;
 		RemoveFile *rf = new RemoveFile(path,0);
-		rf->run();  rf->wait();
+		rf->start();  rf->wait();
+		delete rf;
 	}
 };
 

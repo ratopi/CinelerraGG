@@ -121,6 +121,7 @@ MainError::MainError(MWindow *mwindow)
 MainError::~MainError()
 {
 	close_window();
+	errors.remove_all_objects();
 	delete errors_lock;
 }
 

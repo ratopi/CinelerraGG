@@ -1695,8 +1695,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Define new_edls and new_assets to load
 	int result = 0, ftype = -1;
-	for(int i = 0; i < filenames->size(); i++)
-	{
+
+	for( int i=0; i<filenames->size(); ++i ) {
 // Get type of file
 		File *new_file = new File;
 		Asset *new_asset = new Asset(filenames->get(i));
@@ -1715,234 +1715,210 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 		result = 1;
-		switch(ftype)
-		{
+		switch( ftype ) {
 // Convert media file to EDL
-			case FILE_OK:
+		case FILE_OK:
 // Warn about odd image dimensions
-				if(new_asset->video_data &&
-					((new_asset->width % 2) ||
-					(new_asset->height % 2)))
-				{
-					char string[BCTEXTLEN];
-					sprintf(string, _("%s's resolution is %dx%d.\nImages with odd dimensions may not decode properly."),
-						new_asset->path,
-						new_asset->width,
-						new_asset->height);
-					MainError::show_error(string);
+			if( new_asset->video_data &&
+			    ((new_asset->width % 2) || (new_asset->height % 2)) ) {
+				char string[BCTEXTLEN];
+				sprintf(string, _("%s's resolution is %dx%d.\nImages with odd dimensions may not decode properly."),
+					new_asset->path, new_asset->width, new_asset->height);
+				MainError::show_error(string);
+			}
+
+			if( new_asset->program >= 0 &&
+			    edl->session->program_no != new_asset->program ) {
+				char string[BCTEXTLEN];
+				sprintf(string, _("%s's index was built for program number %d\n"
+					"Playback preference is %d.\n  Using program %d."),
+					new_asset->path, new_asset->program,
+					edl->session->program_no, new_asset->program);
+				MainError::show_error(string);
+			}
+
+			if( load_mode != LOADMODE_RESOURCESONLY ) {
+				RecordLabels *labels = edl->session->label_cells ?
+					new RecordLabels(new_file) : 0;
+				asset_to_edl(new_edl, new_asset, labels);
+				new_edls.append(new_edl);
+				new_edl->add_user();
+				delete labels;
+			}
+			else {
+				new_assets.append(new_asset);
+				new_asset->add_user();
+			}
+
+// Set filename to nothing for assets since save EDL would overwrite them.
+			if( load_mode == LOADMODE_REPLACE ||
+			    load_mode == LOADMODE_REPLACE_CONCATENATE ) {
+				set_filename("");
+// Reset timeline position
+				for( int i=0; i<TOTAL_PANES; ++i ) {
+					new_edl->local_session->view_start[i] = 0;
+					new_edl->local_session->track_start[i] = 0;
 				}
+			}
 
-				if(new_asset->program >= 0 &&
-					edl->session->program_no != new_asset->program)
-				{
-					char string[BCTEXTLEN];
-					sprintf(string, _("%s's index was built for program number %d\n"
-						"Playback preference is %d.\n  Using program %d."),
-						new_asset->path, new_asset->program,
-						edl->session->program_no, new_asset->program);
-					MainError::show_error(string);
+			result = 0;
+			break;
+
+// File not found
+		case FILE_NOT_FOUND:
+			sprintf(string, _("Failed to open %s"), new_asset->path);
+			gui->show_message(string, theme->message_error);
+			gui->update_default_message();
+			break;
+
+// Unknown format
+		case FILE_UNRECOGNIZED_CODEC: {
+// Test index file
+			{ IndexFile indexfile(this, new_asset);
+			if( !(result = indexfile.open_index()) )
+				indexfile.close_index(); }
+
+// Test existing EDLs
+			for( int j=0; result && j<new_edls.total; ++j ) {
+				Asset *old_asset = new_edls[j]->assets->get_asset(new_asset->path);
+				if( old_asset ) {
+					new_asset->copy_from(old_asset,1);
+					result = 0;
 				}
+			}
+			if( result ) {
+				Asset *old_asset = edl->assets->get_asset(new_asset->path);
+				if( old_asset ) {
+					new_asset->copy_from(old_asset,1);
+					result = 0;
+				}
+			}
 
+// Prompt user
+			if( result ) {
+				char string[BCTEXTLEN];
+				FileSystem fs;
+				fs.extract_name(string, new_asset->path);
 
-				if(load_mode != LOADMODE_RESOURCESONLY)
-				{
+				strcat(string, _("'s format couldn't be determined."));
+				new_asset->audio_data = 1;
+				new_asset->format = FILE_PCM;
+				new_asset->channels = defaults->get("AUDIO_CHANNELS", 2);
+				new_asset->sample_rate = defaults->get("SAMPLE_RATE", 44100);
+				new_asset->bits = defaults->get("AUDIO_BITS", 16);
+				new_asset->byte_order = defaults->get("BYTE_ORDER", 1);
+				new_asset->signed_ = defaults->get("SIGNED_", 1);
+				new_asset->header = defaults->get("HEADER", 0);
+
+				FileFormat fwindow(this);
+				fwindow.create_objects(new_asset, string);
+				result = fwindow.run_window();
+
+				defaults->update("AUDIO_CHANNELS", new_asset->channels);
+				defaults->update("SAMPLE_RATE", new_asset->sample_rate);
+				defaults->update("AUDIO_BITS", new_asset->bits);
+				defaults->update("BYTE_ORDER", new_asset->byte_order);
+				defaults->update("SIGNED_", new_asset->signed_);
+				defaults->update("HEADER", new_asset->header);
+				save_defaults();
+			}
+
+// Append to list
+			if( !result ) {
+// Recalculate length
+				delete new_file;
+				new_file = new File;
+				result = new_file->open_file(preferences, new_asset, 1, 0);
+
+				if( load_mode != LOADMODE_RESOURCESONLY ) {
 					RecordLabels *labels = edl->session->label_cells ?
 						new RecordLabels(new_file) : 0;
 					asset_to_edl(new_edl, new_asset, labels);
 					new_edls.append(new_edl);
-					new_asset->Garbage::remove_user();
+					new_edl->add_user();
 					delete labels;
-					new_asset = 0;
 				}
-				else
-				{
+				else {
 					new_assets.append(new_asset);
-					new_asset = 0;
+					new_asset->add_user();
 				}
-
-// Set filename to nothing for assets since save EDL would overwrite them.
-				if(load_mode == LOADMODE_REPLACE ||
-					load_mode == LOADMODE_REPLACE_CONCATENATE)
-				{
-					set_filename("");
-// Reset timeline position
-					for(int i = 0; i < TOTAL_PANES; i++)
-					{
-						new_edl->local_session->view_start[i] = 0;
-						new_edl->local_session->track_start[i] = 0;
-					}
-				}
-
-				result = 0;
-				break;
-
-// File not found
-			case FILE_NOT_FOUND:
-				sprintf(string, _("Failed to open %s"), new_asset->path);
-				gui->show_message(string, theme->message_error);
-				gui->update_default_message();
-				break;
-
-// Unknown format
-			case FILE_UNRECOGNIZED_CODEC:
-			{
-// Test index file
-				{	IndexFile indexfile(this, new_asset);
-					if( !(result = indexfile.open_index()) )
-						indexfile.close_index();
-				}
-
-// Test existing EDLs
-				for(int j = 0; result && j <= new_edls.total; j++) {
-					Asset *old_asset = j < new_edls.total ?
-						new_edls[j]->assets->get_asset(new_asset->path) :
-						edl->assets->get_asset(new_asset->path);
-					if( old_asset ) {
-						new_asset->copy_from(old_asset,1);
-						result = 0;
-					}
-				}
-
-// Prompt user
-				if(result)
-				{
-					char string[BCTEXTLEN];
-					FileSystem fs;
-					fs.extract_name(string, new_asset->path);
-
-					strcat(string, _("'s format couldn't be determined."));
-					new_asset->audio_data = 1;
-					new_asset->format = FILE_PCM;
-					new_asset->channels = defaults->get("AUDIO_CHANNELS", 2);
-					new_asset->sample_rate = defaults->get("SAMPLE_RATE", 44100);
-					new_asset->bits = defaults->get("AUDIO_BITS", 16);
-					new_asset->byte_order = defaults->get("BYTE_ORDER", 1);
-					new_asset->signed_ = defaults->get("SIGNED_", 1);
-					new_asset->header = defaults->get("HEADER", 0);
-
-					FileFormat fwindow(this);
-					fwindow.create_objects(new_asset, string);
-					result = fwindow.run_window();
-
-
-					defaults->update("AUDIO_CHANNELS", new_asset->channels);
-					defaults->update("SAMPLE_RATE", new_asset->sample_rate);
-					defaults->update("AUDIO_BITS", new_asset->bits);
-					defaults->update("BYTE_ORDER", new_asset->byte_order);
-					defaults->update("SIGNED_", new_asset->signed_);
-					defaults->update("HEADER", new_asset->header);
-					save_defaults();
-				}
-
-// Append to list
-				if(!result)
-				{
-// Recalculate length
-					delete new_file;
-					new_file = new File;
-					result = new_file->open_file(preferences, new_asset, 1, 0);
-
-					if(load_mode != LOADMODE_RESOURCESONLY)
-					{
-						RecordLabels *labels = edl->session->label_cells ?
-							new RecordLabels(new_file) : 0;
-						asset_to_edl(new_edl, new_asset, labels);
-						new_edls.append(new_edl);
-						new_asset->Garbage::remove_user();
-						delete labels;
-						new_asset = 0;
-					}
-					else
-					{
-						new_assets.append(new_asset);
-						new_asset = 0;
-					}
-				}
-				else
-				{
-					result = 1;
-				}
-				break;
 			}
+			else {
+				result = 1;
+			}
+			break; }
 
-			case FILE_IS_XML:
-			{
-				FileXML xml_file;
+		case FILE_IS_XML: {
+			FileXML xml_file;
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
-				xml_file.read_from_file(filenames->get(i));
+			xml_file.read_from_file(filenames->get(i));
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
-				const char *cin_version = 0;
-				while( !xml_file.read_tag() ) {
-					if( xml_file.tag.title_is("EDL") ) {
-						cin_version = xml_file.tag.get_property("VERSION");
-						break;
-					}
-				}
-				xml_file.rewind();
-				if( !cin_version ) {
-					eprintf(_("XML file %s\n not from cinelerra."),filenames->get(i));
-					char string[BCTEXTLEN];
-					sprintf(string,_("Unknown %s"), filenames->get(i));
-					gui->show_message(string);
-					result = 1;
+			const char *cin_version = 0;
+			while( !xml_file.read_tag() ) {
+				if( xml_file.tag.title_is("EDL") ) {
+					cin_version = xml_file.tag.get_property("VERSION");
 					break;
 				}
-				if( strcmp(cin_version, CINELERRA_VERSION) ) {
-					char string[BCTEXTLEN];
-					snprintf(string, sizeof(string),
-						 _("Warning: XML from cinelerra version %s\n"
-						"Session data may be incompatible."), cin_version);
-					show_warning(&preferences->warn_version, string);
-				}
-				if(load_mode == LOADMODE_NESTED)
-				{
-// Load temporary EDL for nesting.
-					EDL *nested_edl = new EDL;
-					nested_edl->create_objects();
-					nested_edl->set_path(filenames->get(i));
-					nested_edl->load_xml(&xml_file, LOAD_ALL);
-//printf("MWindow::load_filenames %p %s\n", nested_edl, nested_edl->project_path);
-					edl_to_nested(new_edl, nested_edl);
-					nested_edl->Garbage::remove_user();
-				}
-				else
-				{
-// Load EDL for pasting
-					new_edl->load_xml(&xml_file, LOAD_ALL);
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
-					test_plugins(new_edl, filenames->get(i));
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
-
-					if(load_mode == LOADMODE_REPLACE ||
-						load_mode == LOADMODE_REPLACE_CONCATENATE)
-					{
-						strcpy(session->filename, filenames->get(i));
-						strcpy(new_edl->local_session->clip_title,
-							filenames->get(i));
-						if(update_filename)
-							set_filename(new_edl->local_session->clip_title);
-					}
-					else
-					if( load_mode == LOADMODE_RESOURCESONLY ) {
-						strcpy(new_edl->local_session->clip_title,
-							filenames->get(i));
-						struct stat st;
-						time_t t = !stat(filenames->get(i),&st) ?
-							st.st_mtime : time(&t);
-						ctime_r(&t, new_edl->local_session->clip_notes);
-					}
-				}
-
-				new_edls.append(new_edl);
-				result = 0;
+			}
+			xml_file.rewind();
+			if( !cin_version ) {
+				eprintf(_("XML file %s\n not from cinelerra."),filenames->get(i));
+				char string[BCTEXTLEN];
+				sprintf(string,_("Unknown %s"), filenames->get(i));
+				gui->show_message(string);
+				result = 1;
 				break;
 			}
+			if( strcmp(cin_version, CINELERRA_VERSION) ) {
+				char string[BCTEXTLEN];
+				snprintf(string, sizeof(string),
+					 _("Warning: XML from cinelerra version %s\n"
+					"Session data may be incompatible."), cin_version);
+				show_warning(&preferences->warn_version, string);
+			}
+			if( load_mode == LOADMODE_NESTED ) {
+// Load temporary EDL for nesting.
+				EDL *nested_edl = new EDL;
+				nested_edl->create_objects();
+				nested_edl->set_path(filenames->get(i));
+				nested_edl->load_xml(&xml_file, LOAD_ALL);
+//printf("MWindow::load_filenames %p %s\n", nested_edl, nested_edl->project_path);
+				edl_to_nested(new_edl, nested_edl);
+				nested_edl->Garbage::remove_user();
+			}
+			else {
+// Load EDL for pasting
+				new_edl->load_xml(&xml_file, LOAD_ALL);
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
+				test_plugins(new_edl, filenames->get(i));
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
+
+				if( load_mode == LOADMODE_REPLACE ||
+				    load_mode == LOADMODE_REPLACE_CONCATENATE ) {
+					strcpy(session->filename, filenames->get(i));
+					strcpy(new_edl->local_session->clip_title,
+						filenames->get(i));
+					if(update_filename)
+						set_filename(new_edl->local_session->clip_title);
+				}
+				else if( load_mode == LOADMODE_RESOURCESONLY ) {
+					strcpy(new_edl->local_session->clip_title,
+						filenames->get(i));
+					struct stat st;
+					time_t t = !stat(filenames->get(i),&st) ?
+						st.st_mtime : time(&t);
+					ctime_r(&t, new_edl->local_session->clip_notes);
+				}
+			}
+
+			new_edls.append(new_edl);
+			new_edl->add_user();
+			result = 0;
+			break; }
 		}
 
-// edls are in new_edls
-		if( result && new_edl ) new_edl->Garbage::remove_user();
-// assets are copied
-		if( new_asset ) new_asset->Garbage::remove_user();
+		new_edl->Garbage::remove_user();
+		new_asset->Garbage::remove_user();
 
 // Store for testing index
 		new_files.append(new_file);
