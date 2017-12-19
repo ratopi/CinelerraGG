@@ -181,34 +181,29 @@ int FileList::write_list_header()
 	FILE *stream = fopen(asset->path, "w");
 	if( !stream ) return 1;
 // Use sprintf instead of fprintf for VFS.
-	char string[BCTEXTLEN];
-	sprintf(string, "%s\n", list_prefix);
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "# First line is always %s\n", list_prefix);
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "# Frame rate:\n");
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "%f\n", asset->frame_rate);
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "# Width:\n");
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "%d\n", asset->width);
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "# Height:\n");
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "%d\n", asset->height);
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "# List of image files follows\n");
-	fwrite(string, strlen(string), 1, stream);
+	fprintf(stream, "%s\n", list_prefix);
+	fprintf(stream, "# First line is always %s\n", list_prefix);
+	fprintf(stream, "# Frame rate:\n");
+	fprintf(stream, "%f\n", asset->frame_rate);
+	fprintf(stream, "# Width:\n");
+	fprintf(stream, "%d\n", asset->width);
+	fprintf(stream, "# Height:\n");
+	fprintf(stream, "%d\n", asset->height);
+	fprintf(stream, "# List of image files follows\n");
 
-	for(int i = 0; i < path_list.total; i++)
-	{
+	char *cp = strrchr(asset->path, '/');
+	int dir_len = !cp ? 0 : cp - asset->path;
+
+	for(int i = 0; i < path_list.total; i++) {
+		const char *path = path_list.values[i];
 // Fix path for VFS but leave leading slash
-		if(!strncmp(path_list.values[i], RENDERFARM_FS_PREFIX, strlen(RENDERFARM_FS_PREFIX)))
-			sprintf(string, "%s\n", path_list.values[i] + strlen(RENDERFARM_FS_PREFIX));
-		else
-			sprintf(string, "%s\n", path_list.values[i]);
-		fwrite(string, strlen(string), 1, stream);
+		if( !strncmp(path, RENDERFARM_FS_PREFIX, strlen(RENDERFARM_FS_PREFIX)) )
+			path += strlen(RENDERFARM_FS_PREFIX);
+// ./path for relative list access
+		else if( dir_len > 0 && !strncmp(path, asset->path, dir_len) ) {
+			fprintf(stream, ".");  path += dir_len;
+		}
+		fprintf(stream, "%s\n", path);
 	}
 	fclose(stream);
 	return 0;
@@ -244,15 +239,23 @@ int FileList::read_list_header()
 	asset->audio_data = 0;
 	asset->video_data = 1;
 
-// Get all the paths
+	char prefix[BCTEXTLEN], *bp = prefix, *cp = strrchr(asset->path, '/');
+	for( int i=0, n=!cp ? 0 : cp-asset->path; i<n; ++i ) *bp++ = asset->path[i];
+	*bp = 0;
+
+// Get all the paths, expand relative paths
 	int missing = 0;
-	while(!feof(stream) && fgets(string, BCTEXTLEN, stream) ) {
+	while( !feof(stream) && fgets(string, BCTEXTLEN, stream) ) {
 		int len = strlen(string);
-		if( !len || string[0] == '#' || string[0] == ' ') continue;
-		string[len-1] = 0;
-		if( access(string,R_OK) && !missing++ )
-			eprintf(_("%s:no such file"), string);
-		path_list.append(cstrdup(string));
+		if( !len || string[0] == '#' || string[0] == ' ' ) continue;
+		if( string[len-1] == '\n' ) string[len-1] = 0;
+		char path[BCTEXTLEN], *pp = path, *ep = pp + sizeof(path)-1;
+		if( string[0] == '.' && string[1] == '/' && prefix[0] )
+			pp += snprintf(pp, ep-pp, "%s/", prefix);
+		snprintf(pp, ep-pp, "%s", string);
+		if( access(path, R_OK) && !missing++ )
+			eprintf(_("%s:no such file"), path);
+		path_list.append(cstrdup(path));
 	}
 
 //for(int i = 0; i < path_list.total; i++) printf("%s\n", path_list.values[i]);

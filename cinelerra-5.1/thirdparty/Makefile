@@ -130,6 +130,7 @@ ffmpeg.cfg_params= \
 		$(call inc_path,lame,include) \
 		$(call inc_path,openjpeg,src/lib/openjp2) \
 		$(call inc_path,libogg,include) \
+		$(call inc_path,opus,include) \
 		$(call inc_path,libvorbis,include) \
 		$(call inc_path,libtheora,include) \
 		$(call inc_path,libvpx) \
@@ -146,6 +147,7 @@ ffmpeg.cfg_params= \
 		$(call ld_path,twolame,libtwolame/.libs) \
 		$(call ld_path,lame,libmp3lame/.libs) \
 		$(call ld_path,openjpeg,bin) \
+		$(call ld_path,opus,.libs) \
 		$(call ld_path,libogg,lib/.libs) \
 		$(call ld_path,libvorbis,lib/.libs) \
 		$(call ld_path,libtheora,lib/.libs) \
@@ -243,7 +245,7 @@ $(call rules,$(call std-build,esound,audiofile))
 $(call rules,$(call std-build,faac))
 $(call rules,$(call std-build,faad2))
 $(call rules,$(call std-build,fdk))
-$(call rules,$(call std-build,ffmpeg, faad2 faac fdk twolame lame openjpeg libtheora x264 x265 libvpx))
+$(call rules,$(call std-build,ffmpeg, faad2 faac fdk twolame lame openjpeg opus libtheora x264 x265 libvpx))
 $(call rules,$(call std-build,fftw))
 $(call rules,$(call std-build,flac,libogg))
 $(call rules,$(call std-build,giflib))
@@ -264,6 +266,7 @@ $(call rules,$(call std-build,mjpegtools, libjpeg))
 $(call rules,$(call std-build,opencv))
 $(call rules,$(call std-build,openexr, ilmbase))
 $(call rules,$(call std-build,openjpeg))
+$(call rules,$(call std-build,opus))
 $(call rules,$(call std-build,speech_tools))
 $(call rules,$(call std-build,tiff))
 $(call rules,$(call std-build,twolame))

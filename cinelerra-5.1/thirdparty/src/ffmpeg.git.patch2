@@ -1,6 +1,6 @@
 diff -ur a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
---- a/libavformat/mpegtsenc.c	2017-10-13 16:31:25.000000000 -0600
-+++ b/libavformat/mpegtsenc.c	2017-10-13 20:06:27.930649088 -0600
+--- a/libavformat/mpegtsenc.c	2017-12-10 14:35:10.000000000 -0700
++++ b/libavformat/mpegtsenc.c	2017-12-18 10:54:14.260167666 -0700
 @@ -56,9 +56,8 @@
      int sid;           /* service ID */
      char *name;
@@ -496,4 +496,3 @@ diff -ur a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
      { NULL },
  };
  
-Only in b/libavformat: mpegtsenc.c.orig

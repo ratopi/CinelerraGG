@@ -1,6 +1,6 @@
 diff -ur a/libavformat/avformat.h b/libavformat/avformat.h
---- a/libavformat/avformat.h	2017-10-13 16:31:25.000000000 -0600
-+++ b/libavformat/avformat.h	2017-10-13 20:07:24.178440418 -0600
+--- a/libavformat/avformat.h	2017-12-10 14:35:10.000000000 -0700
++++ b/libavformat/avformat.h	2017-12-18 11:11:31.791996302 -0700
 @@ -504,6 +504,9 @@
                                          The user or muxer can override this through
                                          AVFormatContext.avoid_negative_ts
@@ -22,8 +22,8 @@ diff -ur a/libavformat/avformat.h b/libavformat/avformat.h
      int flags;
  
 diff -ur a/libavformat/dv.c b/libavformat/dv.c
---- a/libavformat/dv.c	2017-10-13 16:31:25.000000000 -0600
-+++ b/libavformat/dv.c	2017-10-13 20:07:24.178440418 -0600
+--- a/libavformat/dv.c	2017-12-10 14:35:10.000000000 -0700
++++ b/libavformat/dv.c	2017-12-18 11:11:31.792996246 -0700
 @@ -632,6 +632,7 @@
  AVInputFormat ff_dv_demuxer = {
      .name           = "dv",
@@ -33,8 +33,8 @@ diff -ur a/libavformat/dv.c b/libavformat/dv.c
      .read_probe     = dv_probe,
      .read_header    = dv_read_header,
 diff -ur a/libavformat/matroskadec.c b/libavformat/matroskadec.c
---- a/libavformat/matroskadec.c	2017-10-13 16:31:25.000000000 -0600
-+++ b/libavformat/matroskadec.c	2017-10-13 20:07:24.180440304 -0600
+--- a/libavformat/matroskadec.c	2017-12-10 14:35:10.000000000 -0700
++++ b/libavformat/matroskadec.c	2017-12-18 11:11:31.793996189 -0700
 @@ -3984,6 +3984,7 @@
  AVInputFormat ff_matroska_demuxer = {
      .name           = "matroska,webm",
@@ -51,11 +51,10 @@ diff -ur a/libavformat/matroskadec.c b/libavformat/matroskadec.c
      .priv_data_size = sizeof(MatroskaDemuxContext),
      .read_header    = webm_dash_manifest_read_header,
      .read_packet    = webm_dash_manifest_read_packet,
-Only in b/libavformat: matroskadec.c.orig
-diff -ur a/libavformat/utils.c b/libavformat/utils.c
---- a/libavformat/utils.c	2017-10-13 16:31:25.000000000 -0600
-+++ b/libavformat/utils.c	2017-10-13 20:07:24.182440190 -0600
-@@ -2415,6 +2415,13 @@
+diff -ur a/libavformat/utils.c ./libavformat/utils.c
+--- a/libavformat/utils.c	2017-12-10 14:35:18.000000000 -0700
++++ b/libavformat/utils.c	2017-12-18 11:11:31.795996077 -0700
+@@ -2416,6 +2416,13 @@
          return seek_frame_byte(s, stream_index, timestamp, flags);
      }
  
@@ -69,4 +68,3 @@ diff -ur a/libavformat/utils.c b/libavformat/utils.c
      if (stream_index < 0) {
          stream_index = av_find_default_stream_index(s);
          if (stream_index < 0)
-Only in b/libavformat: utils.c.orig

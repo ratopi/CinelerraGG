@@ -60,7 +60,7 @@ Preferences::Preferences()
 	sprintf(index_directory, "%s/", File::get_config_path());
 	if(strlen(index_directory))
 		fs.complete_path(index_directory);
-	cache_size = 0x1000000;
+	cache_size = 0x10000000;
 	index_size = 0x400000;
 	index_count = 500;
 	use_thumbnails = 1;

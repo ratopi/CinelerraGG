@@ -1986,6 +1986,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				break;
 			}
 			ctx->time_base = (AVRational) { frame_rate.den, frame_rate.num };
+			st->avg_frame_rate = frame_rate;
 			st->time_base = ctx->time_base;
 			vid->writing = -1;
 			vid->interlaced = asset->interlace_mode == ILACE_MODE_TOP_FIRST ||

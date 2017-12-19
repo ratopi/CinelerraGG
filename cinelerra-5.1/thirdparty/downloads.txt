@@ -33,3 +33,4 @@ https://bitbucket.org/multicoreware/x265/downloads/x265_2.4.tar.gz
 http://ffmpeg.org/releases/ffmpeg-3.3.tar.bz2
 https://chromium.googlesource.com/webm/libvpx/+archive/0c0a05046db1c0b59a7fcc29785a190fdbbe39c2.tar.gz = 1,6,1
 https://github.com/swh/ladspa/releases/tag/v0.4.17, plugin.org.uk
+https://archive.mozilla.org/pub/opus/opus-1.2.1.tar.gz

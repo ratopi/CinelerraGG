@@ -126,7 +126,7 @@ PKG_3RD([fdk],[auto],
   [ libAACdec/include libAACenc/include libSYS/include ])
 
 PKG_3RD([ffmpeg],[yes],
-  [ffmpeg-3.3.4],
+  [ffmpeg-3.4.1],
   [ libavutil/libavutil.a \
     libavcodec/libavcodec.a \
     libpostproc/libpostproc.a \
@@ -222,6 +222,11 @@ PKG_3RD([libjpeg],[auto],
     .libs/libturbojpeg.a \
     simd/.libs/libsimd.a ],
   [ . ])
+
+PKG_3RD([opus],[auto],
+  [opus-1.2.1],
+  [ .libs/libopus.a ],
+  [ include ])
 
 PKG_3RD([openjpeg],[auto],
   [openjpeg-2.1.0-20160221],
@@ -453,8 +458,6 @@ CHECK_LIB([fdk], [fdk-aac], [faacDecInit])
 CHECK_HEADERS([fdk], [fdk headers], [fdk-aac/genericStds.h])
 CHECK_LIB([jbig], [jbig], [jbg_dec_init])
 CHECK_LIB([vdpau], [vdpau], [vdp_device_create_x11])
-CHECK_LIB([opus], [opus], [opus_multistream_decoder_create])
-CHECK_HEADERS([opus], [libopus headers], [opus/opus_multistream.h])
 
 #if test "x$HAVE_mjpegtools" = "xyes"; then
 #CFG_CFLAGS+=" -I/usr/include/mjpegtools"
@@ -524,6 +527,10 @@ CHECK_WANT([ESOUND], [no], [use esd], [
  CHECK_LIB([audiofile], [audiofile], [afOpenFile])
  CHECK_HEADERS([audiofile], [audiofile headers], [audiofile.h])])
 
+CHECK_WANT([LIBOPUS], [auto], [use libopus], [
+ CHECK_LIB([opus], [opus], [opus_multistream_decoder_create])
+ CHECK_HEADERS([opus], [libopus headers], [opus/opus_multistream.h])])
+
 CHECK_WANT([DL], [auto], [system has libdl], [
  CHECK_LIB([DL], [dl], [dlopen])])
 
@@ -540,7 +547,7 @@ CHECK_WANT([OPENEXR], [auto], [use openexr], [
  saved_LIBS="$LIBS"
  saved_CXXFLAGS="$CXXFLAGS"
  # ilmbase libs
- LIBS=" -lIlmImf -lIlmThread -lIex"
+ LIBS=" -lIlmImf -lIlmThread -lIex -lpthread"
  CXXFLAGS="-I/usr/include/OpenEXR"
  AC_LANG_PUSH(C++)
  AC_LINK_IFELSE([AC_LANG_PROGRAM([[
@@ -660,6 +667,7 @@ PKG_PROVIDE([twolame])
 PKG_PROVIDE([x264])
 PKG_PROVIDE([x265])
 PKG_PROVIDE([libvpx])
+PKG_PROVIDE([opus], [$WANT_OPUS])
 
 AC_SUBST(STATIC_BLDS)
 AC_SUBST(SHARED_LIBS)

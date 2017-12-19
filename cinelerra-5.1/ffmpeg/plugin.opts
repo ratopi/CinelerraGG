@@ -50,12 +50,9 @@ aresample sample_rate=48000
 #asettb
 #ashowinfo
 #asidedata
-#asilencedetect
-#asilenceremove
 #asplit
 astats
 #astreamselect
-#astreamsync
 atadenoise
 atempo
 atrim start=1:end=240:start_pts=1:end_pts=2:duration=1:start_sample=1:end_sample=2
@@ -67,11 +64,10 @@ bass
 bbox
 bench
 biquad
-bitplaneoise
 blackdetect
 blackframe
 #blend
-boxblue
+boxblur
 #buffer
 #buffersink
 bwdif
@@ -124,8 +120,6 @@ erosion
 #extractplanes
 extrastereo
 fade
-#ffabuffersink
-#ffbuffersink
 fftfilt
 field
 #fieldhint
@@ -135,7 +129,6 @@ fieldorder
 #find_rect
 #firequalizer
 flanger
-#fliporder
 #format
 #fps
 #framepack
@@ -166,7 +159,6 @@ il
 inflate
 interlace
 #interleave
-#isdesctest
 #join
 kerndeint
 lenscorrection
@@ -258,7 +250,7 @@ signalstats
 #silencedetect
 silenceremove
 sine
-smartblue
+smartblur
 #smptebars
 #smptehdbars
 sobel
@@ -302,6 +294,30 @@ xbr
 yadif
 #yuvtestsrc
 zoompan
+; new in 3.4.1
+#acopy
+bitplanenoise
+boxblur
+ciescope
+crossfeed
+deflicker
+despill
+doubleweave
+floodfill
+haas
+limiter
+loop
+lumakey
+oscilloscope
+pixscope
+pseudocolor
+roberts
+smartblur
+#superequalizer
+#surround
+tlut2
+tonemap
+#vmafmotion
 ; in git
 #afir
 #headphone
