@@ -23,16 +23,20 @@
 #include "assetedit.h"
 #include "assetpopup.h"
 #include "assetremove.h"
+#include "assets.h"
 #include "awindow.h"
 #include "awindowgui.h"
+#include "bccapture.h"
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
+#include "cache.h"
 #include "clipedit.h"
 #include "cstrdup.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "file.h"
 #include "filexml.h"
 #include "language.h"
 #include "localsession.h"
@@ -41,7 +45,12 @@
 #include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "preferences.h"
+#include "renderengine.h"
 #include "tracks.h"
+#include "transportque.h"
+#include "vframe.h"
+#include "vrender.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
 #include "zwindow.h"
@@ -433,6 +442,10 @@ AssetListMenu::AssetListMenu(MWindow *mwindow, AWindowGUI *gui)
 
 AssetListMenu::~AssetListMenu()
 {
+	if( !shots_displayed ) {
+		delete asset_snapshot;
+		delete asset_grabshot;
+	}
 }
 
 void AssetListMenu::create_objects()
@@ -441,12 +454,34 @@ void AssetListMenu::create_objects()
 	add_item(new AWindowListSort(mwindow, gui));
 	add_item(new AssetListCopy(mwindow, gui));
 	add_item(new AssetListPaste(mwindow, gui));
-	update_titles();
+	SnapshotSubMenu *snapshot_submenu;
+	add_item(asset_snapshot = new AssetSnapshot(mwindow, this));
+	asset_snapshot->add_submenu(snapshot_submenu = new SnapshotSubMenu(asset_snapshot));
+	snapshot_submenu->add_submenuitem(new SnapshotMenuItem(snapshot_submenu, _("png"),  SNAPSHOT_PNG));
+	snapshot_submenu->add_submenuitem(new SnapshotMenuItem(snapshot_submenu, _("jpeg"), SNAPSHOT_JPEG));
+	snapshot_submenu->add_submenuitem(new SnapshotMenuItem(snapshot_submenu, _("tiff"), SNAPSHOT_TIFF));
+	GrabshotSubMenu *grabshot_submenu;
+	add_item(asset_grabshot = new AssetGrabshot(mwindow, this));
+	asset_grabshot->add_submenu(grabshot_submenu = new GrabshotSubMenu(asset_grabshot));
+	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("png"),  GRABSHOT_PNG));
+	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("jpeg"), GRABSHOT_JPEG));
+	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("tiff"), GRABSHOT_TIFF));
+	update_titles(shots_displayed = 1);
 }
 
-void AssetListMenu::update_titles()
+void AssetListMenu::update_titles(int shots)
 {
 	format->update();
+	if( shots && !shots_displayed ) {
+		shots_displayed = 1;
+		add_item(asset_snapshot);
+		add_item(asset_grabshot);
+	}
+	else if( !shots && shots_displayed ) {
+		shots_displayed = 0;
+		remove_item(asset_snapshot);
+		remove_item(asset_grabshot);
+	}
 }
 
 AssetListCopy::AssetListCopy(MWindow *mwindow, AWindowGUI *gui)
@@ -699,5 +734,369 @@ int AssetPasteWindow::resize_event(int w, int h)
 	int text_rows = BC_TextBox::pixels_to_rows(this, MEDIUMFONT, text_h);
 	file_list->reposition_window(fx, fy, text_w, text_rows);
 	return 0;
+}
+
+
+
+AssetSnapshot::AssetSnapshot(MWindow *mwindow, AssetListMenu *asset_list_menu)
+ : BC_MenuItem(_("Snapshot..."))
+{
+	this->mwindow = mwindow;
+	this->asset_list_menu = asset_list_menu;
+}
+
+AssetSnapshot::~AssetSnapshot()
+{
+}
+
+SnapshotSubMenu::SnapshotSubMenu(AssetSnapshot *asset_snapshot)
+{
+	this->asset_snapshot = asset_snapshot;
+}
+
+SnapshotSubMenu::~SnapshotSubMenu()
+{
+}
+
+SnapshotMenuItem::SnapshotMenuItem(SnapshotSubMenu *submenu, const char *text, int mode)
+ : BC_MenuItem(text)
+{
+	this->submenu = submenu;
+	this->mode = mode;
+}
+
+SnapshotMenuItem::~SnapshotMenuItem()
+{
+}
+
+int SnapshotMenuItem::handle_event()
+{
+	MWindow *mwindow = submenu->asset_snapshot->mwindow;
+	EDL *edl = mwindow->edl;
+	if( !edl->have_video() ) return 1;
+
+	Preferences *preferences = mwindow->preferences;
+	char filename[BCTEXTLEN];
+	static const char *exts[] = { "png", "jpg", "tif" };
+	time_t tt;     time(&tt);
+	struct tm tm;  localtime_r(&tt,&tm);
+	snprintf(filename,sizeof(filename),"%s/%s_%04d%02d%02d-%02d%02d%02d.%s",
+		preferences->snapshot_path, _("snap"),
+		1900+tm.tm_year,1+tm.tm_mon,tm.tm_mday,
+		tm.tm_hour,tm.tm_min,tm.tm_sec, exts[mode]);
+	int fw = edl->get_w(), fh = edl->get_h();
+	int fcolor_model = edl->session->color_model;
+
+	Asset *asset = new Asset(filename);
+	switch( mode ) {
+	case SNAPSHOT_PNG:
+		asset->format = FILE_PNG;
+		asset->png_use_alpha = 1;
+		break;
+	case SNAPSHOT_JPEG:
+		asset->format = FILE_JPEG;
+		asset->jpeg_quality = 90;
+		break;
+	case SNAPSHOT_TIFF:
+		asset->format = FILE_TIFF;
+		asset->tiff_cmodel = 0;
+		asset->tiff_compression = 0;
+		break;
+	}
+	asset->width = fw;
+	asset->height = fh;
+	asset->audio_data = 0;
+	asset->video_data = 1;
+	asset->video_length = 1;
+	asset->layers = 1;
+
+	File file;
+	int processors = preferences->project_smp + 1;
+	if( processors > 8 ) processors = 8;
+	file.set_processors(processors);
+	int ret = file.open_file(preferences, asset, 0, 1);
+	if( !ret ) {
+		file.start_video_thread(1, fcolor_model,
+			processors > 1 ? 2 : 1, 0);
+		VFrame ***frames = file.get_video_buffer();
+		VFrame *frame = frames[0][0];
+		TransportCommand command;
+		//command.command = audio_tracks ? NORMAL_FWD : CURRENT_FRAME;
+		command.command = CURRENT_FRAME;
+		command.get_edl()->copy_all(edl);
+		command.change_type = CHANGE_ALL;
+		command.realtime = 0;
+
+		RenderEngine render_engine(0, preferences, 0, 0);
+		CICache video_cache(preferences);
+		render_engine.set_vcache(&video_cache);
+		render_engine.arm_command(&command);
+
+		double position = edl->local_session->get_selectionstart(1);
+		int64_t source_position = (int64_t)(position * edl->get_frame_rate());
+		ret = render_engine.vrender->process_buffer(frame, source_position, 0);
+		if( !ret )
+			ret = file.write_video_buffer(1);
+		file.close_file();
+	}
+	if( !ret ) {
+		asset->awindow_folder = AW_MEDIA_FOLDER;
+		mwindow->edl->assets->append(asset);
+		mwindow->awindow->gui->async_update_assets();
+	}
+	else {
+		eprintf(_("snapshot render failed"));
+		asset->remove_user();
+	}
+	return 1;
+}
+
+
+AssetGrabshot::AssetGrabshot(MWindow *mwindow, AssetListMenu *asset_list_menu)
+ : BC_MenuItem(_("Grabshot..."))
+{
+	this->mwindow = mwindow;
+	this->asset_list_menu = asset_list_menu;
+}
+
+AssetGrabshot::~AssetGrabshot()
+{
+}
+
+GrabshotSubMenu::GrabshotSubMenu(AssetGrabshot *asset_grabshot)
+{
+	this->asset_grabshot = asset_grabshot;
+}
+
+GrabshotSubMenu::~GrabshotSubMenu()
+{
+}
+
+GrabshotMenuItem::GrabshotMenuItem(GrabshotSubMenu *submenu, const char *text, int mode)
+ : BC_MenuItem(text)
+{
+	this->submenu = submenu;
+	this->mode = mode;
+	grab_thread = 0;
+}
+
+GrabshotMenuItem::~GrabshotMenuItem()
+{
+	delete grab_thread;
+}
+
+int GrabshotMenuItem::handle_event()
+{
+	if( !grab_thread )
+		grab_thread = new GrabshotThread(submenu->asset_grabshot->mwindow);
+	if( !grab_thread->running() )
+		grab_thread->start(this);
+	return 1;
+}
+
+GrabshotThread::GrabshotThread(MWindow *mwindow)
+ : Thread(1, 0, 0)
+{
+	this->mwindow = mwindow;
+	popup = 0;
+	done = -1;
+}
+GrabshotThread::~GrabshotThread()
+{
+	delete popup;
+}
+
+void GrabshotThread::start(GrabshotMenuItem *menu_item)
+{
+	popup = new GrabshotPopup(this, menu_item->mode);
+	popup->lock_window("GrabshotThread::start");
+	for( int i=0; i<4; ++i )
+		edge[i] = new BC_Popup(mwindow->gui, 0,0, 1,1, ORANGE, 1);
+	mwindow->gui->grab_buttons();
+	mwindow->gui->grab_cursor();
+	popup->grab(mwindow->gui);
+	popup->create_objects();
+	popup->show_window();
+	popup->unlock_window();
+	done = 0;
+	Thread::start();
+}
+
+void GrabshotThread::run()
+{
+	popup->lock_window("GrabshotThread::run 0");
+	while( !done ) {
+		popup->update();
+		popup->unlock_window();
+		enable_cancel();
+		Timer::delay(200);
+		disable_cancel();
+		popup->lock_window("GrabshotThread::run 1");
+	}
+	mwindow->gui->ungrab_cursor();
+	mwindow->gui->ungrab_buttons();
+	popup->ungrab(mwindow->gui);
+	for( int i=0; i<4; ++i ) delete edge[i];
+	popup->unlock_window();
+	delete popup;  popup = 0;
+}
+
+GrabshotPopup::GrabshotPopup(GrabshotThread *grab_thread, int mode)
+ : BC_Popup(grab_thread->mwindow->gui, 0,0, 16,16, -1,1)
+{
+	this->grab_thread = grab_thread;
+	this->mode = mode;
+	dragging = -1;
+	grab_color = ORANGE;
+	x0 = y0 = x1 = y1 = -1;
+	lx0 = ly0 = lx1 = ly1 = -1;
+}
+GrabshotPopup::~GrabshotPopup()
+{
+}
+
+int GrabshotPopup::grab_event(XEvent *event)
+{
+	int cur_drag = dragging;
+	switch( event->type ) {
+	case ButtonPress:
+		if( cur_drag > 0 ) return 1;
+		x0 = event->xbutton.x_root;
+		y0 = event->xbutton.y_root;
+		if( !cur_drag ) {
+			draw_selection(-1);
+			if( event->xbutton.button == RIGHT_BUTTON ) break;
+			if( x0>=get_x() && x0<get_x()+get_w() &&
+			    y0>=get_y() && y0<get_y()+get_h() ) break;
+		}
+		x1 = x0;  y1 = y0;
+		draw_selection(1);
+		dragging = 1;
+		return 1;
+	case ButtonRelease:
+		dragging = 0;
+	case MotionNotify:
+		if( cur_drag > 0 ) {
+			x1 = event->xbutton.x_root;
+			y1 = event->xbutton.y_root;
+			draw_selection(0);
+		}
+		return 1;
+	default:
+		return 0;
+	}
+
+	int cx = lx0,     cy = ly0;
+	int cw = lx1-lx0, ch = ly1-ly0;
+	hide_window();
+	sync_display();
+
+	MWindow *mwindow = grab_thread->mwindow;
+	Preferences *preferences = mwindow->preferences;
+	char filename[BCTEXTLEN];
+	static const char *exts[] = { "png", "jpg", "tif" };
+	time_t tt;     time(&tt);
+	struct tm tm;  localtime_r(&tt,&tm);
+	snprintf(filename,sizeof(filename),"%s/%s_%04d%02d%02d-%02d%02d%02d.%s",
+		preferences->snapshot_path, _("grab"),
+		1900+tm.tm_year,1+tm.tm_mon,tm.tm_mday,
+		tm.tm_hour,tm.tm_min,tm.tm_sec, exts[mode]);
+
+	Asset *asset = new Asset(filename);
+	switch( mode ) {
+	case SNAPSHOT_PNG:
+		asset->format = FILE_PNG;
+		asset->png_use_alpha = 1;
+		break;
+	case SNAPSHOT_JPEG:
+		asset->format = FILE_JPEG;
+		asset->jpeg_quality = 90;
+		break;
+	case SNAPSHOT_TIFF:
+		asset->format = FILE_TIFF;
+		asset->tiff_cmodel = 0;
+		asset->tiff_compression = 0;
+		break;
+	}
+// no odd dimensions
+	int rw = get_root_w(0), rh = get_root_h(0);
+	if( cx < 0 ) { cw += cx;  cx = 0; }
+	if( cy < 0 ) { ch += cy;  cy = 0; }
+	if( cx+cw > rw ) cw = rw-cx;
+	if( cy+ch > rh ) ch = rh-cy;
+	VFrame vframe(cw,ch, BC_RGB888);
+	if( cx+cw < rw ) ++cw;
+	if( cy+ch < rh ) ++ch;
+	BC_Capture capture_bitmap(cw,ch, 0);
+	capture_bitmap.capture_frame(&vframe, cx,cy);
+
+	asset->width = vframe.get_w();
+	asset->height = vframe.get_h();
+	asset->audio_data = 0;
+	asset->video_data = 1;
+	asset->video_length = 1;
+	asset->layers = 1;
+
+	File file;
+	int fcolor_model = mwindow->edl->session->color_model;
+	int processors = preferences->project_smp + 1;
+	if( processors > 8 ) processors = 8;
+	file.set_processors(processors);
+	int ret = file.open_file(preferences, asset, 0, 1);
+	if( !ret ) {
+		file.start_video_thread(1, fcolor_model,
+			processors > 1 ? 2 : 1, 0);
+		VFrame ***frames = file.get_video_buffer();
+		VFrame *frame = frames[0][0];
+		frame->transfer_from(&vframe);
+		ret = file.write_video_buffer(1);
+		file.close_file();
+	}
+	if( !ret ) {
+		asset->awindow_folder = AW_MEDIA_FOLDER;
+		mwindow->edl->assets->append(asset);
+		mwindow->awindow->gui->async_update_assets();
+	}
+	else {
+		eprintf(_("grabshot render failed"));
+		asset->remove_user();
+	}
+
+	grab_thread->done = 1;
+	return 1;
+}
+
+void GrabshotPopup::update()
+{
+	set_color(grab_color ^= GREEN);
+	draw_box(0,0, get_w(),get_h());
+	flash(1);
+}
+
+void GrabshotPopup::draw_selection(int show)
+{
+	if( show < 0 ) {
+		for( int i=0; i<4; ++i ) hide_window(0);
+		flush();
+		return;
+	}
+
+	int nx0 = x0 < x1 ? x0 : x1;
+	int nx1 = x0 < x1 ? x1 : x0;
+	int ny0 = y0 < y1 ? y0 : y1;
+	int ny1 = y0 < y1 ? y1 : y0;
+	lx0 = nx0;  lx1 = nx1;  ly0 = ny0;  ly1 = ny1;
+
+	--nx0;  --ny0;
+	BC_Popup **edge = grab_thread->edge;
+	edge[0]->reposition_window(nx0,ny0, nx1-nx0, 1);
+	edge[1]->reposition_window(nx1,ny0, 1, ny1-ny0);
+	edge[2]->reposition_window(nx0,ny1, nx1-nx0, 1);
+	edge[3]->reposition_window(nx0,ny0, 1, ny1-ny0);
+
+	if( show > 0 ) {
+		for( int i=0; i<4; ++i ) edge[i]->show_window(0);
+	}
+	flush();
 }
 

@@ -324,6 +324,7 @@ RecordGUIBack::RecordGUIBack(RecordTransport *record_transport, int x, int y)
 {
 	this->record_transport = record_transport;
 	set_tooltip(_("Fast rewind"));
+	repeat_id = 257;
 }
 
 RecordGUIBack::~RecordGUIBack()
@@ -364,6 +365,7 @@ RecordGUIFwd::RecordGUIFwd(RecordTransport *record_transport, int x, int y)
 {
 	this->record_transport = record_transport;
 	set_tooltip(_("Fast forward"));
+	repeat_id = 255;
 }
 
 RecordGUIFwd::~RecordGUIFwd()

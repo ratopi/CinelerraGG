@@ -2049,7 +2049,7 @@ run()
 		usleep(500000);
 		disable_cancel();
 		color ^= YELLOW ^ BLUE;
-		if( timer.get_difference() > 10*60*1000 ) { // 10 minites
+		if( timer.get_difference() > 10*60*1000 ) { // 10 minutes
 			record->stop_commercial_capture(0);
 			done = 1;
 		}

@@ -316,7 +316,7 @@ smartblur
 #superequalizer
 #surround
 tlut2
-tonemap
+#tonemap
 #vmafmotion
 ; in git
 #afir

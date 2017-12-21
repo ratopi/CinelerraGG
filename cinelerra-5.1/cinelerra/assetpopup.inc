@@ -22,6 +22,14 @@
 #ifndef ASSETPOPUP_INC
 #define ASSETPOPUP_INC
 
+#define SNAPSHOT_PNG  0
+#define SNAPSHOT_JPEG 1
+#define SNAPSHOT_TIFF 2
+
+#define GRABSHOT_PNG  0
+#define GRABSHOT_JPEG 1
+#define GRABSHOT_TIFF 2
+
 class AssetPopup;
 class AssetPopupInfo;
 class AssetPopupSort;
@@ -42,5 +50,13 @@ class AssetCopyWindow;
 class AssetListPaste;
 class AssetPasteDialog;
 class AssetPasteWindow;
+class AssetSnapshot;
+class SnapshotSubMenu;
+class SnapshotMenuItem;
+class AssetGrabshot;
+class GrabshotSubMenu;
+class GrabshotMenuItem;
+class GrabshotThread;
+class GrabshotPopup;
 
 #endif

@@ -1110,7 +1110,11 @@ void AWindowGUI::update_asset_list()
 		if( !picon->in_use ) {
 			delete picon;
 			assets.remove_number(i);
+			continue;
 		}
+		if( !picon->indexable->is_asset ) continue;
+		struct stat st;
+		picon->mtime = !stat(picon->indexable->path, &st) ? st.st_mtime : 0;
 	}
 }
 
@@ -1556,7 +1560,7 @@ int AWindowAssets::button_press_event()
 			break;
 		case AW_MEDIA_FOLDER:
 		case AW_PROXY_FOLDER:
-			gui->assetlist_menu->update_titles();
+			gui->assetlist_menu->update_titles(folder==AW_MEDIA_FOLDER);
 			gui->assetlist_menu->activate_menu();
 			break;
 		}

@@ -221,11 +221,14 @@ public:
 	~AssetListMenu();
 
 	void create_objects();
-	void update_titles();
+	void update_titles(int shots);
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
 	AWindowListFormat *format;
+	AssetSnapshot *asset_snapshot;
+	AssetGrabshot *asset_grabshot;
+	int shots_displayed;
 };
 
 class AssetListCopy : public BC_MenuItem
@@ -311,6 +314,100 @@ public:
 
 	AssetPasteDialog *paste_dialog;
 	BC_ScrollTextBox *file_list;
+};
+
+class AssetSnapshot : public BC_MenuItem
+{
+public:
+	AssetSnapshot(MWindow *mwindow, AssetListMenu *asset_list_menu);
+	~AssetSnapshot();
+
+	MWindow *mwindow;
+	AssetListMenu *asset_list_menu;
+};
+
+class SnapshotSubMenu : public BC_SubMenu
+{
+public:
+	SnapshotSubMenu(AssetSnapshot *asset_snapshot);
+	~SnapshotSubMenu();
+
+	AssetSnapshot *asset_snapshot;
+};
+
+class SnapshotMenuItem : public BC_MenuItem
+{
+public:
+	SnapshotMenuItem(SnapshotSubMenu *submenu, const char *text, int mode);
+	~SnapshotMenuItem();
+
+	int handle_event();
+	SnapshotSubMenu *submenu;
+	int mode;
+};
+
+
+class AssetGrabshot : public BC_MenuItem
+{
+public:
+	AssetGrabshot(MWindow *mwindow, AssetListMenu *asset_list_menu);
+	~AssetGrabshot();
+
+	MWindow *mwindow;
+	AssetListMenu *asset_list_menu;
+};
+
+class GrabshotSubMenu : public BC_SubMenu
+{
+public:
+	GrabshotSubMenu(AssetGrabshot *asset_grabshot);
+	~GrabshotSubMenu();
+
+	AssetGrabshot *asset_grabshot;
+};
+
+class GrabshotMenuItem : public BC_MenuItem
+{
+public:
+	GrabshotMenuItem(GrabshotSubMenu *submenu, const char *text, int mode);
+	~GrabshotMenuItem();
+
+	int handle_event();
+	GrabshotSubMenu *submenu;
+	int mode;
+	GrabshotThread *grab_thread;
+};
+
+class GrabshotThread : public Thread
+{
+public:
+	GrabshotThread(MWindow* mwindow);
+	~GrabshotThread();
+
+	MWindow *mwindow;
+	GrabshotPopup *popup;
+	BC_Popup *edge[4];
+	int done;
+
+	void start(GrabshotMenuItem *menu_item);
+	void run();
+};
+
+class GrabshotPopup : public BC_Popup
+{
+public:
+	GrabshotPopup(GrabshotThread *grab_thread, int mode);
+	~GrabshotPopup();
+	int grab_event(XEvent *event);
+	void draw_selection(int invert);
+	void update();
+
+	GrabshotThread *grab_thread;
+	int mode;
+	int dragging;
+	int grab_color;
+	int x0, y0, x1, y1;
+	int lx0, ly0, lx1, ly1;
 };
 
 #endif

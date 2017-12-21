@@ -241,6 +241,7 @@ F_cropdetect:	Auto-detect crop size
 F_datascope:	Video data analysis.
 F_deband:	Debands video.
 F_deflate:	Applies deflate effect.
+F_deflicker:	Remove temporal frame luminance variations.
 F_dejudder:	Removes judder produced by pullup.
 F_delogo:	Removes logo from input video.
 		When using this plugin a green box will appear on the
@@ -250,7 +251,10 @@ F_delogo:	Removes logo from input video.
 		and the size of the box (so you can adjust it to the
 		size of the logo).
 F_deshake:	Stabilizes shaky video.
+F_despill:	Remove unwanted foreground colors, caused by reflected color
+		of green or blue screen.
 F_dilation:	Applies dilation effect.
+F_doubleweave:	Weave input video fields into double number of frames.
 F_drawbox:	Draws a colored box on the input video.
 		Through the settings you are able to choose the
 		position of the box on X and Y coordinates,
@@ -271,6 +275,7 @@ F_fade:		Fade in/out input video.
 F_fftfilt:	Apply arbitrary expressions to pixels in frequency domain.
 F_field:	Extract a field from the input video.
 F_fieldorder:	Set the field order.
+F_floodfill:	Fill area of the same color with another color.
 F_framerate:	Upsamples or downsamples progressive
 		source between specified frame rates.
 F_fspp:		Applies Fast Simple Post-processing filter.
@@ -289,7 +294,9 @@ F_inflate:	Applies inflate effect.
 F_interlace:	Convert progressive video into interlaced.
 F_kerndeint:	Applies kernel deinterlacing to the input.
 F_lenscorrection: Rectifies the image by correcting for lens distortion.
+F_limiter:	Limit pixels components to the specified range.
 F_loop:		Loops video frames.
+F_lumakey:	Turns a certain luma into transparency.
 F_lut:		Compute and apply a lookup
 		table to the RGB/YUV input video.
 F_lutrgb:	Compute and apply a lookup table to the RGB input video.
@@ -304,13 +311,18 @@ F_noise:	Adds noise to the video.
 		Through the settings you can
 		select the variables of the noise
 		(strength, flag and seed).
+F_oscilloscope:	2D video oscilloscope.  Useful to measure spatial impulse,
+		step responses, and chroma delays.
 F_owndenoise:	Denoises using wavelets.
 F_perms:	Set permissions for the output video frame.
 F_perspective:	Corrects the perspective of video.
 F_phase:	Phases shift fields.
+F_pixscope:	Pixel data analysis for checking color and levels. It will
+		display sample values of color channels.
 F_pp:		Filters video using libpostproc.
 F_pp7:		Applies Postprocessing 7 filter.
 F_prewitt:	Apply prewitt operator.
+F_pseudocolor:	Make pseudocolored video frames.
 F_readeia608:	Read EIA-608 Closed Caption codes from
 		input video and write them to frame metadata.
 F_readvitc:	Reads vertical interval
@@ -318,6 +330,10 @@ F_readvitc:	Reads vertical interval
 F_realtime:	Slows down filtering to match realtime.
 F_removegrain:	Removes grain.
 F_repeatfields:	Hard repeat fields based on MPEG repeat field flag.
+F_roberts:	Apply roberts cross operator which performs a simple/quick 2-D
+		spatial gradient measurement on the video (usually a graysacle
+		image).  It highlights regions of high spatial frequency which
+		most likely correspond to edges.
 F_rotate:	Rotates the input image.
 F_sab:		Applies shape adaptive blur.
 F_separatefields: Split input video frames into fields.
@@ -337,6 +353,7 @@ F_super2xsai:	Scales the input by 2x using
 F_swaprect:	Swaps 2 rectangular objects in video.
 F_swapuv:	Swaps U and V components.
 F_tinterlace:	Performs temporal field interlacing.
+F_tlut2:	Compute and apply a lookup table from 2 successive frames.
 F_transpose:	Transposes input video.
 F_uspp:		Applies Ultra Simple/Slow Post-processing filter.
 F_vaguedenoiser: Applies a Wavelet based Denoiser.
@@ -381,6 +398,10 @@ F_biquad:	Applies a biquad IIR filter with the given coefficents.
 F_chorus:	Adds a chorus effect to the audio.
 F_compand:	Compresses or expands audio dynamic range.
 F_compensationdelay: audio compensation delay line.
+F_crossfeed:	Apply headphone crossfeed which blends the left and right
+		channels of a stereo audio recording.  It is mainly used
+		to reduce extreme stereo separation of low frequencies in
+		order to produce more speaker like sound.
 F_crystalizer:	Simple Expand Audio Dynamic Range filter.
 F_dcshift:	Applies a DC shift to the audio.
 F_dyaudnorm:	Dynamic Audio Normalizer.  When using this plugin,
@@ -402,6 +423,10 @@ F_extrastereo:	Increases difference between stereo audio
 		brings up an menu.  Highlight the effect shown in the
 		middle section and click OK.
 F_flanger:	Applies a flanging effect to the audio.
+F_haas:		Apply Haas Stereo Enhancer for a more natural sounding pan effect
+		or more clarity in the center of the mix.  With this filter
+		applied to mono signals it give some directionality and stretches
+		its stereo image
 F_highpass:	Applies a high-pass filter with 3dB point frequency.
 F_loudnorm:	EBU R128 loudness normalization.
 F_lowpass:	Applies a low-pass filter with 3dB point frequency.
