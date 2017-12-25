@@ -43,14 +43,8 @@ void SigHandler::signal_handler(int signum)
 void SigHandler::push_file(File *file)
 {
 // Check for duplicate
-	for(int i = 0; i < files.total; i++)
-	{
-		if(files.values[i] == file)
-		{
-			printf("SigHandler::push_file: file %s already on table.\n",
-				file->asset->path);
-			return;
-		}
+	for(int i = 0; i < files.total; i++) {
+		if(files.values[i] == file) return;
 	}
 
 // Append file
@@ -67,17 +61,5 @@ void SigHandler::pull_file(File *file)
 			return;
 		}
 	}
-	printf("SigHandler::pull_file: file %s not on table.\n",
-		file->asset->path);
 }
-
-
-
-
-
-
-
-
-
-
 

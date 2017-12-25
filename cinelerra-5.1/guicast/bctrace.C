@@ -353,7 +353,7 @@ void TheList::dbg_add(pthread_t tid, pthread_t owner, const char *nm)
 {
 	TheLocker the_locker;
 	int i = the_list.size();
-	while( --i >= 0 && the_list[i]->tid != tid );
+	while( --i >= 0 && !(the_list[i]->tid == tid && the_list[i]->owner == owner) );
 	if( i >= 0 ) {
 		printf("dbg_add, dup %016lx %s %s\n",
 			(unsigned long)tid, nm, the_list[i]->name);

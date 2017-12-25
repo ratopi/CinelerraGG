@@ -255,7 +255,6 @@ static void signal_entry(int signum)
 	BC_Trace::dump_traces();
 	BC_Trace::dump_locks();
 	BC_Trace::dump_buffers();
-	BC_Trace::dump_shm_stats();
 	BC_Trace::delete_temps();
 
 // Call user defined signal handler

@@ -188,7 +188,7 @@ void FormatTools::create_objects(
 	window->add_subwindow(format_button = new FormatFormat(x, y, this));
 	format_button->create_objects();
 	x += format_button->get_w() + 5;
-	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y, 64, 1, asset->fformat));
+	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y, 70, 1, asset->fformat));
 	FFMPEG::set_asset_format(asset, asset->fformat);
 	x += ffmpeg_type->get_w();
 	window->add_subwindow(format_ffmpeg = new FormatFFMPEG(x, y, this));

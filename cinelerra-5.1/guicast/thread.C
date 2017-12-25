@@ -150,7 +150,7 @@ int Thread::join()   // join this thread
 		while( running() && !cancelled ) {
 			int ret = pthread_kill(tid, 0);
 			if( ret ) break;
-			usleep(200000);
+			usleep(10000);
 		}
 		tid = ((pthread_t)-1);
 	}

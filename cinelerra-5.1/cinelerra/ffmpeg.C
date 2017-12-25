@@ -1743,8 +1743,11 @@ int FFMPEG::open_decoder()
 			estimated = 1;
 		}
 	}
-	if( estimated )
+	static int notified = 0;
+	if( !notified && estimated ) {
+		notified = 1;
 		printf("FFMPEG::open_decoder: some stream times estimated\n");
+	}
 
 	ff_lock("FFMPEG::open_decoder");
 	int ret = 0, bad_time = 0;

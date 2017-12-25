@@ -1112,7 +1112,7 @@ void AWindowGUI::update_asset_list()
 			assets.remove_number(i);
 			continue;
 		}
-		if( !picon->indexable->is_asset ) continue;
+		if( !picon->indexable || !picon->indexable->is_asset ) continue;
 		struct stat st;
 		picon->mtime = !stat(picon->indexable->path, &st) ? st.st_mtime : 0;
 	}
