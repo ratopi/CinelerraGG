@@ -354,6 +354,7 @@ int FileFFMPEG::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(driver) {
 // the direct X11 color model requires scaling in the codec
+	case SCREENCAPTURE:
 	case PLAYBACK_X11:
 	case PLAYBACK_X11_GL: return BC_RGB888;
 	case PLAYBACK_X11_XV: return BC_YUV420P;

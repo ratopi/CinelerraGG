@@ -16,7 +16,7 @@ include ../../plugin_config
 $(FREEVERBOBJS):
 	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.cpp) -o $*.o
 
-$(OUTPUT): $(DIRS)
+$(FREEVERBOBJS): $(DIRS)
 $(OUTPUT): $(FREEVERBOBJS)
 
 $(DIRS):
