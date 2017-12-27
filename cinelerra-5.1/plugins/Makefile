@@ -181,7 +181,7 @@ $(LADSPA_DIR):
 
 # parallel compilation of all directories
 .PHONY:	$(DIRS)
-$(DIRS):	$(PLUGIN_DIR)
+$(DIRS):
 	$(MAKE) -C $@
 
 clean:
