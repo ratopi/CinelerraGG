@@ -37,9 +37,6 @@ public:
 	MainUndo(MWindow *mwindow);
 	~MainUndo();
 
-
-
-
 // For tweeking operations:
 // If a pair of update_undo_before and update_undo_after are called
 // within a certain time limit and the creator is nonzero and equal,
@@ -56,6 +53,9 @@ public:
 	int undo();
 	int redo();
 
+// load_flags for the next undo/redo stack item
+	int undo_load_flags();
+	int redo_load_flags();
 	void dump(FILE *fp=stdout);
 private:
 // Entry point for all update commands
@@ -69,9 +69,8 @@ private:
 // compression more efficient.
 // So even numbers are before and odd numbers are after
 	UndoStack *undo_stack;
-
-
-
+	UndoStackItem *next_undo();
+	UndoStackItem *next_redo();
 
 // loads undo from the stringfile to the project
 	int load_undo_before(FileXML *file, uint32_t load_flags);

@@ -35,6 +35,23 @@ UndoStack::~UndoStack()
 {
 }
 
+UndoStackItem *UndoStack::get_current_undo()
+{
+	UndoStackItem *item = current;
+	if( item && !(number_of(item) % 2) ) item = item->previous;
+	if( item &&  (number_of(item) % 2) ) item = item->previous;
+	return item;
+}
+
+UndoStackItem *UndoStack::get_current_redo()
+{
+	UndoStackItem *item = current ? current : first;
+	if( item &&  (number_of(item) % 2) ) item = item->next;
+	if( item && !(number_of(item) % 2) ) item = item->next;
+	return item;
+}
+
+
 UndoStackItem* UndoStack::push()
 {
 // current is only 0 if before first undo
@@ -74,11 +91,6 @@ UndoStackItem* UndoStack::push()
 	}
 
 	return current;
-}
-
-void UndoStack::pull()
-{
-	if(current) current = PREVIOUS;
 }
 
 UndoStackItem* UndoStack::pull_next()

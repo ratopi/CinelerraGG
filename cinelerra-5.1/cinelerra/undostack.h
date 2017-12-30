@@ -95,15 +95,15 @@ public:
 	UndoStack();
 	~UndoStack();
 
+// get current undo/redo stack item
+	UndoStackItem *get_current_undo();
+	UndoStackItem *get_current_redo();
+
 // Create a new undo entry and put on the stack.
 // The current pointer points to the new entry.
 // delete future undos if in the middle
 // delete undos older than UNDOLEVELS if last
 	UndoStackItem* push();
-
-// move to the previous undo entry
-	void pull();
-
 
 // move to the next undo entry for a redo
 	UndoStackItem* pull_next();

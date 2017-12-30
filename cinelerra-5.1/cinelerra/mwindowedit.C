@@ -1862,6 +1862,8 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 {
 	calling_window_gui->unlock_window();
 	stop_playback(0);
+	if( undo->redo_load_flags() & LOAD_SESSION )
+		close_mixers();
 
 	cwindow->gui->lock_window("MWindow::redo_entry 1");
 	for( int i = 0; i < vwindows.size(); i++ ) {
@@ -2174,6 +2176,8 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 {
 	calling_window_gui->unlock_window();
 	stop_playback(0);
+	if( undo->undo_load_flags() & LOAD_SESSION )
+		close_mixers();
 
 	cwindow->gui->lock_window("MWindow::undo_entry 1");
 	for( int i = 0; i < vwindows.size(); i++ ) {

@@ -164,122 +164,88 @@ void MainUndo::update_undo_after(const char *description,
 }
 
 
+UndoStackItem *MainUndo::next_undo()
+{
+	return undo_stack->get_current_undo();
+}
+
+UndoStackItem *MainUndo::next_redo()
+{
+	return undo_stack->get_current_redo();
+}
+
+int MainUndo::undo_load_flags()
+{
+	UndoStackItem *item = next_undo();
+	return item ? item->get_flags() : 0;
+}
+
+int MainUndo::redo_load_flags()
+{
+	UndoStackItem *item = next_redo();
+	return item ? item->get_flags() : 0;
+}
+
+
 int MainUndo::undo()
 {
-	UndoStackItem *current = undo_stack->current;
-	char after_description[BCTEXTLEN];
-	after_description[0] = 0;
-
 	mwindow->undo_commercial();
 
-//printf("MainUndo::undo 1\n");
-//dump();
-
-// Rewind to an after entry
-	if(current && !(undo_stack->number_of(current) % 2))
-	{
-		current = PREVIOUS;
-	}
-
-// Rewind to a before entry
-	if(current && (undo_stack->number_of(current) % 2))
-	{
-		strcpy(after_description, current->get_description());
-		current = PREVIOUS;
-	}
-
+	UndoStackItem *current = next_undo();
 // Now have an even number
-	if(current)
-	{
+	if( current ) {
 		undo_stack->current = current;
 // Set the redo text to the current description
-		if(mwindow->gui)
-			mwindow->gui->mainmenu->redo->update_caption(
-				after_description);
-
+		if( mwindow->gui ) {
+			UndoStackItem *next = NEXT;
+			mwindow->gui->mainmenu->redo->
+				update_caption(next ? next->get_description() : "");
+		}
 		FileXML file;
 		char *current_data = current->get_data();
-		if(current_data)
-		{
+		if( current_data ) {
 			file.read_from_string(current_data);
 			load_from_undo(&file, current->get_flags());
 //printf("MainUndo::undo %d %s\n", __LINE__, current->get_filename());
 			mwindow->set_filename(current->get_filename());
 			delete [] current_data;
 
-// move current entry back one step
-			undo_stack->pull();
-
-
-			if(mwindow->gui)
-			{
+			if( mwindow->gui ) {
 // Now update the menu with the after entry
-				current = PREVIOUS;
-// Must be a previous entry to perform undo
-				if(current)
-					mwindow->gui->mainmenu->undo->update_caption(
-						current->get_description());
-				else
-					mwindow->gui->mainmenu->undo->update_caption("");
+				UndoStackItem *prev = PREVIOUS;
+				mwindow->gui->mainmenu->undo->
+					update_caption(prev ? prev->get_description() : "");
 			}
 		}
 	}
 
-
-//dump();
 	reset_creators();
 	mwindow->reset_caches();
 	return 0;
 }
 
+
 int MainUndo::redo()
 {
-	UndoStackItem *current = undo_stack->current;
-//printf("MainUndo::redo 1\n");
-//dump();
-
-// Get 1st entry
-	if(!current) current = undo_stack->first;
-
-// Advance to a before entry
-	if(current && (undo_stack->number_of(current) % 2))
-	{
-		current = NEXT;
-	}
-
-// Advance to an after entry
-	if(current && !(undo_stack->number_of(current) % 2))
-	{
-		current = NEXT;
-	}
-
-	if(current)
-	{
-		FileXML file;
-		char *current_data = current->get_data();
+	UndoStackItem *current = next_redo();
+	if( current ) {
 		undo_stack->current = current;
-
-		if(current_data)
-		{
+		char *current_data = current->get_data();
+		if( current_data ) {
+			FileXML file;
 			mwindow->set_filename(current->get_filename());
 			file.read_from_string(current_data);
 			load_from_undo(&file, current->get_flags());
 			delete [] current_data;
 
-			if(mwindow->gui)
-			{
+			if( mwindow->gui ) {
 // Update menu
-				mwindow->gui->mainmenu->undo->update_caption(current->get_description());
-
+				mwindow->gui->mainmenu->undo->
+					update_caption(current->get_description());
 // Get next after entry
-				current = NEXT;
-				if(current)
-					current = NEXT;
-
-				if(current)
-					mwindow->gui->mainmenu->redo->update_caption(current->get_description());
-				else
-					mwindow->gui->mainmenu->redo->update_caption("");
+				if( (current=NEXT) ) current = NEXT;
+				mwindow->gui->mainmenu->redo->
+					update_caption(current ? current->get_description() : "");
 			}
 		}
 	}
