@@ -1862,7 +1862,6 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 {
 	calling_window_gui->unlock_window();
 	stop_playback(0);
-	close_mixers();
 
 	cwindow->gui->lock_window("MWindow::redo_entry 1");
 	for( int i = 0; i < vwindows.size(); i++ ) {
@@ -1897,7 +1896,6 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 	if( calling_window_gui != gui )
 		gui->unlock_window();
 
-	open_mixers();
 	awindow->gui->async_update_assets();
 
 	cwindow->refresh_frame(CHANGE_ALL);
@@ -2176,7 +2174,6 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 {
 	calling_window_gui->unlock_window();
 	stop_playback(0);
-	close_mixers();
 
 	cwindow->gui->lock_window("MWindow::undo_entry 1");
 	for( int i = 0; i < vwindows.size(); i++ ) {
@@ -2213,7 +2210,6 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 
 	awindow->gui->async_update_assets();
 
-	open_mixers();
 	cwindow->refresh_frame(CHANGE_ALL);
 	calling_window_gui->lock_window("MWindow::undo_entry 4");
 }

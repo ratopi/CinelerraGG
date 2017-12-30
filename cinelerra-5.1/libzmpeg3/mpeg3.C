@@ -658,13 +658,13 @@ mpeg3_skip_video_frame(mpeg3_t *zsrc,int stream)
 extern "C" int64_t
 mpeg3_video_tell_byte(mpeg3_t *zsrc, int stream)
 {
-  return zsrc->vtrack[stream]->demuxer->tell_byte();
+  return zsrc->vtrack[stream]->demuxer->absolute_position();
 }
 
 extern "C" int64_t
 mpeg3_audio_tell_byte(mpeg3_t *zsrc, int stream)
 {
-  return zsrc->atrack[stream]->demuxer->tell_byte();
+  return zsrc->atrack[stream]->demuxer->absolute_position();
 }
 
 #ifdef ZDVB

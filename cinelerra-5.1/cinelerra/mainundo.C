@@ -293,6 +293,8 @@ int MainUndo::redo()
 // Here the master EDL loads
 int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 {
+	if( load_flags & LOAD_SESSION )
+		mwindow->close_mixers();
 	mwindow->edl->load_xml(file, load_flags);
 	for(Asset *asset = mwindow->edl->assets->first;
 		asset;
@@ -308,6 +310,8 @@ int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 	}
 	mwindow->mainindexes->start_build();
 	mwindow->update_plugin_guis(1);
+	if( load_flags & LOAD_SESSION )
+		mwindow->open_mixers();
 	return 0;
 }
 

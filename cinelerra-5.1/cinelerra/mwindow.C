@@ -1273,6 +1273,50 @@ void MWindow::close_mixers()
 	}
 }
 
+void MWindow::create_mixers()
+{
+	if( !session->drag_assets->size() ) return;
+	undo->update_undo_before();
+
+	select_zwindow(0);
+	ArrayList<ZWindow *>new_mixers;
+
+	for( int i=0; i<session->drag_assets->total; ++i ) {
+		Indexable *indexable = session->drag_assets->values[i];
+		ArrayList<Indexable*> new_assets;
+		new_assets.append(indexable);
+		Track *track = edl->tracks->last;
+		load_assets(&new_assets, -1, LOADMODE_NEW_TRACKS, 0, 0, 0, 0, 0, 0);
+		track = !track ? edl->tracks->first : track->next;
+		Mixer *mixer = 0;
+		ZWindow *zwindow = get_mixer(mixer);
+		while( track ) {
+			track->play = track->record = 0;
+			if( track->data_type == TRACK_VIDEO ) {
+				sprintf(track->title, _("Mixer %d"), zwindow->idx);
+			}
+			mixer->mixer_ids.append(track->get_mixer_id());
+			track = track->next;
+		}
+		char *path = indexable->path;
+		char *tp = strrchr(path, '/');
+		if( !tp ) tp = path; else ++tp;
+		zwindow->set_title(tp);
+		new_mixers.append(zwindow);
+	}
+
+	tile_mixers();
+	for( int i=0; i<new_mixers.size(); ++i )
+		new_mixers[i]->start();
+
+	refresh_mixers();
+	save_backup();
+	undo->update_undo_after(_("create mixers"), LOAD_ALL);
+	restart_brender();
+	gui->update(1, 2, 1, 1, 1, 1, 0);
+	sync_parameters(CHANGE_ALL);
+}
+
 void MWindow::open_mixers()
 {
 	for( int i=0; i<edl->mixers.size(); ++i ) {

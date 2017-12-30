@@ -300,39 +300,9 @@ AssetPopupMixer::~AssetPopupMixer()
 
 int AssetPopupMixer::handle_event()
 {
-	ArrayList<ZWindow *>new_mixers;
-
-	mwindow->select_zwindow(0);
-	for( int i=0; i<mwindow->session->drag_assets->total; ++i ) {
-		Indexable *indexable = mwindow->session->drag_assets->values[i];
-		ArrayList<Indexable*> new_assets;
-		new_assets.append(indexable);
-		Track *track = mwindow->edl->tracks->last;
-		mwindow->load_assets(&new_assets, -1, LOADMODE_NEW_TRACKS, 0, 0, 0, 0, 0, 0);
-		track = !track ? mwindow->edl->tracks->first : track->next;
-		Mixer *mixer = 0;
-		ZWindow *zwindow = mwindow->get_mixer(mixer);
-		while( track ) {
-			track->play = track->record = 0;
-			if( track->data_type == TRACK_VIDEO ) {
-				sprintf(track->title, _("Mixer %d"), zwindow->idx);
-			}
-			mixer->mixer_ids.append(track->get_mixer_id());
-			track = track->next;
-		}
-		char *path = indexable->path;
-		char *tp = strrchr(path, '/');
-		if( !tp ) tp = path; else ++tp;
-		zwindow->set_title(tp);
-		new_mixers.append(zwindow);
-	}
-
-	mwindow->tile_mixers();
-	for( int i=0; i<new_mixers.size(); ++i )
-		new_mixers[i]->start();
-
-	mwindow->refresh_mixers();
-	mwindow->resync_guis();
+	mwindow->gui->lock_window("AssetPopupMixer::handle_event");
+	mwindow->create_mixers();
+	mwindow->gui->unlock_window();
 	return 1;
 }
 
