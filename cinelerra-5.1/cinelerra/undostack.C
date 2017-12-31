@@ -38,8 +38,8 @@ UndoStack::~UndoStack()
 UndoStackItem *UndoStack::get_current_undo()
 {
 	UndoStackItem *item = current;
-	if( item && !(number_of(item) % 2) ) item = item->previous;
 	if( item &&  (number_of(item) % 2) ) item = item->previous;
+	if( item && !(number_of(item) % 2) ) item = item->previous;
 	return item;
 }
 
