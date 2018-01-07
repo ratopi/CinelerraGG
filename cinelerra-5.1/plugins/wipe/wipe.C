@@ -143,7 +143,7 @@ WipeMain::~WipeMain()
 
 }
 
-const char* WipeMain::plugin_title() { return _("Wipe"); }
+const char* WipeMain::plugin_title() { return N_("Wipe"); }
 int WipeMain::is_video() { return 1; }
 int WipeMain::is_transition() { return 1; }
 int WipeMain::uses_gui() { return 1; }

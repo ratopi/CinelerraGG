@@ -327,7 +327,7 @@ DiffKey::~DiffKey()
 NEW_WINDOW_MACRO(DiffKey, DiffKeyGUI)
 LOAD_CONFIGURATION_MACRO(DiffKey, DiffKeyConfig)
 
-const char* DiffKey::plugin_title() { return _("Difference key"); }
+const char* DiffKey::plugin_title() { return N_("Difference key"); }
 int DiffKey::is_realtime() { return 1; }
 int DiffKey::is_multichannel() { return 1; }
 

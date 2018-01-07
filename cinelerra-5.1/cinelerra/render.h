@@ -112,8 +112,7 @@ public:
 	void start_batches(ArrayList<BatchRenderJob*> *jobs);
 // The batches are processed in the foreground in non interactive mode.
 	void start_batches(ArrayList<BatchRenderJob*> *jobs,
-		BC_Hash *boot_defaults,
-		Preferences *preferences);
+		BC_Hash *boot_defaults, Preferences *batch_prefs);
 // Called by BatchRender to stop the operation.
 	void stop_operation();
 	BC_Window* new_gui();
@@ -129,8 +128,9 @@ public:
 // force asset parameters regardless of window
 // This should be integrated into the Asset Class.
 	static int check_asset(EDL *edl, Asset &asset);
-// Fix strategy to conform with using renderfarm.
-	static int fix_strategy(int strategy, int use_renderfarm);
+// strategy to conform with using renderfarm.
+	static int get_strategy(int use_renderfarm, int file_per_label);
+	int get_strategy();
 // Force filename to have a 0 padded number if rendering to a list.
 	int check_numbering(Asset &asset);
 	static void create_filename(char *path,
@@ -169,7 +169,6 @@ public:
 // Background compression must be disabled when direct frame copying and reenabled afterwards
 	int direct_frame_copying;
 
-// Copy of mwindow preferences or pointer to another preferences object
 	Preferences *preferences;
 	VFrame *compressed_output;
 	MainProgressBar *progress;
@@ -179,7 +178,7 @@ public:
 	PlayableTracks *playable_tracks;
 	PackageDispatcher *packages;
 	Mutex *package_lock, *counter_lock;
-	int strategy;
+	int file_per_label;
 	int range_type;
 // Total selection to render in seconds
 	double total_start, total_end;

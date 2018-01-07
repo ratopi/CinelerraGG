@@ -443,7 +443,7 @@ WaveEffect::~WaveEffect()
 }
 
 
-const char* WaveEffect::plugin_title() { return _("Wave"); }
+const char* WaveEffect::plugin_title() { return N_("Wave"); }
 int WaveEffect::is_realtime() { return 1; }
 
 

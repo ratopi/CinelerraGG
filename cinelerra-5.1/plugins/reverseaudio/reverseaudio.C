@@ -167,7 +167,7 @@ ReverseAudio::~ReverseAudio()
 
 }
 
-const char* ReverseAudio::plugin_title() { return _("Reverse audio"); }
+const char* ReverseAudio::plugin_title() { return N_("Reverse audio"); }
 int ReverseAudio::is_realtime() { return 1; }
 
 

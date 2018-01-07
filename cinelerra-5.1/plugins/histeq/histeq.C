@@ -294,7 +294,7 @@ HistEqMain::~HistEqMain()
 	delete [] wts;
 }
 
-const char* HistEqMain::plugin_title() { return _("HistEq"); }
+const char* HistEqMain::plugin_title() { return N_("HistEq"); }
 int HistEqMain::is_realtime() { return 1; }
 
 

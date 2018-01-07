@@ -78,7 +78,7 @@ HistogramMain::~HistogramMain()
 	delete engine;
 }
 
-const char* HistogramMain::plugin_title() { return _("Histogram Bezier"); }
+const char* HistogramMain::plugin_title() { return N_("Histogram Bezier"); }
 int HistogramMain::is_realtime() { return 1; }
 
 

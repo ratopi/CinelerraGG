@@ -69,10 +69,7 @@ HULKTHEMEMain::~HULKTHEMEMain()
 {
 }
 
-const char* HULKTHEMEMain::plugin_title()
-{
-	return _("Hulk");
-}
+const char* HULKTHEMEMain::plugin_title() { return N_("Hulk"); }
 
 Theme* HULKTHEMEMain::new_theme()
 {

@@ -872,6 +872,20 @@ PluginServer* MWindow::scan_plugindb(char *title,
 	return 0;
 }
 
+// repair session files with xlated plugin titles
+void MWindow::fix_plugin_title(char *title)
+{
+	for(int i = 0; i < plugindb->total; i++) {
+		PluginServer *server = plugindb->get(i);
+		if( !server->title ) continue;
+		const char *server_title = server->title;
+		if( !bstrcasecmp(title, _(server_title)) ) {
+			strcpy(title, server_title);
+			return;
+		}
+	}
+}
+
 int MWindow::plugin_exists(const char *plugin_path, ArrayList<PluginServer*> &plugins)
 {
 	for( int i=0; i<plugins.size(); ++i )
@@ -1034,7 +1048,7 @@ void MWindow::init_theme()
 		fprintf(stderr, _("MWindow::init_theme: prefered theme %s not found.\n"),
 			 preferences->theme);
 
-	const char *default_theme = _(DEFAULT_THEME);
+	const char *default_theme = DEFAULT_THEME;
 	if( !theme_plugin && strcasecmp(preferences->theme, default_theme) ) {
 		fprintf(stderr, _("MWindow::init_theme: trying default theme %s\n"),
 			default_theme);
@@ -2199,74 +2213,37 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 {
 	char string[BCTEXTLEN];
 
-// Do a check weather plugins exist
-	for(Track *track = new_edl->tracks->first; track; track = track->next)
-	{
-		for(int k = 0; k < track->plugin_set.total; k++)
-		{
+// Do a check whether plugins exist
+	for( Track *track=new_edl->tracks->first; track; track=track->next ) {
+		for( int k=0; k<track->plugin_set.total; ++k ) {
 			PluginSet *plugin_set = track->plugin_set[k];
-			for(Plugin *plugin = (Plugin*)plugin_set->first;
-				plugin;
-				plugin = (Plugin*)plugin->next)
-			{
-				if(plugin->plugin_type == PLUGIN_STANDALONE)
-				{
+			for( Plugin *plugin = (Plugin*)plugin_set->first;
+					plugin; plugin = (Plugin*)plugin->next ) {
+				if( plugin->plugin_type != PLUGIN_STANDALONE ) continue;
 // ok we need to find it in plugindb
-					int plugin_found = 0;
-
-					for(int j = 0; j < plugindb->size(); j++)
-					{
-						PluginServer *server = plugindb->get(j);
-						if(server->title &&
-							!strcasecmp(server->title, plugin->title) &&
-							((track->data_type == TRACK_AUDIO && server->audio) ||
-							(track->data_type == TRACK_VIDEO && server->video)) &&
-							(!server->transition))
-							plugin_found = 1;
-					}
-
-					if (!plugin_found)
-					{
-						sprintf(string,
+				PluginServer *server =
+					scan_plugindb(plugin->title, track->data_type);
+				if( !server || server->transition ) {
+					sprintf(string,
 	_("The %s '%s' in file '%s' is not part of your installation of Cinelerra.\n"
 	  "The project won't be rendered as it was meant and Cinelerra might crash.\n"),
-							"effect", plugin->title,
-							path);
-						MainError::show_error(string);
-					}
+						"effect", _(plugin->title), path);
+					MainError::show_error(string);
 				}
 			}
 		}
 
-		for(Edit *edit = (Edit*)track->edits->first;
-			edit;
-			edit = (Edit*)edit->next)
-		{
-			if (edit->transition)
-			{
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( !edit->transition ) continue;
 // ok we need to find transition in plugindb
-
-				int transition_found = 0;
-				for(int j = 0; j < plugindb->size(); j++)
-				{
-					PluginServer *server = plugindb->get(j);
-					if(server->title &&
-						!strcasecmp(server->title, edit->transition->title) &&
-						((track->data_type == TRACK_AUDIO && server->audio) ||
-						(track->data_type == TRACK_VIDEO && server->video)) &&
-						(server->transition))
-						transition_found = 1;
-				}
-
-				if (!transition_found)
-				{
-					sprintf(string,
+			PluginServer *server =
+				scan_plugindb(edit->transition->title, track->data_type);
+			if( !server || !server->transition ) {
+				sprintf(string,
 	_("The %s '%s' in file '%s' is not part of your installation of Cinelerra.\n"
 	  "The project won't be rendered as it was meant and Cinelerra might crash.\n"),
-						"transition", edit->transition->title,
-						path);
-					MainError::show_error(string);
-				}
+					"transition", _(edit->transition->title), path);
+				MainError::show_error(string);
 			}
 		}
 	}

@@ -64,7 +64,7 @@ public:
 						int prompt_video_compression,
 						const char *locked_compressor,  // Select compressors to be offered
 						int recording, // Change captions for recording
-						int *strategy,  // If nonzero, prompt for insertion strategy
+						int *file_per_label,  // prompt if nonzero
 						int brender,   // Supply file formats for background rendering
 						int horizontal_layout = 0);
 // In recording preferences, aspects of the format are locked
@@ -75,7 +75,7 @@ public:
 
 	void reposition_window(int &init_x, int &init_y);
 // Put new asset's parameters in and change asset.
-	void update(Asset *asset, int *strategy);
+	void update(Asset *asset, int *file_per_label);
 // Update filename extension when format is changed.
 	void update_extension();
 	void close_format_windows();
@@ -127,7 +127,7 @@ public:
 	int prompt_audio_channels;
 	int prompt_video;
 	int prompt_video_compression;
-	int *strategy;
+	int *file_per_label;
 	int w;
 // Determines what the configuration buttons do.
 	int video_driver;

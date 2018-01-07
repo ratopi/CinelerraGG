@@ -193,7 +193,7 @@ int PluginArray::run_plugins()
 		MainProgressBar *progress;
 		char string[BCTEXTLEN], string2[BCTEXTLEN];
 
-		sprintf(string, "%s...", plugin_server->title);
+		sprintf(string, "%s...", _(plugin_server->title));
 		progress = mwindow->mainprogress->start_progress(string, end - start);
 
 		for(int64_t current_position = start;
@@ -219,7 +219,7 @@ int PluginArray::run_plugins()
 		progress->stop_progress();
 		delete progress;
 
-		sprintf(string, _("%s took %s"), plugin_server->title, string2);
+		sprintf(string, _("%s took %s"), _(plugin_server->title), string2);
 		mwindow->gui->lock_window();
 		mwindow->gui->show_message(string2);
 		mwindow->gui->unlock_window();

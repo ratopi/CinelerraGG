@@ -79,7 +79,7 @@ DotMain::~DotMain()
 	}
 }
 
-const char* DotMain::plugin_title() { return _("DotTV"); }
+const char* DotMain::plugin_title() { return N_("DotTV"); }
 int DotMain::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(DotMain, DotWindow)

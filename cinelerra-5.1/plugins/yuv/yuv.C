@@ -206,7 +206,7 @@ YUVEffect::~YUVEffect()
 
 }
 
-const char* YUVEffect::plugin_title() { return _("YUV"); }
+const char* YUVEffect::plugin_title() { return N_("YUV"); }
 int YUVEffect::is_realtime() { return 1; }
 
 

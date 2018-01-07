@@ -246,7 +246,7 @@ int DelayVideo::is_realtime()
 	return 1;
 }
 
-const char* DelayVideo::plugin_title() { return _("Delay Video"); }
+const char* DelayVideo::plugin_title() { return N_("Delay Video"); }
 
 LOAD_CONFIGURATION_MACRO(DelayVideo, DelayVideoConfig)
 NEW_WINDOW_MACRO(DelayVideo, DelayVideoWindow)

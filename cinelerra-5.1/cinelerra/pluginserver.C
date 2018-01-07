@@ -271,7 +271,7 @@ int PluginServer::get_synthesis()
 
 void PluginServer::set_title(const char *string)
 {
-	if(title) delete [] title;
+	delete [] title;
 	title = cstrdup(string);
 }
 

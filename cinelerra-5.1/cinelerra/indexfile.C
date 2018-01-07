@@ -103,12 +103,12 @@ static int udf_volume_id(const char *path, char *fname)
 		if( strncmp(ISO_STANDARD_ID,id.id,sizeof(id.id)) ) continue;
 		// look for volume_id
 		if( !isalnum(id.volume_id[0]) ) continue;
-		char *bp = &id.volume_id[0], *cp = fname;
+		char *bp = (char*)&id.volume_id[0], *cp = fname;
 		for( int i=0; i<(int)sizeof(id.volume_id); ++i ) *cp++ = *bp++;
 		while( --cp>=fname && *cp==' ' ) *cp = 0;
 		if( !*fname ) continue;
 		// fname = volume_id _ creation_date
-		++cp;  *cp++ = '_';  bp = &id.creation_date[0];
+		++cp;  *cp++ = '_';  bp = (char*)&id.creation_date[0];
 		for( int i=0; i<(int)sizeof(id.creation_date)-1; ++i ) {
 			if( !isdigit(*bp) ) break;
 			*cp++ = *bp++;

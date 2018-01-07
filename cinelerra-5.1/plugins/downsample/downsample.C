@@ -373,7 +373,7 @@ DownSampleMain::~DownSampleMain()
 	if(engine) delete engine;
 }
 
-const char* DownSampleMain::plugin_title() { return _("Downsample"); }
+const char* DownSampleMain::plugin_title() { return N_("Downsample"); }
 int DownSampleMain::is_realtime() { return 1; }
 
 

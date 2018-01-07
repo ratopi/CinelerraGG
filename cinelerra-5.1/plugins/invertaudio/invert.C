@@ -32,7 +32,7 @@ public:
 	 : PluginAClient(server) {};
 	~InvertAudioEffect() {};
 
-	const char* plugin_title() { return  _("Invert Audio"); };
+	const char* plugin_title() { return N_("Invert Audio"); };
 	int is_realtime() { return 1; };
 	int process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr) {
 		double *output_samples = output_ptr->get_data();

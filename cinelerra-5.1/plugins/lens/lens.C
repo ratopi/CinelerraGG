@@ -584,7 +584,7 @@ LensMain::~LensMain()
 NEW_WINDOW_MACRO(LensMain, LensGUI)
 LOAD_CONFIGURATION_MACRO(LensMain, LensConfig)
 int LensMain::is_realtime() { return 1; }
-const char* LensMain::plugin_title() { return _("Lens"); }
+const char* LensMain::plugin_title() { return N_("Lens"); }
 
 void LensMain::update_gui()
 {

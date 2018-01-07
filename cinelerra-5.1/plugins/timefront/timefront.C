@@ -647,7 +647,7 @@ TimeFrontMain::~TimeFrontMain()
 	if(overlayer) delete overlayer;
 }
 
-const char* TimeFrontMain::plugin_title() { return _("TimeFront"); }
+const char* TimeFrontMain::plugin_title() { return N_("TimeFront"); }
 int TimeFrontMain::is_realtime() { return 1; }
 int TimeFrontMain::is_multichannel() { return 1; }
 

@@ -82,7 +82,7 @@ Gain::~Gain()
 
 }
 
-const char* Gain::plugin_title() { return _("Gain"); }
+const char* Gain::plugin_title() { return N_("Gain"); }
 int Gain::is_realtime() { return 1; }
 
 

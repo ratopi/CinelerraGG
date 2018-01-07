@@ -63,10 +63,7 @@ UNFLATTHEMEMain::~UNFLATTHEMEMain()
 {
 }
 
-const char* UNFLATTHEMEMain::plugin_title()
-{
-	return _("UnFlat");
-}
+const char* UNFLATTHEMEMain::plugin_title() { return N_("UnFlat"); }
 
 Theme* UNFLATTHEMEMain::new_theme()
 {

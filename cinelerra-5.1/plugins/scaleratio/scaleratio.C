@@ -93,7 +93,7 @@ ScaleRatioMain::~ScaleRatioMain()
 	overlayer = 0;
 }
 
-const char* ScaleRatioMain::plugin_title() { return _("Scale Ratio"); }
+const char* ScaleRatioMain::plugin_title() { return N_("Scale Ratio"); }
 int ScaleRatioMain::is_realtime() { return 1; }
 
 

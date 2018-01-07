@@ -102,7 +102,7 @@ UnsharpMain::~UnsharpMain()
 	delete engine;
 }
 
-const char* UnsharpMain::plugin_title() { return _("Unsharp"); }
+const char* UnsharpMain::plugin_title() { return N_("Unsharp"); }
 int UnsharpMain::is_realtime() { return 1; }
 
 

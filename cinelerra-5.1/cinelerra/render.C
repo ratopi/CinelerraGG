@@ -219,8 +219,8 @@ void MainPackageRenderer::set_progress(int64_t value)
 
 	render->counter_lock->unlock();
 
-// This locks the preferences
-	if(mwindow) mwindow->preferences->copy_rates_from(preferences);
+	if( mwindow )
+		mwindow->preferences->copy_rates_from(preferences);
 }
 
 int MainPackageRenderer::progress_cancelled()
@@ -236,13 +236,13 @@ Render::Render(MWindow *mwindow)
 	this->mwindow = mwindow;
 	in_progress = 0;
 	progress = 0;
-	preferences = 0;
 	elapsed_time = 0.0;
 	package_lock = new Mutex("Render::package_lock");
 	counter_lock = new Mutex("Render::counter_lock");
 	completion = new Condition(0, "Render::completion");
 	progress_timer = new Timer;
 	range_type = RANGE_BACKCOMPAT;
+	preferences = new Preferences();
 	thread = new RenderThread(mwindow, this);
 	render_window = 0;
 	asset = 0;
@@ -306,14 +306,12 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 }
 
 void Render::start_batches(ArrayList<BatchRenderJob*> *jobs,
-	BC_Hash *boot_defaults,
-	Preferences *preferences)
+	BC_Hash *boot_defaults, Preferences *batch_prefs)
 {
 	mode = Render::BATCH;
 	batch_cancelled = 0;
+	preferences->copy_from(batch_prefs);
 	this->jobs = jobs;
-	this->preferences = new Preferences;
-	this->preferences->copy_from(preferences);
 
 	completion->reset();
 	thread->run();
@@ -473,25 +471,15 @@ int Render::check_asset(EDL *edl, Asset &asset)
 	return 0;
 }
 
-int Render::fix_strategy(int strategy, int use_renderfarm)
+int Render::get_strategy(int use_renderfarm, int file_per_label)
 {
-	if(use_renderfarm)
-	{
-		if(strategy == FILE_PER_LABEL)
-			strategy = FILE_PER_LABEL_FARM;
-		else
-		if(strategy == SINGLE_PASS)
-			strategy = SINGLE_PASS_FARM;
-	}
-	else
-	{
-		if(strategy == FILE_PER_LABEL_FARM)
-			strategy = FILE_PER_LABEL;
-		else
-		if(strategy == SINGLE_PASS_FARM)
-			strategy = SINGLE_PASS;
-	}
-	return strategy;
+	return use_renderfarm ?
+		(file_per_label ? FILE_PER_LABEL_FARM : SINGLE_PASS_FARM) :
+		(file_per_label ? FILE_PER_LABEL      : SINGLE_PASS     ) ;
+}
+int Render::get_strategy()
+{
+	return get_strategy(preferences->use_renderfarm, file_per_label);
 }
 
 void Render::start_progress()
@@ -628,7 +616,7 @@ void Render::get_starting_number(char *path,
 
 int Render::load_defaults(Asset *asset)
 {
-	strategy = mwindow->defaults->get("RENDER_STRATEGY", SINGLE_PASS);
+	file_per_label = mwindow->defaults->get("RENDER_FILE_PER_LABEL", 0);
 	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
 	range_type = mwindow->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
 
@@ -647,8 +635,8 @@ int Render::load_defaults(Asset *asset)
 int Render::load_profile(int profile_slot, Asset *asset)
 {
 	char string_name[100];
-	sprintf(string_name, "RENDER_%i_STRATEGY", profile_slot);
-	strategy = mwindow->defaults->get(string_name, SINGLE_PASS);
+	sprintf(string_name, "RENDER_%i_FILE_PER_LABEL", profile_slot);
+	file_per_label = mwindow->defaults->get(string_name, 0);
 // Load mode is not part of the profile
 //	printf(string_name, "RENDER_%i_LOADMODE", profile_slot);
 //	load_mode = mwindow->defaults->get(string_name, LOADMODE_NEW_TRACKS);
@@ -664,7 +652,7 @@ int Render::load_profile(int profile_slot, Asset *asset)
 
 int Render::save_defaults(Asset *asset)
 {
-	mwindow->defaults->update("RENDER_STRATEGY", strategy);
+	mwindow->defaults->update("RENDER_FILE_PER_LABEL", file_per_label);
 	mwindow->defaults->update("RENDER_LOADMODE", load_mode);
 	mwindow->defaults->update("RENDER_RANGE_TYPE", range_type);
 
@@ -710,12 +698,6 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 	render->default_asset = asset;
 	render->progress = 0;
 	render->result = 0;
-
-	if( mwindow ) {
-		if( !render->preferences )
-			render->preferences = new Preferences;
-		render->preferences->copy_from(mwindow->preferences);
-	}
 
 // Create rendering command
 	TransportCommand *command = new TransportCommand;
@@ -778,7 +760,6 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 		if(mwindow) mwindow->stop_brender();
 
 		fs.complete_path(render->default_asset->path);
-		strategy = Render::fix_strategy(strategy, render->preferences->use_renderfarm);
 
 		render->result = render->packages->create_packages(mwindow,
 			command->get_edl(),
@@ -1029,10 +1010,13 @@ if(debug) printf("Render::render %d\n", __LINE__);
 
 void RenderThread::run()
 {
+	if( mwindow )
+		render->preferences->copy_from(mwindow->preferences);
+
 	if(render->mode == Render::INTERACTIVE)
 	{
 		render_single(1, render->asset, mwindow->edl,
-			render->strategy, render->range_type);
+			render->get_strategy(), render->range_type);
 	}
 	else
 	if(render->mode == Render::BATCH)
@@ -1070,9 +1054,8 @@ void RenderThread::run()
 				edl->create_objects();
 				file->read_from_file(job->edl_path);
 				edl->load_xml(file, LOAD_ALL);
-
 //PRINT_TRACE
-				render_single(0, job->asset, edl, job->strategy, RANGE_BACKCOMPAT);
+				render_single(0, job->asset, edl, job->get_strategy(), RANGE_BACKCOMPAT);
 
 //PRINT_TRACE
 				edl->Garbage::remove_user();
@@ -1151,7 +1134,7 @@ void RenderWindow::load_profile(int profile_slot)
 {
 	render->load_profile(profile_slot, asset);
 	update_range_type(render->range_type);
-	render_format->update(asset, &render->strategy);
+	render_format->update(asset, &render->file_per_label);
 }
 
 
@@ -1160,15 +1143,14 @@ void RenderWindow::create_objects()
 	int x = 10, y = 10;
 	lock_window("RenderWindow::create_objects");
 	add_subwindow(new BC_Title(x, y,
-		(char*)((render->strategy == FILE_PER_LABEL ||
-				render->strategy == FILE_PER_LABEL_FARM) ?
+		(char*)(render->file_per_label ?
 			_("Select the first file to render to:") :
 			_("Select a file to render to:"))));
 	y += 25;
 
 	render_format = new RenderFormat(mwindow, this, asset);
 	render_format->create_objects(x, y,
-		1, 1, 1, 1, 0, 1, 0, 0, &render->strategy, 0);
+		1, 1, 1, 1, 0, 1, 0, 0, &render->file_per_label, 0);
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Render range:")));

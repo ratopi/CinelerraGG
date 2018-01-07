@@ -328,7 +328,7 @@ OverlayAudio::~OverlayAudio()
 
 }
 
-const char* OverlayAudio::plugin_title() { return _("Overlay"); }
+const char* OverlayAudio::plugin_title() { return N_("Overlay"); }
 int OverlayAudio::is_realtime() { return 1; }
 int OverlayAudio::is_multichannel() { return 1; }
 

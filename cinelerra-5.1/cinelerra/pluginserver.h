@@ -382,7 +382,7 @@ public:
 	int uses_gui;
 // Plugin is a transition
 	int transition;
-// name/tip of plugin in current locale.
+// name/tip of plugin
 	char *title, *tip;
 	int64_t written_samples, written_frames;
 	char *path;           // location of plugin on disk

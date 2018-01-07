@@ -380,7 +380,7 @@ RadialBlurMain::~RadialBlurMain()
 	delete rotate;
 }
 
-const char* RadialBlurMain::plugin_title() { return _("Radial Blur"); }
+const char* RadialBlurMain::plugin_title() { return N_("Radial Blur"); }
 int RadialBlurMain::is_realtime() { return 1; }
 
 

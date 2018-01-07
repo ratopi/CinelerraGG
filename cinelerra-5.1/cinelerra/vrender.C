@@ -271,7 +271,7 @@ int VRender::get_colormodel(VEdit *playable_edit, int use_vconsole, int use_bren
 					colormodel = BC_BGR8888;
 				else {
 // file favorite colormodel may mismatch rgb/yuv
-					int vstream = playable_edit->channel;
+					int vstream = playable_edit ? playable_edit->channel : -1;
 					int best_colormodel = file->get_best_colormodel(vconfig->driver, vstream);
 					if( BC_CModels::is_yuv(best_colormodel) == BC_CModels::is_yuv(colormodel) )
 						colormodel = best_colormodel;

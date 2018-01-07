@@ -120,7 +120,7 @@ Motion51Main::~Motion51Main()
 	delete [] ypts;
 }
 
-const char* Motion51Main::plugin_title() { return _("Motion51"); }
+const char* Motion51Main::plugin_title() { return N_("Motion51"); }
 int Motion51Main::is_realtime() { return 1; }
 int Motion51Main::is_multichannel() { return 1; }
 

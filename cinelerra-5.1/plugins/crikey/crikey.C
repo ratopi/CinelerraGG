@@ -299,7 +299,7 @@ void CriKey::get_color(int x, int y)
 	}
 }
 
-const char* CriKey::plugin_title() { return _("CriKey"); }
+const char* CriKey::plugin_title() { return N_("CriKey"); }
 int CriKey::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(CriKey, CriKeyWindow);

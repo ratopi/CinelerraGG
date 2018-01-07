@@ -68,10 +68,7 @@ BlondThemeMain::~BlondThemeMain()
 {
 }
 
-const char* BlondThemeMain::plugin_title()
-{
-	return _("Blond");
-}
+const char* BlondThemeMain::plugin_title() { return N_("Blond"); }
 
 Theme* BlondThemeMain::new_theme()
 {

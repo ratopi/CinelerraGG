@@ -206,7 +206,7 @@ MotionCVMain::~MotionCVMain()
 	delete rotate_target_dst;
 }
 
-const char *MotionCVMain::plugin_title() { return _("MotionCV"); }
+const char *MotionCVMain::plugin_title() { return N_("MotionCV"); }
 int MotionCVMain::is_realtime() { return 1; }
 int MotionCVMain::is_multichannel() { return 1; }
 

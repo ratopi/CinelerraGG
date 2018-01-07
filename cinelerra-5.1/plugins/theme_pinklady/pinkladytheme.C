@@ -60,10 +60,7 @@ PINKLADYMain::~PINKLADYMain()
 {
 }
 
-const char* PINKLADYMain::plugin_title()
-{
-	return _("PinkLady");
-}
+const char* PINKLADYMain::plugin_title() { return N_("PinkLady"); }
 
 Theme* PINKLADYMain::new_theme()
 {

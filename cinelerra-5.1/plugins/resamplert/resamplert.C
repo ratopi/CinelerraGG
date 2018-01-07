@@ -220,7 +220,7 @@ ResampleRT::~ResampleRT()
 	delete resample;
 }
 
-const char* ResampleRT::plugin_title() { return _("ResampleRT"); }
+const char* ResampleRT::plugin_title() { return N_("ResampleRT"); }
 int ResampleRT::is_realtime() { return 1; }
 int ResampleRT::is_synthesis() { return 1; }
 

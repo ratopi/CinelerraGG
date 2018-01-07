@@ -76,7 +76,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 	prompt_audio_channels = 0;
 	prompt_video = 0;
 	prompt_video_compression = 0;
-	strategy = 0;
+	file_per_label = 0;
 	locked_compressor = 0;
 	video_driver = 0;
 }
@@ -111,7 +111,7 @@ void FormatTools::create_objects(
 		int prompt_video_compression,
 		const char *locked_compressor,
 		int recording,
-		int *strategy,
+		int *file_per_label,
 		int brender,
 		int horizontal_layout)
 {
@@ -129,30 +129,9 @@ void FormatTools::create_objects(
 	this->prompt_audio_channels = prompt_audio_channels;
 	this->prompt_video = prompt_video;
 	this->prompt_video_compression = prompt_video_compression;
-	this->strategy = strategy;
+	this->file_per_label = file_per_label;
 
 //printf("FormatTools::create_objects 1\n");
-
-// Modify strategy depending on render farm
-	if(strategy)
-	{
-		if(mwindow->preferences->use_renderfarm)
-		{
-			if(*strategy == FILE_PER_LABEL)
-				*strategy = FILE_PER_LABEL_FARM;
-			else
-			if(*strategy == SINGLE_PASS)
-				*strategy = SINGLE_PASS_FARM;
-		}
-		else
-		{
-			if(*strategy == FILE_PER_LABEL_FARM)
-				*strategy = FILE_PER_LABEL;
-			else
-			if(*strategy == SINGLE_PASS_FARM)
-				*strategy = SINGLE_PASS;
-		}
-	}
 
 	if(!recording)
 	{
@@ -257,9 +236,9 @@ void FormatTools::create_objects(
 //printf("FormatTools::create_objects 11\n");
 
 	x = init_x;
-	if(strategy)
-	{
-		window->add_subwindow(multiple_files = new FormatMultiple(mwindow, x, y, strategy));
+	if( file_per_label ) {
+		multiple_files = new FormatMultiple(mwindow, x, y, file_per_label);
+		window->add_subwindow(multiple_files);
 		y += multiple_files->get_h() + 10;
 	}
 
@@ -439,19 +418,14 @@ void FormatTools::update_extension()
 	}
 }
 
-void FormatTools::update(Asset *asset, int *strategy)
+void FormatTools::update(Asset *asset, int *file_per_label)
 {
 	this->asset = asset;
-	this->strategy = strategy;
-
-	if(path_textbox)
-		path_textbox->update(asset->path);
+	this->file_per_label = file_per_label;
+	if( file_per_label ) multiple_files->update(file_per_label);
+	if( path_textbox ) path_textbox->update(asset->path);
 	format_text->update(File::formattostr(asset->format));
 	update_format();
-	if(strategy)
-	{
-		multiple_files->update(strategy);
-	}
 	close_format_windows();
 }
 
@@ -553,8 +527,7 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 		x = init_x;
 	}
 
-	if(strategy)
-	{
+	if( file_per_label ) {
 		multiple_files->reposition_window(x, y);
 		y += multiple_files->get_h() + 10;
 	}
@@ -864,10 +837,7 @@ int FormatToTracks::handle_event()
 
 
 FormatMultiple::FormatMultiple(MWindow *mwindow, int x, int y, int *output)
- : BC_CheckBox(x,
- 	y,
-	(*output == FILE_PER_LABEL) || (*output == FILE_PER_LABEL_FARM),
-	_("Create new file at each label"))
+ : BC_CheckBox(x, y, *output, _("Create new file at each label"))
 {
 	this->output = output;
 	this->mwindow = mwindow;
@@ -879,31 +849,14 @@ FormatMultiple::~FormatMultiple()
 
 int FormatMultiple::handle_event()
 {
-	if(get_value())
-	{
-		if(mwindow->preferences->use_renderfarm)
-			*output = FILE_PER_LABEL_FARM;
-		else
-			*output = FILE_PER_LABEL;
-	}
-	else
-	{
-		if(mwindow->preferences->use_renderfarm)
-			*output = SINGLE_PASS_FARM;
-		else
-			*output = SINGLE_PASS;
-	}
+	*output = get_value();
 	return 1;
 }
 
 void FormatMultiple::update(int *output)
 {
 	this->output = output;
-	if(*output == FILE_PER_LABEL_FARM ||
-		*output ==FILE_PER_LABEL)
-		set_value(1);
-	else
-		set_value(0);
+	set_value(*output ? 1 : 0);
 }
 
 

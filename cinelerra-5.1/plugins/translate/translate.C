@@ -112,7 +112,7 @@ TranslateMain::~TranslateMain()
 	overlayer = 0;
 }
 
-const char* TranslateMain::plugin_title() { return _("Translate"); }
+const char* TranslateMain::plugin_title() { return N_("Translate"); }
 int TranslateMain::is_realtime() { return 1; }
 
 

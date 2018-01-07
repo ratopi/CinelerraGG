@@ -70,10 +70,7 @@ BlueDotThemeMain::~BlueDotThemeMain()
 {
 }
 
-const char* BlueDotThemeMain::plugin_title()
-{
-	return _("Blue Dot");
-}
+const char* BlueDotThemeMain::plugin_title() { return N_("Blue Dot"); }
 
 Theme* BlueDotThemeMain::new_theme()
 {

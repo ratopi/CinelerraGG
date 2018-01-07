@@ -178,7 +178,7 @@ BandWipeMain::~BandWipeMain()
 
 }
 
-const char* BandWipeMain::plugin_title() { return _("BandWipe"); }
+const char* BandWipeMain::plugin_title() { return N_("BandWipe"); }
 int BandWipeMain::is_transition() { return 1; }
 int BandWipeMain::uses_gui() { return 1; }
 

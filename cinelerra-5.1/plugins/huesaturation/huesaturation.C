@@ -568,7 +568,7 @@ int HueEffect::process_buffer(VFrame *frame,
 	return 0;
 }
 
-const char* HueEffect::plugin_title() { return _("Hue saturation"); }
+const char* HueEffect::plugin_title() { return N_("Hue saturation"); }
 int HueEffect::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(HueEffect, HueWindow)

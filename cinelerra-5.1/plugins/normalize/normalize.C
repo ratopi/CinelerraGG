@@ -50,7 +50,7 @@ NormalizeMain::~NormalizeMain()
 {
 }
 
-const char* NormalizeMain::plugin_title() { return _("Normalize"); }
+const char* NormalizeMain::plugin_title() { return N_("Normalize"); }
 int NormalizeMain::is_realtime() { return 0; }
 int NormalizeMain::is_multichannel() { return 1; }
 

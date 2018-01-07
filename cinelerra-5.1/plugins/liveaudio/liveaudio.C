@@ -374,7 +374,7 @@ void LiveAudio::render_stop()
 }
 
 
-const char* LiveAudio::plugin_title() { return _("Live Audio"); }
+const char* LiveAudio::plugin_title() { return N_("Live Audio"); }
 int LiveAudio::is_realtime() { return 1; }
 int LiveAudio::is_multichannel() { return 1; }
 int LiveAudio::is_synthesis() { return 1; }

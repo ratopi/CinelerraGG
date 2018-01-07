@@ -360,7 +360,7 @@ Color3WayMain::~Color3WayMain()
 	delete engine;
 }
 
-const char* Color3WayMain::plugin_title() { return _("Color 3 Way"); }
+const char* Color3WayMain::plugin_title() { return N_("Color 3 Way"); }
 int Color3WayMain::is_realtime() { return 1; }
 
 

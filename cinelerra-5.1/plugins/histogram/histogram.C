@@ -96,7 +96,7 @@ HistogramMain::~HistogramMain()
 	delete engine;
 }
 
-const char* HistogramMain::plugin_title() { return _("Histogram"); }
+const char* HistogramMain::plugin_title() { return N_("Histogram"); }
 int HistogramMain::is_realtime() { return 1; }
 
 

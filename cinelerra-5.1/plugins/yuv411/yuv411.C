@@ -70,7 +70,7 @@ yuv411Main::~yuv411Main()
 	delete temp_frame;
 }
 
-const char *yuv411Main::plugin_title() { return _("YUV411"); }
+const char *yuv411Main::plugin_title() { return N_("YUV411"); }
 int yuv411Main::is_realtime() { return 1; }
 
 #define YUV411_MACRO(type, components) \

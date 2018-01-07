@@ -93,7 +93,7 @@ BrightnessMain::~BrightnessMain()
 	if(engine) delete engine;
 }
 
-const char* BrightnessMain::plugin_title() { return _("Brightness/Contrast"); }
+const char* BrightnessMain::plugin_title() { return N_("Brightness/Contrast"); }
 int BrightnessMain::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(BrightnessMain, BrightnessWindow)

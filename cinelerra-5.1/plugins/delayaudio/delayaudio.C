@@ -55,7 +55,7 @@ DelayAudio::~DelayAudio()
 
 NEW_WINDOW_MACRO(DelayAudio, DelayAudioWindow)
 
-const char* DelayAudio::plugin_title() { return _("Delay audio"); }
+const char* DelayAudio::plugin_title() { return N_("Delay audio"); }
 int DelayAudio::is_realtime() { return 1; }
 
 

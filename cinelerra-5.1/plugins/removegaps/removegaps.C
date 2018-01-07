@@ -194,7 +194,7 @@ RemoveGaps::~RemoveGaps()
 	delete temp;
 }
 
-const char* RemoveGaps::plugin_title() { return _("Remove Gaps"); }
+const char* RemoveGaps::plugin_title() { return N_("Remove Gaps"); }
 int RemoveGaps::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(RemoveGaps, RemoveGapsWindow)

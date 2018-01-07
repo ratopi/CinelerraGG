@@ -193,7 +193,7 @@ void SoundLevelEffect::reset()
 	accum_size = 0;
 }
 
-const char* SoundLevelEffect::plugin_title() { return _("SoundLevel"); }
+const char* SoundLevelEffect::plugin_title() { return N_("SoundLevel"); }
 int SoundLevelEffect::is_realtime() { return 1; }
 
 

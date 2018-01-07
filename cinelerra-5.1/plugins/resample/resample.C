@@ -126,7 +126,7 @@ ResampleEffect::~ResampleEffect()
 {
 }
 
-const char* ResampleEffect::plugin_title() { return _("Resample"); }
+const char* ResampleEffect::plugin_title() { return N_("Resample"); }
 
 void ResampleEffect::reset()
 {

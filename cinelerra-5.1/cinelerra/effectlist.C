@@ -50,7 +50,7 @@ void EffectTipDialog::start(int x, int y, const char *effect, const char *text)
 	close_window();
 	AWindowGUI *gui = awindow->gui;
 	char string[BCTEXTLEN];
-	sprintf(string, _("Effect info: %s"), effect);
+	sprintf(string, _("Effect info: %s"), _(effect));
 	int effect_w = BC_Title::calculate_w(gui, string);
 	int text_w = BC_Title::calculate_w(gui, text);
 	int text_h = BC_Title::calculate_h(gui, text);

@@ -212,7 +212,7 @@ MotionMain::~MotionMain()
 	delete rotate_target_dst;
 }
 
-const char* MotionMain::plugin_title() { return _("Motion"); }
+const char* MotionMain::plugin_title() { return N_("Motion"); }
 int MotionMain::is_realtime() { return 1; }
 int MotionMain::is_multichannel() { return 1; }
 

@@ -632,7 +632,7 @@ static const char * const overlay_shaders[TRANSFER_TYPES] = {
 }
 
 
-const char* Overlay::plugin_title() { return _("Overlay"); }
+const char* Overlay::plugin_title() { return N_("Overlay"); }
 int Overlay::is_realtime() { return 1; }
 int Overlay::is_multichannel() { return 1; }
 int Overlay::is_synthesis() { return 1; }

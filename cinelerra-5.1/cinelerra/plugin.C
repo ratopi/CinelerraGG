@@ -37,9 +37,7 @@
 #include "virtualnode.h"
 
 
-Plugin::Plugin(EDL *edl,
-		Track *track,
-		const char *title)
+Plugin::Plugin(EDL *edl, Track *track, const char *title)
  : Edit(edl, track)
 {
 	is_plugin = 1;
@@ -189,15 +187,10 @@ void Plugin::equivalent_output(Edit *edit, int64_t *result)
 	}
 
 // Start of plugin changed
-	if(
-		startproject != plugin->startproject ||
-		plugin_type != plugin->plugin_type ||
-		on != plugin->on ||
-		!(shared_location == plugin->shared_location) ||
-		strcmp(title, plugin->title)
-		)
-	{
-		if(*result < 0 || startproject < *result)
+	if( startproject != plugin->startproject || plugin_type != plugin->plugin_type ||
+	    on != plugin->on || !(shared_location == plugin->shared_location) ||
+		strcmp(title, plugin->title) ) {
+		if( *result < 0 || startproject < *result )
 			*result = startproject;
 	}
 
@@ -546,20 +539,22 @@ Track* Plugin::get_shared_track()
 
 void Plugin::calculate_title(char *string, int use_nudge)
 {
-	if(plugin_type == PLUGIN_STANDALONE || plugin_type == PLUGIN_NONE)
-	{
+	switch( plugin_type ) {
+	case PLUGIN_STANDALONE:
+	case PLUGIN_NONE:
 		strcpy(string, _(title));
+		break;
+	case PLUGIN_SHAREDPLUGIN:
+	case PLUGIN_SHAREDMODULE:
+		shared_location.calculate_title(string, edl,
+			startproject, 0, plugin_type, use_nudge);
+		break;
 	}
-	else
-	if(plugin_type == PLUGIN_SHAREDPLUGIN || plugin_type == PLUGIN_SHAREDMODULE)
-	{
-		shared_location.calculate_title(string,
-			edl,
-			startproject,
-			0,
-			plugin_type,
-			use_nudge);
-	}
+}
+
+void Plugin::fix_plugin_title(char *title)
+{
+	MWindow::fix_plugin_title(title);
 }
 
 
@@ -585,11 +580,7 @@ void Plugin::shift(int64_t difference)
 void Plugin::dump(FILE *fp)
 {
 	fprintf(fp,"    PLUGIN: type=%d title=\"%s\" on=%d track=%d plugin=%d\n",
-		plugin_type,
-		title,
-		on,
-		shared_location.module,
-		shared_location.plugin);
+		plugin_type, title, on, shared_location.module, shared_location.plugin);
 	fprintf(fp,"    startproject %jd length %jd\n", startproject, length);
 
 	keyframes->dump(fp);

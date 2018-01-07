@@ -199,6 +199,7 @@ public:
 // Find the plugin whose title matches title and return it
 	static PluginServer* scan_plugindb(char *title,
 		int data_type);
+	static void fix_plugin_title(char *title);
 	static int plugin_exists(const char *plugin_path, ArrayList<PluginServer*> &plugins);
 	static int plugin_exists(char *plugin_path);
 	void dump_plugindb(FILE *fp);

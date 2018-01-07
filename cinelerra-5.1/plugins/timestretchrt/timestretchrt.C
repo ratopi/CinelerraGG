@@ -222,7 +222,7 @@ TimeStretchRT::~TimeStretchRT()
 	delete engine;
 }
 
-const char* TimeStretchRT::plugin_title() { return _("Time Stretch RT"); }
+const char* TimeStretchRT::plugin_title() { return N_("Time Stretch RT"); }
 int TimeStretchRT::is_realtime() { return 1; }
 int TimeStretchRT::is_synthesis() { return 1; }
 

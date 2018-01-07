@@ -226,12 +226,12 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 	fprintf(fp,"#!/bin/bash -ex\n");
 	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
 	fprintf(fp,"mkdir -p $1/udfs\n");
-	fprintf(fp,"sz=`du -sb $1/bd.m2ts | sed -e 's/[ \t].*//'`\n");
+	fprintf(fp,"sz=`du -cb $1/bd.m2ts* | tail -1 | sed -e 's/[ \t].*//'`\n");
 	fprintf(fp,"blks=$((sz/2048 + 4096))\n");
 	fprintf(fp,"rm -f %s\n", udfs);
 	fprintf(fp,"mkudffs %s $blks\n", udfs);
 	fprintf(fp,"mount %s%s\n", mopts, mntpt);
-	fprintf(fp,"bdwrite %s $1/bd.m2ts\n",mntpt);
+	fprintf(fp,"bdwrite %s $1/bd.m2ts*\n",mntpt);
 	fprintf(fp,"umount %s\n",mntpt);
 	if( is_usr_mnt )
 		fprintf(fp,"mv -f %s $1/bd.udfs\n", udfs);
@@ -925,14 +925,13 @@ option_presets()
 					use_scale = Rescale::scaled;
 			}
 			for( int i=0; i<trk->plugin_set.size(); ++i ) {
-				for(Plugin *plugin = (Plugin*)trk->plugin_set[i]->first;
-						plugin;
-						plugin = (Plugin*)plugin->next) {
-					if( !strcmp(plugin->title, _("Deinterlace")) )
+				for( Plugin *plugin = (Plugin*)trk->plugin_set[i]->first;
+						plugin; plugin=(Plugin*)plugin->next ) {
+					if( !strcmp(plugin->title, "Deinterlace") )
 						has_deinterlace = 1;
-					if( !strcmp(plugin->title, _("Auto Scale")) ||
-					    !strcmp(plugin->title, _("Scale Ratio")) ||
-					    !strcmp(plugin->title, _("Scale")) )
+					if( !strcmp(plugin->title, "Auto Scale") ||
+					    !strcmp(plugin->title, "Scale Ratio") ||
+					    !strcmp(plugin->title, "Scale") )
 						has_scale = 1;
 				}
 			}

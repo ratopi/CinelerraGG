@@ -258,7 +258,7 @@ MotionHVMain::~MotionHVMain()
 	delete rotate_target_dst;
 }
 
-const char* MotionHVMain::plugin_title() { return _("MotionHV"); }
+const char* MotionHVMain::plugin_title() { return N_("MotionHV"); }
 int MotionHVMain::is_realtime() { return 1; }
 int MotionHVMain::is_multichannel() { return 1; }
 

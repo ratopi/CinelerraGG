@@ -288,7 +288,7 @@ PhotoScaleMain::~PhotoScaleMain()
 	if(engine) delete engine;
 }
 
-const char* PhotoScaleMain::plugin_title() { return _("Auto Scale"); }
+const char* PhotoScaleMain::plugin_title() { return N_("Auto Scale"); }
 int PhotoScaleMain::is_realtime() { return 1; }
 
 

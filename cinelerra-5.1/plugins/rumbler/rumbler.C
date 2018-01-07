@@ -303,7 +303,7 @@ int Rumbler::handle_opengl()
 }
 
 
-const char* Rumbler::plugin_title() { return _("Rumbler"); }
+const char* Rumbler::plugin_title() { return N_("Rumbler"); }
 int Rumbler::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(Rumbler, RumblerWindow)

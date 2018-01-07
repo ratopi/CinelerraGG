@@ -126,7 +126,7 @@ void DenoiseEffect::reset()
 	iterations = 1;
 }
 
-const char* DenoiseEffect::plugin_title() { return _("Denoise"); }
+const char* DenoiseEffect::plugin_title() { return N_("Denoise"); }
 int DenoiseEffect::is_realtime() { return 1; }
 
 

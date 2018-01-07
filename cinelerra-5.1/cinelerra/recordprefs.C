@@ -82,7 +82,7 @@ void RecordPrefs::create_objects()
 		1,
 		0,  // Select compressors to be offered
 		1,  // Prompt for recording options
-		0,  // If nonzero, prompt for insertion strategy
+		0,  // prompt for file_per_label
 		0); // Supply file formats for background rendering
 
 	realtime_toc = new RecordRealtimeTOC(mwindow, pwindow,

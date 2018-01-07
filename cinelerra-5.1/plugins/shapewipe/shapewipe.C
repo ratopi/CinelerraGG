@@ -344,7 +344,7 @@ ShapeWipeMain::~ShapeWipeMain()
 	shape_titles.remove_all_objects();
 }
 
-const char* ShapeWipeMain::plugin_title() { return _("Shape Wipe"); }
+const char* ShapeWipeMain::plugin_title() { return N_("Shape Wipe"); }
 int ShapeWipeMain::is_transition() { return 1; }
 int ShapeWipeMain::uses_gui() { return 1; }
 

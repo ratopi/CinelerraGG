@@ -559,7 +559,7 @@ void FrameField::average_rows(int offset, VFrame *frame)
 
 
 
-const char* FrameField::plugin_title() { return _("Frames to fields"); }
+const char* FrameField::plugin_title() { return N_("Frames to fields"); }
 int FrameField::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(FrameField, FrameFieldWindow)

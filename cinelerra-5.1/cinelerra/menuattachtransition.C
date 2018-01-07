@@ -82,9 +82,9 @@ void TransitionDialogThread::start()
 		mwindow->search_plugindb(data_type == TRACK_AUDIO,
 			data_type == TRACK_VIDEO, 0, 1, 0, plugindb);
 		for(int i = 0; i < plugindb.total; i++) {
-			const char *title = _(plugindb.values[i]->title);
+			const char *title = plugindb.values[i]->title;
 			if( !strcmp(transition_title, title) ) number = i;
-			transition_names.append(new BC_ListBoxItem(title));
+			transition_names.append(new BC_ListBoxItem(_(title)));
 		}
 	}
 

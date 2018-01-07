@@ -444,7 +444,7 @@ int DenoiseMJPEG::process_realtime(VFrame *input, VFrame *output)
 	return 0;
 }
 
-const char* DenoiseMJPEG::plugin_title() { return _("Denoise video2"); }
+const char* DenoiseMJPEG::plugin_title() { return N_("Denoise video2"); }
 int DenoiseMJPEG::is_realtime() { return 1; }
 
 void DenoiseMJPEG::update_gui()

@@ -124,7 +124,7 @@ public:
 	DBXEffect(PluginServer *server);
 	~DBXEffect();
 
-	char* plugin_title();
+	const char* plugin_title();
 	int is_multichannel();
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);

@@ -846,7 +846,7 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 
 
 NEW_WINDOW_MACRO(InterpolateVideo, InterpolateVideoWindow)
-const char* InterpolateVideo::plugin_title() { return _("Interpolate Video"); }
+const char* InterpolateVideo::plugin_title() { return N_("Interpolate Video"); }
 int InterpolateVideo::is_realtime() { return 1; }
 
 int InterpolateVideo::load_configuration()

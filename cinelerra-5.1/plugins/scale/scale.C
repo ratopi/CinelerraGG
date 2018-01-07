@@ -87,7 +87,7 @@ ScaleMain::~ScaleMain()
 	if(overlayer) delete overlayer;
 }
 
-const char* ScaleMain::plugin_title() { return _("Scale"); }
+const char* ScaleMain::plugin_title() { return N_("Scale"); }
 int ScaleMain::is_realtime() { return 1; }
 
 

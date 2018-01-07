@@ -98,7 +98,7 @@ Reverb::~Reverb()
 	}
 }
 
-const char* Reverb::plugin_title() { return _("Reverb"); }
+const char* Reverb::plugin_title() { return N_("Reverb"); }
 int Reverb::is_realtime() { return 1; }
 int Reverb::is_multichannel() { return 1; }
 int Reverb::is_synthesis() { return 1; }

@@ -175,7 +175,7 @@ ReverseVideo::~ReverseVideo()
 
 }
 
-const char* ReverseVideo::plugin_title() { return _("Reverse video"); }
+const char* ReverseVideo::plugin_title() { return N_("Reverse video"); }
 int ReverseVideo::is_realtime() { return 1; }
 
 

@@ -167,7 +167,7 @@ InterpolatePixelsMain::~InterpolatePixelsMain()
 	delete engine;
 }
 
-const char* InterpolatePixelsMain::plugin_title() { return _("Interpolate Bayer"); }
+const char* InterpolatePixelsMain::plugin_title() { return N_("Interpolate Bayer"); }
 int InterpolatePixelsMain::is_realtime() { return 1; }
 
 

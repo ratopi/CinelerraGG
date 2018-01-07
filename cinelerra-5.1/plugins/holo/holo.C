@@ -73,7 +73,7 @@ HoloMain::~HoloMain()
 		delete bgimage;
 }
 
-const char* HoloMain::plugin_title() { return _("HolographicTV"); }
+const char* HoloMain::plugin_title() { return N_("HolographicTV"); }
 int HoloMain::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(HoloMain, HoloWindow)

@@ -66,10 +66,7 @@ BrightThemeMain::~BrightThemeMain()
 {
 }
 
-const char* BrightThemeMain::plugin_title()
-{
-	return _("Bright");
-}
+const char* BrightThemeMain::plugin_title() { return N_("Bright"); }
 
 Theme* BrightThemeMain::new_theme()
 {

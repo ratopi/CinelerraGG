@@ -363,7 +363,7 @@ WhirlEffect::~WhirlEffect()
 
 
 
-const char* WhirlEffect::plugin_title() { return _("Whirl"); }
+const char* WhirlEffect::plugin_title() { return N_("Whirl"); }
 int WhirlEffect::is_realtime() { return 1; }
 
 

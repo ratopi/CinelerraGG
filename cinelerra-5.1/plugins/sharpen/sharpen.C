@@ -112,7 +112,7 @@ NEW_WINDOW_MACRO(SharpenMain, SharpenWindow)
 
 LOAD_CONFIGURATION_MACRO(SharpenMain, SharpenConfig)
 
-const char* SharpenMain::plugin_title() { return _("Sharpen"); }
+const char* SharpenMain::plugin_title() { return N_("Sharpen"); }
 int SharpenMain::is_realtime() { return 1; }
 
 

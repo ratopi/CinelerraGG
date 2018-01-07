@@ -92,12 +92,13 @@ int BatchRenderMenuItem::handle_event()
 
 
 
-BatchRenderJob::BatchRenderJob(Preferences *preferences)
+BatchRenderJob::BatchRenderJob(Preferences *preferences, int strategy)
 {
 	this->preferences = preferences;
+	this->strategy = strategy;
+	file_per_label = 0;
 	asset = new Asset;
 	edl_path[0] = 0;
-	strategy = 0;
 	enabled = 1;
 	elapsed = 0;
 }
@@ -122,10 +123,9 @@ void BatchRenderJob::load(FileXML *file)
 
 	edl_path[0] = 0;
 	file->tag.get_property("EDL_PATH", edl_path);
-	strategy = file->tag.get_property("STRATEGY", strategy);
+	strategy = file->tag.get_property("STRATEGY", get_strategy());
 	enabled = file->tag.get_property("ENABLED", enabled);
 	elapsed = file->tag.get_property("ELAPSED", elapsed);
-	fix_strategy();
 
 	result = file->read_tag();
 	if(!result)
@@ -148,7 +148,7 @@ void BatchRenderJob::load(FileXML *file)
 void BatchRenderJob::save(FileXML *file)
 {
 	file->tag.set_property("EDL_PATH", edl_path);
-	file->tag.set_property("STRATEGY", strategy);
+	file->tag.set_property("STRATEGY", get_strategy());
 	file->tag.set_property("ENABLED", enabled);
 	file->tag.set_property("ELAPSED", elapsed);
 	file->append_tag();
@@ -177,18 +177,11 @@ void BatchRenderJob::save(FileXML *file)
 	file->append_newline();
 }
 
-void BatchRenderJob::fix_strategy()
+int BatchRenderJob::get_strategy()
 {
-	strategy = Render::fix_strategy(strategy, preferences->use_renderfarm);
+	return strategy >= 0 ? strategy :
+		Render::get_strategy(preferences->use_renderfarm, file_per_label);
 }
-
-
-
-
-
-
-
-
 
 
 BatchRenderThread::BatchRenderThread(MWindow *mwindow)
@@ -323,7 +316,6 @@ void BatchRenderThread::load_defaults(BC_Hash *defaults)
 	{
 		default_job->asset->load_defaults(defaults,
 			"BATCHRENDER_", 1, 1, 1, 1, 1);
-		default_job->fix_strategy();
 	}
 
 	for(int i = 0; i < BATCHRENDER_COLUMNS; i++)
@@ -336,20 +328,17 @@ void BatchRenderThread::load_defaults(BC_Hash *defaults)
 
 void BatchRenderThread::save_defaults(BC_Hash *defaults)
 {
-	if(default_job)
-	{
+	if( default_job ) {
 		default_job->asset->save_defaults(defaults,
 			"BATCHRENDER_", 1, 1, 1, 1, 1);
-		defaults->update("BATCHRENDER_STRATEGY", default_job->strategy);
 	}
-	for(int i = 0; i < BATCHRENDER_COLUMNS; i++)
-	{
+	for( int i=0; i<BATCHRENDER_COLUMNS; ++i ) {
 		char string[BCTEXTLEN];
 		sprintf(string, "BATCHRENDER_COLUMN%d", i);
 		defaults->update(string, column_width[i]);
 	}
 //	defaults->update("BATCHRENDER_JOB", current_job);
-	if(mwindow)
+	if( mwindow )
 		mwindow->save_defaults();
 	else
 		defaults->save();
@@ -534,7 +523,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 			packages->create_packages(mwindow,
 				command->get_edl(),
 				preferences,
-				job->strategy,
+				job->get_strategy(),
 				job->asset,
 				command->start_position,
 				command->end_position,
@@ -757,7 +746,7 @@ void BatchRenderGUI::create_objects()
 	format_tools = new BatchFormat(mwindow, this, thread->get_current_asset());
 	format_tools->set_w(get_w() / 2);
 	format_tools->create_objects(x1, y1, 1, 1, 1, 1, 0, 1, 0, 0,
-			&thread->get_current_job()->strategy, 0);
+			&thread->get_current_job()->file_per_label, 0);
 
 // input EDL
 	add_subwindow(edl_path_title = new BC_Title(x2, y2, _("EDL Path:")));
@@ -965,7 +954,7 @@ void BatchRenderGUI::create_list(int update_widget)
 void BatchRenderGUI::change_job()
 {
 	BatchRenderJob *job = thread->get_current_job();
-	format_tools->update(job->asset, &job->strategy);
+	format_tools->update(job->asset, &job->file_per_label);
 	edl_path_text->update(job->edl_path);
 }
 

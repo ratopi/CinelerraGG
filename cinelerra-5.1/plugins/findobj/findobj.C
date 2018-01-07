@@ -145,7 +145,7 @@ FindObjMain::~FindObjMain()
 	delete overlayer;
 }
 
-const char* FindObjMain::plugin_title() { return _("FindObj"); }
+const char* FindObjMain::plugin_title() { return N_("FindObj"); }
 int FindObjMain::is_realtime() { return 1; }
 int FindObjMain::is_multichannel() { return 1; }
 

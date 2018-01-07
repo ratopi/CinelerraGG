@@ -400,6 +400,7 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 				char title[BCTEXTLEN];
 				title[0] = 0;
 				file->tag.get_property("TITLE", title);
+				Plugin::fix_plugin_title(title);
 				SharedLocation shared_location;
 				shared_location.load(file);
 

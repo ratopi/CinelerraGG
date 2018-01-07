@@ -159,7 +159,7 @@ _1080to540Main::~_1080to540Main()
 	if(temp) delete temp;
 }
 
-const char* _1080to540Main::plugin_title() { return _("1080 to 540"); }
+const char* _1080to540Main::plugin_title() { return N_("1080 to 540"); }
 int _1080to540Main::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(_1080to540Main, _1080to540Window)

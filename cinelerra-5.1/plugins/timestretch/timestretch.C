@@ -351,7 +351,7 @@ TimeStretch::~TimeStretch()
 
 
 
-const char* TimeStretch::plugin_title() { return _("Time stretch"); }
+const char* TimeStretch::plugin_title() { return N_("Time stretch"); }
 
 int TimeStretch::get_parameters()
 {

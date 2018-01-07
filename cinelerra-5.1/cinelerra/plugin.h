@@ -108,6 +108,7 @@ public:
 // Shift in time
 	void shift(int64_t difference);
 	void dump(FILE *fp=stdout);
+	static void fix_plugin_title(char *title);
 // Called by PluginClient sequence to get rendering parameters
 	KeyFrame* get_prev_keyframe(int64_t position, int direction);
 	KeyFrame* get_next_keyframe(int64_t position, int direction);

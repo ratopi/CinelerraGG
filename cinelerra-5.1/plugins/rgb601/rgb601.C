@@ -51,7 +51,7 @@ RGB601Main::~RGB601Main()
 
 }
 
-const char* RGB601Main::plugin_title() { return _("RGB - 601"); }
+const char* RGB601Main::plugin_title() { return N_("RGB - 601"); }
 int RGB601Main::is_realtime() { return 1; }
 
 

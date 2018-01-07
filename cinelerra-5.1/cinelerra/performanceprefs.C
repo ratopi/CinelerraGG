@@ -153,7 +153,7 @@ void PerformancePrefs::create_objects()
 		1,
 		0,  // Select compressors to be offered
 		0,  // Prompt for recording options
-		0,  // If nonzero, prompt for insertion strategy
+		0,  // prompt for file_per_label
 		1); // Supply file formats for background rendering
 	x = xmargin1;
 
@@ -547,17 +547,14 @@ int PrefsRenderFarmPort::handle_event()
 
 PrefsRenderFarmNodes::PrefsRenderFarmNodes(PreferencesWindow *pwindow,
 	PerformancePrefs *subwindow, int x, int y)
- : BC_ListBox(x, y, 340, 230,
-		LISTBOX_TEXT,                         // Display text list or icons
-		subwindow->nodes,
-		0, //default_titles,
-		0, //default_widths,
-		PerformancePrefs::TOTAL_COLUMNS)
+ : BC_ListBox(x, y, 340, 230, LISTBOX_TEXT)
 {
 	for( int i=0; i<PerformancePrefs::TOTAL_COLUMNS; ++i ) {
 		titles[i] = _(default_titles[i]);
 		widths[i] = default_widths[i];
 	}
+	update(subwindow->nodes, titles, widths, PerformancePrefs::TOTAL_COLUMNS,
+		0, 0, -1, 0, 0);
 	this->subwindow = subwindow;
 	this->pwindow = pwindow;
 }

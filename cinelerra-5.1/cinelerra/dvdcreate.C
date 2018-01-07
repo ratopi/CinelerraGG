@@ -16,6 +16,7 @@
 #include "mwindowgui.h"
 #include "plugin.h"
 #include "pluginset.h"
+#include "preferences.h"
 #include "rescale.h"
 #include "track.h"
 #include "tracks.h"
@@ -183,8 +184,10 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 	fprintf(fp,"\n");
 	const char *exec_path = File::get_cinlib_path();
 	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
+	if( mwindow->preferences->use_renderfarm )
+		fprintf(fp,"cat > $1/dvd.m2v $1/dvd.m2v0*\n");
 	if( !use_ffmpeg ) {
-		fprintf(fp,"mplex -f 8 -o $1/dvd.mpg $1/dvd.m2v $1/dvd.ac3\n");
+		fprintf(fp,"mplex -M -f 8 -o $1/dvd.mpg $1/dvd.m2v $1/dvd.ac3\n");
 		fprintf(fp,"\n");
 	}
 	fprintf(fp,"rm -rf $1/iso\n");
@@ -334,7 +337,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		asset->vmpeg_preset = 8;
 		asset->vmpeg_field_order = 0;
 		asset->vmpeg_pframe_distance = 0;
-		job = new BatchRenderJob(mwindow->preferences);
+		job = new BatchRenderJob(mwindow->preferences, SINGLE_PASS);
 		jobs->append(job);
 		strcpy(&job->edl_path[0], xml_filename);
 		asset = job->asset;
@@ -966,14 +969,13 @@ option_presets()
 				if( !EQUIV(aspect, dvd_aspect) ) use_scale = Rescale::scaled;
 			}
 			for( int i=0; i<trk->plugin_set.size(); ++i ) {
-				for(Plugin *plugin = (Plugin*)trk->plugin_set[i]->first;
-						plugin;
-						plugin = (Plugin*)plugin->next) {
-					if( !strcmp(plugin->title, _("Deinterlace")) )
+				for( Plugin *plugin = (Plugin*)trk->plugin_set[i]->first;
+						plugin; plugin=(Plugin*)plugin->next ) {
+					if( !strcmp(plugin->title, "Deinterlace") )
 						has_deinterlace = 1;
-					if( !strcmp(plugin->title, _("Auto Scale")) ||
-					    !strcmp(plugin->title, _("Scale Ratio")) ||
-					    !strcmp(plugin->title, _("Scale")) )
+					if( !strcmp(plugin->title, "Auto Scale") ||
+					    !strcmp(plugin->title, "Scale Ratio") ||
+					    !strcmp(plugin->title, "Scale") )
 						has_scale = 1;
 				}
 			}

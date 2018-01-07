@@ -208,7 +208,7 @@ YUVShiftEffect::~YUVShiftEffect()
 	delete temp_frame;
 }
 
-const char* YUVShiftEffect::plugin_title() { return _("YUVShift"); }
+const char* YUVShiftEffect::plugin_title() { return N_("YUVShift"); }
 int YUVShiftEffect::is_realtime() { return 1; }
 
 

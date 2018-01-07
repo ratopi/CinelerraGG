@@ -54,19 +54,20 @@ public:
 class BatchRenderJob
 {
 public:
-	BatchRenderJob(Preferences *preferences);
+	BatchRenderJob(Preferences *preferences, int strategy=-1);
 	~BatchRenderJob();
 
 	void copy_from(BatchRenderJob *src);
 	void load(FileXML *file);
 	void save(FileXML *file);
-	void fix_strategy();
+	int get_strategy();
 
 // Source EDL to render
 	char edl_path[BCTEXTLEN];
 // Destination file for output
 	Asset *asset;
 	int strategy;
+	int file_per_label;
 	int enabled;
 // Amount of time elapsed in last render operation
 	double elapsed;

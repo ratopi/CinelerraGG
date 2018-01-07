@@ -214,7 +214,7 @@ int C41Slider::update(int v)
 	return 1;
 }
 
-const char* C41Effect::plugin_title() { return _("C41"); }
+const char* C41Effect::plugin_title() { return N_("C41"); }
 int C41Effect::is_realtime() { return 1; }
 int C41Effect::is_synthesis() { return 1; }
 

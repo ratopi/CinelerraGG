@@ -661,7 +661,7 @@ void AudioScope::reset()
 }
 
 
-const char* AudioScope::plugin_title() { return _("AudioScope"); }
+const char* AudioScope::plugin_title() { return N_("AudioScope"); }
 int AudioScope::is_realtime() { return 1; }
 int AudioScope::is_multichannel() { return 1; }
 

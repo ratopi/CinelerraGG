@@ -328,7 +328,7 @@ void AssetPicon::create_objects()
 	}
 	else
 	if( plugin ) {
-		strcpy(name,  plugin->title);
+		strcpy(name, _(plugin->title));
 		set_text(name);
 		icon_vframe = plugin->get_picon();
 		if( icon_vframe )

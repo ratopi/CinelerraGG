@@ -720,7 +720,7 @@ remove(int len)
 		sample_data -= len;
 }
 
-const char* EchoCancel::plugin_title() { return _("EchoCancel"); }
+const char* EchoCancel::plugin_title() { return N_("EchoCancel"); }
 int EchoCancel::is_realtime() { return 1; }
 
 static inline double sqr(double v) { return v*v; }

@@ -65,11 +65,7 @@ SUVMain::SUVMain(PluginServer *server)
 SUVMain::~SUVMain()
 {
 }
-
-const char* SUVMain::plugin_title()
-{
-	return _("S.U.V.");
-}
+const char* SUVMain::plugin_title() { return N_("S.U.V."); }
 
 Theme* SUVMain::new_theme()
 {

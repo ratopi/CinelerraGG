@@ -127,7 +127,7 @@ ThresholdMain::~ThresholdMain()
 	delete threshold_engine;
 }
 
-const char* ThresholdMain::plugin_title() { return _("Threshold"); }
+const char* ThresholdMain::plugin_title() { return N_("Threshold"); }
 int ThresholdMain::is_realtime() { return 1; }
 
 

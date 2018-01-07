@@ -73,7 +73,7 @@ AgingMain::~AgingMain()
 	if(aging_server) delete aging_server;
 }
 
-const char* AgingMain::plugin_title() { return _("AgingTV"); }
+const char* AgingMain::plugin_title() { return N_("AgingTV"); }
 int AgingMain::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(AgingMain, AgingWindow)

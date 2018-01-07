@@ -622,7 +622,7 @@ Fuse360Main::~Fuse360Main()
 NEW_WINDOW_MACRO(Fuse360Main, Fuse360GUI)
 LOAD_CONFIGURATION_MACRO(Fuse360Main, Fuse360Config)
 int Fuse360Main::is_realtime() { return 1; }
-const char* Fuse360Main::plugin_title() { return N_("360 Fuser"); }
+const char* Fuse360Main::plugin_title() { return "360 Fuser"; }
 
 void Fuse360Main::update_gui()
 {

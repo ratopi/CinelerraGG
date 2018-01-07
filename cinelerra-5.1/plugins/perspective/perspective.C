@@ -656,7 +656,7 @@ PerspectiveMain::~PerspectiveMain()
 	if(temp) delete temp;
 }
 
-const char* PerspectiveMain::plugin_title() { return _("Perspective"); }
+const char* PerspectiveMain::plugin_title() { return N_("Perspective"); }
 int PerspectiveMain::is_realtime() { return 1; }
 
 

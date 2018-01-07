@@ -178,7 +178,7 @@ LoopAudio::~LoopAudio()
 
 }
 
-const char* LoopAudio::plugin_title() { return _("Loop audio"); }
+const char* LoopAudio::plugin_title() { return N_("Loop audio"); }
 int LoopAudio::is_realtime() { return 1; }
 int LoopAudio::is_synthesis() { return 1; }
 

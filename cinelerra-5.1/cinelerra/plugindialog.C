@@ -243,25 +243,8 @@ PluginDialog::~PluginDialog()
 void PluginDialog::create_objects()
 {
 //	int use_default = 1;
-	char string[BCTEXTLEN];
 	mwindow->theme->get_plugindialog_sizes();
-
 	lock_window("PluginDialog::create_objects");
- 	if(thread->plugin)
-	{
-		strcpy(string, thread->plugin->title);
-		//use_default = 0;
-	}
-	else
-	{
-// no plugin
-		sprintf(string, _("None"));
-	}
-
-
-
-
-
 
 // GET A LIST OF ALL THE PLUGINS AVAILABLE
 	mwindow->search_plugindb(thread->data_type == TRACK_AUDIO,
@@ -288,10 +271,9 @@ void PluginDialog::create_objects()
 			PLAY_FORWARD,
 			1,
 			0);
-		char *plugin_title = plugin->title;
 		char string[BCTEXTLEN];
-
-		snprintf(string, sizeof(string), "%s: %s", track_title, _(plugin_title));
+		const char *plugin_title = _(plugin->title);
+		snprintf(string, sizeof(string), "%s: %s", track_title, plugin_title);
 		shared_data.append(new BC_ListBoxItem(string));
 	}
 	for(int i = 0; i < module_locations.total; i++)
@@ -330,12 +312,6 @@ void PluginDialog::create_objects()
 // 			mwindow->theme->plugindialog_newattach_y));
 //
 
-
-
-
-
-
-
 	add_subwindow(shared_title = new BC_Title(mwindow->theme->plugindialog_shared_x,
 		mwindow->theme->plugindialog_shared_y - 20,
 		_("Shared effects:")));
@@ -356,13 +332,6 @@ void PluginDialog::create_objects()
 // 			mwindow->theme->plugindialog_sharedattach_x,
 // 			mwindow->theme->plugindialog_sharedattach_y));
 //
-
-
-
-
-
-
-
 
 	add_subwindow(module_title = new BC_Title(mwindow->theme->plugindialog_module_x,
 		mwindow->theme->plugindialog_module_y - 20,

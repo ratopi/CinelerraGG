@@ -456,7 +456,7 @@ FreeverbEffect::~FreeverbEffect()
 NEW_WINDOW_MACRO(FreeverbEffect, FreeverbWindow)
 
 
-const char* FreeverbEffect::plugin_title() { return _("Freeverb"); }
+const char* FreeverbEffect::plugin_title() { return N_("Freeverb"); }
 int FreeverbEffect::is_realtime() { return 1; }
 int FreeverbEffect::is_multichannel() { return 1; }
 

@@ -116,7 +116,7 @@ TimeAvgMain::~TimeAvgMain()
 	if(history_valid) delete [] history_valid;
 }
 
-const char* TimeAvgMain::plugin_title() { return _("Time Average"); }
+const char* TimeAvgMain::plugin_title() { return N_("Time Average"); }
 int TimeAvgMain::is_realtime() { return 1; }
 
 

@@ -125,7 +125,7 @@ public:
 	int is_realtime();
 	int is_synthesis();
 	int load_configuration();
-	char* plugin_title();
+	const char* plugin_title();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int show_gui();

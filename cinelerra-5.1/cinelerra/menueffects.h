@@ -85,7 +85,7 @@ public:
 	MenuEffects *menu_item;
 	char title[BCTEXTLEN];
 	int realtime, load_mode;
-	int strategy;
+	int file_per_label;
 // GUI Plugins to delete
 	ArrayList<PluginServer*> *dead_plugins;
 

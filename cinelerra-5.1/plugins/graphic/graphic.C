@@ -1045,7 +1045,7 @@ GraphicEQ::~GraphicEQ()
 
 int GraphicEQ::is_realtime() { return 1; }
 
-const char* GraphicEQ::plugin_title() { return _("EQ Graphic"); }
+const char* GraphicEQ::plugin_title() { return N_("EQ Graphic"); }
 
 NEW_WINDOW_MACRO(GraphicEQ, GraphicGUI)
 

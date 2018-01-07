@@ -97,7 +97,7 @@ SvgMain::~SvgMain()
 	delete overlayer;
 }
 
-const char* SvgMain::plugin_title() { return _("SVG via Inkscape"); }
+const char* SvgMain::plugin_title() { return N_("SVG via Inkscape"); }
 int SvgMain::is_realtime() { return 1; }
 int SvgMain::is_synthesis() { return 1; }
 

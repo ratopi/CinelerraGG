@@ -84,7 +84,7 @@ BluebananaMain::~BluebananaMain() {
   delete engine;
 }
 
-const char* BluebananaMain::plugin_title() { return _("Blue Banana"); }
+const char* BluebananaMain::plugin_title() { return N_("Blue Banana"); }
 int BluebananaMain::is_realtime() { return 1; }
 
 NEW_WINDOW_MACRO(BluebananaMain, BluebananaWindow)

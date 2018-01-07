@@ -57,7 +57,7 @@ Synth::~Synth()
 
 NEW_WINDOW_MACRO(Synth, SynthWindow);
 
-const char* Synth::plugin_title() { return _("Synthesizer"); }
+const char* Synth::plugin_title() { return N_("Synthesizer"); }
 int Synth::is_realtime() { return 1; }
 int Synth::is_synthesis() { return 1; }
 

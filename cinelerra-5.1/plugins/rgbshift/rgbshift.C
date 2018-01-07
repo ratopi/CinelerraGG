@@ -208,7 +208,7 @@ RGBShiftEffect::~RGBShiftEffect()
 	delete temp_frame;
 }
 
-const char* RGBShiftEffect::plugin_title() { return _("RGBShift"); }
+const char* RGBShiftEffect::plugin_title() { return N_("RGBShift"); }
 int RGBShiftEffect::is_realtime() { return 1; }
 
 
