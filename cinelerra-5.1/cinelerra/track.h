@@ -150,7 +150,8 @@ public:
 
 // Used by PlayableTracks::is_playable
 	int plugin_used(int64_t position, int64_t direction);
-
+// align to frame boundary
+	int64_t frame_align(int64_t position, int round);
 
 	virtual int copy_settings(Track *track);
 	void shift_keyframes(int64_t position, int64_t length);

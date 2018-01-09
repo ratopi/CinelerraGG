@@ -331,16 +331,28 @@ int TrackCanvas::drag_stop(int *redraw)
 				if( hi_plugin_set && hi_plugin_set->track == drag_plugin->track ) {
 //printf("TrackCanvas::drag_stop 6\n");
 					drop_position = drop_plugin_position(hi_plugin_set, drag_plugin);
-					if( drop_position >= 0 )
-						mwindow->move_effect(drag_plugin, hi_plugin_set, drop_position);
+					if( drop_position < 0 ) {
+						result = 1;
+						break;		// Do not do anything
+					}
+
+					Track *track = mwindow->session->track_highlighted;
+					drop_position = track->frame_align(drop_position, 0);
+					mwindow->move_effect(drag_plugin, hi_plugin_set, drop_position);
 					result = 1;
 				}
 				else if( hi_track ) {
 // Put it in a new plugin set determined by an edit boundary, or at the start of the track
 					Edit *hi_edit = mwindow->session->edit_highlighted;
 					drop_position = hi_edit ? hi_edit->startproject : 0;
-					if( drop_position >= 0 )
-						mwindow->move_effect(drag_plugin, hi_track, drop_position);
+					if( drop_position < 0 ) {
+						result = 1;
+						break;		// Do not do anything
+					}
+
+					Track *track = mwindow->session->track_highlighted;
+					drop_position = track->frame_align(drop_position, 0);
+					mwindow->move_effect(drag_plugin, hi_track, drop_position);
 					result = 1;
 				}
 			}
@@ -382,7 +394,7 @@ int TrackCanvas::drag_stop(int *redraw)
  					length = mwindow->session->track_highlighted->from_units(
  						mwindow->session->edit_highlighted->length);
  				}
-
+				start = mwindow->edl->align_to_frame(start, 0);
 				mwindow->insert_effects_canvas(start, length);
 				*redraw = 1;
 			}
@@ -394,7 +406,6 @@ int TrackCanvas::drag_stop(int *redraw)
 			if(mwindow->session->track_highlighted) {
 				double asset_duration = 0;
 				int64_t asset_length_units = 0;
-				int64_t position = 0;
 
 				if(mwindow->session->current_operation == DRAG_ASSET &&
 					mwindow->session->drag_assets->total) {
@@ -432,23 +443,24 @@ int TrackCanvas::drag_stop(int *redraw)
 				}
 
 				asset_length_units = mwindow->session->track_highlighted->to_units(asset_duration, 1);
-				position = drop_edit_position (&insertion, NULL, asset_length_units);
-				if( position == -1 ) {
+				int64_t drop_position = drop_edit_position (&insertion, NULL, asset_length_units);
+				if( drop_position < 0 ) {
 					result = 1;
 					break;		// Do not do anything
 				}
 
-				double position_f = mwindow->session->track_highlighted->from_units(position);
 				Track *track = mwindow->session->track_highlighted;
+				double track_position = track->from_units(drop_position);
+				track_position = mwindow->edl->align_to_frame(track_position, 0);
 
 //				if (!insertion) {
 //					// FIXME, we should create an mwindow/EDL method that overwrites, without clearing the keyframes and autos
 //					// Unfortunately, this is _a lot_ of work to do right
 //					printf("Problematic insertion\n");
-//					mwindow->edl->tracks->clear(position_f,
-//						position_f + asset_duration, 0);
+//					mwindow->edl->tracks->clear(track_position,
+//						track_position + asset_duration, 0);
 //				}
-				mwindow->paste_assets(position_f, track, !insertion);
+				mwindow->paste_assets(track_position, track, !insertion);
 				result = 1;    // need to be one no matter what, since we have track highlited so we have to cleanup....
 			}
 			break;
@@ -458,19 +470,18 @@ int TrackCanvas::drag_stop(int *redraw)
 			if(mwindow->session->track_highlighted) {
 				if( mwindow->session->track_highlighted->data_type ==
 					mwindow->session->drag_edit->track->data_type) {
-					int64_t position = 0;
-					position = drop_edit_position(&insertion,
+					int64_t drop_position = drop_edit_position(&insertion,
 							mwindow->session->drag_edit,
 							mwindow->session->drag_edit->length);
-					if (position == -1) {
+					if( drop_position < 0 ) {
 						result = 1;
 						break;		// Do not do anything
 					}
-
-					double position_f = mwindow->session->track_highlighted->from_units(position);
 					Track *track = mwindow->session->track_highlighted;
+					double track_position = track->from_units(drop_position);
+					track_position = mwindow->edl->align_to_frame(track_position, 0);
 					mwindow->move_edits(mwindow->session->drag_edits,
-							track, position_f, !insertion);
+							track, track_position, !insertion);
 				}
 
 				result = 1;
@@ -511,69 +522,67 @@ int64_t TrackCanvas::drop_edit_position(int *is_insertion, Edit *moved_edit, int
 	Track *track = mwindow->session->track_highlighted;
 	int cursor_x = get_relative_cursor_x();
 	double zoom_scale = (double)mwindow->edl->session->sample_rate / mwindow->edl->local_session->zoom_sample;
-	double drop_time = (cursor_x + mwindow->edl->local_session->view_start[pane->number]) / zoom_scale;
-	drop_time = mwindow->edl->align_to_frame(drop_time, 0);
-	// we use cursor position for affinity calculations
-	int64_t cursor_position = track->to_units(drop_time, 0);
-	if( cursor_position <= 0 ) {
+	double cur_pos = (cursor_x + mwindow->edl->local_session->view_start[pane->number]) / zoom_scale;
+	double position = mwindow->edl->align_to_frame(cur_pos, 1);
+	if( position <= 0 ) {
 		*is_insertion = 1;
 		return 0;
 	}
-	if( moved_edit )  // relative cursor position depends upon drop point
- 		drop_time -= mwindow->session->drag_position - moved_edit->track->from_units(moved_edit->startproject);
-	int64_t drop_position = track->to_units(drop_time, 0);
+	double cursor_position = position;
+	int64_t drop_position = track->to_units(cursor_position, 1);
+	if( moved_edit ) { // relative cursor position depends upon drop point
+		double moved_edit_start = moved_edit->track->from_units(moved_edit->startproject);
+		position -= mwindow->session->drag_position - moved_edit_start;
+	}
+	int64_t edit_position = track->to_units(position, 1);
+	int64_t grab_position = edit_position;
 	if( !moved_edit )  // for clips and assets acts as they were grabbed in the middle
-		drop_position -= moved_edit_length / 2;
+		grab_position -= moved_edit_length / 2;
 	Edit *last_edit = track->edits->last;
-	if( !last_edit || drop_position > last_edit->startproject+last_edit->length ) {
+	if( !last_edit || edit_position >= (last_edit->startproject+last_edit->length) ) {
 		*is_insertion = 0;
-		return drop_position;
+		return grab_position;
 	}
 
-	int64_t drop_x0 = 0, drop_x1 = 0;  // drop zone boundries
-	for( Edit *edit = track->edits->first; edit; ) {
-		int64_t edit_x0 = edit->startproject, edit_x1 = edit_x0 + edit->length;
-		if( Units::round(labs(edit_x0-cursor_position)*zoom_scale) < HANDLE_W ) {
+	int64_t drop_start = 0, drop_end = 0;  // drop zone boundries
+	Edit *next_edit = track->edits->first;
+	while( next_edit ) {
+		Edit *edit = next_edit;  next_edit = (Edit *)edit->next;
+		int64_t edit_start = edit->startproject;
+		int64_t edit_end = edit_start + edit->length;
+		double edit_start_pos = edit->track->from_units(edit_start);
+		if( (fabs(edit_start_pos-cursor_position)*zoom_scale) < HANDLE_W ) {
 			*is_insertion = 1; // cursor is close to the beginning of an edit -> insertion
-			return edit->startproject;
+			return edit_start;
 		}
-		if( Units::round(labs(edit_x1-cursor_position)*zoom_scale) < HANDLE_W ) {
+		double edit_end_pos = edit->track->from_units(edit_end);
+		if( (fabs(edit_end_pos-cursor_position)*zoom_scale) < HANDLE_W ) {
 			*is_insertion = 1; // cursor is close to the end of an edit -> insertion
-			return edit->startproject + edit->length;
+			return edit_end;
 		}
 		if( edit != moved_edit && !edit->silence() )
-			drop_x0 = edit_x1; // reset drop zone
-		if( (edit=edit->next) != 0 ) {
-			if( edit == moved_edit || edit->silence() ) continue;
-			drop_x1 = edit_x1;
+			drop_start = edit_end; // reset drop zone
+		if( next_edit ) {
+			if( next_edit == moved_edit || next_edit->silence() ) continue;
+			drop_end = edit_end;
 		}
 		else
-			drop_x1 = INT64_MAX;
-//printf("drop cursor=%jd, x0=%jd, x1=%jd\n", cursor_position, drop_x0, drop_x1);
-		if( drop_position >= drop_x0 && drop_position+moved_edit_length < drop_x1 ) {
+			drop_end = INT64_MAX;
+		if( edit_position >= drop_start &&
+		    edit_position+moved_edit_length < drop_end ) {
 			*is_insertion = 0; // fits in the zone
-//printf("into %jd\n", drop_position);
-			return drop_position;
+			return edit_position;
 		}
-		if( cursor_position < drop_x1 ) { // drop in the zone
-			if( (drop_x1-drop_x0) >= moved_edit_length ) {
+		if( drop_position < drop_end ) { // drop in the zone
+			if( (drop_end - drop_start) >= moved_edit_length ) {
 				*is_insertion = 0; // fits in the zone, but over the edge
-				int64_t dx0 = llabs(cursor_position-drop_x0);
-				int64_t dx1 = llabs(cursor_position-drop_x1);
-//printf("onto %jd\n", dx0 < dx1 ? drop_x0 : drop_x1 - moved_edit_length);
-				return dx0 < dx1 ? drop_x0 : drop_x1 - moved_edit_length;
+				int64_t dx0 = llabs(drop_position - drop_start);
+				int64_t dx1 = llabs(drop_position - drop_end);
+				return dx0 < dx1 ? drop_start : drop_end - moved_edit_length;
 			}
-			int edit_center = (edit_x0+edit_x1) / 2;
-			if( cursor_position < edit_center ) {
-				*is_insertion = 1;
-//printf("snap left %jd\n", drop_x0);
-				return drop_x0;	// snap left
-			}
-			else {
-				*is_insertion = 1;
-//printf("snap right %jd\n", drop_x1);
-				return drop_x1;	// snap right
-			}
+			*is_insertion = 1;
+			int64_t edit_center = (edit_start + edit_end) / 2;
+			return position < edit_center ? drop_start : drop_end;
 		}
 	}
 
@@ -585,40 +594,47 @@ int64_t TrackCanvas::drop_plugin_position(PluginSet *plugin_set, Plugin *moved_p
 {
 	// get the canvas/track position
 	Track *track = plugin_set->track;
+	double moved_plugin_length = moved_plugin->track->from_units(moved_plugin->length);
+	int64_t track_plugin_length = track->to_units(moved_plugin_length, 0);
 	int cursor_x = get_relative_cursor_x();
 	double zoom_scale = (double)mwindow->edl->session->sample_rate / mwindow->edl->local_session->zoom_sample;
-	double drop_time = (cursor_x + mwindow->edl->local_session->view_start[pane->number]) / zoom_scale;
-	drop_time = mwindow->edl->align_to_frame(drop_time, 0);
-	// we use cursor position for affinity calculations
-	int64_t cursor_position = track->to_units(drop_time, 0);
-	if( cursor_position <= 0 ) return 0;
-	drop_time -= mwindow->session->drag_position - moved_plugin->track->from_units(moved_plugin->startproject);
-	int64_t drop_position = track->to_units(drop_time, 1);
+	double cur_pos = (cursor_x + mwindow->edl->local_session->view_start[pane->number]) / zoom_scale;
+	double position = mwindow->edl->align_to_frame(cur_pos, 1);
+	if( position <= 0 ) return 0;
+	int64_t drop_position = track->to_units(position, 1);
 	Plugin *last_plugin = (Plugin *)plugin_set->last;
-	if( !last_plugin || drop_position > last_plugin->startproject+last_plugin->length ) {
-		return drop_position;
-	}
+	if( !last_plugin ) return drop_position;
+	double plugin_set_end = last_plugin->track->from_units(last_plugin->startproject+last_plugin->length);
+	if( position >= plugin_set_end ) return drop_position;
+	double moved_plugin_start = moved_plugin->track->from_units(moved_plugin->startproject);
+	position -= mwindow->session->drag_position - moved_plugin_start;
+	int64_t plugin_position = track->to_units(position, 1);
 
-	int64_t drop_x0 = 0, drop_x1 = 0;  // drop zone boundries
-	for( Plugin *plugin = (Plugin *)plugin_set->first; plugin; ) {
-		int64_t plugin_x0 = plugin->startproject, plugin_x1 = plugin_x0 + plugin->length;
+	int64_t drop_start = 0, drop_end = 0;  // drop zone boundries
+	Plugin *next_plugin = (Plugin *)plugin_set->first;
+	while( next_plugin ) {
+		Plugin *plugin = next_plugin;  next_plugin = (Plugin *)plugin->next;
+		int64_t plugin_start = plugin->startproject;
+		int64_t plugin_end = plugin_start + plugin->length;
+		double plugin_end_pos = plugin->track->from_units(plugin_end);
+		int64_t track_plugin_end = track->to_units(plugin_end_pos, 0);
 		if( plugin != moved_plugin && !plugin->silence() )
-			drop_x0 = plugin_x1;
-		if( (plugin=(Plugin *)plugin->next) != 0 ) {
-			if( plugin == moved_plugin || plugin->silence() ) continue;
-			drop_x1 = plugin_x1;
+			drop_start = track_plugin_end;
+		if( next_plugin ) {
+			if( next_plugin == moved_plugin || next_plugin->silence() ) continue;
+			drop_end = track_plugin_end;
 		}
 		else
-			drop_x1 = INT64_MAX;
-		if( drop_position >= drop_x0 && // fits in the zone
-		    drop_position+moved_plugin->length < drop_x1 ) {
-			return drop_position;
+			drop_end = INT64_MAX;
+		if( plugin_position >= drop_start && // fits in the zone
+		    plugin_position+track_plugin_length < drop_end ) {
+			return plugin_position;
 		}
-		if( cursor_position < drop_x1 ) { // drop in the zone
-			if( (drop_x1-drop_x0) >= moved_plugin->length ) {
-				int64_t dx0 = llabs(cursor_position-drop_x0);
-				int64_t dx1 = llabs(cursor_position-drop_x1);
-				return dx0 < dx1 ? drop_x0 : drop_x1 - moved_plugin->length;
+		if( drop_position < drop_end ) { // drop in the zone
+			if( (drop_end - drop_start) >= track_plugin_length ) {
+				int64_t dx0 = llabs(drop_position - drop_start);
+				int64_t dx1 = llabs(drop_position - drop_end);
+				return dx0 < dx1 ? drop_start : drop_end - track_plugin_length;
 			}
 		}
 	}
@@ -633,12 +649,12 @@ void TrackCanvas::draw(int mode, int hide_cursor)
 
 
 // Swap pixmap layers
- 	if(get_w() != background_pixmap->get_w() ||
- 		get_h() != background_pixmap->get_h())
- 	{
- 		delete background_pixmap;
- 		background_pixmap = new BC_Pixmap(this, get_w(), get_h());
- 	}
+	if(get_w() != background_pixmap->get_w() ||
+		get_h() != background_pixmap->get_h())
+	{
+		delete background_pixmap;
+		background_pixmap = new BC_Pixmap(this, get_w(), get_h());
+	}
 
 // Cursor disappears after resize when this is called.
 // Cursor doesn't redraw after editing when this isn't called.
@@ -1021,7 +1037,7 @@ void TrackCanvas::draw_paste_destination()
 
 		int has_audio = 0, has_video = 0;
 		double paste_audio_length = 0, paste_video_length = 0;
-                double paste_audio_position = -1, paste_video_position = -1;
+		double paste_audio_position = -1, paste_video_position = -1;
 
 		if( indexable ) {
 			has_audio = indexable->have_audio();
@@ -1132,6 +1148,7 @@ void TrackCanvas::draw_paste_destination()
 								from_units(drop_edit_position(&insertion,
 									mwindow->session->drag_edit,
 									mwindow->session->drag_edit->length));
+							current_aedit++;
 						}
 					}
 					if( paste_position >= 0 ) {
@@ -1174,6 +1191,7 @@ void TrackCanvas::draw_paste_destination()
 								from_units(drop_edit_position(&insertion,
 									mwindow->session->drag_edit,
 									mwindow->session->drag_edit->length));
+							current_vedit++;
 						}
 					}
 					if( paste_position >= 0 ) {
@@ -1195,10 +1213,6 @@ void TrackCanvas::draw_paste_destination()
 					int h = dest->vertical_span(mwindow->theme);
 
 //printf("TrackCanvas::draw_paste_destination 2 %d %d %d %d\n", x, y, w, h);
-					if (insertion)
-						draw_highlight_insertion(x, y, w, h);
-					else
-						draw_highlight_rectangle(x, y, w, h);
 					if(x < -BC_INFINITY) {
 						w -= -BC_INFINITY - x;
 						x += -BC_INFINITY - x;
@@ -1207,7 +1221,10 @@ void TrackCanvas::draw_paste_destination()
 // if(pane->number == TOP_RIGHT_PANE)
 // printf("TrackCanvas::draw_paste_destination %d %d %d %d %d\n",
 // __LINE__, x, y, w, h);
-					draw_highlight_rectangle(x, y, w, h);
+					if (insertion)
+						draw_highlight_insertion(x, y, w, h);
+					else
+						draw_highlight_rectangle(x, y, w, h);
 				}
 			}
 		}
@@ -1995,7 +2012,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 	for(Track *track = mwindow->edl->tracks->first;
 		track && !result;
 		track = track->next) {
-        	Auto *auto_keyframe = 0;
+		Auto *auto_keyframe = 0;
 		Automation *automation = track->automation;
 
 
@@ -2562,7 +2579,7 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y, int in_x,
 // cursor_y,
 // x1, x2, y1, y2);
 	if(buttonpress && (buttonpress != 3) && result)
-       	{
+	{
 		mwindow->undo->update_undo_before();
 	}
 

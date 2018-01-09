@@ -1856,6 +1856,13 @@ double Track::from_units(int64_t position)
 	return (double)position;
 }
 
+int64_t Track::frame_align(int64_t position, int round)
+{
+	if( data_type != TRACK_VIDEO && edl->session->cursor_on_frames )
+		position = to_units(edl->align_to_frame(from_units(position), round), round);
+	return position;
+}
+
 int Track::plugin_exists(Plugin *plugin)
 {
 	for(int number = 0; number < plugin_set.size(); number++)

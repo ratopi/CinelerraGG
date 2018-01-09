@@ -2652,7 +2652,7 @@ int media_info::scan()
         continue;
       }
       pgm->strm_idx.append(jj);
-      if( pgm->duration < st->duration )
+      if( !pgm->duration || st->duration < pgm->duration )
         pgm->duration = av_rescale_q(st->duration, st->time_base, clk45k);
     }
     programs.append(pgm);
@@ -2685,7 +2685,7 @@ int media_info::scan()
         fprintf(stderr, "bad stream idx %d in pgm %d\n",av_idx, ii);
         continue;
       }
-      if( pgm->duration < st->duration )
+      if( !pgm->duration || st->duration < pgm->duration )
         pgm->duration = av_rescale_q(st->duration, st->time_base, clk45k);
       pgm->strm_idx.append(sidx);
     }
