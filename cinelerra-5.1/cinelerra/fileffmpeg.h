@@ -93,6 +93,14 @@ public:
 	int handle_event();
 };
 
+class FFMpegAudioQuality : public FFMpegAudioNum
+{
+public:
+        FFMpegAudioQuality(BC_Window *window, int x, int y, char *title_text, int *output)
+          : FFMpegAudioNum(window, x, y, title_text, output) {}
+	int handle_event();
+};
+
 class FFMpegVideoNum : public FFMpegConfigNum
 {
 public:
@@ -130,6 +138,7 @@ public:
 	ArrayList<BC_ListBoxItem*> presets;
 	FFMPEGConfigAudioPopup *preset_popup;
 	FFMpegAudioBitrate *bitrate;
+	FFMpegAudioQuality *quality;
 	FFAudioOptions *audio_options;
 	BC_WindowBase *parent_window;
 	Asset *asset;

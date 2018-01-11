@@ -286,7 +286,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 		return 1;
 	}
 
-	BatchRenderJob *job = new BatchRenderJob(mwindow->preferences);
+	BatchRenderJob *job = new BatchRenderJob(mwindow->preferences, use_label_chapters);
 	jobs->append(job);
 	strcpy(&job->edl_path[0], xml_filename);
 	Asset *asset = job->asset;
@@ -330,7 +330,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 	asset->ff_video_bitrate = vid_bitrate;
 	asset->ff_video_quality = -1;
 
-	job = new BatchRenderJob(mwindow->preferences);
+	job = new BatchRenderJob(mwindow->preferences, 0, 0);
 	jobs->append(job);
 	job->edl_path[0] = '@';
 	strcpy(&job->edl_path[1], script_filename);

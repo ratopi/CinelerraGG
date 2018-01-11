@@ -28,6 +28,7 @@
 #include "mwindow.h"
 #include "performanceprefs.h"
 #include "preferences.h"
+#include <ctype.h>
 #include <string.h>
 #include "theme.h"
 
@@ -153,7 +154,7 @@ void PerformancePrefs::create_objects()
 		1,
 		0,  // Select compressors to be offered
 		0,  // Prompt for recording options
-		0,  // prompt for file_per_label
+		0,  // prompt for use labels
 		1); // Supply file formats for background rendering
 	x = xmargin1;
 
@@ -547,7 +548,7 @@ int PrefsRenderFarmPort::handle_event()
 
 PrefsRenderFarmNodes::PrefsRenderFarmNodes(PreferencesWindow *pwindow,
 	PerformancePrefs *subwindow, int x, int y)
- : BC_ListBox(x, y, 340, 230, LISTBOX_TEXT)
+ : BC_ListBox(x, y, 340, 230, LISTBOX_TEXT, 0,0,0,1, 0,0, LISTBOX_MULTIPLE)
 {
 	for( int i=0; i<PerformancePrefs::TOTAL_COLUMNS; ++i ) {
 		titles[i] = _(default_titles[i]);
@@ -576,7 +577,9 @@ SET_TRACE
 	{
 		subwindow->hot_node = get_selection_number(1, 0);
 		subwindow->edit_node->update(get_selection(1, 0)->get_text());
-		subwindow->edit_port->update(get_selection(2, 0)->get_text());
+		const char *text = get_selection(2, 0)->get_text();
+		subwindow->edit_port->update(text);
+		pwindow->thread->preferences->renderfarm_port = atol(text);
 		if(get_cursor_x() < widths[0])
 		{
 			pwindow->thread->preferences->renderfarm_enabled.values[subwindow->hot_node] =
@@ -627,7 +630,7 @@ int PrefsRenderFarmEditNode::handle_event()
 
 
 PrefsRenderFarmNewNode::PrefsRenderFarmNewNode(PreferencesWindow *pwindow, PerformancePrefs *subwindow, int x, int y)
- : BC_GenericButton(x, y, _("Add Node"))
+ : BC_GenericButton(x, y, _("Add Nodes"))
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
@@ -637,10 +640,17 @@ PrefsRenderFarmNewNode::~PrefsRenderFarmNewNode()
 }
 int PrefsRenderFarmNewNode::handle_event()
 {
-	pwindow->thread->preferences->add_node(subwindow->edit_node->get_text(),
-		pwindow->thread->preferences->renderfarm_port,
-		1,
-		0.0);
+	const char *name = subwindow->edit_node->get_text();
+	char *cp = (char*)subwindow->edit_port->get_text();
+	int64_t start_port = strtol(cp, &cp, 0), end_port = start_port;
+	while( isspace(*cp) ) ++cp;
+	if( *cp++ == '-' )
+		end_port = strtol(cp, &cp, 0);
+	for( int port=start_port; port<=end_port; ++port ) {
+		pwindow->thread->preferences->add_node(name, port, 1, 0.0);
+	}
+	pwindow->thread->preferences->renderfarm_port = end_port;
+	subwindow->edit_port->update(end_port);
 	pwindow->thread->preferences->reset_rates();
 	subwindow->generate_node_list();
 	subwindow->update_node_list();
@@ -682,7 +692,7 @@ int PrefsRenderFarmReplaceNode::handle_event()
 
 
 PrefsRenderFarmDelNode::PrefsRenderFarmDelNode(PreferencesWindow *pwindow, PerformancePrefs *subwindow, int x, int y)
- : BC_GenericButton(x, y, _("Delete Node"))
+ : BC_GenericButton(x, y, _("Delete Nodes"))
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
@@ -692,13 +702,14 @@ PrefsRenderFarmDelNode::~PrefsRenderFarmDelNode()
 }
 int PrefsRenderFarmDelNode::handle_event()
 {
-	if( subwindow->hot_node >= 0 ) {
-		pwindow->thread->preferences->delete_node(subwindow->hot_node);
-
-		subwindow->generate_node_list();
-		subwindow->update_node_list();
-		subwindow->hot_node = -1;
+	ArrayList<BC_ListBoxItem *> &item_list = subwindow->nodes[0];
+	for( int i=item_list.size(); --i>=0; ) {
+		if( !item_list[i]->get_selected() ) continue;
+		pwindow->thread->preferences->delete_node(i);
 	}
+	subwindow->generate_node_list();
+	subwindow->update_node_list();
+	subwindow->hot_node = -1;
 	return 1;
 }
 

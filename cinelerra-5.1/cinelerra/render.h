@@ -129,7 +129,7 @@ public:
 // This should be integrated into the Asset Class.
 	static int check_asset(EDL *edl, Asset &asset);
 // strategy to conform with using renderfarm.
-	static int get_strategy(int use_renderfarm, int file_per_label);
+	static int get_strategy(int use_renderfarm, int use_labels);
 	int get_strategy();
 // Force filename to have a 0 padded number if rendering to a list.
 	int check_numbering(Asset &asset);
@@ -178,7 +178,7 @@ public:
 	PlayableTracks *playable_tracks;
 	PackageDispatcher *packages;
 	Mutex *package_lock, *counter_lock;
-	int file_per_label;
+	int use_labels;
 	int range_type;
 // Total selection to render in seconds
 	double total_start, total_end;

@@ -169,7 +169,7 @@ void MenuEffectThread::run()
 	get_derived_attributes(default_asset, defaults);
 //	to_tracks = defaults->get("RENDER_EFFECT_TO_TRACKS", 1);
 	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOADMODE_PASTE);
-	file_per_label = defaults->get("RENDER_FILE_PER_LABEL", 0);
+	use_labels = defaults->get("RENDER_FILE_PER_LABEL", 0);
 
 // get plugin information
 	int need_plugin = !strlen(title) ? 1 : 0;
@@ -207,7 +207,7 @@ void MenuEffectThread::run()
 // save defaults
 	save_derived_attributes(default_asset, defaults);
 	defaults->update("RENDER_EFFECT_LOADMODE", load_mode);
-	defaults->update("RENDER_EFFECT_FILE_PER_LABEL", file_per_label);
+	defaults->update("RENDER_EFFECT_FILE_PER_LABEL", use_labels);
 	mwindow->save_defaults();
 
 // get plugin server to use and delete the plugin list
@@ -360,7 +360,7 @@ void MenuEffectThread::run()
 		default_asset->height = mwindow->edl->session->output_h;
 	}
 
-	int strategy = Render::get_strategy(mwindow->preferences->use_renderfarm, file_per_label);
+	int strategy = Render::get_strategy(mwindow->preferences->use_renderfarm, use_labels);
 // Process the total length in fragments
 	ArrayList<MenuEffectPacket*> packets;
 	if(!result)
@@ -618,7 +618,7 @@ void MenuEffectWindow::create_objects()
 	add_subwindow(file_title = new BC_Title(
 		mwindow->theme->menueffect_file_x,
 		mwindow->theme->menueffect_file_y,
-		(char*)(menueffects->file_per_label ?
+		(char*)(menueffects->use_labels ?
 			_("Select the first file to render to:") :
 			_("Select a file to render to:"))));
 
@@ -628,7 +628,7 @@ void MenuEffectWindow::create_objects()
 					this,
 					asset);
 	format_tools->create_objects(x, y, asset->audio_data, asset->video_data,
-		0, 0, 0, 1, 0, 0, &menueffects->file_per_label, 0);
+		0, 0, 0, 1, 0, 0, &menueffects->use_labels, 0);
 
 	loadmode = new LoadMode(mwindow, this, x, y, &menueffects->load_mode, 1);
 	loadmode->create_objects();

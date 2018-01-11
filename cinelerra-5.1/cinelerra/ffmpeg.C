@@ -1913,6 +1913,19 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				sprintf(arg, "%d", asset->ff_audio_bitrate);
 				av_dict_set(&sopts, "b", arg, 0);
 			}
+			else if( asset->ff_audio_quality >= 0 ) {
+				ctx->global_quality = asset->ff_audio_quality * FF_QP2LAMBDA;
+				ctx->qmin    = ctx->qmax =  asset->ff_audio_quality;
+				ctx->mb_lmin = ctx->qmin * FF_QP2LAMBDA;
+				ctx->mb_lmax = ctx->qmax * FF_QP2LAMBDA;
+				ctx->flags |= CODEC_FLAG_QSCALE;
+				char arg[BCSTRLEN];
+				av_dict_set(&sopts, "flags", "+qscale", 0);
+				sprintf(arg, "%d", asset->ff_audio_quality);
+				av_dict_set(&sopts, "qscale", arg, 0);
+				sprintf(arg, "%d", ctx->global_quality);
+				av_dict_set(&sopts, "global_quality", arg, 0);
+			}
 			int aidx = ffaudio.size();
 			int fidx = aidx + ffvideo.size();
 			FFAudioStream *aud = new FFAudioStream(this, st, aidx, fidx);

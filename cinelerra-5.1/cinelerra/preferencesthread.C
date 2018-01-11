@@ -248,7 +248,7 @@ int PreferencesThread::apply_settings()
 	}
 
 	mwindow->reset_android_remote();
-	int ffmpeg_early_probe = mwindow->preferences->get_file_probe_armed("FFPMEG_Early");
+	int ffmpeg_early_probe = mwindow->preferences->get_file_probe_armed("FFMPEG_Early");
 	mwindow->gui->ffmpeg_toggle->update(ffmpeg_early_probe);
 	mwindow->gui->ffmpeg_toggle->set_tooltip(ffmpeg_early_probe ?
 		FFMPEG_EARLY_TIP : FFMPEG_LATE_TIP);

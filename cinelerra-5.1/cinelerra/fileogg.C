@@ -2323,7 +2323,7 @@ PackagingEngineOGG::~PackagingEngineOGG()
 		delete [] packages;
 	}
 	if (default_asset)
-		delete default_asset;
+		default_asset->remove_user();
 }
 
 
@@ -2490,6 +2490,7 @@ int PackagingEngineOGG::packages_are_done()
 	if (default_asset->audio_data)
 	{
 		audio_asset = new Asset(packages[local_current_package]->path);
+		audio_asset->format = FILE_OGG;
 		local_current_package++;
 
 		audio_file_gen = new File();
@@ -2502,6 +2503,7 @@ int PackagingEngineOGG::packages_are_done()
 	if (default_asset->video_data)
 	{
 		video_asset = new Asset(packages[local_current_package]->path);
+		video_asset->format = FILE_OGG;
 		local_current_package++;
 
 		video_file_gen = new File();
@@ -2541,8 +2543,9 @@ int PackagingEngineOGG::packages_are_done()
 						ogg_stream_clear(&video_in_stream);
 						video_file_gen->close_file();
 						delete video_file_gen;
-						delete video_asset;
+						if( video_asset ) video_asset->remove_user();
 						video_asset = new Asset(packages[local_current_package]->path);
+						video_asset->format = FILE_OGG;
 						local_current_package++;
 
 						video_file_gen = new File();
@@ -2623,22 +2626,24 @@ int PackagingEngineOGG::packages_are_done()
 		ogg_stream_clear(&audio_in_stream);
 		audio_file_gen->close_file();
 		delete audio_file_gen;
-		delete audio_asset;
+		if( audio_asset )
+			audio_asset->remove_user();
 	}
 	if (default_asset->video_data)
 	{
 		ogg_stream_clear(&video_in_stream);
 		video_file_gen->close_file();
 		delete video_file_gen;
-		delete video_asset;
+		if( video_asset )
+			video_asset->remove_user();
 	}
 
 	output_file_gen->close_file();
 	delete output_file_gen;
 
-// Now delete the temp files
-	for(int i = 0; i < total_packages; i++)
-		unlink(packages[i]->path);
+// don't delete the temp files, for now
+//	for(int i = 0; i < total_packages; i++)
+//		unlink(packages[i]->path);
 
 	return 0;
 }

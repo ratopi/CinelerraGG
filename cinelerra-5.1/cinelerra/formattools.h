@@ -30,21 +30,8 @@
 #include "file.inc"
 #include "ffmpeg.h"
 #include "formatpopup.h"
+#include "formattools.inc"
 #include "mwindow.inc"
-
-class FormatAParams;
-class FormatVParams;
-class FormatAThread;
-class FormatVThread;
-class FormatChannels;
-class FormatPathButton;
-class FormatPathText;
-class FormatFormat;
-class FormatFFMPEG;
-class FFMpegType;
-class FormatAudio;
-class FormatVideo;
-class FormatMultiple;
 
 class FormatTools
 {
@@ -104,17 +91,14 @@ public:
 	BC_TextBox *format_text;
 	FormatFFMPEG *format_ffmpeg;
 	FFMpegType *ffmpeg_type;
-	BC_ITumbler *channels_tumbler;
 
 	BC_Title *audio_title;
-	BC_Title *channels_title;
-	FormatChannels *channels_button;
 	FormatAudio *audio_switch;
 
 	BC_Title *video_title;
 	FormatVideo *video_switch;
 
-	FormatMultiple *multiple_files;
+	FormatFilePerLabel *labeled_files;
 
 	ArrayList<PluginServer*> *plugindb;
 	MWindow *mwindow;
@@ -254,33 +238,16 @@ public:
 };
 
 
-class FormatChannels : public BC_TextBox
+class FormatFilePerLabel : public BC_CheckBox
 {
 public:
-	FormatChannels(int x, int y, FormatTools *format);
-	~FormatChannels();
-	int handle_event();
-	FormatTools *format;
-};
-
-class FormatToTracks : public BC_CheckBox
-{
-public:
-	FormatToTracks(int x, int y, int *output);
-	~FormatToTracks();
-	int handle_event();
-	int *output;
-};
-
-class FormatMultiple : public BC_CheckBox
-{
-public:
-	FormatMultiple(MWindow *mwindow, int x, int y, int *output);
-	~FormatMultiple();
+	FormatFilePerLabel(FormatTools *format, int x, int y, int *output);
+	~FormatFilePerLabel();
 	int handle_event();
 	void update(int *output);
+
+	FormatTools *format;
 	int *output;
-	MWindow *mwindow;
 };
 
 

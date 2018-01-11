@@ -1578,42 +1578,26 @@ void File::getenv_path(char *result, const char *path)
 	*rp = 0;
 }
 
-void File::setenv_path(char *result, const char *var, const char *path)
+void File::setenv_path(const char *var, const char *path, int overwrite)
 {
-	char *env = getenv(var);
-	if( env ) return;
 	char env_path[BCTEXTLEN];
 	getenv_path(env_path, path);
-	sprintf(result, "%s=%s", var, env_path);
-	putenv(result);
+	setenv(var, env_path, overwrite);
 }
-
-char File::cinexe_path[BCTEXTLEN];
-char File::cinpkg_path[BCTEXTLEN];
-char File::cindat_path[BCTEXTLEN];
-char File::cinlib_path[BCTEXTLEN];
-char File::cincfg_path[BCTEXTLEN];
-char File::cinplg_path[BCTEXTLEN];
-char File::cinlad_path[BCTEXTLEN];
-char File::cinlcl_path[BCTEXTLEN];
-char File::cinbwr_path[BCTEXTLEN];
 
 void File::init_cin_path()
 {
 	char env_path[BCTEXTLEN], env_pkg[BCTEXTLEN];
 // these values are advertised for forks/shell scripts
 	get_exe_path(env_path, env_pkg);
-	snprintf(cinexe_path, sizeof(cinexe_path), "CIN_PATH=%s", env_path);
-	putenv(cinexe_path);
-	snprintf(cinpkg_path, sizeof(cinpkg_path), "CIN_PKG=%s", env_pkg);
-	putenv(cinpkg_path);
-
-	setenv_path(cindat_path, "CIN_DAT", CINDAT_DIR);
-	setenv_path(cinlib_path, "CIN_LIB", CINLIB_DIR);
-	setenv_path(cincfg_path, "CIN_CONFIG", CONFIG_DIR);
-	setenv_path(cinplg_path, "CIN_PLUGIN", PLUGIN_DIR);
-	setenv_path(cinlad_path, "CIN_LADSPA", LADSPA_DIR);
-	setenv_path(cinlcl_path, "CIN_LOCALE", LOCALE_DIR);
-	setenv_path(cinbwr_path, "CIN_BROWSER", CIN_BROWSER);
+	setenv_path("CIN_PATH", env_path, 1);
+	setenv_path("CIN_PKG", env_pkg, 1);
+	setenv_path("CIN_DAT", CINDAT_DIR, 0);
+	setenv_path("CIN_LIB", CINLIB_DIR, 0);
+	setenv_path("CIN_CONFIG", CONFIG_DIR, 0);
+	setenv_path("CIN_PLUGIN", PLUGIN_DIR, 0);
+	setenv_path("CIN_LADSPA", LADSPA_DIR, 0);
+	setenv_path("CIN_LOCALE", LOCALE_DIR, 0);
+	setenv_path("CIN_BROWSER", CIN_BROWSER, 0);
 }
 

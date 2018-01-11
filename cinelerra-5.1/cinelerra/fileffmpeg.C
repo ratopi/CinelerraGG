@@ -87,6 +87,22 @@ FFMpegAudioNum::FFMpegAudioNum(BC_Window *window,
 int FFMpegAudioBitrate::handle_event()
 {
 	int ret = FFMpegAudioNum::handle_event();
+	Asset *asset = window()->asset;
+	if( asset->ff_audio_bitrate > 0 )
+		window()->quality->disable();
+	else if( !window()->quality->get_textbox()->is_hidden() )
+		window()->quality->enable();
+	return ret;
+}
+
+int FFMpegAudioQuality::handle_event()
+{
+	int ret = FFMpegAudioNum::handle_event();
+	Asset *asset = window()->asset;
+	if( asset->ff_audio_quality >= 0 )
+		window()->bitrate->disable();
+	else if( !window()->bitrate->get_textbox()->is_hidden() )
+		window()->bitrate->enable();
 	return ret;
 }
 
@@ -462,8 +478,13 @@ void FFMPEGConfigAudio::create_objects()
 	bitrate->create_objects();
 	bitrate->set_increment(1000);
 	bitrate->set_boundaries((int64_t)0, (int64_t)INT_MAX);
+	y += bitrate->get_h() + 5;
+	quality = new FFMpegAudioQuality(this, x, y, _("Quality:"), &asset->ff_audio_quality);
+	quality->create_objects();
+	quality->set_increment(1);
+	quality->set_boundaries((int64_t)-1, (int64_t)51);
 
-	y += bitrate->get_h() + 10;
+	y += quality->get_h() + 10;
 	BC_Title *title = new BC_Title(x, y, _("Audio Options:"));
 	add_subwindow(title);
 
@@ -486,6 +507,10 @@ void FFMPEGConfigAudio::create_objects()
 	show_window(1);
 
 	bitrate->update_param("cin_bitrate", asset->ff_audio_options);
+	quality->update_param("cin_quality", asset->ff_audio_options);
+
+	if( asset->ff_audio_bitrate > 0 ) quality->disable();
+	else if( asset->ff_audio_quality >= 0 ) bitrate->disable();
 
 	unlock_window();
 }
@@ -523,6 +548,7 @@ int FFMPEGConfigAudioPopup::handle_event()
 	popup->audio_options->set_text_row(0);
 
 	popup->bitrate->update_param("cin_bitrate", asset->ff_audio_options);
+	popup->quality->update_param("cin_quality", asset->ff_audio_options);
 	return 1;
 }
 

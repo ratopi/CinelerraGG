@@ -184,11 +184,15 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 	fprintf(fp,"\n");
 	const char *exec_path = File::get_cinlib_path();
 	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
-	if( mwindow->preferences->use_renderfarm )
-		fprintf(fp,"cat > $1/dvd.m2v $1/dvd.m2v0*\n");
-	if( !use_ffmpeg ) {
-		fprintf(fp,"mplex -M -f 8 -o $1/dvd.mpg $1/dvd.m2v $1/dvd.ac3\n");
-		fprintf(fp,"\n");
+ 	if( mwindow->preferences->use_renderfarm ||
+	    (use_label_chapters && edl->labels ) ) {
+		if( !use_ffmpeg ) {
+			fprintf(fp, "cat > $1/dvd.m2v $1/dvd.m2v0*\n");
+			fprintf(fp, "mplex -M -f 8 -o $1/dvd.mpg $1/dvd.m2v $1/dvd.ac3\n");
+		}
+		else
+			fprintf(fp, "ffmpeg -f concat -safe 0 -i <(for f in \"$1/dvd.mpg0\"*; do "
+					"echo \"file '$f'\"; done) -c copy -y $1/dvd.mpg\n");
 	}
 	fprintf(fp,"rm -rf $1/iso\n");
 	fprintf(fp,"mkdir -p $1/iso\n");
@@ -289,7 +293,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		return 1;
 	}
 
-	BatchRenderJob *job = new BatchRenderJob(mwindow->preferences);
+	BatchRenderJob *job = new BatchRenderJob(mwindow->preferences, use_label_chapters);
 	jobs->append(job);
 	strcpy(&job->edl_path[0], xml_filename);
 	Asset *asset = job->asset;
@@ -337,7 +341,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		asset->vmpeg_preset = 8;
 		asset->vmpeg_field_order = 0;
 		asset->vmpeg_pframe_distance = 0;
-		job = new BatchRenderJob(mwindow->preferences, SINGLE_PASS);
+		job = new BatchRenderJob(mwindow->preferences, 0, 0);
 		jobs->append(job);
 		strcpy(&job->edl_path[0], xml_filename);
 		asset = job->asset;
@@ -355,7 +359,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		asset->ac3_bitrate = dvd_kaudio_rate;
 	}
 
-	job = new BatchRenderJob(mwindow->preferences);
+	job = new BatchRenderJob(mwindow->preferences, 0, 0);
 	jobs->append(job);
 	job->edl_path[0] = '@';
 	strcpy(&job->edl_path[1], script_filename);

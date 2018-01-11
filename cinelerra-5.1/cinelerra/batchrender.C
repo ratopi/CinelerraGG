@@ -55,21 +55,10 @@
 #include "transportque.h"
 #include "vframe.h"
 
-
-static const char *list_titles[] =
-{
-	_("Enabled"),
-	_("Output"),
-	_("EDL"),
-	_("Elapsed")
-};
-
-static int list_widths[] =
-{
-	50,
-	100,
-	200,
-	100
+// Farmed is not present if not preferences->use_renderfarm
+int BatchRenderThread::column_widths[] = { 42, 42, 42, 222, 222, 150 };
+const char *BatchRenderThread::column_titles[] = {
+	_("Enabled"), _("Labeled"), _("Farmed"), _("Output"), _("EDL"), _("Elapsed")
 };
 
 BatchRenderMenuItem::BatchRenderMenuItem(MWindow *mwindow)
@@ -86,17 +75,11 @@ int BatchRenderMenuItem::handle_event()
 }
 
 
-
-
-
-
-
-
-BatchRenderJob::BatchRenderJob(Preferences *preferences, int strategy)
+BatchRenderJob::BatchRenderJob(Preferences *preferences, int labeled, int farmed)
 {
 	this->preferences = preferences;
-	this->strategy = strategy;
-	file_per_label = 0;
+	this->labeled = labeled;
+	this->farmed = farmed >= 0 ? farmed : preferences->use_renderfarm;
 	asset = new Asset;
 	edl_path[0] = 0;
 	enabled = 1;
@@ -110,10 +93,11 @@ BatchRenderJob::~BatchRenderJob()
 
 void BatchRenderJob::copy_from(BatchRenderJob *src)
 {
+	enabled = src->enabled;
+	farmed = src->farmed;
+	labeled = src->labeled;
 	asset->copy_from(src->asset, 0);
 	strcpy(edl_path, src->edl_path);
-	strategy = src->strategy;
-	enabled = src->enabled;
 	elapsed = 0;
 }
 
@@ -121,17 +105,16 @@ void BatchRenderJob::load(FileXML *file)
 {
 	int result = 0;
 
+	enabled = file->tag.get_property("ENABLED", enabled);
+	farmed = file->tag.get_property("FARMED", farmed);
+	labeled = file->tag.get_property("STRATEGY", labeled);
 	edl_path[0] = 0;
 	file->tag.get_property("EDL_PATH", edl_path);
-	strategy = file->tag.get_property("STRATEGY", get_strategy());
-	enabled = file->tag.get_property("ENABLED", enabled);
 	elapsed = file->tag.get_property("ELAPSED", elapsed);
 
 	result = file->read_tag();
-	if(!result)
-	{
-		if(file->tag.title_is("ASSET"))
-		{
+	if( !result ) {
+		if( file->tag.title_is("ASSET") ) {
 			file->tag.get_property("SRC", asset->path);
 			asset->read(file, 0);
 // The compression parameters are stored in the defaults to reduce
@@ -147,27 +130,20 @@ void BatchRenderJob::load(FileXML *file)
 
 void BatchRenderJob::save(FileXML *file)
 {
-	file->tag.set_property("EDL_PATH", edl_path);
-	file->tag.set_property("STRATEGY", get_strategy());
 	file->tag.set_property("ENABLED", enabled);
+	file->tag.set_property("FARMED", farmed);
+	file->tag.set_property("LABELED", labeled);
+	file->tag.set_property("EDL_PATH", edl_path);
 	file->tag.set_property("ELAPSED", elapsed);
 	file->append_tag();
 	file->append_newline();
-	asset->write(file,
-		0,
-		"");
+	asset->write(file, 0, "");
 
 // The compression parameters are stored in the defaults to reduce
 // coding maintenance.  The defaults must now be stuffed into the XML for
 // unique storage.
 	BC_Hash defaults;
-	asset->save_defaults(&defaults,
-		"",
-		0,
-		1,
-		0,
-		0,
-		0);
+	asset->save_defaults(&defaults, "", 0, 1, 0, 0, 0);
 	char *string;
 	defaults.save_string(string);
 	file->append_text(string);
@@ -179,8 +155,9 @@ void BatchRenderJob::save(FileXML *file)
 
 int BatchRenderJob::get_strategy()
 {
-	return strategy >= 0 ? strategy :
-		Render::get_strategy(preferences->use_renderfarm, file_per_label);
+// if set, overrides farmed, labeled
+	int use_renderfarm = farmed && preferences->use_renderfarm ? 1 : 0;
+	return Render::get_strategy(use_renderfarm, labeled);
 }
 
 
@@ -249,12 +226,9 @@ BC_Window* BatchRenderThread::new_gui()
 	default_job = new BatchRenderJob(mwindow->preferences);
 	load_jobs(batch_path, mwindow->preferences);
 	load_defaults(mwindow->defaults);
-	this->gui = new BatchRenderGUI(mwindow,
-		this,
-		mwindow->session->batchrender_x,
-		mwindow->session->batchrender_y,
-		mwindow->session->batchrender_w,
-		mwindow->session->batchrender_h);
+	this->gui = new BatchRenderGUI(mwindow, this,
+		mwindow->session->batchrender_x, mwindow->session->batchrender_y,
+		mwindow->session->batchrender_w, mwindow->session->batchrender_h);
 	this->gui->create_objects();
 	return this->gui;
 }
@@ -270,18 +244,14 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
 	if( !path[0] ) create_path(path);
 	file.read_from_file(path);
 
-	while(!result)
-	{
-		if(!(result = file.read_tag()))
-		{
-			if(file.tag.title_is("JOBS"))
-			{
+	while( !result ) {
+		if( !(result = file.read_tag()) ) {
+			if( file.tag.title_is("JOBS") ) {
 				warn = file.tag.get_property("WARN", 1);
 			}
-			else if(file.tag.title_is("JOB"))
-			{
-				BatchRenderJob *job;
-				jobs.append(job = new BatchRenderJob(preferences));
+			else if( file.tag.title_is("JOB") ) {
+				BatchRenderJob *job =  new BatchRenderJob(preferences);
+				jobs.append(job);
 				job->load(&file);
 			}
 		}
@@ -296,8 +266,7 @@ void BatchRenderThread::save_jobs(char *path)
 	file.append_tag();
 	file.append_newline();
 
-	for(int i = 0; i < jobs.total; i++)
-	{
+	for( int i = 0; i < jobs.total; i++ ) {
 		file.tag.set_title("JOB");
 		jobs.values[i]->save(&file);
 	}
@@ -312,17 +281,15 @@ void BatchRenderThread::save_jobs(char *path)
 
 void BatchRenderThread::load_defaults(BC_Hash *defaults)
 {
-	if(default_job)
-	{
+	if( default_job ) {
 		default_job->asset->load_defaults(defaults,
 			"BATCHRENDER_", 1, 1, 1, 1, 1);
 	}
 
-	for(int i = 0; i < BATCHRENDER_COLUMNS; i++)
-	{
+	for( int i = 0; i < BATCHRENDER_COLUMNS; i++ ) {
 		char string[BCTEXTLEN];
 		sprintf(string, "BATCHRENDER_COLUMN%d", i);
-		column_width[i] = defaults->get(string, list_widths[i]);
+		list_width[i] = defaults->get(string, column_widths[i]);
 	}
 }
 
@@ -335,7 +302,7 @@ void BatchRenderThread::save_defaults(BC_Hash *defaults)
 	for( int i=0; i<BATCHRENDER_COLUMNS; ++i ) {
 		char string[BCTEXTLEN];
 		sprintf(string, "BATCHRENDER_COLUMN%d", i);
-		defaults->update(string, column_width[i]);
+		defaults->update(string, list_width[i]);
 	}
 //	defaults->update("BATCHRENDER_JOB", current_job);
 	if( mwindow )
@@ -365,10 +332,9 @@ void BatchRenderThread::new_job()
 
 void BatchRenderThread::delete_job()
 {
-	if(current_job < jobs.total && current_job >= 0)
-	{
+	if( current_job < jobs.total && current_job >= 0 ) {
 		jobs.remove_object_number(current_job);
-		if(current_job > 0) current_job--;
+		if( current_job > 0 ) current_job--;
 		gui->create_list(1);
 		gui->change_job();
 	}
@@ -402,16 +368,8 @@ void BatchRenderThread::update_selected_edl()
 
 BatchRenderJob* BatchRenderThread::get_current_job()
 {
-	BatchRenderJob *result;
-	if(current_job >= jobs.total || current_job < 0)
-	{
-		result = default_job;
-	}
-	else
-	{
-		result = jobs.values[current_job];
-	}
-	return result;
+	return current_job >= 0 && current_job < jobs.total ?
+		jobs.values[current_job] : default_job;
 }
 
 
@@ -499,11 +457,9 @@ int BatchRenderThread::test_edl_files()
 void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 	Preferences *preferences)
 {
-	for(int i = 0; i < jobs.total; i++)
-	{
+	for( int i = 0; i < jobs.total; i++ ) {
 		BatchRenderJob *job = jobs.values[i];
-		if(job->enabled && *job->edl_path != '@')
-		{
+		if( job->enabled && *job->edl_path != '@' ) {
 			PackageDispatcher *packages = new PackageDispatcher;
 
 // Load EDL
@@ -581,7 +537,7 @@ void BatchRenderThread::start_rendering(char *config_path,
 
 //PRINT_TRACE
 // Test EDL files for existence
-	if(test_edl_files()) return;
+	if( test_edl_files() ) return;
 
 //PRINT_TRACE
 
@@ -594,20 +550,18 @@ void BatchRenderThread::start_rendering(char *config_path,
 	int result = ConfirmSave::test_files(0, &paths);
 	paths.remove_all_objects();
 // Abort on any existing file because it's so hard to set this up.
-	if(result) return;
+	if( result ) return;
 
 //PRINT_TRACE
 	render = new Render(0);
 //PRINT_TRACE
-	render->start_batches(&jobs,
-		boot_defaults,
-		preferences);
+	render->start_batches(&jobs, boot_defaults, preferences);
 //PRINT_TRACE
 }
 
 void BatchRenderThread::start_rendering()
 {
-	if(is_rendering) return;
+	if( is_rendering ) return;
 	is_rendering = 1;
 
 	save_jobs(batch_path);
@@ -615,7 +569,7 @@ void BatchRenderThread::start_rendering()
 	gui->button_disable();
 
 // Test EDL files for existence
-	if(test_edl_files()) return;
+	if( test_edl_files() ) return;
 
 // Predict all destination paths
 	ArrayList<char*> paths;
@@ -627,8 +581,7 @@ void BatchRenderThread::start_rendering()
 	paths.remove_all_objects();
 
 // User cancelled
-	if(result)
-	{
+	if( result ) {
 		is_rendering = 0;
 		gui->button_enable();
 		return;
@@ -639,7 +592,7 @@ void BatchRenderThread::start_rendering()
 
 void BatchRenderThread::stop_rendering()
 {
-	if(!is_rendering) return;
+	if( !is_rendering ) return;
 	mwindow->render->stop_operation();
 	is_rendering = 0;
 }
@@ -647,13 +600,11 @@ void BatchRenderThread::stop_rendering()
 void BatchRenderThread::update_active(int number)
 {
 	gui->lock_window("BatchRenderThread::update_active");
-	if(number >= 0)
-	{
+	if( number >= 0 ) {
 		current_job = number;
 		rendering_job = number;
 	}
-	else
-	{
+	else {
 		rendering_job = -1;
 		is_rendering = 0;
 	}
@@ -666,15 +617,13 @@ void BatchRenderThread::update_done(int number,
 	double elapsed_time)
 {
 	gui->lock_window("BatchRenderThread::update_done");
-	if(number < 0)
-	{
+	if( number < 0 ) {
 		gui->button_enable();
 	}
-	else
-	{
+	else {
 		jobs.values[number]->enabled = 0;
 		jobs.values[number]->elapsed = elapsed_time;
-		if(create_list) gui->create_list(1);
+		if( create_list ) gui->create_list(1);
 	}
 	gui->unlock_window();
 }
@@ -682,14 +631,13 @@ void BatchRenderThread::update_done(int number,
 void BatchRenderThread::move_batch(int src, int dst)
 {
 	BatchRenderJob *src_job = jobs.values[src];
-	if(dst < 0) dst = jobs.total - 1;
+	if( dst < 0 ) dst = jobs.total - 1;
 
-	if(dst != src)
-	{
-		for(int i = src; i < jobs.total - 1; i++)
+	if( dst != src ) {
+		for( int i = src; i < jobs.total - 1; i++ )
 			jobs.values[i] = jobs.values[i + 1];
-//		if(dst > src) dst--;
-		for(int i = jobs.total - 1; i > dst; i--)
+//		if( dst > src ) dst--;
+		for( int i = jobs.total - 1; i > dst; i-- )
 			jobs.values[i] = jobs.values[i - 1];
 		jobs.values[dst] = src_job;
 		gui->create_list(1);
@@ -718,6 +666,7 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
+	use_renderfarm = 0;
 }
 
 BatchRenderGUI::~BatchRenderGUI()
@@ -745,9 +694,15 @@ void BatchRenderGUI::create_objects()
 
 	format_tools = new BatchFormat(mwindow, this, thread->get_current_asset());
 	format_tools->set_w(get_w() / 2);
+	BatchRenderJob *current_job = thread->get_current_job();
 	format_tools->create_objects(x1, y1, 1, 1, 1, 1, 0, 1, 0, 0,
-			&thread->get_current_job()->file_per_label, 0);
-
+			&current_job->labeled, 0);
+	if( mwindow->preferences->use_renderfarm ) {
+		use_renderfarm = new BatchRenderUseFarm(thread, x1, y1,
+			&current_job->farmed);
+		add_subwindow(use_renderfarm);
+		y1 += use_renderfarm->get_h() + 10;
+	}
 // input EDL
 	add_subwindow(edl_path_title = new BC_Title(x2, y2, _("EDL Path:")));
 	y2 += edl_path_title->get_h() + mwindow->theme->widget_border;
@@ -832,7 +787,8 @@ int BatchRenderGUI::resize_event(int w, int h)
 	output_path_title->reposition_window(x1, y1);
 	y1 += output_path_title->get_h() + mwindow->theme->widget_border;
 	format_tools->reposition_window(x1, y1);
-
+	if( use_renderfarm )
+		use_renderfarm->reposition_window(x1, y1);
 // input EDL
 	x = x2, y = y2;
 	edl_path_title->reposition_window(x, y);
@@ -895,79 +851,80 @@ int BatchRenderGUI::close_event()
 
 void BatchRenderGUI::create_list(int update_widget)
 {
-	for(int i = 0; i < BATCHRENDER_COLUMNS; i++)
-	{
-		list_columns[i].remove_all_objects();
+	for( int i = 0; i < BATCHRENDER_COLUMNS; i++ ) {
+		list_items[i].remove_all_objects();
 	}
 
-	for(int i = 0; i < thread->jobs.total; i++)
-	{
+	const char **column_titles = BatchRenderThread::column_titles;
+	list_columns = 0;
+	list_titles[list_columns] = column_titles[ENABLED_COL];
+	list_width[list_columns++] = thread->list_width[ENABLED_COL];
+	list_titles[list_columns] = column_titles[LABELED_COL];
+	list_width[list_columns++] = thread->list_width[LABELED_COL];
+	if( mwindow->preferences->use_renderfarm ) {
+		list_titles[list_columns] = column_titles[FARMED_COL];
+		list_width[list_columns++] = thread->list_width[FARMED_COL];
+	}
+	list_titles[list_columns] = column_titles[OUTPUT_COL];
+	list_width[list_columns++] = thread->list_width[OUTPUT_COL];
+	list_titles[list_columns] = column_titles[EDL_COL];
+	list_width[list_columns++] = thread->list_width[EDL_COL];
+	list_titles[list_columns] = column_titles[ELAPSED_COL];
+	list_width[list_columns++] = thread->list_width[ELAPSED_COL];
+
+	for( int i = 0; i < thread->jobs.total; i++ ) {
 		BatchRenderJob *job = thread->jobs.values[i];
 		char string[BCTEXTLEN];
-		BC_ListBoxItem *enabled = new BC_ListBoxItem(job->enabled ?
-			(char*)"X" :
-			(char*)" ");
-		BC_ListBoxItem *item1 = new BC_ListBoxItem(job->asset->path);
-		BC_ListBoxItem *item2 = new BC_ListBoxItem(job->edl_path);
-		BC_ListBoxItem *item3;
-		if(job->elapsed)
-			item3 = new BC_ListBoxItem(
-				Units::totext(string,
-					job->elapsed,
-					TIME_HMS2));
-		else
-			item3 = new BC_ListBoxItem(_("Unknown"));
-		list_columns[0].append(enabled);
-		list_columns[1].append(item1);
-		list_columns[2].append(item2);
-		list_columns[3].append(item3);
-		if(i == thread->current_job)
-		{
+		BC_ListBoxItem *enabled = new BC_ListBoxItem(job->enabled ? "X" : " ");
+		BC_ListBoxItem *labeled = new BC_ListBoxItem(job->labeled ? "X" : " ");
+		BC_ListBoxItem *farmed  = !mwindow->preferences->use_renderfarm ? 0 :
+			new BC_ListBoxItem(job->farmed  ? "X" : " ");
+		BC_ListBoxItem *out_path = new BC_ListBoxItem(job->asset->path);
+		BC_ListBoxItem *edl_path = new BC_ListBoxItem(job->edl_path);
+		BC_ListBoxItem *elapsed = new BC_ListBoxItem(!job->elapsed ? _("Unknown") :
+			Units::totext(string, job->elapsed, TIME_HMS2));
+		int col = 0;
+		list_items[col++].append(enabled);
+		list_items[col++].append(labeled);
+		if( farmed ) list_items[col++].append(farmed);
+		list_items[col++].append(out_path);
+		list_items[col++].append(edl_path);
+		list_items[col].append(elapsed);
+		if( i == thread->current_job ) {
 			enabled->set_selected(1);
-			item1->set_selected(1);
-			item2->set_selected(1);
-			item3->set_selected(1);
+			labeled->set_selected(1);
+			if( farmed ) farmed->set_selected(1);
+			out_path->set_selected(1);
+			edl_path->set_selected(1);
+			elapsed->set_selected(1);
 		}
-		if(i == thread->rendering_job)
-		{
+		if( i == thread->rendering_job ) {
 			enabled->set_color(RED);
-			item1->set_color(RED);
-			item2->set_color(RED);
-			item3->set_color(RED);
+			labeled->set_color(RED);
+			if( farmed ) farmed->set_color(RED);
+			out_path->set_color(RED);
+			edl_path->set_color(RED);
+			elapsed->set_color(RED);
 		}
 	}
 
-	if(update_widget)
-	{
-		batch_list->update(list_columns,
-						list_titles,
-						thread->column_width,
-						BATCHRENDER_COLUMNS,
-						batch_list->get_xposition(),
-						batch_list->get_yposition(),
-						batch_list->get_highlighted_item(),  // Flat index of item cursor is over
-						1,     // set all autoplace flags to 1
-						1);
+	if( update_widget ) {
+		batch_list->update(list_items, list_titles, list_width, list_columns,
+			batch_list->get_xposition(), batch_list->get_yposition(),
+			batch_list->get_highlighted_item(), 1, 1);
 	}
 }
 
 void BatchRenderGUI::change_job()
 {
 	BatchRenderJob *job = thread->get_current_job();
-	format_tools->update(job->asset, &job->file_per_label);
+	format_tools->update(job->asset, &job->labeled);
+	if( use_renderfarm ) use_renderfarm->update(&job->farmed);
 	edl_path_text->update(job->edl_path);
 }
 
 
-
-
-
-
-
-
-BatchFormat::BatchFormat(MWindow *mwindow,
-			BatchRenderGUI *gui,
-			Asset *asset)
+BatchFormat::BatchFormat(MWindow *mwindow, BatchRenderGUI *gui, Asset *asset)
  : FormatTools(mwindow, gui, asset)
 {
 	this->gui = gui;
@@ -985,26 +942,9 @@ int BatchFormat::handle_event()
 	return 1;
 }
 
-
-
-
-
-
-
-
-
-
-
 BatchRenderEDLPath::BatchRenderEDLPath(BatchRenderThread *thread,
-	int x,
-	int y,
-	int w,
-	char *text)
- : BC_TextBox(x,
-		y,
-		w,
-		1,
-		text)
+	int x, int y, int w, char *text)
+ : BC_TextBox(x, y, w, 1, text)
 {
 	this->thread = thread;
 }
@@ -1017,11 +957,6 @@ int BatchRenderEDLPath::handle_event()
 	thread->gui->create_list(1);
 	return 1;
 }
-
-
-
-
-
 
 BatchRenderNew::BatchRenderNew(BatchRenderThread *thread,
 	int x,
@@ -1037,9 +972,7 @@ int BatchRenderNew::handle_event()
 	return 1;
 }
 
-BatchRenderDelete::BatchRenderDelete(BatchRenderThread *thread,
-	int x,
-	int y)
+BatchRenderDelete::BatchRenderDelete(BatchRenderThread *thread, int x, int y)
  : BC_GenericButton(x, y, _("Delete"))
 {
 	this->thread = thread;
@@ -1053,9 +986,7 @@ int BatchRenderDelete::handle_event()
 
 
 
-BatchRenderSaveList::BatchRenderSaveList(BatchRenderThread *thread,
-	int x,
-	int y)
+BatchRenderSaveList::BatchRenderSaveList(BatchRenderThread *thread, int x, int y)
  : BC_GenericButton(x, y, _("Save Jobs"))
 {
 	this->thread = thread;
@@ -1067,8 +998,7 @@ BatchRenderSaveList::BatchRenderSaveList(BatchRenderThread *thread,
 BatchRenderSaveList::~BatchRenderSaveList()
 {
 	startup_lock->lock("BatchRenderSaveList::~BrowseButton");
-	if(gui)
-	{
+	if( gui ) {
 		gui->lock_window();
 		gui->set_done(1);
 		gui->unlock_window();
@@ -1080,10 +1010,8 @@ BatchRenderSaveList::~BatchRenderSaveList()
 
 int BatchRenderSaveList::handle_event()
 {
-	if(Thread::running())
-	{
-		if(gui)
-		{
+	if( Thread::running() ) {
+		if( gui ) {
 			gui->lock_window();
 			gui->raise_window();
 			gui->unlock_window();
@@ -1111,7 +1039,7 @@ void BatchRenderSaveList::run()
 	filewindow.create_objects();
 
 	int result2 = filewindow.run_window();
-	if(!result2) {
+	if( !result2 ) {
 		strcpy(thread->batch_path, filewindow.get_submitted_path());
 		thread->gui->batch_path->update(thread->batch_path);
 		thread->mwindow->defaults->update("DEFAULT_BATCHLOADPATH", thread->batch_path);
@@ -1125,12 +1053,10 @@ void BatchRenderSaveList::run()
 }
 
 int BatchRenderSaveList::keypress_event() {
-	if (get_keypress() == 's' ||
-	    get_keypress() == 'S') return handle_event();
+	if( get_keypress() == 's' ||
+	    get_keypress() == 'S' ) return handle_event();
 	return 0;
 }
-
-
 
 
 BatchRenderLoadList::BatchRenderLoadList(BatchRenderThread *thread,
@@ -1148,7 +1074,7 @@ BatchRenderLoadList::BatchRenderLoadList(BatchRenderThread *thread,
 BatchRenderLoadList::~BatchRenderLoadList()
 {
 	startup_lock->lock("BatchRenderLoadList::~BrowseButton");
-	if(gui) {
+	if( gui ) {
 		gui->lock_window();
 		gui->set_done(1);
 		gui->unlock_window();
@@ -1160,8 +1086,8 @@ BatchRenderLoadList::~BatchRenderLoadList()
 
 int BatchRenderLoadList::handle_event()
 {
-	if(Thread::running()) {
-		if(gui) {
+	if( Thread::running() ) {
+		if( gui ) {
 			gui->lock_window();
 			gui->raise_window();
 			gui->unlock_window();
@@ -1189,7 +1115,7 @@ void BatchRenderLoadList::run()
 	filewindow.create_objects();
 
 	int result2 = filewindow.run_window();
-	if(!result2) {
+	if( !result2 ) {
 		strcpy(thread->batch_path, filewindow.get_submitted_path());
 		thread->gui->batch_path->update(thread->batch_path);
 		thread->mwindow->defaults->update("DEFAULT_BATCHLOADPATH", thread->batch_path);
@@ -1206,8 +1132,8 @@ void BatchRenderLoadList::run()
 }
 
 int BatchRenderLoadList::keypress_event() {
-	if (get_keypress() == 'o' ||
-	    get_keypress() == 'O') return handle_event();
+	if( get_keypress() == 'o' ||
+	    get_keypress() == 'O' ) return handle_event();
 	return 0;
 }
 
@@ -1240,27 +1166,11 @@ int BatchRenderUpdateEDL::handle_event()
 }
 
 
-
-
 BatchRenderList::BatchRenderList(BatchRenderThread *thread,
-	int x,
-	int y,
-	int w,
-	int h)
- : BC_ListBox(x,
- 	y,
-	w,
-	h,
-	LISTBOX_TEXT,
-	thread->gui->list_columns,
-	list_titles,
-	thread->column_width,
-	BATCHRENDER_COLUMNS,
-	0,
-	0,
-	LISTBOX_SINGLE,
-	ICON_LEFT,
-	1)
+	int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h, LISTBOX_TEXT, thread->gui->list_items,
+	thread->gui->list_titles, thread->gui->list_width, thread->gui->list_columns,
+	0, 0, LISTBOX_SINGLE, ICON_LEFT, 1)
 {
 	this->thread = thread;
 	dragging_item = 0;
@@ -1276,28 +1186,36 @@ int BatchRenderList::selection_changed()
 {
 	thread->current_job = get_selection_number(0, 0);
 	thread->gui->change_job();
-	if(get_cursor_x() < thread->column_width[0])
-	{
-		BatchRenderJob *job = thread->get_current_job();
+	int cursor_x = get_cursor_x();
+	BatchRenderJob *job = thread->get_current_job();
+	int col_x = 0, changed = 1;
+	if( cursor_x < (col_x += thread->list_width[ENABLED_COL]) )
 		job->enabled = !job->enabled;
+	else if( cursor_x < (col_x += thread->list_width[LABELED_COL]) )
+		job->labeled = job->edl_path[0] != '@' ? !job->labeled : 0;
+	else if( thread->gui->use_renderfarm &&
+		 cursor_x < (col_x += thread->list_width[FARMED_COL]) )
+		job->farmed = job->edl_path[0] != '@' ? !job->farmed : 0;
+	else
+		changed = 0;
+	if( changed ) {
 		thread->gui->create_list(1);
+		thread->gui->change_job();
 	}
 	return 1;
 }
 
 int BatchRenderList::column_resize_event()
 {
-	for(int i = 0; i < BATCHRENDER_COLUMNS; i++)
-	{
-		thread->column_width[i] = get_column_width(i);
+	for( int i = 0; i < BATCHRENDER_COLUMNS; i++ ) {
+		thread->list_width[i] = get_column_width(i);
 	}
 	return 1;
 }
 
 int BatchRenderList::drag_start_event()
 {
-	if(BC_ListBox::drag_start_event())
-	{
+	if( BC_ListBox::drag_start_event() ) {
 		dragging_item = 1;
 		return 1;
 	}
@@ -1307,8 +1225,7 @@ int BatchRenderList::drag_start_event()
 
 int BatchRenderList::drag_motion_event()
 {
-	if(BC_ListBox::drag_motion_event())
-	{
+	if( BC_ListBox::drag_motion_event() ) {
 		return 1;
 	}
 	return 0;
@@ -1316,12 +1233,10 @@ int BatchRenderList::drag_motion_event()
 
 int BatchRenderList::drag_stop_event()
 {
-	if(dragging_item)
-	{
+	if( dragging_item ) {
 		int src = get_selection_number(0, 0);
 		int dst = get_highlighted_item();
-		if(src != dst)
-		{
+		if( src != dst ) {
 			thread->move_batch(src, dst);
 		}
 		BC_ListBox::drag_stop_event();
@@ -1331,22 +1246,8 @@ int BatchRenderList::drag_stop_event()
 
 
 
-
-
-
-
-
-
-
-
-
-
-BatchRenderStart::BatchRenderStart(BatchRenderThread *thread,
-	int x,
-	int y)
- : BC_GenericButton(x,
- 	y,
-	_("Start"))
+BatchRenderStart::BatchRenderStart(BatchRenderThread *thread, int x, int y)
+ : BC_GenericButton(x, y, _("Start"))
 {
 	this->thread = thread;
 }
@@ -1357,12 +1258,8 @@ int BatchRenderStart::handle_event()
 	return 1;
 }
 
-BatchRenderStop::BatchRenderStop(BatchRenderThread *thread,
-	int x,
-	int y)
- : BC_GenericButton(x,
- 	y,
-	_("Stop"))
+BatchRenderStop::BatchRenderStop(BatchRenderThread *thread, int x, int y)
+ : BC_GenericButton(x, y, _("Stop"))
 {
 	this->thread = thread;
 }
@@ -1388,13 +1285,8 @@ int BatchRenderWarning::handle_event()
 	return 1;
 }
 
-
-BatchRenderCancel::BatchRenderCancel(BatchRenderThread *thread,
-	int x,
-	int y)
- : BC_GenericButton(x,
- 	y,
-	_("Close"))
+BatchRenderCancel::BatchRenderCancel(BatchRenderThread *thread, int x, int y)
+ : BC_GenericButton(x, y, _("Close"))
 {
 	this->thread = thread;
 }
@@ -1410,8 +1302,7 @@ int BatchRenderCancel::handle_event()
 
 int BatchRenderCancel::keypress_event()
 {
-	if(get_keypress() == ESC)
-	{
+	if( get_keypress() == ESC ) {
 		unlock_window();
 		thread->stop_rendering();
 		lock_window("BatchRenderCancel::keypress_event");
@@ -1419,5 +1310,25 @@ int BatchRenderCancel::keypress_event()
 		return 1;
 	}
 	return 0;
+}
+
+BatchRenderUseFarm::BatchRenderUseFarm(BatchRenderThread *thread, int x, int y, int *output)
+ : BC_CheckBox(x, y, *output, _("Use render farm"))
+{
+	this->thread = thread;
+	this->output = output;
+}
+
+int BatchRenderUseFarm::handle_event()
+{
+	*output = get_value();
+	thread->gui->create_list(1);
+	return 1;
+}
+
+void BatchRenderUseFarm::update(int *output)
+{
+	this->output = output;
+	BC_CheckBox::update(*output);
 }
 

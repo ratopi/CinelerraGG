@@ -23,5 +23,16 @@
 #define FORMATTOOLS_INC
 
 class FormatTools;
+class FormatPathText;
+class FormatFormat;
+class FormatFFMPEG;
+class FFMpegType;
+class FormatAParams;
+class FormatVParams;
+class FormatAThread;
+class FormatVThread;
+class FormatAudio;
+class FormatVideo;
+class FormatFilePerLabel;
 
 #endif

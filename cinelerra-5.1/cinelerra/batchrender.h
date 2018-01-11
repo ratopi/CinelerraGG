@@ -36,10 +36,11 @@
 #include "render.inc"
 #include "timeentry.h"
 
-#define BATCHRENDER_COLUMNS 4
-
-
-
+enum {
+	ENABLED_COL, LABELED_COL, FARMED_COL,
+	OUTPUT_COL, EDL_COL, ELAPSED_COL,
+	BATCHRENDER_COLUMNS
+};
 
 class BatchRenderMenuItem : public BC_MenuItem
 {
@@ -54,7 +55,7 @@ public:
 class BatchRenderJob
 {
 public:
-	BatchRenderJob(Preferences *preferences, int strategy=-1);
+	BatchRenderJob(Preferences *preferences, int labeled=0, int farmed=-1);
 	~BatchRenderJob();
 
 	void copy_from(BatchRenderJob *src);
@@ -66,8 +67,7 @@ public:
 	char edl_path[BCTEXTLEN];
 // Destination file for output
 	Asset *asset;
-	int strategy;
-	int file_per_label;
+	int labeled, farmed;
 	int enabled;
 // Amount of time elapsed in last render operation
 	double elapsed;
@@ -131,7 +131,10 @@ public:
 	Preferences *preferences;
 	Render *render;
 	BatchRenderGUI *gui;
-	int column_width[BATCHRENDER_COLUMNS];
+
+	static const char *column_titles[BATCHRENDER_COLUMNS];
+	static int column_widths[BATCHRENDER_COLUMNS];
+	int list_width[BATCHRENDER_COLUMNS];
 // job being edited
 	int current_job;
 // job being rendered
@@ -275,6 +278,17 @@ public:
 	MWindow *mwindow;
 };
 
+class BatchRenderUseFarm : public BC_CheckBox
+{
+public:
+	BatchRenderUseFarm(BatchRenderThread *thread, int x, int y, int *output);
+	int handle_event();
+	void update(int *output);
+
+	BatchRenderThread *thread;
+	int *output;
+};
+
 
 class BatchRenderGUI : public BC_Window
 {
@@ -296,7 +310,9 @@ public:
 	void button_enable();
 	void button_disable();
 
-	ArrayList<BC_ListBoxItem*> list_columns[BATCHRENDER_COLUMNS];
+	ArrayList<BC_ListBoxItem*> list_items[BATCHRENDER_COLUMNS];
+	const char *list_titles[BATCHRENDER_COLUMNS];
+	int list_width[BATCHRENDER_COLUMNS], list_columns;
 
 	MWindow *mwindow;
 	BatchRenderThread *thread;
@@ -321,6 +337,7 @@ public:
 	BatchRenderCancel *cancel_button;
 	BatchRenderCurrentEDL *use_current_edl;
 	BatchRenderUpdateEDL *update_selected_edl;
+	BatchRenderUseFarm *use_renderfarm;
 };
 
 

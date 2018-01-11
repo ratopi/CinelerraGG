@@ -345,6 +345,7 @@ void Render::handle_done_event(int result)
 		// add to recentlist only on OK
 		render_window->render_format->path_recent->
 			add_item(File::formattostr(asset->format), asset->path);
+		setenv("CIN_RENDER", asset->path, 1);
 	}
 	render_window = 0;
 }
@@ -471,15 +472,15 @@ int Render::check_asset(EDL *edl, Asset &asset)
 	return 0;
 }
 
-int Render::get_strategy(int use_renderfarm, int file_per_label)
+int Render::get_strategy(int use_renderfarm, int use_labels)
 {
 	return use_renderfarm ?
-		(file_per_label ? FILE_PER_LABEL_FARM : SINGLE_PASS_FARM) :
-		(file_per_label ? FILE_PER_LABEL      : SINGLE_PASS     ) ;
+		(use_labels ? FILE_PER_LABEL_FARM : SINGLE_PASS_FARM) :
+		(use_labels ? FILE_PER_LABEL      : SINGLE_PASS     ) ;
 }
 int Render::get_strategy()
 {
-	return get_strategy(preferences->use_renderfarm, file_per_label);
+	return get_strategy(preferences->use_renderfarm, use_labels);
 }
 
 void Render::start_progress()
@@ -616,7 +617,7 @@ void Render::get_starting_number(char *path,
 
 int Render::load_defaults(Asset *asset)
 {
-	file_per_label = mwindow->defaults->get("RENDER_FILE_PER_LABEL", 0);
+	use_labels = mwindow->defaults->get("RENDER_FILE_PER_LABEL", 0);
 	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
 	range_type = mwindow->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
 
@@ -636,7 +637,7 @@ int Render::load_profile(int profile_slot, Asset *asset)
 {
 	char string_name[100];
 	sprintf(string_name, "RENDER_%i_FILE_PER_LABEL", profile_slot);
-	file_per_label = mwindow->defaults->get(string_name, 0);
+	use_labels = mwindow->defaults->get(string_name, 0);
 // Load mode is not part of the profile
 //	printf(string_name, "RENDER_%i_LOADMODE", profile_slot);
 //	load_mode = mwindow->defaults->get(string_name, LOADMODE_NEW_TRACKS);
@@ -652,7 +653,7 @@ int Render::load_profile(int profile_slot, Asset *asset)
 
 int Render::save_defaults(Asset *asset)
 {
-	mwindow->defaults->update("RENDER_FILE_PER_LABEL", file_per_label);
+	mwindow->defaults->update("RENDER_FILE_PER_LABEL", use_labels);
 	mwindow->defaults->update("RENDER_LOADMODE", load_mode);
 	mwindow->defaults->update("RENDER_RANGE_TYPE", range_type);
 
@@ -689,7 +690,6 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 	double total_length;
 	RenderFarmServer *farm_server = 0;
 	FileSystem fs;
-	//int done = 0;
 	const int debug = 0;
 
 	render->in_progress = 1;
@@ -771,7 +771,6 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 			test_overwrite);
 	}
 
-	//done = 0;
 	render->total_rendered = 0;
 
 	if(!render->result)
@@ -863,14 +862,8 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 // Exit point
 			if(!package)
 			{
-				//done = 1;
 				break;
 			}
-
-
-
-			Timer timer;
-			timer.update();
 
 			if(package_renderer.render_package(package))
 				render->result = 1;
@@ -1134,7 +1127,7 @@ void RenderWindow::load_profile(int profile_slot)
 {
 	render->load_profile(profile_slot, asset);
 	update_range_type(render->range_type);
-	render_format->update(asset, &render->file_per_label);
+	render_format->update(asset, &render->use_labels);
 }
 
 
@@ -1143,14 +1136,14 @@ void RenderWindow::create_objects()
 	int x = 10, y = 10;
 	lock_window("RenderWindow::create_objects");
 	add_subwindow(new BC_Title(x, y,
-		(char*)(render->file_per_label ?
+		(char*)(render->use_labels ?
 			_("Select the first file to render to:") :
 			_("Select a file to render to:"))));
 	y += 25;
 
 	render_format = new RenderFormat(mwindow, this, asset);
 	render_format->create_objects(x, y,
-		1, 1, 1, 1, 0, 1, 0, 0, &render->file_per_label, 0);
+		1, 1, 1, 1, 0, 1, 0, 0, &render->use_labels, 0);
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Render range:")));

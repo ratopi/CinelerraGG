@@ -52,7 +52,6 @@ FormatTools::FormatTools(MWindow *mwindow,
 	vparams_button = 0;
 	aparams_thread = 0;
 	vparams_thread = 0;
-	channels_tumbler = 0;
 	audio_switch = 0;
 	video_switch = 0;
 	path_textbox = 0;
@@ -63,9 +62,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 	format_text = 0;
 	audio_title = 0;
 	video_title = 0;
-	channels_title = 0;
-	channels_button = 0;
-	multiple_files = 0;
+	labeled_files = 0;
 	w = window->get_w();
 
 	recording = 0;
@@ -100,7 +97,6 @@ SET_TRACE
 SET_TRACE
 	if(vparams_thread) delete vparams_thread;
 SET_TRACE
-	if(channels_tumbler) delete channels_tumbler;
 }
 
 void FormatTools::create_objects(
@@ -187,18 +183,6 @@ void FormatTools::create_objects(
 		ylev = y;
 		y += aparams_button->get_h() + 10;
 
-// Audio channels only used for recording.
-// 		if(prompt_audio_channels)
-// 		{
-// 			window->add_subwindow(channels_title = new BC_Title(x, y, _("Number of audio channels to record:")));
-// 			x += 260;
-// 			window->add_subwindow(channels_button = new FormatChannels(x, y, this));
-// 			x += channels_button->get_w() + 5;
-// 			window->add_subwindow(channels_tumbler = new BC_ITumbler(channels_button, 1, MAXCHANNELS, x, y));
-// 			y += channels_button->get_h() + 20;
-// 			x = init_x;
-// 		}
-
 //printf("FormatTools::create_objects 6\n");
 		aparams_thread = new FormatAThread(this);
 	}
@@ -237,9 +221,9 @@ void FormatTools::create_objects(
 
 	x = init_x;
 	if( file_per_label ) {
-		multiple_files = new FormatMultiple(mwindow, x, y, file_per_label);
-		window->add_subwindow(multiple_files);
-		y += multiple_files->get_h() + 10;
+		labeled_files = new FormatFilePerLabel(this, x, y, file_per_label);
+		window->add_subwindow(labeled_files);
+		y += labeled_files->get_h() + 10;
 	}
 
 //printf("FormatTools::create_objects 12\n");
@@ -422,7 +406,7 @@ void FormatTools::update(Asset *asset, int *file_per_label)
 {
 	this->asset = asset;
 	this->file_per_label = file_per_label;
-	if( file_per_label ) multiple_files->update(file_per_label);
+	if( file_per_label ) labeled_files->update(file_per_label);
 	if( path_textbox ) path_textbox->update(asset->path);
 	format_text->update(File::formattostr(asset->format));
 	update_format();
@@ -490,16 +474,6 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 
 		x = init_x;
 		y += aparams_button->get_h() + 10;
-		if(prompt_audio_channels)
-		{
-			channels_title->reposition_window(x, y);
-			x += 260;
-			channels_button->reposition_window(x, y);
-			x += channels_button->get_w() + 5;
-			channels_tumbler->reposition_window(x, y);
-			y += channels_button->get_h() + 20;
-			x = init_x;
-		}
 	}
 
 
@@ -528,8 +502,8 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 	}
 
 	if( file_per_label ) {
-		multiple_files->reposition_window(x, y);
-		y += multiple_files->get_h() + 10;
+		labeled_files->reposition_window(x, y);
+		y += labeled_files->get_h() + 10;
 	}
 
 	init_y = y;
@@ -591,6 +565,7 @@ FormatAParams::~FormatAParams()
 int FormatAParams::handle_event()
 {
 	format->set_audio_options();
+	format->handle_event();
 	return 1;
 }
 
@@ -612,6 +587,7 @@ FormatVParams::~FormatVParams()
 int FormatVParams::handle_event()
 {
 	format->set_video_options();
+	format->handle_event();
 	return 1;
 }
 
@@ -714,6 +690,7 @@ FormatAudio::~FormatAudio() {}
 int FormatAudio::handle_event()
 {
 	format->asset->audio_data = get_value();
+	format->handle_event();
 	return 1;
 }
 
@@ -731,6 +708,7 @@ FormatVideo::~FormatVideo() {}
 int FormatVideo::handle_event()
 {
 	format->asset->video_data = get_value();
+	format->handle_event();
 	return 1;
 }
 
@@ -768,6 +746,7 @@ int FormatFormat::handle_event()
 				load_items(File::formattostr(format->asset->format));
 			format->update_format();
 		}
+		format->handle_event();
 	}
 	return 1;
 }
@@ -795,65 +774,32 @@ int FormatFFMPEG::handle_event()
 		format->update_extension();
 		format->close_format_windows();
 		format->update_format();
+		format->handle_event();
 	}
 	return 1;
 }
 
 
-
-
-FormatChannels::FormatChannels(int x, int y, FormatTools *format)
- : BC_TextBox(x, y, 100, 1, format->asset->channels)
-{
- 	this->format = format;
-}
-
-FormatChannels::~FormatChannels()
-{
-}
-
-int FormatChannels::handle_event()
-{
-	format->asset->channels = atol(get_text());
-	return 1;
-}
-
-
-FormatToTracks::FormatToTracks(int x, int y, int *output)
- : BC_CheckBox(x, y, *output, _("Overwrite project with output"))
-{
-	this->output = output;
-}
-
-FormatToTracks::~FormatToTracks()
-{
-}
-
-int FormatToTracks::handle_event()
-{
-	*output = get_value();
-	return 1;
-}
-
-
-FormatMultiple::FormatMultiple(MWindow *mwindow, int x, int y, int *output)
+FormatFilePerLabel::FormatFilePerLabel(FormatTools *format,
+	int x, int y, int *output)
  : BC_CheckBox(x, y, *output, _("Create new file at each label"))
 {
+	this->format = format;
 	this->output = output;
-	this->mwindow = mwindow;
 }
 
-FormatMultiple::~FormatMultiple()
+FormatFilePerLabel::~FormatFilePerLabel()
 {
 }
 
-int FormatMultiple::handle_event()
+int FormatFilePerLabel::handle_event()
 {
 	*output = get_value();
+	format->handle_event();
 	return 1;
 }
 
-void FormatMultiple::update(int *output)
+void FormatFilePerLabel::update(int *output)
 {
 	this->output = output;
 	set_value(*output ? 1 : 0);

@@ -211,6 +211,7 @@ public:
 	char ff_audio_options[BCTEXTLEN];
 	char ff_video_options[BCTEXTLEN];
 	int ff_audio_bitrate;
+	int ff_audio_quality;
 	int ff_video_bitrate;
 	int ff_video_quality;
 

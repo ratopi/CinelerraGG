@@ -220,7 +220,7 @@ int RenderProfile::save_to_slot(int profile_slot, const char *profile_name)
 
 	sprintf(string_name, "RENDER_%i_FILE_PER_LABEL", profile_slot);
 	mwindow->defaults->update(string_name,
-		rwindow->render->file_per_label ? FILE_PER_LABEL : SINGLE_PASS);
+		rwindow->render->use_labels ? FILE_PER_LABEL : SINGLE_PASS);
 	sprintf(string_name, "RENDER_%i_LOADMODE", profile_slot);
 	mwindow->defaults->update(string_name, rwindow->render->load_mode);
 	sprintf(string_name, "RENDER_%i_RANGE_TYPE", profile_slot);
@@ -228,12 +228,7 @@ int RenderProfile::save_to_slot(int profile_slot, const char *profile_name)
 
 	sprintf(string_name, "RENDER_%i_", profile_slot);
 	rwindow->asset->save_defaults(mwindow->defaults,
-		string_name,
-		1,
-		1,
-		1,
-		1,
-		1);
+		string_name, 1, 1, 1, 1, 1);
 
 	mwindow->save_defaults();
 	return 0;

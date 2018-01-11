@@ -212,7 +212,7 @@ void ShBtnTextWindow::create_objects()
         add_subwindow(cmd_name);
         cmd_text = new BC_ScrollTextBox(this, x1, y, get_w()-x1-20, 4, pref->commands);
 	cmd_text->create_objects();
-	y += cmd_text->get_h() + 8;
+	y += cmd_text->get_h() + 16;
         add_subwindow(st_err_warn = new ShBtnErrWarn(this, x1, y));
         y = get_h() - ShBtnTextOK::calculate_h() - 10;
         add_subwindow(new ShBtnTextOK(this, x, y));

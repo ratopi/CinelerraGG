@@ -9898,7 +9898,7 @@ int CLASS main (int argc, const char **argv)
   reset(); // Globals must be reset
 
 #ifndef LOCALTIME
-  putenv ((char *) "TZ=UTC");
+//  putenv ((char *) "TZ=UTC");
 #endif
 #ifdef LOCALEDIR
   setlocale (LC_CTYPE, "");

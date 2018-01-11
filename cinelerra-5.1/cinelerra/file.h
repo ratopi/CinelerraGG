@@ -317,12 +317,7 @@ public:
 	static void init_cin_path();
 	static void get_exe_path(char *result, char *bnp=0);
 	static void getenv_path(char *result, const char *path);
-	static void setenv_path(char *result, const char *var, const char *path);
-	static char cinexe_path[BCTEXTLEN], cinpkg_path[BCTEXTLEN];
-	static char cindat_path[BCTEXTLEN], cinlib_path[BCTEXTLEN];
-	static char cincfg_path[BCTEXTLEN], cinplg_path[BCTEXTLEN];
-	static char cinlad_path[BCTEXTLEN], cinlcl_path[BCTEXTLEN];
-	static char cinbwr_path[BCTEXTLEN];
+	static void setenv_path(const char *var, const char *path, int overwrite);
 	static const char *get_cin() { return getenv("CIN_PKG"); }
 	static const char *get_cin_path() { return getenv("CIN_PATH"); }
 	static const char *get_cindat_path() { return getenv("CIN_DAT"); }
@@ -331,6 +326,7 @@ public:
 	static const char *get_plugin_path() { return getenv("CIN_PLUGIN"); }
 	static const char *get_ladspa_path() { return getenv("CIN_LADSPA"); }
 	static const char *get_locale_path() { return getenv("CIN_LOCALE"); }
+	static const char *get_render_path() { return getenv("CIN_RENDER"); }
 	static const char *get_browser_path() { return getenv("CIN_BROWSER"); }
 
 	static const char *default_probes[];
