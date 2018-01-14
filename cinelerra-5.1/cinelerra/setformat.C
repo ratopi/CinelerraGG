@@ -151,9 +151,9 @@ void SetFormatThread::apply_changes()
 
 	mwindow->undo->update_undo_before();
 
-	memcpy(&mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
+	memcpy(&mwindow->preferences->channel_positions[new_channels - 1],
 		new_settings->session->achannel_positions,
-		sizeof(int) * MAXCHANNELS);
+		sizeof(mwindow->preferences->channel_positions[new_channels - 1]));
 
 
 	mwindow->edl->copy_session(new_settings, 1);
@@ -175,20 +175,6 @@ void SetFormatThread::update()
 	window->channels->update((int64_t)new_settings->session->audio_channels);
 	window->frame_rate->update((float)new_settings->session->frame_rate);
 
-	switch( new_settings->session->audio_channels ) {
-	case 6:
-		new_settings->session->achannel_positions[0] = 90;
-		new_settings->session->achannel_positions[1] = 150;
-		new_settings->session->achannel_positions[2] = 30;
-		new_settings->session->achannel_positions[3] = 210;
-		new_settings->session->achannel_positions[4] = 330;
-		new_settings->session->achannel_positions[5] = 270;
-		break;
-	case 2:
-		new_settings->session->achannel_positions[0] = 180;
-		new_settings->session->achannel_positions[1] = 0;
-		break;
-	}
 	auto_aspect = 0;
 	window->auto_aspect->update(0);
 
@@ -322,51 +308,38 @@ void SetFormatWindow::create_objects()
 
 
 
-	presets = new SetFormatPresets(mwindow,
-		this,
-		x,
-		y);
+	presets = new SetFormatPresets(mwindow, this, x, y);
 	presets->create_objects();
-	x = presets->x;
-	y = presets->y;
-
+	x = presets->x; //  y = presets->y;
 	y = mwindow->theme->setformat_y2;
 
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x1,
-		y,
-		_("Audio"),
-		LARGEFONT));
+	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, y,
+		_("Audio"), LARGEFONT));
 	y = mwindow->theme->setformat_y3;
 
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x1,
-		y,
+	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, y,
 		_("Samplerate:")));
 	add_subwindow(sample_rate = new SetSampleRateTextBox(thread,
 		mwindow->theme->setformat_x2,
 		y));
-	add_subwindow(new SampleRatePulldown(mwindow,
-		sample_rate,
-		mwindow->theme->setformat_x2 + sample_rate->get_w(),
-		y));
+	add_subwindow(new SampleRatePulldown(mwindow, sample_rate,
+		mwindow->theme->setformat_x2 + sample_rate->get_w(), y));
 
 	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x1,
-		y,
+	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, y,
 		_("Channels:")));
 	add_subwindow(channels = new SetChannelsTextBox(thread,
-		mwindow->theme->setformat_x2,
-		y));
-	add_subwindow(new BC_ITumbler(channels,
-		1,
-		MAXCHANNELS,
-		mwindow->theme->setformat_x2 + channels->get_w(),
-		y));
+		mwindow->theme->setformat_x2, y));
+	add_subwindow(new BC_ITumbler(channels, 1, MAXCHANNELS,
+		mwindow->theme->setformat_x2 + channels->get_w(), y));
 
 	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x1,
-		y,
+	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, y,
 		_("Channel positions:")));
 	y += mwindow->theme->setformat_margin;
+	add_subwindow(new SetChannelsReset(thread,
+		mwindow->theme->setformat_x1, y,
+		_("Reset")));
 	add_subwindow(canvas = new SetChannelsCanvas(mwindow,
 		thread,
 		mwindow->theme->setformat_channels_x,
@@ -374,12 +347,6 @@ void SetFormatWindow::create_objects()
 		mwindow->theme->setformat_channels_w,
 		mwindow->theme->setformat_channels_h));
 	canvas->draw();
-
-
-
-
-
-
 
 
 
@@ -558,18 +525,6 @@ EDL* SetFormatPresets::get_edl()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 SetSampleRateTextBox::SetSampleRateTextBox(SetFormatThread *thread, int x, int y)
  : BC_TextBox(x, y, 100, 1, (int64_t)thread->new_settings->session->sample_rate)
 {
@@ -596,8 +551,8 @@ int SetChannelsTextBox::handle_event()
 	if(new_channels > 0)
 	{
 		memcpy(thread->new_settings->session->achannel_positions,
-			&thread->mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
-			sizeof(int) * MAXCHANNELS);
+			&thread->mwindow->preferences->channel_positions[new_channels - 1],
+			sizeof(thread->new_settings->session->achannel_positions));
 	}
 
 
@@ -605,17 +560,25 @@ int SetChannelsTextBox::handle_event()
 	return 1;
 }
 
+SetChannelsReset::SetChannelsReset(SetFormatThread *thread, int x, int y, const char *text)
+ : BC_GenericButton(x, y, text)
+{
+	this->thread = thread;
+}
+
+int SetChannelsReset::handle_event()
+{
+	int channels = thread->new_settings->session->audio_channels;
+	int *achannels = thread->new_settings->session->achannel_positions;
+	for( int i=0; i<MAX_CHANNELS; ++i )
+		achannels[i] = default_audio_channel_position(i, channels);
+	thread->window->canvas->draw();
+	return 1;
+}
 
 SetChannelsCanvas::SetChannelsCanvas(MWindow *mwindow,
-	SetFormatThread *thread,
-	int x,
-	int y,
-	int w,
-	int h)
- : BC_SubWindow(x,
- 	y,
-	w,
-	h)
+	SetFormatThread *thread, int x, int y, int w, int h)
+ : BC_SubWindow(x, y, w, h)
 {
 	this->thread = thread;
 	this->mwindow = mwindow;
@@ -755,22 +718,15 @@ int SetChannelsCanvas::cursor_motion_event()
 		{
 			thread->new_settings->session->achannel_positions[active_channel] = new_d;
 			int new_channels = thread->new_settings->session->audio_channels;
-			memcpy(&thread->mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
+			memcpy(&thread->mwindow->preferences->channel_positions[new_channels - 1],
 				thread->new_settings->session->achannel_positions,
-				sizeof(int) * MAXCHANNELS);
+				sizeof(thread->mwindow->preferences->channel_positions[new_channels - 1]));
 			draw(thread->new_settings->session->achannel_positions[active_channel]);
 		}
 		return 1;
 	}
 	return 0;
 }
-
-
-
-
-
-
-
 
 
 SetFrameRateTextBox::SetFrameRateTextBox(SetFormatThread *thread, int x, int y)
@@ -848,7 +804,6 @@ int ScaleRatioText::handle_event()
 }
 
 
-
 ScaleAspectAuto::ScaleAspectAuto(int x, int y, SetFormatThread *thread)
  : BC_CheckBox(x, y, thread->auto_aspect, _("Auto"))
 {
@@ -883,10 +838,6 @@ int ScaleAspectText::handle_event()
 }
 
 
-
-
-
-
 SetFormatApply::SetFormatApply(int x, int y, SetFormatThread *thread)
  : BC_GenericButton(x, y, _("Apply"))
 {
@@ -898,17 +849,6 @@ int SetFormatApply::handle_event()
 	thread->apply_changes();
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 FormatSwapExtents::FormatSwapExtents(MWindow *mwindow,
@@ -936,7 +876,4 @@ int FormatSwapExtents::handle_event()
 	thread->update_window();
 	return 1;
 }
-
-
-
 

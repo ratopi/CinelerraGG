@@ -3357,6 +3357,14 @@ int BC_WindowBase::ungrab(BC_WindowBase *window)
 	this->grab_active = 0;
 	return 1;
 }
+int BC_WindowBase::grab_event_count()
+{
+	int result = 0;
+#ifndef SINGLE_THREAD
+	result = grab_active->get_event_count();
+#endif
+	return result;
+}
 int BC_WindowBase::grab_buttons()
 {
 	XSync(top_level->display, False);

@@ -1550,19 +1550,13 @@ void MWindow::restart_brender()
 //printf("MWindow::restart_brender 1\n");
 	if( !brender_active || !preferences->use_brender ) return;
 	if( !brender ) return;
-	int locked  = gui->get_window_lock();
-	if( locked ) gui->unlock_window();
 	brender->restart(edl);
-	if( locked ) gui->lock_window("MWindow::restart_brender");
 }
 
 void MWindow::stop_brender()
 {
 	if( !brender ) return;
-	int locked  = gui->get_window_lock();
-	if( locked ) gui->unlock_window();
 	brender->stop();
-	if( locked ) gui->lock_window("MWindow::stop_brender");
 }
 
 int MWindow::brender_available(int position)
@@ -3987,29 +3981,9 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 		if( channels < 1 ) channels = 1;
 		if( channels > 6 ) channels = 6;
 		session->audio_tracks = session->audio_channels = channels;
-		switch( channels ) {
-		case 6:
-			session->achannel_positions[0] = 90;
-			session->achannel_positions[1] = 150;
-			session->achannel_positions[2] = 30;
-			session->achannel_positions[3] = 210;
-			session->achannel_positions[4] = 330;
-			session->achannel_positions[5] = 270;
-			break;
-		case 2:
-			session->achannel_positions[0] = 180;
-			session->achannel_positions[1] = 0;
-			break;
-		case 1:
-			session->achannel_positions[1] = 90;
-			break;
-		default: {
-			if( !channels ) break;
-			double t = 0, dt = 360./channels;
-			for( int i=channels; --i>=0; t+=dt )
-				session->achannel_positions[i] = int(t+0.5);
-			break; }
-		}
+
+		int *achannel_positions = preferences->channel_positions[session->audio_channels-1];
+		memcpy(&session->achannel_positions, achannel_positions, sizeof(session->achannel_positions));
 		remap_audio(MWindow::AUDIO_1_TO_1);
 
 		if( delete_tracks ) {

@@ -94,6 +94,14 @@ public:
 	MWindow *mwindow;
 };
 
+class SetChannelsReset : public BC_GenericButton
+{
+public:
+	SetChannelsReset(SetFormatThread *thread, int x, int y, const char *text);
+	int handle_event();
+
+	SetFormatThread *thread;
+};
 
 class SetChannelsCanvas : public BC_SubWindow
 {

@@ -194,25 +194,16 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 		*result = brender_start;
 }
 
-
 int EDLSession::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
+	audio_channels = defaults->get("ACHANNELS", audio_channels);
+	audio_tracks = defaults->get("ATRACKS", audio_tracks);
 // Default channel positions
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
+	for( int i=0; i<MAXCHANNELS; ++i ) {
 		sprintf(string, "ACHANNEL_ANGLE_%d", i);
-		int default_position = i * 30;
-
-		if(i == 0) default_position = 180;
-		else
-		if(i == 1) default_position = 0;
-		else
-		if(default_position == 90) default_position = 300;
-		else
-		if(default_position == 0) default_position = 330;
-
-		achannel_positions[i] = defaults->get(string, default_position);
+		achannel_positions[i] = defaults->get(string,
+			default_audio_channel_position(i, audio_channels));
 	}
 	aconfig_in->load_defaults(defaults);
 	assetlist_format = defaults->get("ASSETLIST_FORMAT", ASSETS_ICONS);
@@ -223,8 +214,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 		sprintf(string, "ASSET_COLUMN%d", i);
 		asset_columns[i] = defaults->get(string, 100);
 	}
-	audio_channels = defaults->get("ACHANNELS", audio_channels);
-	audio_tracks = defaults->get("ATRACKS", audio_tracks);
 	auto_conf->load_defaults(defaults);
 	autos_follow_edits = defaults->get("AUTOS_FOLLOW_EDITS", 1);
 	brender_start = defaults->get("BRENDER_START", brender_start);
@@ -562,8 +551,6 @@ int EDLSession::load_audio_config(FileXML *file, int append_mode, uint32_t load_
 // load channels setting
 	if(append_mode) return 0;
 	audio_channels = file->tag.get_property("CHANNELS", (int64_t)audio_channels);
-
-
 	for(int i = 0; i < audio_channels; i++)
 	{
 		sprintf(string, "ACHANNEL_ANGLE_%d", i);

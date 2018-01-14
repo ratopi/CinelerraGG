@@ -22,4 +22,36 @@
 #ifndef MAXCHANNELS
 #define MAXCHANNELS 32
 #define MAX_CHANNELS 32
+
+static inline int default_audio_channel_position(int channel, int total_channels)
+{
+	int default_position = 0;
+	switch( total_channels ) {
+	case 0: break;
+	case 1: switch( channel ) {
+		case 0: default_position = 90;   break;
+		}
+		break;
+	case 2: switch( channel ) {
+		case 0: default_position = 180;  break;
+		case 1: default_position = 0;    break;
+		}
+		break;
+	case 6: switch( channel ) {
+		case 0: default_position = 150;  break;
+		case 1: default_position = 30;   break;
+		case 2: default_position = 90;   break;
+		case 3: default_position = 270;  break;
+		case 4: default_position = 210;  break;
+		case 5: default_position = 330;  break;
+		}
+		break;
+	default:
+		default_position = 180 - (360 * channel / total_channels);
+		while( default_position < 0 ) default_position += 360;
+		break;
+	}
+	return default_position;
+}
+
 #endif

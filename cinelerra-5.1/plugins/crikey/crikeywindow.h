@@ -227,6 +227,8 @@ public:
 	void start_color_thread();
 	int grab_event(XEvent *event);
 	void done_event(int result);
+	int check_configure_change(int ret);
+	void send_configure_change();
 
 	CriKey *plugin;
 	CriKeyThreshold *threshold;
@@ -243,7 +245,7 @@ public:
 	CriKeyPointUp *point_up;
 	CriKeyPointDn *point_dn;
 	CriKeyCurPoint *cur_point;
-	int dragging;
+	int dragging, pending_config;
 	float last_x, last_y;
 	CriKeyDrag *drag;
 	CriKeyPoints *points;

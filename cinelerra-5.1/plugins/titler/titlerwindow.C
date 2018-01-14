@@ -115,6 +115,7 @@ TitleWindow::TitleWindow(TitleMain *client)
 	background = 0;
 	background_path = 0;
 	loop_playback = 0;
+	pending_config = 0;
 }
 
 void TitleWindow::done_event(int result)
@@ -314,7 +315,7 @@ void TitleWindow::create_objects()
 	x1 += motion_title->get_w()+margin;
 	motion = new TitleMotion(client, this, x1, y);
 	motion->create_objects();
-	add_tool(loop = new TitleLoop(client, x, y1));
+	add_tool(loop = new TitleLoop(client, this, x, y1));
 	x = margin;    y = y1 + loop->get_h()+20;
 
 	add_tool(dropshadow_title = new BC_Title(x, y, _("Drop shadow:")));
@@ -369,9 +370,9 @@ void TitleWindow::create_objects()
 	x += stroker->get_w() + margin;
 #endif
 	y += outline_title->get_h() + margin;
-	add_tool(timecode = new TitleTimecode(client, x1=x, y));
+	add_tool(timecode = new TitleTimecode(client, this, x1=x, y));
 	x += timecode->get_w() + margin;
-	add_tool(timecode_format = new TitleTimecodeFormat(client, x, y,
+	add_tool(timecode_format = new TitleTimecodeFormat(client, this, x, y,
 		Units::print_time_format(client->config.timecode_format, string)));
 	timecode_format->create_objects();
 	y += timecode_format->get_h() + margin;
@@ -385,7 +386,7 @@ void TitleWindow::create_objects()
 		client->server->mwindow->theme, this, background_path,
 		x, y, "", _("background media"), _("Select background media path")));
 	x += background_browse->get_w() + 3*margin;
-	add_tool(loop_playback = new TitleLoopPlayback(client, x, y));
+	add_tool(loop_playback = new TitleLoopPlayback(client, this, x, y));
 	y += loop_playback->get_h() + 10;
 
 	x = 10;
@@ -468,13 +469,26 @@ int TitleWindow::resize_event(int w, int h)
 	return 1;
 }
 
+void TitleWindow::send_configure_change()
+{
+	pending_config = 0;
+	client->send_configure_change();
+}
+int TitleWindow::check_configure_change(int ret)
+{
+	if( pending_config && !grab_event_count() )
+		send_configure_change();
+	return ret;
+}
+
 int TitleWindow::grab_event(XEvent *event)
 {
 	switch( event->type ) {
 	case ButtonPress: break;
 	case ButtonRelease: break;
 	case MotionNotify: break;
-	default: return 0;
+	default:
+		return check_configure_change(0);
 	}
 
 	MWindow *mwindow = client->server->mwindow;
@@ -485,8 +499,9 @@ int TitleWindow::grab_event(XEvent *event)
 	cy -= mwindow->theme->ccanvas_y;
 
 	if( !dragging ) {
-		if( cx < 0 || cx >= mwindow->theme->ccanvas_w ) return 0;
-		if( cy < 0 || cy >= mwindow->theme->ccanvas_h ) return 0;
+		if( cx < 0 || cx >= mwindow->theme->ccanvas_w ||
+		    cy < 0 || cy >= mwindow->theme->ccanvas_h )
+			return check_configure_change(0);
 	}
 
 	switch( event->type ) {
@@ -494,14 +509,14 @@ int TitleWindow::grab_event(XEvent *event)
 		if( !dragging ) break;
 		return 1;
 	case ButtonRelease:
-		if( !dragging ) return 0;
+		if( !dragging ) return check_configure_change(0);
 		dragging = 0;
 		return 1;
 	case MotionNotify:
-		if( !dragging ) return 0;
+		if( !dragging ) return check_configure_change(0);
 		break;
 	default:
-		return 0;
+		return check_configure_change(0);
 	}
 
 	float cursor_x = cx, cursor_y = cy;
@@ -618,7 +633,10 @@ int TitleWindow::grab_event(XEvent *event)
 		this->title_y->update((int64_t)(client->config.title_y += dy));
 		}
 	}
-	client->send_configure_change();
+	if( !grab_event_count() )
+		send_configure_change();
+	else
+		pending_config = 1;
 	return 1;
 }
 
@@ -637,7 +655,7 @@ void TitleWindow::previous_font()
 	font->update(fonts.values[current_font]->get_text());
 	strcpy(client->config.font, fonts.values[current_font]->get_text());
 	check_style(client->config.font,1);
-	client->send_configure_change();
+	send_configure_change();
 }
 
 void  TitleWindow::next_font()
@@ -655,7 +673,7 @@ void  TitleWindow::next_font()
 	font->update(fonts.values[current_font]->get_text());
 	strcpy(client->config.font, fonts.values[current_font]->get_text());
 	check_style(client->config.font,1);
-	client->send_configure_change();
+	send_configure_change();
 }
 
 int TitleWindow::insert_ibeam(const char *txt, int ofs)
@@ -672,7 +690,7 @@ int TitleWindow::insert_ibeam(const char *txt, int ofs)
 		ibeam = client->config.wlen;
 	text->wset_selection(-1, -1, ibeam);
 	text->update(client->config.wtext);
-	client->send_configure_change();
+	send_configure_change();
 	return 1;
 }
 
@@ -796,7 +814,7 @@ int TitleSizeTumble::handle_up_event()
 
 	client->config.size = atoi(window->sizes.get(current_index)->get_text());
 	window->size->update(client->config.size);
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -819,7 +837,7 @@ int TitleSizeTumble::handle_down_event()
 
 	client->config.size = atoi(window->sizes.get(current_index)->get_text());
 	window->size->update(client->config.size);
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -835,7 +853,7 @@ int TitleBold::handle_event()
 	client->config.style =
 		(client->config.style & ~BC_FONT_BOLD) |
 			(get_value() ? BC_FONT_BOLD : 0);
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -850,7 +868,7 @@ int TitleItalic::handle_event()
 	client->config.style =
 		(client->config.style & ~BC_FONT_ITALIC) |
 			(get_value() ? BC_FONT_ITALIC : 0);
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -869,7 +887,7 @@ int TitleSize::handle_event()
 {
 	client->config.size = atol(get_text());
 //printf("TitleSize::handle_event 1 %s\n", get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 void TitleSize::update(int size)
@@ -896,7 +914,7 @@ TitlePitch::
 int TitlePitch::handle_event()
 {
 	*value = atol(get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -937,25 +955,27 @@ TitleMotion::TitleMotion(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleMotion::handle_event()
 {
 	client->config.motion_strategy = client->text_to_motion(get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
-TitleLoop::TitleLoop(TitleMain *client, int x, int y)
+TitleLoop::TitleLoop(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_CheckBox(x, y, client->config.loop, _("Loop"))
 {
 	this->client = client;
+	this->window = window;
 }
 int TitleLoop::handle_event()
 {
 	client->config.loop = get_value();
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
-TitleTimecode::TitleTimecode(TitleMain *client, int x, int y)
+TitleTimecode::TitleTimecode(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_CheckBox(x, y, client->config.timecode, _("Stamp timecode"))
 {
 	this->client = client;
+	this->window = window;
 }
 int TitleTimecode::handle_event()
 {
@@ -964,16 +984,18 @@ int TitleTimecode::handle_event()
 	return 1;
 }
 
-TitleTimecodeFormat::TitleTimecodeFormat(TitleMain *client, int x, int y, const char *text)
+TitleTimecodeFormat::TitleTimecodeFormat(TitleMain *client, TitleWindow *window,
+		int x, int y, const char *text)
  : BC_PopupMenu(x, y, 100, text, 1)
 {
 	this->client = client;
+	this->window = window;
 }
 
 int TitleTimecodeFormat::handle_event()
 {
 	client->config.timecode_format = Units::text_to_format(get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1012,7 +1034,7 @@ TitleFade::TitleFade(TitleMain *client, TitleWindow *window,
 int TitleFade::handle_event()
 {
 	*value = atof(get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1058,7 +1080,7 @@ int TitleFont::handle_event()
 {
 	strcpy(client->config.font, get_text());
 	window->check_style(client->config.font, 1);
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1103,7 +1125,7 @@ int TitleText::handle_event()
 	client->config.wtext[len-1] = 0;
 	client->config.wlen = wcslen(client->config.wtext);
 	window->update_stats();
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 TitleTextChars::TitleTextChars(int x, int y, int w)
@@ -1145,7 +1167,7 @@ TitleDropShadow::TitleDropShadow(TitleMain *client, TitleWindow *window, int x, 
 int TitleDropShadow::handle_event()
 {
 	client->config.dropshadow = atol(get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1160,7 +1182,7 @@ TitleOutline::TitleOutline(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleOutline::handle_event()
 {
 	client->config.outline_size = atol(get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1179,7 +1201,7 @@ int TitleStroker::handle_event()
 		client->config.style |= BC_FONT_OUTLINE;
 	else
 		client->config.style &= ~BC_FONT_OUTLINE;
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1194,7 +1216,7 @@ TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleX::handle_event()
 {
 	client->config.title_x = atol(get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1208,7 +1230,7 @@ TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleY::handle_event()
 {
 	client->config.title_y = atol(get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1222,7 +1244,7 @@ TitleW::TitleW(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleW::handle_event()
 {
 	client->config.title_w = atol(get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1236,7 +1258,7 @@ TitleH::TitleH(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleH::handle_event()
 {
 	client->config.title_h = atol(get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1245,6 +1267,7 @@ TitleSpeed::TitleSpeed(TitleMain *client, TitleWindow *window, int x, int y)
 	(float)0, (float)1000, x, y, 100)
 {
 	this->client = client;
+	this->window = window;
 	set_precision(2);
 	set_increment(10);
 }
@@ -1253,7 +1276,7 @@ TitleSpeed::TitleSpeed(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleSpeed::handle_event()
 {
 	client->config.pixels_per_second = atof(get_text());
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1268,7 +1291,7 @@ int TitleLeft::handle_event()
 {
 	client->config.hjustification = JUSTIFY_LEFT;
 	window->update_justification();
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1282,7 +1305,7 @@ int TitleCenter::handle_event()
 {
 	client->config.hjustification = JUSTIFY_CENTER;
 	window->update_justification();
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1296,7 +1319,7 @@ int TitleRight::handle_event()
 {
 	client->config.hjustification = JUSTIFY_RIGHT;
 	window->update_justification();
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1312,7 +1335,7 @@ int TitleTop::handle_event()
 {
 	client->config.vjustification = JUSTIFY_TOP;
 	window->update_justification();
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1326,7 +1349,7 @@ int TitleMid::handle_event()
 {
 	client->config.vjustification = JUSTIFY_MID;
 	window->update_justification();
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1340,7 +1363,7 @@ int TitleBottom::handle_event()
 {
 	client->config.vjustification = JUSTIFY_BOTTOM;
 	window->update_justification();
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1370,7 +1393,7 @@ int TitleColorThread::handle_new_color(int output, int alpha)
 	window->flush();
 	window->unlock_window();
 
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1394,7 +1417,7 @@ int TitleDrag::handle_event()
 	else
 		window->ungrab(cwindow_gui);
 	client->config.drag = value;
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1408,7 +1431,7 @@ TitleBackground::TitleBackground(TitleMain *client, TitleWindow *window, int x, 
 int TitleBackground::handle_event()
 {
 	client->config.background = get_value();
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
@@ -1422,19 +1445,20 @@ TitleBackgroundPath::TitleBackgroundPath(TitleMain *client, TitleWindow *window,
 int TitleBackgroundPath::handle_event()
 {
 	strncpy(client->config.background_path, get_text(), sizeof(client->config.background_path));
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 
-TitleLoopPlayback::TitleLoopPlayback(TitleMain *client, int x, int y)
+TitleLoopPlayback::TitleLoopPlayback(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_CheckBox(x, y, client->config.loop_playback, _("Loop playback"))
 {
 	this->client = client;
+	this->window = window;
 }
 int TitleLoopPlayback::handle_event()
 {
 	client->config.loop_playback = get_value();
-	client->send_configure_change();
+	window->send_configure_change();
 	return 1;
 }
 

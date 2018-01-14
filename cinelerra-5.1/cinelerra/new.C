@@ -99,9 +99,8 @@ int New::create_new_project()
 	mwindow->reset_caches();
 
 	memcpy(new_edl->session->achannel_positions,
-		&mwindow->preferences->channel_positions[
-			MAXCHANNELS * (new_edl->session->audio_channels - 1)],
-		sizeof(int) * MAXCHANNELS);
+		&mwindow->preferences->channel_positions[new_edl->session->audio_channels - 1],
+		sizeof(new_edl->session->achannel_positions));
 	new_edl->session->boundaries();
 	new_edl->create_default_tracks();
 

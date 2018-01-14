@@ -98,6 +98,8 @@ public:
 	void check_style(const char *font_name, int update);
 	int insert_ibeam(const char *txt, int ofs=0);
 	void done_event(int result);
+	void send_configure_change();
+	int check_configure_change(int ret);
 
 	TitleMain *client;
 
@@ -130,7 +132,7 @@ public:
 	int color_x, color_y;
 	int outline_color_x, outline_color_y;
 	int drag_dx, drag_dy, dragging;
-	int cur_ibeam;
+	int cur_ibeam, pending_config;
 
 	BC_Title *size_title;
 	TitleSize *size;
@@ -293,7 +295,7 @@ public:
 class TitleLoop : public BC_CheckBox
 {
 public:
-	TitleLoop(TitleMain *client, int x, int y);
+	TitleLoop(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;
@@ -301,7 +303,7 @@ public:
 class TitleLinePitch : public BC_CheckBox
 {
 public:
-	TitleLinePitch(TitleMain *client, int x, int y);
+	TitleLinePitch(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;
@@ -310,19 +312,21 @@ public:
 class TitleTimecode : public BC_CheckBox
 {
 public:
-	TitleTimecode(TitleMain *client, int x, int y);
+	TitleTimecode(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
 	TitleMain *client;
+	TitleWindow *window;
 };
 
 class TitleTimecodeFormat : public BC_PopupMenu
 {
 public:
-	TitleTimecodeFormat(TitleMain *client, int x, int y, const char *text);
+	TitleTimecodeFormat(TitleMain *client, TitleWindow *window, int x, int y, const char *text);
 	void create_objects();
 	int update(int timecode_format);
 	int handle_event();
 	TitleMain *client;
+	TitleWindow *window;
 };
 
 class TitleFade : public BC_TextBox
@@ -437,6 +441,7 @@ public:
 	TitleSpeed(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
 	TitleMain *client;
+	TitleWindow *window;
 };
 
 class TitleLeft : public BC_Radial
@@ -516,7 +521,7 @@ public:
 class TitleLoopPlayback : public BC_CheckBox
 {
 public:
-	TitleLoopPlayback(TitleMain *client, int x, int y);
+	TitleLoopPlayback(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;

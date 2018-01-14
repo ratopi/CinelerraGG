@@ -154,10 +154,10 @@ int AudioDevice::arm_buffer(int buffer_num, double **data, int channels,
 		int k = och * bits / 8;
 
 		if( map51_2 ) {
-			double *center = data[0];
-			double *front = data[och+1];
-			double *back = data[och+3];
-			double *subwoof = data[5];
+			double *front = data[och];
+			double *center = data[2];
+			double *subwoof = data[3];
+			double *back = data[och+4];
 			if( play_dither ) {
 				switch( bits ) {
 				case 8: for( int j=0; j<samples; ++j,k+=frame )

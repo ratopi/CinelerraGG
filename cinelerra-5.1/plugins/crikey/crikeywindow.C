@@ -62,7 +62,7 @@ int CriKeyPointX::handle_event()
 		points->set_point(hot_point, PT_X, v);
 	}
 	points->update_list();
-	gui->plugin->send_configure_change();
+	gui->send_configure_change();
 	return 1;
 }
 int CriKeyPointY::handle_event()
@@ -76,7 +76,7 @@ int CriKeyPointY::handle_event()
 		points->set_point(hot_point, PT_Y, v);
 	}
 	points->update_list();
-	gui->plugin->send_configure_change();
+	gui->send_configure_change();
 	return 1;
 }
 
@@ -106,7 +106,7 @@ void CriKeyDrawMode::update(int mode, int send)
 	this->mode = mode;
 	set_text(draw_modes[mode]);
 	gui->plugin->config.draw_mode = mode;
-	if( send ) gui->plugin->send_configure_change();
+	if( send ) gui->send_configure_change();
 }
 
 CriKeyColorButton::CriKeyColorButton(CriKeyWindow *gui, int x, int y)
@@ -139,7 +139,7 @@ void CriKeyColorPicker::handle_done_event(int result)
 	gui->lock_window("CriKeyColorPicker::handle_done_event");
 	gui->update_color(color);
 	gui->plugin->config.color = color;
-	gui->plugin->send_configure_change();
+	gui->send_configure_change();
 	gui->unlock_window();
 }
 
@@ -150,7 +150,7 @@ int CriKeyColorPicker::handle_new_color(int color, int alpha)
 	gui->update_color(this->color = color);
 	gui->flush();
 	gui->plugin->config.color = color;
-	gui->plugin->send_configure_change();
+	gui->send_configure_change();
 	gui->unlock_window();
 	return 1;
 }
@@ -179,6 +179,7 @@ CriKeyWindow::CriKeyWindow(CriKey *plugin)
 	this->drag = 0;       this->dragging = 0;
 	this->last_x = 0;     this->last_y = 0;
 	this->points = 0;     this->cur_point = 0;
+	this->pending_config = 0;
 }
 
 CriKeyWindow::~CriKeyWindow()
@@ -243,13 +244,26 @@ void CriKeyWindow::create_objects()
 	show_window(1);
 }
 
+void CriKeyWindow::send_configure_change()
+{
+	pending_config = 0;
+	plugin->send_configure_change();
+}
+int CriKeyWindow::check_configure_change(int ret)
+{
+	if( pending_config && !grab_event_count() )
+		send_configure_change();
+	return ret;
+}
+
 int CriKeyWindow::grab_event(XEvent *event)
 {
 	switch( event->type ) {
 	case ButtonPress: break;
 	case ButtonRelease: break;
 	case MotionNotify: break;
-	default: return 0;
+	default:
+		return check_configure_change(0);
 	}
 
 	MWindow *mwindow = plugin->server->mwindow;
@@ -260,24 +274,25 @@ int CriKeyWindow::grab_event(XEvent *event)
 	cy -= mwindow->theme->ccanvas_y;
 
 	if( !dragging ) {
-		if( cx < 0 || cx >= mwindow->theme->ccanvas_w ) return 0;
-		if( cy < 0 || cy >= mwindow->theme->ccanvas_h ) return 0;
+		if( cx < 0 || cx >= mwindow->theme->ccanvas_w ||
+		    cy < 0 || cy >= mwindow->theme->ccanvas_h )
+			return check_configure_change(0);
 	}
 
 	switch( event->type ) {
 	case ButtonPress:
-		if( dragging ) return 0;
+		if( dragging ) return check_configure_change(0);
 		dragging = event->xbutton.state & ShiftMask ? -1 : 1;
 		break;
 	case ButtonRelease:
-		if( !dragging ) return 0;
+		if( !dragging ) return check_configure_change(0);
 		dragging = 0;
 		return 1;
 	case MotionNotify:
-		if( !dragging ) return 0;
+		if( !dragging ) return check_configure_change(0);
 		break;
 	default:
-		return 0;
+		return check_configure_change(0);
 	}
 
 	float cursor_x = cx, cursor_y = cy;
@@ -357,7 +372,10 @@ int CriKeyWindow::grab_event(XEvent *event)
 	}
 
 	last_x = output_x;  last_y = output_y;
-	plugin->send_configure_change();
+	if( !grab_event_count() ) 
+		send_configure_change();
+	else
+		pending_config = 1;
 	return 1;
 }
 
@@ -412,7 +430,7 @@ int CriKeyPoints::handle_event()
 	gui->point_y->update(y_text);
 	plugin->config.selected = hot_point;
 	update(hot_point);
-	gui->plugin->send_configure_change();
+	gui->send_configure_change();
 	return 1;
 }
 
@@ -525,7 +543,7 @@ int CriKeyThreshold::handle_event()
 {
 	float v = get_value();
 	gui->plugin->config.threshold = v;
-	gui->plugin->send_configure_change();
+	gui->send_configure_change();
 	return 1;
 }
 
@@ -551,7 +569,7 @@ int CriKeyPointUp::handle_event()
 		gui->plugin->config.selected = hot_point;
 		gui->points->update(hot_point);
 	}
-	gui->plugin->send_configure_change();
+	gui->send_configure_change();
 	return 1;
 }
 
@@ -575,7 +593,7 @@ int CriKeyPointDn::handle_event()
 		gui->plugin->config.selected = hot_point;
 		gui->points->update(hot_point);
 	}
-	gui->plugin->send_configure_change();
+	gui->send_configure_change();
 	return 1;
 }
 
@@ -597,7 +615,7 @@ int CriKeyDrag::handle_event()
 	else
 		gui->ungrab(cwindow_gui);
 	gui->plugin->config.drag = value;
-	gui->plugin->send_configure_change();
+	gui->send_configure_change();
 	return 1;
 }
 
@@ -614,7 +632,7 @@ int CriKeyNewPoint::handle_event()
 {
 	int k = plugin->new_point();
 	gui->points->update(k);
-	gui->plugin->send_configure_change();
+	gui->send_configure_change();
 	return 1;
 }
 
@@ -637,7 +655,7 @@ int CriKeyDelPoint::handle_event()
 		if( hot_point >= n && hot_point > 0 ) --hot_point;
 		gui->plugin->config.selected = hot_point;
 		gui->points->update(hot_point);
-		gui->plugin->send_configure_change();
+		gui->send_configure_change();
 	}
 	return 1;
 }

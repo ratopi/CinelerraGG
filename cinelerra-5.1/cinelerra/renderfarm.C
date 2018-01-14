@@ -115,6 +115,13 @@ int RenderFarmServer::wait_clients()
 	return 0;
 }
 
+int RenderFarmServer::active_clients()
+{
+	int n = 0;
+	for( int i=0; i<clients.size(); ++i )
+		if( clients[i]->running() ) ++n;
+	return n;
+}
 
 // Waits for requests from every client.
 // Joins when the client is finished.

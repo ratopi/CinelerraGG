@@ -482,7 +482,7 @@ int main(int ac, char **av)
 //  if( a.ctx->codec_id != b.ctx->codec_id ) { printf("codec mismatch\n"); return 1;}
   if( a.width != b.width ) { printf("width mismatch\n"); return 1;}
   if( a.height != b.height ) { printf("height mismatch\n"); return 1;}
-  if( a.frame_rate != b.frame_rate ) { printf("framerate mismatch\n"); return 1;}
+//  if( a.frame_rate != b.frame_rate ) { printf("framerate mismatch\n"); return 1;}
 //  if( a.pix_fmt != b.pix_fmt ) { printf("format mismatch\n"); return 1;}
 
   signal(SIGINT,sigint);

@@ -31,6 +31,7 @@
 #include "filesystem.h"
 #include "guicast.h"
 #include "indexfile.h"
+#include "maxchannels.h"
 #include "mutex.h"
 #include "preferences.h"
 #include "probeprefs.h"
@@ -112,14 +113,12 @@ Preferences::Preferences()
 	android_port = 23432;
 	strcpy(android_pin, "cinelerra");
 
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
-		for(int j = 0; j < i + 1; j++)
-		{
-			int position = 180 - (360 * j / (i + 1));
-			while(position < 0) position += 360;
-			channel_positions[i * MAXCHANNELS + j] = position;
-		}
+	memset(channel_positions, 0, sizeof(channel_positions));
+	int channels = 0;
+	while( channels < MAXCHANNELS ) {
+		int *positions = channel_positions[channels++];
+		for( int i=0; i<channels; ++i )
+			positions[i] = default_audio_channel_position(i, channels);
 	}
 }
 
@@ -333,30 +332,14 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	strcpy(snapshot_path, "/tmp");
 	defaults->get("SNAPSHOT_PATH", snapshot_path);
 
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
+	for( int i=0; i<MAXCHANNELS; ++i ) {
 		char string2[BCTEXTLEN];
 		sprintf(string, "CHANNEL_POSITIONS%d", i);
-		print_channels(string2,
-			&channel_positions[i * MAXCHANNELS],
-			i + 1);
-
+		print_channels(string2, &channel_positions[i][0], i+1);
 		defaults->get(string, string2);
-
-		scan_channels(string2,
-			&channel_positions[i * MAXCHANNELS],
-			i + 1);
+		scan_channels(string2, &channel_positions[i][0], i+1);
 	}
-
-	brender_asset->load_defaults(defaults,
-		"BRENDER_",
-		1,
-		1,
-		1,
-		0,
-		0);
-
-
+	brender_asset->load_defaults(defaults, "BRENDER_", 1, 1, 1, 0, 0);
 
 	project_smp = defaults->get("PROJECT_SMP", project_smp);
 	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", force_uniprocessor);
@@ -489,7 +472,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	{
 		char string2[BCTEXTLEN];
 		sprintf(string, "CHANNEL_POSITIONS%d", i);
-		print_channels(string2, &channel_positions[i * MAXCHANNELS], i + 1);
+		print_channels(string2, &channel_positions[i][0], i + 1);
 		defaults->update(string, string2);
 	}
 

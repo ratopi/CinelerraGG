@@ -181,6 +181,8 @@ public:
 	int start_clients();
 // The render farm must wait for all the clients to finish.
 	int wait_clients();
+// number of running clients
+	int active_clients();
 
 // Likewise the render farm must check the internal render loop before
 // dispatching the next job and whenever a client queries for errors.

@@ -2286,22 +2286,15 @@ void MWindow::remap_audio(int pattern)
 			if( pattern == MWindow::AUDIO_5_1_TO_2 ) {
 				switch( current_track ) {
 				case 0:
-					pan_auto->values[0] = 0.5;
-					pan_auto->values[1] = 0.5;
+				case 4:
+					pan_auto->values[0] = 1;
 					break;
 				case 1:
-					pan_auto->values[0] = 1;
+				case 5:
+					pan_auto->values[1] = 1;
 					break;
 				case 2:
-					pan_auto->values[1] = 1;
-					break;
 				case 3:
-					pan_auto->values[0] = 1;
-					break;
-				case 4:
-					pan_auto->values[1] = 1;
-					break;
-				case 5:
 					pan_auto->values[0] = 0.5;
 					pan_auto->values[1] = 0.5;
 					break;

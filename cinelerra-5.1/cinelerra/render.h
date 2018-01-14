@@ -152,6 +152,7 @@ public:
 
 	void start_progress();
 	void stop_progress();
+	void show_progress();
 
 // Procedure the run function should use.
 	int mode;

@@ -129,7 +129,7 @@ public:
 	int yuv_color_range;
 
 // Default positions for channels
-	int channel_positions[MAXCHANNELS * MAXCHANNELS];
+	int channel_positions[MAXCHANNELS][MAXCHANNELS];
 
 	Asset *brender_asset;
 	int use_brender;

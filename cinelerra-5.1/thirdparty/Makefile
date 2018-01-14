@@ -105,8 +105,6 @@ esound.cfg_vars+= AUDIOFILE_LIBS="$(call ld_path,audiofile,libaudiofile/.libs)"
 esound.cfg_params= --enable-shared=no --with-pic
 esound.mak_vars+= CFLAGS="" 
 esound.ldflags=" -lm -lstdc++"
-faac.cfg_params= --enable-shared=no --without-mp4v2
-faad2.cfg_params= --enable-shared=no
 #fdk.cfg_vars= ./autogen.sh ; CFLAGS+=" -Wno-narrowing" CXXFLAGS+=" -Wno-narrowing"
 fdk.cfg_params= --enable-shared=no
 fdk.mak_params= ; for f in $(call bld_path,fdk,/lib*/include); do ln -s . $$$$f/fdk-aac; done
@@ -203,7 +201,6 @@ libtheora.cfg_params?= --disable-examples --disable-spec --enable-shared=no
 libuuid.cfg_params?=--enable-shared=no
 libvorbis.cfg_params?= --disable-oggtest --enable-shared=no
 openjpeg.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
-openjpeg.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
 openjpeg.cfg_vars?=$(call cmake_config,.)
 openjpeg.mak_params?= ; cd $(call bld_path,openjpeg,src/lib/openjp2); ln -sf . openjpeg-2.1
 opencv.cfg_vars?=$(call cmake_config,.)
@@ -242,10 +239,8 @@ $(call rules,$(call std-build,djbfft))
 $(call rules,$(call std-build,audiofile))
 $(call rules,$(call std-build,encore))
 $(call rules,$(call std-build,esound,audiofile))
-$(call rules,$(call std-build,faac))
-$(call rules,$(call std-build,faad2))
 $(call rules,$(call std-build,fdk))
-$(call rules,$(call std-build,ffmpeg, faad2 faac fdk twolame lame openjpeg opus libtheora x264 x265 libvpx))
+$(call rules,$(call std-build,ffmpeg, fdk twolame lame openjpeg opus libtheora x264 x265 libvpx))
 $(call rules,$(call std-build,fftw))
 $(call rules,$(call std-build,flac,libogg))
 $(call rules,$(call std-build,giflib))

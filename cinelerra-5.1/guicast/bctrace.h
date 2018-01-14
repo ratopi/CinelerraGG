@@ -220,24 +220,17 @@ public:
 	static void dbg_add(pthread_t tid, pthread_t owner, const char *nm);
 	static void dbg_del(pthread_t tid);
 	static void reset() { the_list.remove_all_objects(); TheLocker::reset(); }
-	 TheList() {}
-	~TheList() { reset(); }
-};
-
-class TheChk {
-public:
-	static TheChk the_chk;
-
-	TheChk() {}
-	~TheChk() {
-		int i = TheList::the_list.size();
+	void check() {
+		int i = the_list.size();
 		if( !i ) return;
 		printf("unjoined tids / owner %d\n", i);
 		while( --i >= 0 ) printf("  %016lx / %016lx %s\n",
-			(unsigned long)TheList::the_list[i]->tid,
-			(unsigned long)TheList::the_list[i]->owner,
-			TheList::the_list[i]->name);
+			(unsigned long)the_list[i]->tid,
+			(unsigned long)the_list[i]->owner,
+			the_list[i]->name);
 	}
+	 TheList() {}
+	~TheList() { check(); reset(); }
 };
 
 #endif

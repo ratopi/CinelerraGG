@@ -345,7 +345,6 @@ void BC_Trace::unset_temp(char *string)
 
 TheLock TheLocker::the_lock;
 TheList TheList::the_list;
-TheChk TheChk::the_chk;
 
 int lock_item::table_id = 0;
 

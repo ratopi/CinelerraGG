@@ -242,24 +242,13 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 	fprintf(fp,"\n");
 	fclose(fp);
 
-	if( use_wide_audio ) {
-		session->audio_channels = session->audio_tracks = BD_WIDE_CHANNELS;
-		session->achannel_positions[0] = 90;
-		session->achannel_positions[1] = 150;
-		session->achannel_positions[2] = 30;
-		session->achannel_positions[3] = 210;
-		session->achannel_positions[4] = 330;
-		session->achannel_positions[5] = 270;
-		if( edl->tracks->recordable_audio_tracks() == BD_WIDE_CHANNELS )
-			mwindow->remap_audio(MWindow::AUDIO_1_TO_1);
-	}
-	else {
-		session->audio_channels = session->audio_tracks = BD_CHANNELS;
-		session->achannel_positions[0] = 180;
-		session->achannel_positions[1] = 0;
-		if( edl->tracks->recordable_audio_tracks() == BD_WIDE_CHANNELS )
-			mwindow->remap_audio(MWindow::AUDIO_5_1_TO_2);
-	}
+	session->audio_channels = session->audio_tracks =
+		!use_wide_audio ? BD_CHANNELS : BD_WIDE_CHANNELS;
+	for( int i=0; i<MAX_CHANNELS; ++i )
+		session->achannel_positions[i] = default_audio_channel_position(i, session->audio_channels);
+	int audio_mapping = edl->tracks->recordable_audio_tracks() == BD_WIDE_CHANNELS &&
+		!use_wide_audio ? MWindow::AUDIO_5_1_TO_2 : MWindow::AUDIO_1_TO_1;
+	mwindow->remap_audio(audio_mapping);
 
 	double new_samplerate = session->sample_rate;
 	double new_framerate = session->frame_rate;

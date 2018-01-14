@@ -461,6 +461,7 @@ public:
 // Reroute toplevel events
 	int grab(BC_WindowBase *window);
 	int ungrab(BC_WindowBase *window);
+	int grab_event_count();
 // Grab button events
 	int grab_buttons();
 	void ungrab_buttons();

@@ -187,35 +187,7 @@ void MainPackageRenderer::set_progress(int64_t value)
 
 // If non interactive, print progress out
 	if(!render->progress)
-	{
-		int64_t current_eta = render->progress_timer->get_scaled_difference(1000);
-		if(current_eta - render->last_eta > 1000)
-		{
-			double eta = 0;
-
-
-			if(render->total_rendered)
-			{
-				eta = current_eta /
-					1000 *
-					render->progress_max /
-					render->total_rendered -
-					current_eta /
-					1000;
-			}
-
-			char string[BCTEXTLEN];
-			Units::totext(string,
-				eta,
-				TIME_HMS2);
-
-			printf("\r%d%% %s: %s      ",
-				(int)(100 * (float)render->total_rendered / render->progress_max),
-				_("ETA"), string);
-			fflush(stdout);
-			render->last_eta = current_eta;
-		}
-	}
+		render->show_progress();
 
 	render->counter_lock->unlock();
 
@@ -431,8 +403,6 @@ void Render::stop_operation()
 	}
 }
 
-
-
 int Render::check_asset(EDL *edl, Asset &asset)
 {
 	if(asset.video_data &&
@@ -526,6 +496,19 @@ void Render::stop_progress()
 		mwindow->gui->unlock_window();
 	}
 	progress = 0;
+}
+
+void Render::show_progress()
+{
+	int64_t current_eta = progress_timer->get_scaled_difference(1000);
+	if (current_eta - last_eta < 1000 ) return;
+	double eta = !total_rendered ? 0 :
+		current_eta / 1000. * (progress_max / (double)total_rendered - 1.);
+	char string[BCTEXTLEN];  Units::totext(string, eta, TIME_HMS2);
+	printf("\r%d%% %s: %s      ",
+		(int)(100 * (float)total_rendered / progress_max), _("ETA"), string);
+	fflush(stdout);
+	last_eta = current_eta;
 }
 
 
@@ -879,8 +862,14 @@ printf("Render::render_single: Session finished.\n");
 
 
 
-		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
-		{
+		if( strategy == SINGLE_PASS_FARM ||
+		    strategy == FILE_PER_LABEL_FARM ) {
+			if( !render->progress ) {
+				while( farm_server->active_clients() > 0 ) {
+					sleep(1);
+					render->show_progress();
+				}
+			}
 			farm_server->wait_clients();
 			render->result |= render->packages->packages_are_done();
 		}
