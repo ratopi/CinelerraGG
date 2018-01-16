@@ -157,4 +157,15 @@ ArrayList<BC_ListBoxItem*>* BC_ListBoxItem::new_sublist(int columns)
 	return sublist;
 }
 
+int BC_ListBoxItem::compare_item_text(const void *a, const void *b)
+{
+	BC_ListBoxItem *ap = *(BC_ListBoxItem**)a, *bp = *(BC_ListBoxItem**)b;
+	return strcmp(ap->text, bp->text);
+}
+
+void BC_ListBoxItem::sort_items(ArrayList<BC_ListBoxItem*> &items)
+{
+	qsort(&items[0], items.size(), sizeof(items[0]), compare_item_text);
+}
+
 

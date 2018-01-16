@@ -42,6 +42,7 @@ class PrefsRenderFarmReplaceNode;
 class PrefsRenderFarmDelNode;
 class PrefsRenderFarmSortNodes;
 class PrefsRenderFarmReset;
+class PrefsRenderFarmWatchdog;
 class CICacheSize;
 
 #endif

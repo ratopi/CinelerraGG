@@ -156,6 +156,8 @@ public:
 	int renderfarm_job_count;
 // Consolidate output files
 	int renderfarm_consolidate;
+// watchdog timeout, zero disabled
+	int renderfarm_watchdog_timeout;
 
 // Tip of the day
 	int use_tipwindow;

@@ -92,11 +92,9 @@ int RenderFarmServer::start_clients()
 {
 	int result = 0;
 
-	for(int i = 0; i < preferences->get_enabled_nodes() && !result; i++)
-	{
+	for( int i=0; i<preferences->get_enabled_nodes() && !result; ++i ) {
 		client_lock->lock("RenderFarmServer::start_clients");
-		RenderFarmServerThread *client = new RenderFarmServerThread(this,
-			i);
+		RenderFarmServerThread *client = new RenderFarmServerThread(this, i);
 		clients.append(client);
 
 		result = client->start_loop();
@@ -143,14 +141,11 @@ RenderFarmServerThread::RenderFarmServerThread(RenderFarmServer *server,
 
 RenderFarmServerThread::~RenderFarmServerThread()
 {
-//printf("RenderFarmServerThread::~RenderFarmServerThread 1 %p\n", this);
 	Thread::join();
-//printf("RenderFarmServerThread::~RenderFarmServerThread 1\n");
-	if(socket_fd >= 0) close(socket_fd);
-	if(watchdog) delete watchdog;
-	if(buffer) delete [] buffer;
-	if(datagram) delete [] datagram;
-//printf("RenderFarmServerThread::~RenderFarmServerThread 2\n");
+	if( socket_fd >= 0 ) close(socket_fd);
+	delete watchdog;
+	delete [] buffer;
+	delete [] datagram;
 }
 
 
@@ -160,15 +155,12 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 	int result = 0;
 
 // Open file for master node
-	if(hostname[0] == '/')
-	{
-		if((socket_fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0)
-		{
-			perror(_("RenderFarmServerThread::start_loop: socket\n"));
+	if( hostname[0] == '/' ) {
+		if( (socket_fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0 ) {
+			perror(_("RenderFarmServerThread::open_client: socket\n"));
 			result = 1;
 		}
-		else
-		{
+		else {
 			struct sockaddr_un addr;
 			addr.sun_family = AF_FILE;
 			strcpy(addr.sun_path, hostname);
@@ -183,11 +175,9 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 
 			do
 			{
-				if(connect(socket_fd, (struct sockaddr*)&addr, size) < 0)
-				{
+				if( connect(socket_fd, (struct sockaddr*)&addr, size) < 0 ) {
 					attempt++;
-					if(attempt > 30000000 / ATTEMPT_DELAY)
-					{
+					if( attempt > 30000000 / ATTEMPT_DELAY ) {
 						fprintf(stderr, _("RenderFarmServerThread::open_client: %s: %s\n"),
 							hostname,
 							strerror(errno));
@@ -204,31 +194,26 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 	else
 // Open socket
 	{
-		if((socket_fd = socket(PF_INET, SOCK_STREAM, 0)) < 0)
-		{
+		if( (socket_fd = socket(PF_INET, SOCK_STREAM, 0)) < 0 ) {
 			perror(_("RenderFarmServerThread::start_loop: socket"));
 			result = 1;
 		}
-		else
-		{
+		else {
 // Open port
 			struct sockaddr_in addr;
 			struct hostent *hostinfo;
    			addr.sin_family = AF_INET;
 			addr.sin_port = htons(port);
 			hostinfo = gethostbyname(hostname);
-			if(hostinfo == NULL)
-    		{
+			if( hostinfo == NULL ) {
     			fprintf(stderr, _("RenderFarmServerThread::open_client: unknown host %s.\n"),
 					hostname);
     			result = 1;
     		}
-			else
-			{
+			else {
 				addr.sin_addr = *(struct in_addr *) hostinfo->h_addr;
 
-				if(connect(socket_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
-				{
+				if( connect(socket_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0 ) {
 					fprintf(stderr, _("RenderFarmServerThread::open_client: %s: %s\n"),
 						hostname,
 						strerror(errno));
@@ -238,7 +223,7 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 		}
 	}
 
-	if(result) socket_fd = -1;
+	if( result ) socket_fd = -1;
 
 	return socket_fd;
 }
@@ -246,19 +231,19 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 int RenderFarmServerThread::start_loop()
 {
 	int result = 0;
-
 	socket_fd = open_client(server->preferences->get_node_hostname(number),
 		server->preferences->get_node_port(number));
+	if( socket_fd < 0 ) result = 1;
 
-	if(socket_fd < 0) result = 1;
-
-	if(!result)
-	{
-		watchdog = new RenderFarmWatchdog(this, 0);
-		watchdog->start();
+	if( !result ) {
+		int watchdog_timeout = server->preferences->renderfarm_watchdog_timeout;
+		if( watchdog_timeout > 0 ) {
+			watchdog = new RenderFarmWatchdog(watchdog_timeout, this, 0);
+			watchdog->start();
+		}
 	}
 
-	if(!result) Thread::start();
+	if( !result ) Thread::start();
 
 	return result;
 }
@@ -276,7 +261,7 @@ int RenderFarmServerThread::start_loop()
 int64_t RenderFarmServerThread::read_int64(int *error)
 {
 	int temp = 0;
-	if(!error) error = &temp;
+	if( !error ) error = &temp;
 
 	unsigned char data[sizeof(int64_t)];
 	*error = (read_socket((char*)data, sizeof(int64_t)) !=
@@ -285,8 +270,7 @@ int64_t RenderFarmServerThread::read_int64(int *error)
 // Make it return 1 if error so it can be used to read a result code from the
 // server.
 	int64_t result = 1;
-	if(!*error)
-	{
+	if( !*error ) {
 		result = (((int64_t)data[0]) << 56) |
 			(((uint64_t)data[1]) << 48) |
 			(((uint64_t)data[2]) << 40) |
@@ -321,22 +305,23 @@ int RenderFarmServerThread::read_socket(char *data, int len)
 	int bytes_read = 0;
 	int offset = 0;
 //printf("RenderFarmServerThread::read_socket 1\n");
-	watchdog->begin_request();
+	if( watchdog )
+		watchdog->begin_request();
 	while(len > 0 && bytes_read >= 0)
 	{
 		enable_cancel();
 		bytes_read = read(socket_fd, data + offset, len);
 		disable_cancel();
-		if(bytes_read > 0)
-		{
+		if( bytes_read > 0 ) {
 			len -= bytes_read;
 			offset += bytes_read;
 		}
 		else
-		if(bytes_read < 0)
+		if( bytes_read < 0 )
 			break;
 	}
-	watchdog->end_request();
+	if( watchdog )
+		watchdog->end_request();
 //printf("RenderFarmServerThread::read_socket 10\n");
 
 	return offset;
@@ -353,14 +338,12 @@ int RenderFarmServerThread::write_socket(char *data, int len)
 
 void RenderFarmServerThread::reallocate_buffer(int size)
 {
-	if(buffer && buffer_allocated < size)
-	{
+	if( buffer && buffer_allocated < size ) {
 		delete [] buffer;
 		buffer = 0;
 	}
 
-	if(!buffer && size)
-	{
+	if( !buffer && size ) {
 		buffer = new unsigned char[size];
 		buffer_allocated = size;
 	}
@@ -385,25 +368,23 @@ void RenderFarmServerThread::run()
 
 
 
-	while(!done)
-	{
+	while(!done) {
 
 // Wait for requests.
 // Requests consist of request ID's and accompanying buffers.
 // Get request ID.
 		bytes_read = read_socket((char*)header, 5);
 //printf("RenderFarmServerThread::run 1\n");
-		if(bytes_read != 5)
-		{
+		if( bytes_read != 5 ) {
 			done = 1;
 			continue;
 		}
 
 		int request_id = header[0];
 		int64_t request_size = (((u_int32_t)header[1]) << 24) |
-							(((u_int32_t)header[2]) << 16) |
-							(((u_int32_t)header[3]) << 8)  |
-							(u_int32_t)header[4];
+					(((u_int32_t)header[2]) << 16) |
+					(((u_int32_t)header[3]) << 8)  |
+					(u_int32_t)header[4];
 
 		reallocate_buffer(request_size);
 
@@ -411,74 +392,64 @@ void RenderFarmServerThread::run()
 		bytes_read = read_socket((char*)buffer, request_size);
 
 //printf("RenderFarmServerThread::run 2 %d %jd %d\n", request_id, request_size, bytes_read);
-		if(bytes_read != request_size)
-		{
+		if( bytes_read != request_size ) {
 			done = 1;
 			continue;
 		}
 //printf("RenderFarmServerThread::run 3\n");
 
-		switch(request_id)
-		{
-			case RENDERFARM_PREFERENCES:
-				send_preferences();
-				break;
+		switch( request_id ) {
+		case RENDERFARM_PREFERENCES:
+			send_preferences();
+			break;
 
-			case RENDERFARM_ASSET:
-				send_asset();
-				break;
+		case RENDERFARM_ASSET:
+			send_asset();
+			break;
 
-			case RENDERFARM_EDL:
-				send_edl();
-				break;
+		case RENDERFARM_EDL:
+			send_edl();
+			break;
 
-			case RENDERFARM_PACKAGE:
-				send_package(buffer);
-				break;
+		case RENDERFARM_PACKAGE:
+			send_package(buffer);
+			break;
 
-			case RENDERFARM_PROGRESS:
-				set_progress(buffer);
-				break;
+		case RENDERFARM_PROGRESS:
+			set_progress(buffer);
+			break;
 
-			case RENDERFARM_SET_RESULT:
-				set_result(buffer);
-				break;
+		case RENDERFARM_SET_RESULT:
+			set_result(buffer);
+			break;
 
-			case RENDERFARM_SET_VMAP:
-				set_video_map(buffer);
-				break;
+		case RENDERFARM_SET_VMAP:
+			set_video_map(buffer);
+			break;
 
-			case RENDERFARM_GET_RESULT:
-				get_result();
-				break;
+		case RENDERFARM_GET_RESULT:
+			get_result();
+			break;
 
-			case RENDERFARM_DONE:
+		case RENDERFARM_DONE:
 //printf("RenderFarmServerThread::run 10\n");
-				done = 1;
-				break;
+			done = 1;
+			break;
 
-			case RENDERFARM_KEEPALIVE:
-				break;
+		case RENDERFARM_KEEPALIVE:
+			break;
 
-			default:
-//				if(!fs_server->handle_request(request_id, request_size, (unsigned char*)buffer))
-				{
-					printf(_("RenderFarmServerThread::run: unknown request %02x\n"), request_id);
-				}
-				break;
+		default:
+//			if( fs_server->handle_request(request_id, request_size, (unsigned char*)buffer) ) break;
+			printf(_("RenderFarmServerThread::run: unknown request %02x\n"), request_id);
+			break;
 		}
 //printf("RenderFarmServerThread::run 10 %d %jd\n", request_id, request_size);
 	}
-
-// Don't let watchdog kill the entire renderfarm when a client finishes
-// normally.
-	if(watchdog)
-	{
 //printf("RenderFarmServerThread::run 20\n");
-		delete watchdog;
-		watchdog = 0;
-	}
 
+// Don't let watchdog kill the entire renderfarm when a client finishes normally.
+	delete watchdog;  watchdog = 0;
 //	delete fs_server;
 }
 
@@ -571,8 +542,7 @@ void RenderFarmServerThread::send_package(unsigned char *buffer)
 	datagram = new char[BCTEXTLEN];
 
 // No more packages
-	if(!package)
-	{
+	if( !package ) {
 //printf("RenderFarmServerThread::send_package 1\n");
 		datagram[0] = datagram[1] = datagram[2] = datagram[3] = 0;
 		write_socket(datagram, 4);
@@ -623,14 +593,13 @@ void RenderFarmServerThread::set_progress(unsigned char *buffer)
 	server->preferences->set_rate(frames_per_second, number);
 
 // This locks the preferences
-	if(server->mwindow) server->mwindow->preferences->copy_rates_from(
+	if( server->mwindow ) server->mwindow->preferences->copy_rates_from(
 		server->preferences);
 }
 
 int RenderFarmServerThread::set_video_map(unsigned char *buffer)
 {
-	if(server->brender)
-	{
+	if( server->brender ) {
 		server->brender->set_video_map((int64_t)(((u_int32_t)buffer[0]) << 24) |
 							(((u_int32_t)buffer[1]) << 16) |
 							(((u_int32_t)buffer[2]) << 8)  |
@@ -651,7 +620,7 @@ int RenderFarmServerThread::set_video_map(unsigned char *buffer)
 void RenderFarmServerThread::set_result(unsigned char *buffer)
 {
 //printf("RenderFarmServerThread::set_result %p\n", buffer);
-	if(!*server->result_return)
+	if( !*server->result_return )
 		*server->result_return = buffer[0];
 }
 
@@ -676,11 +645,12 @@ void RenderFarmServerThread::get_result()
 
 
 
-RenderFarmWatchdog::RenderFarmWatchdog(
+RenderFarmWatchdog::RenderFarmWatchdog(int timeout_secs,
 	RenderFarmServerThread *server,
 	RenderFarmClientThread *client)
  : Thread(1, 0, 0)
 {
+	this->timeout_usecs = timeout_secs * 1000000;
 	this->server = server;
 	this->client = client;
 	next_request = new Condition(0, "RenderFarmWatchdog::next_request", 0);
@@ -710,24 +680,17 @@ void RenderFarmWatchdog::end_request()
 
 void RenderFarmWatchdog::run()
 {
-	while(!done)
-	{
+	while(!done) {
 		next_request->lock("RenderFarmWatchdog::run");
-
-		int result = request_complete->timed_lock(RENDERFARM_TIMEOUT * 1000000,
-			"RenderFarmWatchdog::run");
+		int result = request_complete->timed_lock(timeout_usecs, "RenderFarmWatchdog::run");
 //printf("RenderFarmWatchdog::run 1 %d\n", result);
 
-		if(result)
-		{
-			if(client)
-			{
+		if( result ) {
+			if( client ) {
 				printf("RenderFarmWatchdog::run 1 killing client pid %d\n", client->pid);
 				kill(client->pid, SIGKILL);
 			}
-			else
-			if(server)
-			{
+			else if( server ) {
 				printf("RenderFarmWatchdog::run 1 killing server thread %p\n", server);
 				server->cancel();
 				unsigned char buffer[4];

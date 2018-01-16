@@ -262,10 +262,8 @@ public:
 class RenderFarmWatchdog : public Thread
 {
 public:
-// use_pid - causes it to kill the pid instead of cancel the thread
-// Used for client.
-	RenderFarmWatchdog(RenderFarmServerThread *server,
-		RenderFarmClientThread *client);
+	RenderFarmWatchdog(int timeout_secs,
+		RenderFarmServerThread *server, RenderFarmClientThread *client);
 	~RenderFarmWatchdog();
 
 // Called at the beginning of a socket read
@@ -280,6 +278,7 @@ public:
 	Condition *request_complete;
 	int done;
 	int pid;
+	int timeout_usecs;
 };
 
 

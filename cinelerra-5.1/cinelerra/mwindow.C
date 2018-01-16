@@ -1556,6 +1556,7 @@ void MWindow::restart_brender()
 void MWindow::stop_brender()
 {
 	if( !brender ) return;
+// cannot be holding mwindow->gui display lock
 	brender->stop();
 }
 
@@ -1598,7 +1599,9 @@ void MWindow::set_brender_active(int v, int update)
 	}
 	else {
 		edl->session->brender_start = edl->session->brender_end = 0;
+		gui->unlock_window();
 		stop_brender();
+		gui->lock_window("MWindow::set_brender_active");
 	}
 	if( update ) {
 		gui->update_timebar(0);
@@ -3237,7 +3240,6 @@ void MWindow::update_project(int load_mode)
 	const int debug = 0;
 
 	if(debug) PRINT_TRACE
-	init_brender();
 	edl->tracks->update_y_pixels(theme);
 
 	if(debug) PRINT_TRACE
@@ -3251,6 +3253,7 @@ void MWindow::update_project(int load_mode)
 	gui->update(1, 1, 1, 1, 1, 1, 1);
 	if(debug) PRINT_TRACE
 	gui->unlock_window();
+	init_brender();
 
 	cwindow->gui->lock_window("MWindow::update_project 1");
 	cwindow->update(0, 0, 1, 1, 1);

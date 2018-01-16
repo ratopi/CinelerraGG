@@ -555,8 +555,9 @@ void RenderFarmClientThread::run()
 	TheList::reset();
 
 	int socket_fd = this->socket_fd;
-
-	init_client_keepalive();
+	int watchdog_timeout = client->boot_preferences->renderfarm_watchdog_timeout;
+	if( watchdog_timeout > 0 )
+		init_client_keepalive(watchdog_timeout);
 
 // Get command to run
 	int command;
@@ -580,11 +581,11 @@ void RenderFarmClientThread::run()
 }
 
 
-void RenderFarmClientThread::init_client_keepalive()
+void RenderFarmClientThread::init_client_keepalive(int timeout_secs)
 {
 	keep_alive = new RenderFarmKeepalive(this);
 	keep_alive->start();
-	watchdog = new RenderFarmWatchdog(0, this);
+	watchdog = new RenderFarmWatchdog(timeout_secs, 0, this);
 	watchdog->start();
 }
 
@@ -712,8 +713,7 @@ void RenderFarmKeepalive::run()
 		enable_cancel();
 		sleep(5);
 		disable_cancel();
-		if(!done)
-		{
+		if( !done ) {
 //printf("RenderFarmKeepalive::run 1\n");
 // watchdog thread kills this if it gets stuck
 			client_thread->ping_server();

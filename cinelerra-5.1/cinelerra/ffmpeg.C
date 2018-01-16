@@ -7,6 +7,8 @@
 #include <stdarg.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <ctype.h>
+
 // work arounds (centos)
 #include <lzma.h>
 #ifndef INT64_MAX
@@ -251,6 +253,10 @@ FFStream::FFStream(FFMPEG *ffmpeg, AVStream *st, int fidx)
 	need_packet = 1;
 	frame = fframe = 0;
 	bsfc = 0;
+	stats_fp = 0;
+	stats_filename = 0;
+	stats_in = 0;
+	pass = 0;
 }
 
 FFStream::~FFStream()
@@ -264,6 +270,9 @@ FFStream::~FFStream()
 	if( frame ) av_frame_free(&frame);
 	if( fframe ) av_frame_free(&fframe);
 	delete frm_lock;
+	if( stats_fp ) fclose(stats_fp);
+	if( stats_in ) av_freep(&stats_in);
+	delete [] stats_filename;
 }
 
 void FFStream::ff_lock(const char *cp)
@@ -475,6 +484,10 @@ int FFStream::encode_frame(AVFrame *frame)
 		ret = write_packet(opkt);
 		if( ret < 0 ) break;
 		++pkts;
+		if( stats_fp ) {
+			ret = write_stats_file();
+			if( ret < 0 ) break;
+		}
 	}
 	ff_err(ret, "FFStream::encode_frame: encode failed\n");
 	return -1;
@@ -485,9 +498,73 @@ int FFStream::flush()
 	if( writing < 0 )
 		return -1;
 	int ret = encode_frame(0);
+	if( ret >= 0 && stats_fp ) {
+		ret = write_stats_file();
+		close_stats_file();
+	}
 	if( ret < 0 )
 		ff_err(ret, "FFStream::flush");
 	return ret >= 0 ? 0 : 1;
+}
+
+
+int FFStream::open_stats_file()
+{
+	stats_fp = fopen(stats_filename,"w");
+	return stats_fp ? 0 : AVERROR(errno);
+}
+
+int FFStream::close_stats_file()
+{
+	if( stats_fp ) {
+		fclose(stats_fp);  stats_fp = 0;
+	}
+	return 0;
+}
+
+int FFStream::read_stats_file()
+{
+	int64_t len = 0;  struct stat stats_st;
+	int fd = open(stats_filename, O_RDONLY);
+	int ret = fd >= 0 ? 0: ENOENT;
+	if( !ret && fstat(fd, &stats_st) )
+		ret = EINVAL;
+	if( !ret ) {
+		len = stats_st.st_size;
+		stats_in = (char *)av_malloc(len+1);
+		if( !stats_in )
+			ret = ENOMEM;
+	}
+	if( !ret && read(fd, stats_in, len+1) != len )
+		ret = EIO;
+	if( !ret ) {
+		stats_in[len] = 0;
+		avctx->stats_in = stats_in;
+	}
+	if( fd >= 0 )
+		close(fd);
+	return !ret ? 0 : AVERROR(ret);
+}
+
+int FFStream::write_stats_file()
+{
+	int ret = 0;
+	if( avctx->stats_out && (ret=strlen(avctx->stats_out)) > 0 ) {
+		int len = fwrite(avctx->stats_out, 1, ret, stats_fp);
+		if( ret != len )
+			ff_err(ret = AVERROR(errno), "FFStream::write_stats_file");
+	}
+	return ret;
+}
+
+int FFStream::init_stats_file()
+{
+	int ret = 0;
+	if( (pass & 2) && (ret = read_stats_file()) < 0 )
+		ff_err(ret, "stat file read: %s", stats_filename);
+	if( (pass & 1) && (ret=open_stats_file()) < 0 )
+		ff_err(ret, "stat file open: %s", stats_filename);
+	return ret >= 0 ? 0 : ret;
 }
 
 int FFStream::seek(int64_t no, double rate)
@@ -2001,6 +2078,9 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				ret = 1;
 				break;
 			}
+			av_reduce(&frame_rate.num, &frame_rate.den,
+				frame_rate.num, frame_rate.den, INT_MAX);
+			ctx->framerate = (AVRational) { frame_rate.num, frame_rate.den };
 			ctx->time_base = (AVRational) { frame_rate.den, frame_rate.num };
 			st->avg_frame_rate = frame_rate;
 			st->time_base = ctx->time_base;
@@ -2013,11 +2093,44 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			eprintf(_("not audio/video, %s:%s\n"), codec_name, filename);
 			ret = 1;
 		}
+
+		if( ctx ) {
+			AVDictionaryEntry *tag;
+			if( (tag=av_dict_get(sopts, "cin_stats_filename", NULL, 0)) != 0 ) {
+				char suffix[BCSTRLEN];  sprintf(suffix,"-%d.log",fst->fidx);
+				fst->stats_filename = cstrcat(2, tag->value, suffix);
+			}
+			if( (tag=av_dict_get(sopts, "flags", NULL, 0)) != 0 ) {
+				int pass = fst->pass;
+				char *cp = tag->value;
+				while( *cp ) {
+					int ch = *cp++, pfx = ch=='-' ? -1 : ch=='+' ? 1 : 0;
+					if( !isalnum(!pfx ? ch : (ch=*cp++)) ) continue;
+					char id[BCSTRLEN], *bp = id, *ep = bp+sizeof(id)-1;
+					for( *bp++=ch; isalnum(ch=*cp); ++cp )
+						if( bp < ep ) *bp++ = ch;
+					*bp = 0;
+					if( !strcmp(id, "pass1") ) {
+						pass = pfx<0 ? (pass&~1) : pfx>0 ? (pass|1) : 1;
+					}
+					else if( !strcmp(id, "pass2") ) {
+						pass = pfx<0 ? (pass&~2) : pfx>0 ? (pass|2) : 2;
+					}
+				}
+				if( (fst->pass=pass) ) {
+					if( pass & 1 ) ctx->flags |= AV_CODEC_FLAG_PASS1;
+					if( pass & 2 ) ctx->flags |= AV_CODEC_FLAG_PASS2;
+				}
+			}
+		}
 	}
 	if( !ret ) {
 		if( fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER )
 			ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
-
+		if( fst->stats_filename && (ret=fst->init_stats_file()) )
+			eprintf(_("error: stats file = %s\n"), fst->stats_filename);
+	}
+	if( !ret ) {
 		av_dict_set(&sopts, "cin_bitrate", 0, 0);
 		av_dict_set(&sopts, "cin_quality", 0, 0);
 
@@ -2028,6 +2141,13 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			ret = avcodec_parameters_from_context(st->codecpar, ctx);
 			if( ret < 0 )
 				fprintf(stderr, "Could not copy the stream parameters\n");
+		}
+		if( ret >= 0 ) {
+_Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+			ret = avcodec_copy_context(st->codec, ctx);
+_Pragma("GCC diagnostic warning \"-Wdeprecated-declarations\"")
+			if( ret < 0 )
+				fprintf(stderr, "Could not copy the stream context\n");
 		}
 		if( ret < 0 ) {
 			ff_err(ret,"FFMPEG::open_encoder");

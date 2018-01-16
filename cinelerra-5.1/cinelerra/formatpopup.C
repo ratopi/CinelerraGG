@@ -132,6 +132,7 @@ void FFMPEGPopup::create_objects()
         	}
         }
 
+	BC_ListBoxItem::sort_items(ffmpeg_types);
 	update(&ffmpeg_types, 0, 0, 1);
 }
 

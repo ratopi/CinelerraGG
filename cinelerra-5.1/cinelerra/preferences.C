@@ -40,26 +40,23 @@
 #include "videoconfig.h"
 #include "videodevice.inc"
 
+#include <ctype.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
 
-//#define CLAMP(x, y, z) (x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x)))
-
 Preferences::Preferences()
 {
 // Set defaults
 	FileSystem fs;
-
 	preferences_lock = new Mutex("Preferences::preferences_lock");
-
 
 // initial plugin path from build -DPLUGIN_DIR="..."
 	sprintf(plugin_dir, "%s/", File::get_plugin_path());
 	sprintf(index_directory, "%s/", File::get_config_path());
-	if(strlen(index_directory))
+	if( strlen(index_directory) )
 		fs.complete_path(index_directory);
 	cache_size = 0x10000000;
 	index_size = 0x400000;
@@ -79,6 +76,7 @@ Preferences::Preferences()
 	renderfarm_mountpoint[0] = 0;
 	renderfarm_vfs = 0;
 	renderfarm_job_count = 20;
+	renderfarm_watchdog_timeout = 60;
 	project_smp = processors = calculate_processors(0);
 	real_processors = calculate_processors(1);
 	ffmpeg_marker_indexes = 1;
@@ -91,8 +89,8 @@ Preferences::Preferences()
 	forward_render_displacement = 0;
 	dvd_yuv420p_interlace = 0;
 	highlight_inverse = 0xffffff;
-	yuv_color_space = 0; // bt601
-	yuv_color_range = 0; // jpeg
+	yuv_color_space = BC_COLORS_BT601;
+	yuv_color_range = BC_COLORS_JPEG;
 
 // Default brender asset
 	brender_asset = new Asset;
@@ -138,26 +136,19 @@ void Preferences::copy_rates_from(Preferences *preferences)
 // one of the nodes in the source is the master node.
 	local_rate = preferences->local_rate;
 
-	for(int j = 0;
-		j < preferences->renderfarm_nodes.total;
-		j++)
-	{
+	for( int j=0; j<preferences->renderfarm_nodes.total; ++j ) {
 		double new_rate = preferences->renderfarm_rate.values[j];
 // Put in the master node
-		if(preferences->renderfarm_nodes.values[j][0] == '/')
-		{
-			if(!EQUIV(new_rate, 0.0))
+		if( preferences->renderfarm_nodes.values[j][0] == '/' ) {
+			if( !EQUIV(new_rate, 0.0) )
 				local_rate = new_rate;
 		}
 		else
 // Search for local node and copy it to that node
-		if(!EQUIV(new_rate, 0.0))
-		{
-			for(int i = 0; i < renderfarm_nodes.total; i++)
-			{
-				if(!strcmp(preferences->renderfarm_nodes.values[j], renderfarm_nodes.values[i]) &&
-					preferences->renderfarm_ports.values[j] == renderfarm_ports.values[i])
-				{
+		if( !EQUIV(new_rate, 0.0) ) {
+			for( int i=0; i<renderfarm_nodes.total; ++i ) {
+				if( !strcmp(preferences->renderfarm_nodes.values[j], renderfarm_nodes.values[i]) &&
+					preferences->renderfarm_ports.values[j] == renderfarm_ports.values[i] ) {
 					renderfarm_rate.values[i] = new_rate;
 					break;
 				}
@@ -216,8 +207,7 @@ void Preferences::copy_from(Preferences *that)
 	renderfarm_enabled.remove_all();
 	renderfarm_rate.remove_all();
 	local_rate = that->local_rate;
-	for(int i = 0; i < that->renderfarm_nodes.size(); i++)
-	{
+	for( int i=0; i<that->renderfarm_nodes.size(); ++i ) {
 		add_node(that->renderfarm_nodes.get(i),
 			that->renderfarm_ports.get(i),
 			that->renderfarm_enabled.get(i),
@@ -228,6 +218,7 @@ void Preferences::copy_from(Preferences *that)
 	render_preroll = that->render_preroll;
 	brender_preroll = that->brender_preroll;
 	renderfarm_job_count = that->renderfarm_job_count;
+	renderfarm_watchdog_timeout = that->renderfarm_watchdog_timeout;
 	renderfarm_vfs = that->renderfarm_vfs;
 	strcpy(renderfarm_mountpoint, that->renderfarm_mountpoint);
 	renderfarm_consolidate = that->renderfarm_consolidate;
@@ -238,13 +229,12 @@ void Preferences::copy_from(Preferences *that)
 // Check boundaries
 
 	FileSystem fs;
-	if(strlen(index_directory))
-	{
+	if( strlen(index_directory) ) {
 		fs.complete_path(index_directory);
 		fs.add_end_slash(index_directory);
 	}
 
-// 	if(strlen(global_plugin_dir))
+// 	if( strlen(global_plugin_dir) )
 // 	{
 // 		fs.complete_path(global_plugin_dir);
 // 		fs.add_end_slash(global_plugin_dir);
@@ -269,42 +259,31 @@ printf("Preferences::operator=\n");
 	return *this;
 }
 
-void Preferences::print_channels(char *string,
-	int *channel_positions,
-	int channels)
+void Preferences::print_channels(char *string, int *channel_positions, int channels)
 {
-	char string3[BCTEXTLEN];
-	string[0] = 0;
-	for(int j = 0; j < channels; j++)
-	{
-		sprintf(string3, "%d", channel_positions[j]);
-		strcat(string, string3);
-		if(j < channels - 1)
-			strcat(string, ",");
+	char *cp = string, *ep = cp+BCTEXTLEN-1;
+	for( int i=0; i<channels; ++i ) {
+		if( i ) cp += snprintf(cp, ep-cp, ", ");
+		cp += snprintf(cp, ep-cp, "%d", channel_positions[i]);
 	}
+	*cp = 0;
 }
 
-void Preferences::scan_channels(char *string,
-	int *channel_positions,
-	int channels)
+void Preferences::scan_channels(char *string, int *channel_positions, int channels)
 {
-	char string2[BCTEXTLEN];
-	int len = strlen(string);
+	char *cp = string;
 	int current_channel = 0;
-	for(int i = 0; i < len; i++)
-	{
-		strcpy(string2, &string[i]);
-		for(int j = 0; j < BCTEXTLEN; j++)
-		{
-			if(string2[j] == ',' || string2[j] == 0)
-			{
-				i += j;
-				string2[j] = 0;
-				break;
-			}
-		}
-		channel_positions[current_channel++] = atoi(string2);
-		if(current_channel >= channels) break;
+	for(;;) {
+		while( isspace(*cp) ) ++cp;
+		if( !cp ) break;
+		channel_positions[current_channel++] = strtol(cp, &cp, 0);
+		if( current_channel >= channels ) break;
+		while( isspace(*cp) ) ++cp;
+		if( *cp == ',' ) ++cp;
+	}
+	while( current_channel < channels ) {
+		int pos = default_audio_channel_position(current_channel, channels);
+		channel_positions[current_channel++] = pos;
 	}
 }
 
@@ -364,13 +343,13 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	render_preroll = defaults->get("RENDERFARM_PREROLL", render_preroll);
 	brender_preroll = defaults->get("BRENDER_PREROLL", brender_preroll);
 	renderfarm_job_count = defaults->get("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
+	renderfarm_watchdog_timeout = defaults->get("RENDERFARM_WATCHDOG_TIMEOUT", renderfarm_watchdog_timeout);
 	renderfarm_consolidate = defaults->get("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
 //	renderfarm_vfs = defaults->get("RENDERFARM_VFS", renderfarm_vfs);
 	defaults->get("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	int renderfarm_total = defaults->get("RENDERFARM_TOTAL", 0);
 
-	for(int i = 0; i < renderfarm_total; i++)
-	{
+	for( int i = 0; i < renderfarm_total; i++ ) {
 		sprintf(string, "RENDERFARM_NODE%d", i);
 		char result[BCTEXTLEN];
 		int result_port = 0;
@@ -389,8 +368,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 		sprintf(string, "RENDERFARM_RATE%d", i);
 		result_rate = defaults->get(string, result_rate);
 
-		if(result[0] != 0)
-		{
+		if( result[0] != 0 ) {
 			add_node(result, result_port, result_enabled, result_rate);
 		}
 	}
@@ -468,8 +446,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("PLUGIN_ICONS", plugin_icons);
 	defaults->update("SNAPSHOT_PATH", snapshot_path);
 
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
+	for( int i = 0; i < MAXCHANNELS; i++ ) {
 		char string2[BCTEXTLEN];
 		sprintf(string, "CHANNEL_POSITIONS%d", i);
 		print_channels(string2, &channel_positions[i][0], i + 1);
@@ -501,10 +478,10 @@ int Preferences::save_defaults(BC_Hash *defaults)
 //	defaults->update("RENDERFARM_VFS", renderfarm_vfs);
 	defaults->update("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	defaults->update("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
+	defaults->update("RENDERFARM_WATCHDOG_TIMEOUT", renderfarm_watchdog_timeout);
 	defaults->update("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
 	defaults->update("RENDERFARM_TOTAL", (int64_t)renderfarm_nodes.total);
-	for(int i = 0; i < renderfarm_nodes.total; i++)
-	{
+	for( int i = 0; i < renderfarm_nodes.total; i++ ) {
 		sprintf(string, "RENDERFARM_NODE%d", i);
 		defaults->update(string, renderfarm_nodes.values[i]);
 		sprintf(string, "RENDERFARM_PORT%d", i);
@@ -538,7 +515,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 
 void Preferences::add_node(const char *text, int port, int enabled, float rate)
 {
-	if(text[0] == 0) return;
+	if( text[0] == 0 ) return;
 
 	preferences_lock->lock("Preferences::add_node");
 	char *new_item = new char[strlen(text) + 1];
@@ -554,8 +531,7 @@ void Preferences::add_node(const char *text, int port, int enabled, float rate)
 void Preferences::delete_node(int number)
 {
 	preferences_lock->lock("Preferences::delete_node");
-	if(number < renderfarm_nodes.total && number >= 0)
-	{
+	if( number < renderfarm_nodes.total && number >= 0 ) {
 		delete [] renderfarm_nodes.values[number];
 		renderfarm_nodes.remove_number(number);
 		renderfarm_ports.remove_number(number);
@@ -568,7 +544,7 @@ void Preferences::delete_node(int number)
 void Preferences::delete_nodes()
 {
 	preferences_lock->lock("Preferences::delete_nodes");
-	for(int i = 0; i < renderfarm_nodes.total; i++)
+	for( int i = 0; i < renderfarm_nodes.total; i++ )
 		delete [] renderfarm_nodes.values[i];
 	renderfarm_nodes.remove_all();
 	renderfarm_ports.remove_all();
@@ -579,8 +555,7 @@ void Preferences::delete_nodes()
 
 void Preferences::reset_rates()
 {
-	for(int i = 0; i < renderfarm_nodes.total; i++)
-	{
+	for( int i = 0; i < renderfarm_nodes.total; i++ ) {
 		renderfarm_rate.values[i] = 0.0;
 	}
 	local_rate = 0.0;
@@ -588,18 +563,14 @@ void Preferences::reset_rates()
 
 float Preferences::get_rate(int node)
 {
-	if(node < 0)
-	{
+	if( node < 0 ) {
 		return local_rate;
 	}
-	else
-	{
+	else {
 		int total = 0;
-		for(int i = 0; i < renderfarm_nodes.size(); i++)
-		{
-			if(renderfarm_enabled.get(i)) total++;
-			if(total == node + 1)
-			{
+		for( int i = 0; i < renderfarm_nodes.size(); i++ ) {
+			if( renderfarm_enabled.get(i) ) total++;
+			if( total == node + 1 ) {
 				return renderfarm_rate.get(i);
 			}
 		}
@@ -611,18 +582,14 @@ float Preferences::get_rate(int node)
 void Preferences::set_rate(float rate, int node)
 {
 //printf("Preferences::set_rate %f %d\n", rate, node);
-	if(node < 0)
-	{
+	if( node < 0 ) {
 		local_rate = rate;
 	}
-	else
-	{
+	else {
 		int total = 0;
-		for(int i = 0; i < renderfarm_nodes.size(); i++)
-		{
-			if(renderfarm_enabled.get(i)) total++;
-			if(total == node + 1)
-			{
+		for( int i = 0; i < renderfarm_nodes.size(); i++ ) {
+			if( renderfarm_enabled.get(i) ) total++;
+			if( total == node + 1 ) {
 				renderfarm_rate.set(i, rate);
 				return;
 			}
@@ -634,38 +601,31 @@ float Preferences::get_avg_rate(int use_master_node)
 {
 	preferences_lock->lock("Preferences::get_avg_rate");
 	float total = 0.0;
-	if(renderfarm_rate.total)
-	{
+	if( renderfarm_rate.total ) {
 		int enabled = 0;
-		if(use_master_node)
-		{
-			if(EQUIV(local_rate, 0.0))
-			{
+		if( use_master_node ) {
+			if( EQUIV(local_rate, 0.0) ) {
 				preferences_lock->unlock();
 				return 0.0;
 			}
-			else
-			{
+			else {
 				enabled++;
 				total += local_rate;
 			}
 		}
 
-		for(int i = 0; i < renderfarm_rate.total; i++)
-		{
-			if(renderfarm_enabled.values[i])
-			{
+		for( int i = 0; i < renderfarm_rate.total; i++ ) {
+			if( renderfarm_enabled.values[i] ) {
 				enabled++;
 				total += renderfarm_rate.values[i];
-				if(EQUIV(renderfarm_rate.values[i], 0.0))
-				{
+				if( EQUIV(renderfarm_rate.values[i], 0.0) ) {
 					preferences_lock->unlock();
 					return 0.0;
 				}
 			}
 		}
 
-		if(enabled)
+		if( enabled )
 			total /= enabled;
 		else
 			total = 0.0;
@@ -682,10 +642,8 @@ void Preferences::sort_nodes()
 	while(!done)
 	{
 		done = 1;
-		for(int i = 0; i < renderfarm_nodes.total - 1; i++)
-		{
-			if(strcmp(renderfarm_nodes.values[i], renderfarm_nodes.values[i + 1]) > 0)
-			{
+		for( int i = 0; i < renderfarm_nodes.total - 1; i++ ) {
+			if( strcmp(renderfarm_nodes.values[i], renderfarm_nodes.values[i + 1]) > 0 ) {
 				char *temp = renderfarm_nodes.values[i];
 				int temp_port = renderfarm_ports.values[i];
 
@@ -723,19 +681,17 @@ void Preferences::edit_node(int number,
 int Preferences::get_enabled_nodes()
 {
 	int result = 0;
-	for(int i = 0; i < renderfarm_enabled.total; i++)
-		if(renderfarm_enabled.values[i]) result++;
+	for( int i = 0; i < renderfarm_enabled.total; i++ )
+		if( renderfarm_enabled.values[i] ) result++;
 	return result;
 }
 
 const char* Preferences::get_node_hostname(int number)
 {
 	int total = 0;
-	for(int i = 0; i < renderfarm_nodes.total; i++)
-	{
-		if(renderfarm_enabled.values[i])
-		{
-			if(total == number)
+	for( int i = 0; i < renderfarm_nodes.total; i++ ) {
+		if( renderfarm_enabled.values[i] ) {
+			if( total == number )
 				return renderfarm_nodes.values[i];
 			else
 				total++;
@@ -747,11 +703,9 @@ const char* Preferences::get_node_hostname(int number)
 int Preferences::get_node_port(int number)
 {
 	int total = 0;
-	for(int i = 0; i < renderfarm_ports.total; i++)
-	{
-		if(renderfarm_enabled.values[i])
-		{
-			if(total == number)
+	for( int i = 0; i < renderfarm_ports.total; i++ ) {
+		if( renderfarm_enabled.values[i] ) {
+			if( total == number )
 				return renderfarm_ports.values[i];
 			else
 				total++;
@@ -780,7 +734,7 @@ int Preferences::get_asset_file_path(Asset *asset, char *path)
 
 int Preferences::calculate_processors(int interactive)
 {
-	if(force_uniprocessor && !interactive) return 1;
+	if( force_uniprocessor && !interactive ) return 1;
 	return BC_WindowBase::get_resources()->machine_cpus;
 }
 

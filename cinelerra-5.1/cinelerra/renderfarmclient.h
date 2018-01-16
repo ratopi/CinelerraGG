@@ -93,7 +93,7 @@ public:
 	int read_package(int socket_fd, RenderPackage *package);
 	int send_completion(int socket_fd);
 	void ping_server();
-	void init_client_keepalive();
+	void init_client_keepalive(int timeout_secs);
 
 	void main_loop(int socket_fd);
 	void run();

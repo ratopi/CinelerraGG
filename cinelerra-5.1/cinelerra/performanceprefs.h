@@ -60,18 +60,17 @@ public:
 	PrefsRenderFarmEditNode *edit_node;
 	PrefsRenderFarmPort *edit_port;
 	PrefsRenderFarmNodes *node_list;
+	PrefsRenderFarmWatchdog *renderfarm_watchdog;
 	FormatTools *brender_tools;
 	BC_Title *master_rate;
 };
-
 
 
 class PrefsUseBRender : public BC_CheckBox
 {
 public:
 	PrefsUseBRender(PreferencesWindow *pwindow,
-		int x,
-		int y);
+		int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
@@ -81,13 +80,10 @@ class PrefsBRenderFragment : public BC_TumbleTextBox
 public:
 	PrefsBRenderFragment(PreferencesWindow *pwindow,
 		PerformancePrefs *subwindow,
-		int x,
-		int y);
+		int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
-
-
 
 class PrefsRenderPreroll : public BC_TumbleTextBox
 {
@@ -135,9 +131,6 @@ public:
 	PerformancePrefs *perf_prefs;
 };
 
-
-
-
 class PrefsRenderFarm : public BC_CheckBox
 {
 public:
@@ -145,7 +138,6 @@ public:
 	~PrefsRenderFarm();
 
 	int handle_event();
-
 
 	PreferencesWindow *pwindow;
 };
@@ -158,7 +150,6 @@ public:
 
 	int handle_event();
 
-
 	PreferencesWindow *pwindow;
 };
 
@@ -168,8 +159,7 @@ class PrefsRenderFarmPort : public BC_TumbleTextBox
 public:
 	PrefsRenderFarmPort(PreferencesWindow *pwindow,
 		PerformancePrefs *subwindow,
-		int x,
-		int y);
+		int x, int y);
 	~PrefsRenderFarmPort();
 
 	int handle_event();
@@ -193,8 +183,7 @@ class PrefsRenderFarmJobs : public BC_TumbleTextBox
 public:
 	PrefsRenderFarmJobs(PreferencesWindow *pwindow,
 		PerformancePrefs *subwindow,
-		int x,
-		int y);
+		int x, int y);
 	~PrefsRenderFarmJobs();
 
 	int handle_event();
@@ -207,8 +196,7 @@ class PrefsRenderFarmMountpoint : public BC_TextBox
 public:
 	PrefsRenderFarmMountpoint(PreferencesWindow *pwindow,
 		PerformancePrefs *subwindow,
-		int x,
-		int y);
+		int x, int y);
 	~PrefsRenderFarmMountpoint();
 
 	int handle_event();
@@ -297,7 +285,6 @@ public:
 	int handle_event();
 
 	PerformancePrefs *subwindow;
-
 	PreferencesWindow *pwindow;
 };
 
@@ -313,13 +300,23 @@ public:
 	PreferencesWindow *pwindow;
 };
 
-
 class PrefsRenderFarmReset : public BC_GenericButton
 {
 public:
 	PrefsRenderFarmReset(PreferencesWindow *pwindow,
-		PerformancePrefs *subwindow,
-		int x, int y);
+		PerformancePrefs *subwindow, int x, int y);
+
+	int handle_event();
+
+	PerformancePrefs *subwindow;
+	PreferencesWindow *pwindow;
+};
+
+class PrefsRenderFarmWatchdog : public BC_TumbleTextBox
+{
+public:
+	PrefsRenderFarmWatchdog(PreferencesWindow *pwindow,
+		PerformancePrefs *subwindow, int x, int y);
 
 	int handle_event();
 
@@ -331,11 +328,12 @@ public:
 class CICacheSize : public BC_TumbleTextBox
 {
 public:
-	CICacheSize(int x,
-		int y,
+	CICacheSize(int x, int y,
 		PreferencesWindow *pwindow,
 		PerformancePrefs *subwindow);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
 

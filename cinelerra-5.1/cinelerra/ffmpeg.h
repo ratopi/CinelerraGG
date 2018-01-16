@@ -99,6 +99,11 @@ public:
 	int load_filter(AVFrame *frame);
 	int read_filter(AVFrame *frame);
 	int read_frame(AVFrame *frame);
+	int open_stats_file();
+	int close_stats_file();
+	int read_stats_file();
+	int write_stats_file();
+	int init_stats_file();
 
 	FFMPEG *ffmpeg;
 	AVStream *st;
@@ -123,6 +128,11 @@ public:
 	int fidx;
 	int reading, writing;
 	int seeked, eof;
+
+	FILE *stats_fp;
+	char *stats_filename;
+	char *stats_in;
+	int pass;
 
 	int st_eof() { return eof; }
 	void st_eof(int v) { eof = v; }

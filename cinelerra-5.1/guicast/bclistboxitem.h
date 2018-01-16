@@ -99,10 +99,13 @@ public:
 // Return if it's expanded
 	int get_expand() { return expand; }
 	void set_expand(int value) { expand = value; }
+// alpha sort on text
+	static void sort_items(ArrayList<BC_ListBoxItem*> &items);
 
 private:
 	int initialize();
 	void set_in_view(int v) { in_view = v; }
+	static int compare_item_text(const void *a, const void *b);
 
 	BC_Pixmap *icon;
 	VFrame *icon_vframe;
