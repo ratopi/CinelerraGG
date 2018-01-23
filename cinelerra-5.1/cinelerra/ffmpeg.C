@@ -2085,9 +2085,9 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			ctx->pix_fmt = pix_fmt;
 			const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
 			int mask_w = (1<<desc->log2_chroma_w)-1;
-			if( mask_w > 0 ) ctx->width = (vid->width+mask_w) & ~mask_w;
+			ctx->width = (vid->width+mask_w) & ~mask_w;
 			int mask_h = (1<<desc->log2_chroma_h)-1;
-			if( mask_h > 0 ) ctx->height = (vid->height+mask_h) & ~mask_h;
+			ctx->height = (vid->height+mask_h) & ~mask_h;
 			ctx->sample_aspect_ratio = to_sample_aspect_ratio(asset);
 			AVRational frame_rate = check_frame_rate(codec, vid->frame_rate);
 			if( !frame_rate.num || !frame_rate.den ) {
