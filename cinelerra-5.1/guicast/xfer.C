@@ -45,6 +45,9 @@ void BC_Xfer::init(
 	this->out_h = out_h;
 	this->in_colormodel = in_colormodel;
 	switch( in_colormodel ) {
+	case BC_GBRP:
+		in_rowspan = in_w * sizeof(uint8_t);
+		break;
 	case BC_RGB_FLOATP:
 	case BC_RGBA_FLOATP:
 		if( !BC_CModels::has_alpha(out_colormodel) )
@@ -55,6 +58,9 @@ void BC_Xfer::init(
 	this->total_in_w = in_rowspan;
 	this->out_colormodel = out_colormodel;
 	switch( out_colormodel ) {
+	case BC_GBRP:
+		out_rowspan = out_w * sizeof(uint8_t);
+		break;
 	case BC_RGB_FLOATP:
 	case BC_RGBA_FLOATP:
 		out_rowspan = out_w * sizeof(float);

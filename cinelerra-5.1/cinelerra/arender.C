@@ -48,27 +48,20 @@ ARender::ARender(RenderEngine *renderengine)
  : CommonRender(renderengine)
 {
 // Clear output buffers
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
+	for( int i=0; i<MAXCHANNELS; ++i ) {
 		buffer[i] = 0;
 		audio_out[i] = 0;
 		buffer_allocated[i] = 0;
-		level_history[i] = 0;
 	}
-	level_samples = 0;
 	total_peaks = 0;
-
+	meter_history = new MeterHistory();
 	data_type = TRACK_AUDIO;
 }
 
 ARender::~ARender()
 {
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
-		if(buffer[i]) delete buffer[i];
-		if(level_history[i]) delete [] level_history[i];
-	}
-	if(level_samples) delete [] level_samples;
+	for( int i=0; i<MAXCHANNELS; ++i ) delete buffer[i];
+	delete meter_history;
 }
 
 void ARender::arm_command()
@@ -93,67 +86,40 @@ Module* ARender::new_module(Track *track)
 
 int ARender::calculate_history_size()
 {
-	if(total_peaks > 0)
-		return total_peaks;
-	else
-	{
+	if( !total_peaks ) {
 		meter_render_fragment = renderengine->fragment_len;
+		int tracking_fragment = renderengine->get_edl()->session->sample_rate / TRACKING_RATE;
 // This number and the timer in tracking.C determine the rate
-		while(meter_render_fragment >
-			renderengine->get_edl()->session->sample_rate / TRACKING_RATE)
-			meter_render_fragment /= 2;
-		total_peaks = 16 *
-			renderengine->fragment_len /
-			meter_render_fragment;
-		return total_peaks;
+		while( meter_render_fragment > tracking_fragment ) meter_render_fragment /= 2;
+		total_peaks = 16 * renderengine->fragment_len / meter_render_fragment;
 	}
+	return total_peaks;
 }
 
 int ARender::init_meters()
 {
 // not providing enough peaks results in peaks that are ahead of the sound
-	if(level_samples) delete [] level_samples;
-	calculate_history_size();
-	level_samples = new int64_t[total_peaks];
-
-	for(int i = 0; i < MAXCHANNELS;i++)
-	{
-		current_level[i] = 0;
-		if(buffer[i] && !level_history[i])
-			level_history[i] = new double[total_peaks];
-	}
-
-	for(int i = 0; i < total_peaks; i++)
-	{
-		level_samples[i] = -1;
-	}
-
-	for(int j = 0; j < MAXCHANNELS; j++)
-	{
-		if(buffer[j])
-			for(int i = 0; i < total_peaks; i++)
-				level_history[j][i] = 0;
+	meter_history->init(MAXCHANNELS, calculate_history_size());
+	for( int i=0; i<MAXCHANNELS; ++i ) {
+		if( buffer[i] ) meter_history->reset_channel(i);
 	}
 	return 0;
 }
 
 void ARender::allocate_buffers(int samples)
 {
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
+	for( int i=0; i<MAXCHANNELS; ++i ) {
 // Reset the output buffers in case speed changed
-		if(buffer_allocated[i] < samples)
-		{
-			delete buffer[i];
-			buffer[i] = 0;
+		if( buffer_allocated[i] < samples ||
+		    i >= renderengine->get_edl()->session->audio_channels ) {
+			delete buffer[i];  buffer[i] = 0;
 		}
 
-		if(i < renderengine->get_edl()->session->audio_channels)
-		{
+		if( !buffer[i] && i < renderengine->get_edl()->session->audio_channels ) {
 			buffer[i] = new Samples(samples);
 			buffer_allocated[i] = samples;
-			audio_out[i] = buffer[i];
 		}
+		audio_out[i] = buffer[i];
 	}
 }
 
@@ -243,26 +209,6 @@ int ARender::process_buffer(int64_t input_len, int64_t input_position)
 {
 	int result = ((VirtualAConsole*)vconsole)->process_buffer(input_len,
 		input_position);
-	return result;
-}
-
-int ARender::get_history_number(int64_t *table, int64_t position)
-{
-// Get the entry closest to position
-	int result = 0;
-	int64_t min_difference = 0x7fffffff;
-	for(int i = 0; i < total_peaks; i++)
-	{
-
-//printf("%jd ", table[i]);
-		if(labs(table[i] - position) < min_difference)
-		{
-			min_difference = labs(table[i] - position);
-			result = i;
-		}
-	}
-//printf("\n");
-//printf("ARender::get_history_number %jd %d\n", position, result);
 	return result;
 }
 
@@ -357,13 +303,4 @@ if(debug) printf("ARender::run %d\n", __LINE__);
 	vconsole->stop_rendering(0);
 	stop_plugins();
 }
-
-
-int ARender::get_next_peak(int current_peak)
-{
-	current_peak++;
-	if(current_peak >= total_peaks) current_peak = 0;
-	return current_peak;
-}
-
 

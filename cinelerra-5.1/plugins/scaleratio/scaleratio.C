@@ -171,6 +171,8 @@ int ScaleRatioMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	load_configuration();
 
+	if(get_use_opengl()) return run_opengl();
+
 //printf("ScaleRatioMain::process_realtime 1 %p\n", input);
 	if( input->get_rows()[0] == output->get_rows()[0] ) {
 		if( temp_frame && (
@@ -227,6 +229,31 @@ void ScaleRatioMain::update_gui()
         if( load_configuration() )
                 window->update_gui();
         window->unlock_window();
+}
+
+
+int ScaleRatioMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	VFrame *input = get_input(), *output = get_output();
+	float ix1 = (input->get_w() - config.src_w)/2 + config.src_x;
+	float iy1 = (input->get_h() - config.src_h)/2 + config.src_y;
+	float ix2 = ix1 + config.src_w;
+	float iy2 = iy1 + config.src_h;
+	float ox1 = (output->get_w() - config.dst_w)/2 + config.dst_x;
+	float oy1 = (output->get_h() - config.dst_h)/2 + config.dst_y;
+	float ox2 = ox1 + config.dst_w;
+	float oy2 = oy1 + config.dst_h;
+
+	output->to_texture();
+	output->enable_opengl();
+	output->init_screen();
+	output->clear_pbuffer();
+	output->bind_texture(0);
+	output->draw_texture(ix1,iy1, ix2,iy2, ox1,oy1, ox2,oy2);
+	output->set_opengl_state(VFrame::SCREEN);
+#endif
+	return 0;
 }
 
 

@@ -430,12 +430,14 @@ void AssetListMenu::create_objects()
 	snapshot_submenu->add_submenuitem(new SnapshotMenuItem(snapshot_submenu, _("png"),  SNAPSHOT_PNG));
 	snapshot_submenu->add_submenuitem(new SnapshotMenuItem(snapshot_submenu, _("jpeg"), SNAPSHOT_JPEG));
 	snapshot_submenu->add_submenuitem(new SnapshotMenuItem(snapshot_submenu, _("tiff"), SNAPSHOT_TIFF));
+	snapshot_submenu->add_submenuitem(new SnapshotMenuItem(snapshot_submenu, _("ppm"),  SNAPSHOT_PPM));
 	GrabshotSubMenu *grabshot_submenu;
 	add_item(asset_grabshot = new AssetGrabshot(mwindow, this));
 	asset_grabshot->add_submenu(grabshot_submenu = new GrabshotSubMenu(asset_grabshot));
 	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("png"),  GRABSHOT_PNG));
 	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("jpeg"), GRABSHOT_JPEG));
 	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("tiff"), GRABSHOT_TIFF));
+	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("ppm"),  GRABSHOT_PPM));
 	update_titles(shots_displayed = 1);
 }
 
@@ -747,7 +749,7 @@ int SnapshotMenuItem::handle_event()
 
 	Preferences *preferences = mwindow->preferences;
 	char filename[BCTEXTLEN];
-	static const char *exts[] = { "png", "jpg", "tif" };
+	static const char *exts[] = { "png", "jpg", "tif", "ppm" };
 	time_t tt;     time(&tt);
 	struct tm tm;  localtime_r(&tt,&tm);
 	snprintf(filename,sizeof(filename),"%s/%s_%04d%02d%02d-%02d%02d%02d.%s",
@@ -771,6 +773,9 @@ int SnapshotMenuItem::handle_event()
 		asset->format = FILE_TIFF;
 		asset->tiff_cmodel = 0;
 		asset->tiff_compression = 0;
+		break;
+	case SNAPSHOT_PPM:
+		asset->format = FILE_PPM;
 		break;
 	}
 	asset->width = fw;
@@ -964,7 +969,7 @@ int GrabshotPopup::grab_event(XEvent *event)
 	MWindow *mwindow = grab_thread->mwindow;
 	Preferences *preferences = mwindow->preferences;
 	char filename[BCTEXTLEN];
-	static const char *exts[] = { "png", "jpg", "tif" };
+	static const char *exts[] = { "png", "jpg", "tif", "ppm" };
 	time_t tt;     time(&tt);
 	struct tm tm;  localtime_r(&tt,&tm);
 	snprintf(filename,sizeof(filename),"%s/%s_%04d%02d%02d-%02d%02d%02d.%s",
@@ -974,18 +979,21 @@ int GrabshotPopup::grab_event(XEvent *event)
 
 	Asset *asset = new Asset(filename);
 	switch( mode ) {
-	case SNAPSHOT_PNG:
+	case GRABSHOT_PNG:
 		asset->format = FILE_PNG;
 		asset->png_use_alpha = 1;
 		break;
-	case SNAPSHOT_JPEG:
+	case GRABSHOT_JPEG:
 		asset->format = FILE_JPEG;
 		asset->jpeg_quality = 90;
 		break;
-	case SNAPSHOT_TIFF:
+	case GRABSHOT_TIFF:
 		asset->format = FILE_TIFF;
 		asset->tiff_cmodel = 0;
 		asset->tiff_compression = 0;
+		break;
+	case GRABSHOT_PPM:
+		asset->format = FILE_PPM;
 		break;
 	}
 // no odd dimensions

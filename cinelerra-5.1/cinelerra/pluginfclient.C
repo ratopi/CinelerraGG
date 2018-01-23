@@ -939,7 +939,7 @@ int PluginFVClient::process_buffer(VFrame **frames, int64_t position, double fra
 		ret = av_buffersink_get_frame(fsink, frame);
 		if( ret >= 0 || ret != AVERROR(EAGAIN) ) break;
 		if( !fsrc ) { ret = AVERROR(EIO);  break; }
-		read_frame(vframe, 0, filter_position++, frame_rate, get_use_opengl());
+		read_frame(vframe, 0, filter_position++, frame_rate, 0);
 		frame->format = pix_fmt;
 	        frame->width  = width;
 		frame->height = height;

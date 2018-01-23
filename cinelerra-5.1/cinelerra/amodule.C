@@ -150,11 +150,10 @@ AModule::AModule(RenderEngine *renderengine,
 	data_type = TRACK_AUDIO;
 	transition_temp = 0;
 	speed_temp = 0;
-	level_history = 0;
-	current_level = 0;
 	bzero(nested_output, sizeof(Samples*) * MAX_CHANNELS);
 	bzero(prev_head, SPEED_OVERLAP * sizeof(double));
 	bzero(prev_tail, SPEED_OVERLAP * sizeof(double));
+	meter_history = new MeterHistory();
 	nested_allocation = 0;
 	resample = 0;
 	asset = 0;
@@ -166,22 +165,11 @@ AModule::AModule(RenderEngine *renderengine,
 
 AModule::~AModule()
 {
-	if(transition_temp) delete transition_temp;
-	if(speed_temp) delete speed_temp;
-	if(level_history)
-	{
-		delete [] level_history;
-		delete [] level_samples;
-	}
-
+	delete transition_temp;
+	delete speed_temp;
+	delete meter_history;
 	for(int i = 0; i < MAX_CHANNELS; i++)
-	{
-		if(nested_output[i])
-		{
-			delete nested_output[i];
-		}
-	}
-
+		delete nested_output[i];
 	delete resample;
 }
 
@@ -195,17 +183,9 @@ void AModule::create_objects()
 {
 	Module::create_objects();
 // Not needed in pluginarray
-	if(commonrender)
-	{
-		level_history = new double[((ARender*)commonrender)->total_peaks];
-		level_samples = new int64_t[((ARender*)commonrender)->total_peaks];
-		current_level = 0;
-
-		for(int i = 0; i < ((ARender*)commonrender)->total_peaks; i++)
-		{
-			level_history[i] = 0;
-			level_samples[i] = -1;
-		}
+	if( commonrender ) {
+		meter_history->init(1, ((ARender*)commonrender)->total_peaks);
+		meter_history->reset_channel(0);
 	}
 }
 

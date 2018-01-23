@@ -54,9 +54,10 @@ void FormatPopup::create_objects()
 		post_item(FILE_AIFF);
 		post_item(FILE_AU);
 		post_item(FILE_FLAC);
-		post_item(FILE_JPEG);
 	}
 
+	if(!use_brender)
+		post_item(FILE_JPEG);
 	post_item(FILE_JPEG_LIST);
 
 	if(!use_brender) {
@@ -71,24 +72,21 @@ void FormatPopup::create_objects()
 		post_item(FILE_VORBIS);
 		post_item(FILE_OGG);
 		post_item(FILE_PCM);
+	}
+
+	if(!use_brender)
 		post_item(FILE_PNG);
-	}
-
-	format_items.append(new BC_ListBoxItem(_(PNG_LIST_NAME)));
-
+	post_item(FILE_PNG_LIST);
 	if(!use_brender)
-	{
-		format_items.append(new BC_ListBoxItem(_(TGA_NAME)));
-	}
-
-	format_items.append(new BC_ListBoxItem(_(TGA_LIST_NAME)));
-
+		post_item(FILE_PPM);
+	post_item(FILE_PPM_LIST);
 	if(!use_brender)
-	{
-		format_items.append(new BC_ListBoxItem(_(TIFF_NAME)));
-	}
+		post_item(FILE_TGA);
+	post_item(FILE_TGA_LIST);
+	if(!use_brender)
+		post_item(FILE_TIFF);
+	post_item(FILE_TIFF_LIST);
 
-	format_items.append(new BC_ListBoxItem(_(TIFF_LIST_NAME)));
 	update(&format_items, 0, 0, 1);
 }
 

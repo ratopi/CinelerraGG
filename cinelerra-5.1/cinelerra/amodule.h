@@ -40,6 +40,7 @@ class AModuleReset;
 #include "filexml.inc"
 #include "floatautos.inc"
 #include "maxchannels.h"
+#include "meterhistory.h"
 #include "module.h"
 #include "resample.h"
 #include "samples.inc"
@@ -102,10 +103,7 @@ public:
 	FloatAutos* get_pan_automation(int channel);  // get pan automation
 	FloatAutos* get_fade_automation();       // get the fade automation for this module
 
-
-	double *level_history;
-	int64_t *level_samples;
-	int current_level;
+	MeterHistory *meter_history;
 
 // Temporary buffer for rendering transitions
 	Samples *transition_temp;

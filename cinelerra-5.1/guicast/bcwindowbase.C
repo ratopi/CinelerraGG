@@ -2338,6 +2338,9 @@ void BC_WindowBase::init_xft()
 {
 #ifdef HAVE_XFT
 	if( !get_resources()->use_xft ) return;
+// apparently, xft is not reentrant, more than this is needed
+static Mutex xft_init_lock("BC_WindowBase::xft_init_lock", 0);
+xft_init_lock.lock("BC_WindowBase::init_xft");
 	if(!(smallfont_xft =
 		(resources.small_font_xft[0] == '-' ?
 			XftFontOpenXlfd(display, screen, resources.small_font_xft) :
@@ -2407,6 +2410,7 @@ void BC_WindowBase::init_xft()
 	}
 // _XftDisplayInfo needs a lock.
 	XftDefaultHasRender(display);
+xft_init_lock.unlock();
 #endif // HAVE_XFT
 }
 

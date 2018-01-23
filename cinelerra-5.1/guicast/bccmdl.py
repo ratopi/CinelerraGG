@@ -325,6 +325,22 @@ base = {
     },
   },
 
+  "gbrp": {
+    "i8": {
+      "r": " int g = *gip++, b = *bip++, r = *rip++;",
+      "w": " *gop++ = g; *bop++ = b; *rop++ = r;",
+    },
+    "i16": {
+      "r": " int ig = *gip++, g = (ig<<8) | ig, ib = *bip++, b = (ib<<8) | ib," +
+           " ir = *rip++, r = (ir<<8) | ir;",
+      "w": " *gop++ = g >> 8; *bop++ = b >> 8; *rop++ = r >> 8;",
+    },
+    "fp": {
+      "r": " float g = *gip++/255.f, b = *bip++/255.f, r = *rip++/255.f;",
+      "w": " *gop++ = clp(256,g); *bop++ = clp(256,b); *rop++ = clp(256,r);",
+    },
+  },
+
   "grey8": {
     "i8": {
       "r": " int32_t y = *inp++, u = 0x80, v = 0x80;",
@@ -488,6 +504,7 @@ add_cmodel(34, "bc_yuv420pi", "i8", "yuv420pi")
 
 add_cmodel(36, "bc_grey8", "i8", "grey8")
 add_cmodel(37, "bc_grey16", "i16", "grey16")
+add_cmodel(38, "bc_gbrp", "i8", "gbrp")
 
 specialize("bc_rgba8888", "bc_transparency", "XFER_rgba8888_to_transparency")
 
@@ -522,17 +539,17 @@ def is_rgb(nm):
     "bc_bgr888", "bc_bgr8888", "bc_rgb888", "bc_rgba8888", \
     "bc_argb8888", "bc_abgr8888", "bc_rgb", "bc_rgb161616", \
     "bc_rgba16161616", "bc_rgb_float", "bc_rgba_float", \
-    "bc_rgb_floatp", "bc_rgba_floatp", ]
+    "bc_rgb_floatp", "bc_rgba_floatp", "bc_gbrp", ]
 
 def is_yuv(nm):
   return nm in [ "bc_yuv888", "bc_yuva8888", "bc_yuv161616", \
     "bc_yuva16161616", "bc_ayuv16161616", "bc_yuv422", "bc_uvy422", "bc_yuv101010", \
     "bc_vyu888", "bc_uyva8888", "bc_yuv420p", "bc_yuv420pi", "bc_yuv422p", \
-    "bc_yuv444p", "bc_yuv411p", "bc_yuv410p", "bc_grey8", "bc_grey16" ]
+    "bc_yuv444p", "bc_yuv411p", "bc_yuv410p", "bc_grey8", "bc_grey16", ]
 
 def is_planar(nm):
   return nm in [ "bc_yuv420p", "bc_yuv420pi", "bc_yuv422p", "bc_yuv444p", \
-    "bc_yuv411p", "bc_yuv410p", "bc_rgb_floatp", "bc_rgba_floatp", ]
+    "bc_yuv411p", "bc_yuv410p", "bc_rgb_floatp", "bc_rgba_floatp", "bc_gbrp", ]
 
 def is_float(nm):
   return nm in ["bc_rgb_float", "bc_rgba_float", "bc_rgb_floatp", "bc_rgba_floatp", ]
@@ -553,10 +570,14 @@ def gen_xfer_fn(fr_cmdl, to_cmdl):
   # xfr fn body
   print "{"
   # loops / pointer preload
-  in_cmdl = fr_cmdl[3:] if is_planar(fr_cmdl) else "flat";
-  out_cmdl = to_cmdl[3:] if is_planar(to_cmdl) else "flat";
+  in_xfer = "flat" if not is_planar(fr_cmdl) else \
+    fr_cmdl[3:] if is_yuv(fr_cmdl) else \
+    "rgbp" if not has_alpha(fr_cmdl) else "rgbap"
+  out_xfer = "flat" if not is_planar(to_cmdl) else \
+    to_cmdl[3:] if is_yuv(to_cmdl) else \
+    "rgbp" if not has_alpha(to_cmdl) else "rgbap"
   print " xfer_%s_row_out(%s) xfer_%s_row_in(%s)" % \
-     (out_cmdl, ctype[otyp], in_cmdl, ctype[ityp],)
+     (out_xfer, ctype[otyp], in_xfer, ctype[ityp],)
   # load inp
   if( is_float(to_cmdl) and is_yuv(fr_cmdl) ):
     for ic in layout[fr_cmdl]: print "%s" % (base[ic][ityp]['r']),

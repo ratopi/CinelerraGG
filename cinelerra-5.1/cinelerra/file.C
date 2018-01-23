@@ -54,6 +54,7 @@
 #undef HAVE_STDLIB_H // automake conflict
 #include "fileogg.h"
 #include "filepng.h"
+#include "fileppm.h"
 #include "filescene.h"
 #include "filesndfile.h"
 #include "filetga.h"
@@ -167,6 +168,7 @@ int File::get_options(FormatTools *format,
 	//ArrayList<PluginServer*> *plugindb = format->plugindb;
 	Asset *asset = format->asset;
 
+	format_window = 0;
 	getting_options = 1;
 	format_completion->lock("File::get_options");
 	switch( asset->format ) {
@@ -219,6 +221,11 @@ int File::get_options(FormatTools *format,
 	case FILE_PNG:
 	case FILE_PNG_LIST:
 		FilePNG::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options);
+		break;
+	case FILE_PPM:
+	case FILE_PPM_LIST:
+		FilePPM::get_parameters(parent_window, asset, format_window,
 			audio_options, video_options);
 		break;
 	case FILE_TGA:
@@ -336,6 +343,7 @@ const char *File::default_probes[] = {
 #endif 
 	"SndFile",
 	"PNG",
+	"PPM",
 	"JPEG",
 	"GIF",
 #ifdef HAVE_OPENEXR
@@ -398,6 +406,11 @@ int File::probe()
 		if( !strcmp(pref->name,"PNG") ) { // PNG file
 			if( !FilePNG::check_sig(this->asset) ) continue;
 			file = new FilePNG(this->asset, this);
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"PPM") ) { // PPM file
+			if( !FilePPM::check_sig(this->asset) ) continue;
+			file = new FilePPM(this->asset, this);
 			return FILE_OK;
 		}
 		if( !strcmp(pref->name,"JPEG") ) { // JPEG file
@@ -511,6 +524,11 @@ int File::open_file(Preferences *preferences,
 	case FILE_PNG:
 	case FILE_PNG_LIST:
 		file = new FilePNG(this->asset, this);
+		break;
+
+	case FILE_PPM:
+	case FILE_PPM_LIST:
+		file = new FilePPM(this->asset, this);
 		break;
 
 	case FILE_JPEG:
@@ -1204,6 +1222,8 @@ int File::strtoformat(const char *format)
 	if( !strcasecmp(format, _(SND_NAME)) ) return FILE_SND;
 	if( !strcasecmp(format, _(PNG_NAME)) ) return FILE_PNG;
 	if( !strcasecmp(format, _(PNG_LIST_NAME)) ) return FILE_PNG_LIST;
+	if( !strcasecmp(format, _(PPM_NAME)) ) return FILE_PPM;
+	if( !strcasecmp(format, _(PPM_LIST_NAME)) ) return FILE_PPM_LIST;
 	if( !strcasecmp(format, _(TIFF_NAME)) ) return FILE_TIFF;
 	if( !strcasecmp(format, _(TIFF_LIST_NAME)) ) return FILE_TIFF_LIST;
 	if( !strcasecmp(format, _(JPEG_NAME)) ) return FILE_JPEG;
@@ -1240,6 +1260,8 @@ const char* File::formattostr(int format)
 	case FILE_SND:		return _(SND_NAME);
 	case FILE_PNG:		return _(PNG_NAME);
 	case FILE_PNG_LIST:	return _(PNG_LIST_NAME);
+	case FILE_PPM:		return _(PPM_NAME);
+	case FILE_PPM_LIST:	return _(PPM_LIST_NAME);
 	case FILE_JPEG:		return _(JPEG_NAME);
 	case FILE_JPEG_LIST:	return _(JPEG_LIST_NAME);
 	case FILE_CR2:		return _(CR2_NAME);
@@ -1338,6 +1360,8 @@ int File::get_best_colormodel(Asset *asset, int driver)
 #endif
 	case FILE_PNG:
 	case FILE_PNG_LIST:	return FilePNG::get_best_colormodel(asset, driver);
+	case FILE_PPM:
+	case FILE_PPM_LIST:	return FilePPM::get_best_colormodel(asset, driver);
 	case FILE_TGA:
 	case FILE_TGA_LIST:	return FileTGA::get_best_colormodel(asset, driver);
 	case FILE_CR2:
@@ -1390,6 +1414,8 @@ int File::renders_video(int format)
 	case FILE_EXR_LIST:
 	case FILE_PNG:
 	case FILE_PNG_LIST:
+	case FILE_PPM:
+	case FILE_PPM_LIST:
 	case FILE_TGA:
 	case FILE_TGA_LIST:
 	case FILE_TIFF:
@@ -1440,6 +1466,7 @@ int File::is_image_render(int format)
 	case FILE_EXR:
 	case FILE_JPEG:
 	case FILE_PNG:
+	case FILE_PPM:
 	case FILE_TGA:
 	case FILE_TIFF:
 		return 1;
@@ -1466,6 +1493,8 @@ const char* File::get_tag(int format)
 	case FILE_PCM:          return "pcm";
 	case FILE_PNG:          return "png";
 	case FILE_PNG_LIST:     return "png";
+	case FILE_PPM:          return "ppm";
+	case FILE_PPM_LIST:     return "ppm";
 	case FILE_TGA:          return "tga";
 	case FILE_TGA_LIST:     return "tga";
 	case FILE_TIFF:         return "tif";
@@ -1484,6 +1513,7 @@ const char* File::get_prefix(int format)
 	case FILE_PCM:		return "PCM";
 	case FILE_WAV:		return "WAV";
 	case FILE_PNG:		return "PNG";
+	case FILE_PPM:		return "PPM";
 	case FILE_JPEG:		return "JPEG";
 	case FILE_TIFF:		return "TIFF";
 	case FILE_GIF:		return "GIF";
@@ -1499,6 +1529,7 @@ const char* File::get_prefix(int format)
 	case FILE_RAWDV:	return "RAWDV";
 	case FILE_TIFF_LIST:	return "TIFF_LIST";
 	case FILE_PNG_LIST:	return "PNG_LIST";
+	case FILE_PPM_LIST:	return "PPM_LIST";
 	case FILE_AC3:		return "AC3";
 	case FILE_EXR:		return "EXR";
 	case FILE_EXR_LIST:	return "EXR_LIST";

@@ -167,43 +167,49 @@ ZTYP(float);
       ity_t *uip = (ity_t *)(uip_row + in_ofs); \
       ity_t *vip = (ity_t *)(vip_row + in_ofs); \
 
-// rgb_floatp
-#define xfer_rgb_fltp_row_out(oty_t) \
+// rgb planar
+#define xfer_rgbp_row_out(oty_t) \
   for( unsigned i=y0; i<y1; ++i ) { \
     int out_rofs = i * total_out_w + out_x; \
     oty_t *rop = (oty_t *)(out_yp + out_rofs); \
     oty_t *gop = (oty_t *)(out_up + out_rofs); \
     oty_t *bop = (oty_t *)(out_vp + out_rofs); \
 
-#define xfer_rgb_fltp_row_in(ity_t) \
+#define xfer_rgbap_row_out(oty_t) \
+  xfer_rgbp_row_out(oty_t) \
+    oty_t *aop = (oty_t *)(out_ap + out_rofs); \
+
+
+#define xfer_row_in_rgbp(ity_t) \
     int in_rofs = row_table[i] * total_in_w; \
     uint8_t *rip_row = in_yp + in_rofs; \
     uint8_t *gip_row = in_up + in_rofs; \
     uint8_t *bip_row = in_vp + in_rofs; \
 
-#define xfer_rgb_fltp_col_in(ity_t) \
+#define xfer_row_in_rgbap(oty_t) \
+  xfer_row_in_rgbp(ity_t) \
+    uint8_t *aip_row = in_ap + in_rofs; \
+
+
+#define xfer_col_in_rgbp(ity_t) \
     for( unsigned j=0; j<out_w; ++j ) { \
       int in_ofs = column_table[j]; \
       ity_t *rip = (ity_t *)(rip_row + in_ofs); \
       ity_t *gip = (ity_t *)(gip_row + in_ofs); \
       ity_t *bip = (ity_t *)(bip_row + in_ofs); \
 
-#define xfer_rgb_floatp_row_out(oty_t) \
-  xfer_rgb_fltp_row_out(oty_t) \
+#define xfer_col_in_rgbap(ity_t) \
+  xfer_col_in_rgbp(ity_t) \
+    ity_t *aip = (ity_t *)(aip_row + in_ofs); \
 
-#define xfer_rgba_floatp_row_out(oty_t) \
-  xfer_rgb_fltp_row_out(oty_t) \
-    oty_t *aop = (oty_t *)(out_ap + out_rofs); \
 
-#define xfer_rgb_floatp_row_in(ity_t) \
-  xfer_rgb_fltp_row_in(ity_t) \
-   xfer_rgb_fltp_col_in(ity_t) \
+#define xfer_rgbp_row_in(ity_t) \
+  xfer_row_in_rgbp(ity_t) \
+    xfer_col_in_rgbp(ity_t) \
 
-#define xfer_rgba_floatp_row_in(ity_t) \
-  xfer_rgb_fltp_row_in(ity_t) \
-    uint8_t *aip_row = in_ap + in_rofs; \
-    xfer_rgb_fltp_col_in(ity_t) \
-      ity_t *aip = (ity_t *)(aip_row + in_ofs); \
+#define xfer_rgbap_row_in(ity_t) \
+  xfer_row_in_rgbap(ity_t) \
+    xfer_col_in_rgbap(ity_t) \
 
 
 class BC_Xfer {

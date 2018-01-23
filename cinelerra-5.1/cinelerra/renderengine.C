@@ -27,6 +27,7 @@
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "meterhistory.h"
 #include "mutex.h"
 #include "mwindow.h"
 #include "playbackengine.h"
@@ -468,34 +469,29 @@ int RenderEngine::close_output()
 
 void RenderEngine::get_output_levels(double *levels, int64_t position)
 {
-	if(do_audio)
-	{
-		int history_entry = arender->get_history_number(arender->level_samples,
-			position);
-		for(int i = 0; i < MAXCHANNELS; i++)
-		{
-			if(arender->audio_out[i])
-				levels[i] = arender->level_history[i][history_entry];
+	if( do_audio ) {
+		MeterHistory *meter_history = arender->meter_history;
+		int64_t tolerance = 4*arender->meter_render_fragment;
+		int pos = meter_history->get_nearest(position, tolerance);
+		for( int i=0; i<MAXCHANNELS; ++i ) {
+			if( !arender->audio_out[i] ) continue;
+			levels[i] = meter_history->get_peak(i, pos);
 		}
 	}
 }
 
 void RenderEngine::get_module_levels(ArrayList<double> *module_levels, int64_t position)
 {
-	if(do_audio)
-	{
-		for(int i = 0; i < arender->total_modules; i++)
-		{
-//printf("RenderEngine::get_module_levels %p %p\n", ((AModule*)arender->modules[i]), ((AModule*)arender->modules[i])->level_samples);
-			int history_entry = arender->get_history_number(((AModule*)arender->modules[i])->level_samples, position);
-
-			module_levels->append(((AModule*)arender->modules[i])->level_history[history_entry]);
+	if( do_audio ) {
+		int64_t tolerance = 4*arender->meter_render_fragment;
+		for( int i=0; i<arender->total_modules; ++i ) {
+			AModule *amodule = (AModule *)arender->modules[i];
+			MeterHistory *meter_history = amodule->meter_history;
+			int pos = meter_history->get_nearest(position, tolerance);
+			module_levels->append(meter_history->get_peak(0, pos));
 		}
 	}
 }
-
-
-
 
 
 void RenderEngine::run()

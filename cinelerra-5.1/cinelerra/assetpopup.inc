@@ -25,10 +25,12 @@
 #define SNAPSHOT_PNG  0
 #define SNAPSHOT_JPEG 1
 #define SNAPSHOT_TIFF 2
+#define SNAPSHOT_PPM  3
 
 #define GRABSHOT_PNG  0
 #define GRABSHOT_JPEG 1
 #define GRABSHOT_TIFF 2
+#define GRABSHOT_PPM  3
 
 class AssetPopup;
 class AssetPopupInfo;

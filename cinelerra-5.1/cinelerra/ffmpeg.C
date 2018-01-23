@@ -484,7 +484,7 @@ int FFStream::encode_frame(AVFrame *frame)
 		ret = write_packet(opkt);
 		if( ret < 0 ) break;
 		++pkts;
-		if( stats_fp ) {
+		if( frame && stats_fp ) {
 			ret = write_stats_file();
 			if( ret < 0 ) break;
 		}
@@ -1047,6 +1047,7 @@ AVPixelFormat FFVideoConvert::color_model_to_pix_fmt(int color_model)
 	case BC_RGB161616:      return AV_PIX_FMT_RGB48LE;
 	case BC_RGBA16161616:   return AV_PIX_FMT_RGBA64LE;
 	case BC_AYUV16161616:	return AV_PIX_FMT_AYUV64LE;
+	case BC_GBRP:		return AV_PIX_FMT_GBRP;
 	default: break;
 	}
 
@@ -1072,6 +1073,7 @@ int FFVideoConvert::pix_fmt_to_color_model(AVPixelFormat pix_fmt)
 	case AV_PIX_FMT_RGB48LE:	return BC_RGB161616;
 	case AV_PIX_FMT_RGBA64LE:	return BC_RGBA16161616;
 	case AV_PIX_FMT_AYUV64LE:	return BC_AYUV16161616;
+	case AV_PIX_FMT_GBRP:		return BC_GBRP;
 	default: break;
 	}
 
@@ -2066,12 +2068,27 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			vstrm_index.append(ffidx(vidx, 0));
 			vid->avctx = ctx;  ffvideo.append(vid);  fst = vid;
 			vid->width = asset->width;
-			ctx->width = (vid->width+3) & ~3;
 			vid->height = asset->height;
-			ctx->height = (vid->height+3) & ~3;
 			vid->frame_rate = asset->frame_rate;
+			AVPixelFormat pix_fmt = codec->pix_fmts ?
+				codec->pix_fmts[0] : AV_PIX_FMT_YUV420P;
+			AVDictionaryEntry *tag = av_dict_get(sopts, "cin_pix_fmt", NULL, 0);
+			if( tag != 0 ) {
+				int avfmt = av_get_pix_fmt(tag->value);
+				if( avfmt < 0 ) {
+					eprintf(_("cin_pix_fmt unknown = %s\n"), tag->value);
+					ret = 1;
+					break;
+				}
+				pix_fmt = (AVPixelFormat)avfmt;
+			}
+			ctx->pix_fmt = pix_fmt;
+			const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
+			int mask_w = (1<<desc->log2_chroma_w)-1;
+			if( mask_w > 0 ) ctx->width = (vid->width+mask_w) & ~mask_w;
+			int mask_h = (1<<desc->log2_chroma_h)-1;
+			if( mask_h > 0 ) ctx->height = (vid->height+mask_h) & ~mask_h;
 			ctx->sample_aspect_ratio = to_sample_aspect_ratio(asset);
-			ctx->pix_fmt = codec->pix_fmts ? codec->pix_fmts[0] : AV_PIX_FMT_YUV420P;
 			AVRational frame_rate = check_frame_rate(codec, vid->frame_rate);
 			if( !frame_rate.num || !frame_rate.den ) {
 				eprintf(_("check_frame_rate failed %s\n"), filename);

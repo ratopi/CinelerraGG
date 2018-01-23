@@ -281,8 +281,6 @@ if(debug) printf("VirtualANode::render_as_module %d\n", __LINE__);
 // Scan fragment in meter sized fragments
 		for(int i = 0; i < len; )
 		{
-			int current_level = ((AModule*)real_module)->current_level;
-			double peak = 0;
 			meter_render_start = i;
 			meter_render_end = i + meter_render_fragment;
 			if(meter_render_end > len)
@@ -290,25 +288,20 @@ if(debug) printf("VirtualANode::render_as_module %d\n", __LINE__);
 // Number of samples into the fragment this meter sized fragment is,
 // normalized to project sample rate.
 			int64_t meter_render_start_project = meter_render_start *
-				project_sample_rate /
-				sample_rate;
+				project_sample_rate / sample_rate;
 
 // Scan meter sized fragment
-			double *output_samples = output_temp->get_data();
-			for( ; i < meter_render_end; i++)
-			{
-				double sample = fabs(output_samples[i]);
-				if(sample > peak) peak = sample;
+			double peak = 0, *output_samples = output_temp->get_data();
+			while( i < meter_render_end ) {
+				double sample = fabs(output_samples[i++]);
+				if( sample > peak ) peak = sample;
 			}
 
-			((AModule*)real_module)->level_history[current_level] =
-				peak;
-			((AModule*)real_module)->level_samples[current_level] =
-				(direction == PLAY_FORWARD) ?
+			MeterHistory *meter_history = ((AModule*)real_module)->meter_history;
+			int64_t pos = (direction == PLAY_FORWARD) ?
 				(start_position_project + meter_render_start_project) :
-				(start_position_project - meter_render_start_project);
-			((AModule*)real_module)->current_level =
-				arender->get_next_peak(current_level);
+				(start_position_project - meter_render_start_project) ;
+			meter_history->set_peak(0, peak, pos);
 		}
 	}
 if(debug) printf("VirtualANode::render_as_module %d\n", __LINE__);

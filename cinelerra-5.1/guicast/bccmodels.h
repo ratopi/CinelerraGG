@@ -61,6 +61,7 @@ enum BC_CModel {
 	BC_RGB_FLOATP   = 32,
 	BC_RGBA_FLOATP  = 33,
 	BC_YUV420PI     = 34,
+	BC_GBRP         = 38,
 // only used in intermediate ffmpeg xfers
 	BC_AYUV16161616 = 35,
 	BC_GREY8        = 36,

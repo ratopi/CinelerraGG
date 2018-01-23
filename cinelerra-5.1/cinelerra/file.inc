@@ -89,6 +89,8 @@
 #define FILE_CR2_LIST           35
 #define FILE_GIF_LIST   	36
 #define FILE_DB                 37
+#define FILE_PPM                38
+#define FILE_PPM_LIST           39
 
 // For formats supported by plugins, the format number is the plugin number in the
 // plugin list ORed with 0x8000.
@@ -114,6 +116,8 @@ N_("OGG Theora/Vorbis")
 N_("OGG Vorbis")    // For decoding only
 N_("PNG")
 N_("PNG Sequence")
+N_("PPM")
+N_("PPM Sequence")
 N_("Raw DV")
 N_("Raw PCM")
 N_("Sun/NeXT AU")
@@ -146,6 +150,8 @@ N_("Unknown sound")
 #define PCM_NAME		"Raw PCM"
 #define PNG_LIST_NAME		"PNG Sequence"
 #define PNG_NAME		"PNG"
+#define PPM_LIST_NAME		"PPM Sequence"
+#define PPM_NAME		"PPM"
 #define RAWDV_NAME		"Raw DV"
 #define SCENE_NAME		"Text To Movie"
 #define SND_NAME		"Unknown sound"

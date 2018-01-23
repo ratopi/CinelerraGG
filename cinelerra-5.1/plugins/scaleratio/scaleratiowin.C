@@ -29,7 +29,7 @@
 
 
 ScaleRatioWin::ScaleRatioWin(ScaleRatioMain *client)
- : PluginClientWindow(client, 400, 300, 400, 300, 0)
+ : PluginClientWindow(client, 400, 320, 400, 320, 0)
 {
 	this->client = client;
 }

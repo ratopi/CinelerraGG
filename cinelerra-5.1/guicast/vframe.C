@@ -355,6 +355,7 @@ if( memory_type != VFrame::SHARED )
 		case BC_YUV444P:
 		case BC_RGB_FLOATP:
 		case BC_RGBA_FLOATP:
+		case BC_GBRP:
 			break;
 
 		default:
@@ -445,6 +446,12 @@ void VFrame::create_row_pointers()
 		this->y_offset = 0;
 		this->u_offset = sz;
 		this->v_offset = sz + sz;
+		break;
+	case BC_GBRP:
+		if( this->v_offset ) break;
+		this->y_offset = 0;
+		this->u_offset = sz * sizeof(uint8_t);
+		this->v_offset = 2 * sz * sizeof(uint8_t);
 		break;
 	case BC_RGBA_FLOATP:
 		if( this->v_offset || a ) break;
@@ -901,6 +908,12 @@ int VFrame::clear_frame()
 		bzero(get_y(), sz);
 		bzero(get_u(), sz / 2);
 		bzero(get_v(), sz / 2);
+		break;
+
+	case BC_GBRP:
+		bzero(get_y(), sz);
+		bzero(get_u(), sz);
+		bzero(get_b(), sz);
 		break;
 
 	case BC_RGBA_FLOATP: if( a ) {

@@ -25,6 +25,7 @@
 #include "atrack.inc"
 #include "commonrender.h"
 #include "maxchannels.h"
+#include "meterhistory.h"
 #include "samples.inc"
 
 class ARender : public CommonRender
@@ -66,9 +67,12 @@ public:
 
 // Calculate number of samples in each meter fragment and how many
 // meter fragments to buffer.
+	int init_meters();
 	int calculate_history_size();
-// Get subscript of history entry corresponding to sample
-	int get_history_number(int64_t *table, int64_t position);
+	int total_peaks;
+	MeterHistory *meter_history;
+// samples to use for one meter update.  Must be multiple of fragment_len
+	int64_t meter_render_fragment;
 
 	int64_t tounits(double position, int round);
 	double fromunits(int64_t position);
@@ -79,19 +83,6 @@ public:
 	Samples *buffer[MAXCHANNELS];
 // allocated buffer sizes for nested EDL rendering
 	int buffer_allocated[MAXCHANNELS];
-// information for meters
-	int get_next_peak(int current_peak);
-	int init_meters();
-// samples to use for one meter update.  Must be multiple of fragment_len
-	int64_t meter_render_fragment;
-// Level history of output buffers
-	double *level_history[MAXCHANNELS];
-// sample position of each level
-	int64_t *level_samples;
-// total entries in level_history
-	int total_peaks;
-// Next level to store value in
-	int current_level[MAXCHANNELS];
 // Make VirtualAConsole block before the first buffer until video is ready
 	int first_buffer;
 };

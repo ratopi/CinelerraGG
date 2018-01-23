@@ -116,6 +116,7 @@ OBJS = \
 	$(OBJDIR)/file.o \
 	$(OBJDIR)/fileogg.o \
 	$(OBJDIR)/filepng.o \
+	$(OBJDIR)/fileppm.o \
 	$(OBJDIR)/filescene.o \
 	$(OBJDIR)/filesndfile.o \
 	$(OBJDIR)/filetga.o \
@@ -184,6 +185,7 @@ OBJS = \
 	$(OBJDIR)/menueffects.o \
 	$(OBJDIR)/menutransitionlength.o \
 	$(OBJDIR)/menuveffects.o \
+	$(OBJDIR)/meterhistory.o \
 	$(OBJDIR)/meterpanel.o \
 	$(OBJDIR)/module.o \
 	$(OBJDIR)/mtimebar.o \

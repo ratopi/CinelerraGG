@@ -225,6 +225,10 @@ int PreferencesThread::apply_settings()
 		mwindow->gui->unlock_window();
 		redraw_overlays = 1;
 	}
+	PreferencesWindow *window = (PreferencesWindow*)get_gui();
+	if( window ) window->unlock_window();
+	mwindow->init_brender();
+	if( window ) window->lock_window("PreferencesThread::apply_settings 5");
 
 	if( strcmp(preferences->theme, mwindow->preferences->theme) != 0 )
 		mwindow->restart_status = -1; // reload, need new bcresources
@@ -233,7 +237,6 @@ int PreferencesThread::apply_settings()
 
 	mwindow->edl->copy_session(edl, 1);
 	mwindow->preferences->copy_from(preferences);
-	mwindow->init_brender();
 
 	BC_Signals::set_catch_segv(mwindow->preferences->trap_sigsegv);
 	BC_Signals::set_catch_intr(mwindow->preferences->trap_sigintr);

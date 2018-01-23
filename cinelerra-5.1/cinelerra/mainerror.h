@@ -33,17 +33,6 @@
 
 // Once created, it accumulates errors in a listbox until it's closed.
 
-// Macro to enable the simplest possible error output
-//#define eprintf(format, ...) {char error_string[1024]; sprintf(sprintf(error_string, "%s: " format, __PRETTY_FUNCTION__, ## __VA_ARGS__); MainError::show_error(error_string); }
-// We have to use longer version if we want to gettext error messages
-
-#define eprintf(...) do { \
-  char err_msg[1024], *ep = err_msg; \
-  ep += sprintf(ep, "%s:\n", __PRETTY_FUNCTION__); \
-  sprintf(ep, __VA_ARGS__); (volatile void)MainError::show_error(err_msg); \
-} while(0)
-
-
 class MainErrorGUI : public BC_Window
 {
 public:
@@ -98,6 +87,20 @@ private:
 };
 
 
+// format text to error dialog listbox
 
+static inline void eprint1(const char *func, const char *fmt, ...)
+{
+	char err_msg[1024], *cp = err_msg, *ep = cp + sizeof(err_msg)-1;
+	va_list va;
+	va_start(va, fmt);
+	cp += snprintf(cp, ep-cp, "%s:\n", func);
+	cp += vsnprintf(cp, ep-cp, fmt, va);
+	*cp = 0;
+	va_end(va);
+	MainError::show_error(err_msg); \
+}
+
+#define eprintf(s...) eprint1(__PRETTY_FUNCTION__, s)
 
 #endif

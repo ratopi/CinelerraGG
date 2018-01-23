@@ -163,30 +163,23 @@ if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
 					meter_render_end =  len;
 
 				double peak = 0;
-
-				for( ; j < meter_render_end; j++)
-				{
+				while( j < meter_render_end ) {
 // Level history comes before clipping to get over status
-					double *sample = &current_buffer[j];
-
-
-					if(fabs(*sample) > peak) peak = fabs(*sample);
+					double *sample = &current_buffer[j++];
+					if( fabs(*sample) > peak ) peak = fabs(*sample);
 // Make the output device clip it
 // 					if(*sample > 1) *sample = 1;
 // 					else
 // 					if(*sample < -1) *sample = -1;
 				}
 
-
- 				if(renderengine->command->realtime)
- 				{
-					arender->level_history[i][arender->current_level[i]] = peak;
-					arender->level_samples[arender->current_level[i]] =
-						renderengine->command->get_direction() == PLAY_REVERSE ?
+				if( renderengine->command->realtime ) {
+					int direction = renderengine->command->get_direction();
+					int64_t pos = direction == PLAY_REVERSE ?
 						start_position - j :
-						start_position + j;
- 					arender->current_level[i] = arender->get_next_peak(arender->current_level[i]);
- 				}
+						start_position + j ;
+					arender->meter_history->set_peak(i, peak, pos);
+				}
 			}
 		}
 	}
@@ -247,7 +240,7 @@ if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
 			if(renderengine->command->get_speed() < 1)
 			{
 // number of samples to skip
- 				int interpolate_len = (int)(1.0 / renderengine->command->get_speed());
+				int interpolate_len = (int)(1.0 / renderengine->command->get_speed());
 				real_output_len = len * interpolate_len;
 
 				for(in = len - 1, out = real_output_len - 1; in >= 0; )

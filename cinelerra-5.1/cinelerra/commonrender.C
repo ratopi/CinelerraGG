@@ -127,7 +127,7 @@ void CommonRender::create_modules()
 	{
 		for(module = 0; module < total_modules; module++)
 		{
-			modules[module]->create_objects();
+			modules[module]->Module::create_objects();
 		}
 	}
 }

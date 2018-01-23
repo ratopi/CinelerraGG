@@ -193,13 +193,9 @@ void MainError::show_error_local(const char *string)
 
 void MainError::show_error(const char *string)
 {
-	if( main_error )
-		main_error->show_error_local(string);
-	else {
-		printf("%s", string);
-		if( string[strlen(string) - 1] != '\n' )
-			printf("\n");
-	}
+	if( main_error ) main_error->show_error_local(string);
+	int len = strlen(string);
+	printf("%s%s", string, len>0 && string[len-1] == '\n' ? "" : "\n");
 }
 
 
