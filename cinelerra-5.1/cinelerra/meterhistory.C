@@ -1,5 +1,6 @@
 #include "meterhistory.h"
 
+#include <stdlib.h>
 #include <math.h>
 
 MeterHistory::MeterHistory()
