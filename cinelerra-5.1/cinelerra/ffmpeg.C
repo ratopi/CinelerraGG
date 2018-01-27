@@ -321,7 +321,8 @@ int FFStream::decode_activate()
 		av_dict_copy(&copts, ffmpeg->opts, 0);
 		int ret = 0;
 		// this should be avformat_copy_context(), but no copy avail
-		ret = avformat_open_input(&fmt_ctx, ffmpeg->fmt_ctx->filename, NULL, &copts);
+		ret = avformat_open_input(&fmt_ctx,
+			ffmpeg->fmt_ctx->filename, ffmpeg->fmt_ctx->iformat, &copts);
 		if( ret >= 0 ) {
 			ret = avformat_find_stream_info(fmt_ctx, 0);
 			st = fmt_ctx->streams[fidx];
@@ -1931,7 +1932,9 @@ int FFMPEG::init_decoder(const char *filename)
 	char file_opts[BCTEXTLEN];
 	char *bp = strrchr(strcpy(file_opts, filename), '/');
 	char *sp = strrchr(!bp ? file_opts : bp, '.');
+	if( !sp ) sp = bp + strlen(bp);
 	FILE *fp = 0;
+	AVInputFormat *ifmt = 0;
 	if( sp ) {
 		strcpy(sp, ".opts");
 		fp = fopen(file_opts, "r");
@@ -1939,12 +1942,16 @@ int FFMPEG::init_decoder(const char *filename)
 	if( fp ) {
 		read_options(fp, file_opts, opts);
 		fclose(fp);
+		AVDictionaryEntry *tag;
+		if( (tag=av_dict_get(opts, "format", NULL, 0)) != 0 ) {
+			ifmt = av_find_input_format(tag->value);
+		}
 	}
 	else
 		load_options("decode.opts", opts);
 	AVDictionary *fopts = 0;
 	av_dict_copy(&fopts, opts, 0);
-	int ret = avformat_open_input(&fmt_ctx, filename, NULL, &fopts);
+	int ret = avformat_open_input(&fmt_ctx, filename, ifmt, &fopts);
 	av_dict_free(&fopts);
 	if( ret >= 0 )
 		ret = avformat_find_stream_info(fmt_ctx, NULL);
