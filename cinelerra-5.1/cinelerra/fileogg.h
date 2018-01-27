@@ -23,6 +23,7 @@
 #define FILEOGG_H
 
 #include "../config.h"
+#include "edl.inc"
 #include "filebase.h"
 #include "file.inc"
 #include "packagingengine.h"
@@ -103,10 +104,8 @@ public:
 	~FileOGG();
 
 	static void get_parameters(BC_WindowBase *parent_window,
-		Asset *asset,
-		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options);
+		Asset *asset, BC_WindowBase* &format_window,
+		int audio_options, int video_options, EDL *edl);
 
 	int reset_parameters_derived();
 	int open_file(int rd, int wr);

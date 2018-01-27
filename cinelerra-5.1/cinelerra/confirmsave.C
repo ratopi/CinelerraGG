@@ -47,14 +47,12 @@ int ConfirmSave::test_file(MWindow *mwindow, char *path)
 
 int ConfirmSave::test_files(MWindow *mwindow, ArrayList<char*> *paths)
 {
-	FILE *file;
 	ArrayList<BC_ListBoxItem*> list;
 	int result = 0;
 
 	for(int i = 0; i < paths->size(); i++) {
 		char *path = paths->values[i];
-		if( (file=fopen(path, "r")) != 0 ) {
-			fclose(file);
+		if( !access(path, F_OK) ) {
 			list.append(new BC_ListBoxItem(path));
 		}
 	}

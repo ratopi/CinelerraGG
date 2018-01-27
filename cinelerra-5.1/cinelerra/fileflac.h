@@ -23,13 +23,9 @@
 #define FILEFLAC_H
 
 #include "bitspopup.inc"
+#include "edl.inc"
 #include "file.inc"
 #include "filebase.h"
-
-
-
-
-
 
 class FileFLAC : public FileBase
 {
@@ -38,10 +34,8 @@ public:
 	~FileFLAC();
 
 	static void get_parameters(BC_WindowBase *parent_window,
-		Asset *asset,
-		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options);
+		Asset *asset, BC_WindowBase* &format_window,
+		int audio_options, int video_options, EDL *edl);
 	int reset_parameters_derived();
 
 	static int check_sig(Asset *asset, char *test);

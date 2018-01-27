@@ -13,6 +13,7 @@
 #include "bcwindowbase.inc"
 #include "condition.h"
 #include "cstrdup.h"
+#include "edl.inc"
 #include "linklist.h"
 #include "ffmpeg.inc"
 #include "filebase.inc"
@@ -254,18 +255,29 @@ public:
 	AVRational check_frame_rate(AVCodec *codec, double frame_rate);
 	AVRational to_sample_aspect_ratio(Asset *asset);
 	AVRational to_time_base(int sample_rate);
+	static int get_fmt_score(AVSampleFormat dst_fmt, AVSampleFormat src_fmt);
+	static AVSampleFormat find_best_sample_fmt_of_list(
+		const AVSampleFormat *sample_fmts, AVSampleFormat src_fmt);
 
 	static void set_option_path(char *path, const char *fmt, ...);
 	static void get_option_path(char *path, const char *type, const char *spec);
 	static int get_format(char *format, const char *path, const char *spec);
 	static int get_codec(char *codec, const char *path, const char *spec);
-	static int scan_option_line(char *cp,char *tag,char *val);
+	static int scan_option_line(const char *cp,char *tag,char *val);
 	static int load_defaults(const char *path, const char *type,
 		 char *codec, char *codec_options, int len);
-	static void set_asset_format(Asset *asset, const char *text);
+	static int can_render(const char *fformat, const char *type);
+	static int renders_audio(const char *fformat) { return can_render(fformat, "audio"); }
+	static int renders_video(const char *fformat) { return can_render(fformat, "video"); }
+	static int get_ff_option(const char *nm, const char *options, char *value);
+	static void scan_audio_options(Asset *asset, EDL *edl);
+	static void load_audio_options(Asset *asset, EDL *edl);
+	static void scan_video_options(Asset *asset, EDL *edl);
+	static void load_video_options(Asset *asset, EDL *edl);
+	static void set_asset_format(Asset *asset, EDL *edl, const char *text);
 	int get_file_format();
-	int get_encoder(const char *options, char *format, char *codec, char *bsfilter);
-	int get_encoder(FILE *fp, char *format, char *codec, char *bsfilter);
+	static int get_encoder(const char *options, char *format, char *codec, char *bsfilter);
+	static int scan_encoder(const char *line, char *format, char *codec, char *bsfilter);
 	int read_options(const char *options, AVDictionary *&opts, int skip=0);
 	int scan_options(const char *options, AVDictionary *&opts, AVStream *st);
 	int read_options(FILE *fp, const char *options, AVDictionary *&opts);

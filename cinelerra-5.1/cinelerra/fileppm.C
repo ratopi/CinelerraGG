@@ -207,8 +207,9 @@ PPMConfigVideo::PPMConfigVideo(BC_WindowBase *gui, Asset *asset)
 	unlock_window();
 }
 
-void FilePPM::get_parameters(BC_WindowBase *parent_window, Asset *asset,
-	BC_WindowBase* &format_window, int audio_options, int video_options)
+void FilePPM::get_parameters(BC_WindowBase *parent_window,
+	Asset *asset, BC_WindowBase* &format_window,
+	int audio_options, int video_options, EDL *edl)
 {
 	if(video_options) {
 		PPMConfigVideo *window = new PPMConfigVideo(parent_window, asset);

@@ -19,8 +19,11 @@
 #include "asset.h"
 #include "bccmodels.h"
 #include "bchash.h"
-#include "fileffmpeg.h"
+#include "edl.h"
+#include "edlsession.h"
 #include "file.h"
+#include "fileffmpeg.h"
+#include "filesystem.h"
 #include "ffmpeg.h"
 #include "indexfile.h"
 #include "interlacemodes.h"
@@ -1384,6 +1387,37 @@ AVRational FFMPEG::to_time_base(int sample_rate)
 	return (AVRational){1, sample_rate};
 }
 
+int FFMPEG::get_fmt_score(AVSampleFormat dst_fmt, AVSampleFormat src_fmt)
+{
+	int score = 0;
+	int dst_planar = av_sample_fmt_is_planar(dst_fmt);
+	int src_planar = av_sample_fmt_is_planar(src_fmt);
+	if( dst_planar != src_planar ) ++score;
+	int dst_bytes = av_get_bytes_per_sample(dst_fmt);
+	int src_bytes = av_get_bytes_per_sample(src_fmt);
+	score += (src_bytes > dst_bytes ? 100 : -10) * (src_bytes - dst_bytes);
+	int src_packed = av_get_packed_sample_fmt(src_fmt);
+	int dst_packed = av_get_packed_sample_fmt(dst_fmt);
+	if( dst_packed == AV_SAMPLE_FMT_S32 && src_packed == AV_SAMPLE_FMT_FLT ) score += 20;
+	if( dst_packed == AV_SAMPLE_FMT_FLT && src_packed == AV_SAMPLE_FMT_S32 ) score += 2;
+	return score;
+}
+
+AVSampleFormat FFMPEG::find_best_sample_fmt_of_list(
+		const AVSampleFormat *sample_fmts, AVSampleFormat src_fmt)
+{
+	AVSampleFormat best = AV_SAMPLE_FMT_NONE;
+	int best_score = get_fmt_score(best, src_fmt);
+	for( int i=0; sample_fmts[i] >= 0; ++i ) {
+		AVSampleFormat sample_fmt = sample_fmts[i];
+		int score = get_fmt_score(sample_fmt, src_fmt);
+		if( score >= best_score ) continue;
+		best = sample_fmt;  best_score = score;
+	}
+	return best;
+}
+
+
 void FFMPEG::set_option_path(char *path, const char *fmt, ...)
 {
 	char *ep = path + BCTEXTLEN-1;
@@ -1480,10 +1514,10 @@ int FFMPEG::get_file_format()
 	return ret;
 }
 
-int FFMPEG::scan_option_line(char *cp, char *tag, char *val)
+int FFMPEG::scan_option_line(const char *cp, char *tag, char *val)
 {
 	while( *cp == ' ' || *cp == '\t' ) ++cp;
-	char *bp = cp;
+	const char *bp = cp;
 	while( *cp && *cp != ' ' && *cp != '\t' && *cp != '=' && *cp != '\n' ) ++cp;
 	int len = cp - bp;
 	if( !len || len > BCSTRLEN-1 ) return 1;
@@ -1499,6 +1533,123 @@ int FFMPEG::scan_option_line(char *cp, char *tag, char *val)
 	while( bp < cp ) *val++ = *bp++;
 	*val = 0;
 	return 0;
+}
+
+int FFMPEG::can_render(const char *fformat, const char *type)
+{
+	FileSystem fs;
+	char option_path[BCTEXTLEN];
+	FFMPEG::set_option_path(option_path, type);
+	fs.update(option_path);
+	int total_files = fs.total_files();
+	for( int i=0; i<total_files; ++i ) {
+		const char *name = fs.get_entry(i)->get_name();
+		const char *ext = strrchr(name,'.');
+		if( !ext ) continue;
+		if( !strcmp(fformat, ++ext) ) return 1;
+	}
+	return 0;
+}
+
+int FFMPEG::get_ff_option(const char *nm, const char *options, char *value)
+{
+        for( const char *cp=options; *cp!=0; ) {
+                char line[BCTEXTLEN], *bp = line, *ep = bp+sizeof(line)-1;
+                while( bp < ep && *cp && *cp!='\n' ) *bp++ = *cp++;
+                if( *cp ) ++cp;
+                *bp = 0;
+                if( !line[0] || line[0] == '#' || line[0] == ';' ) continue;
+                char key[BCSTRLEN], val[BCTEXTLEN];
+                if( FFMPEG::scan_option_line(line, key, val) ) continue;
+                if( !strcmp(key, nm) ) {
+                        strncpy(value, val, BCSTRLEN);
+                        return 0;
+                }
+        }
+        return 1;
+}
+
+void FFMPEG::scan_audio_options(Asset *asset, EDL *edl)
+{
+	char cin_sample_fmt[BCSTRLEN];
+	int cin_fmt = AV_SAMPLE_FMT_NONE;
+	const char *options = asset->ff_audio_options;
+	if( !get_ff_option("cin_sample_fmt", options, cin_sample_fmt) )
+		cin_fmt = (int)av_get_sample_fmt(cin_sample_fmt);
+	if( cin_fmt < 0 ) {
+		char audio_codec[BCSTRLEN]; audio_codec[0] = 0;
+		AVCodec *av_codec = !FFMPEG::get_codec(audio_codec, "audio", asset->acodec) ?
+			avcodec_find_encoder_by_name(audio_codec) : 0;
+		if( av_codec && av_codec->sample_fmts )
+			cin_fmt = find_best_sample_fmt_of_list(av_codec->sample_fmts, AV_SAMPLE_FMT_FLT);
+	}
+	if( cin_fmt < 0 ) cin_fmt = AV_SAMPLE_FMT_S16;
+	const char *name = av_get_sample_fmt_name((AVSampleFormat)cin_fmt);
+	if( !name ) name = _("None");
+	strcpy(asset->ff_sample_format, name);
+
+	char value[BCSTRLEN];
+	if( !get_ff_option("cin_bitrate", options, value) )
+		asset->ff_audio_bitrate = atoi(value);
+	if( !get_ff_option("cin_quality", options, value) )
+		asset->ff_audio_quality = atoi(value);
+}
+
+void FFMPEG::load_audio_options(Asset *asset, EDL *edl)
+{
+	char options_path[BCTEXTLEN];
+	set_option_path(options_path, "audio/%s", asset->acodec);
+        if( !load_options(options_path,
+			asset->ff_audio_options,
+			sizeof(asset->ff_audio_options)) )
+		scan_audio_options(asset, edl);
+}
+
+void FFMPEG::scan_video_options(Asset *asset, EDL *edl)
+{
+	char cin_pix_fmt[BCSTRLEN];
+	int cin_fmt = AV_PIX_FMT_NONE;
+	const char *options = asset->ff_video_options;
+	if( !get_ff_option("cin_pix_fmt", options, cin_pix_fmt) )
+			cin_fmt = (int)av_get_pix_fmt(cin_pix_fmt);
+	if( cin_fmt < 0 ) {
+		char video_codec[BCSTRLEN];  video_codec[0] = 0;
+		AVCodec *av_codec = !get_codec(video_codec, "video", asset->vcodec) ?
+			avcodec_find_encoder_by_name(video_codec) : 0;
+		if( av_codec && av_codec->pix_fmts ) {
+			if( edl ) {
+				int color_model = edl->session->color_model;
+				int max_bits = BC_CModels::calculate_pixelsize(color_model) * 8;
+				max_bits /= BC_CModels::components(color_model);
+				cin_fmt = avcodec_find_best_pix_fmt_of_list(av_codec->pix_fmts,
+					(BC_CModels::is_yuv(color_model) ?
+						(max_bits > 8 ? AV_PIX_FMT_AYUV64LE : AV_PIX_FMT_YUV444P) :
+						(max_bits > 8 ? AV_PIX_FMT_RGB48LE : AV_PIX_FMT_RGB24)), 0, 0);
+			}
+			else
+				cin_fmt = av_codec->pix_fmts[0];
+		}
+	}
+	if( cin_fmt < 0 ) cin_fmt = AV_PIX_FMT_YUV420P;
+	const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get((AVPixelFormat)cin_fmt);
+	const char *name = desc ? desc->name : _("None");
+	strcpy(asset->ff_pixel_format, name);
+
+	char value[BCSTRLEN];
+	if( !get_ff_option("cin_bitrate", options, value) )
+		asset->ff_video_bitrate = atoi(value);
+	if( !get_ff_option("cin_quality", options, value) )
+		asset->ff_video_quality = atoi(value);
+}
+
+void FFMPEG::load_video_options(Asset *asset, EDL *edl)
+{
+	char options_path[BCTEXTLEN];
+	set_option_path(options_path, "video/%s", asset->vcodec);
+        if( !load_options(options_path,
+			asset->ff_video_options,
+			sizeof(asset->ff_video_options)) )
+		scan_video_options(asset, edl);
 }
 
 int FFMPEG::load_defaults(const char *path, const char *type,
@@ -1521,18 +1672,24 @@ int FFMPEG::load_defaults(const char *path, const char *type,
 	return load_options(default_file, codec_options, len);
 }
 
-void FFMPEG::set_asset_format(Asset *asset, const char *text)
+void FFMPEG::set_asset_format(Asset *asset, EDL *edl, const char *text)
 {
 	if( asset->format != FILE_FFMPEG ) return;
 	if( text != asset->fformat )
 		strcpy(asset->fformat, text);
-	if( !asset->ff_audio_options[0] ) {
-		asset->audio_data = !load_defaults("audio", text, asset->acodec,
-			asset->ff_audio_options, sizeof(asset->ff_audio_options));
+	if( asset->audio_data && !asset->ff_audio_options[0] ) {
+		if( !load_defaults("audio", text, asset->acodec,
+				asset->ff_audio_options, sizeof(asset->ff_audio_options)) )
+			scan_audio_options(asset, edl);
+		else
+			asset->audio_data = 0;
 	}
-	if( !asset->ff_video_options[0] ) {
-		asset->video_data = !load_defaults("video", text, asset->vcodec,
-			asset->ff_video_options, sizeof(asset->ff_video_options));
+	if( asset->video_data && !asset->ff_video_options[0] ) {
+		if( !load_defaults("video", text, asset->vcodec,
+				asset->ff_video_options, sizeof(asset->ff_video_options)) )
+			scan_video_options(asset, edl);
+		else
+			asset->video_data = 0;
 	}
 }
 
@@ -1544,19 +1701,18 @@ int FFMPEG::get_encoder(const char *options,
 		eprintf(_("options open failed %s\n"),options);
 		return 1;
 	}
-	if( get_encoder(fp, format, codec, bsfilter) )
+	char line[BCTEXTLEN];
+	if( !fgets(line, sizeof(line), fp) ||
+	    scan_encoder(line, format, codec, bsfilter) )
 		eprintf(_("format/codec not found %s\n"), options);
 	fclose(fp);
 	return 0;
 }
 
-int FFMPEG::get_encoder(FILE *fp,
+int FFMPEG::scan_encoder(const char *line,
 		char *format, char *codec, char *bsfilter)
 {
 	format[0] = codec[0] = bsfilter[0] = 0;
-	char line[BCTEXTLEN];
-	if( !fgets(line, sizeof(line), fp) ) return 1;
-	line[sizeof(line)-1] = 0;
 	if( scan_option_line(line, format, codec) ) return 1;
 	char *cp = codec;
 	while( *cp && *cp != '|' ) ++cp;
@@ -1890,14 +2046,18 @@ int FFMPEG::open_decoder()
 
 int FFMPEG::init_encoder(const char *filename)
 {
-	int fd = ::open(filename,O_WRONLY);
-	if( fd < 0 ) fd = open(filename,O_WRONLY+O_CREAT,0666);
-	if( fd < 0 ) {
+// try access first for named pipes
+	int ret = access(filename, W_OK);
+	if( ret ) {
+		int fd = ::open(filename,O_WRONLY);
+		if( fd < 0 ) fd = open(filename,O_WRONLY+O_CREAT,0666);
+		if( fd >= 0 ) { close(fd);  ret = 0; }
+	}
+	if( ret ) {
 		eprintf(_("bad file path: %s\n"), filename);
 		return 1;
 	}
-	::close(fd);
-	int ret = get_file_format();
+	ret = get_file_format();
 	if( ret > 0 ) {
 		eprintf(_("bad file format: %s\n"), filename);
 		return 1;
@@ -2021,7 +2181,10 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				break;
 			}
 			ctx->time_base = st->time_base = (AVRational){1, aud->sample_rate};
-			ctx->sample_fmt = codec->sample_fmts[0];
+			AVSampleFormat sample_fmt = av_get_sample_fmt(asset->ff_sample_format);
+			if( sample_fmt == AV_SAMPLE_FMT_NONE )
+				sample_fmt = codec->sample_fmts ? codec->sample_fmts[0] : AV_SAMPLE_FMT_S16;
+			ctx->sample_fmt = sample_fmt;
 			uint64_t layout = av_get_default_channel_layout(ctx->channels);
 			aud->resample_context = swr_alloc_set_opts(NULL,
 				layout, ctx->sample_fmt, aud->sample_rate,
@@ -2070,18 +2233,10 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			vid->width = asset->width;
 			vid->height = asset->height;
 			vid->frame_rate = asset->frame_rate;
-			AVPixelFormat pix_fmt = codec->pix_fmts ?
-				codec->pix_fmts[0] : AV_PIX_FMT_YUV420P;
-			AVDictionaryEntry *tag = av_dict_get(sopts, "cin_pix_fmt", NULL, 0);
-			if( tag != 0 ) {
-				int avfmt = av_get_pix_fmt(tag->value);
-				if( avfmt < 0 ) {
-					eprintf(_("cin_pix_fmt unknown = %s\n"), tag->value);
-					ret = 1;
-					break;
-				}
-				pix_fmt = (AVPixelFormat)avfmt;
-			}
+
+			AVPixelFormat pix_fmt = av_get_pix_fmt(asset->ff_pixel_format);
+			if( pix_fmt == AV_PIX_FMT_NONE )
+				pix_fmt = codec->pix_fmts ? codec->pix_fmts[0] : AV_PIX_FMT_YUV420P;
 			ctx->pix_fmt = pix_fmt;
 			const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
 			int mask_w = (1<<desc->log2_chroma_w)-1;

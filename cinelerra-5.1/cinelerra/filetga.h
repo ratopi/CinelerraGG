@@ -22,6 +22,7 @@
 #ifndef FILETGA_H
 #define FILETGA_H
 
+#include "edl.inc"
 #include "filelist.h"
 #include "guicast.h"
 
@@ -33,10 +34,8 @@ public:
 
 	static int check_sig(Asset *asset);
 	static void get_parameters(BC_WindowBase *parent_window,
-		Asset *asset,
-		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options);
+		Asset *asset, BC_WindowBase* &format_window,
+		int audio_options, int video_options, EDL *edl);
 	int read_frame_header(char *path);
 	static const char* compression_to_str(const char *compression);
 	static const char* str_to_compression(const char *string);

@@ -23,6 +23,7 @@
 #define FILEPNG_H
 
 
+#include "edl.inc"
 #include "file.inc"
 #include "filebase.h"
 #include "filelist.h"
@@ -36,10 +37,8 @@ public:
 
 	static int check_sig(Asset *asset);
 	static void get_parameters(BC_WindowBase *parent_window,
-		Asset *asset,
-		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options);
+		Asset *asset, BC_WindowBase* &format_window,
+		int audio_options, int video_options, EDL *edl);
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame, VFrame *data);

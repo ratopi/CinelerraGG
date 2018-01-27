@@ -11,6 +11,7 @@
 #include "bcwindowbase.h"
 #include "bitspopup.h"
 #include "ctype.h"
+#include "edl.h"
 #include "ffmpeg.h"
 #include "filebase.h"
 #include "file.h"
@@ -25,7 +26,7 @@
 #include "videodevice.inc"
 
 FileFFMPEG::FileFFMPEG(Asset *asset, File *file)
-  : FileBase(asset, file)
+ : FileBase(asset, file)
 {
 	ff = 0;
 	if(asset->format == FILE_UNKNOWN)
@@ -60,8 +61,8 @@ void FFMpegConfigNum::create_objects()
 
 int FFMpegConfigNum::update_param(const char *param, const char *opts)
 {
-	char value[BCTEXTLEN];
-	if( !FileFFMPEG::get_ff_option(param, opts, value) ) {
+	char value[BCSTRLEN];
+	if( !FFMPEG::get_ff_option(param, opts, value) ) {
 		if( (*output = atoi(value)) < 0 ) {
 			disable(1);
 			return 0;
@@ -134,7 +135,69 @@ int FFMpegVideoQuality::handle_event()
 	return ret;
 }
 
-void FileFFMPEG::set_parameters(char *cp, int len, const char *bp)
+FFMpegPixelFormat::FFMpegPixelFormat(FFMPEGConfigVideo *vid_config,
+	int x, int y, int w, int list_h)
+ : BC_PopupTextBox(vid_config, 0, 0, x, y, w, list_h)
+{
+	this->vid_config = vid_config;
+}
+
+int FFMpegPixelFormat::handle_event()
+{
+	strncpy(vid_config->asset->ff_pixel_format, get_text(),
+		sizeof(vid_config->asset->ff_pixel_format));
+	return 1;
+}
+
+void FFMpegPixelFormat::update_formats()
+{
+	pixfmts.remove_all_objects();
+	char video_codec[BCSTRLEN]; video_codec[0] = 0;
+	const char *vcodec = vid_config->asset->vcodec;
+	AVCodec *av_codec = !FFMPEG::get_codec(video_codec, "video", vcodec) ?
+		avcodec_find_encoder_by_name(video_codec) : 0;
+	const AVPixelFormat *pix_fmts = av_codec ? av_codec->pix_fmts : 0;
+	if( pix_fmts ) {
+		for( int i=0; pix_fmts[i]>=0; ++i ) {
+			const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmts[i]);
+			if( desc ) pixfmts.append(new BC_ListBoxItem(desc->name));
+		}
+	}
+	update_list(&pixfmts);
+}
+
+FFMpegSampleFormat::FFMpegSampleFormat(FFMPEGConfigAudio *aud_config,
+	int x, int y, int w, int list_h)
+ : BC_PopupTextBox(aud_config, 0, 0, x, y, w, list_h)
+{
+	this->aud_config = aud_config;
+}
+
+int FFMpegSampleFormat::handle_event()
+{
+	strncpy(aud_config->asset->ff_sample_format, get_text(),
+		sizeof(aud_config->asset->ff_sample_format));
+	return 1;
+}
+
+void FFMpegSampleFormat::update_formats()
+{
+	samplefmts.remove_all_objects();
+	char audio_codec[BCSTRLEN]; audio_codec[0] = 0;
+	const char *acodec = aud_config->asset->acodec;
+	AVCodec *av_codec = !FFMPEG::get_codec(audio_codec, "audio", acodec) ?
+		avcodec_find_encoder_by_name(audio_codec) : 0;
+	const AVSampleFormat *sample_fmts = av_codec ? av_codec->sample_fmts : 0;
+	if( sample_fmts ) {
+		for( int i=0; sample_fmts[i]>=0; ++i ) {
+			const char *name = av_get_sample_fmt_name(sample_fmts[i]);
+			if( name ) samplefmts.append(new BC_ListBoxItem(name));
+		}
+	}
+	update_list(&samplefmts);
+}
+
+void FileFFMPEG::set_options(char *cp, int len, const char *bp)
 {
 	char *ep = cp + len-2, ch = 0;
 	while( cp < ep && *bp != 0 ) { ch = *bp++; *cp++ = ch; }
@@ -144,26 +207,35 @@ void FileFFMPEG::set_parameters(char *cp, int len, const char *bp)
 
 void FileFFMPEG::get_parameters(BC_WindowBase *parent_window,
 		Asset *asset, BC_WindowBase *&format_window,
-		int audio_options, int video_options)
+		int audio_options, int video_options, EDL *edl)
 {
-	if(audio_options) {
-		FFMPEGConfigAudio *window = new FFMPEGConfigAudio(parent_window, asset);
+	Asset *ff_asset = new Asset();
+	ff_asset->copy_from(asset, 0);
+	if( audio_options ) {
+		FFMPEGConfigAudio *window = new FFMPEGConfigAudio(parent_window, ff_asset, edl);
 		format_window = window;
 		window->create_objects();
-		if( !window->run_window() )
-			set_parameters(asset->ff_audio_options, sizeof(asset->ff_audio_options),
-				 window->audio_options->get_text());
+		if( !window->run_window() ) {
+			asset->copy_from(ff_asset,0);
+			set_options(asset->ff_audio_options,
+				sizeof(asset->ff_audio_options),
+				window->audio_options->get_text());
+		}
 		delete window;
 	}
-	else if(video_options) {
-		FFMPEGConfigVideo *window = new FFMPEGConfigVideo(parent_window, asset);
+	else if( video_options ) {
+		FFMPEGConfigVideo *window = new FFMPEGConfigVideo(parent_window, ff_asset, edl);
 		format_window = window;
 		window->create_objects();
-		if( !window->run_window() )
-			set_parameters(asset->ff_video_options, sizeof(asset->ff_video_options),
-				 window->video_options->get_text());
+		if( !window->run_window() ) {
+			asset->copy_from(ff_asset,0);
+			set_options(asset->ff_video_options,
+				sizeof(asset->ff_video_options),
+				window->video_options->get_text());
+		}
 		delete window;
 	}
+	ff_asset->remove_user();
 }
 
 int FileFFMPEG::check_sig(Asset *asset)
@@ -379,43 +451,9 @@ int FileFFMPEG::get_best_colormodel(Asset *asset, int driver)
 	return BC_YUV420P;
 }
 
-int FileFFMPEG::can_render(const char *fformat, const char *type)
-{
-	FileSystem fs;
-	char option_path[BCTEXTLEN];
-	FFMPEG::set_option_path(option_path, type);
-	fs.update(option_path);
-	int total_files = fs.total_files();
-	for( int i=0; i<total_files; ++i ) {
-		const char *name = fs.get_entry(i)->get_name();
-		const char *ext = strrchr(name,'.');
-		if( !ext ) continue;
-		if( !strcmp(fformat, ++ext) ) return 1;
-	}
-	return 0;
-}
-
-int FileFFMPEG::get_ff_option(const char *nm, const char *options, char *value)
-{
-	for( const char *cp=options; *cp!=0; ) {
-		char line[BCTEXTLEN], *bp = line, *ep = bp+sizeof(line)-1;
-		while( bp < ep && *cp && *cp!='\n' ) *bp++ = *cp++;
-		if( *cp ) ++cp;
-		*bp = 0;
-		if( !line[0] || line[0] == '#' || line[0] == ';' ) continue;
-		char key[BCSTRLEN], val[BCTEXTLEN];
-		if( FFMPEG::scan_option_line(line, key, val) ) continue;
-		if( !strcmp(key, nm) ) {
-			strcpy(value, val);
-			return 0;
-		}
-	}
-	return 1;
-}
-
 //======
 
-FFMPEGConfigAudio::FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
+FFMPEGConfigAudio::FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset, EDL *edl)
  : BC_Window(_(PROGRAM_NAME ": Audio Preset"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
@@ -423,6 +461,7 @@ FFMPEGConfigAudio::FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
+	this->edl = edl;
 	preset_popup = 0;
 
 	bitrate = 0;
@@ -437,6 +476,11 @@ FFMPEGConfigAudio::~FFMPEGConfigAudio()
 	delete preset_popup;
 	presets.remove_all_objects();
 	unlock_window();
+}
+
+void FFMPEGConfigAudio::load_options()
+{
+	FFMPEG::load_audio_options(asset, edl);
 }
 
 void FFMPEGConfigAudio::create_objects()
@@ -483,8 +527,20 @@ void FFMPEGConfigAudio::create_objects()
 	quality->create_objects();
 	quality->set_increment(1);
 	quality->set_boundaries((int64_t)-1, (int64_t)51);
-
 	y += quality->get_h() + 10;
+
+	add_subwindow(new BC_Title(x, y, _("Samples:")));
+	sample_format = new FFMpegSampleFormat(this, x+90, y, 100, 120);
+	sample_format->create_objects();
+	if( asset->acodec[0] ) {
+		sample_format->update_formats();
+		if( !asset->ff_audio_options[0] )
+			load_options();
+	}
+	if( !asset->ff_sample_format[0] ) strcpy(asset->ff_sample_format, _("None"));
+	sample_format->update(asset->ff_sample_format);
+	y += sample_format->get_h() + 10;
+
 	BC_Title *title = new BC_Title(x, y, _("Audio Options:"));
 	add_subwindow(title);
 
@@ -493,13 +549,7 @@ void FFMPEGConfigAudio::create_objects()
 	add_subwindow(new FFOptionsViewAudio(this, x1, y, _("view")));
 
 	y += 25;
-	if( !asset->ff_audio_options[0] && asset->acodec[0] ) {
-		FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
-		FFMPEG::load_options(option_path, asset->ff_audio_options,
-			 sizeof(asset->ff_audio_options));
-	}
-
-	audio_options = new FFAudioOptions(this, x, y, get_w()-x-20, 10,
+	audio_options = new FFAudioOptions(this, x, y, get_w()-x-20, 8,
 		 sizeof(asset->ff_audio_options)-1, asset->ff_audio_options);
 	audio_options->create_objects();
 	add_subwindow(new BC_OKButton(this));
@@ -538,17 +588,16 @@ FFMPEGConfigAudioPopup::FFMPEGConfigAudioPopup(FFMPEGConfigAudio *popup, int x, 
 int FFMPEGConfigAudioPopup::handle_event()
 {
 	strcpy(popup->asset->acodec, get_text());
+	popup->sample_format->update_formats();
 	Asset *asset = popup->asset;
-	asset->ff_audio_bitrate = 0;
-	char option_path[BCTEXTLEN];
-	FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
-	FFMPEG::load_options(option_path, asset->ff_audio_options,
-			 sizeof(asset->ff_audio_options));
+	asset->ff_audio_bitrate = 0;  asset->ff_audio_quality = -1;
+	popup->load_options();
 	popup->audio_options->update(asset->ff_audio_options);
 	popup->audio_options->set_text_row(0);
 
 	popup->bitrate->update_param("cin_bitrate", asset->ff_audio_options);
 	popup->quality->update_param("cin_quality", asset->ff_audio_options);
+	popup->sample_format->update(asset->ff_sample_format);
 	return 1;
 }
 
@@ -568,7 +617,7 @@ int FFMPEGConfigAudioToggle::handle_event()
 
 //======
 
-FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
+FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset, EDL *edl)
  : BC_Window(_(PROGRAM_NAME ": Video Preset"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
@@ -576,6 +625,7 @@ FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
+	this->edl = edl;
 	preset_popup = 0;
 
 	bitrate = 0;
@@ -590,6 +640,11 @@ FFMPEGConfigVideo::~FFMPEGConfigVideo()
 	if(preset_popup) delete preset_popup;
 	presets.remove_all_objects();
 	unlock_window();
+}
+
+void FFMPEGConfigVideo::load_options()
+{
+	FFMPEG::load_video_options(asset, edl);
 }
 
 void FFMPEGConfigVideo::create_objects()
@@ -641,8 +696,20 @@ void FFMPEGConfigVideo::create_objects()
 	quality->create_objects();
 	quality->set_increment(1);
 	quality->set_boundaries((int64_t)-1, (int64_t)51);
-
 	y += quality->get_h() + 10;
+
+	add_subwindow(new BC_Title(x, y, _("Pixels:")));
+	pixel_format = new FFMpegPixelFormat(this, x+90, y, 100, 120);
+	pixel_format->create_objects();
+	if( asset->vcodec[0] ) {
+		pixel_format->update_formats();
+		if( !asset->ff_video_options[0] )
+			load_options();
+	}
+	if( !asset->ff_pixel_format[0] ) strcpy(asset->ff_pixel_format, _("None"));
+	pixel_format->update(asset->ff_pixel_format);
+	y += pixel_format->get_h() + 10;
+
 	BC_Title *title = new BC_Title(x, y, _("Video Options:"));
 	add_subwindow(title);
 
@@ -651,13 +718,7 @@ void FFMPEGConfigVideo::create_objects()
 	add_subwindow(new FFOptionsViewVideo(this, x1, y, _("view")));
 
 	y += 25;
-	if( !asset->ff_video_options[0] && asset->vcodec[0] ) {
-		FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
-		FFMPEG::load_options(option_path, asset->ff_video_options,
-			 sizeof(asset->ff_video_options));
-	}
-
-	video_options = new FFVideoOptions(this, x, y, get_w()-x-20, 10,
+	video_options = new FFVideoOptions(this, x, y, get_w()-x-20, 8,
 		 sizeof(asset->ff_video_options)-1, asset->ff_video_options);
 	video_options->create_objects();
 	add_subwindow(new BC_OKButton(this));
@@ -695,17 +756,16 @@ FFMPEGConfigVideoPopup::FFMPEGConfigVideoPopup(FFMPEGConfigVideo *popup, int x, 
 int FFMPEGConfigVideoPopup::handle_event()
 {
 	strcpy(popup->asset->vcodec, get_text());
+	popup->pixel_format->update_formats();
 	Asset *asset = popup->asset;
-	char option_path[BCTEXTLEN];
 	asset->ff_video_bitrate = 0;  asset->ff_video_quality = -1;
-	FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
-	FFMPEG::load_options(option_path, asset->ff_video_options,
-			 sizeof(asset->ff_video_options));
+	popup->load_options();
 	popup->video_options->update(asset->ff_video_options);
 	popup->video_options->set_text_row(0);
 
 	popup->bitrate->update_param("cin_bitrate", asset->ff_video_options);
 	popup->quality->update_param("cin_quality", asset->ff_video_options);
+	popup->pixel_format->update(asset->ff_pixel_format);
 	return 1;
 }
 
@@ -900,16 +960,16 @@ char *FFOptions_Opt::get(char *vp, int sz)
 	void *obj = (void *)options->obj;
 	uint8_t *bp = 0;
 	if( av_opt_get(obj, opt->name, 0, &bp) >= 0 && bp != 0 ) {
-                const char *val = (const char *)bp;
+	const char *val = (const char *)bp;
 		if( opt->unit && *val ) {
 			int id = atoi(val);
 			const char *uid = unit_name(id);
 			if( uid ) val = uid;
 		}
-                cp = sz >= 0 ? strncpy(vp,val,sz) : strcpy(vp, val);
-                if( sz > 0 ) vp[sz-1] = 0;
-                av_freep(&bp);
-        }
+		cp = sz >= 0 ? strncpy(vp,val,sz) : strcpy(vp, val);
+		if( sz > 0 ) vp[sz-1] = 0;
+		av_freep(&bp);
+	}
 
 	return cp;
 }

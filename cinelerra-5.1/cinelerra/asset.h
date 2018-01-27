@@ -208,12 +208,12 @@ public:
 
 // ffmpeg muxer file extension
 	char fformat[BCSTRLEN];
-	char ff_audio_options[BCTEXTLEN];
 	char ff_video_options[BCTEXTLEN];
-	int ff_audio_bitrate;
-	int ff_audio_quality;
-	int ff_video_bitrate;
-	int ff_video_quality;
+	char ff_pixel_format[BCSTRLEN];
+	int ff_video_bitrate, ff_video_quality;
+	char ff_audio_options[BCTEXTLEN];
+	char ff_sample_format[BCSTRLEN];
+	int ff_audio_bitrate, ff_audio_quality;
 
 // PNG video compression
 	int png_use_alpha;

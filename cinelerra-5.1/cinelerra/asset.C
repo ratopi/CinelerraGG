@@ -85,9 +85,11 @@ int Asset::init_values()
 	strcpy(acodec, "");
 
 	ff_audio_options[0] = 0;
-	ff_video_options[0] = 0;
+	ff_sample_format[0] = 0;
 	ff_audio_bitrate = 0;
 	ff_audio_quality = -1;
+	ff_video_options[0] = 0;
+	ff_pixel_format[0] = 0;
 	ff_video_bitrate = 0;
 	ff_video_quality = -1;
 
@@ -223,9 +225,11 @@ void Asset::copy_format(Asset *asset, int do_index)
 	strcpy(acodec, asset->acodec);
 
 	strcpy(ff_audio_options, asset->ff_audio_options);
-	strcpy(ff_video_options, asset->ff_video_options);
+	strcpy(ff_sample_format, asset->ff_sample_format);
 	ff_audio_bitrate = asset->ff_audio_bitrate;
 	ff_audio_quality = asset->ff_audio_quality;
+	strcpy(ff_video_options, asset->ff_video_options);
+	strcpy(ff_pixel_format, asset->ff_pixel_format);
 	ff_video_bitrate = asset->ff_video_bitrate;
 	ff_video_quality = asset->ff_video_quality;
 
@@ -353,6 +357,7 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 			!strcmp(acodec, asset.acodec));
 		if(result && format == FILE_FFMPEG)
 			result = !strcmp(ff_audio_options, asset.ff_audio_options) &&
+				!strcmp(ff_sample_format, asset.ff_sample_format) &&
 				ff_audio_bitrate == asset.ff_audio_bitrate &&
 				ff_audio_quality == asset.ff_audio_quality;
 	}
@@ -373,6 +378,7 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 			jpeg_sphere == asset.jpeg_sphere);
 		if(result && format == FILE_FFMPEG)
 			result = !strcmp(ff_video_options, asset.ff_video_options) &&
+				!strcmp(ff_pixel_format, asset.ff_pixel_format) &&
 				ff_video_bitrate == asset.ff_video_bitrate &&
 				ff_video_quality == asset.ff_video_quality;
 	}
@@ -795,9 +801,11 @@ void Asset::load_defaults(BC_Hash *defaults,
 	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FREQUENCY", theora_keyframe_force_frequency);
 
 	GET_DEFAULT("FF_AUDIO_OPTIONS", ff_audio_options);
+	GET_DEFAULT("FF_SAMPLE_FORMAT", ff_sample_format);
 	ff_audio_bitrate = GET_DEFAULT("FF_AUDIO_BITRATE", ff_audio_bitrate);
 	ff_audio_quality = GET_DEFAULT("FF_AUDIO_QUALITY", ff_audio_quality);
 	GET_DEFAULT("FF_VIDEO_OPTIONS", ff_video_options);
+	GET_DEFAULT("FF_PIXEL_FORMAT", ff_pixel_format);
 	ff_video_bitrate = GET_DEFAULT("FF_VIDEO_BITRATE", ff_video_bitrate);
 	ff_video_quality = GET_DEFAULT("FF_VIDEO_QUALITY", ff_video_quality);
 
@@ -887,9 +895,11 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
 
 		UPDATE_DEFAULT("FF_AUDIO_OPTIONS", ff_audio_options);
+		UPDATE_DEFAULT("FF_SAMPLE_FORMAT", ff_sample_format);
 		UPDATE_DEFAULT("FF_AUDIO_BITRATE", ff_audio_bitrate);
 		UPDATE_DEFAULT("FF_AUDIO_QUALITY", ff_audio_quality);
 		UPDATE_DEFAULT("FF_VIDEO_OPTIONS", ff_video_options);
+		UPDATE_DEFAULT("FF_PIXEL_FORMAT",  ff_pixel_format);
 		UPDATE_DEFAULT("FF_VIDEO_BITRATE", ff_video_bitrate);
 		UPDATE_DEFAULT("FF_VIDEO_QUALITY", ff_video_quality);
 
@@ -988,9 +998,11 @@ int Asset::dump(FILE *fp)
 	fprintf(fp,"   format %d\n", format);
 	fprintf(fp,"   fformat=\"%s\"\n", fformat);
 	fprintf(fp,"   ff_audio_options=\"%s\"\n", ff_audio_options);
+	fprintf(fp,"   ff_sample_format=\"%s\"\n", ff_sample_format);
 	fprintf(fp,"   ff_audio_bitrate=%d\n", ff_audio_bitrate);
 	fprintf(fp,"   ff_audio_quality=%d\n", ff_audio_quality);
 	fprintf(fp,"   ff_video_options=\"%s\"\n", ff_video_options);
+	fprintf(fp,"   ff_pixel_format=\"%s\"\n", ff_pixel_format);
 	fprintf(fp,"   ff_video_bitrate=%d\n", ff_video_bitrate);
 	fprintf(fp,"   ff_video_quality=%d\n", ff_video_quality);
 	fprintf(fp,"   audio_data %d channels %d samplerate %d bits %d"

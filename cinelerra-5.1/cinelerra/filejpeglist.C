@@ -55,10 +55,8 @@ char* FileJPEGList::extension()
 }
 
 void FileJPEGList::get_parameters(BC_WindowBase *parent_window,
-	Asset *asset,
-	BC_WindowBase* &format_window,
-	int audio_options,
-	int video_options)
+	Asset *asset, BC_WindowBase* &format_window,
+	int audio_options, int video_options, EDL *edl)
 {
 	if(video_options)
 	{

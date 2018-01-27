@@ -24,6 +24,7 @@
 
 #include "bitspopup.inc"
 #include "condition.inc"
+#include "edl.inc"
 #include "file.inc"
 #include "filebase.h"
 #include "indexfile.inc"
@@ -63,10 +64,8 @@ public:
 	friend class FileMPEGVideo;
 
 	static void get_parameters(BC_WindowBase *parent_window,
-		Asset *asset,
-		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options);
+		Asset *asset, BC_WindowBase* &format_window,
+		int audio_options, int video_options, EDL *edl);
 
 	static int check_sig(Asset *asset);
 

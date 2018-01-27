@@ -22,6 +22,7 @@
 #ifndef FILEJPEG_H
 #define FILEJPEG_H
 
+#include "edl.inc"
 #include "file.inc"
 #include "filelist.h"
 #include "vframe.inc"
@@ -35,10 +36,8 @@ public:
 // basic commands for every file interpreter
 	static int check_sig(Asset *asset);
 	static void get_parameters(BC_WindowBase *parent_window,
-		Asset *asset,
-		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options);
+		Asset *asset, BC_WindowBase* &format_window,
+		int audio_options, int video_options, EDL *edl);
 
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);

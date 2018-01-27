@@ -36,24 +36,18 @@
 class FormatTools
 {
 public:
-	FormatTools(MWindow *mwindow,
-				BC_WindowBase *window,
-				Asset *asset);
+	FormatTools(MWindow *mwindow, BC_WindowBase *window, Asset *asset);
 	virtual ~FormatTools();
 
-	void create_objects(int &init_x,
-						int &init_y,
-						int do_audio,    // Include tools for audio
-						int do_video,   // Include tools for video
-						int prompt_audio,  // Include checkbox for audio
-						int prompt_video,  // Include checkbox for video
-						int prompt_audio_channels,
-						int prompt_video_compression,
-						const char *locked_compressor,  // Select compressors to be offered
-						int recording, // Change captions for recording
-						int *file_per_label,  // prompt if nonzero
-						int brender,   // Supply file formats for background rendering
-						int horizontal_layout = 0);
+	void create_objects(int &init_x, int &init_y,
+		int do_audio, int do_video,   // Include tools for audio, video
+		int prompt_audio,  int prompt_video,  // Include checkbox for audio, video
+		int prompt_audio_channels, int prompt_video_compression,
+		const char *locked_compressor,  // Select compressors to be offered
+		int recording, // Change captions for recording
+		int *file_per_label,  // prompt if nonzero
+		int brender,   // Supply file formats for background rendering
+		int horizontal_layout = 0);
 // In recording preferences, aspects of the format are locked
 // depending on the driver used.
 	void update_driver(int driver);
@@ -100,7 +94,6 @@ public:
 
 	FormatFilePerLabel *labeled_files;
 
-	ArrayList<PluginServer*> *plugindb;
 	MWindow *mwindow;
 	const char *locked_compressor;
 	int recording;

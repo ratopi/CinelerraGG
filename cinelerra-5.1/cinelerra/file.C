@@ -165,24 +165,19 @@ int File::get_options(FormatTools *format,
 	int audio_options, int video_options)
 {
 	BC_WindowBase *parent_window = format->window;
-	//ArrayList<PluginServer*> *plugindb = format->plugindb;
 	Asset *asset = format->asset;
-
+	EDL *edl = format->mwindow ? format->mwindow->edl : 0;
 	format_window = 0;
 	getting_options = 1;
 	format_completion->lock("File::get_options");
 	switch( asset->format ) {
-	case FILE_AC3:
-		FileAC3::get_parameters(parent_window,
-			asset,
-			format_window,
-			audio_options,
-			video_options);
+	case FILE_AC3: FileAC3::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options, edl);
 		break;
 #ifdef HAVE_DV
 	case FILE_RAWDV:
 		FileDV::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 #endif
 	case FILE_PCM:
@@ -191,56 +186,56 @@ int File::get_options(FormatTools *format,
 	case FILE_AIFF:
 	case FILE_SND:
 		FileSndFile::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 	case FILE_FFMPEG:
 		FileFFMPEG::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 	case FILE_AMPEG:
 	case FILE_VMPEG:
 		FileMPEG::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 	case FILE_JPEG:
 	case FILE_JPEG_LIST:
 		FileJPEG::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 #ifdef HAVE_OPENEXR
 	case FILE_EXR:
 	case FILE_EXR_LIST:
 		FileEXR::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 #endif
 	case FILE_FLAC:
 		FileFLAC::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 	case FILE_PNG:
 	case FILE_PNG_LIST:
 		FilePNG::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 	case FILE_PPM:
 	case FILE_PPM_LIST:
 		FilePPM::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 	case FILE_TGA:
 	case FILE_TGA_LIST:
 		FileTGA::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 	case FILE_TIFF:
 	case FILE_TIFF_LIST:
 		FileTIFF::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 	case FILE_OGG:
 		FileOGG::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options);
+			audio_options, video_options, edl);
 		break;
 	default:
 		break;
@@ -1430,7 +1425,7 @@ int File::renders_video(int format)
 int File::renders_video(Asset *asset)
 {
 	return asset->format == FILE_FFMPEG ?
-		FileFFMPEG::renders_video(asset->fformat) :
+		FFMPEG::renders_video(asset->fformat) :
 		renders_video(asset->format);
 }
 
@@ -1456,7 +1451,7 @@ int File::renders_audio(int format)
 int File::renders_audio(Asset *asset)
 {
 	return asset->format == FILE_FFMPEG ?
-		FileFFMPEG::renders_audio(asset->fformat) :
+		FFMPEG::renders_audio(asset->fformat) :
 		renders_audio(asset->format);
 }
 

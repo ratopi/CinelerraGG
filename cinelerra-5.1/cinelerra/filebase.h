@@ -26,6 +26,7 @@
 #include "assets.inc"
 #include "bccmodels.h"
 #include "edit.inc"
+#include "edl.inc"
 #include "ffmpeg.inc"
 #include "guicast.h"
 #include "file.inc"
@@ -54,22 +55,8 @@ public:
 	friend class FileList;
 	friend class FrameWriter;
 
-
-
-
 	void get_mode(char *mode, int rd, int wr);
 	void reset_parameters();
-
-
-
-	virtual void get_parameters(BC_WindowBase *parent_window,
-			Asset *asset,
-			BC_WindowBase **format_window,
-			int audio_options,
-			int video_options,
-			int lock_compressor) {};
-
-
 
 	virtual int get_index(IndexFile *index_file, MainProgressBar *progress_bar) { return -1; }
 	virtual int check_header() { return 0; }  // Test file to see if it is of this type.

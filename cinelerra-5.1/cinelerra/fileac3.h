@@ -30,6 +30,7 @@ extern "C" {
 #include "libswresample/swresample.h"
 };
 
+#include "edl.inc"
 #include "filebase.h"
 #include "filempeg.inc"
 #include "indexfile.inc"
@@ -45,10 +46,8 @@ public:
 
 	int reset_parameters_derived();
 	static void get_parameters(BC_WindowBase *parent_window,
-			Asset *asset,
-			BC_WindowBase* &format_window,
-			int audio_options,
-			int video_options);
+		Asset *asset, BC_WindowBase* &format_window,
+		int audio_options, int video_options, EDL *edl);
 	static int check_sig();
 	int open_file(int rd, int wr);
 	int close_file();

@@ -22,6 +22,7 @@
 #ifndef FILEPPM_H
 #define FILEPPM_H
 
+#include "edl.inc"
 #include "filelist.h"
 #include "fileppm.inc"
 
@@ -43,8 +44,9 @@ public:
 	int read_frame_header(char *path);
 	int write_frame(VFrame *frame, VFrame *output, FrameWriterUnit *unit);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
-	static void get_parameters(BC_WindowBase *parent_window, Asset *asset,
-		BC_WindowBase* &format_window, int audio_options, int video_options);
+	static void get_parameters(BC_WindowBase *parent_window,
+		Asset *asset, BC_WindowBase* &format_window,
+		int audio_options, int video_options, EDL *edl);
 };
 
 class PPMConfigVideo : public BC_Window

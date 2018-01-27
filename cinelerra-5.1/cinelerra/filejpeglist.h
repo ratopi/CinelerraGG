@@ -22,6 +22,7 @@
 #ifndef FILEJPEGLIST_H
 #define FILEJPEGLIST_H
 
+#include "edl.inc"
 #include "file.inc"
 #include "filebase.h"
 #include "filelist.h"
@@ -36,10 +37,8 @@ public:
 
 
 	static void get_parameters(BC_WindowBase *parent_window,
-		Asset *asset,
-		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options);
+		Asset *asset, BC_WindowBase* &format_window,
+		int audio_options, int video_options, EDL *edl);
 
 	int get_best_colormodel(int driver, int colormodel);
 	int read_frame(VFrame *frame, VFrame *data);

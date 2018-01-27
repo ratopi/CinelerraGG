@@ -25,14 +25,11 @@
 #include "ffmpeg.h"
 #include "formatpopup.h"
 #include "language.h"
-#include "pluginserver.h"
-
 
 
 FormatPopup::FormatPopup(int x, int y, int do_audio, int do_video, int use_brender)
  : BC_ListBox(x, y, 200, 200, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
 {
-	this->plugindb = plugindb;
 	this->do_audio = do_audio;
 	this->do_video = do_video;
 	this->use_brender = use_brender;
@@ -101,10 +98,9 @@ int FormatPopup::handle_event()
 }
 
 
-FFMPEGPopup::FFMPEGPopup(ArrayList<PluginServer*> *plugindb, int x, int y)
+FFMPEGPopup::FFMPEGPopup(int x, int y)
  : BC_ListBox(x, y, 100, 200, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
 {
-	this->plugindb = plugindb;
 	set_tooltip(_("Set ffmpeg file type"));
 }
 

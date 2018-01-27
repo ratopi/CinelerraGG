@@ -46,7 +46,6 @@ FormatTools::FormatTools(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->window = window;
 	this->asset = asset;
-	this->plugindb = mwindow->plugindb;
 
 	aparams_button = 0;
 	vparams_button = 0;
@@ -164,7 +163,7 @@ void FormatTools::create_objects(
 	format_button->create_objects();
 	x += format_button->get_w() + 5;
 	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y, 70, 1, asset->fformat));
-	FFMPEG::set_asset_format(asset, asset->fformat);
+	FFMPEG::set_asset_format(asset, mwindow->edl, asset->fformat);
 	x += ffmpeg_type->get_w();
 	window->add_subwindow(format_ffmpeg = new FormatFFMPEG(x, y, this));
 	format_ffmpeg->create_objects();
@@ -753,7 +752,7 @@ int FormatFormat::handle_event()
 
 
 FormatFFMPEG::FormatFFMPEG(int x, int y, FormatTools *format)
- : FFMPEGPopup(format->plugindb, x, y)
+ : FFMPEGPopup(x, y)
 {
 	this->format = format;
 }
@@ -770,7 +769,7 @@ int FormatFFMPEG::handle_event()
 		format->ffmpeg_type->update(text);
 		format->asset->ff_audio_options[0] = 0;
 		format->asset->ff_video_options[0] = 0;
-		FFMPEG::set_asset_format(format->asset, text);
+		FFMPEG::set_asset_format(format->asset, format->mwindow->edl, text);
 		format->update_extension();
 		format->close_format_windows();
 		format->update_format();

@@ -4,6 +4,7 @@ maxrate=20000000
 bufsize=20000000
 preset=veryslow
 profile=high
+cin_pix_fmt yuv420p
 level=41
 bf=8
 refs=4

@@ -5,6 +5,7 @@
 #include "bcdialog.h"
 #include "bcwindowbase.inc"
 #include "bitspopup.inc"
+#include "edl.inc"
 #include "ffmpeg.h"
 #include "filebase.h"
 #include "fileffmpeg.inc"
@@ -31,19 +32,16 @@ public:
 	static void ff_lock(const char *cp=0);
 	static void ff_unlock();
 
-	static void set_parameters(char *cp, int len, const char *bp);
-	static void get_parameters(BC_WindowBase *parent_window,Asset *asset,
-	   BC_WindowBase *&format_window,int audio_options,int video_options);
+	static void set_options(char *cp, int len, const char *bp);
+	static void get_parameters(BC_WindowBase *parent_window,
+		Asset *asset, BC_WindowBase *&format_window,
+		int audio_options,int video_options, EDL *edl);
 	static int check_sig(Asset *asset);
 	int get_best_colormodel(int driver, int vstream);
 	int get_video_info(int track, int &pid, double &framerate,
 		int &width, int &height, char *title=0);
 	int get_audio_for_video(int vstream, int astream, int64_t &channel_mask);
 	static void get_info(char *path,char *text,int len);
-	static int can_render(const char *fformat, const char *type);
-	static int renders_audio(const char *fformat) { return can_render(fformat, "audio"); }
-	static int renders_video(const char *fformat) { return can_render(fformat, "video"); }
-	static int get_ff_option(const char *nm, const char *options, char *value);
 	int open_file(int rd,int wr);
 	int get_index(IndexFile *index_file, MainProgressBar *progress_bar);
 	int close_file(void);
@@ -126,15 +124,41 @@ public:
 	int handle_event();
 };
 
+class FFMpegPixelFormat : public BC_PopupTextBox
+{
+public:
+	FFMpegPixelFormat(FFMPEGConfigVideo *vid_config, int x, int y, int w, int list_h);
+
+        FFMPEGConfigVideo *vid_config;
+	ArrayList<BC_ListBoxItem*> pixfmts;
+
+	int handle_event();
+	void update_formats();
+};
+
+class FFMpegSampleFormat : public BC_PopupTextBox
+{
+public:
+	FFMpegSampleFormat(FFMPEGConfigAudio *aud_config, int x, int y, int w, int list_h);
+
+        FFMPEGConfigAudio *aud_config;
+	ArrayList<BC_ListBoxItem*> samplefmts;
+
+	int handle_event();
+	void update_formats();
+};
+
 class FFMPEGConfigAudio : public BC_Window
 {
 public:
-	FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset);
+	FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset, EDL *edl);
 	~FFMPEGConfigAudio();
 
 	void create_objects();
 	int close_event();
+	void load_options();
 
+	FFMpegSampleFormat *sample_format;
 	ArrayList<BC_ListBoxItem*> presets;
 	FFMPEGConfigAudioPopup *preset_popup;
 	FFMpegAudioBitrate *bitrate;
@@ -142,6 +166,7 @@ public:
 	FFAudioOptions *audio_options;
 	BC_WindowBase *parent_window;
 	Asset *asset;
+	EDL *edl;
 	FFOptionsDialog *ff_options_dialog;
 };
 
@@ -177,12 +202,14 @@ public:
 class FFMPEGConfigVideo : public BC_Window
 {
 public:
-	FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset);
+	FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset, EDL *edl);
 	~FFMPEGConfigVideo();
 
 	void create_objects();
 	int close_event();
+	void load_options();
 
+	FFMpegPixelFormat *pixel_format;
 	ArrayList<BC_ListBoxItem*> presets;
 	FFMPEGConfigVideoPopup *preset_popup;
 	BC_WindowBase *parent_window;
@@ -190,6 +217,7 @@ public:
 	FFMpegVideoQuality *quality;
 	FFVideoOptions *video_options;
 	Asset *asset;
+	EDL *edl;
 	FFOptionsDialog *ff_options_dialog;
 };
 

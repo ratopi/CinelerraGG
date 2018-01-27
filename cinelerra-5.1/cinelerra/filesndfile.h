@@ -26,6 +26,7 @@
 #include <stdint.h>
 
 #include "bitspopup.inc"
+#include "edl.inc"
 #include "filebase.h"
 #include "filesndfile.h"
 #include "sndfile.h"
@@ -53,10 +54,8 @@ public:
 	void asset_to_format();
 
 	static void get_parameters(BC_WindowBase *parent_window,
-		Asset *asset,
-		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options);
+		Asset *asset, BC_WindowBase* &format_window,
+		int audio_options, int video_options, EDL *edl);
 
 	SNDFILE *fd;
 	SF_INFO fd_config;
