@@ -64,7 +64,6 @@ public:
 	int state;
 
 	void show_playback_cursor(int64_t position);
-	int view_follows_playback;
 // Delay until startup
 	Condition *startup_lock;
 	MWindow *mwindow;

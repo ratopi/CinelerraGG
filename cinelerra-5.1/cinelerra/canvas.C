@@ -883,6 +883,16 @@ void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
 }
 
 
+void Canvas::clear(int flush)
+{
+	if( refresh_frame )
+		refresh_frame->clear_frame();
+	BC_WindowBase *wdw = get_canvas();
+	if( !wdw ) return;
+	wdw->set_bg_color(BLACK);
+	wdw->clear_box(0,0, wdw->get_w(), wdw->get_h());
+	wdw->flash(flush);
+}
 
 
 

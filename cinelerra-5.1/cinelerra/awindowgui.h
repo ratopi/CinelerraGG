@@ -55,6 +55,8 @@ public:
 
 	void create_objects();
 	void reset();
+	void draw_wave(VFrame *frame, double *dp, int len,
+		int base_color, int line_color);
 
 	MWindow *mwindow;
 	AWindowGUI *gui;

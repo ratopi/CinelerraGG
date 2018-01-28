@@ -54,6 +54,7 @@
 #include "nestededls.h"
 #include "newfolder.h"
 #include "preferences.h"
+#include "samples.h"
 #include "theme.h"
 #include "vframe.h"
 #include "vicon.h"
@@ -211,6 +212,32 @@ AssetPicon::~AssetPicon()
 	}
 }
 
+void AssetPicon::draw_wave(VFrame *frame, double *dp, int len, int base_color, int line_color)
+{
+	int w = frame->get_w(), h = frame->get_h();
+	int h1 = h-1, h2 = h/2, y = h2;
+	int rgb_color = frame->pixel_rgb;
+	for( int x=0,x1=0,x2=0; x<w; ++x,x1=x2 ) {
+		double min = *dp, max = min;
+		x2 = (len * (x+1))/w;
+		for( int i=x1; i<x2; ++i ) {
+			double value = *dp++;
+			if( value < min ) min = value;
+			if( value > max ) max = value;
+		}
+		int ctr = (min + max) / 2;
+		int y0 = (int)(h2 - ctr*h2);  CLAMP(y0, 0,h1);
+		int y1 = (int)(h2 - min*h2);  CLAMP(y1, 0,h1);
+		int y2 = (int)(h2 - max*h2);  CLAMP(y2, 0,h1);
+		frame->pixel_rgb = line_color;
+		frame->draw_line(x,y1, x,y2);
+		frame->pixel_rgb = base_color;
+		frame->draw_line(x,y, x,y0);
+		y = y0;
+	}
+	frame->pixel_rgb = rgb_color;
+}
+
 void AssetPicon::reset()
 {
 	plugin = 0;
@@ -309,8 +336,69 @@ void AssetPicon::create_objects()
 		}
 		else
 		if( asset->audio_data ) {
-			icon = gui->audio_icon;
-			icon_vframe = gui->audio_vframe;
+			if( mwindow->preferences->use_thumbnails ) {
+				gui->unlock_window();
+				File *file = mwindow->audio_cache->check_out(asset,
+					mwindow->edl,
+					1);
+				if( file ) {
+					pixmap_w = pixmap_h * 16/9;
+					icon_vframe = new VFrame(0,
+						-1, pixmap_w, pixmap_h, BC_RGB888, -1);
+					{ char string[BCTEXTLEN];
+					sprintf(string, _("Reading %s"), name);
+					mwindow->gui->lock_window("AssetPicon::create_objects 3");
+					mwindow->gui->show_message(string);
+					mwindow->gui->unlock_window(); }
+					int sample_rate = asset->get_sample_rate();
+					int channels = asset->get_audio_channels();
+					if( channels > 2 ) channels = 2;
+					int64_t length = asset->get_audio_samples();
+					double duration = (double)length / sample_rate;
+					float t = duration > 1 ? (logf(duration) / logf(3600.f)) : 0;
+					if( t > 1 ) t = 1;
+					float h = 300 * t, s = 1., v = 1.;
+					float r, g, b; // duration, 0..1hr == hue red..magenta
+					HSV::hsv_to_rgb(r,g,b, h,s,v);
+					int ih = icon_vframe->get_h()/8, iw = icon_vframe->get_w();
+					int ir = r * 256;  CLAMP(ir, 0,255);
+					int ig = g * 256;  CLAMP(ig, 0,255);
+					int ib = b * 256;  CLAMP(ib, 0,255);
+					unsigned char **rows = icon_vframe->get_rows();
+					for( int y=0; y<ih; ++y ) {
+						unsigned char *rp = rows[y];
+						for( int x=0; x<iw; rp+=3,++x ) {
+							rp[0] = ir;  rp[1] = ig;  rp[2] = ib;
+						}
+					}
+					length = sample_rate;
+					Samples samples(length);
+					static int line_colors[2] = { GREEN, YELLOW };
+					static int base_colors[2] = { RED, PINK };
+					for( int i=channels; --i>=0; ) {
+						file->set_channel(i);
+						file->set_audio_position(0);
+						file->read_samples(&samples, length);
+						draw_wave(icon_vframe, samples.get_data(), length,
+							base_colors[i], line_colors[i]);
+					}
+					mwindow->audio_cache->check_in(asset);
+					gui->lock_window("AssetPicon::create_objects 4");
+					icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
+					icon->draw_vframe(icon_vframe,
+						0, 0, pixmap_w, pixmap_h, 0, 0);
+				}
+				else {
+					gui->lock_window("AssetPicon::create_objects 5");
+					icon = gui->audio_icon;
+					icon_vframe = gui->audio_vframe;
+				}
+			}
+			else {
+				icon = gui->audio_icon;
+				icon_vframe = gui->audio_vframe;
+			}
+
 		}
 		struct stat st;
 		mtime = !stat(asset->path, &st) ? st.st_mtime : 0;

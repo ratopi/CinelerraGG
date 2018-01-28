@@ -104,6 +104,7 @@ void VWindowGUI::change_source(EDL *edl, const char *title)
 		sprintf(string, _(PROGRAM_NAME ": Viewer"));
 
 	lock_window("VWindowGUI::change_source");
+	canvas->clear();
 	timebar->update(0);
 	set_title(string);
 	unlock_window();
