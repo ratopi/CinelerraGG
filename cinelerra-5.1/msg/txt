@@ -9,6 +9,14 @@ For usage help, refer to the following:
 Cinfinity icons selected in Preferences (Creative Common
   By https://creativecommons.org/licenses/by/3.0/)
 .
+January 2018 New Features of note:
+  Plugin names in EDL now all english & not translated.
+  Raw Video (yuv/rgb) and raw audio available.
+  Audio waveform icons, color coded, in Resources Media.
+  Allowance for piped file usage has been added.
+  Render Farm minor enhancements and bug fixes.
+  Pixels for Render Video and Samples/Quality for Audio.
+  2 Pass option for VP9/webm added.
 December 2017 New Features of note:
   Cinfinity Square plugin icons available as new choice.
   New Transition picons for a more modern look by Sam.
