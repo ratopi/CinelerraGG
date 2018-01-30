@@ -354,6 +354,19 @@ int VWindowGUI::keypress_event()
 
 int VWindowGUI::button_press_event()
 {
+	if( get_buttonpress() == LEFT_BUTTON && canvas->get_canvas() &&
+	    canvas->get_canvas()->get_cursor_over_window() ) {
+		PlaybackEngine *playback_engine = vwindow->playback_engine;
+		unlock_window();
+		if( playback_engine->is_playing_back ) {
+			transport->handle_transport(STOP, 1);
+		}
+		else {
+			transport->handle_transport(NORMAL_FWD, 1);
+		}
+		vwindow->gui->lock_window("VWindowEditing::prev_label");
+		return 1;
+	}
 	if(canvas->get_canvas())
 		return canvas->button_press_event_base(canvas->get_canvas());
 	return 0;
@@ -418,6 +431,11 @@ int VWindowGUI::drag_stop()
 		EDL *edl = mwindow->session->drag_clips->size() ?
 			mwindow->session->drag_clips->get(0) :
 			0;
+		if( vwindow->playback_engine->is_playing_back ) {
+			unlock_window();
+			vwindow->stop_playback(1);
+			lock_window("VWindowGUI::drag_stop");
+		}
 
 		if(indexable)
 			vwindow->change_source(indexable);
