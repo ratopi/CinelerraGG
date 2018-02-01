@@ -41,6 +41,7 @@ public:
 	~VWindow();
 
 	void handle_done_event(int result);
+	void handle_close_event(int result);
 	BC_Window* new_gui();
 
 	void load_defaults();

@@ -137,8 +137,6 @@ void VWindow::handle_done_event(int result)
 	}
 }
 
-
-
 BC_Window* VWindow::new_gui()
 {
 //printf("VWindow::create_objects 1\n");
@@ -162,6 +160,12 @@ BC_Window* VWindow::new_gui()
 
 	clip_edit = new ClipEdit(mwindow, 0, this);
 	return gui;
+}
+
+void VWindow::handle_close_event(int result)
+{
+	delete playback_engine;
+	playback_engine = 0;
 }
 
 

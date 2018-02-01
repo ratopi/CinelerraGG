@@ -9,7 +9,13 @@ AC_LANG_C
 AC_PROG_CXX
 
 CFG_CFLAGS+=" -fno-omit-frame-pointer -fno-math-errno -fno-signed-zeros"
-CFG_CFLAGS+=" -pthread -Wall -Wno-unused-result -Wno-format-truncation"
+CFG_CFLAGS+=" -pthread -Wall"
+# misguided pedantic warnings
+CFG_CFLAGS+=" -Wno-unused-result"
+CFG_CFLAGS+=" -Wno-stringop-truncation"
+CFG_CFLAGS+=" -Wno-stringop-overflow"
+CFG_CFLAGS+=" -Wno-format-truncation"
+CFG_CFLAGS+=" -Wno-format-overflow"
 CFG_CFLAGS+=" -D__STDC_CONSTANT_MACROS"
 CFG_CFLAGS+=" -D__STDC_LIMIT_MACROS"
 CFG_CFLAGS+=" -DPNG_SKIP_SETJMP_CHECK=1"

@@ -554,21 +554,21 @@ def is_planar(nm):
 def is_float(nm):
   return nm in ["bc_rgb_float", "bc_rgba_float", "bc_rgb_floatp", "bc_rgba_floatp", ]
 
-def gen_xfer_proto(pfx, cls, fr_cmdl, to_cmdl):
+def gen_xfer_proto(fd, pfx, cls, fr_cmdl, to_cmdl):
   global dtype, ctype
-  print "%svoid %sxfer_%s_to_%s" % (pfx, cls, fr_cmdl[3:], to_cmdl[3:]),
+  print >>fd, "%svoid %sxfer_%s_to_%s" % (pfx, cls, fr_cmdl[3:], to_cmdl[3:]),
   ityp = dtype[fr_cmdl];  fr_typ = ctype[ityp];
   otyp = dtype[to_cmdl];  to_typ = ctype[otyp];
-  print "(unsigned y0, unsigned y1)",
+  print >>fd, "(unsigned y0, unsigned y1)",
 
-def gen_xfer_fn(fr_cmdl, to_cmdl):
+def gen_xfer_fn(fd, fr_cmdl, to_cmdl):
   global layout, dtype, adata
   ityp = dtype[fr_cmdl];  otyp = dtype[to_cmdl]
   if( ityp is None or otyp is None ): return
   # xfr fn header
-  gen_xfer_proto("", class_qual, fr_cmdl, to_cmdl);
+  gen_xfer_proto(fd, "", class_qual, fr_cmdl, to_cmdl);
   # xfr fn body
-  print "{"
+  print >>fd, "{"
   # loops / pointer preload
   in_xfer = "flat" if not is_planar(fr_cmdl) else \
     fr_cmdl[3:] if is_yuv(fr_cmdl) else \
@@ -576,105 +576,122 @@ def gen_xfer_fn(fr_cmdl, to_cmdl):
   out_xfer = "flat" if not is_planar(to_cmdl) else \
     to_cmdl[3:] if is_yuv(to_cmdl) else \
     "rgbp" if not has_alpha(to_cmdl) else "rgbap"
-  print " xfer_%s_row_out(%s) xfer_%s_row_in(%s)" % \
+  print >>fd, " xfer_%s_row_out(%s) xfer_%s_row_in(%s)" % \
      (out_xfer, ctype[otyp], in_xfer, ctype[ityp],)
   # load inp
   if( is_float(to_cmdl) and is_yuv(fr_cmdl) ):
-    for ic in layout[fr_cmdl]: print "%s" % (base[ic][ityp]['r']),
+    for ic in layout[fr_cmdl]: print >>fd, "%s" % (base[ic][ityp]['r']),
     if( ityp == "i8" ):
-      print "\n float r, g, b; YUV::yuv.yuv_to_rgb_8(r, g, b, y, u, v);",
+      print >>fd, "\n float r, g, b; YUV::yuv.yuv_to_rgb_8(r, g, b, y, u, v);",
     elif( ityp == "i16" ):
-      print "\n float r, g, b; YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v);",
+      print >>fd, "\n float r, g, b; YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v);",
     if( has_alpha(fr_cmdl) or has_alpha(to_cmdl) ):
       if( not has_alpha(fr_cmdl) ):
-        print " z_float fa = 1;",
+        print >>fd, " z_float fa = 1;",
       elif( ityp == "i8" ):
-        print " float fa = fclp(a,256);",
+        print >>fd, " float fa = fclp(a,256);",
       elif( ityp == "i16" ):
-        print " float fa = fclp(a,65536);",
+        print >>fd, " float fa = fclp(a,65536);",
   else:
-    for ic in layout[fr_cmdl]: print "%s" % (base[ic][otyp]['r']),
+    for ic in layout[fr_cmdl]: print >>fd, "%s" % (base[ic][otyp]['r']),
     if( has_alpha(to_cmdl) and not has_alpha(fr_cmdl) ):
-      print "%s" % (adata[otyp]),
-  print ""
+      print >>fd, "%s" % (adata[otyp]),
+  print >>fd, ""
   # xfer
   if( is_rgb(fr_cmdl) and is_yuv(to_cmdl) ):
     if( otyp == "i8" ):
-      print " int32_t y, u, v;  YUV::yuv.rgb_to_yuv_8(r, g, b, y, u, v);"
+      print >>fd, " int32_t y, u, v;  YUV::yuv.rgb_to_yuv_8(r, g, b, y, u, v);"
     elif( otyp == "i16" ):
-      print " int32_t y, u, v;  YUV::yuv.rgb_to_yuv_16(r, g, b, y, u, v);"
+      print >>fd, " int32_t y, u, v;  YUV::yuv.rgb_to_yuv_16(r, g, b, y, u, v);"
   elif( is_yuv(fr_cmdl) and is_rgb(to_cmdl)):
     if( otyp == "i8" ):
-      print " int32_t r, g, b;  YUV::yuv.yuv_to_rgb_8(r, g, b, y, u, v);"
+      print >>fd, " int32_t r, g, b;  YUV::yuv.yuv_to_rgb_8(r, g, b, y, u, v);"
     elif( otyp == "i16" ):
-      print " int32_t r, g, b;  YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v);"
+      print >>fd, " int32_t r, g, b;  YUV::yuv.yuv_to_rgb_16(r, g, b, y, u, v);"
   # blend
   if( has_bgcolor(fr_cmdl,to_cmdl) ):
-    print "%s" % (base["bbg"][otyp])
+    print >>fd, "%s" % (base["bbg"][otyp])
   elif( has_alpha(fr_cmdl) and not has_alpha(to_cmdl) ):
     if( is_rgb(to_cmdl) ):
-      print "%s" % (base["brgb"][otyp])
+      print >>fd, "%s" % (base["brgb"][otyp])
     elif( is_yuv(to_cmdl) ):
-      print "%s" % (base["byuv"][otyp])
+      print >>fd, "%s" % (base["byuv"][otyp])
   # store out
   for oc in layout[to_cmdl]:
-    print "%s" % (base[oc][otyp]['w']),
-  print "xfer_end"
-  print "}"
-  print ""
+    print >>fd, "%s" % (base[oc][otyp]['w']),
+  print >>fd, "xfer_end"
+  print >>fd, "}"
+  print >>fd, ""
 
 # output code file
 class_qual = "BC_Xfer::"
-
-print "#include \"xfer.h\""
-print ""
+xfn = "xfer/xfer.h"
+fd = open(xfn, "w")
+xid = "".join([chr(x) if chr(x).isalnum() else '_' for x in range(256)])
+xid = "__" + xfn.upper()[xfn.rfind("/")+1:].translate("".join(xid)) + "__"
+print >>fd, "#ifndef %s" % xid
+print >>fd, "#define %s" % xid
+print >>fd, ""
+xfd = open("bcxfer.h")
+fd.write(xfd.read())
+xfd.close()
 
 for fr_cmdl in cmodels:
   ityp = dtype[fr_cmdl]
   for to_cmdl in cmodels:
     otyp = dtype[to_cmdl]
     if( is_specialized(fr_cmdl, to_cmdl) ):
-      print "  void %s(unsigned y0, unsigned y1);" % (special[(fr_cmdl, to_cmdl)])
+      print >>fd, "  void %s(unsigned y0, unsigned y1);" % (special[(fr_cmdl, to_cmdl)])
       continue
     if( ityp is None or otyp is None ): continue
-    gen_xfer_proto("  ", "", fr_cmdl, to_cmdl);
-    print ";"
+    gen_xfer_proto(fd, "  ", "", fr_cmdl, to_cmdl);
+    print >>fd, ";"
 # end of class definition
-print "};"
-print ""
+print >>fd, "};"
+print >>fd, ""
+print >>fd, "#endif"
+fd.close()
+xfn = xfn[:xfn.rfind(".h")]
 
 # xfer functions
 for fr_cmdl in cmodels:
+  fd = open(xfn + "_" + fr_cmdl + ".C", "w")
+  print >>fd, "#include \"xfer.h\""
+  print >>fd, ""
   for to_cmdl in cmodels:
-    gen_xfer_fn(fr_cmdl, to_cmdl)
+    gen_xfer_fn(fd, fr_cmdl, to_cmdl)
+  fd.close()
 
+fd = open(xfn + ".C", "w")
 # transfer switch
-print ""
-print "void %sxfer()" % class_qual
-print "{"
+print >>fd, "#include \"xfer.h\""
+print >>fd, ""
+print >>fd, "void %sxfer()" % class_qual
+print >>fd, "{"
 mx_no = mx_bcmdl + 1
-print "  static xfer_fn xfns[%d][%d] = {" % (mx_no, mx_no)
+print >>fd, "  static xfer_fn xfns[%d][%d] = {" % (mx_no, mx_no)
 for fr_no in range(mx_no):
   fr_cmdl = bcmodels.get(fr_no)
   ityp = dtype[fr_cmdl]
-  print "  { // %s" % (fr_cmdl.upper() if ityp else "None")
+  print >>fd, "  { // %s" % (fr_cmdl.upper() if ityp else "None")
   n = 0
   for to_no in range(mx_no):
     to_cmdl = bcmodels.get(to_no)
     otyp = dtype[to_cmdl]
     xfn = special[(fr_cmdl, to_cmdl)] if( is_specialized(fr_cmdl, to_cmdl) ) else \
       "xfer_%s_to_%s" % (fr_cmdl[3:], to_cmdl[3:]) if ( ityp and otyp ) else None
-    if( n > 72 ): print ""; n = 0
-    if( n == 0 ): print "   ",; n += 4
+    if( n > 72 ): print >>fd, ""; n = 0
+    if( n == 0 ): print >>fd, "   ",; n += 4
     fn = "&%s%s" % (class_qual, xfn) if( xfn ) else "0"
-    print "%s, " % (fn),
+    print >>fd, "%s, " % (fn),
     n += len(fn) + 3
-  print "}, "
-print "  }; "
-print "  xfn = xfns[in_colormodel][out_colormodel];"
-print "  xfer_slices(out_w*out_h/0x80000+1);"
-print "}"
-print ""
-print "#include \"xfer.C\""
-print ""
+  print >>fd, "}, "
+print >>fd, "  }; "
+print >>fd, "  xfn = xfns[in_colormodel][out_colormodel];"
+print >>fd, "  xfer_slices(out_w*out_h/0x80000+1);"
+print >>fd, "}"
+print >>fd, ""
+print >>fd, "#include \"bcxfer.C\""
+print >>fd, ""
+fd.close()
 

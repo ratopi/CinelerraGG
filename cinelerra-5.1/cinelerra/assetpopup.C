@@ -809,7 +809,8 @@ int SnapshotMenuItem::handle_event()
 
 		double position = edl->local_session->get_selectionstart(1);
 		int64_t source_position = (int64_t)(position * edl->get_frame_rate());
-		ret = render_engine.vrender->process_buffer(frame, source_position, 0);
+		ret = !render_engine.vrender ? 1 :
+			render_engine.vrender->process_buffer(frame, source_position, 0);
 		if( !ret )
 			ret = file.write_video_buffer(1);
 		file.close_file();
@@ -965,6 +966,7 @@ int GrabshotPopup::grab_event(XEvent *event)
 	int cw = lx1-lx0, ch = ly1-ly0;
 	hide_window();
 	sync_display();
+	grab_thread->done = 1;
 
 	MWindow *mwindow = grab_thread->mwindow;
 	Preferences *preferences = mwindow->preferences;
@@ -996,12 +998,15 @@ int GrabshotPopup::grab_event(XEvent *event)
 		asset->format = FILE_PPM;
 		break;
 	}
+
 // no odd dimensions
 	int rw = get_root_w(0), rh = get_root_h(0);
 	if( cx < 0 ) { cw += cx;  cx = 0; }
 	if( cy < 0 ) { ch += cy;  cy = 0; }
 	if( cx+cw > rw ) cw = rw-cx;
 	if( cy+ch > rh ) ch = rh-cy;
+	if( !cw || !ch ) return 1;
+
 	VFrame vframe(cw,ch, BC_RGB888);
 	if( cx+cw < rw ) ++cw;
 	if( cy+ch < rh ) ++ch;
@@ -1040,7 +1045,6 @@ int GrabshotPopup::grab_event(XEvent *event)
 		asset->remove_user();
 	}
 
-	grab_thread->done = 1;
 	return 1;
 }
 

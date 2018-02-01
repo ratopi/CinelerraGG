@@ -65,7 +65,6 @@ OBJS = \
 	$(OBJDIR)/bcwindowbase.o \
 	$(OBJDIR)/bcwindowdraw.o \
 	$(OBJDIR)/bcwindowevents.o \
-	$(OBJDIR)/bcxfer.o \
 	$(OBJDIR)/condition.o \
 	$(OBJDIR)/errorbox.o \
 	$(OBJDIR)/filesystem.o \
@@ -83,6 +82,7 @@ OBJS = \
 OUTPUT = $(OBJDIR)/libguicast.a
 
 UTILS = $(OBJDIR)/bootstrap $(OBJDIR)/pngtoh $(OBJDIR)/pngtoraw
+BCXFER = xfer/$(OBJDIR)/xfer.o
 
 CFLAGS += -I/usr/include/freetype2
 
@@ -91,14 +91,13 @@ $(shell echo $(OBJS) > $(OBJDIR)/objs)
 
 all: $(OUTPUT) $(UTILS)
 
-$(OBJDIR)/bcxfer.o:	bcxfer.C xfer.C xfer.h
-	$(CXX) `cat $(OBJDIR)/c_flags` -O3 -c $< -o $@
+$(BCXFER):	bccmdl.py bcxfer.C bcxfer.h
+	python2.7 < ./bccmdl.py
+	+make -C xfer
 
-bcxfer.C:	bccmdl.py
-	python2.7 < ./bccmdl.py > bcxfer.C
-
-$(OUTPUT): $(OBJS)
-	ar rcs $(OUTPUT) `cat $(OBJDIR)/objs`
+$(OUTPUT): $(OBJS) $(BCXFER)
+	ar rc $(OUTPUT) `cat $(OBJDIR)/objs` `ls -1 $(dir $(BCXFER))/xfer*.o`
+	ar rs $(OUTPUT) `ls -1 $(dir $(BCXFER))/xfer*.o`
 
 $(OBJDIR)/bootstrap:
 	gcc -O2 $(BOOTSTRAPFLAGS) bootstrap.c -o $(OBJDIR)/bootstrap
@@ -111,7 +110,7 @@ $(OBJDIR)/pngtoraw: pngtoraw.c
 
 clean:
 	rm -rf $(OBJDIR)
-	rm -f bcxfer.C
+	make -C xfer clean
 
 install:
 

@@ -3280,6 +3280,10 @@ void MWindow::update_project(int load_mode)
 			if( !vwindow->is_running() ) continue;
 			vwindow->close_window();
 		}
+		for( int i=0; i<edl->vwindow_edls.size(); ++i ) {
+			VWindow *vwindow = get_viewer(1, -1);
+			vwindow->change_source(i);
+		}
 		if(debug) PRINT_TRACE
 		select_zwindow(0);
 		close_mixers();

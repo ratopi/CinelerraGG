@@ -413,6 +413,7 @@ unsigned int VFrame::make_shader(const char **fragments, ...)
 	}
 
 //printf("VFrame::make_shader\n%s\n", program);
+	delete [] program;
 #endif
 	return result;
 }
