@@ -38,16 +38,16 @@ class NewPresets;
 class InterlacemodePulldown;
 class ColormodelPulldown;
 
-class New : public BC_MenuItem
+class New
 {
 public:
 	New(MWindow *mwindow);
 	~New();
 
-	void create_objects();
+	virtual void create_objects() = 0;
 	int handle_event();
 	int run_script(FileXML *script);
-	int create_new_project();
+	int create_new_project(int load_mode);
 	void create_new_edl();
 
 	MWindow *mwindow;
@@ -58,10 +58,30 @@ private:
 	FileXML *script;
 };
 
+class NewProject : public BC_MenuItem, public New
+{
+public:
+	NewProject(MWindow *mwindow);
+	~NewProject();
+
+	void create_objects();
+	int handle_event() { return New::handle_event(); }
+};
+
+class AppendTracks : public BC_MenuItem, public New
+{
+public:
+	AppendTracks(MWindow *mwindow);
+	~AppendTracks();
+
+	void create_objects();
+	int handle_event() { return New::handle_event(); }
+};
+
 class NewThread : public BC_DialogThread
 {
 public:
-	NewThread(MWindow *mwindow, New *new_project);
+	NewThread(MWindow *mwindow, New *new_project, const char *title, int load_mode);
 	~NewThread();
 
 	BC_Window* new_gui();
@@ -75,6 +95,8 @@ public:
 	NewWindow *nwindow;
 	MWindow *mwindow;
 	New *new_project;
+	const char *title;
+	int load_mode;
 };
 
 class NewWindow : public BC_Window

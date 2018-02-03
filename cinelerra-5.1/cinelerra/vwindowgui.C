@@ -356,15 +356,17 @@ int VWindowGUI::button_press_event()
 {
 	if( get_buttonpress() == LEFT_BUTTON && canvas->get_canvas() &&
 	    canvas->get_canvas()->get_cursor_over_window() ) {
+		int command = STOP;
 		PlaybackEngine *playback_engine = vwindow->playback_engine;
+		if( !playback_engine->is_playing_back && vwindow->get_edl() != 0 ) {
+			double length = vwindow->get_edl()->tracks->total_playable_length();
+			double position = playback_engine->get_tracking_position();
+			if( position >= length ) transport->goto_start();
+			command = NORMAL_FWD;
+		}
 		unlock_window();
-		if( playback_engine->is_playing_back ) {
-			transport->handle_transport(STOP, 1);
-		}
-		else {
-			transport->handle_transport(NORMAL_FWD, 1);
-		}
-		vwindow->gui->lock_window("VWindowEditing::prev_label");
+		transport->handle_transport(command, 1);
+		lock_window("VWindowGUI::button_press_event");
 		return 1;
 	}
 	if(canvas->get_canvas())

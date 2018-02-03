@@ -53,7 +53,6 @@
 #define HEIGHT 425
 
 New::New(MWindow *mwindow)
- : BC_MenuItem(_("New Project..."), "n", 'n')
 {
 	this->mwindow = mwindow;
 	script = 0;
@@ -64,11 +63,6 @@ New::New(MWindow *mwindow)
 New::~New()
 {
 	delete thread;
-}
-
-void New::create_objects()
-{
-	thread = new NewThread(mwindow, this);
 }
 
 int New::handle_event()
@@ -92,7 +86,7 @@ void New::create_new_edl()
 }
 
 
-int New::create_new_project()
+int New::create_new_project(int load_mode)
 {
 	mwindow->stop_playback(0);
 	mwindow->gui->lock_window();
@@ -106,26 +100,59 @@ int New::create_new_project()
 
 	mwindow->undo->update_undo_before();
 	mwindow->set_filename("");
-
-	mwindow->hide_plugins();
-	mwindow->edl->Garbage::remove_user();
-	mwindow->edl = new_edl;
+	ArrayList<EDL *>new_edls;
+	new_edls.append(new_edl);
+	mwindow->paste_edls(&new_edls, load_mode, 0,0,0,0,0,0);
+	new_edl->remove_user();
 	new_edl = 0;
-	mwindow->save_defaults();
 
 // Load file sequence
-	mwindow->update_project(LOADMODE_REPLACE);
+	mwindow->update_project(load_mode);
 	mwindow->session->changes_made = 0;
-	mwindow->undo->update_undo_after(_("New Project"), LOAD_ALL);
+	mwindow->undo->update_undo_after(load_mode == LOADMODE_REPLACE ?
+		_("New Project") : _("Append Project"), LOAD_ALL);
 	mwindow->gui->unlock_window();
 	return 0;
 }
 
-NewThread::NewThread(MWindow *mwindow, New *new_project)
+NewProject::NewProject(MWindow *mwindow)
+ : BC_MenuItem(_("New Project..."), "n", 'n'), New(mwindow)
+{
+}
+NewProject::~NewProject()
+{
+}
+
+void NewProject::create_objects()
+{
+	thread = new NewThread(mwindow, this,
+		_(PROGRAM_NAME ": New Project"), LOADMODE_REPLACE);
+}
+
+AppendTracks::AppendTracks(MWindow *mwindow)
+ : BC_MenuItem(_("Append to Project..."), "N", 'N'), New(mwindow)
+{
+	set_shift(1);
+}
+AppendTracks::~AppendTracks()
+{
+}
+
+void AppendTracks::create_objects()
+{
+	thread = new NewThread(mwindow, this,
+		_(PROGRAM_NAME ": Append to Project"), LOADMODE_NEW_TRACKS);
+}
+
+
+NewThread::NewThread(MWindow *mwindow, New *new_project,
+		const char *title, int load_mode)
  : BC_DialogThread()
 {
 	this->mwindow = mwindow;
 	this->new_project = new_project;
+	this->title = title;
+	this->load_mode = load_mode;
 	nwindow = 0;
 }
 
@@ -162,7 +189,7 @@ void NewThread::handle_close_event(int result)
 			new_project->new_edl = 0;
 	}
 	else {
-		new_project->create_new_project();
+		new_project->create_new_project(load_mode);
 	}
 }
 
@@ -187,28 +214,40 @@ int NewThread::update_aspect()
 			new_project->new_edl->session->output_w,
 			new_project->new_edl->session->output_h);
 		sprintf(string, "%.02f", new_project->new_edl->session->aspect_w);
-		nwindow->aspect_w_text->update(string);
+		if( nwindow->aspect_w_text ) nwindow->aspect_w_text->update(string);
 		sprintf(string, "%.02f", new_project->new_edl->session->aspect_h);
-		nwindow->aspect_h_text->update(string);
+		if( nwindow->aspect_h_text )nwindow->aspect_h_text->update(string);
 	}
 	return 0;
 }
 
 
 NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": New Project"), x, y, WIDTH, HEIGHT,
+ : BC_Window(new_thread->title, x, y,
+		WIDTH, new_thread->load_mode == LOADMODE_REPLACE ? HEIGHT : HEIGHT-180,
 		-1, -1, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->new_thread = new_thread;
 	this->new_edl = new_thread->new_project->new_edl;
 	format_presets = 0;
+	atracks = 0;
+	achannels = 0;
+	sample_rate = 0;
+	vtracks = 0;
+	frame_rate = 0;
+	output_w_text = 0;
+	output_h_text = 0;
+	aspect_w_text = 0;
+	aspect_h_text = 0;
+	interlace_pulldown = 0;
+	color_model = 0;
 }
 
 NewWindow::~NewWindow()
 {
 	lock_window("NewWindow::~NewWindow");
-	if( format_presets ) delete format_presets;
+	delete format_presets;
 	unlock_window();
 }
 
@@ -244,20 +283,22 @@ void NewWindow::create_objects()
 	add_subwindow(new NewATracksTumbler(this, x1, y));
 	y += atracks->get_h() + 5;
 
-	x1 = x;
-	add_subwindow(new BC_Title(x1, y, _("Channels:")));
-	x1 += 100;
-	add_subwindow(achannels = new NewAChannels(this, "", x1, y));
-	x1 += achannels->get_w();
-	add_subwindow(new NewAChannelsTumbler(this, x1, y));
-	y += achannels->get_h() + 5;
+	if( new_thread->load_mode == LOADMODE_REPLACE ) {
+		x1 = x;
+		add_subwindow(new BC_Title(x1, y, _("Channels:")));
+		x1 += 100;
+		add_subwindow(achannels = new NewAChannels(this, "", x1, y));
+		x1 += achannels->get_w();
+		add_subwindow(new NewAChannelsTumbler(this, x1, y));
+		y += achannels->get_h() + 5;
 
-	x1 = x;
-	add_subwindow(new BC_Title(x1, y, _("Samplerate:")));
-	x1 += 100;
-	add_subwindow(sample_rate = new NewSampleRate(this, "", x1, y));
-	x1 += sample_rate->get_w();
-	add_subwindow(new SampleRatePulldown(mwindow, sample_rate, x1, y));
+		x1 = x;
+		add_subwindow(new BC_Title(x1, y, _("Samplerate:")));
+		x1 += 100;
+		add_subwindow(sample_rate = new NewSampleRate(this, "", x1, y));
+		x1 += sample_rate->get_w();
+		add_subwindow(new SampleRatePulldown(mwindow, sample_rate, x1, y));
+	}
 
 	x += 250;
 	y = y1;
@@ -271,21 +312,22 @@ void NewWindow::create_objects()
 	add_subwindow(new NewVTracksTumbler(this, x1, y));
 	y += vtracks->get_h() + 5;
 
-// 	x1 = x;
-// 	add_subwindow(new BC_Title(x1, y, _("Channels:")));
-// 	x1 += 100;
-// 	add_subwindow(vchannels = new NewVChannels(this, "", x1, y));
-// 	x1 += vchannels->get_w();
-// 	add_subwindow(new NewVChannelsTumbler(this, x1, y));
-// 	y += vchannels->get_h() + 5;
-	x1 = x;
-	add_subwindow(new BC_Title(x1, y, _("Framerate:")));
-	x1 += 115;
-	add_subwindow(frame_rate = new NewFrameRate(this, "", x1, y));
-	x1 += frame_rate->get_w();
-	add_subwindow(new FrameRatePulldown(mwindow, frame_rate, x1, y));
-	y += frame_rate->get_h() + 5;
-
+	if( new_thread->load_mode == LOADMODE_REPLACE ) {
+// 		x1 = x;
+//	 	add_subwindow(new BC_Title(x1, y, _("Channels:")));
+// 		x1 += 100;
+// 		add_subwindow(vchannels = new NewVChannels(this, "", x1, y));
+// 		x1 += vchannels->get_w();
+// 		add_subwindow(new NewVChannelsTumbler(this, x1, y));
+// 		y += vchannels->get_h() + 5;
+		x1 = x;
+		add_subwindow(new BC_Title(x1, y, _("Framerate:")));
+		x1 += 115;
+		add_subwindow(frame_rate = new NewFrameRate(this, "", x1, y));
+		x1 += frame_rate->get_w();
+		add_subwindow(new FrameRatePulldown(mwindow, frame_rate, x1, y));
+		y += frame_rate->get_h() + 5;
+	}
 //	x1 = x;
 //	add_subwindow(new BC_Title(x1, y, _("Canvas size:")));
 // 	x1 += 100;
@@ -323,39 +365,41 @@ void NewWindow::create_objects()
 	add_subwindow(new NewSwapExtents(mwindow, this, x1, y));
 	y += output_h_text->get_h() + 5;
 
-	x1 = x;
-	add_subwindow(new BC_Title(x1, y, _("Aspect ratio:")));
-	x1 += 115;
-	add_subwindow(aspect_w_text = new NewAspectW(this, "", x1, y));
-	x1 += aspect_w_text->get_w() + 2;
-	add_subwindow(new BC_Title(x1, y, ":"));
-	x1 += 10;
-	add_subwindow(aspect_h_text = new NewAspectH(this, "", x1, y));
-	x1 += aspect_h_text->get_w();
-	add_subwindow(new AspectPulldown(mwindow,
-		aspect_w_text, aspect_h_text, x1, y));
+	if( new_thread->load_mode == LOADMODE_REPLACE ) {
+		x1 = x;
+		add_subwindow(new BC_Title(x1, y, _("Aspect ratio:")));
+		x1 += 115;
+		add_subwindow(aspect_w_text = new NewAspectW(this, "", x1, y));
+		x1 += aspect_w_text->get_w() + 2;
+		add_subwindow(new BC_Title(x1, y, ":"));
+		x1 += 10;
+		add_subwindow(aspect_h_text = new NewAspectH(this, "", x1, y));
+		x1 += aspect_h_text->get_w();
+		add_subwindow(new AspectPulldown(mwindow,
+			aspect_w_text, aspect_h_text, x1, y));
 
-	x1 = aspect_w_text->get_x();
-	y += aspect_w_text->get_h() + 5;
-	add_subwindow(new NewAspectAuto(this, x1, y));
-	y += 40;
-	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y, _("Color model:")));
-	x1 = x + title->get_w();
-	y1 = y;  y += title->get_h() + 10;
-	add_subwindow(title = new BC_Title(x, y, _("Interlace mode:")));
-	int x2 = x + title->get_w();
-	int y2 = y;  y += title->get_h() + 10;
-	if( x1 < x2 ) x1 = x2;
-	x1 += 20;
-	add_subwindow(textbox = new BC_TextBox(x1, y1, 150, 1, ""));
-	add_subwindow(color_model = new ColormodelPulldown(mwindow,
-		textbox, &new_edl->session->color_model, x1+textbox->get_w(), y1));
-	add_subwindow(textbox = new BC_TextBox(x1, y2, 150, 1, ""));
-	add_subwindow(interlace_pulldown = new InterlacemodePulldown(mwindow,
-		textbox, &new_edl->session->interlace_mode,
-		(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_project_modes,
-		x1+textbox->get_w(), y2));
+		x1 = aspect_w_text->get_x();
+		y += aspect_w_text->get_h() + 5;
+		add_subwindow(new NewAspectAuto(this, x1, y));
+		y += 40;
+		BC_Title *title;
+		add_subwindow(title = new BC_Title(x, y, _("Color model:")));
+		x1 = x + title->get_w();
+		y1 = y;  y += title->get_h() + 10;
+		add_subwindow(title = new BC_Title(x, y, _("Interlace mode:")));
+		int x2 = x + title->get_w();
+		int y2 = y;  y += title->get_h() + 10;
+		if( x1 < x2 ) x1 = x2;
+		x1 += 20;
+		add_subwindow(textbox = new BC_TextBox(x1, y1, 150, 1, ""));
+		add_subwindow(color_model = new ColormodelPulldown(mwindow,
+			textbox, &new_edl->session->color_model, x1+textbox->get_w(), y1));
+		add_subwindow(textbox = new BC_TextBox(x1, y2, 150, 1, ""));
+		add_subwindow(interlace_pulldown = new InterlacemodePulldown(mwindow,
+			textbox, &new_edl->session->interlace_mode,
+			(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_project_modes,
+			x1+textbox->get_w(), y2));
+	}
 
 	add_subwindow(new BC_OKButton(this,
 		mwindow->theme->get_image_set("new_ok_images")));
@@ -369,17 +413,17 @@ void NewWindow::create_objects()
 
 int NewWindow::update()
 {
-	atracks->update((int64_t)new_edl->session->audio_tracks);
-	achannels->update((int64_t)new_edl->session->audio_channels);
-	sample_rate->update((int64_t)new_edl->session->sample_rate);
-	vtracks->update((int64_t)new_edl->session->video_tracks);
-	frame_rate->update((float)new_edl->session->frame_rate);
-	output_w_text->update((int64_t)new_edl->session->output_w);
-	output_h_text->update((int64_t)new_edl->session->output_h);
-	aspect_w_text->update((float)new_edl->session->aspect_w);
-	aspect_h_text->update((float)new_edl->session->aspect_h);
-	interlace_pulldown->update(new_edl->session->interlace_mode);
-	color_model->update_value(new_edl->session->color_model);
+	if( atracks ) atracks->update((int64_t)new_edl->session->audio_tracks);
+	if( achannels ) achannels->update((int64_t)new_edl->session->audio_channels);
+	if( sample_rate ) sample_rate->update((int64_t)new_edl->session->sample_rate);
+	if( vtracks ) vtracks->update((int64_t)new_edl->session->video_tracks);
+	if( frame_rate ) frame_rate->update((float)new_edl->session->frame_rate);
+	if( output_w_text ) output_w_text->update((int64_t)new_edl->session->output_w);
+	if( output_h_text ) output_h_text->update((int64_t)new_edl->session->output_h);
+	if( aspect_w_text ) aspect_w_text->update((float)new_edl->session->aspect_w);
+	if( aspect_h_text ) aspect_h_text->update((float)new_edl->session->aspect_h);
+	if( interlace_pulldown ) interlace_pulldown->update(new_edl->session->interlace_mode);
+	if( color_model ) color_model->update_value(new_edl->session->color_model);
 	return 0;
 }
 

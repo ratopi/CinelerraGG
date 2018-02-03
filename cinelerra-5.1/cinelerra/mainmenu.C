@@ -98,7 +98,7 @@ void MainMenu::create_objects()
 	total_loads = 0;
 
 	add_menu(filemenu = new BC_Menu(_("File")));
-	filemenu->add_item(new_project = new New(mwindow));
+	filemenu->add_item(new_project = new NewProject(mwindow));
 	new_project->create_objects();
 
 // file loaders
@@ -198,6 +198,9 @@ void MainMenu::create_objects()
 	trackmenu->add_item(new DeleteTracks(mwindow));
 	trackmenu->add_item(new DeleteTrack(mwindow));
 	trackmenu->add_item(new ConcatenateTracks(mwindow));
+	AppendTracks *append_tracks;
+	trackmenu->add_item(append_tracks = new AppendTracks(mwindow));
+	append_tracks->create_objects();
 	trackmenu->add_item(new AddSubttlTrack(mwindow));
 
 	add_menu(settingsmenu = new BC_Menu(_("Settings")));

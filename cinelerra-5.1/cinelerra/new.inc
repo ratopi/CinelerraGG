@@ -25,6 +25,8 @@
 class ColormodelItem;
 class InterlacemodeItem;
 class New;
+class NewProject;
+class AppendTracks;
 class NewWindow;
 
 #endif

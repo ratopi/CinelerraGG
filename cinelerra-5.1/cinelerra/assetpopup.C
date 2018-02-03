@@ -160,10 +160,13 @@ int AssetPopupInfo::handle_event()
 {
 	int cur_x, cur_y;
 	popup->gui->get_abs_cursor(cur_x, cur_y);
-	if( mwindow->session->drag_assets->size() ) {
-		AssetEdit *asset_edit = mwindow->awindow->get_asset_editor();
-		asset_edit->edit_asset(
-			mwindow->session->drag_assets->values[0], cur_x, cur_y);
+	int n = mwindow->session->drag_assets->size();
+	if( n > 0 ) {
+		for( int i=0; i<n; ++i ) {
+			AssetEdit *asset_edit = mwindow->awindow->get_asset_editor();
+			asset_edit->edit_asset(
+				mwindow->session->drag_assets->values[i], cur_x-30*i, cur_y-30*i);
+		}
 	}
 	else if( mwindow->session->drag_clips->size() ) {
 		popup->gui->awindow->clip_edit->edit_clip(

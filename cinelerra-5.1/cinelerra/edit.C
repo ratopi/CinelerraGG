@@ -33,6 +33,7 @@
 #include "plugin.h"
 #include "mainsession.h"
 #include "nestededls.h"
+#include "strack.h"
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "transition.h"
@@ -233,7 +234,9 @@ void Edit::detach_transition()
 
 int Edit::silence()
 {
-	return asset || nested_edl ? 0 : 1;
+	return (track->data_type != TRACK_SUBTITLE ?
+		asset || nested_edl :
+		*((SEdit *)this)->get_text()) ? 0 : 1;
 }
 
 

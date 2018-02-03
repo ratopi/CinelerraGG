@@ -106,7 +106,7 @@ public:
 
 	RecordMenuItem *record_menu_item;
 	RenderItem *render;
-	New *new_project;
+	NewProject *new_project;
 	MenuAEffectItem *aeffect[TOTAL_EFFECTS];
 	MenuVEffectItem *veffect[TOTAL_EFFECTS];
 	Quit *quit_program;              // affected by save
