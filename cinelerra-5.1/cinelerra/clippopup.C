@@ -186,7 +186,6 @@ ClipPopupView::~ClipPopupView()
 int ClipPopupView::handle_event()
 {
 	VWindow *vwindow = mwindow->get_viewer(1, DEFAULT_VWINDOW);
-	vwindow->gui->lock_window("ClipPopupView::handle_event");
 
 	if( mwindow->session->drag_assets->total )
 		vwindow->change_source(
@@ -196,7 +195,6 @@ int ClipPopupView::handle_event()
 		vwindow->change_source(
 			mwindow->session->drag_clips->values[0]);
 
-	vwindow->gui->unlock_window();
 	return 1;
 }
 

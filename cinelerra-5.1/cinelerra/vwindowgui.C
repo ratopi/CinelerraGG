@@ -424,6 +424,7 @@ int VWindowGUI::drag_stop()
 	{
 		highlighted = 0;
 		canvas->draw_refresh();
+		unlock_window();
 
 		Indexable *indexable = mwindow->session->drag_assets->size() ?
 			mwindow->session->drag_assets->get(0) :
@@ -431,17 +432,12 @@ int VWindowGUI::drag_stop()
 		EDL *edl = mwindow->session->drag_clips->size() ?
 			mwindow->session->drag_clips->get(0) :
 			0;
-		if( vwindow->playback_engine->is_playing_back ) {
-			unlock_window();
-			vwindow->stop_playback(1);
-			lock_window("VWindowGUI::drag_stop");
-		}
-
 		if(indexable)
 			vwindow->change_source(indexable);
 		else
 		if(edl)
 			vwindow->change_source(edl);
+		lock_window("VWindowGUI::drag_stop");
 		return 1;
 	}
 

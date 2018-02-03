@@ -38,16 +38,16 @@ UndoStack::~UndoStack()
 UndoStackItem *UndoStack::get_current_undo()
 {
 	UndoStackItem *item = current;
-	if( item &&  (number_of(item) % 2) ) item = item->previous;
-	if( item && !(number_of(item) % 2) ) item = item->previous;
+	if( item &&  (number_of(item) & 1) ) item = item->previous;
+	if( item && !(number_of(item) & 1) ) item = item->previous;
 	return item;
 }
 
 UndoStackItem *UndoStack::get_current_redo()
 {
 	UndoStackItem *item = current ? current : first;
-	if( item &&  (number_of(item) % 2) ) item = item->next;
-	if( item && !(number_of(item) % 2) ) item = item->next;
+	if( item &&  (number_of(item) & 1) ) item = item->next;
+	if( item && !(number_of(item) & 1) ) item = item->next;
 	return item;
 }
 
@@ -55,35 +55,30 @@ UndoStackItem *UndoStack::get_current_redo()
 UndoStackItem* UndoStack::push()
 {
 // current is only 0 if before first undo
-	if(current)
+	if( current )
 		current = insert_after(current);
 	else
 		current = insert_before(first);
 
 // delete future undos if necessary
-	if(current && current->next)
-	{
-		while(current->next) remove(last);
+	if( current && current->next ) {
+		while( current->next ) remove(last);
 	}
 
 // delete oldest 2 undos if necessary
-	if(total() > UNDOLEVELS)
-	{
-		for(int i = 0; i < 2; i++)
-		{
+	if( total() > UNDOLEVELS ) {
+		for( int i=0; i<2; ++i ) {
 			UndoStackItem *second = first->next;
 			char *temp_data = 0;
 
 
-			if(!second->is_key())
-			{
+			if( !second->is_key() ) {
 				temp_data = second->get_data();
 			}
 			remove(first);
 
 // Convert new first to key buffer.
-			if(!second->is_key())
-			{
+			if( !second->is_key() ) {
 				second->set_data(temp_data);
 			}
 			delete [] temp_data;
@@ -96,11 +91,11 @@ UndoStackItem* UndoStack::push()
 UndoStackItem* UndoStack::pull_next()
 {
 // use first entry if none
-	if(!current)
+	if( !current )
 		current = first;
 	else
 // use next entry if there is a next entry
-	if(current->next)
+	if( current->next )
 		current = NEXT;
 // don't change current if there is no next entry
 	else
@@ -114,43 +109,19 @@ void UndoStack::dump(FILE *fp)
 {
 	fprintf(fp,"UndoStack::dump\n");
 	UndoStackItem *current = last;
-	int i = 0;
 // Dump most recent
-	while(current && i < 10)
-	{
-		fprintf(fp,"  %d %p %s %c\n",
-			i++,
-			current,
-			current->get_description(),
-			current == this->current ? '*' : ' ');
-		current = PREVIOUS;
+	for( int i=0; current && i<16; ++i,current=PREVIOUS ) {
+		fprintf(fp,"  %d %p %s %04jx %c\n", i, current, current->get_description(),
+			current->get_flags(), current == this->current ? '*' : ' ');
+//char fn[BCSTRLEN]; sprintf(fn,"/tmp/undo%d", i); FILE *fp = fopen(fn,"w");
+//if( fp ) { char *cp=current->get_data(); fwrite(cp,strlen(cp),1,fp); fclose(fp); delete [] cp; }
 	}
 }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // These difference routines are straight out of the Heroinediff/Heroinepatch
 // utilities.
-
-
-
-
 
 
 // We didn't want to use the diff program because that isn't efficient enough
@@ -175,12 +146,6 @@ void UndoStack::dump(FILE *fp)
 // for differences.
 
 
-
-
-
-
-
-
 // Minimum size of transposed block.
 // Smaller transpositions should be included in the same difference record.
 #define MIN_TRANS 16
@@ -197,8 +162,7 @@ static void append_record(unsigned char **result,
 	int new_size,
 	int old_size)
 {
-	if(new_size || old_size)
-	{
+	if( new_size || old_size ) {
 		int record_size = new_size + 12;
 		unsigned char *new_result = new unsigned char[(*result_size) + record_size];
 		memcpy(new_result, (*result), (*result_size));
@@ -238,12 +202,10 @@ static unsigned char* get_difference_fast(unsigned char *before,
 // Get last different bytes
 	unsigned char *last_difference_after = after + after_len - 1;
 	unsigned char *last_difference_before = before + before_len - 1;
-	while(1)
-	{
-		if(last_difference_after < after ||
-			last_difference_before < before) break;
-		if(*last_difference_after != *last_difference_before)
-		{
+	for(;;) {
+		if( last_difference_after < after ||
+			last_difference_before < before ) break;
+		if( *last_difference_after != *last_difference_before ) {
 			break;
 		}
 		last_difference_after--;
@@ -252,11 +214,6 @@ static unsigned char* get_difference_fast(unsigned char *before,
 	last_difference_after++;
 	last_difference_before++;
 
-
-
-
-
-
 	int done = 0;
 	unsigned char *before_ptr = before;
 	unsigned char *after_ptr = after;
@@ -264,72 +221,54 @@ static unsigned char* get_difference_fast(unsigned char *before,
 	unsigned char *after_end = after + after_len;
 
 // Scan forward for first difference
-	while(!done)
-	{
-		if(before_ptr < before_end &&
-			after_ptr < after_end)
-		{
+	while( !done ) {
+		if( before_ptr < before_end &&
+			after_ptr < after_end ) {
 // Both characters equal
-			if(*before_ptr == *after_ptr &&
+			if( *before_ptr == *after_ptr &&
 				before_ptr < last_difference_before &&
-				after_ptr < last_difference_after)
-			{
+				after_ptr < last_difference_after ) {
 				before_ptr++;
 				after_ptr++;
 			}
-			else
+			else {
 // Characters differ
-			{
 // Get length of difference.
 				unsigned char *before_difference_start = before_ptr;
 				unsigned char *after_difference_start = after_ptr;
 
 
-				while(*before_ptr != *after_ptr &&
-					before_ptr < last_difference_before &&
-					after_ptr < last_difference_after)
-				{
+				while( *before_ptr != *after_ptr &&
+				    before_ptr < last_difference_before &&
+				    after_ptr < last_difference_after ) {
 					before_ptr++;
 					after_ptr++;
 				}
 
 // Finished comparing if either pointer hits its last difference
-				if(before_ptr >= last_difference_before ||
-					after_ptr >= last_difference_after)
-				{
+				if( before_ptr >= last_difference_before ||
+					after_ptr >= last_difference_after ) {
 					done = 1;
 					before_ptr = last_difference_before;
 					after_ptr = last_difference_after;
 				}
-
-
 
 				int after_start = after_difference_start - after;
 				int before_start = before_difference_start - before;
 				int after_len = after_ptr - after_difference_start;
 				int before_len = before_ptr - before_difference_start;
 
-				if(verbose)
-				{
+				if( verbose ) {
 					char string[1024];
 					memcpy(string, after_difference_start, MIN(after_len, 40));
 					string[MIN(after_len, 40)] = 0;
 					printf("after_offset=0x%x before_offset=0x%x after_size=%d before_size=%d \"%s\"\n",
-						after_start,
-						before_start,
-						after_len,
-						before_len,
-						string);
+						after_start, before_start, after_len, before_len, string);
 				}
 
-
 // Create difference record
-				append_record(&result,
-					result_len,
-					after_difference_start,
-					after_start,
-					after_len,
-					before_len);
+				append_record(&result, result_len, after_difference_start,
+					after_start, after_len, before_len);
 			}
 		}
 		else
@@ -338,45 +277,21 @@ static unsigned char* get_difference_fast(unsigned char *before,
 	return result;
 }
 
-
-
-
-
-
-
-
-
-static void get_record(unsigned char **patch_ptr,
-	unsigned char *patch_end,
-	unsigned char **after_data,
-	int *after_offset,
-	int *after_size,
-	int *before_size)
+static void get_record(unsigned char **patch_ptr, unsigned char *patch_end,
+	unsigned char **after_data, int *after_offset, int *after_size, int *before_size)
 {
 	(*after_data) = 0;
-	if((*patch_ptr) < patch_end)
-	{
-		(*after_offset) = *(int32_t*)(*patch_ptr);
-		(*patch_ptr) += 4;
-		(*after_size) = *(int32_t*)(*patch_ptr);
-		(*patch_ptr) += 4;
-		(*before_size) = *(int32_t*)(*patch_ptr);
-		(*patch_ptr) += 4;
-
-		(*after_data) = (*patch_ptr);
-		(*patch_ptr) += (*after_size);
+	if( (*patch_ptr) < patch_end ) {
+		(*after_offset) = *(int32_t*)(*patch_ptr);  (*patch_ptr) += 4;
+		(*after_size) = *(int32_t*)(*patch_ptr);    (*patch_ptr) += 4;
+		(*before_size) = *(int32_t*)(*patch_ptr);   (*patch_ptr) += 4;
+		(*after_data) = (*patch_ptr);               (*patch_ptr) += (*after_size);
 	}
 }
 
 
-
-
-
-static unsigned char* apply_difference(unsigned char *before,
-		int before_len,
-		unsigned char *patch,
-		int patch_len,
-		int *result_len)
+static unsigned char* apply_difference(unsigned char *before, int before_len,
+		unsigned char *patch, int patch_len, int *result_len)
 {
 	unsigned char *patch_ptr = patch;
 	*result_len = *(int32_t*)patch_ptr;
@@ -390,25 +305,16 @@ static unsigned char* apply_difference(unsigned char *before,
 	unsigned char *before_ptr = before;
 
 	int done = 0;
-	while(!done)
-	{
+	while( !done ) {
 		unsigned char *after_data;
-		int after_offset;
-		int after_size;
-		int before_size;
+		int after_offset, after_size, before_size;
 
-		get_record(&patch_ptr,
-			patch_end,
-			&after_data,
-			&after_offset,
-			&after_size,
-			&before_size);
+		get_record(&patch_ptr, patch_end,
+			&after_data, &after_offset, &after_size, &before_size);
 
-		if(after_data)
-		{
+		if( after_data ) {
 			int result_offset = result_ptr - result;
-			if(after_offset > result_offset)
-			{
+			if( after_offset > result_offset ) {
 				int skip_size = after_offset - result_offset;
 				memcpy(result_ptr, before_ptr, skip_size);
 				result_ptr += skip_size;
@@ -418,10 +324,9 @@ static unsigned char* apply_difference(unsigned char *before,
 			result_ptr += after_size;
 			before_ptr += before_size;
 		}
-		else
-		{
+		else {
 // All data from before_ptr to end of result buffer is identical
-			if(result_end - result_ptr > 0)
+			if( result_end - result_ptr > 0 )
 				memcpy(result_ptr, before_ptr, result_end - result_ptr);
 			done = 1;
 		}
@@ -470,7 +375,7 @@ char* UndoStackItem::get_filename()
 
 const char* UndoStackItem::get_description()
 {
-	if(description)
+	if( description )
 		return description;
 	else
 		return "";
@@ -491,10 +396,8 @@ void UndoStackItem::set_data(char *data)
 	int need_key = 1;
 	UndoStackItem *current = this;
 	this->key = 0;
-	for(int i = 0; i < UNDO_KEY_INTERVAL && current; i++)
-	{
-		if(current->key && current->has_data())
-		{
+	for( int i=0; i<UNDO_KEY_INTERVAL && current; ++i ) {
+		if( current->key && current->has_data() ) {
 			need_key = 0;
 			break;
 		}
@@ -504,8 +407,7 @@ void UndoStackItem::set_data(char *data)
 
 	int new_size = strlen(data) + 1;
 
-	if(!need_key)
-	{
+	if( !need_key ) {
 // Reconstruct previous data for difference
 		char *prev_buffer = previous->get_data();
 		int prev_size = prev_buffer ? strlen(prev_buffer) + 1 : 0;
@@ -536,14 +438,12 @@ void UndoStackItem::set_data(char *data)
 // Diff was bigger than original.
 // Happens if a lot of tiny changes happened and the record headers
 // took more space than the changes.
-		if(this->data_size > new_size)
-		{
+		if( this->data_size > new_size ) {
 			delete [] this->data;
 			this->data_size = 0;
 			need_key = 1;
 		}
-		else
-		{
+		else {
 // Reconstruct current data from difference
 			int test_size;
 			char *test_buffer = (char*)apply_difference((unsigned char*)prev_buffer,
@@ -551,9 +451,8 @@ void UndoStackItem::set_data(char *data)
 				(unsigned char*)this->data,
 				this->data_size,
 				&test_size);
-			if(test_size != new_size ||
-				memcmp(test_buffer, data, test_size))
-			{
+			if( test_size != new_size ||
+				memcmp(test_buffer, data, test_size) ) {
 // FILE *test1 = fopen("/tmp/undo1", "w");
 // fwrite(prev_buffer, prev_size, 1, test1);
 // fclose(test1);
@@ -581,8 +480,7 @@ void UndoStackItem::set_data(char *data)
 		delete [] prev_buffer;
 	}
 
-	if(need_key)
-	{
+	if( need_key ) {
 		this->key = 1;
 		this->data_size = new_size;
 		this->data = new char[this->data_size];
@@ -590,8 +488,6 @@ void UndoStackItem::set_data(char *data)
 	}
 	return;
 }
-
-
 
 char* UndoStackItem::get_incremental_data()
 {
@@ -612,17 +508,15 @@ char* UndoStackItem::get_data()
 {
 // Find latest key buffer
 	UndoStackItem *current = this;
-	while(current && !current->key)
+	while( current && !current->key )
 		current = PREVIOUS;
-	if(!current)
-	{
+	if( !current ) {
 		printf("UndoStackItem::get_data: no key buffer found!\n");
 		return 0;
 	}
 
 // This is the key buffer
-	if(current == this)
-	{
+	if( current == this ) {
 		char *result = new char[data_size];
 		memcpy(result, data, data_size);
 		return result;
@@ -632,21 +526,17 @@ char* UndoStackItem::get_data()
 	char *current_data = current->get_data();
 	int current_size = current->get_size();
 	current = NEXT;
-	while(current)
-	{
+	while( current ) {
 // Do incremental updates
 		int new_size;
-		char *new_data = (char*)apply_difference((unsigned char*)current_data,
-			current_size,
+		char *new_data = (char*)apply_difference((unsigned char*)current_data, current_size,
 			(unsigned char*)current->get_incremental_data(),
-			current->get_incremental_size(),
-			&new_size);
+			current->get_incremental_size(), &new_size);
 		delete [] current_data;
 
-		if(current == this)
+		if( current == this )
 			return new_data;
-		else
-		{
+		else {
 			current_data = new_data;
 			current_size = new_size;
 			current = NEXT;
@@ -658,9 +548,6 @@ char* UndoStackItem::get_data()
 	printf("UndoStackItem::get_data: lost starting object!\n");
 	return 0;
 }
-
-
-
 
 int UndoStackItem::is_key()
 {
@@ -686,10 +573,4 @@ void* UndoStackItem::get_creator()
 {
 	return creator;
 }
-
-
-
-
-
-
 

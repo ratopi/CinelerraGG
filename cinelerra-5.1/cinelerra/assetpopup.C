@@ -241,7 +241,6 @@ AssetPopupView::~AssetPopupView()
 int AssetPopupView::handle_event()
 {
 	VWindow *vwindow = mwindow->get_viewer(1, DEFAULT_VWINDOW);
-	vwindow->gui->lock_window("AssetPopupView::handle_event");
 
 	if( mwindow->session->drag_assets->total )
 		vwindow->change_source(
@@ -251,7 +250,6 @@ int AssetPopupView::handle_event()
 		vwindow->change_source(
 			mwindow->session->drag_clips->values[0]);
 
-	vwindow->gui->unlock_window();
 	return 1;
 }
 
@@ -273,8 +271,6 @@ int AssetPopupViewWindow::handle_event()
 	VWindow *vwindow = mwindow->get_viewer(1);
 
 // TODO: create new vwindow or change current vwindow
-	vwindow->gui->lock_window("AssetPopupView::handle_event");
-
 	if( mwindow->session->drag_assets->total )
 		vwindow->change_source(
 			mwindow->session->drag_assets->values[0]);
@@ -283,7 +279,6 @@ int AssetPopupViewWindow::handle_event()
 		vwindow->change_source(
 			mwindow->session->drag_clips->values[0]);
 
-	vwindow->gui->unlock_window();
 	return 1;
 }
 

@@ -183,7 +183,10 @@ Indexable* VWindow::get_source()
 void VWindow::change_source(int edl_number)
 {
 	if(!is_running()) return;
+	if( playback_engine->is_playing_back )
+		stop_playback(1);
 
+	gui->lock_window("VWindow::change_source 1");
 //printf("VWindow::change_source %d %p\n", __LINE__, mwindow->edl->get_vwindow_edl(edl_number));
 	if( edl_number >= 0 && edl_number < mwindow->edl->total_vwindow_edls() &&
 		 mwindow->edl->get_vwindow_edl(edl_number) )
@@ -200,11 +203,16 @@ void VWindow::change_source(int edl_number)
 //		indexable = 0;
 //		mwindow->edl->vwindow_edl_shared = 0;
 	}
+	gui->unlock_window();
 }
 
 void VWindow::change_source(Indexable *indexable)
 {
 	if(!running()) return;
+	if( playback_engine->is_playing_back )
+		stop_playback(1);
+
+	gui->lock_window("VWindow::change_source 2");
 // 	if(asset && this->asset &&
 // 		asset->id == this->asset->id &&
 // 		asset == this->asset) return;
@@ -256,11 +264,16 @@ void VWindow::change_source(Indexable *indexable)
 
 
 //printf("VWindow::change_source 2\n");
+	gui->unlock_window();
 }
 
 void VWindow::change_source(EDL *edl)
 {
 	if(!running()) return;
+	if( playback_engine->is_playing_back )
+		stop_playback(1);
+
+	gui->lock_window("VWindow::change_source 3");
 //printf("VWindow::change_source %d %p\n", __LINE__, edl);
 // EDLs are identical
 //	if(edl && mwindow->edl->vwindow_edl &&
@@ -286,6 +299,7 @@ void VWindow::change_source(EDL *edl)
 	}
 	else
 		gui->change_source(edl, _("Viewer"));
+	gui->unlock_window();
 }
 
 

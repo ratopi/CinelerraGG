@@ -1673,12 +1673,10 @@ int AWindowAssets::handle_event()
 		mwindow->vwindows.get(DEFAULT_VWINDOW) : 0;
 	if( !vwindow || !vwindow->is_running() ) return 1;
 
-	vwindow->gui->lock_window("AWindowAssets::handle_event");
 	if( asset_picon->indexable )
 		vwindow->change_source(asset_picon->indexable);
 	else if( asset_picon->edl )
 		vwindow->change_source(asset_picon->edl);
-	vwindow->gui->unlock_window();
 	return 1;
 }
 

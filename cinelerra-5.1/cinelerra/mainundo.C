@@ -190,11 +190,13 @@ int MainUndo::redo_load_flags()
 int MainUndo::undo()
 {
 	mwindow->undo_commercial();
-
-	UndoStackItem *current = next_undo();
-// Now have an even number
+	UndoStackItem *current = undo_stack->current;
 	if( current ) {
-		undo_stack->current = current;
+		undo_stack->current = next_undo();
+		if( undo_stack->number_of(current) % 2 )
+			current = PREVIOUS; // Now have an even number
+	}
+	if( current ) {
 // Set the redo text to the current description
 		if( mwindow->gui ) {
 			UndoStackItem *next = NEXT;

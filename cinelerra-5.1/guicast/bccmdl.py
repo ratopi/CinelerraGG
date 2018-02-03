@@ -628,7 +628,7 @@ class_qual = "BC_Xfer::"
 xfn = "xfer/xfer.h"
 fd = open(xfn, "w")
 xid = "".join([chr(x) if chr(x).isalnum() else '_' for x in range(256)])
-xid = "__" + xfn.upper()[xfn.rfind("/")+1:].translate("".join(xid)) + "__"
+xid = "__" + xfn.upper()[xfn.rfind("/")+1:].translate(xid) + "__"
 print >>fd, "#ifndef %s" % xid
 print >>fd, "#define %s" % xid
 print >>fd, ""
