@@ -96,11 +96,9 @@ int64_t MTimeBar::position_to_pixel(double position)
 }
 
 
-void MTimeBar::stop_playback()
+void MTimeBar::stop_transport()
 {
-	gui->unlock_window();
-	gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-	gui->lock_window();
+	gui->stop_transport("MTimeBar::stop_transport");
 }
 
 #define TEXT_MARGIN 4
@@ -455,13 +453,10 @@ void MTimeBar::draw_range()
 
 void MTimeBar::select_label(double position)
 {
+	stop_transport();
+
 	EDL *edl = mwindow->edl;
-
-	gui->unlock_window();
-	gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-	gui->lock_window();
-
-	position = mwindow->edl->align_to_frame(position, 1);
+	position = edl->align_to_frame(position, 1);
 
 	if(shift_down())
 	{

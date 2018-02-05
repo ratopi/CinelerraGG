@@ -329,6 +329,13 @@ SET_TRACE
 SET_TRACE
 }
 
+void EditPanel::stop_transport(const char *lock_msg)
+{
+	int have_subwindow_lock = subwindow->get_window_lock();
+	if( have_subwindow_lock ) subwindow->unlock_window();
+	mwindow->stop_transport();
+	if( have_subwindow_lock ) subwindow->lock_window(lock_msg);
+}
 
 
 void EditPanel::toggle_label()
@@ -340,29 +347,17 @@ void EditPanel::prev_label()
 {
 	int shift_down = subwindow->shift_down();
 	int snap = subwindow->ctrl_down() && subwindow->alt_down();
-
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
-	int have_subwindow_lock =
-		 subwindow->get_top_level() == mwindow->gui->get_top_level() ?
-			 0 : subwindow->get_window_lock();
-	if(have_mwindow_lock)
-		mwindow->gui->unlock_window();
-	if(have_subwindow_lock)
-		subwindow->unlock_window();
+	if( have_mwindow_lock ) mwindow->gui->unlock_window();
 
-	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-
-	if(have_subwindow_lock)
-		subwindow->lock_window("EditPanel::prev_label 1");
+	stop_transport("EditPanel::prev_label 1");
 
 	mwindow->gui->lock_window("EditPanel::prev_label 2");
-
 	if( snap )
 		mwindow->snap_left_label();
 	else
 		mwindow->prev_label(shift_down);
-
-	if(!have_mwindow_lock)
+	if( !have_mwindow_lock )
 		mwindow->gui->unlock_window();
 }
 
@@ -370,29 +365,17 @@ void EditPanel::next_label()
 {
 	int shift_down = subwindow->shift_down();
 	int snap = subwindow->ctrl_down() && subwindow->alt_down();
-
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
-	int have_subwindow_lock =
-		 subwindow->get_top_level() == mwindow->gui->get_top_level() ?
-			 0 : subwindow->get_window_lock();
-	if(have_mwindow_lock)
-		mwindow->gui->unlock_window();
-	if(have_subwindow_lock)
-		subwindow->unlock_window();
+	if( have_mwindow_lock ) mwindow->gui->unlock_window();
 
-	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-
-	if(have_subwindow_lock)
-		subwindow->lock_window("EditPanel::next_label 1");
+	stop_transport("EditPanel::next_label 1");
 
 	mwindow->gui->lock_window("EditPanel::next_label 2");
-
 	if( snap )
 		mwindow->snap_right_label();
 	else
 		mwindow->next_label(shift_down);
-
-	if(!have_mwindow_lock)
+	if( !have_mwindow_lock )
 		mwindow->gui->unlock_window();
 }
 
@@ -402,20 +385,10 @@ void EditPanel::prev_edit()
 {
 	int shift_down = subwindow->shift_down();
 	int snap = subwindow->ctrl_down() && subwindow->alt_down();
-
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
-	int have_subwindow_lock =
-		 subwindow->get_top_level() == mwindow->gui->get_top_level() ?
-			 0 : subwindow->get_window_lock();
-	if(have_mwindow_lock)
-		mwindow->gui->unlock_window();
-	if(have_subwindow_lock)
-		subwindow->unlock_window();
+	if( have_mwindow_lock ) mwindow->gui->unlock_window();
 
-	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-
-	if(have_subwindow_lock)
-		subwindow->lock_window("EditPanel::prev_edit 1");
+	stop_transport("EditPanel::prev_edit 1");
 
 	mwindow->gui->lock_window("EditPanel::prev_edit 2");
 
@@ -424,7 +397,7 @@ void EditPanel::prev_edit()
 	else
 		mwindow->prev_edit_handle(shift_down);
 
-	if(!have_mwindow_lock)
+	if( !have_mwindow_lock )
 		mwindow->gui->unlock_window();
 }
 
@@ -432,20 +405,10 @@ void EditPanel::next_edit()
 {
 	int shift_down = subwindow->shift_down();
 	int snap = subwindow->ctrl_down() && subwindow->alt_down();
-
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
-	int have_subwindow_lock =
-		 subwindow->get_top_level() == mwindow->gui->get_top_level() ?
-			 0 : subwindow->get_window_lock();
-	if(have_mwindow_lock)
-		mwindow->gui->unlock_window();
-	if(have_subwindow_lock)
-		subwindow->unlock_window();
+	if( have_mwindow_lock ) mwindow->gui->unlock_window();
 
-	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-
-	if(have_subwindow_lock)
-		subwindow->lock_window("EditPanel::next_edit 1");
+	stop_transport("EditPanel::next_edit 1");
 
 	mwindow->gui->lock_window("EditPanel::next_edit 2");
 
@@ -454,7 +417,7 @@ void EditPanel::next_edit()
 	else
 		mwindow->next_edit_handle(shift_down);
 
-	if(!have_mwindow_lock)
+	if( !have_mwindow_lock )
 		mwindow->gui->unlock_window();
 }
 
@@ -669,9 +632,9 @@ int EditInPoint::handle_event()
 }
 int EditInPoint::keypress_event()
 {
-	if(get_keypress() == '[')
-	{
-		panel->set_inpoint();
+	int key = get_keypress();
+	if( key == '[' || key == '<' ) {
+                panel->set_inpoint();
 		return 1;
 	}
 	if(ctrl_down() && get_keypress() == 't')
@@ -699,8 +662,8 @@ int EditOutPoint::handle_event()
 }
 int EditOutPoint::keypress_event()
 {
-	if(get_keypress() == ']')
-	{
+	int key = get_keypress();
+	if( key == ']' || key == '>' ) {
 		panel->set_outpoint();
 		return 1;
 	}

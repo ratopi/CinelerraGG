@@ -53,6 +53,7 @@ void TransportCommand::reset()
 	realtime = 0;
 	resume = 0;
 	audio_toggle = 0;
+	play_loop = 0;
 	displacement = 0;
 // Don't reset the change type for commands which don't perform the change
 	if(command != STOP) change_type = 0;
@@ -88,6 +89,7 @@ void TransportCommand::copy_from(TransportCommand *command)
 	this->realtime = command->realtime;
 	this->resume = command->resume;
 	this->audio_toggle = command->audio_toggle;
+	this->play_loop = command->play_loop;
 	this->displacement = command->displacement;
 }
 
@@ -163,37 +165,33 @@ float TransportCommand::get_speed()
 
 // Assume starting without pause
 void TransportCommand::set_playback_range(EDL *edl,
-	int use_inout, int toggle_audio, int use_displacement)
+	int use_inout, int toggle_audio, int loop_play, int use_displacement)
 {
 	if(!edl) edl = this->edl;
-
 	double length = edl->tracks->total_playable_length();
 	double frame_period = 1.0 / edl->session->frame_rate;
-	double start = edl->local_session->get_selectionstart(1);
-	double end = edl->local_session->get_selectionend(1);
 
 	displacement = 0;
-	if( use_inout ) {
-		if( edl->local_session->inpoint_valid() )
-			start_position = edl->local_session->get_inpoint();
-		if( edl->local_session->outpoint_valid() )
-			end_position = edl->local_session->get_outpoint();
-	}
-	else if( !EQUIV(start, end) ) {
-		start_position = start;
-		end_position = end;
-	}
-	else {
-// starting play at or past end, play to end of media (for mixers)
-		if( start >= length )
+	audio_toggle = toggle_audio;
+	play_loop = loop_play;
+
+	start_position = use_inout && edl->local_session->inpoint_valid() ?
+		edl->local_session->get_inpoint() :
+		!loop_play ? edl->local_session->get_selectionstart(1) : 0;
+	end_position = use_inout && edl->local_session->outpoint_valid() ?
+		edl->local_session->get_outpoint() :
+		!loop_play ? edl->local_session->get_selectionend(1) : length;
+
+	if( !use_inout && EQUIV(start_position, end_position) ) {
+// starting play at or past end_position, play to end_position of media (for mixers)
+		if( start_position >= length )
 			length = edl->tracks->total_length();
 		switch( command ) {
 		case SLOW_FWD:
 		case FAST_FWD:
 		case NORMAL_FWD: {
-			start_position = start;
 			end_position = length;
-// this prevents a crash if start position is after the loop when playing forwards
+// this prevents a crash if start_position position is after the loop when playing forwards
 			if( edl->local_session->loop_playback &&
 			    start_position > edl->local_session->loop_end ) {
 				start_position = edl->local_session->loop_start;
@@ -203,9 +201,8 @@ void TransportCommand::set_playback_range(EDL *edl,
 		case SLOW_REWIND:
 		case FAST_REWIND:
 		case NORMAL_REWIND:
-			end_position = end;
 			start_position = 0;
-// this prevents a crash if start position is before the loop when playing backwards
+// this prevents a crash if start_position position is before the loop when playing backwards
 			if( edl->local_session->loop_playback &&
 			    end_position <= edl->local_session->loop_start ) {
 					end_position = edl->local_session->loop_end;
@@ -214,12 +211,10 @@ void TransportCommand::set_playback_range(EDL *edl,
 
 		case CURRENT_FRAME:
 		case SINGLE_FRAME_FWD:
-			start_position = start;
 			end_position = start_position + frame_period;
 			break;
 
 		case SINGLE_FRAME_REWIND:
-			end_position = end;
 			start_position = end_position - frame_period;
 			break;
 		}
@@ -232,8 +227,11 @@ void TransportCommand::set_playback_range(EDL *edl,
 		}
 	}
 
-	playbackstart = get_direction() == PLAY_FORWARD ? start_position : end_position;
-	audio_toggle = toggle_audio;
+	if( end_position < start_position )
+		end_position = start_position;
+
+	playbackstart = get_direction() == PLAY_FORWARD ?
+		start_position : end_position;
 }
 
 void TransportCommand::playback_range_adjust_inout()
@@ -287,8 +285,8 @@ TransportQue::~TransportQue()
 }
 
 int TransportQue::send_command(int command, int change_type,
-		EDL *new_edl, int realtime, int resume,
-		int use_inout, int toggle_audio, int use_displacement)
+		EDL *new_edl, int realtime, int resume, int use_inout,
+		int toggle_audio, int loop_play, int use_displacement)
 {
 	input_lock->lock("TransportQue::send_command 1");
 	this->command.command = command;
@@ -315,8 +313,8 @@ int TransportQue::send_command(int command, int change_type,
 		}
 
 // Set playback range
-		this->command.set_playback_range(new_edl,
-			use_inout, toggle_audio, use_displacement);
+		this->command.set_playback_range(new_edl, use_inout,
+				toggle_audio, loop_play, use_displacement);
 	}
 
 	input_lock->unlock();

@@ -58,11 +58,14 @@ public:
 // update_refresh - causes a frame advance to be issued after STOP to update
 // the refresh frame.
 // toggle_audio - reverses audio playback enable in RenderEngine::get_duty
+// loop_play - sets play_loop and plays btwn start/end position (in a loop)
 	void handle_transport(int command, int wait_tracking=0,
-		int use_inout=0, int update_refresh=1, int toggle_audio=0);
+		int use_inout=0, int update_refresh=1, int toggle_audio=0,
+		int loop_play=0);
 	int pause_transport();
 	int reset_transport();
 	int get_w();
+	int is_stopped();
 // Get the EDL to play back with default to mwindow->edl
 	virtual EDL* get_edl();
 	void change_position(double position);
@@ -98,6 +101,7 @@ public:
 	PTransportButton(MWindow *mwindow, PlayTransport *transport, int x, int y, VFrame **data);
 	virtual ~PTransportButton();
 	virtual int set_mode(int mode);
+	int play_command(const char *lock_msg, int command);
 
 	int mode;
 	MWindow *mwindow;

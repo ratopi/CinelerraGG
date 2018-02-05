@@ -473,58 +473,34 @@ int CWindowGUI::keypress_event()
 			lock_window("CWindowGUI::keypress_event 4");
 			break;
 		case LEFT:
-			if(!ctrl_down())
-			{
-				if (alt_down())
-				{
-					int shift_down = this->shift_down();
-					unlock_window();
-					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-
-					mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+			if( !ctrl_down() ) {
+				int alt_down = this->alt_down();
+				int shift_down = this->shift_down();
+				unlock_window();
+				stop_transport(0);
+				mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+				if( alt_down )
 					mwindow->prev_edit_handle(shift_down);
-					mwindow->gui->unlock_window();
-
-					lock_window("CWindowGUI::keypress_event 1");
-				}
 				else
-				{
-					unlock_window();
-
-					mwindow->gui->lock_window("CWindowGUI::keypress_event 3");
 					mwindow->move_left();
-					mwindow->gui->unlock_window();
-
-					lock_window("CWindowGUI::keypress_event 2");
-				}
+				mwindow->gui->unlock_window();
+				lock_window("CWindowGUI::keypress_event 2");
  				result = 1;
 			}
 			break;
 		case RIGHT:
-			if(!ctrl_down())
-			{
-				if (alt_down())
-				{
-					int shift_down = this->shift_down();
-					unlock_window();
-					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-
-					mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+			if( !ctrl_down() ) {
+				int alt_down = this->alt_down();
+				int shift_down = this->shift_down();
+				unlock_window();
+				stop_transport(0);
+				mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+				if( alt_down )
 					mwindow->next_edit_handle(shift_down);
-					mwindow->gui->unlock_window();
-
-					lock_window("CWindowGUI::keypress_event 2");
-				}
 				else
-				{
-					unlock_window();
-
-					mwindow->gui->lock_window("CWindowGUI::keypress_event 4");
 					mwindow->move_right();
-					mwindow->gui->unlock_window();
-
-					lock_window("CWindowGUI::keypress_event 3");
-				}
+				mwindow->gui->unlock_window();
+				lock_window("CWindowGUI::keypress_event 2");
 				result = 1;
 			}
 			break;
@@ -674,6 +650,13 @@ void CWindowGUI::update_meters()
 		mwindow->theme->get_cwindow_sizes(this, mwindow->session->cwindow_controls);
 		resize_event(get_w(), get_h());
 	}
+}
+
+void CWindowGUI::stop_transport(const char *lock_msg)
+{
+	if( lock_msg ) unlock_window();
+	mwindow->stop_transport();
+	if( lock_msg ) lock_window(lock_msg);
 }
 
 

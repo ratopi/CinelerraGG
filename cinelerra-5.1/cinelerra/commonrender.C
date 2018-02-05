@@ -290,10 +290,6 @@ double CommonRender::fromunits(int64_t position)
 
 int CommonRender::advance_position(int64_t current_render_length)
 {
-	int64_t loop_end = tounits(renderengine->get_edl()->local_session->loop_end, 1);
-	int64_t loop_start = tounits(renderengine->get_edl()->local_session->loop_start, 0);
-	int64_t start_position = tounits(renderengine->command->start_position, 0);
-	int64_t end_position = tounits(renderengine->command->end_position, 1);
 	int direction = renderengine->command->get_direction();
 
 // advance the playback position
@@ -302,24 +298,31 @@ int CommonRender::advance_position(int64_t current_render_length)
 	else
 		current_position += current_render_length;
 
+	int64_t start_position, end_position;
+	int play_loop = renderengine->command->play_loop;
+	int loop_playback = renderengine->get_edl()->local_session->loop_playback;
+	if( play_loop || !loop_playback ) {
+		start_position = tounits(renderengine->command->start_position, 0);
+		end_position = tounits(renderengine->command->end_position, 1);
+	}
+	else {
+		start_position = tounits(renderengine->get_edl()->local_session->loop_start, 0);
+		end_position = tounits(renderengine->get_edl()->local_session->loop_end, 1);
+		play_loop = 1;
+	}
 // test loop again
-	if(renderengine->get_edl()->local_session->loop_playback &&
-		!renderengine->command->infinite)
-	{
-		if(direction == PLAY_REVERSE)
-		{
-			if(current_position <= loop_start)
-				current_position = loop_end;
+	if( play_loop && !renderengine->command->infinite ) {
+		if( direction == PLAY_REVERSE ) {
+			if( current_position <= start_position )
+				current_position = end_position - (start_position - current_position);
 		}
-		else
-		{
-			if(current_position >= loop_end)
-				current_position = loop_start + (current_position - loop_end);
+		else {
+			if( current_position >= end_position )
+				current_position = start_position + (current_position - end_position);
 		}
 	}
-	else
+	else {
 // test end of file again
-	{
 		if( (direction == PLAY_FORWARD && current_position >= end_position) ||
 			(direction == PLAY_REVERSE && current_position <= start_position) )
 			done = 1;

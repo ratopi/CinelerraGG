@@ -1217,7 +1217,7 @@ void MWindow::update_mixer_tracks()
 }
 
 void MWindow::queue_mixers(EDL *edl, int command, int wait_tracking,
-		int use_inout, int update_refresh, int toggle_audio)
+		int use_inout, int update_refresh, int toggle_audio, int loop_play)
 {
 	zwindows_lock->lock("MWindow::queue_mixers");
 	for( int vidx=0; vidx<zwindows.size(); ++vidx ) {
@@ -1249,14 +1249,14 @@ void MWindow::queue_mixers(EDL *edl, int command, int wait_tracking,
 		}
 		zwindow->change_source(mixer_edl);
 		zwindow->issue_command(command,
-			wait_tracking, use_inout, update_refresh, toggle_audio);
+			wait_tracking, use_inout, update_refresh, toggle_audio, loop_play);
 	}
 	zwindows_lock->unlock();
 }
 
 void MWindow::refresh_mixers()
 {
-	queue_mixers(edl,CURRENT_FRAME,0,0,1,0);
+	queue_mixers(edl,CURRENT_FRAME,0,0,1,0,0);
 }
 
 void MWindow::stop_mixers()
@@ -1264,7 +1264,7 @@ void MWindow::stop_mixers()
 	for( int vidx=0; vidx<zwindows.size(); ++vidx ) {
 		ZWindow *zwindow = zwindows[vidx];
 		if( zwindow->idx < 0 ) continue;
-		zwindow->issue_command(STOP, 0, 0, 0, 0);
+		zwindow->issue_command(STOP, 0, 0, 0, 0, 0);
 	}
 }
 
@@ -1721,6 +1721,11 @@ void MWindow::stop_playback(int wait)
 		if( zwindow->idx < 0 ) continue;
 		zwindow->stop_playback(wait);
 	}
+}
+
+void MWindow::stop_transport()
+{
+	gui->stop_transport(gui->get_window_lock() ? "MWindow::stop_transport" : 0);
 }
 
 int MWindow::load_filenames(ArrayList<char*> *filenames,

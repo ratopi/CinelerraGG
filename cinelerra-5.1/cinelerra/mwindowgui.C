@@ -1170,9 +1170,7 @@ int MWindowGUI::keypress_event()
 
 	case 'k': case 'K':
 		if( alt_down() ) break;
-		unlock_window();
-		mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-		lock_window("MWindowGUI::keypress_event 1");
+		stop_transport("MWindowGUI::keypress_event 1");
 		mwindow->nearest_plugin_keyframe(shift_down(),
 			!ctrl_down() ? PLAY_FORWARD : PLAY_REVERSE);
 		result = 1;
@@ -1188,9 +1186,7 @@ int MWindowGUI::keypress_event()
 	case LEFT:
 		if( !ctrl_down() ) {
 			if( alt_down() ) {
-				unlock_window();
-				mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-				lock_window("MWindowGUI::keypress_event 1");
+				stop_transport("MWindowGUI::keypress_event 1");
 				mwindow->prev_edit_handle(shift_down());
 			}
 			else
@@ -1202,9 +1198,7 @@ int MWindowGUI::keypress_event()
 	case RIGHT:
 		if( !ctrl_down() ) {
 			if( alt_down() ) {
-				unlock_window();
-				mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-				lock_window("MWindowGUI::keypress_event 2");
+				stop_transport("MWindowGUI::keypress_event 2");
 				mwindow->next_edit_handle(shift_down());
 			}
 			else
@@ -2260,6 +2254,15 @@ void MWindowGUI::update_mixers(Track *track, int v)
 					mwindow->mixer_track_active(patchgui->track));
 			}
 		}
+	}
+}
+
+void MWindowGUI::stop_transport(const char *lock_msg)
+{
+	if( !mbuttons->transport->is_stopped() ) {
+		if( lock_msg ) unlock_window();
+		mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+		if( lock_msg ) lock_window(lock_msg);
 	}
 }
 

@@ -352,22 +352,26 @@ int VWindowGUI::keypress_event()
 	return result;
 }
 
+void VWindowGUI::stop_transport(const char *lock_msg)
+{
+	if( !transport->is_stopped() ) {
+		if( lock_msg ) unlock_window();
+		transport->handle_transport(STOP, 1, 0, 0);
+		if( lock_msg ) lock_window(lock_msg);
+	}
+}
+
 int VWindowGUI::button_press_event()
 {
 	if( get_buttonpress() == LEFT_BUTTON && canvas->get_canvas() &&
 	    canvas->get_canvas()->get_cursor_over_window() ) {
-		int command = STOP;
 		PlaybackEngine *playback_engine = vwindow->playback_engine;
 		if( !playback_engine->is_playing_back && vwindow->get_edl() != 0 ) {
 			double length = vwindow->get_edl()->tracks->total_playable_length();
 			double position = playback_engine->get_tracking_position();
 			if( position >= length ) transport->goto_start();
-			command = NORMAL_FWD;
 		}
-		unlock_window();
-		transport->handle_transport(command, 1);
-		lock_window("VWindowGUI::button_press_event");
-		return 1;
+		return transport->forward_play->handle_event();
 	}
 	if(canvas->get_canvas())
 		return canvas->button_press_event_base(canvas->get_canvas());

@@ -56,6 +56,7 @@ public:
 	int resize_event(int w, int h);
 	int translation_event();
 	int close_event();
+	void stop_transport(const char *lock_msg);
 	int keypress_event();
 	int button_press_event();
 	int cursor_leave_event();

@@ -293,12 +293,22 @@ double PlaybackEngine::get_tracking_position()
 		else
 // Interpolate
 		{
-			double loop_start = command->get_edl()->local_session->loop_start;
-			double loop_end = command->get_edl()->local_session->loop_end;
+			double loop_start, loop_end;
+			int play_loop = command->play_loop ? 1 : 0;
+			EDL *edl = command->get_edl();
+			int loop_playback = edl->local_session->loop_playback ? 1 : 0;
+			if( play_loop || !loop_playback ) {
+				loop_start = command->start_position;
+				loop_end = command->end_position;
+			}
+			else {
+				loop_start = edl->local_session->loop_start;
+				loop_end = edl->local_session->loop_end;
+				play_loop = 1;
+			}
 			double loop_size = loop_end - loop_start;
 
-			if(command->get_direction() == PLAY_FORWARD)
-			{
+			if( command->get_direction() == PLAY_FORWARD ) {
 // Interpolate
 				result = tracking_position +
 					command->get_speed() *
@@ -307,13 +317,11 @@ double PlaybackEngine::get_tracking_position()
 
 // Compensate for loop
 //printf("PlaybackEngine::get_tracking_position 1 %d\n", command->get_edl()->local_session->loop_playback);
-				if(command->get_edl()->local_session->loop_playback)
-				{
-					while(result > loop_end) result -= loop_size;
+				if( play_loop && loop_size > 0 ) {
+					while( result > loop_end ) result -= loop_size;
 				}
 			}
-			else
-			{
+			else {
 // Interpolate
 				result = tracking_position -
 					command->get_speed() *
@@ -321,9 +329,8 @@ double PlaybackEngine::get_tracking_position()
 					1000.0;
 
 // Compensate for loop
-				if(command->get_edl()->local_session->loop_playback)
-				{
-					while(result < loop_start) result += loop_size;
+				if( play_loop && loop_size > 0 ) {
+					while( result < loop_start ) result += loop_size;
 				}
 			}
 
@@ -427,9 +434,9 @@ void PlaybackEngine::stop_playback(int wait)
 
 
 void PlaybackEngine::issue_command(EDL *edl, int command, int wait_tracking,
-		int use_inout, int update_refresh, int toggle_audio)
+		int use_inout, int update_refresh, int toggle_audio, int loop_play)
 {
-//printf("PlayTransport::handle_transport 1 %d\n", command);
+//printf("PlaybackEngine::issue_command 1 %d\n", command);
 // Stop requires transferring the output buffer to a refresh buffer.
 	int do_stop = 0, resume = 0;
 	int prev_command = this->command->command;
@@ -470,7 +477,7 @@ void PlaybackEngine::issue_command(EDL *edl, int command, int wait_tracking,
 		case SINGLE_FRAME_REWIND:
 // Start from scratch
 			que->send_command(command, CHANGE_NONE, edl,
-				1, resume, use_inout, toggle_audio,
+				1, resume, use_inout, toggle_audio, loop_play,
 				mwindow->preferences->forward_render_displacement);
 			break;
 		}

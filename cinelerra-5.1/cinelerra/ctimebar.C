@@ -88,13 +88,10 @@ void CTimeBar::update_cursor()
 
 void CTimeBar::select_label(double position)
 {
+	gui->stop_transport("CTimeBar::select_label");
+
 	EDL *edl = mwindow->edl;
-
-	gui->unlock_window();
-	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-	gui->lock_window();
-
-	position = mwindow->edl->align_to_frame(position, 1);
+	position = edl->align_to_frame(position, 1);
 
 	if( shift_down() ) {
 		if( position > edl->local_session->get_selectionend(1) / 2 +

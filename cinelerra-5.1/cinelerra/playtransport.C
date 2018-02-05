@@ -129,6 +129,11 @@ int PlayTransport::get_w()
 	return end_button->get_x() + end_button->get_w() - rewind_button->get_x();
 }
 
+int PlayTransport::is_stopped()
+{
+	return engine->command->command == STOP ? 1 : 0;
+}
+
 int PlayTransport::flip_vertical(int vertical, int &x, int &y)
 {
 	if(vertical)
@@ -195,10 +200,13 @@ int PlayTransport::do_keypress(int key)
 		goto_end();
 		return result;
 	}
-
-	int toggle_audio = subwindow->shift_down() ? 1 : 0;
-	int use_inout = subwindow->ctrl_down() ? 1 : 0;
+// as in play_command
+	int ctrl_key = subwindow->ctrl_down() ? 1 : 0;
+	int shft_key = subwindow->shift_down() ? 1 : 0;
 	int alt_key = subwindow->alt_down() ? 1 : 0;
+	int use_inout = ctrl_key;
+	int toggle_audio = shft_key & ~ctrl_key;
+	int loop_play = shft_key & ctrl_key;
 	int command = -1, prev_command = engine->command->command;
 	using_inout = use_inout;
 	subwindow->unlock_window();
@@ -256,7 +264,7 @@ int PlayTransport::do_keypress(int key)
 		break;
 	}
 	if( command >= 0 ) {
-		handle_transport(command, 0, use_inout, 1, toggle_audio);
+		handle_transport(command, 0, use_inout, 1, toggle_audio, loop_play);
 		result = 1;
 	}
 
@@ -277,14 +285,14 @@ void PlayTransport::goto_end()
 
 
 
-void PlayTransport::handle_transport(int command,
-	int wait_tracking, int use_inout, int update_refresh, int toggle_audio)
+void PlayTransport::handle_transport(int command, int wait_tracking, int use_inout,
+		int update_refresh, int toggle_audio, int loop_play)
 {
 	EDL *edl = get_edl();
 	if( !edl ) return;
 	if( !is_vwindow() )
-		mwindow->queue_mixers(edl, command, wait_tracking, use_inout, update_refresh, toggle_audio);
-	engine->issue_command(edl, command, wait_tracking, use_inout, update_refresh, toggle_audio);
+		mwindow->queue_mixers(edl, command, wait_tracking, use_inout, update_refresh, toggle_audio, 0);
+	engine->issue_command(edl, command, wait_tracking, use_inout, update_refresh, toggle_audio, loop_play);
 }
 
 EDL* PlayTransport::get_edl()
@@ -327,6 +335,19 @@ int PTransportButton::set_mode(int mode)
 	return 0;
 }
 
+int PTransportButton::play_command(const char *lock_msg, int command)
+{
+	int ctrl_key = transport->subwindow->ctrl_down() ? 1 : 0;
+	int shft_key = transport->subwindow->shift_down() ? 1 : 0;
+	int use_inout = ctrl_key;
+	int toggle_audio = shft_key & ~ctrl_key;
+	int loop_play = shft_key & ctrl_key;
+	unlock_window();
+	transport->handle_transport(command, 0, use_inout, 0, toggle_audio, loop_play);
+	lock_window(lock_msg);
+	return 1;
+}
+
 
 RewindButton::RewindButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("rewind"))
@@ -348,10 +369,7 @@ FastReverseButton::FastReverseButton(MWindow *mwindow, PlayTransport *transport,
 }
 int FastReverseButton::handle_event()
 {
-	unlock_window();
-	transport->handle_transport(FAST_REWIND, 0, ctrl_down());
-	lock_window("FastReverseButton::handle_event");
-	return 1;
+	return play_command("FastReverseButton::handle_event", FAST_REWIND);
 }
 
 // Reverse playback normal speed
@@ -363,10 +381,7 @@ ReverseButton::ReverseButton(MWindow *mwindow, PlayTransport *transport, int x, 
 }
 int ReverseButton::handle_event()
 {
-	unlock_window();
-	transport->handle_transport(NORMAL_REWIND, 0, ctrl_down());
-	lock_window("ReverseButton::handle_event");
-	return 1;
+	return play_command("ReverseButton::handle_event", NORMAL_REWIND);
 }
 
 // Reverse playback one frame
@@ -393,10 +408,7 @@ PlayButton::PlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
 }
 int PlayButton::handle_event()
 {
-	unlock_window();
-	transport->handle_transport(NORMAL_FWD, 0, ctrl_down());
-	lock_window("PlayButton::handle_event");
-	return 1;
+	return play_command("PlayButton::handle_event", NORMAL_FWD);
 }
 
 
@@ -425,10 +437,7 @@ FastPlayButton::FastPlayButton(MWindow *mwindow, PlayTransport *transport, int x
 }
 int FastPlayButton::handle_event()
 {
-	unlock_window();
-	transport->handle_transport(FAST_FWD, 0, ctrl_down());
-	lock_window("FastPlayButton::handle_event");
-	return 1;
+	return play_command("FastPlayButton::handle_event", FAST_FWD);
 }
 
 EndButton::EndButton(MWindow *mwindow, PlayTransport *transport, int x, int y)

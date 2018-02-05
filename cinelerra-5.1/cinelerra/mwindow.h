@@ -204,9 +204,10 @@ public:
 	static int plugin_exists(char *plugin_path);
 	void dump_plugindb(FILE *fp);
 	void stop_playback(int wait);
+	void stop_transport();
 
 	void queue_mixers(EDL *edl, int command, int wait_tracking,
-		int use_inout, int update_refresh, int toggle_audio);
+		int use_inout, int update_refresh, int toggle_audio, int loop_play);
 	void create_mixers();
 	void refresh_mixers();
 	void stop_mixers();

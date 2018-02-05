@@ -432,6 +432,7 @@ public:
 	static int calculate_h(MWindow *mwindow);
 	void update();
 	void create_buttons();
+	void stop_transport(const char *lock_msg);
 	void reposition_buttons(int x, int y);
 	void create_objects();
 	int get_w();

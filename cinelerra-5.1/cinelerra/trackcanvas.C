@@ -4822,11 +4822,8 @@ int TrackCanvas::button_press_event()
 			activate();
 		}
 
-		if( get_buttonpress() == LEFT_BUTTON &&
-		    gui->mbuttons->transport->engine->command->command != STOP ) {
-			gui->unlock_window();
-			gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-			gui->lock_window("TrackCanvas::button_press_event");
+		if( get_buttonpress() == LEFT_BUTTON ) {
+			gui->stop_transport("TrackCanvas::button_press_event");
 		}
 
 		int update_overlay = 0, update_cursor = 0, rerender = 0;

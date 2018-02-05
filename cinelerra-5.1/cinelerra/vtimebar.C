@@ -68,12 +68,8 @@ void VTimeBar::draw_time()
 void VTimeBar::select_label(double position)
 {
 	EDL *edl = get_edl();
-
-	if(edl)
-	{
-		unlock_window();
-		gui->transport->handle_transport(STOP, 1, 0, 0);
-		lock_window();
+	if( edl ) {
+		gui->stop_transport("VTimeBar::select_label");
 
 		position = mwindow->edl->align_to_frame(position, 1);
 

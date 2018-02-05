@@ -83,7 +83,7 @@ public:
 	void run();
 	void stop_playback(int wait);
 	void issue_command(EDL *edl, int command, int wait_tracking,
-		int use_inout, int update_refresh, int toggle_audio);
+		int use_inout, int update_refresh, int toggle_audio, int loop_play);
 	void refresh_frame(int change_type, EDL *edl);
 
 // Maintain caches through console changes

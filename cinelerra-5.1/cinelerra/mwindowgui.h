@@ -129,6 +129,7 @@ public:
 	void set_editing_mode(int flush);
 	void set_meter_format(int mode, int min, int max);
 	void update_mixers(Track *track, int v);
+	void stop_transport(const char *lock_msg);
 
 	int translation_event();
 	int resize_event(int w, int h);          // handle a resize event

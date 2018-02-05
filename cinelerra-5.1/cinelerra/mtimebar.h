@@ -78,7 +78,7 @@ public:
 	void create_objects();
 	void draw_time();
 	void draw_range();
-	void stop_playback();
+	void stop_transport();
 	int resize_event();
 	int resize_event(int x, int y, int w, int h);
 	int button_press_event();

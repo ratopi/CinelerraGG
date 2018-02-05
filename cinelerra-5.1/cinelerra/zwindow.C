@@ -229,10 +229,10 @@ void ZWindow::stop_playback(int wait)
 }
 
 void ZWindow::issue_command(int command, int wait_tracking,
-		int use_inout, int update_refresh, int toggle_audio)
+		int use_inout, int update_refresh, int toggle_audio, int loop_play)
 {
 	zgui->playback_engine->issue_command(edl, command,
-			wait_tracking, use_inout, update_refresh, toggle_audio);
+			wait_tracking, use_inout, update_refresh, toggle_audio, loop_play);
 }
 
 void ZWindow::update_mixer_ids()

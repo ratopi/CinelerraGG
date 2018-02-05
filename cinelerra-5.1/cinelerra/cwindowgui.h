@@ -85,6 +85,7 @@ public:
 	void keyboard_zoomin();
 	void keyboard_zoomout();
 	void update_meters();
+	void stop_transport(const char *lock_msg);
 
 	MWindow *mwindow;
 	CWindow *cwindow;

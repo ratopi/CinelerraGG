@@ -259,7 +259,9 @@ void NewWindow::create_objects()
 	lock_window("NewWindow::create_objects");
 	mwindow->theme->draw_new_bg(this);
 
-	add_subwindow(new BC_Title(x, y, _("Parameters for the new project:")));
+	add_subwindow( new BC_Title(x, y, new_thread->load_mode == LOADMODE_REPLACE ?
+			_("Parameters for the new project:") :
+			_("Parameters for additional tracks:") ) );
 	y += 20;
 
 	format_presets = new NewPresets(mwindow,
@@ -347,7 +349,7 @@ void NewWindow::create_objects()
 //	y += canvas_h_text->get_h() + 5;
 
 	x1 = x;
-	add_subwindow(new BC_Title(x1, y, _("Canvas size:")));
+	add_subwindow(new BC_Title(x1, y, _("Track size:")));
 	x1 += 115;
 	add_subwindow(output_w_text = new NewOutputW(this, x1, y));
 	x1 += output_w_text->get_w() + 2;
