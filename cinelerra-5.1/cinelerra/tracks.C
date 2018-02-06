@@ -287,83 +287,39 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 
 Track* Tracks::add_video_track(int above, Track *dst_track)
 {
-const int debug = 0;
-if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 	VTrack* new_track = new VTrack(edl, this);
-if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 	if(!dst_track)
 		dst_track = (above ? first : last);
-
-if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 	if(above)
-	{
 		insert_before(dst_track, (Track*)new_track);
-	}
 	else
-	{
 		insert_after(dst_track, (Track*)new_track);
-	}
-if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 
-
-
-// Shift effects referenced below the new track
-	for(Track *track = last;
-		track && track != new_track;
-		track = track->previous)
-	{
+	for(Track *track = last; track && track != new_track; track = track->previous)
 		change_modules(number_of(track) - 1, number_of(track), 0);
-	}
-
-if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
-
 
 	new_track->create_objects();
-if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 	new_track->set_default_title();
-if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 	return new_track;
 }
 
 
 Track* Tracks::add_subttl_track(int above, Track *dst_track)
 {
-const int debug = 0;
-if(debug) printf("Tracks::add_subttl_track %d\n", __LINE__);
 	STrack* new_track = new STrack(edl, this);
-if(debug) printf("Tracks::add_subttl_track %d\n", __LINE__);
 	if(!dst_track)
 		dst_track = (above ? first : last);
 
-if(debug) printf("Tracks::add_subttl_track %d\n", __LINE__);
 	if(above)
-	{
 		insert_before(dst_track, (Track*)new_track);
-	}
 	else
-	{
 		insert_after(dst_track, (Track*)new_track);
-	}
-if(debug) printf("Tracks::add_subttl_track %d\n", __LINE__);
 
-
-
-// Shift effects referenced below the new track
-	for(Track *track = last;
-		track && track != new_track;
-		track = track->previous)
-	{
+	for(Track *track = last; track && track != new_track; track = track->previous)
 		change_modules(number_of(track) - 1, number_of(track), 0);
-	}
-
-if(debug) printf("Tracks::add_subttl_track %d\n", __LINE__);
-
 
 	new_track->create_objects();
-if(debug) printf("Tracks::add_subttl_track %d\n", __LINE__);
 	new_track->set_default_title();
-if(debug) printf("Tracks::add_subttl_track %d\n", __LINE__);
-
 //	new_track->paste_silence(0,total_length(),0);
 	return new_track;
 }

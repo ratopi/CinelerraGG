@@ -117,6 +117,7 @@ RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
 RecordGUI::~RecordGUI()
 {
 	delete status_thread;
+	delete record_transport;
 	delete batch_source;
 	delete batch_mode;
 	delete batch_flash;
@@ -1382,6 +1383,7 @@ RecordStatusThread::~RecordStatusThread()
 		input_lock->unlock();
 	}
 	Thread::join();
+	delete input_lock;
 }
 
 void RecordStatusThread::reset_video()

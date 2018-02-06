@@ -41,6 +41,8 @@
 #include "preferences.h"
 #include "theme.h"
 #include "transportque.h"
+#include "track.h"
+#include "tracks.h"
 #include "videowindow.h"
 #include "vplayback.h"
 #include "vwindow.h"
@@ -97,7 +99,21 @@ int New::create_new_project(int load_mode)
 		sizeof(new_edl->session->achannel_positions));
 	new_edl->session->boundaries();
 	new_edl->create_default_tracks();
-
+	if( load_mode == LOADMODE_NEW_TRACKS ) {
+		Tracks *tracks =  mwindow->edl->tracks;
+		int vindex = tracks->total_video_tracks();
+		int aindex = tracks->total_audio_tracks();
+		for( Track *track=new_edl->tracks->first; track; track=track->next ) {
+			switch( track->data_type ) {
+			case TRACK_AUDIO:
+				sprintf(track->title, _("Audio %d"), ++aindex);
+				break;
+			case TRACK_VIDEO:
+				sprintf(track->title, _("Video %d"), ++vindex);
+				break;
+			}
+		}
+	}
 	mwindow->undo->update_undo_before();
 	mwindow->set_filename("");
 	ArrayList<EDL *>new_edls;

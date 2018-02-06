@@ -296,6 +296,31 @@ int CWindowGUI::resize_event(int w, int h)
 
 int CWindowGUI::button_press_event()
 {
+	if( current_operation == CWINDOW_NONE &&
+	    mwindow->edl != 0 && canvas->get_canvas() &&
+	    canvas->get_canvas()->get_cursor_over_window() ) {
+		switch( get_buttonpress() ) {
+		case LEFT_BUTTON:
+			if( !cwindow->playback_engine->is_playing_back ) {
+				double length = mwindow->edl->tracks->total_playable_length();
+				double position = cwindow->playback_engine->get_tracking_position();
+				if( position >= length ) transport->goto_start();
+			}
+			return transport->forward_play->handle_event();
+		case MIDDLE_BUTTON:
+			if( !cwindow->playback_engine->is_playing_back ) {
+				double position = cwindow->playback_engine->get_tracking_position();
+				if( position <= 0 ) transport->goto_end();
+			}
+			return transport->reverse_play->handle_event();
+		case RIGHT_BUTTON:  // activates popup
+			break;
+		case WHEEL_UP:
+			return transport->frame_forward_play->handle_event();
+		case WHEEL_DOWN:
+			return transport->frame_reverse_play->handle_event();
+		}
+	}
 	if(canvas->get_canvas())
 		return canvas->button_press_event_base(canvas->get_canvas());
 	return 0;
@@ -3187,7 +3212,8 @@ int CWindowCanvas::button_press_event()
 	gui->y_offset = get_y_offset(mwindow->edl, 0, zoom_y, conformed_w, conformed_h);
 
 // Scroll view
-	if(get_buttonpress() == 2)
+	if( mwindow->edl->session->cwindow_operation != CWINDOW_PROTECT &&
+	    get_buttonpress() == 2 )
 	{
 		gui->current_operation = CWINDOW_SCROLL;
 		result = 1;

@@ -197,7 +197,9 @@ public:
 // Must be called in the constructor.
 	void set_use_button(int value);
 	void set_is_suggestions(int value);
-
+	void set_scroll_repeat();
+	void unset_scroll_repeat();
+	int scroll_repeat;
 
 // change the contents
 	int update(ArrayList<BC_ListBoxItem*> *data,

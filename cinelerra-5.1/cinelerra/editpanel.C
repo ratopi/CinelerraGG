@@ -620,7 +620,7 @@ EditInPoint::EditInPoint(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip(_("In point ( [ )"));
+	set_tooltip(_("In point ( [ or < )"));
 }
 EditInPoint::~EditInPoint()
 {
@@ -650,7 +650,7 @@ EditOutPoint::EditOutPoint(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip(_("Out point ( ] )"));
+	set_tooltip(_("Out point ( ] or > )"));
 }
 EditOutPoint::~EditOutPoint()
 {

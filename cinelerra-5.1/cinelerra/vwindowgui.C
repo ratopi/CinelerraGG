@@ -348,7 +348,8 @@ int VWindowGUI::keypress_event()
 			break;
 	}
 	if(!result) result = transport->keypress_event();
-
+	if( result && !vwindow->playback_engine->is_playing_back )
+		timebar->update(1);
 	return result;
 }
 
@@ -363,15 +364,29 @@ void VWindowGUI::stop_transport(const char *lock_msg)
 
 int VWindowGUI::button_press_event()
 {
-	if( get_buttonpress() == LEFT_BUTTON && canvas->get_canvas() &&
+	if( vwindow->get_edl() != 0 && canvas->get_canvas() &&
 	    canvas->get_canvas()->get_cursor_over_window() ) {
-		PlaybackEngine *playback_engine = vwindow->playback_engine;
-		if( !playback_engine->is_playing_back && vwindow->get_edl() != 0 ) {
-			double length = vwindow->get_edl()->tracks->total_playable_length();
-			double position = playback_engine->get_tracking_position();
-			if( position >= length ) transport->goto_start();
+		switch( get_buttonpress() ) {
+		case LEFT_BUTTON:
+			if( !vwindow->playback_engine->is_playing_back ) {
+				double length = vwindow->get_edl()->tracks->total_playable_length();
+				double position = vwindow->playback_engine->get_tracking_position();
+				if( position >= length ) transport->goto_start();
+			}
+			return transport->forward_play->handle_event();
+		case MIDDLE_BUTTON:
+			if( !vwindow->playback_engine->is_playing_back ) {
+				double position = vwindow->playback_engine->get_tracking_position();
+				if( position <= 0 ) transport->goto_end();
+			}
+			return transport->reverse_play->handle_event();
+		case RIGHT_BUTTON:  // activates popup
+			break;
+		case WHEEL_UP:
+			return transport->frame_forward_play->handle_event();
+		case WHEEL_DOWN:
+			return transport->frame_reverse_play->handle_event();
 		}
-		return transport->forward_play->handle_event();
 	}
 	if(canvas->get_canvas())
 		return canvas->button_press_event_base(canvas->get_canvas());

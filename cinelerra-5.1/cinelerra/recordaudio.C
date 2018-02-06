@@ -61,6 +61,8 @@ RecordAudio::~RecordAudio()
 {
 	delete_buffer();
 	delete trigger_lock;
+	delete pause_record_lock;
+	delete record_paused_lock;
 }
 
 void RecordAudio::reset_parameters()

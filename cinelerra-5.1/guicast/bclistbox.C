@@ -311,6 +311,7 @@ BC_ListBox::BC_ListBox(int x, int y, int w, int h,
 	list_highlighted = 0;
 	disabled = 0;
 
+	scroll_repeat = 0;
  	allow_drag_scroll = 1;
 	process_drag = 1;
 
@@ -743,6 +744,19 @@ void BC_ListBox::calculate_item_coords_recursive(
 void BC_ListBox::set_is_suggestions(int value)
 {
 	this->is_suggestions = value;
+}
+void BC_ListBox::set_scroll_repeat()
+{
+	if( scroll_repeat ) return;
+	scroll_repeat = 1;
+	set_repeat(get_resources()->scroll_repeat);
+}
+
+void BC_ListBox::unset_scroll_repeat()
+{
+	if( !scroll_repeat ) return;
+	scroll_repeat = 0;
+	unset_repeat(get_resources()->scroll_repeat);
 }
 
 void BC_ListBox::set_use_button(int value)
@@ -2635,6 +2649,7 @@ int BC_ListBox::button_release_event()
 	int cursor_x, cursor_y;
 	int do_event = 0;
 	new_value = 0;
+	unset_scroll_repeat();
 
 //printf("BC_ListBox::button_release_event 1 %d\n", current_operation);
 	switch( current_operation ) {
@@ -2652,7 +2667,6 @@ int BC_ListBox::button_release_event()
 	case BUTTON_DOWN_SELECT:
 	case SELECT:
 //printf("BC_ListBox::button_release_event 10\n");
-		unset_repeat(get_resources()->scroll_repeat);
 		current_operation = NO_OPERATION;
 		if( gui ) {
 			translate_coordinates(top_level->event_win, gui->win,
@@ -2687,7 +2701,6 @@ int BC_ListBox::button_release_event()
 
 
 	case SELECT_RECT:
-		unset_repeat(get_resources()->scroll_repeat);
 		if( data ) {
 // Demote selections from rectangle selection
 			promote_selections(data, 2, 1);
@@ -2885,9 +2898,8 @@ int BC_ListBox::cursor_motion_event()
 		break; }
 
 	case SELECT_RECT: {
-		if( test_drag_scroll(get_cursor_x(), get_cursor_y()) ) {
-			set_repeat(get_resources()->scroll_repeat);
-		}
+		if( test_drag_scroll(get_cursor_x(), get_cursor_y()) )
+			set_scroll_repeat();
 
 		int old_x1 = MIN(rect_x1, rect_x2);
 		int old_x2 = MAX(rect_x1, rect_x2);
@@ -2938,11 +2950,8 @@ int BC_ListBox::cursor_motion_event()
 	case SELECT: {
 		int old_highlighted_item = highlighted_item;
 
-		if( test_drag_scroll(get_cursor_x(),
-			get_cursor_y()) ) {
-			set_repeat(get_resources()->scroll_repeat);
-		}
-
+		if( test_drag_scroll(get_cursor_x(), get_cursor_y()) )
+			set_scroll_repeat();
 
 		highlighted_item = selection_number = get_cursor_item(data,
 			get_cursor_x(), get_cursor_y(), &highlighted_ptr);
@@ -3149,7 +3158,7 @@ int BC_ListBox::drag_start_event()
 				current_operation = DRAG_ITEM;
 // require shift down for scrolling
 				if( allow_drag < 0 && shift_down() )
-					set_repeat(get_resources()->scroll_repeat);
+					set_scroll_repeat();
 				return 1;
 			}
 		}
@@ -3217,9 +3226,9 @@ int BC_ListBox::drag_motion_event()
 int BC_ListBox::drag_stop_event()
 {
 	int result = 0;
+	unset_scroll_repeat();
 	switch( current_operation ) {
 	case DRAG_ITEM:
-		unset_repeat(get_resources()->scroll_repeat);
 // Inside window boundary
 		if( top_level->cursor_x > 0 &&
 		    top_level->cursor_x < gui->get_w() - drag_popup->get_w() / 2 &&

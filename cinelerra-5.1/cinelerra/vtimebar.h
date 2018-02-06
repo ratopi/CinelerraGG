@@ -44,6 +44,7 @@ public:
 	double pixel_to_position(int pixel);
 	void update_cursor();
 	int has_preview() { return 1; }
+	double test_highlight();
 
 	VWindowGUI *gui;
 };

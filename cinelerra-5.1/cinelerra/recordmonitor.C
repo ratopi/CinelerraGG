@@ -277,6 +277,7 @@ RecordMonitorGUI::~RecordMonitorGUI()
 	delete avc1394_transport;
 	delete avc1394transport_title;
 #endif
+	delete meters;
 	unlock_window();
 }
 

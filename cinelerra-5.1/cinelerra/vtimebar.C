@@ -124,4 +124,8 @@ void VTimeBar::update_cursor()
 	update(1);
 }
 
+double VTimeBar::test_highlight()
+{
+	return gui->edit_panel->get_position();
+}
 
