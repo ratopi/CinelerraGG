@@ -2050,11 +2050,8 @@ int CWindowDisableOpenGLMasking::handle_event()
 
 
 CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow,
- 	thread,
-	_(PROGRAM_NAME ": Mask"),
-	330,
-	310)
+ : CWindowToolGUI(mwindow, thread,
+	_(PROGRAM_NAME ": Mask"), 330, 320)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -2121,6 +2118,8 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(title = new BC_Title(x, y, _("Press Shift to move an end point")));
 	y += title->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, _("Press Ctrl to move a control point")));
+	y += title->get_h() + margin;
+	add_subwindow(title = new BC_Title(x, y, _("Shift+click Delete to delete the mask")));
 	y += title->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, _("Press Alt to translate the mask")));
 	y += 30;

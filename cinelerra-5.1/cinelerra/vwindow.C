@@ -351,6 +351,7 @@ void VWindow::update_position(int change_type,
 		double position = edl->local_session->get_selectionstart(1);
 		if(lock_window) gui->lock_window("VWindow::update_position");
 		gui->clock->update(position);
+		gui->timebar->update(1);
 		if(lock_window) gui->unlock_window();
 	}
 }

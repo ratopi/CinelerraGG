@@ -348,8 +348,6 @@ int VWindowGUI::keypress_event()
 			break;
 	}
 	if(!result) result = transport->keypress_event();
-	if( result && !vwindow->playback_engine->is_playing_back )
-		timebar->update(1);
 	return result;
 }
 

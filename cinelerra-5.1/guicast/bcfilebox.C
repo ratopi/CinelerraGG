@@ -794,6 +794,13 @@ int BC_FileBox::extract_extension(char *out, const char *in)
 	return 0;
 }
 
+static inline int64_t ipow(int m, int n)
+{
+	int64_t v = 1;
+	for( int64_t vv=m; n>0; vv*=vv,n>>=1 ) if( n & 1 ) v *= vv;
+	return v;
+}
+
 int BC_FileBox::create_tables()
 {
 	delete_tables();
@@ -821,7 +828,27 @@ int BC_FileBox::create_tables()
 // 		{
 			if(!is_dir)
 			{
-				sprintf(string, "%jd", file_item->size);
+				int64_t size = file_item->size;
+#if 1
+				int len = 1;
+				static const char *suffix[] = { "", "K", "M", "G", "T", "P" };
+				for( int64_t s=size; len<15 && (s/=10)>0; ++len );
+				int drop = len-3;
+				if( drop > 0 ) {
+					size /= ipow(10,drop);
+					int sfx = (len-1)/3;
+					int digits = (sfx+1)*3 - len;
+					int64_t frac = ipow(10,digits);
+					int mantisa = size / frac;
+					int fraction = size - mantisa*frac;
+					if( fraction )
+						sprintf(string, "%d.%0*d%s", mantisa, digits, fraction, suffix[sfx]);
+					else
+						sprintf(string, "%d%s", mantisa, suffix[sfx]);
+				}
+				else
+#endif
+					sprintf(string, "%jd", size);
 				new_item = new BC_ListBoxItem(string, get_resources()->file_color);
 			}
 			else
