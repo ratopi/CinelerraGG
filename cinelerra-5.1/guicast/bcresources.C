@@ -347,6 +347,7 @@ VFrame *BC_Resources::default_filebox_newfolder_images[3] = { 0, };
 VFrame *BC_Resources::default_filebox_rename_images[3] = { 0, };
 VFrame *BC_Resources::default_filebox_delete_images[3] = { 0, };
 VFrame *BC_Resources::default_filebox_reload_images[3] = { 0, };
+VFrame *BC_Resources::default_filebox_szfmt_images[3] = { 0, };
 VFrame *BC_Resources::default_listbox_button[4] = { 0, };
 VFrame *BC_Resources::default_listbox_bg = 0;
 VFrame *BC_Resources::default_listbox_expand[5] = { 0, };
@@ -508,6 +509,10 @@ new_vframes(3,default_menubar_data,
 #include "images/file_reload_up_png.h"
 #include "images/file_reload_hi_png.h"
 #include "images/file_reload_dn_png.h"
+#include "images/file_size_fmt_up_png.h"
+#include "images/file_size_fmt_hi_png.h"
+#include "images/file_size_fmt_dn_png.h"
+
 new_vframes(3,default_filebox_text_images,
 	new VFramePng(file_text_up_png),
 	new VFramePng(file_text_hi_png),
@@ -542,6 +547,11 @@ new_vframes(3,default_filebox_reload_images,
 	new VFramePng(file_reload_up_png),
 	new VFramePng(file_reload_hi_png),
 	new VFramePng(file_reload_dn_png));
+
+new_vframes(3,default_filebox_szfmt_images,
+	new VFramePng(file_size_fmt_up_png),
+	new VFramePng(file_size_fmt_hi_png),
+	new VFramePng(file_size_fmt_dn_png));
 
 #include "images/listbox_button_dn_png.h"
 #include "images/listbox_button_hi_png.h"
@@ -783,6 +793,8 @@ new_vframes(20,default_medium_7segment,
 	filebox_rename_images = default_filebox_rename_images;
 	filebox_delete_images = default_filebox_delete_images;
 	filebox_reload_images = default_filebox_reload_images;
+	filebox_szfmt_images = default_filebox_szfmt_images;
+	filebox_size_format = FILEBOX_SIZE_RAW;
 	directory_color = BLUE;
 	file_color = BLACK;
 
@@ -859,6 +871,7 @@ BC_Resources::~BC_Resources()
 	del_vframes(default_filebox_rename_images, 3);
 	del_vframes(default_filebox_delete_images, 3);
 	del_vframes(default_filebox_reload_images, 3);
+	del_vframes(default_filebox_szfmt_images, 3);
 	del_vframes(default_listbox_button, 4);
 	delete default_listbox_bg;
 	del_vframes(default_listbox_expand, 5);

@@ -172,8 +172,6 @@ int BC_FileBoxListBox::evaluate_query(char *string)
 }
 
 
-
-
 BC_FileBoxTextBox::BC_FileBoxTextBox(int x, int y, BC_FileBox *filebox)
  : BC_TextBox(x, y, filebox->get_w() - 20, 1,
 	filebox->want_directory ?  filebox->directory : filebox->filename)
@@ -185,9 +183,6 @@ BC_FileBoxTextBox::~BC_FileBoxTextBox()
 {
 }
 
-
-
-
 int BC_FileBoxTextBox::handle_event()
 {
 	int result = 0;
@@ -197,8 +192,6 @@ int BC_FileBoxTextBox::handle_event()
 	}
 	return result;
 }
-
-
 
 
 BC_FileBoxDirectoryText::BC_FileBoxDirectoryText(int x, int y, BC_FileBox *filebox)
@@ -229,9 +222,6 @@ int BC_FileBoxDirectoryText::handle_event()
 }
 
 
-
-
-
 BC_FileBoxFilterText::BC_FileBoxFilterText(int x, int y, BC_FileBox *filebox)
  : BC_TextBox(x, y, filebox->get_w() - 50, 1, filebox->get_resources()->filebox_filter)
 {
@@ -245,20 +235,9 @@ int BC_FileBoxFilterText::handle_event()
 }
 
 
-
-
 BC_FileBoxFilterMenu::BC_FileBoxFilterMenu(int x, int y, BC_FileBox *filebox)
- : BC_ListBox(x,
- 	y,
-	filebox->get_w() - 30,
-	120,
-	LISTBOX_TEXT,
-	&filebox->filter_list,
-	0,
-	0,
-	1,
-	0,
-	1)
+ : BC_ListBox(x, y, filebox->get_w() - 30, 120,
+	LISTBOX_TEXT, &filebox->filter_list, 0, 0, 1, 0, 1)
 {
 	this->filebox = filebox;
 	set_tooltip(_("Change the filter"));
@@ -274,37 +253,24 @@ int BC_FileBoxFilterMenu::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-BC_FileBoxCancel::BC_FileBoxCancel(BC_FileBox *filebox)
- : BC_CancelButton(filebox)
+BC_FileBoxSizeFormat::BC_FileBoxSizeFormat(int x, int y, BC_FileBox *file_box)
+ : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_szfmt_images)
 {
-	this->filebox = filebox;
-	set_tooltip(_("Cancel the operation"));
+	this->file_box = file_box;
+	set_tooltip(_("Size numeric format"));
 }
-
-BC_FileBoxCancel::~BC_FileBoxCancel()
+BC_FileBoxSizeFormat::~BC_FileBoxSizeFormat()
 {
 }
 
-int BC_FileBoxCancel::handle_event()
+int BC_FileBoxSizeFormat::handle_event()
 {
-//	filebox->submit_file(filebox->textbox->get_text());
-	filebox->newfolder_thread->interrupt();
-	filebox->set_done(1);
+	if( ++file_box->size_format > FILEBOX_SIZE_THOU )
+		file_box->size_format = FILEBOX_SIZE_RAW;
+	BC_WindowBase::get_resources()->filebox_size_format = file_box->size_format;
+	file_box->refresh(0);
 	return 1;
 }
-
-
-
-
-
 
 
 BC_FileBoxUseThis::BC_FileBoxUseThis(BC_FileBox *filebox)
@@ -331,9 +297,6 @@ int BC_FileBoxUseThis::handle_event()
 }
 
 
-
-
-
 BC_FileBoxOK::BC_FileBoxOK(BC_FileBox *filebox)
  : BC_OKButton(filebox,
  	!filebox->want_directory ?
@@ -358,6 +321,26 @@ int BC_FileBoxOK::handle_event()
 	if( *path ) filebox->submit_file(path);
 	return 1;
 }
+
+BC_FileBoxCancel::BC_FileBoxCancel(BC_FileBox *filebox)
+ : BC_CancelButton(filebox)
+{
+	this->filebox = filebox;
+	set_tooltip(_("Cancel the operation"));
+}
+
+BC_FileBoxCancel::~BC_FileBoxCancel()
+{
+}
+
+int BC_FileBoxCancel::handle_event()
+{
+//	filebox->submit_file(filebox->textbox->get_text());
+	filebox->newfolder_thread->interrupt();
+	filebox->set_done(1);
+	return 1;
+}
+
 
 
 BC_FileBoxText::BC_FileBoxText(int x, int y, BC_FileBox *filebox)
@@ -455,13 +438,6 @@ int BC_FileBoxReload::handle_event()
 
 
 
-
-
-
-
-
-
-
 BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
 		const char *title, const char *caption, int show_all_files,
 		int want_directory, int multiple_files, int h_padding)
@@ -489,6 +465,7 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
 	filter_text = 0;
 	filter_popup = 0;
 	usethis_button = 0;
+	size_format = BC_WindowBase::get_resources()->filebox_size_format;
 
 	strcpy(this->caption, caption);
 	strcpy(this->current_path, init_path);
@@ -619,6 +596,9 @@ void BC_FileBox::create_objects()
 	x -= resources->filebox_updir_images[0]->get_w() + 5;
 
 	add_subwindow(updir_button = new BC_FileBoxUpdir(x, y, this));
+	x -= resources->filebox_szfmt_images[0]->get_w() + 5;
+
+	add_subwindow(szfmt_button = new BC_FileBoxSizeFormat(x, y, this));
 
 	x = 10;
 	y += directory_title_margin + 3;
@@ -755,6 +735,7 @@ int BC_FileBox::resize_event(int w, int h)
 	reload_button->reposition_window(reload_button->get_x()+dx, reload_button->get_y());
 	delete_button->reposition_window(delete_button->get_x()+dx, delete_button->get_y());
 	updir_button->reposition_window(updir_button->get_x()+dx, updir_button->get_y());
+	szfmt_button->reposition_window(szfmt_button->get_x()+dx, szfmt_button->get_y());
 	set_w(w);  set_h(h);
 	get_resources()->filebox_w = get_w();
 	get_resources()->filebox_h = get_h();
@@ -829,26 +810,34 @@ int BC_FileBox::create_tables()
 			if(!is_dir)
 			{
 				int64_t size = file_item->size;
-#if 1
-				int len = 1;
-				static const char *suffix[] = { "", "K", "M", "G", "T", "P" };
-				for( int64_t s=size; len<15 && (s/=10)>0; ++len );
-				int drop = len-3;
-				if( drop > 0 ) {
+				if( (size_format == FILEBOX_SIZE_1000 && size >= 1000) ||
+				    (size_format == FILEBOX_SIZE_1024 && size >= 1024) ) {
+					static const char *suffix[] = { "", "K", "M", "G", "T", "P" };
+					if( size_format == FILEBOX_SIZE_1024 ) {
+						static const long double kk = logl(1000.)/logl(1024.);
+				                size = expl(kk*logl((long double)size)) + 0.5;
+					}
+					int len = 1;
+					for( int64_t s=size; len<16 && (s/=10)>0; ++len );
+					int drop = len-3;
 					size /= ipow(10,drop);
 					int sfx = (len-1)/3;
 					int digits = (sfx+1)*3 - len;
 					int64_t frac = ipow(10,digits);
-					int mantisa = size / frac;
-					int fraction = size - mantisa*frac;
+					int mant  = size / frac;
+					int fraction = size - mant*frac;
 					if( fraction )
-						sprintf(string, "%d.%0*d%s", mantisa, digits, fraction, suffix[sfx]);
+						sprintf(string, "%d.%0*d%s",
+							mant, digits, fraction, suffix[sfx]);
 					else
-						sprintf(string, "%d%s", mantisa, suffix[sfx]);
+						sprintf(string, "%d%s",
+							mant, suffix[sfx]);
 				}
-				else
-#endif
+				else {
 					sprintf(string, "%jd", size);
+					if( size_format == FILEBOX_SIZE_THOU )
+						Units::punctuate(string);
+				}
 				new_item = new BC_ListBoxItem(string, get_resources()->file_color);
 			}
 			else

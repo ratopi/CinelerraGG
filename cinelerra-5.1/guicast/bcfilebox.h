@@ -78,22 +78,22 @@ public:
 	BC_FileBox *filebox;
 };
 
+class BC_FileBoxUseThis : public BC_Button
+{
+public:
+	BC_FileBoxUseThis(BC_FileBox *filebox);
+	~BC_FileBoxUseThis();
+	int handle_event();
+
+	BC_FileBox *filebox;
+};
+
 class BC_FileBoxOK : public BC_OKButton
 {
 public:
 	BC_FileBoxOK(BC_FileBox *filebox);
 	~BC_FileBoxOK();
 
-	int handle_event();
-
-	BC_FileBox *filebox;
-};
-
-class BC_FileBoxUseThis : public BC_Button
-{
-public:
-	BC_FileBoxUseThis(BC_FileBox *filebox);
-	~BC_FileBoxUseThis();
 	int handle_event();
 
 	BC_FileBox *filebox;
@@ -191,6 +191,15 @@ public:
 	BC_FileBox *filebox;
 };
 
+class BC_FileBoxSizeFormat : public BC_Button
+{
+public:
+	BC_FileBoxSizeFormat(int x, int y, BC_FileBox *file_box);
+	~BC_FileBoxSizeFormat();
+
+	int handle_event();
+	BC_FileBox *file_box;
+};
 
 
 class BC_FileBoxRecent : public BC_ListBox
@@ -239,6 +248,7 @@ public:
 	friend class BC_FileBoxDelete;
 	friend class BC_FileBoxReload;
 	friend class BC_FileBoxRecent;
+	friend class BC_FileBoxSizeFormat;
 
 	virtual void create_objects();
 	virtual int keypress_event();
@@ -307,6 +317,7 @@ private:
 	BC_Button *updir_button;
 	BC_Button *delete_button;
 	BC_Button *reload_button;
+	BC_FileBoxSizeFormat *szfmt_button;
 	BC_Button *ok_button, *cancel_button;
 	BC_FileBoxUseThis *usethis_button;
 	char caption[BCTEXTLEN];
@@ -320,6 +331,7 @@ private:
 
 	int sort_column;
 	int sort_order;
+	int size_format;
 
 	const char *column_titles[FILEBOX_COLUMNS];
 	ArrayList<BC_ListBoxItem*> filter_list;

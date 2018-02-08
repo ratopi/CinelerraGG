@@ -39,6 +39,11 @@ class BC_FileBox;
 #define FILEBOX_DATE 2
 #define FILEBOX_EXTENSION 3
 
+#define FILEBOX_SIZE_RAW  0
+#define FILEBOX_SIZE_1000 1
+#define FILEBOX_SIZE_1024 2
+#define FILEBOX_SIZE_THOU 3
+
 #define FILEBOX_NAME_TEXT _("File")
 #define FILEBOX_SIZE_TEXT _("Size")
 #define FILEBOX_DATE_TEXT _("Date")

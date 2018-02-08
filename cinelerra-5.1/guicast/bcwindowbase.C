@@ -4256,6 +4256,7 @@ int BC_WindowBase::load_defaults(BC_Hash *defaults)
 	resources->filebox_columnwidth[1] = defaults->get("FILEBOX_WIDTH1", resources->filebox_columnwidth[1]);
 	resources->filebox_columnwidth[2] = defaults->get("FILEBOX_WIDTH2", resources->filebox_columnwidth[2]);
 	resources->filebox_columnwidth[3] = defaults->get("FILEBOX_WIDTH3", resources->filebox_columnwidth[3]);
+	resources->filebox_size_format = defaults->get("FILEBOX_SIZE_FORMAT", get_resources()->filebox_size_format);
 	defaults->get("FILEBOX_FILTER", resources->filebox_filter);
 	return 0;
 }
@@ -4283,6 +4284,7 @@ int BC_WindowBase::save_defaults(BC_Hash *defaults)
 	defaults->update("FILEBOX_WIDTH2", resources->filebox_columnwidth[2]);
 	defaults->update("FILEBOX_WIDTH3", resources->filebox_columnwidth[3]);
 	defaults->update("FILEBOX_FILTER", resources->filebox_filter);
+	defaults->update("FILEBOX_SIZE_FORMAT", get_resources()->filebox_size_format);
 	return 0;
 }
 

@@ -195,6 +195,7 @@ public:
 	VFrame **filebox_descend_images;
 	VFrame **filebox_delete_images;
 	VFrame **filebox_reload_images;
+	VFrame **filebox_szfmt_images;
 
 // Generic button images
 	VFrame **generic_button_images;
@@ -388,6 +389,7 @@ public:
 	static VFrame *default_filebox_rename_images[3];
 	static VFrame *default_filebox_delete_images[3];
 	static VFrame *default_filebox_reload_images[3];
+	static VFrame *default_filebox_szfmt_images[3];
 	static VFrame *default_listbox_button[4];
 	static VFrame *default_listbox_bg;
 	static VFrame *default_listbox_expand[5];
@@ -414,7 +416,8 @@ public:
 	int use_xvideo;
 // Seems to help if only 1 window is created at a time.
 	Mutex *create_window_lock;
-
+// size raw, 1000, 1024, thou
+	int filebox_size_format;
 private:
 // Test for availability of shared memory pixmaps
 	void init_shm(BC_WindowBase *window);

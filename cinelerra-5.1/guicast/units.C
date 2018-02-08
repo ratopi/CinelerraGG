@@ -620,14 +620,13 @@ const char* Units::format_to_separators(int time_format)
 
 void Units::punctuate(char *string)
 {
-	int len = strlen(string);
-	int commas = (len - 1) / 3;
-	for(int i = len + commas, j = len, k; j >= 0 && i >= 0; i--, j--) {
-		k = (len - j - 1) / 3;
-		if(k * 3 == len - j - 1 && j != len - 1 && string[j] != 0) {
-			string[i--] = ',';
-		}
-		string[i] = string[j];
+	int sep = ',', len = strlen(string), commas = (len - 1) / 3;
+	char *cp = string + len, *bp = cp + commas;
+	*bp = 0;
+	for( int k=3; cp < bp && bp > string; ) {
+		*--bp = *--cp;
+		if( --k > 0 ) continue;
+		*--bp = sep;  k = 3;
 	}
 }
 
