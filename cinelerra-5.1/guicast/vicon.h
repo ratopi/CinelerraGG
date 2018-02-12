@@ -41,16 +41,22 @@ public:
 	ArrayList<VIFrame *> images;
         int64_t seq_no;
         double cycle_start, age, frame_rate;
+	int audio_size, playing_audio;
+	uint8_t *audio_data;
 
 	int64_t vframes() { return images.size(); }
 	void reset() { seq_no = 0; cycle_start = 0; age = 0; }
 	void reset(double rate) { reset(); frame_rate = rate; }
 	void clear_images() { images.remove_all_objects(); }
+	void init_audio(int audio_size);
 
 	virtual int64_t set_seq_no(int64_t no) { return seq_no = no; }
 	virtual VFrame *frame() { return *images[seq_no]; }
 	virtual int get_vx() { return 0; }
 	virtual int get_vy() { return 0; }
+	virtual void load_audio() {}
+	virtual void start_audio() {}
+	virtual void stop_audio() {}
 
 	void add_image(VFrame *frm, int ww, int hh, int vcmdl);
 	void draw_vframe(BC_WindowBase *wdw, int x, int y);

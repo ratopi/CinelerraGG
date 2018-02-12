@@ -781,6 +781,12 @@ static inline int64_t ipow(int m, int n)
 	for( int64_t vv=m; n>0; vv*=vv,n>>=1 ) if( n & 1 ) v *= vv;
 	return v;
 }
+static inline int ilen(int64_t v)
+{
+        int len = 1;
+        while( len<16 && (v/=10)>0 ) ++len;
+        return len;
+}
 
 int BC_FileBox::create_tables()
 {
@@ -817,21 +823,23 @@ int BC_FileBox::create_tables()
 						static const long double kk = logl(1000.)/logl(1024.);
 				                size = expl(kk*logl((long double)size)) + 0.5;
 					}
-					int len = 1;
-					for( int64_t s=size; len<16 && (s/=10)>0; ++len );
-					int drop = len-3;
+					int len = ilen(size), drop = len-3, round = 1;
+					if( round && drop > 0 ) { //round
+						size += ipow(10,drop)/2;
+						len = ilen(size);  drop = len-3;
+					}
 					size /= ipow(10,drop);
 					int sfx = (len-1)/3;
 					int digits = (sfx+1)*3 - len;
 					int64_t frac = ipow(10,digits);
 					int mant  = size / frac;
 					int fraction = size - mant*frac;
-					if( fraction )
-						sprintf(string, "%d.%0*d%s",
-							mant, digits, fraction, suffix[sfx]);
+					sfx = *suffix[sfx];
+					if( sfx && size_format == FILEBOX_SIZE_1000 ) sfx += 'a'-'A';
+					if( digits )
+						sprintf(string, "%d.%0*d%c", mant, digits, fraction, sfx);
 					else
-						sprintf(string, "%d%s",
-							mant, suffix[sfx]);
+						sprintf(string, "%d%c", mant, sfx);
 				}
 				else {
 					sprintf(string, "%jd", size);

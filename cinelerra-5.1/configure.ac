@@ -148,7 +148,7 @@ if test "x$WANT_GIT_FFMPEG" != "xno" ; then
 fi
 
 PKG_3RD([fftw],[auto],
-  [fftw-3.3.6-pl2],
+  [fftw-3.3.7],
   [ .libs/libfftw3.a \
     libbench2/libbench2.a \
     rdft/scalar/r2cb/.libs/librdft_scalar_r2cb.a \
@@ -162,8 +162,7 @@ PKG_3RD([fftw],[auto],
     dft/scalar/.libs/libdft_scalar.a \
     dft/.libs/libdft.a \
     kernel/.libs/libkernel.a \
-    simd-support/.libs/libsimd_support.a \
-    simd-support/.libs/libsimd_sse2_nonportable.a ],
+    simd-support/.libs/libsimd_support.a ],
   [ api ])
 
 PKG_3RD([flac],[auto],
@@ -184,7 +183,7 @@ PKG_3RD([giflib],[yes],
   [ lib ])
 
 PKG_3RD([ilmbase],[auto],
-  [ilmbase-2.2.0],
+  [ilmbase-2.2.1],
   [ Iex/.libs/libIex.a \
     IexMath/.libs/libIexMath.a \
     Half/.libs/libHalf.a \
@@ -195,7 +194,7 @@ PKG_3RD([ilmbase],[auto],
 PKG_DEF([ladspa], [ladspa-0.4.17], [], [])
 
 PKG_3RD([lame],[auto],
-  [lame-3.99.5],
+  [lame-3.100],
   [ libmp3lame/.libs/libmp3lame.a \
     mpglib/.libs/libmpgdecoder.a ],
   [ include ])
@@ -283,7 +282,7 @@ PKG_3RD([mjpegtools],[yes],
   [ .  lavtools utils ])
 
 PKG_3RD([openexr],[auto],
-  [openexr-2.2.0],
+  [openexr-2.2.1],
   [ IlmImf/.libs/libIlmImf.a \
     IlmImfUtil/.libs/libIlmImfUtil.a ],
   [ IlmImf config ])
@@ -298,7 +297,7 @@ PKG_3RD([openexr],[auto],
 #  [])
 #
 PKG_3RD([tiff],[auto],
-  [tiff-4.0.6],
+  [tiff-4.0.9],
   [ libtiff/.libs/libtiff.a \
     libtiff/.libs/libtiffxx.a \
     port/.libs/libport.a ],[
@@ -310,12 +309,12 @@ PKG_3RD([twolame],[auto],
   [  libtwolame ])
 
 PKG_3RD([x264],[auto],
-  [x264-snapshot-20170426-2245],
+  [x264-snapshot-20180118-2245],
   [ libx264.a ],
   [ . ])
 
 PKG_3RD([x265],[auto],
-  [x265_2.5],
+  [x265_v2.6],
   [ libx265.a ],
   [ . source ])
 

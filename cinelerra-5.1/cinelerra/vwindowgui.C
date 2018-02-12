@@ -19,10 +19,12 @@
  *
  */
 
+#include "arender.h"
 #include "asset.h"
 #include "assets.h"
 #include "awindowgui.h"
 #include "awindow.h"
+#include "cache.h"
 #include "canvas.h"
 #include "clip.h"
 #include "clipedit.h"
@@ -44,9 +46,12 @@
 #include "mwindow.h"
 #include "playtransport.h"
 #include "preferences.h"
+#include "renderengine.h"
+#include "samples.h"
 #include "theme.h"
 #include "timebar.h"
 #include "tracks.h"
+#include "transportque.h"
 #include "vframe.h"
 #include "vplayback.h"
 #include "vtimebar.h"
@@ -91,6 +96,47 @@ VWindowGUI::~VWindowGUI()
 //	delete source;
 }
 
+void VWindowGUI::draw_wave()
+{
+	TransportCommand command;
+	command.command = NORMAL_FWD;
+	command.get_edl()->copy_all(vwindow->get_edl());
+	command.change_type = CHANGE_ALL;
+	command.realtime = 0;
+	RenderEngine *render_engine = new RenderEngine(0, mwindow->preferences, 0, 0);
+	CICache *cache = new CICache(mwindow->preferences);
+	render_engine->set_acache(cache);
+	render_engine->arm_command(&command);
+
+	double duration = 1.;
+	int w = mwindow->edl->session->output_w;
+	int h = mwindow->edl->session->output_h;
+	VFrame *vframe = new VFrame(w, h, BC_RGB888);
+	int sample_rate = mwindow->edl->get_sample_rate();
+	int channels = mwindow->edl->session->audio_channels;
+	if( channels > 2 ) channels = 2;
+	int64_t bfrsz = sample_rate * duration;
+	Samples *samples[MAXCHANNELS];
+	int ch = 0;
+	while( ch < channels ) samples[ch++] = new Samples(bfrsz);
+	while( ch < MAXCHANNELS ) samples[ch++] = 0;
+	render_engine->arender->process_buffer(samples, bfrsz, 0);
+
+	static int line_colors[2] = { GREEN, YELLOW };
+	static int base_colors[2] = { RED, PINK };
+	for( int i=channels; --i>=0; ) {
+		AssetPicon::draw_wave(vframe, samples[i]->get_data(), bfrsz,
+			base_colors[i], line_colors[i]);
+	}
+
+	for( int i=channels; --i>=0; ) delete samples[i];
+	delete render_engine;
+	delete cache;
+	delete canvas->refresh_frame;
+	canvas->refresh_frame = vframe;
+	canvas->draw_refresh(1);
+}
+
 void VWindowGUI::change_source(EDL *edl, const char *title)
 {
 //printf("VWindowGUI::change_source %d\n", __LINE__);
@@ -105,6 +151,10 @@ void VWindowGUI::change_source(EDL *edl, const char *title)
 
 	lock_window("VWindowGUI::change_source");
 	canvas->clear();
+	if( edl &&
+	    !edl->tracks->playable_video_tracks() &&
+	    edl->tracks->playable_audio_tracks() )
+		draw_wave();
 	timebar->update(0);
 	set_title(string);
 	unlock_window();

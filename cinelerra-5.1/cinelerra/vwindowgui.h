@@ -72,6 +72,7 @@ public:
 //	void update_labels();
 //	void update_points();
 	void update_meters();
+	void draw_wave();
 
 	MWindow *mwindow;
 	VWindow *vwindow;

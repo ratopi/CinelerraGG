@@ -23,6 +23,7 @@
 #include "assetedit.h"
 #include "assetpopup.h"
 #include "assets.h"
+#include "audiodevice.h"
 #include "awindowgui.h"
 #include "awindow.h"
 #include "bccmodels.h"
@@ -98,9 +99,36 @@ AssetVIcon::~AssetVIcon()
 
 VFrame *AssetVIcon::frame()
 {
+	Asset *asset = (Asset *)picon->indexable;
+	if( !asset->video_data && audio_data && audio_size && length > 0 ) {
+		if( !temp ) temp = new VFrame(0, -1, vw, vh, BC_RGB888, -1);
+		temp->clear_frame();
+		int sample_rate = asset->get_sample_rate();
+		int64_t audio_samples = asset->get_audio_samples();
+		double duration = (double)audio_samples / sample_rate;
+		picon->draw_hue_bar(temp, duration);
+		int secs = length / frame_rate + 0.5;
+		if( !secs ) secs = 1;
+		int bfrsz = VICON_SAMPLE_RATE;
+		int samples = audio_size/sizeof(vicon_audio_t);
+		double line_pos = (double)seq_no/(length-1);
+		int audio_pos = samples * line_pos * (secs-1)/secs;
+		vicon_audio_t *audio_data = ((vicon_audio_t *)this->audio_data) + audio_pos;
+		static const int mx = (1<<(8*sizeof(*audio_data)-1)) - 1;
+		double data[bfrsz], sample_scale = 1./mx;
+		int len = samples - audio_pos;
+		if( len > bfrsz ) len = bfrsz;
+		int i = 0;
+		while( i < len ) data[i++] = *audio_data++ * sample_scale;
+		while( i < bfrsz ) data[i++] = 0;
+		picon->draw_wave(temp, data, bfrsz, RED, GREEN);
+		int x = (vw-1) * line_pos;
+		temp->pixel_rgb = RED;
+		temp->draw_line(x,0, x,vh);
+		return temp;
+	}
 	if( seq_no >= images.size() ) {
 		MWindow *mwindow = picon->mwindow;
-		Asset *asset = (Asset *)picon->indexable;
 		File *file = mwindow->video_cache->check_out(asset, mwindow->edl, 1);
 		if( !file ) return 0;
 		if( temp && (temp->get_w() != asset->width || temp->get_h() != asset->height) ) {
@@ -139,6 +167,120 @@ int AssetVIcon::get_vy()
 	return lbox->get_item_y(picon) + lbox->get_title_h();
 }
 
+void AssetVIcon::load_audio()
+{
+	MWindow *mwindow = picon->mwindow;
+	Asset *asset = (Asset *)picon->indexable;
+	File *file = mwindow->audio_cache->check_out(asset, mwindow->edl, 1);
+	int channels = asset->get_audio_channels();
+	if( channels > 2 ) channels = 2;
+	int sample_rate = asset->get_sample_rate();
+	int bfrsz = sample_rate;
+	Samples samples(bfrsz);
+	double time_scale = (double)sample_rate / VICON_SAMPLE_RATE;
+	vicon_audio_t *audio_data = (vicon_audio_t *)this->audio_data;
+	static const int mx = (1<<(8*sizeof(*audio_data)-1)) - 1;
+	double sample_scale = (double)mx / channels;
+	int audio_pos = 0, audio_len = audio_size/sizeof(vicon_audio_t);
+	while( audio_pos < audio_len ) {
+		int64_t pos = audio_pos * time_scale;
+		for( int ch=0; ch<channels; ++ch ) {
+			file->set_channel(ch);
+			file->set_audio_position(pos);
+			file->read_samples(&samples, bfrsz);
+			double *data = samples.get_data();
+			for( int64_t k=audio_pos; k<audio_len; ++k ) {
+				int i = k * time_scale - pos;
+				if( i >= bfrsz ) break;
+				int v = audio_data[k] + data[i] * sample_scale;
+				audio_data[k] = CLIP(v, -mx,mx);
+			}
+		}
+		audio_pos = (pos + bfrsz) / time_scale;
+	}
+	mwindow->audio_cache->check_in(asset);
+}
+
+
+AssetVIconAudio::AssetVIconAudio(AWindowGUI *gui)
+ : Thread(1, 0, 0)
+{
+	this->gui = gui;
+	audio = new AudioDevice(gui->mwindow);
+	interrupted = 0;
+	vicon = 0;
+}
+AssetVIconAudio::~AssetVIconAudio()
+{
+	delete audio;
+}
+
+void AssetVIconAudio::run()
+{
+	int channels = 2;
+	int64_t bfrsz = VICON_SAMPLE_RATE;
+	MWindow *mwindow = gui->mwindow;
+	EDL *edl = mwindow->edl;
+	EDLSession *session = edl->session;
+	AudioOutConfig *aconfig = session->playback_config->aconfig;
+	audio->open_output(aconfig, VICON_SAMPLE_RATE, bfrsz, channels, 0);
+	audio->start_playback();
+	double out0[bfrsz], out1[bfrsz], *out[2] = { out0, out1 };
+	vicon_audio_t *audio_data = (vicon_audio_t *)vicon->audio_data;
+	static const int mx = (1<<(8*sizeof(*audio_data)-1)) - 1;
+
+	int audio_len = vicon->audio_size/sizeof(vicon_audio_t);
+	while( !interrupted ) {
+		int len = audio_len - audio_pos;
+		if( len <= 0 ) break;
+		if( len > bfrsz ) len = bfrsz;
+		int k = audio_pos;
+		for( int i=0; i<len; ++i,++k )
+			out0[i] = out1[i] = (double)audio_data[k] / mx;
+		audio_pos = k;
+		audio->write_buffer(out, channels, len);
+	}
+
+	if( !interrupted )
+		audio->set_last_buffer();
+	audio->stop_audio(interrupted ? 0 : 1);
+	audio->close_all();
+}
+
+void AssetVIconAudio::start(AssetVIcon *vicon)
+{
+	if( running() ) return;
+	interrupted = 0;
+	audio_pos = 0;
+	this->vicon = vicon;
+	Thread::start();
+}
+
+void AssetVIconAudio::stop(int wait)
+{
+	if( running() && !interrupted ) {
+		interrupted = 1;
+		audio->stop_audio(wait);
+	}
+	Thread::join();
+	if( vicon ) {
+		vicon->playing_audio = 0;
+		vicon = 0;
+	}
+}
+
+void AssetVIcon::start_audio()
+{
+	picon->gui->vicon_audio->stop(0);
+	playing_audio = 1;
+	picon->gui->vicon_audio->start(this);
+}
+
+void AssetVIcon::stop_audio()
+{
+	picon->gui->vicon_audio->stop(0);
+	playing_audio = 0;
+}
 
 AssetPicon::AssetPicon(MWindow *mwindow,
 	AWindowGUI *gui, Indexable *indexable)
@@ -209,6 +351,26 @@ AssetPicon::~AssetPicon()
 	if( icon && !gui->protected_pixmap(icon) ) {
 		delete icon;
 		if( !plugin ) delete icon_vframe;
+	}
+}
+
+void AssetPicon::draw_hue_bar(VFrame *frame, double duration)
+{
+	float t = duration > 1 ? (log(duration) / log(3600.f)) : 0;
+	if( t > 1 ) t = 1;
+	float h = 300 * t, s = 1., v = 1.;
+	float r, g, b; // duration, 0..1hr == hue red..magenta
+	HSV::hsv_to_rgb(r,g,b, h,s,v);
+	int ih = frame->get_h()/8, iw = frame->get_w();
+	int ir = r * 256;  CLAMP(ir, 0,255);
+	int ig = g * 256;  CLAMP(ig, 0,255);
+	int ib = b * 256;  CLAMP(ib, 0,255);
+	unsigned char **rows = frame->get_rows();
+	for( int y=0; y<ih; ++y ) {
+		unsigned char *rp = rows[y];
+		for( int x=0; x<iw; rp+=3,++x ) {
+			rp[0] = ir;  rp[1] = ig;  rp[2] = ib;
+		}
 	}
 }
 
@@ -303,7 +465,7 @@ void AssetPicon::create_objects()
 					file->read_frame(gui->temp_picon);
 					mwindow->video_cache->check_in(asset);
 
-					gui->lock_window("AssetPicon::create_objects 1");
+					gui->lock_window("AssetPicon::create_objects 0");
 					icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
 					icon->draw_vframe(gui->temp_picon,
 						0, 0, pixmap_w, pixmap_h, 0, 0);
@@ -319,6 +481,13 @@ void AssetPicon::create_objects()
 						if( secs > 5 ) secs = 5;
 						int64_t length = secs * gui->vicon_thread->refresh_rate;
 						vicon = new AssetVIcon(this, pixmap_w, pixmap_h, framerate, length);
+						if( asset->audio_data && secs > 0 ) {
+							gui->unlock_window();
+							int audio_len = VICON_SAMPLE_RATE*secs+0.5;
+							vicon->init_audio(audio_len*sizeof(vicon_audio_t));
+							vicon->load_audio();
+							gui->lock_window("AssetPicon::create_objects 1");
+						}
 						gui->vicon_thread->add_vicon(vicon);
 					}
 
@@ -353,36 +522,32 @@ void AssetPicon::create_objects()
 					int sample_rate = asset->get_sample_rate();
 					int channels = asset->get_audio_channels();
 					if( channels > 2 ) channels = 2;
-					int64_t length = asset->get_audio_samples();
-					double duration = (double)length / sample_rate;
-					float t = duration > 1 ? (logf(duration) / logf(3600.f)) : 0;
-					if( t > 1 ) t = 1;
-					float h = 300 * t, s = 1., v = 1.;
-					float r, g, b; // duration, 0..1hr == hue red..magenta
-					HSV::hsv_to_rgb(r,g,b, h,s,v);
-					int ih = icon_vframe->get_h()/8, iw = icon_vframe->get_w();
-					int ir = r * 256;  CLAMP(ir, 0,255);
-					int ig = g * 256;  CLAMP(ig, 0,255);
-					int ib = b * 256;  CLAMP(ib, 0,255);
-					unsigned char **rows = icon_vframe->get_rows();
-					for( int y=0; y<ih; ++y ) {
-						unsigned char *rp = rows[y];
-						for( int x=0; x<iw; rp+=3,++x ) {
-							rp[0] = ir;  rp[1] = ig;  rp[2] = ib;
-						}
-					}
-					length = sample_rate;
-					Samples samples(length);
+					int64_t audio_samples = asset->get_audio_samples();
+					double duration = (double)audio_samples / sample_rate;
+					draw_hue_bar(icon_vframe, duration);
+					int bfrsz = sample_rate;
+					Samples samples(bfrsz);
 					static int line_colors[2] = { GREEN, YELLOW };
 					static int base_colors[2] = { RED, PINK };
 					for( int i=channels; --i>=0; ) {
 						file->set_channel(i);
 						file->set_audio_position(0);
-						file->read_samples(&samples, length);
-						draw_wave(icon_vframe, samples.get_data(), length,
+						file->read_samples(&samples, bfrsz);
+						draw_wave(icon_vframe, samples.get_data(), bfrsz,
 							base_colors[i], line_colors[i]);
 					}
 					mwindow->audio_cache->check_in(asset);
+					if( asset->awindow_folder == AW_MEDIA_FOLDER ) {
+						double secs = duration;
+						if( secs > 5 ) secs = 5;
+						double refresh_rate = gui->vicon_thread->refresh_rate;
+						int64_t length = secs * refresh_rate;
+						vicon = new AssetVIcon(this, pixmap_w, pixmap_h, refresh_rate, length);
+						int audio_len = VICON_SAMPLE_RATE*secs+0.5;
+						vicon->init_audio(audio_len*sizeof(vicon_audio_t));
+						vicon->load_audio();
+						gui->vicon_thread->add_vicon(vicon);
+					}
 					gui->lock_window("AssetPicon::create_objects 4");
 					icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
 					icon->draw_vframe(icon_vframe,
@@ -529,6 +694,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	allow_iconlisting = 1;
 	remove_plugin = 0;
 	vicon_thread = 0;
+	vicon_audio = 0;
 	vicon_drawing = 1;
 	displayed_folder = AW_NO_FOLDER;
 }
@@ -545,6 +711,7 @@ AWindowGUI::~AWindowGUI()
 	displayed_assets[1].remove_all_objects();
 
 	delete vicon_thread;
+	delete vicon_audio;
 	delete newfolder_thread;
 
 	delete asset_menu;
@@ -715,6 +882,7 @@ void AWindowGUI::create_objects()
 
 	vicon_thread = new VIconThread(asset_list);
 	vicon_thread->start();
+	vicon_audio = new AssetVIconAudio(this);
 
 	add_subwindow(divider = new AWindowDivider(mwindow, this,
 		mwindow->theme->adivider_x, mwindow->theme->adivider_y,
@@ -1714,7 +1882,8 @@ int AWindowAssets::selection_changed()
 		BC_ListBox::deactivate_selection();
 		return 1;
 	}
-	else if( get_button_down() && get_buttonpress() == 1 &&
+	else if( gui->vicon_drawing &&
+		 get_button_down() && get_buttonpress() == 1 &&
 		 (item = (AssetPicon*)get_selection(0, 0)) ) {
 		VIcon *vicon = 0;
 		if( !gui->vicon_thread->viewing ) {

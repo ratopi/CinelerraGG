@@ -27,6 +27,7 @@
 #include "assetpopup.inc"
 #include "asset.inc"
 #include "assets.inc"
+#include "audiodevice.inc"
 #include "awindow.inc"
 #include "awindowgui.inc"
 #include "clippopup.inc"
@@ -55,7 +56,8 @@ public:
 
 	void create_objects();
 	void reset();
-	void draw_wave(VFrame *frame, double *dp, int len,
+	static void draw_hue_bar(VFrame *frame, double t);
+	static void draw_wave(VFrame *frame, double *dp, int len,
 		int base_color, int line_color);
 
 	MWindow *mwindow;
@@ -81,6 +83,25 @@ public:
 	VIcon *vicon;
 };
 
+typedef int16_t vicon_audio_t;
+
+class AssetVIconAudio : public Thread
+{
+public:
+	AssetVIconAudio(AWindowGUI *gui);
+	~AssetVIconAudio();
+
+	void run();
+	void start(AssetVIcon *vicon);
+	void stop(int wait);
+
+	AWindowGUI *gui;
+	AudioDevice *audio;
+	AssetVIcon *vicon;
+	int interrupted;
+	int audio_pos;
+};
+
 class AssetVIcon : public VIcon {
 public:
 	AssetPicon *picon;
@@ -91,6 +112,9 @@ public:
 	int64_t set_seq_no(int64_t no);
 	int get_vx();
 	int get_vy();
+	void load_audio();
+	void start_audio();
+	void stop_audio();
 
 	AssetVIcon(AssetPicon *picon, int w, int h, double framerate, int64_t length);
 	~AssetVIcon();
@@ -241,6 +265,7 @@ public:
 // Temporary for reading picons from files
 	VFrame *temp_picon;
 	VIconThread *vicon_thread;
+	AssetVIconAudio *vicon_audio;
 
 	int64_t plugin_visibility;
 	AWindowRemovePlugin *remove_plugin;
