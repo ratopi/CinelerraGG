@@ -333,7 +333,6 @@ AC_ARG_ENABLE([$1],
 
 CHECK_ENABLE([static-build], [STATIC_BUILD], [build static], [auto])
 CHECK_ENABLE([x264_hidepth], [X264_HIDEPTH], [build x264 10bit], [no])
-CHECK_ENABLE([x265_hidepth], [X265_HIDEPTH], [build x265 10/12bit], [no])
 
 test "x$WANT_STATIC_BUILD" = "xauto" && WANT_STATIC_BUILD=$WANT_CINBIN_BUILD
 
@@ -358,6 +357,19 @@ if test "x$FATAL_ERROR" != "x"; then
 fi
 CHECK_PROG(PACTL, [pactl])
 WANT_PACTL=$PROG_PACTL
+
+# libx264 nasm fix
+AC_MSG_CHECKING([nasm x264 compatible])
+echo "vmovdqa32 [[eax]]{k1}{z}, zmm0" > conftest.asm
+nasm conftest.asm -o conftest.o > /dev/null 2>&1
+if test $? != 0 ; then
+ AC_MSG_RESULT([no])
+ AC_MSG_WARN([libx264 built without assembly code])
+ X264_CFG_PARAMS="$X264_CFG_PARAMS --disable-asm"
+else
+ AC_MSG_RESULT([yes])
+fi
+rm -f conftest.asm conftest.o
 
 AC_CHECK_DECL([X_HAVE_UTF8_STRING],,[no_utf=yes],[#include <X11/Xlib.h>])
 if test "$no_utf" = "yes"; then
@@ -734,7 +746,6 @@ fi
 AC_SUBST(EXTRA_LIBS)
 AC_SUBST(FFMPEG_EXTRA_CFG)
 AC_SUBST(WANT_X264_HIDEPTH)
-AC_SUBST(WANT_X265_HIDEPTH)
 
 AC_SUBST(CFG_CFLAGS)
 AC_SUBST(CFG_CXXFLAGS)
@@ -792,10 +803,7 @@ for flg in $CFG_CXXFLAGS; do echo "CXXFLAGS += $flg"; done
 echo ""
 
 if test  $WANT_X264_HIDEPTH = "yes" ; then
-  echo "x264.cfg_params := --enable-static --bit-depth=10"
-fi
-if test  $WANT_X265_HIDEPTH = "yes" ; then
-  echo "x265.cfg_params := -DENABLE_SHARED=no -DHIGH_BIT_DEPTH:BOOL=ON" # -DMAIN12:BOOL=ON"
+  X264_CFG_PARAMS="$X264_CFG_PARAMS --bit-depth=10"
 fi
 
 for pkg in $STATIC_PKGS; do
@@ -859,4 +867,7 @@ echo "ffmpeg.git := $WANT_GIT_FFMPEG"
 fi
 if test "x$HAVE_opus" = "xyes"; then
 echo 'ffmpeg.cflags+=" -I/usr/include/opus"'
+fi
+if test "x$X264_CFG_PARAMS" != "x" ; then
+  echo "x264.cfg_params :=$X264_CFG_PARAMS --enable-static --enable-pic"
 fi

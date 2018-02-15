@@ -124,13 +124,20 @@ public:
 	int handle_event();
 };
 
+class FFMpegPixFmtItems : public ArrayList<BC_ListBoxItem*>
+{
+public:
+	FFMpegPixFmtItems() {}
+	~FFMpegPixFmtItems() { remove_all_objects(); }
+};
+
 class FFMpegPixelFormat : public BC_PopupTextBox
 {
 public:
 	FFMpegPixelFormat(FFMPEGConfigVideo *vid_config, int x, int y, int w, int list_h);
 
         FFMPEGConfigVideo *vid_config;
-	ArrayList<BC_ListBoxItem*> pixfmts;
+	FFMpegPixFmtItems pixfmts;
 
 	int handle_event();
 	void update_formats();

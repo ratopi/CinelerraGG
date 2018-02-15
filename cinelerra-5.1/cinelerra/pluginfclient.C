@@ -1098,8 +1098,8 @@ int PluginFFilter::init(const char *name, PluginFClientConfig *conf)
 		graph->nb_threads  = 0;
 	}
 	fctx = avfilter_graph_alloc_filter(graph, filter, inst_name);
-	fctx->thread_type = graph->thread_type; // bug in avfilter
 	if( !fctx ) return AVERROR(ENOMEM);
+	fctx->thread_type = graph->thread_type; // bug in avfilter
 	if( conf ) {
 		AVDictionary *opts = 0;
 		for( int i=0; i<conf->size(); ++i ) {

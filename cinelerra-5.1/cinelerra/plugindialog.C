@@ -722,7 +722,7 @@ void PluginDialog::load_plugin_list(int redraw)
 	const char *text = search_text->get_text();
 
 	for( int i=0; i<plugindb.total; ++i ) {
-		const char *title = plugindb.values[i]->title;
+		const char *title = _(plugindb.values[i]->title);
 		if( text && text[0] && !bstrcasestr(title, text) ) continue;
 		standalone_data.append(new PluginDialogListItem(title, i));
 	}

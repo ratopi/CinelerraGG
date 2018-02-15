@@ -627,6 +627,8 @@ FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset,
 	this->asset = asset;
 	this->edl = edl;
 	preset_popup = 0;
+	ff_options_dialog = 0;
+	pixel_format = 0;
 
 	bitrate = 0;
 	quality = 0;
@@ -635,9 +637,10 @@ FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset,
 
 FFMPEGConfigVideo::~FFMPEGConfigVideo()
 {
-	delete ff_options_dialog;
 	lock_window("FFMPEGConfigVideo::~FFMPEGConfigVideo");
-	if(preset_popup) delete preset_popup;
+	delete ff_options_dialog;
+	delete pixel_format;
+	delete preset_popup;
 	presets.remove_all_objects();
 	unlock_window();
 }
