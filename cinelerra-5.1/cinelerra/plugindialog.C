@@ -438,9 +438,9 @@ int PluginDialog::resize_event(int w, int h)
 
 
 	if(single_standalone)
-		single_standalone->reposition_window(mwindow->theme->plugindialog_new_x,
-			mwindow->theme->plugindialog_new_y +
-				mwindow->theme->plugindialog_new_h +
+		single_standalone->reposition_window(
+			mwindow->theme->plugindialog_new_x + BC_OKButton::calculate_w() + 10,
+			mwindow->theme->plugindialog_new_y + mwindow->theme->plugindialog_new_h +
 				get_text_height(MEDIUMFONT));
 
 	flush();
@@ -747,7 +747,7 @@ PluginDialogSingle::PluginDialogSingle(PluginDialog *dialog, int x, int y)
  : BC_CheckBox(x,
  	y,
 	dialog->thread->single_standalone,
-	_("Attach single standlone and share others"))
+	_("Attach single standalone and share others"))
 {
 	this->dialog = dialog;
 }

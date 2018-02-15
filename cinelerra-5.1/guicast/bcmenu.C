@@ -197,8 +197,8 @@ int BC_Menu::dispatch_cursor_leave()
 {
 	if(active)
 	{
-		if( !menu_popup->cursor_inside() )
-			deactivate_menu();
+//		if( !menu_popup->cursor_inside() )
+//			deactivate_menu();
 		menu_popup->dispatch_cursor_leave();
 	}
 	unhighlight();

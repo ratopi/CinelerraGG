@@ -1106,7 +1106,16 @@ int PluginFFilter::init(const char *name, PluginFClientConfig *conf)
 			PluginFClient_Opt *op = conf->get(i);
 			const char *name = op->opt->name;
 			char val[BCTEXTLEN], *vp = op->get(val, sizeof(val));
-			if( vp ) av_dict_set(&opts, name, vp, 0);
+			if( !vp ) continue;
+			uint8_t *bp = 0;
+// unspecified opts cause a special behavior in some filters (lut3d)
+// so... if opt value is the default, skip it or no special behavior
+			if( av_opt_get(filter_config(), name, 0, &bp) >= 0 ) {
+				int result = strcmp((const char *)bp, vp);
+				av_freep(&bp);
+				if( !result ) continue;
+			}
+			av_dict_set(&opts, name, vp, 0);
 		}
 		ret = avfilter_init_dict(fctx, &opts);
 		av_dict_free(&opts);
