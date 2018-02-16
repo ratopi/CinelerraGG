@@ -503,32 +503,58 @@ int CWindowGUI::keypress_event()
 				int shift_down = this->shift_down();
 				unlock_window();
 				stop_transport(0);
-				mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+				mwindow->gui->lock_window("CWindowGUI::keypress_event 5");
 				if( alt_down )
 					mwindow->prev_edit_handle(shift_down);
 				else
 					mwindow->move_left();
 				mwindow->gui->unlock_window();
-				lock_window("CWindowGUI::keypress_event 2");
+				lock_window("CWindowGUI::keypress_event 6");
  				result = 1;
 			}
 			break;
+
+		case ',':
+			if( !ctrl_down() && !alt_down() ) {
+				unlock_window();
+				stop_transport(0);
+				mwindow->gui->lock_window("CWindowGUI::keypress_event 7");
+				mwindow->move_left();
+				mwindow->gui->unlock_window();
+				lock_window("CWindowGUI::keypress_event 8");
+				result = 1;
+			}
+			break;
+
 		case RIGHT:
 			if( !ctrl_down() ) {
 				int alt_down = this->alt_down();
 				int shift_down = this->shift_down();
 				unlock_window();
 				stop_transport(0);
-				mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+				mwindow->gui->lock_window("CWindowGUI::keypress_event 8");
 				if( alt_down )
 					mwindow->next_edit_handle(shift_down);
 				else
 					mwindow->move_right();
 				mwindow->gui->unlock_window();
-				lock_window("CWindowGUI::keypress_event 2");
+				lock_window("CWindowGUI::keypress_event 9");
 				result = 1;
 			}
 			break;
+
+		case '.':
+			if( !ctrl_down() && !alt_down() ) {
+				unlock_window();
+				stop_transport(0);
+				mwindow->gui->lock_window("CWindowGUI::keypress_event 10");
+				mwindow->move_right();
+				mwindow->gui->unlock_window();
+				lock_window("CWindowGUI::keypress_event 11");
+				result = 1;
+			}
+			break;
+
 	}
 
 	if(!result) result = transport->keypress_event();
@@ -726,10 +752,16 @@ CWrapper(set_inpoint)
 CWrapper(set_outpoint)
 CWrapper(unset_inoutpoint)
 CWrapper(toggle_label)
-CWrapper(prev_label)
-CWrapper(next_label)
-CWrapper(prev_edit)
-CWrapper(next_edit)
+
+#define CWrapper_cut(fn) void CWindowEditing::fn(int cut) { \
+	mwindow->gui->lock_window("CWrapper::" #fn); \
+	EditPanel::fn(cut); \
+	mwindow->gui->unlock_window(); \
+}
+CWrapper_cut(prev_label)
+CWrapper_cut(next_label)
+CWrapper_cut(prev_edit)
+CWrapper_cut(next_edit)
 
 void CWindowEditing::to_clip()
 {

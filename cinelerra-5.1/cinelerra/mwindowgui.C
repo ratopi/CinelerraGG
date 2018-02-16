@@ -1195,6 +1195,13 @@ int MWindowGUI::keypress_event()
 		}
 		break;
 
+	case ',':
+		if( !ctrl_down() && !alt_down() ) {
+			mwindow->move_left();
+			result = 1;
+		}
+		break;
+
 	case RIGHT:
 		if( !ctrl_down() ) {
 			if( alt_down() ) {
@@ -1203,6 +1210,13 @@ int MWindowGUI::keypress_event()
 			}
 			else
 				mwindow->move_right();
+			result = 1;
+		}
+		break;
+
+	case '.':
+		if( !ctrl_down() && !alt_down() ) {
+			mwindow->move_right();
 			result = 1;
 		}
 		break;

@@ -170,10 +170,10 @@ public:
 	void unset_inoutpoint();
 	void to_clip();
 	void toggle_label();
-	void prev_label();
-	void next_label();
-	void prev_edit();
-	void next_edit();
+	void prev_label(int cut);
+	void next_label(int cut);
+	void prev_edit(int cut);
+	void next_edit(int cut);
 
 	MWindow *mwindow;
 	CWindow *cwindow;

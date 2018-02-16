@@ -343,36 +343,34 @@ void EditPanel::toggle_label()
 	mwindow->toggle_label(is_mwindow);
 }
 
-void EditPanel::prev_label()
+void EditPanel::prev_label(int cut)
 {
 	int shift_down = subwindow->shift_down();
-	int snap = subwindow->ctrl_down() && subwindow->alt_down();
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
 	if( have_mwindow_lock ) mwindow->gui->unlock_window();
 
 	stop_transport("EditPanel::prev_label 1");
 
 	mwindow->gui->lock_window("EditPanel::prev_label 2");
-	if( snap )
-		mwindow->snap_left_label();
+	if( cut )
+		mwindow->cut_left_label();
 	else
 		mwindow->prev_label(shift_down);
 	if( !have_mwindow_lock )
 		mwindow->gui->unlock_window();
 }
 
-void EditPanel::next_label()
+void EditPanel::next_label(int cut)
 {
 	int shift_down = subwindow->shift_down();
-	int snap = subwindow->ctrl_down() && subwindow->alt_down();
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
 	if( have_mwindow_lock ) mwindow->gui->unlock_window();
 
 	stop_transport("EditPanel::next_label 1");
 
 	mwindow->gui->lock_window("EditPanel::next_label 2");
-	if( snap )
-		mwindow->snap_right_label();
+	if( cut )
+		mwindow->cut_right_label();
 	else
 		mwindow->next_label(shift_down);
 	if( !have_mwindow_lock )
@@ -381,10 +379,9 @@ void EditPanel::next_label()
 
 
 
-void EditPanel::prev_edit()
+void EditPanel::prev_edit(int cut)
 {
 	int shift_down = subwindow->shift_down();
-	int snap = subwindow->ctrl_down() && subwindow->alt_down();
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
 	if( have_mwindow_lock ) mwindow->gui->unlock_window();
 
@@ -392,8 +389,8 @@ void EditPanel::prev_edit()
 
 	mwindow->gui->lock_window("EditPanel::prev_edit 2");
 
-	if( snap )
-		mwindow->snap_left_edit();
+	if( cut )
+		mwindow->cut_left_edit();
 	else
 		mwindow->prev_edit_handle(shift_down);
 
@@ -401,10 +398,9 @@ void EditPanel::prev_edit()
 		mwindow->gui->unlock_window();
 }
 
-void EditPanel::next_edit()
+void EditPanel::next_edit(int cut)
 {
 	int shift_down = subwindow->shift_down();
-	int snap = subwindow->ctrl_down() && subwindow->alt_down();
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
 	if( have_mwindow_lock ) mwindow->gui->unlock_window();
 
@@ -412,8 +408,8 @@ void EditPanel::next_edit()
 
 	mwindow->gui->lock_window("EditPanel::next_edit 2");
 
-	if( snap )
-		mwindow->snap_right_edit();
+	if( cut )
+		mwindow->cut_right_edit();
 	else
 		mwindow->next_edit_handle(shift_down);
 
@@ -633,14 +629,17 @@ int EditInPoint::handle_event()
 int EditInPoint::keypress_event()
 {
 	int key = get_keypress();
-	if( key == '[' || key == '<' ) {
-                panel->set_inpoint();
-		return 1;
+	if( ctrl_down() ) {
+		if( key == 't' ) {
+			panel->unset_inoutpoint();
+			return 1;
+		}
 	}
-	if(ctrl_down() && get_keypress() == 't')
-	{
-		panel->unset_inoutpoint();
-		return 1;
+	else if( !alt_down() ) {
+		if( key == '[' || key == '<' ) {
+			panel->set_inpoint();
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -663,14 +662,17 @@ int EditOutPoint::handle_event()
 int EditOutPoint::keypress_event()
 {
 	int key = get_keypress();
-	if( key == ']' || key == '>' ) {
-		panel->set_outpoint();
-		return 1;
+	if( ctrl_down() ) {
+		if(  key == 't' ) {
+			panel->unset_inoutpoint();
+			return 1;
+		}
 	}
-	if(ctrl_down() && get_keypress() == 't')
-	{
-		panel->unset_inoutpoint();
-		return 1;
+	else if( !alt_down() ) {
+		if( key == ']' || key == '>' ) {
+			panel->set_outpoint();
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -693,13 +695,23 @@ EditNextLabel::~EditNextLabel()
 }
 int EditNextLabel::keypress_event()
 {
-	if( ctrl_down() && get_keypress() == (!alt_down() ? RIGHT : '>') )
-		return handle_event();
+	if( ctrl_down() ) {
+		int key = get_keypress();
+		if( (key == RIGHT || key == '.') && !alt_down() ) {
+			panel->next_label(0);
+			return 1;
+		}
+		if( key == '>' && alt_down() ) {
+			panel->next_label(1);
+			return 1;
+		}
+	}
 	return 0;
 }
 int EditNextLabel::handle_event()
 {
-	panel->next_label();
+	int cut = ctrl_down() && alt_down();
+	panel->next_label(cut);
 	return 1;
 }
 
@@ -720,13 +732,23 @@ EditPrevLabel::~EditPrevLabel()
 }
 int EditPrevLabel::keypress_event()
 {
-	if( ctrl_down() && get_keypress() == (!alt_down() ? LEFT : '<') )
-		return handle_event();
+	if( ctrl_down() ) {
+		int key = get_keypress();
+		if( (key == LEFT || key == ',') && !alt_down() ) {
+			panel->prev_label(0);
+			return 1;
+		}
+		if( key == '<' && alt_down() ) {
+			panel->prev_label(1);
+			return 1;
+		}
+	}
 	return 0;
 }
 int EditPrevLabel::handle_event()
 {
-	panel->prev_label();
+	int cut = ctrl_down() && alt_down();
+	panel->prev_label(cut);
 	return 1;
 }
 
@@ -749,13 +771,23 @@ EditNextEdit::~EditNextEdit()
 }
 int EditNextEdit::keypress_event()
 {
-	if( alt_down() && get_keypress() == (!ctrl_down() ? RIGHT : '.') )
-		return handle_event();
+	if( alt_down() ) {
+		int key = get_keypress();
+		if( (key == RIGHT || key == '.') && !ctrl_down() ) {
+			panel->next_edit(0);
+			return 1;
+		}
+		if( key == '.' && ctrl_down() ) {
+			panel->next_edit(1);
+			return 1;
+		}
+	}
 	return 0;
 }
 int EditNextEdit::handle_event()
 {
-	panel->next_edit();
+	int cut = ctrl_down() && alt_down();
+	panel->next_edit(cut);
 	return 1;
 }
 
@@ -776,13 +808,23 @@ EditPrevEdit::~EditPrevEdit()
 }
 int EditPrevEdit::keypress_event()
 {
-	if( alt_down() && get_keypress() == (!ctrl_down() ? LEFT : ',') )
-		return handle_event();
+	if( alt_down() ) {
+		int key = get_keypress();
+		if( (key == LEFT || key == ',') && !ctrl_down() ) {
+			panel->prev_edit(0);
+			return 1;
+		}
+		if( key == ',' && ctrl_down() ) {
+			panel->prev_edit(1);
+			return 1;
+		}
+	}
 	return 0;
 }
 int EditPrevEdit::handle_event()
 {
-	panel->prev_edit();
+	int cut = ctrl_down() && alt_down();
+	panel->prev_edit(cut);
 	return 1;
 }
 

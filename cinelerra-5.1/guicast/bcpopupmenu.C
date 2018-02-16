@@ -473,7 +473,7 @@ int BC_PopupMenu::cursor_leave_event()
 	if( popup_down ) {
 		if( !get_button_down() && !menu_popup->cursor_inside() ) {
 			status = BUTTON_UP;
-			deactivate_menu();
+//			deactivate_menu();
 		}
 		menu_popup->dispatch_cursor_leave();
 	}

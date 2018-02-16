@@ -554,7 +554,7 @@ void MWindow::cut(double start, double end, double new_position)
 	cwindow->refresh_frame(CHANGE_EDL);
 }
 
-void MWindow::snap_left_edit()
+void MWindow::cut_left_edit()
 {
 	double start_pos = edl->local_session->get_selectionstart(1);
 	double position = edl->prev_edit(start_pos);
@@ -562,7 +562,7 @@ void MWindow::snap_left_edit()
 		cut(position, start_pos, position);
 }
 
-void MWindow::snap_right_edit()
+void MWindow::cut_right_edit()
 {
 	double end_pos = edl->local_session->get_selectionend(1);
 	double position = edl->next_edit(end_pos);
@@ -570,7 +570,7 @@ void MWindow::snap_right_edit()
 		cut(end_pos, position, end_pos);
 }
 
-void MWindow::snap_left_label()
+void MWindow::cut_left_label()
 {
 	double start_pos = edl->local_session->get_selectionstart(1);
 	Label *left_label = edl->labels->prev_label(start_pos);
@@ -580,7 +580,7 @@ void MWindow::snap_left_label()
 		cut(position, start_pos, position);
 }
 
-void MWindow::snap_right_label()
+void MWindow::cut_right_label()
 {
 	double end_pos = edl->local_session->get_selectionend(1);
 	Label *right_label = edl->labels->next_label(end_pos);

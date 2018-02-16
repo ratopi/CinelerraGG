@@ -444,10 +444,10 @@ public:
 	virtual void unset_inoutpoint();
 	virtual void to_clip() = 0;
 	virtual void toggle_label();
-	virtual void prev_label();
-	virtual void next_label();
-	virtual void prev_edit();
-	virtual void next_edit();
+	virtual void prev_label(int cut);
+	virtual void next_label(int cut);
+	virtual void prev_edit(int cut);
+	virtual void next_edit(int cut);
 	virtual double get_position();
 	virtual void set_position(double position);
 

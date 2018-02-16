@@ -126,7 +126,7 @@ int New::create_new_project(int load_mode)
 	mwindow->update_project(load_mode);
 	mwindow->session->changes_made = 0;
 	mwindow->undo->update_undo_after(load_mode == LOADMODE_REPLACE ?
-		_("New Project") : _("Append Project"), LOAD_ALL);
+		_("New Project") : _("Append to Project"), LOAD_ALL);
 	mwindow->gui->unlock_window();
 	return 0;
 }
