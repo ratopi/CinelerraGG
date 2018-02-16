@@ -298,6 +298,7 @@ int CWindowGUI::button_press_event()
 {
 	if( current_operation == CWINDOW_NONE &&
 	    mwindow->edl != 0 && canvas->get_canvas() &&
+	    mwindow->edl->session->cwindow_click2play &&
 	    canvas->get_canvas()->get_cursor_over_window() ) {
 		switch( get_buttonpress() ) {
 		case LEFT_BUTTON:
@@ -712,28 +713,27 @@ void CWindowGUI::stop_transport(const char *lock_msg)
 
 
 CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow)
- : EditPanel(mwindow,
-		cwindow->gui,
-		mwindow->theme->cedit_x,
-		mwindow->theme->cedit_y,
+ : EditPanel(mwindow, cwindow->gui, CWINDOW_ID,
+		mwindow->theme->cedit_x, mwindow->theme->cedit_y,
 		mwindow->edl->session->editing_mode,
-		0,
-		1,
-		0,
-		0,
-		1,
-		1,
-		1,
-		1,
-		1,
-		0,
+		0, // use_editing_mode
+		1, // use_keyframe
+		0, // use_splice
+		0, // use_overwrite
+		1, // use_lift
+		1, // use_extract
+		1, // use_copy
+		1, // use_paste
+		1, // use_undo
+		0, // use_fit
 		0, // locklabels
-		1,
-		1,
-		1,
-		0,
-		1,
-		0)
+		1, // use_labels
+		1, // use_toclip
+		1, // use_meters
+		1, // use_cut
+		0, // use_commerical
+		0, // use_goto
+		1) // use_clk2play
 {
 	this->mwindow = mwindow;
 	this->cwindow = cwindow;

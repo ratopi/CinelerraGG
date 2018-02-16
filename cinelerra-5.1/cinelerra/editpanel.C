@@ -51,6 +51,7 @@
 
 EditPanel::EditPanel(MWindow *mwindow,
 	BC_WindowBase *subwindow,
+	int window_id,
 	int x,
 	int y,
 	int editing_mode,
@@ -68,10 +69,12 @@ EditPanel::EditPanel(MWindow *mwindow,
 	int use_labels,
 	int use_toclip,
 	int use_meters,
-	int is_mwindow,
 	int use_cut,
-	int use_commercial)
+	int use_commercial,
+	int use_goto,
+	int use_clk2play)
 {
+	this->window_id = window_id;
 	this->editing_mode = editing_mode;
 	this->use_editing_mode = use_editing_mode;
 	this->use_keyframe = use_keyframe;
@@ -89,9 +92,10 @@ EditPanel::EditPanel(MWindow *mwindow,
 	this->use_locklabels = use_locklabels;
 	this->use_toclip = use_toclip;
 	this->use_meters = use_meters;
-	this->is_mwindow = is_mwindow;
 	this->use_cut = use_cut;
 	this->use_commercial = use_commercial;
+	this->use_goto = use_goto;
+	this->use_clk2play = use_clk2play;
 
 	this->x = x;
 	this->y = y;
@@ -120,6 +124,8 @@ EditPanel::EditPanel(MWindow *mwindow,
 	this->arrow = 0;
 	this->ibeam = 0;
 	this->keyframe = 0;
+	this->mangoto = 0;
+	this->click2play = 0;
 	locklabels = 0;
 }
 
@@ -136,22 +142,22 @@ void EditPanel::set_meters(MeterPanel *meter_panel)
 void EditPanel::update()
 {
 	int new_editing_mode = mwindow->edl->session->editing_mode;
-	if(arrow) arrow->update(new_editing_mode == EDITING_ARROW);
-	if(ibeam) ibeam->update(new_editing_mode == EDITING_IBEAM);
-	if(keyframe) keyframe->update(mwindow->edl->session->auto_keyframes);
-	if(locklabels) locklabels->set_value(mwindow->edl->session->labels_follow_edits);
-	if(meters)
-	{
-//printf("EditPanel::update %d %p %p\n", __LINE__, subwindow, (BC_WindowBase*)mwindow->cwindow->gui);
-		if(subwindow == (BC_WindowBase*)mwindow->cwindow->gui)
-		{
-//printf("EditPanel::update %d %d\n", __LINE__, mwindow->edl->session->cwindow_meter);
+	if( arrow ) arrow->update(new_editing_mode == EDITING_ARROW);
+	if( ibeam ) ibeam->update(new_editing_mode == EDITING_IBEAM);
+	if( keyframe ) keyframe->update(mwindow->edl->session->auto_keyframes);
+	if( locklabels ) locklabels->set_value(mwindow->edl->session->labels_follow_edits);
+	if( click2play ) {
+		int value = !is_vwindow() ?
+			mwindow->edl->session->cwindow_click2play :
+			mwindow->edl->session->vwindow_click2play ;
+		click2play->set_value(value);
+	}
+	if( meters ) {
+		if( is_cwindow() ) {
 			meters->update(mwindow->edl->session->cwindow_meter);
 			mwindow->cwindow->gui->update_meters();
 		}
-		else
-		{
-//printf("EditPanel::update %d %d\n", __LINE__, mwindow->edl->session->vwindow_meter);
+		else {
 			meters->update(mwindow->edl->session->vwindow_meter);
 		}
 	}
@@ -162,8 +168,7 @@ int EditPanel::calculate_w(MWindow *mwindow, int use_keyframe, int total_buttons
 {
 	int result = 0;
 	int button_w = mwindow->theme->get_image_set("ibeam")[0]->get_w();
-	if(use_keyframe)
-	{
+	if( use_keyframe ) {
 		result += button_w + mwindow->theme->toggle_margin;
 	}
 
@@ -180,153 +185,154 @@ void EditPanel::create_buttons()
 {
 	x1 = x, y1 = y;
 
-
-SET_TRACE
-	if(use_editing_mode)
-	{
-		subwindow->add_subwindow(arrow = new ArrowButton(mwindow, this, x1, y1));
+	if( use_editing_mode ) {
+		arrow = new ArrowButton(mwindow, this, x1, y1);
+		subwindow->add_subwindow(arrow);
 		x1 += arrow->get_w();
-		subwindow->add_subwindow(ibeam = new IBeamButton(mwindow, this, x1, y1));
+		ibeam = new IBeamButton(mwindow, this, x1, y1);
+		subwindow->add_subwindow(ibeam);
 		x1 += ibeam->get_w();
 		x1 += mwindow->theme->toggle_margin;
 	}
 
-	if(use_keyframe)
-	{
-		subwindow->add_subwindow(keyframe = new KeyFrameButton(mwindow, this, x1, y1));
+	if( use_keyframe ) {
+		keyframe = new KeyFrameButton(mwindow, this, x1, y1);
+		subwindow->add_subwindow(keyframe);
 		x1 += keyframe->get_w();
 	}
 
-	if(use_locklabels)
-	{
-		subwindow->add_subwindow(locklabels = new LockLabelsButton(mwindow,
-			x1,
-			y1));
+	if( use_locklabels ) {
+		locklabels = new LockLabelsButton(mwindow, x1, y1);
+		subwindow->add_subwindow(locklabels);
 		x1 += locklabels->get_w();
 	}
-	if(use_keyframe || use_locklabels)
+
+	if( use_keyframe || use_locklabels )
 		x1 += mwindow->theme->toggle_margin;
 
 // Mandatory
-	subwindow->add_subwindow(inpoint = new EditInPoint(mwindow, this, x1, y1));
+	inpoint = new EditInPoint(mwindow, this, x1, y1);
+	subwindow->add_subwindow(inpoint);
 	x1 += inpoint->get_w();
-	subwindow->add_subwindow(outpoint = new EditOutPoint(mwindow, this, x1, y1));
+	outpoint = new EditOutPoint(mwindow, this, x1, y1);
+	subwindow->add_subwindow(outpoint);
 	x1 += outpoint->get_w();
-	if(use_splice)
-	{
-		subwindow->add_subwindow(splice = new EditSplice(mwindow, this, x1, y1));
+
+	if( use_splice ) {
+		splice = new EditSplice(mwindow, this, x1, y1);
+		subwindow->add_subwindow(splice);
 		x1 += splice->get_w();
 	}
-	if(use_overwrite)
-	{
-		subwindow->add_subwindow(overwrite = new EditOverwrite(mwindow, this, x1, y1));
+
+	if( use_overwrite ) {
+		overwrite = new EditOverwrite(mwindow, this, x1, y1);
+		subwindow->add_subwindow(overwrite);
 		x1 += overwrite->get_w();
 	}
-	if(use_lift)
-	{
-		subwindow->add_subwindow(lift = new EditLift(mwindow, this, x1, y1));
+
+	if( use_lift ) {
+		lift = new EditLift(mwindow, this, x1, y1);
+		subwindow->add_subwindow(lift);
 		x1 += lift->get_w();
 	}
-	if(use_extract)
-	{
-		subwindow->add_subwindow(extract = new EditExtract(mwindow, this, x1, y1));
+
+	if( use_extract ) {
+		extract = new EditExtract(mwindow, this, x1, y1);
+		subwindow->add_subwindow(extract);
 		x1 += extract->get_w();
 	}
-	if(use_toclip)
-	{
-		subwindow->add_subwindow(clip = new EditToClip(mwindow, this, x1, y1));
+
+	if( use_toclip ) {
+		clip = new EditToClip(mwindow, this, x1, y1);
+		subwindow->add_subwindow(clip);
 		x1 += clip->get_w();
 	}
 
-	if(use_cut)
-	{
-		subwindow->add_subwindow(cut = new EditCut(mwindow, this, x1, y1));
+	if( use_cut ) {
+		cut = new EditCut(mwindow, this, x1, y1);
+		subwindow->add_subwindow(cut);
 		x1 += cut->get_w();
 	}
-	if(use_copy)
-	{
-		subwindow->add_subwindow(copy = new EditCopy(mwindow, this, x1, y1));
+
+	if( use_copy ) {
+		copy = new EditCopy(mwindow, this, x1, y1);
+		subwindow->add_subwindow(copy);
 		x1 += copy->get_w();
 	}
-	if(use_paste)
-	{
-		subwindow->add_subwindow(paste = new EditPaste(mwindow, this, x1, y1));
+
+	if( use_paste ) {
+		paste = new EditPaste(mwindow, this, x1, y1);
+		subwindow->add_subwindow(paste);
 		x1 += paste->get_w();
 	}
 
-	if(use_meters)
-	{
-		if(!meter_panel)
-		{
-			printf("EditPanel::create_objects: meter_panel == 0\n");
+	if( use_meters ) {
+		if( meter_panel ) {
+			meters = new MeterShow(mwindow, meter_panel, x1, y1);
+			subwindow->add_subwindow(meters);
+			x1 += meters->get_w();
 		}
-		subwindow->add_subwindow(meters = new MeterShow(mwindow, meter_panel, x1, y1));
-		x1 += meters->get_w();
+		else
+			printf("EditPanel::create_objects: meter_panel == 0\n");
 	}
 
-	if(use_labels)
-	{
-		subwindow->add_subwindow(labelbutton = new EditLabelbutton(mwindow,
-			this,
-			x1,
-			y1));
+	if( use_labels ) {
+		labelbutton = new EditLabelbutton(mwindow, this, x1, y1);
+		subwindow->add_subwindow(labelbutton);
 		x1 += labelbutton->get_w();
-		subwindow->add_subwindow(prevlabel = new EditPrevLabel(mwindow,
-			this,
-			x1,
-			y1,
-			is_mwindow));
+		prevlabel = new EditPrevLabel(mwindow, this, x1, y1);
+		subwindow->add_subwindow(prevlabel);
 		x1 += prevlabel->get_w();
-		subwindow->add_subwindow(nextlabel = new EditNextLabel(mwindow,
-			this,
-			x1,
-			y1,
-			is_mwindow));
+		nextlabel = new EditNextLabel(mwindow, this, x1, y1);
+		subwindow->add_subwindow(nextlabel);
 		x1 += nextlabel->get_w();
 	}
 
 // all windows except VWindow since it's only implemented in MWindow.
-	if(use_cut)
-	{
-		subwindow->add_subwindow(prevedit = new EditPrevEdit(mwindow,
-			this,
-			x1,
-			y1,
-			is_mwindow));
+	if( use_cut ) {
+		prevedit = new EditPrevEdit(mwindow, this, x1, y1);
+		subwindow->add_subwindow(prevedit);
 		x1 += prevedit->get_w();
-		subwindow->add_subwindow(nextedit = new EditNextEdit(mwindow,
-			this,
-			x1,
-			y1,
-			is_mwindow));
+		nextedit = new EditNextEdit(mwindow, this, x1, y1);
+		subwindow->add_subwindow(nextedit);
 		x1 += nextedit->get_w();
 	}
 
-	if(use_fit)
-	{
-		subwindow->add_subwindow(fit = new EditFit(mwindow, this, x1, y1));
+	if( use_fit ) {
+		fit = new EditFit(mwindow, this, x1, y1);
+		subwindow->add_subwindow(fit);
 		x1 += fit->get_w();
-		subwindow->add_subwindow(fit_autos = new EditFitAutos(mwindow, this, x1, y1));
+		fit_autos = new EditFitAutos(mwindow, this, x1, y1);
+		subwindow->add_subwindow(fit_autos);
 		x1 += fit_autos->get_w();
 	}
 
-	if(use_undo)
-	{
-		subwindow->add_subwindow(undo = new EditUndo(mwindow, this, x1, y1));
+	if( use_undo ) {
+		undo = new EditUndo(mwindow, this, x1, y1);
+		subwindow->add_subwindow(undo);
 		x1 += undo->get_w();
-		subwindow->add_subwindow(redo = new EditRedo(mwindow, this, x1, y1));
+		redo = new EditRedo(mwindow, this, x1, y1);
+		subwindow->add_subwindow(redo);
 		x1 += redo->get_w();
 	}
 
-	subwindow->add_subwindow(mangoto = new EditManualGoto(mwindow, this, x1, y1));
-	x1 += mangoto->get_w();
+	if( use_goto ) {
+		mangoto = new EditManualGoto(mwindow, this, x1, y1);
+		subwindow->add_subwindow(mangoto);
+		x1 += mangoto->get_w();
+	}
 
-	if(use_commercial)
-	{
-		subwindow->add_subwindow(commercial = new EditCommercial(mwindow, this, x1, y1));
+	if( use_clk2play ) {
+		click2play = new EditClick2Play(mwindow, this, x1, y1+5);
+		subwindow->add_subwindow(click2play);
+		x1 += click2play->get_w();
+	}
+
+	if( use_commercial ) {
+		commercial = new EditCommercial(mwindow, this, x1, y1);
+		subwindow->add_subwindow(commercial);
 		x1 += commercial->get_w();
 	}
-SET_TRACE
 }
 
 void EditPanel::stop_transport(const char *lock_msg)
@@ -340,7 +346,7 @@ void EditPanel::stop_transport(const char *lock_msg)
 
 void EditPanel::toggle_label()
 {
-	mwindow->toggle_label(is_mwindow);
+	mwindow->toggle_label(is_mwindow());
 }
 
 void EditPanel::prev_label(int cut)
@@ -440,20 +446,13 @@ void EditPanel::set_position(double position)
 	}
 }
 
-
-
-
-
-
-
 void EditPanel::reposition_buttons(int x, int y)
 {
 	this->x = x;
 	this->y = y;
 	x1 = x, y1 = y;
 
-	if(use_editing_mode)
-	{
+	if( use_editing_mode ) {
 		arrow->reposition_window(x1, y1);
 		x1 += arrow->get_w();
 		ibeam->reposition_window(x1, y1);
@@ -461,74 +460,62 @@ void EditPanel::reposition_buttons(int x, int y)
 		x1 += mwindow->theme->toggle_margin;
 	}
 
-	if(use_keyframe)
-	{
+	if( use_keyframe ) {
 		keyframe->reposition_window(x1, y1);
 		x1 += keyframe->get_w();
 	}
 
-	if(use_locklabels)
-	{
+	if( use_locklabels ) {
 		locklabels->reposition_window(x1,y1);
 		x1 += locklabels->get_w();
 	}
 
-	if(use_keyframe || use_locklabels)
+	if( use_keyframe || use_locklabels )
 		x1 += mwindow->theme->toggle_margin;
 
 	inpoint->reposition_window(x1, y1);
 	x1 += inpoint->get_w();
 	outpoint->reposition_window(x1, y1);
 	x1 += outpoint->get_w();
-	if(use_splice)
-	{
+	if( use_splice ) {
 		splice->reposition_window(x1, y1);
 		x1 += splice->get_w();
 	}
-	if(use_overwrite)
-	{
+	if( use_overwrite ) {
 		overwrite->reposition_window(x1, y1);
 		x1 += overwrite->get_w();
 	}
-	if(use_lift)
-	{
+	if( use_lift ) {
 		lift->reposition_window(x1, y1);
 		x1 += lift->get_w();
 	}
-	if(use_extract)
-	{
+	if( use_extract ) {
 		extract->reposition_window(x1, y1);
 		x1 += extract->get_w();
 	}
-	if(use_toclip)
-	{
+	if( use_toclip ) {
 		clip->reposition_window(x1, y1);
 		x1 += clip->get_w();
 	}
-	if(use_cut)
-	{
+	if( use_cut ) {
 		cut->reposition_window(x1, y1);
 		x1 += cut->get_w();
 	}
-	if(use_copy)
-	{
+	if( use_copy ) {
 		copy->reposition_window(x1, y1);
 		x1 += copy->get_w();
 	}
-	if(use_paste)
-	{
+	if( use_paste ) {
 		paste->reposition_window(x1, y1);
 		x1 += paste->get_w();
 	}
 
-	if(use_meters)
-	{
+	if( use_meters ) {
 		meters->reposition_window(x1, y1);
 		x1 += meters->get_w();
 	}
 
-	if(use_labels)
-	{
+	if( use_labels ) {
 		labelbutton->reposition_window(x1, y1);
 		x1 += labelbutton->get_w();
 		prevlabel->reposition_window(x1, y1);
@@ -537,36 +524,34 @@ void EditPanel::reposition_buttons(int x, int y)
 		x1 += nextlabel->get_w();
 	}
 
-	if(prevedit)
-	{
+	if( prevedit ) {
 		prevedit->reposition_window(x1, y1);
 		x1 += prevedit->get_w();
 	}
 
-	if(nextedit)
-	{
+	if( nextedit ) {
 		nextedit->reposition_window(x1, y1);
 		x1 += nextedit->get_w();
 	}
 
-	if(use_fit)
-	{
+	if( use_fit ) {
 		fit->reposition_window(x1, y1);
 		x1 += fit->get_w();
 		fit_autos->reposition_window(x1, y1);
 		x1 += fit_autos->get_w();
 	}
 
-	if(use_undo)
-	{
+	if( use_undo ) {
 		undo->reposition_window(x1, y1);
 		x1 += undo->get_w();
 		redo->reposition_window(x1, y1);
 		x1 += redo->get_w();
 	}
 
-	mangoto->reposition_window(x1, y1);
-	x1 += mangoto->get_w();
+	if( use_goto ) {
+		mangoto->reposition_window(x1, y1);
+		x1 += mangoto->get_w();
+	}
 }
 
 
@@ -679,15 +664,11 @@ int EditOutPoint::keypress_event()
 
 
 EditNextLabel::EditNextLabel(MWindow *mwindow,
-	EditPanel *panel,
-	int x,
-	int y,
-	int is_mwindow)
+	EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("nextlabel"))
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	this->is_mwindow = is_mwindow;
 	set_tooltip(_("Next label ( ctrl -> )"));
 }
 EditNextLabel::~EditNextLabel()
@@ -716,15 +697,11 @@ int EditNextLabel::handle_event()
 }
 
 EditPrevLabel::EditPrevLabel(MWindow *mwindow,
-	EditPanel *panel,
-	int x,
-	int y,
-	int is_mwindow)
+	EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("prevlabel"))
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	this->is_mwindow = is_mwindow;
 	set_tooltip(_("Previous label ( ctrl <- )"));
 }
 EditPrevLabel::~EditPrevLabel()
@@ -755,15 +732,11 @@ int EditPrevLabel::handle_event()
 
 
 EditNextEdit::EditNextEdit(MWindow *mwindow,
-	EditPanel *panel,
-	int x,
-	int y,
-	int is_mwindow)
+	EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("nextedit"))
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	this->is_mwindow = is_mwindow;
 	set_tooltip(_("Next edit ( alt -> )"));
 }
 EditNextEdit::~EditNextEdit()
@@ -792,15 +765,11 @@ int EditNextEdit::handle_event()
 }
 
 EditPrevEdit::EditPrevEdit(MWindow *mwindow,
-	EditPanel *panel,
-	int x,
-	int y,
-	int is_mwindow)
+	EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("prevedit"))
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	this->is_mwindow = is_mwindow;
 	set_tooltip(_("Previous edit (alt <- )"));
 }
 EditPrevEdit::~EditPrevEdit()
@@ -862,8 +831,7 @@ int EditOverwrite::handle_event()
 }
 int EditOverwrite::keypress_event()
 {
-	if(get_keypress() == 'b')
-	{
+	if( get_keypress() == 'b' ) {
 		handle_event();
 		return 1;
 	}
@@ -904,8 +872,7 @@ int EditToClip::handle_event()
 
 int EditToClip::keypress_event()
 {
-	if(get_keypress() == 'i' && !alt_down())
-	{
+	if( get_keypress() == 'i' && !alt_down() ) {
 		handle_event();
 		return 1;
 	}
@@ -932,8 +899,7 @@ int EditManualGoto::handle_event()
 
 int EditManualGoto::keypress_event()
 {
-	if(get_keypress() == 'g')
-	{
+	if( get_keypress() == 'g' ) {
 		handle_event();
 		return 1;
 	}
@@ -958,8 +924,7 @@ int EditSplice::handle_event()
 }
 int EditSplice::keypress_event()
 {
-	if(get_keypress() == 'v')
-	{
+	if( get_keypress() == 'v' ) {
 		handle_event();
 		return 1;
 	}
@@ -978,7 +943,7 @@ EditCut::~EditCut()
 }
 int EditCut::keypress_event()
 {
-	if(get_keypress() == 'x')
+	if( get_keypress() == 'x' )
 		return handle_event();
 	return 0;
 }
@@ -986,13 +951,33 @@ int EditCut::keypress_event()
 int EditCut::handle_event()
 {
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
-	if(!have_mwindow_lock)
+	if( !have_mwindow_lock )
 		mwindow->gui->lock_window("EditCut::handle_event");
 
 	mwindow->cut();
 
-	if(!have_mwindow_lock)
+	if( !have_mwindow_lock )
 		mwindow->gui->unlock_window();
+	return 1;
+}
+
+EditClick2Play::EditClick2Play(MWindow *mwindow, EditPanel *panel, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("playpatch_data"),
+    !panel->is_vwindow() ?
+	mwindow->edl->session->cwindow_click2play :
+	mwindow->edl->session->vwindow_click2play)
+{
+        this->mwindow = mwindow;
+        this->panel = panel;
+        set_tooltip(_("Click to play"));
+}
+int EditClick2Play::handle_event()
+{
+	int value = get_value();
+	if( !panel->is_vwindow() )
+		mwindow->edl->session->cwindow_click2play = value;
+	else
+		mwindow->edl->session->vwindow_click2play = value;
 	return 1;
 }
 
@@ -1008,7 +993,7 @@ EditCommercial::~EditCommercial()
 }
 int EditCommercial::keypress_event()
 {
-	if(get_keypress() == 'X')
+	if( get_keypress() == 'X' )
 		return handle_event();
 	return 0;
 }
@@ -1016,19 +1001,19 @@ int EditCommercial::keypress_event()
 int EditCommercial::handle_event()
 {
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
-	if(have_mwindow_lock)
+	if( have_mwindow_lock )
 		mwindow->gui->unlock_window();
 	mwindow->commit_commercial();
 	if( !mwindow->put_commercial() ) {
 		mwindow->gui->lock_window("EditCommercial::handle_event 1");
 		mwindow->cut();
-		if(!have_mwindow_lock)
+		if( !have_mwindow_lock )
 			mwindow->gui->unlock_window();
 		mwindow->activate_commercial();
 		return 1;
 	}
 	mwindow->undo_commercial();
-	if(have_mwindow_lock)
+	if( have_mwindow_lock )
 		mwindow->gui->lock_window("EditCommercial::handle_event 2");
 	return 1;
 }
@@ -1046,7 +1031,7 @@ EditCopy::~EditCopy()
 
 int EditCopy::keypress_event()
 {
-	if(get_keypress() == 'c')
+	if( get_keypress() == 'c' )
 		return handle_event();
 	return 0;
 }
@@ -1106,19 +1091,19 @@ EditPaste::~EditPaste()
 
 int EditPaste::keypress_event()
 {
-	if(get_keypress() == 'v')
+	if( get_keypress() == 'v' )
 		return handle_event();
 	return 0;
 }
 int EditPaste::handle_event()
 {
 	int have_mwindow_lock = mwindow->gui->get_window_lock();
-	if(!have_mwindow_lock)
+	if( !have_mwindow_lock )
 		mwindow->gui->lock_window("EditPaste::handle_event");
 
 	mwindow->paste();
 
-	if(!have_mwindow_lock)
+	if( !have_mwindow_lock )
 		mwindow->gui->unlock_window();
 	return 1;
 }
@@ -1167,7 +1152,7 @@ EditUndo::~EditUndo()
 }
 int EditUndo::keypress_event()
 {
-	if(get_keypress() == 'z')
+	if( get_keypress() == 'z' )
 		return handle_event();
 	return 0;
 }
@@ -1189,7 +1174,7 @@ EditRedo::~EditRedo()
 }
 int EditRedo::keypress_event()
 {
-	if(get_keypress() == 'Z')
+	if( get_keypress() == 'Z' )
 		return handle_event();
 	return 0;
 }
@@ -1216,7 +1201,7 @@ EditLabelbutton::~EditLabelbutton()
 }
 int EditLabelbutton::keypress_event()
 {
-	if(get_keypress() == 'l' && !alt_down())
+	if( get_keypress() == 'l' && !alt_down() )
 		return handle_event();
 	return 0;
 }
@@ -1244,8 +1229,7 @@ EditFit::~EditFit()
 }
 int EditFit::keypress_event()
 {
-	if(!alt_down() && get_keypress() == 'f')
-	{
+	if( !alt_down() && get_keypress() == 'f' ) {
 		handle_event();
 		return 1;
 	}
@@ -1277,13 +1261,11 @@ EditFitAutos::~EditFitAutos()
 }
 int EditFitAutos::keypress_event()
 {
-	if(!ctrl_down() && alt_down() && get_keypress() == 'f')
-	{
+	if( !ctrl_down() && alt_down() && get_keypress() == 'f' ) {
 		mwindow->fit_autos(1);
 		return 1;
 	}
-	if(ctrl_down() && alt_down() && get_keypress() == 'f')
-	{
+	if( ctrl_down() && alt_down() && get_keypress() == 'f' ) {
 		mwindow->fit_autos(0);
 		return 1;
 	}
@@ -1308,14 +1290,10 @@ int EditFitAutos::handle_event()
 
 
 ArrowButton::ArrowButton(MWindow *mwindow, EditPanel *panel, int x, int y)
- : BC_Toggle(x,
- 	y,
+ : BC_Toggle(x, y,
 	mwindow->theme->get_image_set("arrow"),
 	mwindow->edl->session->editing_mode == EDITING_ARROW,
-	"",
-	0,
-	0,
-	0)
+	"", 0, 0, 0)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
@@ -1327,22 +1305,17 @@ int ArrowButton::handle_event()
 	update(1);
 	panel->ibeam->update(0);
 	mwindow->set_editing_mode(EDITING_ARROW,
-		!panel->is_mwindow,
-		panel->is_mwindow);
+		!panel->is_mwindow(), panel->is_mwindow());
 // Nothing after this
 	return 1;
 }
 
 
 IBeamButton::IBeamButton(MWindow *mwindow, EditPanel *panel, int x, int y)
- : BC_Toggle(x,
- 	y,
+ : BC_Toggle(x, y,
 	mwindow->theme->get_image_set("ibeam"),
 	mwindow->edl->session->editing_mode == EDITING_IBEAM,
-	"",
-	0,
-	0,
-	0)
+	"", 0, 0, 0)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
@@ -1354,21 +1327,16 @@ int IBeamButton::handle_event()
 	update(1);
 	panel->arrow->update(0);
 	mwindow->set_editing_mode(EDITING_IBEAM,
-		!panel->is_mwindow,
-		panel->is_mwindow);
+		!panel->is_mwindow(), panel->is_mwindow());
 // Nothing after this
 	return 1;
 }
 
 KeyFrameButton::KeyFrameButton(MWindow *mwindow, EditPanel *panel, int x, int y)
- : BC_Toggle(x,
- 	y,
+ : BC_Toggle(x, y,
 	mwindow->theme->get_image_set("autokeyframe"),
 	mwindow->edl->session->auto_keyframes,
-	"",
-	0,
-	0,
-	0)
+	"", 0, 0, 0)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
@@ -1378,21 +1346,16 @@ KeyFrameButton::KeyFrameButton(MWindow *mwindow, EditPanel *panel, int x, int y)
 int KeyFrameButton::handle_event()
 {
 	mwindow->set_auto_keyframes(get_value(),
-		!panel->is_mwindow,
-		panel->is_mwindow);
+		!panel->is_mwindow(), panel->is_mwindow());
 	return 1;
 }
 
 
 LockLabelsButton::LockLabelsButton(MWindow *mwindow, int x, int y)
- : BC_Toggle(x,
- 	y,
+ : BC_Toggle(x, y,
 	mwindow->theme->get_image_set("locklabels"),
 	mwindow->edl->session->labels_follow_edits,
-	"",
-	0,
-	0,
-	0)
+	"", 0, 0, 0)
 {
 	this->mwindow = mwindow;
 	set_tooltip(_("Lock labels from moving"));

@@ -125,9 +125,26 @@ void MainTransport::goto_end()
 }
 
 MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
- : EditPanel(mwindow, mbuttons, x, y, mwindow->edl->session->editing_mode,
-		1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, // locklabels
-		1, 1, 0, 1, 1, mwindow->has_commercials())
+ : EditPanel(mwindow, mbuttons, MWINDOW_ID, x, y,
+		mwindow->edl->session->editing_mode,
+		1, // use_editing_mode
+		1, // use_keyframe
+		0, // use_splice
+		0, // use_overwrite
+		1, // use_lift
+		1, // use_extract
+		1, // use_copy
+		1, // use_paste
+		1, // use_undo
+		1, // use_fit
+		1, // locklabels
+		1, // use_labels
+		1, // use_toclip
+		0, // use_meters
+		1, // use_cut
+		mwindow->has_commercials(), // use_commerical
+		1, // use_goto
+		0) // use_clk2play
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;

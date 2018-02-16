@@ -116,6 +116,7 @@ public:
 	int cwindow_xscroll;
 	int cwindow_yscroll;
 	float cwindow_zoom;
+	int cwindow_click2play;
 // Transition
 	char default_atransition[BCTEXTLEN];
 	char default_vtransition[BCTEXTLEN];
@@ -222,6 +223,7 @@ public:
 // Use the vwindow meter or not
 	int vwindow_meter;
 	float vwindow_zoom;
+	int vwindow_click2play;
 
 // Global ID counter
 	static int current_id;

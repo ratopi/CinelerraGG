@@ -71,6 +71,7 @@ EDLSession::EDLSession(EDL *edl)
 	cwindow_scrollbars = 0;
 	cwindow_xscroll = cwindow_yscroll = 0;
 	cwindow_zoom = 1.0;
+	cwindow_click2play = 1;
 	strcpy(default_atransition, "");
 	strcpy(default_vtransition, "");
 	default_transition_length = 1.0;
@@ -140,6 +141,7 @@ EDLSession::EDLSession(EDL *edl)
 	view_follows_playback = 1;
 	vwindow_meter = 0;
 	vwindow_zoom = 1.;
+	vwindow_click2play = 1;
 
 	playback_config = new PlaybackConfig;
 }
@@ -243,6 +245,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	cwindow_xscroll = defaults->get("CWINDOW_XSCROLL", 0);
 	cwindow_yscroll = defaults->get("CWINDOW_YSCROLL", 0);
 	cwindow_zoom = defaults->get("CWINDOW_ZOOM", (float)1);
+	cwindow_click2play = defaults->get("CWINDOW_CLICK2PLAY", 1);
 	sprintf(default_atransition, _("Crossfade"));
 	defaults->get("DEFAULT_ATRANSITION", default_atransition);
 	sprintf(default_vtransition, _("Dissolve"));
@@ -325,6 +328,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", 1);
 	vwindow_meter = defaults->get("VWINDOW_METER", 0);
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
+	vwindow_click2play = defaults->get("VWINDOW_CLICK2PLAY", 1);
 
 	decode_subtitles = defaults->get("DECODE_SUBTITLES", decode_subtitles);
 	subtitle_number = defaults->get("SUBTITLE_NUMBER", subtitle_number);
@@ -385,6 +389,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("CWINDOW_XSCROLL", cwindow_xscroll);
 	defaults->update("CWINDOW_YSCROLL", cwindow_yscroll);
 	defaults->update("CWINDOW_ZOOM", cwindow_zoom);
+	defaults->update("CWINDOW_CLICK2PLAY", cwindow_click2play);
 	defaults->update("DEFAULT_ATRANSITION", default_atransition);
 	defaults->update("DEFAULT_VTRANSITION", default_vtransition);
 	defaults->update("DEFAULT_TRANSITION_LENGTH", default_transition_length);
@@ -455,6 +460,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("VIEW_FOLLOWS_PLAYBACK", view_follows_playback);
 	defaults->update("VWINDOW_METER", vwindow_meter);
 	defaults->update("VWINDOW_ZOOM", vwindow_zoom);
+	defaults->update("VWINDOW_CLICK2PLAY", vwindow_click2play);
 
 	defaults->update("DECODE_SUBTITLES", decode_subtitles);
 	defaults->update("SUBTITLE_NUMBER", subtitle_number);
@@ -609,6 +615,7 @@ int EDLSession::load_xml(FileXML *file,
 		cwindow_xscroll = file->tag.get_property("CWINDOW_XSCROLL", cwindow_xscroll);
 		cwindow_yscroll = file->tag.get_property("CWINDOW_YSCROLL", cwindow_yscroll);
 		cwindow_zoom = file->tag.get_property("CWINDOW_ZOOM", cwindow_zoom);
+		cwindow_click2play = file->tag.get_property("CWINDOW_CLICK2PLAY", cwindow_click2play);
 		editing_mode = file->tag.get_property("EDITING_MODE", editing_mode);
 		folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
 		highlighted_track = file->tag.get_property("HIGHLIGHTED_TRACK", 0);
@@ -625,6 +632,7 @@ int EDLSession::load_xml(FileXML *file,
 		tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
 		vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
 		vwindow_zoom = file->tag.get_property("VWINDOW_ZOOM", vwindow_zoom);
+		vwindow_click2play = file->tag.get_property("VWINDOW_CLICK2PLAY", vwindow_click2play);
 
 		decode_subtitles = file->tag.get_property("DECODE_SUBTITLES", decode_subtitles);
 		subtitle_number = file->tag.get_property("SUBTITLE_NUMBER", subtitle_number);
@@ -672,6 +680,7 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("CWINDOW_XSCROLL", cwindow_xscroll);
 	file->tag.set_property("CWINDOW_YSCROLL", cwindow_yscroll);
 	file->tag.set_property("CWINDOW_ZOOM", cwindow_zoom);
+	file->tag.set_property("CWINDOW_CLICK2PLAY", cwindow_click2play);
 	file->tag.set_property("EDITING_MODE", editing_mode);
 	file->tag.set_property("FOLDERLIST_FORMAT", folderlist_format);
 	file->tag.set_property("HIGHLIGHTED_TRACK", highlighted_track);
@@ -688,6 +697,7 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("TOOL_WINDOW", tool_window);
 	file->tag.set_property("VWINDOW_METER", vwindow_meter);
 	file->tag.set_property("VWINDOW_ZOOM", vwindow_zoom);
+	file->tag.set_property("VWINDOW_CLICK2PLAY", vwindow_click2play);
 
 	file->tag.set_property("DECODE_SUBTITLES", decode_subtitles);
 	file->tag.set_property("SUBTITLE_NUMBER", subtitle_number);
@@ -802,6 +812,7 @@ int EDLSession::copy(EDLSession *session)
 	cwindow_xscroll = session->cwindow_xscroll;
 	cwindow_yscroll = session->cwindow_yscroll;
 	cwindow_zoom = session->cwindow_zoom;
+	cwindow_click2play = session->cwindow_click2play;
 	strcpy(default_atransition, session->default_atransition);
 	strcpy(default_vtransition, session->default_vtransition);
 	default_transition_length = session->default_transition_length;
@@ -867,6 +878,7 @@ int EDLSession::copy(EDLSession *session)
 	view_follows_playback = session->view_follows_playback;
 	vwindow_meter = session->vwindow_meter;
 	vwindow_zoom = session->vwindow_zoom;
+	vwindow_click2play = session->vwindow_click2play;
 	proxy_scale = session->proxy_scale;
 	proxy_use_scaler = session->proxy_use_scaler;
 	proxy_auto_scale = session->proxy_auto_scale;

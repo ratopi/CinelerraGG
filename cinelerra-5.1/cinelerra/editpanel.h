@@ -23,6 +23,7 @@
 #define EDITPANEL_H
 
 #include "guicast.h"
+#include "editpanel.inc"
 #include "meterpanel.inc"
 #include "mwindow.inc"
 #include "manualgoto.inc"
@@ -165,6 +166,18 @@ public:
 	EditPanel *panel;
 };
 
+class EditClick2Play : public BC_Toggle
+{
+public:
+	EditClick2Play(MWindow *mwindow, EditPanel *panel, int x, int y);
+        EditClick2Play();
+
+        int handle_event();
+
+	MWindow *mwindow;
+	EditPanel *panel;
+};
+
 class EditCopy : public BC_Button
 {
 public:
@@ -294,11 +307,7 @@ public:
 class EditPrevLabel : public BC_Button
 {
 public:
-	EditPrevLabel(MWindow *mwindow,
-		EditPanel *panel,
-		int x,
-		int y,
-		int is_mwindow);
+	EditPrevLabel(MWindow *mwindow, EditPanel *panel, int x, int y);
 	~EditPrevLabel();
 
 	int keypress_event();
@@ -306,17 +315,12 @@ public:
 
 	MWindow *mwindow;
 	EditPanel *panel;
-	int is_mwindow;
 };
 
 class EditNextLabel : public BC_Button
 {
 public:
-	EditNextLabel(MWindow *mwindow,
-		EditPanel *panel,
-		int x,
-		int y,
-		int is_mwindow);
+	EditNextLabel(MWindow *mwindow, EditPanel *panel, int x, int y);
 	~EditNextLabel();
 
 	int keypress_event();
@@ -324,17 +328,12 @@ public:
 
 	MWindow *mwindow;
 	EditPanel *panel;
-	int is_mwindow;
 };
 
 class EditPrevEdit : public BC_Button
 {
 public:
-	EditPrevEdit(MWindow *mwindow,
-		EditPanel *panel,
-		int x,
-		int y,
-		int is_mwindow);
+	EditPrevEdit(MWindow *mwindow, EditPanel *panel, int x, int y);
 	~EditPrevEdit();
 
 	int keypress_event();
@@ -342,17 +341,12 @@ public:
 
 	MWindow *mwindow;
 	EditPanel *panel;
-	int is_mwindow;
 };
 
 class EditNextEdit : public BC_Button
 {
 public:
-	EditNextEdit(MWindow *mwindow,
-		EditPanel *panel,
-		int x,
-		int y,
-		int is_mwindow);
+	EditNextEdit(MWindow *mwindow, EditPanel *panel, int x, int y);
 	~EditNextEdit();
 
 	int keypress_event();
@@ -360,7 +354,6 @@ public:
 
 	MWindow *mwindow;
 	EditPanel *panel;
-	int is_mwindow;
 };
 
 
@@ -403,10 +396,8 @@ public:
 class EditPanel
 {
 public:
-	EditPanel(MWindow *mwindow,
-		BC_WindowBase *subwindow,
-		int x,
-		int y,
+	EditPanel(MWindow *mwindow, BC_WindowBase *subwindow,
+		int window_id, int x, int y,
 		int editing_mode,   // From edl.inc
 		int use_editing_mode,
 		int use_keyframe,
@@ -422,9 +413,10 @@ public:
 		int use_labels,
 		int use_toclip,
 		int use_meters,
-		int is_mwindow,
 		int use_cut,
-		int use_commerical);
+		int use_commerical,
+		int use_goto,
+		int use_clk2play);
 	~EditPanel();
 
 	void set_meters(MeterPanel *meter_panel);
@@ -455,9 +447,11 @@ public:
 	BC_WindowBase *subwindow;
 	MeterPanel *meter_panel;
 
+	int window_id;
+	int x, y, x1, y1;
+	int editing_mode;
 	int use_editing_mode;
 	int use_keyframe;
-	int editing_mode;
 	int use_splice;
 	int use_overwrite;
 	int use_lift;
@@ -470,10 +464,10 @@ public:
 	int use_labels;
 	int use_toclip;
 	int use_meters;
-	int x, y, x1, y1;
-	int is_mwindow;
 	int use_cut;
 	int use_commercial;
+	int use_goto;
+	int use_clk2play;
 
 	EditFit *fit;
 	EditFitAutos *fit_autos;
@@ -486,9 +480,10 @@ public:
 	EditLift *lift;
 	EditExtract *extract;
 	EditToClip *clip;
-	EditManualGoto *mangoto;
 	EditCut *cut;
 	EditCommercial *commercial;
+	EditManualGoto *mangoto;
+	EditClick2Play *click2play;
 	EditCopy *copy;
 	EditPaste *paste;
 	EditLabelbutton *labelbutton;
@@ -503,6 +498,10 @@ public:
 	IBeamButton *ibeam;
 	KeyFrameButton *keyframe;
 	LockLabelsButton *locklabels;
+
+	int is_mwindow() { return window_id == MWINDOW_ID; }
+	int is_cwindow() { return window_id == CWINDOW_ID; }
+	int is_vwindow() { return window_id == VWINDOW_ID; }
 };
 
 #endif
