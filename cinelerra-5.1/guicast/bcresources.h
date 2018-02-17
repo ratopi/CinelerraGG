@@ -389,7 +389,7 @@ public:
 	static VFrame *default_filebox_rename_images[3];
 	static VFrame *default_filebox_delete_images[3];
 	static VFrame *default_filebox_reload_images[3];
-	static VFrame *default_filebox_szfmt_images[3];
+	static VFrame *default_filebox_szfmt_images[12];
 	static VFrame *default_listbox_button[4];
 	static VFrame *default_listbox_bg;
 	static VFrame *default_listbox_expand[5];

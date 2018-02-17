@@ -347,7 +347,7 @@ VFrame *BC_Resources::default_filebox_newfolder_images[3] = { 0, };
 VFrame *BC_Resources::default_filebox_rename_images[3] = { 0, };
 VFrame *BC_Resources::default_filebox_delete_images[3] = { 0, };
 VFrame *BC_Resources::default_filebox_reload_images[3] = { 0, };
-VFrame *BC_Resources::default_filebox_szfmt_images[3] = { 0, };
+VFrame *BC_Resources::default_filebox_szfmt_images[12] = { 0, };
 VFrame *BC_Resources::default_listbox_button[4] = { 0, };
 VFrame *BC_Resources::default_listbox_bg = 0;
 VFrame *BC_Resources::default_listbox_expand[5] = { 0, };
@@ -491,67 +491,84 @@ new_vframes(3,default_menubar_data,
 #include "images/file_text_up_png.h"
 #include "images/file_text_hi_png.h"
 #include "images/file_text_dn_png.h"
-#include "images/file_icons_up_png.h"
-#include "images/file_icons_hi_png.h"
-#include "images/file_icons_dn_png.h"
-#include "images/file_newfolder_up_png.h"
-#include "images/file_newfolder_hi_png.h"
-#include "images/file_newfolder_dn_png.h"
-#include "images/file_rename_up_png.h"
-#include "images/file_rename_hi_png.h"
-#include "images/file_rename_dn_png.h"
-#include "images/file_updir_up_png.h"
-#include "images/file_updir_hi_png.h"
-#include "images/file_updir_dn_png.h"
-#include "images/file_delete_up_png.h"
-#include "images/file_delete_hi_png.h"
-#include "images/file_delete_dn_png.h"
-#include "images/file_reload_up_png.h"
-#include "images/file_reload_hi_png.h"
-#include "images/file_reload_dn_png.h"
-#include "images/file_size_fmt_up_png.h"
-#include "images/file_size_fmt_hi_png.h"
-#include "images/file_size_fmt_dn_png.h"
-
 new_vframes(3,default_filebox_text_images,
 	new VFramePng(file_text_up_png),
 	new VFramePng(file_text_hi_png),
 	new VFramePng(file_text_dn_png));
 
+#include "images/file_icons_up_png.h"
+#include "images/file_icons_hi_png.h"
+#include "images/file_icons_dn_png.h"
 new_vframes(3,default_filebox_icons_images,
 	new VFramePng(file_icons_up_png),
 	new VFramePng(file_icons_hi_png),
 	new VFramePng(file_icons_dn_png));
 
+#include "images/file_updir_up_png.h"
+#include "images/file_updir_hi_png.h"
+#include "images/file_updir_dn_png.h"
 new_vframes(3,default_filebox_updir_images,
 	new VFramePng(file_updir_up_png),
 	new VFramePng(file_updir_hi_png),
 	new VFramePng(file_updir_dn_png));
 
+#include "images/file_newfolder_up_png.h"
+#include "images/file_newfolder_hi_png.h"
+#include "images/file_newfolder_dn_png.h"
 new_vframes(3,default_filebox_newfolder_images,
 	new VFramePng(file_newfolder_up_png),
 	new VFramePng(file_newfolder_hi_png),
 	new VFramePng(file_newfolder_dn_png));
 
+#include "images/file_rename_up_png.h"
+#include "images/file_rename_hi_png.h"
+#include "images/file_rename_dn_png.h"
 new_vframes(3,default_filebox_rename_images,
 	new VFramePng(file_rename_up_png),
 	new VFramePng(file_rename_hi_png),
 	new VFramePng(file_rename_dn_png));
 
+#include "images/file_delete_up_png.h"
+#include "images/file_delete_hi_png.h"
+#include "images/file_delete_dn_png.h"
 new_vframes(3,default_filebox_delete_images,
 	new VFramePng(file_delete_up_png),
 	new VFramePng(file_delete_hi_png),
 	new VFramePng(file_delete_dn_png));
 
+#include "images/file_reload_up_png.h"
+#include "images/file_reload_hi_png.h"
+#include "images/file_reload_dn_png.h"
 new_vframes(3,default_filebox_reload_images,
 	new VFramePng(file_reload_up_png),
 	new VFramePng(file_reload_hi_png),
 	new VFramePng(file_reload_dn_png));
 
-new_vframes(3,default_filebox_szfmt_images,
-	new VFramePng(file_size_fmt_up_png),
-	new VFramePng(file_size_fmt_hi_png),
-	new VFramePng(file_size_fmt_dn_png));
+#include "images/file_size_capb_dn_png.h"
+#include "images/file_size_capb_hi_png.h"
+#include "images/file_size_capb_up_png.h"
+#include "images/file_size_lwrb_dn_png.h"
+#include "images/file_size_lwrb_hi_png.h"
+#include "images/file_size_lwrb_up_png.h"
+#include "images/file_size_semi_dn_png.h"
+#include "images/file_size_semi_hi_png.h"
+#include "images/file_size_semi_up_png.h"
+#include "images/file_size_zero_dn_png.h"
+#include "images/file_size_zero_hi_png.h"
+#include "images/file_size_zero_up_png.h"
+new_vframes(12,default_filebox_szfmt_images,
+	new VFramePng(file_size_zero_dn_png),
+	new VFramePng(file_size_zero_hi_png),
+	new VFramePng(file_size_zero_up_png),
+	new VFramePng(file_size_lwrb_dn_png),
+	new VFramePng(file_size_lwrb_hi_png),
+	new VFramePng(file_size_lwrb_up_png),
+	new VFramePng(file_size_capb_dn_png),
+	new VFramePng(file_size_capb_hi_png),
+	new VFramePng(file_size_capb_up_png),
+	new VFramePng(file_size_semi_dn_png),
+	new VFramePng(file_size_semi_hi_png),
+	new VFramePng(file_size_semi_up_png));
 
 #include "images/listbox_button_dn_png.h"
 #include "images/listbox_button_hi_png.h"

@@ -254,7 +254,8 @@ int BC_FileBoxFilterMenu::handle_event()
 
 
 BC_FileBoxSizeFormat::BC_FileBoxSizeFormat(int x, int y, BC_FileBox *file_box)
- : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_szfmt_images)
+ : BC_Button(x, y, &BC_WindowBase::get_resources()->
+		filebox_szfmt_images[3*file_box->size_format])
 {
 	this->file_box = file_box;
 	set_tooltip(_("Size numeric format"));
@@ -268,6 +269,9 @@ int BC_FileBoxSizeFormat::handle_event()
 	if( ++file_box->size_format > FILEBOX_SIZE_THOU )
 		file_box->size_format = FILEBOX_SIZE_RAW;
 	BC_WindowBase::get_resources()->filebox_size_format = file_box->size_format;
+	set_images(&BC_WindowBase::get_resources()->
+		filebox_szfmt_images[3*file_box->size_format]);
+	draw_face(0);
 	file_box->refresh(0);
 	return 1;
 }

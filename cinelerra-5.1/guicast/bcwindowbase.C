@@ -3848,12 +3848,9 @@ int BC_WindowBase::get_cursor_over_window()
 	int ret = XQueryPointer(display, win,
 		&root_return, &child_return, &abs_x, &abs_y,
 		&win_x, &win_y, &temp_mask);
-//printf("BC_WindowBase::get_cursor_over_window %d %s 0x%x %d 0x%x\n",
-//  __LINE__, title, win, ret, child_return);
-
-	int result = !ret || child_return == None ? 0 :
-		match_window(child_return);
-	return result;
+	if( ret && win != root_return && child_return != None )
+		ret = match_window(child_return);
+	return ret;
 }
 
 int BC_WindowBase::cursor_above()

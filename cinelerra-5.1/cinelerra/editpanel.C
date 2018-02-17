@@ -552,6 +552,10 @@ void EditPanel::reposition_buttons(int x, int y)
 		mangoto->reposition_window(x1, y1);
 		x1 += mangoto->get_w();
 	}
+	if( use_clk2play ) {
+		click2play->reposition_window(x1, y1+5);
+		x1 += click2play->get_w();
+	}
 }
 
 

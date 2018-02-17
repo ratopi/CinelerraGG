@@ -519,24 +519,9 @@ int TimeBar::draw()
 
 double TimeBar::get_edl_length()
 {
-	edl_length = 0;
-
-	if( get_edl() ) {
-//printf("TimeBar::get_edl_length 1 %f\n", get_edl()->tracks->total_length());
-		edl_length = get_edl()->tracks->total_length();
-	}
-
-//printf("TimeBar::get_edl_length 2\n");
-	if( !EQUIV(edl_length, 0) ) {
-//printf("TimeBar::get_edl_length 3\n");
-		time_per_pixel = edl_length / get_w();
-//printf("TimeBar::get_edl_length 4\n");
-	}
-	else {
-		time_per_pixel = 0;
-	}
-//printf("TimeBar::get_edl_length 5\n");
-
+	edl_length = get_edl() ? get_edl()->tracks->total_length() : 0;
+	int w1 = get_w()-1;
+	time_per_pixel = !EQUIV(edl_length, 0) ? edl_length/w1 : w1;
 	return edl_length;
 }
 
