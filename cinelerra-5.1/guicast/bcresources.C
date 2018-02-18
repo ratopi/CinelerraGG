@@ -544,31 +544,31 @@ new_vframes(3,default_filebox_reload_images,
 	new VFramePng(file_reload_hi_png),
 	new VFramePng(file_reload_dn_png));
 
-#include "images/file_size_capb_dn_png.h"
-#include "images/file_size_capb_hi_png.h"
 #include "images/file_size_capb_up_png.h"
-#include "images/file_size_lwrb_dn_png.h"
-#include "images/file_size_lwrb_hi_png.h"
+#include "images/file_size_capb_hi_png.h"
+#include "images/file_size_capb_dn_png.h"
 #include "images/file_size_lwrb_up_png.h"
-#include "images/file_size_semi_dn_png.h"
-#include "images/file_size_semi_hi_png.h"
+#include "images/file_size_lwrb_hi_png.h"
+#include "images/file_size_lwrb_dn_png.h"
 #include "images/file_size_semi_up_png.h"
-#include "images/file_size_zero_dn_png.h"
-#include "images/file_size_zero_hi_png.h"
+#include "images/file_size_semi_hi_png.h"
+#include "images/file_size_semi_dn_png.h"
 #include "images/file_size_zero_up_png.h"
+#include "images/file_size_zero_hi_png.h"
+#include "images/file_size_zero_dn_png.h"
 new_vframes(12,default_filebox_szfmt_images,
-	new VFramePng(file_size_zero_dn_png),
-	new VFramePng(file_size_zero_hi_png),
 	new VFramePng(file_size_zero_up_png),
-	new VFramePng(file_size_lwrb_dn_png),
-	new VFramePng(file_size_lwrb_hi_png),
+	new VFramePng(file_size_zero_hi_png),
+	new VFramePng(file_size_zero_dn_png),
 	new VFramePng(file_size_lwrb_up_png),
-	new VFramePng(file_size_capb_dn_png),
-	new VFramePng(file_size_capb_hi_png),
+	new VFramePng(file_size_lwrb_hi_png),
+	new VFramePng(file_size_lwrb_dn_png),
 	new VFramePng(file_size_capb_up_png),
-	new VFramePng(file_size_semi_dn_png),
+	new VFramePng(file_size_capb_hi_png),
+	new VFramePng(file_size_capb_dn_png),
+	new VFramePng(file_size_semi_up_png),
 	new VFramePng(file_size_semi_hi_png),
-	new VFramePng(file_size_semi_up_png));
+	new VFramePng(file_size_semi_dn_png));
 
 #include "images/listbox_button_dn_png.h"
 #include "images/listbox_button_hi_png.h"
