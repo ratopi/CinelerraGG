@@ -506,7 +506,6 @@ int ClipPopupUnNest::handle_event()
 			}
 			else
 				edl->clips.append(new_clip);
-			edl->clips.add_clip(new_clip);
 			popup->gui->async_update_assets();
 		}
 	}
