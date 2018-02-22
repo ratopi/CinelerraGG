@@ -888,7 +888,7 @@ BC_Resources::~BC_Resources()
 	del_vframes(default_filebox_rename_images, 3);
 	del_vframes(default_filebox_delete_images, 3);
 	del_vframes(default_filebox_reload_images, 3);
-	del_vframes(default_filebox_szfmt_images, 3);
+	del_vframes(default_filebox_szfmt_images, 12);
 	del_vframes(default_listbox_button, 4);
 	delete default_listbox_bg;
 	del_vframes(default_listbox_expand, 5);

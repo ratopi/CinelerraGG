@@ -118,7 +118,6 @@ int main(int argc, char *argv[])
 	config_path[0] = 0;
 	batch_path[0] = 0;
 	deamon_path[0] = 0;
-	EDL::id_lock = new Mutex("EDL::id_lock");
 	Units::init();
 
 	File::init_cin_path();
@@ -407,7 +406,6 @@ DISABLE_BUFFER
 	}
 
 	filenames.remove_all_objects();
-	delete EDL::id_lock;  EDL::id_lock = 0;
 	Units::finit();
 
 	return 0;

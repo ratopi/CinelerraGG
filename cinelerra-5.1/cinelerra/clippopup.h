@@ -208,4 +208,28 @@ public:
 	AWindowGUI *gui;
 };
 
+class ClipPopupNest : public BC_MenuItem
+{
+public:
+	ClipPopupNest(MWindow *mwindow, ClipPopup *popup);
+	~ClipPopupNest();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	ClipPopup *popup;
+};
+
+class ClipPopupUnNest : public BC_MenuItem
+{
+public:
+	ClipPopupUnNest(MWindow *mwindow, ClipPopup *popup);
+	~ClipPopupUnNest();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	ClipPopup *popup;
+};
+
 #endif

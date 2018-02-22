@@ -40,7 +40,7 @@
 #include "localsession.inc"
 #include "maxchannels.h"
 #include "mutex.inc"
-#include "nestededls.inc"
+#include "clipedls.h"
 #include "playabletracks.inc"
 #include "playbackconfig.h"
 #include "pluginserver.h"
@@ -80,14 +80,11 @@ public:
 	void boundaries();
 // Create tracks using existing configuration
 	int create_default_tracks();
-	int load_xml(FileXML *file,
-		uint32_t load_flags);
-	int save_xml(FileXML *xml,
-		const char *output_path,
-		int is_clip,
-		int is_vwindow);
-    int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
-    int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
+	int load_xml(FileXML *file, uint32_t load_flags);
+	int read_xml(FileXML *file, uint32_t load_flags);
+	int save_xml(FileXML *xml, const char *output_path);
+	int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
+	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
 
 // Return 1 if rendering requires a virtual console.
 	int get_use_vconsole(VEdit* *playable_edit,
@@ -105,6 +102,15 @@ public:
 // Scale all sample values since everything is locked to audio
 	void rechannel();
 	void resample(double old_rate, double new_rate, int data_type);
+	int copy(double start, double end, int all,
+		FileXML *file, const char *output_path, int rewind_it);
+	int copy_clip(double start, double end, int all,
+		FileXML *file, const char *output_path, int rewind_it);
+	int copy_nested_edl(double start, double end, int all,
+		FileXML *file, const char *output_path, int rewind_it);
+	int copy_vwindow_edl(double start, double end, int all,
+		FileXML *file, const char *output_path, int rewind_it);
+
 	void copy_tracks(EDL *edl);
 // Copies project path, folders, EDLSession, and LocalSession from edl argument.
 // session_only - used by preferences and format specify
@@ -113,6 +119,7 @@ public:
 	int copy_all(EDL *edl);
 	void copy_assets(EDL *edl);
 	void copy_clips(EDL *edl);
+	void copy_nested(EDL *edl);
 	void copy_mixers(EDL *edl);
 // Copy pan and fade settings from edl
 	void synchronize_params(EDL *edl);
@@ -169,29 +176,20 @@ public:
 		int edit_autos);
 
 // Editing functions
-	int copy_assets(double start,
-		double end,
-		FileXML *file,
-		int all,
-		const char *output_path);
-	int copy(double start,
-		double end,
-		int all,   // Ignore recordable status of tracks for saving
-		int is_clip,
-		int is_vwindow,
-		FileXML *file,
-		const char *output_path,
-		int rewind_it);     // Rewind EDL for easy pasting
-	void paste_silence(double start,
-		double end,
+	int copy_assets(double start, double end,
+		FileXML *file, int all, const char *output_path);
+	int copy(double start, double end, int all,
+		const char *closer, FileXML *file,
+		const char *output_path, int rewind_it);
+	int to_nested(EDL *nested_edl);
+	void paste_silence(double start, double end,
 		int edit_labels /* = 1 */,
 		int edit_plugins,
 		int edit_autos);
 	void remove_from_project(ArrayList<Indexable*> *assets);
 	void remove_from_project(ArrayList<EDL*> *clips);
 	int blade(double position);
-	int clear(double start,
-		double end,
+	int clear(double start, double end,
 		int clear_labels,
 		int clear_plugins,
 		int edit_autos);
@@ -243,10 +241,8 @@ public:
 
 // Titles of all subfolders
 	ArrayList<char*> folders;
-// Clips
-	ArrayList<EDL*> clips;
-// Nested EDLs
-	NestedEDLs *nested_edls;
+// Clips, Nested EDLs
+	ClipEDLs clips, nested_edls;
 // EDLs being shown in VWindows
 	ArrayList<EDL*> vwindow_edls;
 // is the vwindow_edl shared and therefore should not be deleted in destructor
@@ -257,8 +253,6 @@ public:
 // Shared between all EDLs
 	Assets *assets;
 
-
-
 	Tracks *tracks;
 	Labels *labels;
 // Shared between all EDLs in a tree, for projects.
@@ -266,17 +260,8 @@ public:
 // Specific to this EDL, for clips.
 	LocalSession *local_session;
 
-
-
-
-
-
 // Use parent Assets if nonzero
 	EDL *parent_edl;
-
-
-	static Mutex *id_lock;
-
 };
 
 #endif

@@ -512,10 +512,7 @@ void RenderFarmServerThread::send_edl()
 	FileXML file;
 
 // Save the XML
-	server->edl->save_xml(&file,
-		0,
-		0,
-		0);
+	server->edl->save_xml(&file, 0);
 	file.terminate_string();
 //printf("RenderFarmServerThread::send_edl\n%s\n\n", file.string);
 

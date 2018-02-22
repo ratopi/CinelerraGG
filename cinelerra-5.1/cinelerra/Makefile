@@ -60,6 +60,7 @@ OBJS = \
 	$(OBJDIR)/channelpicker.o \
 	$(OBJDIR)/chantables.o \
 	$(OBJDIR)/clipedit.o \
+	$(OBJDIR)/clipedls.o \
 	$(OBJDIR)/clippopup.o \
 	$(OBJDIR)/colorpicker.o \
 	$(OBJDIR)/commercials.o \
@@ -193,7 +194,6 @@ OBJS = \
 	$(OBJDIR)/mwindowgui.o \
 	$(OBJDIR)/mwindowmove.o \
 	$(OBJDIR)/mwindow.o \
-	$(OBJDIR)/nestededls.o \
 	$(OBJDIR)/newfolder.o \
 	$(OBJDIR)/new.o \
 	$(OBJDIR)/overlaydirect.o \

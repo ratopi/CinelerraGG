@@ -38,6 +38,7 @@
 #include "channeldb.h"
 #include "channelinfo.h"
 #include "clip.h"
+#include "clipedls.h"
 #include "bccmodels.h"
 #include "commercials.h"
 #include "cplayback.h"
@@ -80,7 +81,6 @@
 #include "mutex.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
-#include "nestededls.h"
 #include "new.h"
 #include "panautos.h"
 #include "patchbay.h"
@@ -1943,7 +1943,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				nested_edl->set_path(filenames->get(i));
 				nested_edl->load_xml(&xml_file, LOAD_ALL);
 //printf("MWindow::load_filenames %p %s\n", nested_edl, nested_edl->project_path);
-				edl_to_nested(new_edl, nested_edl);
+				new_edl->to_nested(nested_edl);
+				new_edl->local_session->set_clip_path(nested_edl);
 				nested_edl->Garbage::remove_user();
 			}
 			else {
@@ -2027,40 +2028,33 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Add new assets to EDL and schedule assets for index building.
 	int got_indexes = 0;
-	for(int i = 0; i < new_edls.size(); i++)
-	{
+	for( int i=0; i<new_edls.size(); ++i ) {
 		EDL *new_edl = new_edls[i];
-		for(int j = 0; j < new_edl->nested_edls->size(); j++)
-		{
-			mainindexes->add_next_asset(0,
-				new_edl->nested_edls->get(j));
+		for( int j=0; j<new_edl->nested_edls.size(); ++j ) {
+			mainindexes->add_next_asset(0, new_edl->nested_edls[j]);
+			edl->nested_edls.update_index(new_edl->nested_edls[j]);
 			got_indexes = 1;
-			edl->nested_edls->update_index(new_edl->nested_edls->get(j));
 		}
 
 	}
 
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
-	for(int i = 0; i < new_assets.size(); i++)
-	{
+	for( int i=0; i<new_assets.size(); ++i ) {
 		Asset *new_asset = new_assets[i];
 
 		File *new_file = 0;
 		int got_it = 0;
-		for(int j = 0; j < new_files.size(); j++)
-		{
+		for( int j=0; j<new_files.size(); ++j ) {
 			new_file = new_files[j];
-			if(!strcmp(new_file->asset->path,
-				new_asset->path))
-			{
+			if( !strcmp(new_file->asset->path, new_asset->path) ) {
 				got_it = 1;
 				break;
 			}
 		}
 
 		mainindexes->add_next_asset(got_it ? new_file : 0, new_asset);
-		got_indexes = 1;
 		edl->assets->update(new_asset);
+		got_indexes = 1;
 	}
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
@@ -3206,38 +3200,6 @@ if(debug) printf("MWindow::asset_to_edl %d\n", __LINE__);
 	return 0;
 }
 
-int MWindow::edl_to_nested(EDL *new_edl,
-	EDL *nested_edl)
-{
-
-// Keep frame rate, sample rate, and output size unchanged.
-// These parameters would revert the project if VWindow displayed an asset
-// of different size than the project.
-
-
-
-// Nest all video & audio outputs
-	new_edl->session->video_tracks = 1;
-	new_edl->session->audio_tracks = nested_edl->session->audio_channels;
-	new_edl->create_default_tracks();
-
-
-
-	new_edl->insert_asset(0,
-		nested_edl,
-		0,
-		0,
-		0);
-
-	char string[BCTEXTLEN];
-	FileSystem fs;
-	fs.extract_name(string, nested_edl->path);
-//printf("MWindow::edl_to_nested %p %s\n", nested_edl, nested_edl->path);
-
-	strcpy(new_edl->local_session->clip_title, string);
-
-	return 0;
-}
 
 // Reset everything after a load.
 void MWindow::update_project(int load_mode)
@@ -3373,7 +3335,7 @@ void MWindow::save_backup()
 	char backup_path[BCTEXTLEN];
 	snprintf(backup_path, sizeof(backup_path), "%s/%s",
 		File::get_config_path(), BACKUP_FILE);
-	edl->save_xml(&file, backup_path, 0, 0);
+	edl->save_xml(&file, backup_path);
 	file.terminate_string();
 	FileSystem fs;
 	fs.complete_path(backup_path);

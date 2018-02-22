@@ -299,6 +299,7 @@ F_loop:		Loops video frames.
 F_lumakey:	Turns a certain luma into transparency.
 F_lut:		Compute and apply a lookup
 		table to the RGB/YUV input video.
+F_lut3d:	Apply a 3D LUT (look up table) to an input video.
 F_lutrgb:	Compute and apply a lookup table to the RGB input video.
 F_lutyuv:	Combine and apply a lookup table to the YUV input video.
 F_mcdeint:	Applies motion compensating deinterlacing.

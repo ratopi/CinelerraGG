@@ -26,6 +26,7 @@
 #include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
+#include "clipedls.h"
 #include "edit.h"
 #include "edits.h"
 #include "edl.h"
@@ -34,7 +35,6 @@
 #include "filexml.h"
 #include "filesystem.h"
 #include "localsession.h"
-#include "nestededls.h"
 #include "plugin.h"
 #include "strategies.inc"
 #include "track.h"
@@ -111,11 +111,8 @@ printf("Edits::operator= 1\n");
 }
 
 
-void Edits::insert_asset(Asset *asset,
-	EDL *nested_edl,
-	int64_t length,
-	int64_t position,
-	int track_number)
+void Edits::insert_asset(Asset *asset, EDL *nested_edl,
+	int64_t length, int64_t position, int track_number)
 {
 	Edit *new_edit = insert_new_edit(position);
 
@@ -172,7 +169,7 @@ void Edits::insert_edits(Edits *source_edits,
 	{
 		EDL *dest_nested_edl = 0;
 		if(source_edit->nested_edl)
-			dest_nested_edl = edl->nested_edls->get_copy(source_edit->nested_edl);
+			dest_nested_edl = edl->nested_edls.get_copy(source_edit->nested_edl);
 
 // Update Assets
 		Asset *dest_asset = 0;
@@ -462,11 +459,10 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 			file->tag.get_property("SRC", path);
 //printf("Edits::load_edit %d path=%s\n", __LINE__, path);
 			if(path[0] != 0) {
-				current->nested_edl = edl->nested_edls->get(path);
+				current->nested_edl = edl->nested_edls.load(path);
 			}
 // printf("Edits::load_edit %d nested_edl->path=%s\n",
-// __LINE__,
-// current->nested_edl->path);
+// __LINE__, current->nested_edl->path);
 		}
 		else if(file->tag.title_is("FILE")) {
 			char filename[BCTEXTLEN];

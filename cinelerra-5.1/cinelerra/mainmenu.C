@@ -861,7 +861,7 @@ int ClearDefaultKeyframe::handle_event()
 }
 
 Cut::Cut(MWindow *mwindow)
- : BC_MenuItem(_("Cut"), "x", 'x')
+ : BC_MenuItem(_("Split | Cut"), "x", 'x')
 {
 	this->mwindow = mwindow;
 }

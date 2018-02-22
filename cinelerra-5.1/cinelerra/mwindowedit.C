@@ -194,7 +194,7 @@ void MWindow::asset_to_all()
 				edl->session->aspect_h,
 				w, h);
 
-			for( Track *current = edl->tracks->first; current; current = NEXT ) {
+			for( Track *current=edl->tracks->first; current; current=NEXT ) {
 				if( current->data_type == TRACK_VIDEO /* &&
 					current->record */  ) {
 					current->track_w = w;
@@ -420,7 +420,7 @@ int MWindow::copy(double start, double end)
 	if( start == end ) return 1;
 
 	FileXML file;
-	edl->copy(start, end, 0, 0, 0, &file, "", 1);
+	edl->copy(start, end, 0, &file, "", 1);
 	const char *file_string = file.string();
 	long file_length = strlen(file_string);
 	gui->to_clipboard(file_string, file_length, BC_PRIMARY_SELECTION);
@@ -541,7 +541,7 @@ void MWindow::cut(double start, double end, double new_position)
 
 	edl->optimize();
 	save_backup();
-	undo->update_undo_after(_("cut"), LOAD_EDITS | LOAD_TIMEBAR);
+	undo->update_undo_after(_("split | cut"), LOAD_EDITS | LOAD_TIMEBAR);
 	if( new_position >= 0 ) {
 		edl->local_session->set_selectionstart(new_position);
 		edl->local_session->set_selectionend(new_position);
@@ -715,7 +715,7 @@ void MWindow::insert_effects_canvas(double start,
 
 	undo->update_undo_before();
 
-	for( int i = 0; i < session->drag_pluginservers->total; i++ ) {
+	for( int i=0; i<session->drag_pluginservers->total; ++i ) {
 		PluginServer *plugin = session->drag_pluginservers->values[i];
 		insert_effect(plugin->title, 0, dest_track,
 			i == 0 ? session->pluginset_highlighted : 0,
@@ -745,7 +745,7 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 			edl->local_session->get_selectionstart();
 	}
 
-	for( int i = 0; i < session->drag_pluginservers->total; i++ ) {
+	for( int i=0; i<session->drag_pluginservers->total; ++i ) {
 		PluginServer *plugin = session->drag_pluginservers->values[i];
 		insert_effect(plugin->title, 0, dest_track, 0,
 			start, length, PLUGIN_STANDALONE);
@@ -768,7 +768,7 @@ void MWindow::insert_effect(char *title,
 	SharedLocation shared_location_local;
 	shared_location_local.copy_from(shared_location);
 	int first_track = 1;
-	for( ; current; current = NEXT) {
+	for( ; current; current=NEXT ) {
 		if( current->data_type == data_type &&
 			current->record ) {
 			insert_effect(title, &shared_location_local,
@@ -1074,8 +1074,7 @@ void MWindow::overwrite(EDL *source)
 		overwrite_len = dst_len;
 	}
 
-	source->copy(src_start, src_start + overwrite_len,
-		0, 0, 0, &file, "", 1);
+	source->copy(src_start, src_start + overwrite_len, 0, &file, "", 1);
 
 // HACK around paste_edl get_start/endselection on its own
 // so we need to clear only when not using both io points
@@ -1198,7 +1197,7 @@ if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
 	if( position < 0 ) position = edl->local_session->get_selectionstart();
 
 	ArrayList<EDL*> new_edls;
-	for( int i = 0; i < new_assets->total; i++ ) {
+	for( int i=0; i<new_assets->total; ++i ) {
 		Indexable *indexable = new_assets->get(i);
 		if( indexable->is_asset ) {
 			remove_asset_from_caches((Asset*)indexable);
@@ -1208,19 +1207,18 @@ if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
 		new_edl->copy_session(edl);
 		new_edls.append(new_edl);
 
-
-		if( indexable->is_asset ) {
-if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
-if( debug ) ((Asset*)indexable)->dump();
-			asset_to_edl(new_edl, (Asset*)indexable);
+		if( !indexable->is_asset ) {
+			EDL *nested_edl = (EDL*)indexable;
+			new_edl->to_nested(nested_edl);
+			new_edl->local_session->set_clip_path(nested_edl);
 		}
-		else
-			edl_to_nested(new_edl, (EDL*)indexable);
-if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
-
+		else {
+			Asset *asset = (Asset*)indexable;
+			asset_to_edl(new_edl, asset);
+		}
 
 		if( labels ) {
-			for( RecordLabel *label = labels->first; label; label = label->next ) {
+			for( RecordLabel *label=labels->first; label; label=label->next ) {
 				new_edl->labels->toggle_label(label->position, label->position);
 			}
 		}
@@ -1232,7 +1230,7 @@ if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
 if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
 
 	save_backup();
-	for( int i = 0; i < new_edls.size(); i++ )
+	for( int i=0; i<new_edls.size(); ++i )
 		new_edls.get(i)->Garbage::remove_user();
 
 if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
@@ -1351,33 +1349,30 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 	    load_mode == LOADMODE_NEW_TRACKS ) {
 
 		need_new_tracks = 1;
-		for( int i = 0; i < new_edls->total; i++ ) {
+		for( int i=0; i<new_edls->total; ++i ) {
 			EDL *new_edl = new_edls->values[i];
-			for( Track *current = new_edl->tracks->first;
-				current;
-				current = NEXT ) {
-				if( current->data_type == TRACK_VIDEO ) {
+			for( Track *current=new_edl->tracks->first; current; current=NEXT ) {
+				switch( current->data_type ) {
+				case TRACK_VIDEO:
 					edl->tracks->add_video_track(0, 0);
 					if( current->draw ) edl->tracks->last->draw = 1;
-					destination_tracks.append(edl->tracks->last);
-				}
-				else
-				if( current->data_type == TRACK_AUDIO ) {
+					break;
+				case TRACK_AUDIO:
 					edl->tracks->add_audio_track(0, 0);
-					destination_tracks.append(edl->tracks->last);
-				}
-				else
-				if( current->data_type == TRACK_SUBTITLE ) {
+					break;
+				case TRACK_SUBTITLE:
 					edl->tracks->add_subttl_track(0, 0);
-					destination_tracks.append(edl->tracks->last);
+					break;
+				default:
+					continue;
 				}
-				edl->session->highlighted_track = edl->tracks->total() - 1;
+				destination_tracks.append(edl->tracks->last);
 			}
 
 // Base track count on first EDL only for concatenation
 			if( load_mode == LOADMODE_REPLACE_CONCATENATE ) break;
 		}
-
+		edl->session->highlighted_track = edl->tracks->total() - 1;
 	}
 	else
 // Recycle existing tracks of master EDL
@@ -1390,13 +1385,12 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 // then be shifted back to their original locations without recursively
 // shifting back every paste.
 		if( (load_mode == LOADMODE_PASTE || load_mode == LOADMODE_NESTED) &&
-			edl->session->labels_follow_edits )
+		    edl->session->labels_follow_edits )
 			edl->labels->clear(edl->local_session->get_selectionstart(),
-						edl->local_session->get_selectionend(),
-						1);
+					   edl->local_session->get_selectionend(), 1);
 
 		Track *current = first_track ? first_track : edl->tracks->first;
-		for( ; current; current = NEXT) {
+		for( ; current; current=NEXT ) {
 			if( current->record ) {
 				destination_tracks.append(current);
 			}
@@ -1409,7 +1403,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 	double *paste_position = new double[destination_tracks.total];
 
 // Iterate through the edls
-	for( int i = 0; i < new_edls->total; i++ ) {
+	for( int i=0; i<new_edls->total; ++i ) {
 
 		EDL *new_edl = new_edls->values[i];
 		double edl_length = new_edl->local_session->clipboard_length ?
@@ -1430,9 +1424,8 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 			TRACK_VIDEO);
 //PRINT_TRACE
 // Add assets and prepare index files
-		for( Asset *new_asset = new_edl->assets->first;
-		     new_asset;
-		     new_asset = new_asset->next ) {
+		for( Asset *new_asset=new_edl->assets->first;
+		     new_asset; new_asset=new_asset->next ) {
 			mainindexes->add_next_asset(0, new_asset);
 		}
 // Capture index file status from mainindex test
@@ -1458,7 +1451,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 		case LOADMODE_NESTED:
 			destination_track = 0;
 			if( i == 0 ) {
-				for( int j = 0; j < destination_tracks.total; j++ ) {
+				for( int j=0; j<destination_tracks.total; ++j ) {
 					paste_position[j] = (current_position >= 0) ?
 						current_position :
 						edl->local_session->get_selectionstart();
@@ -1489,14 +1482,13 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 					edit_labels);
 //PRINT_TRACE
 
-			for( Track *new_track = new_edl->tracks->first;
-			     new_track;
-			     new_track = new_track->next ) {
+			for( Track *new_track=new_edl->tracks->first;
+			     new_track; new_track=new_track->next ) {
 // Get destination track of same type as new_track
 				for( int k = 0;
-					k < destination_tracks.total &&
-					destination_tracks.values[destination_track]->data_type != new_track->data_type;
-					k++, destination_track++ ) {
+				     k < destination_tracks.total &&
+				     destination_tracks.values[destination_track]->data_type != new_track->data_type;
+				     ++k, ++destination_track ) {
 					if( destination_track >= destination_tracks.total - 1 )
 						destination_track = 0;
 				}
@@ -1558,11 +1550,14 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 // strange issue, for index not being shown
 // Assume any paste operation from the same EDL won't contain any clips.
 // If it did it would duplicate every clip here.
-	for( int i = 0; i < new_edls->total; i++ ) {
-		EDL *new_edl = new_edls->values[i];
+	for( int i=0; i<new_edls->total; ++i ) {
+		EDL *new_edl = new_edls->get(i);
 
-		for( int j = 0; j < new_edl->clips.total; j++ ) {
-			edl->add_clip(new_edl->clips.values[j]);
+		for( int j=0; j<new_edl->clips.size(); ++j ) {
+			edl->add_clip(new_edl->clips[j]);
+		}
+		for( int j=0; j<new_edl->nested_edls.size(); ++j ) {
+			edl->nested_edls.get_copy(new_edl->nested_edls[j]);
 		}
 
 		if( new_edl->total_vwindow_edls() ) {
@@ -1572,7 +1567,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 //			edl->vwindow_edl->create_objects();
 //			edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
 
-			for( int j = 0; j < new_edl->total_vwindow_edls(); j++ ) {
+			for( int j=0; j<new_edl->total_vwindow_edls(); ++j ) {
 				EDL *vwindow_edl = new EDL(edl);
 				vwindow_edl->create_objects();
 				vwindow_edl->copy_all(new_edl->get_vwindow_edl(j));
@@ -1866,7 +1861,7 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 		close_mixers();
 
 	cwindow->gui->lock_window("MWindow::redo_entry 1");
-	for( int i = 0; i < vwindows.size(); i++ ) {
+	for( int i=0; i<vwindows.size(); ++i ) {
 		if( vwindows.get(i)->is_running() ) {
 			if( calling_window_gui != vwindows.get(i)->gui ) {
 				vwindows.get(i)->gui->lock_window("MWindow::redo_entry 2");
@@ -1887,7 +1882,7 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 	cwindow->update(1, 1, 1, 1, 1);
 	cwindow->gui->unlock_window();
 
-	for( int i = 0; i < vwindows.size(); i++ ) {
+	for( int i=0; i < vwindows.size(); ++i ) {
 		if( vwindows.get(i)->is_running() ) {
 			if( calling_window_gui != vwindows.get(i)->gui ) {
 				vwindows.get(i)->gui->unlock_window();
@@ -2001,7 +1996,7 @@ void MWindow::splice(EDL *source)
 	undo->update_undo_before();
 	double source_start = source->local_session->get_selectionstart();
 	double source_end = source->local_session->get_selectionend();
-	source->copy(source_start, source_end, 1, 0, 0, &file, "", 1);
+	source->copy(source_start, source_end, 1, &file, "", 1);
 //file.dump();
 	double start = edl->local_session->get_selectionstart();
 	//double end = edl->local_session->get_selectionend();
@@ -2075,6 +2070,7 @@ void MWindow::save_clip(EDL *new_edl, const char *txt)
 	gui->unlock_window();
 
 	awindow->clip_edit->create_clip(new_edl, cur_x, cur_y);
+	new_edl->remove_user();
 
 	gui->lock_window("MWindow::save_clip");
 	save_backup();
@@ -2095,7 +2091,7 @@ void MWindow::to_clip(EDL *edl, const char *txt)
 	}
 
 // Don't copy all since we don't want the clips twice.
-	edl->copy(start, end, 0, 0, 0, &file, "", 1);
+	edl->copy(start, end, 0, &file, "", 1);
 
 	EDL *new_edl = new EDL(edl);
 	new_edl->create_objects();
@@ -2180,7 +2176,7 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 		close_mixers();
 
 	cwindow->gui->lock_window("MWindow::undo_entry 1");
-	for( int i = 0; i < vwindows.size(); i++ ) {
+	for( int i=0; i<vwindows.size(); ++i ) {
 		if( vwindows.get(i)->is_running() ) {
 			if( calling_window_gui != vwindows.get(i)->gui ) {
 				vwindows.get(i)->gui->lock_window("MWindow::undo_entry 4");
@@ -2201,7 +2197,7 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 	cwindow->update(1, 1, 1, 1, 1);
 	cwindow->gui->unlock_window();
 
-	for( int i = 0; i < vwindows.size(); i++ ) {
+	for( int i=0; i<vwindows.size(); ++i ) {
 		if( vwindows.get(i)->is_running() ) {
 			if( calling_window_gui != vwindows.get(i)->gui ) {
 				vwindows.get(i)->gui->unlock_window();
@@ -2269,13 +2265,13 @@ void MWindow::remap_audio(int pattern)
 {
 	int current_channel = 0;
 	int current_track = 0;
-	for( Track *current = edl->tracks->first; current; current = NEXT ) {
+	for( Track *current=edl->tracks->first; current; current=NEXT ) {
 		if( current->data_type == TRACK_AUDIO &&
 			current->record ) {
 			Autos *pan_autos = current->automation->autos[AUTOMATION_PAN];
 			PanAuto *pan_auto = (PanAuto*)pan_autos->get_auto_for_editing(-1);
 
-			for( int i = 0; i < MAXCHANNELS; i++ ) {
+			for( int i=0; i < MAXCHANNELS; ++i ) {
 				pan_auto->values[i] = 0.0;
 			}
 
@@ -2366,9 +2362,9 @@ void MWindow::set_proxy(int use_scaler, int new_scale, int auto_scale,
 		Asset *proxy_asset = edl->assets->update((Asset *)proxy_assets->get(i));
 		proxy_asset->awindow_folder = awindow_folder;
 // replace track contents
-		for( Track *track = edl->tracks->first; track; track = track->next ) {
+		for( Track *track=edl->tracks->first; track; track=track->next ) {
 			if( track->data_type != TRACK_VIDEO ) continue;
-			for( Edit *edit = track->edits->first; edit; edit = edit->next ) {
+			for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 				if( !edit->asset ) continue;
 				if( !strcmp(edit->asset->path, orig_assets->get(i)->path) ) {
 					edit->asset = proxy_asset;
@@ -2395,9 +2391,9 @@ void MWindow::add_proxy(int use_scaler,
 		Asset *proxy_asset = edl->assets->update((Asset *)proxy_assets->get(i));
 		proxy_asset->awindow_folder = AW_PROXY_FOLDER;
 // replace track contents
-		for( Track *track = edl->tracks->first; track; track = track->next ) {
+		for( Track *track=edl->tracks->first; track; track=track->next ) {
 			if( track->data_type != TRACK_VIDEO ) continue;
-			for( Edit *edit = track->edits->first; edit; edit = edit->next ) {
+			for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 				if( !edit->asset ) continue;
 				if( !strcmp(edit->asset->path, orig_assets->get(i)->path) ) {
 					edit->asset = proxy_asset;

@@ -26,16 +26,21 @@
 #include "awindowgui.h"
 #include "bcsignals.h"
 #include "clipedit.h"
+#include "clipedls.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
+#include "edit.h"
+#include "edits.h"
 #include "edl.h"
 #include "filexml.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainerror.h"
+#include "mainindexes.h"
 #include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "track.h"
 #include "tracks.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
@@ -63,6 +68,8 @@ void ClipPopup::create_objects()
 	add_item(view = new ClipPopupView(mwindow, this));
 	add_item(view_window = new ClipPopupViewWindow(mwindow, this));
 	add_item(new ClipPopupCopy(mwindow, this));
+	add_item(new ClipPopupNest(mwindow, this));
+	add_item(new ClipPopupUnNest(mwindow, this));
 	add_item(new ClipPopupPaste(mwindow, this));
 	add_item(menu_item = new BC_MenuItem(_("Match...")));
 	menu_item->add_submenu(submenu = new BC_SubMenu());
@@ -249,7 +256,7 @@ int ClipPopupCopy::handle_event()
 		FileXML file;
 		EDL *edl = mwindow->session->drag_clips->values[0];
 		double start = 0, end = edl->tracks->total_length();
-		edl->copy(start, end, 1, 0, 0, &file, "", 1);
+		edl->copy(start, end, 1, &file, "", 1);
 		const char *file_string = file.string();
 		long file_length = strlen(file_string);
 		gui->to_clipboard(file_string, file_length, SECONDARY_SELECTION);
@@ -404,5 +411,106 @@ void ClipListMenu::create_objects()
 void ClipListMenu::update()
 {
 	format->update();
+}
+
+
+ClipPopupNest::ClipPopupNest(MWindow *mwindow, ClipPopup *popup)
+ : BC_MenuItem(_("Nest"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+ClipPopupNest::~ClipPopupNest()
+{
+}
+
+int ClipPopupNest::handle_event()
+{
+	MWindowGUI *gui = mwindow->gui;
+	gui->lock_window("ClipPopupNest::handle_event 1");
+	if( mwindow->session->drag_clips->total > 0 ) {
+		EDL *edl = mwindow->edl;
+		EDL *clip = mwindow->session->drag_clips->values[0];
+		EDL *clip_edl = new EDL;  // no parent for nested clip
+		clip_edl->create_objects();
+		clip_edl->copy_all(clip);
+		EDL *new_clip = new EDL(edl);
+		new_clip->create_objects();
+		new_clip->awindow_folder = AW_CLIP_FOLDER;
+		snprintf(new_clip->local_session->clip_title,
+			sizeof(new_clip->local_session->clip_title),
+			_("Nested: %s"), clip->local_session->clip_title);
+		strcpy(new_clip->local_session->clip_notes,
+			clip->local_session->clip_notes);
+		time_t dt;	time(&dt);
+		struct tm dtm;	localtime_r(&dt, &dtm);
+		char path[BCSTRLEN];
+		sprintf(path, _("Nested_%02d%02d%02d-%02d%02d%02d"),
+			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
+			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
+		clip_edl->set_path(path);
+		new_clip->set_path(path);
+		new_clip->to_nested(clip_edl);
+		int idx = edl->clips.number_of(clip);
+		if( idx >= 0 ) {
+			edl->clips[idx] = new_clip;
+			clip->remove_user();
+		}
+		else
+			edl->clips.append(new_clip);
+		mwindow->mainindexes->add_next_asset(0, clip_edl);
+		mwindow->mainindexes->start_build();
+		clip_edl->remove_user();
+		popup->gui->async_update_assets();
+	}
+	gui->unlock_window();
+	return 1;
+}
+
+
+ClipPopupUnNest::ClipPopupUnNest(MWindow *mwindow, ClipPopup *popup)
+ : BC_MenuItem(_("UnNest"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+ClipPopupUnNest::~ClipPopupUnNest()
+{
+}
+
+int ClipPopupUnNest::handle_event()
+{
+	EDL *nested_edl = 0;
+	MWindowGUI *gui = mwindow->gui;
+	gui->lock_window("ClipPopupUnNest::handle_event 1");
+	if( mwindow->session->drag_clips->total > 0 ) {
+		EDL *clip = mwindow->session->drag_clips->values[0];
+		Track *track = clip->tracks->first;
+		Edit *edit = track ? track->edits->first : 0;
+		nested_edl = edit && !edit->next && !edit->asset ? edit->nested_edl : 0;
+		while( nested_edl && (track=track->next)!=0 ) {
+			Edit *edit = track->edits->first;
+			if( !edit || edit->next || edit->nested_edl != nested_edl )
+				nested_edl = 0;
+		}
+		if( nested_edl ) {
+			EDL *edl = mwindow->edl;
+			EDL *new_clip = new EDL(edl);
+			new_clip->create_objects();
+			new_clip->copy_all(nested_edl);
+			new_clip->awindow_folder = AW_CLIP_FOLDER;
+			int idx = edl->clips.number_of(clip);
+			if( idx >= 0 ) {
+				edl->clips[idx] = new_clip;
+				clip->remove_user();
+			}
+			else
+				edl->clips.append(new_clip);
+			edl->clips.add_clip(new_clip);
+			popup->gui->async_update_assets();
+		}
+	}
+	gui->unlock_window();
+	return 1;
 }
 

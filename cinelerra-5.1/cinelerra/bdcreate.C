@@ -266,7 +266,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 	char xml_filename[BCTEXTLEN];
 	sprintf(xml_filename, "%s/bd.xml", asset_dir);
 	FileXML xml_file;
-	edl->save_xml(&xml_file, xml_filename, 0, 0);
+	edl->save_xml(&xml_file, xml_filename);
 	xml_file.terminate_string();
 	if( xml_file.write_to_file(xml_filename) ) {
 		char msg[BCTEXTLEN];

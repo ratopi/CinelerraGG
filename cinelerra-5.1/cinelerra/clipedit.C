@@ -58,9 +58,9 @@ void ClipEdit::handle_close_event(int result)
 {
 	if( !result ) {
 		int name_ok = 1;
-		for( int i = 0; name_ok && i < mwindow->edl->clips.total; ++i ) {
+		for( int i=0; name_ok && i<mwindow->edl->clips.size(); ++i ) {
 			if( !strcasecmp(clip->local_session->clip_title,
-			      mwindow->edl->clips.values[i]->local_session->clip_title) &&
+			      mwindow->edl->clips[i]->local_session->clip_title) &&
 			    (create_it || strcasecmp(clip->local_session->clip_title,
 			       original->local_session->clip_title)) )
 				name_ok = 0;
@@ -90,11 +90,8 @@ void ClipEdit::handle_close_event(int result)
 		mwindow->session->clip_number--;
 	}
 
-
-
-// For creating new clips, the original was copied in add_clip.
-// For editing old clips, the original was transferred to another variable.
-	if( !create_it ) clip->remove_user();
+// always a copy from new_gui
+	clip->remove_user();
 	original = 0;
 	clip = 0;
 	create_it = 0;
@@ -105,12 +102,9 @@ void ClipEdit::handle_close_event(int result)
 BC_Window* ClipEdit::new_gui()
 {
 	original = clip;
-
-	if( !create_it ) {
-		this->clip = new EDL(mwindow->edl);
-		clip->create_objects();
-		clip->copy_all(original);
-	}
+	this->clip = new EDL(mwindow->edl);
+	clip->create_objects();
+	clip->copy_all(original);
 
 	window = new ClipEditWindow(mwindow, this);
 	window->create_objects();

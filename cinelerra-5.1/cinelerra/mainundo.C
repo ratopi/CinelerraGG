@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "assets.h"
 #include "bctimer.h"
+#include "clipedls.h"
 #include "edl.h"
 #include "filexml.h"
 #include "mainindexes.h"
@@ -30,7 +31,6 @@
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "nestededls.h"
 #include <string.h>
 #include "undostack.h"
 
@@ -55,10 +55,7 @@ void MainUndo::update_undo_entry(const char *description,
 {
 	FileXML file;
 
-	mwindow->edl->save_xml(&file,
-		"",
-		0,
-		0);
+	mwindow->edl->save_xml(&file, "");
 	file.terminate_string();
 	if(changes_made) mwindow->session->changes_made = 1;
 
@@ -264,16 +261,11 @@ int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 	if( load_flags & LOAD_SESSION )
 		mwindow->close_mixers();
 	mwindow->edl->load_xml(file, load_flags);
-	for(Asset *asset = mwindow->edl->assets->first;
-		asset;
-		asset = asset->next)
-	{
+	for( Asset *asset=mwindow->edl->assets->first; asset; asset=asset->next ) {
 		mwindow->mainindexes->add_next_asset(0, asset);
 	}
-
-	for(int i = 0; i < mwindow->edl->nested_edls->size(); i++)
-	{
-		EDL *nested_edl = mwindow->edl->nested_edls->get(i);
+	for( int i=0; i<mwindow->edl->nested_edls.size(); ++i ) {
+		EDL *nested_edl = mwindow->edl->nested_edls[i];
 		mwindow->mainindexes->add_next_asset(0, nested_edl);
 	}
 	mwindow->mainindexes->start_build();
@@ -286,10 +278,7 @@ int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 
 void MainUndo::reset_creators()
 {
-	for(UndoStackItem *current = undo_stack->first;
-		current;
-		current = NEXT)
-	{
+	for( UndoStackItem *current=undo_stack->first; current; current=NEXT ) {
 		current->set_creator(0);
 	}
 }

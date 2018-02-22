@@ -201,31 +201,23 @@ int Tracks::load(FileXML *xml,
 	xml->tag.get_property("TYPE", string);
 
 	if((load_flags & LOAD_ALL) == LOAD_ALL ||
-		(load_flags & LOAD_EDITS))
-	{
-		if(!strcmp(string, "VIDEO"))
-		{
-			add_video_track(0, 0);
+		(load_flags & LOAD_EDITS)) {
+		if(!strcmp(string, "VIDEO")) {
+			track = add_video_track(0, 0);
 		}
-		else
-		if(!strcmp(string, "SUBTTL"))
-		{
-			add_subttl_track(0, 0);
+		else if(!strcmp(string, "SUBTTL")) {
+			track = add_subttl_track(0, 0);
 		}
-		else
-		{
-			add_audio_track(0, 0);    // default to audio
+		else {
+			track = add_audio_track(0, 0);    // default to audio
 		}
-		track = last;
 	}
-	else
-	{
-		track = get_item_number(track_offset);
-		track_offset++;
+	else {
+		track = get_item_number(track_offset++);
 	}
 
 // load it
-	if(track) track->load(xml, track_offset, load_flags);
+	if( track ) track->load(xml, track_offset, load_flags);
 
 	return 0;
 }

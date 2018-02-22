@@ -24,6 +24,7 @@
 #include "clip.h"
 #include "bchash.h"
 #include "edl.h"
+#include "filesystem.h"
 #include "filexml.h"
 #include "floatauto.h"
 #include "language.h"
@@ -474,6 +475,12 @@ int LocalSession::outpoint_valid()
 	return out_point >= 0;
 }
 
-
+void LocalSession::set_clip_path(Indexable *indexable)
+{
+	char string[BCTEXTLEN];
+	FileSystem fs;
+	fs.extract_name(string, indexable->path);
+	strcpy(clip_title, string);
+}
 
 

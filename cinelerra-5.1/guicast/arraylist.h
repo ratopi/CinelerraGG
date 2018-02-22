@@ -43,7 +43,7 @@ public:
 	}
 	void remove_number(int n) {
 		if( n >= total ) return;
-		for(int i=n+1; i<total; ++i ) values[i-1]=values[i];
+		while( ++n<total ) values[n-1]=values[n];
 		remove();
 	}
 	void remove(TYPE value) {

@@ -165,62 +165,36 @@ void VWindowGUI::change_source(EDL *edl, const char *title)
 void VWindowGUI::update_sources(const char *title)
 {
 	lock_window("VWindowGUI::update_sources");
-
-//printf("VWindowGUI::update_sources 1\n");
 	sources.remove_all_objects();
-//printf("VWindowGUI::update_sources 2\n");
 
-
-
-	for(int i = 0;
-		i < mwindow->edl->clips.total;
-		i++)
-	{
+	for( int i=0; i<mwindow->edl->clips.size(); ++i ) {
 		char *clip_title = mwindow->edl->clips.values[i]->local_session->clip_title;
 		int exists = 0;
 
-		for(int j = 0; j < sources.total; j++)
-		{
-			if(!strcasecmp(sources.values[j]->get_text(), clip_title))
-			{
+		for( int j=0; !exists && j<sources.size(); ++j ) {
+			if( !strcasecmp(sources.values[j]->get_text(), clip_title) )
 				exists = 1;
-			}
 		}
 
-		if(!exists)
-		{
+		if( !exists )
 			sources.append(new BC_ListBoxItem(clip_title));
-		}
 	}
-//printf("VWindowGUI::update_sources 3\n");
 
 	FileSystem fs;
-	for(Asset *current = mwindow->edl->assets->first;
-		current;
-		current = NEXT)
-	{
+	for( Asset *current=mwindow->edl->assets->first; current; current=NEXT ) {
 		char clip_title[BCTEXTLEN];
 		fs.extract_name(clip_title, current->path);
 		int exists = 0;
 
-		for(int j = 0; j < sources.total; j++)
-		{
-			if(!strcasecmp(sources.values[j]->get_text(), clip_title))
-			{
+		for( int j=0; !exists && j<sources.size(); ++j ) {
+			if( !strcasecmp(sources.values[j]->get_text(), clip_title) )
 				exists = 1;
-			}
 		}
 
-		if(!exists)
-		{
+		if( !exists )
 			sources.append(new BC_ListBoxItem(clip_title));
-		}
 	}
 
-//printf("VWindowGUI::update_sources 4\n");
-
-//	source->update_list(&sources);
-//	source->update(title);
 	unlock_window();
 }
 

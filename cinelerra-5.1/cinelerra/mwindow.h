@@ -146,10 +146,6 @@ public:
 	int asset_to_edl(EDL *new_edl,
 		Asset *new_asset,
 		RecordLabels *labels = 0);
-// Convert nested_edl to a nested EDL in new_edl
-// suitable for pasting in paste_edls
-	int edl_to_nested(EDL *new_edl,
-		EDL *nested_edl);
 
 // Entry point to insert assets and insert edls.  Called by TrackCanvas
 // and AssetPopup when assets are dragged in from AWindow.

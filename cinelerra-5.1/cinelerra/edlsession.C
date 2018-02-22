@@ -71,7 +71,7 @@ EDLSession::EDLSession(EDL *edl)
 	cwindow_scrollbars = 0;
 	cwindow_xscroll = cwindow_yscroll = 0;
 	cwindow_zoom = 1.0;
-	cwindow_click2play = 1;
+	cwindow_click2play = 0;
 	strcpy(default_atransition, "");
 	strcpy(default_vtransition, "");
 	default_transition_length = 1.0;
@@ -141,7 +141,7 @@ EDLSession::EDLSession(EDL *edl)
 	view_follows_playback = 1;
 	vwindow_meter = 0;
 	vwindow_zoom = 1.;
-	vwindow_click2play = 1;
+	vwindow_click2play = 0;
 
 	playback_config = new PlaybackConfig;
 }
@@ -245,7 +245,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	cwindow_xscroll = defaults->get("CWINDOW_XSCROLL", 0);
 	cwindow_yscroll = defaults->get("CWINDOW_YSCROLL", 0);
 	cwindow_zoom = defaults->get("CWINDOW_ZOOM", (float)1);
-	cwindow_click2play = defaults->get("CWINDOW_CLICK2PLAY", 1);
+	cwindow_click2play = defaults->get("CWINDOW_CLICK2PLAY", 0);
 	sprintf(default_atransition, _("Crossfade"));
 	defaults->get("DEFAULT_ATRANSITION", default_atransition);
 	sprintf(default_vtransition, _("Dissolve"));
@@ -328,7 +328,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", 1);
 	vwindow_meter = defaults->get("VWINDOW_METER", 0);
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
-	vwindow_click2play = defaults->get("VWINDOW_CLICK2PLAY", 1);
+	vwindow_click2play = defaults->get("VWINDOW_CLICK2PLAY", 0);
 
 	decode_subtitles = defaults->get("DECODE_SUBTITLES", decode_subtitles);
 	subtitle_number = defaults->get("SUBTITLE_NUMBER", subtitle_number);

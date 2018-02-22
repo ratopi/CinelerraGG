@@ -357,7 +357,7 @@ void BatchRenderThread::update_selected_edl()
         FileXML xml_file;
 	char *path = get_current_edl();
 	EDL *edl = mwindow->edl;
-        edl->save_xml(&xml_file, path, 0, 0);
+        edl->save_xml(&xml_file, path);
         xml_file.terminate_string();
         if( xml_file.write_to_file(path) ) {
 		char msg[BCTEXTLEN];

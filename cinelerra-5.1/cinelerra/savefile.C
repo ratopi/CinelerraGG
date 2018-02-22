@@ -89,10 +89,7 @@ int Save::handle_event()
 // save it
 // TODO: Move this into mwindow.
 		FileXML file;
-		mwindow->edl->save_xml(&file,
-			mwindow->session->filename,
-			0,
-			0);
+		mwindow->edl->save_xml(&file, mwindow->session->filename);
 		file.terminate_string();
 
 		if(file.write_to_file(mwindow->session->filename))
@@ -195,10 +192,7 @@ void SaveAs::run()
 	mwindow->gui->lock_window("SaveAs::run 1");
 // update the project name
 	mwindow->set_filename(filename);
-	mwindow->edl->save_xml(&file,
-		filename,
-		0,
-		0);
+	mwindow->edl->save_xml(&file, filename);
 	mwindow->gui->unlock_window();
 	file.terminate_string();
 

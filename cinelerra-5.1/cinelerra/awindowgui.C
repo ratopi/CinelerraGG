@@ -32,6 +32,7 @@
 #include "cache.h"
 #include "cstrdup.h"
 #include "clip.h"
+#include "clipedls.h"
 #include "clippopup.h"
 #include "cursors.h"
 #include "cwindowgui.h"
@@ -52,7 +53,6 @@
 #include "mainsession.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
-#include "nestededls.h"
 #include "newfolder.h"
 #include "preferences.h"
 #include "samples.h"
@@ -1280,16 +1280,16 @@ void AWindowGUI::update_asset_list()
 	}
 
 // Synchronize EDL clips
-	for( int i = 0; i < mwindow->edl->clips.total; i++ ) {
+	for( int i=0; i<mwindow->edl->clips.size(); ++i ) {
 		int exists = 0;
 
 // Look for clip in existing listitems
 		for( int j = 0; j < assets.total && !exists; j++ ) {
 			AssetPicon *picon = (AssetPicon*)assets.values[j];
 
-			if( picon->id == mwindow->edl->clips.values[i]->id ) {
-				picon->edl = mwindow->edl->clips.values[i];
-				picon->set_text(mwindow->edl->clips.values[i]->local_session->clip_title);
+			if( picon->id == mwindow->edl->clips[i]->id ) {
+				picon->edl = mwindow->edl->clips[i];
+				picon->set_text(mwindow->edl->clips[i]->local_session->clip_title);
 				exists = 1;
 				picon->in_use = 1;
 			}
@@ -1298,16 +1298,14 @@ void AWindowGUI::update_asset_list()
 // Create new listitem
 		if( !exists ) {
 			AssetPicon *picon = new AssetPicon(mwindow,
-				this, mwindow->edl->clips.values[i]);
+				this, mwindow->edl->clips[i]);
 			picon->create_objects();
 			assets.append(picon);
 		}
 	}
 
 // Synchronize EDL assets
-	for( Asset *current = mwindow->edl->assets->first;
-		current;
-		current = NEXT ) {
+	for( Asset *current=mwindow->edl->assets->first; current; current=NEXT ) {
 		int exists = 0;
 
 // Look for asset in existing listitems
@@ -1316,9 +1314,8 @@ void AWindowGUI::update_asset_list()
 
 			if( picon->id == current->id ) {
 				picon->indexable = current;
-				exists = 1;
 				picon->in_use = 1;
-				break;
+				exists = 1;
 			}
 		}
 
@@ -1336,26 +1333,25 @@ void AWindowGUI::update_asset_list()
 	mwindow->gui->unlock_window();
 
 // Synchronize nested EDLs
-	for( int i = 0; i < mwindow->edl->nested_edls->size(); i++ ) {
+	for( int i=0; i<mwindow->edl->nested_edls.size(); ++i ) {
 		int exists = 0;
-		Indexable *indexable = mwindow->edl->nested_edls->get(i);
+		EDL *nested_edl = mwindow->edl->nested_edls[i];
 
 // Look for asset in existing listitems
-		for( int j = 0; j < assets.total && !exists; j++ ) {
+		for( int j=0; j<assets.total && !exists; ++j ) {
 			AssetPicon *picon = (AssetPicon*)assets.values[j];
 
-			if( picon->id == indexable->id ) {
-				picon->indexable = indexable;
-				exists = 1;
+			if( picon->id == nested_edl->id ) {
+				picon->indexable = nested_edl;
 				picon->in_use = 1;
-				break;
+				exists = 1;
 			}
 		}
 
 // Create new listitem
 		if( !exists ) {
 			AssetPicon *picon = new AssetPicon(mwindow,
-				this, indexable);
+				this, (Indexable*)nested_edl);
 			picon->create_objects();
 			assets.append(picon);
 		}

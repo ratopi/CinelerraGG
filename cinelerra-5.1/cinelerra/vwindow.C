@@ -255,7 +255,7 @@ void VWindow::change_source(Indexable *indexable)
 	if(asset)
 		mwindow->asset_to_edl(this->edl, asset);
 	else
-		mwindow->edl_to_nested(this->edl, nested_edl);
+		this->edl->to_nested(nested_edl);
 
 // Update GUI
 	gui->change_source(this->edl, title);
@@ -421,14 +421,7 @@ void VWindow::copy()
 		double start = edl->local_session->get_selectionstart();
 		double end = edl->local_session->get_selectionend();
 		FileXML file;
-		edl->copy(start,
-			end,
-			0,
-			0,
-			0,
-			&file,
-			"",
-			1);
+		edl->copy(start, end, 0, &file, "", 1);
 		const char *file_string = file.string();
 		long file_length = strlen(file_string);
 		mwindow->gui->lock_window();

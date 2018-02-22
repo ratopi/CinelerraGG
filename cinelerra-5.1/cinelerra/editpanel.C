@@ -940,7 +940,7 @@ EditCut::EditCut(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip(_("Cut ( x )"));
+	set_tooltip(_("Split | Cut ( x )"));
 }
 EditCut::~EditCut()
 {

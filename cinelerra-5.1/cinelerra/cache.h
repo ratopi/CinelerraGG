@@ -114,6 +114,8 @@ private:
 	int lock_all();
 	int unlock_all();
 
+	int check_outs;
+
 // to prevent one from checking the same asset out before it's checked in
 // yet without blocking the asset trying to get checked in
 // use a seperate mutex for checkouts and checkins

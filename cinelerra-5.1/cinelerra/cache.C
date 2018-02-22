@@ -43,6 +43,7 @@ CICache::CICache(Preferences *preferences)
 	edl = 0;
 	check_out_lock = new Condition(0, "CICache::check_out_lock", 0);
 	total_lock = new Mutex("CICache::total_lock");
+	check_outs = 0;
 }
 
 CICache::~CICache()
@@ -106,6 +107,8 @@ SET_TRACE
 				current->age = EDL::next_id();
 				current->checked_out = tid;
 			}
+			else if( current->checked_out == tid )
+				++check_outs;
 			else
 				current = 0;
 		}
@@ -122,13 +125,17 @@ SET_TRACE
 int CICache::check_in(Asset *asset)
 {
 	total_lock->lock("CICache::check_in");
-	CICacheItem *current = first;
-	while(current && strcmp(current->asset->path, asset->path) != 0)
-		current = NEXT;
-	if(current && current->checked_out) {
-		current->checked_out = 0;
-		current->Garbage::remove_user();
+	if( !check_outs ) {
+		CICacheItem *current = first;
+		while(current && strcmp(current->asset->path, asset->path) != 0)
+			current = NEXT;
+		if(current && current->checked_out) {
+			current->checked_out = 0;
+			current->Garbage::remove_user();
+		}
 	}
+	else
+		--check_outs;
 	total_lock->unlock();
 
 // Release for blocking check_out operations
