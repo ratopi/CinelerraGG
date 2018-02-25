@@ -117,30 +117,18 @@ int BC_ScrollBar::get_span(int orientation)
 
 int BC_ScrollBar::get_span()
 {
-	switch(orientation)
-	{
-		case SCROLL_HORIZ:
-			return data[SCROLL_HANDLE_UP]->get_h();
-			break;
-
-		case SCROLL_VERT:
-			return data[SCROLL_HANDLE_UP]->get_w();
-			break;
+	switch(orientation) {
+	case SCROLL_HORIZ: return data[SCROLL_HANDLE_UP]->get_h();
+	case SCROLL_VERT:  return data[SCROLL_HANDLE_UP]->get_w();
 	}
 	return 0;
 }
 
 int BC_ScrollBar::get_arrow_pixels()
 {
-	switch(orientation)
-	{
-		case SCROLL_HORIZ:
-			return data[SCROLL_BACKARROW_UP]->get_w();
-			break;
-
-		case SCROLL_VERT:
-			return data[SCROLL_BACKARROW_UP]->get_h();
-			break;
+	switch(orientation) {
+	case SCROLL_HORIZ: return data[SCROLL_BACKARROW_UP]->get_w();
+	case SCROLL_VERT:  return data[SCROLL_BACKARROW_UP]->get_h();
 	}
 	return 0;
 }

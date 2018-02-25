@@ -34,16 +34,22 @@ class CriKey;
 #define DRAW_MASK       2
 #define DRAW_MODES      3
 
-enum { PT_E, PT_X, PT_Y, PT_T, PT_SZ }; // enable, x,y, tag
+enum { PT_E, PT_X, PT_Y, PT_T, PT_TAG, PT_SZ }; // enable, x,y,threshold, tag
 
 class CriKeyPoint
 {
 public:
-	int t, e;
-	float x, y;
+	int tag, e;
+	float x, y, t;
 
-	CriKeyPoint(int t, int e, float x, float y);
+	CriKeyPoint(int tag, int e, float x, float y, float t);
 	~CriKeyPoint();
+};
+class CriKeyPoints : public ArrayList<CriKeyPoint *>
+{
+public:
+	CriKeyPoints() {}
+	~CriKeyPoints() { remove_all_objects(); }
 };
 
 class CriKeyConfig
@@ -57,15 +63,12 @@ public:
 	void interpolate(CriKeyConfig &prev, CriKeyConfig &next,
 		long prev_frame, long next_frame, long current_frame);
 	void limits();
-	static void set_target(int is_yuv, int color, float *target);
-	static void set_color(int is_yuv, float *target, int &color);
 
-	ArrayList<CriKeyPoint *> points;
-	int add_point(int t, int e, float x, float y);
+	CriKeyPoints points;
+	int add_point(int tag, int e, float x, float y, float t);
 	int add_point();
 	void del_point(int i);
 
-	int color;
 	float threshold;
 	int draw_mode;
 	int drag, selected;
@@ -90,6 +93,8 @@ public:
 	LoadClient* new_client();
 
 	CriKey *plugin;
+	int set_color(int x, int y, float t);
+	float color[3], threshold;
 };
 
 class CriKeyUnit : public LoadClient
@@ -115,25 +120,19 @@ public:
 	int is_realtime();
 	void update_gui();
 	int new_point();
+	int set_target(float *color, int x, int y);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	int process_buffer(VFrame *frame, int64_t start_position, double frame_rate);
 	void draw_alpha(VFrame *msk);
+	void draw_edge(VFrame *frm);
 	void draw_mask(VFrame *frm);
 	void draw_point(VFrame *msk, CriKeyPoint *pt);
-	static void set_target(int is_yuv, int color, float *target) {
-		CriKeyConfig::set_target(is_yuv, color, target);
-	}
-	static void set_color(int is_yuv, float *target, int &color) {
-		CriKeyConfig::set_color(is_yuv, target, color);
-	}
 
 	CriKeyEngine *engine;
-	VFrame *src, *dst, *msk;
-	int w, h, color_model, bpp, comp, is_yuv, is_float;
-
-	void get_color(int x, int y);
-	float target[3];
+	VFrame *src, *edg, *msk;
+	int w, h, color_model, bpp, comp;
+	int is_yuv, is_float;
 };
 
 #endif

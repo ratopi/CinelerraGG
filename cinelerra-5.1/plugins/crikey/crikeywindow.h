@@ -22,25 +22,22 @@
 #define __CRIKEYWINDOW_H__
 
 #include "guicast.h"
-#include "colorpicker.h"
 
 class CriKey;
 class CriKeyWindow;
 class CriKeyNum;
 class CriKeyPointX;
 class CriKeyPointY;
-class CriKeyColorButton;
-class CriKeyColorPicker;
 class CriKeyDrawMode;
 class CriKeyDrawModeItem;
 class CriKeyThreshold;
 class CriKeyDrag;
-class CriKeyPoints;
+class CriKeyPointList;
 class CriKeyNewPoint;
 class CriKeyDelPoint;
 class CriKeyPointUp;
 class CriKeyPointDn;
-class CriKeyCurPoint;
+class CriKeyReset;
 
 
 class CriKeyNum : public BC_TumbleTextBox
@@ -68,28 +65,6 @@ public:
 	~CriKeyPointY() {}
 
 	int handle_event();
-};
-
-class CriKeyColorButton : public BC_GenericButton
-{
-public:
-	CriKeyColorButton(CriKeyWindow *gui, int x, int y);
-
-	int handle_event();
-	CriKeyWindow *gui;
-};
-
-class CriKeyColorPicker : public ColorPicker
-{
-public:
-	CriKeyColorPicker(CriKeyColorButton *color_button);
-
-	void start(int color);
-	int handle_new_color(int color, int alpha);
-	void handle_done_event(int result);
-
-	CriKeyColorButton *color_button;
-	int color, orig_color;
 };
 
 class CriKeyDrawMode : public BC_PopupMenu
@@ -131,24 +106,25 @@ public:
 	CriKeyWindow *gui;
 };
 
-class CriKeyPoints : public BC_ListBox
+class CriKeyPointList : public BC_ListBox
 {
 public:
-	CriKeyPoints(CriKeyWindow *gui, CriKey *plugin, int x, int y);
-	~CriKeyPoints();
+	CriKeyPointList(CriKeyWindow *gui, CriKey *plugin, int x, int y);
+	~CriKeyPointList();
 
 	int handle_event();
 	int selection_changed();
 	int column_resize_event();
 	ArrayList<BC_ListBoxItem*> cols[PT_SZ];
 	void clear();
-	void new_point(const char *ep, const char *xp, const char *yp, const char *tp);
+	void new_point(const char *ep, const char *xp, const char *yp,
+		const char *tp, const char *tag);
 	void del_point(int i);
 	void set_point(int i, int c, float v);
 	void set_point(int i, int c, const char *cp);
 	int set_selected(int k);
-	void update_list();
 	void update(int k);
+	void update_list(int k);
 
 
 	CriKeyWindow *gui;
@@ -203,17 +179,18 @@ public:
 	CriKeyWindow *gui;
 };
 
-class CriKeyCurPoint : public BC_Title
+class CriKeyReset : public BC_GenericButton
 {
 public:
-	CriKeyCurPoint(CriKeyWindow *gui, CriKey *plugin, int x, int y);
-	~CriKeyCurPoint();
+	CriKeyReset(CriKeyWindow *gui, CriKey *plugin, int x, int y);
+	~CriKeyReset();
 
-	void update(int n);
+	int handle_event();
 
 	CriKey *plugin;
 	CriKeyWindow *gui;
 };
+
 
 class CriKeyWindow : public PluginClientWindow
 {
@@ -222,7 +199,6 @@ public:
 	~CriKeyWindow();
 
 	void create_objects();
-	void update_color(int color);
 	void update_gui();
 	void start_color_thread();
 	int grab_event(XEvent *event);
@@ -234,9 +210,6 @@ public:
 	CriKeyThreshold *threshold;
 	CriKeyDrawMode *draw_mode;
 
-	CriKeyColorButton *color_button;
-	CriKeyColorPicker *color_picker;
-	int color_x, color_y;
 	BC_Title *title_x, *title_y;
 	CriKeyPointX *point_x;
 	CriKeyPointY *point_y;
@@ -244,11 +217,12 @@ public:
 	CriKeyDelPoint *del_point;
 	CriKeyPointUp *point_up;
 	CriKeyPointDn *point_dn;
-	CriKeyCurPoint *cur_point;
 	int dragging, pending_config;
 	float last_x, last_y;
 	CriKeyDrag *drag;
-	CriKeyPoints *points;
+	CriKeyPointList *point_list;
+	CriKeyReset *reset;
+	BC_Title *notes;
 };
 
 #endif

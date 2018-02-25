@@ -287,8 +287,8 @@ BC_ListBox::BC_ListBox(int x, int y, int w, int h,
 	yscrollbar = 0;
 	current_cursor = ARROW_CURSOR;
 	gui = 0;
-	view_h = 0;
-	view_w = 0;
+	view_w = items_w = 0;
+	view_h = items_h = 0;
 	title_h = 0;
 	active = 0;
 	is_suggestions = 0;
@@ -300,20 +300,26 @@ BC_ListBox::BC_ListBox(int x, int y, int w, int h,
  	bg_tile = 0;
 	bg_draw = 1;
  	drag_popup = 0;
+	dragged_title = 0;
  	selection_number1 = -1;
 	selection_number2 = -1;
 	bg_surface = 0;
  	bg_pixmap = 0;
 	row_height = row_ascent = row_descent = 0;
-
+	selection_start = 0;
+	selection_center = 0;
+	selection_end = -1;
+	selection_number = -1;
  	current_operation = NO_OPERATION;
 	button_highlighted = 0;
+	button_releases = 0;
 	list_highlighted = 0;
 	disabled = 0;
 
 	scroll_repeat = 0;
  	allow_drag_scroll = 1;
 	process_drag = 1;
+	for( int i=0; i<32; ++i ) default_column_width[i] = 0;
 
 	sort_column = -1;
 	sort_order = 0;
@@ -360,8 +366,11 @@ BC_ListBox::BC_ListBox(int x, int y, int w, int h,
 
 	drag_icon_vframe = 0;
 	drag_column_icon_vframe = 0;
-
-
+	drag_cursor_x = 0;
+	drag_column_w = 0;
+	temp_display_format = display_format;
+	rect_x1 = rect_x2 = 0;
+	rect_y1 = rect_y2 = 0;
 
 // reset the search engine
 //printf("BC_ListBox::BC_ListBox 4\n");

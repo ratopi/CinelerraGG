@@ -507,7 +507,7 @@ private:
 // Size of the popup if there is one
 	char **column_titles;
 	int *column_width;
-	int default_column_width[1];
+	int default_column_width[32];
 	int columns;
 	int master_column;
 	int search_column;

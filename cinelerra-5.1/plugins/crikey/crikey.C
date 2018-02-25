@@ -49,9 +49,11 @@ void crikey_pgm(const char *fn,VFrame *vfrm)
 }
 #endif
 
-CriKeyPoint::CriKeyPoint(int t, int e, float x, float y)
+CriKeyPoint::CriKeyPoint(int tag, int e, float x, float y, float t)
 {
-	this->t = t;  this->e = e; this->x = x; this->y = y;
+	this->tag = tag;  this->e = e;
+	this->x = x;      this->y = y;
+	this->t = t;
 }
 CriKeyPoint::~CriKeyPoint()
 {
@@ -59,7 +61,6 @@ CriKeyPoint::~CriKeyPoint()
 
 CriKeyConfig::CriKeyConfig()
 {
-	color = 0x000000;
 	threshold = 0.5f;
 	draw_mode = DRAW_ALPHA;
 	drag = 0;
@@ -67,29 +68,27 @@ CriKeyConfig::CriKeyConfig()
 }
 CriKeyConfig::~CriKeyConfig()
 {
-	points.remove_all_objects();
 }
 
 int CriKeyConfig::equivalent(CriKeyConfig &that)
 {
-	if( this->color != that.color ) return 0;
 	if( !EQUIV(this->threshold, that.threshold) ) return 0;
 	if( this->draw_mode != that.draw_mode ) return 0;
 	if( this->drag != that.drag ) return 0;
 	if( this->points.size() != that.points.size() ) return 0;
 	for( int i=0, n=points.size(); i<n; ++i ) {
 		CriKeyPoint *ap = this->points[i], *bp = that.points[i];
-		if( ap->t != bp->t ) return 0;
+		if( ap->tag != bp->tag ) return 0;
 		if( ap->e != bp->e ) return 0;
 		if( !EQUIV(ap->x, bp->x) ) return 0;
 		if( !EQUIV(ap->y, bp->y) ) return 0;
+		if( !EQUIV(ap->t, bp->t) ) return 0;
 	}
 	return 1;
 }
 
 void CriKeyConfig::copy_from(CriKeyConfig &that)
 {
-	this->color = that.color;
 	this->threshold = that.threshold;
 	this->draw_mode = that.draw_mode;
 	this->drag = that.drag;
@@ -98,28 +97,20 @@ void CriKeyConfig::copy_from(CriKeyConfig &that)
 	points.remove_all_objects();
 	for( int i=0,n=that.points.size(); i<n; ++i ) {
 		CriKeyPoint *pt = that.points[i];
-		add_point(pt->t, pt->e, pt->x, pt->y);
+		add_point(pt->tag, pt->e, pt->x, pt->y, pt->t);
 	}
 }
 
 void CriKeyConfig::interpolate(CriKeyConfig &prev, CriKeyConfig &next,
 		long prev_frame, long next_frame, long current_frame)
 {
-	this->color = prev.color;
+	this->threshold = prev.threshold;
 	this->draw_mode = prev.draw_mode;
 	this->drag = prev.drag;
 	this->selected = prev.selected;
 
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
-	this->threshold = prev.threshold * prev_scale + next.threshold * next_scale;
- // interpolate rgb components
-	float prev_target[3];  set_target(0, prev.color, prev_target);
-	float next_target[3];  set_target(0, next.color, next_target);
-	float target[3];
-	for( int i=0; i<3; ++i )
-		target[i] = prev_target[i] * prev_scale + next_target[i] * next_scale;
-	set_color(0, target, this->color);
 
 	points.remove_all_objects();
 	int prev_sz = prev.points.size(), next_sz = next.points.size();
@@ -127,12 +118,12 @@ void CriKeyConfig::interpolate(CriKeyConfig &prev, CriKeyConfig &next,
 		CriKeyPoint *pt = prev.points[i], *nt = 0;
 		float x = pt->x, y = pt->y;
 		int k = next_sz;  // associated by tag id in next
-		while( --k >= 0 && pt->t != (nt=next.points[k])->t );
+		while( --k >= 0 && pt->tag != (nt=next.points[k])->tag );
 		if( k >= 0 ) {
 			x = x * prev_scale + nt->x * next_scale;
 			y = y * prev_scale + nt->y * next_scale;
 		}
-		add_point(pt->t, pt->e, x, y);
+		add_point(pt->tag, pt->e, x, y, pt->t);
 	}
 }
 
@@ -142,17 +133,17 @@ void CriKeyConfig::limits()
 	bclamp(draw_mode, 0, DRAW_MODES-1);
 }
 
-int CriKeyConfig::add_point(int t, int e, float x, float y)
+int CriKeyConfig::add_point(int tag, int e, float x, float y, float t)
 {
 	int k = points.size();
-	if( t < 0 ) {
-		t = 0;
+	if( tag < 0 ) {
+		tag = 0;
 		for( int i=k; --i>=0; ) {
-			int n = points[i]->t;
-			if( n >= t ) t = n + 1;
+			int n = points[i]->tag;
+			if( n >= tag ) tag = n + 1;
 		}
 	}
-	points.append(new CriKeyPoint(t, e, x, y));
+	points.append(new CriKeyPoint(tag, e, x, y, t));
 	return k;
 }
 
@@ -178,22 +169,23 @@ class FillRegion
 	}
  
 	int w, h;
-	uint8_t *data, *mask;
-	bool edge_pixel(uint8_t *dp) { return *dp; }
+	float *edg;
+	uint8_t *msk;
+	bool edge_pixel(int i) { return edg[i] > 0; }
 
 public:
 	void fill(int x, int y);
 	void run();
 
-	FillRegion(VFrame *d, VFrame *m);
+	FillRegion(VFrame *edg, VFrame *msk);
 };
 
-FillRegion::FillRegion(VFrame *d, VFrame *m)
+FillRegion::FillRegion(VFrame *edg, VFrame *msk)
 {
-	w = d->get_w();
-	h = d->get_h();
-	data = d->get_data();
-	mask = m->get_data();
+	this->w = msk->get_w();
+	this->h = msk->get_h();
+	this->msk = (uint8_t*) msk->get_data();
+	this->edg = (float*) edg->get_data();
 }
 
 void FillRegion::fill(int x, int y)
@@ -207,24 +199,22 @@ void FillRegion::run()
 		int y, ilt, irt;
 		pop(y, ilt, irt);
 		int ofs = y*w + ilt;
-		uint8_t *idp = data + ofs;
-		uint8_t *imp = mask + ofs;
-		for( int x=ilt; x<=irt; ++x,++imp,++idp ) {
-			if( !*imp ) continue;
-			*imp = 0;
-			if( edge_pixel(idp) ) continue;
+		for( int x=ilt; x<=irt; ++x,++ofs ) {
+			if( !msk[ofs] ) continue;
+			msk[ofs] = 0;
+			if( edge_pixel(ofs) ) continue;
 			int lt = x, rt = x;
-			uint8_t *ldp = idp, *lmp = imp;
+			int lofs = ofs;
 			for( int i=lt; --i>=0; ) {
-				if( !*--lmp ) break;
-				*lmp = 0;  lt = i;
-				if( edge_pixel(--ldp) ) break;
+				if( !msk[--lofs] ) break;
+				msk[lofs] = 0;  lt = i;
+				if( edge_pixel(lofs) ) break;
 			}
-			uint8_t *rdp = idp, *rmp = imp;
-			for( int i=rt; ++i< w; rt=i,*rmp=0 ) {
-				if( !*++rmp ) break;
-				*rmp = 0;  rt = i;
-				if( edge_pixel(++rdp) ) break;
+			int rofs = ofs;
+			for( int i=rt; ++i< w; rt=i,msk[rofs]=0 ) {
+				if( !msk[++rofs] ) break;
+				msk[rofs] = 0;  rt = i;
+				if( edge_pixel(rofs) ) break;
 			}
 			if( y+1 <  h ) push(y+1, lt, rt);
 			if( y-1 >= 0 ) push(y-1, lt, rt);
@@ -238,65 +228,30 @@ CriKey::CriKey(PluginServer *server)
 {
 	engine = 0;
 	msk = 0;
-	dst = 0;
+	edg = 0;
 }
 
 CriKey::~CriKey()
 {
 	delete engine;
 	delete msk;
-	delete dst;
+	delete edg;
 }
 
-void CriKeyConfig::set_target(int is_yuv, int color, float *target)
+int CriKey::set_target(float *color, int x, int y)
 {
-	float r = ((color>>16) & 0xff) / 255.0f;
-	float g = ((color>> 8) & 0xff) / 255.0f;
-	float b = ((color>> 0) & 0xff) / 255.0f;
-	if( is_yuv ) {
-		float y, u, v;
-		YUV::yuv.rgb_to_yuv_f(r,g,b, y,u,v);
-		target[0] = y;
-		target[1] = u + 0.5f;
-		target[2] = v + 0.5f;
-	}
-	else {
-		target[0] = r;
-		target[1] = g;
-		target[2] = b;
-	}
-}
-void CriKeyConfig::set_color(int is_yuv, float *target, int &color)
-{
-	float r = target[0];
-	float g = target[1];
-	float b = target[2];
-	if( is_yuv ) {
-		float y = r, u = g-0.5f, v = b-0.5f;
-		YUV::yuv.yuv_to_rgb_f(y,u,v, r,g,b);
-	}
-	int ir = r >= 1 ? 0xff : r < 0 ? 0 : (int)(r * 256);
-	int ig = g >= 1 ? 0xff : g < 0 ? 0 : (int)(g * 256);
-	int ib = b >= 1 ? 0xff : b < 0 ? 0 : (int)(b * 256);
-	color = (ir << 16) | (ig << 8) | (ib << 0);
-}
-
-void CriKey::get_color(int x, int y)
-{
-	if( x < 0 || x >= w ) return;
-	if( y < 0 || y >= h ) return;
+	if( x < 0 || x >= w ) return 1;
+	if( y < 0 || y >= h ) return 1;
 	uint8_t **src_rows = src->get_rows();
-	uint8_t *sp = src_rows[y] + x*bpp;
 	if( is_float ) {
-		float *fp = (float *)sp;
-		for( int i=0; i<comp; ++i,++fp )
-			target[i] = *fp;
+		float *fp = (float*)(src_rows[y] + x*bpp);
+		for( int i=0; i<comp; ++i,++fp ) color[i] = *fp;
 	}
 	else {
-		float scale = 1./255;
-		for( int i=0; i<comp; ++i,++sp )
-			target[i] = *sp * scale;
+		uint8_t *sp = src_rows[y] + x*bpp;
+		for( int i=0; i<comp; ++i,++sp ) color[i] = *sp;
 	}
+	return 0;
 }
 
 const char* CriKey::plugin_title() { return N_("CriKey"); }
@@ -310,7 +265,7 @@ int CriKey::new_point()
 	EDLSession *session = get_edlsession();
 	float x = !session ? 0.f : session->output_w / 2.f;
 	float y = !session ? 0.f : session->output_h / 2.f;
-	return config.add_point(-1, 0, x, y);
+	return config.add_point(-1, 0, x, y, 0.5f);
 }
 
 void CriKey::save_data(KeyFrame *keyframe)
@@ -321,7 +276,6 @@ void CriKey::save_data(KeyFrame *keyframe)
 	output.set_shared_output(keyframe->get_data(), MESSAGESIZE);
 
 	output.tag.set_title("CRIKEY");
-	output.tag.set_property("COLOR", config.color);
 	output.tag.set_property("THRESHOLD", config.threshold);
 	output.tag.set_property("DRAW_MODE", config.draw_mode);
 	output.tag.set_property("DRAG", config.drag);
@@ -334,11 +288,12 @@ void CriKey::save_data(KeyFrame *keyframe)
 	for( int i=0, n = config.points.size(); i<n; ++i ) {
 		CriKeyPoint *pt = config.points[i];
 		char point[BCSTRLEN];
-		sprintf(point,"/POINT_%d",pt->t);
+		sprintf(point,"/POINT_%d",pt->tag);
 		output.tag.set_title(point+1);
 		output.tag.set_property("E", pt->e);
 		output.tag.set_property("X", pt->x);
 		output.tag.set_property("Y", pt->y);
+		output.tag.set_property("T", pt->t);
 		output.append_tag();
 		output.tag.set_title(point+0);
 		output.append_tag();
@@ -356,7 +311,6 @@ void CriKey::read_data(KeyFrame *keyframe)
 
 	while( !(result=input.read_tag()) ) {
 		if( input.tag.title_is("CRIKEY") ) {
-			config.color = input.tag.get_property("COLOR", config.color);
 			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
 			config.draw_mode = input.tag.get_property("DRAW_MODE", config.draw_mode);
 			config.drag = input.tag.get_property("DRAG", config.drag);
@@ -364,11 +318,12 @@ void CriKey::read_data(KeyFrame *keyframe)
 			config.limits();
 		}
 		else if( !strncmp(input.tag.get_title(),"POINT_",6) ) {
-			int t = atoi(input.tag.get_title() + 6);
+			int tag = atoi(input.tag.get_title() + 6);
 			int e = input.tag.get_property("E", 0);
 			float x = input.tag.get_property("X", 0.f);
 			float y = input.tag.get_property("Y", 0.f);
-			config.add_point(t, e, x, y);
+			float t = input.tag.get_property("T", .5f);
+			config.add_point(tag, e, x, y, t);
 		}
 	}
 
@@ -440,6 +395,79 @@ void CriKey::draw_alpha(VFrame *msk)
 				if( *mp ) continue;
 				uint8_t *px = sp;
 				px[3] = 0;
+			}
+		}
+		break;
+	}
+}
+
+void CriKey::draw_edge(VFrame *edg)
+{
+	uint8_t **src_rows = src->get_rows();
+	float **edg_rows = (float**) edg->get_rows(), gain = 10;
+	switch( color_model ) {
+	case BC_RGB_FLOAT:
+		for( int y=0; y<h; ++y ) {
+			uint8_t *sp = src_rows[y];
+			float *ap = edg_rows[y];
+			for( int x=0; x<w; ++x,++ap,sp+=bpp ) {
+				float *px = (float *)sp, v = *ap * gain;
+				px[0] = px[1] = px[2] = v<1 ? v : 1;
+			}
+		}
+		break;
+	case BC_RGBA_FLOAT:
+		for( int y=0; y<h; ++y ) {
+			uint8_t *sp = src_rows[y];
+			float *ap = edg_rows[y];
+			for( int x=0; x<w; ++x,++ap,sp+=bpp ) {
+				float *px = (float *)sp, v = *ap * gain;
+				px[0] = px[1] = px[2] = v<1 ? v : 1;
+				px[3] = 1.0f;
+			}
+		}
+		break;
+	case BC_RGB888:
+		for( int y=0; y<h; ++y ) {
+			uint8_t *sp = src_rows[y];
+			float *ap = edg_rows[y];
+			for( int x=0; x<w; ++x,++ap,sp+=bpp ) {
+				uint8_t *px = sp;  float v = *ap * gain;
+				px[0] = px[1] = px[2] = v<1 ? v*256 : 255;
+			}
+		}
+		break;
+	case BC_RGBA8888:
+		for( int y=0; y<h; ++y ) {
+			uint8_t *sp = src_rows[y];
+			float *ap = edg_rows[y];
+			for( int x=0; x<w; ++x,++ap,sp+=bpp ) {
+				uint8_t *px = sp;  float v = *ap * gain;
+				px[0] = px[1] = px[2] = v<1 ? v*256 : 255;
+				px[3] = 0xff;
+			}
+		}
+		break;
+	case BC_YUV888:
+		for( int y=0; y<h; ++y ) {
+			uint8_t *sp = src_rows[y];
+			float *ap = edg_rows[y];
+			for( int x=0; x<w; ++x,++ap,sp+=bpp ) {
+				uint8_t *px = sp;  float v = *ap * gain;
+				px[0] = *ap<1 ? v*256 : 255;
+				px[1] = px[2] = 0x80;
+			}
+		}
+		break;
+	case BC_YUVA8888:
+		for( int y=0; y<h; ++y ) {
+			uint8_t *sp = src_rows[y];
+			float *ap = edg_rows[y];
+			for( int x=0; x<w; ++x,++ap,sp+=bpp ) {
+				uint8_t *px = sp;  float v = *ap * gain;
+				px[0] = *ap<1 ? v*256 : 255;
+				px[1] = px[2] = 0x80;
+				px[3] = 0xff;
 			}
 		}
 		break;
@@ -520,6 +548,7 @@ void CriKey::draw_mask(VFrame *msk)
 	}
 }
 
+
 void CriKey::draw_point(VFrame *src, CriKeyPoint *pt)
 {
 	int d = bmax(w,h) / 200 + 2;
@@ -538,6 +567,23 @@ void CriKey::draw_point(VFrame *src, CriKeyPoint *pt)
 	}
 }
 
+
+static void get_vframe(VFrame *&vfrm, int w, int h, int color_model)
+{
+	if( vfrm && ( vfrm->get_w() != w || vfrm->get_h() != h ) ) {
+		delete vfrm;  vfrm = 0;
+	}
+	if( !vfrm ) vfrm = new VFrame(w, h, color_model, 0);
+}
+
+static void fill_edge(VFrame *vfrm, int w, int h)
+{
+	int w1 = w-1, h1 = h-1;
+	float *dp = (float*) vfrm->get_data();
+	if( w1 > 0 ) for( int y=0; y<h1; ++y,dp+=w ) dp[w1] = dp[w1-1];
+	if( h1 > 0 ) for( int x=0; x<w; ++x ) dp[x] = dp[x-w];
+}
+
 int CriKey::process_buffer(VFrame *frame, int64_t start_position, double frame_rate)
 {
 	load_configuration();
@@ -545,61 +591,41 @@ int CriKey::process_buffer(VFrame *frame, int64_t start_position, double frame_r
 	w = src->get_w(), h = src->get_h();
 	color_model = src->get_color_model();
 	bpp = BC_CModels::calculate_pixelsize(color_model);
-	comp = BC_CModels::components(color_model);
-        if( comp > 3 ) comp = 3;
-	is_yuv = BC_CModels::is_yuv(color_model);
 	is_float = BC_CModels::is_float(color_model);
+	is_yuv = BC_CModels::is_yuv(color_model);
+	comp = BC_CModels::components(color_model);
+	if( comp > 3 ) comp = 3;
 
 	read_frame(src, 0, start_position, frame_rate, 0);
-
-	set_target(is_yuv, config.color, target);
-
-        if( dst && ( dst->get_w() != w || src->get_h() != h ) ) {
-		delete dst;  dst = 0;
-        }
-        if( !dst )
-		dst = new VFrame(w, h, BC_A8, 0);
-	dst->clear_frame();
+	get_vframe(edg, w, h, BC_A_FLOAT);
 
 	if( !engine )
 		engine = new CriKeyEngine(this,
 			PluginClient::get_project_smp() + 1,
 			PluginClient::get_project_smp() + 1);
-	engine->process_packages();
-// copy fill btm/rt edges
-	int w1 = w-1, h1 = h-1;
-	uint8_t *dp = dst->get_data();
-	if( w1 > 0 ) for( int y=0; y<h1; ++y,dp+=w ) dp[w1] = dp[w1-1];
-	if( h1 > 0 ) for( int x=0; x<w; ++x ) dp[x] = dp[x-w];
-//crikey_pgm("/tmp/dst.pgm",dst);
 
-	if( config.draw_mode != DRAW_EDGE ) {
-		if( msk && ( msk->get_w() != w || msk->get_h() != h ) ) {
-			delete msk;  msk = 0;
-		}
-		if( !msk )
-			msk = new VFrame(w, h, BC_A8, 0);
-		memset(msk->get_data(), 0xff, msk->get_data_size());
+	get_vframe(msk, w, h, BC_A8);
+	memset(msk->get_data(), 0xff, msk->get_data_size());
 
-		FillRegion fill_region(dst, msk);
-		for( int i=0, n=config.points.size(); i<n; ++i ) {
-			CriKeyPoint *pt = config.points[i];
-			if( !pt->e ) continue;
-			float x = pt->x, y = pt->y;
-			if( x >= 0 && x < w && y >= 0 && y < h )
-				fill_region.fill(x, y);
-		}
+	for( int i=0, n=config.points.size(); i<n; ++i ) {
+		CriKeyPoint *pt = config.points[i];
+		if( !pt->e ) continue;
+		if( set_target(engine->color, pt->x, pt->y) ) continue;
+		engine->threshold = pt->t;
+		edg->clear_frame();
+		engine->process_packages();
+		fill_edge(edg, w, h);
+		FillRegion fill_region(edg, msk);
+		fill_region.fill(pt->x, pt->y);
 		fill_region.run();
+	}
 
 //crikey_pgm("/tmp/msk.pgm",msk);
-
-		if( config.draw_mode == DRAW_MASK )
-			draw_mask(msk);
-		else
-			draw_alpha(msk);
+	switch( config.draw_mode ) {
+	case DRAW_ALPHA: draw_alpha(msk);  break;
+	case DRAW_EDGE:  draw_edge(edg);   break;
+	case DRAW_MASK:  draw_mask(msk);   break;
 	}
-	else
-		draw_mask(dst);
 
 	if( config.drag ) {
 		for( int i=0, n=config.points.size(); i<n; ++i ) {
@@ -633,30 +659,28 @@ LoadClient* CriKeyEngine::new_client()
 	return new CriKeyUnit(this);
 }
 
-#define EDGE_MACRO(type, max, components, is_yuv) \
+#define EDGE_MACRO(type, components, is_yuv) \
 { \
 	uint8_t **src_rows = src->get_rows(); \
 	int comps = MIN(components, 3); \
-	float scale = 1.0f/max; \
 	for( int y=y1; y<y2; ++y ) { \
 		uint8_t *row0 = src_rows[y], *row1 = src_rows[y+1]; \
-		uint8_t *outp = dst_rows[y]; \
-		for( int v,x=x1; x<x2; *outp++=v,++x,row0+=bpp,row1+=bpp ) { \
+		float *edgp = edg_rows[y]; \
+		for( int x=x1; x<x2; ++edgp,++x,row0+=bpp,row1+=bpp ) { \
 			type *r0 = (type*)row0, *r1 = (type*)row1; \
 			float a00 = 0, a01 = 0, a10 = 0, a11 = 0; \
-			for( int i=0; i<comps; ++i,++r0,++r1 ) { \
-				float t = target[i]; \
-				a00 += fabs(t - r0[0]*scale); \
-				a01 += fabs(t - r0[components]*scale); \
-				a10 += fabs(t - r1[0]*scale); \
-				a11 += fabs(t - r1[components]*scale); \
+			for( int c=0; c<comps; ++c,++r0,++r1 ) { \
+				float t = target_color[c]; \
+                                a00 += fabs(t - r0[0]); \
+				a01 += fabs(t - r0[components]); \
+				a10 += fabs(t - r1[0]); \
+				a11 += fabs(t - r1[components]); \
 			} \
-			v = 0; \
-			float a = bmin(bmin(a00, a01), bmin(a10, a11)); \
-			if( a > threshold ) continue; \
-			float b = bmax(bmax(a00, a01), bmax(a10, a11)); \
-			if( threshold >= b ) continue; \
-			v = 255; \
+			float mx = scale * bmax(bmax(a00, a01), bmax(a10, a11)); \
+			if( mx < threshold ) continue; \
+                        float mn = scale * bmin(bmin(a00, a01), bmin(a10, a11)); \
+			if( mn >= threshold ) continue; \
+			*edgp += (mx - mn); \
 		} \
 	} \
 } break
@@ -664,23 +688,25 @@ LoadClient* CriKeyEngine::new_client()
 
 void CriKeyUnit::process_package(LoadPackage *package)
 {
-	VFrame *src = server->plugin->src;
+	int color_model = server->plugin->color_model;
 	int bpp = server->plugin->bpp;
-	VFrame *dst = server->plugin->dst;
-	uint8_t **dst_rows = dst->get_rows();
-	float *target = server->plugin->target;
-	float threshold = server->plugin->config.threshold;
+	VFrame *src = server->plugin->src;
+	VFrame *edg = server->plugin->edg;
+	float **edg_rows = (float**)edg->get_rows();
+	float *target_color = server->color;
+	float threshold = 2.f * server->threshold*server->threshold;
+	float scale = 1./BC_CModels::calculate_max(color_model);
 	CriKeyPackage *pkg = (CriKeyPackage*)package;
 	int x1 = 0, x2 = server->plugin->w-1;
 	int y1 = pkg->y1, y2 = pkg->y2;
 
-	switch( src->get_color_model() ) {
-	case BC_RGB_FLOAT:  EDGE_MACRO(float, 1, 3, 0);
-	case BC_RGBA_FLOAT: EDGE_MACRO(float, 1, 4, 0);
-	case BC_RGB888:	    EDGE_MACRO(unsigned char, 0xff, 3, 0);
-	case BC_YUV888:	    EDGE_MACRO(unsigned char, 0xff, 3, 1);
-	case BC_RGBA8888:   EDGE_MACRO(unsigned char, 0xff, 4, 0);
-	case BC_YUVA8888:   EDGE_MACRO(unsigned char, 0xff, 4, 1);
+	switch( color_model ) {
+	case BC_RGB_FLOAT:  EDGE_MACRO(float, 3, 0);
+	case BC_RGBA_FLOAT: EDGE_MACRO(float, 4, 0);
+	case BC_RGB888:	    EDGE_MACRO(unsigned char, 3, 0);
+	case BC_YUV888:	    EDGE_MACRO(unsigned char, 3, 1);
+	case BC_RGBA8888:   EDGE_MACRO(unsigned char, 4, 0);
+	case BC_YUVA8888:   EDGE_MACRO(unsigned char, 4, 1);
 	}
 }
 
