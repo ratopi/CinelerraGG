@@ -116,14 +116,15 @@ void CriKeyConfig::interpolate(CriKeyConfig &prev, CriKeyConfig &next,
 	int prev_sz = prev.points.size(), next_sz = next.points.size();
 	for( int i=0; i<prev_sz; ++i ) {
 		CriKeyPoint *pt = prev.points[i], *nt = 0;
-		float x = pt->x, y = pt->y;
+		float x = pt->x, y = pt->y, t = pt->t;
 		int k = next_sz;  // associated by tag id in next
 		while( --k >= 0 && pt->tag != (nt=next.points[k])->tag );
 		if( k >= 0 ) {
 			x = x * prev_scale + nt->x * next_scale;
 			y = y * prev_scale + nt->y * next_scale;
+			t = t * prev_scale + nt->t * next_scale;
 		}
-		add_point(pt->tag, pt->e, x, y, pt->t);
+		add_point(pt->tag, pt->e, x, y, t);
 	}
 }
 

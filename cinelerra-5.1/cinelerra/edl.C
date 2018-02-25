@@ -538,7 +538,8 @@ int EDL::copy(double start, double end, int all,
 			file->append_newline();
 		}
 
-		copy_assets(start, end, file, all, output_path);
+		if( !parent_edl )
+			copy_assets(start, end, file, all, output_path);
 
 		for( int i=0; i<nested_edls.size(); ++i )
 			nested_edls[i]->copy_nested_edl(0, tracks->total_length(), 1,

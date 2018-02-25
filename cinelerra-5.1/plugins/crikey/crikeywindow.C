@@ -225,6 +225,8 @@ int CriKeyWindow::grab_event(XEvent *event)
 	switch( event->type ) {
 	case ButtonPress:
 		if( dragging ) return check_configure_change(0);
+		if( event->xbutton.button == WHEEL_UP )  return threshold->wheel_event(1);
+		if( event->xbutton.button == WHEEL_DOWN ) return threshold->wheel_event(-1);
 		dragging = event->xbutton.state & ShiftMask ? -1 : 1;
 		break;
 	case ButtonRelease:
@@ -490,6 +492,16 @@ CriKeyThreshold::CriKeyThreshold(CriKeyWindow *gui, int x, int y, int w)
 {
 	this->gui = gui;
 	set_precision(0.005);
+	set_pagination(0.01, 0.1);
+}
+
+int CriKeyThreshold::wheel_event(int v)
+{
+	if( v > 0 ) increase_value();
+	else if( v < 0 ) decrease_value();
+	handle_event();
+	enable();
+	return 1;
 }
 
 int CriKeyThreshold::handle_event()

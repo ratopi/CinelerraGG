@@ -76,9 +76,10 @@ XMLBuffer::~XMLBuffer()
 unsigned char *&XMLBuffer::demand(long len)
 {
 	if( len > bsz ) {
-		len += BCTEXTLEN;
+		long sz = inp-bfr;
+		len += sz/2 + BCTEXTLEN;
 		unsigned char *np = new unsigned char[len];
-		if( inp > bfr ) memcpy(np,bfr,inp-bfr);
+		if( sz > 0 ) memcpy(np,bfr,sz);
 		inp = np + (inp-bfr);
 		outp = np + (outp-bfr);
 		lmt = np + len;  bsz = len;

@@ -94,6 +94,7 @@ class CriKeyThreshold : public BC_FSlider
 public:
 	CriKeyThreshold(CriKeyWindow *gui, int x, int y, int w);
 	int handle_event();
+	int wheel_event(int v);
 	CriKeyWindow *gui;
 };
 
