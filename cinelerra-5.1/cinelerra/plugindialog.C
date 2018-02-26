@@ -266,11 +266,9 @@ void PluginDialog::create_objects()
 		Track *track = mwindow->edl->tracks->number(plugin_locations.values[i]->module);
 		char *track_title = track->title;
 		int number = plugin_locations.values[i]->plugin;
-		Plugin *plugin = track->get_current_plugin(mwindow->edl->local_session->get_selectionstart(1),
-			number,
-			PLAY_FORWARD,
-			1,
-			0);
+		double start = mwindow->edl->local_session->get_selectionstart(1);
+		Plugin *plugin = track->get_current_plugin(start, number, PLAY_FORWARD, 1, 0);
+		if( !plugin ) continue;
 		char string[BCTEXTLEN];
 		const char *plugin_title = _(plugin->title);
 		snprintf(string, sizeof(string), "%s: %s", track_title, plugin_title);

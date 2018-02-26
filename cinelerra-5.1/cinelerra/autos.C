@@ -502,15 +502,17 @@ int Autos::copy(int64_t start,
 //printf("Autos::copy 10 %d %d %p\n", default_only, start, autoof(start));
 	if(active_only || (!default_only && !active_only))
 	{
-		for(Auto* current = autoof(start);
-			current && current->position <= end;
-			current = NEXT)
-		{
+		Auto *current = autoof(start);
+// need the last one if past the end
+		if( !current && last )
+			last->copy(start, end, file, default_only);
+
+		while( current && current->position <= end ) {
 // Want to copy single keyframes by putting the cursor on them
-			if(current->position >= start && current->position <= end)
-			{
+			if( current->position >= start && current->position <= end ) {
 				current->copy(start, end, file, default_only);
 			}
+			current = NEXT;
 		}
 	}
 // Copy default auto again to make it the active auto on the clipboard

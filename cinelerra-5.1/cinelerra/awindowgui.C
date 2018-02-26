@@ -622,20 +622,23 @@ void AssetPicon::create_objects()
 					icon_vframe = VFramePng::vframe_png(clip_icon_path);
 				}
 				if( !icon_vframe ) {
+printf("render clip: %s\n", name);
 					int edl_h = edl->get_h(), edl_w = edl->get_w();
 					int height = edl_h > 0 ? edl_h : 1;
 					int width = edl_w > 0 ? edl_w : 1;
+					int color_model = edl->session->color_model;
 					pixmap_w = pixmap_h * width / height;
 
 					if( gui->temp_picon &&
-					    (gui->temp_picon->get_w() != width ||
+					    (gui->temp_picon->get_color_model() != color_model ||
+					     gui->temp_picon->get_w() != width ||
 					     gui->temp_picon->get_h() != height) ) {
 						delete gui->temp_picon;  gui->temp_picon = 0;
 					}
 
 					if( !gui->temp_picon ) {
 						gui->temp_picon = new VFrame(0, -1,
-							width, height, BC_RGB888, -1);
+							width, height, color_model, -1);
 					}
 					char string[BCTEXTLEN];
 					sprintf(string, _("Rendering %s"), name);
