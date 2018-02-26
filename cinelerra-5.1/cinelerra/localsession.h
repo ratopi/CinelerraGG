@@ -78,6 +78,8 @@ public:
 // Title if clip
 	char clip_title[BCTEXTLEN];
 	char clip_notes[BCTEXTLEN];
+	char clip_icon[BCSTRLEN];
+
 // Folder in parent EDL of clip
 	int awindow_folder;
 

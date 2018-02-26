@@ -273,12 +273,13 @@ void VWindow::change_source(EDL *edl)
 	if( playback_engine->is_playing_back )
 		stop_playback(1);
 
-	gui->lock_window("VWindow::change_source 3");
 //printf("VWindow::change_source %d %p\n", __LINE__, edl);
 // EDLs are identical
 //	if(edl && mwindow->edl->vwindow_edl &&
 //		edl->id == mwindow->edl->vwindow_edl->id) return;
 	if(edl && get_edl() && edl->id == get_edl()->id) return;
+
+	gui->lock_window("VWindow::change_source 3");
 
 	delete_source(1, 0);
 

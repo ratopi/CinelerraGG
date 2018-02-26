@@ -63,6 +63,7 @@ LocalSession::LocalSession(EDL *edl)
 	awindow_folder = AW_CLIP_FOLDER;
 	sprintf(clip_title, _("Program"));
 	strcpy(clip_notes, _("Hello world"));
+	strcpy(clip_icon, "");
 	clipboard_length = 0;
 	loop_playback = 0;
 	loop_start = loop_end = 0;
@@ -117,6 +118,7 @@ void LocalSession::copy_from(LocalSession *that)
 {
 	strcpy(clip_title, that->clip_title);
 	strcpy(clip_notes, that->clip_notes);
+	strcpy(clip_icon, that->clip_icon);
 	awindow_folder = that->awindow_folder;
 	in_point = that->in_point;
 	loop_playback = that->loop_playback;
@@ -167,6 +169,7 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("SELECTION_END", selectionend - start);
 	file->tag.set_property("CLIP_TITLE", clip_title);
 	file->tag.set_property("CLIP_NOTES", clip_notes);
+	file->tag.set_property("CLIP_ICON", clip_icon);
 	file->tag.set_property("AWINDOW_FOLDER", awindow_folder);
 	file->tag.set_property("X_PANE", x_pane);
 	file->tag.set_property("Y_PANE", y_pane);
@@ -242,6 +245,19 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 // Overwritten by MWindow::load_filenames
 		file->tag.get_property("CLIP_TITLE", clip_title);
 		file->tag.get_property("CLIP_NOTES", clip_notes);
+		clip_icon[0] = 0;
+		file->tag.get_property("CLIP_ICON", clip_icon);
+// kludge if possible
+		if( !clip_icon[0] ) {
+			char *cp = clip_notes;
+			int year, mon, mday, hour, min, sec;
+			while( *cp && *cp++ != ':' );
+			if( *cp && sscanf(cp, "%d/%02d/%02d %02d:%02d:%02d,",
+					&year, &mon, &mday, &hour, &min, &sec) == 6 ) {
+				sprintf(clip_icon, "clip_%02d%02d%02d-%02d%02d%02d.png",
+					year, mon, mday, hour, min, sec);
+			}
+		}
 		const char *folder = file->tag.get_property("FOLDER");
 		if( folder ) {
 			awindow_folder = AWindowGUI::folder_number(folder);

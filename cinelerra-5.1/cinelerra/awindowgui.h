@@ -42,6 +42,8 @@
 #include "mwindow.inc"
 #include "newfolder.inc"
 #include "pluginserver.inc"
+#include "renderengine.inc"
+#include "samples.inc"
 #include "vicon.h"
 
 class AssetPicon : public BC_ListBoxItem
@@ -59,6 +61,10 @@ public:
 	static void draw_hue_bar(VFrame *frame, double t);
 	static void draw_wave(VFrame *frame, double *dp, int len,
 		int base_color, int line_color);
+	void open_render_engine(EDL *edl, int is_audio);
+	void close_render_engine();
+	void render_video(int64_t pos, VFrame *vfrm);
+	void render_audio(int64_t pos, Samples **samples, int len);
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
@@ -81,6 +87,7 @@ public:
 	PluginServer *plugin;
 	Label *label;
 	VIcon *vicon;
+	RenderEngine *render_engine;
 };
 
 typedef int16_t vicon_audio_t;

@@ -2043,7 +2043,7 @@ void MWindow::save_clip(EDL *new_edl, const char *txt)
 	}
 
         time_t now;  time(&now);
-        struct tm *tm = localtime(&now);
+        struct tm dtm;   localtime_r(&now, &dtm);
 	char *cp = new_edl->local_session->clip_notes;
 	int n, sz = sizeof(new_edl->local_session->clip_notes)-1;
 	if( txt && *txt ) {
@@ -2052,8 +2052,8 @@ void MWindow::save_clip(EDL *new_edl, const char *txt)
 	}
 	n = snprintf(cp, sz, 
 		"%02d/%02d/%02d %02d:%02d:%02d,  +%s\n",
-		tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, 
-		tm->tm_hour, tm->tm_min, tm->tm_sec, duration);
+		dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday, 
+		dtm.tm_hour, dtm.tm_min, dtm.tm_sec, duration);
 	cp += n;  sz -= n;
 	if( path && *path ) {
 	        FileSystem fs;
@@ -2063,7 +2063,10 @@ void MWindow::save_clip(EDL *new_edl, const char *txt)
 		cp += n;  sz -= n;
 	}
 	cp[n] = 0;
-
+	sprintf(new_edl->local_session->clip_icon,
+		"clip_%02d%02d%02d-%02d%02d%02d.png",
+		dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
+		dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
 	edl->update_assets(new_edl);
 	int cur_x, cur_y;
 	gui->get_abs_cursor(cur_x, cur_y, 0);

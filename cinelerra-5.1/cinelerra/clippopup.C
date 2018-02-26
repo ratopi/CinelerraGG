@@ -449,6 +449,10 @@ int ClipPopupNest::handle_event()
 			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
 			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
 		clip_edl->set_path(path);
+		sprintf(new_clip->local_session->clip_icon,
+			"clip_%02d%02d%02d-%02d%02d%02d.png",
+			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
+			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
 		new_clip->set_path(path);
 		new_clip->to_nested(clip_edl);
 		int idx = edl->clips.number_of(clip);

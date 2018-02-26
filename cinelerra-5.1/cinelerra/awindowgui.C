@@ -19,6 +19,7 @@
  *
  */
 
+#include "arender.h"
 #include "asset.h"
 #include "assetedit.h"
 #include "assetpopup.h"
@@ -55,10 +56,14 @@
 #include "mwindow.h"
 #include "newfolder.h"
 #include "preferences.h"
+#include "renderengine.h"
 #include "samples.h"
 #include "theme.h"
+#include "tracks.h"
+#include "transportque.h"
 #include "vframe.h"
 #include "vicon.h"
+#include "vrender.h"
 #include "vwindowgui.h"
 #include "vwindow.h"
 
@@ -416,6 +421,33 @@ void AssetPicon::reset()
 	persistent = 0;
 }
 
+void AssetPicon::open_render_engine(EDL *edl, int is_audio)
+{
+	TransportCommand command;
+	command.command = is_audio ? NORMAL_FWD : CURRENT_FRAME;
+	command.get_edl()->copy_all(edl);
+	command.change_type = CHANGE_ALL;
+	command.realtime = 0;
+	render_engine = new RenderEngine(0, mwindow->preferences, 0, 0);
+	render_engine->set_vcache(mwindow->video_cache);
+	render_engine->set_acache(mwindow->audio_cache);
+	render_engine->arm_command(&command);
+}
+void AssetPicon::close_render_engine()
+{
+	delete render_engine;  render_engine = 0;
+}
+void AssetPicon::render_video(int64_t pos, VFrame *vfrm)
+{
+	if( !render_engine || !render_engine->vrender ) return;
+	render_engine->vrender->process_buffer(vfrm, pos, 0);
+}
+void AssetPicon::render_audio(int64_t pos, Samples **samples, int len)
+{
+	if( !render_engine || !render_engine->arender ) return;
+	render_engine->arender->process_buffer(samples, len, pos);
+}
+
 void AssetPicon::create_objects()
 {
 	FileSystem fs;
@@ -426,6 +458,10 @@ void AssetPicon::create_objects()
 
 	if( indexable ) {
 		fs.extract_name(name, indexable->path);
+		set_text(name);
+	}
+	else if( edl ) {
+		set_text(strcpy(name, edl->local_session->clip_title));
 		set_text(name);
 	}
 
@@ -575,9 +611,115 @@ void AssetPicon::create_objects()
 	}
 	else
 	if( edl ) {
-		set_text(strcpy(name, edl->local_session->clip_title));
-		icon = gui->clip_icon;
-		icon_vframe = gui->clip_vframe;
+		if( edl->tracks->playable_video_tracks() ) {
+			if( mwindow->preferences->use_thumbnails ) {
+				gui->unlock_window();
+				char clip_icon_path[BCTEXTLEN];
+				char *clip_icon = edl->local_session->clip_icon;
+				if( clip_icon[0] ) {
+					snprintf(clip_icon_path, sizeof(clip_icon_path),
+						"%s/%s", File::get_config_path(), clip_icon);
+					icon_vframe = VFramePng::vframe_png(clip_icon_path);
+				}
+				if( !icon_vframe ) {
+					int edl_h = edl->get_h(), edl_w = edl->get_w();
+					int height = edl_h > 0 ? edl_h : 1;
+					int width = edl_w > 0 ? edl_w : 1;
+					pixmap_w = pixmap_h * width / height;
+
+					if( gui->temp_picon &&
+					    (gui->temp_picon->get_w() != width ||
+					     gui->temp_picon->get_h() != height) ) {
+						delete gui->temp_picon;  gui->temp_picon = 0;
+					}
+
+					if( !gui->temp_picon ) {
+						gui->temp_picon = new VFrame(0, -1,
+							width, height, BC_RGB888, -1);
+					}
+					char string[BCTEXTLEN];
+					sprintf(string, _("Rendering %s"), name);
+					mwindow->gui->lock_window("AssetPicon::create_objects");
+					mwindow->gui->show_message(string);
+					mwindow->gui->unlock_window();
+					open_render_engine(edl, 0);
+					render_video(0, gui->temp_picon);
+					close_render_engine();
+					gui->lock_window("AssetPicon::create_objects 0");
+					icon_vframe = new VFrame(0,
+						-1, pixmap_w, pixmap_h, BC_RGB888, -1);
+					icon_vframe->transfer_from(gui->temp_picon);
+					if( clip_icon[0] ) icon_vframe->write_png(clip_icon_path);
+				}
+				else {
+					pixmap_w = icon_vframe->get_w();
+					pixmap_h = icon_vframe->get_h();
+				}
+				icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
+				icon->draw_vframe(icon_vframe,
+					0, 0, pixmap_w, pixmap_h, 0, 0);
+			}
+			else {
+				icon = gui->clip_icon;
+				icon_vframe = gui->clip_vframe;
+			}
+		}
+		else
+		if( edl->tracks->playable_audio_tracks() ) {
+			if( mwindow->preferences->use_thumbnails ) {
+				gui->unlock_window();
+				char clip_icon_path[BCTEXTLEN];
+				char *clip_icon = edl->local_session->clip_icon;
+				if( clip_icon[0] ) {
+					snprintf(clip_icon_path, sizeof(clip_icon_path),
+						"%s/%s", File::get_config_path(), clip_icon);
+					icon_vframe = VFramePng::vframe_png(clip_icon_path);
+				}
+				if( !icon_vframe ) {
+					pixmap_w = pixmap_h * 16/9;
+					icon_vframe = new VFrame(0,
+						-1, pixmap_w, pixmap_h, BC_RGB888, -1);
+					char string[BCTEXTLEN];
+					sprintf(string, _("Rendering %s"), name);
+					mwindow->gui->lock_window("AssetPicon::create_objects 3");
+					mwindow->gui->show_message(string);
+					mwindow->gui->unlock_window();
+					int sample_rate = edl->get_sample_rate();
+					int channels = edl->get_audio_channels();
+					if( channels > 2 ) channels = 2;
+					int64_t audio_samples = edl->get_audio_samples();
+					double duration = (double)audio_samples / sample_rate;
+					draw_hue_bar(icon_vframe, duration);
+					Samples *samples[MAX_CHANNELS];
+					int bfrsz = sample_rate;
+					for( int i=0; i<MAX_CHANNELS; ++i )
+						samples[i] = i<channels ? new Samples(bfrsz) : 0;
+					open_render_engine(edl, 1);
+					render_audio(0, samples, bfrsz);
+					close_render_engine();
+					gui->lock_window("AssetPicon::create_objects 4");
+					static int line_colors[2] = { GREEN, YELLOW };
+					static int base_colors[2] = { RED, PINK };
+					for( int i=channels; --i>=0; ) {
+						draw_wave(icon_vframe, samples[i]->get_data(), bfrsz,
+							base_colors[i], line_colors[i]);
+					}
+					for( int i=0; i<channels; ++i ) delete samples[i];
+					if( clip_icon[0] ) icon_vframe->write_png(clip_icon_path);
+				}
+				else {
+					pixmap_w = icon_vframe->get_w();
+					pixmap_h = icon_vframe->get_h();
+				}
+				icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
+				icon->draw_vframe(icon_vframe,
+					0, 0, pixmap_w, pixmap_h, 0, 0);
+			}
+			else {
+				icon = gui->clip_icon;
+				icon_vframe = gui->clip_vframe;
+			}
+		}
 	}
 	else
 	if( plugin ) {

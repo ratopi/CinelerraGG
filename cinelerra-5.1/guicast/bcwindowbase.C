@@ -3848,8 +3848,8 @@ int BC_WindowBase::get_cursor_over_window()
 	int ret = XQueryPointer(display, win,
 		&root_return, &child_return, &abs_x, &abs_y,
 		&win_x, &win_y, &temp_mask);
-	if( ret && win != root_return && child_return != None )
-		ret = match_window(child_return);
+	if( ret && child_return == None && win != root_return ) ret = 0;
+	if( ret && child_return != None ) ret = match_window(child_return);
 	return ret;
 }
 
