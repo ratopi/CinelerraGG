@@ -212,10 +212,10 @@ void VWindow::change_source(Indexable *indexable)
 	if( playback_engine->is_playing_back )
 		stop_playback(1);
 
-	gui->lock_window("VWindow::change_source 2");
 // 	if(asset && this->asset &&
 // 		asset->id == this->asset->id &&
 // 		asset == this->asset) return;
+	gui->lock_window("VWindow::change_source 2");
 
 //printf("VWindow::change_source %d\n", __LINE__);
 

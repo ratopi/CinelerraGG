@@ -54,7 +54,7 @@ void KeyFrame::load(FileXML *file)
 //	position = file->tag.get_property((char*)"POSITION", position);
 //printf("KeyFrame::load 1\n");
 
-	int len = file->read_data_until((char*)"/KEYFRAME", data, MESSAGESIZE-1);
+	int len = file->read_data_until((char*)"/KEYFRAME", data, MESSAGESIZE-1, 1);
 	data[len] = 0;
 //printf("KeyFrame::load 2 data=\n%s\nend of data\n", data);
 }

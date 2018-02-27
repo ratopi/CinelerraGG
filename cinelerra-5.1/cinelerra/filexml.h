@@ -133,8 +133,8 @@ public:
 	int append_data(const char *text, long len);
 
 	char* read_text();
-	int read_data_until(const char *tag_end, char *out, int len);
-	int read_text_until(const char *tag_end, char *out, int len);
+	int read_data_until(const char *tag_end, char *out, int len, int skip=0);
+	int read_text_until(const char *tag_end, char *out, int len, int skip=0);
 	int read_tag();
 	int skip_tag();
 	int write_to_file(const char *filename);

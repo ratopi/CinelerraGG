@@ -168,7 +168,6 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("SELECTION_START", selectionstart - start);
 	file->tag.set_property("SELECTION_END", selectionend - start);
 	file->tag.set_property("CLIP_TITLE", clip_title);
-	file->tag.set_property("CLIP_NOTES", clip_notes);
 	file->tag.set_property("CLIP_ICON", clip_icon);
 	file->tag.set_property("AWINDOW_FOLDER", awindow_folder);
 	file->tag.set_property("X_PANE", x_pane);
@@ -213,6 +212,14 @@ void LocalSession::save_xml(FileXML *file, double start)
 		}
 	}
 	file->append_tag();
+	file->append_newline();
+
+//this used to be a property, now used as tag member
+//	file->tag.set_property("CLIP_NOTES", clip_notes);
+	file->tag.set_title("CLIP_NOTES");   file->append_tag();
+	file->append_text(clip_notes);
+	file->tag.set_title("/CLIP_NOTES");  file->append_tag();
+	file->append_newline();
 
 	file->tag.set_title("/LOCALSESSION");
 	file->append_tag();
@@ -244,6 +251,7 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 //		clipboard_length = 0;
 // Overwritten by MWindow::load_filenames
 		file->tag.get_property("CLIP_TITLE", clip_title);
+		clip_notes[0] = 0;
 		file->tag.get_property("CLIP_NOTES", clip_notes);
 		clip_icon[0] = 0;
 		file->tag.get_property("CLIP_ICON", clip_icon);
@@ -319,6 +327,14 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 	{
 		in_point = file->tag.get_property("IN_POINT", (double)-1);
 		out_point = file->tag.get_property("OUT_POINT", (double)-1);
+	}
+
+	while( !file->read_tag() ) {
+		if( file->tag.title_is("/LOCALSESSION") ) break;
+		if( file->tag.title_is("CLIP_NOTES") ) {
+			file->read_text_until("/CLIP_NOTES",
+				clip_notes, sizeof(clip_notes)-1, 1);
+		}
 	}
 }
 

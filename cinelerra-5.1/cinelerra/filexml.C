@@ -489,7 +489,7 @@ int FileXML::skip_tag()
 	return 1;
 }
 
-int FileXML::read_data_until(const char *tag_end, char *out, int len)
+int FileXML::read_data_until(const char *tag_end, char *out, int len, int skip)
 {
 	long ipos = buffer->itell();
 	int opos = 0, pos = -1;
@@ -518,15 +518,15 @@ int FileXML::read_data_until(const char *tag_end, char *out, int len)
 		++pos;
 	}
 // if end tag is reached, pos is left on the < of the end tag
-	if( pos >= 0 && !tag_end[pos] )
+	if( !skip && pos >= 0 && !tag_end[pos] && !skip )
 		buffer->iseek(ipos);
 	return opos;
 }
 
-int FileXML::read_text_until(const char *tag_end, char *out, int len)
+int FileXML::read_text_until(const char *tag_end, char *out, int len, int skip)
 {
 	char data[len+1];
-	int opos = read_data_until(tag_end, data, len);
+	int opos = read_data_until(tag_end, data, len, skip);
 	decode(out, data, opos);
 	return 0;
 }
