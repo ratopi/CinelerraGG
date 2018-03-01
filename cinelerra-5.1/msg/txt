@@ -9,6 +9,19 @@ For usage help, refer to the following:
 Cinfinity icons selected in Preferences (Creative Common
   By https://creativecommons.org/licenses/by/3.0/)
 .
+February 2018 New Features of note:
+  Pulldown menus now stay until window or mouse change.
+  Audio waveform partial image will show in the Viewer.
+  Adding a matched set of tracks is now available.
+  Loop play added in Viewer and Compositor.
+  Mouse play action implemented in Viewer/Compositor.
+  Nested EDLs are now available and automatically render.
+  Audio plays the first few bars in the Resources window.
+  Third-party programs have been upgraded.
+  File size indicator in File Load has numeric options.
+  Shortcuts.html updated for some new or missing actions.
+  Clips in the Resources window show a png thumbnail.
+.
 January 2018 New Features of note:
   Plugin names in EDL now all english & not translated.
   Raw Video (yuv/rgb) and raw audio available.
@@ -17,58 +30,27 @@ January 2018 New Features of note:
   Render Farm minor enhancements and bug fixes.
   Pixels for Render Video and Samples/Quality for Audio.
   2 Pass option for VP9/webm added.
-December 2017 New Features of note:
-  Cinfinity Square plugin icons available as new choice.
-  New Transition picons for a more modern look by Sam.
-  Libopus included with upgraded ffmpeg to 3.4.1.
-  HistEq plugin for improved color was added.
-  BT2020 color space/color range options available.
-  Grabshot is a new option to do a screen grab.
-  Added date/time sort to Resources Media/Proxy folder.
-November 2017 New Features of note:
+.
+2017 New Features of note:
+  Many plugin icons and other new icons modernized by Sam.
   Mixer Viewer for multiple media/cameras was added.
   Blade cut and hard edges are now available.
-  Additional opts video/audio files provided by Frederic.
-  Reset button added to chromkay, chromakeyhsv & gradient.
-  Factory preset for Rule of Thirds added for f_drawgrid.
-  Hotkeys for keyframe positioning and delete in/out.
-  Single button press to delete the entire mask.
-  Colorspace and Color range improvement with choices.
-October 2017 New Features of note:
-  HV7 mods merged in to include X11 Direct playback for
-   large format files and Presets for plugins with edit.
-  Multiple windows available now for multiple assets.
-  Many more new icons for ffmpeg plugins + others.
-  Alternative shortcut keys for computers without numpad.
   Snap/Cut editing and snap while dragging stickiness.
-  Snapshot capability for single frame png, jpg, or tiff.
-  Preference for Set Input Focus when window entered.
-  Upgraded Russian translation provided by Igor.
+  New plugins of CriKey, Motion51 and HistEq added.
+  Perspective/BlueBanana/C41 plugins were fixed/improved.
+  Grabshot/Snapshot new options for screen grab/shot.
+  Colorspace & Color range improvements for BT601/709/2020.
+  HV7 mods merged in to include X11 Direct playback.
+  Alternative shortcut keys for computers without numpad.
   Search box in the Resources window to narrow choices.
-September 2017 New Features of note:
   Proxy Editing added to Settings pulldown.
   OpenCV optional compile with 4 plugins now available.
-  New Rumbler "dream-like" plugin added.
-  Always Show Next Frame seeking option in Preferences.
-August 2017 New Features of note:
-  Specks, Burst, Spiral transition wipes are new.
-  C41 plugin updated for negative images to photos.
   Shortcuts.html added to shell cmds icon for easy view.
-  Keypad 1-6 have new Shift option to add/subtract audio.
-July 2017 New Features of note:
-  Cinfinity icons added along with a Preferences choice.
-  Perspective plugin improvements with more versatility.
-  Copy/Paste within and across instances enhancements.
-June 2017 New Features of note:
-  CriKey does edgedetect, chroma key, and interpolation.
   Faststart option added for Mp4 and QT ffmpeg format.
-.
-January to May 2017 New Features of note:
   Probe Order preference added for flexibility.
   Dcraw program updated to latest Coffin version.
   Zoom bar in compositor handles any size.
   Upgraded FFMPEG to 3.3 + other 3rd party libraries.
-  Blue Banana plugin improvements - End Mask +.
   Title plugin major changes to include:
    ColorPicker added, fast Font selection,
    Stroker for fonts added, BC_FONT_PATH.
@@ -78,9 +60,6 @@ January to May 2017 New Features of note:
      Caps, Blink, Alpha, Nudge, Sup(erscript,
      subscript), and PNG inclusion + Rt. Click.
    Now handles 3071 characters and a count provided.
-  Added C_/D_ for ambiguous translations.
-  Bluray creation allowing for non-root usage.
-  Motion51 plugin added with easier usage.
+  Bluray creation improved & allows for non-root usage.
   Unicode characters can be put into textbox.
   Smooth Lines create near-perfect circles/curves.
-  Bluray creation improved to cover more area.

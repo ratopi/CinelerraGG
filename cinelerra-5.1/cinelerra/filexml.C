@@ -518,7 +518,7 @@ int FileXML::read_data_until(const char *tag_end, char *out, int len, int skip)
 		++pos;
 	}
 // if end tag is reached, pos is left on the < of the end tag
-	if( !skip && pos >= 0 && !tag_end[pos] && !skip )
+	if( !skip && pos >= 0 && !tag_end[pos] )
 		buffer->iseek(ipos);
 	return opos;
 }

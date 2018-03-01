@@ -3839,17 +3839,28 @@ int BC_WindowBase::match_window(Window win)
 
 int BC_WindowBase::get_cursor_over_window()
 {
-	if(top_level != this) return top_level->get_cursor_over_window();
-
 	int abs_x, abs_y, win_x, win_y;
-	unsigned int temp_mask;
+	unsigned int mask_return;
 	Window root_return, child_return;
 
-	int ret = XQueryPointer(display, win,
+	int ret = XQueryPointer(top_level->display, top_level->rootwin,
 		&root_return, &child_return, &abs_x, &abs_y,
-		&win_x, &win_y, &temp_mask);
-	if( ret && child_return == None && win != root_return ) ret = 0;
-	if( ret && child_return != None ) ret = match_window(child_return);
+		&win_x, &win_y, &mask_return);
+	if( ret && child_return == None ) ret = 0;
+	if( ret && win != child_return )
+		ret = top_level->match_window(child_return);
+// query pointer can return a window manager window with this top_level as a child
+	if( !ret ) {
+		unsigned int nchildren_return = 0;
+		Window parent_return, *children_return = 0;
+		XQueryTree(top_level->display, child_return, &root_return,
+			&parent_return, &children_return, &nchildren_return);
+		if( children_return ) {
+			if( nchildren_return==1 && children_return[0]==top_level->win )
+				ret = 1;
+			XFree(children_return);
+		}
+	}
 	return ret;
 }
 
