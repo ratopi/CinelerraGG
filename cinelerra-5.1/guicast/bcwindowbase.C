@@ -3850,16 +3850,15 @@ int BC_WindowBase::get_cursor_over_window()
 	if( ret && win != child_return )
 		ret = top_level->match_window(child_return);
 // query pointer can return a window manager window with this top_level as a child
-	if( !ret ) {
-		unsigned int nchildren_return = 0;
-		Window parent_return, *children_return = 0;
-		XQueryTree(top_level->display, child_return, &root_return,
-			&parent_return, &children_return, &nchildren_return);
-		if( children_return ) {
-			if( nchildren_return==1 && children_return[0]==top_level->win )
-				ret = 1;
-			XFree(children_return);
-		}
+//  for kde this can be two levels deep
+	unsigned int nchildren_return = 0;
+	Window parent_return, *children_return = 0;
+	Window top_win = top_level->win;
+	while( !ret && top_win != top_level->rootwin && top_win != root_return &&
+		XQueryTree(top_level->display, top_win, &root_return,
+			&parent_return, &children_return, &nchildren_return) ) {
+		if( children_return ) XFree(children_return);
+		if( (top_win=parent_return) == child_return ) ret = 1;
 	}
 	return ret;
 }
