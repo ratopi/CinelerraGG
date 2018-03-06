@@ -892,22 +892,22 @@ int VFrame::clear_frame()
 
 	case BC_YUV410P:
 		bzero(get_y(), sz);
-		bzero(get_u(), w / 4 * h / 4);
-		bzero(get_v(), w / 4 * h / 4);
+		memset(get_u(), 0x80, w / 4 * h / 4);
+		memset(get_v(), 0x80, w / 4 * h / 4);
 		break;
 
 	case BC_YUV411P:
 	case BC_YUV420P:
 	case BC_YUV420PI:
 		bzero(get_y(), sz);
-		bzero(get_u(), sz / 4);
-		bzero(get_v(), sz / 4);
+		memset(get_u(), 0x80, sz / 4);
+		memset(get_v(), 0x80, sz / 4);
 		break;
 
 	case BC_YUV422P:
 		bzero(get_y(), sz);
-		bzero(get_u(), sz / 2);
-		bzero(get_v(), sz / 2);
+		memset(get_u(), 0x80, sz / 2);
+		memset(get_v(), 0x80, sz / 2);
 		break;
 
 	case BC_GBRP:
@@ -918,7 +918,7 @@ int VFrame::clear_frame()
 
 	case BC_RGBA_FLOATP: if( a ) {
 		float *ap = (float *)a;
-		for( int i=sz; --i>=0; ++ap ) *ap = 1.f; }
+		for( int i=sz; --i>=0; ++ap ) *ap = 0.f; }
 	case BC_RGB_FLOATP: {
 		float *rp = (float *)y;
 		for( int i=sz; --i>=0; ++rp ) *rp = 0.f;
@@ -929,8 +929,8 @@ int VFrame::clear_frame()
 		break; }
 	case BC_YUV444P:
 		bzero(get_y(), sz);
-		bzero(get_u(), sz);
-		bzero(get_v(), sz);
+		memset(get_u(), 0x80, sz);
+		memset(get_v(), 0x80, sz);
 		break;
 
 	case BC_YUV888:

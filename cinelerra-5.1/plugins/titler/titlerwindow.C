@@ -1158,8 +1158,8 @@ int TitleTextBfrSz::update(int n)
 
 
 TitleDropShadow::TitleDropShadow(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_TumbleTextBox(window, (int64_t)client->config.dropshadow,
-	(int64_t)-1000, (int64_t)1000, x, y, 70)
+ : BC_TumbleTextBox(window, client->config.dropshadow,
+		-1000, 1000, x, y, 70)
 {
 	this->client = client;
 	this->window = window;
@@ -1173,26 +1173,28 @@ int TitleDropShadow::handle_event()
 
 
 TitleOutline::TitleOutline(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_TumbleTextBox(window, (int64_t)client->config.outline_size,
-	(int64_t)0, (int64_t)1000, x, y, 70)
+ : BC_TumbleTextBox(window, client->config.outline_size,
+		0.f, 1000.f, x, y, 70)
 {
 	this->client = client;
 	this->window = window;
+	set_precision(1);
 }
 int TitleOutline::handle_event()
 {
-	client->config.outline_size = atol(get_text());
+	client->config.outline_size = atof(get_text());
 	window->send_configure_change();
 	return 1;
 }
 
 
 TitleStroker::TitleStroker(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_TumbleTextBox(window, (int64_t)client->config.stroke_width,
-	(int64_t)0, (int64_t)1000, x, y, 70)
+ : BC_TumbleTextBox(window, client->config.stroke_width,
+		0.f, 1000.f, x, y, 70)
 {
 	this->client = client;
 	this->window = window;
+	set_precision(1);
 }
 int TitleStroker::handle_event()
 {
@@ -1207,36 +1209,38 @@ int TitleStroker::handle_event()
 
 
 TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_TumbleTextBox(window, (int64_t)client->config.title_x,
-	(int64_t)-32767, (int64_t)32767, x, y, 50)
+ : BC_TumbleTextBox(window, client->config.title_x,
+		-32767.f, 32767.f, x, y, 50)
 {
 	this->client = client;
 	this->window = window;
+	set_precision(1);
 }
 int TitleX::handle_event()
 {
-	client->config.title_x = atol(get_text());
+	client->config.title_x = atof(get_text());
 	window->send_configure_change();
 	return 1;
 }
 
 TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_TumbleTextBox(window, (int64_t)client->config.title_y,
-	(int64_t)-32767, (int64_t)32767, x, y, 50)
+ : BC_TumbleTextBox(window, client->config.title_y,
+		-32767.f, 32767.f, x, y, 50)
 {
 	this->client = client;
 	this->window = window;
+	set_precision(1);
 }
 int TitleY::handle_event()
 {
-	client->config.title_y = atol(get_text());
+	client->config.title_y = atof(get_text());
 	window->send_configure_change();
 	return 1;
 }
 
 TitleW::TitleW(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_TumbleTextBox(window, (int64_t)client->config.title_w,
-	(int64_t)0, (int64_t)32767, x, y, 50)
+ : BC_TumbleTextBox(window, client->config.title_w,
+		0, 32767, x, y, 50)
 {
 	this->client = client;
 	this->window = window;
@@ -1249,8 +1253,8 @@ int TitleW::handle_event()
 }
 
 TitleH::TitleH(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_TumbleTextBox(window, (int64_t)client->config.title_h,
-	(int64_t)0, (int64_t)32767, x, y, 50)
+ : BC_TumbleTextBox(window, client->config.title_h,
+		0, 32767, x, y, 50)
 {
 	this->client = client;
 	this->window = window;
@@ -1263,8 +1267,8 @@ int TitleH::handle_event()
 }
 
 TitleSpeed::TitleSpeed(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_TumbleTextBox(window, (float)client->config.pixels_per_second,
-	(float)0, (float)1000, x, y, 100)
+ : BC_TumbleTextBox(window, client->config.pixels_per_second,
+		0.f, 1000.f, x, y, 100)
 {
 	this->client = client;
 	this->window = window;

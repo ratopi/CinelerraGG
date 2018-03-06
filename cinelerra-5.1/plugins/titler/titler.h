@@ -79,7 +79,7 @@ class TitleMain;
 #include "indexable.inc"
 #include "loadbalance.h"
 #include "mutex.h"
-#include "overlayframe.inc"
+#include "overlayframe.h"
 #include "pluginvclient.h"
 #include "renderengine.inc"
 #include "titlerwindow.h"
@@ -380,55 +380,6 @@ public:
 	int pass;
 };
 
-
-// Overlay text mask with fractional translation
-// We don't use OverlayFrame to enable alpha blending on non alpha
-// output.
-class TitleTranslatePackage : public LoadPackage
-{
-public:
-	TitleTranslatePackage();
-	int y1, y2;
-};
-
-typedef struct {
-	int in_x1;
-	float in_fraction1;
-	int in_x2;       // Might be same as in_x1 for boundary
-	float in_fraction2;
-	float output_fraction;
-} transfer_table_f;
-
-class TitleTranslateUnit : public LoadClient
-{
-public:
-	TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server);
-
-	static void translation_array_f(transfer_table_f* &table,
-		float out_x1, float out_x2, int out_total,
-		float in_x1, float in_x2, int in_total,
-		int &x1_out, int &x2_out);
-	void process_package(LoadPackage *package);
-	TitleMain *plugin;
-};
-
-class TitleTranslate : public LoadServer
-{
-public:
-	TitleTranslate(TitleMain *plugin, int cpus);
-	~TitleTranslate();
-	void init_packages();
-	void run_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	TitleMain *plugin;
-	transfer_table_f *y_table;
-	transfer_table_f *x_table;
-	VFrame *xlat_mask;
-	int out_x1, out_x2;
-	int out_y1, out_y2;
-};
-
 template<class typ> class TitleStack : public ArrayList<typ>
 {
 	typ &last() { return ArrayList<typ>::last(); }
@@ -571,6 +522,44 @@ public:
 };
 
 
+// Overlay text mask with fractional translation
+// We don't use OverlayFrame to enable alpha blending on non alpha
+// output.
+class TitleTranslatePackage : public LoadPackage
+{
+public:
+	TitleTranslatePackage();
+	int y1, y2;
+};
+
+class TitleTranslateUnit : public LoadClient
+{
+public:
+	TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server);
+
+	void process_package(LoadPackage *package);
+	TitleMain *plugin;
+};
+
+class TitleTranslate : public LoadServer
+{
+public:
+	TitleTranslate(TitleMain *plugin, int cpus);
+	~TitleTranslate();
+
+	TitleMain *plugin;
+	VFrame *input;
+	float in_w, in_h, out_w, out_h;
+	float ix1, iy1, ix2, iy2;
+	float ox1, oy1, ox2, oy2;
+
+	void copy(VFrame *input);
+	LoadClient* new_client();
+	LoadPackage* new_package();
+	void init_packages();
+};
+
+
 class TitleMain : public PluginVClient
 {
 public:
@@ -645,7 +634,8 @@ public:
 
 	int window_w, window_h;
 	int fuzz, fuzz1, fuzz2;
-	int title_x, title_y, title_w, title_h;
+	float title_x, title_y;
+	int title_w, title_h;
 
 	float text_x, text_y, text_w, text_h;
 	float text_x1, text_y1, text_x2, text_y2;

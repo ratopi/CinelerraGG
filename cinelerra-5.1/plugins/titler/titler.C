@@ -572,7 +572,7 @@ void TitleUnit::draw_frame(int mode, VFrame *dst, VFrame *src, int x, int y)
 		while( y_inp < inp_h && y_out < out_h ) {
 			uint8_t *inp = inp_rows[y_inp], *out = out_rows[y_out];
 			for( int xin=x_inp,xout=x_out*4+3; xin<inp_w; ++xin,xout+=4 ) {
-				out[xout] = inp[xin];
+				out[xout] = STD_ALPHA(max, inp[xin], out[xout]);
 			}
 			++y_inp;  ++y_out;
 		}
@@ -585,11 +585,18 @@ void TitleUnit::draw_frame(int mode, VFrame *dst, VFrame *src, int x, int y)
 			for( int xin=x_inp,xout=x_out*4+0; xin<inp_w; ++xin,xout+=4 ) {
 				int in_a = inp[xin], out_a = out[xout+3];
 				if( in_a + out_a == 0 ) continue;
-				int opacity = (in_a * alpha)/max, transp = out_a * (max - opacity)/max;
-				out[xout+0] = (opacity * r + transp * out[xout+0]) / max;
-				out[xout+1] = (opacity * (g-ofs) + transp * (out[xout+1]-ofs)) / max + ofs;
-				out[xout+2] = (opacity * (b-ofs) + transp * (out[xout+2]-ofs)) / max + ofs;
-				out[xout+3] = opacity + transp - (opacity * transp) / max;
+				if( in_a >= out_a ) { // crayola for top draw
+					out[xout+0] = r;  out[xout+1] = g;  out[xout+2] = b;
+					out[xout+3] = alpha * in_a / max;
+				}
+				else {
+					int i_r = r, i_g = g-ofs, i_b = b-ofs;
+					int o_r = out[xout+0], o_g = out[xout+1]-ofs, o_b = out[xout+2]-ofs;
+					out[xout+0] = COLOR_NORMAL(max, i_r, in_a, o_r, out_a);
+					out[xout+1] = COLOR_NORMAL(max, i_g, in_a, o_g, out_a) + ofs;
+					out[xout+2] = COLOR_NORMAL(max, i_b, in_a, o_b, out_a) + ofs;
+					out[xout+3] = alpha * STD_ALPHA(max, in_a, out_a) / max;
+				}
 			}
 			++y_inp;  ++y_out;
 		}
@@ -598,13 +605,22 @@ void TitleUnit::draw_frame(int mode, VFrame *dst, VFrame *src, int x, int y)
 		while( y_inp < inp_h && y_out < out_h ) {
 			uint8_t *inp = inp_rows[y_inp], *out = out_rows[y_out];
 			for( int xin=x_inp,xout=x_out*4+0; xin<inp_w; ++xin,xout+=4 ) {
-				int xinp = xin*4, in_a = inp[xinp+3], out_a = out[xout+3];
+				int xinp = xin*4;
+				int in_a = inp[xinp+3], out_a = out[xout+3];
 				if( in_a + out_a == 0 ) continue;
-				int opacity = (in_a * alpha)/max, transp = out_a * (max - opacity)/max;
-				out[xout+0] = (opacity * inp[xinp+0] + transp * out[xout+0]) / max;
-				out[xout+1] = (opacity * (inp[xinp+1]-ofs) + transp * (out[xout+1]-ofs)) / max + ofs;
-				out[xout+2] = (opacity * (inp[xinp+2]-ofs) + transp * (out[xout+2]-ofs)) / max + ofs;
-				out[xout+3] = opacity + transp - (opacity * transp) / max;
+				if( in_a >= out_a ) {
+					int i_r = inp[xinp+0], i_g = inp[xinp+1], i_b = inp[xinp+2];
+					out[xout+0] = i_r;  out[xout+1] = i_g;  out[xout+2] = i_b;
+					out[xout+3] = alpha * in_a / max;
+				}
+				else {
+					int i_r = inp[xinp+0], i_g = inp[xinp+1]-ofs, i_b = inp[xinp+2]-ofs;
+					int o_r = out[xout+0], o_g = out[xout+1]-ofs, o_b = out[xout+2]-ofs;
+					out[xout+0] = COLOR_NORMAL(max, i_r, in_a, o_r, out_a);
+					out[xout+1] = COLOR_NORMAL(max, i_g, in_a, o_g, out_a) + ofs;
+					out[xout+2] = COLOR_NORMAL(max, i_b, in_a, o_b, out_a) + ofs;
+					out[xout+3] = alpha * STD_ALPHA(max, in_a, out_a) / max;
+				}
 			}
 			++y_inp;  ++y_out;
 		}
@@ -674,69 +690,6 @@ LoadPackage* TitleEngine::new_package()
 	return new TitlePackage;
 }
 
-void TitleTranslateUnit::translation_array_f(transfer_table_f* &table,
-	float in_x1, float in_x2, int in_total,
-	float out_x1, float out_x2, int out_total,
-	int &x1_out, int &x2_out)
-{
-	int out_w;
-	//float offset = out_x1 - in_x1;
-
-	x1_out = (int)out_x1;
-	x2_out = MIN((int)ceil(out_x2), out_total);
-	if( x1_out >= x2_out ) return;
-
-	out_w = x2_out - x1_out;
-	table = new transfer_table_f[out_w];
-	bzero(table, sizeof(transfer_table_f) * out_w);
-
-	float in_x = in_x1;
-	for( int out_x=x1_out; out_x<x2_out; ++out_x ) {
-		transfer_table_f *entry = &table[out_x - x1_out];
-
-		entry->in_x1 = (int)in_x;
-		entry->in_x2 = (int)in_x + 1;
-
-// Get fraction of output pixel to fill
-		entry->output_fraction = 1;
-
-		if( out_x1 > out_x ) {
-			entry->output_fraction -= out_x1 - out_x;
-		}
-
-		if( out_x2 < out_x + 1 ) {
-			entry->output_fraction = (out_x2 - out_x);
-		}
-
-// Advance in_x until out_x_fraction is filled
-		float out_x_fraction = entry->output_fraction;
-		float in_x_fraction = floor(in_x + 1) - in_x;
-
-		if( out_x_fraction <= in_x_fraction ) {
-			entry->in_fraction1 = out_x_fraction;
-			entry->in_fraction2 = 0.0;
-			in_x += out_x_fraction;
-		}
-		else {
-			entry->in_fraction1 = in_x_fraction;
-			in_x += out_x_fraction;
-			entry->in_fraction2 = in_x - floor(in_x);
-		}
-
-// Clip in_x and zero out fraction.  This doesn't work for YUV.
-		if( entry->in_x2 >= in_total ) {
-			entry->in_x2 = in_total - 1;
-			entry->in_fraction2 = 0.0;
-		}
-
-		if( entry->in_x1 >= in_total ) {
-			entry->in_x1 = in_total - 1;
-			entry->in_fraction1 = 0.0;
-		}
-	}
-}
-
-
 
 // Copy a single character to the text mask
 TitleOutlinePackage::TitleOutlinePackage()
@@ -762,16 +715,16 @@ void TitleOutlineUnit::process_package(LoadPackage *package)
 	unsigned char **text_rows = plugin->text_mask->get_rows();
 	int mask_w1 = plugin->text_mask->get_w()-1;
 	int mask_h1 = plugin->text_mask->get_h()-1;
-	int ofs = plugin->config.outline_size;
+	int oln_sz = plugin->config.outline_size;
 
 	if( engine->pass == 0 ) {
 // get max alpha under outline size macropixel
 		for( int y=pkg->y1, my=pkg->y2; y<my; ++y ) {
 			unsigned char *out_row = outline_rows[y];
-			int y1 = y - ofs, y2 = y + ofs;
+			int y1 = y - oln_sz, y2 = y + oln_sz;
 			CLAMP(y1, 0, mask_h1);  CLAMP(y2, 0, mask_h1);
 			for( int x=0, mx=plugin->text_mask->get_w(); x<mx; ++x ) {
-				int x1 = x - ofs, x2 = x + ofs;
+				int x1 = x - oln_sz, x2 = x + oln_sz;
 				CLAMP(x1, 0, mask_w1);  CLAMP(x2, 0, mask_w1);
 				int max_a = 0;
 				for( int yy=y1; yy<=y2; ++yy ) {
@@ -843,179 +796,6 @@ LoadPackage* TitleOutlineEngine::new_package()
 	return new TitleOutlinePackage;
 }
 
-
-
-TitleTranslatePackage::TitleTranslatePackage()
- : LoadPackage()
-{
-	y1 = y2 = 0;
-}
-
-
-TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server)
- : LoadClient(server)
-{
-	this->plugin = plugin;
-}
-
-void TitleTranslate::run_packages()
-{
-// Generate scaling tables
-	delete [] x_table;  x_table = 0;
-	delete [] y_table;  y_table = 0;
-
-	float in_w = xlat_mask->get_w();
-	float in_h = xlat_mask->get_h();
-	float ix1 = 0, ix2 = ix1 + in_w;
-	float iy1 = 0, iy2 = iy1 + in_h;
-
-	float out_w = plugin->output->get_w();
-	float out_h = plugin->output->get_h();
-	float x1 = plugin->title_x, x2 = x1 + plugin->title_w;
-	float y1 = plugin->title_y, y2 = y1 + plugin->title_h;
-	bclamp(x1, 0, out_w);  bclamp(y1, 0, out_h);
-	bclamp(x2, 0, out_w);  bclamp(y2, 0, out_h);
-
-	float ox1 = plugin->title_x + plugin->text_x - plugin->text_x1 + plugin->mask_x1, ox2 = ox1 + in_w;
-	float oy1 = plugin->title_y + plugin->text_y - plugin->text_y1 + plugin->mask_y1, oy2 = oy1 + in_h;
-	if( ox1 < x1 ) { ix1 -= (ox1-x1);  ox1 = x1; }
-	if( oy1 < y1 ) { iy1 -= (oy1-y1);  oy1 = y1; }
-	if( ox2 > x2 ) { ix2 -= (ox2-x2);  ox2 = x2; }
-	if( oy2 > y2 ) { iy2 -= (oy2-x2);  oy2 = y2; }
-#if 0
-printf("TitleTranslate text  txy=%7.2f,%-7.2f\n"
-  "  mxy1=%7d,%-7d mxy2=%7d,%-7d\n"
-  "   xy1=%7.2f,%-7.2f  xy2=%7.2f,%-7.2f\n"
-  "  ixy1=%7.2f,%-7.2f ixy2=%7.2f,%-7.2f\n"
-  "  oxy1=%7.2f,%-7.2f oxy2=%7.2f,%-7.2f\n",
-   plugin->text_x, plugin->text_y,
-   plugin->mask_x1, plugin->mask_y1, plugin->mask_x2, plugin->mask_y2,
-   x1,y1, x2,y2, ix1,iy1, ix2,iy2, ox1,oy1, ox2,oy2);
-#endif
-	out_x1 = out_x2 = out_y1 = out_y2 = 0;
-	TitleTranslateUnit::translation_array_f(x_table,
-		ix1, ix2, in_w, ox1, ox2, out_w, out_x1, out_x2);
-	TitleTranslateUnit::translation_array_f(y_table,
-		iy1, iy2, in_h, oy1, oy2, out_h, out_y1, out_y2);
-
-	process_packages();
-}
-
-
-
-#define TRANSLATE(type, max, components, ofs) { \
-	unsigned char **in_rows = server->xlat_mask->get_rows(); \
-	type **out_rows = (type**)plugin->output->get_rows(); \
- \
-	for( int y=pkg->y1; y<pkg->y2; ++y ) { \
-		int in_y1 = server->y_table[y].in_x1; \
-		int in_y2 = server->y_table[y].in_x2; \
-		float y_f1 = server->y_table[y].in_fraction1; \
-		float y_f2 = server->y_table[y].in_fraction2; \
-		unsigned char *in_row1 = in_rows[in_y1]; \
-		unsigned char *in_row2 = in_rows[in_y2]; \
-		type *out_row = out_rows[y + server->out_y1]; \
-		for( int i=0,x=server->out_x1; x<server->out_x2; ++i,++x ) { \
-			int in_x1 = 4*server->x_table[i].in_x1; \
-			int in_x2 = 4*server->x_table[i].in_x2; \
-			float x_f1 = server->x_table[i].in_fraction1; \
-			float x_f2 = server->x_table[i].in_fraction2; \
-			float f11 = x_f1 * y_f1 / (256.f-max); \
-			float f12 = x_f2 * y_f1 / (256.f-max); \
-			float f21 = x_f1 * y_f2 / (256.f-max); \
-			float f22 = x_f2 * y_f2 / (256.f-max); \
-			type input_r = (type)( \
-				in_row1[in_x1 + 0] * f11 + in_row1[in_x2 + 0] * f12 +  \
-				in_row2[in_x1 + 0] * f21 + in_row2[in_x2 + 0] * f22 ); \
-			type input_g = (type)( \
-				in_row1[in_x1 + 1] * f11 + in_row1[in_x2 + 1] * f12 +  \
-				in_row2[in_x1 + 1] * f21 + in_row2[in_x2 + 1] * f22 ); \
-			type input_b = (type)( \
-				in_row1[in_x1 + 2] * f11 + in_row1[in_x2 + 2] * f12 +  \
-				in_row2[in_x1 + 2] * f21 + in_row2[in_x2 + 2] * f22 ); \
-			type input_a = (type)( \
-				in_row1[in_x1 + 3] * f11 + in_row1[in_x2 + 3] * f12 +  \
-				in_row2[in_x1 + 3] * f21 + in_row2[in_x2 + 3] * f22 ); \
-			input_a = input_a * plugin->fade; \
-			if( components == 4 ) { \
-				type transparency = out_row[x * components + 3] * (max - input_a) / max; \
-				out_row[x * components + 0] =  (input_r * input_a + \
-					out_row[x * components + 0] * transparency) / max; \
-				out_row[x * components + 1] =  ((input_g-ofs) * input_a + \
-					(out_row[x * components + 1]-ofs) * transparency) / max + ofs; \
-				out_row[x * components + 2] =  ((input_b-ofs) * input_a + \
-					(out_row[x * components + 2]-ofs) * transparency) / max + ofs; \
-				out_row[x * components + 3] =  MAX(input_a, out_row[x * components + 3]); \
-			} \
-			else { \
-				type transparency = max - input_a; \
-				out_row[x * components + 0] = (input_r * input_a + \
-					out_row[x * components + 0] * transparency) / max; \
-				out_row[x * components + 1] =  ((input_g-ofs) * input_a + \
-					(out_row[x * components + 1]-ofs) * transparency) / max + ofs; \
-				out_row[x * components + 2] =  ((input_b-ofs) * input_a + \
-					(out_row[x * components + 2]-ofs) * transparency) / max + ofs; \
-			} \
-		} \
-	} \
-}
-
-
-void TitleTranslateUnit::process_package(LoadPackage *package)
-{
-	TitleTranslatePackage *pkg = (TitleTranslatePackage*)package;
-	TitleTranslate *server = (TitleTranslate*)this->server;
-
-	switch( plugin->output->get_color_model() ) {
-	case BC_RGB888:     TRANSLATE(unsigned char, 0xff, 3, 0);    break;
-	case BC_RGB_FLOAT:  TRANSLATE(float, 1.0, 3, 0);             break;
-	case BC_YUV888:     TRANSLATE(unsigned char, 0xff, 3, 0x80); break;
-	case BC_RGBA_FLOAT: TRANSLATE(float, 1.0, 4, 0);             break;
-	case BC_RGBA8888:   TRANSLATE(unsigned char, 0xff, 4, 0);    break;
-	case BC_YUVA8888:   TRANSLATE(unsigned char, 0xff, 4, 0x80); break;
-	}
-//printf("TitleTranslateUnit::process_package 5\n");
-}
-
-
-TitleTranslate::TitleTranslate(TitleMain *plugin, int cpus)
- : LoadServer(cpus, cpus)
-{
-	this->plugin = plugin;
-	x_table = 0;
-	y_table = 0;
-	out_x1 = out_x2 = 0;
-	out_y1 = out_y2 = 0;
-}
-
-TitleTranslate::~TitleTranslate()
-{
-	delete [] x_table;
-	delete [] y_table;
-}
-
-void TitleTranslate::init_packages()
-{
-	int out_h = out_y2 - out_y1;
-	int py1 = 0, py2 = 0;
-	int pkgs = get_total_packages();
-	for( int i=0; i<pkgs; py1=py2 ) {
-		TitleTranslatePackage *pkg = (TitleTranslatePackage*)get_package(i);
-		py2 = (++i*out_h) / pkgs;
-		pkg->y1 = py1;  pkg->y2 = py2;
-	}
-//printf("TitleTranslate::init_packages 2\n");
-}
-
-LoadClient* TitleTranslate::new_client()
-{
-	return new TitleTranslateUnit(plugin, this);
-}
-
-LoadPackage* TitleTranslate::new_package()
-{
-	return new TitleTranslatePackage;
-}
 
 TitleCurNudge::TitleCurNudge(TitleParser *parser, TitleMain *plugin)
  : TitleStack<int>(parser, 0)
@@ -2337,16 +2117,157 @@ void TitleMain::draw_overlay()
 
 	if( !translate )
 		translate = new TitleTranslate(this, cpus);
+
 	int tx = text_x - text_x1 + mask_x1;
 	if( tx < title_w && tx+mask_w > 0 ) {
-		translate->xlat_mask = text_mask;
-		translate->run_packages();
+		translate->copy(text_mask);
 		if( config.stroke_width >= SMALL && (config.style & BC_FONT_OUTLINE) ) {
-			translate->xlat_mask = stroke_mask;
-			translate->run_packages();
+			translate->copy(stroke_mask);
 		}
 	}
 }
+
+
+TitleTranslate::TitleTranslate(TitleMain *plugin, int cpus)
+ : LoadServer(cpus, cpus)
+{
+	this->plugin = plugin;
+}
+
+TitleTranslate::~TitleTranslate()
+{
+}
+
+void TitleTranslate::copy(VFrame *input)
+{
+	this->input = input;
+	in_w = input->get_w();
+	in_h = input->get_h();
+	ix1 = 0, ix2 = ix1 + in_w;
+	iy1 = 0, iy2 = iy1 + in_h;
+
+	out_w = plugin->output->get_w();
+	out_h = plugin->output->get_h();
+	float x1 = plugin->title_x, x2 = x1 + plugin->title_w;
+	float y1 = plugin->title_y, y2 = y1 + plugin->title_h;
+	bclamp(x1, 0, out_w);  bclamp(y1, 0, out_h);
+	bclamp(x2, 0, out_w);  bclamp(y2, 0, out_h);
+
+	ox1 = plugin->title_x + plugin->text_x - plugin->text_x1 + plugin->mask_x1;
+	ox2 = ox1 + in_w;
+	oy1 = plugin->title_y + plugin->text_y - plugin->text_y1 + plugin->mask_y1;
+	oy2 = oy1 + in_h;
+	if( ox1 < x1 ) { ix1 -= (ox1-x1);  ox1 = x1; }
+	if( oy1 < y1 ) { iy1 -= (oy1-y1);  oy1 = y1; }
+	if( ox2 > x2 ) { ix2 -= (ox2-x2);  ox2 = x2; }
+	if( oy2 > y2 ) { iy2 -= (oy2-x2);  oy2 = y2; }
+#if 0
+printf("TitleTranslate text  txy=%7.2f,%-7.2f\n"
+  "  mxy1=%7d,%-7d mxy2=%7d,%-7d\n"
+  "   xy1=%7.2f,%-7.2f  xy2=%7.2f,%-7.2f\n"
+  "  ixy1=%7.2f,%-7.2f ixy2=%7.2f,%-7.2f\n"
+  "  oxy1=%7.2f,%-7.2f oxy2=%7.2f,%-7.2f\n",
+   plugin->text_x, plugin->text_y,
+   plugin->mask_x1, plugin->mask_y1, plugin->mask_x2, plugin->mask_y2,
+   x1,y1, x2,y2, ix1,iy1, ix2,iy2, ox1,oy1, ox2,oy2);
+#endif
+	process_packages();
+}
+
+
+TitleTranslatePackage::TitleTranslatePackage()
+ : LoadPackage()
+{
+	y1 = y2 = 0;
+}
+
+TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server)
+ : LoadClient(server)
+{
+}
+
+#define TRANSLATE(type, max, comps, ofs) { \
+	type **out_rows = (type**)output->get_rows(); \
+	float fs = 1./(256.-max); \
+	float r = max > 1 ? 0.5 : 0; \
+	for( int y=y1; y<y2; ++y ) { \
+		float fy = y+yofs;  int iy = fy; \
+		float yf1 = fy>=iy ? fy - iy : fy+1-iy; \
+		float yf0 = 1. - yf1; \
+		unsigned char *in_row0 = in_rows[iy<0 ? 0 : iy]; \
+		unsigned char *in_row1 = in_rows[iy<ih1 ? iy+1 : ih1]; \
+		for( int x=x1; x<x2; ++x ) { \
+			type *op = out_rows[y] + x*comps; \
+			float fx = x+xofs;  int ix = fx; \
+			float xf1 = fx - ix, xf0 = 1. - xf1; \
+			int i0 = (ix<0 ? 0 : ix)*4, i1 = (ix<iw1 ? ix+1 : iw1)*4; \
+			uint8_t *cp00 = in_row0 + i0, *cp01 = in_row0 + i1; \
+			uint8_t *cp10 = in_row1 + i0, *cp11 = in_row1 + i1; \
+			float a00 = yf0 * xf0 * cp00[3], a01 = yf0 * xf1 * cp01[3]; \
+			float a10 = yf1 * xf0 * cp10[3], a11 = yf1 * xf1 * cp11[3]; \
+			float fa = a00 + a01 + a10 + a11;  if( !fa ) continue;  fa *= fs; \
+			type in_a = fa + r;  float s = 1./fa; \
+			type in_r = (cp00[0]*a00 + cp01[0]*a01 + cp10[0]*a10 + cp11[0]*a11)*s + r; \
+			type in_g = (cp00[1]*a00 + cp01[1]*a01 + cp10[1]*a10 + cp11[1]*a11)*s + r; \
+			type in_b = (cp00[2]*a00 + cp01[2]*a01 + cp10[2]*a10 + cp11[2]*a11)*s + r; \
+			type a = in_a*plugin->fade, b = max - a, px; \
+			/*if( comps == 4 ) { b = (b * op[3]) / max; }*/ \
+			px = *op;  *op++ = (a*in_r + b*px) / max; \
+			px = *op;  *op++ = (a*(in_g-ofs) + b*(px-ofs)) / max + ofs; \
+			px = *op;  *op++ = (a*(in_b-ofs) + b*(px-ofs)) / max + ofs; \
+			if( comps == 4 ) { b = *op;  *op++ = a + b - a*b / max; } \
+		} \
+	} \
+}
+
+void TitleTranslateUnit::process_package(LoadPackage *package)
+{
+	TitleTranslatePackage *pkg = (TitleTranslatePackage*)package;
+	TitleTranslate *server = (TitleTranslate*)this->server;
+	TitleMain *plugin = server->plugin;
+	VFrame *input = server->input, *output = plugin->output;
+	int iw = input->get_w(),  ih = input->get_h();
+	int iw1 = iw-1, ih1 = ih-1;
+	float x1 = server->ox1, x2 = server->ox2;
+	float y1 = pkg->y1, y2 = pkg->y2;
+	float xofs = server->ix1 - server->ox1;
+	float yofs = server->iy1 - server->oy1;
+	unsigned char **in_rows = input->get_rows();
+
+	switch( output->get_color_model() ) {
+	case BC_RGB888:     TRANSLATE(unsigned char, 0xff, 3, 0);    break;
+	case BC_RGB_FLOAT:  TRANSLATE(float, 1.0, 3, 0);             break;
+	case BC_YUV888:     TRANSLATE(unsigned char, 0xff, 3, 0x80); break;
+	case BC_RGBA_FLOAT: TRANSLATE(float, 1.0, 4, 0);             break;
+	case BC_RGBA8888:   TRANSLATE(unsigned char, 0xff, 4, 0);    break;
+	case BC_YUVA8888:   TRANSLATE(unsigned char, 0xff, 4, 0x80); break;
+	}
+}
+
+void TitleTranslate::init_packages()
+{
+	int oh = oy2 - oy1;
+	int py = oy1;
+	int i = 0, pkgs = get_total_packages();
+	while( i < pkgs ) {
+		TitleTranslatePackage *pkg = (TitleTranslatePackage*)get_package(i++);
+		pkg->y1 = py;
+		py = oy1 + i*oh / pkgs;
+		pkg->y2 = py;
+	}
+}
+
+LoadClient* TitleTranslate::new_client()
+{
+	return new TitleTranslateUnit(plugin, this);
+}
+
+LoadPackage* TitleTranslate::new_package()
+{
+	return new TitleTranslatePackage;
+}
+
+
 
 const char* TitleMain::motion_to_text(int motion)
 {
