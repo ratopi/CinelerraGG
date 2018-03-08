@@ -1058,12 +1058,14 @@ void MWindow::mute_selection()
 }
 
 
-void MWindow::overwrite(EDL *source)
+void MWindow::overwrite(EDL *source, int all)
 {
 	FileXML file;
 
-	double src_start = source->local_session->get_selectionstart();
-	double overwrite_len = source->local_session->get_selectionend() - src_start;
+	double src_start = all ? 0 :
+		source->local_session->get_selectionstart();
+	double overwrite_len = all ? source->tracks->total_length() :
+		source->local_session->get_selectionend() - src_start;
 	double dst_start = edl->local_session->get_selectionstart();
 	double dst_len = edl->local_session->get_selectionend() - dst_start;
 
@@ -1989,13 +1991,15 @@ void MWindow::unset_inoutpoint(int is_mwindow)
 	}
 }
 
-void MWindow::splice(EDL *source)
+void MWindow::splice(EDL *source, int all)
 {
 	FileXML file;
 
 	undo->update_undo_before();
-	double source_start = source->local_session->get_selectionstart();
-	double source_end = source->local_session->get_selectionend();
+	double source_start = all ? 0 :
+		source->local_session->get_selectionstart();
+	double source_end = all ? source->tracks->total_length() :
+		source->local_session->get_selectionend();
 	source->copy(source_start, source_end, 1, &file, "", 1);
 //file.dump();
 	double start = edl->local_session->get_selectionstart();
@@ -2079,14 +2083,16 @@ void MWindow::save_clip(EDL *new_edl, const char *txt)
 	save_backup();
 }
 
-void MWindow::to_clip(EDL *edl, const char *txt)
+void MWindow::to_clip(EDL *edl, const char *txt, int all)
 {
 	FileXML file;
 	double start, end;
 
 	gui->lock_window("MWindow::to_clip 1");
-	start = edl->local_session->get_selectionstart();
-	end = edl->local_session->get_selectionend();
+	start = all ? 0 :
+		edl->local_session->get_selectionstart();
+	end = all ? edl->tracks->total_length() :
+		edl->local_session->get_selectionend();
 
 	if( EQUIV(end, start) ) {
 		start = 0;

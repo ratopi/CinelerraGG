@@ -622,7 +622,7 @@ void AssetPicon::create_objects()
 					icon_vframe = VFramePng::vframe_png(clip_icon_path);
 				}
 				if( !icon_vframe ) {
-printf("render clip: %s\n", name);
+//printf("render clip: %s\n", name);
 					int edl_h = edl->get_h(), edl_w = edl->get_w();
 					int height = edl_h > 0 ? edl_h : 1;
 					int width = edl_w > 0 ? edl_w : 1;

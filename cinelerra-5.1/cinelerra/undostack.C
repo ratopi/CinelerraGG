@@ -23,6 +23,7 @@
 #include "bctimer.h"
 #include "clip.h"
 #include "cstrdup.h"
+#include "filexml.h"
 #include "undostack.h"
 #include <string.h>
 
@@ -110,231 +111,58 @@ void UndoStack::dump(FILE *fp)
 	fprintf(fp,"UndoStack::dump\n");
 	UndoStackItem *current = last;
 // Dump most recent
-	for( int i=0; current && i<16; ++i,current=PREVIOUS ) {
-		fprintf(fp,"  %d %p %s %04jx %c\n", i, current, current->get_description(),
+	for( int i=0; current && i<32; ++i,current=PREVIOUS ) {
+		fprintf(fp,"%c %2d %14p %-24s %8d %04jx %c\n", current->is_key() ? 'k' : ' ',
+			i, current, current->get_description(), current->get_size(),
 			current->get_flags(), current == this->current ? '*' : ' ');
 //char fn[BCSTRLEN]; sprintf(fn,"/tmp/undo%d", i); FILE *fp = fopen(fn,"w");
 //if( fp ) { char *cp=current->get_data(); fwrite(cp,strlen(cp),1,fp); fclose(fp); delete [] cp; }
 	}
 }
 
+// undo can be incremental or direct, from key to current
+//#define UNDO_INCREMENTAL
 
-
-// These difference routines are straight out of the Heroinediff/Heroinepatch
-// utilities.
-
-
-// We didn't want to use the diff program because that isn't efficient enough
-// to compress EDL's.  This program also handles binary data.
-
-// Algorithm 1:
-// Search from beginning for first difference.
-// Count everything up to first difference as equal.
-// Determine length of different block by searching for transposition with most
-// similar characters.
-// For every byte in different block, search for occurrence of
-// transposed copy longer than a record header in remaining old buffer.
-// If no match is found, add 1 to the different block length and try the next
-// byte.  Once the most similar match is found, store the changed data leading up to it in the
-// difference record.
-// This can be real slow if there is a large transposition early in the file.
-
-// Algorithm 2:
-// Search backwards from end of both files for last difference.
-// Count all data from last same bytes as a transposition.
-// Search forwards from start of both files until last same bytes
-// for differences.
-
-
-// Minimum size of transposed block.
-// Smaller transpositions should be included in the same difference record.
-#define MIN_TRANS 16
-
-// Format for difference records.
-// The first 4 bytes are the offset of the change.
-// The next 4 bytes are the number of bytes of new data.
-// The next 4 bytes are the number of bytes of old data replaced.
-// The new data follows.
-static void append_record(unsigned char **result,
-	int *result_size,
-	unsigned char *new_data,
-	int new_offset,
-	int new_size,
-	int old_size)
-{
-	if( new_size || old_size ) {
-		int record_size = new_size + 12;
-		unsigned char *new_result = new unsigned char[(*result_size) + record_size];
-		memcpy(new_result, (*result), (*result_size));
-		delete [] (*result);
-
-		unsigned char *new_result_ptr = new_result + (*result_size);
-		*(int32_t*)new_result_ptr = new_offset;
-		new_result_ptr += 4;
-		*(int32_t*)new_result_ptr = new_size;
-		new_result_ptr += 4;
-		*(int32_t*)new_result_ptr = old_size;
-		new_result_ptr += 4;
-
-		memcpy(new_result_ptr, new_data, new_size);
-		(*result_size) += record_size;
-		(*result) = new_result;
-	}
-}
-
-
-
-static unsigned char* get_difference_fast(unsigned char *before,
-		int before_len,
-		unsigned char *after,
-		int after_len,
-		int *result_len,
-		int verbose)
-{
-	unsigned char *result = new unsigned char[4];
-	*result_len = 4;
-
-// Store size of new buffer
-	*(int32_t*)result = after_len;
-
-
-
-// Get last different bytes
-	unsigned char *last_difference_after = after + after_len - 1;
-	unsigned char *last_difference_before = before + before_len - 1;
-	for(;;) {
-		if( last_difference_after < after ||
-			last_difference_before < before ) break;
-		if( *last_difference_after != *last_difference_before ) {
-			break;
-		}
-		last_difference_after--;
-		last_difference_before--;
-	}
-	last_difference_after++;
-	last_difference_before++;
-
-	int done = 0;
-	unsigned char *before_ptr = before;
-	unsigned char *after_ptr = after;
-	unsigned char *before_end = before + before_len;
-	unsigned char *after_end = after + after_len;
-
-// Scan forward for first difference
-	while( !done ) {
-		if( before_ptr < before_end &&
-			after_ptr < after_end ) {
-// Both characters equal
-			if( *before_ptr == *after_ptr &&
-				before_ptr < last_difference_before &&
-				after_ptr < last_difference_after ) {
-				before_ptr++;
-				after_ptr++;
-			}
-			else {
-// Characters differ
-// Get length of difference.
-				unsigned char *before_difference_start = before_ptr;
-				unsigned char *after_difference_start = after_ptr;
-
-
-				while( *before_ptr != *after_ptr &&
-				    before_ptr < last_difference_before &&
-				    after_ptr < last_difference_after ) {
-					before_ptr++;
-					after_ptr++;
-				}
-
-// Finished comparing if either pointer hits its last difference
-				if( before_ptr >= last_difference_before ||
-					after_ptr >= last_difference_after ) {
-					done = 1;
-					before_ptr = last_difference_before;
-					after_ptr = last_difference_after;
-				}
-
-				int after_start = after_difference_start - after;
-				int before_start = before_difference_start - before;
-				int after_len = after_ptr - after_difference_start;
-				int before_len = before_ptr - before_difference_start;
-
-				if( verbose ) {
-					char string[1024];
-					memcpy(string, after_difference_start, MIN(after_len, 40));
-					string[MIN(after_len, 40)] = 0;
-					printf("after_offset=0x%x before_offset=0x%x after_size=%d before_size=%d \"%s\"\n",
-						after_start, before_start, after_len, before_len, string);
-				}
-
-// Create difference record
-				append_record(&result, result_len, after_difference_start,
-					after_start, after_len, before_len);
-			}
-		}
-		else
-			done = 1;
-	}
-	return result;
-}
-
-static void get_record(unsigned char **patch_ptr, unsigned char *patch_end,
-	unsigned char **after_data, int *after_offset, int *after_size, int *before_size)
-{
-	(*after_data) = 0;
-	if( (*patch_ptr) < patch_end ) {
-		(*after_offset) = *(int32_t*)(*patch_ptr);  (*patch_ptr) += 4;
-		(*after_size) = *(int32_t*)(*patch_ptr);    (*patch_ptr) += 4;
-		(*before_size) = *(int32_t*)(*patch_ptr);   (*patch_ptr) += 4;
-		(*after_data) = (*patch_ptr);               (*patch_ptr) += (*after_size);
-	}
-}
-
+class undo_record {
+public:
+	int32_t new_ofs;
+	int32_t new_len;
+	int32_t old_len;
+};
 
 static unsigned char* apply_difference(unsigned char *before, int before_len,
 		unsigned char *patch, int patch_len, int *result_len)
 {
-	unsigned char *patch_ptr = patch;
-	*result_len = *(int32_t*)patch_ptr;
-	patch_ptr += 4;
-	unsigned char *patch_end = patch + patch_len;
-	//unsigned char *before_end = before + before_len;
+	XMLBuffer xbfr((const char *)patch, patch_len, 0);
+	int32_t len = 0;
+	xbfr.read((char *)&len, sizeof(len));
+	char *result = new char[len];
+	char *rp = result, *bp = (char*)before;
 
-	unsigned char *result = new unsigned char[*result_len];
-	unsigned char *result_ptr = result;
-	unsigned char *result_end = result + *result_len;
-	unsigned char *before_ptr = before;
-
-	int done = 0;
-	while( !done ) {
-		unsigned char *after_data;
-		int after_offset, after_size, before_size;
-
-		get_record(&patch_ptr, patch_end,
-			&after_data, &after_offset, &after_size, &before_size);
-
-		if( after_data ) {
-			int result_offset = result_ptr - result;
-			if( after_offset > result_offset ) {
-				int skip_size = after_offset - result_offset;
-				memcpy(result_ptr, before_ptr, skip_size);
-				result_ptr += skip_size;
-				before_ptr += skip_size;
-			}
-			memcpy(result_ptr, after_data, after_size);
-			result_ptr += after_size;
-			before_ptr += before_size;
+	while( xbfr.itell() < patch_len ) {
+		undo_record urecd;
+		xbfr.read((char*)&urecd, sizeof(urecd));
+		int ofs = rp - result;
+		if( urecd.new_ofs > ofs ) {
+			int sz = urecd.new_ofs - ofs;
+			memcpy(rp, bp, sz);
+			bp += sz;  rp += sz;
 		}
-		else {
-// All data from before_ptr to end of result buffer is identical
-			if( result_end - result_ptr > 0 )
-				memcpy(result_ptr, before_ptr, result_end - result_ptr);
-			done = 1;
-		}
+		if( urecd.new_len > 0 )
+			xbfr.read(rp, urecd.new_len);
+		bp += urecd.old_len;  rp += urecd.new_len;
 	}
 
-	return result;
-}
+// All data from before_ptr to end of result buffer is identical
+	int sz = bp - (char *)before;
+	if( (before_len-=sz) > 0 ) {
+		memcpy(rp, bp, before_len);
+		rp += before_len;
+	}
 
+	*result_len = rp - result;
+	return (unsigned char *)result;
+}
 
 UndoStackItem::UndoStackItem()
  : ListItem<UndoStackItem>()
@@ -381,127 +209,197 @@ const char* UndoStackItem::get_description()
 		return "";
 }
 
-int UndoStackItem::has_data()
+// undo diff
+
+UndoHash::UndoHash(char *txt, int len, UndoHash *nxt)
 {
-	return data_size ? 1 : 0;
+	this->txt = txt;
+	this->len = len;
+	this->nxt = nxt;
+	line[va] = line[vb] = -1;
+	occurs[va] = occurs[vb] = 0;
 }
+UndoHash::~UndoHash()
+{
+}
+
+UndoHashTable::UndoHashTable()
+{
+	for( int i=0; i<hash_sz; ++i ) table[i] = 0;
+	bof = new UndoHash(0, 0, 0);
+	eof = new UndoHash(0, 0, 0);
+}
+UndoHashTable::~UndoHashTable()
+{
+	delete bof;
+	delete eof;
+	for( int i=0; i<hash_sz; ++i ) {
+		for( UndoHash *nxt=0, *hp=table[i]; hp; hp=nxt ) {
+			nxt = hp->nxt;  delete hp;
+		}
+	}
+}
+
+UndoHash *UndoHashTable::add(char *txt, int len)
+{
+	uint8_t *bp = (uint8_t *)txt;
+	int v = 0;
+	for( int i=len; --i>=0; ++bp ) {
+		v = (v<<1) + *bp;
+		v = (v + (v>>hash_sz2)) & hash_sz1;
+	}
+	UndoHash *hp = table[v];
+	while( hp && strncmp(hp->txt,txt,len) ) hp = hp->nxt;
+	if( !hp ) {
+		hp = new UndoHash(txt, len, table[v]);
+		table[v] = hp;
+	}
+	return hp;
+}
+
+UndoLine::UndoLine(UndoHash *hash)
+{
+	this->txt = 0;  this->len = 0;
+	this->hash = hash;
+	hash->occurs[va] = hash->occurs[vb] = 1;
+}
+
+UndoLine::UndoLine(UndoHashTable *hash, char *txt, int len)
+{
+	this->txt = txt;  this->len = len;
+	this->hash = hash->add(txt, len);
+}
+UndoLine::~UndoLine()
+{
+}
+
+int UndoLine::eq(UndoLine *ln)
+{
+	return hash == ln->hash ? 1 : 0;
+}
+
+void UndoVersion::scan_lines(UndoHashTable *hash, char *sp, char *ep)
+{
+	append(new UndoLine(hash->bof));
+	for( int line=1; sp<ep; ++line ) {
+		char *txt = sp;
+		while( sp<ep && *sp++ != '\n' );
+		UndoLine *ln = new UndoLine(hash, txt, sp-txt);
+		ln->hash->line[ver] = line;
+		++ln->hash->occurs[ver];
+		append(ln);
+	}
+	append(new UndoLine(hash->eof));
+}
+
 
 void UndoStackItem::set_data(char *data)
 {
-	delete [] this->data;
-	this->data = 0;
-	this->data_size = 0;
+	delete [] this->data;  this->data = 0;
+	this->data_size = 0;   this->key = 0;
+	int data_size = strlen(data)+1;
 
-// Search for key buffer within interval
-	int need_key = 1;
 	UndoStackItem *current = this;
-	this->key = 0;
-	for( int i=0; i<UNDO_KEY_INTERVAL && current; ++i ) {
-		if( current->key && current->has_data() ) {
-			need_key = 0;
-			break;
+// Search for key buffer within interval
+	for( int i=UNDO_KEY_INTERVAL; --i>=0 && current && !current->key; current=PREVIOUS );
+
+	int need_key = current ? 0 : 1;
+// setting need_key = 1 forces all undo data items to key (not diffd)
+//	int need_key = 1;
+	char *prev = 0;  int prev_size = 0;
+	if( !need_key ) {
+#ifdef UNDO_INCREMENTAL
+		prev = previous->get_data();
+		prev_size = prev ? strlen(prev)+1 : 0;
+#else
+		prev = current->data;
+		prev_size = current->data_size;
+#endif
+		int min_size = data_size/16;
+// if the previous is a sizable incremental diff
+		if( previous && !previous->key &&
+		    previous->data_size > min_size ) {
+//  and this minimum diff distance is a lot different, need key
+			int dist = abs(data_size - prev_size);
+			if( abs(dist - previous->data_size) > min_size )
+				need_key = 1;
+		}
+	}
+	if( !need_key ) {
+		int bfr_size = BCTEXTLEN;
+		char *bfr = new char[bfr_size];
+		XMLBuffer xbfr(bfr_size, bfr, 1);
+		xbfr.write((char*)&data_size, sizeof(data_size));
+		UndoHashTable hash;
+		UndoVersion alines(va), blines(vb);
+		char *asp = data, *aep = asp + data_size-1;
+		char *bsp = prev, *bep = bsp + prev_size-1;
+		alines.scan_lines(&hash, asp, aep);
+		blines.scan_lines(&hash, bsp, bep);
+// trim suffix
+		int asz = alines.size(), bsz = blines.size();
+		while( asz > 0 && bsz > 0 && alines[asz-1]->eq(blines[bsz-1]) ) {
+			--asz;  --bsz;
+		}
+
+		int ai = 0, bi = 0;
+		while( ai < asz || bi < bsz ) {
+// skip running match
+			if( alines[ai]->eq(blines[bi]) ) { ++ai;  ++bi;  continue; }
+			char *adp = alines[ai]->txt, *bdp = blines[bi]->txt;
+// find best unique match
+			int ma = asz, mb = bsz;
+			int mx = ma + mb + 1;
+			for( int ia=ai; ia<asz && ia-ai<mx; ++ia ) {
+				UndoHash *ah = alines[ia]->hash;
+				if( ah->occurs[va] != 1 || ah->occurs[vb] != 1 ) continue;
+				int m = (ah->line[va] - ai) + (ah->line[vb] - bi);
+				if( m >= mx ) continue;
+				ma = ah->line[va];  mb = ah->line[vb];  mx = m;
+			}
+// trim suffix
+			while( ma > 0 && mb > 0 && alines[ma-1]->eq(blines[mb-1]) ) { --ma;  --mb; }
+			char *ap = alines[ma]->txt, *bp = blines[mb]->txt;
+			ai = ma;  bi = mb;
+			undo_record urecd;
+			urecd.new_ofs = adp - data;
+			urecd.new_len = ap - adp;
+			urecd.old_len = bp - bdp;
+			xbfr.write((const char*)&urecd, sizeof(urecd));
+			xbfr.write((const char*)adp, urecd.new_len);
+		}
+
+		int64_t pos = xbfr.otell();
+		if( abs(data_size-prev_size) < pos/2 ) {
+			this->data = new char[this->data_size = pos];
+			xbfr.iseek(0);
+			xbfr.read(this->data, pos);
+#if 1
+			int test_size = 0;
+			char *test_data = (char*)apply_difference(
+				(unsigned char *)prev, prev_size,
+				(unsigned char *)this->data, this->data_size,
+				&test_size);
+			if( test_size != data_size || memcmp(test_data, data, test_size) ) {
+				printf("UndoStackItem::set_data: *** incremental undo failed!\n");
+				delete [] this->data;  this->data = 0;  this->data_size = 0;
+				need_key = 1;
+			}
+			delete [] test_data;
+#endif
 		}
 		else
-			current = PREVIOUS;
-	}
-
-	int new_size = strlen(data) + 1;
-
-	if( !need_key ) {
-// Reconstruct previous data for difference
-		char *prev_buffer = previous->get_data();
-		int prev_size = prev_buffer ? strlen(prev_buffer) + 1 : 0;
-// Timer timer;
-// timer.update();
-// printf("UndoStackItem::set_data 1\n");
-		this->data = (char*)get_difference_fast((unsigned char*)prev_buffer,
-			prev_size,
-			(unsigned char*)data,
-			new_size,
-			&this->data_size,
-			0);
-//printf("UndoStackItem::set_data 2 %jd\n", timer.get_difference());
-
-// Testing
-// FILE *test1 = fopen("/tmp/undo1", "w");
-// fwrite(prev_buffer, prev_size, 1, test1);
-// fclose(test1);
-// FILE *test2 = fopen("/tmp/undo2", "w");
-// fwrite(data, new_size, 1, test2);
-// fclose(test2);
-// FILE *test3 = fopen("/tmp/undo2.diff", "w");
-// fwrite(this->data, this->data_size, 1, test3);
-// fclose(test3);
-//
-//printf("UndoStackItem::set_data 3 %d %d\n", new_size, this->data_size);
-
-// Diff was bigger than original.
-// Happens if a lot of tiny changes happened and the record headers
-// took more space than the changes.
-		if( this->data_size > new_size ) {
-			delete [] this->data;
-			this->data_size = 0;
 			need_key = 1;
-		}
-		else {
-// Reconstruct current data from difference
-			int test_size;
-			char *test_buffer = (char*)apply_difference((unsigned char*)prev_buffer,
-				prev_size,
-				(unsigned char*)this->data,
-				this->data_size,
-				&test_size);
-			if( test_size != new_size ||
-				memcmp(test_buffer, data, test_size) ) {
-// FILE *test1 = fopen("/tmp/undo1", "w");
-// fwrite(prev_buffer, prev_size, 1, test1);
-// fclose(test1);
-// FILE *test2 = fopen("/tmp/undo2", "w");
-// fwrite(data, new_size, 1, test2);
-// fclose(test2);
-// FILE *test3 = fopen("/tmp/undo2.diff", "w");
-// fwrite(this->data, this->data_size, 1, test3);
-// fclose(test3);
-// FILE *test4 = fopen("/tmp/undo3", "w");
-// fwrite(test_buffer, test_size, 1, test4);
-// fclose(test4);
-
-				printf("UndoStackItem::set_data: incremental undo failed!\n");
-				need_key = 1;
-				delete [] this->data;
-				this->data_size = 0;
-				this->data = 0;
-			}
-			delete [] test_buffer;
-
-		}
-
-
-		delete [] prev_buffer;
 	}
 
+#ifdef UNDO_INCREMENTAL
+	delete [] prev;
+#endif
 	if( need_key ) {
 		this->key = 1;
-		this->data_size = new_size;
-		this->data = new char[this->data_size];
+		this->data = new char[this->data_size = data_size];
 		memcpy(this->data, data, this->data_size);
 	}
-	return;
-}
-
-char* UndoStackItem::get_incremental_data()
-{
-	return data;
-}
-
-int UndoStackItem::get_incremental_size()
-{
-	return data_size;
-}
-
-int UndoStackItem::get_size()
-{
-	return data_size;
 }
 
 char* UndoStackItem::get_data()
@@ -521,37 +419,47 @@ char* UndoStackItem::get_data()
 		memcpy(result, data, data_size);
 		return result;
 	}
-
+#ifdef UNDO_INCREMENTAL
 // Get key buffer
 	char *current_data = current->get_data();
-	int current_size = current->get_size();
+	int current_size = current->data_size;
 	current = NEXT;
 	while( current ) {
 // Do incremental updates
 		int new_size;
-		char *new_data = (char*)apply_difference((unsigned char*)current_data, current_size,
-			(unsigned char*)current->get_incremental_data(),
-			current->get_incremental_size(), &new_size);
+		char *new_data = (char*)apply_difference(
+			(unsigned char*)current_data, current_size,
+			(unsigned char*)current->data, current->data_size,
+			&new_size);
 		delete [] current_data;
 
 		if( current == this )
 			return new_data;
-		else {
-			current_data = new_data;
-			current_size = new_size;
-			current = NEXT;
-		}
+		current_data = new_data;
+		current_size = new_size;
+		current = NEXT;
 	}
-
 // Never hit this object.
 	delete [] current_data;
 	printf("UndoStackItem::get_data: lost starting object!\n");
 	return 0;
+#else
+	int new_size;
+	char *new_data = (char*)apply_difference(
+		(unsigned char*)current->data, current->data_size,
+		(unsigned char*)this->data, this->data_size, &new_size);
+	return new_data;
+#endif
 }
 
 int UndoStackItem::is_key()
 {
 	return key;
+}
+
+int UndoStackItem::get_size()
+{
+	return data_size;
 }
 
 void UndoStackItem::set_flags(uint64_t flags)

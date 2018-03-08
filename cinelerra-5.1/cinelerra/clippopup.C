@@ -253,10 +253,14 @@ int ClipPopupCopy::handle_event()
 	MWindowGUI *gui = mwindow->gui;
 	gui->lock_window("ClipPopupCopy::handle_event");
 	if( mwindow->session->drag_clips->total > 0 ) {
-		FileXML file;
 		EDL *edl = mwindow->session->drag_clips->values[0];
+		EDL *copy_edl = new EDL; // no parent or assets wont be copied
+		copy_edl->create_objects();
+		copy_edl->copy_all(edl);
+		FileXML file;
 		double start = 0, end = edl->tracks->total_length();
-		edl->copy(start, end, 1, &file, "", 1);
+		copy_edl->copy(start, end, 1, &file, "", 1);
+		copy_edl->remove_user();
 		const char *file_string = file.string();
 		long file_length = strlen(file_string);
 		gui->to_clipboard(file_string, file_length, SECONDARY_SELECTION);

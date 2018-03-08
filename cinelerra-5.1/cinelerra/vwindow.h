@@ -70,7 +70,7 @@ public:
 	void set_inpoint();
 	void set_outpoint();
 	void unset_inoutpoint();
-	void copy();
+	void copy(int all);
 	void splice_selection();
 	void overwrite_selection();
 	void delete_source(int do_main_edl, int update_gui);

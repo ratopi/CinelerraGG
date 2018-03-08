@@ -414,15 +414,21 @@ void VWindow::unset_inoutpoint()
 	}
 }
 
-void VWindow::copy()
+void VWindow::copy(int all)
 {
 	EDL *edl = get_edl();
 	if(edl)
 	{
-		double start = edl->local_session->get_selectionstart();
-		double end = edl->local_session->get_selectionend();
+		double start = all ? 0 :
+			edl->local_session->get_selectionstart();
+		double end = all ? edl->tracks->total_length() :
+			edl->local_session->get_selectionend();
+		EDL *copy_edl = new EDL; // no parent or assets wont be copied
+		copy_edl->create_objects();
+		copy_edl->copy_all(edl);
 		FileXML file;
-		edl->copy(start, end, 0, &file, "", 1);
+		copy_edl->copy(start, end, 0, &file, "", 1);
+		copy_edl->remove_user();
 		const char *file_string = file.string();
 		long file_length = strlen(file_string);
 		mwindow->gui->lock_window();

@@ -142,7 +142,7 @@ int ZWindowGUI::button_press_event()
 			local_session->set_selectionend(end);
 			local_session->set_inpoint(start);
 			local_session->set_outpoint(end);
-			mwindow->overwrite(zwindow->edl);
+			mwindow->overwrite(zwindow->edl, 0);
 			local_session->set_inpoint(orig_inpoint);
 			local_session->set_outpoint(orig_outpoint);
 			mwindow->gui->update_timebar(1);

@@ -41,7 +41,7 @@ class XMLBuffer
 	unsigned char *&demand(long len);
 public:
 	XMLBuffer(long buf_size=0x1000, long max_size=LONG_MAX, int del=1);
-	XMLBuffer(long buf_size, const char *buf, int del=0); // writing
+	XMLBuffer(long buf_size, char *buf, int del=0); // writing
 	XMLBuffer(const char *buf, long buf_size, int del=0); // reading
 	~XMLBuffer();
 

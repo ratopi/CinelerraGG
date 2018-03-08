@@ -58,7 +58,7 @@ XMLBuffer::XMLBuffer(const char *buf, long buf_size, int del)
 	destroy = del;
 }
 
-XMLBuffer::XMLBuffer(long buf_size, const char *buf, int del)
+XMLBuffer::XMLBuffer(long buf_size, char *buf, int del)
 {	// writing
 	bfr = (unsigned char *)buf;
 	bsz = buf_size;

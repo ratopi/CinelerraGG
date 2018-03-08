@@ -31,11 +31,56 @@
 #define UNDOLEVELS 500
 #define UNDO_KEY_INTERVAL 100
 
-// The undo stack is a series of key undo buffers and
-// incremental undo buffers.  The incremental buffers
-// store the differences in the most compact way possible:
-// a series of offsets, sizes and values.  This should allow
-// a huge number of undo updates.
+
+#define hash_sz2 8
+#define hash_sz  (1<<hash_sz2)
+#define hash_sz1 (hash_sz-1)
+#define va 0
+#define vb 1
+
+class UndoHash
+{
+public:
+	UndoHash(char *txt, int len, UndoHash *nxt);
+	~UndoHash();
+
+	UndoHash *nxt;
+	char *txt;  int len;
+	int line[2], occurs[2];
+};
+
+class UndoHashTable
+{
+public:
+	UndoHashTable();
+	~UndoHashTable();
+	UndoHash *add(char *txt, int len);
+
+	UndoHash *table[hash_sz];
+	UndoHash *bof, *eof;
+};
+
+class UndoLine
+{
+public:
+	UndoLine(UndoHash *hash);
+	UndoLine(UndoHashTable *hash, char *txt, int len);
+	~UndoLine();
+	int eq(UndoLine *ln);
+
+	char *txt;  int len;
+	UndoHash *hash;
+};
+
+class UndoVersion : public ArrayList<UndoLine *>
+{
+public:
+	UndoVersion(int v) { ver = v; }
+	~UndoVersion() { remove_all_objects(); }
+	int ver;
+
+	void scan_lines(UndoHashTable *hash, char *sp, char *ep);
+};
 
 
 class UndoStackItem : public ListItem<UndoStackItem>
@@ -56,15 +101,9 @@ public:
 // The string must be deleted by the user.
 	char* get_data();
 	char* get_filename();
-	int has_data();
 	int get_size();
 	int is_key();
 	uint64_t get_flags();
-
-
-// Get pointer to incremental data for use in an apply_difference command.
-	char* get_incremental_data();
-	int get_incremental_size();
 
 	void set_creator(void *creator);
 	void* get_creator();

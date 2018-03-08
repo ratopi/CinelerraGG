@@ -567,7 +567,7 @@ VWindowEditing::~VWindowEditing()
 
 void VWindowEditing::copy_selection()
 {
-	vwindow->copy();
+	vwindow->copy(subwindow->shift_down());
 }
 
 void VWindowEditing::splice_selection()
@@ -575,7 +575,7 @@ void VWindowEditing::splice_selection()
 	if(vwindow->get_edl())
 	{
 		mwindow->gui->lock_window("VWindowEditing::splice_selection");
-		mwindow->splice(vwindow->get_edl());
+		mwindow->splice(vwindow->get_edl(), subwindow->shift_down());
 		mwindow->gui->unlock_window();
 	}
 }
@@ -585,7 +585,7 @@ void VWindowEditing::overwrite_selection()
 	if(vwindow->get_edl())
 	{
 		mwindow->gui->lock_window("VWindowEditing::overwrite_selection");
-		mwindow->overwrite(vwindow->get_edl());
+		mwindow->overwrite(vwindow->get_edl(), subwindow->shift_down());
 		mwindow->gui->unlock_window();
 	}
 }
@@ -703,7 +703,7 @@ void VWindowEditing::to_clip()
 {
 	EDL *edl = vwindow->get_edl();
 	if( !edl ) return;
-	mwindow->to_clip(edl, _("viewer window: "));
+	mwindow->to_clip(edl, _("viewer window: "), subwindow->shift_down());
 }
 
 VWindowSource::VWindowSource(MWindow *mwindow, VWindowGUI *vwindow, int x, int y)

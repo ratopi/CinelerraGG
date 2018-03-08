@@ -414,24 +414,17 @@ public:
 	void move_tracks_up();
 	void mute_selection();
 	void new_folder(const char *new_folder);
-	void overwrite(EDL *source);
 // For clipboard commands
 	void paste();
 // For splice and overwrite
-	int paste(double start,
-		double end,
-		FileXML *file,
-		int edit_labels,
-		int edit_plugins,
-		int edit_autos);
-	int paste_output(int64_t startproject,
-				int64_t endproject,
-				int64_t startsource_sample,
-				int64_t endsource_sample,
-				int64_t startsource_frame,
-				int64_t endsource_frame,
-				Asset *asset,
-				RecordLabels *new_labels);
+	void overwrite(EDL *source, int all);
+	void splice(EDL *source, int all);
+	int paste(double start, double end, FileXML *file,
+		int edit_labels, int edit_plugins, int edit_autos);
+	int paste_output(int64_t startproject, int64_t endproject,
+		int64_t startsource_sample, int64_t endsource_sample,
+		int64_t startsource_frame, int64_t endsource_frame,
+		Asset *asset, RecordLabels *new_labels);
 	void paste_silence();
 
 // Detach single transition
@@ -480,14 +473,13 @@ public:
 	void set_inpoint(int is_mwindow);
 	void set_outpoint(int is_mwindow);
 	void unset_inoutpoint(int is_mwindow);
-	void splice(EDL *source);
 	void toggle_loop_playback();
 	void trim_selection();
 // Synchronize EDL settings with all playback engines depending on current
 // operation.  Doesn't redraw anything.
 	void sync_parameters(int change_type = CHANGE_PARAMS);
 	void save_clip(EDL *new_edl, const char *txt);
-	void to_clip(EDL *edl, const char *txt);
+	void to_clip(EDL *edl, const char *txt, int all);
 	int toggle_label(int is_mwindow);
 	void undo_entry(BC_WindowBase *calling_window_gui);
 	void redo_entry(BC_WindowBase *calling_window_gui);
