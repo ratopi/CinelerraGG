@@ -2188,7 +2188,7 @@ TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server
 
 #define TRANSLATE(type, max, comps, ofs) { \
 	type **out_rows = (type**)output->get_rows(); \
-	float fs = 1./(256.-max); \
+	float fr = 1./(256.-max), fs = max/255.; \
 	float r = max > 1 ? 0.5 : 0; \
 	for( int y=y1; y<y2; ++y ) { \
 		float fy = y+yofs;  int iy = fy; \
@@ -2205,8 +2205,8 @@ TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server
 			uint8_t *cp10 = in_row1 + i0, *cp11 = in_row1 + i1; \
 			float a00 = yf0 * xf0 * cp00[3], a01 = yf0 * xf1 * cp01[3]; \
 			float a10 = yf1 * xf0 * cp10[3], a11 = yf1 * xf1 * cp11[3]; \
-			float fa = a00 + a01 + a10 + a11;  if( !fa ) continue;  fa *= fs; \
-			type in_a = fa + r;  float s = 1./fa; \
+			float fa = a00 + a01 + a10 + a11;  if( !fa ) continue;  \
+			type in_a = fa*fr + r;  float s = fs/fa; \
 			type in_r = (cp00[0]*a00 + cp01[0]*a01 + cp10[0]*a10 + cp11[0]*a11)*s + r; \
 			type in_g = (cp00[1]*a00 + cp01[1]*a01 + cp10[1]*a10 + cp11[1]*a11)*s + r; \
 			type in_b = (cp00[2]*a00 + cp01[2]*a01 + cp10[2]*a10 + cp11[2]*a11)*s + r; \

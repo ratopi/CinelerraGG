@@ -835,7 +835,9 @@ int EditOverwrite::handle_event()
 }
 int EditOverwrite::keypress_event()
 {
-	if( get_keypress() == 'b' ) {
+	if( alt_down() ) return 0;
+	if( get_keypress() == 'b' ||
+	    (panel->is_vwindow() && get_keypress() == 'B') ) {
 		handle_event();
 		return 1;
 	}
@@ -876,7 +878,9 @@ int EditToClip::handle_event()
 
 int EditToClip::keypress_event()
 {
-	if( get_keypress() == 'i' && !alt_down() ) {
+	if( alt_down() ) return 0;
+	if( get_keypress() == 'i' ||
+	    (panel->is_vwindow() && get_keypress() == 'I') ) {
 		handle_event();
 		return 1;
 	}
@@ -928,7 +932,9 @@ int EditSplice::handle_event()
 }
 int EditSplice::keypress_event()
 {
-	if( get_keypress() == 'v' ) {
+	if( alt_down() ) return 0;
+	if( get_keypress() == 'v' ||
+	    (panel->is_vwindow() && get_keypress() == 'V') ) {
 		handle_event();
 		return 1;
 	}
@@ -1035,8 +1041,11 @@ EditCopy::~EditCopy()
 
 int EditCopy::keypress_event()
 {
-	if( get_keypress() == 'c' )
+	if( alt_down() ) return 0;
+	if( get_keypress() == 'c' ||
+	    (panel->is_vwindow() && get_keypress() == 'C') ) {
 		return handle_event();
+	}
 	return 0;
 }
 int EditCopy::handle_event()
