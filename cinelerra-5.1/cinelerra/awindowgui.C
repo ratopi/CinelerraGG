@@ -56,6 +56,7 @@
 #include "mwindow.h"
 #include "newfolder.h"
 #include "preferences.h"
+#include "proxy.h"
 #include "renderengine.h"
 #include "samples.h"
 #include "theme.h"
@@ -1571,18 +1572,62 @@ void AWindowGUI::sort_folders()
 	update_assets();
 }
 
-void AWindowGUI::collect_assets()
+EDL *AWindowGUI::collect_proxy(Indexable *indexable)
 {
-	int i = 0;
+	Asset *proxy_asset = (Asset *)indexable;
+	char path[BCTEXTLEN];
+	int proxy_scale = mwindow->edl->session->proxy_scale;
+	ProxyRender::from_proxy_path(path, proxy_asset, proxy_scale);
+	Asset *unproxy_asset = mwindow->edl->assets->get_asset(path);
+	if( !unproxy_asset || !unproxy_asset->channels ) return 0;
+// make a clip from proxy video tracks and unproxy audio tracks
+	EDL *proxy_edl = new EDL(mwindow->edl);
+	proxy_edl->create_objects();
+	FileSystem fs;  fs.extract_name(path, proxy_asset->path);
+	strcpy(proxy_edl->local_session->clip_title, path);
+	strcpy(proxy_edl->local_session->clip_notes, _("Proxy clip"));
+	proxy_edl->session->video_tracks = proxy_asset->layers;
+	proxy_edl->session->audio_tracks = unproxy_asset->channels;
+	proxy_edl->create_default_tracks();
+	double length = proxy_asset->frame_rate > 0 ?
+		(double)proxy_asset->video_length / proxy_asset->frame_rate :
+		1.0 / mwindow->edl->session->frame_rate;
+	Track *current = proxy_edl->tracks->first;
+	for( int vtrack=0; current; current=NEXT ) {
+		if( current->data_type != TRACK_VIDEO ) continue;
+		current->insert_asset(proxy_asset, 0, length, 0, vtrack++);
+	}
+	length = (double)unproxy_asset->audio_length / unproxy_asset->sample_rate;
+	current = proxy_edl->tracks->first;
+	for( int atrack=0; current; current=NEXT ) {
+		if( current->data_type != TRACK_AUDIO ) continue;
+		current->insert_asset(unproxy_asset, 0, length, 0, atrack++);
+	}
+	return proxy_edl;
+}
+
+
+void AWindowGUI::collect_assets(int proxy)
+{
 	mwindow->session->drag_assets->remove_all();
 	mwindow->session->drag_clips->remove_all();
-	while(1)
-	{
-		AssetPicon *result = (AssetPicon*)asset_list->get_selection(0, i++);
-		if( !result ) break;
-
-		if( result->indexable ) mwindow->session->drag_assets->append(result->indexable);
-		if( result->edl ) mwindow->session->drag_clips->append(result->edl);
+	mwindow->session->clear_drag_proxy();
+	int i = 0;  AssetPicon *result;
+	while( (result = (AssetPicon*)asset_list->get_selection(0, i++)) != 0 ) {
+		Indexable *indexable = result->indexable;  EDL *drag_edl;
+		if( proxy && (drag_edl=collect_proxy(indexable)) ) {
+			mwindow->session->drag_clips->append(drag_edl);
+			mwindow->session->drag_proxy->append(drag_edl);
+			continue;
+		}
+		if( indexable ) {
+			mwindow->session->drag_assets->append(indexable);
+			continue;
+		}
+		if( result->edl ) {
+			mwindow->session->drag_clips->append(result->edl);
+			continue;
+		}
 	}
 }
 
@@ -1761,7 +1806,6 @@ int AWindowGUI::drag_motion()
 int AWindowGUI::drag_stop()
 {
 	if( get_hidden() ) return 0;
-
 	return 0;
 }
 
@@ -2051,7 +2095,7 @@ void AWindowAssets::draw_background()
 int AWindowAssets::drag_start_event()
 {
 	int collect_pluginservers = 0;
-	int collect_assets = 0;
+	int collect_assets = 0, proxy = 0;
 
 	if( BC_ListBox::drag_start_event() ) {
 		switch( mwindow->edl->session->awindow_folder ) {
@@ -2074,6 +2118,10 @@ int AWindowAssets::drag_start_event()
 		case AW_LABEL_FOLDER:
 			// do nothing!
 			break;
+		case AW_PROXY_FOLDER:
+			proxy = 1;
+			// fall thru
+		case AW_MEDIA_FOLDER:
 		default:
 			mwindow->session->current_operation = DRAG_ASSET;
 			collect_assets = 1;
@@ -2093,7 +2141,7 @@ int AWindowAssets::drag_start_event()
 		}
 
 		if( collect_assets ) {
-			gui->collect_assets();
+			gui->collect_assets(proxy);
 		}
 
 		return 1;
@@ -2169,6 +2217,8 @@ int AWindowAssets::drag_stop_event()
 	BC_ListBox::drag_stop_event();
 // since NO_OPERATION is also defined in listbox, we have to reach for global scope...
 	mwindow->session->current_operation = ::NO_OPERATION;
+	mwindow->session->clear_drag_proxy();
+
 	return 1;
 }
 

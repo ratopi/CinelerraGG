@@ -68,7 +68,7 @@ public:
 	ProxyRender(MWindow *mwindow, Asset *format_asset);
 	~ProxyRender();
 	void to_proxy_path(char *new_path, Indexable *indexable, int scale);
-	void from_proxy_path(char *new_path, Asset *asset, int scale);
+	static void from_proxy_path(char *new_path, Asset *asset, int scale);
 
 	ArrayList<Indexable *> orig_idxbls;   // originals which match the proxy assets
 	ArrayList<Indexable *> orig_proxies;  // proxy assets

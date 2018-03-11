@@ -62,7 +62,7 @@ void Indexable::update_path(const char *new_path)
 void Indexable::update_index(Indexable *src)
 {
 	if( index_state == src->index_state ) return;
-	index_state->remove_user();
+	if( index_state ) index_state->remove_user();
 	index_state = src->index_state;
 	index_state->add_user();
 }

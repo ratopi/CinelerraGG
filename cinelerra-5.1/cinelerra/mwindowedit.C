@@ -2380,6 +2380,18 @@ void MWindow::set_proxy(int use_scaler, int new_scale, int auto_scale,
 				}
 			}
 		}
+		for( int j=0,m=edl->clips.size(); j<m; ++j ) {
+			EDL *clip = edl->clips[j];
+			for( Track *track=clip->tracks->first; track; track=track->next ) {
+				if( track->data_type != TRACK_VIDEO ) continue;
+				for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+					if( !edit->asset ) continue;
+					if( !strcmp(edit->asset->path, orig_assets->get(i)->path) ) {
+						edit->asset = proxy_asset;
+					}
+				}
+			}
+		}
 	}
 }
 

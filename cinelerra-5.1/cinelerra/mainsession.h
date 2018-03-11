@@ -49,14 +49,11 @@ public:
 
 	int load_defaults(BC_Hash *defaults);
 	int save_defaults(BC_Hash *defaults);
+	void clear_drag_proxy();
 	void save_x11_host(int play_config, const char *x11_host);
 	int set_default_x11_host(int win_config=-1);
 	void default_window_positions(int window_config=0);
 	void boundaries();
-
-
-
-
 
 // For drag and drop events
 // The entire track where the dropped asset is going to go
@@ -77,6 +74,7 @@ public:
 	Edits *trim_edits;
 	ArrayList<Indexable*> *drag_assets;
 	ArrayList<EDL*> *drag_clips;
+	ArrayList<EDL*> *drag_proxy;
 	Auto *drag_auto;
 	ArrayList<Auto*> *drag_auto_gang;
 

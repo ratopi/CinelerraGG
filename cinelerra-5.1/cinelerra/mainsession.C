@@ -49,6 +49,7 @@ MainSession::MainSession(MWindow *mwindow)
 	drag_assets = new ArrayList<Indexable*>;
 	drag_auto_gang = new ArrayList<Auto*>;
 	drag_clips = new ArrayList<EDL*>;
+	drag_proxy = new ArrayList<EDL*>;
 	drag_edits = new ArrayList<Edit*>;
 	drag_edit = 0;
 	clip_number = 1;
@@ -113,10 +114,12 @@ MainSession::MainSession(MWindow *mwindow)
 
 MainSession::~MainSession()
 {
+	clear_drag_proxy();
 	delete drag_pluginservers;
 	delete drag_assets;
 	delete drag_auto_gang;
 	delete drag_clips;
+	delete drag_proxy;
 	delete drag_edits;
 }
 
@@ -139,6 +142,13 @@ void MainSession::boundaries()
 	rmonitor_x = MAX(0, rmonitor_x);
 	rmonitor_y = MAX(0, rmonitor_y);
 	CLAMP(cwindow_controls, 0, 1);
+}
+
+void MainSession::clear_drag_proxy()
+{
+	for( int i=drag_proxy->size(); --i>=0; )
+		drag_proxy->get(i)->remove_user();
+	drag_proxy->remove_all();
 }
 
 void MainSession::save_x11_host(int play_config, const char *x11_host)

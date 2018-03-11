@@ -83,7 +83,9 @@ ProxyDialog::ProxyDialog(MWindow *mwindow)
 	asset = new Asset;
 	bzero(size_text, sizeof(char*) * MAX_SIZES);
 	bzero(size_factors, sizeof(int) * MAX_SIZES);
-	total_sizes = 0;
+	size_text[0] = cstrdup(_("Original size"));
+	size_factors[0] = 1;
+	total_sizes = 1;
 }
 
 ProxyDialog::~ProxyDialog()
@@ -207,6 +209,8 @@ void ProxyDialog::to_proxy()
 			proxy->width = proxy->actual_width;
 			proxy->height = proxy->actual_height;
 			proxy->remove_user();
+			mwindow->edl->assets->remove_pointer(proxy);
+			proxy->remove_user();
 		}
 		proxy_assets.remove_all();
 		for( int i = 0; i < orig_idxbls.size(); i++ )
@@ -291,7 +295,7 @@ void ProxyRender::from_proxy_path(char *new_path, Asset *asset, int scale)
 	char prxy[BCTEXTLEN];
 	int n = sprintf(prxy, ".proxy%d", scale);
 	strcpy(new_path, asset->path);
-	char *ptr = strstr(asset->path, prxy);
+	char *ptr = strstr(new_path, prxy);
 	if( !ptr || (ptr[n] != '-' && ptr[n] != '.') ) return;
 // remove proxy, path.proxy#-sfx.ext => path.sfx
 	char *ext = strrchr(ptr, '.');
@@ -454,9 +458,6 @@ void ProxyWindow::create_objects()
 	add_subwindow(text = new BC_Title(x, y, _("Scale factor:")));
 	x += text->get_w() + margin;
 
-	dialog->size_text[0] = cstrdup(_("Original size"));
-	dialog->size_factors[0] = 1;
-	dialog->total_sizes = 1;
 	int popupmenu_w = BC_PopupMenu::calculate_w(get_text_width(MEDIUMFONT, dialog->size_text[0]));
 	add_subwindow(scale_factor = new ProxyMenu(mwindow, this, x, y, popupmenu_w, ""));
 	scale_factor->update_sizes();

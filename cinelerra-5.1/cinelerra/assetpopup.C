@@ -100,10 +100,11 @@ void AssetPopup::paste_assets()
 	mwindow->gui->lock_window("AssetPopup::paste_assets");
 	mwindow->cwindow->gui->lock_window("AssetPopup::paste_assets");
 
-	gui->collect_assets();
+	int proxy = mwindow->edl->session->awindow_folder == AW_PROXY_FOLDER ? 1 : 0;
+	gui->collect_assets(proxy);
 	mwindow->paste_assets(mwindow->edl->local_session->get_selectionstart(1),
-		mwindow->edl->tracks->first,
-		0);   // do not overwrite
+		mwindow->edl->tracks->first, 0);   // do not overwrite
+	mwindow->session->clear_drag_proxy();
 
 	gui->unlock_window();
 	mwindow->gui->unlock_window();
@@ -140,7 +141,8 @@ void AssetPopup::match_all()
 int AssetPopup::update()
 {
 	format->update();
-	gui->collect_assets();
+	int proxy = mwindow->edl->session->awindow_folder == AW_PROXY_FOLDER ? 1 : 0;
+	gui->collect_assets(proxy);
 	return 0;
 }
 
