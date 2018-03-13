@@ -1254,9 +1254,10 @@ void MWindow::queue_mixers(EDL *edl, int command, int wait_tracking,
 	zwindows_lock->unlock();
 }
 
-void MWindow::refresh_mixers()
+void MWindow::refresh_mixers(int dir)
 {
-	queue_mixers(edl,CURRENT_FRAME,0,0,1,0,0);
+	int command = dir >= 0 ? CURRENT_FRAME : LAST_FRAME;
+	queue_mixers(edl,command,0,0,1,0,0);
 }
 
 void MWindow::stop_mixers()

@@ -225,45 +225,28 @@ void CWindow::run()
 	gui->run_window();
 }
 
-void CWindow::update(int position,
-	int overlays,
-	int tool_window,
-	int operation,
-	int timebar)
+void CWindow::update(int dir, int overlays, int tool_window, int operation, int timebar)
 {
 
-	if(position)
-	{
-		refresh_frame(CHANGE_NONE);
-	}
+	if(dir)
+		refresh_frame(CHANGE_NONE, dir);
 
 	gui->lock_window("CWindow::update 2");
-
-
 // Create tool window
 	if(operation)
-	{
 		gui->set_operation(mwindow->edl->session->cwindow_operation);
-	}
-
 
 // Updated by video device.
-	if(overlays && !position)
-	{
+	if(overlays && !dir)
 		gui->canvas->draw_refresh();
-	}
 
 // Update tool parameters
 // Never updated by someone else
-	if(tool_window || position)
-	{
+	if(tool_window || dir)
 		gui->update_tool();
-	}
 
 	if(timebar)
-	{
 		gui->timebar->update(1);
-	}
 
 	double zoom = !mwindow->edl->session->cwindow_scrollbars ?
 		0 :mwindow->edl->session->cwindow_zoom;
@@ -305,15 +288,15 @@ int CWindow::update_position(double position)
 	return 1;
 }
 
-void CWindow::refresh_frame(int change_type, EDL *edl)
+void CWindow::refresh_frame(int change_type, EDL *edl, int dir)
 {
-	mwindow->refresh_mixers();
-	playback_engine->refresh_frame(change_type, edl);
+	mwindow->refresh_mixers(dir);
+	playback_engine->refresh_frame(change_type, edl, dir);
 }
 
-void CWindow::refresh_frame(int change_type)
+void CWindow::refresh_frame(int change_type, int dir)
 {
-	refresh_frame(change_type, mwindow->edl);
+	refresh_frame(change_type, mwindow->edl, dir);
 }
 
 CWindowRemoteHandler::

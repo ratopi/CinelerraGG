@@ -159,9 +159,10 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 			__LINE__, nested_edl, current_edit->nested_edl);
 
 // Convert requested direction to command
-		if(renderengine->command->command == CURRENT_FRAME)
+		if( renderengine->command->command == CURRENT_FRAME ||
+		    renderengine->command->command == LAST_FRAME )
 		{
-			command = CURRENT_FRAME;
+			command = renderengine->command->command;
 		}
 		else
 		if(direction == PLAY_REVERSE)

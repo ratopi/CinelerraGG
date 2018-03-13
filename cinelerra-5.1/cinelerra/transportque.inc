@@ -44,6 +44,7 @@
 #define REWIND              11
 #define GOTO_END            12
 #define CURRENT_FRAME       13
+#define LAST_FRAME          14
 
 // Level of change.  Changes have to be inclusive of all the lesser changes.
 // Delete cache

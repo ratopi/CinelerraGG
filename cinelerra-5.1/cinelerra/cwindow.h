@@ -42,7 +42,7 @@ public:
 
     void create_objects();
 // Position is inclusive of the other 2
-	void update(int position,
+	void update(int dir,
 		int overlays,
 		int tool_window,
 		int operation = 0,
@@ -71,8 +71,8 @@ public:
 	void hide_window();
 	int update_position(double position);
 	void stop_playback(int wait);
-	void refresh_frame(int change_type);
-	void refresh_frame(int change_type, EDL *edl);
+	void refresh_frame(int change_type, int dir=1);
+	void refresh_frame(int change_type, EDL *edl, int dir=1);
 
 	int destination;
 	MWindow *mwindow;

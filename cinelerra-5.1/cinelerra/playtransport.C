@@ -226,6 +226,7 @@ int PlayTransport::do_keypress(int key)
 		switch( prev_command ) {
 		case COMMAND_NONE:
 		case CURRENT_FRAME:
+		case LAST_FRAME:
 		case PAUSE:
 		case STOP:
 			command = NORMAL_FWD;

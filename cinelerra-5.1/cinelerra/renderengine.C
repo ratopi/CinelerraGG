@@ -516,7 +516,7 @@ void RenderEngine::run()
 // Fix the tracking position
 	if(playback_engine)
 	{
-		if(command->command == CURRENT_FRAME)
+		if(command->command == CURRENT_FRAME || command->command == LAST_FRAME)
 		{
 //printf("RenderEngine::run 4.1 %d\n", playback_engine->tracking_position);
 			playback_engine->tracking_position = command->playbackstart;

@@ -4027,22 +4027,26 @@ int TrackCanvas::cursor_motion_event()
 				position = mwindow->edl->align_to_frame(position, 0);
 				position = MAX(position, 0);
 
+				double start = mwindow->edl->local_session->get_selectionstart(1);
+				double end = mwindow->edl->local_session->get_selectionend(1);
 				if(position < selection_midpoint) {
 					mwindow->edl->local_session->set_selectionend(selection_midpoint);
 					mwindow->edl->local_session->set_selectionstart(position);
-	// Que the CWindow
-					gui->unlock_window();
-					mwindow->cwindow->update(1, 0, 0, 0, 1);
-					gui->lock_window("TrackCanvas::cursor_motion_event 1");
-	// Update the faders
-					mwindow->update_plugin_guis();
-					gui->update_patchbay();
 				}
 				else {
 					mwindow->edl->local_session->set_selectionstart(selection_midpoint);
 					mwindow->edl->local_session->set_selectionend(position);
-	// Don't que the CWindow
 				}
+	// Que the CWindow
+				gui->unlock_window();
+				int dir =
+					start != mwindow->edl->local_session->get_selectionstart(1) ? 1 :
+					end != mwindow->edl->local_session->get_selectionend(1) ? -1 : 0;
+				mwindow->cwindow->update(dir, 0, 0, 0, 1);
+				gui->lock_window("TrackCanvas::cursor_motion_event 1");
+	// Update the faders
+				mwindow->update_plugin_guis();
+				gui->update_patchbay();
 
 				timebar_position = mwindow->edl->local_session->get_selectionend(1);
 

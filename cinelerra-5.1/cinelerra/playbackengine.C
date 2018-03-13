@@ -390,6 +390,7 @@ void PlaybackEngine::run()
 			break;
 
 		case CURRENT_FRAME:
+		case LAST_FRAME:
 			last_command = command->command;
 			perform_change();
 			arm_render_engine();
@@ -457,6 +458,8 @@ void PlaybackEngine::issue_command(EDL *edl, int command, int wait_tracking,
 	case SLOW_FWD:
 	case NORMAL_FWD:
 	case FAST_FWD:
+	case CURRENT_FRAME:
+	case LAST_FRAME:
 		if( !prev_single_frame &&
 		    prev_command == command &&
 		    cur_audio == prev_audio ) {
@@ -475,6 +478,8 @@ void PlaybackEngine::issue_command(EDL *edl, int command, int wait_tracking,
 		case COMMAND_NONE:
 		case SINGLE_FRAME_FWD:
 		case SINGLE_FRAME_REWIND:
+		case CURRENT_FRAME:
+		case LAST_FRAME:
 // Start from scratch
 			que->send_command(command, CHANGE_NONE, edl,
 				1, resume, use_inout, toggle_audio, loop_play,
@@ -497,8 +502,9 @@ void PlaybackEngine::issue_command(EDL *edl, int command, int wait_tracking,
 	}
 }
 
-void PlaybackEngine::refresh_frame(int change_type, EDL *edl)
+void PlaybackEngine::refresh_frame(int change_type, EDL *edl, int dir)
 {
-	que->send_command(CURRENT_FRAME, change_type, edl, 1);
+	que->send_command(dir >= 0 ? CURRENT_FRAME : LAST_FRAME,
+		change_type, edl, 1);
 }
 

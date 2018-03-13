@@ -462,9 +462,9 @@ void VRender::run()
 			__LINE__, current_position, done);
 
 // Update tracking.
-		if(renderengine->command->realtime &&
-			renderengine->playback_engine &&
-			renderengine->command->command != CURRENT_FRAME)
+		if(renderengine->command->realtime && renderengine->playback_engine &&
+			renderengine->command->command != CURRENT_FRAME &&
+			renderengine->command->command != LAST_FRAME)
 		{
 			renderengine->playback_engine->update_tracking(fromunits(current_position));
 		}

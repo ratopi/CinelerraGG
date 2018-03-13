@@ -101,9 +101,8 @@ TransportCommand& TransportCommand::operator=(TransportCommand &command)
 
 int TransportCommand::single_frame(int command)
 {
-	return (command == SINGLE_FRAME_FWD ||
-		command == SINGLE_FRAME_REWIND ||
-		command == CURRENT_FRAME);
+	return (command == SINGLE_FRAME_FWD || command == SINGLE_FRAME_REWIND ||
+		command == CURRENT_FRAME || command == LAST_FRAME);
 }
 int TransportCommand::single_frame()
 {
@@ -125,6 +124,7 @@ int TransportCommand::get_direction(int command)
 	case NORMAL_REWIND:
 	case FAST_REWIND:
 	case SLOW_REWIND:
+	case LAST_FRAME:
 		return PLAY_REVERSE;
 
 	default:
@@ -149,6 +149,7 @@ float TransportCommand::get_speed(int command)
 	case SINGLE_FRAME_FWD:
 	case SINGLE_FRAME_REWIND:
 	case CURRENT_FRAME:
+	case LAST_FRAME:
 		return 1.;
 
 	case FAST_FWD:
@@ -210,6 +211,7 @@ void TransportCommand::set_playback_range(EDL *edl,
 			break;
 
 		case CURRENT_FRAME:
+		case LAST_FRAME:
 		case SINGLE_FRAME_FWD:
 			end_position = start_position + frame_period;
 			break;
@@ -219,8 +221,9 @@ void TransportCommand::set_playback_range(EDL *edl,
 			break;
 		}
 
-		if( use_displacement && command != CURRENT_FRAME &&
-		    get_direction() == PLAY_FORWARD ) {
+		if( use_displacement && (
+		    (command != CURRENT_FRAME && get_direction() == PLAY_FORWARD ) ||
+		    (command != LAST_FRAME    && get_direction() == PLAY_REVERSE ) ) ) {
 			start_position += frame_period;
 			end_position += frame_period;
 			displacement = 1;

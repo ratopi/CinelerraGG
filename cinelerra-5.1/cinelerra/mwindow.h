@@ -205,7 +205,7 @@ public:
 	void queue_mixers(EDL *edl, int command, int wait_tracking,
 		int use_inout, int update_refresh, int toggle_audio, int loop_play);
 	void create_mixers();
-	void refresh_mixers();
+	void refresh_mixers(int dir=1);
 	void stop_mixers();
 	void close_mixers();
 	void open_mixers();
