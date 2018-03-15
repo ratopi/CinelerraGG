@@ -40,6 +40,10 @@ EDL* ClipEDLs::get_copy(EDL *src)
 	if( !src ) return 0;
 	for( int i=0; i<size(); ++i ) {
 		EDL *dst = get(i);
+		if( src == dst || src->id == dst->id ) return dst;
+	}
+	for( int i=0; i<size(); ++i ) {
+		EDL *dst = get(i);
 		if( !strcmp(dst->path, src->path) ) return dst;
 	}
 

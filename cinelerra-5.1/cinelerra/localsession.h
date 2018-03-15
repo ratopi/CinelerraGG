@@ -63,7 +63,6 @@ public:
 	void load_xml(FileXML *file, unsigned long load_flags);
 	int load_defaults(BC_Hash *defaults);
 	int save_defaults(BC_Hash *defaults);
-	void set_clip_path(Indexable *indexable);
 // Used to copy parameters that affect rendering.
 	void synchronize_params(LocalSession *that);
 

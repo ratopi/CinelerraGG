@@ -234,6 +234,7 @@ OBJS = \
 	$(OBJDIR)/presets.o \
 	$(OBJDIR)/probeprefs.o \
 	$(OBJDIR)/proxy.o \
+	$(OBJDIR)/proxypopup.o \
 	$(OBJDIR)/question.o \
 	$(OBJDIR)/quit.o \
 	$(OBJDIR)/recconfirmdelete.o \

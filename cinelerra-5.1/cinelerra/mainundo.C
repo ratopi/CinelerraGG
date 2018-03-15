@@ -200,14 +200,14 @@ int MainUndo::undo()
 			mwindow->gui->mainmenu->redo->
 				update_caption(next ? next->get_description() : "");
 		}
-		FileXML file;
 		char *current_data = current->get_data();
 		if( current_data ) {
+			FileXML file;
 			file.read_from_string(current_data);
+			delete [] current_data;
 			load_from_undo(&file, current->get_flags());
 //printf("MainUndo::undo %d %s\n", __LINE__, current->get_filename());
 			mwindow->set_filename(current->get_filename());
-			delete [] current_data;
 
 			if( mwindow->gui ) {
 // Now update the menu with the after entry
@@ -231,21 +231,18 @@ int MainUndo::redo()
 		undo_stack->current = current;
 		char *current_data = current->get_data();
 		if( current_data ) {
-			FileXML file;
 			mwindow->set_filename(current->get_filename());
+			FileXML file;
 			file.read_from_string(current_data);
 			load_from_undo(&file, current->get_flags());
 			delete [] current_data;
-
-			if( mwindow->gui ) {
 // Update menu
-				mwindow->gui->mainmenu->undo->
-					update_caption(current->get_description());
+			mwindow->gui->mainmenu->undo->
+				update_caption(current->get_description());
 // Get next after entry
-				if( (current=NEXT) ) current = NEXT;
-				mwindow->gui->mainmenu->redo->
-					update_caption(current ? current->get_description() : "");
-			}
+			if( (current=NEXT) ) current = NEXT;
+			mwindow->gui->mainmenu->redo->
+				update_caption(current ? current->get_description() : "");
 		}
 	}
 	reset_creators();
@@ -258,8 +255,11 @@ int MainUndo::redo()
 // Here the master EDL loads
 int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 {
-	if( load_flags & LOAD_SESSION )
+	if( load_flags & LOAD_SESSION ) {
+		mwindow->gui->unlock_window();
 		mwindow->close_mixers();
+		mwindow->gui->lock_window("MainUndo::load_from_undo");
+	}
 	mwindow->edl->load_xml(file, load_flags);
 	for( Asset *asset=mwindow->edl->assets->first; asset; asset=asset->next ) {
 		mwindow->mainindexes->add_next_asset(0, asset);
@@ -270,8 +270,11 @@ int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 	}
 	mwindow->mainindexes->start_build();
 	mwindow->update_plugin_guis(1);
-	if( load_flags & LOAD_SESSION )
+	if( load_flags & LOAD_SESSION ) {
+		mwindow->gui->unlock_window();
 		mwindow->open_mixers();
+		mwindow->gui->lock_window("MainUndo::load_from_undo");
+	}
 	return 0;
 }
 

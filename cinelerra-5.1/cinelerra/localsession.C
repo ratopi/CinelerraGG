@@ -507,12 +507,3 @@ int LocalSession::outpoint_valid()
 	return out_point >= 0;
 }
 
-void LocalSession::set_clip_path(Indexable *indexable)
-{
-	char string[BCTEXTLEN];
-	FileSystem fs;
-	fs.extract_name(string, indexable->path);
-	strcpy(clip_title, string);
-}
-
-

@@ -1207,17 +1207,15 @@ if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
 		EDL *new_edl = new EDL;
 		new_edl->create_objects();
 		new_edl->copy_session(edl);
-		new_edls.append(new_edl);
-
 		if( !indexable->is_asset ) {
 			EDL *nested_edl = (EDL*)indexable;
-			new_edl->to_nested(nested_edl);
-			new_edl->local_session->set_clip_path(nested_edl);
+			new_edl->create_nested(nested_edl, indexable->path);
 		}
 		else {
 			Asset *asset = (Asset*)indexable;
 			asset_to_edl(new_edl, asset);
 		}
+		new_edls.append(new_edl);
 
 		if( labels ) {
 			for( RecordLabel *label=labels->first; label; label=label->next ) {

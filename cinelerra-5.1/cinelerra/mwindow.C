@@ -1288,35 +1288,53 @@ void MWindow::close_mixers()
 	}
 }
 
+ZWindow *MWindow::create_mixer(Indexable *indexable)
+{
+	ArrayList<Indexable*> new_assets;
+	new_assets.append(indexable);
+	Track *track = edl->tracks->last;
+	load_assets(&new_assets, 0, LOADMODE_NEW_TRACKS, 0, 0, 0, 0, 0, 0);
+	track = !track ? edl->tracks->first : track->next;
+	Mixer *mixer = 0;
+	ZWindow *zwindow = get_mixer(mixer);
+	while( track ) {
+		track->play = track->record = 0;
+		if( track->data_type == TRACK_VIDEO ) {
+			sprintf(track->title, _("Mixer %d"), zwindow->idx);
+		}
+		mixer->mixer_ids.append(track->get_mixer_id());
+		track = track->next;
+	}
+	if(  indexable->is_asset ) {
+		char *path = indexable->path;
+		char *tp = strrchr(path, '/');
+		if( !tp ) tp = path; else ++tp;
+		zwindow->set_title(tp);
+	}
+	else {
+		char *title = ((EDL*)indexable)->local_session->clip_title;
+		zwindow->set_title(title);
+	}
+	return zwindow;
+}
+
 void MWindow::create_mixers()
 {
-	if( !session->drag_assets->size() ) return;
+	if( !session->drag_assets->size() &&
+	    !session->drag_clips->size() ) return;
 	undo->update_undo_before();
 
 	select_zwindow(0);
 	ArrayList<ZWindow *>new_mixers;
 
-	for( int i=0; i<session->drag_assets->total; ++i ) {
-		Indexable *indexable = session->drag_assets->values[i];
-		ArrayList<Indexable*> new_assets;
-		new_assets.append(indexable);
-		Track *track = edl->tracks->last;
-		load_assets(&new_assets, -1, LOADMODE_NEW_TRACKS, 0, 0, 0, 0, 0, 0);
-		track = !track ? edl->tracks->first : track->next;
-		Mixer *mixer = 0;
-		ZWindow *zwindow = get_mixer(mixer);
-		while( track ) {
-			track->play = track->record = 0;
-			if( track->data_type == TRACK_VIDEO ) {
-				sprintf(track->title, _("Mixer %d"), zwindow->idx);
-			}
-			mixer->mixer_ids.append(track->get_mixer_id());
-			track = track->next;
-		}
-		char *path = indexable->path;
-		char *tp = strrchr(path, '/');
-		if( !tp ) tp = path; else ++tp;
-		zwindow->set_title(tp);
+	for( int i=0; i<session->drag_assets->size(); ++i ) {
+		Indexable *indexable = session->drag_assets->get(i);
+		ZWindow *zwindow = create_mixer(indexable);
+		new_mixers.append(zwindow);
+	}
+	for( int i=0; i<session->drag_clips->size(); ++i ) {
+		Indexable *indexable = (Indexable*)session->drag_clips->get(i);
+		ZWindow *zwindow = create_mixer(indexable);
 		new_mixers.append(zwindow);
 	}
 
@@ -1941,11 +1959,9 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 // Load temporary EDL for nesting.
 				EDL *nested_edl = new EDL;
 				nested_edl->create_objects();
-				nested_edl->set_path(filenames->get(i));
 				nested_edl->load_xml(&xml_file, LOAD_ALL);
 //printf("MWindow::load_filenames %p %s\n", nested_edl, nested_edl->project_path);
-				new_edl->to_nested(nested_edl);
-				new_edl->local_session->set_clip_path(nested_edl);
+				new_edl->create_nested(nested_edl, filenames->get(i));
 				nested_edl->Garbage::remove_user();
 			}
 			else {

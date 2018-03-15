@@ -181,7 +181,9 @@ public:
 	int copy(double start, double end, int all,
 		const char *closer, FileXML *file,
 		const char *output_path, int rewind_it);
-	int to_nested(EDL *nested_edl);
+	EDL *get_nested(EDL *nested_edl, const char *path);
+	EDL *new_nested(EDL *nested_edl, const char *path);
+	void create_nested(EDL *nested_edl, const char *path);
 	void paste_silence(double start, double end,
 		int edit_labels /* = 1 */,
 		int edit_plugins,

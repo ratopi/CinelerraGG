@@ -432,11 +432,9 @@ int ClipPopupNest::handle_event()
 	if( mwindow->session->drag_clips->total > 0 ) {
 		EDL *edl = mwindow->edl;
 		EDL *clip = mwindow->session->drag_clips->values[0];
-		EDL *clip_edl = new EDL;  // no parent for nested clip
-		clip_edl->create_objects();
-		clip_edl->copy_all(clip);
 		EDL *new_clip = new EDL(edl);
 		new_clip->create_objects();
+		new_clip->copy_all(clip);
 		new_clip->awindow_folder = AW_CLIP_FOLDER;
 		snprintf(new_clip->local_session->clip_title,
 			sizeof(new_clip->local_session->clip_title),
@@ -445,27 +443,25 @@ int ClipPopupNest::handle_event()
 			clip->local_session->clip_notes);
 		time_t dt;	time(&dt);
 		struct tm dtm;	localtime_r(&dt, &dtm);
-		char path[BCSTRLEN];
-		sprintf(path, _("Nested_%02d%02d%02d-%02d%02d%02d"),
-			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
-			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
-		clip_edl->set_path(path);
 		sprintf(new_clip->local_session->clip_icon,
 			"clip_%02d%02d%02d-%02d%02d%02d.png",
 			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
 			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
-		new_clip->set_path(path);
-		new_clip->to_nested(clip_edl);
+		char path[BCSTRLEN];
+		sprintf(path, _("Nested_%02d%02d%02d-%02d%02d%02d"),
+			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
+			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
+		EDL *clip_edl = edl->new_nested(new_clip, path);
+		new_clip->remove_user();
 		int idx = edl->clips.number_of(clip);
 		if( idx >= 0 ) {
-			edl->clips[idx] = new_clip;
+			edl->clips[idx] = clip_edl;
 			clip->remove_user();
 		}
 		else
-			edl->clips.append(new_clip);
+			edl->clips.append(clip_edl);
 		mwindow->mainindexes->add_next_asset(0, clip_edl);
 		mwindow->mainindexes->start_build();
-		clip_edl->remove_user();
 		popup->gui->async_update_assets();
 	}
 	gui->unlock_window();

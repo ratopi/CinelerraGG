@@ -580,20 +580,37 @@ int EDL::copy(double start, double end, int all,
 	return 0;
 }
 
-int EDL::to_nested(EDL *nested_edl)
+EDL *EDL::get_nested(EDL *nested_edl, const char *path)
 {
-// Keep frame rate, sample rate, and output size unchanged.
-// These parameters would revert the project if VWindow displayed an asset
-// of different size than the project.
-
-// Nest all video & audio outputs
-	session->video_tracks = 1;
-	session->audio_tracks = nested_edl->session->audio_channels;
-	create_default_tracks();
-	insert_asset(0, nested_edl, 0, 0, 0);
-	return 0;
+	for( int i=0; i<nested_edls.size(); ++i ) {
+		EDL *dst = nested_edls[i];
+		if( !strcmp(path, dst->path) ) return dst;
+	}
+	return new_nested(nested_edl, path);
 }
 
+EDL *EDL::new_nested(EDL *nested_edl, const char *path)
+{
+	EDL *new_edl = new EDL;  // no parent for nested clip
+	new_edl->create_objects();
+	new_edl->copy_session(this);
+	new_edl->create_nested(nested_edl, path);
+	return new_edl;
+}
+
+void EDL::create_nested(EDL *nested_edl, const char *path)
+{
+	set_path(path);
+	strcpy(local_session->clip_title, path);
+// save a ref to nested edl for garbage delete
+	EDL *nest = clips.get_copy(nested_edl);
+// Keep frame rate, sample rate, and output size unchanged.
+// Nest all video & audio outputs
+	session->video_tracks = 1;
+	session->audio_tracks = nest->session->audio_channels;
+	create_default_tracks();
+	insert_asset(0, nest, 0, 0, 0);
+}
 
 void EDL::retrack()
 {

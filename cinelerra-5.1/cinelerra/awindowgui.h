@@ -42,6 +42,7 @@
 #include "mwindow.inc"
 #include "newfolder.inc"
 #include "pluginserver.inc"
+#include "proxypopup.inc"
 #include "renderengine.inc"
 #include "samples.inc"
 #include "vicon.h"
@@ -264,10 +265,12 @@ public:
 	AssetPopup *asset_menu;
 	ClipPopup *clip_menu;
 	LabelPopup *label_menu;
+	ProxyPopup *proxy_menu;
 	EffectListMenu *effectlist_menu;
 	AssetListMenu *assetlist_menu;
 	ClipListMenu *cliplist_menu;
 	LabelListMenu *labellist_menu;
+	ProxyListMenu *proxylist_menu;
 	FolderListMenu *folderlist_menu;
 	AddTools *add_tools;
 // Temporary for reading picons from files

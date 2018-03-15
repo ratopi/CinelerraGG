@@ -57,6 +57,7 @@
 #include "newfolder.h"
 #include "preferences.h"
 #include "proxy.h"
+#include "proxypopup.h"
 #include "renderengine.h"
 #include "samples.h"
 #include "theme.h"
@@ -833,6 +834,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	effectlist_menu = 0;
 	assetlist_menu = 0;
 	cliplist_menu = 0;
+	proxylist_menu = 0;
 	labellist_menu = 0;
 	folderlist_menu = 0;
 	temp_picon = 0;
@@ -860,14 +862,6 @@ AWindowGUI::~AWindowGUI()
 	delete vicon_audio;
 	delete newfolder_thread;
 
-	delete asset_menu;
-	delete clip_menu;
-	delete label_menu;
-	delete effectlist_menu;
-	delete assetlist_menu;
-	delete cliplist_menu;
-	delete labellist_menu;
-	delete folderlist_menu;
 	delete search_text;
 	delete temp_picon;
 	delete remove_plugin;
@@ -1060,6 +1054,8 @@ void AWindowGUI::create_objects()
 	clip_menu->create_objects();
 	add_subwindow(label_menu = new LabelPopup(mwindow, this));
 	label_menu->create_objects();
+	add_subwindow(proxy_menu = new ProxyPopup(mwindow, this));
+	proxy_menu->create_objects();
 
 	add_subwindow(effectlist_menu = new EffectListMenu(mwindow, this));
 	effectlist_menu->create_objects();
@@ -1069,6 +1065,8 @@ void AWindowGUI::create_objects()
 	cliplist_menu->create_objects();
 	add_subwindow(labellist_menu = new LabelListMenu(mwindow, this));
 	labellist_menu->create_objects();
+	add_subwindow(proxylist_menu = new ProxyListMenu(mwindow, this));
+	proxylist_menu->create_objects();
 
 	add_subwindow(folderlist_menu = new FolderListMenu(mwindow, this));
 	folderlist_menu->create_objects();
@@ -1584,6 +1582,7 @@ EDL *AWindowGUI::collect_proxy(Indexable *indexable)
 	EDL *proxy_edl = new EDL(mwindow->edl);
 	proxy_edl->create_objects();
 	FileSystem fs;  fs.extract_name(path, proxy_asset->path);
+	proxy_edl->set_path(path);
 	strcpy(proxy_edl->local_session->clip_title, path);
 	strcpy(proxy_edl->local_session->clip_notes, _("Proxy clip"));
 	proxy_edl->session->video_tracks = proxy_asset->layers;
@@ -1999,8 +1998,11 @@ int AWindowAssets::button_press_event()
 			gui->cliplist_menu->update();
 			gui->cliplist_menu->activate_menu();
 			break;
-		case AW_MEDIA_FOLDER:
 		case AW_PROXY_FOLDER:
+			gui->proxylist_menu->update();
+			gui->proxylist_menu->activate_menu();
+			break;
+		case AW_MEDIA_FOLDER:
 			gui->assetlist_menu->update_titles(folder==AW_MEDIA_FOLDER);
 			gui->assetlist_menu->activate_menu();
 			break;
@@ -2056,6 +2058,11 @@ int AWindowAssets::selection_changed()
 			if( !item->indexable && !item->edl ) break;
 			gui->clip_menu->update();
 			gui->clip_menu->activate_menu();
+			break;
+		case AW_PROXY_FOLDER:
+			if( !item->indexable && !item->edl ) break;
+			gui->proxy_menu->update();
+			gui->proxy_menu->activate_menu();
 			break;
 		default:
 			if( !item->indexable && !item->edl ) break;

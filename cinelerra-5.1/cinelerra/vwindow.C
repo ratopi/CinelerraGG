@@ -208,62 +208,36 @@ void VWindow::change_source(int edl_number)
 
 void VWindow::change_source(Indexable *indexable)
 {
+	if( !indexable->is_asset ) {
+		change_source((EDL*)indexable);
+		return;
+	}
 	if(!running()) return;
 	if( playback_engine->is_playing_back )
 		stop_playback(1);
 
-// 	if(asset && this->asset &&
-// 		asset->id == this->asset->id &&
-// 		asset == this->asset) return;
 	gui->lock_window("VWindow::change_source 2");
-
-//printf("VWindow::change_source %d\n", __LINE__);
 
 	char title[BCTEXTLEN];
 	FileSystem fs;
 	fs.extract_name(title, indexable->path);
-//printf("VWindow::change_source 1\n");
-
 	delete_source(1, 0);
-//printf("VWindow::change_source 1\n");
-
-// Generate EDL off of main EDL for cutting
-	Asset *asset = 0;
-	EDL *nested_edl = 0;
-	if(indexable->is_asset)
-	{
-		this->indexable = asset = new Asset;
-		asset->copy_from((Asset*)indexable, 0);
-	}
-	else
-	{
-		this->indexable = nested_edl = new EDL;
-		nested_edl->create_objects();
-		nested_edl->copy_all((EDL*)indexable);
-	}
 
 // Create EDL
 	this->edl = new EDL(mwindow->edl);
 	this->edl->create_objects();
 	mwindow->edl->append_vwindow_edl(this->edl, 1);
 
-//	mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
-//	mwindow->edl->vwindow_edl_shared = 0;
-//	mwindow->edl->vwindow_edl->create_objects();
-
-//printf("VWindow::change_source 1 %d %p %p\n", __LINE__, asset, nested_edl);
-	if(asset)
-		mwindow->asset_to_edl(this->edl, asset);
-	else
-		this->edl->to_nested(nested_edl);
+// Generate EDL off of main EDL for cutting
+	Asset *asset = new Asset;
+	asset->copy_from((Asset*)indexable, 0);
+	this->indexable = asset;
+	mwindow->asset_to_edl(this->edl, asset);
 
 // Update GUI
 	gui->change_source(this->edl, title);
 	update_position(CHANGE_ALL, 1, 1, 1);
 
-
-
-//printf("VWindow::change_source 2\n");
 	gui->unlock_window();
 }
 
