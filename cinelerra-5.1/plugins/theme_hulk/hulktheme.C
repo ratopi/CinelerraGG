@@ -109,6 +109,7 @@ void HULKTHEME::initialize()
 
 	resources->text_default = 0x001000;
 	resources->text_background = 0x75b697;
+	resources->text_background_disarmed = 0xce00ff;
 	resources->text_border1 = 0x202020;
 	resources->text_border2 = 0x75b697;
 	resources->text_border3 = 0x75b697;

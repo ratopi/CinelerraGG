@@ -759,6 +759,7 @@ new_vframes(20,default_medium_7segment,
 	text_default = BLACK;
 	highlight_inverse = WHITE ^ BLUE;
 	text_background = WHITE;
+	text_background_disarmed = 0xc08080;
 	text_background_hi = LTYELLOW;
 	text_background_noborder_hi = LTGREY;
 	text_background_noborder = -1;

@@ -117,6 +117,8 @@ public:
 	int get_text_y();
 	void set_text_x(int v);
 	void set_text_y(int v);
+	int get_back_color();
+	void set_back_color(int v);
 
 	int reposition_window(int x, int y, int w = -1, int rows = -1);
 	int uses_text();

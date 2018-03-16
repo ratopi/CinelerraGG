@@ -30,6 +30,7 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "playback3d.h"
+#include "preferences.h"
 #include "quit.h"
 #include "record.h"
 #include "render.h"
@@ -55,8 +56,9 @@ int Quit::handle_event()
 
 //printf("Quit::handle_event 1 %d\n", mwindow->session->changes_made);
 	Record *record = mwindow->gui->record;
-	if( mwindow->session->changes_made || mwindow->render->in_progress ||
-		record->capturing || record->recording || record->writing_file ) {
+	if( !mwindow->preferences->perpetual_session &&
+	    ( mwindow->session->changes_made || mwindow->render->in_progress ||
+	      record->capturing || record->recording || record->writing_file ) ) {
 		start();
 	}
 	else

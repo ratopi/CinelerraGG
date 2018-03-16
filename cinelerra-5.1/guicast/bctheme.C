@@ -106,6 +106,8 @@ VFrame** BC_Theme::new_image_set_images(const char *title, int total, ...)
 	BC_ThemeSet *existing_image_set = title[0] ? get_image_set_object(title) : 0;
 	if( existing_image_set ) {
 		image_sets.remove_object(existing_image_set);
+		last_image_set = 0;
+		last_image_data = 0;
 	}
 
 	BC_ThemeSet *result = new BC_ThemeSet(total, 0, title);

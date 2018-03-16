@@ -94,6 +94,7 @@ void PINKLADY::initialize()
 
 	resources->text_default = 0x1b0f11;
 	resources->text_background = 0xffb1d0;
+	resources->text_background_disarmed = 0x0000ff;
 	resources->text_border1 = 0x202020;
 	resources->text_border2 = 0xffb1d0;
 	resources->text_border3 = 0xffb1d0;

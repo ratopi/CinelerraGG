@@ -165,6 +165,7 @@ public:
 	int text_border2;
 	int text_border2_hi;
 	int text_background;
+	int text_background_disarmed;
 	int text_background_hi;
 	int text_background_noborder_hi;
 	int text_border3;

@@ -89,7 +89,7 @@ public:
 //PRINT_TRACE
 		mwindow->load_filenames(filenames, LOADMODE_REPLACE);
 //PRINT_TRACE
-		if(filenames->size() == 1)
+		if( filenames->size() == 1 )
 			mwindow->gui->mainmenu->add_load(filenames->get(0));
 //PRINT_TRACE
 		mwindow->gui->unlock_window();
@@ -115,6 +115,7 @@ int main(int argc, char *argv[])
 	char config_path[BCTEXTLEN];
 	char batch_path[BCTEXTLEN];
 	int nice_value = 20;
+	int load_perpetual = 1;
 	config_path[0] = 0;
 	batch_path[0] = 0;
 	deamon_path[0] = 0;
@@ -137,24 +138,24 @@ int main(int argc, char *argv[])
 		// Extract from locale language & region
 		char locbuf[32], *p;
 		locbuf[0] = 0;
-		if((p = strchr(loc, '.')) != 0 && (p - loc) < (int)sizeof(locbuf)-1) {
+		if( (p = strchr(loc, '.')) != 0 && (p - loc) < (int)sizeof(locbuf)-1 ) {
 			strncpy(locbuf, loc, p - loc);
 			locbuf[p - loc] = 0;
 		}
-		else if(strlen(loc) < sizeof(locbuf)-1)
+		else if( strlen(loc) < sizeof(locbuf)-1 )
 			strcpy(locbuf, loc);
 
                 // Locale 'C' does not give useful language info - assume en
-		if(!locbuf[0] || locbuf[0] == 'C')
+		if( !locbuf[0] || locbuf[0] == 'C' )
 			strcpy(locbuf, "en");
 
-		if((p = strchr(locbuf, '_')) && p - locbuf < LEN_LANG) {
+		if( (p = strchr(locbuf, '_')) && p - locbuf < LEN_LANG ) {
 			*p++ = 0;
 			strcpy(BC_Resources::language, locbuf);
-			if(strlen(p) < LEN_LANG)
+			if( strlen(p) < LEN_LANG )
 				strcpy(BC_Resources::region, p);
 		}
-		else if(strlen(locbuf) < LEN_LANG)
+		else if( strlen(locbuf) < LEN_LANG )
 			strcpy(BC_Resources::language, locbuf);
 	}
 	else
@@ -167,88 +168,62 @@ int main(int argc, char *argv[])
 	int load_backup = 0;
 	int start_remote_control = 0;
 
-	for(int i = 1; i < argc; i++)
-	{
-		if(!strcmp(argv[i], "-h"))
-		{
+	for( int i = 1; i < argc; i++ ) {
+		if( !strcmp(argv[i], "-h") ) {
 			operation = DO_USAGE;
 		}
-		else
-		if(!strcmp(argv[i], "-z"))
-		{
+		else if( !strcmp(argv[i], "-z") ) {
 			start_remote_control = 1;
 		}
-		else
-		if(!strcmp(argv[i], "-r"))
-		{
+		else if( !strcmp(argv[i], "-r") ) {
 			operation = DO_BATCHRENDER;
-			if(argc > i + 1)
-			{
-				if(argv[i + 1][0] != '-')
-				{
+			if( argc > i + 1 ) {
+				if( argv[i + 1][0] != '-' ) {
 					strcpy(batch_path, argv[i + 1]);
 					i++;
 				}
 			}
 		}
-		else
-		if(!strcmp(argv[i], "-c"))
-		{
-			if(argc > i + 1)
-			{
+		else if( !strcmp(argv[i], "-c") ) {
+			if( argc > i + 1 ) {
 				strcpy(config_path, argv[i + 1]);
 				i++;
 			}
-			else
-			{
+			else {
 				fprintf(stderr, _("%s: -c needs a filename.\n"), argv[0]);
 			}
 		}
-		else
-		if(!strcmp(argv[i], "-d") || !strcmp(argv[i], "-f"))
-		{
-			if(!strcmp(argv[i], "-d"))
-				operation = DO_DEAMON;
-			else
-				operation = DO_DEAMON_FG;
-
-			if(argc > i + 1)
-			{
-				if(atol(argv[i + 1]) > 0)
-				{
+		else if( !strcmp(argv[i], "-d") || !strcmp(argv[i], "-f") ) {
+			operation = !strcmp(argv[i], "-d") ? DO_DEAMON : DO_DEAMON_FG;
+			if( argc > i + 1 ) {
+				if( atol(argv[i + 1]) > 0 ) {
 					deamon_port = atol(argv[i + 1]);
 					i++;
 				}
 			}
 		}
-		else
-		if(!strcmp(argv[i], "-b"))
-		{
+		else if( !strcmp(argv[i], "-b") ) {
 			operation = DO_BRENDER;
-			if(i > argc - 2)
-			{
+			if( i > argc - 2 ) {
 				fprintf(stderr, _("-b may not be used by the user.\n"));
 				exit(1);
 			}
 			else
 				strcpy(deamon_path, argv[i + 1]);
 		}
-		else
-		if(!strcmp(argv[i], "-n"))
-		{
-			if(argc > i + 1)
-			{
+		else if( !strcmp(argv[i], "-n") ) {
+			if( argc > i + 1 ) {
 				nice_value = atol(argv[i + 1]);
 				i++;
 			}
 		}
-		else
-		if(!strcmp(argv[i], "-x"))
-		{
+		else if( !strcmp(argv[i], "-x") ) {
 			load_backup = 1;
 		}
-		else
-		{
+		else if( !strcmp(argv[i], "-S") ) {
+			load_perpetual = 0;
+		}
+		else {
 			char *new_filename;
 			new_filename = new char[BCTEXTLEN];
 			strcpy(new_filename, argv[i]);
@@ -259,11 +234,9 @@ int main(int argc, char *argv[])
 
 
 
-	if(operation == DO_GUI ||
-		operation == DO_DEAMON ||
-		operation == DO_DEAMON_FG ||
-		operation == DO_USAGE ||
-		operation == DO_BATCHRENDER) {
+	if( operation == DO_GUI ||
+	    operation == DO_DEAMON || operation == DO_DEAMON_FG ||
+	    operation == DO_USAGE  || operation == DO_BATCHRENDER) {
 
 #ifndef REPOMAINTXT
 #define REPOMAINTXT ""
@@ -283,8 +256,7 @@ int main(int argc, char *argv[])
 			PROGRAM_NAME, PROGRAM_NAME);
 	}
 
-	switch(operation)
-	{
+	switch( operation ) {
 		case DO_USAGE:
 			printf(_("\nUsage:\n"));
 			printf(_("%s [-f] [-c configuration] [-d port] [-n nice] [-r batch file] [filenames]\n\n"), argv[0]);
@@ -295,19 +267,18 @@ int main(int argc, char *argv[])
 				File::get_config_path(), CONFIG_FILE);
 			printf(_("-r = batch render the contents of the batch file (%s/%s) with no GUI.  batch file is optional.\n"),
 				File::get_config_path(), BATCH_PATH);
+			printf(_("-S = do not reload perpetual session\n"));
+			printf(_("-x = reload from backup\n"));
 			printf(_("filenames = files to load\n\n\n"));
 			exit(0);
 			break;
 
 		case DO_DEAMON:
-		case DO_DEAMON_FG:
-		{
-			if(operation == DO_DEAMON)
-			{
+		case DO_DEAMON_FG: {
+			if( operation == DO_DEAMON ) {
 				int pid = fork();
 
-				if(pid)
-				{
+				if( pid ) {
 // Redhat 9 requires _exit instead of exit here.
 					_exit(0);
 				}
@@ -318,36 +289,32 @@ int main(int argc, char *argv[])
 				nice_value,
 				config_path);
 			client.main_loop();
-			break;
-		}
+			break; }
 
 // Same thing without detachment
-		case DO_BRENDER:
-		{
+		case DO_BRENDER: {
 			RenderFarmClient client(0,
 				deamon_path,
 				20,
 				config_path);
 			client.main_loop();
-			break;
-		}
+			break; }
 
-		case DO_BATCHRENDER:
-		{
+		case DO_BATCHRENDER: {
 			BatchRenderThread *thread = new BatchRenderThread;
 			thread->start_rendering(config_path,
 				batch_path);
-			break;
-		}
+			break; }
 
-		case DO_GUI:
-		{
+		case DO_GUI: {
 			int restart = 0, done = 0;
 			while( !done ) {
 				BC_WindowBase::get_resources()->vframe_shm = 0;
 				MWindow mwindow;
 				mwindow.create_objects(1, !filenames.total, config_path);
 				CommandLineThread *thread  = 0;
+				if( mwindow.preferences->perpetual_session && load_perpetual )
+					mwindow.load_undo_data();
 //SET_TRACE
 // load the initial files on seperate tracks
 // use a new thread so it doesn't block the GUI
@@ -382,6 +349,8 @@ int main(int argc, char *argv[])
 					done = 1;
 
 				mwindow.save_defaults();
+				if( mwindow.preferences->perpetual_session )
+					mwindow.save_undo_data();
 //PRINT_TRACE
 				filenames.remove_all_objects();
 				delete thread;
@@ -399,10 +368,9 @@ int main(int argc, char *argv[])
 				av[ac++] = 0;
 				execv(exe_path, av);
 			}
-		}
 //SET_TRACE
 DISABLE_BUFFER
-		break;
+		break; }
 	}
 
 	filenames.remove_all_objects();

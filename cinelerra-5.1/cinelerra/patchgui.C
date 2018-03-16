@@ -425,6 +425,10 @@ int RecordPatch::button_press_event()
 			get_value(),
 			this,
 			&patch->track->record);
+		patch->title->set_back_color(patch->track->record ?
+			get_resources()->text_background :
+			get_resources()->text_background_disarmed);
+		patch->title->set_text_row(0);
 		return 1;
 	}
 	return 0;
@@ -658,19 +662,23 @@ int ExpandPatch::button_release_event()
 }
 
 
-
-
-
 TitlePatch::TitlePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
- : BC_TextBox(x,
- 		y,
-		patch->patchbay->get_w() - 10,
-		1,
-		patch->track->title,
-		1, MEDIUMFONT, 1)
+ : BC_TextBox(x, y, patch->patchbay->get_w() - 10, 1,
+		patch->track->title, 1, MEDIUMFONT, 1)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
+	set_back_color(patch->track->record ?
+			get_resources()->text_background :
+			get_resources()->text_background_disarmed);
+}
+
+void TitlePatch::update(const char *text)
+{
+	set_back_color(patch->track->record ?
+			get_resources()->text_background :
+			get_resources()->text_background_disarmed);
+	BC_TextBox::update(text);
 }
 
 int TitlePatch::handle_event()
@@ -682,13 +690,6 @@ int TitlePatch::handle_event()
 	mwindow->undo->update_undo_after(_("track title"), LOAD_PATCHES);
 	return 1;
 }
-
-
-
-
-
-
-
 
 
 NudgePatch::NudgePatch(MWindow *mwindow,

@@ -89,6 +89,7 @@ public:
 // Use thumbnails in AWindow assets.
 	int use_thumbnails;
 	int keyframe_reticle;
+	int perpetual_session;
 	int trap_sigsegv;
 	int trap_sigintr;
 // Title of theme

@@ -57,6 +57,9 @@ public:
 	int undo_load_flags();
 	int redo_load_flags();
 	void dump(FILE *fp=stdout);
+
+	void save(FILE *fp);
+	void load(FILE *fp);
 private:
 // Entry point for all update commands
 	void update_undo_entry(const char *description,

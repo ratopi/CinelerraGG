@@ -115,6 +115,7 @@ class TitlePatch : public BC_TextBox
 public:
 	TitlePatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
 	int handle_event();
+	void update(const char *text);
 	MWindow *mwindow;
 	PatchGUI *patch;
 };

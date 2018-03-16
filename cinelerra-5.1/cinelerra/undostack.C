@@ -482,3 +482,58 @@ void* UndoStackItem::get_creator()
 	return creator;
 }
 
+void UndoStackItem::save(FILE *fp)
+{
+	fwrite(&key,1,sizeof(key),fp);
+	fwrite(&load_flags,1,sizeof(load_flags),fp);
+	fwrite(&data_size,1,sizeof(data_size),fp);
+	fwrite(data,1,data_size,fp);
+	for( char *bp=session_filename; *bp; ++bp ) fputc(*bp, fp);
+	fputc(0, fp);
+	for( char *bp=description; *bp; ++bp ) fputc(*bp, fp);
+	fputc(0, fp);
+}
+
+void UndoStackItem::load(FILE *fp)
+{
+	fread(&key,1,sizeof(key),fp);
+	fread(&load_flags,1,sizeof(load_flags),fp);
+	fread(&data_size,1,sizeof(data_size),fp);
+	fread(data=new char[data_size],1,data_size,fp);
+	char filename[BCTEXTLEN], descr[BCTEXTLEN];
+	char *bp = filename, *ep = bp+sizeof(filename)-1;
+	for( int ch; bp<ep && (ch=fgetc(fp))>0; ++bp ) *bp = ch;
+	*bp = 0;
+	session_filename = cstrdup(filename);
+	bp = descr;  ep = bp+sizeof(descr)-1;
+	for( int ch; bp<ep && (ch=fgetc(fp))>0; ++bp ) *bp = ch;
+	*bp = 0;
+	description = cstrdup(descr);
+//printf("read undo key=%d,flags=%jx,data_size=%d,data=%p,file=%s,descr=%s\n",
+// key, load_flags, data_size, data, session_filename, description);
+}
+
+void UndoStack::save(FILE *fp)
+{
+	for( UndoStackItem *item=first; item; item=item->next ) {
+		int is_current = item == current ? 1 : 0;
+		fwrite(&is_current,1,sizeof(is_current),fp);
+		item->save(fp);
+//		if( item == current ) break; // stop at current
+	}
+}
+
+void UndoStack::load(FILE *fp)
+{
+	while( last ) delete last;
+	current = 0;
+	UndoStackItem *current_item = 0;
+	int is_current = 0;
+	while( fread(&is_current,1,sizeof(is_current),fp) == sizeof(is_current) ) {
+		UndoStackItem *item = push();
+		item->load(fp);
+		if( is_current ) current_item = item;
+	}
+	if( current_item ) current = current_item;
+}
+

@@ -292,3 +292,30 @@ void MainUndo::dump(FILE *fp)
 	undo_stack->dump(fp);
 }
 
+void MainUndo::save(FILE *fp)
+{
+	undo_stack->save(fp);
+}
+
+void MainUndo::load(FILE *fp)
+{
+	undo_stack->load(fp);
+	UndoStackItem *current = undo_stack->current;
+	char *current_data = current ? current->get_data() : 0;
+	if( !current_data ) return;
+	mwindow->gui->lock_window("MainUndo::load");
+	UndoStackItem *next = current->next;
+	mwindow->gui->mainmenu->redo->
+		update_caption(next ? next->get_description() : "");
+	mwindow->set_filename(current->get_filename());
+	FileXML file;
+	file.read_from_string(current_data);
+	load_from_undo(&file, LOAD_ALL);
+	delete [] current_data;
+	UndoStackItem *prev = current->previous;
+	mwindow->gui->mainmenu->undo->
+		update_caption(prev ? prev->get_description() : "");
+	mwindow->update_project(LOADMODE_REPLACE);
+	mwindow->gui->unlock_window();
+}
+

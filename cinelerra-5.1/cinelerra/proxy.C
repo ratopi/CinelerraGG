@@ -33,6 +33,7 @@
 #include "formattools.h"
 #include "language.h"
 #include "mainerror.h"
+#include "mainindexes.h"
 #include "mainprogress.h"
 #include "mainundo.h"
 #include "mutex.h"
@@ -758,6 +759,11 @@ void ProxyClient::process_package(LoadPackage *ptr)
 			break;
 		}
 		proxy_render->update_progress();
+	}
+	if( !proxy_render->failed && !proxy_render->is_canceled() ) {
+		Asset *asset = mwindow->edl->assets->update(proxy);
+		mwindow->mainindexes->add_next_asset(0, asset);
+		mwindow->mainindexes->start_build();
 	}
 }
 

@@ -102,14 +102,22 @@ public:
 // Scale all sample values since everything is locked to audio
 	void rechannel();
 	void resample(double old_rate, double new_rate, int data_type);
+
 	int copy(double start, double end, int all,
 		FileXML *file, const char *output_path, int rewind_it);
+	int copy(int all, FileXML *file, const char *output_path, int rewind_it);
+
 	int copy_clip(double start, double end, int all,
 		FileXML *file, const char *output_path, int rewind_it);
+	int copy_clip(int all, FileXML *file, const char *output_path, int rewind_it);
+
 	int copy_nested_edl(double start, double end, int all,
 		FileXML *file, const char *output_path, int rewind_it);
+	int copy_nested_edl(int all, FileXML *file, const char *output_path, int rewind_it);
+
 	int copy_vwindow_edl(double start, double end, int all,
 		FileXML *file, const char *output_path, int rewind_it);
+	int copy_vwindow_edl(int all, FileXML *file, const char *output_path, int rewind_it);
 
 	void copy_tracks(EDL *edl);
 // Copies project path, folders, EDLSession, and LocalSession from edl argument.

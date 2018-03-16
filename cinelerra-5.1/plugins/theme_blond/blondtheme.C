@@ -108,6 +108,7 @@ void BlondTheme::initialize()
 
 	resources->text_default = 0x000000;
 	resources->text_background = 0xcecea2;
+	resources->text_background_disarmed = 0xefeddb;
 	resources->text_border1 = 0x202020;
 	resources->text_border2 = 0xcecea2;
 	resources->text_border3 = 0xcecea2;

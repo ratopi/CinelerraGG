@@ -106,6 +106,7 @@ void BrightTheme::initialize()
 
 	resources->text_default = 0x000000;
 	resources->text_background = 0xffffff;
+	resources->text_background_disarmed = 0xaaaaaa;
 	resources->text_background_hi = 0xffffff;
 	resources->text_border1 = 0x000000;
 	resources->text_border2 = 0xffffff;

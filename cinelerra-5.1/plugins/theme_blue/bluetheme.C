@@ -108,6 +108,7 @@ void BlueDotTheme::initialize()
 
 	resources->text_default = 0xeeeeff;
 	resources->text_background = 0x1a1447;
+	resources->text_background_disarmed = 0x7282d4;
 	resources->text_border1 = 0x202020;
 	resources->text_border2 = 0x1a1447;
 	resources->text_border3 = 0x1a1447;

@@ -484,7 +484,8 @@ public:
 	int toggle_label(int is_mwindow);
 	void undo_entry(BC_WindowBase *calling_window_gui);
 	void redo_entry(BC_WindowBase *calling_window_gui);
-
+	void save_undo_data();
+	void load_undo_data();
 
 	int cut_automation();
 	int copy_automation();

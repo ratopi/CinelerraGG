@@ -166,6 +166,8 @@ int BC_TextBox::reset_parameters(int rows, int has_border, int font, int size)
 	text_x = 0;
 	enabled = 1;
 	highlighted = 0;
+	back_color = -1;
+	high_color = -1;
 	precision = 4;
 	if (!skip_cursor)
 		skip_cursor = new Timer;
@@ -281,13 +283,13 @@ int BC_TextBox::initialize()
 	BC_Resources *resources = get_resources();
 	if(has_border)
 	{
-		back_color = resources->text_background;
-		high_color = resources->text_background_hi;
+		if( back_color < 0 ) back_color = resources->text_background;
+		if( high_color < 0 ) high_color = resources->text_background_hi;
 	}
 	else
 	{
-		high_color = resources->text_background_noborder_hi;
-		back_color = bg_color;
+		if( back_color < 0 ) back_color = bg_color;
+		if( high_color < 0 ) high_color = resources->text_background_noborder_hi;
 	}
 
 	draw(0);
@@ -456,7 +458,8 @@ int BC_TextBox::update(const char *text)
 {
 //printf("BC_TextBox::update 1 %d %s %s\n", tstrcmp(text), text, this->text);
 // Don't update if contents are the same
-	if(!tstrcmp(text)) return 0;
+	int bg_color = has_border || !highlighted ? back_color : high_color;
+	if( bg_color == background_color && !tstrcmp(text)) return 0;
 	tstrcpy(text);
 	int wtext_len = wtext_update();
 	if(highlight_letter1 > wtext_len) highlight_letter1 = wtext_len;
@@ -519,6 +522,8 @@ int BC_TextBox::get_text_x() { return text_x; }
 int BC_TextBox::get_text_y() { return text_y; }
 void BC_TextBox::set_text_x(int v) { text_x = v; }
 void BC_TextBox::set_text_y(int v) { text_y = v; }
+int BC_TextBox::get_back_color() { return back_color; }
+void BC_TextBox::set_back_color(int v) { back_color = v; }
 
 int BC_TextBox::pixels_to_rows(BC_WindowBase *window, int font, int pixels)
 {
@@ -655,12 +660,7 @@ void BC_TextBox::draw(int flush)
 
 //printf("BC_TextBox::draw %d %s\n", __LINE__, text);
 // Background
-	if(has_border)
-		background_color = resources->text_background;
-	else if(highlighted)
-		background_color = high_color;
-	else
-		background_color = back_color;
+	background_color = has_border || !highlighted ? back_color : high_color;
 	set_color(background_color);
 	draw_box(0, 0, w, h);
 

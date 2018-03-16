@@ -3349,9 +3349,12 @@ void MWindow::save_backup()
 	FileXML file;
 	edl->optimize();
 	edl->set_path(session->filename);
-	char backup_path[BCTEXTLEN];
+	char backup_path[BCTEXTLEN], backup_path1[BCTEXTLEN];
 	snprintf(backup_path, sizeof(backup_path), "%s/%s",
 		File::get_config_path(), BACKUP_FILE);
+	snprintf(backup_path1, sizeof(backup_path1), "%s/%s",
+		File::get_config_path(), BACKUP_FILE1);
+	rename(backup_path, backup_path1);
 	edl->save_xml(&file, backup_path);
 	file.terminate_string();
 	FileSystem fs;
@@ -3386,6 +3389,29 @@ void MWindow::load_backup()
 	set_filename(edl->path);
 	path_list.remove_all_objects();
 	save_backup();
+}
+
+
+void MWindow::save_undo_data()
+{
+	char perpetual_path[BCTEXTLEN];
+	snprintf(perpetual_path, sizeof(perpetual_path), "%s/%s",
+		File::get_config_path(), PERPETUAL_FILE);
+	FILE *fp = fopen(perpetual_path,"w");
+	if( !fp ) return;
+	undo->save(fp);
+	fclose(fp);
+}
+
+void MWindow::load_undo_data()
+{
+	char perpetual_path[BCTEXTLEN];
+	snprintf(perpetual_path, sizeof(perpetual_path), "%s/%s",
+		File::get_config_path(), PERPETUAL_FILE);
+	FILE *fp = fopen(perpetual_path,"r");
+	if( !fp ) return;
+	undo->load(fp);
+	fclose(fp);
 }
 
 static inline int gcd(int m, int n)

@@ -25,6 +25,7 @@
 // Run-time configuration directory
 #define DEAMON_PORT 400
 #define BACKUP_FILE "backup.xml"
+#define BACKUP_FILE1 "backup.prev"
 #define FFMPEG_EARLY_TIP _("Currently: Try FFMpeg first\n   Click to: Try FFMpeg last")
 #define FFMPEG_LATE_TIP  _("Currently: Try FFMpeg last\n   Click to: Try FFMpeg first")
 

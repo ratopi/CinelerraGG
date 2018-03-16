@@ -190,6 +190,8 @@ void AppearancePrefs::create_objects()
 	add_subwindow(displacement);
 	y1 += displacement->get_h() + 5;
 	add_subwindow(thumbnails = new ViewThumbnails(x1, y1, pwindow));
+	y1 += thumbnails->get_h() + 5;
+	add_subwindow(perpetual = new PerpetualSession(x1, y1, pwindow));
 	if( y < y1 ) y = y1;
 }
 
@@ -626,5 +628,19 @@ int YuvColorRangeItem::handle_event()
 	popup->set_text(get_text());
 	popup->pwindow->thread->preferences->yuv_color_range = id;
 	return popup->handle_event();
+}
+
+
+PerpetualSession::PerpetualSession(int x, int y, PreferencesWindow *pwindow)
+ : BC_CheckBox(x, y,
+	pwindow->thread->preferences->perpetual_session, _("Perpetual session"))
+{
+	this->pwindow = pwindow;
+}
+
+int PerpetualSession::handle_event()
+{
+	pwindow->thread->preferences->perpetual_session = get_value();
+	return 1;
 }
 

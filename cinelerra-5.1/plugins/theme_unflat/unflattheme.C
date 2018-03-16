@@ -103,6 +103,7 @@ void UNFLATTHEME::initialize()
 
 	resources->text_default = 0xbfbfbf;
 	resources->text_background = 0x333333;
+	resources->text_background_disarmed = 0xaf0000;
 	resources->text_border1 = 0x202020;
 	resources->text_border2 = 0x333333;
 	resources->text_border3 = 0x333333;

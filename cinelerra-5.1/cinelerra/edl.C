@@ -339,7 +339,7 @@ int EDL::read_xml(FileXML *file, uint32_t load_flags)
 // The string is not terminated in this call.
 int EDL::save_xml(FileXML *file, const char *output_path)
 {
-	copy(0, tracks->total_length(), 1, file, output_path, 0);
+	copy(1, file, output_path, 0);
 	return 0;
 }
 
@@ -472,6 +472,10 @@ int EDL::copy(double start, double end, int all,
 	return copy(start, end, all,
 		"/EDL", file, output_path, rewind_it);
 }
+int EDL::copy(int all, FileXML *file, const char *output_path, int rewind_it)
+{
+	return copy(0, tracks->total_length(), all, file, output_path, rewind_it);
+}
 
 int EDL::copy_clip(double start, double end, int all,
 	FileXML *file, const char *output_path, int rewind_it)
@@ -480,6 +484,11 @@ int EDL::copy_clip(double start, double end, int all,
 	return copy(start, end, all,
 		"/CLIP_EDL", file, output_path, rewind_it);
 }
+int EDL::copy_clip(int all, FileXML *file, const char *output_path, int rewind_it)
+{
+	return copy_clip(0, tracks->total_length(), all, file, output_path, rewind_it);
+}
+
 int EDL::copy_nested_edl(double start, double end, int all,
 	FileXML *file, const char *output_path, int rewind_it)
 {
@@ -488,6 +497,11 @@ int EDL::copy_nested_edl(double start, double end, int all,
 	return copy(start, end, all,
 		"/NESTED_EDL", file, output_path, rewind_it);
 }
+int EDL::copy_nested_edl(int all, FileXML *file, const char *output_path, int rewind_it)
+{
+	return copy_nested_edl(0, tracks->total_length(), all, file, output_path, rewind_it);
+}
+
 int EDL::copy_vwindow_edl(double start, double end, int all,
 	FileXML *file, const char *output_path, int rewind_it)
 {
@@ -495,6 +509,11 @@ int EDL::copy_vwindow_edl(double start, double end, int all,
 	return copy(start, end, all,
 		"/VWINDOW_EDL", file, output_path, rewind_it);
 }
+int EDL::copy_vwindow_edl(int all, FileXML *file, const char *output_path, int rewind_it)
+{
+	return copy_vwindow_edl(0, tracks->total_length(), all, file, output_path, rewind_it);
+}
+
 
 int EDL::copy(double start, double end, int all,
 	const char *closer, FileXML *file,
@@ -549,12 +568,10 @@ int EDL::copy(double start, double end, int all,
 // Don't want this if using clipboard
 		if( all ) {
 			for( int i=0; i<total_vwindow_edls(); ++i )
-				get_vwindow_edl(i)->copy_vwindow_edl(0, tracks->total_length(), 1,
-					file, output_path, 0);
+				get_vwindow_edl(i)->copy_vwindow_edl(1, file, output_path, 0);
 
 			for( int i=0; i<clips.size(); ++i )
-				clips[i]->copy_clip(0, tracks->total_length(), 1,
-					file, output_path, 0);
+				clips[i]->copy_clip(1, file, output_path, 0);
 
 			mixers.save(file);
 		}

@@ -49,5 +49,6 @@ class YuvColorSpace;
 class YuvColorSpaceItem;
 class YuvColorRange;
 class YuvColorRangeItem;
+class PerpetualSession;
 
 #endif

@@ -114,6 +114,7 @@ void BlueDotTheme::initialize()
 	// COPIED FROM DEFAULT THEME 1>>
 	resources->text_default = 0x000000;
 	resources->text_background = 0xffffff;
+	resources->text_background_disarmed = 0xff3939;
 		//listbox borders
 	resources->text_border1 = 0x4a484a; // (top outer)
 	resources->text_border2 = 0x000000; // (top inner)

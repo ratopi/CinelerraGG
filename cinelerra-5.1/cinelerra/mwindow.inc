@@ -28,6 +28,7 @@
 #define CONFIG_FILE "Cinelerra_rc"
 // user presets
 #define PRESETS_FILE "Cinelerra_presets"
+#define PERPETUAL_FILE "perpetual.dat"
 // factory presets
 #define FACTORY_FILE "Cinelerra_factory"
 #define PICTURE_FILE "Cinelerra_picture"

@@ -108,6 +108,8 @@ public:
 	void set_creator(void *creator);
 	void* get_creator();
 
+	void save(FILE *fp);
+	void load(FILE *fp);
 private:
 // command description for the menu item
 	char *description;
@@ -147,6 +149,8 @@ public:
 // move to the next undo entry for a redo
 	UndoStackItem* pull_next();
 
+	void save(FILE *fp);
+	void load(FILE *fp);
 	void dump(FILE *fp=stdout);
 
 	UndoStackItem* current;

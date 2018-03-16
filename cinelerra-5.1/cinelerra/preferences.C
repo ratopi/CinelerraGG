@@ -63,6 +63,7 @@ Preferences::Preferences()
 	index_count = 500;
 	use_thumbnails = 1;
 	keyframe_reticle = HAIRLINE_DRAGGING;
+	perpetual_session = 0;
 	trap_sigsegv = 1;
 	trap_sigintr = 1;
 	theme[0] = 0;
@@ -168,6 +169,7 @@ void Preferences::copy_from(Preferences *that)
 	index_count = that->index_count;
 	use_thumbnails = that->use_thumbnails;
 	keyframe_reticle = that->keyframe_reticle;
+	perpetual_session = that->perpetual_session;
 	strcpy(theme, that->theme);
 	strcpy(plugin_icons, that->plugin_icons);
 	strcpy(snapshot_path, that->snapshot_path);
@@ -299,8 +301,8 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	defaults->get("INDEX_DIRECTORY", index_directory);
 	index_size = defaults->get("INDEX_SIZE", index_size);
 	index_count = defaults->get("INDEX_COUNT", index_count);
-	use_thumbnails = defaults->get("USE_THUMBNAILS", use_thumbnails);
 	keyframe_reticle = defaults->get("KEYFRAME_RETICLE", keyframe_reticle);
+	perpetual_session = defaults->get("PERPETUAL_SESSION", perpetual_session);
 	trap_sigsegv = defaults->get("TRAP_SIGSEGV", trap_sigsegv);
 	trap_sigintr = defaults->get("TRAP_SIGINTR", trap_sigintr);
 
@@ -440,6 +442,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("INDEX_COUNT", index_count);
 	defaults->update("USE_THUMBNAILS", use_thumbnails);
 	defaults->update("KEYFRAME_RETICLE", keyframe_reticle);
+	defaults->update("PERPETUAL_SESSION", perpetual_session);
 	defaults->update("TRAP_SIGSEGV", trap_sigsegv);
 	defaults->update("TRAP_SIGINTR", trap_sigintr);
 	defaults->update("THEME", theme);
