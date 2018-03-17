@@ -597,36 +597,47 @@ int EDL::copy(double start, double end, int all,
 	return 0;
 }
 
-EDL *EDL::get_nested(EDL *nested_edl, const char *path)
+void EDL::copy_indexables(EDL *edl)
 {
-	for( int i=0; i<nested_edls.size(); ++i ) {
-		EDL *dst = nested_edls[i];
-		if( !strcmp(path, dst->path) ) return dst;
+	for( Track *track=edl->tracks->first; track; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( edit->asset )
+				assets->update(edit->asset);
+			if( edit->nested_edl )
+				nested_edls.get_nested(edit->nested_edl);
+		}
 	}
-	return new_nested(nested_edl, path);
 }
 
-EDL *EDL::new_nested(EDL *nested_edl, const char *path)
+EDL *EDL::new_nested(EDL *edl, const char *path)
 {
-	EDL *new_edl = new EDL;  // no parent for nested clip
+	EDL *nested = new EDL;  // no parent for nested edl
+	nested->create_objects();
+	nested->copy_session(edl);
+	nested->set_path(path);
+	nested->update_index(edl);
+	nested->copy_indexables(edl);
+	nested->tracks->copy_from(edl->tracks);
+	nested_edls.append(nested);
+	return nested;
+}
+
+EDL *EDL::create_nested_clip(EDL *nested)
+{
+	EDL *new_edl = new EDL(this);  // parent for clip edl
 	new_edl->create_objects();
-	new_edl->copy_session(this);
-	new_edl->create_nested(nested_edl, path);
+	new_edl->create_nested(nested);
 	return new_edl;
 }
 
-void EDL::create_nested(EDL *nested_edl, const char *path)
+void EDL::create_nested(EDL *nested)
 {
-	set_path(path);
-	strcpy(local_session->clip_title, path);
-// save a ref to nested edl for garbage delete
-	EDL *nest = clips.get_copy(nested_edl);
 // Keep frame rate, sample rate, and output size unchanged.
 // Nest all video & audio outputs
 	session->video_tracks = 1;
-	session->audio_tracks = nest->session->audio_channels;
+	session->audio_tracks = nested->session->audio_channels;
 	create_default_tracks();
-	insert_asset(0, nest, 0, 0, 0);
+	insert_asset(0, nested, 0, 0, 0);
 }
 
 void EDL::retrack()
@@ -1048,7 +1059,7 @@ void EDL::insert_asset(Asset *asset,
 	EDL *new_nested_edl = 0;
 
 	if( asset ) new_asset = assets->update(asset);
-	if( nested_edl ) new_nested_edl = nested_edls.get_copy(nested_edl);
+	if( nested_edl ) new_nested_edl = nested_edls.get_nested(nested_edl);
 
 // Paste video
 	int vtrack = 0;

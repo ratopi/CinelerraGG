@@ -20,6 +20,7 @@
  */
 
 #include "assetedit.h"
+#include "assetremove.h"
 #include "proxypopup.h"
 #include "awindow.h"
 #include "awindowgui.h"
@@ -57,6 +58,8 @@ ProxyPopup::~ProxyPopup()
 
 void ProxyPopup::create_objects()
 {
+	BC_MenuItem *menu_item;
+	BC_SubMenu *submenu;
 	add_item(info = new ProxyPopupInfo(mwindow, this));
 	add_item(format = new AWindowListFormat(mwindow, gui));
 	add_item(new ProxyPopupSort(mwindow, this));
@@ -64,6 +67,10 @@ void ProxyPopup::create_objects()
 	add_item(view_window = new ProxyPopupViewWindow(mwindow, this));
 	add_item(new ProxyPopupCopy(mwindow, this));
 	add_item(new ProxyPopupPaste(mwindow, this));
+	add_item(menu_item = new BC_MenuItem(_("Remove...")));
+	menu_item->add_submenu(submenu = new BC_SubMenu());
+	submenu->add_submenuitem(new ProxyPopupProjectRemove(mwindow, this));
+	submenu->add_submenuitem(new ProxyPopupDiskRemove(mwindow, this));
 }
 
 void ProxyPopup::paste_assets()
@@ -243,6 +250,48 @@ int ProxyPopupPaste::handle_event()
 	popup->paste_assets();
 	return 1;
 }
+
+
+ProxyPopupProjectRemove::ProxyPopupProjectRemove(MWindow *mwindow, ProxyPopup *popup)
+ : BC_MenuItem(_("Remove from project"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+
+ProxyPopupProjectRemove::~ProxyPopupProjectRemove()
+{
+}
+
+int ProxyPopupProjectRemove::handle_event()
+{
+	popup->gui->collect_assets();
+	mwindow->remove_assets_from_project(1, 1,
+		mwindow->session->drag_assets,
+		mwindow->session->drag_clips);
+	return 1;
+}
+
+
+ProxyPopupDiskRemove::ProxyPopupDiskRemove(MWindow *mwindow, ProxyPopup *popup)
+ : BC_MenuItem(_("Remove from disk"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+
+
+ProxyPopupDiskRemove::~ProxyPopupDiskRemove()
+{
+}
+
+int ProxyPopupDiskRemove::handle_event()
+{
+	popup->gui->collect_assets();
+	mwindow->awindow->asset_remove->start();
+	return 1;
+}
+
 
 
 ProxyListMenu::ProxyListMenu(MWindow *mwindow, AWindowGUI *gui)

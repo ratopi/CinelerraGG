@@ -35,7 +35,7 @@ void ClipEDLs::remove_clip(EDL *clip)
 }
 
 
-EDL* ClipEDLs::get_copy(EDL *src)
+EDL* ClipEDLs::get_nested(EDL *src)
 {
 	if( !src ) return 0;
 	for( int i=0; i<size(); ++i ) {

@@ -1209,7 +1209,8 @@ if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
 		new_edl->copy_session(edl);
 		if( !indexable->is_asset ) {
 			EDL *nested_edl = (EDL*)indexable;
-			new_edl->create_nested(nested_edl, indexable->path);
+			new_edl->create_nested(nested_edl);
+			new_edl->set_path(indexable->path);
 		}
 		else {
 			Asset *asset = (Asset*)indexable;
@@ -1557,7 +1558,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 			edl->add_clip(new_edl->clips[j]);
 		}
 		for( int j=0; j<new_edl->nested_edls.size(); ++j ) {
-			edl->nested_edls.get_copy(new_edl->nested_edls[j]);
+			edl->nested_edls.get_nested(new_edl->nested_edls[j]);
 		}
 
 		if( new_edl->total_vwindow_edls() ) {

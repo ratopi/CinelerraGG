@@ -241,7 +241,7 @@ int Edit::silence()
 
 void Edit::copy_from(Edit *edit)
 {
-	this->nested_edl = edl->nested_edls.get_copy(edit->nested_edl);
+	this->nested_edl = edl->nested_edls.get_nested(edit->nested_edl);
 	this->asset = edl->assets->update(edit->asset);
 	this->startsource = edit->startsource;
 	this->startproject = edit->startproject;

@@ -28,6 +28,8 @@ class ProxyPopupSort;
 class ProxyPopupView;
 class ProxyPopupViewWindow;
 class ProxyPopupCopy;
+class ProxyPopupProjectRemove;
+class ProxyPopupDiskRemove;
 class ProxyListMenu;
 
 #endif

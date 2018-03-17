@@ -64,7 +64,7 @@ void Indexable::update_index(Indexable *src)
 	if( index_state == src->index_state ) return;
 	if( index_state ) index_state->remove_user();
 	index_state = src->index_state;
-	index_state->add_user();
+	if( index_state ) index_state->add_user();
 }
 
 

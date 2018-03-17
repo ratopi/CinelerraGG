@@ -431,36 +431,33 @@ int ClipPopupNest::handle_event()
 	gui->lock_window("ClipPopupNest::handle_event 1");
 	if( mwindow->session->drag_clips->total > 0 ) {
 		EDL *edl = mwindow->edl;
+		time_t dt;      time(&dt);
+		struct tm dtm;  localtime_r(&dt, &dtm);
+		char path[BCSTRLEN];
+		sprintf(path, _("Nested_%02d%02d%02d-%02d%02d%02d"),
+			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
+			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
 		EDL *clip = mwindow->session->drag_clips->values[0];
-		EDL *new_clip = new EDL(edl);
-		new_clip->create_objects();
-		new_clip->copy_all(clip);
+		EDL *nested = edl->new_nested(clip, path);
+		EDL *new_clip = edl->create_nested_clip(nested);
 		new_clip->awindow_folder = AW_CLIP_FOLDER;
+                sprintf(new_clip->local_session->clip_icon,
+                        "clip_%02d%02d%02d-%02d%02d%02d.png",
+                        dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
+                        dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
 		snprintf(new_clip->local_session->clip_title,
 			sizeof(new_clip->local_session->clip_title),
 			_("Nested: %s"), clip->local_session->clip_title);
 		strcpy(new_clip->local_session->clip_notes,
 			clip->local_session->clip_notes);
-		time_t dt;	time(&dt);
-		struct tm dtm;	localtime_r(&dt, &dtm);
-		sprintf(new_clip->local_session->clip_icon,
-			"clip_%02d%02d%02d-%02d%02d%02d.png",
-			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
-			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
-		char path[BCSTRLEN];
-		sprintf(path, _("Nested_%02d%02d%02d-%02d%02d%02d"),
-			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
-			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
-		EDL *clip_edl = edl->new_nested(new_clip, path);
-		new_clip->remove_user();
 		int idx = edl->clips.number_of(clip);
 		if( idx >= 0 ) {
-			edl->clips[idx] = clip_edl;
+			edl->clips[idx] = new_clip;
 			clip->remove_user();
 		}
 		else
-			edl->clips.append(clip_edl);
-		mwindow->mainindexes->add_next_asset(0, clip_edl);
+			edl->clips.append(new_clip);
+		mwindow->mainindexes->add_next_asset(0, nested);
 		mwindow->mainindexes->start_build();
 		popup->gui->async_update_assets();
 	}

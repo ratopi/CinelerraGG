@@ -1961,7 +1961,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				nested_edl->create_objects();
 				nested_edl->load_xml(&xml_file, LOAD_ALL);
 //printf("MWindow::load_filenames %p %s\n", nested_edl, nested_edl->project_path);
-				new_edl->create_nested(nested_edl, filenames->get(i));
+				new_edl->create_nested(nested_edl);
+				new_edl->set_path(filenames->get(i));
 				nested_edl->Garbage::remove_user();
 			}
 			else {

@@ -169,7 +169,7 @@ void Edits::insert_edits(Edits *source_edits,
 	{
 		EDL *dest_nested_edl = 0;
 		if(source_edit->nested_edl)
-			dest_nested_edl = edl->nested_edls.get_copy(source_edit->nested_edl);
+			dest_nested_edl = edl->nested_edls.get_nested(source_edit->nested_edl);
 
 // Update Assets
 		Asset *dest_asset = 0;

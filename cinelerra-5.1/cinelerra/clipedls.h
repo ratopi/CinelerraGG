@@ -14,7 +14,7 @@ public:
 	void add_clip(EDL *clip);
 	void remove_clip(EDL *clip);
 // Return copy of the src EDL which belongs to the current object.
-	EDL* get_copy(EDL *src);
+	EDL* get_nested(EDL *src);
 	void copy_nested(ClipEDLs &nested);
 	EDL* load(char *path);
 	void clear();

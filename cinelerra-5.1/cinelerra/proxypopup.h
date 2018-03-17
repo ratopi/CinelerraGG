@@ -126,6 +126,30 @@ public:
 	ProxyPopup *popup;
 };
 
+class ProxyPopupProjectRemove : public BC_MenuItem
+{
+public:
+	ProxyPopupProjectRemove(MWindow *mwindow, ProxyPopup *popup);
+	~ProxyPopupProjectRemove();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	ProxyPopup *popup;
+};
+
+class ProxyPopupDiskRemove : public BC_MenuItem
+{
+public:
+	ProxyPopupDiskRemove(MWindow *mwindow, ProxyPopup *popup);
+	~ProxyPopupDiskRemove();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	ProxyPopup *popup;
+};
+
 class ProxyListMenu : public BC_PopupMenu
 {
 public:
