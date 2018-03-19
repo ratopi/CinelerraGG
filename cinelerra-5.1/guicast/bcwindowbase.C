@@ -3431,6 +3431,8 @@ BC_WindowBase::get_xinerama_info(int screen)
 		return 0;
 	}
 	int top_x = get_x(), top_y = get_y();
+	if(  BC_DisplayInfo::left_border >= 0 ) top_x +=  BC_DisplayInfo::left_border;
+	if(  BC_DisplayInfo::top_border >= 0 ) top_y +=  BC_DisplayInfo::top_border;
 	for( int i=0; i<xinerama_screens; ++i ) {
 		int scr_y = top_y - xinerama_info[i].y_org;
 		if( scr_y < 0 || scr_y >= xinerama_info[i].height ) continue;
