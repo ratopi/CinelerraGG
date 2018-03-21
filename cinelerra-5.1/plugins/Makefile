@@ -49,6 +49,7 @@ DIRS = $(OPENCV_OBJS) \
 	denoisefft \
 	denoiseseltempavg \
 	denoisevideo \
+	descratch \
 	despike \
 	diffkey \
 	dissolve \

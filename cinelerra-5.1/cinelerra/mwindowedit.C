@@ -1600,6 +1600,10 @@ void MWindow::paste_silence()
 {
 	double start = edl->local_session->get_selectionstart();
 	double end = edl->local_session->get_selectionend();
+	if( EQUIV(start, end) ) {
+		if( edl->session->frame_rate > 0 )
+			end += 1./edl->session->frame_rate;
+	}
 	undo->update_undo_before();
 	edl->paste_silence(start, end,
 		edl->session->labels_follow_edits,

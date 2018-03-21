@@ -40,7 +40,7 @@ video_tools := blur decimate delayvideo denoisemjpeg denoisevideo downsample \
 	motion2 motionblur motion motion-cv motion-hv motion51 \
 	overlay radialblur reframe reframert reroute reversevideo \
 	rumbler seltempavg sharpen svg titler timeavg timefront \
-	unsharp videoscope wave zoomblur findobject
+	unsharp videoscope wave zoomblur findobject descratch
 
 plugin_dirs += blending
 blending := crikey chromakeyhsv chromakey diffkey
