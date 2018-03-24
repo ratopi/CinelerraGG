@@ -23,22 +23,10 @@
 #include "agingwindow.h"
 #include "language.h"
 
-
-
-
-
-
-
-
-AgingWindow::AgingWindow(AgingMain *client)
- : PluginClientWindow(client,
-	300,
-	170,
-	300,
-	170,
-	0)
+AgingWindow::AgingWindow(AgingMain *plugin)
+ : PluginClientWindow(plugin, 300, 180, 300, 180, 0)
 {
-	this->client = client;
+	this->plugin = plugin;
 }
 
 AgingWindow::~AgingWindow()
@@ -48,171 +36,65 @@ AgingWindow::~AgingWindow()
 void AgingWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y,
-		"Film aging from EffectTV\n"
-		"Copyright (C) 2001 FUKUCHI Kentarou")
-	);
-// 
-// 	y += 50;
-// 	add_subwindow(color = new AgingColor(x, y, client));
-// 
-// 	y += 25;
-// 	add_subwindow(scratches = new AgingScratches(x, y, client));
-// 	add_subwindow(scratch_count = new AgingScratchCount(x + 100, y + 10, client));
-// 
-// 	y += 25;
-// 	add_subwindow(pits = new AgingPits(x, y, client));
-// 	add_subwindow(pit_count = new AgingPitCount(x + 100, y + 10, client));
-// 
-// 	y += 25;
-// 	add_subwindow(dust = new AgingDust(x, y, client));
-// 	add_subwindow(dust_count = new AgingDustCount(x + 100, y + 10, client));
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, _("Aging:")));
+	y += title->get_h() + 15;
 
-	show_window();
-	flush();
+	add_subwindow(color = new AgingCheckBox(this, x, y,
+		&plugin->config.colorage, _("Grain")));
+	y += color->get_h() + 5;
+
+	add_subwindow(scratches = new AgingCheckBox(this, x, y,
+		&plugin->config.scratch, _("Scratch")));
+	add_subwindow(scratch_count = new AgingISlider(this, x+100, y, 180,
+		0,SCRATCH_MAX, &plugin->config.scratch_lines));
+	y += scratches->get_h() + 5;
+
+	add_subwindow(pits = new AgingCheckBox(this, x, y,
+		&plugin->config.pits, _("Pits")));
+	add_subwindow(pit_count = new AgingISlider(this, x+100, y, 180,
+		0,100, &plugin->config.pits_interval));
+	y += pits->get_h() + 5;
+
+	add_subwindow(dust = new AgingCheckBox(this, x, y,
+		&plugin->config.dust, _("Dust")));
+	add_subwindow(dust_count = new AgingISlider(this, x+100, y, 180,
+		0,100, &plugin->config.dust_interval));
+
+	show_window(1);
 }
 
 
-
-
-
-
-
-
-AgingColor::AgingColor(int x, int y, AgingMain *plugin)
- : BC_CheckBox(x, y, plugin->config.colorage, _("Grain"))
+AgingISlider::AgingISlider(AgingWindow *win,
+		int x, int y, int w, int min, int max, int *output)
+ : BC_ISlider(x, y, 0, w, w, min, max, *output)
 {
-	this->plugin = plugin;
+	this->win = win;
+	this->output = output;
 }
 
-int AgingColor::handle_event()
+AgingISlider::~AgingISlider()
 {
-	return 1;
 }
 
-
-
-
-
-AgingScratches::AgingScratches(int x, int y, AgingMain *plugin)
- : BC_CheckBox(x, y, plugin->config.scratch, _("Scratch"))
+int AgingISlider::handle_event()
 {
-	this->plugin = plugin;
+	int ret = BC_ISlider::handle_event();
+	win->plugin->send_configure_change();
+	return ret;
 }
 
-int AgingScratches::handle_event()
+AgingCheckBox::AgingCheckBox(AgingWindow *win, int x, int y,
+		int *output, const char *text)
+ : BC_CheckBox(x, y, output, text)
 {
-	return 1;
+	this->win = win;
 }
 
-
-
-
-
-
-
-
-
-AgingScratchCount::AgingScratchCount(int x, int y, AgingMain *plugin)
- : BC_ISlider(x,
-			y,
-			0,
-			180,
-			180,
-			0,
-			SCRATCH_MAX,
-			plugin->config.scratch_lines)
+int AgingCheckBox::handle_event()
 {
-	this->plugin = plugin;
+	int ret = BC_CheckBox::handle_event();
+	win->plugin->send_configure_change();
+	return ret;
 }
-
-int AgingScratchCount::handle_event()
-{
-	return 1;
-}
-
-
-
-
-
-
-AgingPits::AgingPits(int x, int y, AgingMain *plugin)
- : BC_CheckBox(x, y, plugin->config.pits, _("Pits"))
-{
-	this->plugin = plugin;
-}
-
-int AgingPits::handle_event()
-{
-	return 1;
-}
-
-
-
-
-
-
-AgingPitCount::AgingPitCount(int x, int y, AgingMain *plugin)
- : BC_ISlider(x,
-			y,
-			0,
-			180,
-			180,
-			0,
-			100,
-			plugin->config.pit_count)
-{
-	this->plugin = plugin;
-}
-
-int AgingPitCount::handle_event()
-{
-	return 1;
-}
-
-
-
-
-
-
-
-
-
-AgingDust::AgingDust(int x, int y, AgingMain *plugin)
- : BC_CheckBox(x, y, plugin->config.dust, _("Dust"))
-{
-	this->plugin = plugin;
-}
-
-int AgingDust::handle_event()
-{
-	return 1;
-}
-
-
-
-
-
-AgingDustCount::AgingDustCount(int x, int y, AgingMain *plugin)
- : BC_ISlider(x,
-			y,
-			0,
-			180,
-			180,
-			0,
-			100,
-			plugin->config.dust_count)
-{
-	this->plugin = plugin;
-}
-
-int AgingDustCount::handle_event()
-{
-	return 1;
-}
-
-
-
-
-
 

@@ -38,6 +38,7 @@ class TitleInterlace;
 class TitleFontTumble;
 class TitleSizeTumble;
 class TitleItalic;
+class TitleAlias;
 class TitleBold;
 class TitleDrag;
 class TitleSize;
@@ -122,6 +123,7 @@ public:
 	TitleStroker *stroker;
 	BC_Title *style_title;
 	TitleItalic *italic;
+	TitleAlias *alias;
 	TitleBold *bold;
 	TitleDrag *drag;
 	TitleCurPopup *cur_popup;
@@ -207,7 +209,14 @@ public:
 };
 
 
-
+class TitleAlias : public BC_CheckBox
+{
+public:
+	TitleAlias(TitleMain *client, TitleWindow *window, int x, int y);
+	int handle_event();
+	TitleMain *client;
+	TitleWindow *window;
+};
 class TitleItalic : public BC_CheckBox
 {
 public:

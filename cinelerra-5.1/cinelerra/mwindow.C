@@ -746,7 +746,7 @@ void MWindow::add_plugins(ArrayList<PluginServer*> &plugins)
 void MWindow::init_plugin_tips(ArrayList<PluginServer*> &plugins, const char *lang)
 {
 	const char *cfg_path = File::get_cindat_path();
-	char msg_path[BCTEXTLEN];  int txt = 0;
+	char msg_path[BCTEXTLEN];
 	FILE *fp = 0;
 	if( BC_Resources::language[0] ) {
 		snprintf(msg_path, sizeof(msg_path), "%s/info/plugins.%s",
@@ -754,7 +754,6 @@ void MWindow::init_plugin_tips(ArrayList<PluginServer*> &plugins, const char *la
 		fp = fopen(msg_path, "r");
 	}
 	if( !fp ) {
-		txt = 1;
 		snprintf(msg_path, sizeof(msg_path), "%s/info/plugins.txt",
 			cfg_path);
 		fp = fopen(msg_path, "r");
@@ -775,9 +774,8 @@ void MWindow::init_plugin_tips(ArrayList<PluginServer*> &plugins, const char *la
 		if( done ) {
 			if( tp > text && *--tp == '\n' ) *tp = 0;
 			if( title[0] ) {
-				tp = !txt ? title : _(title);
 				int idx = plugins.size();
-				while( --idx>=0 && strcmp(plugins[idx]->title, tp) );
+				while( --idx>=0 && strcmp(plugins[idx]->title, title) );
 				if( idx >= 0 ) {
 					delete [] plugins[idx]->tip;
 					plugins[idx]->tip = cstrdup(text);

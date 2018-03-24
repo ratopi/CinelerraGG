@@ -8,6 +8,7 @@ This program is FREE software under GPL licence v2.
 
 This plugin removes vertical scratches from digitized films.
 Reworked for cin5 by GG. 03/2018, from the laws of Fizick's
+Adapted strategy to mark, test, draw during port.
 */
 
 
@@ -16,6 +17,8 @@ Reworked for cin5 by GG. 03/2018, from the laws of Fizick's
 #include "language.h"
 #include "descratch.h"
 
+#include <math.h>
+
 REGISTER_PLUGIN(DeScratchMain)
 
 DeScratchMain::DeScratchMain(PluginServer *server)
@@ -23,8 +26,7 @@ DeScratchMain::DeScratchMain(PluginServer *server)
 {
 	inf = 0;  sz_inf = 0;
 	src = 0;  dst = 0;
-	tmp_frame = 0;
-	blurry = 0;
+	tmpy = 0; blury = 0;
 	overlay_frame = 0;
 }
 
@@ -33,8 +35,8 @@ DeScratchMain::~DeScratchMain()
 	delete [] inf;
 	delete src;
 	delete dst;
-	delete blurry;
-	delete tmp_frame;
+	delete blury;
+	delete tmpy;
 	delete overlay_frame;
 }
 
@@ -43,21 +45,22 @@ int DeScratchMain::is_realtime() { return 1; }
 
 void DeScratchConfig::reset()
 {
-	threshold = 24;
-	asymmetry = 16;
+	threshold = 12;
+	asymmetry = 25;
 	min_width = 1;
-	max_width = 3;
-	min_len = 1;
+	max_width = 2;
+	min_len = 10;
 	max_len = 100;
-	max_angle = 45;
-	blur_len = 4;
-	gap_len = 10;
+	max_angle = 5;
+	blur_len = 2;
+	gap_len = 0;
 	mode_y = MODE_ALL;
 	mode_u = MODE_NONE;
 	mode_v = MODE_NONE;
 	mark = 0;
 	ffade = 100;
 	border = 2;
+	edge_only = 0;
 }
 
 DeScratchConfig::DeScratchConfig()
@@ -85,7 +88,8 @@ int DeScratchConfig::equivalent(DeScratchConfig &that)
 		mode_v == that.mode_v &&
 		mark == that.mark &&
 		ffade == that.ffade &&
-		border == that.border;
+		border == that.border &&
+		edge_only == that.edge_only;
 }
 void DeScratchConfig::copy_from(DeScratchConfig &that)
 {
@@ -104,6 +108,7 @@ void DeScratchConfig::copy_from(DeScratchConfig &that)
 	mark = that.mark;
 	ffade = that.ffade;
 	border = that.border;
+	edge_only = that.edge_only;
 }
 
 void DeScratchConfig::interpolate(DeScratchConfig &prev, DeScratchConfig &next,
@@ -136,6 +141,7 @@ void DeScratchMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("MARK", config.mark);
 	output.tag.set_property("FFADE", config.ffade);
 	output.tag.set_property("BORDER", config.border);
+	output.tag.set_property("EDGE_ONLY", config.edge_only);
 	output.append_tag();
 	output.tag.set_title("/DESCRATCH");
 	output.append_tag();
@@ -153,7 +159,7 @@ void DeScratchMain::read_data(KeyFrame *keyframe)
 	while( !(result = input.read_tag()) ) {
 		if(input.tag.title_is("DESCRATCH")) {
 			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
-			config.asymmetry	 = input.tag.get_property("ASYMMETRY", config.asymmetry);
+			config.asymmetry = input.tag.get_property("ASYMMETRY", config.asymmetry);
 			config.min_width = input.tag.get_property("MIN_WIDTH", config.min_width);
 			config.max_width = input.tag.get_property("MAX_WIDTH", config.max_width);
 			config.min_len	 = input.tag.get_property("MIN_LEN", config.min_len);
@@ -167,100 +173,64 @@ void DeScratchMain::read_data(KeyFrame *keyframe)
 			config.mark	 = input.tag.get_property("MARK", config.mark);
 			config.ffade	 = input.tag.get_property("FFADE", config.ffade);
 			config.border	 = input.tag.get_property("BORDER", config.border);
+			config.edge_only = input.tag.get_property("EDGE_ONLY", config.edge_only);
 		}
 	}
 }
 
-void DeScratchMain::get_extrems_plane(int comp, int thresh)
+void DeScratchMain::set_extrems_plane(int width, int comp, int thresh)
 {
-	uint8_t **rows = blurry->get_rows();
-	int d = config.max_width, d1 = d+1, wd = src_w - d1;
-	int bpp = 3, dsz = d * bpp;
-	int asym = config.asymmetry;
+	uint8_t **rows = blury->get_rows();
+	int r = width, r1 = r+1, wd = src_w - r1;
+	int bpp = 3, dsz = r * bpp;
+	int asym = config.asymmetry * 256 / 100;
 	if( thresh > 0 ) {	// black (low value) scratches
 		for( int y=0; y<src_h; ++y ) {
-			uint8_t *ip = inf + y*src_w;
-			int x = 0;
-			for( ; x<d1; ++x ) *ip++ = SD_NULL;
-			uint8_t *dp = rows[y] + x*bpp + comp;
-			for( ; x<wd; ++x,dp+=bpp ) {
+			uint8_t *ip = inf + y*src_w + r1;
+			uint8_t *dp = rows[y] + r1*bpp + comp;
+			for( int x=r1; x<wd; ++x,++ip,dp+=bpp ) {
+				if( *ip != SD_NULL ) continue;
 				uint8_t *lp = dp-dsz, *rp = dp+dsz;
-				*ip++ = (lp[0]-*dp) > thresh && (rp[0]-*dp) > thresh &&
-					(abs(lp[-bpp]-rp[+bpp]) <= asym) &&
-					 ((lp[0]-lp[+bpp]) + (rp[0]-rp[-bpp]) >
-					  (lp[-bpp]-lp[0]) + (rp[bpp]-rp[0])) ?
-						SD_EXTREM : SD_NULL; // sharp extremum found
+				if( (lp[0]-*dp) > thresh && (rp[0]-*dp) > thresh &&
+				    (abs(lp[-bpp]-rp[+bpp]) <= asym) &&
+				    ((lp[0]-lp[+bpp]) + (rp[0]-rp[-bpp]) >
+				     (lp[-bpp]-lp[0]) + (rp[bpp]-rp[0])) ) {
+					*ip = SD_EXTREM;
+					for( int i=1; i<r; ++i ) ip[i] = ip[-i] = SD_EXTREM;
+				}
 			}
-			for( ; x<src_w; ++x ) *ip++ = SD_NULL;
 		}
 	}
 	else {			// white (high value) scratches
 		for( int y=0; y<src_h; ++y ) {
-			uint8_t *ip = inf + y*src_w;
-			int x = 0;
-			for( ; x<d1; ++x ) *ip++ = SD_NULL;
-			uint8_t *dp = rows[y] + x*bpp + comp;
-			for( ; x<wd; ++x,dp+=bpp ) {
+			uint8_t *ip = inf + y*src_w + r1;
+			uint8_t *dp = rows[y] + r1*bpp + comp;
+			for( int x=r1; x<wd; ++x,++ip,dp+=bpp ) {
+				if( *ip != SD_NULL ) continue;
 				uint8_t *lp = dp-dsz, *rp = dp+dsz;
-				*ip++ = (lp[0]-*dp) < thresh && (rp[0]-*dp) < thresh &&
-					(abs(lp[-bpp]-rp[+bpp]) <= asym) &&
-					 ((lp[0]-lp[+bpp]) + (rp[0]-rp[-bpp]) <
-					  (lp[-bpp]-lp[0]) + (rp[bpp]-rp[0])) ?
-						SD_EXTREM : SD_NULL; // sharp extremum found
+				if( (lp[0]-*dp) < thresh && (rp[0]-*dp) < thresh &&
+				    (abs(lp[-bpp]-rp[+bpp]) <= asym) &&
+				    ((lp[0]-lp[+bpp]) + (rp[0]-rp[-bpp]) <
+				     (lp[-bpp]-lp[0]) + (rp[bpp]-rp[0])) ) {
+					*ip = SD_EXTREM;
+					for( int i=1; i<r; ++i ) ip[i] = ip[-i] = SD_EXTREM;
+				}
 			}
-			for( ; x<src_w; ++x ) *ip++ = SD_NULL;
 		}
 	}
 }
 
 //
-void DeScratchMain::remove_min_extrems_plane(int comp, int thresh)
-{
-	uint8_t **rows = blurry->get_rows();
-	int d = config.min_width, d1 = d+1, wd = src_w - d1;
-	int bpp = 3, dsz = d * bpp;
-	int asym = config.asymmetry;
-	if( thresh > 0 ) {	// black (low value) scratches
-		for( int y=0; y<src_h; ++y ) {
-			uint8_t *ip = inf + y*src_w;
-			uint8_t *dp = rows[y] + d1*bpp + comp;
-			for( int x=d1; x<wd; ++x,++ip,dp+=bpp ) {
-				if( *ip != SD_EXTREM ) continue;
-				uint8_t *lp = dp-dsz, *rp = dp+dsz;
-				if( (lp[0]-*dp) > thresh && (rp[0]-*dp) > thresh &&
-					(abs(lp[-bpp]-rp[+bpp]) <= asym) &&
-					 ((lp[0]-lp[+bpp]) + (rp[0]-rp[-bpp]) >
-					  (lp[-bpp]-lp[0]) + (rp[bpp]-rp[0])) )
-						*ip = SD_NULL; // sharp extremum found
-			}
-		}
-	}
-	else {			// white (high value) scratches
-		for( int y=0; y<src_h; ++y ) {
-			uint8_t *ip = inf + y*src_w;
-			uint8_t *dp = rows[y] + d1*bpp + comp;
-			for( int x=d1; x<wd; ++x,++ip,dp+=bpp ) {
-				if( *ip != SD_EXTREM ) continue;
-				uint8_t *lp = dp-dsz, *rp = dp+dsz;
-				if( (lp[0]-*dp) < thresh && (rp[0]-*dp) < thresh &&
-					(abs(lp[-bpp]-rp[+bpp]) <= asym) &&
-					 ((lp[0]-lp[+bpp]) + (rp[0]-rp[-bpp]) <
-					  (lp[-bpp]-lp[0]) + (rp[bpp]-rp[0])) )
-						*ip = SD_NULL; // sharp extremum found
-			}
-		}
-	}
-}
-
 void DeScratchMain::close_gaps()
 {
 	int len = config.gap_len * src_h / 100;
-	for( int y=len; y<src_h; ++y ) {
+	for( int y=0; y<src_h; ++y ) {
 		uint8_t *ip = inf + y*src_w;
 		for( int x=0; x<src_w; ++x,++ip ) {
-			if( *ip != SD_EXTREM ) continue;
-			uint8_t *bp = ip;			// expand to previous lines in range
-			for( int i=len; --i>0; ) *(bp-=src_w) = SD_EXTREM;
+			if( !(*ip & SD_EXTREM) ) continue;
+			uint8_t *bp = ip, b = *bp;		// expand to previous lines in range
+			int i = len < y ? len : y;
+			while( --i>=0 ) *(bp-=src_w) = b;
 		}
 	}
 }
@@ -270,153 +240,140 @@ void DeScratchMain::test_scratches()
 	int w2 = src_w - 2;
 	int min_len = config.min_len * src_h / 100;
 	int max_len = config.max_len * src_h / 100;
-	int maxwidth = config.max_width*2 + 1;
-	int maxangle = config.max_angle;
+	int maxwidth = config.max_width;
+	float sin_mxa = sin(config.max_angle * M_PI/180.);
 
 	for( int y=0; y<src_h; ++y ) {
 		for( int x=2; x<w2; ++x ) {
-			int ofs = y*src_w + x;			// offset of first candidate
-			if( inf[ofs] != SD_EXTREM ) continue;
-			int ctr = ofs+1, nctr = ctr;		// centered to inf for maxwidth=3
+			int ofs = y*src_w + x;			// first candidate
+			if( !(inf[ofs] & SD_EXTREM) ) continue;
+			int ctr = ofs, nctr = ctr;
 			int hy = src_h - y, len;
-			for( len=0; len<hy; ++len ) {		// cycle along inf
+			for( len=0; len<hy; ++len ) {		// check vertical aspect
 				uint8_t *ip = inf + ctr;
 				int n = 0;			// number good points in row
-				if( maxwidth >= 3 ) {
-					if( ip[-2] == SD_EXTREM ) { ip[-2] = SD_TESTED; nctr = ctr-2; ++n; }
-					if( ip[+2] == SD_EXTREM ) { ip[+2] = SD_TESTED; nctr = ctr+2; ++n; }
-				}
-				if( ip[-1] == SD_EXTREM ) { ip[-1] = SD_TESTED; nctr = ctr-1; ++n; }
-				if( ip[+1] == SD_EXTREM ) { ip[+1] = SD_TESTED; nctr = ctr+1; ++n; }
-				if( ip[+0] == SD_EXTREM ) { ip[+0] = SD_TESTED; nctr = ctr+0; ++n; }
-				// end of points tests, check result for row:
-				// check gap and angle, if no points or big angle, it is end of inf
-				if( !n || abs(nctr%src_w - x) >= maxwidth+len*maxangle/57 ) break;
-				ctr = nctr + src_w;		 // new center for next row test
+				if( ip[-1] & SD_EXTREM ) { ip[-1] |= SD_TESTED; nctr = ctr-1; ++n; }
+				if( ip[+1] & SD_EXTREM ) { ip[+1] |= SD_TESTED; nctr = ctr+1; ++n; }
+				if( ip[+0] & SD_EXTREM ) { ip[+0] |= SD_TESTED; nctr = ctr+0; ++n; }
+				if( !n ) break;
+				ctr = nctr + src_w;		// new center for next row test
 			}
-			int mask = len >= min_len && len <= max_len ? SD_GOOD : SD_REJECT;
-			ctr = ofs+1; nctr = ctr;		// pass2
+			int v = (!config.edge_only || y == 0 || y+len>=src_h) &&
+				abs(nctr%src_w - x) < maxwidth + len*sin_mxa &&
+				len >= min_len && len <= max_len ? SD_GOOD : SD_REJECT;
+			ctr = ofs; nctr = ctr;			// pass2
 			for( len=0; len<hy; ++len ) {		// cycle along inf
 				uint8_t *ip = inf + ctr;
 				int n = 0;			// number good points in row
-				if( maxwidth >= 3 ) {
-					if( ip[-2] == SD_TESTED ) { ip[-2] = mask; nctr = ctr-2; ++n; }
-					if( ip[+2] == SD_TESTED ) { ip[+2] = mask; nctr = ctr+2; ++n; }
-				}
-				if( ip[-1] == SD_TESTED ) { ip[-1] = mask; nctr = ctr-1; ++n; }
-				if( ip[+1] == SD_TESTED ) { ip[+1] = mask; nctr = ctr+1; ++n; }
-				if( ip[+0] == SD_TESTED ) { ip[+0] = mask; nctr = ctr+0; ++n; }
-				// end of points tests, check result for row:
-				// check gap and angle, if no points or big angle, it is end of inf
-				if( !n || abs(nctr%src_w - x) >= maxwidth+len*maxangle/57 ) break;
-				ctr = nctr + src_w;		 // new center for next row test
+				if( ip[-1] & SD_TESTED ) { ip[-1] = v; nctr = ctr-1; ++n; }
+				if( ip[+1] & SD_TESTED ) { ip[+1] = v; nctr = ctr+1; ++n; }
+				if( ip[+0] & SD_TESTED ) { ip[+0] = v; nctr = ctr+0; ++n; }
+				if( !n ) break;
+				ctr = nctr + src_w;		// new center for next row test
 			}
 		}
 	}
 }
 
-void DeScratchMain::mark_scratches_plane(int comp, int mask, int value)
+void DeScratchMain::mark_scratches_plane()
 {
 	int bpp = 3, dst_w = dst->get_w(), dst_h = dst->get_h();
 	uint8_t **rows = dst->get_rows();
 	for( int y=0; y<dst_h; ++y ) {
-		uint8_t *dp = rows[y] + comp;
 		uint8_t *ip = inf + y*src_w;
-		for( int x=0; x<dst_w; ++x,++ip,dp+=bpp ) {
-			if( *ip == mask ) *dp = value;
+		for( int x=0; x<dst_w; ++x,++ip ) {
+			if( *ip == SD_NULL ) continue;
+			static uint8_t grn_yuv[3] = { 0xad, 0x28, 0x19, };
+			static uint8_t ylw_yuv[3] = { 0xdb, 0x0f, 0x89, };
+			static uint8_t red_yuv[3] = { 0x40, 0x66, 0xef, };
+			for( int comp=0; comp<3; ++comp ) {
+				uint8_t *dp = rows[y] + comp + x*bpp;
+				if( *ip & SD_GOOD )
+					*dp = config.threshold > 0 ? grn_yuv[comp] : red_yuv[comp];
+				else if( *ip & SD_REJECT )
+					*dp = ylw_yuv[comp];
+			}
 		}
 	}
 }
 
 void DeScratchMain::remove_scratches_plane(int comp)
 {
-	int r = config.max_width;
-	int fade = (config.ffade * 1024) / 100; // norm 2^10
-	int fade1 = 1024 - fade;
+	int bpp = 3, w1 = src_w-1;
+	int border = config.border;
 	uint8_t *ip = inf;
-	uint8_t **src_rows = src->get_rows();
 	uint8_t **dst_rows = dst->get_rows();
-	uint8_t **blur_rows = blurry->get_rows();
-	int bpp = 3, margin = r+config.border+2, wm = src_w-margin;
-	float nrm = 1. / 1024.f, nrm2r = nrm / (2*r*bpp);
+	uint8_t **blur_rows = blury->get_rows();
+	float a = config.ffade / 100, b = 1 - a;
 
 	for( int y=0; y<src_h; ++y ) {
-		int left = 0;
-		uint8_t *inp = src_rows[y] + comp;
+		int left = -1;
 		uint8_t *out = dst_rows[y] + comp;
 		uint8_t *blur = blur_rows[y] + comp;
-		for( int x=margin; x<wm; ++x ) {
+		for( int x=1; x<w1; ++x ) {
 			uint8_t *dp = ip + x;
-			if( (dp[+0]&SD_GOOD) && !(dp[-1]&SD_GOOD) ) left = x;
-			if( left!=0 && (dp[+0]&SD_GOOD) && !(dp[+1]&SD_GOOD) ) { // the inf, left/right
-				int right = x;
-				int ctr = (left + right) / 2;			// the inf center
-				int ls = ctr - r, rs = ctr + r;
-				int lt = ls - config.border - 1, rt = rs + config.border + 1;
-				lt *= bpp;  ls *= bpp;  rs *= bpp;  rt *= bpp;  // component index
-			 	for( int i=ls; i<=rs; i+=bpp ) {		// across the inf
-					int lv = inp[i] + blur[lt] - blur[i];
-					int rv = inp[i] + blur[rt] - blur[i];
-					lv = fade*lv + fade1*inp[lt];
-					rv = fade*rv + fade1*inp[rt];
-					int v = nrm2r*(lv*(rs-i) + rv*(i-ls));
-			 		out[i] = CLIP(v,0,255);
-			 	}
-			 	for( int i=lt; i<ls; i+=bpp ) {			 // at left border
-					int lv = inp[i] + blur[lt] - blur[i];
-					int v = nrm*(fade*lv + fade1*inp[lt]);
-			 		out[i] = CLIP(v,0,255);
-			 	}
-			 	for( int i=rt; i>rs; i-=bpp ) {			// at right border
-					int rv = inp[i] + blur[rt] - blur[i];
-					int v = nrm*(fade*rv + fade1*inp[rt]);
-			 		out[i] = CLIP(v,0,255);
-			 	}
-				left = 0;
+			if( !(dp[-1]&SD_GOOD) && (dp[0]&SD_GOOD) ) left = x;
+			if( left < 0 || !(dp[0]&SD_GOOD) || (dp[1]&SD_GOOD) ) continue;
+			int right = x;
+			int ctr = (left + right) / 2;			// scratch center
+			int r = (right - left + border) / 2 + 1;
+			left = 0;
+			int ls = ctr - r, rs = ctr + r;			// scratch edges
+			int lt = ls - border, rt = rs + border;		// border edges
+			if( ls < 0 ) ls = 0;
+			if( rs > w1 ) rs = w1;
+			if( lt < 0 ) lt = 0;
+			if( rt > w1 ) rt = w1;
+			ls *= bpp;  rs *= bpp;
+			lt *= bpp;  rt *= bpp;
+			if( rs > ls ) {
+				float s = 1. / (rs - ls);
+				for( int i=ls; (i+=bpp)<rs; ) {		// across the scratch
+					int lv = a * blur[ls] + b * out[i];
+					int rv = a * blur[rs] + b * out[i];
+					int v = s * (lv*(rs-i) + rv*(i-ls));
+					out[i] = CLIP(v, 0, 255);
+				}
+			}
+			if( !border ) continue;
+			if( ls > lt ) {
+				float s = 1. / (ls - lt);
+				for( int i=lt; (i+=bpp)<=ls; ) {	// at left border
+					int lv = a * out[lt] + b * out[i];
+					int rv = a * blur[i] + b * out[i];
+					int v = s * (lv*(ls-i) + rv*(i-lt));
+					out[i] = CLIP(v, 0, 255);
+				}
+			}
+			if( rt > rs ) {
+				float s = 1. / (rt - rs);
+				for( int i=rt; (i-=bpp)>=rs; ) {	// at right border
+					int lv = a * blur[i] + b * out[i];
+					int rv = a * out[rt] + b * out[i];
+					int v = s * (rv*(i-rs) + lv*(rt-i));
+					out[i] = CLIP(v, 0, 255);
+				}
 			}
 		}
 		ip += src_w;
 	}
 }
 
-void DeScratchMain::pass(int comp, int thresh)
-{
-// pass for current plane and current sign
-	get_extrems_plane(comp, thresh);
-	if( config.min_width > 1 )
-		remove_min_extrems_plane(comp, thresh);
-	close_gaps();
-	test_scratches();
-	if( config.mark ) {
-		int value = config.threshold > 0 ? 0 : 255;
-		mark_scratches_plane(comp, SD_GOOD, value);
-		mark_scratches_plane(comp, SD_REJECT, 127);
-	}
-	else
-		remove_scratches_plane(comp);
-}
-
 void DeScratchMain::blur(int scale)
 {
-	int tw = src_w, th = (src_h / scale) & ~1;
-	if( tmp_frame &&
-	    (tmp_frame->get_w() != tw || tmp_frame->get_h() != th) ) {
-		delete tmp_frame;  tmp_frame = 0;
+	int th = (src_h / scale) & ~1;
+	if( tmpy&& (tmpy->get_w() != src_w || tmpy->get_h() != th) ) {
+		delete tmpy;  tmpy= 0;
 	}
-	if( !tmp_frame )
-		tmp_frame = new VFrame(tw, th, BC_YUV888);
-
-	if( blurry &&
-	    (blurry->get_w() != src_w || blurry->get_h() != src_h) ) {
-		delete blurry;  blurry = 0;
+	if( !tmpy ) tmpy = new VFrame(src_w, th, BC_YUV888);
+	if( blury && (blury->get_w() != src_w || blury->get_h() != src_h) ) {
+		delete blury;  blury= 0;
 	}
-	if( !blurry )
-		blurry = new VFrame(src_w, src_h, BC_YUV888);
-
-	overlay_frame->overlay(tmp_frame, src,
-		0,0,src_w,src_h, 0,0,tw,th, 1.f, TRANSFER_NORMAL, LINEAR_LINEAR);
-	overlay_frame->overlay(blurry, tmp_frame,
-		0,0,tw,th, 0,0,src_w,src_h, 1.f, TRANSFER_NORMAL, CUBIC_CUBIC);
+	if( !blury ) blury = new VFrame(src_w, src_h, BC_YUV888);
+	overlay_frame->overlay(tmpy, src,
+		0,0,src_w,src_h, 0,0,src_w,th, 1.f, TRANSFER_NORMAL, LINEAR_LINEAR);
+	overlay_frame->overlay(blury, tmpy,
+		0,0,src_w,th, 0,0,src_w,src_h, 1.f, TRANSFER_NORMAL, CUBIC_CUBIC);
 }
 
 void DeScratchMain::copy(int comp)
@@ -427,6 +384,15 @@ void DeScratchMain::copy(int comp)
 		uint8_t *sp = src_rows[y] + comp, *dp = dst_rows[y] + comp;
 		for( int x=0; x<src_w; ++x,sp+=3,dp+=3 ) *sp = *dp;
 	}
+}
+
+void DeScratchMain::pass(int comp, int thresh)
+{
+// pass for current plane and current sign
+	int w0 = config.min_width, w1 = config.max_width;
+	if( w1 < w0 ) w1 = w0;
+	for( int iw=w0; iw<=w1; ++iw )
+		set_extrems_plane(iw, comp, thresh);
 }
 
 void DeScratchMain::plane_pass(int comp, int mode)
@@ -443,6 +409,12 @@ void DeScratchMain::plane_pass(int comp, int mode)
 		pass(comp, threshold);
 		break;
 	}
+}
+
+void DeScratchMain::plane_proc(int comp, int mode)
+{
+	if( mode == MODE_NONE ) return;
+	remove_scratches_plane(comp);
 }
 
 int DeScratchMain::process_realtime(VFrame *input, VFrame *output)
@@ -470,9 +442,19 @@ int DeScratchMain::process_realtime(VFrame *input, VFrame *output)
 		if( sz_inf != sz ) {  delete [] inf;  inf = 0; }
 		if( !inf ) inf = new uint8_t[sz_inf=sz];
 		blur(config.blur_len + 1);
+		memset(inf, SD_NULL, sz_inf);
 		plane_pass(0, config.mode_y);
 		plane_pass(1, config.mode_u);
 		plane_pass(2, config.mode_v);
+		close_gaps();
+		test_scratches();
+		if( !config.mark ) {
+			plane_proc(0, config.mode_y);
+			plane_proc(1, config.mode_u);
+			plane_proc(2, config.mode_v);
+		}
+		else
+			mark_scratches_plane();
 		output->transfer_from(dst);
 	}
 	return 0;
@@ -516,7 +498,7 @@ void DeScratchWindow::create_objects()
 	add_tool(threshold = new DeScratchISlider(this, x1, y, x2-x1-10, 0,64, &config.threshold));
 	add_tool(title = new BC_Title(x1=x2, y, _("asymmetry:")));
 	x1 += title->get_w()+16;
-	add_tool(asymmetry = new DeScratchISlider(this, x1, y, get_w()-x1-15, 0,64, &config.asymmetry));
+	add_tool(asymmetry = new DeScratchFSlider(this, x1, y, get_w()-x1-15, 0,100., &config.asymmetry));
 	y += threshold->get_h() + 10;
 
 	add_tool(title = new BC_Title(x1=x, y, _("Mode:")));
@@ -537,10 +519,10 @@ void DeScratchWindow::create_objects()
 	w1 = title->get_w()+16;  x1 += w1;
 	add_tool(title = new BC_Title(x1, y, _("min:")));
 	x1 += title->get_w()+16;
-	add_tool(min_width = new DeScratchISlider(this, x1, y, x2-x1-10, 0,16, &config.min_width));
+	add_tool(min_width = new DeScratchISlider(this, x1, y, x2-x1-10, 1,16, &config.min_width));
 	add_tool(title = new BC_Title(x1=x2, y, _("max:")));
 	x1 += title->get_w()+16;
-	add_tool(max_width = new DeScratchISlider(this, x1, y, get_w()-x1-15, 0,16, &config.max_width));
+	add_tool(max_width = new DeScratchISlider(this, x1, y, get_w()-x1-15, 1,16, &config.max_width));
 	y += min_width->get_h() + 10;
 
 	add_tool(title = new BC_Title(x1=x, y, _("len:")));
@@ -557,7 +539,7 @@ void DeScratchWindow::create_objects()
 	w1 = title->get_w()+16;  x1 += w1;
 	add_tool(title = new BC_Title(x1, y, _("blur:")));
 	x1 += title->get_w()+16;
-	add_tool(blur_len = new DeScratchISlider(this, x1, y, x2-x1-10, 0,16, &config.blur_len));
+	add_tool(blur_len = new DeScratchISlider(this, x1, y, x2-x1-10, 0,8, &config.blur_len));
 	add_tool(title = new BC_Title(x1=x2, y, _("gap:")));
 	x1 += title->get_w()+16;
 	add_tool(gap_len = new DeScratchFSlider(this, x1, y, get_w()-x1-15, 0.0,100.0, &config.gap_len));
@@ -565,7 +547,7 @@ void DeScratchWindow::create_objects()
 
 	add_tool(title = new BC_Title(x1=x, y, _("max angle:")));
 	w1 = title->get_w()+16;  x1 += w1;
-	add_tool(max_angle = new DeScratchFSlider(this, x1, y, x2-x1-10, 0.0,90.0, &config.max_angle));
+	add_tool(max_angle = new DeScratchFSlider(this, x1, y, x2-x1-10, 0.0,15.0, &config.max_angle));
 	add_tool(title = new BC_Title(x1=x2, y, _("fade:")));
 	x1 += title->get_w()+16;
 	add_tool(ffade = new DeScratchFSlider(this, x1, y, get_w()-x1-15, 0.0,100.0, &config.ffade));
@@ -575,8 +557,12 @@ void DeScratchWindow::create_objects()
 	x1 += title->get_w()+16;
 	add_tool(border = new DeScratchISlider(this, x1, y, x2-x1-10, 0,16, &config.border));
 	add_tool(mark = new DeScratchMark(this, x1=x2, y));
+	x1 += mark->get_w() + 10;
+	add_tool(edge_only = new DeScratchEdgeOnly(this, x1, y));
+
 	w1 = DeScratchReset::calculate_w(this, _("Reset"));
-	add_tool(reset = new DeScratchReset(this, get_w()-w1-15, y));
+	int h1 = DeScratchReset::calculate_h();
+	add_tool(reset = new DeScratchReset(this, get_w()-w1-15, get_h()-h1-15));
 
 	show_window();
 }
@@ -584,18 +570,22 @@ void DeScratchWindow::create_objects()
 void DeScratchWindow::update_gui()
 {
 	DeScratchConfig &config = plugin->config;
-	y_mode->update(config.mode_y);
-	u_mode->update(config.mode_u);
-	v_mode->update(config.mode_v);
+	threshold->update(config.threshold);
+	asymmetry->update(config.asymmetry);
 	min_width->update(config.min_width);
 	max_width->update(config.max_width);
 	min_len->update(config.min_len);
 	max_len->update(config.max_len);
+	max_angle->update(config.max_angle);
 	blur_len->update(config.blur_len);
 	gap_len->update(config.gap_len);
-	max_angle->update(config.max_angle);
-	ffade->update(config.ffade);
+	y_mode->update(config.mode_y);
+	u_mode->update(config.mode_u);
+	v_mode->update(config.mode_v);
 	mark->update(config.mark);
+	ffade->update(config.ffade);
+	border->update(config.border);
+	edge_only->update(config.edge_only);
 }
 
 
@@ -703,6 +693,23 @@ DeScratchMark::~DeScratchMark()
 }
 
 int DeScratchMark::handle_event()
+{
+	int ret = BC_CheckBox::handle_event();
+	win->plugin->send_configure_change();
+	return ret;
+}
+
+DeScratchEdgeOnly::DeScratchEdgeOnly(DeScratchWindow *win, int x, int y)
+ : BC_CheckBox(x, y, &win->plugin->config.edge_only, _("Edge"))
+{
+	this->win = win;
+};
+
+DeScratchEdgeOnly::~DeScratchEdgeOnly()
+{
+}
+
+int DeScratchEdgeOnly::handle_event()
 {
 	int ret = BC_CheckBox::handle_event();
 	win->plugin->send_configure_change();

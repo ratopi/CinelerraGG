@@ -149,14 +149,19 @@ PluginClientWindow::PluginClientWindow(PluginClient *client,
  : BC_Window(client->gui_string,
 	client->window_x /* - w / 2 */,
 	client->window_y /* - h / 2 */,
-	w, h, min_w, min_h, allow_resize, 0, 1)
+	(int)(w*get_resources()->font_scale+0.5), (int)(h*get_resources()->font_scale+0.5),
+	(int)(min_w*get_resources()->font_scale+0.5), (int)(min_h*get_resources()->font_scale+0.5),
+	allow_resize, 0, 1)
 {
 	this->client = client;
 }
 
 PluginClientWindow::PluginClientWindow(const char *title,
 	int x, int y, int w, int h, int min_w, int min_h, int allow_resize)
- : BC_Window(title, x, y, w, h, min_w, min_h, allow_resize, 0, 1)
+ : BC_Window(title, x, y,
+        (int)(w*get_resources()->font_scale+0.5), (int)(h*get_resources()->font_scale+0.5),
+        (int)(min_w*get_resources()->font_scale+0.5), (int)(min_h*get_resources()->font_scale+0.5),
+	allow_resize, 0, 1)
 {
 	this->client = 0;
 }

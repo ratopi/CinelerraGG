@@ -34,6 +34,7 @@
 #define KW_UL     _("ul")
 #define KW_BLINK  _("blink")
 #define KW_FIXED  _("fixed")
+#define KW_ALIAS  _("alias")
 #define KW_SUP    _("sup")
 #define KW_PNG    _("png")
 
@@ -68,6 +69,7 @@ class TitleCurCaps;
 class TitleCurUnder;
 class TitleCurBlink;
 class TitleCurFixed;
+class TitleCurAlias;
 class TitleCurSuper;
 class TitleCurNudge;
 class TitleParser;
@@ -111,12 +113,15 @@ class TitleMain;
 // char types
 #define CHAR_GLYPH  0
 #define CHAR_IMAGE  1
+
 // flags
 #define FLAG_UNDER  0x0001
 #define FLAG_FIXED  0x0002
 #define FLAG_SUPER  0x0004
 #define FLAG_SUBER  0x0008
 #define FLAG_BLINK  0x0010
+
+#define FONT_ALIAS 0x08
 
 class TitleConfig
 {
@@ -481,6 +486,12 @@ public:
 	int set(const char *txt);
 };
 
+class TitleCurAlias : public TitleStack<int> {
+public:
+	TitleCurAlias(TitleParser *parser, TitleMain *plugin);
+	int set(const char *txt);
+};
+
 class TitleCurSuper : public TitleStack<int> {
 public:
 	TitleCurSuper(TitleParser *parser, TitleMain *plugin);
@@ -516,6 +527,7 @@ public:
 	TitleCurUnder  cur_under;
 	TitleCurBlink  cur_blink;
 	TitleCurFixed  cur_fixed;
+	TitleCurAlias  cur_alias;
 	TitleCurSuper  cur_super;
 
 	TitleParser(TitleMain *main);

@@ -34,35 +34,23 @@ class AgingEngine;
 
 #define SCRATCH_MAX 20
 
-
-typedef struct _scratch
-{
-	int life;
-	int x;
-	int dx;
-	int init;
-} scratch_t;
-
 class AgingConfig
 {
 public:
 	AgingConfig();
+	~AgingConfig();
+
+	void reset();
+	int equivalent(AgingConfig &that);
+	void copy_from(AgingConfig &that);
+	void interpolate(AgingConfig &prev, AgingConfig &next,
+		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 
 	int area_scale;
 	int aging_mode;
-	scratch_t scratches[SCRATCH_MAX];
-
-	static int dx[8];
-	static int dy[8];
 	int dust_interval;
-
-
 	int pits_interval;
-
 	int scratch_lines;
-	int pit_count;
-	int dust_count;
-
 	int colorage;
 	int scratch;
 	int pits;
@@ -93,27 +81,25 @@ class AgingClient : public LoadClient
 public:
 	AgingClient(AgingServer *server);
 
-	void coloraging(unsigned char **output_ptr,
-		unsigned char **input_ptr,
-		int color_model,
-		int w,
-		int h);
+	void coloraging(unsigned char **output_ptr, unsigned char **input_ptr,
+			int color_model, int w, int h);
 	void scratching(unsigned char **output_ptr,
-		int color_model,
-		int w,
-		int h);
+			int color_model, int w, int h);
 	void pits(unsigned char **output_ptr,
-		int color_model,
-		int w,
-		int h);
+			int color_model, int w, int h);
 	void dusts(unsigned char **output_ptr,
-		int color_model,
-		int w,
-		int h);
+			int color_model, int w, int h);
 	void process_package(LoadPackage *package);
 
 	AgingMain *plugin;
 };
+
+typedef struct _scratch {
+	int life;
+	int x;
+	int dx;
+	int init;
+} scratch_t;
 
 
 class AgingMain : public PluginVClient
@@ -129,14 +115,15 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
-	int load_defaults();
-	int save_defaults();
-
 	AgingServer *aging_server;
 	AgingClient *aging_client;
 
 	AgingEngine **engine;
 	VFrame *input_ptr, *output_ptr;
+
+	int pits_count, dust_count;
+	scratch_t scratches[SCRATCH_MAX];
+	static int dx[8], dy[8];
 };
 
 

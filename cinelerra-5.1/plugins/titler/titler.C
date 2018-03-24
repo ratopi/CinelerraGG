@@ -82,7 +82,7 @@ TitleConfig::TitleConfig()
 {
 	strcpy(font, "fixed");
 	strcpy(encoding, DEFAULT_ENCODING);
-	style = 0;
+	style = FONT_ALIAS;
 	size = 24;
 	color = BLACK;
 	alpha = 0xff;
@@ -289,6 +289,17 @@ GlyphUnit::~GlyphUnit()
 		FT_Done_FreeType(freetype_library);
 }
 
+static inline void to_mono(VFrame *data)
+{
+	if( !data ) return;
+	int w = data->get_w(), h = data->get_h();
+	uint8_t **rows = data->get_rows();
+	for( int y=0; y<h; ++y ) {
+		uint8_t *dp = rows[y];
+		for( int x=0; x<w; ++x,++dp ) *dp = *dp >= 0x80 ? 0xff : 0;
+	}
+}
+
 void GlyphUnit::process_package(LoadPackage *package)
 {
 	GlyphPackage *pkg = (GlyphPackage*)package;
@@ -490,6 +501,11 @@ printf("GlyphUnit::process_package 1 glyph not found (%s) %04x, '%c'\n",
 			FT_Done_Glyph(glyph_image);
 
 //printf("GlyphUnit::process_package 2\n");
+		}
+
+		if( !(glyph->style & FONT_ALIAS) ) {
+			to_mono(glyph->data);
+			to_mono(glyph->data_stroke);
 		}
 	}
 }
@@ -841,6 +857,10 @@ TitleCurFixed::TitleCurFixed(TitleParser *parser, TitleMain *plugin)
  : TitleStack<int>(parser, 0)
 {
 }
+TitleCurAlias::TitleCurAlias(TitleParser *parser, TitleMain *plugin)
+ : TitleStack<int>(parser, (plugin->config.style & FONT_ALIAS) ? 1 : 0)
+{
+}
 TitleCurSuper::TitleCurSuper(TitleParser *parser, TitleMain *plugin)
  : TitleStack<int>(parser, 0)
 {
@@ -859,6 +879,7 @@ TitleParser::TitleParser(TitleMain *plugin)
    cur_under(this, plugin),
    cur_blink(this, plugin),
    cur_fixed(this, plugin),
+   cur_alias(this, plugin),
    cur_super(this, plugin)
 {
 	bfr = out = plugin->config.wtext;
@@ -1578,6 +1599,14 @@ int TitleCurFixed::set(const char *txt)
 	return 0;
 }
 
+int TitleCurAlias::set(const char *txt)
+{
+	int alias = !*txt ? 1 : strtol(txt,(char **)&txt,0);
+	if( *txt ) return 1;
+	push(alias);
+	return 0;
+}
+
 int TitleCurSuper::set(const char *txt)
 {
 	int super = !*txt ? 1 : strtol(txt,(char **)&txt,0);
@@ -1611,6 +1640,7 @@ int TitleParser::set_attributes(int ret)
         if( !strcmp(id,KW_UL) )     return ret>1 ? cur_under.unset(text)  : cur_under.set(text);
         if( !strcmp(id,KW_BLINK) )  return ret>1 ? cur_blink.unset(text)  : cur_blink.set(text);
         if( !strcmp(id,KW_FIXED) )  return ret>1 ? cur_fixed.unset(text)  : cur_fixed.set(text);
+        if( !strcmp(id,KW_ALIAS) )  return ret>1 ? cur_alias.unset(text)  : cur_alias.set(text);
         if( !strcmp(id,KW_SUP) )    return ret>1 ? cur_super.unset(text)  : cur_super.set(text);
 	return 1;
 }
@@ -1644,6 +1674,8 @@ void TitleMain::load_glyphs()
 		if( cur_bold ) cur_style |= BC_FONT_BOLD;
 		int cur_italic  = wchrs.cur_italic;
 		if( cur_italic ) cur_style |= BC_FONT_ITALIC;
+		int cur_alias  = wchrs.cur_alias;
+		if( cur_alias ) cur_style |= FONT_ALIAS;
 		int cur_super = wchrs.cur_super;
 		if( cur_super ) cur_size /= 2;
 		int exists = 0;
@@ -1758,6 +1790,8 @@ int TitleMain::get_text()
 		int cur_style = 0;
 		int cur_bold  = wchrs.cur_bold;
 		if( cur_bold ) cur_style |= BC_FONT_BOLD;
+		int cur_alias   = wchrs.cur_alias;
+		if( cur_alias ) cur_style |= FONT_ALIAS;
 		int cur_italic  = wchrs.cur_italic;
 		if( cur_italic ) cur_style |= BC_FONT_ITALIC;
 		short nx = cur_nudge >> 16, ny = cur_nudge;

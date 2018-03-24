@@ -266,6 +266,9 @@ void TitleWindow::create_objects()
 			eprintf("drag enabled, but compositor already grabbed\n");
 	}
 
+	add_tool(alias = new TitleAlias(client, this, x, y+110));
+	if( alias->get_w() > w1 ) w1 = drag->get_w();
+
 	x += w1 + margin;
 	add_tool(justify_title = new BC_Title(x, y, _("Justify:")));
 	add_tool(left = new TitleLeft(client, this, x, y + 20));
@@ -337,9 +340,9 @@ void TitleWindow::create_objects()
 	if( fade_out->get_w() > w1 ) w1 = fade_out->get_w();
 	x += w1 + margin;
 
-	add_tool(speed_title = new BC_Title(x, y1=y, _("Speed:")));
+	add_tool(speed_title = new BC_Title(x, y, _("Speed:")));
 	w1 = speed_title->get_w();
-	y += speed_title->get_h() + 5;
+	y += speed_title->get_h() + 5;  y1 = y;
 	speed = new TitleSpeed(client, this, x, y);
 	speed->create_objects();
 	if( speed->get_w() > w1 ) w1 = speed->get_w();
@@ -433,6 +436,7 @@ int TitleWindow::resize_event(int w, int h)
 	italic->reposition_window(italic->get_x(), italic->get_y());
 	bold->reposition_window(bold->get_x(), bold->get_y());
 	drag->reposition_window(drag->get_x(), drag->get_y());
+	alias->reposition_window(alias->get_x(), alias->get_y());
 	size_title->reposition_window(size_title->get_x(), size_title->get_y());
 	size->reposition_window(size->get_x(), size->get_y());
 	size_tumbler->reposition_window(size_tumbler->get_x(), size_tumbler->get_y());
@@ -734,6 +738,7 @@ void TitleWindow::update()
 	title_h->update((int64_t)client->config.title_h);
 	italic->update(client->config.style & BC_FONT_ITALIC);
 	bold->update(client->config.style & BC_FONT_BOLD);
+	alias->update(client->config.style & FONT_ALIAS);
 	size->update(client->config.size);
 	motion->update(TitleMain::motion_to_text(client->config.motion_strategy));
 	loop->update(client->config.loop);
@@ -837,6 +842,22 @@ int TitleSizeTumble::handle_down_event()
 
 	client->config.size = atoi(window->sizes.get(current_index)->get_text());
 	window->size->update(client->config.size);
+	window->send_configure_change();
+	return 1;
+}
+
+TitleAlias::TitleAlias(TitleMain *client, TitleWindow *window, int x, int y)
+ : BC_CheckBox(x, y, client->config.style & FONT_ALIAS, _("Alias"))
+{
+	this->client = client;
+	this->window = window;
+}
+
+int TitleAlias::handle_event()
+{
+	client->config.style =
+		(client->config.style & ~FONT_ALIAS) |
+			(get_value() ? FONT_ALIAS : 0);
 	window->send_configure_change();
 	return 1;
 }
@@ -1551,6 +1572,11 @@ void TitleCurPopup::create_objects()
 	sub_menu->add_subitem("%s ",item);
 	sub_menu->add_subitem("%s 20",item);
 	sub_menu->add_subitem("%s 10",item);
+	sub_menu->add_subitem("%s 0",item);
+	sub_menu->add_subitem("/%s",item);
+	add_item(cur_item = new TitleCurItem(this, item = KW_ALIAS));
+	cur_item->add_submenu(sub_menu = new TitleCurSubMenu(cur_item));
+	sub_menu->add_subitem("%s 1",item);
 	sub_menu->add_subitem("%s 0",item);
 	sub_menu->add_subitem("/%s",item);
 	add_item(cur_item = new TitleCurItem(this, item = KW_SUP));

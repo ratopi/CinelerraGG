@@ -175,9 +175,15 @@ void ViewPopup::draw_vframe(VFrame *frame)
 
 ViewPopup *VIconThread::new_view_window(VFrame *frame)
 {
-	int wx = viewing->get_vx() - view_w, rx = 0;
-	int wy = viewing->get_vy() - view_h, ry = 0;
-	wdw->get_root_coordinates(wx, wy, &rx, &ry);
+	BC_WindowBase *parent = wdw->get_parent();
+	XineramaScreenInfo *info = parent->get_xinerama_info(-1);
+	int cx = info ? info->x_org + info->width/2 : parent->get_root_w(0)/2;
+	int cy = info ? info->y_org + info->height/2 : parent->get_root_h(0)/2;
+	int vx = viewing->get_vx(), rx = 0;
+	int vy = viewing->get_vy(), ry = 0;
+	wdw->get_root_coordinates(vx, vy, &rx, &ry);
+	rx += (rx >= cx ? -view_w : viewing->vw);
+	ry += (ry >= cy ? -view_h : viewing->vh);
 	ViewPopup *vwin = new ViewPopup(this, frame, rx, ry, view_w, view_h);
 	wdw->set_active_subwindow(vwin);
 	return vwin;

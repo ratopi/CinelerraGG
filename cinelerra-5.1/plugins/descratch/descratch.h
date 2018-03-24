@@ -15,8 +15,8 @@
 // so that write_pgm can create grey images of inf
 #define SD_NULL 0
 #define SD_EXTREM 0x80
-#define SD_TESTED 0x60
-#define SD_GOOD   0x40
+#define SD_TESTED 0x40
+#define SD_GOOD   0x20
 #define SD_REJECT 0x10
 
 #define MODE_NONE 0
@@ -32,6 +32,7 @@ class DeScratchMode;
 class DeScratchISlider;
 class DeScratchFSlider;
 class DeScratchMark;
+class DeScratchEdgeOnly;
 class DeScratchReset;
 
 
@@ -47,7 +48,7 @@ public:
 		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 
 	int threshold;
-	int asymmetry;
+	float asymmetry;
 	int min_width;
 	int max_width;
 	float min_len;
@@ -61,6 +62,7 @@ public:
 	int mark;
 	float ffade;
 	int border;
+	int edge_only;
 };
 
 class DeScratchMain : public PluginVClient
@@ -73,23 +75,23 @@ public:
 	uint8_t *inf;  int sz_inf;
 	int src_w, src_h;
 	VFrame *src, *dst;
-	VFrame *tmp_frame, *blurry;
+	VFrame *tmpy, *blury;
 	OverlayFrame *overlay_frame;
 	int is_realtime();
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
-	void get_extrems_plane(int comp, int thresh);
-	void remove_min_extrems_plane(int comp, int thresh);
+	void set_extrems_plane(int width, int comp, int thresh);
 	void close_gaps();
 	void test_scratches();
-	void mark_scratches_plane(int comp, int mask, int value);
+	void mark_scratches_plane();
 	void remove_scratches_plane(int comp);
-	void pass(int comp, int thresh);
 	void blur(int scale);
 	void copy(int comp);
+	void pass(int comp, int thresh);
 	void plane_pass(int comp, int mode);
+	void plane_proc(int comp, int mode);
 	int process_realtime(VFrame *input, VFrame *output);
 };
 
@@ -104,7 +106,8 @@ public:
 	
 	DeScratchMain *plugin;
 	DeScratchMode *y_mode, *u_mode, *v_mode;
-	DeScratchISlider *threshold, *asymmetry;
+	DeScratchISlider *threshold;
+	DeScratchFSlider *asymmetry;
 	DeScratchISlider *min_width, *max_width;
 	DeScratchFSlider *min_len, *max_len;
 	DeScratchISlider *blur_len;
@@ -112,6 +115,7 @@ public:
 	DeScratchFSlider *max_angle;
 	DeScratchISlider *border;
 	DeScratchMark *mark;
+	DeScratchEdgeOnly *edge_only;
 	DeScratchFSlider *ffade;
 	DeScratchReset *reset;
 };
@@ -170,6 +174,16 @@ class DeScratchMark : public BC_CheckBox
 public:
 	DeScratchMark(DeScratchWindow *win, int x, int y);
 	~DeScratchMark();
+	int handle_event();
+
+	DeScratchWindow *win;
+};
+
+class DeScratchEdgeOnly : public BC_CheckBox
+{
+public:
+	DeScratchEdgeOnly(DeScratchWindow *win, int x, int y);
+	~DeScratchEdgeOnly();
 	int handle_event();
 
 	DeScratchWindow *win;

@@ -31,108 +31,46 @@ class AgingWindow;
 #include "mutex.h"
 #include "aging.h"
 
-
-class AgingColor;
-class AgingScratches;
-class AgingScratchCount;
-class AgingPits;
-class AgingPitCount;
-class AgingDust;
-class AgingDustCount;
+class AgingCheckBox;
+class AgingISlider;
 
 class AgingWindow : public PluginClientWindow
 {
 public:
-	AgingWindow(AgingMain *client);
+	AgingWindow(AgingMain *plugin);
 	~AgingWindow();
 
 	void create_objects();
+	AgingMain *plugin;
 
-	AgingMain *client;
-
-
-	AgingColor *color;
-	AgingScratches *scratches;
-	AgingScratchCount *scratch_count;
-	AgingPits *pits;
-	AgingPitCount *pit_count;
-	AgingDust *dust;
-	AgingDustCount *dust_count;
+	AgingCheckBox *color;
+	AgingCheckBox *scratches;
+	AgingISlider *scratch_count;
+	AgingCheckBox *pits;
+	AgingISlider *pit_count;
+	AgingCheckBox *dust;
+	AgingISlider *dust_count;
 };
 
-
-
-
-
-class AgingColor : public BC_CheckBox
+class AgingISlider : public BC_ISlider
 {
 public:
-	AgingColor(int x, int y, AgingMain *plugin);
+	AgingISlider(AgingWindow *win,
+		int x, int y, int w, int min, int max, int *output);
+	~AgingISlider();
 	int handle_event();
-	AgingMain *plugin;
+
+	AgingWindow *win;
+	int *output;
 };
 
-
-class AgingScratches : public BC_CheckBox
+class AgingCheckBox : public BC_CheckBox
 {
 public:
-	AgingScratches(int x, int y, AgingMain *plugin);
+	AgingCheckBox(AgingWindow *win, int x, int y, int *output, const char *text);
 	int handle_event();
-	AgingMain *plugin;
+
+	AgingWindow *win;
 };
-
-
-class AgingScratchCount : public BC_ISlider
-{
-public:
-	AgingScratchCount(int x, int y, AgingMain *plugin);
-	int handle_event();
-	AgingMain *plugin;
-};
-
-class AgingPits : public BC_CheckBox
-{
-public:
-	AgingPits(int x, int y, AgingMain *plugin);
-	int handle_event();
-	AgingMain *plugin;
-};
-
-class AgingPitCount : public BC_ISlider
-{
-public:
-	AgingPitCount(int x, int y, AgingMain *plugin);
-	int handle_event();
-	AgingMain *plugin;
-};
-
-
-
-
-
-
-
-
-class AgingDust : public BC_CheckBox
-{
-public:
-	AgingDust(int x, int y, AgingMain *plugin);
-	int handle_event();
-	AgingMain *plugin;
-};
-
-class AgingDustCount : public BC_ISlider
-{
-public:
-	AgingDustCount(int x, int y, AgingMain *plugin);
-	int handle_event();
-	AgingMain *plugin;
-};
-
-
-
-
-
-
 
 #endif
