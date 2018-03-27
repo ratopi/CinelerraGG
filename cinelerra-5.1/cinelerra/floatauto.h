@@ -42,6 +42,7 @@ public:
 	int operator==(Auto &that);
 	int operator==(FloatAuto &that);
 	int identical(FloatAuto *src);
+	int equals(FloatAuto *src);
 	void copy_from(Auto *that);
 	void copy_from(FloatAuto *that);
 	int interpolate_from(Auto *a1, Auto *a2, int64_t pos, Auto *templ=0); // bezier interpolation

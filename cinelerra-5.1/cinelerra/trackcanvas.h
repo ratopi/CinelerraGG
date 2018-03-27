@@ -328,6 +328,7 @@ public:
 		int max_y);
 	int button_press_event();
 	int button_release_event();
+	int cursor_update(int in_motion);
 	int cursor_motion_event();
 	int activate();
 	int deactivate();
@@ -416,6 +417,7 @@ public:
 
 	double selection_midpoint;        // division between current ends
 	int snapped;			// drag handle snapping
+	EDL *speed_edl;			// drag speed handle start edl
 };
 
 #endif

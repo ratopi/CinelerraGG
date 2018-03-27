@@ -557,6 +557,8 @@ public:
 	static Commercials *commercials;
 	int commercial_active;
 	int has_commercials();
+// copy of edl created in speed_before, used in speed_after to normalize_speed
+	EDL *speed_edl;
 
 // Menu items
 	ArrayList<ColormodelItem*> colormodels;
@@ -655,6 +657,7 @@ public:
 	void commit_commercial();
 	void undo_commercial();
 	void cut_commercials();
+	void update_gui(int changed_edl);
 	int paste_subtitle_text(char *text, double start, double end);
 
 	void init_error();
@@ -702,6 +705,9 @@ public:
 	void init_commercials();
 	static void add_plugins(ArrayList<PluginServer*> &plugins);
 	static void delete_plugins();
+	void speed_before();
+	int speed_after(int done);
+	int normalize_speed(EDL *old_edl, EDL *new_edl);
 //
 	void clean_indexes();
 //	TimeBomb timebomb;

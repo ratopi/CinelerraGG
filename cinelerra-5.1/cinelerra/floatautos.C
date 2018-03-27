@@ -449,12 +449,10 @@ double FloatAutos::automation_integral(int64_t start, int64_t length, int direct
 		length += start;
 		start = 0;
 	}
-	int64_t end = start + length;
-	double value = 0, track_length = track->get_length();
-	int64_t pos = start, len = track->to_units(track_length,0);
-	if( end > len ) end = len;
+	double value = 0;
+	int64_t pos = start, len = length, end = pos + len;
 	while( pos < end ) {
-		int64_t prev_pos = 0, next_pos = len;
+		int64_t prev_pos = 0, next_pos = end;
 		Auto *zprev = 0, *znext = 0;
 		FloatAuto *prev = (FloatAuto*)get_prev_auto(pos, direction, zprev, 0);
 		if( prev ) prev_pos = prev->position;
@@ -489,5 +487,19 @@ double FloatAutos::automation_integral(int64_t start, int64_t length, int direct
 	}
 
 	return value + 1e-6;
+}
+
+int64_t FloatAutos::speed_position(double pos)
+{
+	double length = track->get_length();
+	int64_t l = -1, r = track->to_units(length, 1);
+	if( r < 1 ) r = 1;
+	for( int i=32; --i >= 0 && automation_integral(0,r,PLAY_FORWARD) <= pos; r*=2 );
+	for( int i=64; --i >= 0 && (r-l)>1; ) {
+		int64_t m = (l + r) / 2;
+		double t = automation_integral(0,m,PLAY_FORWARD) - pos;
+		*(t >= 0 ? &r : &l) = m;
+	}
+	return r;
 }
 

@@ -622,6 +622,7 @@ KeySpeedValue::KeySpeedValue(KeySpeedPatch *key_speed_patch)
 	key_speed_patch->mwindow->get_float_auto(key_speed_patch->patch, AUTOMATION_SPEED)->get_value())
 {
 	this->key_speed_patch = key_speed_patch;
+	key_speed_patch->mwindow->speed_before();
 	set_precision(0.01);
 }
 
@@ -632,6 +633,8 @@ KeySpeedValue::~KeySpeedValue()
 int KeySpeedValue::button_release_event()
 {
 	BC_FSlider::button_release_event();
+	key_speed_patch->mwindow->speed_after(1);
+	key_speed_patch->mwindow->resync_guis();
 	return 0;
 }
 
@@ -645,7 +648,7 @@ void KeySpeedValue::update_edl()
 	mwindow->undo->update_undo_before(_("speed"), need_undo ? 0 : this);
 	FloatAuto *current = (FloatAuto*)speed_autos->get_auto_for_editing(position);
 	current->set_value(get_value());
-	mwindow->undo->update_undo_after(_("speed"), LOAD_AUTOMATION);
+	mwindow->undo->update_undo_after(_("speed"), LOAD_AUTOMATION+LOAD_EDITS);
 }
 
 int KeySpeedValue::handle_event()

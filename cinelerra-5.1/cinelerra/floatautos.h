@@ -65,6 +65,7 @@ public:
 	void set_automation_mode(int64_t start, int64_t end, int mode);
 	void set_proxy(int orig_scale, int new_scale);
 	double automation_integral(int64_t start, int64_t length, int direction);
+	int64_t speed_position(double pos);
 
 	void dump();
 	Auto* new_auto();

@@ -74,6 +74,18 @@ int FloatAuto::identical(FloatAuto *src)
 		// curve_mode is ignored, no recalculations
 }
 
+// exactly equals
+int FloatAuto::equals(FloatAuto *that)
+{
+	return this->value == that->value &&
+		this->control_in_value == that->control_in_value &&
+		this->control_out_value == that->control_out_value &&
+		this->control_in_position == that->control_in_position &&
+		this->control_out_position == that->control_out_position &&
+		this->curve_mode == that->curve_mode;
+}
+
+
 /* Note: the following is essentially display-code and has been moved to:
  *  TrackCanvas::value_to_percentage(float auto_value, int autogrouptype)
  *

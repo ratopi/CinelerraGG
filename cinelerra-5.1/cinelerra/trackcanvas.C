@@ -2046,16 +2046,27 @@ int TrackCanvas::do_keyframes(int cursor_x,
 					case Autos::AUTOMATION_TYPE_FLOAT: {
 						Automation automation(0, track);
 						int grouptype = automation.autogrouptype(i, track);
+						if( buttonpress && i == AUTOMATION_SPEED ) {
+							mwindow->speed_before();
+						}
+
 						if(draw) // Do dropshadow
 							result = do_float_autos(track, autos,
 								cursor_x, cursor_y, draw,
 								buttonpress, 1, 1, MDGREY,
 								auto_keyframe, grouptype);
-
 						result = do_float_autos(track, autos,
 							cursor_x, cursor_y, draw, buttonpress,
 							0, 0, GWindowGUI::auto_colors[i],
 							auto_keyframe, grouptype);
+
+						if( !result && buttonpress && i == AUTOMATION_SPEED )
+							mwindow->speed_after(-1);
+						int current_grouptype = mwindow->edl->local_session->zoombar_showautotype;
+						if( result && buttonpress && grouptype != current_grouptype ) {
+							mwindow->edl->local_session->zoombar_showautotype = grouptype;
+						        mwindow->gui->zoombar->update_autozoom();
+						}
 						break; }
 
 					case Autos::AUTOMATION_TYPE_INT: {
@@ -3902,7 +3913,7 @@ void TrackCanvas::update_drag_caption()
 
 
 
-int TrackCanvas::cursor_motion_event()
+int TrackCanvas::cursor_update(int in_motion)
 {
 	int result = 0;
 	int cursor_x = 0;
@@ -3915,7 +3926,7 @@ int TrackCanvas::cursor_motion_event()
 	int new_cursor = 0;
 	int rerender = 0;
 	double position = 0.;
-//printf("TrackCanvas::cursor_motion_event %d\n", __LINE__);
+//printf("TrackCanvas::cursor_update %d\n", __LINE__);
 
 // Default cursor
 	switch(mwindow->edl->session->editing_mode)
@@ -3978,6 +3989,8 @@ int TrackCanvas::cursor_motion_event()
 		case DRAG_PROJECTOR_Z:
 			if(active) rerender = update_overlay =
 				update_drag_floatauto(get_cursor_x(), get_cursor_y());
+			if( rerender && mwindow->session->current_operation == DRAG_SPEED )
+				mwindow->speed_after(!in_motion ? 1 : 0);
 			break;
 
 		case DRAG_PLAY:
@@ -4043,7 +4056,7 @@ int TrackCanvas::cursor_motion_event()
 					start != mwindow->edl->local_session->get_selectionstart(1) ? 1 :
 					end != mwindow->edl->local_session->get_selectionend(1) ? -1 : 0;
 				mwindow->cwindow->update(dir, 0, 0, 0, 1);
-				gui->lock_window("TrackCanvas::cursor_motion_event 1");
+				gui->lock_window("TrackCanvas::cursor_update 1");
 	// Update the faders
 				mwindow->update_plugin_guis();
 				gui->update_patchbay();
@@ -4078,7 +4091,7 @@ int TrackCanvas::cursor_motion_event()
 				for(int i = 0; i < TOTAL_PANES; i++)
 					if(gui->pane[i]) gui->pane[i]->canvas->timebar_position = position;
 
-//printf("TrackCanvas::cursor_motion_event %d %d %p %p\n", __LINE__, pane->number, pane, pane->timebar);
+//printf("TrackCanvas::cursor_update %d %d %p %p\n", __LINE__, pane->number, pane, pane->timebar);
 				gui->update_timebar(0);
 // Update cursor
 				if(do_transitions(get_cursor_x(), get_cursor_y(),
@@ -4096,13 +4109,13 @@ int TrackCanvas::cursor_motion_event()
 			break;
 	}
 
-//printf("TrackCanvas::cursor_motion_event 1\n");
+//printf("TrackCanvas::cursor_update 1\n");
 	if(update_cursor && new_cursor != get_cursor())
 	{
 		set_cursor(new_cursor, 0, 1);
 	}
 
-//printf("TrackCanvas::cursor_motion_event 1 %d\n", rerender);
+//printf("TrackCanvas::cursor_update 1 %d\n", rerender);
 	if(rerender && render_timer->get_difference() > 0.25 ) {
 		render_timer->update();
 		mwindow->restart_brender();
@@ -4110,7 +4123,7 @@ int TrackCanvas::cursor_motion_event()
 		mwindow->update_plugin_guis();
 		gui->unlock_window();
 		mwindow->cwindow->update(1, 0, 0, 0, 1);
-		gui->lock_window("TrackCanvas::cursor_motion_event 2");
+		gui->lock_window("TrackCanvas::cursor_update 2");
 	}
 	if(rerender) {
 // Update faders
@@ -4141,8 +4154,13 @@ int TrackCanvas::cursor_motion_event()
 		gui->draw_overlays(1);
 	}
 
-//printf("TrackCanvas::cursor_motion_event %d\n", __LINE__);
+//printf("TrackCanvas::cursor_update %d\n", __LINE__);
 	return result;
+}
+
+int TrackCanvas::cursor_motion_event()
+{
+	return cursor_update(1);
 }
 
 void TrackCanvas::start_dragscroll()
@@ -4244,7 +4262,8 @@ int TrackCanvas::repeat_event(int64_t duration)
 
 int TrackCanvas::button_release_event()
 {
-	int redraw = 0, update_overlay = 0, result = 0;
+	int redraw = -1, update_overlay = 0;
+	int result = 0, load_flags = 0;
 
 // printf("TrackCanvas::button_release_event %d\n",
 // mwindow->session->current_operation);
@@ -4278,8 +4297,10 @@ int TrackCanvas::button_release_event()
 			result = 1;
 			break;
 
-		case DRAG_FADE:
 		case DRAG_SPEED:
+			redraw = FORCE_REDRAW;
+			load_flags |= LOAD_EDITS;
+		case DRAG_FADE:
 // delete the drag_auto_gang first and remove out of order keys
 			synchronize_autos(0, 0, 0, -1);
 		case DRAG_CZOOM:
@@ -4296,6 +4317,7 @@ int TrackCanvas::button_release_event()
 		case DRAG_PROJECTOR_Y:
 		case DRAG_PROJECTOR_Z:
 		case DRAG_PLUGINKEY:
+			load_flags |= LOAD_AUTOMATION;
 			mwindow->session->current_operation = NO_OPERATION;
 			mwindow->session->drag_handle = 0;
 // Remove any out-of-order keyframe
@@ -4306,8 +4328,7 @@ int TrackCanvas::button_release_event()
 				update_overlay = 1;
 			}
 
-
-			mwindow->undo->update_undo_after(_("keyframe"), LOAD_AUTOMATION);
+			mwindow->undo->update_undo_after(_("keyframe"), load_flags);
 			result = 1;
 			break;
 
@@ -4334,13 +4355,14 @@ int TrackCanvas::button_release_event()
 	}
 
 	if (result)
-		cursor_motion_event();
+		cursor_update(0);
 
 	if(update_overlay) {
 		gui->draw_overlays(1);
 	}
-	if(redraw) {
-		gui->draw_canvas(NORMAL_DRAW, 0);
+	if(redraw >= 0) {
+		gui->draw_canvas(redraw, 0);
+		gui->flash_canvas(1);
 	}
 	return result;
 }

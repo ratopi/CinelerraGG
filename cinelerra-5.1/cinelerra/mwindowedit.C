@@ -325,55 +325,60 @@ void MWindow::clear(int clear_handle)
 	}
 }
 
+void MWindow::update_gui(int changed_edl)
+{
+	restart_brender();
+	update_plugin_guis();
+	if( changed_edl ) {
+		gui->update(1, 2, 1, 1, 1, 1, 0);
+		cwindow->update(1, 0, 0, 0, 1);
+		cwindow->refresh_frame(CHANGE_EDL);
+	}
+	else {
+		gui->draw_overlays(1);
+		sync_parameters(CHANGE_PARAMS);
+		gui->update_patchbay();
+		cwindow->update(1, 0, 0);
+	}
+}
+
 void MWindow::set_automation_mode(int mode)
 {
 	undo->update_undo_before();
+	speed_before();
 	edl->tracks->set_automation_mode(
 		edl->local_session->get_selectionstart(),
 		edl->local_session->get_selectionend(),
 		mode);
+	int changed_edl = speed_after(1);
 	save_backup();
 	char string[BCSTRLEN];
 	sprintf(string,"set %s", FloatAuto::curve_name(mode));
 	undo->update_undo_after(string, LOAD_AUTOMATION);
-
-	restart_brender();
-	update_plugin_guis();
-	gui->draw_overlays(1);
-	sync_parameters(CHANGE_PARAMS);
-	gui->update_patchbay();
-	cwindow->update(1, 0, 0);
+	update_gui(changed_edl);
 }
 
 void MWindow::clear_automation()
 {
 	undo->update_undo_before();
+	speed_before();
 	edl->tracks->clear_automation(edl->local_session->get_selectionstart(),
 		edl->local_session->get_selectionend());
+	int changed_edl = speed_after(1);
 	save_backup();
 	undo->update_undo_after(_("clear keyframes"), LOAD_AUTOMATION);
-
-	restart_brender();
-	update_plugin_guis();
-	gui->draw_overlays(1);
-	sync_parameters(CHANGE_PARAMS);
-	gui->update_patchbay();
-	cwindow->update(1, 0, 0);
+	update_gui(changed_edl);
 }
 
 int MWindow::clear_default_keyframe()
 {
 	undo->update_undo_before();
+	speed_before();
 	edl->tracks->clear_default_keyframe();
+	int changed_edl = speed_after(1);
 	save_backup();
 	undo->update_undo_after(_("clear default keyframe"), LOAD_AUTOMATION);
-
-	restart_brender();
-	gui->draw_overlays(1);
-	sync_parameters(CHANGE_PARAMS);
-	gui->update_patchbay();
-	cwindow->update(1, 0, 0);
-
+	update_gui(changed_edl);
 	return 0;
 }
 
@@ -593,21 +598,14 @@ void MWindow::cut_right_label()
 int MWindow::cut_automation()
 {
 	undo->update_undo_before();
-
+	speed_before();
 	copy_automation();
-
 	edl->tracks->clear_automation(edl->local_session->get_selectionstart(),
 		edl->local_session->get_selectionend());
+	int changed_edl = speed_after(1);
 	save_backup();
 	undo->update_undo_after(_("cut keyframes"), LOAD_AUTOMATION);
-
-
-	restart_brender();
-	update_plugin_guis();
-	gui->draw_overlays(1);
-	sync_parameters(CHANGE_PARAMS);
-	gui->update_patchbay();
-	cwindow->update(1, 0, 0);
+	update_gui(changed_edl);
 	return 0;
 }
 
@@ -615,18 +613,13 @@ int MWindow::cut_default_keyframe()
 {
 
 	undo->update_undo_before();
+	speed_before();
 	copy_default_keyframe();
 	edl->tracks->clear_default_keyframe();
-	undo->update_undo_after(_("cut default keyframe"), LOAD_AUTOMATION);
-
-	restart_brender();
-	gui->draw_overlays(1);
-	sync_parameters(CHANGE_PARAMS);
-	gui->update_patchbay();
-	cwindow->update(1, 0, 0);
+	int changed_edl = speed_after(1);
 	save_backup();
-
-
+	undo->update_undo_after(_("cut default keyframe"), LOAD_AUTOMATION);
+	update_gui(changed_edl);
 	return 0;
 }
 
@@ -1243,6 +1236,7 @@ int MWindow::paste_automation()
 
 	if( len ) {
 		undo->update_undo_before();
+		speed_before();
 		char *string = new char[len];
 		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		FileXML file;
@@ -1253,16 +1247,11 @@ int MWindow::paste_automation()
 		edl->tracks->clear_automation(start, end);
 		edl->tracks->paste_automation(start, &file, 0, 1,
 			edl->session->typeless_keyframes);
+		int changed_edl = speed_after(1);
 		save_backup();
 		undo->update_undo_after(_("paste keyframes"), LOAD_AUTOMATION);
 		delete [] string;
-
-		restart_brender();
-		update_plugin_guis();
-		gui->draw_overlays(1);
-		sync_parameters(CHANGE_PARAMS);
-		gui->update_patchbay();
-		cwindow->update(1, 0, 0);
+		update_gui(changed_edl);
 	}
 
 	return 0;
@@ -1274,6 +1263,7 @@ int MWindow::paste_default_keyframe()
 
 	if( len ) {
 		undo->update_undo_before();
+		speed_before();
 		char *string = new char[len];
 		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		FileXML file;
@@ -1283,15 +1273,10 @@ int MWindow::paste_default_keyframe()
 			edl->session->typeless_keyframes);
 //		edl->tracks->paste_default_keyframe(&file);
 		undo->update_undo_after(_("paste default keyframe"), LOAD_AUTOMATION);
-
-		restart_brender();
-		update_plugin_guis();
-		gui->draw_overlays(1);
-		sync_parameters(CHANGE_PARAMS);
-		gui->update_patchbay();
-		cwindow->update(1, 0, 0);
-		delete [] string;
+		int changed_edl = speed_after(1);
 		save_backup();
+		delete [] string;
+		update_gui(changed_edl);
 	}
 
 	return 0;
@@ -2442,4 +2427,58 @@ void MWindow::cut_commercials()
 	cwindow->refresh_frame(CHANGE_EDL);
 }
 
+int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl)
+{
+	int result = 0;
+	Track *old_track = old_edl->tracks->first;
+	Track *new_track = new_edl->tracks->first;
+	for( ; old_track && new_track; old_track=old_track->next, new_track=new_track->next ) {
+		if( old_track->data_type != new_track->data_type ) continue;
+		FloatAutos *old_speeds = (FloatAutos *)old_track->automation->autos[AUTOMATION_SPEED];
+		FloatAutos *new_speeds = (FloatAutos *)new_track->automation->autos[AUTOMATION_SPEED];
+		if( !old_speeds || !new_speeds ) continue;
+		FloatAuto *old_speed = (FloatAuto *)old_speeds->first;
+		FloatAuto *new_speed = (FloatAuto *)new_speeds->first;
+		while( old_speed && new_speed && old_speed->equals(new_speed) ) {
+			old_speed = (FloatAuto *)old_speed->next;
+			new_speed = (FloatAuto *)new_speed->next;
+		}
+		Edit *old_edit = old_track->edits->first;
+		Edit *new_edit = new_track->edits->first;
+		for( ; old_edit && new_edit; old_edit=old_edit->next, new_edit=new_edit->next ) {
+			int64_t edit_start = old_edit->startproject, edit_end = edit_start + old_edit->length;
+			if( old_speed || new_speed ) {
+				double orig_start = old_speeds->automation_integral(0, edit_start, PLAY_FORWARD);
+				double orig_end   = old_speeds->automation_integral(0, edit_end, PLAY_FORWARD);
+				edit_start = new_speeds->speed_position(orig_start);
+				edit_end = new_speeds->speed_position(orig_end);
+				result = 1;
+			}
+			new_edit->startproject = edit_start;
+			new_edit->length = edit_end - edit_start;
+		}
+	}
+	return result;
+}
+
+void MWindow::speed_before()
+{
+	if( !speed_edl ) {
+		speed_edl = new EDL;
+		speed_edl->create_objects();
+	}
+	speed_edl->copy_all(edl);
+}
+
+int MWindow::speed_after(int done)
+{
+	int result = 0;
+	if( speed_edl && done >= 0 )
+		result = normalize_speed(speed_edl, edl);
+	if( done ) {
+		speed_edl->remove_user();
+		speed_edl = 0;
+	}
+	return result;
+}
 

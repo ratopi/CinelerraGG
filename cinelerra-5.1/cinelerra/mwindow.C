@@ -230,6 +230,7 @@ MWindow::MWindow()
 	restart_status = 0;
 	screens = 1;
 	in_destructor = 0;
+	speed_edl = 0;
 }
 
 
@@ -251,7 +252,7 @@ MWindow::~MWindow()
 	commit_commercial();
 	if( commercials && !commercials->remove_user() ) commercials = 0;
 	close_mixers();
-
+	if( speed_edl ) { speed_edl->remove_user();  speed_edl = 0; }
 // Save defaults for open plugins
 	plugin_gui_lock->lock("MWindow::~MWindow");
 	for(int i = 0; i < plugin_guis->size(); i++) {
