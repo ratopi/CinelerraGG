@@ -213,14 +213,13 @@ void NewSvgButton::run()
 		new_window->update_filter("*.svg");
 		result = new_window->run_window();
 		const char *filepath = new_window->get_path(0);
-		strcpy(filename, filepath);
+		strcpy(filename, filepath ? filepath : "" );
 		delete new_window;  new_window = 0;
-		if( result || !filepath || !*filepath ) {
-			window->editing_lock.lock();
+		window->editing_lock.lock();
+		if( result || !filename[0] )
 			window->editing = 0;
-			window->editing_lock.unlock();
-			return;              // cancel or no filename given
-		}
+		window->editing_lock.unlock();
+		if( !window->editing ) return;              // cancel or no filename given
 
 // Extend the filename with .svg
 		if( strlen(filename) < 4 ||
@@ -398,7 +397,7 @@ void SvgInkscapeThread::run()
 		"inkscape --with-gui %s", edit->client->config.svg_file);
 	printf(_("Running external SVG editor: %s\n"), command);
 	char *const argv[] = {
-		(char*) "incscape",
+		(char*) "inkscape",
 		(char*)"--with-gui",
 		edit->client->config.svg_file,
 		0,
