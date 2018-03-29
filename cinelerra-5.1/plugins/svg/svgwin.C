@@ -22,6 +22,7 @@
 #include "svgwin.h"
 #include "filexml.h"
 #include "language.h"
+#include "mainerror.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -29,6 +30,9 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
 #include <errno.h>
 
 #include "empty_svg.h"
@@ -105,6 +109,7 @@ void SvgWin::create_objects()
 
 int SvgWin::close_event()
 {
+	new_svg_button->stop();
 	edit_svg_button->stop();
 	set_done(1);
 	return 1;
@@ -112,6 +117,7 @@ int SvgWin::close_event()
 
 int SvgWin::hide_window(int flush)
 {
+	new_svg_button->stop();
 	edit_svg_button->stop();
 	return BC_WindowBase::hide_window(flush);
 }
@@ -160,7 +166,13 @@ NewSvgButton::NewSvgButton(SvgMain *client, SvgWin *window, int x, int y)
 {
 	this->client = client;
 	this->window = window;
+	new_window = 0;
 }
+NewSvgButton::~NewSvgButton()
+{
+	stop();
+}
+
 
 int NewSvgButton::handle_event()
 {
@@ -196,13 +208,13 @@ void NewSvgButton::run()
 			char *cp = getenv("HOME");
 			if( cp ) strncpy(directory, cp, sizeof(directory));
 		}
-		NewSvgWindow *new_window = new NewSvgWindow(client, window, directory);
+		new_window = new NewSvgWindow(client, window, directory);
 		new_window->create_objects();
 		new_window->update_filter("*.svg");
 		result = new_window->run_window();
 		const char *filepath = new_window->get_path(0);
 		strcpy(filename, filepath);
-		delete new_window;
+		delete new_window;  new_window = 0;
 		if( result || !filepath || !*filepath ) {
 			window->editing_lock.lock();
 			window->editing = 0;
@@ -230,9 +242,7 @@ void NewSvgButton::run()
 	} while(result);        // file doesn't exist so repeat
 
 	strcpy(client->config.svg_file, filename);
-	struct stat st;
-	client->config.ms_time = stat(filename, &st) ? 0 :
-		st.st_mtim.tv_sec*1000 + st.st_mtim.tv_nsec/1000000;
+	client->config.ms_time = 0;
 	window->update_gui(client->config);
 	client->send_configure_change();
 
@@ -241,6 +251,14 @@ void NewSvgButton::run()
 	window->editing_lock.unlock();
 
 	return;
+}
+
+void NewSvgButton::stop()
+{
+	if( new_window ) {
+		new_window->set_done(1);
+	}
+	join();
 }
 
 EditSvgButton::EditSvgButton(SvgMain *client, SvgWin *window, int x, int y)
@@ -354,6 +372,24 @@ SvgInkscapeThread::~SvgInkscapeThread()
 	join();
 }
 
+static int exec_command(char* const*argv)
+{
+        pid_t pid = vfork();
+        if( pid < 0 ) return -1;
+        if( pid > 0 ) {
+                int stat = 0;
+		waitpid(pid, &stat, 0);
+                if( stat ) {
+                        char msg[BCTEXTLEN];
+                        sprintf(msg, "%s: error exit status %d", argv[0], stat);
+                        MainError::show_error(msg);
+                }
+                return 0;
+	}
+        execvp(argv[0], &argv[0]);
+        return -1;
+}
+
 void SvgInkscapeThread::run()
 {
 // Runs the inkscape
@@ -361,9 +397,15 @@ void SvgInkscapeThread::run()
 	snprintf(command, sizeof(command),
 		"inkscape --with-gui %s", edit->client->config.svg_file);
 	printf(_("Running external SVG editor: %s\n"), command);
+	char *const argv[] = {
+		(char*) "incscape",
+		(char*)"--with-gui",
+		edit->client->config.svg_file,
+		0,
+	};
 
 	enable_cancel();
-	system(command);
+	exec_command(argv);
 	printf(_("External SVG editor finished\n"));
 	struct fifo_struct fifo_buf;
 	fifo_buf.pid = getpid();
@@ -373,7 +415,6 @@ void SvgInkscapeThread::run()
 
 	return;
 }
-
 
 
 NewSvgWindow::NewSvgWindow(SvgMain *client, SvgWin *window, char *init_directory)

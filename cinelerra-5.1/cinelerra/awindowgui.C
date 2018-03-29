@@ -1308,6 +1308,12 @@ int AWindowGUI::keypress_event()
 			return 1;
 		}
 		break;
+	case 'o':
+		if( !ctrl_down() && !shift_down() ) {
+			assetlist_menu->load_file->handle_event();
+			return 1;
+		}
+		break;
 	case DELETE:
 		if( shift_down() ) {
 			PluginServer* plugin = selected_plugin();

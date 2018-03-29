@@ -21,6 +21,7 @@
 #include "clip.h"
 #include "filexml.h"
 #include "language.h"
+#include "mainerror.h"
 #include "svg.h"
 #include "svgwin.h"
 #include "overlayframe.inc"
@@ -32,6 +33,8 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 
 REGISTER_PLUGIN(SvgMain)
@@ -53,6 +56,7 @@ int SvgConfig::equivalent(SvgConfig &that)
 		EQUIV(out_w, that.out_w) &&
 		EQUIV(out_h, that.out_h) &&
 		!strcmp(svg_file, that.svg_file) &&
+		ms_time != 0 && that.ms_time != 0 &&
 		ms_time == that.ms_time;
 }
 
@@ -147,6 +151,24 @@ void SvgMain::read_data(KeyFrame *keyframe)
 	}
 }
 
+static int exec_command(char* const*argv)
+{
+        pid_t pid = vfork();
+        if( pid < 0 ) return -1;
+        if( pid > 0 ) {
+                int stat = 0;
+		waitpid(pid, &stat, 0);
+                if( stat ) {
+                        char msg[BCTEXTLEN];
+                        sprintf(msg, "%s: error exit status %d", argv[0], stat);
+                        MainError::show_error(msg);
+                }
+                return 0;
+	}
+        execvp(argv[0], &argv[0]);
+        return -1;
+}
+
 
 int SvgMain::process_realtime(VFrame *input, VFrame *output)
 {
@@ -158,7 +180,7 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 	char last_svg_file[BCTEXTLEN];
 	strcpy(last_svg_file, config.svg_file);
 	int64_t last_ms_time = config.ms_time;
-	load_configuration();
+	need_reconfigure = load_configuration();
 	if( last_dpi != config.dpi )
 		need_export = 1;
 	if( strcmp(last_svg_file, config.svg_file) ||
@@ -177,13 +199,22 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 			st_png.st_mtim.tv_sec*1000 + st_png.st_mtim.tv_nsec/1000000;
 		int fd = ms_time < config.ms_time ? -1 : open(filename_png, O_RDWR);
 		if( fd < 0 ) { // file does not exist, export it
-			char command[BCTEXTLEN];
+			char command[BCTEXTLEN], dpi[BCSTRLEN];
 			snprintf(command, sizeof(command),
 				"inkscape --without-gui --export-background=0x000000 "
 				"--export-background-opacity=0 -d %f %s --export-png=%s",
 				config.dpi, config.svg_file, filename_png);
 			printf(_("Running command %s\n"), command);
-			system(command);
+			snprintf(dpi, sizeof(dpi), "%f", config.dpi);
+			snprintf(command, sizeof(command), "--export-png=%s",filename_png);
+			char *const argv[] = {
+				(char*)"inkscape",
+				(char*)"--without-gui",
+				(char*)"--export-background=0x000000",
+                                (char*)"--export-background-opacity=0",
+				(char*)"-d", dpi, config.svg_file, command,
+				0, };
+			exec_command(argv);
 			// in order for lockf to work it has to be open for writing
 			fd = open(filename_png, O_RDWR);
 			if( fd < 0 )

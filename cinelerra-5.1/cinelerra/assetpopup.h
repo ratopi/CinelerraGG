@@ -225,10 +225,23 @@ public:
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
+	AssetPopupLoadFile *load_file;
 	AWindowListFormat *format;
 	AssetSnapshot *asset_snapshot;
 	AssetGrabshot *asset_grabshot;
 	int shots_displayed;
+};
+
+class AssetPopupLoadFile : public BC_MenuItem
+{
+public:
+	AssetPopupLoadFile(MWindow *mwindow, AWindowGUI *gui);
+	~AssetPopupLoadFile();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AWindowGUI *gui;
 };
 
 class AssetListCopy : public BC_MenuItem

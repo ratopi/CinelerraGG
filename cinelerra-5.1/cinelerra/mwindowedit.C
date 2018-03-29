@@ -354,7 +354,9 @@ void MWindow::set_automation_mode(int mode)
 	save_backup();
 	char string[BCSTRLEN];
 	sprintf(string,"set %s", FloatAuto::curve_name(mode));
-	undo->update_undo_after(string, LOAD_AUTOMATION);
+	undo->update_undo_after(string,
+		!changed_edl ? LOAD_AUTOMATION :
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 	update_gui(changed_edl);
 }
 
@@ -366,7 +368,9 @@ void MWindow::clear_automation()
 		edl->local_session->get_selectionend());
 	int changed_edl = speed_after(1);
 	save_backup();
-	undo->update_undo_after(_("clear keyframes"), LOAD_AUTOMATION);
+	undo->update_undo_after(_("clear keyframes"),
+		!changed_edl ? LOAD_AUTOMATION :
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 	update_gui(changed_edl);
 }
 
@@ -377,7 +381,9 @@ int MWindow::clear_default_keyframe()
 	edl->tracks->clear_default_keyframe();
 	int changed_edl = speed_after(1);
 	save_backup();
-	undo->update_undo_after(_("clear default keyframe"), LOAD_AUTOMATION);
+	undo->update_undo_after(_("clear default keyframe"),
+		!changed_edl ? LOAD_AUTOMATION :
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 	update_gui(changed_edl);
 	return 0;
 }
@@ -604,7 +610,9 @@ int MWindow::cut_automation()
 		edl->local_session->get_selectionend());
 	int changed_edl = speed_after(1);
 	save_backup();
-	undo->update_undo_after(_("cut keyframes"), LOAD_AUTOMATION);
+	undo->update_undo_after(_("cut keyframes"),
+		!changed_edl ? LOAD_AUTOMATION :
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 	update_gui(changed_edl);
 	return 0;
 }
@@ -618,7 +626,9 @@ int MWindow::cut_default_keyframe()
 	edl->tracks->clear_default_keyframe();
 	int changed_edl = speed_after(1);
 	save_backup();
-	undo->update_undo_after(_("cut default keyframe"), LOAD_AUTOMATION);
+	undo->update_undo_after(_("cut default keyframe"),
+		!changed_edl ? LOAD_AUTOMATION :
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 	update_gui(changed_edl);
 	return 0;
 }
@@ -1241,7 +1251,7 @@ int MWindow::paste_automation()
 		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		FileXML file;
 		file.read_from_string(string);
-
+		delete [] string;
 		double start = edl->local_session->get_selectionstart();
 		double end = edl->local_session->get_selectionend();
 		edl->tracks->clear_automation(start, end);
@@ -1249,8 +1259,9 @@ int MWindow::paste_automation()
 			edl->session->typeless_keyframes);
 		int changed_edl = speed_after(1);
 		save_backup();
-		undo->update_undo_after(_("paste keyframes"), LOAD_AUTOMATION);
-		delete [] string;
+		undo->update_undo_after(_("paste keyframes"),
+			!changed_edl ? LOAD_AUTOMATION :
+				LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 		update_gui(changed_edl);
 	}
 
@@ -1268,14 +1279,16 @@ int MWindow::paste_default_keyframe()
 		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		FileXML file;
 		file.read_from_string(string);
+		delete [] string;
 		double start = edl->local_session->get_selectionstart();
 		edl->tracks->paste_automation(start, &file, 1, 0,
 			edl->session->typeless_keyframes);
 //		edl->tracks->paste_default_keyframe(&file);
-		undo->update_undo_after(_("paste default keyframe"), LOAD_AUTOMATION);
 		int changed_edl = speed_after(1);
+		undo->update_undo_after(_("paste default keyframe"),
+			!changed_edl ? LOAD_AUTOMATION :
+				LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 		save_backup();
-		delete [] string;
 		update_gui(changed_edl);
 	}
 
@@ -1785,7 +1798,7 @@ void MWindow::align_edits()
 
 void MWindow::set_edit_length(double length)
 {
-	gui->lock_window("MWindow::detach_transitions 1");
+	gui->lock_window("MWindow::set_edit_length 1");
 
 	undo->update_undo_before();
 	double start = edl->local_session->get_selectionstart();
@@ -1805,7 +1818,7 @@ void MWindow::set_edit_length(double length)
 
 void MWindow::set_transition_length(Transition *transition, double length)
 {
-	gui->lock_window("MWindow::detach_transitions 1");
+	gui->lock_window("MWindow::set_transition_length 1");
 
 	undo->update_undo_before();
 	//double start = edl->local_session->get_selectionstart();
@@ -1824,7 +1837,7 @@ void MWindow::set_transition_length(Transition *transition, double length)
 
 void MWindow::set_transition_length(double length)
 {
-	gui->lock_window("MWindow::detach_transitions 1");
+	gui->lock_window("MWindow::set_transition_length 2");
 
 	undo->update_undo_before();
 	double start = edl->local_session->get_selectionstart();
@@ -2042,9 +2055,9 @@ void MWindow::save_clip(EDL *new_edl, const char *txt)
 		n = snprintf(cp, sz, "%s", txt);
 		cp += n;  sz -= n;
 	}
-	n = snprintf(cp, sz, 
+	n = snprintf(cp, sz,
 		"%02d/%02d/%02d %02d:%02d:%02d,  +%s\n",
-		dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday, 
+		dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
 		dtm.tm_hour, dtm.tm_min, dtm.tm_sec, duration);
 	cp += n;  sz -= n;
 	if( path && *path ) {

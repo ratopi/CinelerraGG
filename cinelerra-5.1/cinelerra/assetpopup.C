@@ -39,9 +39,11 @@
 #include "file.h"
 #include "filexml.h"
 #include "language.h"
+#include "loadfile.h"
 #include "localsession.h"
 #include "mainerror.h"
 #include "mainindexes.h"
+#include "mainmenu.h"
 #include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -420,6 +422,7 @@ AssetListMenu::~AssetListMenu()
 
 void AssetListMenu::create_objects()
 {
+	add_item(load_file = new AssetPopupLoadFile(mwindow, gui));
 	add_item(format = new AWindowListFormat(mwindow, gui));
 	add_item(new AWindowListSort(mwindow, gui));
 	add_item(new AssetListCopy(mwindow, gui));
@@ -439,6 +442,23 @@ void AssetListMenu::create_objects()
 	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("tiff"), GRABSHOT_TIFF));
 	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("ppm"),  GRABSHOT_PPM));
 	update_titles(shots_displayed = 1);
+}
+
+AssetPopupLoadFile::AssetPopupLoadFile(MWindow *mwindow, AWindowGUI *gui)
+ : BC_MenuItem(_("Load files..."), "o", 'o')
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+
+AssetPopupLoadFile::~AssetPopupLoadFile()
+{
+}
+
+int AssetPopupLoadFile::handle_event()
+{
+	mwindow->gui->mainmenu->load_file->thread->start();
+	return 1;
 }
 
 void AssetListMenu::update_titles(int shots)

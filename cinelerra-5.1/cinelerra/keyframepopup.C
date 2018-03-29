@@ -187,7 +187,9 @@ KeyframePopupDelete::~KeyframePopupDelete()
 int KeyframePopupDelete::handle_event()
 {
 	mwindow->undo->update_undo_before(_("delete keyframe"), 0);
+	mwindow->speed_before();
 	delete popup->keyframe_auto;
+	mwindow->speed_after(1);
 	mwindow->undo->update_undo_after(_("delete keyframe"), LOAD_ALL);
 
 	mwindow->save_backup();

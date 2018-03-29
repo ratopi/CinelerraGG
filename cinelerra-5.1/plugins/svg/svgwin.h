@@ -82,11 +82,14 @@ class NewSvgButton : public BC_GenericButton, public Thread
 {
 public:
 	NewSvgButton(SvgMain *client, SvgWin *window, int x, int y);
+	~NewSvgButton();
 	int handle_event();
 	void run();
+	void stop();
 
 	SvgMain *client;
 	SvgWin *window;
+	NewSvgWindow *new_window;
 };
 
 class EditSvgButton : public BC_GenericButton, public Thread

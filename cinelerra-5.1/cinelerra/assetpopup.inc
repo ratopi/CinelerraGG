@@ -38,6 +38,7 @@ class AssetPopupSort;
 class AssetPopupBuildIndex;
 class AssetPopupView;
 class AssetPopupViewWindow;
+class AssetPopupLoadFile;
 class AssetPopupMixer;
 class AssetPopupPaste;
 class AssetMatchSize;
