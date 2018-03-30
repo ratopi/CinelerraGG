@@ -21,6 +21,8 @@
 
 #include "arender.h"
 #include "asset.h"
+#include "automation.h"
+#include "autos.h"
 #include "bcsignals.h"
 #include "bctimer.h"
 #include "cache.h"
@@ -33,6 +35,8 @@
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "floatauto.h"
+#include "floatautos.h"
 #include "indexable.h"
 #include "indexfile.h"
 #include "indexstate.h"
@@ -651,160 +655,127 @@ SET_TRACE
 		mwindow->edl->local_session->zoom_sample -
 		mwindow->edl->local_session->view_start[pane_number];
 
+	FloatAutos *speed_autos = (FloatAutos *)edit->track->automation->autos[AUTOMATION_SPEED];
 // samples in segment to draw relative to asset
-	double asset_over_session = (double)source_samplerate /
-		mwindow->edl->session->sample_rate;
-	int64_t startsource = (int64_t)(((pixmap->pixmap_x - virtual_edit_x + x) *
-		mwindow->edl->local_session->zoom_sample +
-		edit->startsource) *
-		asset_over_session);
-// just in case we get a numerical error
-	if (startsource < 0) startsource = 0;
-	int64_t length = (int64_t)(w *
-		mwindow->edl->local_session->zoom_sample *
-		asset_over_session);
-	int64_t lengthindex = length / index_state->index_zoom * 2;
-	int64_t startindex = startsource / index_state->index_zoom * 2;
-// length of index to read in floats
+	double asset_over_session = (double)source_samplerate / mwindow->edl->session->sample_rate;
+	int64_t start_source = (pixmap->pixmap_x - virtual_edit_x + x) *
+		mwindow->edl->local_session->zoom_sample + edit->startsource;
+	int64_t start_speed = speed_autos->automation_integral(0, start_source, PLAY_FORWARD);
+	int64_t start_asset = start_speed * asset_over_session;
+	if( start_asset < 0 ) start_asset = 0;
+	int64_t start_index = start_asset / index_state->index_zoom;
+	int64_t end_source = (pixmap->pixmap_x - virtual_edit_x + x + w) *
+		mwindow->edl->local_session->zoom_sample + edit->startsource;
+	int64_t end_speed = speed_autos->automation_integral(0, end_source, PLAY_FORWARD);
+	int64_t end_asset = end_speed * asset_over_session;
+	if( end_asset < 0 ) end_asset = 0;
+	int64_t end_index = end_asset / index_state->index_zoom;
+// start/length of index to read in floats
+	start_index *= 2;  end_index *= 2;
 // length of index available in floats
-	int64_t endindex = index_state->index_status == INDEX_BUILDING ?
+	int64_t size_index = index_state->index_status == INDEX_BUILDING ?
 		index_state->get_channel_used(edit->channel) * 2 :
 		index_state->get_index_size(edit->channel);
 // Clamp length of index to read by available data
-	if(startindex + lengthindex >= endindex )
-		lengthindex = endindex - startindex;
-	if( lengthindex <= 0 ) return 0;
+	if( end_index >= size_index ) end_index = size_index;
+	int64_t length_index = end_index - start_index;
+	if( length_index <= 0 ) return 0;
 
-// Actual length read from file in bytes
-	int64_t length_read;
 // Start and length of fragment to read from file in bytes.
-	int64_t startfile, lengthfile;
 	float *buffer = 0;
 	int buffer_shared = 0;
 	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
 	if( mwindow->edl->session->show_titles )
 		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
-	//int miny = center_pixel - mwindow->edl->local_session->zoom_track / 2;
-	//int maxy = center_pixel + mwindow->edl->local_session->zoom_track / 2;
-	int x1 = 0, y1, y2;
-// get zoom_sample relative to index zoomx
-	double index_frames_per_pixel = mwindow->edl->local_session->zoom_sample /
-		index_state->index_zoom *
-		asset_over_session;
 
-
-
-	if(index_state->index_status == INDEX_BUILDING)
-	{
+	if( index_state->index_status == INDEX_BUILDING ) {
 // index is in RAM, being built
 		buffer = index_state->get_channel_buffer(edit->channel);
 		if( !buffer ) return 0;
-		buffer += startindex;
+		buffer += start_index;
 		buffer_shared = 1;
 	}
-	else
-	{
-// add channel offset
-		startindex += index_state->get_index_offset(edit->channel);
-// index is stored in a file
-		buffer = new float[lengthindex + 1];
+	else {
+		buffer = new float[length_index + 1];
+		int64_t length_buffer = length_index * sizeof(float);
+// add file/channel offset
+		int64_t index_offset = index_state->get_index_offset(edit->channel);
+		int64_t file_offset = (index_offset + start_index) * sizeof(float);
+		int64_t file_pos = index_state->index_start + file_offset;
+		int64_t read_length = file_length - file_pos;
+		if( read_length > length_buffer )
+			read_length = length_buffer;
+		int64_t length_read = 0;
+		if( read_length > 0 ) {
+			fseek(fd, file_pos, SEEK_SET);
+			length_read = fread(buffer, 1, read_length + sizeof(float), fd);
+			length_read &= ~(sizeof(float)-1);
+		}
+		if( (read_length-=length_read) > 0 )
+			memset((char*)buffer + length_read, 0, read_length);
 		buffer_shared = 0;
-		startfile = index_state->index_start + startindex * sizeof(float);
-		lengthfile = lengthindex * sizeof(float);
-		length_read = 0;
-
-		if(startfile < file_length)
-		{
-			fseek(fd, startfile, SEEK_SET);
-
-			length_read = lengthfile;
-			if(startfile + length_read > file_length)
-				length_read = file_length - startfile;
-
-			(void)fread(buffer, length_read + sizeof(float), 1, fd);
-		}
-
-		if(length_read < lengthfile) {
-			int pos = length_read / sizeof(float);
-			int file_length = lengthfile / sizeof(float);
-			while( pos < file_length ) buffer[pos++] = 0;
-		}
 	}
 
 	canvas->set_color(mwindow->theme->audio_color);
 
-	double current_frame = 0;
-	float highsample = buffer[0];
-	float lowsample = buffer[1];
 	int prev_y1 = center_pixel;
 	int prev_y2 = center_pixel;
 	int first_frame = 1;
 	int zoom_y = mwindow->edl->local_session->zoom_y, zoom_y2 = zoom_y / 2;
 	int max_y = center_pixel + zoom_y2 - 1;
+	int64_t pos_project = (pixmap->pixmap_x - virtual_edit_x + x) *
+		mwindow->edl->local_session->zoom_sample + edit->startsource;
+	int64_t pos_speed = speed_autos->automation_integral(0, pos_project, PLAY_FORWARD);
+	int64_t pos_asset = pos_speed * asset_over_session;
+	int64_t pos_index = pos_asset / index_state->index_zoom;
+	int64_t i = 2 * pos_index - start_index;
+	CLAMP(i, 0, length_index);
 SET_TRACE
 
-	for(int bufferposition = 0;
-		bufferposition < lengthindex;
-		bufferposition += 2)
-	{
-		if(current_frame >= index_frames_per_pixel)
-		{
+	for( int64_t x1=0; x1<w && i < length_index; ++x1 ) {
+		float highsample = buffer[i];  ++i;
+		float lowsample = buffer[i];   ++i;
+		int x2 = x1 + x + 1;
+		pos_project = (pixmap->pixmap_x - virtual_edit_x + x2) *
+			mwindow->edl->local_session->zoom_sample + edit->startsource;
+		pos_speed = speed_autos->automation_integral(0, pos_project, PLAY_FORWARD);
+		pos_asset = pos_speed * asset_over_session;
+		pos_index = pos_asset / index_state->index_zoom;
+		int64_t k = 2 * pos_index - start_index;
+		CLAMP(k, 0, length_index);
+		while( i < k ) {
+			highsample = MAX(highsample, buffer[i]); ++i;
+			lowsample = MIN(lowsample, buffer[i]);   ++i;
+		}
 
-			int y1 = (int)(center_pixel - highsample * zoom_y2);
-			int y2 = (int)(center_pixel - lowsample * zoom_y2);
-			CLAMP(y1, 0, max_y);  int next_y1 = y1;
-			CLAMP(y2, 0, max_y);  int next_y2 = y2;
-//printf("draw_line (%f,%f) = %d,%d,  %d,%d\n", lowsample, highsample, x1 + x, y1, x1 + x, y2);
+		int y1 = (int)(center_pixel - highsample * zoom_y2);
+		int y2 = (int)(center_pixel - lowsample * zoom_y2);
+		CLAMP(y1, 0, max_y);  int next_y1 = y1;
+		CLAMP(y2, 0, max_y);  int next_y2 = y2;
+//printf("draw_line (%f,%f) = %d,%d,  %d,%d\n", lowsample, highsample, x2, y1, x2, y2);
 
 //SET_TRACE
 // A different algorithm has to be used if it's 1 sample per pixel and the
 // index is used.  Now the min and max values are equal so we join the max samples.
-			if(mwindow->edl->local_session->zoom_sample == 1)
-			{
-				canvas->draw_line(x1 + x - 1, prev_y1, x1 + x, y1, pixmap);
-			}
-			else
-			{
-// Extend line height if it doesn't connect to previous line
-				if(!first_frame)
-				{
-					if(y1 > prev_y2) y1 = prev_y2 + 1;
-					if(y2 < prev_y1) y2 = prev_y1 - 1;
-				}
-				else
-				{
-					first_frame = 0;
-				}
-
-
-
-				canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
-			}
-			current_frame -= index_frames_per_pixel;
-			x1++;
-			prev_y1 = next_y1;
-			prev_y2 = next_y2;
-			highsample = buffer[bufferposition];
-			lowsample = buffer[bufferposition + 1];
+		if(mwindow->edl->local_session->zoom_sample == 1) {
+			canvas->draw_line(x2 - 1, prev_y1, x2, y1, pixmap);
 		}
-
-		current_frame++;
-		highsample = MAX(highsample, buffer[bufferposition]);
-		lowsample = MIN(lowsample, buffer[bufferposition + 1]);
+		else {
+// Extend line height if it doesn't connect to previous line
+			if(!first_frame) {
+				if(y1 > prev_y2) y1 = prev_y2 + 1;
+				if(y2 < prev_y1) y2 = prev_y1 - 1;
+			}
+			else {
+				first_frame = 0;
+			}
+			canvas->draw_line(x2, y1, x2, y2, pixmap);
+		}
+		prev_y1 = next_y1;
+		prev_y2 = next_y2;
 	}
-SET_TRACE
-
-// Get last column
-	if(current_frame)
-	{
-		y1 = (int)(center_pixel - highsample * zoom_y2);
-		y2 = (int)(center_pixel - lowsample * zoom_y2);
-		canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
-	}
 
 SET_TRACE
-
-
 
 	if(!buffer_shared) delete [] buffer;
 SET_TRACE
