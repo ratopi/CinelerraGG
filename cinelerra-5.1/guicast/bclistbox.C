@@ -3505,7 +3505,7 @@ int BC_ListBox::keypress_event()
 		break;
 
 	default:
-		if( !ctrl_down() ) {
+		if( show_query && !ctrl_down() ) {
 			int query_len = strlen(query);
 			if( query_len < (int)sizeof(query)-1 &&
 			    top_level->get_keypress() > 30 &&
@@ -3519,12 +3519,10 @@ int BC_ListBox::keypress_event()
 				if( query_len > 0 ) query[--query_len] = 0;
 				new_selection = query_list();
 			}
-			if( show_query ) {
-				if( query_len > 0 )
-					show_tooltip(query);
-				else
-					hide_tooltip();
-			}
+			if( query_len > 0 )
+				show_tooltip(query);
+			else
+				hide_tooltip();
 			redraw = 1;
 			result = 1;
 		}

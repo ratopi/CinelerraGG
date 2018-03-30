@@ -34,7 +34,7 @@
 #define KW_UL     _("ul")
 #define KW_BLINK  _("blink")
 #define KW_FIXED  _("fixed")
-#define KW_ALIAS  _("alias")
+#define KW_ALIAS  _("smooth")
 #define KW_SUP    _("sup")
 #define KW_PNG    _("png")
 

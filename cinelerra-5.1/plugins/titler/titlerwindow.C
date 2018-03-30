@@ -270,7 +270,7 @@ void TitleWindow::create_objects()
 	if( alias->get_w() > w1 ) w1 = drag->get_w();
 
 	x += w1 + margin;
-	add_tool(justify_title = new BC_Title(x, y, _("Justify:")));
+	add_tool(justify_title = new BC_Title(x+50, y, _("Justify:")));
 	add_tool(left = new TitleLeft(client, this, x, y + 20));
 	w1 = left->get_w();
 	add_tool(center = new TitleCenter(client, this, x, y + 50));
@@ -847,7 +847,7 @@ int TitleSizeTumble::handle_down_event()
 }
 
 TitleAlias::TitleAlias(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_CheckBox(x, y, client->config.style & FONT_ALIAS, _("Alias"))
+ : BC_CheckBox(x, y, client->config.style & FONT_ALIAS, _("Smooth"))
 {
 	this->client = client;
 	this->window = window;

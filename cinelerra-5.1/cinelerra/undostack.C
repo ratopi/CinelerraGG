@@ -257,9 +257,9 @@ UndoHash *UndoHashTable::add(char *txt, int len)
 	return hp;
 }
 
-UndoLine::UndoLine(UndoHash *hash)
+UndoLine::UndoLine(UndoHash *hash, char *tp)
 {
-	this->txt = 0;  this->len = 0;
+	this->txt = tp;  this->len = 0;
 	this->hash = hash;
 	hash->occurs[va] = hash->occurs[vb] = 1;
 }
@@ -280,7 +280,6 @@ int UndoLine::eq(UndoLine *ln)
 
 void UndoVersion::scan_lines(UndoHashTable *hash, char *sp, char *ep)
 {
-	append(new UndoLine(hash->bof));
 	for( int line=1; sp<ep; ++line ) {
 		char *txt = sp;
 		while( sp<ep && *sp++ != '\n' );
@@ -289,7 +288,6 @@ void UndoVersion::scan_lines(UndoHashTable *hash, char *sp, char *ep)
 		++ln->hash->occurs[ver];
 		append(ln);
 	}
-	append(new UndoLine(hash->eof));
 }
 
 
@@ -334,13 +332,21 @@ void UndoStackItem::set_data(char *data)
 		UndoVersion alines(va), blines(vb);
 		char *asp = data, *aep = asp + data_size-1;
 		char *bsp = prev, *bep = bsp + prev_size-1;
+		alines.append(new UndoLine(hash.bof, asp));
+		blines.append(new UndoLine(hash.bof, bsp));
 		alines.scan_lines(&hash, asp, aep);
 		blines.scan_lines(&hash, bsp, bep);
-// trim suffix
 		int asz = alines.size(), bsz = blines.size();
+// trim matching suffix
 		while( asz > 0 && bsz > 0 && alines[asz-1]->eq(blines[bsz-1]) ) {
-			--asz;  --bsz;
+			aep = alines[--asz]->txt;  alines.remove_object();
+			bep = blines[--bsz]->txt;  blines.remove_object();
 		}
+// include for matching last item
+		alines.append(new UndoLine(hash.eof, aep));
+		blines.append(new UndoLine(hash.eof, bep));
+		hash.eof->line[va] = asz++;
+		hash.eof->line[vb] = bsz++;
 
 		int ai = 0, bi = 0;
 		while( ai < asz || bi < bsz ) {

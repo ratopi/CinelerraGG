@@ -63,7 +63,7 @@ public:
 class UndoLine
 {
 public:
-	UndoLine(UndoHash *hash);
+	UndoLine(UndoHash *hash, char *tp);
 	UndoLine(UndoHashTable *hash, char *txt, int len);
 	~UndoLine();
 	int eq(UndoLine *ln);
