@@ -9,6 +9,16 @@ For usage help, refer to the following:
 Cinfinity icons selected in Preferences (Creative Common
   By https://creativecommons.org/licenses/by/3.0/)
 .
+March 2018 New Features of note:
+  Audio now is associated when in the Proxy folder.
+  Perpetual Session preference and 1 extra backup.
+  Speed automation will now update the track duration.
+  Locking tracks in patchbay, highlites that scenario.
+  Can now Paste Silence a single frame at hairline cursor.
+  Load files from the Resources window now via "o".
+  SVG with Inkscape rewritten to not use Shell command.
+  Hyperlinks for the Table of Contents added to Features5.
+.
 February 2018 New Features of note:
   Pulldown menus now stay until window or mouse change.
   Audio waveform partial image will show in the Viewer.
