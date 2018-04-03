@@ -369,6 +369,7 @@ int BC_PopupMenu::repeat_event(int64_t duration)
 
 int BC_PopupMenu::button_press_event()
 {
+	int result = 0;
 	if(get_buttonpress() == 1 &&
 		is_event_win() &&
 		use_title)
@@ -404,17 +405,18 @@ int BC_PopupMenu::button_press_event()
 
 		BC_MenuItem *tmp = menu_popup->menu_items.values[theval];
 		set_text(tmp->get_text());
- 		if (!tmp->handle_event())
-			this->handle_event();
+		result = tmp->handle_event();
+		if( !result )
+			result = this->handle_event();
 	}
 	if(popup_down)
 	{
 // Menu is down so dispatch to popup.
 		menu_popup->dispatch_button_press();
-		return 1;
+		result = 1;
 	}
 
-	return 0;
+	return result;
 }
 
 int BC_PopupMenu::button_release_event()

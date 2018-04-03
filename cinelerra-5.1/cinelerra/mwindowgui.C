@@ -2328,7 +2328,8 @@ int PaneButton::cursor_motion_event()
 
 int PaneButton::button_release_event()
 {
-	mwindow->gui->stop_pane_drag();
+	if( get_buttonpress() != WHEEL_DOWN && get_buttonpress() != WHEEL_UP )
+		mwindow->gui->stop_pane_drag();
 	int result = BC_Button::button_release_event();
 	return result;
 }

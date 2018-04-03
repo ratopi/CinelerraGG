@@ -90,7 +90,7 @@ int MWindow::zoom_sample(int64_t zoom_sample)
 {
 	CLAMP(zoom_sample, 1, 0x100000);
 	edl->local_session->zoom_sample = zoom_sample;
-		find_cursor();
+	find_cursor();
 
 	TimelinePane *pane = gui->get_focused_pane();
 	samplemovement(edl->local_session->view_start[pane->number], pane->number);

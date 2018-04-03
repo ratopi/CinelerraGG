@@ -149,7 +149,7 @@ CPanelProtect::CPanelProtect(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Protect video from changes"));
+	set_tooltip(_("Protect video from changes (F1)"));
 }
 CPanelProtect::~CPanelProtect()
 {
@@ -173,7 +173,7 @@ CPanelMask::CPanelMask(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Edit mask"));
+	set_tooltip(_("Edit mask (F3)"));
 }
 CPanelMask::~CPanelMask()
 {
@@ -195,7 +195,7 @@ CPanelRuler::CPanelRuler(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Ruler"));
+	set_tooltip(_("Ruler (F4)"));
 }
 CPanelRuler::~CPanelRuler()
 {
@@ -217,7 +217,7 @@ CPanelMagnify::CPanelMagnify(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Zoom view"));
+	set_tooltip(_("Zoom view (F2)"));
 }
 CPanelMagnify::~CPanelMagnify()
 {
@@ -237,7 +237,7 @@ CPanelCamera::CPanelCamera(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Adjust camera automation"));
+	set_tooltip(_("Adjust camera automation (F5)"));
 }
 CPanelCamera::~CPanelCamera()
 {
@@ -257,7 +257,7 @@ CPanelProj::CPanelProj(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Adjust projector automation"));
+	set_tooltip(_("Adjust projector automation (F6)"));
 }
 CPanelProj::~CPanelProj()
 {
@@ -277,7 +277,7 @@ CPanelCrop::CPanelCrop(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Crop a layer or output"));
+	set_tooltip(_("Crop a layer or output (F7)"));
 }
 
 CPanelCrop::~CPanelCrop()
@@ -301,7 +301,7 @@ CPanelEyedrop::CPanelEyedrop(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Get color"));
+	set_tooltip(_("Get color (F8)"));
 }
 
 CPanelEyedrop::~CPanelEyedrop()
@@ -325,7 +325,7 @@ CPanelToolWindow::CPanelToolWindow(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Show tool info"));
+	set_tooltip(_("Show tool info (F9)"));
 }
 
 CPanelToolWindow::~CPanelToolWindow()
@@ -356,7 +356,7 @@ CPanelTitleSafe::CPanelTitleSafe(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Show safe regions"));
+	set_tooltip(_("Show safe regions (F10)"));
 }
 CPanelTitleSafe::~CPanelTitleSafe()
 {

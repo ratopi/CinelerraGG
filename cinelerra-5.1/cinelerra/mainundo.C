@@ -260,6 +260,12 @@ int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 		mwindow->close_mixers();
 		mwindow->gui->lock_window("MainUndo::load_from_undo");
 	}
+	if( (load_flags & LOAD_ALL) == LOAD_ALL ) {
+		EDL *edl = new EDL;
+		edl->create_objects();
+		mwindow->edl->remove_user();
+		mwindow->edl = edl;
+	}
 	mwindow->edl->load_xml(file, load_flags);
 	for( Asset *asset=mwindow->edl->assets->first; asset; asset=asset->next ) {
 		mwindow->mainindexes->add_next_asset(0, asset);

@@ -99,6 +99,7 @@ int Asset::init_values()
 	interlace_mode = ILACE_MODE_UNDETECTED;
 	interlace_fixmethod = ILACE_FIXMETHOD_NONE;
 
+	mp3_bitrate = 224;
 	ampeg_bitrate = 256;
 	ampeg_derivative = 3;
 

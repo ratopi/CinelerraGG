@@ -122,6 +122,8 @@ EDLSession::EDLSession(EDL *edl)
 	scrub_speed = 2.;
 	show_assets = 1;
 	show_titles = 1;
+	si_useduration = 1;
+	si_duration = 3;
 	test_playback_edits = 1;
 	time_format = TIME_HMSF;
 	nudge_format = 1;

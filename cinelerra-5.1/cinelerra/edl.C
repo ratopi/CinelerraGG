@@ -298,7 +298,7 @@ int EDL::read_xml(FileXML *file, uint32_t load_flags)
 				nested_edl->create_objects();
 				nested_edl->read_xml(file, LOAD_ALL);
 				if( (load_flags & LOAD_ALL) == LOAD_ALL )
-					nested_edls.add_clip(nested_edl);
+					nested_edls.get_nested(nested_edl);
 				nested_edl->remove_user();
 			}
 			else
