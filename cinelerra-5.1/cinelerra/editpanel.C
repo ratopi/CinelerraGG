@@ -979,7 +979,7 @@ EditClick2Play::EditClick2Play(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
         this->mwindow = mwindow;
         this->panel = panel;
-        set_tooltip(_("Click to play"));
+        set_tooltip(_("Click to play (p)"));
 }
 int EditClick2Play::handle_event()
 {
@@ -990,6 +990,21 @@ int EditClick2Play::handle_event()
 		mwindow->edl->session->vwindow_click2play = value;
 	return 1;
 }
+int EditClick2Play::keypress_event()
+{
+	int key = get_keypress();
+	if( key == 'p' && !ctrl_down() && !shift_down() && !alt_down() ) {
+		int value = get_value() ? 0 : 1;
+		update(value);
+		if( !panel->is_vwindow() )
+			mwindow->edl->session->cwindow_click2play = value;
+		else
+			mwindow->edl->session->vwindow_click2play = value;
+		return 1;
+	}
+	return 0;
+}
+
 
 EditCommercial::EditCommercial(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("commercial"))
@@ -1353,7 +1368,7 @@ KeyFrameButton::KeyFrameButton(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip(_("Generate keyframes while tweeking"));
+	set_tooltip(_("Generate keyframes while tweeking (j)"));
 }
 
 int KeyFrameButton::handle_event()
@@ -1363,6 +1378,18 @@ int KeyFrameButton::handle_event()
 	return 1;
 }
 
+int KeyFrameButton::keypress_event()
+{
+	int key = get_keypress();
+	if( key == 'j' && !ctrl_down() && !shift_down() && !alt_down() ) {
+		int value = get_value() ? 0 : 1;
+		update(value);
+		mwindow->set_auto_keyframes(value,
+			!panel->is_mwindow(), panel->is_mwindow());
+		return 1;
+	}
+	return 0;
+}
 
 LockLabelsButton::LockLabelsButton(MWindow *mwindow, int x, int y)
  : BC_Toggle(x, y,

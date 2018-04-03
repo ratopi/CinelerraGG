@@ -289,9 +289,28 @@ int CWindowToolGUI::close_event()
 
 int CWindowToolGUI::keypress_event()
 {
-	if(get_keypress() == 'w' || get_keypress() == 'W')
+	int result = 0;
+	int cwindow_operation = CWINDOW_NONE;
+
+	switch( get_keypress() ) {
+	case 'w':
+	case 'W':
 		return close_event();
-	return 0;
+	case KEY_F1:
+	case KEY_F2:
+	case KEY_F3:
+	case KEY_F4:
+	case KEY_F5:
+	case KEY_F6:
+	case KEY_F7:
+	case KEY_F8:
+	case KEY_F9:
+	case KEY_F10:
+		resend_event(thread->gui);
+		result = 1;
+	}
+
+	return result;
 }
 
 int CWindowToolGUI::translation_event()

@@ -219,14 +219,7 @@ void CWindowGUI::create_objects()
 	tool_panel = new CWindowTool(mwindow, this);
 	tool_panel->Thread::start();
 
-
 	set_operation(mwindow->edl->session->cwindow_operation);
-
-
-
-	canvas->draw_refresh(0);
-
-
 	draw_status(0);
 	unlock_window();
 }
@@ -425,15 +418,26 @@ void CWindowGUI::zoom_canvas(double value, int update_menu)
 	canvas->draw_refresh();
 }
 
-
-
 void CWindowGUI::set_operation(int value)
 {
-	mwindow->edl->session->cwindow_operation = value;
+	switch( value ) {
+	case CWINDOW_TOOL_WINDOW:
+		mwindow->edl->session->tool_window = !mwindow->edl->session->tool_window;
+		composite_panel->operation[CWINDOW_TOOL_WINDOW]->update(mwindow->edl->session->tool_window);
+		tool_panel->update_show_window();
+		return;
+	case CWINDOW_TITLESAFE:
+		mwindow->edl->session->safe_regions = !mwindow->edl->session->safe_regions;
+		composite_panel->operation[CWINDOW_TITLESAFE]->update(mwindow->edl->session->safe_regions);
+		value = mwindow->edl->session->cwindow_operation;
+		break;
+	default:
+		mwindow->edl->session->cwindow_operation = value;
+		composite_panel->set_operation(value);
+		break;
+	}
 
-	composite_panel->set_operation(value);
 	edit_panel->update();
-
 	tool_panel->start_tool(value);
 	canvas->draw_refresh();
 }
@@ -453,6 +457,7 @@ int CWindowGUI::close_event()
 int CWindowGUI::keypress_event()
 {
 	int result = 0;
+	int cwindow_operation = CWINDOW_NONE;
 
 	switch(get_keypress())
 	{
@@ -556,6 +561,21 @@ int CWindowGUI::keypress_event()
 			}
 			break;
 
+		case KEY_F1:	cwindow_operation = CWINDOW_PROTECT;	break;
+		case KEY_F2:	cwindow_operation = CWINDOW_ZOOM;	break;
+		case KEY_F3:	cwindow_operation = CWINDOW_MASK;	break;
+		case KEY_F4:	cwindow_operation = CWINDOW_RULER;	break;
+		case KEY_F5:	cwindow_operation = CWINDOW_CAMERA;	break;
+		case KEY_F6:	cwindow_operation = CWINDOW_PROJECTOR;	break;
+		case KEY_F7:	cwindow_operation = CWINDOW_CROP;	break;
+		case KEY_F8:	cwindow_operation = CWINDOW_EYEDROP;	break;
+		case KEY_F9:	cwindow_operation = CWINDOW_TOOL_WINDOW; break;
+		case KEY_F10:	cwindow_operation = CWINDOW_TITLESAFE;	break;
+	}
+
+	if( cwindow_operation >= 0 ) {
+		set_operation(cwindow_operation);
+		result = 1;
 	}
 
 	if(!result) result = transport->keypress_event();

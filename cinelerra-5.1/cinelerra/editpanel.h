@@ -173,6 +173,7 @@ public:
         EditClick2Play();
 
         int handle_event();
+	int keypress_event();
 
 	MWindow *mwindow;
 	EditPanel *panel;
@@ -380,6 +381,7 @@ class KeyFrameButton : public BC_Toggle
 public:
 	KeyFrameButton(MWindow *mwindow, EditPanel *panel, int x, int y);
 	int handle_event();
+	int keypress_event();
 	MWindow *mwindow;
 	EditPanel *panel;
 };

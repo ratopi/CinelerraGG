@@ -1039,7 +1039,7 @@ int MWindowGUI::drag_stop()
 	}
 
 
-//printf("TrackCanvas::drag_stop %d %d\n", redraw, mwindow->session->current_operation);
+//printf("MWindowGUI::drag_stop %d %d\n", redraw, mwindow->session->current_operation);
 	if(redraw)
 	{
 		mwindow->edl->tracks->update_y_pixels(mwindow->theme);
@@ -1162,6 +1162,8 @@ int MWindowGUI::keypress_event()
 	int result = mbuttons->keypress_event();
 	if( result ) return result;
 
+	Track *this_track = 0;
+
 	switch(get_keypress()) {
 	case 'e':
 		mwindow->toggle_editing_mode();
@@ -1263,7 +1265,6 @@ int MWindowGUI::keypress_event()
 
 	case TAB:
 	case LEFTTAB:
-		Track *this_track = 0;
 		for( int i=0; i<TOTAL_PANES; ++i ) {
 			if( !pane[i] ) continue;
 			if( (this_track = pane[i]->over_track()) != 0 ) break;
@@ -1287,10 +1288,23 @@ int MWindowGUI::keypress_event()
 		update(0, 1, 0, 0, 1, 0, 1);
 		unlock_window();
 		mwindow->cwindow->update(0, 1, 1);
-		lock_window("TrackCanvas::keypress_event 3");
+		lock_window("MWindowGUI::keypress_event 3");
 
 		result = 1;
 		break;
+
+	case KEY_F1:
+	case KEY_F2:
+	case KEY_F3:
+	case KEY_F4:
+	case KEY_F5:
+	case KEY_F6:
+	case KEY_F7:
+	case KEY_F8:
+	case KEY_F9:
+	case KEY_F10:
+		resend_event(mwindow->cwindow->gui);
+		return 1;
 	}
 
 // since things under cursor have changed...

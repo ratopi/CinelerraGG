@@ -255,6 +255,7 @@ int BC_WindowBase::initialize()
 	keys_return[0] = 0;
 	is_deleting = 0;
 	window_lock = 0;
+	resend_event_window = 0;
 	x = 0;
 	y = 0;
 	w = 0;
@@ -1254,6 +1255,18 @@ locking_message = event->xclient.message_type;
 		case XK_KP_Insert:	key_pressed = KPINS;	break;
 		case XK_KP_Decimal:
 		case XK_KP_Delete:	key_pressed = KPDEL;	break;
+
+		case XK_F1:		key_pressed = KEY_F1;	break;
+		case XK_F2:		key_pressed = KEY_F2;	break;
+		case XK_F3:		key_pressed = KEY_F3;	break;
+		case XK_F4:		key_pressed = KEY_F4;	break;
+		case XK_F5:		key_pressed = KEY_F5;	break;
+		case XK_F6:		key_pressed = KEY_F6;	break;
+		case XK_F7:		key_pressed = KEY_F7;	break;
+		case XK_F8:		key_pressed = KEY_F8;	break;
+		case XK_F9:		key_pressed = KEY_F9;	break;
+		case XK_F10:		key_pressed = KEY_F10;	break;
+
 		case XK_Menu:		key_pressed = KPMENU;	break;  /* menu */
 // remote control
 // above	case XK_KP_Enter:	key_pressed = KPENTER;	break;  /* check */
@@ -1351,7 +1364,14 @@ locking_message = event->xclient.message_type;
 
 #ifndef SINGLE_THREAD
 	unlock_window();
-	if(event) delete event;
+	if(event) {
+		if( resend_event_window ) {
+			resend_event_window->put_event(event);
+			resend_event_window = 0;
+		}
+		else
+			delete event;
+	}
 #else
 //	if(done) completion_lock->unlock();
 #endif
@@ -4471,6 +4491,20 @@ void BC_WindowBase::dequeue_events(Window win)
 	common_events.total = out;
 
 	event_lock->unlock();
+}
+
+int BC_WindowBase::resend_event(BC_WindowBase *window)
+{
+	if( resend_event_window ) return 1;
+	resend_event_window = window;
+	return 0;
+}
+
+#else
+
+int BC_WindowBase::resend_event(BC_WindowBase *window)
+{
+	return 1;
 }
 
 #endif // SINGLE_THREAD

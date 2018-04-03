@@ -202,11 +202,8 @@ public:
 class FormatSwapExtents : public BC_Button
 {
 public:
-	FormatSwapExtents(MWindow *mwindow,
-		SetFormatThread *thread,
-		SetFormatWindow *gui,
-		int x,
-		int y);
+	FormatSwapExtents(MWindow *mwindow, SetFormatThread *thread,
+		SetFormatWindow *gui, int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	SetFormatThread *thread;
@@ -217,9 +214,8 @@ class SetFormatWindow : public BC_Window
 {
 public:
 	SetFormatWindow(MWindow *mwindow,
-		SetFormatThread *thread,
-		int x,
-		int y);
+		SetFormatThread *thread, int x, int y);
+	~SetFormatWindow();
 
 	void create_objects();
 	const char* get_preset_text();

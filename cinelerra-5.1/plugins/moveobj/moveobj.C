@@ -255,7 +255,7 @@ int MoveObj::process_buffer(VFrame *frame, int64_t start_position, double frame_
 	goodFeaturesToTrack(next_mat,
 		*next_corners, corner_count, 0.01,        // quality_level
 		min_distance, noArray(), block_size,
-		0,           // use_harris
+		false,       // use_harris
 		0.04);       // k
 
 	ptV pt1, pt2;

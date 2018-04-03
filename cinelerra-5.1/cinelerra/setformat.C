@@ -279,22 +279,18 @@ void SetFormatThread::update_aspect()
 
 
 SetFormatWindow::SetFormatWindow(MWindow *mwindow,
-	SetFormatThread *thread,
-	int x,
-	int y)
- : BC_Window(_(PROGRAM_NAME ": Set Format"),
- 	x,
-	y,
-	mwindow->theme->setformat_w,
-	mwindow->theme->setformat_h,
-	-1,
-	-1,
-	0,
-	0,
-	1)
+	SetFormatThread *thread, int x, int y)
+ : BC_Window(_(PROGRAM_NAME ": Set Format"), x, y,
+	mwindow->theme->setformat_w, mwindow->theme->setformat_h,
+	-1, -1, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
+	presets = 0;
+}
+SetFormatWindow::~SetFormatWindow()
+{
+	delete presets;
 }
 
 void SetFormatWindow::create_objects()

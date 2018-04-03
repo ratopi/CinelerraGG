@@ -34,7 +34,6 @@
 #define BACKSPACE           262
 #define ESC                 263
 #define TAB                 264
-
 // Number pad keys
 #define KPPLUS              265
 #define KPMINUS             266
@@ -115,6 +114,17 @@
 #define KPRECD              297
 #define KPSTOP              298
 #define KPAUSE              299
+// function keys
+#define KEY_F1              301
+#define KEY_F2              302
+#define KEY_F3              303
+#define KEY_F4              304
+#define KEY_F5              305
+#define KEY_F6              306
+#define KEY_F7              307
+#define KEY_F8              308
+#define KEY_F9              309
+#define KEY_F10             310
 
 #define RETURN              13
 #define NEWLINE             13

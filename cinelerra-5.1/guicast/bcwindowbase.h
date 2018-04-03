@@ -224,7 +224,6 @@ public:
 	int get_deleting();
 
 
-
 //============================= OpenGL functions ===============================
 // OpenGL functions must be called from inside a BC_Synchronous command.
 // Create openGL context and bind it to the current window.
@@ -269,6 +268,7 @@ public:
 	virtual int keyboard_listener(BC_WindowBase *wp) { return 0; }
 	void add_keyboard_listener(int(BC_WindowBase::*handler)(BC_WindowBase *));
 	void del_keyboard_listener(int(BC_WindowBase::*handler)(BC_WindowBase *));
+	int resend_event(BC_WindowBase *window);
 // Dimensions
 	virtual int get_w() { return w; }
 	virtual int get_h() { return h; }
@@ -658,6 +658,8 @@ private:
 	BC_PopupMenu* active_popup_menu;
 // pointer to the active subwindow
 	BC_WindowBase* active_subwindow;
+// pointer to the window to which to put the current event
+	BC_WindowBase* resend_event_window;
 // thread id of display locker
 	pthread_t display_lock_owner;
 

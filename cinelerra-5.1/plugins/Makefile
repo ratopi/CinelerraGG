@@ -8,7 +8,7 @@ endif
 ifneq ($(WANT_OPENCV), no)
 want_var:=$(WANT_OPENCV)
 include $(TOPDIR)/opencv_build
-OPENCV_OBJS := findobj flowobj gaborobj moveobj
+OPENCV_OBJS := findobj flowobj gaborobj moveobj stylizeobj puzzleobj
 $(OPENCV_OBJS): opencv
 endif
 
