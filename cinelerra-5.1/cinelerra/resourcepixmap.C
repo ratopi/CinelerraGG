@@ -548,38 +548,39 @@ SET_TRACE
 
 
 
-void ResourcePixmap::draw_audio_source(TrackCanvas *canvas,
-	Edit *edit,
-	int x,
-	int w)
+void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, int w)
 {
 	w++;
 	Indexable *indexable = edit->get_source();
-	FloatAutos *speed_autos = (FloatAutos *)edit->track->automation->autos[AUTOMATION_SPEED];
-	double asset_over_session = (double)indexable->get_sample_rate() /
-		mwindow->edl->session->sample_rate;
 	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
 	if( mwindow->edl->session->show_titles )
 		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 	int64_t scale_y = mwindow->edl->local_session->zoom_y;
 	int y_max = center_pixel + scale_y / 2 - 1;
 
-	int64_t start_source = (pixmap_x - edit_x + x) *
-		mwindow->edl->local_session->zoom_sample + edit->startsource;
-	int64_t start_speed = speed_autos->automation_integral(0, start_source, PLAY_FORWARD);
-	int64_t start_asset = start_speed * asset_over_session;
-	if( start_asset < 0 ) start_asset = 0;
-	int64_t end_source = (pixmap_x - edit_x + x + w) *
-		mwindow->edl->local_session->zoom_sample + edit->startsource;
-	int64_t end_speed = speed_autos->automation_integral(0, end_source, PLAY_FORWARD);
-	int64_t end_asset = end_speed * asset_over_session;
-	if( end_asset < 0 ) end_asset = 0;
-	int64_t total_source_samples = end_asset - start_asset;
-	if( total_source_samples < 0 ) total_source_samples = 0;
+	double project_zoom = mwindow->edl->local_session->zoom_sample;
+	FloatAutos *speed_autos = !edit->track->has_speed() ? 0 :
+		(FloatAutos *)edit->track->automation->autos[AUTOMATION_SPEED];
+	int64_t edit_position = (x + pixmap_x - edit_x) * project_zoom;
+	int64_t start_position = edit->startsource;
+	start_position += !speed_autos ? edit_position :
+		speed_autos->automation_integral(edit->startproject, edit_position, PLAY_FORWARD);
+	int64_t end_position = edit->startsource;
+	edit_position = (x + w + pixmap_x - edit_x) * project_zoom;
+	end_position += !speed_autos ? edit_position :
+		speed_autos->automation_integral(edit->startproject, edit_position, PLAY_FORWARD);
+
+	double session_sample_rate = mwindow->edl->session->sample_rate;
+	double asset_over_session = (double)indexable->get_sample_rate() / session_sample_rate;
+	start_position *= asset_over_session;
+	end_position *= asset_over_session;
+	int sample_size = end_position - start_position;
+	if( sample_size < 0 ) sample_size = 0;
+	int source_samples = sample_size + 1;
 
 // Single sample zoom
 	if( mwindow->edl->local_session->zoom_sample == 1 ) {
-		Samples *buffer = new Samples(total_source_samples);
+		Samples *buffer = 0;
 		int result = 0;
 		canvas->set_color(mwindow->theme->audio_color);
 
@@ -593,9 +594,10 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas,
 				return;
 			}
 
-			source->set_audio_position(start_speed);
+			source->set_audio_position(start_position);
 			source->set_channel(edit->channel);
-			result = source->read_samples(buffer, total_source_samples);
+			buffer = new Samples(source_samples);
+			result = source->read_samples(buffer, source_samples);
 			mwindow->audio_cache->check_in(edit->asset);
 		}
 		else {
@@ -618,22 +620,17 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas,
 				mwindow->gui->render_engine->arm_command(&command);
 			}
 
-			Samples *temp_buffer[MAX_CHANNELS];
-			bzero(temp_buffer, MAX_CHANNELS * sizeof(double*));
-			for( int i = 0; i < indexable->get_audio_channels(); i++ ) {
-				temp_buffer[i] = new Samples(total_source_samples);
-			}
-
 			if( mwindow->gui->render_engine->arender ) {
+				Samples *buffers[MAX_CHANNELS];
+				memset(buffers, 0, sizeof(buffers));
+				int nch = indexable->get_audio_channels(), ch = edit->channel;
+				for( int i=0; i<nch; ++i )
+					buffers[i] = new Samples(source_samples);
 				mwindow->gui->render_engine->arender->process_buffer(
-					temp_buffer, total_source_samples, start_speed);
-				memcpy(buffer->get_data(),
-					temp_buffer[edit->channel]->get_data(),
-					total_source_samples * sizeof(double));
-			}
-
-			for( int i = 0; i < indexable->get_audio_channels(); i++ ) {
-				delete temp_buffer[i];
+					buffers, source_samples, start_position);
+				for( int i=0; i<nch; ++i )
+					if( i != ch ) delete buffers[i];
+				buffer = buffers[ch];
 			}
 		}
 
@@ -644,11 +641,13 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas,
 
 			for( int x0=0; x0<w; ++x0 ) {
 				int x1 = x0 + x, x2 = x1 + 1;
-				int64_t pos_project = (pixmap_x - edit_x + x2) *
-					mwindow->edl->local_session->zoom_sample + edit->startsource;
-				int64_t pos_speed = speed_autos->automation_integral(0, pos_project, PLAY_FORWARD);
-				int j = (pos_speed - start_speed) * asset_over_session;
-				CLAMP(j, 0, total_source_samples);
+				edit_position = (x1 + pixmap_x - edit_x) * project_zoom;
+				int64_t speed_position = edit->startsource;
+				speed_position += !speed_autos ? edit_position :
+					speed_autos->automation_integral(
+						edit->startproject, edit_position, PLAY_FORWARD);
+				int j = speed_position * asset_over_session - start_position;
+				CLAMP(j, 0, sample_size);
 				int y0 = y2;
 				y1 = center_pixel - samples[j] * scale_y / 2;
 				y2 = CLIP(y1, 0, y_max);
@@ -660,45 +659,43 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas,
 		delete buffer;
 	}
 	else {
+		edit_position = (x + pixmap_x - edit_x) * project_zoom;
+		int64_t speed_position = edit->startsource;
+		speed_position += !speed_autos ? edit_position :
+			speed_autos->automation_integral(
+				edit->startproject, edit_position, PLAY_FORWARD);
+		int64_t next_position = asset_over_session * speed_position;
 // Multiple sample zoom
-		int first_pixel = 1;
-		int prev_y1 = -1;
-		int prev_y2 = y_max;
-		int x2 = x + w;
-
+		int first_pixel = 1, prev_y1 = -1, prev_y2 = y_max;
 		canvas->set_color(mwindow->theme->audio_color);
-
-		int64_t next_project = (pixmap_x - edit_x + x) *
-			mwindow->edl->local_session->zoom_sample + edit->startsource;
-		int64_t next_speed = speed_autos->automation_integral(0, next_project, PLAY_FORWARD);
-		int64_t next_asset = next_speed * asset_over_session;
+		++x;
 
 // Draw each pixel from the cache
 //printf("ResourcePixmap::draw_audio_source %d x=%d w=%d\n", __LINE__, x, w);
-		while( x < x2 ) {
-			int64_t prev_asset = next_asset;
-			next_project = (pixmap_x - edit_x + x) *
-				mwindow->edl->local_session->zoom_sample + edit->startsource;
-			next_speed = speed_autos->automation_integral(0, next_project, PLAY_FORWARD);
-			next_asset = next_speed * asset_over_session;
+		for( int x2=x+w; x<x2; ++x ) {
+			int64_t prev_position = next_position;
+			edit_position = (x + pixmap_x - edit_x) * project_zoom;
+			speed_position = edit->startsource;
+			speed_position += !speed_autos ? edit_position :
+				speed_autos->automation_integral(
+					edit->startproject, edit_position, PLAY_FORWARD);
+			next_position = speed_position * asset_over_session;
 // Starting sample of pixel relative to asset rate.
 			WaveCacheItem *item = mwindow->wave_cache->get_wave(indexable->id,
-					edit->channel, prev_asset, next_asset);
+					edit->channel, prev_position, next_position);
 			if( item ) {
 //printf("ResourcePixmap::draw_audio_source %d\n", __LINE__);
 				int y_lo = (int)(center_pixel - item->low * scale_y / 2);
 				int y1 = CLIP(y_lo, 0, y_max);
 				int y_hi = (int)(center_pixel - item->high * scale_y / 2);
 				int y2 = CLIP(y_hi, 0, y_max);
-
 				if( !first_pixel ) {
 					y_lo = MIN(y1,prev_y2);
 					y_hi = MAX(y2,prev_y1);
 				}
 				else {
 					first_pixel = 0;
-					y_lo = y1;
-					y_hi = y2;
+					y_lo = y1;  y_hi = y2;
 				}
 				prev_y1 = y1;  prev_y2 = y2;
 				canvas->draw_line(x, y_lo, x, y_hi, this);
@@ -709,14 +706,12 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas,
 //printf("ResourcePixmap::draw_audio_source %d\n", __LINE__);
 				gui->resource_thread->add_wave(this,
 					canvas->pane->number, indexable, x,
-					edit->channel, prev_asset, next_asset);
-				first_pixel = 1;
-				prev_y1 = -1;
-				prev_y2 = y_max;
+					edit->channel, prev_position, next_position);
+				first_pixel = 1;  prev_y1 = -1;  prev_y2 = y_max;
 			}
-			++x;
 		}
 	}
+
 	canvas->test_timer();
 }
 
@@ -754,84 +749,49 @@ void ResourcePixmap::draw_video_resource(TrackCanvas *canvas,
 // or bigger than edit and fills at less than 1.5 percent timeline
 	if( picon_w > edit_w && edit_w < canvas->get_w()/64 ) return;
 
-// pixels spanned by a frame
-	double frame_w = edit->frame_w();
-
 // Frames spanned by a picon
-	double frames_per_picon = edit->frames_per_picon();
-
+	double frame_w = edit->frame_w();
+// pixels spanned by a frame
+	if( frame_w < picon_w ) frame_w = picon_w;
 // Current pixel relative to pixmap
-	int x = 0;
 	int y = 0;
 	if( mwindow->edl->session->show_titles )
 		y += mwindow->theme->get_image("title_bg_data")->get_h();
+
 // Frame in project touched by current pixel
-	int64_t project_frame;
-
-// Get first frame touched by x and fix x to start of frame
-	if( frames_per_picon > 1 ) {
-		int picon = Units::to_int64(
-			(double)((int64_t)refresh_x + pixmap_x - edit_x) / picon_w);
-		x = picon_w * picon + edit_x - pixmap_x;
-		project_frame = Units::to_int64((double)picon * frames_per_picon);
-	}
-	else {
-		project_frame = Units::to_int64((double)((int64_t)refresh_x + pixmap_x - edit_x) /
-			frame_w);
-		x = Units::round((double)project_frame * frame_w + edit_x - pixmap_x);
- 	}
-
-	FloatAutos *speed_autos = (FloatAutos *)edit->track->automation->autos[AUTOMATION_SPEED];
+	FloatAutos *speed_autos = !edit->track->has_speed() ? 0 :
+		(FloatAutos *)edit->track->automation->autos[AUTOMATION_SPEED];
+	Indexable *indexable = edit->get_source();
+	double session_sample_rate = mwindow->edl->session->sample_rate;
+	double project_zoom = mwindow->edl->local_session->zoom_sample / session_sample_rate;
+	int skip_frames = Units::to_int64(((int64_t)refresh_x + pixmap_x - edit_x) / frame_w);
+	int x = Units::to_int64(skip_frames * frame_w) + edit_x - pixmap_x;
 
 // Draw only cached frames
 	while( x < refresh_x + refresh_w ) {
-		int64_t source_frame = project_frame + edit->startsource;
-		source_frame = speed_autos->automation_integral(0, source_frame, PLAY_FORWARD);
-		VFrame *picon_frame = 0;
-		Indexable *indexable = edit->get_source();
-		int use_cache = 0;
-		int id = -1;
-
-		id = indexable->id;
-
-		if( id >= 0 ) {
-			picon_frame = mwindow->frame_cache->get_frame_ptr(source_frame, edit->channel,
-				mwindow->edl->session->frame_rate, BC_RGB888, picon_w, picon_h, id);
-		}
-
-		if( picon_frame != 0 ) {
-			use_cache = 1;
-		}
-		else {
-// Set picon thread to draw in background
-			if( mode != IGNORE_THREAD ) {
-// printf("ResourcePixmap::draw_video_resource %d %d %lld\n",
-// __LINE__,
-// mwindow->frame_cache->total(),
-// source_frame);
-				gui->resource_thread->add_picon(this, canvas->pane->number, x, y,
-					picon_w, picon_h, mwindow->edl->session->frame_rate,
-					source_frame, edit->channel, indexable);
-			}
-		}
-
-		if( picon_frame )
+		int64_t edit_position =
+			edit->track->to_units((x + pixmap_x - edit_x) * project_zoom, 0);
+		int64_t speed_position = edit->startsource;
+		speed_position += !speed_autos ? edit_position :
+			 speed_autos->automation_integral(
+				edit->startproject, edit_position, PLAY_FORWARD);
+		VFrame *picon_frame = indexable->id < 0 ? 0 :
+			mwindow->frame_cache->get_frame_ptr(speed_position, edit->channel,
+				mwindow->edl->session->frame_rate, BC_RGB888,
+				picon_w, picon_h, indexable->id);
+		if( picon_frame ) {
 			draw_vframe(picon_frame, x, y, picon_w, picon_h, 0, 0);
-
-// Unlock the get_frame_ptr command
-		if( use_cache )
 			mwindow->frame_cache->unlock();
-
-		if( frames_per_picon > 1 ) {
-			x += Units::round(picon_w);
-			project_frame = Units::to_int64(frames_per_picon * (int64_t)((double)(x + pixmap_x - edit_x) / picon_w));
 		}
-		else {
-			x += Units::round(frame_w);
-			project_frame = (int64_t)((double)(x + pixmap_x - edit_x) / frame_w);
+		else if( mode != IGNORE_THREAD ) {
+// Set picon thread to draw in background
+// printf("ResourcePixmap::draw_video_resource %d %d %lld\n",
+// __LINE__, mwindow->frame_cache->total(), source_frame);
+			gui->resource_thread->add_picon(this, canvas->pane->number, x, y,
+				picon_w, picon_h, mwindow->edl->session->frame_rate,
+				speed_position, edit->channel, indexable);
 		}
-
-
+		x += frame_w;
 		canvas->test_timer();
 	}
 }

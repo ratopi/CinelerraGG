@@ -290,7 +290,6 @@ int CWindowToolGUI::close_event()
 int CWindowToolGUI::keypress_event()
 {
 	int result = 0;
-	int cwindow_operation = CWINDOW_NONE;
 
 	switch( get_keypress() ) {
 	case 'w':

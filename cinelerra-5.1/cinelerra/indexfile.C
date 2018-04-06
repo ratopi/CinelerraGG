@@ -655,21 +655,26 @@ SET_TRACE
 		mwindow->edl->local_session->zoom_sample -
 		mwindow->edl->local_session->view_start[pane_number];
 
-	FloatAutos *speed_autos = (FloatAutos *)edit->track->automation->autos[AUTOMATION_SPEED];
 // samples in segment to draw relative to asset
-	double asset_over_session = (double)source_samplerate / mwindow->edl->session->sample_rate;
-	int64_t start_source = (pixmap->pixmap_x - virtual_edit_x + x) *
-		mwindow->edl->local_session->zoom_sample + edit->startsource;
-	int64_t start_speed = speed_autos->automation_integral(0, start_source, PLAY_FORWARD);
-	int64_t start_asset = start_speed * asset_over_session;
-	if( start_asset < 0 ) start_asset = 0;
-	int64_t start_index = start_asset / index_state->index_zoom;
-	int64_t end_source = (pixmap->pixmap_x - virtual_edit_x + x + w) *
-		mwindow->edl->local_session->zoom_sample + edit->startsource;
-	int64_t end_speed = speed_autos->automation_integral(0, end_source, PLAY_FORWARD);
-	int64_t end_asset = end_speed * asset_over_session;
-	if( end_asset < 0 ) end_asset = 0;
-	int64_t end_index = end_asset / index_state->index_zoom;
+	FloatAutos *speed_autos = !edit->track->has_speed() ? 0 :
+		(FloatAutos *)edit->track->automation->autos[AUTOMATION_SPEED];
+	double project_zoom = mwindow->edl->local_session->zoom_sample;
+	int64_t edit_position = (x + pixmap->pixmap_x - virtual_edit_x) * project_zoom;
+	int64_t start_position = edit->startsource;
+	start_position += !speed_autos ? edit_position :
+		speed_autos->automation_integral(edit->startproject, edit_position, PLAY_FORWARD);
+	int64_t end_position = edit->startsource;
+	edit_position = (x + w + pixmap->pixmap_x - virtual_edit_x) * project_zoom;
+	end_position += !speed_autos ? edit_position :
+		speed_autos->automation_integral(edit->startproject, edit_position, PLAY_FORWARD);
+	double session_sample_rate = mwindow->edl->session->sample_rate;
+	double asset_over_session = (double)indexable->get_sample_rate() / session_sample_rate;
+	int64_t start_source = start_position * asset_over_session;
+	if( start_source < 0 ) start_source = 0;
+	int64_t start_index = start_source / index_state->index_zoom;
+	int64_t end_source = end_position * asset_over_session;
+	if( end_source < 0 ) end_source = 0;
+	int64_t end_index = end_source / index_state->index_zoom;
 // start/length of index to read in floats
 	start_index *= 2;  end_index *= 2;
 // length of index available in floats
@@ -723,12 +728,13 @@ SET_TRACE
 	int first_frame = 1;
 	int zoom_y = mwindow->edl->local_session->zoom_y, zoom_y2 = zoom_y / 2;
 	int max_y = center_pixel + zoom_y2 - 1;
-	int64_t pos_project = (pixmap->pixmap_x - virtual_edit_x + x) *
-		mwindow->edl->local_session->zoom_sample + edit->startsource;
-	int64_t pos_speed = speed_autos->automation_integral(0, pos_project, PLAY_FORWARD);
-	int64_t pos_asset = pos_speed * asset_over_session;
-	int64_t pos_index = pos_asset / index_state->index_zoom;
-	int64_t i = 2 * pos_index - start_index;
+	edit_position = (x + pixmap->pixmap_x - virtual_edit_x) * project_zoom;
+	int64_t speed_position = edit->startsource;
+	speed_position += !speed_autos ? edit_position :
+		speed_autos->automation_integral(edit->startproject, edit_position, PLAY_FORWARD);
+	int64_t source_position  = speed_position * asset_over_session;
+	int64_t index_position = source_position / index_state->index_zoom;
+	int64_t i = 2 * index_position - start_index;
 	CLAMP(i, 0, length_index);
 SET_TRACE
 
@@ -736,12 +742,13 @@ SET_TRACE
 		float highsample = buffer[i];  ++i;
 		float lowsample = buffer[i];   ++i;
 		int x2 = x1 + x + 1;
-		pos_project = (pixmap->pixmap_x - virtual_edit_x + x2) *
-			mwindow->edl->local_session->zoom_sample + edit->startsource;
-		pos_speed = speed_autos->automation_integral(0, pos_project, PLAY_FORWARD);
-		pos_asset = pos_speed * asset_over_session;
-		pos_index = pos_asset / index_state->index_zoom;
-		int64_t k = 2 * pos_index - start_index;
+		edit_position = (x2 + pixmap->pixmap_x - virtual_edit_x) * project_zoom;
+		int64_t speed_position = edit->startsource;
+		speed_position += !speed_autos ? edit_position :
+			speed_autos->automation_integral(edit->startproject, edit_position, PLAY_FORWARD);
+		source_position  = speed_position * asset_over_session;
+		index_position = source_position / index_state->index_zoom;
+		int64_t k = 2 * index_position - start_index;
 		CLAMP(k, 0, length_index);
 		while( i < k ) {
 			highsample = MAX(highsample, buffer[i]); ++i;
