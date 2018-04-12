@@ -17,6 +17,7 @@ all:
 
 clean:
 	for dir in $(SUBDIRS); do $(MAKE) -C $$dir clean; done
+	rm -rf thirdparty/opencv*
 	rm -rf bin
 	./autogen.sh clean
 

@@ -18,6 +18,7 @@ bin:
 	mkdir -p bin bin/applications bin/pixmaps
 
 clean-generic:
+	rm -rf thirdparty/opencv*
 	rm -rf bin
 
 inst_sh := $(CURDIR)/inst.sh

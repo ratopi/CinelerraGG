@@ -177,6 +177,7 @@ void Transition::load_xml(FileXML *file)
 {
 	int result = 0;
 	file->tag.get_property("TITLE", title);
+	Plugin::fix_plugin_title(title);
 	length = file->tag.get_property("LENGTH", length);
 	on = 0;
 

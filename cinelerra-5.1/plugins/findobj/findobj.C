@@ -27,6 +27,9 @@
 #include "findobjwindow.h"
 #include "mutex.h"
 #include "overlayframe.h"
+#include "plugin.h"
+#include "pluginserver.h"
+#include "track.h"
 
 #include <errno.h>
 #include <exception>
@@ -39,13 +42,15 @@ FindObjConfig::FindObjConfig()
 	algorithm = NO_ALGORITHM;
 	use_flann = 1;
 	draw_keypoints = 0;
-	draw_border = 0;
+	draw_scene_border = 0;
 	replace_object = 0;
 	draw_object_border = 0;
 	object_x = 50;  object_y = 50;
 	object_w = 100; object_h = 100;
+	drag_object = 0;
 	scene_x = 50;   scene_y = 50;
 	scene_w = 100;  scene_h = 100;
+	drag_scene = 0;
 	scene_layer = 0;
 	object_layer = 1;
 	replace_layer = 2;
@@ -54,6 +59,7 @@ FindObjConfig::FindObjConfig()
 
 void FindObjConfig::boundaries()
 {
+	bclamp(drag_object, 0, 1); bclamp(drag_scene, 0, 1);
 	bclamp(object_x, 0, 100);  bclamp(object_y, 0, 100);
 	bclamp(object_w, 0, 100);  bclamp(object_h, 0, 100);
 	bclamp(scene_x, 0, 100);   bclamp(scene_y, 0, 100);
@@ -70,13 +76,15 @@ int FindObjConfig::equivalent(FindObjConfig &that)
 		algorithm == that.algorithm &&
 		use_flann == that.use_flann &&
 		draw_keypoints == that.draw_keypoints &&
-		draw_border == that.draw_border &&
+		draw_scene_border == that.draw_scene_border &&
 		replace_object == that.replace_object &&
 		draw_object_border == that.draw_object_border &&
 		object_x == that.object_x && object_y == that.object_y &&
 		object_w == that.object_w && object_h == that.object_h &&
+		drag_object == that.drag_object &&
 		scene_x == that.scene_x && scene_y == that.scene_y &&
 		scene_w == that.scene_w && scene_h == that.scene_h &&
+		drag_scene == that.drag_scene &&
 		object_layer == that.object_layer &&
 		replace_layer == that.replace_layer &&
 		scene_layer == that.scene_layer &&
@@ -89,13 +97,15 @@ void FindObjConfig::copy_from(FindObjConfig &that)
 	algorithm = that.algorithm;
 	use_flann = that.use_flann;
 	draw_keypoints = that.draw_keypoints;
-	draw_border = that.draw_border;
+	draw_scene_border = that.draw_scene_border;
 	replace_object = that.replace_object;
 	draw_object_border = that.draw_object_border;
 	object_x = that.object_x;  object_y = that.object_y;
 	object_w = that.object_w;  object_h = that.object_h;
+	drag_object = that.drag_object;
 	scene_x = that.scene_x;    scene_y = that.scene_y;
 	scene_w = that.scene_w;    scene_h = that.scene_h;
+	drag_scene = that.drag_scene;
 	object_layer = that.object_layer;
 	replace_layer = that.replace_layer;
 	scene_layer = that.scene_layer;
@@ -160,6 +170,7 @@ void FindObjMain::update_gui()
 	window->lock_window("FindObjMain::update_gui");
 	window->algorithm->set_text(FindObjAlgorithm::to_text(config.algorithm));
 	window->use_flann->update(config.use_flann);
+	window->drag_object->update(config.drag_object);
 	window->object_x->update(config.object_x);
 	window->object_x_text->update((float)config.object_x);
 	window->object_y->update(config.object_y);
@@ -168,6 +179,7 @@ void FindObjMain::update_gui()
 	window->object_w_text->update((float)config.object_w);
 	window->object_h->update(config.object_h);
 	window->object_h_text->update((float)config.object_h);
+	window->drag_scene->update(config.drag_scene);
 	window->scene_x->update(config.scene_x);
 	window->scene_x_text->update((float)config.scene_x);
 	window->scene_y->update(config.scene_y);
@@ -177,7 +189,7 @@ void FindObjMain::update_gui()
 	window->scene_h->update(config.scene_h);
 	window->scene_h_text->update((float)config.scene_h);
 	window->draw_keypoints->update(config.draw_keypoints);
-	window->draw_border->update(config.draw_border);
+	window->draw_scene_border->update(config.draw_scene_border);
 	window->replace_object->update(config.replace_object);
 	window->draw_object_border->update(config.draw_object_border);
 	window->object_layer->update( (int64_t)config.object_layer);
@@ -197,16 +209,18 @@ void FindObjMain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("FINDOBJ");
 	output.tag.set_property("ALGORITHM", config.algorithm);
 	output.tag.set_property("USE_FLANN", config.use_flann);
+	output.tag.set_property("DRAG_OBJECT", config.drag_object);
 	output.tag.set_property("OBJECT_X", config.object_x);
 	output.tag.set_property("OBJECT_Y", config.object_y);
 	output.tag.set_property("OBJECT_W", config.object_w);
 	output.tag.set_property("OBJECT_H", config.object_h);
+	output.tag.set_property("DRAG_SCENE", config.drag_scene);
 	output.tag.set_property("SCENE_X", config.scene_x);
 	output.tag.set_property("SCENE_Y", config.scene_y);
 	output.tag.set_property("SCENE_W", config.scene_w);
 	output.tag.set_property("SCENE_H", config.scene_h);
 	output.tag.set_property("DRAW_KEYPOINTS", config.draw_keypoints);
-	output.tag.set_property("DRAW_BORDER", config.draw_border);
+	output.tag.set_property("DRAW_SCENE_BORDER", config.draw_scene_border);
 	output.tag.set_property("REPLACE_OBJECT", config.replace_object);
 	output.tag.set_property("DRAW_OBJECT_BORDER", config.draw_object_border);
 	output.tag.set_property("OBJECT_LAYER", config.object_layer);
@@ -236,12 +250,14 @@ void FindObjMain::read_data(KeyFrame *keyframe)
 			config.object_y = input.tag.get_property("OBJECT_Y", config.object_y);
 			config.object_w = input.tag.get_property("OBJECT_W", config.object_w);
 			config.object_h = input.tag.get_property("OBJECT_H", config.object_h);
+			config.drag_object = input.tag.get_property("DRAG_OBJECT", config.drag_object);
 			config.scene_x = input.tag.get_property("SCENE_X", config.scene_x);
 			config.scene_y = input.tag.get_property("SCENE_Y", config.scene_y);
 			config.scene_w = input.tag.get_property("SCENE_W", config.scene_w);
 			config.scene_h = input.tag.get_property("SCENE_H", config.scene_h);
+			config.drag_scene = input.tag.get_property("DRAG_SCENE", config.drag_scene);
 			config.draw_keypoints = input.tag.get_property("DRAW_KEYPOINTS", config.draw_keypoints);
-			config.draw_border = input.tag.get_property("DRAW_BORDER", config.draw_border);
+			config.draw_scene_border = input.tag.get_property("DRAW_SCENE_BORDER", config.draw_scene_border);
 			config.replace_object = input.tag.get_property("REPLACE_OBJECT", config.replace_object);
 			config.draw_object_border = input.tag.get_property("DRAW_OBJECT_BORDER", config.draw_object_border);
 			config.object_layer = input.tag.get_property("OBJECT_LAYER", config.object_layer);
@@ -261,10 +277,11 @@ void FindObjMain::draw_line(VFrame *vframe, int x1, int y1, int x2, int y2)
 
 void FindObjMain::draw_rect(VFrame *vframe, int x1, int y1, int x2, int y2)
 {
+	--x2;  --y2;
 	draw_line(vframe, x1, y1, x2, y1);
-	draw_line(vframe, x2, y1 + 1, x2, y2);
-	draw_line(vframe, x2 - 1, y2, x1, y2);
-	draw_line(vframe, x1, y2 - 1, x1, y1 + 1);
+	draw_line(vframe, x2, y1, x2, y2);
+	draw_line(vframe, x2, y2, x1, y2);
+	draw_line(vframe, x1, y2, x1, y1);
 }
 
 void FindObjMain::draw_circle(VFrame *vframe, int x, int y, int r)
@@ -408,7 +425,7 @@ void FindObjMain::process_match()
 {
 	if( config.algorithm == NO_ALGORITHM ) return;
 	if( !config.replace_object &&
-	    !config.draw_border &&
+	    !config.draw_scene_border &&
 	    !config.draw_keypoints ) return;
 
 	if( detector.empty() ) {
@@ -481,34 +498,33 @@ int FindObjMain::process_buffer(VFrame **frame, int64_t start_position, double f
 		matcher.release();
 	}
 
-	w = frame[0]->get_w();
-	h = frame[0]->get_h();
-
 	object_layer = config.object_layer;
 	scene_layer = config.scene_layer;
 	replace_layer = config.replace_layer;
+	Track *track = server->plugin->track;
+	w = track->track_w;
+	h = track->track_h;
 
 	int max_layer = PluginClient::get_total_buffers() - 1;
 	object_layer = bclip(config.object_layer, 0, max_layer);
 	scene_layer = bclip(config.scene_layer, 0, max_layer);
 	replace_layer = bclip(config.replace_layer, 0, max_layer);
 
-	int cfg_w, cfg_h, cfg_x1, cfg_y1, cfg_x2, cfg_y2;
-	cfg_w = (int)(config.object_w * w / 100);
-	cfg_h = (int)(config.object_h * h / 100);
-	cfg_x1 = (int)(config.object_x * w / 100 - cfg_w / 2);
-	cfg_y1 = (int)(config.object_y * h / 100 - cfg_h / 2);
-	cfg_x2 = cfg_x1 + cfg_w;
-	cfg_y2 = cfg_y1 + cfg_h;
+	int cfg_w = (int)(w * config.object_w / 100.);
+	int cfg_h = (int)(h * config.object_h / 100.);
+	int cfg_x1 = (int)(w * config.object_x / 100. - cfg_w / 2);
+	int cfg_y1 = (int)(h * config.object_y / 100. - cfg_h / 2);
+	int cfg_x2 = cfg_x1 + cfg_w;
+	int cfg_y2 = cfg_y1 + cfg_h;
 	bclamp(cfg_x1, 0, w);  object_x = cfg_x1;
 	bclamp(cfg_y1, 0, h);  object_y = cfg_y1;
 	bclamp(cfg_x2, 0, w);  object_w = cfg_x2 - cfg_x1;
 	bclamp(cfg_y2, 0, h);  object_h = cfg_y2 - cfg_y1;
 
-	cfg_w = (int)(config.scene_w * w / 100);
-	cfg_h = (int)(config.scene_h * h / 100);
-	cfg_x1 = (int)(config.scene_x * w / 100 - cfg_w / 2);
-	cfg_y1 = (int)(config.scene_y * h / 100 - cfg_h / 2);
+	cfg_w = (int)(w * config.scene_w / 100.);
+	cfg_h = (int)(h * config.scene_h / 100.);
+	cfg_x1 = (int)(w * config.scene_x / 100. - cfg_w / 2);
+	cfg_y1 = (int)(h * config.scene_y / 100. - cfg_h / 2);
 	cfg_x2 = cfg_x1 + cfg_w;
 	cfg_y2 = cfg_y1 + cfg_h;
 	bclamp(cfg_x1, 0, w);  scene_x = cfg_x1;
@@ -534,7 +550,7 @@ int FindObjMain::process_buffer(VFrame **frame, int64_t start_position, double f
 		process_match();
 	}
 
-	double w0 = init_border ? 1. : config.blend/100., w1 = 1. - w0;
+	double w0 = init_border ? (init_border=0, 1.) : config.blend/100., w1 = 1. - w0;
 	obj_x1 = border_x1*w0 + obj_x1*w1;  obj_y1 = border_y1*w0 + obj_y1*w1;
 	obj_x2 = border_x2*w0 + obj_x2*w1;  obj_y2 = border_y2*w0 + obj_y2*w1;
 	obj_x3 = border_x3*w0 + obj_x3*w1;  obj_y3 = border_y3*w0 + obj_y3*w1;
@@ -562,15 +578,16 @@ int FindObjMain::process_buffer(VFrame **frame, int64_t start_position, double f
 
 	}
 
-	if( config.draw_border ) {
+	if( config.draw_scene_border ) {
 		int wh = (w+h)>>8, ss = 1; while( wh>>=1 ) ss<<=1;
 		scene->set_pixel_color(WHITE);  scene->set_stiple(ss*2);
-		draw_line(scene, obj_x1, obj_y1, obj_x2, obj_y2);
-		draw_line(scene, obj_x2, obj_y2, obj_x3, obj_y3);
-		draw_line(scene, obj_x3, obj_y3, obj_x4, obj_y4);
-		draw_line(scene, obj_x4, obj_y4, obj_x1, obj_y1);
+		draw_rect(scene, scene_x, scene_y, scene_x+scene_w, scene_y+scene_h);
 	}
-
+	if( config.draw_object_border ) {
+		int wh = (w+h)>>8, ss = 1; while( wh>>=1 ) ss<<=1;
+		scene->set_pixel_color(YELLOW);  scene->set_stiple(ss*3);
+		draw_rect(scene, object_x, object_y, object_x+object_w, object_y+object_h);
+	}
 	if( config.draw_keypoints ) {
 		scene->set_pixel_color(RED);  scene->set_stiple(0);
 		for( int i=0,n=scn_keypts.size(); i<n; ++i ) {
@@ -581,17 +598,15 @@ int FindObjMain::process_buffer(VFrame **frame, int64_t start_position, double f
 		}
 	}
 
-// Draw object outline in the object layer
-	if( config.draw_object_border ) {
-		int wh = (w+h)>>8, ss = 1; while( wh>>=1 ) ss<<=1;
-		scene->set_pixel_color(YELLOW);  scene->set_stiple(ss*3);
-		int x1 = object_x, x2 = x1 + object_w - 1;
-		int y1 = object_y, y2 = y1 + object_h - 1;
-		draw_rect(scene, x1, y1, x2, y2);
-		scene->set_pixel_color(GREEN);  scene->set_stiple(0);
-		x1 = scene_x, x2 = x1 + scene_w - 1;
-		y1 = scene_y, y2 = y1 + scene_h - 1;
-		draw_rect(scene, x1, y1, x2, y2);
+	if( gui_open() ) {
+		if( config.drag_scene ) {
+			scene->set_pixel_color(WHITE);
+			DragCheckBox::draw_boundary(scene, scene_x, scene_y, scene_w, scene_h);
+		}
+		if( config.drag_object ) {
+			scene->set_pixel_color(YELLOW);
+			DragCheckBox::draw_boundary(scene, object_x, object_y, object_w, object_h);
+		}
 	}
 
 	scene->set_pixel_color(BLACK);

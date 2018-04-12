@@ -29,6 +29,7 @@ class TitleWindow;
 class TitleInterlace;
 
 #include "colorpicker.h"
+#include "dragcheckbox.h"
 #include "filexml.h"
 #include "mutex.h"
 #include "titler.h"
@@ -89,7 +90,7 @@ public:
 
 	void create_objects();
 	int resize_event(int w, int h);
-	int grab_event(XEvent *event);
+	void update_drag();
 	void update_color();
 	void update_justification();
 	void update_stats();
@@ -233,11 +234,15 @@ public:
 	TitleMain *client;
 	TitleWindow *window;
 };
-class TitleDrag : public BC_CheckBox
+class TitleDrag : public DragCheckBox
 {
 public:
 	TitleDrag(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
+	void update_gui();
+	Track *get_drag_track();
+	int64_t get_drag_position();
+
 	TitleMain *client;
 	TitleWindow *window;
 };

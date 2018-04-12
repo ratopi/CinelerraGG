@@ -28,6 +28,7 @@
 #include "automation.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
+#include "dragcheckbox.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "keys.h"
@@ -120,7 +121,7 @@ TitleWindow::TitleWindow(TitleMain *client)
 
 void TitleWindow::done_event(int result)
 {
-	ungrab(client->server->mwindow->cwindow->gui);
+	drag->drag_deactivate();
 	color_thread->close_window();
 	outline_color_thread->close_window();
 	color_popup->close_window();
@@ -260,9 +261,10 @@ void TitleWindow::create_objects()
 	if( bold->get_w() > w1 ) w1 = bold->get_w();
 
 	add_tool(drag = new TitleDrag(client, this, x, y + 80));
+	drag->create_objects();
 	if( drag->get_w() > w1 ) w1 = drag->get_w();
 	if( client->config.drag ) {
-		if( !grab(client->server->mwindow->cwindow->gui) )
+		if( drag->drag_activate() )
 			eprintf("drag enabled, but compositor already grabbed\n");
 	}
 
@@ -473,175 +475,17 @@ int TitleWindow::resize_event(int w, int h)
 	return 1;
 }
 
+void TitleWindow::update_drag()
+{
+	drag->drag_x = client->config.title_x;
+	drag->drag_y = client->config.title_y;
+	drag->drag_w = client->config.title_w;
+	drag->drag_h = client->config.title_h;
+	send_configure_change();
+}
 void TitleWindow::send_configure_change()
 {
-	pending_config = 0;
 	client->send_configure_change();
-}
-int TitleWindow::check_configure_change(int ret)
-{
-	if( pending_config && !grab_event_count() )
-		send_configure_change();
-	return ret;
-}
-
-int TitleWindow::grab_event(XEvent *event)
-{
-	switch( event->type ) {
-	case ButtonPress: break;
-	case ButtonRelease: break;
-	case MotionNotify: break;
-	default:
-		return check_configure_change(0);
-	}
-
-	MWindow *mwindow = client->server->mwindow;
-	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
-	CWindowCanvas *canvas = cwindow_gui->canvas;
-	int cx, cy;  cwindow_gui->get_relative_cursor(cx, cy);
-	cx -= mwindow->theme->ccanvas_x;
-	cy -= mwindow->theme->ccanvas_y;
-
-	if( !dragging ) {
-		if( cx < 0 || cx >= mwindow->theme->ccanvas_w ||
-		    cy < 0 || cy >= mwindow->theme->ccanvas_h )
-			return check_configure_change(0);
-	}
-
-	switch( event->type ) {
-	case ButtonPress:
-		if( !dragging ) break;
-		return 1;
-	case ButtonRelease:
-		if( !dragging ) return check_configure_change(0);
-		dragging = 0;
-		return 1;
-	case MotionNotify:
-		if( !dragging ) return check_configure_change(0);
-		break;
-	default:
-		return check_configure_change(0);
-	}
-
-	float cursor_x = cx, cursor_y = cy;
-	canvas->canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
-	int64_t position = client->get_source_position();
-	float projector_x, projector_y, projector_z;
-	Track *track = client->server->plugin->track;
-	int track_w = track->track_w, track_h = track->track_h;
-	track->automation->get_projector(
-		&projector_x, &projector_y, &projector_z,
-		position, PLAY_FORWARD);
-	projector_x += mwindow->edl->session->output_w / 2;
-	projector_y += mwindow->edl->session->output_h / 2;
-	cursor_x = (cursor_x - projector_x) / projector_z + track_w / 2;
-	cursor_y = (cursor_y - projector_y) / projector_z + track_h / 2;
-	int title_x = client->config.title_x, title_y = client->config.title_y;
-	int title_w = client->config.title_w, title_h = client->config.title_h;
-	if( !title_w ) title_w = track_w;
-	if( !title_h ) title_h = track_h;
-	int r = MIN(track_w, track_h)/100 + 2;
-	int x0 = title_x, x1 = title_x+(title_w+1)/2, x2 = title_x+title_w;
-	int y0 = title_y, y1 = title_y+(title_h+1)/2, y2 = title_y+title_h;
-	int drag_dx = 0, drag_dy = 0;
-	if( !dragging ) {  // clockwise
-		     if( abs(drag_dx = cursor_x-x0) < r &&  // x0,y0
-			 abs(drag_dy = cursor_y-y0) < r ) dragging = 1;
-		else if( abs(drag_dx = cursor_x-x1) < r &&  // x1,y0
-			 abs(drag_dy = cursor_y-y0) < r ) dragging = 2;
-		else if( abs(drag_dx = cursor_x-x2) < r &&  // x2,y0
-			 abs(drag_dy = cursor_y-y0) < r ) dragging = 3;
-		else if( abs(drag_dx = cursor_x-x2) < r &&  // x2,y1
-			 abs(drag_dy = cursor_y-y1) < r ) dragging = 4;
-		else if( abs(drag_dx = cursor_x-x2) < r &&  // x2,y2
-			 abs(drag_dy = cursor_y-y2) < r ) dragging = 5;
-		else if( abs(drag_dx = cursor_x-x1) < r &&  // x1,y2
-			 abs(drag_dy = cursor_y-y2) < r ) dragging = 6;
-		else if( abs(drag_dx = cursor_x-x0) < r &&  // x0,y2
-			 abs(drag_dy = cursor_y-y2) < r ) dragging = 7;
-		else if( abs(drag_dx = cursor_x-x0) < r &&  // x0,y1
-			 abs(drag_dy = cursor_y-y1) < r ) dragging = 8;
-		else if( abs(drag_dx = cursor_x-x1) < r &&  // x1,y1
-			 abs(drag_dy = cursor_y-y1) < r ) dragging = 9;
-			return 0;
-	}
-	switch( dragging ) {
-	case 1: { // x0,y0
-		int cur_x = cursor_x - drag_dx, dx = cur_x - x0;
-		int cur_y = cursor_y - drag_dy, dy = cur_y - y0;
-		if( !dx && !dy ) return 1;
-		int cur_w = title_w - dx;  if( cur_w < 1 ) cur_w = 1;
-		int cur_h = title_h - dy;  if( cur_h < 1 ) cur_h = 1;
-		this->title_x->update((int64_t)(client->config.title_x = cur_x));
-		this->title_y->update((int64_t)(client->config.title_y = cur_y));
-		this->title_w->update((int64_t)(client->config.title_w = cur_w));
-		this->title_h->update((int64_t)(client->config.title_h = cur_h));
-		break; }
-	case 2: { // x1,y0
-		int cur_y = cursor_y - drag_dy, dy = cur_y - y0;
-		if( !dy ) return 1;
-		int cur_h = title_h - dy;  if( cur_h < 1 ) cur_h = 1;
-		this->title_y->update((int64_t)(client->config.title_y = cur_y));
-		this->title_h->update((int64_t)(client->config.title_h = cur_h));
-		break; }
-	case 3: { // x2,y0
-		int cur_x = cursor_x - drag_dx, dx = cur_x - x2;
-		int cur_y = cursor_y - drag_dy, dy = cur_y - y0;
-		int cur_w = title_w + dx;  if( cur_w < 1 ) cur_w = 1;
-		int cur_h = title_h - dy;  if( cur_h < 1 ) cur_h = 1;
-		this->title_w->update((int64_t)(client->config.title_w = cur_w));
-		this->title_y->update((int64_t)(client->config.title_y = cur_y));
-		this->title_h->update((int64_t)(client->config.title_h = cur_h));
-		break; }
-	case 4: { // x2,y1
-		int cur_x = cursor_x - drag_dx, dx = cur_x - x2;
-		if( !dx ) return 1;
-		int cur_w = title_w + dx;  if( cur_w < 1 ) cur_w = 1;
-		this->title_w->update((int64_t)(client->config.title_w = cur_w));
-		break; }
-	case 5: { // x2,y2
-		int cur_x = cursor_x - drag_dx, dx = cur_x - x2;
-		int cur_y = cursor_y - drag_dy, dy = cur_y - y2;
-		int cur_w = title_w + dx;  if( cur_w < 1 ) cur_w = 1;
-		int cur_h = title_h + dy;  if( cur_h < 1 ) cur_h = 1;
-		this->title_w->update((int64_t)(client->config.title_w = cur_w));
-		this->title_h->update((int64_t)(client->config.title_h = cur_h));
-		break; }
-	case 6: { // x1,y2
-		int cur_y = cursor_y - drag_dy, dy = cur_y - y2;
-		if( client->config.title_h == cur_y ) return 1;
-		int cur_h = title_h + dy;  if( cur_h < 1 ) cur_h = 1;
-		this->title_h->update((int64_t)(client->config.title_h = cur_h));
-		break; }
-	case 7: { // x0,y2
-		int cur_x = cursor_x - drag_dx, dx = cur_x - x0;
-		int cur_y = cursor_y - drag_dy, dy = cur_y - y2;
-		int cur_w = title_w - dx;  if( cur_w < 1 ) cur_w = 1;
-		int cur_h = title_h + dy;  if( cur_h < 1 ) cur_h = 1;
-		this->title_x->update((int64_t)(client->config.title_x = cur_x));
-		this->title_w->update((int64_t)(client->config.title_w = cur_w));
-		this->title_h->update((int64_t)(client->config.title_h = cur_h));
-		break; }
-	case 8: { // x0,y1
-		int cur_x = cursor_x - drag_dx, dx = cur_x - x0;
-		if( !dx ) return 1;
-		int cur_w = title_w - dx;  if( cur_w < 1 ) cur_w = 1;
-		this->title_x->update((int64_t)(client->config.title_x = cur_x));
-		this->title_w->update((int64_t)(client->config.title_w = cur_w));
-		break; }
-	case 9: { // x1,y1
-		int cur_x = cursor_x - drag_dx, dx = cur_x - x1;
-		int cur_y = cursor_y - drag_dy, dy = cur_y - y1;
-		if( title_x == cur_x && title_y == cur_y ) return 1;
-		this->title_x->update((int64_t)(client->config.title_x += dx));
-		this->title_y->update((int64_t)(client->config.title_y += dy));
-		}
-	}
-	if( !grab_event_count() )
-		send_configure_change();
-	else
-		pending_config = 1;
-	return 1;
 }
 
 void TitleWindow::previous_font()
@@ -790,7 +634,6 @@ int TitleFontTumble::handle_down_event()
 	window->next_font();
 	return 1;
 }
-
 
 
 TitleSizeTumble::TitleSizeTumble(TitleMain *client, TitleWindow *window, int x, int y)
@@ -1240,7 +1083,7 @@ TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleX::handle_event()
 {
 	client->config.title_x = atof(get_text());
-	window->send_configure_change();
+	window->update_drag();
 	return 1;
 }
 
@@ -1255,7 +1098,7 @@ TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleY::handle_event()
 {
 	client->config.title_y = atof(get_text());
-	window->send_configure_change();
+	window->update_drag();
 	return 1;
 }
 
@@ -1269,7 +1112,7 @@ TitleW::TitleW(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleW::handle_event()
 {
 	client->config.title_w = atol(get_text());
-	window->send_configure_change();
+	window->update_drag();
 	return 1;
 }
 
@@ -1283,7 +1126,7 @@ TitleH::TitleH(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleH::handle_event()
 {
 	client->config.title_h = atol(get_text());
-	window->send_configure_change();
+	window->update_drag();
 	return 1;
 }
 
@@ -1423,27 +1266,42 @@ int TitleColorThread::handle_new_color(int output, int alpha)
 }
 
 TitleDrag::TitleDrag(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_CheckBox(x, y, client->config.drag, _("Drag"))
+ : DragCheckBox(client->server->mwindow, x, y, _("Drag"), &client->config.drag,
+		client->config.title_x, client->config.title_y,
+		client->config.title_w, client->config.title_h)
 {
 	this->client = client;
 	this->window = window;
 }
 
+Track *TitleDrag::get_drag_track()
+{
+	return client->server->plugin->track;
+}
+int64_t TitleDrag::get_drag_position()
+{
+	return client->get_source_position();
+}
+
+void TitleDrag::update_gui()
+{
+	client->config.drag = get_value();
+	client->config.title_x = drag_x;
+	client->config.title_y = drag_y;
+	client->config.title_w = drag_w+0.5;
+	client->config.title_h = drag_h+0.5;
+	window->title_x->update((float)client->config.title_x);
+	window->title_y->update((float)client->config.title_y);
+	window->title_w->update((int64_t)client->config.title_w);
+	window->title_h->update((int64_t)client->config.title_h);
+	window->send_configure_change();
+}
+
 int TitleDrag::handle_event()
 {
-	int value = get_value();
-	CWindowGUI *cwindow_gui = client->server->mwindow->cwindow->gui;
-	if( value ) {
-		if( !window->grab(cwindow_gui) ) {
-			update(value = 0);
-			flicker(10,50);
-		}
-	}
-	else
-		window->ungrab(cwindow_gui);
-	client->config.drag = value;
+	int ret = DragCheckBox::handle_event();
 	window->send_configure_change();
-	return 1;
+	return ret;
 }
 
 TitleBackground::TitleBackground(TitleMain *client, TitleWindow *window, int x, int y)

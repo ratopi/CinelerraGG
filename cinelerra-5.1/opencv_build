@@ -72,6 +72,7 @@ $(opencv)/build: $(opencv).src
 	mkdir -p $@
 	cd $@ && cmake \
   -DCMAKE_BUILD_TYPE=RELEASE \
+  -DWITH_IPP=OFF \
   -DBUILD_SHARED_LIBS=OFF \
   -DINSTALL_C_EXAMPLES=OFF \
   -DINSTALL_PYTHON_EXAMPLES=OFF \
@@ -88,6 +89,7 @@ $(opencv)/build: $(opencv).src
 	mkdir -p $@
 	cd $@ && cmake \
   -DCMAKE_BUILD_TYPE=RELEASE \
+  -DWITH_IPP=OFF \
   -DBUILD_SHARED_LIBS=ON \
   -DINSTALL_C_EXAMPLES=ON \
   -DINSTALL_PYTHON_EXAMPLES=ON \

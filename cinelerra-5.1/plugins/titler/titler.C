@@ -2348,46 +2348,9 @@ int TitleMain::init_freetype()
 
 void TitleMain::draw_boundry()
 {
-	VFrame &out = *output;
-	int iw = output->get_w(), ih = output->get_h();
-	int mr = MIN(iw, ih)/200 + 2, rr = 2*mr;
-	int x = title_x, y = title_y, w = title_w, h = title_h;
-	int r2 = (rr+1)/2;
-	int x0 = x-r2, x1 = x+(w+1)/2, x2 = x+w+r2;
-	int y0 = y-r2, y1 = y+(h+1)/2, y2 = y+h+r2;
-	int st = 1;
-	for( int r=2; r<mr; r<<=1 ) st = r;
-	out.set_stiple(st);
-
-	for( int r=mr/2; --r>=0; ) { // bbox
-		int lft = x+r, rgt = x+w-1-r;
-		int top = y+r, bot = y+h-1-r;
-		out.draw_line(lft,top, rgt,top);
-		out.draw_line(rgt,top, rgt,bot);
-		out.draw_line(rgt,bot, lft,bot);
-		out.draw_line(lft,bot, lft,top);
-	}
-
-	for( int r=mr; r<rr; ++r ) { // center
-		out.draw_smooth(x1-r,y1, x1-r,y1+r, x1,y1+r);
-		out.draw_smooth(x1,y1+r, x1+r,y1+r, x1+r,y1);
-		out.draw_smooth(x1+r,y1, x1+r,y1-r, x1,y1-r);
-		out.draw_smooth(x1,y1-r, x1-r,y1-r, x1-r,y1);
-	}
-
-	for( int r=rr; --r>=0; ) { // edge arrows
-		out.draw_line(x1-r,y0+r, x1+r,y0+r);
-		out.draw_line(x2-r,y1-r, x2-r,y1+r);
-		out.draw_line(x1-r,y2-r, x1+r,y2-r);
-		out.draw_line(x0+r,y1+r, x0+r,y1-r);
-	}
-	x0 += r2;  y0 += r2;  x2 -= r2;  y2 -= r2;
-	for( int r=2*mr; --r>=0; ) { // corner arrows
-		out.draw_line(x0,y0+r, x0+r,y0);
-		out.draw_line(x2,y0+r, x2-r,y0);
-		out.draw_line(x2,y2-r, x2-r,y2);
-		out.draw_line(x0,y2-r, x0+r,y2);
-	}
+	if( !gui_open() ) return;
+	DragCheckBox::draw_boundary(output,
+		title_x, title_y, title_w, title_h);
 }
 
 

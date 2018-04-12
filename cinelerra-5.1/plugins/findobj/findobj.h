@@ -45,6 +45,7 @@
 #include "pluginvclient.h"
 #include "vframe.inc"
 
+#define Mutex CvMutex
 #include "opencv2/core/types.hpp"
 #include "opencv2/core/mat.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -52,6 +53,7 @@
 #include "opencv2/calib3d.hpp"
 #include "opencv2/flann/defines.h"
 #include "opencv2/flann/params.h"
+#undef Mutex
 
 #include <vector>
 
@@ -100,11 +102,12 @@ public:
 	void boundaries();
 
 	int algorithm, use_flann;
+	int drag_object, drag_scene;
 	float object_x, object_y, object_w, object_h;
-	float scene_x, scene_y,   scene_w, scene_h;
+	float scene_x, scene_y, scene_w, scene_h;
 
 	int draw_keypoints;
-	int draw_border;
+	int draw_scene_border;
 	int replace_object;
 	int draw_object_border;
 

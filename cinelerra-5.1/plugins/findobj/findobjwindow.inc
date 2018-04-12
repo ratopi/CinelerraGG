@@ -25,7 +25,7 @@
 class FindObjLayer;
 class FindObjScanFloat;
 class FindObjScanFloatText;
-class FindObjDrawBorder;
+class FindObjDrawSceneBorder;
 class FindObjDrawKeypoints;
 class FindObjReplace;
 class FindObjDrawObjectBorder;

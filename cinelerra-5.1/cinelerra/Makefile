@@ -84,6 +84,7 @@ OBJS = \
 	$(OBJDIR)/devicempeginput.o \
 	$(OBJDIR)/devicev4l2base.o \
 	$(OBJDIR)/devicev4l2input.o \
+	$(OBJDIR)/dragcheckbox.o \
 	$(OBJDIR)/drivesync.o \
 	$(OBJDIR)/dvbtune.o \
 	$(OBJDIR)/dvdcreate.o \

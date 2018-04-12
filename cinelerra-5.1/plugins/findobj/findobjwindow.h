@@ -23,16 +23,19 @@
 #ifndef __FINDOBJWINDOW_H__
 #define __FINDOBJWINDOW_H__
 
-#include "guicast.h"
+#include "dragcheckbox.h"
 #include "findobj.inc"
+#include "guicast.h"
 
 class FindObjLayer;
 class FindObjScanFloat;
 class FindObjScanFloatText;
-class FindObjDrawBorder;
+class FindObjDrawSceneBorder;
 class FindObjDrawKeypoints;
 class FindObjReplace;
 class FindObjDrawObjectBorder;
+class FindObjDragObject;
+class FindObjDragScene;
 class FindObjAlgorithm;
 class FindObjBlend;
 class FindObjWindow;
@@ -54,6 +57,7 @@ class FindObjScanFloat : public BC_FPot
 public:
 	FindObjScanFloat(FindObjMain *plugin, FindObjWindow *gui, int x, int y, float *value);
 	int handle_event();
+	void update(float v);
 	FindObjMain *plugin;
 	FindObjWindow *gui;
 	FindObjScanFloatText *center_text;
@@ -72,10 +76,19 @@ public:
 };
 
 
-class FindObjDrawBorder : public BC_CheckBox
+class FindObjDrawSceneBorder : public BC_CheckBox
 {
 public:
-	FindObjDrawBorder(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
+	FindObjDrawSceneBorder(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
+	int handle_event();
+	FindObjMain *plugin;
+	FindObjWindow *gui;
+};
+
+class FindObjDrawObjectBorder : public BC_CheckBox
+{
+public:
+	FindObjDrawObjectBorder(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
 	int handle_event();
 	FindObjMain *plugin;
 	FindObjWindow *gui;
@@ -99,11 +112,34 @@ public:
 	FindObjWindow *gui;
 };
 
-class FindObjDrawObjectBorder : public BC_CheckBox
+class FindObjDragScene : public DragCheckBox
 {
 public:
-	FindObjDrawObjectBorder(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
+	FindObjDragScene(FindObjMain *plugin, FindObjWindow *gui, int x, int y,
+		float drag_x, float drag_y, float drag_w, float drag_h);
+	~FindObjDragScene();
 	int handle_event();
+	Track *get_drag_track();
+	int64_t get_drag_position();
+	void update_gui();
+
+	FindObjMain *plugin;
+	FindObjWindow *gui;
+
+};
+
+class FindObjDragObject : public DragCheckBox
+{
+public:
+	FindObjDragObject(FindObjMain *plugin, FindObjWindow *gui, int x, int y,
+		float drag_x, float drag_y, float drag_w, float drag_h);
+	~FindObjDragObject();
+
+	int handle_event();
+	Track *get_drag_track();
+	int64_t get_drag_position();
+	void update_gui();
+
 	FindObjMain *plugin;
 	FindObjWindow *gui;
 };
@@ -145,6 +181,7 @@ public:
 	FindObjWindow(FindObjMain *plugin);
 	~FindObjWindow();
 	void create_objects();
+	void update_drag();
 
 	FindObjAlgorithm *algorithm;
 	FindObjUseFlann *use_flann;
@@ -153,9 +190,11 @@ public:
 	FindObjScanFloat *scene_x, *scene_y, *scene_w, *scene_h;
 	FindObjScanFloatText *scene_x_text, *scene_y_text, *scene_w_text, *scene_h_text;
 	FindObjDrawKeypoints *draw_keypoints;
-	FindObjDrawBorder *draw_border;
+	FindObjDrawSceneBorder *draw_scene_border;
 	FindObjReplace *replace_object;
 	FindObjDrawObjectBorder *draw_object_border;
+	FindObjDragObject *drag_object;
+	FindObjDragScene *drag_scene;
 	FindObjLayer *object_layer;
 	FindObjLayer *scene_layer;
 	FindObjLayer *replace_layer;
