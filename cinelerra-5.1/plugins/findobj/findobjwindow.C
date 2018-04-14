@@ -32,7 +32,7 @@
 
 
 FindObjWindow::FindObjWindow(FindObjMain *plugin)
- : PluginClientWindow(plugin, 340, 660, 340, 660, 0)
+ : PluginClientWindow(plugin, 500, 660, 500, 660, 0)
 {
 	this->plugin = plugin;
 }
@@ -43,7 +43,7 @@ FindObjWindow::~FindObjWindow()
 
 void FindObjWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = x, x2 = get_w()/2;
+	int x = 10, y = 10, x1 = x, x2 = get_w()*1/3, x3 = get_w()*2/3;
 	plugin->load_configuration();
 
 	BC_Title *title;
@@ -51,6 +51,7 @@ void FindObjWindow::create_objects()
 	add_subwindow(algorithm = new FindObjAlgorithm(plugin, this,
 		x1 + title->get_w() + 10, y));
 	algorithm->create_objects();
+	add_subwindow(reset = new FindObjReset(plugin, this, get_w() - 15, y));
 	y += algorithm->get_h() + plugin->get_theme()->widget_border;
 
 	add_subwindow(use_flann = new FindObjUseFlann(plugin, this, x, y));
@@ -182,14 +183,88 @@ void FindObjWindow::create_objects()
 	object_h->center_text = object_h_text;
 	object_h_text->center = object_h;
 
-	y += 40 + 15;
+	y = y1;
+	add_subwindow(replace_object = new FindObjReplace(plugin, this,
+			x3, y - title->get_h() - 15));
+
+	add_subwindow(title = new BC_Title(x3, y + 10, _("Replace X:")));
+	drag_w = trk_w * plugin->config.replace_w / 100.;
+	drag_h = trk_h * plugin->config.replace_h / 100.;
+	ctr_x  = trk_w * plugin->config.replace_x / 100.,
+	ctr_y  = trk_h * plugin->config.replace_y / 100.;
+	drag_x = ctr_x - drag_w/2;  drag_y = ctr_y - drag_h/2;
+	drag_replace = new FindObjDragReplace(plugin, this, x3+title->get_w()+10, y+5,
+		drag_x, drag_y, drag_w, drag_h);
+	add_subwindow(drag_replace);
+	drag_replace->create_objects();
+	y += title->get_h() + 15;
+
+	add_subwindow(replace_x = new FindObjScanFloat(plugin, this,
+		x3, y, &plugin->config.replace_x));
+	add_subwindow(replace_x_text = new FindObjScanFloatText(plugin, this,
+		x3 + replace_x->get_w() + 10, y + 10, &plugin->config.replace_x));
+	replace_x->center_text = replace_x_text;
+	replace_x_text->center = replace_x;
+
+	y += 40;
+	add_subwindow(title = new BC_Title(x3, y + 10, _("Replace Y:")));
+	y += title->get_h() + 15;
+	add_subwindow(replace_y = new FindObjScanFloat(plugin, this,
+		x3, y, &plugin->config.replace_y));
+	add_subwindow(replace_y_text = new FindObjScanFloatText(plugin, this,
+		x3 + replace_y->get_w() + 10, y + 10, &plugin->config.replace_y));
+	replace_y->center_text = replace_y_text;
+	replace_y_text->center = replace_y;
+
+	y += 40;
+	add_subwindow(new BC_Title(x3, y + 10, _("Replace W:")));
+	y += title->get_h() + 15;
+	add_subwindow(replace_w = new FindObjScanFloat(plugin, this,
+		x3, y, &plugin->config.replace_w));
+	add_subwindow(replace_w_text = new FindObjScanFloatText(plugin, this,
+		x3 + replace_w->get_w() + 10, y + 10, &plugin->config.replace_w));
+	replace_w->center_text = replace_w_text;
+	replace_w_text->center = replace_w;
+
+	y += 40;
+	add_subwindow(title = new BC_Title(x3, y + 10, _("Replace H:")));
+	y += title->get_h() + 15;
+	add_subwindow(replace_h = new FindObjScanFloat(plugin, this,
+		x3, y, &plugin->config.replace_h));
+	add_subwindow(replace_h_text = new FindObjScanFloatText(plugin, this,
+		x3 + replace_h->get_w() + 10, y + 10,
+		&plugin->config.replace_h));
+	replace_h->center_text = replace_h_text;
+	replace_h_text->center = replace_h;
+
+	y += 40;  int y2 = y;
+	add_subwindow(title = new BC_Title(x3, y + 10, _("Replace DX:")));
+	y += title->get_h() + 15;
+	add_subwindow(replace_dx = new FindObjScanFloat(plugin, this,
+		x3, y, &plugin->config.replace_dx, -100.f, 100.f));
+	add_subwindow(replace_dx_text = new FindObjScanFloatText(plugin, this,
+		x3 + replace_dx->get_w() + 10, y + 10, &plugin->config.replace_dx));
+	replace_dx->center_text = replace_dx_text;
+	replace_dx_text->center = replace_dx;
+
+	y += 40;
+	add_subwindow(title = new BC_Title(x3, y + 10, _("Replace DY:")));
+	y += title->get_h() + 15;
+	add_subwindow(replace_dy = new FindObjScanFloat(plugin, this,
+		x3, y, &plugin->config.replace_dy, -100.f, 100.f));
+	add_subwindow(replace_dy_text = new FindObjScanFloatText(plugin, this,
+		x3 + replace_dy->get_w() + 10, y + 10, &plugin->config.replace_dy));
+	replace_dy->center_text = replace_dy_text;
+	replace_dy_text->center = replace_dy;
+
+	y = y2 + 15;
 	add_subwindow(draw_keypoints = new FindObjDrawKeypoints(plugin, this, x, y));
 	y += draw_keypoints->get_h() + plugin->get_theme()->widget_border;
-	add_subwindow(replace_object = new FindObjReplace(plugin, this, x, y));
-	y += replace_object->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(draw_scene_border = new FindObjDrawSceneBorder(plugin, this, x, y));
 	y += draw_scene_border->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(draw_object_border = new FindObjDrawObjectBorder(plugin, this, x, y));
+	y += draw_object_border->get_h() + plugin->get_theme()->widget_border;
+	add_subwindow(draw_replace_border = new FindObjDrawReplaceBorder(plugin, this, x, y));
 	y += draw_object_border->get_h() + plugin->get_theme()->widget_border;
 
 	add_subwindow(title = new BC_Title(x, y + 10, _("Object blend amount:")));
@@ -199,6 +274,24 @@ void FindObjWindow::create_objects()
 	y += blend->get_h();
 
 	show_window(1);
+}
+
+FindObjReset::FindObjReset(FindObjMain *plugin, FindObjWindow *gui, int x, int y)
+ : BC_GenericButton(x - BC_GenericButton::calculate_w(gui, _("Reset")), y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int FindObjReset::handle_event()
+{
+	plugin->config.reset();
+	gui->drag_scene->drag_deactivate();
+	gui->drag_object->drag_deactivate();
+	gui->drag_replace->drag_deactivate();
+	gui->update_gui();
+	plugin->send_configure_change();
+	return 1;
 }
 
 void FindObjWindow::update_drag()
@@ -215,12 +308,65 @@ void FindObjWindow::update_drag()
 	drag_object->drag_h = trk_h * plugin->config.object_h/100.;
 	drag_object->drag_x = trk_w * plugin->config.object_x/100. - drag_object->drag_w/2;
 	drag_object->drag_y = trk_h * plugin->config.object_y/100. - drag_object->drag_h/2;
-	plugin->send_configure_change();
+	track = drag_replace->get_drag_track();
+	trk_w = track->track_w, trk_h = track->track_h;
+	drag_replace->drag_w = trk_w * plugin->config.replace_w/100.;
+	drag_replace->drag_h = trk_h * plugin->config.replace_h/100.;
+	drag_replace->drag_x = trk_w * plugin->config.replace_x/100. - drag_replace->drag_w/2;
+	drag_replace->drag_y = trk_h * plugin->config.replace_y/100. - drag_replace->drag_h/2;
+}
+
+void FindObjWindow::update_gui()
+{
+	update_drag();
+	FindObjConfig &conf = plugin->config;
+	algorithm->update(conf.algorithm);
+	use_flann->update(conf.use_flann);
+	drag_object->update(conf.drag_object);
+	object_x->update(conf.object_x);
+	object_x_text->update((float)conf.object_x);
+	object_y->update(conf.object_y);
+	object_y_text->update((float)conf.object_y);
+	object_w->update(conf.object_w);
+	object_w_text->update((float)conf.object_w);
+	object_h->update(conf.object_h);
+	object_h_text->update((float)conf.object_h);
+	drag_scene->update(conf.drag_scene);
+	scene_x->update(conf.scene_x);
+	scene_x_text->update((float)conf.scene_x);
+	scene_y->update(conf.scene_y);
+	scene_y_text->update((float)conf.scene_y);
+	scene_w->update(conf.scene_w);
+	scene_w_text->update((float)conf.scene_w);
+	scene_h->update(conf.scene_h);
+	scene_h_text->update((float)conf.scene_h);
+	drag_replace->update(conf.drag_replace);
+	replace_x->update(conf.replace_x);
+	replace_x_text->update((float)conf.replace_x);
+	replace_y->update(conf.replace_y);
+	replace_y_text->update((float)conf.replace_y);
+	replace_w->update(conf.replace_w);
+	replace_w_text->update((float)conf.replace_w);
+	replace_h->update(conf.replace_h);
+	replace_h_text->update((float)conf.replace_h);
+	replace_dx->update(conf.replace_dx);
+	replace_dx_text->update((float)conf.replace_dx);
+	replace_dx->update(conf.replace_dx);
+	replace_dx_text->update((float)conf.replace_dx);
+	draw_keypoints->update(conf.draw_keypoints);
+	draw_scene_border->update(conf.draw_scene_border);
+	replace_object->update(conf.replace_object);
+	draw_object_border->update(conf.draw_object_border);
+	draw_replace_border->update(conf.draw_replace_border);
+	object_layer->update( (int64_t)conf.object_layer);
+	replace_layer->update( (int64_t)conf.replace_layer);
+	scene_layer->update( (int64_t)conf.scene_layer);
+	blend->update( (int64_t)conf.blend);
 }
 
 FindObjScanFloat::FindObjScanFloat(FindObjMain *plugin, FindObjWindow *gui,
-	int x, int y, float *value)
- : BC_FPot(x, y, *value, (float)0, (float)100)
+	int x, int y, float *value, float min, float max)
+ : BC_FPot(x, y, *value, min, max)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -234,6 +380,7 @@ int FindObjScanFloat::handle_event()
 	*value = get_value();
 	center_text->update(*value);
 	gui->update_drag();
+	plugin->send_configure_change();
 	return 1;
 }
 
@@ -261,6 +408,7 @@ int FindObjScanFloatText::handle_event()
 	*value = atof(get_text());
 	center->update(*value);
 	gui->update_drag();
+	plugin->send_configure_change();
 	return 1;
 }
 
@@ -286,6 +434,28 @@ FindObjDrawObjectBorder::FindObjDrawObjectBorder(FindObjMain *plugin, FindObjWin
 {
 	this->gui = gui;
 	this->plugin = plugin;
+}
+
+int FindObjDrawObjectBorder::handle_event()
+{
+	plugin->config.draw_object_border = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+FindObjDrawReplaceBorder::FindObjDrawReplaceBorder(FindObjMain *plugin, FindObjWindow *gui,
+	int x, int y)
+ : BC_CheckBox(x, y, plugin->config.draw_replace_border, _("Draw replace border"))
+{
+	this->gui = gui;
+	this->plugin = plugin;
+}
+
+int FindObjDrawReplaceBorder::handle_event()
+{
+	plugin->config.draw_replace_border = get_value();
+	plugin->send_configure_change();
+	return 1;
 }
 
 
@@ -316,14 +486,6 @@ FindObjReplace::FindObjReplace(FindObjMain *plugin, FindObjWindow *gui,
 int FindObjReplace::handle_event()
 {
 	plugin->config.replace_object = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-int FindObjDrawObjectBorder::handle_event()
-{
-	plugin->config.draw_object_border = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -361,7 +523,6 @@ void FindObjDragScene::update_gui()
 	Track *track = get_drag_track();
 	int trk_w = track->track_w, trk_h = track->track_h;
 	float ctr_x = drag_x + drag_w/2, ctr_y = drag_y + drag_h/2;
-printf("scene=%f,%f wxh=%fx%f  ctr=%f,%f\n",drag_x,drag_y,drag_w,drag_h, ctr_x,ctr_y);
 	gui->scene_x->update( plugin->config.scene_x = 100. * ctr_x / trk_w );
 	gui->scene_y->update( plugin->config.scene_y = 100. * ctr_y / trk_h );
 	gui->scene_w->update( plugin->config.scene_w = 100. * drag_w / trk_w );
@@ -401,11 +562,49 @@ void FindObjDragObject::update_gui()
 	Track *track = get_drag_track();
 	int trk_w = track->track_w, trk_h = track->track_h;
 	float ctr_x = drag_x + drag_w/2, ctr_y = drag_y + drag_h/2;
-printf("object %f,%f  %fx%f   ctr %f,%f\n", drag_x,drag_y,drag_w,drag_h,ctr_x,ctr_y);
 	gui->object_x->update( plugin->config.object_x = 100. * ctr_x / trk_w );
 	gui->object_y->update( plugin->config.object_y = 100. * ctr_y / trk_h );
 	gui->object_w->update( plugin->config.object_w = 100. * drag_w / trk_w );
 	gui->object_h->update( plugin->config.object_h = 100. * drag_h / trk_h );
+	plugin->send_configure_change();
+}
+
+FindObjDragReplace::FindObjDragReplace(FindObjMain *plugin, FindObjWindow *gui, int x, int y,
+		float drag_x, float drag_y, float drag_w, float drag_h)
+ : DragCheckBox(plugin->server->mwindow, x, y, _("Drag"), &plugin->config.drag_replace,
+		drag_x, drag_y, drag_w, drag_h)
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+FindObjDragReplace::~FindObjDragReplace()
+{
+}
+
+int FindObjDragReplace::handle_event()
+{
+	int ret = DragCheckBox::handle_event();
+	plugin->send_configure_change();
+	return ret;
+}
+Track *FindObjDragReplace::get_drag_track()
+{
+	return plugin->server->plugin->track;
+}
+int64_t FindObjDragReplace::get_drag_position()
+{
+	return plugin->get_source_position();
+}
+void FindObjDragReplace::update_gui()
+{
+	Track *track = get_drag_track();
+	int trk_w = track->track_w, trk_h = track->track_h;
+	float ctr_x = drag_x + drag_w/2, ctr_y = drag_y + drag_h/2;
+	gui->replace_x->update( plugin->config.replace_x = 100. * ctr_x / trk_w );
+	gui->replace_y->update( plugin->config.replace_y = 100. * ctr_y / trk_h );
+	gui->replace_w->update( plugin->config.replace_w = 100. * drag_w / trk_w );
+	gui->replace_h->update( plugin->config.replace_h = 100. * drag_h / trk_h );
 	plugin->send_configure_change();
 }
 
@@ -463,6 +662,11 @@ int FindObjAlgorithm::from_text(char *text)
 	if(!strcmp(text, _("BRISK"))) return ALGORITHM_BRISK;
 #endif
 	return NO_ALGORITHM;
+}
+
+void FindObjAlgorithm::update(int mode)
+{
+	set_text(to_text(mode));
 }
 
 char* FindObjAlgorithm::to_text(int mode)

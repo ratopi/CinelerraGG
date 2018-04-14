@@ -138,7 +138,7 @@ void ShowAutomation::update_toggle()
 
 
 PluginAutomation::PluginAutomation(MWindow *mwindow, const char *hotkey)
- : BC_MenuItem(_("Plugin Autos"), hotkey, hotkey[0])
+ : BC_MenuItem(_("Plugin Keyframes"), hotkey, hotkey[0])
 {
 	this->mwindow = mwindow;
 }

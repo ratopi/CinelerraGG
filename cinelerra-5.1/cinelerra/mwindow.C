@@ -2263,32 +2263,38 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 }
 
 
-void MWindow::init_shm()
+void MWindow::init_shm(const char *pfn, int64_t min)
 {
+	int64_t result = 0;
 // Fix shared memory
-	FILE *fd = fopen("/proc/sys/kernel/shmmax", "w");
-	if(fd) {
-		fprintf(fd, "0x7fffffff");
+	FILE *fd = fopen(pfn, "r");
+	if( fd ) {
+		fscanf(fd, "%jd", &result);
+		fclose(fd);
+		if( result >= min ) return;
+	}
+
+	fd = fopen(pfn, "w");
+	if( fd ) {
+		fprintf(fd, "0x%jx", min);
 		fclose(fd);
 	}
-	fd = 0;
 
-	fd = fopen("/proc/sys/kernel/shmmax", "r");
-	if(!fd) {
-		MainError::show_error("MWindow::init_shm: couldn't open /proc/sys/kernel/shmmax for reading.\n");
+	fd = fopen(pfn, "r");
+	if( !fd ) {
+		eprintf(_("MWindow::init_shm: couldn't open %s for reading.\n"), pfn);
 		return;
 	}
 
-	int64_t result = 0;
 	fscanf(fd, "%jd", &result);
 	fclose(fd);
-	fd = 0;
-	if(result < 0x7fffffff) {
-		eprintf(_("MWindow::init_shm: /proc/sys/kernel/shmmax is %p.\n"
+	if( result < min ) {
+		eprintf(_("MWindow::init_shm: %s is %p.\n"
 			"you probably need to be root, or:\n"
-			"as root, run: echo 0x7fffffff > /proc/sys/kernel/shmmax\n"
+			"as root, run: echo 0x%jx > %s\n"
 			"before trying to start cinelerra.\n"
-			"It should be at least 0x7fffffff for Cinelerra.\n"), (void *)result);
+			"It should be at least 0x%jx for Cinelerra.\n"),
+			pfn, (void *)result, min, pfn, min);
 	}
 }
 
@@ -2473,7 +2479,8 @@ void MWindow::create_objects(int want_gui,
 		&MWindowGUI::keyboard_listener);
 
 	hide_splash();
-	init_shm();
+	init_shm("/proc/sys/kernel/shmmax", 0x7fffffff);
+	init_shm("/proc/sys/kernel/shmmni", 0x4000);
 	if(debug) PRINT_TRACE
 
 	BC_WindowBase::get_resources()->vframe_shm = 1;

@@ -314,7 +314,7 @@ PKG_3RD([x264],[auto],
   [ . ])
 
 PKG_3RD([x265],[auto],
-  [x265_v2.6],
+  [x265_2.7],
   [ libx265.a ],
   [ . source ])
 

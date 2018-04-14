@@ -27,6 +27,7 @@
 #include "findobj.inc"
 #include "guicast.h"
 
+class FindObjReset;
 class FindObjLayer;
 class FindObjScanFloat;
 class FindObjScanFloatText;
@@ -34,11 +35,22 @@ class FindObjDrawSceneBorder;
 class FindObjDrawKeypoints;
 class FindObjReplace;
 class FindObjDrawObjectBorder;
+class FindObjDrawReplaceBorder;
 class FindObjDragObject;
 class FindObjDragScene;
+class FindObjDragReplace;
 class FindObjAlgorithm;
 class FindObjBlend;
 class FindObjWindow;
+
+class FindObjReset : public BC_GenericButton
+{
+public:
+	FindObjReset(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
+	int handle_event();
+	FindObjMain *plugin;
+	FindObjWindow *gui;
+};
 
 class FindObjLayer : public BC_TumbleTextBox
 {
@@ -55,7 +67,8 @@ public:
 class FindObjScanFloat : public BC_FPot
 {
 public:
-	FindObjScanFloat(FindObjMain *plugin, FindObjWindow *gui, int x, int y, float *value);
+	FindObjScanFloat(FindObjMain *plugin, FindObjWindow *gui, int x, int y,
+		float *value, float min=0., float max=100.);
 	int handle_event();
 	void update(float v);
 	FindObjMain *plugin;
@@ -89,6 +102,15 @@ class FindObjDrawObjectBorder : public BC_CheckBox
 {
 public:
 	FindObjDrawObjectBorder(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
+	int handle_event();
+	FindObjMain *plugin;
+	FindObjWindow *gui;
+};
+
+class FindObjDrawReplaceBorder : public BC_CheckBox
+{
+public:
+	FindObjDrawReplaceBorder(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
 	int handle_event();
 	FindObjMain *plugin;
 	FindObjWindow *gui;
@@ -144,12 +166,29 @@ public:
 	FindObjWindow *gui;
 };
 
+class FindObjDragReplace : public DragCheckBox
+{
+public:
+	FindObjDragReplace(FindObjMain *plugin, FindObjWindow *gui, int x, int y,
+		float drag_x, float drag_y, float drag_w, float drag_h);
+	~FindObjDragReplace();
+
+	int handle_event();
+	Track *get_drag_track();
+	int64_t get_drag_position();
+	void update_gui();
+
+	FindObjMain *plugin;
+	FindObjWindow *gui;
+};
+
 class FindObjAlgorithm : public BC_PopupMenu
 {
 public:
 	FindObjAlgorithm(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
 	int handle_event();
 	void create_objects();
+	void update(int mode);
 	static int calculate_w(FindObjWindow *gui);
 	static int from_text(char *text);
 	static char* to_text(int mode);
@@ -182,19 +221,27 @@ public:
 	~FindObjWindow();
 	void create_objects();
 	void update_drag();
+	void update_gui();
 
+	FindObjReset *reset;
 	FindObjAlgorithm *algorithm;
 	FindObjUseFlann *use_flann;
 	FindObjScanFloat *object_x, *object_y, *object_w, *object_h;
 	FindObjScanFloatText *object_x_text, *object_y_text, *object_w_text, *object_h_text;
 	FindObjScanFloat *scene_x, *scene_y, *scene_w, *scene_h;
 	FindObjScanFloatText *scene_x_text, *scene_y_text, *scene_w_text, *scene_h_text;
+	FindObjScanFloat *replace_x, *replace_y, *replace_w, *replace_h;
+	FindObjScanFloatText *replace_x_text, *replace_y_text, *replace_w_text, *replace_h_text;
+	FindObjScanFloat *replace_dx, *replace_dy;
+	FindObjScanFloatText *replace_dx_text, *replace_dy_text;
 	FindObjDrawKeypoints *draw_keypoints;
 	FindObjDrawSceneBorder *draw_scene_border;
 	FindObjReplace *replace_object;
 	FindObjDrawObjectBorder *draw_object_border;
+	FindObjDrawReplaceBorder *draw_replace_border;
 	FindObjDragObject *drag_object;
 	FindObjDragScene *drag_scene;
+	FindObjDragReplace *drag_replace;
 	FindObjLayer *object_layer;
 	FindObjLayer *scene_layer;
 	FindObjLayer *replace_layer;

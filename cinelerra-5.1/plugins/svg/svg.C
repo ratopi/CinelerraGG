@@ -181,7 +181,7 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 	strcpy(last_svg_file, config.svg_file);
 	int64_t last_ms_time = config.ms_time;
 	need_reconfigure = load_configuration();
-	if( last_dpi != config.dpi )
+	if( !ofrm || last_dpi != config.dpi )
 		need_export = 1;
 	if( strcmp(last_svg_file, config.svg_file) ||
 	    last_ms_time != config.ms_time )

@@ -71,7 +71,7 @@ const char *GWindowGUI::other_text[NON_AUTOMATION_TOTAL] =
 	N_("Assets"),
 	N_("Titles"),
 	N_("Transitions"),
-	N_("Plugin Autos")
+	N_("Plugin Keyframes")
 };
 
 const char *GWindowGUI::auto_text[AUTOMATION_TOTAL] =

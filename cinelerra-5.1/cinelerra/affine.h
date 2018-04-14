@@ -94,6 +94,14 @@ public:
 // This removes some of the extremely faint artifacts in the trig rotation.
 	void rotate(VFrame *output, VFrame *input, float angle);
 	void set_matrix(AffineMatrix *matrix);
+// set_matrix:
+//  in x1,y1 - x2,y1   out x1,y1 - x2,y2 clockwise
+//       |       |           |       |
+//     x1,y2 - x2,y2       x4,y4 - x3,y3
+//
+	void set_matrix( double in_x1,  double in_y1,  double in_x2,  double in_y2,
+			 double out_x1, double out_y1, double out_x2, double out_y2,
+			 double out_x3, double out_y3, double out_x4, double out_y4);
 // Set the viewport to transform.  The transform is based on the input viewport.
 // The output viewport clips the transformed output.
 	void set_in_viewport(int x, int y, int w, int h);

@@ -159,7 +159,9 @@ int DragCheckBox::grab_event(XEvent *event)
 			 fabs(drag_dy = cursor_y-y1) < r ) dragging = 8;
 		else if( fabs(drag_dx = cursor_x-x1) < r &&  // x1,y1
 			 fabs(drag_dy = cursor_y-y1) < r ) dragging = 9;
+		else
 			return 0;
+		return 1;
 	}
 	int cur_x = cursor_x - drag_dx;
 	int cur_y = cursor_y - drag_dy;

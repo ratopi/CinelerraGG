@@ -635,7 +635,7 @@ public:
 	Mutex *brender_lock;
 
 // Initialize shared memory
-	void init_shm();
+	void init_shm(const char *pfn, int64_t min);
 
 // Initialize channel DB's for playback
 	void init_channeldb();

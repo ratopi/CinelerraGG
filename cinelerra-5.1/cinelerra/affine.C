@@ -912,6 +912,40 @@ void AffineEngine::set_matrix(AffineMatrix *matrix)
 	}
 }
 
+//  in x1,y1 - x2,y1   out x1,y1 - x2,y2 clockwise
+//       |       |           |       |
+//     x1,y2 - x2,y2       x4,y4 - x3,y3
+void AffineEngine::set_matrix(
+		double in_x1,  double in_y1,  double in_x2,  double in_y2,
+		double out_x1, double out_y1, double out_x2, double out_y2,
+		double out_x3, double out_y3, double out_x4, double out_y4)
+{
+	AffineMatrix m;
+	double in_w = in_x2 - in_x1, scalex = in_w > 0 ? 1./in_w : 1.0;
+	double in_h = in_y2 - in_y1, scaley = in_h > 0 ? 1./in_h : 1.0;
+	double dx1 = out_x2 - out_x3;
+	double dy1 = out_y2 - out_y3;
+	double dx2 = out_x4 - out_x3;
+	double dy2 = out_y4 - out_y3;
+	double dx3 = out_x1 - out_x2 + out_x3 - out_x4;
+	double dy3 = out_y1 - out_y2 + out_y3 - out_y4;
+	double det = dx1 * dy2 - dy1 * dx2;
+	m.values[2][0] = det ? (dx3 * dy2 - dy3 * dx2) / det : 0;
+	m.values[2][1] = det ? (dx1 * dy3 - dy1 * dx3) / det : 0;
+	m.values[2][2] = 1.0;
+	m.values[0][0] = out_x2 - out_x1 + matrix.values[2][0] * out_x2;
+	m.values[0][1] = out_x4 - out_x1 + matrix.values[2][1] * out_x4;
+	m.values[0][2] = out_x1;
+	m.values[1][0] = out_y2 - out_y1 + matrix.values[2][0] * out_y2;
+	m.values[1][1] = out_y4 - out_y1 + matrix.values[2][1] * out_y4;
+	m.values[1][2] = out_y1;
+	matrix.identity();
+	matrix.translate(-in_x1, -in_y1);
+	matrix.scale(scalex, scaley);
+	m.multiply(&matrix);
+}
+
+
 void AffineEngine::set_in_viewport(int x, int y, int w, int h)
 {
 	this->in_x = x;  this->in_y = y;

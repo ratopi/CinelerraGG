@@ -95,6 +95,7 @@ class FindObjConfig
 public:
 	FindObjConfig();
 
+	void reset();
 	int equivalent(FindObjConfig &that);
 	void copy_from(FindObjConfig &that);
 	void interpolate(FindObjConfig &prev, FindObjConfig &next,
@@ -102,14 +103,17 @@ public:
 	void boundaries();
 
 	int algorithm, use_flann;
-	int drag_object, drag_scene;
+	int drag_object, drag_scene, drag_replace;
 	float object_x, object_y, object_w, object_h;
 	float scene_x, scene_y, scene_w, scene_h;
+	float replace_x, replace_y, replace_w, replace_h;
+	float replace_dx, replace_dy;
 
 	int draw_keypoints;
 	int draw_scene_border;
 	int replace_object;
 	int draw_object_border;
+	int draw_replace_border;
 
 	int object_layer;
 	int replace_layer;
@@ -160,6 +164,8 @@ public:
 
 	int object_x, object_y, object_w, object_h;
 	int scene_x, scene_y, scene_w, scene_h;
+	int replace_x, replace_y, replace_w, replace_h;
+	int replace_dx, replace_dy;
 
 	int w, h;
 	int object_layer;
