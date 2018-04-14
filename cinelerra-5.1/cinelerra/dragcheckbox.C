@@ -233,6 +233,20 @@ int DragCheckBox::grab_event(XEvent *event)
 	return 1;
 }
 
+
+void DragCheckBox::bound()
+{
+	Track *track = get_drag_track();
+	int trk_w = track->track_w, trk_h = track->track_h;
+	float x1 = drag_x, x2 = x1 + drag_w;
+	float y1 = drag_y, y2 = y1 + drag_h;
+	bclamp(x1, 0, trk_w);  bclamp(x2, 0, trk_w);
+	bclamp(y1, 0, trk_h);  bclamp(y2, 0, trk_h);
+	if( x1 >= x2 ) { if( x2 > 0 ) x1 = x2-1; else x2 = (x1=0)+1; }
+	if( y1 >= y2 ) { if( x2 > 0 ) y1 = y2-1; else y2 = (y1=0)+1; }
+	drag_x = x1;  drag_y = y1;  drag_w = x2-x1;  drag_h = y2-y1;
+}
+
 void DragCheckBox::draw_boundary(VFrame *out,
 	int x, int y, int w, int h)
 {

@@ -15,6 +15,7 @@ public:
 	virtual int64_t get_drag_position() = 0;
 	virtual void update_gui() { return; };
 	void create_objects();
+	void bound();
 	static void draw_boundary(VFrame *out, int x, int y, int w, int h);
 
 	int check_pending();

@@ -520,6 +520,7 @@ int64_t FindObjDragScene::get_drag_position()
 }
 void FindObjDragScene::update_gui()
 {
+	bound();
 	Track *track = get_drag_track();
 	int trk_w = track->track_w, trk_h = track->track_h;
 	float ctr_x = drag_x + drag_w/2, ctr_y = drag_y + drag_h/2;
@@ -559,6 +560,7 @@ int64_t FindObjDragObject::get_drag_position()
 }
 void FindObjDragObject::update_gui()
 {
+	bound();
 	Track *track = get_drag_track();
 	int trk_w = track->track_w, trk_h = track->track_h;
 	float ctr_x = drag_x + drag_w/2, ctr_y = drag_y + drag_h/2;
@@ -598,6 +600,7 @@ int64_t FindObjDragReplace::get_drag_position()
 }
 void FindObjDragReplace::update_gui()
 {
+	bound();
 	Track *track = get_drag_track();
 	int trk_w = track->track_w, trk_h = track->track_h;
 	float ctr_x = drag_x + drag_w/2, ctr_y = drag_y + drag_h/2;
