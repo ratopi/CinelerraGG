@@ -42,6 +42,11 @@ public:
 	void multiply(AffineMatrix *dst);
 	void copy_from(AffineMatrix *src);
 	void invert(AffineMatrix *dst);
+// in x1,y1 x2,y1  out x1,y1  x2,y2
+//    x1,y2 x2,y2      x3,y3  x4,y4
+	void set_matrix(double in_x1, double in_y1, double in_x2, double in_y2,
+		double out_x1, double out_y1, double out_x2, double out_y2,
+		double out_x3, double out_y3, double out_x4, double out_y4);
 	void transform_point(float x, float y, float *newx, float *newy);
 	double determinant();
 	void dump();
@@ -60,20 +65,6 @@ class AffineUnit : public LoadClient
 public:
 	AffineUnit(AffineEngine *server);
 	void process_package(LoadPackage *package);
-	void calculate_matrix(
-		double in_x1,
-		double in_y1,
-		double in_x2,
-		double in_y2,
-		double out_x1,
-		double out_y1,
-		double out_x2,
-		double out_y2,
-		double out_x3,
-		double out_y3,
-		double out_x4,
-		double out_y4,
-		AffineMatrix *result);
 //	float transform_cubic(float dx, float jm1, float j, float jp1, float jp2);
 	AffineEngine *server;
 };
@@ -90,18 +81,13 @@ public:
 		float x1, float y1, float x2, float y2,
 		float x3, float y3, float x4, float y4,
 		int forward);
+	void set_matrix(
+		double in_x1, double in_y1, double in_x2, double in_y2,
+		double out_x1, double out_y1, double out_x2, double out_y2,
+		double out_x3, double out_y3, double out_x4, double out_y4);
 // Do rotation with the affine/perspective transform.
 // This removes some of the extremely faint artifacts in the trig rotation.
 	void rotate(VFrame *output, VFrame *input, float angle);
-	void set_matrix(AffineMatrix *matrix);
-// set_matrix:
-//  in x1,y1 - x2,y1   out x1,y1 - x2,y2 clockwise
-//       |       |           |       |
-//     x1,y2 - x2,y2       x4,y4 - x3,y3
-//
-	void set_matrix( double in_x1,  double in_y1,  double in_x2,  double in_y2,
-			 double out_x1, double out_y1, double out_x2, double out_y2,
-			 double out_x3, double out_y3, double out_x4, double out_y4);
 // Set the viewport to transform.  The transform is based on the input viewport.
 // The output viewport clips the transformed output.
 	void set_in_viewport(int x, int y, int w, int h);

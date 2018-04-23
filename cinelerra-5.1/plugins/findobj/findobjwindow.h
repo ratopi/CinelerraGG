@@ -40,6 +40,10 @@ class FindObjDragObject;
 class FindObjDragScene;
 class FindObjDragReplace;
 class FindObjAlgorithm;
+class FindObjMode;
+class FindObjScale;
+class FindObjRotate;
+class FindObjTranslate;
 class FindObjBlend;
 class FindObjWindow;
 
@@ -205,6 +209,47 @@ public:
 	FindObjWindow *gui;
 };
 
+class FindObjScale : public BC_CheckBox
+{
+public:
+	FindObjScale(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
+	int handle_event();
+	FindObjMain *plugin;
+	FindObjWindow *gui;
+};
+
+class FindObjRotate : public BC_CheckBox
+{
+public:
+	FindObjRotate(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
+	int handle_event();
+	FindObjMain *plugin;
+	FindObjWindow *gui;
+};
+
+class FindObjTranslate : public BC_CheckBox
+{
+public:
+	FindObjTranslate(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
+	int handle_event();
+	FindObjMain *plugin;
+	FindObjWindow *gui;
+};
+
+class FindObjMode : public BC_PopupMenu
+{
+public:
+	FindObjMode(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
+	int handle_event();
+	void create_objects();
+	void update(int mode);
+	static int calculate_w(FindObjWindow *gui);
+	static int from_text(char *text);
+	static char *to_text(int mode);
+	FindObjMain *plugin;
+	FindObjWindow *gui;
+};
+
 class FindObjBlend : public BC_IPot
 {
 public:
@@ -226,6 +271,10 @@ public:
 	FindObjReset *reset;
 	FindObjAlgorithm *algorithm;
 	FindObjUseFlann *use_flann;
+	FindObjMode *mode;
+	FindObjScale *scale;
+	FindObjRotate *rotate;
+	FindObjTranslate *translate;
 	FindObjScanFloat *object_x, *object_y, *object_w, *object_h;
 	FindObjScanFloatText *object_x_text, *object_y_text, *object_w_text, *object_h_text;
 	FindObjScanFloat *scene_x, *scene_y, *scene_w, *scene_h;

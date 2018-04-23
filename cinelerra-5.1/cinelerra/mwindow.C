@@ -2275,10 +2275,9 @@ void MWindow::init_shm(const char *pfn, int64_t min)
 	}
 
 	fd = fopen(pfn, "w");
-	if( fd ) {
-		fprintf(fd, "0x%jx", min);
-		fclose(fd);
-	}
+	if( !fd ) return;
+	fprintf(fd, "0x%jx", min);
+	fclose(fd);
 
 	fd = fopen(pfn, "r");
 	if( !fd ) {

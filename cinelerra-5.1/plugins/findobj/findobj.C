@@ -46,6 +46,10 @@ void FindObjConfig::reset()
 {
 	algorithm = NO_ALGORITHM;
 	use_flann = 1;
+	mode = MODE_QUADRILATERAL;
+	scale = 1;
+	translate = 1;
+	rotate = 1;
 	draw_keypoints = 0;
 	draw_scene_border = 0;
 	replace_object = 0;
@@ -84,6 +88,10 @@ int FindObjConfig::equivalent(FindObjConfig &that)
 	int result =
 		algorithm == that.algorithm &&
 		use_flann == that.use_flann &&
+		mode == that.mode &&
+		scale == that.scale &&
+		translate == that.translate &&
+		rotate == that.rotate &&
 		draw_keypoints == that.draw_keypoints &&
 		draw_scene_border == that.draw_scene_border &&
 		replace_object == that.replace_object &&
@@ -110,6 +118,10 @@ void FindObjConfig::copy_from(FindObjConfig &that)
 {
 	algorithm = that.algorithm;
 	use_flann = that.use_flann;
+	mode = that.mode;
+	scale = that.scale;
+	translate = that.translate;
+	rotate = that.rotate;
 	draw_keypoints = that.draw_keypoints;
 	draw_scene_border = that.draw_scene_border;
 	replace_object = that.replace_object;
@@ -201,6 +213,10 @@ void FindObjMain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("FINDOBJ");
 	output.tag.set_property("ALGORITHM", config.algorithm);
 	output.tag.set_property("USE_FLANN", config.use_flann);
+	output.tag.set_property("MODE", config.mode);
+	output.tag.set_property("SCALE", config.scale);
+	output.tag.set_property("TRANSLATE", config.translate);
+	output.tag.set_property("ROTATE", config.rotate);
 	output.tag.set_property("DRAG_OBJECT", config.drag_object);
 	output.tag.set_property("OBJECT_X", config.object_x);
 	output.tag.set_property("OBJECT_Y", config.object_y);
@@ -246,6 +262,10 @@ void FindObjMain::read_data(KeyFrame *keyframe)
 		if( input.tag.title_is("FINDOBJ") ) {
 			config.algorithm = input.tag.get_property("ALGORITHM", config.algorithm);
 			config.use_flann = input.tag.get_property("USE_FLANN", config.use_flann);
+			config.mode = input.tag.get_property("MODE", config.mode);
+			config.scale = input.tag.get_property("SCALE", config.scale);
+			config.translate = input.tag.get_property("TRANSLATE", config.translate);
+			config.rotate = input.tag.get_property("ROTATE", config.rotate);
 			config.object_x = input.tag.get_property("OBJECT_X", config.object_x);
 			config.object_y = input.tag.get_property("OBJECT_Y", config.object_y);
 			config.object_w = input.tag.get_property("OBJECT_W", config.object_w);
@@ -429,12 +449,10 @@ void FindObjMain::set_brisk()
 }
 #endif
 
+
 void FindObjMain::process_match()
 {
 	if( config.algorithm == NO_ALGORITHM ) return;
-	if( !config.replace_object &&
-	    !config.draw_scene_border &&
-	    !config.draw_keypoints ) return;
 
 	if( detector.empty() ) {
 		switch( config.algorithm ) {
@@ -482,16 +500,116 @@ void FindObjMain::process_match()
 	src.push_back(Point2f(obj_x1,obj_y2));
 	perspectiveTransform(src, dst, H);
 
-	float dx = scene_x + replace_dx;
-	float dy = scene_y + replace_dy;
-	border_x1 = dst[0].x + dx;  border_y1 = dst[0].y + dy;
-	border_x2 = dst[1].x + dx;  border_y2 = dst[1].y + dy;
-	border_x3 = dst[2].x + dx;  border_y3 = dst[2].y + dy;
-	border_x4 = dst[3].x + dx;  border_y4 = dst[3].y + dy;
-//printf("src %f,%f  %f,%f  %f,%f  %f,%f\n",
-// src[0].x,src[0].y, src[1].x,src[1].y, src[2].x,src[2].y, src[3].x,src[3].y);
-//printf("dst %f,%f  %f,%f  %f,%f  %f,%f\n",
-// dst[0].x,dst[0].y, dst[1].x,dst[1].y, dst[2].x,dst[2].y, dst[3].x,dst[3].y);
+	border_x1 = dst[0].x;  border_y1 = dst[0].y;
+	border_x2 = dst[1].x;  border_y2 = dst[1].y;
+	border_x3 = dst[2].x;  border_y3 = dst[2].y;
+	border_x4 = dst[3].x;  border_y4 = dst[3].y;
+}
+
+
+static double area(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
+{ // quadrelateral area
+	double dx1 = x3-x1, dy1 = y3-y1;
+	double dx2 = x4-x2, dy2 = y4-y2;
+	return 0.5 * abs(dx1 * dy2 - dx2 * dy1);
+}
+static double dist(float x1,float y1, float x2, float y2)
+{
+	double dx = x2-x1, dy = y2-y1;
+	return sqrt(dx*dx + dy*dy);
+}
+
+/*
+ * 4---------3    1---------2
+ * |0,h   w,h|    |0,0   w,0|
+ * |    +    |    |    +    |
+ * |0,0   w,0|    |0,h   w,h|
+ * 1---------2    1---------2
+ * pt locations    screen pts
+ */
+void FindObjMain::reshape()
+{
+	if( config.mode == MODE_NONE ) return;
+	const double pi = M_PI;
+	double x1 = border_x1, y1 = border_y1;
+	double x2 = border_x2, y2 = border_y2;
+	double x3 = border_x3, y3 = border_y3;
+	double x4 = border_x4, y4 = border_y4;
+// centroid
+	double cx = (x1 + x2 + x3 + x4) / 4;
+	double cy = (y1 + y2 + y3 + y4) / 4;
+// centered
+	x1 -= cx;  x2 -= cx;  x3 -= cx;  x4 -= cx;
+	y1 -= cy;  y2 -= cy;  y3 -= cy;  y4 -= cy;
+// rotation, if mode is quad: reverse rotate
+	double r = 0;
+	if( (config.mode == MODE_QUADRILATERAL) ^ config.rotate ) {
+// edge centers
+		double cx12 = (x1 + x2) / 2, cy12 = (y1 + y2) / 2;
+		double cx23 = (x2 + x3) / 2, cy23 = (y2 + y3) / 2;
+		double cx34 = (x3 + x4) / 2, cy34 = (y3 + y4) / 2;
+		double cx41 = (x4 + x1) / 2, cy41 = (y4 + y1) / 2;
+		double vx = cx34 - cx12, vy = cy34 - cy12;
+		double hx = cx23 - cx41, hy = cy23 - cy41;
+		double v = atan2(vy, vx);
+		double h = atan2(hy, hx);
+		r = (h + v - pi/2) / 2;
+	}
+// diagonal length
+	double a = dist(x1,y1, x3,y3) / 2;
+	double b = dist(x2,y2, x4,y4) / 2;
+	if( config.mode == MODE_SQUARE ||
+	    config.mode == MODE_RECTANGLE )
+		a = b = (a + b) / 2;
+// central angles
+	double a1 = atan2(y1, x1);
+	double a2 = atan2(y2, x2);
+	double a3 = atan2(y3, x3);
+	double a4 = atan2(y4, x4);
+// edge angles
+	double a12 = a2 - a1, a23 = a3 - a2;
+	double a34 = a4 - a3, a41 = a1 - a4;
+	double dt = (a12 - a23 + a34 - a41)/4;
+	switch( config.mode ) {
+	case MODE_SQUARE:
+	case MODE_RHOMBUS:
+		dt = pi/2;
+	case MODE_RECTANGLE:
+	case MODE_PARALLELOGRAM: {
+		double t = -(pi+dt)/2;
+		x1 = a*cos(t);  y1 = a*sin(t);  t += dt;
+		x2 = b*cos(t);  y2 = b*sin(t);  t += pi - dt;
+		x3 = a*cos(t);  y3 = a*sin(t);  t += dt;
+		x4 = b*cos(t);  y4 = b*sin(t); }
+	case MODE_QUADRILATERAL:
+		break;
+	}
+// rotation
+	if( r ) {
+		double ct = cos(r), st = sin(r), x, y;
+		x = x1*ct + y1*st;  y = y1*ct - x1*st;  x1 = x;  y1 = y;
+		x = x2*ct + y2*st;  y = y2*ct - x2*st;  x2 = x;  y2 = y;
+		x = x3*ct + y3*st;  y = y3*ct - x3*st;  x3 = x;  y3 = y;
+		x = x4*ct + y4*st;  y = y4*ct - x4*st;  x4 = x;  y4 = y;
+	}
+// scaling
+	double ia = !config.scale ? object_w * object_h :
+			area(border_x1,border_y1, border_x2,border_y2,
+			     border_x3,border_y3, border_x4,border_y4);
+	double oa = area(x1,y1, x2,y2, x3,y3, x4,y4);
+	double sf =  oa ? sqrt(ia / oa) : 0;
+	x1 *= sf;  x2 *= sf;  x3 *= sf;  x4 *= sf;
+	y1 *= sf;  y2 *= sf;  y3 *= sf;  y4 *= sf;
+// translation
+	double ox = !config.translate ? object_x + object_w/2. : cx;
+	double oy = !config.translate ? object_y + object_h/2. : cy;
+	x1 += ox;  x2 += ox;  x3 += ox;  x4 += ox;
+	y1 += oy;  y2 += oy;  y3 += oy;  y4 += oy;
+
+	border_x1 = x1;  border_y1 = y1;
+	border_x2 = x2;  border_y2 = y2;
+	border_x3 = x3;  border_y3 = y3;
+	border_x4 = x4;  border_y4 = y4;
 }
 
 int FindObjMain::process_buffer(VFrame **frame, int64_t start_position, double frame_rate)
@@ -574,14 +692,15 @@ int FindObjMain::process_buffer(VFrame **frame, int64_t start_position, double f
 
 	if( scene_w > 0 && scene_h > 0 && object_w > 0 && object_h > 0 ) {
 		process_match();
+		reshape();
 	}
 
-	double w0 = init_border ? (init_border=0, 1.) : config.blend/100., w1 = 1. - w0;
+	double w0 = init_border ? 1. : config.blend/100., w1 = 1. - w0;
+	init_border = 0;
 	obj_x1 = border_x1*w0 + obj_x1*w1;  obj_y1 = border_y1*w0 + obj_y1*w1;
 	obj_x2 = border_x2*w0 + obj_x2*w1;  obj_y2 = border_y2*w0 + obj_y2*w1;
 	obj_x3 = border_x3*w0 + obj_x3*w1;  obj_y3 = border_y3*w0 + obj_y3*w1;
 	obj_x4 = border_x4*w0 + obj_x4*w1;  obj_y4 = border_y4*w0 + obj_y4*w1;
-
 // Replace object in the scene layer
 	if( config.replace_object ) {
 		int cpus1 = get_project_smp() + 1;
@@ -592,13 +711,12 @@ int FindObjMain::process_buffer(VFrame **frame, int64_t start_position, double f
 		VFrame *temp = new_temp(w, h, scene->get_color_model());
 		temp->clear_frame();
 		affine->set_in_viewport(replace_x, replace_y, replace_w, replace_h);
-		int x1 = obj_x1, x2 = obj_x2, x3 = obj_x3, x4 = obj_x4;
-		int y1 = obj_y1, y2 = obj_y2, y3 = obj_y3, y4 = obj_y4;
-		bclamp(x1, 0, w);  bclamp(x2, 0, w);  bclamp(x3, 0, w);  bclamp(x4, 0, w);
-		bclamp(y1, 0, h);  bclamp(y2, 0, h);  bclamp(y3, 0, h);  bclamp(y4, 0, h);
+		float dx = replace_dx, dy = replace_dy;
+		float x1 = obj_x1+dx, x2 = obj_x2+dx, x3 = obj_x3+dx, x4 = obj_x4+dx;
+		float y1 = obj_y1-dy, y2 = obj_y2-dy, y3 = obj_y3-dy, y4 = obj_y4-dy;
 		affine->set_matrix(
 			replace_x, replace_y, replace_x+replace_w, replace_y+replace_h,
-			x1,y1, x2,y2, x3,y3, x4,y4);
+			x1,y1, x2,y2, x4,y4, x3,y3);
 		affine->process(temp, replace, 0,
 			AffineEngine::TRANSFORM, 0,0, 100,0, 100,100, 0,100, 1);
 		overlayer->overlay(scene, temp,  0,0, w,h,  0,0, w,h,
@@ -622,6 +740,13 @@ int FindObjMain::process_buffer(VFrame **frame, int64_t start_position, double f
 		draw_rect(scene, replace_x, replace_y, replace_x+replace_w, replace_y+replace_h);
 	}
 	if( config.draw_keypoints ) {
+		scene->set_pixel_color(GREEN);  scene->set_stiple(0);
+		for( int i=0,n=obj_keypts.size(); i<n; ++i ) {
+			Point2f &pt = obj_keypts[i].pt;
+			int r = obj_keypts[i].size * 1.2/9 * 2;
+			int x = pt.x + object_x, y = pt.y + object_y;
+			draw_circle(scene, x, y, r);
+		}
 		scene->set_pixel_color(RED);  scene->set_stiple(0);
 		for( int i=0,n=scn_keypts.size(); i<n; ++i ) {
 			Point2f &pt = scn_keypts[i].pt;

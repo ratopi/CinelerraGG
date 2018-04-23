@@ -51,13 +51,28 @@ void FindObjWindow::create_objects()
 	add_subwindow(algorithm = new FindObjAlgorithm(plugin, this,
 		x1 + title->get_w() + 10, y));
 	algorithm->create_objects();
-	add_subwindow(reset = new FindObjReset(plugin, this, get_w() - 15, y));
+	int x0 = get_w() - 15;
+	add_subwindow(reset = new FindObjReset(plugin, this, x0, y));
 	y += algorithm->get_h() + plugin->get_theme()->widget_border;
 
 	add_subwindow(use_flann = new FindObjUseFlann(plugin, this, x, y));
-	y += use_flann->get_h() + plugin->get_theme()->widget_border + 20;
+	x0 -= FindObjMode::calculate_w(this) + 30;
+	add_subwindow(mode = new FindObjMode(plugin, this, x0, y));
+	mode->create_objects();
+	x0 -= BC_Title::calculate_w(this, _("Mode:")) + 10;
+	add_subwindow(title = new BC_Title(x0, y, _("Mode:")));
+	y += use_flann->get_h() + plugin->get_theme()->widget_border + 10;
 
-	int x0 = x + 200;
+	int y1 = y;
+	add_subwindow(scale = new FindObjScale(plugin, this, x3, y));
+	y += scale->get_h() + 10;
+	add_subwindow(rotate = new FindObjRotate(plugin, this, x3, y));
+	y += rotate->get_h() + 10;
+	add_subwindow(translate = new FindObjTranslate(plugin, this, x3, y));
+	y += translate->get_h() + 10;
+	add_subwindow(replace_object = new FindObjReplace(plugin, this,x3, y));
+
+	x0 = x + 200;  y = y1 + 10;
 	add_subwindow(title = new BC_Title(x, y, _("Output/scene layer:")));
 	scene_layer = new FindObjLayer(plugin, this, x0, y,
 		&plugin->config.scene_layer);
@@ -79,7 +94,7 @@ void FindObjWindow::create_objects()
 	add_subwindow(title = new BC_Title(x+15, y, _("Units: 0 to 100 percent")));
 	y += title->get_h();
 
-	int y1 = y;
+	y1 = y;
 	add_subwindow(title = new BC_Title(x1, y + 10, _("Scene X:")));
 	Track *track = plugin->server->plugin->track;
 	int trk_w = track->track_w, trk_h = track->track_h;
@@ -184,9 +199,6 @@ void FindObjWindow::create_objects()
 	object_h_text->center = object_h;
 
 	y = y1;
-	add_subwindow(replace_object = new FindObjReplace(plugin, this,
-			x3, y - title->get_h() - 15));
-
 	add_subwindow(title = new BC_Title(x3, y + 10, _("Replace X:")));
 	drag_w = trk_w * plugin->config.replace_w / 100.;
 	drag_h = trk_h * plugin->config.replace_h / 100.;
@@ -322,6 +334,9 @@ void FindObjWindow::update_gui()
 	FindObjConfig &conf = plugin->config;
 	algorithm->update(conf.algorithm);
 	use_flann->update(conf.use_flann);
+	scale->update(conf.scale);
+	rotate->update(conf.rotate);
+	translate->update(conf.translate);
 	drag_object->update(conf.drag_object);
 	object_x->update(conf.object_x);
 	object_x_text->update((float)conf.object_x);
@@ -730,6 +745,108 @@ int FindObjUseFlann::handle_event()
 	plugin->config.use_flann = get_value();
 	plugin->send_configure_change();
 	return 1;
+}
+
+FindObjScale::FindObjScale(FindObjMain *plugin, FindObjWindow *gui,
+	int x, int y)
+ : BC_CheckBox(x, y, plugin->config.scale, _("Scale"))
+{
+	this->gui = gui;
+	this->plugin = plugin;
+}
+
+int FindObjScale::handle_event()
+{
+	plugin->config.scale = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+FindObjRotate::FindObjRotate(FindObjMain *plugin, FindObjWindow *gui,
+	int x, int y)
+ : BC_CheckBox(x, y, plugin->config.rotate, _("Rotate"))
+{
+	this->gui = gui;
+	this->plugin = plugin;
+}
+
+int FindObjRotate::handle_event()
+{
+	plugin->config.rotate = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+FindObjTranslate::FindObjTranslate(FindObjMain *plugin, FindObjWindow *gui,
+	int x, int y)
+ : BC_CheckBox(x, y, plugin->config.translate, _("Translate"))
+{
+	this->gui = gui;
+	this->plugin = plugin;
+}
+
+int FindObjTranslate::handle_event()
+{
+	plugin->config.translate = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+FindObjMode::FindObjMode(FindObjMain *plugin, FindObjWindow *gui, int x, int y)
+ : BC_PopupMenu(x, y, calculate_w(gui), to_text(plugin->config.mode))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int FindObjMode::handle_event()
+{
+	plugin->config.mode = from_text(get_text());
+	plugin->send_configure_change();
+	return 1;
+}
+
+void FindObjMode::create_objects()
+{
+	add_item(new BC_MenuItem(to_text(MODE_SQUARE)));
+	add_item(new BC_MenuItem(to_text(MODE_RHOMBUS)));
+	add_item(new BC_MenuItem(to_text(MODE_RECTANGLE)));
+	add_item(new BC_MenuItem(to_text(MODE_PARALLELOGRAM)));
+	add_item(new BC_MenuItem(to_text(MODE_QUADRILATERAL)));
+}
+int FindObjMode::from_text(char *text)
+{
+	if(!strcmp(text, _("Square"))) return MODE_SQUARE;
+	if(!strcmp(text, _("Rhombus"))) return MODE_RHOMBUS;
+	if(!strcmp(text, _("Rectangle"))) return MODE_RECTANGLE;
+	if(!strcmp(text, _("Parallelogram"))) return MODE_PARALLELOGRAM;
+	if(!strcmp(text, _("Quadrilateral"))) return MODE_QUADRILATERAL;
+	return MODE_NONE;
+}
+
+void FindObjMode::update(int mode)
+{
+	set_text(to_text(mode));
+}
+
+char* FindObjMode::to_text(int mode)
+{
+	switch( mode ) {
+	case MODE_SQUARE: return _("Square");
+	case MODE_RHOMBUS: return _("Rhombus");
+	case MODE_RECTANGLE: return _("Rectangle");
+	case MODE_PARALLELOGRAM: return _("Parallelogram");
+	case MODE_QUADRILATERAL: return _("Quadrilateral");
+	}
+	return _("None");
+}
+
+int FindObjMode::calculate_w(FindObjWindow *gui)
+{
+	int result = 0;
+	for( int mode=MODE_NONE; mode<MODE_MAX; ++mode )
+		result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(mode)));
+	return result + 50;
 }
 
 

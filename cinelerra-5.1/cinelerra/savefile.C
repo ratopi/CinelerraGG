@@ -46,7 +46,7 @@
 
 
 SaveBackup::SaveBackup(MWindow *mwindow)
- : BC_MenuItem(_("Save backup"))
+ : BC_MenuItem(_("Save backup"), "b", 'b')
 {
 	this->mwindow = mwindow;
 }

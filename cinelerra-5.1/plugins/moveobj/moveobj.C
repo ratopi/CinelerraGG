@@ -334,7 +334,7 @@ int MoveObj::process_buffer(VFrame *frame, int64_t start_position, double frame_
 // interpolate with identity matrix
 		accum_matrix = w0*identity + w1*accum_matrix;
 
-		AffineMatrix matrix;
+		AffineMatrix &matrix = affine->matrix;
 		for( int i=0,k=0; i<3; ++i )
 			for( int j=0; j<3; ++j )
 				matrix.values[i][j] = amat[k++];
@@ -342,7 +342,6 @@ int MoveObj::process_buffer(VFrame *frame, int64_t start_position, double frame_
 //printf("MoveObj::process_buffer %d %jd matrix=\n", __LINE__, start_position);
 //matrix.dump();
 
-		affine->set_matrix(&matrix);
 // iframe is always temp, if we get here
 		output->clear_frame();
 		affine->process(output, iframe, 0, AffineEngine::TRANSFORM,

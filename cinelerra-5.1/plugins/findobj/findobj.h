@@ -83,12 +83,20 @@ using namespace cvflann;
 #define MIN_BLEND 1
 #define MAX_BLEND 100
 
-#define NO_ALGORITHM 0
+#define NO_ALGORITHM   -1
 #define ALGORITHM_SIFT  1
 #define ALGORITHM_SURF  2
 #define ALGORITHM_ORB   3
 #define ALGORITHM_AKAZE 4
 #define ALGORITHM_BRISK 5
+
+#define MODE_NONE          -1
+#define MODE_SQUARE         0
+#define MODE_RHOMBUS        1
+#define MODE_RECTANGLE      2
+#define MODE_PARALLELOGRAM  3
+#define MODE_QUADRILATERAL  4
+#define MODE_MAX            5
 
 class FindObjConfig
 {
@@ -109,6 +117,7 @@ public:
 	float replace_x, replace_y, replace_w, replace_h;
 	float replace_dx, replace_dy;
 
+	int mode, scale, translate, rotate;
 	int draw_keypoints;
 	int draw_scene_border;
 	int replace_object;
@@ -144,6 +153,7 @@ public:
 	void set_brisk();
 #endif
 	void process_match();
+	void reshape();
 
 	void draw_vectors(VFrame *frame);
 	int is_multichannel();
@@ -162,10 +172,10 @@ public:
 	static void draw_rect(VFrame *vframe, int x1, int y1, int x2, int y2);
 	static void draw_circle(VFrame *vframe, int x, int y, int r);
 
-	int object_x, object_y, object_w, object_h;
-	int scene_x, scene_y, scene_w, scene_h;
-	int replace_x, replace_y, replace_w, replace_h;
-	int replace_dx, replace_dy;
+	float object_x, object_y, object_w, object_h;
+	float scene_x, scene_y, scene_w, scene_h;
+	float replace_x, replace_y, replace_w, replace_h;
+	float replace_dx, replace_dy;
 
 	int w, h;
 	int object_layer;
@@ -173,10 +183,10 @@ public:
 	int replace_layer;
 
 // Latest coordinates of object in scene
-	int border_x1, border_y1;
-	int border_x2, border_y2;
-	int border_x3, border_y3;
-	int border_x4, border_y4;
+	float border_x1, border_y1;
+	float border_x2, border_y2;
+	float border_x3, border_y3;
+	float border_x4, border_y4;
 // Coordinates of object in scene with blending
 	float obj_x1, obj_y1;
 	float obj_x2, obj_y2;

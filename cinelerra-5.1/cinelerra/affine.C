@@ -145,6 +145,38 @@ void AffineMatrix::copy_from(AffineMatrix *src)
 	memcpy(&values[0][0], &src->values[0][0], sizeof(values));
 }
 
+void AffineMatrix::set_matrix(
+	double in_x1, double in_y1, double in_x2, double in_y2,
+	double out_x1, double out_y1, double out_x2, double out_y2,
+	double out_x3, double out_y3, double out_x4, double out_y4)
+{
+	double scalex = in_x2 > in_x1 ? 1./(in_x2 - in_x1) : 1.0;
+	double scaley = in_y2 > in_y1 ? 1./(in_y2 - in_y1) : 1.0;
+	double dx1 = out_x2 - out_x4, dx2 = out_x3 - out_x4;
+	double dx3 = out_x1 - out_x2 + out_x4 - out_x3;
+
+	double dy1 = out_y2 - out_y4, dy2 = out_y3 - out_y4;
+	double dy3 = out_y1 - out_y2 + out_y4 - out_y3;
+	double det = dx1 * dy2 - dy1 * dx2;
+	if( !det ) { identity();  return; }
+
+	AffineMatrix m;
+	m.values[2][0] = (dx3 * dy2 - dy3 * dx2) / det;
+	m.values[2][1] = (dx1 * dy3 - dy1 * dx3) / det;
+	m.values[0][0] = out_x2 - out_x1 + m.values[2][0] * out_x2;
+	m.values[0][1] = out_x3 - out_x1 + m.values[2][1] * out_x3;
+	m.values[0][2] = out_x1;
+	m.values[1][0] = out_y2 - out_y1 + m.values[2][0] * out_y2;
+	m.values[1][1] = out_y3 - out_y1 + m.values[2][1] * out_y3;
+	m.values[1][2] = out_y1;
+	m.values[2][2] = 1.0;
+
+	identity();
+	translate(-in_x1, -in_y1);
+	scale(scalex, scaley);
+	m.multiply(this);
+}
+
 void AffineMatrix::transform_point(float x,
 	float y,
 	float *newx,
@@ -185,91 +217,6 @@ AffineUnit::AffineUnit(AffineEngine *server)
 	this->server = server;
 }
 
-
-
-
-
-
-
-
-
-void AffineUnit::calculate_matrix(
-	double in_x1, double in_y1, double in_x2, double in_y2,
-	double out_x1, double out_y1, double out_x2, double out_y2,
-	double out_x3, double out_y3, double out_x4, double out_y4,
-	AffineMatrix *result)
-{
-	AffineMatrix matrix;
-	double scalex;
-	double scaley;
-
-	scalex = scaley = 1.0;
-
-	if( (in_x2 - in_x1) > 0 )
-		scalex = 1.0 / (double)(in_x2 - in_x1);
-
-	if( (in_y2 - in_y1) > 0 )
-		scaley = 1.0 / (double)(in_y2 - in_y1);
-
-/* Determine the perspective transform that maps from
- * the unit cube to the transformed coordinates
- */
-	double dx1, dx2, dx3, dy1, dy2, dy3;
-	double det1, det2;
-
-	dx1 = out_x2 - out_x4;
-	dx2 = out_x3 - out_x4;
-	dx3 = out_x1 - out_x2 + out_x4 - out_x3;
-
-	dy1 = out_y2 - out_y4;
-	dy2 = out_y3 - out_y4;
-	dy3 = out_y1 - out_y2 + out_y4 - out_y3;
-// printf("AffineUnit::calculate_matrix %f %f %f %f %f %f\n",
-//  dx1, dx2, dx3, dy1, dy2, dy3 );
-
-/*  Is the mapping affine?  */
-	if((dx3 == 0.0) && (dy3 == 0.0)) {
-		matrix.values[0][0] = out_x2 - out_x1;
-		matrix.values[0][1] = out_x4 - out_x2;
-		matrix.values[0][2] = out_x1;
-		matrix.values[1][0] = out_y2 - out_y1;
-		matrix.values[1][1] = out_y4 - out_y2;
-		matrix.values[1][2] = out_y1;
-		matrix.values[2][0] = 0.0;
-		matrix.values[2][1] = 0.0;
-	}
-	else {
-		det1 = dx3 * dy2 - dy3 * dx2;
-		det2 = dx1 * dy2 - dy1 * dx2;
-		matrix.values[2][0] = det1 / det2;
-		det1 = dx1 * dy3 - dy1 * dx3;
-		det2 = dx1 * dy2 - dy1 * dx2;
-		matrix.values[2][1] = det1 / det2;
-
-		matrix.values[0][0] = out_x2 - out_x1 + matrix.values[2][0] * out_x2;
-		matrix.values[0][1] = out_x3 - out_x1 + matrix.values[2][1] * out_x3;
-		matrix.values[0][2] = out_x1;
-
-		matrix.values[1][0] = out_y2 - out_y1 + matrix.values[2][0] * out_y2;
-		matrix.values[1][1] = out_y3 - out_y1 + matrix.values[2][1] * out_y3;
-		matrix.values[1][2] = out_y1;
-	}
-
-	matrix.values[2][2] = 1.0;
-
-// printf("AffineUnit::calculate_matrix 1 %f %f\n", dx3, dy3);
-// matrix.dump();
-
-	result->identity();
-	result->translate(-in_x1, -in_y1);
-	result->scale(scalex, scaley);
-	matrix.multiply(result);
-// double test[3][3] = 
-// { { 0.0896, 0.0, 0.0 },  { 0.0, 0.0896, 0.0 },  { -0.00126, 0.0, 1.0 } };
-// memcpy(&result->values[0][0], test, sizeof(test));
-// printf("AffineUnit::calculate_matrix 4 %p\n", result);
-// result->dump();
-}
 
 static inline float transform_cubic(float dx,
 		float p0, float p1, float p2, float p3)
@@ -410,12 +357,11 @@ void AffineUnit::process_package(LoadPackage *package)
 
 
 		if( server->mode != AffineEngine::TRANSFORM ) {
-			calculate_matrix( server->in_x, server->in_y,
+			matrix.set_matrix(server->in_x, server->in_y,
 				server->in_x + server->in_w,
 				server->in_y + server->in_h,
 				out_x1, out_y1, out_x2, out_y2,
-				out_x3, out_y3, out_x4, out_y4,
-				&matrix);
+				out_x3, out_y3, out_x4, out_y4);
 		}
 		else {
 			matrix.copy_from(&server->matrix);
@@ -815,7 +761,14 @@ void AffineEngine::process(VFrame *output, VFrame *input, VFrame *temp, int mode
 	}
 }
 
-
+void AffineEngine::set_matrix(
+	double in_x1, double in_y1, double in_x2, double in_y2,
+	double out_x1, double out_y1, double out_x2, double out_y2,
+	double out_x3, double out_y3, double out_x4, double out_y4)
+{
+	matrix.set_matrix(in_x1, in_y1, in_x2, in_y2,
+		out_x1, out_y1, out_x2, out_y2, out_x3, out_y3, out_x4, out_y4);
+}
 
 
 void AffineEngine::rotate(VFrame *output,
@@ -902,49 +855,6 @@ void AffineEngine::rotate(VFrame *output,
 		process_packages();
 	}
 }
-
-void AffineEngine::set_matrix(AffineMatrix *matrix)
-{
-	for( int i=0; i<3; ++i ) {
-		for( int j=0; j<3; ++j ) {
-			this->matrix.values[i][j] = matrix->values[i][j];
-		}
-	}
-}
-
-//  in x1,y1 - x2,y1   out x1,y1 - x2,y2 clockwise
-//       |       |           |       |
-//     x1,y2 - x2,y2       x4,y4 - x3,y3
-void AffineEngine::set_matrix(
-		double in_x1,  double in_y1,  double in_x2,  double in_y2,
-		double out_x1, double out_y1, double out_x2, double out_y2,
-		double out_x3, double out_y3, double out_x4, double out_y4)
-{
-	AffineMatrix m;
-	double in_w = in_x2 - in_x1, scalex = in_w > 0 ? 1./in_w : 1.0;
-	double in_h = in_y2 - in_y1, scaley = in_h > 0 ? 1./in_h : 1.0;
-	double dx1 = out_x2 - out_x3;
-	double dy1 = out_y2 - out_y3;
-	double dx2 = out_x4 - out_x3;
-	double dy2 = out_y4 - out_y3;
-	double dx3 = out_x1 - out_x2 + out_x3 - out_x4;
-	double dy3 = out_y1 - out_y2 + out_y3 - out_y4;
-	double det = dx1 * dy2 - dy1 * dx2;
-	m.values[2][0] = det ? (dx3 * dy2 - dy3 * dx2) / det : 0;
-	m.values[2][1] = det ? (dx1 * dy3 - dy1 * dx3) / det : 0;
-	m.values[2][2] = 1.0;
-	m.values[0][0] = out_x2 - out_x1 + matrix.values[2][0] * out_x2;
-	m.values[0][1] = out_x4 - out_x1 + matrix.values[2][1] * out_x4;
-	m.values[0][2] = out_x1;
-	m.values[1][0] = out_y2 - out_y1 + matrix.values[2][0] * out_y2;
-	m.values[1][1] = out_y4 - out_y1 + matrix.values[2][1] * out_y4;
-	m.values[1][2] = out_y1;
-	matrix.identity();
-	matrix.translate(-in_x1, -in_y1);
-	matrix.scale(scalex, scaley);
-	m.multiply(&matrix);
-}
-
 
 void AffineEngine::set_in_viewport(int x, int y, int w, int h)
 {

@@ -2224,16 +2224,20 @@ TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server
 	type **out_rows = (type**)output->get_rows(); \
 	float fr = 1./(256.-max), fs = max/255.; \
 	float r = max > 1 ? 0.5 : 0; \
-	for( int y=y1; y<y2; ++y ) { \
-		float fy = y+yofs;  int iy = fy; \
-		float yf1 = fy>=iy ? fy - iy : fy+1-iy; \
+	int ix1= x1, iy1 = y1, ix2= x2, iy2 = y2; \
+	float fy = y1 + yofs; \
+	for( int y=iy1; y<iy2; ++y,++fy ) { \
+		int iy = fy;  float yf1 = fy - iy; \
+		if( yf1 < 0 ) ++yf1; \
 		float yf0 = 1. - yf1; \
 		unsigned char *in_row0 = in_rows[iy<0 ? 0 : iy]; \
 		unsigned char *in_row1 = in_rows[iy<ih1 ? iy+1 : ih1]; \
-		for( int x=x1; x<x2; ++x ) { \
+		float fx = x1 + xofs; \
+		for( int x=ix1; x<ix2; ++x,++fx ) { \
 			type *op = out_rows[y] + x*comps; \
-			float fx = x+xofs;  int ix = fx; \
-			float xf1 = fx - ix, xf0 = 1. - xf1; \
+			int ix = fx;  float xf1 = fx - ix; \
+			if( xf1 < 0 ) ++xf1; \
+			float xf0 = 1. - xf1; \
 			int i0 = (ix<0 ? 0 : ix)*4, i1 = (ix<iw1 ? ix+1 : iw1)*4; \
 			uint8_t *cp00 = in_row0 + i0, *cp01 = in_row0 + i1; \
 			uint8_t *cp10 = in_row1 + i0, *cp11 = in_row1 + i1; \

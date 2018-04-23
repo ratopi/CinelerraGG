@@ -27,6 +27,9 @@
 #include "undostack.h"
 #include <string.h>
 
+// undo can be incremental or direct, from key to current
+//#define UNDO_INCREMENTAL
+
 UndoStack::UndoStack() : List<UndoStackItem>()
 {
 	current = 0;
@@ -55,37 +58,30 @@ UndoStackItem *UndoStack::get_current_redo()
 
 UndoStackItem* UndoStack::push()
 {
-// current is only 0 if before first undo
-	if( current )
-		current = insert_after(current);
-	else
-		current = insert_before(first);
-
-// delete future undos if necessary
-	if( current && current->next ) {
-		while( current->next ) remove(last);
-	}
-
 // delete oldest 2 undos if necessary
 	if( total() > UNDOLEVELS ) {
-		for( int i=0; i<2; ++i ) {
-			UndoStackItem *second = first->next;
-			char *temp_data = 0;
-
-
-			if( !second->is_key() ) {
-				temp_data = second->get_data();
-			}
-			remove(first);
-
-// Convert new first to key buffer.
-			if( !second->is_key() ) {
-				second->set_data(temp_data);
-			}
-			delete [] temp_data;
+		UndoStackItem *item = first, *key = item;
+#ifdef UNDO_INCREMENTAL
+		for( int i=2; --i>=0; item=item->next );
+#else
+		for( int i=2; --i>=0; item=item->next )
+			if( item->is_key() ) key = item;
+#endif
+		char *data = !item->is_key() ? key->get_data() : 0;
+		while( first != item ) {
+			if( current == first ) current = first->next;
+			delete first;
+		}
+		if( data ) {
+			item->set_data(data);
+			delete [] data;
 		}
 	}
 
+// current is only 0 if before first undo
+	current = current ? insert_after(current) : insert_before(first);
+// delete future undos if necessary
+	while( current->next ) remove(last);
 	return current;
 }
 
@@ -119,9 +115,6 @@ void UndoStack::dump(FILE *fp)
 //if( fp ) { char *cp=current->get_data(); fwrite(cp,strlen(cp),1,fp); fclose(fp); delete [] cp; }
 	}
 }
-
-// undo can be incremental or direct, from key to current
-//#define UNDO_INCREMENTAL
 
 class undo_record {
 public:
