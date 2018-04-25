@@ -4,51 +4,160 @@ include $(TOPDIR)/global_config
 # plugin_dirs is translated in awindowgui.C, update if changed.
 
 plugin_dirs := themes
-themes := theme_bright theme_suv theme_blond theme_blue theme_blue_dot \
-	theme_hulk theme_pinklady theme_unflat theme_blond_cv
+themes := \
+	theme_blond \
+	theme_blond_cv \
+	theme_blue \
+	theme_blue_dot \
+	theme_bright \
+	theme_hulk \
+	theme_pinklady \
+	theme_suv \
+	theme_unflat \
 
-plugin_dirs += audio_transitions
-audio_transitions := crossfade
+plugin_dirs += video
+video := \
+	1080to480 \
+	1080to540 \
+	720to480 \
+	aging \
+	bandslide \
+	bandwipe \
+	bluebanana \
+	blur \
+	brightness \
+	burn \
+	C41 \
+	chromakey \
+	chromakeyhsv \
+	color3way \
+	colorbalance \
+	crikey \
+	crossfade \
+	decimate \
+	deinterlace \
+	deinterlace-cv \
+	delayvideo \
+	denoisemjpeg \
+	denoisevideo \
+	descratch \
+	diffkey \
+	dissolve \
+	dot \
+	downsample \
+	edge \
+	fieldframe \
+	flash \
+	flip \
+	framefield \
+	freezeframe \
+	gamma \
+	gradient \
+	greycstoration \
+	histeq \
+	histogram \
+	histogram_bezier \
+	holo \
+	huesaturation \
+	interpolatepixels \
+	interpolatevideo \
+	invertvideo \
+	irissquare \
+	ivtc \
+	lens \
+	linearblur \
+	liveaudio \
+	livevideo \
+	loopvideo \
+	motion \
+	motion2 \
+	motion51 \
+	motionblur \
+	motion-cv \
+	motion-hv \
+	oil \
+	overlay \
+	perspective \
+	photoscale \
+	polar \
+	radialblur \
+	reframe \
+	reframert \
+	reroute \
+	reversevideo \
+	rgb601 \
+	rgbshift \
+	rotate \
+	rumbler \
+	scale \
+	scaleratio \
+	seltempavg \
+	shapewipe \
+	sharpen \
+	shiftinterlace \
+	slide \
+	spherecam \
+	svg \
+	swapchannels \
+	swapframes \
+	threshold \
+	timeavg \
+	timefront \
+	titler \
+	translate \
+	unsharp \
+	videoscope \
+	wave \
+	whirl \
+	wipe \
+	yuv \
+	yuv411 \
+	yuvshift \
+	zoom \
+	zoomblur \
 
-plugin_dirs += video_transitions
-video_transitions := bandslide bandwipe dissolve flip irissquare \
-	shapewipe slide wipe zoom
+plugin_dirs += audio
+audio := \
+	audioscope \
+	cdripper \
+	compressor \
+	dcoffset \
+	delayaudio \
+	denoise \
+	denoisefft \
+	despike \
+	echo \
+	echocancel \
+	freeverb \
+	gain \
+	graphic \
+	interpolateaudio \
+	invertaudio \
+	leveleffect \
+	loopaudio \
+	normalize \
+	overlayaudio \
+	parametric \
+	pitch \
+	removegaps \
+	resample \
+	resamplert \
+	reverb \
+	reverseaudio \
+	spectrogram \
+	synthesizer \
+	timestretch \
+	timestretchrt \
+	vocoder \
 
-plugin_dirs += transforms
-transforms := 1080to480 1080to540 720to480 lens perspective photoscale \
-	polar rotate scale translate whirl scaleratio
-
-plugin_dirs += colors
-colors := brightness bluebanana C41 color3way colorbalance huesaturation \
-	gamma gradient histeq histogram histogram_bezier threshold
-
-plugin_dirs += exotic
-exotic := aging burn dot holo oil edge spherecam \
-	 findobj flowobj gaborobj moveobj stylizeobj puzzleobj
-
-plugin_dirs += audio_tools
-audio_tools := audioscope cdripper compressor dcoffset delayaudio \
-	denoisefft denoise despike echocancel echo freeverb \
-	gain graphic interpolateaudio invertaudio leveleffect loopaudio \
-	normalize overlayaudio parametric pitch removegaps resample \
-	resamplert reverb reverseaudio synthesizer timestretch timestretchrt \
-	spectrogram vocoder
-
-plugin_dirs += video_tools
-video_tools := blur decimate delayvideo denoisemjpeg denoisevideo downsample \
-	fieldframe flash framefield freezeframe greycstoration interpolatepixels \
-	interpolatevideo invertvideo linearblur loopvideo \
-	motion2 motionblur motion motion-cv motion-hv motion51 \
-	overlay radialblur reframe reframert reroute reversevideo \
-	rumbler seltempavg sharpen svg titler timeavg timefront \
-	unsharp videoscope wave zoomblur descratch
-
-plugin_dirs += blending
-blending := crikey chromakeyhsv chromakey diffkey
-
-plugin_dirs += tv_effects
-tv_effects := deinterlace-cv deinterlace ivtc liveaudio livevideo rgb601 \
-	rgbshift shiftinterlace swapchannels swapframes yuv yuv411 yuvshift
+plugin_dirs += opencv
+opencv := \
+	findobj \
+	flowobj \
+	gaborobj \
+	moveobj \
+	puzzleobj \
+	stylizeobj \
 
 $(foreach dir,$(plugin_dirs),$(foreach plugin,$($(dir)), $(eval $(plugin):=$(dir))))
 

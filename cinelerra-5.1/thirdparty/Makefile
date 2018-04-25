@@ -111,8 +111,7 @@ fdk.mak_params= ; for f in $(call bld_path,fdk,/lib*/include); do ln -s . $$$$f/
 fftw.cfg_params= --disable-fortran --enable-shared=no
 ffmpeg.cfg_params= \
 	--enable-pthreads --enable-gpl \
-	--disable-ffserver --disable-ffplay \
-	--disable-vaapi \
+	--disable-ffplay --disable-vaapi \
 	$(call if_pkg,fdk,--enable-libfdk-aac) \
 	$(call if_pkg,twolame,--enable-libtwolame) \
 	$(call if_pkg,openjpeg,--enable-libopenjpeg) \

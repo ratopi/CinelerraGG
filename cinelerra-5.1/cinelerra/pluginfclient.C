@@ -532,7 +532,7 @@ PluginFClient::~PluginFClient()
 	delete ffilt;
 }
 
-bool PluginFClient::is_audio(AVFilter *fp)
+bool PluginFClient::is_audio(const AVFilter *fp)
 {
 	if( !fp->outputs ) return 0;
 	if( avfilter_pad_count(fp->outputs) > 1 ) return 0;
@@ -544,7 +544,7 @@ bool PluginFClient::is_audio(AVFilter *fp)
 	if( avfilter_pad_get_type(fp->inputs, 0) != AVMEDIA_TYPE_AUDIO ) return 0;
 	return 1;
 }
-bool PluginFClient::is_video(AVFilter *fp)
+bool PluginFClient::is_video(const AVFilter *fp)
 {
 	if( !fp->outputs ) return 0;
 	if( avfilter_pad_count(fp->outputs) > 1 ) return 0;
@@ -805,14 +805,14 @@ int PluginFAClient::get_inchannels()
 {
 	AVFilterContext *fctx = ffilt->fctx;
 	AVFilterLink **links = !fctx->nb_inputs ? 0 : fctx->inputs;
-	return !links ? 0 : avfilter_link_get_channels(links[0]);
+	return !links ? 0 : links[0]->channels;
 }
 
 int PluginFAClient::get_outchannels()
 {
 	AVFilterContext *fctx = ffilt->fctx;
 	AVFilterLink **links = !fctx->nb_outputs ? 0 : fctx->outputs;
-	return !links ? 0 : avfilter_link_get_channels(links[0]);
+	return !links ? 0 : links[0]->channels;
 }
 
 int PluginFAClient::process_buffer(int64_t size, Samples **buffer, int64_t start_position, int sample_rate)
@@ -1151,7 +1151,7 @@ PluginFFilter *PluginFFilter::new_ffilter(const char *name, PluginFClientConfig 
 
 PluginClient *PluginServer::new_ffmpeg_plugin()
 {
-	AVFilter *filter = avfilter_get_by_name(ff_name);
+	const AVFilter *filter = avfilter_get_by_name(ff_name);
 	if( !filter ) return 0;
 	PluginFClient *ffmpeg =
 		PluginFClient::is_audio(filter) ?
@@ -1175,8 +1175,9 @@ PluginServer* MWindow::new_ffmpeg_server(MWindow *mwindow, const char *name)
 void MWindow::init_ffmpeg_index(MWindow *mwindow, Preferences *preferences, FILE *fp)
 {
 	PluginFLogLevel errs(AV_LOG_ERROR);
-	const AVFilter *filter = 0;
-	while( (filter=avfilter_next(filter)) != 0 ) {
+	const AVFilter *filter = 0;  void *idx = 0;
+	while( (filter=av_filter_iterate(&idx)) != 0 ) {
+//printf("%s\n",filter->name);
 		PluginServer *server = new_ffmpeg_server(mwindow, filter->name);
 		if( server ) {
 			int result = server->open_plugin(1, preferences, 0, 0);
@@ -1192,7 +1193,5 @@ void MWindow::init_ffmpeg_index(MWindow *mwindow, Preferences *preferences, FILE
 
 void MWindow::init_ffmpeg()
 {
-	av_register_all();
-	avfilter_register_all();
 }
 

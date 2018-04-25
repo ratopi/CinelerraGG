@@ -322,7 +322,7 @@ int FFStream::decode_activate()
 		int ret = 0;
 		// this should be avformat_copy_context(), but no copy avail
 		ret = avformat_open_input(&fmt_ctx,
-			ffmpeg->fmt_ctx->filename, ffmpeg->fmt_ctx->iformat, &copts);
+			ffmpeg->fmt_ctx->url, ffmpeg->fmt_ctx->iformat, &copts);
 		if( ret >= 0 ) {
 			ret = avformat_find_stream_info(fmt_ctx, 0);
 			st = fmt_ctx->streams[fidx];
@@ -337,9 +337,6 @@ int FFStream::decode_activate()
 				ret = AVERROR(ENOMEM);
 			}
 			if( ret >= 0 ) {
-				av_codec_set_pkt_timebase(avctx, st->time_base);
-				if( decoder->capabilities & AV_CODEC_CAP_DR1 )
-					avctx->flags |= CODEC_FLAG_EMU_EDGE;
 				avcodec_parameters_to_context(avctx, st->codecpar);
 				if( !av_dict_get(copts, "threads", NULL, 0) )
 					avctx->thread_count = ffmpeg->ff_cpus();
@@ -762,7 +759,7 @@ int FFAudioStream::decode_frame(AVFrame *frame)
 		ff_err(ret, "FFAudioStream::decode_frame: Could not read audio frame\n");
 		return -1;
 	}
-	int64_t pkt_ts = av_frame_get_best_effort_timestamp(frame);
+	int64_t pkt_ts = frame->best_effort_timestamp;
 	if( pkt_ts != AV_NOPTS_VALUE )
 		curr_pos = ffmpeg->to_secs(pkt_ts - nudge, st->time_base) * sample_rate + 0.5;
 	return 1;
@@ -772,7 +769,7 @@ int FFAudioStream::encode_activate()
 {
 	if( writing >= 0 ) return writing;
 	if( !avctx->codec ) return writing = 0;
-	frame_sz = avctx->codec->capabilities & CODEC_CAP_VARIABLE_FRAME_SIZE ?
+	frame_sz = avctx->codec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE ?
 		10000 : avctx->frame_size;
 	return FFStream::encode_activate();
 }
@@ -936,7 +933,7 @@ int FFVideoStream::decode_frame(AVFrame *frame)
 		ff_err(ret, "FFVideoStream::decode_frame: Could not read video frame\n");
 		return -1;
 	}
-	int64_t pkt_ts = av_frame_get_best_effort_timestamp(frame);
+	int64_t pkt_ts = frame->best_effort_timestamp;
 	if( pkt_ts != AV_NOPTS_VALUE )
 		curr_pos = ffmpeg->to_secs(pkt_ts - nudge, st->time_base) * frame_rate + 0.5;
 	return 1;
@@ -1174,7 +1171,7 @@ int FFVideoConvert::transfer_cmodel(VFrame *frame, AVFrame *ifp)
 {
 	int ret = convert_cmodel(frame, ifp);
 	if( ret > 0 ) {
-		const AVDictionary *src = av_frame_get_metadata(ifp);
+		const AVDictionary *src = ifp->metadata;
 		AVDictionaryEntry *t = NULL;
 		BC_Hash *hp = frame->get_params();
 		//hp->clear();
@@ -1271,7 +1268,7 @@ int FFVideoConvert::transfer_pixfmt(VFrame *frame, AVFrame *ofp)
 	int ret = convert_pixfmt(frame, ofp);
 	if( ret > 0 ) {
 		BC_Hash *hp = frame->get_params();
-		AVDictionary **dict = avpriv_frame_get_metadatap(ofp);
+		AVDictionary **dict = &ofp->metadata;
 		//av_dict_free(dict);
 		for( int i=0; i<hp->size(); ++i ) {
 			char *key = hp->get_key(i), *val = hp->get_value(i);
@@ -1928,7 +1925,6 @@ int FFMPEG::info(char *text, int len)
 int FFMPEG::init_decoder(const char *filename)
 {
 	ff_lock("FFMPEG::init_decoder");
-	av_register_all();
 	char file_opts[BCTEXTLEN];
 	char *bp = strrchr(strcpy(file_opts, filename), '/');
 	char *sp = strrchr(!bp ? file_opts : bp, '.');
@@ -1965,8 +1961,8 @@ int FFMPEG::init_decoder(const char *filename)
 int FFMPEG::open_decoder()
 {
 	struct stat st;
-	if( stat(fmt_ctx->filename, &st) < 0 ) {
-		eprintf(_("can't stat file: %s\n"), fmt_ctx->filename);
+	if( stat(fmt_ctx->url, &st) < 0 ) {
+		eprintf(_("can't stat file: %s\n"), fmt_ctx->url);
 		return 1;
 	}
 
@@ -2074,7 +2070,6 @@ int FFMPEG::init_encoder(const char *filename)
 		return 1;
 	}
 	ff_lock("FFMPEG::init_encoder");
-	av_register_all();
 	char format[BCSTRLEN];
 	if( get_format(format, "format", file_format) )
 		strcpy(format, file_format);
@@ -2164,7 +2159,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				ctx->qmin    = ctx->qmax =  asset->ff_audio_quality;
 				ctx->mb_lmin = ctx->qmin * FF_QP2LAMBDA;
 				ctx->mb_lmax = ctx->qmax * FF_QP2LAMBDA;
-				ctx->flags |= CODEC_FLAG_QSCALE;
+				ctx->flags |= AV_CODEC_FLAG_QSCALE;
 				char arg[BCSTRLEN];
 				av_dict_set(&sopts, "flags", "+qscale", 0);
 				sprintf(arg, "%d", asset->ff_audio_quality);
@@ -2224,7 +2219,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 				ctx->qmin    = ctx->qmax =  asset->ff_video_quality;
 				ctx->mb_lmin = ctx->qmin * FF_QP2LAMBDA;
 				ctx->mb_lmax = ctx->qmax * FF_QP2LAMBDA;
-				ctx->flags |= CODEC_FLAG_QSCALE;
+				ctx->flags |= AV_CODEC_FLAG_QSCALE;
 				char arg[BCSTRLEN];
 				av_dict_set(&sopts, "flags", "+qscale", 0);
 				sprintf(arg, "%d", asset->ff_video_quality);
@@ -2305,7 +2300,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 	}
 	if( !ret ) {
 		if( fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER )
-			ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+			ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 		if( fst->stats_filename && (ret=fst->init_stats_file()) )
 			eprintf(_("error: stats file = %s\n"), fst->stats_filename);
 	}
@@ -2474,9 +2469,9 @@ int FFMPEG::encode_activate()
 	if( encoding < 0 ) {
 		encoding = 0;
 		if( !(fmt_ctx->flags & AVFMT_NOFILE) &&
-		    (ret=avio_open(&fmt_ctx->pb, fmt_ctx->filename, AVIO_FLAG_WRITE)) < 0 ) {
+		    (ret=avio_open(&fmt_ctx->pb, fmt_ctx->url, AVIO_FLAG_WRITE)) < 0 ) {
 			ff_err(ret, "FFMPEG::encode_activate: err opening : %s\n",
-				fmt_ctx->filename);
+				fmt_ctx->url);
 			return -1;
 		}
 
@@ -2490,7 +2485,7 @@ int FFMPEG::encode_activate()
 		while(  --pi >= 0 && fmt_ctx->programs[pi]->id != prog_id );
 		AVDictionary **meta = &prog->metadata;
 		av_dict_set(meta, "service_provider", "cin5", 0);
-		const char *path = fmt_ctx->filename, *bp = strrchr(path,'/');
+		const char *path = fmt_ctx->url, *bp = strrchr(path,'/');
 		if( bp ) path = bp + 1;
 		av_dict_set(meta, "title", path, 0);
 
@@ -2522,7 +2517,7 @@ int FFMPEG::encode_activate()
 		ret = avformat_write_header(fmt_ctx, &fopts);
 		if( ret < 0 ) {
 			ff_err(ret, "FFMPEG::encode_activate: write header failed %s\n",
-				fmt_ctx->filename);
+				fmt_ctx->url);
 			return -1;
 		}
 		av_dict_free(&fopts);
@@ -2861,20 +2856,19 @@ int FFMPEG::ff_cpus()
 
 int FFVideoStream::create_filter(const char *filter_spec, AVCodecParameters *avpar)
 {
-	avfilter_register_all();
 	const char *sp = filter_spec;
 	char filter_name[BCSTRLEN], *np = filter_name;
 	int i = sizeof(filter_name);
 	while( --i>=0 && *sp!=0 && !strchr(" \t:=,",*sp) ) *np++ = *sp++;
 	*np = 0;
-	AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
+	const AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
 	if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_VIDEO ) {
 		ff_err(AVERROR(EINVAL), "FFVideoStream::create_filter: %s\n", filter_spec);
 		return -1;
 	}
 	filter_graph = avfilter_graph_alloc();
-	AVFilter *buffersrc = avfilter_get_by_name("buffer");
-	AVFilter *buffersink = avfilter_get_by_name("buffersink");
+	const AVFilter *buffersrc = avfilter_get_by_name("buffer");
+	const AVFilter *buffersink = avfilter_get_by_name("buffersink");
 
 	int ret = 0;  char args[BCTEXTLEN];
 	AVPixelFormat pix_fmt = (AVPixelFormat)avpar->format;
@@ -2902,20 +2896,19 @@ int FFVideoStream::create_filter(const char *filter_spec, AVCodecParameters *avp
 
 int FFAudioStream::create_filter(const char *filter_spec, AVCodecParameters *avpar)
 {
-	avfilter_register_all();
 	const char *sp = filter_spec;
 	char filter_name[BCSTRLEN], *np = filter_name;
 	int i = sizeof(filter_name);
 	while( --i>=0 && *sp!=0 && !strchr(" \t:=,",*sp) ) *np++ = *sp++;
 	*np = 0;
-	AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
+	const AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
 	if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_AUDIO ) {
 		ff_err(AVERROR(EINVAL), "FFAudioStream::create_filter: %s\n", filter_spec);
 		return -1;
 	}
 	filter_graph = avfilter_graph_alloc();
-	AVFilter *buffersrc = avfilter_get_by_name("abuffer");
-	AVFilter *buffersink = avfilter_get_by_name("abuffersink");
+	const AVFilter *buffersrc = avfilter_get_by_name("abuffer");
+	const AVFilter *buffersink = avfilter_get_by_name("abuffersink");
 	int ret = 0;  char args[BCTEXTLEN];
 	AVSampleFormat sample_fmt = (AVSampleFormat)avpar->format;
 	snprintf(args, sizeof(args),

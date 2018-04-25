@@ -32,7 +32,7 @@
 
 
 FindObjWindow::FindObjWindow(FindObjMain *plugin)
- : PluginClientWindow(plugin, 500, 660, 500, 660, 0)
+ : PluginClientWindow(plugin, 500, 700, 500, 700, 0)
 {
 	this->plugin = plugin;
 }
@@ -47,32 +47,35 @@ void FindObjWindow::create_objects()
 	plugin->load_configuration();
 
 	BC_Title *title;
+	add_subwindow(title = new BC_Title(x1, y, _("Mode:")));
+	add_subwindow(mode = new FindObjMode(plugin, this,
+		x1 + 100, y));
+	add_subwindow(reset = new FindObjReset(plugin, this, get_w()-15, y));
+	mode->create_objects();
+	y += mode->get_h() + 10;
+	int y0 = y;
 	add_subwindow(title = new BC_Title(x1, y, _("Algorithm:")));
 	add_subwindow(algorithm = new FindObjAlgorithm(plugin, this,
-		x1 + title->get_w() + 10, y));
+		x1 + 100, y));
 	algorithm->create_objects();
-	int x0 = get_w() - 15;
-	add_subwindow(reset = new FindObjReset(plugin, this, x0, y));
 	y += algorithm->get_h() + plugin->get_theme()->widget_border;
-
 	add_subwindow(use_flann = new FindObjUseFlann(plugin, this, x, y));
-	x0 -= FindObjMode::calculate_w(this) + 30;
-	add_subwindow(mode = new FindObjMode(plugin, this, x0, y));
-	mode->create_objects();
-	x0 -= BC_Title::calculate_w(this, _("Mode:")) + 10;
-	add_subwindow(title = new BC_Title(x0, y, _("Mode:")));
-	y += use_flann->get_h() + plugin->get_theme()->widget_border + 10;
+	y += use_flann->get_h() + 10;
 
-	int y1 = y;
+	int y1 = y;  y = y0;
+	add_subwindow(replace_object = new FindObjReplace(plugin, this,x3, y));
+	y += replace_object->get_h() + 10;
+	add_subwindow(draw_match = new FindObjDrawMatch(plugin, this, x3, y));
+	y += draw_match->get_h() + 10;
+	add_subwindow(aspect = new FindObjAspect(plugin, this, x3, y));
+	y += aspect->get_h() + 10;
 	add_subwindow(scale = new FindObjScale(plugin, this, x3, y));
 	y += scale->get_h() + 10;
 	add_subwindow(rotate = new FindObjRotate(plugin, this, x3, y));
 	y += rotate->get_h() + 10;
 	add_subwindow(translate = new FindObjTranslate(plugin, this, x3, y));
-	y += translate->get_h() + 10;
-	add_subwindow(replace_object = new FindObjReplace(plugin, this,x3, y));
 
-	x0 = x + 200;  y = y1 + 10;
+	int x0 = x + 200;  y = y1 + 10;
 	add_subwindow(title = new BC_Title(x, y, _("Output/scene layer:")));
 	scene_layer = new FindObjLayer(plugin, this, x0, y,
 		&plugin->config.scene_layer);
@@ -91,6 +94,7 @@ void FindObjWindow::create_objects()
 	replace_layer->create_objects();
 	y += replace_layer->get_h() + plugin->get_theme()->widget_border + 10;
 
+	y += 10;
 	add_subwindow(title = new BC_Title(x+15, y, _("Units: 0 to 100 percent")));
 	y += title->get_h();
 
@@ -334,6 +338,8 @@ void FindObjWindow::update_gui()
 	FindObjConfig &conf = plugin->config;
 	algorithm->update(conf.algorithm);
 	use_flann->update(conf.use_flann);
+	draw_match->update(conf.draw_match);
+	aspect->update(conf.aspect);
 	scale->update(conf.scale);
 	rotate->update(conf.rotate);
 	translate->update(conf.translate);
@@ -743,6 +749,36 @@ FindObjUseFlann::FindObjUseFlann(FindObjMain *plugin, FindObjWindow *gui,
 int FindObjUseFlann::handle_event()
 {
 	plugin->config.use_flann = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+FindObjDrawMatch::FindObjDrawMatch(FindObjMain *plugin, FindObjWindow *gui,
+	int x, int y)
+ : BC_CheckBox(x, y, plugin->config.draw_match, _("Draw match"))
+{
+	this->gui = gui;
+	this->plugin = plugin;
+}
+
+int FindObjDrawMatch::handle_event()
+{
+	plugin->config.draw_match = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+FindObjAspect::FindObjAspect(FindObjMain *plugin, FindObjWindow *gui,
+	int x, int y)
+ : BC_CheckBox(x, y, plugin->config.aspect, _("Aspect"))
+{
+	this->gui = gui;
+	this->plugin = plugin;
+}
+
+int FindObjAspect::handle_event()
+{
+	plugin->config.aspect = get_value();
 	plugin->send_configure_change();
 	return 1;
 }

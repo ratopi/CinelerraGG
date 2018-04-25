@@ -126,8 +126,6 @@ int FileAC3::open_file(int rd, int wr)
 
 	if( !result && wr )
 	{
-		//avcodec_init();
-		avcodec_register_all();
 		codec = avcodec_find_encoder(AV_CODEC_ID_AC3);
 		if(!codec)
 		{

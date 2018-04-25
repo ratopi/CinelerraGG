@@ -836,7 +836,7 @@ int FileFFMPEG::get_index(IndexFile *index_file, MainProgressBar *progress_bar)
 	}
 
 	FileSystem fs;
-	int64_t file_bytes = fs.get_size(ff->fmt_ctx->filename);
+	int64_t file_bytes = fs.get_size(ff->fmt_ctx->url);
 	char *index_path = index_file->index_filename;
 
 	int canceled = 0;

@@ -1,7 +1,7 @@
-diff -ur a/libavformat/avformat.h b/libavformat/avformat.h
---- a/libavformat/avformat.h	2018-02-11 17:29:06.000000000 -0700
-+++ b/libavformat/avformat.h	2018-03-13 09:45:00.061310268 -0600
-@@ -504,6 +504,9 @@
+diff -urN a/libavformat/avformat.h b/libavformat/avformat.h
+--- a/libavformat/avformat.h	2018-04-20 04:02:57.000000000 -0600
++++ b/libavformat/avformat.h	2018-04-24 11:02:20.777232001 -0600
+@@ -487,6 +487,9 @@
                                          The user or muxer can override this through
                                          AVFormatContext.avoid_negative_ts
                                          */
@@ -11,7 +11,7 @@ diff -ur a/libavformat/avformat.h b/libavformat/avformat.h
  
  #define AVFMT_SEEK_TO_PTS   0x4000000 /**< Seeking is based on PTS */
  
-@@ -664,7 +667,8 @@
+@@ -647,7 +650,8 @@
      /**
       * Can use flags: AVFMT_NOFILE, AVFMT_NEEDNUMBER, AVFMT_SHOW_IDS,
       * AVFMT_GENERIC_INDEX, AVFMT_TS_DISCONT, AVFMT_NOBINSEARCH,
@@ -21,9 +21,9 @@ diff -ur a/libavformat/avformat.h b/libavformat/avformat.h
       */
      int flags;
  
-diff -ur a/libavformat/dv.c b/ffmpeg-3.4.2/libavformat/dv.c
---- a/libavformat/dv.c	2018-02-11 17:29:06.000000000 -0700
-+++ b/libavformat/dv.c	2018-03-13 09:45:00.061310268 -0600
+diff -urN a/libavformat/dv.c b/libavformat/dv.c
+--- a/libavformat/dv.c	2018-04-13 17:34:28.000000000 -0600
++++ b/libavformat/dv.c	2018-04-24 11:02:20.778232001 -0600
 @@ -632,6 +632,7 @@
  AVInputFormat ff_dv_demuxer = {
      .name           = "dv",
@@ -32,10 +32,10 @@ diff -ur a/libavformat/dv.c b/ffmpeg-3.4.2/libavformat/dv.c
      .priv_data_size = sizeof(RawDVContext),
      .read_probe     = dv_probe,
      .read_header    = dv_read_header,
-diff -ur a/libavformat/matroskadec.c b/libavformat/matroskadec.c
---- a/libavformat/matroskadec.c	2018-02-11 17:29:18.000000000 -0700
-+++ b/libavformat/matroskadec.c	2018-03-13 09:45:00.061310268 -0600
-@@ -3992,6 +3992,7 @@
+diff -urN a/libavformat/matroskadec.c b/libavformat/matroskadec.c
+--- a/libavformat/matroskadec.c	2018-04-20 04:02:57.000000000 -0600
++++ b/libavformat/matroskadec.c	2018-04-24 11:02:20.779232001 -0600
+@@ -4026,6 +4026,7 @@
  AVInputFormat ff_matroska_demuxer = {
      .name           = "matroska,webm",
      .long_name      = NULL_IF_CONFIG_SMALL("Matroska / WebM"),
@@ -43,7 +43,7 @@ diff -ur a/libavformat/matroskadec.c b/libavformat/matroskadec.c
      .extensions     = "mkv,mk3d,mka,mks",
      .priv_data_size = sizeof(MatroskaDemuxContext),
      .read_probe     = matroska_probe,
-@@ -4005,6 +4006,7 @@
+@@ -4039,6 +4040,7 @@
  AVInputFormat ff_webm_dash_manifest_demuxer = {
      .name           = "webm_dash_manifest",
      .long_name      = NULL_IF_CONFIG_SMALL("WebM DASH Manifest"),
@@ -51,10 +51,10 @@ diff -ur a/libavformat/matroskadec.c b/libavformat/matroskadec.c
      .priv_data_size = sizeof(MatroskaDemuxContext),
      .read_header    = webm_dash_manifest_read_header,
      .read_packet    = webm_dash_manifest_read_packet,
-diff -ur a/libavformat/utils.c b/libavformat/utils.c
---- a/libavformat/utils.c	2018-02-11 17:29:06.000000000 -0700
-+++ b/libavformat/utils.c	2018-03-13 09:45:00.062310270 -0600
-@@ -2416,6 +2416,13 @@
+diff -urN a/libavformat/utils.c b/libavformat/utils.c
+--- a/libavformat/utils.c	2018-04-20 04:02:58.000000000 -0600
++++ b/libavformat/utils.c	2018-04-24 11:02:20.780232001 -0600
+@@ -2471,6 +2471,13 @@
          return seek_frame_byte(s, stream_index, timestamp, flags);
      }
  

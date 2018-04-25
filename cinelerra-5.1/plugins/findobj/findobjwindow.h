@@ -27,23 +27,27 @@
 #include "findobj.inc"
 #include "guicast.h"
 
+
 class FindObjReset;
 class FindObjLayer;
 class FindObjScanFloat;
 class FindObjScanFloatText;
 class FindObjDrawSceneBorder;
-class FindObjDrawKeypoints;
-class FindObjReplace;
 class FindObjDrawObjectBorder;
 class FindObjDrawReplaceBorder;
-class FindObjDragObject;
+class FindObjDrawKeypoints;
+class FindObjReplace;
 class FindObjDragScene;
+class FindObjDragObject;
 class FindObjDragReplace;
 class FindObjAlgorithm;
-class FindObjMode;
+class FindObjUseFlann;
+class FindObjDrawMatch;
+class FindObjAspect;
 class FindObjScale;
 class FindObjRotate;
 class FindObjTranslate;
+class FindObjMode;
 class FindObjBlend;
 class FindObjWindow;
 
@@ -209,6 +213,24 @@ public:
 	FindObjWindow *gui;
 };
 
+class FindObjDrawMatch : public BC_CheckBox
+{
+public:
+	FindObjDrawMatch(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
+	int handle_event();
+	FindObjMain *plugin;
+	FindObjWindow *gui;
+};
+
+class FindObjAspect : public BC_CheckBox
+{
+public:
+	FindObjAspect(FindObjMain *plugin, FindObjWindow *gui, int x, int y);
+	int handle_event();
+	FindObjMain *plugin;
+	FindObjWindow *gui;
+};
+
 class FindObjScale : public BC_CheckBox
 {
 public:
@@ -271,7 +293,9 @@ public:
 	FindObjReset *reset;
 	FindObjAlgorithm *algorithm;
 	FindObjUseFlann *use_flann;
+	FindObjDrawMatch *draw_match;
 	FindObjMode *mode;
+	FindObjAspect *aspect;
 	FindObjScale *scale;
 	FindObjRotate *rotate;
 	FindObjTranslate *translate;

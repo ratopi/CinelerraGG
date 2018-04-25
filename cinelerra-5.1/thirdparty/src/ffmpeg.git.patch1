@@ -1,6 +1,6 @@
-diff -ru ffmpeg-3.0.orig/libavformat/bluray.c ffmpeg-3.0/libavformat/bluray.c
---- ffmpeg-3.0.orig/libavformat/bluray.c	2015-03-13 11:34:50.000000000 -0600
-+++ ffmpeg-3.0/libavformat/bluray.c	2016-05-09 14:07:34.758713307 -0600
+diff -urN a/libavformat/bluray.c b/libavformat/bluray.c
+--- a/libavformat/bluray.c	2018-04-13 17:34:28.000000000 -0600
++++ b/libavformat/bluray.c	2018-04-24 11:02:19.724232178 -0600
 @@ -28,7 +28,7 @@
  #include "libavutil/opt.h"
  

@@ -101,7 +101,7 @@ deband
 #decimate
 deflate
 dejudder
-delogo x=1:y=1:w=1:h=1:band=1:show=0
+delogo x=10:y=10:w=10:h=10:show=1
 deshake
 #detelecine
 dilation
@@ -297,7 +297,6 @@ zoompan
 ; new in 3.4.1
 #acopy
 bitplanenoise
-boxblur
 ciescope
 crossfeed
 deflicker
@@ -312,14 +311,25 @@ oscilloscope
 pixscope
 pseudocolor
 roberts
-smartblur
 #superequalizer
 #surround
 tlut2
 #tonemap
 #vmafmotion
-; in git
+; new in 4.0
+acontrast
 #afir
-#headphone
+#aiir
 #convolve
+#deconvolve
+drmeter
+entropy
+fillborders
+#headphone
+hilbert
+mcompand
+#mix
+normalize
+setrange
 #unpremultiply
+vfrdet

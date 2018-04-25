@@ -1,6 +1,6 @@
-diff -ur a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
---- a/libavformat/mpegtsenc.c	2017-12-10 14:35:10.000000000 -0700
-+++ b/libavformat/mpegtsenc.c	2017-12-18 10:54:14.260167666 -0700
+diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
+--- a/libavformat/mpegtsenc.c	2018-04-20 04:02:57.000000000 -0600
++++ b/libavformat/mpegtsenc.c	2018-04-24 10:27:57.193689213 -0600
 @@ -56,9 +56,8 @@
      int sid;           /* service ID */
      char *name;
@@ -112,7 +112,7 @@ diff -ur a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
 +    ts->delay = av_rescale(s->max_delay, 90000, AV_TIME_BASE);
 +
 +    if (ts->m2ts_mode == -1) {
-+        if (av_match_ext(s->filename, "m2ts")) {
++        if (av_match_ext(s->url, "m2ts")) {
 +            ts->m2ts_mode = 1;
 +        } else {
 +            ts->m2ts_mode = 0;
@@ -245,7 +245,7 @@ diff -ur a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
 -           ts->sdt_packet_period, ts->pat_packet_period);
 -
 -    if (ts->m2ts_mode == -1) {
--        if (av_match_ext(s->filename, "m2ts")) {
+-        if (av_match_ext(s->url, "m2ts")) {
 -            ts->m2ts_mode = 1;
 -        } else {
 -            ts->m2ts_mode = 0;

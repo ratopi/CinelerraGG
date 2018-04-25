@@ -12,7 +12,6 @@ CFG_CFLAGS+=" -fno-omit-frame-pointer -fno-math-errno -fno-signed-zeros"
 CFG_CFLAGS+=" -pthread -Wall"
 # misguided pedantic warnings
 CFG_CFLAGS+=" -Wno-unused-result"
-CFG_CFLAGS+=" -Wno-stringop-truncation"
 CFG_CFLAGS+=" -Wno-stringop-overflow"
 CFG_CFLAGS+=" -Wno-format-truncation"
 CFG_CFLAGS+=" -Wno-format-overflow"
@@ -132,7 +131,7 @@ PKG_3RD([fdk],[auto],
   [ libAACdec/include libAACenc/include libSYS/include ])
 
 PKG_3RD([ffmpeg],[yes],
-  [ffmpeg-3.4.2],
+  [ffmpeg-4.0],
   [ libavutil/libavutil.a \
     libavcodec/libavcodec.a \
     libpostproc/libpostproc.a \

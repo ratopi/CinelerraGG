@@ -110,15 +110,15 @@ public:
 		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 	void boundaries();
 
-	int algorithm, use_flann;
+	int algorithm, use_flann, mode;
 	int drag_object, drag_scene, drag_replace;
 	float object_x, object_y, object_w, object_h;
 	float scene_x, scene_y, scene_w, scene_h;
 	float replace_x, replace_y, replace_w, replace_h;
 	float replace_dx, replace_dy;
 
-	int mode, scale, translate, rotate;
-	int draw_keypoints;
+	int aspect, scale, translate, rotate;
+	int draw_keypoints, draw_match;
 	int draw_scene_border;
 	int replace_object;
 	int draw_object_border;
@@ -169,6 +169,9 @@ public:
 	VFrame *object, *scene, *replace;
 
 	static void draw_line(VFrame *vframe, int x1, int y1, int x2, int y2);
+	void draw_quad(VFrame *vframe,
+			int x1, int y1, int x2, int y2,
+			int x3, int y3, int x4, int y4);
 	static void draw_rect(VFrame *vframe, int x1, int y1, int x2, int y2);
 	static void draw_circle(VFrame *vframe, int x, int y, int r);
 
@@ -182,16 +185,12 @@ public:
 	int scene_layer;
 	int replace_layer;
 
-// Latest coordinates of object in scene
-	float border_x1, border_y1;
-	float border_x2, border_y2;
-	float border_x3, border_y3;
-	float border_x4, border_y4;
+// Latest coordinates of match / shape / object in scene
+	float match_x1, match_y1, shape_x1, shape_y1, out_x1, out_y1;
+	float match_x2, match_y2, shape_x2, shape_y2, out_x2, out_y2;
+	float match_x3, match_y3, shape_x3, shape_y3, out_x3, out_y3;
+	float match_x4, match_y4, shape_x4, shape_y4, out_x4, out_y4;
 // Coordinates of object in scene with blending
-	float obj_x1, obj_y1;
-	float obj_x2, obj_y2;
-	float obj_x3, obj_y3;
-	float obj_x4, obj_y4;
 	int init_border;
 
 //opencv

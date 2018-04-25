@@ -3139,7 +3139,6 @@ main(int ac, char **av)
 {
   char *path = av[1];
   if( mkbdmv(path) ) return 1;
-  av_register_all();
   av_log_set_level(AV_LOG_FATAL);
   //av_log_set_level(AV_LOG_VERBOSE);
   //av_log_set_level(AV_LOG_DEBUG);

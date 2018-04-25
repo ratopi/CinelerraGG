@@ -70,7 +70,7 @@ public:
 class PluginFFilter {
 	PluginFFilter(PluginFFilter &that) {} //disable assign/copy
 public:
-	AVFilter *filter;
+	const AVFilter *filter;
 	AVFilterGraph *graph;
 	AVFilterContext *fctx;
 
@@ -211,8 +211,8 @@ public:
 
 	PluginFClient(PluginClient *plugin, const char *name);
         ~PluginFClient();
-	static bool is_audio(AVFilter *fp);
-	static bool is_video(AVFilter *fp);
+	static bool is_audio(const AVFilter *fp);
+	static bool is_video(const AVFilter *fp);
 
 	int64_t get_source_position() {
 		return plugin->get_source_position();

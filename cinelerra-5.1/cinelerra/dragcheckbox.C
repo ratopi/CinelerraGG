@@ -288,5 +288,6 @@ void DragCheckBox::draw_boundary(VFrame *out,
 		out->draw_line(x2,y2-r, x2-r,y2);
 		out->draw_line(x0,y2-r, x0+r,y2);
 	}
+	out->set_stiple(0);
 }
 
