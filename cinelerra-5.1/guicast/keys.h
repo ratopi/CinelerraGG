@@ -125,6 +125,8 @@
 #define KEY_F8              308
 #define KEY_F9              309
 #define KEY_F10             310
+#define KEY_F11             311
+#define KEY_F12             312
 
 #define RETURN              13
 #define NEWLINE             13

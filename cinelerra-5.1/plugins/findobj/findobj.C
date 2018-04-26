@@ -335,6 +335,11 @@ void FindObjMain::draw_quad(VFrame *vframe,
 	draw_line(vframe, x2, y2, x3, y3);
 	draw_line(vframe, x3, y3, x4, y4);
 	draw_line(vframe, x4, y4, x1, y1);
+}
+
+void FindObjMain::draw_point(VFrame *vframe, int x1, int y1)
+{
+	int r = bmin(vframe->get_w(), vframe->get_h()) / 200 + 1;
 	for( int i=r; --i>0; )
 		draw_circle(vframe, x1, y1, i);
 }
@@ -843,6 +848,8 @@ int FindObjMain::process_buffer(VFrame **frame, int64_t start_position, double f
 		scene->set_pixel_color(BLUE);
 		draw_quad(scene, match_x1, match_y1, match_x2, match_y2,
 				match_x3, match_y3, match_x4, match_y4);
+		scene->set_pixel_color(LTGREEN);
+		draw_point(scene, match_x1, match_y1);
 	}
 
 	if( gui_open() ) {

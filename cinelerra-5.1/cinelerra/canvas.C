@@ -1169,7 +1169,7 @@ int CanvasPopupSize::handle_event()
 
 
 CanvasPopupResetCamera::CanvasPopupResetCamera(Canvas *canvas)
- : BC_MenuItem(_("Reset camera"))
+ : BC_MenuItem(_("Reset camera"), "F11", KEY_F11)
 {
 	this->canvas = canvas;
 }
@@ -1182,7 +1182,7 @@ int CanvasPopupResetCamera::handle_event()
 
 
 CanvasPopupResetProjector::CanvasPopupResetProjector(Canvas *canvas)
- : BC_MenuItem(_("Reset projector"))
+ : BC_MenuItem(_("Reset projector"), "F12", KEY_F12)
 {
 	this->canvas = canvas;
 }

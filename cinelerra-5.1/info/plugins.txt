@@ -270,11 +270,13 @@ F_drawgrid:	Draws a colored grid on the input video.
 F_edgedetect:	Detects and draws edge.
 F_elbg:		Apply posterize effect, using the ELBG algorithm.
 F_eq:		Adjusts brightness, contrast, gamma and saturation.
+F_entropy:	Measure video frames entropy.
 F_erosion:	Applies erosion effect.
 F_fade:		Fade in/out input video.
 F_fftfilt:	Apply arbitrary expressions to pixels in frequency domain.
 F_field:	Extract a field from the input video.
 F_fieldorder:	Set the field order.
+F_fillborders:	Fill borders of the input video.
 F_floodfill:	Fill area of the same color with another color.
 F_framerate:	Upsamples or downsamples progressive
 		source between specified frame rates.
@@ -312,6 +314,8 @@ F_noise:	Adds noise to the video.
 		Through the settings you can
 		select the variables of the noise
 		(strength, flag and seed).
+F_normalize:	Normalize RGB video.
+F_owdenoise:	Denoises using wavelets.
 F_oscilloscope:	2D video oscilloscope.  Useful to measure spatial impulse,
 		step responses, and chroma delays.
 F_owndenoise:	Denoises using wavelets.
@@ -338,6 +342,7 @@ F_roberts:	Apply roberts cross operator which performs a simple/quick 2-D
 F_rotate:	Rotates the input image.
 F_sab:		Applies shape adaptive blur.
 F_separatefields: Split input video frames into fields.
+F_setrange:	Force color range for the output video frame.
 F_showinfo:	Show textual information for each video frame.
 F_shuffleframes: Shuffles video frames.
 F_shuffleplanes: Shuffles video planes.
@@ -360,6 +365,7 @@ F_uspp:		Applies Ultra Simple/Slow Post-processing filter.
 F_vaguedenoiser: Applies a Wavelet based Denoiser.
 F_vectorscope:	Video vectorscope.
 F_vflip:	Flips the input video vertically.
+F_vfrdet:	Variable frame rate detect filter.
 F_vignette:	Makes or reverses a vignette effect.
 		Through the settings you can set the circle center
 		position on a X-Y axis,choose the angle,
@@ -375,6 +381,7 @@ F_zoompan:	Applies Zoom & Pan effect.
 #
 F_abench:	Benchmark part of a filtergraph.
 F_acompressor:	Audio compressor.
+F_acontrast:	Simple audio dynamic range compression/expansion filter.
 F_acrusher:	Reduces audio bit resolution.
 F_adelay:	Delays one or more audio channels.
 F_aecho:	Adds echoing to the audio.
@@ -405,6 +412,8 @@ F_crossfeed:	Apply headphone crossfeed which blends the left and right
 		order to produce more speaker like sound.
 F_crystalizer:	Simple Expand Audio Dynamic Range filter.
 F_dcshift:	Applies a DC shift to the audio.
+F_drmeter:	Measure audio dynamic range where setting window length in
+		seconds is used to split audio into segments of equal length.
 F_dyaudnorm:	Dynamic Audio Normalizer.  When using this plugin,
 		be sure to “attach effect” to all audio tracks by dragging
 		the plugin to the 1st audio track and then right mouse
@@ -429,8 +438,12 @@ F_haas:		Apply Haas Stereo Enhancer for a more natural sounding pan effect
 		applied to mono signals it give some directionality and stretches
 		its stereo image
 F_highpass:	Applies a high-pass filter with 3dB point frequency.
+F_hilbert:	Generate a Hilbert transform FIR coefficients.
 F_loudnorm:	EBU R128 loudness normalization.
 F_lowpass:	Applies a low-pass filter with 3dB point frequency.
+F_mcompand:	Multiband compress or expand audiodynamic range. The input audio
+		is divided into bands which is like the crossover of a loudspeaker,
+		resulting in flat frequency response when absent compander action.
 F_silenceremove: Removes silence.
 F_sine:		Generate sine wave audio signal.
 F_stereotools:	Applies various stereo tools.  When using this plugin,

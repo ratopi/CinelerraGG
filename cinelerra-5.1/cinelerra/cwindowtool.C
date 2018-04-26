@@ -83,6 +83,7 @@ void CWindowTool::start_tool(int operation)
 //printf("CWindowTool::start_tool 1\n");
 	if(current_tool != operation)
 	{
+		int previous_tool = current_tool;
 		current_tool = operation;
 		switch(operation)
 		{
@@ -104,6 +105,10 @@ void CWindowTool::start_tool(int operation)
 			case CWINDOW_RULER:
 				new_gui = new CWindowRulerGUI(mwindow, this);
 				break;
+			case CWINDOW_PROTECT:
+				mwindow->edl->session->tool_window = 0;
+				gui->composite_panel->operation[CWINDOW_TOOL_WINDOW]->update(0);
+				// fall thru
 			default:
 				result = 1;
 				stop_tool();
@@ -120,13 +125,11 @@ void CWindowTool::start_tool(int operation)
 			output_lock->lock("CWindowTool::start_tool");
 			this->tool_gui = new_gui;
 			tool_gui->create_objects();
-
-			if(mwindow->edl->session->tool_window &&
-				mwindow->session->show_cwindow) tool_gui->show_window();
-			tool_gui->lock_window("CWindowTool::start_tool 1");
-			tool_gui->flush();
-			tool_gui->unlock_window();
-
+			if( previous_tool == CWINDOW_PROTECT || previous_tool == CWINDOW_NONE ) {
+				mwindow->edl->session->tool_window = 1;
+				gui->composite_panel->operation[CWINDOW_TOOL_WINDOW]->update(1);
+			}
+			update_show_window();
 
 // Signal thread to run next tool GUI
 			input_lock->unlock();
@@ -305,6 +308,8 @@ int CWindowToolGUI::keypress_event()
 	case KEY_F8:
 	case KEY_F9:
 	case KEY_F10:
+	case KEY_F11:
+	case KEY_F12:
 		resend_event(thread->gui);
 		result = 1;
 	}
@@ -2305,30 +2310,32 @@ CWindowRulerGUI::~CWindowRulerGUI()
 
 void CWindowRulerGUI::create_objects()
 {
-	int x = 10, y = 10;
+	int x = 10, y = 10, x1 = 100;
 	BC_Title *title;
 
 	lock_window("CWindowRulerGUI::create_objects");
 	add_subwindow(title = new BC_Title(x, y, _("Current:")));
-	add_subwindow(current = new BC_Title(x + title->get_w() + 10, y, ""));
+	add_subwindow(current = new BC_TextBox(x1, y, 200, 1, ""));
 	y += title->get_h() + 5;
-
 	add_subwindow(title = new BC_Title(x, y, _("Point 1:")));
-	add_subwindow(point1 = new BC_Title(x + title->get_w() + 10, y, ""));
+	add_subwindow(point1 = new BC_TextBox(x1, y, 200, 1, ""));
 	y += title->get_h() + 5;
-
 	add_subwindow(title = new BC_Title(x, y, _("Point 2:")));
-	add_subwindow(point2 = new BC_Title(x + title->get_w() + 10, y, ""));
+	add_subwindow(point2 = new BC_TextBox(x1, y, 200, 1, ""));
 	y += title->get_h() + 5;
-
+	add_subwindow(title = new BC_Title(x, y, _("Deltas:")));
+	add_subwindow(deltas = new BC_TextBox(x1, y, 200, 1, ""));
+	y += title->get_h() + 5;
 	add_subwindow(title = new BC_Title(x, y, _("Distance:")));
-	add_subwindow(distance = new BC_Title(x + title->get_w() + 10, y, ""));
+	add_subwindow(distance = new BC_TextBox(x1, y, 200, 1, ""));
 	y += title->get_h() + 5;
 	add_subwindow(title = new BC_Title(x, y, _("Angle:")));
-	add_subwindow(angle = new BC_Title(x + title->get_w() + 10, y, ""));
+	add_subwindow(angle = new BC_TextBox(x1, y, 200, 1, ""));
 	y += title->get_h() + 10;
 	char string[BCTEXTLEN];
-	sprintf(string, _("Press Ctrl to lock ruler to the\nnearest 45%c angle."), 0xb0);
+	sprintf(string,
+		 _("Press Ctrl to lock ruler to the\nnearest 45%c%c angle."),
+		0xc2, 0xb0); // degrees utf
 	add_subwindow(title = new BC_Title(x,
 		y,
 		string));
@@ -2343,42 +2350,27 @@ void CWindowRulerGUI::create_objects()
 
 void CWindowRulerGUI::update()
 {
-	double distance_value =
-		sqrt(SQR(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1) +
-		SQR(mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1));
-	double angle_value = atan((mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1) /
-		(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1)) *
-		360 /
-		2 /
-		M_PI;
-
-	if(EQUIV(distance_value, 0.0))
-	{
-		angle_value = 0.0;
-	}
-	else
-	if(angle_value < 0)
-	{
-		angle_value *= -1;
-	}
-
 	char string[BCTEXTLEN];
-	sprintf(string, "%d, %d",
-		mwindow->session->cwindow_output_x,
-		mwindow->session->cwindow_output_y);
+	int cx = mwindow->session->cwindow_output_x;
+	int cy = mwindow->session->cwindow_output_y;
+	sprintf(string, "%d, %d", cx, cy);
 	current->update(string);
-	sprintf(string, "%.0f, %.0f",
-		mwindow->edl->session->ruler_x1,
-		mwindow->edl->session->ruler_y1);
+	double x1 = mwindow->edl->session->ruler_x1;
+	double y1 = mwindow->edl->session->ruler_y1;
+	sprintf(string, "%.0f, %.0f", x1, y1);
 	point1->update(string);
-	sprintf(string, "%.0f, %.0f",
-		mwindow->edl->session->ruler_x2,
-		mwindow->edl->session->ruler_y2);
+	double x2 = mwindow->edl->session->ruler_x2;
+	double y2 = mwindow->edl->session->ruler_y2;
+	sprintf(string, "%.0f, %.0f", x2, y2);
 	point2->update(string);
-
-	sprintf(string, _("%0.01f pixels"), distance_value);
+	double dx = x2 - x1, dy = y2 - y1;
+	sprintf(string, "%s%.0f, %s%.0f", (dx>=0? "+":""), dx, (dy>=0? "+":""), dy);
+	deltas->update(string);
+	double d = sqrt(dx*dx + dy*dy);
+	sprintf(string, _("%0.01f pixels"), d);
 	distance->update(string);
-	sprintf(string, "%0.02f %c", angle_value, 0xb0);
+	double a = d > 0 ? (atan2(-dy, dx) * 180/M_PI) : 0.;
+	sprintf(string, "%0.02f %c%c", a, 0xc2, 0xb0);
 	angle->update(string);
 }
 

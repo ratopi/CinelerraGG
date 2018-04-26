@@ -1266,6 +1266,8 @@ locking_message = event->xclient.message_type;
 		case XK_F8:		key_pressed = KEY_F8;	break;
 		case XK_F9:		key_pressed = KEY_F9;	break;
 		case XK_F10:		key_pressed = KEY_F10;	break;
+		case XK_F11:		key_pressed = KEY_F11;	break;
+		case XK_F12:		key_pressed = KEY_F12;	break;
 
 		case XK_Menu:		key_pressed = KPMENU;	break;  /* menu */
 // remote control

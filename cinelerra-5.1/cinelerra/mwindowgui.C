@@ -1303,6 +1303,8 @@ int MWindowGUI::keypress_event()
 	case KEY_F8:
 	case KEY_F9:
 	case KEY_F10:
+	case KEY_F11:
+	case KEY_F12:
 		resend_event(mwindow->cwindow->gui);
 		return 1;
 	}

@@ -168,8 +168,9 @@ public:
 	OverlayFrame *overlayer;
 	VFrame *object, *scene, *replace;
 
+	static void draw_point(VFrame *vframe,int x1, int y1);
 	static void draw_line(VFrame *vframe, int x1, int y1, int x2, int y2);
-	void draw_quad(VFrame *vframe,
+	static void draw_quad(VFrame *vframe,
 			int x1, int y1, int x2, int y2,
 			int x3, int y3, int x4, int y4);
 	static void draw_rect(VFrame *vframe, int x1, int y1, int x2, int y2);

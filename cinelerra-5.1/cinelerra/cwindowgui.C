@@ -571,6 +571,8 @@ int CWindowGUI::keypress_event()
 		case KEY_F8:	cwindow_operation = CWINDOW_EYEDROP;	break;
 		case KEY_F9:	cwindow_operation = CWINDOW_TOOL_WINDOW; break;
 		case KEY_F10:	cwindow_operation = CWINDOW_TITLESAFE;	break;
+		case KEY_F11:	canvas->reset_camera();			break;
+		case KEY_F12:	canvas->reset_projector();		break;
 	}
 
 	if( cwindow_operation >= 0 ) {

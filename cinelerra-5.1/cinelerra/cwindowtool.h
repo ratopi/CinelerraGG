@@ -443,11 +443,12 @@ public:
 // Update the gui
 	void handle_event();
 
-	BC_Title *current;
-	BC_Title *point1;
-	BC_Title *point2;
-	BC_Title *distance;
-	BC_Title *angle;
+	BC_TextBox *current;
+	BC_TextBox *point1;
+	BC_TextBox *point2;
+	BC_TextBox *deltas;
+	BC_TextBox *distance;
+	BC_TextBox *angle;
 };
 
 
