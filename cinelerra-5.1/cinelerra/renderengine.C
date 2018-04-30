@@ -527,17 +527,9 @@ void RenderEngine::run()
 //printf("RenderEngine::run 4.1 %d\n", playback_engine->tracking_position);
 			if(!interrupted)
 			{
-				if(do_audio)
-					playback_engine->tracking_position =
-						(double)arender->current_position /
-							command->get_edl()->session->sample_rate;
-				else
-				if(do_video)
-				{
-					playback_engine->tracking_position =
-						(double)vrender->current_position /
-							command->get_edl()->session->frame_rate;
-				}
+				playback_engine->tracking_position =
+					command->get_direction() == PLAY_FORWARD ?
+						command->end_position : command->start_position;
 			}
 
 			if( playback_engine->is_playing_back && command->displacement ) {

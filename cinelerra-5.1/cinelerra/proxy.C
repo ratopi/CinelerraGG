@@ -259,7 +259,7 @@ void ProxyDialog::to_proxy()
 	mwindow->restart_brender();
 
 	mwindow->gui->lock_window("ProxyDialog::to_proxy");
-	mwindow->update_project(LOAD_ALL);
+	mwindow->update_project(LOADMODE_REPLACE);
 	mwindow->gui->unlock_window();
 }
 

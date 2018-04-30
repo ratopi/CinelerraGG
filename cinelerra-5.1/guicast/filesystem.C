@@ -536,9 +536,7 @@ int FileSystem::create_dir(const char *new_dir_)
 	char new_dir[BCTEXTLEN];
 	strcpy(new_dir, new_dir_);
 	complete_path(new_dir);
-
-	mkdir(new_dir, S_IREAD | S_IWRITE | S_IEXEC);
-	return 0;
+	return mkdir(new_dir, S_IRWXU | S_IRWXG | S_IRWXO);
 }
 
 int FileSystem::parse_tildas(char *new_dir)

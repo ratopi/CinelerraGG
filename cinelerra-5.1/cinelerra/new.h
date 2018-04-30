@@ -46,16 +46,12 @@ public:
 
 	virtual void create_objects() = 0;
 	int handle_event();
-	int run_script(FileXML *script);
 	int create_new_project(int load_mode);
 	void create_new_edl();
 
 	MWindow *mwindow;
 	NewThread *thread;
 	EDL *new_edl;
-
-private:
-	FileXML *script;
 };
 
 class NewProject : public BC_MenuItem, public New
@@ -85,6 +81,7 @@ public:
 	~NewThread();
 
 	BC_Window* new_gui();
+	void handle_done_event(int result);
 	void handle_close_event(int result);
 
 	int load_defaults();
@@ -119,6 +116,8 @@ public:
 	BC_TextBox *frame_rate;
 	BC_TextBox *aspect_w_text, *aspect_h_text;
 	BC_TextBox *output_w_text, *output_h_text;
+	BC_TextBox *folder, *name;
+	BC_RecentList *recent_folder;
 	InterlacemodePulldown *interlace_pulldown;
 	ColormodelPulldown *color_model;
 	NewPresets *format_presets;

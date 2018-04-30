@@ -107,7 +107,7 @@ void write_ppm(uint8_t *tp, int w, int h, const char *fmt, ...)
   if( fp ) {
     fprintf(fp,"P6\n%d %d\n255\n",w,h);
     fwrite(tp,3*w,h,fp);
-    if( fp != sdtout ) fclose(fp);
+    if( fp != stdout ) fclose(fp);
   }
 }
 

@@ -65,7 +65,8 @@ BC_RecentList::~BC_RecentList()
 	items.remove_all_objects();
 }
 
-int BC_RecentList::handle_event() {
+int BC_RecentList::handle_event()
+{
 	BC_ListBoxItem *item = get_selection(0, 0);
 	if( !item ) return 0;
 	char *text = item->get_text();
@@ -79,7 +80,8 @@ int BC_RecentList::handle_event() {
 }
 
 
-int BC_RecentList::load_items(const char *prefix) {
+int BC_RecentList::load_items(const char *prefix)
+{
 
 	if (! prefix) prefix = "ANY";
 
@@ -105,7 +107,8 @@ int BC_RecentList::load_items(const char *prefix) {
 }
 
 
-int BC_RecentList::add_item(const char *prefix, char *text) {
+int BC_RecentList::add_item(const char *prefix, const char *text)
+{
 
 	if (! prefix) prefix = "ANY";
 
@@ -133,3 +136,4 @@ int BC_RecentList::add_item(const char *prefix, char *text) {
 
 	return count;
 }
+

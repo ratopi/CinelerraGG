@@ -9,6 +9,12 @@ For usage help, refer to the following:
 Cinfinity icons selected in Preferences (Creative Common
   By https://creativecommons.org/licenses/by/3.0/)
 .
+April 2018 New Features of note:
+  FFmpeg has been updated to V 4.0. Libx265 to 2.7.
+  OpenCV FindObj updated and StyleObj, PuzzleObj added.
+  Shortcuts F11-F12 in compositor / b for load backup.
+  Drag widget designed/added for future versatility.
+.
 March 2018 New Features of note:
   Audio now is associated when in the Proxy folder.
   Perpetual Session preference and 1 extra backup.

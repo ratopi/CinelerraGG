@@ -37,6 +37,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
+#include "filesystem.h"
 #include "filexml.h"
 #include "language.h"
 #include "loadfile.h"
@@ -776,10 +777,13 @@ int SnapshotMenuItem::handle_event()
 		preferences->snapshot_path, _("snap"),
 		1900+tm.tm_year,1+tm.tm_mon,tm.tm_mday,
 		tm.tm_hour,tm.tm_min,tm.tm_sec, exts[mode]);
+	char *asset_path = FileSystem::basepath(filename);
+	Asset *asset = new Asset(asset_path);
+	delete [] asset_path;
+
 	int fw = edl->get_w(), fh = edl->get_h();
 	int fcolor_model = edl->session->color_model;
 
-	Asset *asset = new Asset(filename);
 	switch( mode ) {
 	case SNAPSHOT_PNG:
 		asset->format = FILE_PNG;
@@ -998,8 +1002,9 @@ int GrabshotPopup::grab_event(XEvent *event)
 		preferences->snapshot_path, _("grab"),
 		1900+tm.tm_year,1+tm.tm_mon,tm.tm_mday,
 		tm.tm_hour,tm.tm_min,tm.tm_sec, exts[mode]);
-
-	Asset *asset = new Asset(filename);
+	char *asset_path = FileSystem::basepath(filename);
+	Asset *asset = new Asset(asset_path);
+	delete [] asset_path;
 	switch( mode ) {
 	case GRABSHOT_PNG:
 		asset->format = FILE_PNG;

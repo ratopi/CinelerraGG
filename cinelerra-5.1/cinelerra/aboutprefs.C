@@ -117,7 +117,7 @@ void AboutPrefs::create_objects()
 "This program is free software; you can redistribute it and/or modify it under the terms\n"
 "of the GNU General Public License as published by the Free Software Foundation; either version\n"
 "2 of the License, or (at your option) any later version.\n"
-"\n"
+"  This software uses libraries from the FFmpeg project under the LGPLv2.1.\n"
 "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n"
 "without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n"
 "PURPOSE.  See the GNU General Public License for more details.\n"));

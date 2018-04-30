@@ -471,6 +471,7 @@ void MWindow::init_defaults(BC_Hash* &defaults, char *config_path)
 	else
 		create_defaults_path(path, CONFIG_FILE);
 
+	delete defaults;
 	defaults = new BC_Hash(path);
 	defaults->load();
 }
@@ -746,17 +747,17 @@ void MWindow::add_plugins(ArrayList<PluginServer*> &plugins)
 
 void MWindow::init_plugin_tips(ArrayList<PluginServer*> &plugins, const char *lang)
 {
-	const char *cfg_path = File::get_cindat_path();
+	const char *dat_path = File::get_cindat_path();
 	char msg_path[BCTEXTLEN];
 	FILE *fp = 0;
 	if( BC_Resources::language[0] ) {
 		snprintf(msg_path, sizeof(msg_path), "%s/info/plugins.%s",
-			cfg_path, lang);
+			dat_path, lang);
 		fp = fopen(msg_path, "r");
 	}
 	if( !fp ) {
 		snprintf(msg_path, sizeof(msg_path), "%s/info/plugins.txt",
-			cfg_path);
+			dat_path);
 		fp = fopen(msg_path, "r");
 	}
 	if( !fp ) return;

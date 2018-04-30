@@ -627,6 +627,7 @@ void FindObjMain::reshape()
 		double v = atan2(vy, vx);
 		double h = atan2(hy, hx);
 		r = (h + v - pi/2) / 2;
+		if( config.mode != MODE_QUADRILATERAL ) r = -r;
 	}
 // diagonal length
 	double a = dist(x1,y1, x3,y3) / 2;

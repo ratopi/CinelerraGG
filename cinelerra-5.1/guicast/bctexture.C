@@ -227,7 +227,20 @@ void BC_Texture::bind(int texture_unit)
 #endif
 }
 
-void write_ppm(uint8_t *tp, int w, int h, const char *fmt, ...);
+#ifdef HAVE_GL
+static void write_ppm(uint8_t *tp, int w, int h, const char *fmt, ...)
+{
+  va_list ap;    va_start(ap, fmt);
+  char fn[256];  vsnprintf(fn, sizeof(fn), fmt, ap);
+  va_end(ap);
+  FILE *fp = !strcmp(fn,"-") ? stdout : fopen(fn,"w");
+  if( fp ) {
+    fprintf(fp,"P6\n%d %d\n255\n",w,h);
+    fwrite(tp,3*w,h,fp);
+    if( fp != stdout ) fclose(fp);
+  }
+}
+#endif
 
 void BC_Texture::write_tex(const char *fn)
 {

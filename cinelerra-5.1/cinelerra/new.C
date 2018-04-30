@@ -19,16 +19,19 @@
  *
  */
 
+#include "browsebutton.h"
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "filesystem.h"
 #include "filexml.h"
 #include "interlacemodes.h"
 #include "language.h"
 #include "levelwindow.h"
+#include "mainerror.h"
 #include "mainundo.h"
 #include "mainmenu.h"
 #include "mutex.h"
@@ -52,12 +55,16 @@
 
 
 #define WIDTH 640
-#define HEIGHT 425
+// full height
+#define HEIGHT0 585
+// add tracks dialog
+#define HEIGHT1 240
+// offset for folder panel
+#define HEIGHT2 440
 
 New::New(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
-	script = 0;
 	new_edl = 0;
 	thread = 0;
 }
@@ -115,7 +122,7 @@ int New::create_new_project(int load_mode)
 		}
 	}
 	mwindow->undo->update_undo_before();
-	mwindow->set_filename("");
+	mwindow->set_filename(new_edl->path);
 	ArrayList<EDL *>new_edls;
 	new_edls.append(new_edl);
 	mwindow->paste_edls(&new_edls, load_mode, 0,0,0,0,0,0);
@@ -193,19 +200,58 @@ BC_Window* NewThread::new_gui()
 	return nwindow;
 }
 
+void NewThread::handle_done_event(int result)
+{
+	if( !result ) {
+		const char *project_folder = nwindow->folder->get_text();
+		const char *project_name = nwindow->name->get_text();
+		if( project_folder[0] && project_name[0] ) {
+			nwindow->recent_folder->add_item("PROJECT", project_folder);
+			char project_path[BCTEXTLEN], *ep = project_path + sizeof(project_path);
+			FileSystem fs;  fs.join_names(project_path, project_folder, project_name);
+			char *bp = strrchr(project_path, '/');
+			if( !bp ) bp = project_path;
+			bp = strrchr(bp, '.');
+			if( !bp ) bp = project_path + strlen(project_path);
+			if( strcasecmp(bp,".xml") ) snprintf(bp, ep-bp, ".xml");
+			fs.complete_path(project_path);
+			EDL *new_edl = new_project->new_edl;
+			bp = FileSystem::basepath(project_path);
+			strcpy(new_edl->path, bp);  delete [] bp;
+		}
+	}
+}
+
 void NewThread::handle_close_event(int result)
 {
 	if( !new_project->new_edl ) return;
-	new_project->new_edl->save_defaults(mwindow->defaults);
-	mwindow->defaults->save();
 
-	if( result ) {
-// Aborted
-		if( !new_project->new_edl->Garbage::remove_user() )
-			new_project->new_edl = 0;
+	FileSystem fs;
+	char *path = new_project->new_edl->path;
+	char *bp = path;
+	while( !result ) {
+		while( *bp == '/' ) ++bp;
+		if( !(bp = strchr(bp, '/')) ) break;
+		char dir_path[BCTEXTLEN];
+		int len = bp - path;
+		strncpy(dir_path, path, len);
+		dir_path[len] = 0;
+		if( fs.is_dir(dir_path) ) continue;
+		if( fs.create_dir(dir_path) ) {
+			eprintf(_("Cannot create and access project path:\n%s"),
+				dir_path);
+			result = 1;
+		}
 	}
-	else {
+
+	if( !result ) {
+		new_project->new_edl->save_defaults(mwindow->defaults);
+		mwindow->defaults->save();
 		new_project->create_new_project(load_mode);
+	}
+	else { // Aborted
+		new_project->new_edl->Garbage::remove_user();
+		new_project->new_edl = 0;
 	}
 }
 
@@ -240,7 +286,7 @@ int NewThread::update_aspect()
 
 NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
  : BC_Window(new_thread->title, x, y,
-		WIDTH, new_thread->load_mode == LOADMODE_REPLACE ? HEIGHT : HEIGHT-180,
+		WIDTH, new_thread->load_mode == LOADMODE_REPLACE ? HEIGHT0 : HEIGHT1,
 		-1, -1, 0, 0, 1)
 {
 	this->mwindow = mwindow;
@@ -258,6 +304,9 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	aspect_h_text = 0;
 	interlace_pulldown = 0;
 	color_model = 0;
+	folder = 0;
+	name = 0;
+	recent_folder = 0;
 }
 
 NewWindow::~NewWindow()
@@ -271,6 +320,7 @@ void NewWindow::create_objects()
 {
 	int x = 10, y = 10, x1, y1;
 	BC_TextBox *textbox;
+	BC_Title *title;
 
 	lock_window("NewWindow::create_objects");
 	mwindow->theme->draw_new_bg(this);
@@ -400,7 +450,6 @@ void NewWindow::create_objects()
 		y += aspect_w_text->get_h() + 5;
 		add_subwindow(new NewAspectAuto(this, x1, y));
 		y += 40;
-		BC_Title *title;
 		add_subwindow(title = new BC_Title(x, y, _("Color model:")));
 		x1 = x + title->get_w();
 		y1 = y;  y += title->get_h() + 10;
@@ -417,6 +466,21 @@ void NewWindow::create_objects()
 			textbox, &new_edl->session->interlace_mode,
 			(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_project_modes,
 			x1+textbox->get_w(), y2));
+
+		x = 20;  y = HEIGHT2;
+		add_subwindow(title = new BC_Title(x, y, _("Create project folder in:")));
+		x1 = x;  y += title->get_h() + 5;
+		add_subwindow(folder = new BC_TextBox(x1, y, get_w()-x1-64, 1, ""));
+		x1 += folder->get_w() + 10;
+		add_subwindow(recent_folder = new BC_RecentList("FOLDER", mwindow->defaults, folder));
+		recent_folder->load_items("PROJECT");
+		x1 = recent_folder->get_x() + recent_folder->get_w();
+		add_subwindow(new BrowseButton(mwindow->theme, this, folder, x1, y, "",
+                        _("Project Directory"), _("Project Directory Path:"), 1));
+		y += folder->get_h() + 10;  x1 = x;
+		add_subwindow(title = new BC_Title(x1, y, _("Project Name:")));
+		x1 += title->get_w() + 10;
+		add_subwindow(name = new BC_TextBox(x1, y, get_w()-x1-64, 1, ""));
 	}
 
 	add_subwindow(new BC_OKButton(this,
