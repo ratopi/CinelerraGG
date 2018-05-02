@@ -112,6 +112,7 @@ void VWindowGUI::draw_wave()
 	int w = mwindow->edl->session->output_w;
 	int h = mwindow->edl->session->output_h;
 	VFrame *vframe = new VFrame(w, h, BC_RGB888);
+	vframe->clear_frame();
 	int sample_rate = mwindow->edl->get_sample_rate();
 	int channels = mwindow->edl->session->audio_channels;
 	if( channels > 2 ) channels = 2;

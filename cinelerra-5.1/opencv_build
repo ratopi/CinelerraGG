@@ -81,8 +81,8 @@ $(opencv)/build: $(opencv).src
   -DOPENCV_EXTRA_MODULES_PATH="$(opencv)_contrib/modules/"
 
 LFLAGS += -Wl,--start-group
-LFLAGS += $(shell ls -1 $(opencv_prefix)/lib*/libopencv_*.a 2> /dev/null)
-LFLAGS += $(shell ls -1 $(opencv_prefix)/share/OpenCV/3rdparty/lib*/lib*.a 2> /dev/null)
+LFLAGS += $(shell find $(opencv_prefix)/lib* -name "libopencv_*.a" 2> /dev/null)
+LFLAGS += $(shell find $(opencv_prefix)/share/OpenCV/3rdparty/lib* -name "lib*.a" 2> /dev/null)
 LFLAGS += -Wl,--end-group
 else ifeq ($(bld),dyn)
 $(opencv)/build: $(opencv).src
@@ -98,7 +98,7 @@ $(opencv)/build: $(opencv).src
   -DOPENCV_EXTRA_MODULES_PATH="$(opencv)_contrib/modules/"
 
 SYSLIB := $(lastword $(wildcard /usr/lib /usrlib32 /usr/lib64))
-CVLIBS := $(opencv_prefix)/lib
+CVLIBS := $(dir (shell find $(opencv_prefix) -name libopencv_core.a))
 LFLAGS += -L$(CVLIBS) $(patsubst $(CVLIBS)/lib%.so,-l%,$(wildcard $(CVLIBS)/libopencv_*.so))
 LFLAGS += $(patsubst $(SYSLIB)/lib%.so,-l%,$(wildcard $(SYSLIB)/lib{Half,Imath,Ilm,Iex}*.so))
 static_libs :=

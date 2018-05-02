@@ -552,6 +552,7 @@ void AssetPicon::create_objects()
 					pixmap_w = pixmap_h * 16/9;
 					icon_vframe = new VFrame(0,
 						-1, pixmap_w, pixmap_h, BC_RGB888, -1);
+					icon_vframe->clear_frame();
 					{ char string[BCTEXTLEN];
 					sprintf(string, _("Reading %s"), name);
 					mwindow->gui->lock_window("AssetPicon::create_objects 3");
@@ -684,6 +685,7 @@ void AssetPicon::create_objects()
 					pixmap_w = pixmap_h * 16/9;
 					icon_vframe = new VFrame(0,
 						-1, pixmap_w, pixmap_h, BC_RGB888, -1);
+					icon_vframe->clear_frame();
 					char string[BCTEXTLEN];
 					sprintf(string, _("Rendering %s"), name);
 					mwindow->gui->lock_window("AssetPicon::create_objects 3");
