@@ -21,8 +21,10 @@
 
 #include "clip.h"
 #include "bchash.h"
+#include "filesystem.h"
 #include "filexml.h"
 #include "language.h"
+#include "mwindow.h"
 #include "pluginaclientlad.h"
 #include "pluginserver.h"
 #include "samples.h"
@@ -505,12 +507,14 @@ void PluginAClientLAD::read_data(KeyFrame *keyframe)
 
 void PluginAClientLAD::delete_buffers()
 {
-	if(in_buffers)
-		for(int i = 0; i < total_inbuffers; i++) delete [] in_buffers[i];
-	if(out_buffers)
-		for(int i = 0; i < total_outbuffers; i++) delete [] out_buffers[i];
-	in_buffers = 0;
-	out_buffers = 0;
+	if( in_buffers ) {
+		for( int i=0; i<total_inbuffers; ++i ) delete [] in_buffers[i];
+		delete [] in_buffers;  in_buffers = 0;
+	}
+	if( out_buffers ) {
+		for( int i=0; i<total_outbuffers; ++i ) delete [] out_buffers[i];
+		delete [] out_buffers;  out_buffers = 0;
+	}
 	total_inbuffers = 0;
 	total_outbuffers = 0;
 	buffer_allocation = 0;
@@ -650,5 +654,22 @@ int PluginAClientLAD::process_realtime(int64_t size,
 	return size;
 }
 
-
+int MWindow::init_ladspa_index(MWindow *mwindow, Preferences *preferences,
+	const char *index_path, const char *plugin_dir)
+{
+	char plugin_path[BCTEXTLEN], *path = FileSystem::basepath(plugin_dir);
+	strcpy(plugin_path, path);  delete [] path;
+	printf("init ladspa index: %s\n", plugin_dir);
+	FILE *fp = fopen(index_path,"w");
+	if( !fp ) {
+		fprintf(stderr,_("MWindow::init_ladspa_index: "
+			"can't create plugin index: %s\n"), index_path);
+		return 1;
+	}
+	fprintf(fp, "%d\n", PLUGIN_FILE_VERSION);
+	fprintf(fp, "%s\n", plugin_dir);
+	init_plugin_index(mwindow, preferences, fp, plugin_path);
+	fclose(fp);
+	return 0;
+}
 

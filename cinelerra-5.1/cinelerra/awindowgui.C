@@ -2467,10 +2467,14 @@ AddTools::AddTools(MWindow *mwindow, AWindowGUI *gui, int x, int y, const char *
 void AddTools::create_objects()
 {
 	uint64_t vis = 0;
-	add_item(new AddPluginItem(this, "ladspa", PLUGIN_LADSPA_ID));
-	vis |= 1 << PLUGIN_LADSPA_ID;
 	add_item(new AddPluginItem(this, "ffmpeg", PLUGIN_FFMPEG_ID));
 	vis |= 1 << PLUGIN_FFMPEG_ID;
+	add_item(new AddPluginItem(this, "ladspa", PLUGIN_LADSPA_ID));
+	vis |= 1 << PLUGIN_LADSPA_ID;
+#ifdef HAVE_LV2
+	add_item(new AddPluginItem(this, "lv2", PLUGIN_LV2_ID));
+	vis |= 1 << PLUGIN_LV2_ID;
+#endif
 	for( int i=0; i<MWindow::plugindb->size(); ++i ) {
 		PluginServer *plugin = MWindow::plugindb->get(i);
 		if( !plugin->audio && !plugin->video ) continue;
@@ -2489,8 +2493,9 @@ void AddTools::create_objects()
 
 #if 0
 // plugin_dirs list from toplevel makefile include plugin_defs
-N_("ladspa")
 N_("ffmpeg")
+N_("ladspa")
+N_("lv2")
 N_("audio_tools")
 N_("audio_transitions")
 N_("blending")

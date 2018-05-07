@@ -95,6 +95,7 @@ class PluginServer
 	int lad_index;
 	LADSPA_Descriptor_Function lad_descriptor_function;
 	const LADSPA_Descriptor *lad_descriptor;
+
 	int use_opengl;
 // FFMPEG support
 	const char *ff_name;
@@ -102,7 +103,7 @@ class PluginServer
 	VideoDevice *vdevice;
 public:
 	PluginServer();
-	PluginServer(MWindow *mwindow, char *path, int type);
+	PluginServer(MWindow *mwindow, const char *path, int type);
 	PluginServer(PluginServer &);
 	virtual ~PluginServer();
 
@@ -164,13 +165,19 @@ public:
 	VFrame *get_picon();
 	VFrame *get_plugin_images();
 
+	int is_unknown();
+	int is_executable();
+	int is_builtin();
+// ffmpeg
+	int is_ffmpeg();
+	PluginClient *new_ffmpeg_plugin();
 // ladspa
 	void set_lad_index(int i);
 	int get_lad_index();
 	int is_ladspa();
-// ffmpeg
-	int is_ffmpeg();
-	PluginClient *new_ffmpeg_plugin();
+// lv2
+	int is_lv2();
+	PluginClient *new_lv2_plugin();
 // =============================== for realtime plugins
 // save configuration of plugin
 	void save_data(KeyFrame *keyframe);

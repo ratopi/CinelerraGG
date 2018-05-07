@@ -32,6 +32,7 @@ CHECK_WITH([jobs],[parallel build jobs],[JOBS],[auto])
 CHECK_WITH([exec-name],[binary executable name],[CIN],[cin])
 CHECK_WITH([single-user],[to install cin in bin],[CINBIN_BUILD],[no])
 CHECK_WITH([ladspa-build],[build ladspa library],[LADSPA_BUILD],[yes])
+CHECK_WITH([lv2],[lv2 library support],[LV2],[yes])
 CHECK_WITH([cinlib],[cinelerra library path],[CINLIB_DIR],[auto])
 CHECK_WITH([cindat],[cinelerra share path],[CINDAT_DIR],[auto])
 CHECK_WITH([plugin-dir],[plugin install dir],[PLUGIN_DIR],[auto])
@@ -547,6 +548,16 @@ CHECK_WANT([LIBOPUS], [auto], [use libopus], [
  CHECK_LIB([opus], [opus], [opus_multistream_decoder_create])
  CHECK_HEADERS([opus], [libopus headers], [opus/opus_multistream.h])])
 
+CHECK_WANT([LV2], [auto], [use lv2], [
+ CHECK_LIB([lv2], [lilv-0], [lilv_world_new])
+ CHECK_LIB([sord], [sord-0], [sord_world_new])
+ CHECK_LIB([serd], [serd-0], [serd_reader_new])
+ CHECK_LIB([sratom], [sratom-0], [sratom_new])
+ saved_CFLAGS="$CXXFLAGS"
+ CFLAGS="-I/usr/include/lilv-0"
+ CHECK_HEADERS([lv2], [lilv headers], [lilv/lilv.h])
+ CFLAGS="$saved_CXXFLAGS"])
+
 CHECK_WANT([DL], [auto], [system has libdl], [
  CHECK_LIB([DL], [dl], [dlopen])])
 
@@ -695,7 +706,7 @@ AC_SUBST(SYSTEM_LIBS)
 
 echo ""
 for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB \
-	 VIDEO4LINUX2 ESOUND PACTL OPENEXR; do
+	 VIDEO4LINUX2 ESOUND PACTL OPENEXR LV2; do
   eval vv="\$WANT_$v"
   if test "x$vv" != "xno"; then
     CFG_CFLAGS+=" -DHAVE_$v"
@@ -740,6 +751,9 @@ if test "x$HAVE_opus" = "xyes"; then
   EXTRA_LIBS+=' -lopus'
   CFG_CFLAGS+=' -I/usr/include/opus'
   FFMPEG_EXTRA_CFG+=' --enable-libopus'
+fi
+if test "x$HAVE_lv2" = "xyes"; then
+  CFG_CFLAGS+=' -I/usr/include/lilv-0'
 fi
 
 AC_SUBST(EXTRA_LIBS)

@@ -1169,7 +1169,7 @@ PluginServer* MWindow::new_ffmpeg_server(MWindow *mwindow, const char *name)
 	PluginFFilter *ffilt = PluginFFilter::new_ffilter(name);
 	if( !ffilt ) return 0;
 	delete ffilt;
-	return new PluginServer(mwindow, (char*)name, PLUGIN_TYPE_FFMPEG);
+	return new PluginServer(mwindow, name, PLUGIN_TYPE_FFMPEG);
 }
 
 void MWindow::init_ffmpeg_index(MWindow *mwindow, Preferences *preferences, FILE *fp)

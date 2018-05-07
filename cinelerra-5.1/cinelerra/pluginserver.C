@@ -87,7 +87,7 @@ PluginServer::PluginServer()
 	init();
 }
 
-PluginServer::PluginServer(MWindow *mwindow, char *path, int type)
+PluginServer::PluginServer(MWindow *mwindow, const char *path, int type)
 {
 	char fpath[BCTEXTLEN];
 	init();
@@ -98,7 +98,7 @@ PluginServer::PluginServer(MWindow *mwindow, char *path, int type)
 		sprintf(fpath, "ff_%s", path);
 		path = fpath;
 	}
-        set_path(path);
+	set_path(path);
 }
 
 PluginServer::PluginServer(PluginServer &that)
@@ -154,18 +154,14 @@ int PluginServer::reset_parameters()
 	prompt = 0;
 	cleanup_plugin();
 
-	lad_index = -1;
-	lad_descriptor_function = 0;
-	lad_descriptor = 0;
-
 	plugin_obj = 0;
 	client = 0; 
 	new_plugin = 0;
 	lad_index = -1;
 	lad_descriptor_function = 0;
 	lad_descriptor = 0;
-	use_opengl = 0;
 	ff_name = 0;
+	use_opengl = 0;
 	vdevice = 0;
 	plugin_type = 0;
 	start_auto = end_auto = 0;
@@ -242,6 +238,21 @@ int PluginServer::get_lad_index()
 	return this->lad_index;
 }
 
+int PluginServer::is_unknown()
+{
+	return plugin_type == PLUGIN_TYPE_UNKNOWN ? 1 : 0;
+}
+
+int PluginServer::is_executable()
+{
+	return  plugin_type == PLUGIN_TYPE_EXECUTABLE ? 1 : 0;
+}
+
+int PluginServer::is_builtin()
+{
+	return plugin_type == PLUGIN_TYPE_BUILTIN ? 1 : 0;
+}
+
 int PluginServer::is_ladspa()
 {
 	return plugin_type == PLUGIN_TYPE_LADSPA ? 1 : 0;
@@ -250,6 +261,11 @@ int PluginServer::is_ladspa()
 int PluginServer::is_ffmpeg()
 {
 	return plugin_type == PLUGIN_TYPE_FFMPEG ? 1 : 0;
+}
+
+int PluginServer::is_lv2()
+{
+	return plugin_type == PLUGIN_TYPE_LV2 ? 1 : 0;
 }
 
 void PluginServer::set_path(const char *path)
@@ -332,20 +348,20 @@ int PluginServer::open_plugin(int master,
 	this->preferences = preferences;
 	this->plugin = plugin;
 	this->edl = edl;
-	if( plugin_type != PLUGIN_TYPE_FFMPEG && plugin_type != PLUGIN_TYPE_EXECUTABLE && !load_obj() ) {
-// If the load failed, can't use error to detect executable
-//  because locale and language selection change the load_error()
+	if( !is_ffmpeg() && !is_lv2() && !is_executable() && !load_obj() ) {
+// If the load failed, can't use error string to detect executable
+//  because locale and language selection changes the load_error() message
 //	if( !strstr(string, "executable") ) { set_title(path); plugin_type = PLUGIN_TYPE_EXECUTABLE; }
 		eprintf("PluginServer::open_plugin: load_obj %s = %s\n", path, load_error());
 		return PLUGINSERVER_NOT_RECOGNIZED;
 	}
-	if( plugin_type == PLUGIN_TYPE_UNKNOWN || plugin_type == PLUGIN_TYPE_BUILTIN ) {
+	if( is_unknown() || is_builtin() ) {
 		new_plugin =
 			(PluginClient* (*)(PluginServer*)) get_sym("new_plugin");
 		if( new_plugin )
 			plugin_type = PLUGIN_TYPE_BUILTIN;
 	}
-	if( plugin_type == PLUGIN_TYPE_UNKNOWN || plugin_type == PLUGIN_TYPE_LADSPA ) {
+	if( is_unknown() || is_ladspa() ) {
 		lad_descriptor_function =
 			(LADSPA_Descriptor_Function) get_sym("ladspa_descriptor");
 		if( lad_descriptor_function ) {
@@ -356,7 +372,7 @@ int PluginServer::open_plugin(int master,
 			plugin_type = PLUGIN_TYPE_LADSPA;
 		}
 	}
-	if( plugin_type == PLUGIN_TYPE_UNKNOWN ) {
+	if( is_unknown() ) {
 		fprintf(stderr, "PluginServer::open_plugin "
 			" %d: plugin undefined in %s\n", __LINE__, path);
 		return PLUGINSERVER_NOT_RECOGNIZED;
@@ -367,11 +383,14 @@ int PluginServer::open_plugin(int master,
 	case PLUGIN_TYPE_BUILTIN:
 		client = new_plugin(this);
 		break;
+	case PLUGIN_TYPE_FFMPEG:
+		client = new_ffmpeg_plugin();
+		break;
 	case PLUGIN_TYPE_LADSPA:
 		client = new PluginAClientLAD(this);
 		break;
-	case PLUGIN_TYPE_FFMPEG:
-		client = new_ffmpeg_plugin();
+	case PLUGIN_TYPE_LV2:
+		client = new_lv2_plugin();
 		break;
 	default:
 		client = 0;

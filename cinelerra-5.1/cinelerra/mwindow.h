@@ -688,7 +688,10 @@ public:
 	static void init_ffmpeg_index(MWindow *mwindow, Preferences *preferences, FILE *fp);
 	static int load_plugin_index(MWindow *mwindow, const char *index_path,
 		const char *plugin_dir);
-	static PluginServer* new_ffmpeg_server(MWindow *mwindow, const char *name);
+	static PluginServer *new_ffmpeg_server(MWindow *mwindow, const char *name);
+	static int init_lv2_index(MWindow *mwindow, Preferences *preferences, FILE *fp);
+	static PluginServer *new_lv2_server(MWindow *mwindow, const char *name);
+
 	void init_preferences();
 	void init_signals();
 	void init_theme();

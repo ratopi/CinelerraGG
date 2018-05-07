@@ -1,4 +1,6 @@
 #!/bin/bash
+# add lilv-devel for lv2 support
+#  also need lv2 plugins (eg. lv2-calf-plugin)
 
 if [ `id -u` -ne 0 ]; then
   echo "you must be root"
@@ -10,6 +12,7 @@ if [ $# -ne 1 ]; then
 fi
 
 dir="$1"
+
 
 case "$dir" in
 "centos")
@@ -33,6 +36,7 @@ case "$dir" in
     rm -f /tmp/$yasm
   ;;
 "fedora")
+  dnf install groups "Development Tools"
   dnf -y --best --allowerasing \
     install nasm yasm libavc1394-devel libusb-devel flac-devel \
     libjpeg-devel libdv-devel libdvdnav-devel libdvdread-devel \
@@ -76,7 +80,7 @@ case "$dir" in
   ;;
 #"ub16-10")
 #  apt-get -y install libx264-dev libx265-dev libvpx-dev libmjpegtools-dev
-"ubuntu" | "mint" | "ub14" | "ub15" | "ub16" | "ub17" )
+"ubuntu" | "mint" | "ub14" | "ub15" | "ub16" | "ub17" | "ub18" )
   apt-get -y install apt-file sox nasm yasm g++ build-essential libz-dev \
     texinfo libpng-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \

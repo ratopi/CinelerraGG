@@ -562,6 +562,9 @@ int MWindow::load_plugin_index(MWindow *mwindow, const char *index_path, const c
 		case PLUGIN_TYPE_FFMPEG: {
 			server = new_ffmpeg_server(mwindow, path);
 			break; }
+		case PLUGIN_TYPE_LV2: {
+			server = new_lv2_server(mwindow, path);
+			break; }
 		}
 		if( !server ) continue;
 		plugins.append(server);
@@ -630,6 +633,7 @@ int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
 	fprintf(fp, "%s\n", plugin_path);
 	init_plugin_index(mwindow, preferences, fp, plugin_path);
 	init_ffmpeg_index(mwindow, preferences, fp);
+	init_lv2_index(mwindow, preferences, fp);
 	fclose(fp);
 	return load_plugin_index(mwindow, index_path, plugin_path);
 }
@@ -674,25 +678,6 @@ void MWindow::init_plugin_index(MWindow *mwindow, Preferences *preferences,
 		}
 	}
 	scan_plugin_index(mwindow, preferences, fp, plugin_dir, ".", idx);
-}
-
-int MWindow::init_ladspa_index(MWindow *mwindow, Preferences *preferences,
-	const char *index_path, const char *plugin_dir)
-{
-	char plugin_path[BCTEXTLEN], *path = FileSystem::basepath(plugin_dir);
-	strcpy(plugin_path, path);  delete [] path;
-	printf("init ladspa index: %s\n", plugin_dir);
-	FILE *fp = fopen(index_path,"w");
-	if( !fp ) {
-		fprintf(stderr,_("MWindow::init_ladspa_index: "
-			"can't create plugin index: %s\n"), index_path);
-		return 1;
-	}
-	fprintf(fp, "%d\n", PLUGIN_FILE_VERSION);
-	fprintf(fp, "%s\n", plugin_dir);
-	init_plugin_index(mwindow, preferences, fp, plugin_path);
-	fclose(fp);
-	return 0;
 }
 
 void MWindow::scan_plugin_index(MWindow *mwindow, Preferences *preferences, FILE *fp,

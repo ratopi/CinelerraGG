@@ -223,6 +223,7 @@ OBJS = \
 	$(OBJDIR)/pluginclient.o \
 	$(OBJDIR)/plugindialog.o \
 	$(OBJDIR)/pluginfclient.o \
+	$(OBJDIR)/pluginlv2client.o \
 	$(OBJDIR)/plugin.o \
 	$(OBJDIR)/pluginpopup.o \
 	$(OBJDIR)/pluginserver.o \

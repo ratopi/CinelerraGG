@@ -19,23 +19,19 @@
  *
  */
 
-#ifndef PLUGINSERVER_INC
-#define PLUGINSERVER_INC
+#ifndef PLUGINLV2CLIENT_INC
+#define PLUGINLV2CLIENT_INC
 
-class PluginObj;
-class PluginServer;
-
-#define PLUGIN_FFMPEG_ID 0
-#define PLUGIN_LADSPA_ID 1
-#define PLUGIN_LV2_ID 2
-#define PLUGIN_IDS 3
-
-#define PLUGIN_TYPE_UNKNOWN -1
-#define PLUGIN_TYPE_EXECUTABLE 0
-#define PLUGIN_TYPE_BUILTIN 1
-#define PLUGIN_TYPE_FFMPEG 2
-#define PLUGIN_TYPE_LADSPA 3
-#define PLUGIN_TYPE_LV2 4
-#define PLUGIN_TYPES 5
+class PluginLV2UriTable;
+class PluginLV2Client_OptName;
+class PluginLV2Client_OptValue;
+class PluginLV2Client_Opt;
+class PluginLV2ClientConfig;
+class PluginLV2Client_OptPanel;
+class PluginLV2ClientText;
+class PluginLV2ClientReset;
+class PluginLV2ClientApply;
+class PluginLV2ClientWindow;
+class PluginLV2Client;
 
 #endif
