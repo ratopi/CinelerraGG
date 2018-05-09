@@ -30,7 +30,7 @@ http://dl.maptools.org/dl/libtiff/libtiff-cvsroot, untar, cd libtiff, cvs init, 
 https://sourceforge.net/projects/libuuid/files/latest/download?source=directory - 1.0.3
 ftp://ftp.videolan.org/pub/x264/snapshots/x264-snapshot-20170426-2245-stable.tar.bz2
 https://bitbucket.org/multicoreware/x265/downloads/x265_2.4.tar.gz
-http://ffmpeg.org/releases/ffmpeg-3.3.tar.bz2
+http://ffmpeg.org/releases/ffmpeg-4.0.tar.bz2
 https://github.com/webmproject/libvpx/releases/tag/v1.7.0
 https://github.com/swh/ladspa/releases/tag/v0.4.17, plugin.org.uk
 https://archive.mozilla.org/pub/opus/opus-1.2.1.tar.gz

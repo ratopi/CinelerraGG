@@ -110,11 +110,11 @@ public:
 
 class PluginLV2ClientText : public BC_TextBox {
 public:
-        PluginLV2ClientWindow *gui;
+	PluginLV2ClientWindow *gui;
 
-        PluginLV2ClientText(PluginLV2ClientWindow *gui, int x, int y, int w);
-        ~PluginLV2ClientText();
-        int handle_event();
+	PluginLV2ClientText(PluginLV2ClientWindow *gui, int x, int y, int w);
+	~PluginLV2ClientText();
+	int handle_event();
 };
 
 class PluginLV2ClientReset : public BC_GenericButton
@@ -129,11 +129,27 @@ public:
 
 class PluginLV2ClientApply : public BC_GenericButton {
 public:
-        PluginLV2ClientWindow *gui;
+	PluginLV2ClientWindow *gui;
 
-        PluginLV2ClientApply(PluginLV2ClientWindow *gui, int x, int y);
-        ~PluginLV2ClientApply();
-        int handle_event();
+	PluginLV2ClientApply(PluginLV2ClientWindow *gui, int x, int y);
+	~PluginLV2ClientApply();
+	int handle_event();
+};
+
+class PluginLV2ClientPot : public BC_FPot
+{
+public:
+	PluginLV2ClientPot(PluginLV2ClientWindow *gui, int x, int y);
+	int handle_event();
+	PluginLV2ClientWindow *gui;
+};
+
+class PluginLV2ClientSlider : public BC_FSlider
+{
+public:
+	PluginLV2ClientSlider(PluginLV2ClientWindow *gui, int x, int y);
+	int handle_event();
+	PluginLV2ClientWindow *gui;
 };
 
 class PluginLV2ClientWindow : public PluginClientWindow
@@ -143,13 +159,17 @@ public:
 	~PluginLV2ClientWindow();
 
 	void create_objects();
+	int resize_event(int w, int h);
 	void update_selected();
+	void update_selected(float v);
 	int scalar(float f, char *rp);
 	void update(PluginLV2Client_Opt *opt);
 
 	PluginLV2Client *plugin;
 	PluginLV2ClientReset *reset;
 	PluginLV2ClientApply *apply;
+	PluginLV2ClientPot *pot;
+	PluginLV2ClientSlider *slider;
 	PluginLV2ClientText *text;
 	BC_Title *varbl, *range;
 	PluginLV2Client_OptPanel *panel;

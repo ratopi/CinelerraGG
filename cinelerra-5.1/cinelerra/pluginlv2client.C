@@ -156,22 +156,22 @@ int PluginLV2ClientConfig::equivalent(PluginLV2ClientConfig &that)
 
 void PluginLV2ClientConfig::copy_from(PluginLV2ClientConfig &that)
 {
-        if( nb_ports != that.nb_ports ) {
-                reset();
+	if( nb_ports != that.nb_ports ) {
+		reset();
 		nb_ports = that.nb_ports;
 		names = new const char *[nb_ports];
-        	for( int i=0; i<nb_ports; ++i ) names[i] = 0;
+		for( int i=0; i<nb_ports; ++i ) names[i] = 0;
 		mins  = new float[nb_ports];
 		maxs  = new float[nb_ports];
 		ctls  = new float[nb_ports];
-        }
-        for( int i=0; i<nb_ports; ++i ) {
+	}
+	for( int i=0; i<nb_ports; ++i ) {
 		delete [] names[i];
 		names[i] = cstrdup(that.names[i]);
-                mins[i] = that.mins[i];
-                maxs[i] = that.maxs[i];
-                ctls[i] = that.ctls[i];
-        }
+		mins[i] = that.mins[i];
+		maxs[i] = that.maxs[i];
+		ctls[i] = that.ctls[i];
+	}
 	remove_all_objects();
 	for( int i=0; i<that.size(); ++i ) {
 		append(new PluginLV2Client_Opt(this, that[i]->sym, that[i]->idx));
@@ -193,7 +193,7 @@ void PluginLV2ClientConfig::init_lv2(const LilvPlugin *lilv)
 	maxs  = new float[nb_ports];
 	ctls  = new float[nb_ports];
 	lilv_plugin_get_port_ranges_float(lilv, mins, maxs, ctls);
-       	for( int i=0; i<nb_ports; ++i ) {
+	for( int i=0; i<nb_ports; ++i ) {
 		const LilvPort *lp = lilv_plugin_get_port_by_index(lilv, i);
 		LilvNode *pnm = lilv_port_get_name(lilv, lp);
 		names[i] = cstrdup(lilv_node_as_string(pnm));
@@ -230,15 +230,15 @@ int PluginLV2ClientReset::handle_event()
 	gui->selected = 0;
 	gui->update_selected();
 	gui->panel->update();
-        plugin->send_configure_change();
-        return 1;
+	plugin->send_configure_change();
+	return 1;
 }
 
 PluginLV2ClientText::
 PluginLV2ClientText(PluginLV2ClientWindow *gui, int x, int y, int w)
  : BC_TextBox(x, y, w, 1, (char *)"")
 {
-        this->gui = gui;
+	this->gui = gui;
 }
 
 PluginLV2ClientText::
@@ -248,7 +248,7 @@ PluginLV2ClientText::
 
 int PluginLV2ClientText::handle_event()
 {
-        return 0;
+	return 0;
 }
 
 
@@ -318,7 +318,7 @@ void PluginLV2Client_OptPanel::update()
 }
 
 PluginLV2ClientWindow::PluginLV2ClientWindow(PluginLV2Client *plugin)
- : PluginClientWindow(plugin, 500, 300, 500, 300, 0)
+ : PluginClientWindow(plugin, 500, 300, 500, 300, 1)
 {
 	this->plugin = plugin;
 	selected = 0;
@@ -344,6 +344,11 @@ void PluginLV2ClientWindow::create_objects()
 	add_subwindow(apply = new PluginLV2ClientApply(this, x1, y));
 	add_subwindow(text = new PluginLV2ClientText(this, x, y, x1-x - 8));
 	y += title->get_h() + 10;
+	add_subwindow(pot = new PluginLV2ClientPot(this, x, y));
+	x1 = x + pot->get_w() + 10;
+	add_subwindow(slider = new PluginLV2ClientSlider(this, x1, y+10));
+	y += pot->get_h() + 10;
+
 	plugin->init_lv2();
 
 	int panel_x = x, panel_y = y;
@@ -355,6 +360,54 @@ void PluginLV2ClientWindow::create_objects()
 	show_window(1);
 }
 
+int PluginLV2ClientWindow::resize_event(int w, int h)
+{
+	int x1 = w - reset->get_w() - 8;
+	reset->reposition_window(x1, reset->get_y());
+	x1 = w - apply->get_w() - 8;
+	apply->reposition_window(x1, apply->get_y());
+	text->reposition_window(text->get_x(), text->get_y(), x1-text->get_x() - 8);
+	x1 = pot->get_x() + pot->get_w() + 10;
+	int w1 = w - slider->get_x() - 20;
+	slider->set_pointer_motion_range(w1);
+	slider->reposition_window(x1, slider->get_y(), w1, slider->get_h());
+	int panel_x = panel->get_x(), panel_y = panel->get_y();
+	panel->reposition_window(panel_x, panel_y, w-10-panel_x, h-10-panel_y);
+	return 1;
+}
+
+PluginLV2ClientPot::PluginLV2ClientPot(PluginLV2ClientWindow *gui, int x, int y)
+ : BC_FPot(x, y, 0.f, 0.f, 0.f)
+{
+	this->gui = gui;
+}
+
+int PluginLV2ClientPot::handle_event()
+{
+	if( gui->selected ) {
+		gui->selected->update(get_value());
+		gui->update_selected();
+		gui->plugin->send_configure_change();
+	}
+	return 1;
+}
+
+PluginLV2ClientSlider::PluginLV2ClientSlider(PluginLV2ClientWindow *gui, int x, int y)
+ : BC_FSlider(x, y, 0, gui->get_w()-x-20, gui->get_w()-x-20, 0.f, 0.f, 0.f)
+{
+	this->gui = gui;
+}
+
+int PluginLV2ClientSlider::handle_event()
+{
+	if( gui->selected ) {
+		gui->selected->update(get_value());
+		gui->update_selected();
+		gui->plugin->send_configure_change();
+	}
+	return 1;
+}
+
 void PluginLV2ClientWindow::update_selected()
 {
 	update(selected);
@@ -362,16 +415,16 @@ void PluginLV2ClientWindow::update_selected()
 
 int PluginLV2ClientWindow::scalar(float f, char *rp)
 {
-        const char *cp = 0;
-             if( f == FLT_MAX ) cp = "FLT_MAX";
-        else if( f == FLT_MIN ) cp = "FLT_MIN";
-        else if( f == -FLT_MAX ) cp = "-FLT_MAX";
-        else if( f == -FLT_MIN ) cp = "-FLT_MIN";
-        else if( f == 0 ) cp = signbit(f) ? "-0" : "0";
-        else if( isnan(f) ) cp = signbit(f) ? "-NAN" : "NAN";
-        else if( isinf(f) ) cp = signbit(f) ? "-INF" : "INF";
-        else return sprintf(rp, "%g", f);
-        return sprintf(rp, "%s", cp);
+	const char *cp = 0;
+	     if( f == FLT_MAX ) cp = "FLT_MAX";
+	else if( f == FLT_MIN ) cp = "FLT_MIN";
+	else if( f == -FLT_MAX ) cp = "-FLT_MAX";
+	else if( f == -FLT_MIN ) cp = "-FLT_MIN";
+	else if( f == 0 ) cp = signbit(f) ? "-0" : "0";
+	else if( isnan(f) ) cp = signbit(f) ? "-NAN" : "NAN";
+	else if( isinf(f) ) cp = signbit(f) ? "-INF" : "INF";
+	else return sprintf(rp, "%g", f);
+	return sprintf(rp, "%s", cp);
 }
 
 void PluginLV2ClientWindow::update(PluginLV2Client_Opt *opt)
@@ -388,11 +441,20 @@ void PluginLV2ClientWindow::update(PluginLV2Client_Opt *opt)
 		sprintf(var,"%s:", opt->conf->names[opt->idx]);
 		char *cp = rng;
 		cp += sprintf(cp,"( ");
-		cp += scalar(opt->conf->mins[opt->idx], cp);
+		float min = opt->conf->mins[opt->idx];
+		cp += scalar(min, cp);
 		cp += sprintf(cp, " .. ");
-		cp += scalar(opt->conf->maxs[opt->idx], cp);
+		float max = opt->conf->maxs[opt->idx];
+		cp += scalar(max, cp);
 		cp += sprintf(cp, " )");
-		sprintf(val, "%f", opt->get_value());
+		float v = opt->get_value();
+		sprintf(val, "%f", v);
+		slider->update(slider->get_w(), v, min, max);
+		pot->update(v, min, max);
+	}
+	else {
+		slider->update(slider->get_w(), 0.f, 0.f, 0.f);
+		pot->update(0.f, 0.f, 0.f);
 	}
 	varbl->update(var);
 	range->update(rng);
@@ -408,7 +470,7 @@ PluginLV2Client::PluginLV2Client(PluginServer *server)
 	out_buffers = 0;
 	nb_in_bfrs = 0;
 	nb_out_bfrs = 0;
-        bfrsz = 0;
+	bfrsz = 0;
 	nb_inputs = 0;
 	nb_outputs = 0;
 	max_bufsz = 0;
@@ -515,7 +577,7 @@ int PluginLV2Client::init_lv2()
 	config.init_lv2(lilv);
 	nb_inputs = nb_outputs = 0;
 
-        for( int i=0; i<config.nb_ports; ++i ) {
+	for( int i=0; i<config.nb_ports; ++i ) {
 		const LilvPort *lp = lilv_plugin_get_port_by_index(lilv, i);
 		int is_input = lilv_port_is_a(lilv, lp, lv2_InputPort);
 		if( !is_input && !lilv_port_is_a(lilv, lp, lv2_OutputPort) &&
@@ -668,7 +730,7 @@ void PluginLV2Client::connect_ports()
 			else
 				lilv_instance_connect_port(instance, i, seq_out);
 			continue;
-            	}
+		}
 		if( lilv_port_is_a(lilv, lp, lv2_ControlPort) ) {
 			lilv_instance_connect_port(instance, i, &config.ctls[i]);
 			continue;
@@ -713,10 +775,10 @@ void PluginLV2Client::delete_buffers()
 		delete [] in_buffers;  in_buffers = 0;  nb_in_bfrs = 0;
 	}
 	if( out_buffers ) {
-                for( int i=0; i<nb_out_bfrs; ++i ) delete [] out_buffers[i];
+		for( int i=0; i<nb_out_bfrs; ++i ) delete [] out_buffers[i];
 		delete [] out_buffers;  out_buffers = 0;  nb_out_bfrs = 0;
 	}
-        bfrsz = 0;
+	bfrsz = 0;
 }
 
 int PluginLV2Client::process_realtime(int64_t size,

@@ -31,6 +31,8 @@ class PluginLV2Client_OptPanel;
 class PluginLV2ClientText;
 class PluginLV2ClientReset;
 class PluginLV2ClientApply;
+class PluginLV2ClientPot;
+class PluginLV2ClientSlider;
 class PluginLV2ClientWindow;
 class PluginLV2Client;
 
