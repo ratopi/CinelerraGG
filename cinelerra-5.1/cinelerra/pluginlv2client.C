@@ -838,6 +838,9 @@ PluginServer* MWindow::new_lv2_server(MWindow *mwindow, const char *name)
 PluginClient *PluginServer::new_lv2_plugin()
 {
 	PluginLV2Client *client = new PluginLV2Client(this);
+//for some lv2 clients
+	if( client->sample_rate < 64 ) client->sample_rate = 64;
+	if( client->project_sample_rate < 64 ) client->project_sample_rate = 64;
 	if( client->load_lv2(path) ) { delete client;  client = 0; }
 	else client->init_lv2();
 	return client;
