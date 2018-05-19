@@ -88,14 +88,14 @@ void BC_Signals::set_catch_segv(bool v) {
 	if( v == trap_sigsegv ) return;
 	if( v ) catch_segv();
 	else uncatch_segv();
-	v = trap_sigsegv;
+	trap_sigsegv = v;
 }
 
 void BC_Signals::set_catch_intr(bool v) {
 	if( v == trap_sigintr ) return;
 	if( v ) catch_intr();
 	else uncatch_intr();
-	v = trap_sigintr;
+	trap_sigintr = v;
 }
 
 static void bc_copy_textfile(int lines, FILE *ofp, const char *fmt,...)

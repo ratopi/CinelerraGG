@@ -213,6 +213,46 @@ x265.cfg_vars?=$(call cmake_config,source)
 x265.cfg_params?= -DENABLE_SHARED=no
 libvpx.cfg_params?= --enable-pic
 
+DS:=$$$$$$$$
+pkg_cfg=$(call bld_path,$(1),usr/local/lib/pkgconfig):
+LV2_PKGCFG:=$(subst : ,:,$(foreach p,lv2 serd sord sratom lilv suil,$(call pkg_cfg,$(p))))
+
+# lv2
+define waf-setup
+$(1).cfg_vars+=echo 'exec ./waf configure "$(DS)@"' > ./configure; chmod +x \
+ ./configure;  PKG_CONFIG_PATH=$(LV2_PKGCFG) LD_LIBRARY_PATH=$(LV2_LIBPATH) 
+$(1).cfg_params+=\
+ CFLAGS="-I$(call bld_path,lv2) $(foreach f,$(2), $(call inc_path,$(f))) -fPIC "\
+ LDFLAGS="-lm $(foreach f,$(2), $(call ld_path,$(f),usr/local/lib)) "
+$(1).mak_vars=(echo "all:"; echo "	./waf -v build") > $(call bld_path,$(1),Makefile); 
+$(1).mak_params+=; ( cd $(1)*; ./waf install --destdir=$(call bld_path,$(1)) )
+endef
+
+SYS_LIB:=$(notdir $(lastword $(wildcard /usr/lib /usrlib32 /usr/lib64)))
+SYS_LV2:=$(lastword $(wildcard /usr/$(SYS_LIB)/lv2 /usr/local/$(SYS_LIB)/lv2))
+$(if $(SYS_LV2),,$(eval SYS_LV2:=/usr/$(SYS_LIB)/lv2))
+lv2.cfg_params?= --lv2dir=$(SYS_LV2)
+SYS_LV2_PATH:=/usr/$(SYS_LIB)/lv2: /usr/local/$(SYS_LIB)/lv2:
+DFT_LV2_PATH:= /usr/lib64/lv2: /usr/lib/lv2: /usr/local/lib64/lv2: /usr/local/lib/lv2: 
+LV2_PATH:=$(subst : ,:,$(SYS_LV2_PATH)$(filter-out $(SYS_LV2_PATH),$(DFT_LV2_PATH)))
+lilv.cfg_params?= --static --default-lv2-path=$(LV2_PATH)
+sratom.cfg_params?= --static --no-shared
+serd.cfg_params?= --static --no-shared
+sord.cfg_params?= --static --no-shared
+lilv.cfg_params?= --static --dyn-manifest
+suil.cfg_params?= --static --no-qt
+
+$(eval $(call waf-setup,lv2))
+$(eval $(call waf-setup,serd))
+$(eval $(call waf-setup,sord, serd))
+$(eval $(call waf-setup,sratom, serd sord))
+$(eval $(call waf-setup,lilv, lv2 sratom serd sord))
+$(eval $(call waf-setup,suil, lv2))
+
+# add softlinks for legacy paths
+waf_link=$(1).mak_params+=; (cd $(1)*; ln -s $(1)-0/$(1) usr/local/include/.)
+$(foreach p,sratom serd sord lilv suil,$(eval $(call waf_link,$(p))))
+
 # compile flag vars
 $(foreach tgt,$(TARGETS), \
 	$(if $($(tgt).cflags),$(eval $(tgt).cfg_vars+=CFLAGS+=$($(tgt).cflags))))
@@ -267,6 +307,12 @@ $(call rules,$(call std-build,twolame))
 $(call rules,$(call std-build,x264))
 $(call rules,$(call std-build,x265))
 $(call rules,$(call std-build,libvpx))
+$(call rules,$(call std-build,lv2))
+$(call rules,$(call std-build,serd))
+$(call rules,$(call std-build,sord, serd))
+$(call rules,$(call std-build,sratom, serd sord))
+$(call rules,$(call std-build,lilv, lv2 sratom serd sord))
+$(call rules,$(call std-build,suil, lv2))
 
 # specialize festival, multiple tarballs
 festival:

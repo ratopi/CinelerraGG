@@ -129,6 +129,7 @@ OBJS = \
 	$(OBJDIR)/floatauto.o \
 	$(OBJDIR)/floatautos.o \
 	$(OBJDIR)/folderlistmenu.o \
+	$(OBJDIR)/forkbase.o \
 	$(OBJDIR)/formatcheck.o \
 	$(OBJDIR)/formatpopup.o \
 	$(OBJDIR)/formatpresets.o \
@@ -223,7 +224,9 @@ OBJS = \
 	$(OBJDIR)/pluginclient.o \
 	$(OBJDIR)/plugindialog.o \
 	$(OBJDIR)/pluginfclient.o \
+	$(OBJDIR)/pluginlv2config.o \
 	$(OBJDIR)/pluginlv2client.o \
+	$(OBJDIR)/pluginlv2gui.o \
 	$(OBJDIR)/plugin.o \
 	$(OBJDIR)/pluginpopup.o \
 	$(OBJDIR)/pluginserver.o \
@@ -356,7 +359,6 @@ LIBRARIES := \
 	$(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a \
 	$(MPEG2ENC)/$(OBJDIR)/hveg2enc.a \
 	$(TDB)/$(OBJDIR)/db.a \
-	$(THEME_DATA) \
 
 LIBS := $(LIBRARIES)
 LIBS += $(libraries)
@@ -372,6 +374,15 @@ CUTLIBS = \
 
 BDWRITE = $(OBJDIR)/bdwrite
 BDWOBJS = $(OBJDIR)/bdwrite.o
+
+ifneq ($(WANT_LV2UI),no)
+LV2UI = $(OBJDIR)/lv2ui
+LV2OBJS = \
+	$(OBJDIR)/lv2ui.o \
+	$(OBJDIR)/pluginlv2gui.o \
+	$(OBJDIR)/pluginlv2config.o \
+	$(OBJDIR)/forkbase.o
+endif
 
 CFLAGS := \
 	-I$(GUICAST) \
@@ -411,14 +422,14 @@ endif
 
 $(shell mkdir -p $(OBJDIR))
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
-$(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(LIBS) $(LDFLAGS2) > $(OBJDIR)/objs)
+$(shell echo $(LDFLAGS1) $(OBJS) $(THEME_DATA) $(DCRAW) $(LIBS) $(LDFLAGS2) > $(OBJDIR)/objs)
 
-all:	$(OUTPUT) $(CUTADS) $(BDWRITE)
+all:	$(OUTPUT) $(CUTADS) $(BDWRITE) $(LV2UI)
 
 # Static linking is not possible because the plugins depend on symbols
 # in the main executable.
 # Also VFS only overrides the C library when dynamic linking is used.
-$(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(LIBRARIES)
+$(OUTPUT): $(OBJS) $(THEME_DATA) $(DCRAW) $(LIBRARIES)
 	$(LINKER) `cat $(OBJDIR)/objs`
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT) $(OUTPUT_G))
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
@@ -430,11 +441,19 @@ $(CUTADS):	$(CUTOBJS) $(CUTLIBS) $(LIBRARIES)
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(CUTADS) $(CUTADS).debuginfo)
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(CUTADS))
 
+install-cutads:
+	cp -av $(OBJDIR)/cutads $(BINDIR)/.
+install:	install-cutads
+
 $(BDWRITE):	$(BDWOBJS) $(LIBRARIES)
 	@echo g++ -o $@ $(BDWOBJS)
 	@g++ $(CFLAGS) -pthread -o $@ $(BDWOBJS) $(LIBS)
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(BDWRITE) $(BDWRITE).debuginfo)
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(BDWRITE))
+
+install-bdwrite:
+	cp -av $(OBJDIR)/bdwrite $(BINDIR)/.
+install:	install-bdwrite
 
 ydiff:	ydiff.C $(LIBRARIES)
 	@echo g++ -o $@ ydiff.C
@@ -443,9 +462,6 @@ ydiff:	ydiff.C $(LIBRARIES)
 clean:
 	rm -rf $(OBJDIR)
 
-install:
-	cp -a $(OBJDIR)/cutads $(BINDIR)/.
-	cp -a $(OBJDIR)/bdwrite $(BINDIR)/.
 
 tags:
 	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-*
@@ -454,13 +470,39 @@ tags:
 $(OBJDIR)/%.o:		%.C
 	$(CXX) `cat $(OBJDIR)/c_flags` -DMSGQUAL=$* -c $< -o $@
 
+
 $(OBJDIR)/fileexr.o:	fileexr.C
 	$(CXX) `cat $(OBJDIR)/c_flags` -Wno-deprecated -DMSGQUAL=$* -c $< -o $@
 
 $(OBJDIR)/sha1.o:	sha1.C sha1.h
 	$(CXX) `cat $(OBJDIR)/c_flags` -O3 -c $< -o $@
 
+#lv2
+ifneq ($(WANT_LV2UI),no)
+GTK2_INCS := `pkg-config --cflags gtk+-2.0`
+GTK2_LIBS := `pkg-config --libs gtk+-2.0`
 
+$(OBJDIR)/lv2ui.o:	lv2ui.C
+	$(CXX) `cat $(OBJDIR)/c_flags` $(GTK2_INCS) -DMSGQUAL=$* -c $< -o $@
+
+$(OBJDIR)/lv2ui: $(LV2OBJS)
+	@echo $(CXX) \`cat $(OBJDIR)/c_flags\` $^ -o $@
+	@$(CXX) `cat $(OBJDIR)/c_flags` $^ -o $@ $(LIBS) $(GTK2_LIBS)
+	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(LV2UI) $(LV2UI).debuginfo)
+	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(LV2UI))
+
+.PHONY:	lv2ui
+lv2ui:	$(LV2UI)
+
+install-lv2ui:
+	cp -av $(LV2UI) $(BINDIR)/.
+install:	install-lv2ui
+endif
+
+$(OBJDIR)/pluginlv2gui.o:	pluginlv2gui.C
+	$(CXX) `cat $(OBJDIR)/c_flags` $(GTK2_INCS) -DMSGQUAL=$* -c $< -o $@
+
+#dcraw
 $(DCRAW): dcraw.C
 	$(CXX) `cat $(OBJDIR)/c_flags` $(if $(findstring -ggdb,$(CFLAGS)),,-O4) -DNODEPS -DLOCALTIME \
 		-Wno-misleading-indentation -Wno-sign-compare -Wno-narrowing dcraw.C -c -o $*.o

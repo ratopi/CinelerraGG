@@ -52,7 +52,7 @@ cinstall:
 	cd bin; $(inst_sh) "$(DESTDIR)$(bindir)" "$(WANT_CIN)" \
 		cin_db zmpeg3{cat,cc2txt,ifochk,show,toc}
 	cd bin; $(inst_sh) "$(DESTDIR)$(WANT_CINLIB_DIR)" \
-		bdwrite cutads hveg2enc mpeg2enc mplex mplexlo
+		bdwrite cutads lv2ui hveg2enc mpeg2enc mplex mplexlo
 	cd bin; $(inst_sh) "$(DESTDIR)$(datadir)/$(WANT_CIN)" \
 		COPYING README models Cinelerra_factory ffmpeg msg info tips doc
 	cd bin/locale; $(inst_sh) "$(DESTDIR)$(localedir)" .

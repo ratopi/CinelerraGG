@@ -633,10 +633,8 @@ public:
 	Mutex *keyframe_gui_lock;
 // Lock during creation and destruction of brender so playback doesn't use it.
 	Mutex *brender_lock;
-
 // Initialize shared memory
 	void init_shm(const char *pfn, int64_t min);
-
 // Initialize channel DB's for playback
 	void init_channeldb();
 	void init_render();

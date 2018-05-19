@@ -22,76 +22,13 @@
 #ifndef PLUGINLV2CLIENT_H
 #define PLUGINLV2CLIENT_H
 
-#include "bcdisplayinfo.h"
-#include "guicast.h"
 #include "pluginaclient.h"
+#include "pluginlv2config.h"
 #include "pluginlv2client.inc"
+#include "pluginlv2gui.h"
 #include "samples.inc"
 
-#include <lilv/lilv.h>
-#include <lv2/lv2plug.in/ns/ext/atom/atom.h>
-#include <lv2/lv2plug.in/ns/ext/buf-size/buf-size.h>
-
-class PluginLV2UriTable : public ArrayList<const char *>
-{
-public:
-	PluginLV2UriTable();
-	~PluginLV2UriTable();
-	LV2_URID map(const char *uri);
-	const char *unmap(LV2_URID urid);
-};
-
-class PluginLV2Client_OptName : public BC_ListBoxItem
-{
-public:
-	PluginLV2Client_Opt *opt;
-	PluginLV2Client_OptName(PluginLV2Client_Opt *opt);
-};
-
-class PluginLV2Client_OptValue : public BC_ListBoxItem
-{
-public:
-	PluginLV2Client_Opt *opt;
-	PluginLV2Client_OptValue(PluginLV2Client_Opt *opt);
-	int update();
-};
-
-class PluginLV2Client_Opt
-{
-public:
-	int idx;
-	const char *sym;
-	PluginLV2ClientConfig *conf;
-	PluginLV2Client_OptName *item_name;
-	PluginLV2Client_OptValue *item_value;
-	float get_value();
-	void set_value(float v);
-	int update(float v);
-	const char *get_name();
-
-	PluginLV2Client_Opt(PluginLV2ClientConfig *conf, const char *sym, int idx);
-	~PluginLV2Client_Opt();
-};
-
-
-class PluginLV2ClientConfig : public ArrayList<PluginLV2Client_Opt *>
-{
-public:
-	PluginLV2ClientConfig();
-	~PluginLV2ClientConfig();
-
-	int equivalent(PluginLV2ClientConfig &that);
-	void copy_from(PluginLV2ClientConfig &that);
-	void interpolate(PluginLV2ClientConfig &prev, PluginLV2ClientConfig &next,
-		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
-	void reset();
-	void init_lv2(const LilvPlugin *lilv);
-	int update();
-
-	int nb_ports;
-	const char **names;
-	float *mins, *maxs, *ctls;
-};
+#define LV2_SEQ_SIZE  9624
 
 class PluginLV2Client_OptPanel : public BC_ListBox
 {
@@ -124,6 +61,15 @@ public:
 
 	PluginLV2ClientReset(PluginLV2ClientWindow *gui, int x, int y);
 	~PluginLV2ClientReset();
+	int handle_event();
+};
+
+class PluginLV2ClientUI : public BC_GenericButton {
+public:
+	PluginLV2ClientWindow *gui;
+
+	PluginLV2ClientUI(PluginLV2ClientWindow *gui, int x, int y);
+	~PluginLV2ClientUI();
 	int handle_event();
 };
 
@@ -166,6 +112,7 @@ public:
 	void update(PluginLV2Client_Opt *opt);
 
 	PluginLV2Client *plugin;
+	PluginLV2ClientUI *ui;
 	PluginLV2ClientReset *reset;
 	PluginLV2ClientApply *apply;
 	PluginLV2ClientPot *pot;
@@ -190,7 +137,6 @@ public:
 		Samples **input_ptr,
 		Samples **output_ptr);
 // Update output pointers as well
-	void update_gui();
 	int is_realtime();
 	int is_multichannel();
 	int is_synthesis();
@@ -201,6 +147,12 @@ public:
 	void reset_lv2();
 	int load_lv2(const char *path);
 	int init_lv2();
+	int open_lv2_gui(PluginLV2ClientWindow *gui);
+	void update_gui();
+	void update_lv2();
+	void lv2_update();
+	void lv2_update(float *vals);
+	void lv2_set(int idx, float val);
 
 	PLUGIN_CLASS_MEMBERS(PluginLV2ClientConfig)
 	char title[BCSTRLEN];
@@ -224,7 +176,7 @@ public:
 	LV2_Feature        map_feature;
 	LV2_URID_Unmap     unmap;
 	LV2_Feature        unmap_feature;
-	const LV2_Feature  *features[6];
+	Lv2Features        features;
 	LV2_Atom_Sequence  seq_in[2];
 	LV2_Atom_Sequence  *seq_out;
 
@@ -237,10 +189,11 @@ public:
 	LilvNode *lv2_Optional;
 	LilvNode *lv2_InputPort;
 	LilvNode *lv2_OutputPort;
-	LilvNode *urid_map;
 	LilvNode *powerOf2BlockLength;
 	LilvNode *fixedBlockLength;
 	LilvNode *boundedBlockLength;
+
+	PluginLV2ParentGUI *parent_gui;
 };
 
 #endif

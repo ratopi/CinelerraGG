@@ -1,6 +1,5 @@
 #!/bin/bash
-# add lilv-devel for lv2 support
-#  also need lv2 plugins (eg. lv2-calf-plugin)
+#  need lv2 plugins (eg. lv2-calf-plugin)
 
 if [ `id -u` -ne 0 ]; then
   echo "you must be root"
@@ -27,7 +26,8 @@ case "$dir" in
     libavc1394 festival-devel libiec61883-devel flac-devel inkscape \
     libsndfile-devel libtheora-devel linux-firmware ivtv-firmware \
     libvorbis-devel texinfo xz-devel lzma-devel cmake udftools git \
-    autoconf automake rpm-build jbigkit-devel libvdpau-devel alsa-lib-devel
+    autoconf automake rpm-build jbigkit-devel libvdpau-devel alsa-lib-devel \
+    gtk2-devel
     yasm=yasm-1.3.0-3.fc24.x86_64.rpm
     release=http://archives.fedoraproject.org/pub/fedora/linux/releases/24
     url=$release/Everything/x86_64/os/Packages/y/$yasm
@@ -51,7 +51,7 @@ case "$dir" in
     ivtv-firmware libvorbis-devel texinfo xz-devel lzma-devel cmake git \
     ctags patch gcc-c++ perl-XML-XPath libtiff-devel python dvdauthor \
     gettext-devel inkscape udftools autoconf automake numactl-devel \
-    jbigkit-devel libvdpau-devel
+    jbigkit-devel libvdpau-devel gtk2-devel
   ;;
 "suse" | "leap")
   zypper -n install nasm gcc gcc-c++ zlib-devel texinfo libpng16-devel \
@@ -62,7 +62,7 @@ case "$dir" in
     libdvdnav-devel libdvdread-devel libiec61883-devel libuuid-devel \
     ilmbase-devel fftw3-devel libsndfile-devel libtheora-devel flac-devel \
     libtiff-devel inkscape cmake patch libnuma-devel lzma-devel udftools git \
-    yasm autoconf automake rpm-build libjbig-devel libvdpau-devel
+    yasm autoconf automake rpm-build libjbig-devel libvdpau-devel gtk2-devel
     if [ ! -f /usr/lib64/libtermcap.so ]; then
       ln -s libtermcap.so.2 /usr/lib64/libtermcap.so
     fi
@@ -76,7 +76,7 @@ case "$dir" in
     fonts-dejavu libopenexr-dev festival libfftw3-dev gdb \
     libdc1394-22-dev libesd0-dev libflac-dev libjbig-dev libvdpau-dev \
     inkscape libsndfile1-dev libtheora-dev cmake udftools libxml2-utils git \
-    autoconf automake debhelper
+    autoconf automake debhelper libgtk2.0-dev
   ;;
 #"ub16-10")
 #  apt-get -y install libx264-dev libx265-dev libvpx-dev libmjpegtools-dev
@@ -88,7 +88,7 @@ case "$dir" in
     fonts-dejavu libopenexr-dev libavc1394-dev festival-dev fftw3-dev gdb \
     libdc1394-22-dev libiec61883-dev libesd0-dev libflac-dev libjbig-dev \
     libvdpau-dev libsndfile1-dev libtheora-dev cmake udftools libxml2-utils \
-    git inkscape autoconf automake debhelper
+    git inkscape autoconf automake debhelper libgtk-2.0-dev
   ;;
  *)
   echo "unknown os: $dir"

@@ -33,6 +33,7 @@ CHECK_WITH([exec-name],[binary executable name],[CIN],[cin])
 CHECK_WITH([single-user],[to install cin in bin],[CINBIN_BUILD],[no])
 CHECK_WITH([ladspa-build],[build ladspa library],[LADSPA_BUILD],[yes])
 CHECK_WITH([lv2],[lv2 library support],[LV2],[yes])
+CHECK_WITH([lv2ui],[lv2 ui support],[LV2UI],[yes])
 CHECK_WITH([cinlib],[cinelerra library path],[CINLIB_DIR],[auto])
 CHECK_WITH([cindat],[cinelerra share path],[CINDAT_DIR],[auto])
 CHECK_WITH([plugin-dir],[plugin install dir],[PLUGIN_DIR],[auto])
@@ -40,6 +41,18 @@ CHECK_WITH([ladspa-dir],[ladspa install dir],[LADSPA_DIR],[auto])
 CHECK_WITH([config-dir],[.bcast config dir],[CONFIG_DIR],[$$HOME/.bcast5])
 CHECK_WITH([browser],[cin_browser path],[CIN_BROWSER],[firefox])
 CHECK_WITH([git-ffmpeg],[git ffmpeg using url],[GIT_FFMPEG],[no])
+
+if test "x$WANT_LV2" != "xno"; then
+  if test "x$WANT_LV2UI" != "xno"; then
+    GTK2_LIBS=`pkg-config --libs gtk+-2.0`
+    AC_CHECK_LIB([m], [gtk_init], [HAVE_gtk=yes], [HAVE_gtk=no], [$GTK2_LIBS])
+    test "x$HAVE_gtk" != "xno" && test -z "`pkg-config --cflags gtk+-2.0`" && HAVE_gtk=no
+    test "x$HAVE_gtk" != "xno" && test -z "`pkg-config --libs gtk+-2.0`" && HAVE_gtk=no
+    if test "x$HAVE_gtk" = "xno"; then
+      AC_MSG_ERROR([LV2UI requires gtk+-2.0 support.])
+    fi
+  fi
+fi
 
 if test "x$WANT_CINBIN_BUILD" = "xyes"; then
   WANT_LOCALE_DIR='$$CIN_LIB/locale'
@@ -323,6 +336,36 @@ PKG_3RD([libvpx],[auto],
   [ libvpx.a ],
   [ . ])
 
+PKG_3RD([lv2],[auto],
+  [lv2-1.14.0],
+  [ ],
+  [ usr/local/include usr/local/lib64/lv2 usr/local/lib/lv2 ])
+
+PKG_3RD([sratom],[auto],
+  [sratom-0.6.0],
+  [ usr/local/lib/libsratom-0.a ],
+  [ usr/local/include ])
+
+PKG_3RD([serd],[auto],
+  [serd-0.28.0],
+  [ usr/local/lib/libserd-0.a ],
+  [ usr/local/include ])
+
+PKG_3RD([sord],[auto],
+  [sord-0.16.0],
+  [ usr/local/lib/libsord-0.a ],
+  [ usr/local/include ])
+
+PKG_3RD([lilv],[auto],
+  [lilv-0.24.2],
+  [ usr/local/lib/liblilv-0.a ],
+  [ usr/local/include ])
+
+PKG_3RD([suil],[auto],
+  [suil-0.8.4],
+  [ usr/local/lib/libsuil-0.a ],
+  [ usr/local/include ])
+
 AC_SUBST(STATIC_PKGS)
 
 AC_DEFUN([CHECK_ENABLE], [
@@ -482,11 +525,11 @@ CHECK_LIB([vdpau], [vdpau], [vdp_device_create_x11])
 
 AC_DEFUN([CHECK_WANT], [
 RESULT=yes
+# WANT_$1
+if test "x$WANT_$1" != "xyes" -a "x$WANT_$1" != "xno" ; then
 AC_ARG_WITH(m4_tolower([$1]),
  AC_HELP_STRING([m4_join([-],[--with],m4_tolower([$1]))], [$3] (auto)),
   [WANT_$1=$withval],[WANT_$1=$2])
-# WANT_$1
-if test "x$WANT_$1" != "xno" ; then
  m4_quote($4)
  if test "x$RESULT" = "xno" -a "x$PKG_$1" = "x"; then
   echo "=== want $1 Failed."
@@ -549,21 +592,31 @@ CHECK_WANT([LIBOPUS], [auto], [use libopus], [
  CHECK_HEADERS([opus], [libopus headers], [opus/opus_multistream.h])])
 
 CHECK_WANT([LV2], [auto], [use lv2], [
- CHECK_LIB([lv2], [lilv-0], [lilv_world_new])
+ saved_CFLAGS="$CFLAGS"
+ CHECK_LIB([lilv], [lilv-0], [lilv_world_new])
  CHECK_LIB([sord], [sord-0], [sord_world_new])
  CHECK_LIB([serd], [serd-0], [serd_reader_new])
  CHECK_LIB([sratom], [sratom-0], [sratom_new])
- saved_CFLAGS="$CXXFLAGS"
  CFLAGS="-I/usr/include/lilv-0"
  CHECK_HEADERS([lv2], [lilv headers], [lilv/lilv.h])
- CFLAGS="$saved_CXXFLAGS"])
+ CFLAGS="$saved_CFLAGS"])
+
+if test "x$WANT_LV2" = "xno"; then
+ WANT_LV2UI=no
+fi
+
+CHECK_WANT([LV2UI], [auto], [use lv2ui], [
+ CHECK_LIB([suil], [suil-0], [suil_instance_new])
+ CFLAGS="-I/usr/include/suil-0"
+ CHECK_HEADERS([lv2ui], [suil headers], [suil/suil.h])
+ CFLAGS="$saved_CFLAGS"])
 
 CHECK_WANT([DL], [auto], [system has libdl], [
  CHECK_LIB([DL], [dl], [dlopen])])
 
 CHECK_WANT([EXR], [auto], [use exr], [])
+
 CHECK_WANT([OPENCV], [no], [opencv=sys/sta/dyn,git/tar=url], [
- WANT_OPENCV="$withval"
 ])
 
 CHECK_WANT([NUMA], [auto], [system has libnuma], [
@@ -695,6 +748,15 @@ PKG_PROVIDE([x264])
 PKG_PROVIDE([x265])
 PKG_PROVIDE([libvpx])
 PKG_PROVIDE([opus], [$WANT_OPUS])
+PKG_PROVIDE([lv2], [$WANT_LV2])
+PKG_PROVIDE([lilv], [$WANT_LV2])
+PKG_PROVIDE([sratom], [$WANT_LV2])
+PKG_PROVIDE([serd], [$WANT_LV2])
+PKG_PROVIDE([sord], [$WANT_LV2])
+PKG_PROVIDE([suil], [$WANT_LV2UI])
+
+test "x$WANT_LV2"   = "xyes" && test "x$BUILD_lilv" = "x0" && CFG_CFLAGS+=' -I/usr/include/lilv-0'
+test "x$WANT_LV2UI" = "xyes" && test "x$BUILD_suil" = "x0" && CFG_CFLAGS+=' -I/usr/include/suil-0'
 
 AC_SUBST(STATIC_BLDS)
 AC_SUBST(SHARED_LIBS)
@@ -706,7 +768,7 @@ AC_SUBST(SYSTEM_LIBS)
 
 echo ""
 for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB \
-	 VIDEO4LINUX2 ESOUND PACTL OPENEXR LV2; do
+	 VIDEO4LINUX2 ESOUND PACTL OPENEXR LV2 LV2UI; do
   eval vv="\$WANT_$v"
   if test "x$vv" != "xno"; then
     CFG_CFLAGS+=" -DHAVE_$v"
@@ -751,9 +813,6 @@ if test "x$HAVE_opus" = "xyes"; then
   EXTRA_LIBS+=' -lopus'
   CFG_CFLAGS+=' -I/usr/include/opus'
   FFMPEG_EXTRA_CFG+=' --enable-libopus'
-fi
-if test "x$HAVE_lv2" = "xyes"; then
-  CFG_CFLAGS+=' -I/usr/include/lilv-0'
 fi
 
 AC_SUBST(EXTRA_LIBS)

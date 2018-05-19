@@ -210,7 +210,6 @@ MWindow::MWindow()
 	strcpy(cin_lang,"en");
 	channeldb_buz =  new ChannelDB;
 	channeldb_v4l2jpeg =  new ChannelDB;
-	//file_server = 0;
 	plugin_guis = 0;
 	dead_plugins = 0;
 	keyframe_threads = 0;
@@ -319,7 +318,6 @@ MWindow::~MWindow()
 	delete gwindow;         gwindow = 0;
 	delete cwindow;         cwindow = 0;
 	delete gui;		gui = 0;
-	//delete file_server;  file_server = 0; // reusable
 	delete mainindexes;     mainindexes = 0;
 	delete mainprogress;    mainprogress = 0;
 	delete audio_cache;     audio_cache = 0;  // delete the cache after the assets
@@ -2326,9 +2324,6 @@ void MWindow::create_objects(int want_gui,
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
 	if(debug) PRINT_TRACE
-
-// Initialize before too much else is running
-// Preferences & theme are required for building MPEG table of contents
 
 // Default project created here
 	init_edl();

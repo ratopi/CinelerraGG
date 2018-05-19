@@ -22,11 +22,6 @@
 #ifndef PLUGINLV2CLIENT_INC
 #define PLUGINLV2CLIENT_INC
 
-class PluginLV2UriTable;
-class PluginLV2Client_OptName;
-class PluginLV2Client_OptValue;
-class PluginLV2Client_Opt;
-class PluginLV2ClientConfig;
 class PluginLV2Client_OptPanel;
 class PluginLV2ClientText;
 class PluginLV2ClientReset;
