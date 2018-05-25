@@ -53,13 +53,4 @@ public:
 	const char *title;
 };
 
-class mLock
-{
-	Mutex &mutex;
-public:
-	mLock(Mutex &m) : mutex(m) { mutex.lock(); }
-	mLock(Mutex *m) : mutex(*m) { mutex.lock(); }
-	~mLock() { mutex.unlock(); }
-};
-
 #endif

@@ -73,9 +73,10 @@ XMLBuffer::~XMLBuffer()
 	if( destroy ) delete [] bfr;
 }
 
-unsigned char *&XMLBuffer::demand(long len)
+int XMLBuffer::demand(long len)
 {
 	if( len > bsz ) {
+		if( !destroy ) return 0;
 		long sz = inp-bfr;
 		len += sz/2 + BCTEXTLEN;
 		unsigned char *np = new unsigned char[len];
@@ -85,13 +86,13 @@ unsigned char *&XMLBuffer::demand(long len)
 		lmt = np + len;  bsz = len;
 		delete [] bfr;   bfr = np;
 	}
-	return bfr;
+	return 1;
 }
 
 int XMLBuffer::write(const char *bp, int len)
 {
-	if( !destroy && lmt-inp < len ) len = lmt-inp;
 	if( len <= 0 ) return 0;
+	if( !destroy && lmt-inp < len ) len = lmt-inp;
 	demand(otell()+len);
 	memmove(inp,bp,len);
 	inp += len;

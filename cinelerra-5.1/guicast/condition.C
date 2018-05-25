@@ -92,11 +92,11 @@ int Condition::timed_lock(int microseconds, const char *location)
 	struct timeval now;
 	gettimeofday(&now, 0);
 #if 1
-	struct timespec timeout;
-	timeout.tv_sec = now.tv_sec + microseconds / 1000000;
-	timeout.tv_nsec = now.tv_usec * 1000 + (microseconds % 1000000) * 1000;
-	while(value <= 0 && result != ETIMEDOUT)
-	{
+	int64_t nsec = now.tv_usec * 1000 + (microseconds % 1000000) * 1000;
+	int64_t sec = nsec / 1000000000;  nsec %= 1000000000;
+	sec += now.tv_sec + microseconds / 1000000;
+	struct timespec timeout;  timeout.tv_sec = sec;   timeout.tv_nsec = nsec;
+	while( value <= 0 && result != ETIMEDOUT ) {
 		result = pthread_cond_timedwait(&cond, &mutex, &timeout);
 	}
 

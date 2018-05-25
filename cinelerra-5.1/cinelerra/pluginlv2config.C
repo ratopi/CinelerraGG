@@ -29,6 +29,7 @@
 #include <string.h>
 
 PluginLV2UriTable::PluginLV2UriTable()
+ : Mutex("PluginLV2UriTable::PluginLV2UriTable")
 {
 	set_array_delete();
 }
@@ -40,18 +41,21 @@ PluginLV2UriTable::~PluginLV2UriTable()
 
 LV2_URID PluginLV2UriTable::map(const char *uri)
 {
-	mLock locker(uri_table_lock);
-	for( int i=0; i<size(); ++i )
-		if( !strcmp(uri, get(i)) ) return i+1;
-	append(cstrdup(uri));
-	return size();
+	lock("PluginLV2UriTable::map");
+	int i = 0, n = size();
+	while( i<n && strcmp(uri, get(i)) ) ++i;
+	if( i >= n ) append(cstrdup(uri));
+	unlock();
+	return i+1;
 }
 
 const char *PluginLV2UriTable::unmap(LV2_URID urid)
 {
-	mLock locker(uri_table_lock);
+	lock("PluginLV2UriTable::unmap");
 	int idx = urid - 1;
-	return idx>=0 && idx<size() ? get(idx) : 0;
+	const char *ret = idx>=0 && idx<size() ? get(idx) : 0;
+	unlock();
+	return ret;
 }
 
 PluginLV2Client_OptName:: PluginLV2Client_OptName(PluginLV2Client_Opt *opt)

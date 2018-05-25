@@ -32,8 +32,9 @@
 #include <unistd.h>
 
 ForkBase::ForkBase()
+ : Mutex("ForkBase::lock")
 {
-	pid = 0;
+	ppid = pid = 0;
 	child = 0;
 
 	child_fd = -1;
@@ -47,7 +48,6 @@ ForkBase::ForkBase()
 	parent_bytes = 0;
 	parent_allocated = 0;
 	parent_data = 0;
-
 }
 
 ForkBase::~ForkBase()
@@ -56,6 +56,12 @@ ForkBase::~ForkBase()
 	delete [] parent_data;
 	if( child_fd >= 0 ) close(child_fd);
 	if( parent_fd >= 0 ) close(parent_fd);
+}
+
+// return 1 parent is running
+int ForkChild::is_running()
+{
+	return !ppid || !kill(ppid, 0) ? 1 : 0;
 }
 
 int ForkChild::child_iteration()
@@ -67,22 +73,22 @@ int ForkChild::child_iteration()
 
 void ForkParent::start_child()
 {
-	lock->lock("ForkParent::new_child");
+	lock("ForkParent::new_child");
 	int sockets[2]; // Create the process & socket pair.
 	socketpair(AF_UNIX, SOCK_STREAM, 0, sockets);
 	child_fd = sockets[0];  parent_fd = sockets[1];
+	ppid = getpid();
 	pid = fork();
 	if( !pid ) {    // child process
-		BC_Signals::reset_locks();
-		BC_Signals::set_sighup_exit(1);
-		TheList::reset();
 		ForkChild *child = new_fork();
 		child->child_fd = child_fd;
 		child->parent_fd = parent_fd;
+		child->ppid = ppid;
 		child->run();
+		delete child;
 		_exit(0);
 	}
-	lock->unlock();
+	unlock();
 }
 
 // Return -1 if the parent is dead
@@ -101,13 +107,14 @@ int ForkBase::read_timeout(int ms, int fd, void *data, int bytes)
 		FD_ZERO(&rfds);
 		FD_SET(fd, &rfds);
 		int result = select(fd+1, &rfds, 0, 0, &timeout_struct);
+		if( result < 0 ) perror("read_timeout select");
 		if( result < 0 || !is_running() ) return -1;
 		if( !result && !bytes_read ) return 0;
 		int fragment = read(fd, bp + bytes_read, bytes - bytes_read);
+		if( fragment < 0 ) perror("read_timeout read");
 		if( fragment < 0 || !is_running() ) return -1;
 		if( fragment > 0 ) bytes_read += fragment;
 	}
-
 	return 1;
 }
 
@@ -130,10 +137,14 @@ int ForkBase::read_parent(int ms)
 			delete [] parent_data;
 			parent_data = new uint8_t[parent_allocated = parent_bytes];
 		}
-		if( parent_bytes )
+		if( parent_bytes ) {
 			ret = read_timeout(1000, parent_fd, parent_data, parent_bytes);
+			if( !ret ) {
+				printf("read_parent timeout: %d\n", parent_fd);
+				ret = -1;
+			}
+		}
 	}
-//if( ret < 0 ) printf("read_parent timeout\n");
 	return ret;
 }
 
@@ -148,28 +159,47 @@ int ForkBase::read_child(int ms)
 			delete [] child_data;
 			child_data = new uint8_t[child_allocated = child_bytes];
 		}
-		if( child_bytes )
+		if( child_bytes ) {
 			ret = read_timeout(1000, child_fd, child_data, child_bytes);
+			if( !ret ) {
+				printf("read_child timeout: %d\n", child_fd);
+				ret = -1;
+			}
+		}
 	}
-//if( ret < 0 ) printf("read_child timeout\n");
 	return ret;
+}
+
+void ForkBase::send_bfr(int fd, const void *bfr, int len)
+{
+	int ret = 0;
+	for( int retries=10; --retries>=0 && (ret=write(fd, bfr, len)) < 0; ) {
+		printf("send_bfr socket(%d) write error: %d/%d bytes\n%m\n", fd,ret,len);
+		usleep(100000);
+	}
+	if( ret < len )
+		printf("send_bfr socket(%d) write short: %d/%d bytes\n%m\n", fd,ret,len);
 }
 
 int ForkBase::send_parent(int64_t token, const void *data, int bytes)
 {
+	lock("ForkBase::send_parent");
 	token_bfr_t bfr;  memset(&bfr, 0, sizeof(bfr));
 	bfr.token = token;  bfr.bytes = bytes;
-	write(child_fd, &bfr, sizeof(bfr));
-	if( data && bytes ) write(child_fd, data, bytes);
+	send_bfr(child_fd, &bfr, sizeof(bfr));
+	if( data && bytes ) send_bfr(child_fd, data, bytes);
+	unlock();
 	return 0;
 }
 
 int ForkBase::send_child(int64_t token, const void *data, int bytes)
 {
+	lock("ForkBase::send_child");
 	token_bfr_t bfr;  memset(&bfr, 0, sizeof(bfr));
 	bfr.token = token;  bfr.bytes = bytes;
-	write(parent_fd, &bfr, sizeof(bfr));
-	if( data && bytes ) write(parent_fd, data, bytes);
+	send_bfr(parent_fd, &bfr, sizeof(bfr));
+	if( data && bytes ) send_bfr(parent_fd, data, bytes);
+	unlock();
 	return 0;
 }
 
@@ -191,13 +221,19 @@ int ForkChild::handle_child()
 ForkParent::ForkParent()
  : Thread(1, 0, 0)
 {
-	lock = new Mutex("ForkParent::lock");
 	done = -1;
 }
 
 ForkParent::~ForkParent()
 {
-	delete lock;
+}
+
+// return 1 child is running
+int ForkParent::is_running()
+{
+	int status = 0;
+	if( waitpid(pid, &status, WNOHANG) < 0 ) return 0;
+	return !kill(pid, 0) ? 1 : 0;
 }
 
 // Return -1,0,1 if dead,timeout,success
@@ -225,8 +261,9 @@ void ForkParent::stop()
 {
 	if( is_running() ) {
 		send_child(EXIT_CODE, 0, 0);
-		int status = 0;
-		waitpid(pid, &status, 0);
+		int retry = 10;
+		while( --retry>=0 && is_running() ) usleep(100000);
+		if( retry < 0 ) kill(pid, SIGKILL);
 	}
 	join();
 }

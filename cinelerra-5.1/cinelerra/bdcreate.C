@@ -229,7 +229,7 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 	fprintf(fp,"sz=`du -cb $1/bd.m2ts* | tail -1 | sed -e 's/[ \t].*//'`\n");
 	fprintf(fp,"blks=$((sz/2048 + 4096))\n");
 	fprintf(fp,"rm -f %s\n", udfs);
-	fprintf(fp,"mkudffs %s $blks\n", udfs);
+	fprintf(fp,"mkudffs -b 2048 %s $blks\n", udfs);
 	fprintf(fp,"mount %s%s\n", mopts, mntpt);
 	fprintf(fp,"bdwrite %s $1/bd.m2ts*\n",mntpt);
 	fprintf(fp,"umount %s\n",mntpt);

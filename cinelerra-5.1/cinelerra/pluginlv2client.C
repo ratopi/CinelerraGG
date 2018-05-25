@@ -20,480 +20,153 @@
  *
  */
 
+#include "bchash.h"
 #include "clip.h"
 #include "cstrdup.h"
-#include "bchash.h"
+#include "file.h"
 #include "filexml.h"
 #include "language.h"
+#include "mainerror.h"
 #include "mwindow.h"
+#include "plugin.h"
 #include "pluginlv2client.h"
 #include "pluginlv2config.h"
+#include "pluginlv2ui.inc"
 #include "pluginserver.h"
+#include "pluginset.h"
 #include "samples.h"
+#include "track.h"
 
 #include <ctype.h>
 #include <string.h>
 
+PluginLV2UIs PluginLV2ParentUI::plugin_lv2;
 
-PluginLV2ClientUI::
-PluginLV2ClientUI(PluginLV2ClientWindow *gui, int x, int y)
- : BC_GenericButton(x, y, _("UI"))
-{
-	this->gui = gui;
-}
-
-PluginLV2ClientUI::
-~PluginLV2ClientUI()
+PluginLV2UIs::PluginLV2UIs()
+ : Mutex("PluginLV2UIs")
 {
 }
 
-int PluginLV2ClientUI::handle_event()
+PluginLV2UIs::~PluginLV2UIs()
 {
-	if( !gui->plugin->open_lv2_gui(gui) )
-		flicker(8, 64);
-	return 1;
+	del_uis();
 }
 
-PluginLV2ClientReset::
-PluginLV2ClientReset(PluginLV2ClientWindow *gui, int x, int y)
- : BC_GenericButton(x, y, _("Reset"))
+void PluginLV2UIs::del_uis()
 {
-	this->gui = gui;
+	while( size() ) remove_object();
 }
 
-PluginLV2ClientReset::
-~PluginLV2ClientReset()
+PluginLV2ParentUI *PluginLV2UIs::del_ui(PluginLV2Client *client)
 {
-}
-
-int PluginLV2ClientReset::handle_event()
-{
-	PluginLV2Client *plugin = gui->plugin;
-	plugin->init_lv2();
-	gui->selected = 0;
-	gui->update_selected();
-	gui->panel->update();
-	plugin->send_configure_change();
-	return 1;
-}
-
-PluginLV2ClientText::
-PluginLV2ClientText(PluginLV2ClientWindow *gui, int x, int y, int w)
- : BC_TextBox(x, y, w, 1, (char *)"")
-{
-	this->gui = gui;
-}
-
-PluginLV2ClientText::
-~PluginLV2ClientText()
-{
-}
-
-int PluginLV2ClientText::handle_event()
-{
-	return 0;
-}
-
-
-PluginLV2ClientApply::
-PluginLV2ClientApply(PluginLV2ClientWindow *gui, int x, int y)
- : BC_GenericButton(x, y, _("Apply"))
-{
-	this->gui = gui;
-}
-
-PluginLV2ClientApply::
-~PluginLV2ClientApply()
-{
-}
-
-int PluginLV2ClientApply::handle_event()
-{
-	const char *text = gui->text->get_text();
-	if( text && gui->selected ) {
-		gui->selected->update(atof(text));
-		gui->update_selected();
-		gui->plugin->send_configure_change();
+	lock("PluginLV2UIs::del_ui client");
+	int i = size();
+	while( --i >= 0 && get(i)->client != client );
+	PluginLV2ParentUI *ui = 0;
+	if( i >= 0 ) {
+		if( (ui=get(i))->gui ) ui->client = 0;
+		else { remove_object_number(i);  ui = 0; }
 	}
-	return 1;
+	unlock();
+	return ui;
 }
-
-
-
-PluginLV2Client_OptPanel::
-PluginLV2Client_OptPanel(PluginLV2ClientWindow *gui, int x, int y, int w, int h)
- : BC_ListBox(x, y, w, h, LISTBOX_TEXT), opts(items[0]), vals(items[1])
+PluginLV2ParentUI *PluginLV2UIs::del_ui(PluginLV2ClientWindow *gui)
 {
-	this->gui = gui;
-	update();  // init col/wid/columns
-}
-
-PluginLV2Client_OptPanel::
-~PluginLV2Client_OptPanel()
-{
-}
-
-int PluginLV2Client_OptPanel::selection_changed()
-{
-	PluginLV2Client_Opt *opt = 0;
-	BC_ListBoxItem *item = get_selection(0, 0);
-	if( item ) {
-		PluginLV2Client_OptName *opt_name = (PluginLV2Client_OptName *)item;
-		opt = opt_name->opt;
+	lock("PluginLV2UIs::del_ui gui");
+	int i = size();
+	while( --i >= 0 && get(i)->gui != gui );
+	PluginLV2ParentUI *ui = 0;
+	if( i >= 0 ) {
+		if( (ui=get(i))->client ) ui->gui = 0;
+		else { remove_object_number(i);  ui = 0; }
 	}
-	gui->update(opt);
-	return 1;
+	unlock();
+	return ui;
 }
 
-void PluginLV2Client_OptPanel::update()
+PluginLV2ParentUI *PluginLV2UIs::add_ui(PluginLV2ParentUI *ui, PluginLV2Client *client)
 {
-	opts.remove_all();
-	vals.remove_all();
-	PluginLV2ClientConfig &conf = gui->plugin->config;
-	for( int i=0; i<conf.size(); ++i ) {
-		PluginLV2Client_Opt *opt = conf[i];
-		opts.append(opt->item_name);
-		vals.append(opt->item_value);
+	ui->start_child();
+	ui->start_parent(client);
+	append(ui);
+	return ui;
+}
+
+PluginLV2ParentUI *PluginLV2UIs::search_ui(Plugin *plugin)
+{
+	int64_t position = plugin->startproject;
+	PluginSet *plugin_set = plugin->plugin_set;
+	int set_no = plugin_set->get_number();
+	int track_no = plugin_set->track->number_of();
+
+	PluginLV2ParentUI *ui = 0;
+	for( int i=size(); !ui && --i>=0; ) {
+		PluginLV2ParentUI *parent_ui = get(i);
+		if( parent_ui->position != position ) continue;
+		if( parent_ui->set_no != set_no ) continue;
+		if( parent_ui->track_no == track_no ) ui = parent_ui;
 	}
-	const char *cols[] = { "option", "value", };
-	const int col1_w = 150;
-	int wids[] = { col1_w, get_w()-col1_w };
-	BC_ListBox::update(&items[0], &cols[0], &wids[0], sizeof(items)/sizeof(items[0]));
+	return ui;
 }
 
-PluginLV2ClientWindow::PluginLV2ClientWindow(PluginLV2Client *plugin)
- : PluginClientWindow(plugin, 500, 300, 500, 300, 1)
+PluginLV2ParentUI *PluginLV2UIs::find_ui(Plugin *plugin)
 {
-	this->plugin = plugin;
-	selected = 0;
+	if( !plugin ) return 0;
+	lock("PluginLV2UIs::find_ui");
+	PluginLV2ParentUI *ui = search_ui(plugin);
+	unlock();
+	return ui;
+}
+PluginLV2ParentUI *PluginLV2Client::find_ui()
+{
+	return PluginLV2ParentUI::plugin_lv2.find_ui(server->plugin);
+}
+PluginLV2ParentUI *PluginLV2ClientWindow::find_ui()
+{
+	return PluginLV2ParentUI::plugin_lv2.find_ui(client->server->plugin);
 }
 
-PluginLV2ClientWindow::~PluginLV2ClientWindow()
+PluginLV2ParentUI *PluginLV2UIs::get_ui(PluginLV2Client *client)
 {
+	lock("PluginLV2UIs::get_ui");
+	Plugin *plugin = client->server->plugin;
+	PluginLV2ParentUI *ui = search_ui(plugin);
+	if( !ui ) ui = add_ui(new PluginLV2ParentUI(plugin), client);
+	unlock();
+	return ui;
 }
-
-
-void PluginLV2ClientWindow::create_objects()
+PluginLV2ParentUI *PluginLV2Client::get_ui()
 {
-	BC_Title *title;
-	int x = 10, y = 10, x1;
-	add_subwindow(title = new BC_Title(x, y, plugin->title));
-#ifdef HAVE_LV2UI
-	x1 = get_w() - BC_GenericButton::calculate_w(this, _("UI")) - 8;
-	add_subwindow(ui = new PluginLV2ClientUI(this, x1, y));
-#else
-	ui = 0;
-#endif
-	y += title->get_h() + 10;
-	add_subwindow(varbl = new BC_Title(x, y, ""));
-	add_subwindow(range = new BC_Title(x+160, y, ""));
-	x1 = get_w() - BC_GenericButton::calculate_w(this, _("Reset")) - 8;
-	add_subwindow(reset = new PluginLV2ClientReset(this, x1, y));
-	y += title->get_h() + 10;
-	x1 = get_w() - BC_GenericButton::calculate_w(this, _("Apply")) - 8;
-	add_subwindow(apply = new PluginLV2ClientApply(this, x1, y));
-	add_subwindow(text = new PluginLV2ClientText(this, x, y, x1-x - 8));
-	y += title->get_h() + 10;
-	add_subwindow(pot = new PluginLV2ClientPot(this, x, y));
-	x1 = x + pot->get_w() + 10;
-	add_subwindow(slider = new PluginLV2ClientSlider(this, x1, y+10));
-	y += pot->get_h() + 10;
-
-	plugin->init_lv2();
-	plugin->load_configuration();
-	plugin->config.update();
-
-	int panel_x = x, panel_y = y;
-	int panel_w = get_w()-10 - panel_x;
-	int panel_h = get_h()-10 - panel_y;
-	panel = new PluginLV2Client_OptPanel(this, panel_x, panel_y, panel_w, panel_h);
-	add_subwindow(panel);
-	panel->update();
-	show_window(1);
+	PluginLV2ParentUI *ui = PluginLV2ParentUI::plugin_lv2.get_ui(this);
+	ui->client = this;
+	return ui;
 }
-
-int PluginLV2ClientWindow::resize_event(int w, int h)
+PluginLV2ParentUI *PluginLV2ClientWindow::get_ui()
 {
-	int x1;
-#ifdef HAVE_LV2UI
-	x1 = w - ui->get_w() - 8;
-	ui->reposition_window(x1, ui->get_y());
-#endif
-	x1 = w - reset->get_w() - 8;
-	reset->reposition_window(x1, reset->get_y());
-	x1 = w - apply->get_w() - 8;
-	apply->reposition_window(x1, apply->get_y());
-	text->reposition_window(text->get_x(), text->get_y(), x1-text->get_x() - 8);
-	x1 = pot->get_x() + pot->get_w() + 10;
-	int w1 = w - slider->get_x() - 20;
-	slider->set_pointer_motion_range(w1);
-	slider->reposition_window(x1, slider->get_y(), w1, slider->get_h());
-	int panel_x = panel->get_x(), panel_y = panel->get_y();
-	panel->reposition_window(panel_x, panel_y, w-10-panel_x, h-10-panel_y);
-	return 1;
-}
-
-PluginLV2ClientPot::PluginLV2ClientPot(PluginLV2ClientWindow *gui, int x, int y)
- : BC_FPot(x, y, 0.f, 0.f, 0.f)
-{
-	this->gui = gui;
-}
-
-int PluginLV2ClientPot::handle_event()
-{
-	if( gui->selected ) {
-		gui->selected->update(get_value());
-		gui->update_selected();
-		gui->plugin->send_configure_change();
-	}
-	return 1;
-}
-
-PluginLV2ClientSlider::PluginLV2ClientSlider(PluginLV2ClientWindow *gui, int x, int y)
- : BC_FSlider(x, y, 0, gui->get_w()-x-20, gui->get_w()-x-20, 0.f, 0.f, 0.f)
-{
-	this->gui = gui;
-}
-
-int PluginLV2ClientSlider::handle_event()
-{
-	if( gui->selected ) {
-		gui->selected->update(get_value());
-		gui->update_selected();
-		gui->plugin->send_configure_change();
-	}
-	return 1;
-}
-
-void PluginLV2ClientWindow::update_selected()
-{
-	update(selected);
-	if( selected && plugin->parent_gui ) {
-		control_t bfr;
-		bfr.idx = selected->idx;
-		bfr.value = selected->get_value();
-		plugin->parent_gui->send_child(LV2_SET, &bfr, sizeof(bfr));
-	}
-}
-
-int PluginLV2ClientWindow::scalar(float f, char *rp)
-{
-	const char *cp = 0;
-	     if( f == FLT_MAX ) cp = "FLT_MAX";
-	else if( f == FLT_MIN ) cp = "FLT_MIN";
-	else if( f == -FLT_MAX ) cp = "-FLT_MAX";
-	else if( f == -FLT_MIN ) cp = "-FLT_MIN";
-	else if( f == 0 ) cp = signbit(f) ? "-0" : "0";
-	else if( isnan(f) ) cp = signbit(f) ? "-NAN" : "NAN";
-	else if( isinf(f) ) cp = signbit(f) ? "-INF" : "INF";
-	else return sprintf(rp, "%g", f);
-	return sprintf(rp, "%s", cp);
-}
-
-void PluginLV2ClientWindow::update(PluginLV2Client_Opt *opt)
-{
-	if( selected != opt ) {
-		if( selected ) selected->item_name->set_selected(0);
-		selected = opt;
-		if( selected ) selected->item_name->set_selected(1);
-	}
-	char var[BCSTRLEN];  var[0] = 0;
-	char val[BCSTRLEN];  val[0] = 0;
-	char rng[BCTEXTLEN]; rng[0] = 0;
-	if( opt ) {
-		sprintf(var,"%s:", opt->conf->names[opt->idx]);
-		char *cp = rng;
-		cp += sprintf(cp,"( ");
-		float min = opt->conf->mins[opt->idx];
-		cp += scalar(min, cp);
-		cp += sprintf(cp, " .. ");
-		float max = opt->conf->maxs[opt->idx];
-		cp += scalar(max, cp);
-		cp += sprintf(cp, " )");
-		float v = opt->get_value();
-		sprintf(val, "%f", v);
-		slider->update(slider->get_w(), v, min, max);
-		pot->update(v, min, max);
-	}
-	else {
-		slider->update(slider->get_w(), 0.f, 0.f, 0.f);
-		pot->update(0.f, 0.f, 0.f);
-	}
-	varbl->update(var);
-	range->update(rng);
-	text->update(val);
-	panel->update();
+	PluginLV2ParentUI *ui = PluginLV2ParentUI::plugin_lv2.get_ui(client);
+	ui->gui = this;
+	return ui;
 }
 
 
 PluginLV2Client::PluginLV2Client(PluginServer *server)
- : PluginAClient(server)
+ : PluginAClient(server), PluginLV2()
 {
-	in_buffers = 0;
-	out_buffers = 0;
-	nb_in_bfrs = 0;
-	nb_out_bfrs = 0;
-	bfrsz = 0;
-	nb_inputs = 0;
-	nb_outputs = 0;
-	max_bufsz = 0;
-
-	world = 0;
-	instance = 0;
-	lv2_InputPort = 0;
-	lv2_OutputPort = 0;
-	lv2_AudioPort = 0;
-	lv2_CVPort = 0;
-	lv2_ControlPort = 0;
-	lv2_Optional = 0;
-	atom_AtomPort = 0;
-	atom_Sequence = 0;
-	powerOf2BlockLength = 0;
-	fixedBlockLength = 0;
-	boundedBlockLength = 0;
-	seq_out = 0;
-	parent_gui = 0;
+	title[0] = 0;
 }
 
 PluginLV2Client::~PluginLV2Client()
 {
-	reset_lv2();
-	lilv_world_free(world);
-}
-
-void PluginLV2Client::reset_lv2()
-{
-	delete parent_gui;                    parent_gui = 0;
-	if( instance ) lilv_instance_deactivate(instance);
-	lilv_instance_free(instance);         instance = 0;
-	lilv_node_free(powerOf2BlockLength);  powerOf2BlockLength = 0;
-	lilv_node_free(fixedBlockLength);     fixedBlockLength = 0;
-	lilv_node_free(boundedBlockLength);   boundedBlockLength = 0;
-	lilv_node_free(atom_Sequence);        atom_Sequence = 0;
-	lilv_node_free(atom_AtomPort);        atom_AtomPort = 0;
-	lilv_node_free(lv2_Optional);         lv2_Optional = 0;
-	lilv_node_free(lv2_ControlPort);      lv2_ControlPort = 0;
-	lilv_node_free(lv2_AudioPort);        lv2_AudioPort = 0;
-	lilv_node_free(lv2_CVPort);           lv2_CVPort = 0;
-	lilv_node_free(lv2_OutputPort);       lv2_OutputPort = 0;
-	lilv_node_free(lv2_InputPort);        lv2_InputPort = 0;
-	delete [] (char *)seq_out;            seq_out = 0;
-	uri_table.remove_all_objects();
-	delete_buffers();
-	nb_inputs = 0;
-	nb_outputs = 0;
-	max_bufsz = 0;
-	config.reset();
-	config.remove_all_objects();
-}
-
-int PluginLV2Client::load_lv2(const char *path)
-{
-	if( !world ) {
-		world = lilv_world_new();
-		if( !world ) {
-			printf("lv2: lilv_world_new failed");
-			return 1;
-		}
-		lilv_world_load_all(world);
-	}
-
-	LilvNode *uri = lilv_new_uri(world, path);
-	if( !uri ) {
-		printf("lv2: lilv_new_uri(%s) failed", path);
-		return 1;
-	}
-
-	const LilvPlugins *all_plugins = lilv_world_get_all_plugins(world);
-	lilv = lilv_plugins_get_by_uri(all_plugins, uri);
-	lilv_node_free(uri);
-	if( !lilv ) {
-		printf("lv2: lilv_plugins_get_by_uriPlugin(%s) failed", path);
-		return 1;
-	}
-
-	LilvNode *name = lilv_plugin_get_name(lilv);
-	const char *nm = lilv_node_as_string(name);
-	snprintf(title,sizeof(title),"L2_%s",nm);
-	lilv_node_free(name);
-	return 0;
-}
-
-int PluginLV2Client::init_lv2()
-{
-	reset_lv2();
-
-	lv2_InputPort       = lilv_new_uri(world, LV2_CORE__InputPort);
-	lv2_OutputPort      = lilv_new_uri(world, LV2_CORE__OutputPort);
-	lv2_AudioPort       = lilv_new_uri(world, LV2_CORE__AudioPort);
-	lv2_ControlPort     = lilv_new_uri(world, LV2_CORE__ControlPort);
-	lv2_CVPort          = lilv_new_uri(world, LV2_CORE__CVPort);
-	lv2_Optional        = lilv_new_uri(world, LV2_CORE__connectionOptional);
-	atom_AtomPort       = lilv_new_uri(world, LV2_ATOM__AtomPort);
-	atom_Sequence       = lilv_new_uri(world, LV2_ATOM__Sequence);
-	powerOf2BlockLength = lilv_new_uri(world, LV2_BUF_SIZE__powerOf2BlockLength);
-	fixedBlockLength    = lilv_new_uri(world, LV2_BUF_SIZE__fixedBlockLength);
-	boundedBlockLength  = lilv_new_uri(world, LV2_BUF_SIZE__boundedBlockLength);
-	seq_out = (LV2_Atom_Sequence *) new char[sizeof(LV2_Atom_Sequence) + LV2_SEQ_SIZE];
-
-	config.init_lv2(lilv);
-	nb_inputs = nb_outputs = 0;
-
-	for( int i=0; i<config.nb_ports; ++i ) {
-		const LilvPort *lp = lilv_plugin_get_port_by_index(lilv, i);
-		int is_input = lilv_port_is_a(lilv, lp, lv2_InputPort);
-		if( !is_input && !lilv_port_is_a(lilv, lp, lv2_OutputPort) &&
-		    !lilv_port_has_property(lilv, lp, lv2_Optional) ) {
-			printf("lv2: not input, not output, and not optional: %s\n", config.names[i]);
-			continue;
-		}
-		if( is_input && lilv_port_is_a(lilv, lp, lv2_ControlPort) ) {
-			config.append(new PluginLV2Client_Opt(&config, i));
-			continue;
-		}
-		if( lilv_port_is_a(lilv, lp, lv2_AudioPort) ||
-		    lilv_port_is_a(lilv, lp, lv2_CVPort ) ) {
-			if( is_input ) ++nb_inputs; else ++nb_outputs;
-			continue;
-		}
-	}
-
-	map.handle = (void*)&uri_table;
-	map.map = uri_table_map;
-	features.append(new Lv2Feature(LV2_URID_MAP_URI, &map));
-	unmap.handle = (void*)&uri_table;
-	unmap.unmap  = uri_table_unmap;
-	features.append(new Lv2Feature(LV2_URID_UNMAP_URI, &unmap));
-	features.append(new Lv2Feature(LV2_BUF_SIZE__powerOf2BlockLength, 0));
-	features.append(new Lv2Feature(LV2_BUF_SIZE__fixedBlockLength,    0));
-	features.append(new Lv2Feature(LV2_BUF_SIZE__boundedBlockLength,  0));
-	features.append(0);
-
-	instance = lilv_plugin_instantiate(lilv, sample_rate, features);
-	if( !instance ) {
-		printf("lv2: lilv_plugin_instantiate failed: %s\n", server->title);
-		return 1;
-	}
-	lilv_instance_activate(instance);
-// not sure what to do with these
-	max_bufsz = nb_inputs &&
-		(lilv_plugin_has_feature(lilv, powerOf2BlockLength) ||
-		 lilv_plugin_has_feature(lilv, fixedBlockLength) ||
-		 lilv_plugin_has_feature(lilv, boundedBlockLength)) ? 4096 : 0;
-	return 0;
-}
-
-LV2_URID PluginLV2Client::uri_table_map(LV2_URID_Map_Handle handle, const char *uri)
-{
-	return ((PluginLV2UriTable *)handle)->map(uri);
-}
-
-const char *PluginLV2Client::uri_table_unmap(LV2_URID_Map_Handle handle, LV2_URID urid)
-{
-	return ((PluginLV2UriTable *)handle)->unmap(urid);
+	PluginLV2ParentUI::plugin_lv2.del_ui(this);
 }
 
 NEW_WINDOW_MACRO(PluginLV2Client, PluginLV2ClientWindow)
+
+int PluginLV2Client::init_lv2()
+{
+	int sample_rate = get_project_samplerate();
+	return PluginLV2::init_lv2(config, sample_rate);
+}
 
 int PluginLV2Client::load_configuration()
 {
@@ -522,34 +195,9 @@ void PluginLV2Client::update_gui()
 
 void PluginLV2Client::update_lv2()
 {
-	if( !parent_gui ) return;
-	parent_gui->send_child(LV2_UPDATE, config.ctls, sizeof(float)*config.nb_ports);
-}
-
-void PluginLV2Client::lv2_update()
-{
-	PluginClientThread *thread = get_thread();
-	if( !thread ) return;
-	PluginLV2ClientWindow *gui = (PluginLV2ClientWindow*)thread->get_window();
-	gui->lock_window("PluginLV2ParentGUI::handle_parent");
-	int ret = config.update();
-	if( ret ) gui->update(0);
-	gui->unlock_window();
-	if( ret ) send_configure_change();
-}
-
-void PluginLV2Client::lv2_update(float *vals)
-{
-	int nb_ports = config.nb_ports;
-	float *ctls = config.ctls;
-	for( int i=0; i<nb_ports; ++i ) *ctls++ = *vals++;
-	lv2_update();
-}
-
-void PluginLV2Client::lv2_set(int idx, float val)
-{
-	config[idx]->set_value(val);
-	lv2_update();
+	PluginLV2ParentUI *ui = find_ui();
+	if( !ui ) return;
+	ui->send_child(LV2_UPDATE, config.ctls, sizeof(float)*config.nb_ports);
 }
 
 
@@ -598,140 +246,64 @@ void PluginLV2Client::read_data(KeyFrame *keyframe)
 	}
 }
 
-void PluginLV2Client::connect_ports()
+void PluginLV2Client::load_buffer(int samples, Samples **input, int ich)
 {
-	int ich = 0, och = 0;
-	for( int i=0; i<config.nb_ports; ++i ) {
-		const LilvPort *lp = lilv_plugin_get_port_by_index(lilv, i);
-		if( lilv_port_is_a(lilv, lp, lv2_AudioPort) ||
-		    lilv_port_is_a(lilv, lp, lv2_CVPort) ) {
-			if( lilv_port_is_a(lilv, lp, lv2_InputPort) )
-				lilv_instance_connect_port(instance, i, in_buffers[ich++]);
-			else if( lilv_port_is_a(lilv, lp, lv2_OutputPort))
-				lilv_instance_connect_port(instance, i, out_buffers[och++]);
-			continue;
-		}
-		if( lilv_port_is_a(lilv, lp, atom_AtomPort) ) {
-			if( lilv_port_is_a(lilv, lp, lv2_InputPort) )
-				lilv_instance_connect_port(instance, i, &seq_in);
-			else
-				lilv_instance_connect_port(instance, i, seq_out);
-			continue;
-		}
-		if( lilv_port_is_a(lilv, lp, lv2_ControlPort) ) {
-			lilv_instance_connect_port(instance, i, &config.ctls[i]);
-			continue;
-		}
+	for( int i=0; i<nb_inputs; ++i ) {
+		int k = i < ich ? i : 0;
+		double *inp = input[k]->get_data();
+		float *ip = in_buffers[i];
+		for( int j=samples; --j>=0; *ip++=*inp++ );
 	}
-
-	seq_in[0].atom.size = sizeof(LV2_Atom_Sequence_Body);
-	seq_in[0].atom.type = uri_table.map(LV2_ATOM__Sequence);
-	seq_in[1].atom.size = 0;
-	seq_in[1].atom.type = 0;
-	seq_out->atom.size  = LV2_SEQ_SIZE;
-	seq_out->atom.type  = uri_table.map(LV2_ATOM__Chunk);
+	for( int i=0; i<nb_outputs; ++i )
+		bzero(out_buffers[i], samples*sizeof(float));
 }
 
-void PluginLV2Client::init_plugin(int size)
+int PluginLV2Client::unload_buffer(int samples, Samples **output, int och)
 {
-	if( !instance )
-		init_lv2();
-
-	load_configuration();
-
-	if( bfrsz < size )
-		delete_buffers();
-
-	bfrsz = MAX(size, bfrsz);
-	if( !in_buffers ) {
-		in_buffers = new float*[nb_in_bfrs=nb_inputs];
-		for(int i=0; i<nb_in_bfrs; ++i )
-			in_buffers[i] = new float[bfrsz];
+	if( nb_outputs < och ) och = nb_outputs;
+	for( int i=0; i<och; ++i ) {
+		double *outp = output[i]->get_data();
+		float *op = out_buffers[i];
+		for( int j=samples; --j>=0; *outp++=*op++ );
 	}
-	if( !out_buffers ) {
-		out_buffers = new float*[nb_out_bfrs=nb_outputs];
-		for( int i=0; i<nb_out_bfrs; ++i )
-			out_buffers[i] = new float[bfrsz];
-	}
+	return samples;
 }
 
-void PluginLV2Client::delete_buffers()
+void PluginLV2Client::process_buffer(int size)
 {
-	if( in_buffers ) {
-		for( int i=0; i<nb_in_bfrs; ++i ) delete [] in_buffers[i];
-		delete [] in_buffers;  in_buffers = 0;  nb_in_bfrs = 0;
-	}
-	if( out_buffers ) {
-		for( int i=0; i<nb_out_bfrs; ++i ) delete [] out_buffers[i];
-		delete [] out_buffers;  out_buffers = 0;  nb_out_bfrs = 0;
-	}
-	bfrsz = 0;
-}
-
-int PluginLV2Client::open_lv2_gui(PluginLV2ClientWindow *gui)
-{
-#ifdef HAVE_LV2UI
-	if( parent_gui ) {
-		if( !parent_gui->done ) return 0;
-		delete parent_gui;
-	}
-	parent_gui = new PluginLV2ParentGUI(gui);
-	parent_gui->start_child();
-	parent_gui->start_parent();
-	return 1;
-#else
-	return 0;
-#endif
+	PluginLV2ParentUI *ui = get_ui();
+	if( !ui ) return;
+	shm_bfr->done = 0;
+	ui->send_child(LV2_SHMID, &shmid, sizeof(shmid));
+// timeout 10*duration, min 2sec, max 10sec
+	double sample_rate = get_project_samplerate();
+	double t = !sample_rate ? 2. : 10. * size / sample_rate;
+	bclamp(t, 2., 10.);
+	ui->output_bfr->timed_lock(t*1e6, "PluginLV2Client::process_buffer");
+	if( !shm_bfr->done )
+		eprintf("timeout: %s",server->title);
 }
 
 int PluginLV2Client::process_realtime(int64_t size,
 	Samples *input_ptr, Samples *output_ptr)
 {
-	init_plugin(size);
-
-	for( int i=0; i<nb_in_bfrs; ++i ) {
-		double *inp = input_ptr->get_data();
-		float *ip = in_buffers[i];
-		for( int j=size; --j>=0; *ip++=*inp++ );
-	}
-	for( int i=0; i<nb_out_bfrs; ++i )
-		bzero(out_buffers[i], size*sizeof(float));
-
-	connect_ports();
-	lilv_instance_run(instance, size);
-
-	double *outp = output_ptr->get_data();
-	float *op = out_buffers[0];
-	for( int i=size; --i>=0; *outp++=*op++ );
-	return size;
+	load_configuration();
+	init_buffer(size);
+	load_buffer(size, &input_ptr, 1);
+	process_buffer(size);
+	return unload_buffer(size, &output_ptr, 1);
 }
 
 int PluginLV2Client::process_realtime(int64_t size,
 	Samples **input_ptr, Samples **output_ptr)
 {
-	init_plugin(size);
-
-	for( int i=0; i<nb_in_bfrs; ++i ) {
-		int k = i < PluginClient::total_in_buffers ? i : 0;
-		double *inp = input_ptr[k]->get_data();
-		float *ip = in_buffers[i];
-		for( int j=size; --j>=0; *ip++=*inp++ );
-	}
-	for( int i=0; i<nb_out_bfrs; ++i )
-		bzero(out_buffers[i], size*sizeof(float));
-
-	connect_ports();
-	lilv_instance_run(instance, size);
-
-	int nbfrs = PluginClient::total_out_buffers;
-	if( nb_out_bfrs < nbfrs ) nbfrs = nb_out_bfrs;
-	for( int i=0; i<nbfrs; ++i ) {
-		double *outp = output_ptr[i]->get_data();
-		float *op = out_buffers[i];
-		for( int j=size; --j>=0; *outp++=*op++ );
-	}
-	return size;
+	load_configuration();
+	init_buffer(size);
+	load_buffer(size, input_ptr, PluginClient::total_in_buffers);
+	process_buffer(size);
+	return unload_buffer(size, output_ptr, PluginClient::total_out_buffers);
 }
+
 
 PluginServer* MWindow::new_lv2_server(MWindow *mwindow, const char *name)
 {
@@ -741,11 +313,8 @@ PluginServer* MWindow::new_lv2_server(MWindow *mwindow, const char *name)
 PluginClient *PluginServer::new_lv2_plugin()
 {
 	PluginLV2Client *client = new PluginLV2Client(this);
-//for some lv2 clients
-	if( client->sample_rate < 64 ) client->sample_rate = 64;
-	if( client->project_sample_rate < 64 ) client->project_sample_rate = 64;
-	if( client->load_lv2(path) ) { delete client;  client = 0; }
-	else client->init_lv2();
+	if( client->load_lv2(path, client->title) ) { delete client;  return client = 0; }
+	client->init_lv2();
 	return client;
 }
 
@@ -771,48 +340,68 @@ int MWindow::init_lv2_index(MWindow *mwindow, Preferences *preferences, FILE *fp
 	return 0;
 }
 
-ForkChild *PluginLV2ParentGUI::new_fork()
+PluginLV2ParentUI::PluginLV2ParentUI(Plugin *plugin)
 {
-#ifdef HAVE_LV2UI
-	return new PluginLV2ChildGUI();
-#else
-	return 0;
-#endif
+	this->position = plugin->startproject;
+	PluginSet *plugin_set = plugin->plugin_set;
+	if( plugin_set ) {
+		this->set_no = plugin_set->get_number();
+		this->track_no = plugin_set->track->number_of();
+	}
+	else
+		this->track_no = this->set_no = -1;
+
+	output_bfr = new Condition(0, "PluginLV2ParentUI::output_bfr", 1);
+	client = 0;
+	gui = 0;
+	hidden = 1;
 }
 
-PluginLV2ParentGUI::PluginLV2ParentGUI(PluginLV2ClientWindow *gui)
-{
-	this->gui = gui;
-}
-
-PluginLV2ParentGUI::~PluginLV2ParentGUI()
+PluginLV2ParentUI::~PluginLV2ParentUI()
 {
 	stop();
+	delete output_bfr;
 }
 
-void PluginLV2ParentGUI::start_parent()
+void PluginLV2ParentUI::start_parent(PluginLV2Client *client)
 {
 	start();
-	const char *path = gui->plugin->server->path;
-	send_child(LV2_OPEN, path, strlen(path)+1);
-	PluginLV2ClientConfig &conf = gui->plugin->config;
-	send_child(LV2_START, 0, 0);
+	const char *path = client->server->path;
+	int len = sizeof(open_bfr_t) + strlen(path);
+	char bfr[len];  memset(bfr, 0, len);
+	open_bfr_t *open_bfr = (open_bfr_t *)bfr;
+	open_bfr->sample_rate = client->get_project_samplerate();
+	strcpy(open_bfr->path, path);
+	send_child(LV2_OPEN, open_bfr, len);
+	PluginLV2ClientConfig &conf = client->config;
 	send_child(LV2_LOAD, conf.ctls, conf.nb_ports*sizeof(float));
 }
 
-int PluginLV2ParentGUI::handle_parent()
+int PluginLV2ParentUI::handle_parent()
 {
 	int result = 1;
 
 	switch( parent_token ) {
-	case LV2_UPDATE:
-		gui->plugin->lv2_update((float *)parent_data);
-		break;
+	case LV2_UPDATE: {
+		if( !gui ) break;
+		gui->lv2_update((float *)parent_data);
+		break; }
+	case LV2_HIDE: {
+		hidden = 1;
+		break; }
+	case LV2_SHOW: {
+		hidden = 0;
+		break; }
 	case LV2_SET: {
-		control_t *ctl = (control_t *)parent_data;
-		gui->plugin->lv2_set(ctl->idx, ctl->value);
+		if( !gui ) break;
+		control_bfr_t *ctl = (control_bfr_t *)parent_data;
+		gui->lv2_set(ctl->idx, ctl->value);
+		break; }
+	case LV2_SHMID: {
+		output_bfr->unlock();
 		break; }
 	case EXIT_CODE: {
+		output_bfr->unlock();
 		result = -1;
 		break; }
 	default:
@@ -823,11 +412,34 @@ int PluginLV2ParentGUI::handle_parent()
 	return result;
 }
 
-// stub in parent
-int PluginLV2ChildGUI::handle_child()
+int PluginLV2ParentUI::show()
 {
+	if( !hidden ) return 1;
+	send_child(LV2_SHOW, 0, 0);
 	return 0;
 }
+
+int PluginLV2ParentUI::hide()
+{
+	if( hidden ) return 1;
+	send_child(LV2_HIDE, 0, 0);
+	return 0;
+}
+
+
+// stub in parent
+int PluginLV2ChildUI::handle_child() { return 0; }
+void PluginLV2UI::reset_gui() {}
+
+ForkChild *PluginLV2ParentUI::new_fork()
+{
+#ifdef HAVE_LV2UI
+	return new PluginLV2ChildUI();
+#else
+	return 0;
+#endif
+}
+
 
 #else
 #include "mwindow.h"

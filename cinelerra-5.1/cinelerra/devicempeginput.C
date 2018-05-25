@@ -415,36 +415,40 @@ int DeviceMPEGInput::set_channel(Channel *channel)
 
 void DeviceMPEGInput::set_captioning(int strk)
 {
-	mLock holds(decoder_lock);
+	decoder_lock->lock("DeviceMPEGInput::set_captioning");
 	captioning = strk;
 	if( src && video_stream >= 0 )
 		src->show_subtitle(video_stream, strk);
+	decoder_lock->unlock();
 }
 
 int DeviceMPEGInput::drop_frames(int frames)
 {
-	mLock holds(decoder_lock);
+	decoder_lock->lock("DeviceMPEGInput::drop_frames");
 	double result = -1.;
 	if( src && video_stream >= 0 )
 		result = src->drop_frames(frames,video_stream);
+	decoder_lock->unlock();
 	return result;
 }
 
 double DeviceMPEGInput::audio_timestamp()
 {
-	mLock holds(decoder_lock);
+	decoder_lock->lock("DeviceMPEGInput::audio_timestamp");
 	double result = -1.;
 	if( src && audio_stream >= 0 )
 		result = src->get_audio_time(audio_stream);
+	decoder_lock->unlock();
 	return result;
 }
 
 double DeviceMPEGInput::video_timestamp()
 {
-	mLock holds(decoder_lock);
+	decoder_lock->lock("DeviceMPEGInput::video_timestamp");
 	double ret = -1.;
 	if( src && video_stream >= 0 )
 		ret = src->get_video_time(video_stream);
+	decoder_lock->unlock();
 	return ret;
 }
 
@@ -540,7 +544,7 @@ int DeviceMPEGInput::get_video_pid(int track)
 int DeviceMPEGInput::get_video_info(int track, int &pid, double &framerate,
                 int &width, int &height, char *title)
 {
-	//mLock holds(decoder_lock);  caller of callback holds lock
+	//caller of callback holds decoder_lock;
 	if( !src ) return 1;
 	pid = src->video_pid(track);
 	framerate = src->frame_rate(track);

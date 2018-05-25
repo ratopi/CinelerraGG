@@ -67,9 +67,8 @@ public:
 	operator LV2_Feature **() { return (LV2_Feature **)&values[0]; }
 };
 
-class PluginLV2UriTable : public ArrayList<const char *>
+class PluginLV2UriTable : public ArrayList<const char *>, public Mutex
 {
-	Mutex uri_table_lock;
 public:
 	PluginLV2UriTable();
 	~PluginLV2UriTable();

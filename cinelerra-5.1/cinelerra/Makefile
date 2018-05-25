@@ -224,6 +224,7 @@ OBJS = \
 	$(OBJDIR)/pluginclient.o \
 	$(OBJDIR)/plugindialog.o \
 	$(OBJDIR)/pluginfclient.o \
+	$(OBJDIR)/pluginlv2.o \
 	$(OBJDIR)/pluginlv2config.o \
 	$(OBJDIR)/pluginlv2client.o \
 	$(OBJDIR)/pluginlv2gui.o \
@@ -379,7 +380,8 @@ ifneq ($(WANT_LV2UI),no)
 LV2UI = $(OBJDIR)/lv2ui
 LV2OBJS = \
 	$(OBJDIR)/lv2ui.o \
-	$(OBJDIR)/pluginlv2gui.o \
+	$(OBJDIR)/pluginlv2.o \
+	$(OBJDIR)/pluginlv2ui.o \
 	$(OBJDIR)/pluginlv2config.o \
 	$(OBJDIR)/forkbase.o
 endif
@@ -415,7 +417,8 @@ CFLAGS += -DUSE_ALPHA
 else
 
 LDFLAGS1 = -export-dynamic
-LDFLAGS2 =
+# avoid the intel lock elision bug, if possible
+LDFLAGS2 = $(lastword $(wildcard /usr/lib/noelision /lib/noelision /usr/lib64/noelision /lib/noelision))
 LINKER = g++ -o $(OUTPUT)
 
 endif
@@ -482,7 +485,9 @@ ifneq ($(WANT_LV2UI),no)
 GTK2_INCS := `pkg-config --cflags gtk+-2.0`
 GTK2_LIBS := `pkg-config --libs gtk+-2.0`
 
+$(OBJDIR)/pluginlv2ui.o:	pluginlv2ui.C
 $(OBJDIR)/lv2ui.o:	lv2ui.C
+$(OBJDIR)/pluginlv2ui.o $(OBJDIR)/lv2ui.o:
 	$(CXX) `cat $(OBJDIR)/c_flags` $(GTK2_INCS) -DMSGQUAL=$* -c $< -o $@
 
 $(OBJDIR)/lv2ui: $(LV2OBJS)

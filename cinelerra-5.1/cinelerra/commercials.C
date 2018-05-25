@@ -804,16 +804,18 @@ run()
 void SdbPacketQueue::
 put_packet(SdbPacket *p)
 {
-	mLock holds(this);
+	lock("SdbPacketQueue::put_packet");
 	append(p);
+	unlock();
 }
 
 SdbPacket *SdbPacketQueue::
 get_packet()
 {
-	mLock holds(this);
+	lock("SdbPacketQueue::get_packet");
 	SdbPacket *p = first;
 	remove_pointer(p);
+	unlock();
 	return p;
 }
 

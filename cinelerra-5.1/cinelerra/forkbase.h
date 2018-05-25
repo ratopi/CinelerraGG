@@ -30,7 +30,7 @@
 
 #include <stdint.h>
 
-class ForkBase
+class ForkBase : public Mutex
 {
 public:
 	enum { EXIT_CODE=0x7fff };
@@ -39,14 +39,15 @@ public:
 	ForkBase();
 	virtual ~ForkBase();
 
-	int is_running();
+	virtual int is_running() = 0;
+	void send_bfr(int fd, const void *bfr, int len);
 	int read_timeout(int ms, int fd, void *data, int bytes);
 	int read_parent(int ms);
 	int send_parent(int64_t value, const void *data, int bytes);
 	int read_child(int ms);
 	int send_child(int64_t value, const void *data, int bytes);
 
-	int done, pid;
+	int done, ppid, pid;
 	ForkChild *child;
 
 	int child_fd;
@@ -67,9 +68,10 @@ class ForkChild : public ForkBase
 public:
 	ForkChild();
 	virtual ~ForkChild();
-	virtual void run() = 0;
 	virtual int handle_child();
 	int child_iteration();
+	int is_running();
+	virtual void run() {}
 };
 
 class ForkParent : public Thread, public ForkBase
@@ -79,14 +81,13 @@ public:
 	virtual ~ForkParent();
 	virtual int handle_parent();
 	virtual ForkChild *new_fork() = 0;
+	int is_running();
 
 	void start_child();
 	void start();
 	void stop();
 	void run();
 	int parent_iteration();
-
-	Mutex *lock;
 };
 
 #endif

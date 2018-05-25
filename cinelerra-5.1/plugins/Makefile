@@ -171,7 +171,7 @@ all:	$(PLUGIN_DIR) $(DIRS) $(DATA) $(LADSPA_DIR)
 $(PLUGIN_DIR):
 	mkdir -p $@
 
-$(DATA):
+$(DATA):	$(PLUGIN_DIR)
 	cp -a $(notdir $@) $(PLUGIN_DIR)/.
 
 $(LADSPA_DIR):

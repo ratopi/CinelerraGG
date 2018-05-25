@@ -19,16 +19,11 @@
  *
  */
 
-#ifndef PLUGINLV2CLIENT_INC
-#define PLUGINLV2CLIENT_INC
+#ifndef __PLUGINLV2CLIENT_INC__
+#define __PLUGINLV2CLIENT_INC__
 
-class PluginLV2Client_OptPanel;
-class PluginLV2ClientText;
-class PluginLV2ClientReset;
-class PluginLV2ClientApply;
-class PluginLV2ClientPot;
-class PluginLV2ClientSlider;
-class PluginLV2ClientWindow;
+class PluginLV2UIs;
+class PluginLV2ParentUI;
 class PluginLV2Client;
 
 #endif

@@ -38,7 +38,7 @@ class XMLBuffer
 	unsigned char *inp, *outp, *bfr, *lmt;
 	int destroy;
 
-	unsigned char *&demand(long len);
+	int demand(long len);
 public:
 	XMLBuffer(long buf_size=0x1000, long max_size=LONG_MAX, int del=1);
 	XMLBuffer(long buf_size, char *buf, int del=0); // writing
@@ -56,10 +56,7 @@ public:
 
 	int cur()  { return outp>=inp ? -1 : *outp; }
 	int next() { return outp>=inp ? -1 : *outp++; }
-	int next(int ch) {
-		demand(otell()+1);
-		return *inp++ = ch;
-	}
+	int next(int ch) { return !demand(otell()+1) ? -1 : *inp++ = ch; }
 
 	static char *decode_data(char *bp, const char *sp, int n=-1);
 	static char *encode_data(char *bp, const char *sp, int n=-1);
