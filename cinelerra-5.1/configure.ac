@@ -41,6 +41,7 @@ CHECK_WITH([ladspa-dir],[ladspa install dir],[LADSPA_DIR],[auto])
 CHECK_WITH([config-dir],[.bcast config dir],[CONFIG_DIR],[$$HOME/.bcast5])
 CHECK_WITH([browser],[cin_browser path],[CIN_BROWSER],[firefox])
 CHECK_WITH([git-ffmpeg],[git ffmpeg using url],[GIT_FFMPEG],[no])
+CHECK_WITH([noelision],[use noelision/libpthread],[NOELISION],[auto])
 
 if test "x$WANT_LV2" != "xno"; then
   if test "x$WANT_LV2UI" != "xno"; then
@@ -790,6 +791,7 @@ echo "  using: with-plugin-dir = $WANT_PLUGIN_DIR"
 echo "  using: with-ladspa-dir = $WANT_LADSPA_DIR"
 echo "  using: with-opencv = $WANT_OPENCV"
 echo "  using: with-git-ffmpeg = $WANT_GIT_FFMPEG"
+echo "  using: with-noelision = $WANT_NOELISION"
 echo ""
 echo "  using: single-user  = $WANT_CINBIN_BUILD"
 echo "  using: static-build = $WANT_STATIC_BUILD"
@@ -813,6 +815,16 @@ if test "x$HAVE_opus" = "xyes"; then
   EXTRA_LIBS+=' -lopus'
   CFG_CFLAGS+=' -I/usr/include/opus'
   FFMPEG_EXTRA_CFG+=' --enable-libopus'
+fi
+
+# intel lock elision bugs
+if test "x$WANT_NOELISION" != "xno"; then
+  CFG_RPATH=`ls -1fd 2> /dev/null \
+ /usr/lib/noelision \
+ /lib/noelision \
+ /usr/lib64/noelision \
+ /lib64/noelision \
+  | tail -1`
 fi
 
 AC_SUBST(EXTRA_LIBS)
@@ -914,6 +926,11 @@ echo "export static_pkgs static_blds shared_libs system_libs"
 echo ""
 
 echo "thirdparty_libraries := \$(static_libs) \$(shared_libs)"
+
+if test "x$CFG_RPATH" != "x"; then
+  echo "libraries+= -Wl,-rpath=$CFG_RPATH"
+fi
+
 echo "libraries += -Wl,--start-group"
 echo "libraries += \$(thirdparty_libraries)"
 echo "libraries += \$(system_libs)"

@@ -417,8 +417,7 @@ CFLAGS += -DUSE_ALPHA
 else
 
 LDFLAGS1 = -export-dynamic
-# avoid the intel lock elision bug, if possible
-LDFLAGS2 = $(lastword $(wildcard /usr/lib/noelision /lib/noelision /usr/lib64/noelision /lib/noelision))
+LDFLAGS2 =
 LINKER = g++ -o $(OUTPUT)
 
 endif
