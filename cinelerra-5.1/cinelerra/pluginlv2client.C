@@ -287,7 +287,8 @@ void PluginLV2Client::process_buffer(int size)
 int PluginLV2Client::process_realtime(int64_t size,
 	Samples *input_ptr, Samples *output_ptr)
 {
-	load_configuration();
+	if( load_configuration() )
+		update_lv2();
 	init_buffer(size);
 	load_buffer(size, &input_ptr, 1);
 	process_buffer(size);
@@ -297,7 +298,8 @@ int PluginLV2Client::process_realtime(int64_t size,
 int PluginLV2Client::process_realtime(int64_t size,
 	Samples **input_ptr, Samples **output_ptr)
 {
-	load_configuration();
+	if( load_configuration() )
+		update_lv2();
 	init_buffer(size);
 	load_buffer(size, input_ptr, PluginClient::total_in_buffers);
 	process_buffer(size);
