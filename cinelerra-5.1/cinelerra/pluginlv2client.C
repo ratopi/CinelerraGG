@@ -392,15 +392,11 @@ int PluginLV2ParentUI::handle_parent()
 	case LV2_SHOW: {
 		hidden = 0;
 		break; }
-	case LV2_SET: {
-		if( !gui ) break;
-		control_bfr_t *ctl = (control_bfr_t *)parent_data;
-		gui->lv2_set(ctl->idx, ctl->value);
-		break; }
 	case LV2_SHMID: {
 		output_bfr->unlock();
 		break; }
 	case EXIT_CODE: {
+		hidden = 1;
 		output_bfr->unlock();
 		result = -1;
 		break; }

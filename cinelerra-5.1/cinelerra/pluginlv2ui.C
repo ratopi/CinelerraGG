@@ -50,8 +50,7 @@ void PluginLV2UI::update_value(int idx, uint32_t bfrsz, uint32_t typ, const void
 		PluginLV2Client_Opt *opt = config[i];
 		if( opt->idx == idx ) {
 			opt->set_value(*(const float*)bfr);
-//printf("set %s = %f\n", opt->get_symbol(), opt->get_value());
-			++updates;
+			updates = UPDATE_HOST;
 			break;
 		}
 	}
@@ -159,31 +158,46 @@ bool PluginLV2UI::lv2ui_resizable()
 	return !fs_matches && !nrs_matches;
 }
 
-int PluginLV2UI::update_lv2(float *vals, int force)
+int PluginLV2UI::send_host(int64_t token, const void *data, int bytes)
+{
+	return !child ? 0 : child->send_parent(token, data, bytes);
+}
+
+int PluginLV2UI::update_lv2_input(float *vals, int force)
 {
 	int ret = 0;
-	float *ctls = (float *)config.ctls;
+	float *ctls = config.ctls;
 	for( int i=0; i<config.size(); ++i ) {
 		int idx = config[i]->idx;
 		float val = vals[idx];
 		if( !force && ctls[idx] == val ) continue;
-		update_control(idx, sizeof(val), 0, &val);
+		ctls[idx] = val;
+		update_control(idx, sizeof(ctls[idx]), 0, &ctls[idx]);
 		++ret;
 	}
-	for( int i=0; i<config.nb_ports; ++i ) ctls[i] = vals[i];
 	return ret;
+}
+
+void PluginLV2UI::update_lv2_output()
+{
+	int *ports = config.ports;
+	float *ctls = config.ctls;
+	for( int i=0; i<config.nb_ports; ++i ) {
+		if( !(ports[i] & PORTS_UPDATE) ) continue;
+		ports[i] &= ~PORTS_UPDATE;
+		update_control(i, sizeof(ctls[i]), 0, &ctls[i]);
+	}
 }
 
 static void lilv_destroy(GtkWidget* widget, gpointer data)
 {
 	PluginLV2UI *the = (PluginLV2UI*)data;
-	the->hidden = 1;
 	the->top_level = 0;
-	++the->updates;
 }
 
 void PluginLV2UI::start_gui()
 {
+	if( !hidden ) return;
 	top_level = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(top_level, "destroy", G_CALLBACK(lilv_destroy), this);
 	gtk_window_set_title(GTK_WINDOW(top_level), title);
@@ -201,30 +215,25 @@ void PluginLV2UI::start_gui()
 	gtk_window_set_resizable(GTK_WINDOW(top_level), lv2ui_resizable());
 	gtk_widget_show_all(vbox);
 	gtk_widget_grab_focus(widget);
-	float *ctls = (float *)config.ctls;
-	update_lv2(ctls, 1);
-	connect_ports(config, TYP_CONTROL);
-	lilv_instance_run(inst, 0);
+	update_lv2_input(config.ctls, 1);
+	connect_ports(config, PORTS_CONTROL);
+	updates = 0;
+	run_lilv(0);
 	gtk_window_present(GTK_WINDOW(top_level));
+	send_host(LV2_SHOW, 0, 0);
+	hidden = 0;
 }
 
-
-void PluginLV2UI::host_update(PluginLV2ChildUI *child)
+void PluginLV2UI::update_host()
 {
-//printf("update\n");
-	host_updates = updates;
-	if( !child ) return;
-	if( host_hidden != hidden ) {
-		host_hidden = hidden;
-		if( hidden ) reset_gui();
-		child->send_parent(hidden ? LV2_HIDE : LV2_SHOW, 0, 0);
-	}
+// ignore update
 	if( running < 0 ) { running = 1;  return; }
-	child->send_parent(LV2_UPDATE, config.ctls, sizeof(float)*config.nb_ports);
+	send_host(LV2_UPDATE, config.ctls, sizeof(float)*config.nb_ports);
 }
 
 void PluginLV2UI::reset_gui()
 {
+	if( hidden ) return;
 	if( sinst )     { suil_instance_free(sinst);  sinst = 0; }
 	if( ui_host )   { suil_host_free(ui_host);    ui_host = 0; }
 	if( top_level ) { gtk_widget_destroy(top_level); top_level = 0; }
@@ -232,23 +241,29 @@ void PluginLV2UI::reset_gui()
 	while( features.size() > ui_features ) features.remove_object();
 	features.append(0);
 	hidden = 1;
+	send_host(LV2_HIDE, 0, 0);
 }
 
 
 // child main
 int PluginLV2UI::run_ui(PluginLV2ChildUI *child)
 {
+	this->child = child;
 	running = 1;
+	done = 0;
 	while( !done ) {
 		if( gtk_events_pending() ) {
 			gtk_main_iteration();
 			continue;
 		}
-		if( running && host_updates != updates )
-			host_update(child);
-		if( redraw ) {
-			redraw = 0;
-			update_lv2(config.ctls, 1);
+		if( !top_level && !hidden )
+			reset_gui();
+		if( updates ) {
+			if( (updates & UPDATE_PORTS) )
+				update_lv2_output();
+			if( (updates & UPDATE_HOST) )
+				update_host();
+			updates = 0;
 		}
 		if( !child ) usleep(10000);
 		else if( child->child_iteration() < 0 )
@@ -258,13 +273,28 @@ int PluginLV2UI::run_ui(PluginLV2ChildUI *child)
 	return 0;
 }
 
-void PluginLV2UI::run_buffer(int shmid)
+void PluginLV2UI::run_lilv(int samples)
+{
+	float ctls[config.nb_ports];
+	for( int i=0; i<config.nb_ports; ++i ) ctls[i] = config.ctls[i];
+
+	lilv_instance_run(inst, samples);
+
+	for( int i=0; i<config.nb_ports; ++i ) {
+		if( !(config.ports[i] & PORTS_OUTPUT) ) continue;
+		if( !(config.ports[i] & PORTS_CONTROL) ) continue;
+		if( config.ctls[i] == ctls[i] ) continue;
+		config.ports[i] |= PORTS_UPDATE;
+		updates |= UPDATE_PORTS;
+	}
+}
+
+void PluginLV2ChildUI::run_buffer(int shmid)
 {
 	if( !shm_buffer(shmid) ) return;
 	map_buffer();
-	int samples = shm_bfr->samples;
-	connect_ports(config);
-	lilv_instance_run(inst, samples);
+	connect_ports(config, PORTS_ALL);
+	run_lilv(shm_bfr->samples);
 	shm_bfr->done = 1;
 }
 
@@ -276,25 +306,18 @@ int PluginLV2ChildUI::handle_child()
 		if( init_ui(open_bfr->path, open_bfr->sample_rate) ) exit(1);
 		break; }
 	case LV2_LOAD: {
-		float *ctls = (float *)child_data;
-		update_lv2(ctls, 1);
+		float *vals = (float *)child_data;
+		update_lv2_input(vals, 1);
 		break; }
 	case LV2_UPDATE: {
-		float *ctls = (float *)child_data;
-		if( update_lv2(ctls, 0) > 0 )
-			++updates;
+		float *vals = (float *)child_data;
+		update_lv2_input(vals, 0);
 		break; }
 	case LV2_SHOW: {
 		start_gui();
-		hidden = 0;  ++updates;
 		break; }
 	case LV2_HIDE: {
-		hidden = 1;  ++updates;
-		break; }
-	case LV2_SET: {
-		control_bfr_t *ctl_bfr = (control_bfr_t *)child_data;
-		config.ctls[ctl_bfr->idx] = ctl_bfr->value;
-		redraw = 1;
+		reset_gui();
 		break; }
 	case LV2_SHMID: {
 		int shmid = *(int *)child_data;

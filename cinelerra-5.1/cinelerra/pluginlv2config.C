@@ -23,6 +23,7 @@
 #include "arraylist.h"
 #include "cstrdup.h"
 #include "language.h"
+#include "pluginlv2.h"
 #include "pluginlv2config.h"
 
 #include <ctype.h>
@@ -127,6 +128,7 @@ PluginLV2ClientConfig::PluginLV2ClientConfig()
 	mins = 0;
 	maxs = 0;
 	ctls = 0;
+	ports = 0;
 	nb_ports = 0;
 }
 
@@ -142,10 +144,11 @@ void PluginLV2ClientConfig::reset()
 		delete [] names[i];
 		delete [] syms[i];
 	}
-	delete [] names; names = 0;
-	delete [] mins;  mins = 0;
-	delete [] maxs;  maxs = 0;
-	delete [] ctls;  ctls = 0;
+	delete [] names;  names = 0;
+	delete [] mins;   mins = 0;
+	delete [] maxs;   maxs = 0;
+	delete [] ctls;   ctls = 0;
+	delete [] ports;  ports = 0;
 	nb_ports = 0;
 }
 
@@ -171,6 +174,7 @@ void PluginLV2ClientConfig::copy_from(PluginLV2ClientConfig &that)
 		mins  = new float[nb_ports];
 		maxs  = new float[nb_ports];
 		ctls  = new float[nb_ports];
+		ports = new int[nb_ports];
 	}
 	for( int i=0; i<nb_ports; ++i ) {
 		delete [] names[i];  names[i] = cstrdup(that.names[i]);
@@ -178,6 +182,7 @@ void PluginLV2ClientConfig::copy_from(PluginLV2ClientConfig &that)
 		mins[i] = that.mins[i];
 		maxs[i] = that.maxs[i];
 		ctls[i] = that.ctls[i];
+		ports[i] = ports[i];
 	}
 	remove_all_objects();
 	for( int i=0; i<that.size(); ++i ) {
@@ -191,7 +196,7 @@ void PluginLV2ClientConfig::interpolate(PluginLV2ClientConfig &prev, PluginLV2Cl
 	copy_from(prev);
 }
 
-void PluginLV2ClientConfig::init_lv2(const LilvPlugin *lilv)
+void PluginLV2ClientConfig::init_lv2(const LilvPlugin *lilv, PluginLV2 *lv2)
 {
 	reset();
 	nb_ports = lilv_plugin_get_num_ports(lilv);
@@ -200,6 +205,7 @@ void PluginLV2ClientConfig::init_lv2(const LilvPlugin *lilv)
 	mins  = new float[nb_ports];
 	maxs  = new float[nb_ports];
 	ctls  = new float[nb_ports];
+	ports = new int[nb_ports];
 	lilv_plugin_get_port_ranges_float(lilv, mins, maxs, ctls);
 	for( int i=0; i<nb_ports; ++i ) {
 		const LilvPort *lp = lilv_plugin_get_port_by_index(lilv, i);
@@ -208,6 +214,13 @@ void PluginLV2ClientConfig::init_lv2(const LilvPlugin *lilv)
 		lilv_node_free(pnm);
 		const LilvNode *sym = lilv_port_get_symbol(lilv, lp);
 		syms[i] = cstrdup(lilv_node_as_string(sym));
+		int port = 0;
+		if( lilv_port_is_a(lilv, lp, lv2->lv2_AudioPort) )   port |= PORTS_AUDIO;
+		if( lilv_port_is_a(lilv, lp, lv2->lv2_ControlPort) ) port |= PORTS_CONTROL;
+		if( lilv_port_is_a(lilv, lp, lv2->lv2_InputPort) )   port |= PORTS_INPUT;
+		if( lilv_port_is_a(lilv, lp, lv2->lv2_OutputPort) )  port |= PORTS_OUTPUT;
+		if( lilv_port_is_a(lilv, lp, lv2->atom_AtomPort) )   port |= PORTS_ATOM;
+		ports[i] = port;
 	}
 }
 

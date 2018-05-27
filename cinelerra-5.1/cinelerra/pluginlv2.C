@@ -53,11 +53,11 @@ void PluginLV2::reset_lv2()
 	lilv_instance_free(inst);             inst = 0;
 	lilv_uis_free(lilv_uis);              lilv_uis = 0;
 
-        lilv_node_free(lv2_InputPort);        lv2_InputPort = 0;
-        lilv_node_free(lv2_OutputPort);       lv2_OutputPort = 0;
+	lilv_node_free(lv2_InputPort);        lv2_InputPort = 0;
+	lilv_node_free(lv2_OutputPort);       lv2_OutputPort = 0;
 	lilv_node_free(lv2_AudioPort);        lv2_AudioPort = 0;
 	lilv_node_free(lv2_ControlPort);      lv2_ControlPort = 0;
-        lilv_node_free(lv2_CVPort);           lv2_CVPort = 0;
+	lilv_node_free(lv2_CVPort);           lv2_CVPort = 0;
 
 	lilv_node_free(lv2_Optional);         lv2_Optional = 0;
 	lilv_node_free(atom_AtomPort);        atom_AtomPort = 0;
@@ -124,7 +124,7 @@ int PluginLV2::init_lv2(PluginLV2ClientConfig &conf, int sample_rate)
 	boundedBlockLength  = lilv_new_uri(world, LV2_BUF_SIZE__boundedBlockLength);
 	seq_out = (LV2_Atom_Sequence *) new char[sizeof(LV2_Atom_Sequence) + LV2_SEQ_SIZE];
 
-	conf.init_lv2(lilv);
+	conf.init_lv2(lilv, this);
 	nb_inputs = nb_outputs = 0;
 
 	for( int i=0; i<conf.nb_ports; ++i ) {
@@ -184,35 +184,33 @@ const char *PluginLV2::uri_table_unmap(LV2_URID_Map_Handle handle, LV2_URID urid
 	return ((PluginLV2UriTable *)handle)->unmap(urid);
 }
 
-void PluginLV2::connect_ports(PluginLV2ClientConfig &conf, int typ)
+void PluginLV2::connect_ports(PluginLV2ClientConfig &conf, int ports)
 {
 	int ich = 0, och = 0;
 	for( int i=0; i<conf.nb_ports; ++i ) {
 		const LilvPort *lp = lilv_plugin_get_port_by_index(lilv, i);
 		if( !lp ) continue;
-		if( (typ & TYP_CONTROL) &&
-		    lilv_port_is_a(lilv, lp, lv2_ControlPort) ) {
+		int port = conf.ports[i];
+		if( !(port & ports) ) continue;
+		if( (port & PORTS_CONTROL) ) {
 			lilv_instance_connect_port(inst, i, &conf.ctls[i]);
 			continue;
 		}
-		if( (typ & TYP_AUDIO) &&
-		    ( lilv_port_is_a(lilv, lp, lv2_AudioPort) ||
-		      lilv_port_is_a(lilv, lp, lv2_CVPort) ) ) {
-			if( lilv_port_is_a(lilv, lp, lv2_InputPort) ) {
-				lilv_instance_connect_port(inst, iport[ich]=i, in_buffers[ich]);
-				++ich;
+		if( (port & PORTS_AUDIO) ) {
+			if( (port & PORTS_INPUT) ) {
+				lilv_instance_connect_port(inst, i, in_buffers[ich]);
+				iport[ich++] = i;
 			}
-			else if( lilv_port_is_a(lilv, lp, lv2_OutputPort)) {
-				lilv_instance_connect_port(inst, oport[och]=i, out_buffers[och]);
-				++och;
+			else if( (port & PORTS_OUTPUT) ) {
+				lilv_instance_connect_port(inst, i, out_buffers[och]);
+				oport[och++] = i;
 			}
 			continue;
 		}
-		if( (typ & TYP_ATOM) &&
-		    lilv_port_is_a(lilv, lp, atom_AtomPort) ) {
-			if( lilv_port_is_a(lilv, lp, lv2_InputPort) )
+		if( (port & PORTS_ATOM) ) {
+			if( (port & PORTS_INPUT) )
 				lilv_instance_connect_port(inst, i, &seq_in);
-			else
+			else if( (port & PORTS_OUTPUT) )
 				lilv_instance_connect_port(inst, i, seq_out);
 			continue;
 		}
@@ -373,12 +371,12 @@ PluginLV2UI::PluginLV2UI()
 	lilv_type = 0;
 	uri_map = 0;
 
-	done = 0;
+	done = -1;
 	running = 0;
-	redraw = 0;
-	host_updates = updates = 0;
-	host_hidden = hidden = 1;
+	updates = 0;
+	hidden = 1;
 	title[0] = 0;
+	child = 0;
 
 // only gtk-2
 	gtk_type = "http://lv2plug.in/ns/extensions/ui#GtkUI";

@@ -32,6 +32,9 @@
 
 typedef struct _GtkWidget GtkWidget;
 
+#define UPDATE_HOST 1
+#define UPDATE_PORTS 2
+
 class PluginLV2UI : public PluginLV2
 {
 public:
@@ -49,19 +52,21 @@ public:
 
 	char title[BCSTRLEN];
 	PluginLV2ClientConfig config;
-	uint32_t host_updates, updates;
-	int host_hidden, hidden;
+	int updates, hidden;
 	int done, running;
 	const char *gtk_type;
 	GtkWidget *top_level;
+	PluginLV2ChildUI *child;
 
 	void reset_gui();
 	int init_ui(const char *path, int sample_rate);
 	void start();
 	void stop();
-	int update_lv2(float *vals, int force);
-	int redraw;
+	int send_host(int64_t token, const void *data, int bytes);
+	int update_lv2_input(float *vals, int force);
+	void update_lv2_output();
 
+	void run_lilv(int samples);
 	void update_value(int idx, uint32_t bfrsz, uint32_t typ, const void *bfr);
 	void update_control(int idx, uint32_t bfrsz, uint32_t typ, const void *bfr);
 	static void write_from_ui(void *the, uint32_t idx,
@@ -76,8 +81,7 @@ public:
 	bool lv2ui_resizable();
 	void start_gui();
 	int run_ui(PluginLV2ChildUI *child=0);
-	void run_buffer(int shmid);
-	void host_update(PluginLV2ChildUI *child);
+	void update_host();
 	int run(int ac, char **av);
 };
 
@@ -87,6 +91,7 @@ public:
 	PluginLV2ChildUI();
 	~PluginLV2ChildUI();
 	void run();
+	void run_buffer(int shmid);
 
 	int handle_child();
 	int run(int ac, char **av);

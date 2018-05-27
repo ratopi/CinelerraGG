@@ -27,6 +27,7 @@
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
+#include "pluginlv2.inc"
 #include "pluginlv2config.inc"
 #include "samples.inc"
 
@@ -123,11 +124,11 @@ public:
 	void interpolate(PluginLV2ClientConfig &prev, PluginLV2ClientConfig &next,
 		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 	void reset();
-	void init_lv2(const LilvPlugin *lilv);
+	void init_lv2(const LilvPlugin *lilv, PluginLV2 *lv2);
 	int update();
 	void dump(FILE *fp);
 
-	int nb_ports;
+	int nb_ports, *ports;
 	const char **names, **syms;
 	float *mins, *maxs, *ctls;
 };

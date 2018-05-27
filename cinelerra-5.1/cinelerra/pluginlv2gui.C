@@ -68,7 +68,7 @@ PluginLV2ClientReset::
 int PluginLV2ClientReset::handle_event()
 {
 	PluginLV2Client *client = gui->client;
-	client->config.init_lv2(client->lilv);
+	client->config.init_lv2(client->lilv, client);
 	client->config.update();
 	client->update_lv2();
 	gui->update(0);
@@ -271,10 +271,8 @@ void PluginLV2ClientWindow::update_selected()
 	if( !selected ) return;
 	PluginLV2ParentUI *ui = find_ui();
 	if( !ui ) return;
-	control_bfr_t ctl_bfr;
-	ctl_bfr.idx = selected->idx;
-	ctl_bfr.value = selected->get_value();
-	ui->send_child(LV2_SET, &ctl_bfr, sizeof(ctl_bfr));
+	PluginLV2ClientConfig &conf = client->config;
+	ui->send_child(LV2_UPDATE, conf.ctls, sizeof(float)*conf.nb_ports);
 }
 
 int PluginLV2ClientWindow::scalar(float f, char *rp)
