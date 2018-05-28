@@ -49,7 +49,6 @@ public:
 	ViewThumbnails *thumbnails;
 	YuvColorSpace *yuv_color_space;
 	YuvColorRange *yuv_color_range;
-	PerpetualSession *perpetual;
 };
 
 
@@ -296,6 +295,14 @@ public:
 	int handle_event();
 	YuvColorRange *popup;
 	int id;
+};
+
+class PrefsAutostartLV2UI : public BC_CheckBox
+{
+public:
+	PrefsAutostartLV2UI(int x, int y, PreferencesWindow *pwindow);
+	int handle_event();
+	PreferencesWindow *pwindow;
 };
 
 class PerpetualSession : public BC_CheckBox

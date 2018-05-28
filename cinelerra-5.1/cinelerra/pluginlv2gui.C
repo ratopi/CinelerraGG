@@ -29,6 +29,7 @@
 #include "pluginlv2config.h"
 #include "pluginlv2gui.h"
 #include "pluginserver.h"
+#include "preferences.h"
 #include "samples.h"
 
 #include <ctype.h>
@@ -242,6 +243,11 @@ void PluginLV2ClientWindow::create_objects()
 	add_subwindow(panel);
 	panel->update();
 	show_window(1);
+
+	if( client->server->mwindow->preferences->autostart_lv2ui ) {
+		PluginLV2ParentUI *ui = get_ui();
+		ui->show();
+	}
 }
 
 int PluginLV2ClientWindow::resize_event(int w, int h)
@@ -311,7 +317,10 @@ void PluginLV2ClientWindow::update(PluginLV2Client_Opt *opt)
 		cp += sprintf(cp, " )");
 		float v = opt->get_value();
 		sprintf(val, "%f", v);
+		float p = (max-min) / slider->get_w();
+		slider->set_precision(p);
 		slider->update(slider->get_w(), v, min, max);
+		pot->set_precision(p);
 		pot->update(v, min, max);
 	}
 	else {

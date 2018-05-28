@@ -64,6 +64,7 @@ Preferences::Preferences()
 	use_thumbnails = 1;
 	keyframe_reticle = HAIRLINE_DRAGGING;
 	perpetual_session = 0;
+	autostart_lv2ui = 0;
 	trap_sigsegv = 1;
 	trap_sigintr = 1;
 	theme[0] = 0;
@@ -188,6 +189,7 @@ void Preferences::copy_from(Preferences *that)
 	cache_size = that->cache_size;
 	project_smp = that->project_smp;
 	force_uniprocessor = that->force_uniprocessor;
+	autostart_lv2ui = that->autostart_lv2ui;
 	trap_sigsegv = that->trap_sigsegv;
 	trap_sigintr = that->trap_sigintr;
 	processors = that->processors;
@@ -303,6 +305,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	index_count = defaults->get("INDEX_COUNT", index_count);
 	keyframe_reticle = defaults->get("KEYFRAME_RETICLE", keyframe_reticle);
 	perpetual_session = defaults->get("PERPETUAL_SESSION", perpetual_session);
+	autostart_lv2ui = defaults->get("AUTOSTART_LV2UI", autostart_lv2ui);
 	trap_sigsegv = defaults->get("TRAP_SIGSEGV", trap_sigsegv);
 	trap_sigintr = defaults->get("TRAP_SIGINTR", trap_sigintr);
 
@@ -443,6 +446,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("USE_THUMBNAILS", use_thumbnails);
 	defaults->update("KEYFRAME_RETICLE", keyframe_reticle);
 	defaults->update("PERPETUAL_SESSION", perpetual_session);
+	defaults->update("AUTOSTART_LV2UI", autostart_lv2ui);
 	defaults->update("TRAP_SIGSEGV", trap_sigsegv);
 	defaults->update("TRAP_SIGINTR", trap_sigintr);
 	defaults->update("THEME", theme);

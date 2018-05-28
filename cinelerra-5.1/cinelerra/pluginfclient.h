@@ -59,6 +59,10 @@ public:
 	int ranges(char *rp);
 	int units(ArrayList<const AVOption *> &opts);
 	int units(char *rp);
+	int get_range(float &fmn, float &fmx);
+	float get_float();
+	void set_float(float v);
+
 	const char *tip();
 	void *filter_config();
 	const AVClass *filter_class();
@@ -166,6 +170,22 @@ public:
 	int handle_event();
 };
 
+class PluginFClientPot : public BC_FPot
+{
+public:
+	PluginFClientPot(PluginFClientWindow *fwin, int x, int y);
+	int handle_event();
+	PluginFClientWindow *fwin;
+};
+
+class PluginFClientSlider : public BC_FSlider
+{
+public:
+	PluginFClientSlider(PluginFClientWindow *fwin, int x, int y);
+	int handle_event();
+	PluginFClientWindow *fwin;
+};
+
 class PluginFClientWindow : public PluginClientWindow
 {
 public:
@@ -174,19 +194,23 @@ public:
 
 	void create_objects();
 	void update(PluginFClient_Opt *oip);
+	int update();
+	void update_selected();
 	void draw();
 	int resize_event(int w, int h);
 
-        PluginFClient *ffmpeg;
+	PluginFClient *ffmpeg;
 	PluginFClient_OptPanel *panel;
-        int panel_x, panel_y, panel_w, panel_h;
+	int panel_x, panel_y, panel_w, panel_h;
 	BC_Title *type, *range;
-        PluginFClient_Opt *selected;
+	PluginFClient_Opt *selected;
 
 	PluginFClientReset *reset;
 	PluginFClientUnits *units;
 	PluginFClientText *text;
 	PluginFClientApply *apply;
+	PluginFClientPot *pot;
+	PluginFClientSlider *slider;
 };
 
 class PluginFLogLevel {
@@ -210,7 +234,7 @@ public:
 	char title[BCSTRLEN];
 
 	PluginFClient(PluginClient *plugin, const char *name);
-        ~PluginFClient();
+	~PluginFClient();
 	static bool is_audio(const AVFilter *fp);
 	static bool is_video(const AVFilter *fp);
 
@@ -227,23 +251,23 @@ public:
 		return plugin->edl_to_local(position);
 	}
 
-        void update_gui();
+	void update_gui();
 	char *to_upper(char *bp, const char *sp);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-        void render_gui(void *data, int size);
+	void render_gui(void *data, int size);
 	int activate();
 	void reactivate();
 
-        PluginFClientConfig curr_config;
-        PLUGIN_CLASS_MEMBERS(PluginFClientConfig)
+	PluginFClientConfig curr_config;
+	PLUGIN_CLASS_MEMBERS(PluginFClientConfig)
 };
 
 class PluginFAClient : public PluginAClient, public PluginFClient
 {
 public:
 	PluginFAClient(PluginServer *server, const char *name);
-        ~PluginFAClient();
+	~PluginFAClient();
 	const char *plugin_title() { return PluginFClient::plugin_title(); }
 	PluginClientWindow *new_window() { return PluginFClient::new_window(); }
 	int activate();
@@ -252,14 +276,14 @@ public:
 	void save_data(KeyFrame *keyframe) { PluginFClient::save_data(keyframe); }
 	void read_data(KeyFrame *keyframe) { PluginFClient::read_data(keyframe); }
 	void update_gui() { PluginFClient::update_gui(); }
-        void render_gui(void *data, int size) { PluginFClient::render_gui(data, size); }
+	void render_gui(void *data, int size) { PluginFClient::render_gui(data, size); }
 
 	int is_realtime() { return 1; }
 	int is_multichannel() { return 1; }
 	int uses_gui() { return 1; }
 	int is_synthesis() { return 1; }
-        int get_inchannels();
-        int get_outchannels();
+	int get_inchannels();
+	int get_outchannels();
 	int process_buffer(int64_t size, Samples **buffer, int64_t start_position, int sample_rate);
 };
 
@@ -267,7 +291,7 @@ class PluginFVClient : public PluginVClient, public PluginFClient, public FFVide
 {
 public:
 	PluginFVClient(PluginServer *server, const char *name);
-        ~PluginFVClient();
+	~PluginFVClient();
 	const char *plugin_title() { return PluginFClient::plugin_title(); }
 	PluginClientWindow *new_window() { return PluginFClient::new_window(); }
 	int activate(int width, int height, int color_model);
@@ -276,7 +300,7 @@ public:
 	void save_data(KeyFrame *keyframe) { PluginFClient::save_data(keyframe); }
 	void read_data(KeyFrame *keyframe) { PluginFClient::read_data(keyframe); }
 	void update_gui() { PluginFClient::update_gui(); }
-        void render_gui(void *data, int size) { PluginFClient::render_gui(data, size); }
+	void render_gui(void *data, int size) { PluginFClient::render_gui(data, size); }
 
 	int is_realtime() { return 1; }
 	int is_multichannel() { return 1; }

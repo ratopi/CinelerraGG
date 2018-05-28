@@ -41,6 +41,7 @@ class UseWarnIndecies;
 class UseWarnVersion;
 class BD_WarnRoot;
 class PopupMenuBtnup;
+class GrabFocusPolicy;
 class ActivateFocusPolicy;
 class DeactivateFocusPolicy;
 class ForwardRenderDisplacement;
@@ -49,6 +50,7 @@ class YuvColorSpace;
 class YuvColorSpaceItem;
 class YuvColorRange;
 class YuvColorRangeItem;
+class PrefsAutostartLV2UI;
 class PerpetualSession;
 
 #endif

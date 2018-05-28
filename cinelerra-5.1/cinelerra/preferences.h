@@ -92,6 +92,7 @@ public:
 	int perpetual_session;
 	int trap_sigsegv;
 	int trap_sigintr;
+	int autostart_lv2ui;
 // Title of theme
 	char theme[BCTEXTLEN];
 // plugin icon set

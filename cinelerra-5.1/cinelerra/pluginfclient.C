@@ -224,12 +224,75 @@ PluginFClientApply::
 
 int PluginFClientApply::handle_event()
 {
-	const char *text = fwin->text->get_text();
-	if( text && fwin->selected ) {
-		fwin->selected->set(text);
-		fwin->selected->item_value->update();
-		fwin->draw();
-		fwin->ffmpeg->plugin->send_configure_change();
+	return fwin->update();
+}
+
+PluginFClientPot::PluginFClientPot(PluginFClientWindow *fwin, int x, int y)
+ : BC_FPot(x, y, 0.f, 0.f, 0.f)
+{
+	this->fwin = fwin;
+}
+
+int PluginFClient_Opt::get_range(float &fmn, float &fmx)
+{
+	switch( opt->type ) {
+	case AV_OPT_TYPE_INT:
+	case AV_OPT_TYPE_INT64:
+	case AV_OPT_TYPE_DOUBLE:
+	case AV_OPT_TYPE_FLOAT: break;
+	default: return 1;
+	}
+	const AVClass *filt_class = filter_class();
+	if( !filt_class || !filt_class->option ) return 1;
+	AVOptionRanges *r = 0;
+	void *obj = &filt_class;
+	if( av_opt_query_ranges(&r, obj, opt->name, AV_OPT_SEARCH_FAKE_OBJ) < 0 ) return 1;
+	int ret = 1;
+	if( r->nb_ranges == 1 ) {
+		fmn = r->range[0]->value_min;
+		fmx = r->range[0]->value_max;
+		ret = 0;
+	}
+	av_opt_freep_ranges(&r);
+	return ret;
+}
+
+float PluginFClient_Opt::get_float()
+{
+	char val[BCTEXTLEN];  val[0] = 0;
+	get(val, sizeof(val));
+	return atof(val);
+}
+
+void PluginFClient_Opt::set_float(float v)
+{
+	char val[BCTEXTLEN];  val[0] = 0;
+	sprintf(val, "%f", v);
+	set(val);
+}
+
+int PluginFClientPot::handle_event()
+{
+	if( fwin->selected ) {
+		fwin->selected->set_float(get_value());
+		fwin->update_selected();
+		return fwin->update();
+	}
+	return 1;
+}
+
+PluginFClientSlider::PluginFClientSlider(PluginFClientWindow *fwin, int x, int y)
+ : BC_FSlider(x, y, 0, fwin->get_w()-x-20, fwin->get_w()-x-20, 0.f, 0.f, 0.f)
+{
+	this->fwin = fwin;
+}
+
+int PluginFClientSlider::handle_event()
+{
+	if( fwin->selected ) {
+		fwin->selected->set_float(get_value());
+		fwin->update_selected();
+		return fwin->update();
 	}
 	return 1;
 }
@@ -292,7 +355,31 @@ void PluginFClientWindow::update(PluginFClient_Opt *opt)
 	if( opt ) opt->get(val, sizeof(val));
 	text->update(val);
 
+	float v = 0, fmn = 0, fmx = 0;
+	if( opt && !opt->get_range(fmn, fmx) ) v = atof(val);
+	float p = (fmx-fmn) / slider->get_w();
+	slider->set_precision(p);
+	slider->update(slider->get_w(), v, fmn, fmx);
+	pot->set_precision(p);
+	pot->update(v, fmn, fmx);
 	panel->update();
+}
+
+int PluginFClientWindow::update()
+{
+	const char *txt = text->get_text();
+	if( txt && selected ) {
+		selected->set(txt);
+		selected->item_value->update();
+		draw();
+		ffmpeg->plugin->send_configure_change();
+	}
+	return 1;
+}
+
+void PluginFClientWindow::update_selected()
+{
+	update(selected);
 }
 
 int PluginFClient_OptPanel::selection_changed()
@@ -479,6 +566,10 @@ void PluginFClientWindow::create_objects()
 	add_subwindow(apply = new PluginFClientApply(this, x1, y));
 	add_subwindow(text = new PluginFClientText(this, x0, y, x1-x0 - 8));
 	y += title->get_h() + 10;
+	add_subwindow(pot = new PluginFClientPot(this, x, y));
+	x1 = x + pot->get_w() + 10;
+	add_subwindow(slider = new PluginFClientSlider(this, x1, y+10));
+	y += pot->get_h() + 10;
 
 	panel_x = x;  panel_y = y;
 	panel_w = get_w()-10 - panel_x;
@@ -507,11 +598,16 @@ int PluginFClientWindow::resize_event(int w, int h)
 	int x0 = units->get_x() + units->get_w() + 8;
 	int y0 = units->get_y();
 	text->reposition_window(x0,y0, x1-x0-8);
+	x1 = pot->get_x() + pot->get_w() + 10;
+	int w1 = w - slider->get_x() - 20;
+	slider->set_pointer_motion_range(w1);
+	slider->reposition_window(x1, slider->get_y(), w1, slider->get_h());
 	panel_w = get_w()-10 - panel_x;
 	panel_h = get_h()-10 - panel_y;
 	panel->reposition_window(panel_x,panel_y, panel_w, panel_h);
 	return 1;
 }
+
 
 PluginFClient::PluginFClient(PluginClient *plugin, const char *name)
 {

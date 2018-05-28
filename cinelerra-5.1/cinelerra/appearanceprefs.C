@@ -191,7 +191,12 @@ void AppearancePrefs::create_objects()
 	y1 += displacement->get_h() + 5;
 	add_subwindow(thumbnails = new ViewThumbnails(x1, y1, pwindow));
 	y1 += thumbnails->get_h() + 5;
-	add_subwindow(perpetual = new PerpetualSession(x1, y1, pwindow));
+	PrefsAutostartLV2UI *autostart_lv2ui = new PrefsAutostartLV2UI(x1, y1,pwindow);
+	add_subwindow(autostart_lv2ui);
+	y1 += autostart_lv2ui->get_h() + 5;
+	PerpetualSession *perpetual = new PerpetualSession(x1, y1, pwindow);
+	add_subwindow(perpetual);
+	y1 += perpetual->get_h() + 5;
 	if( y < y1 ) y = y1;
 }
 
@@ -630,6 +635,18 @@ int YuvColorRangeItem::handle_event()
 	return popup->handle_event();
 }
 
+
+PrefsAutostartLV2UI::PrefsAutostartLV2UI(int x, int y, PreferencesWindow *pwindow)
+ : BC_CheckBox(x, y,
+	pwindow->thread->preferences->autostart_lv2ui, _("Auto start lv2 gui"))
+{
+	this->pwindow = pwindow;
+}
+int PrefsAutostartLV2UI::handle_event()
+{
+	pwindow->thread->preferences->autostart_lv2ui = get_value();
+	return 1;
+}
 
 PerpetualSession::PerpetualSession(int x, int y, PreferencesWindow *pwindow)
  : BC_CheckBox(x, y,
