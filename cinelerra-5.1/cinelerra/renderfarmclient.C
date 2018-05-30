@@ -70,7 +70,7 @@ RenderFarmClient::RenderFarmClient(int port,
 	this_pid = getpid();
 	(void)nice(nice_value);
 
-
+	boot_defaults = 0;
 	MWindow::init_defaults(boot_defaults, config_path);
 	boot_preferences = new Preferences;
 	boot_preferences->load_defaults(boot_defaults);

@@ -88,7 +88,7 @@ case "$dir" in
     fonts-dejavu libopenexr-dev libavc1394-dev festival-dev fftw3-dev gdb \
     libdc1394-22-dev libiec61883-dev libesd0-dev libflac-dev libjbig-dev \
     libvdpau-dev libsndfile1-dev libtheora-dev cmake udftools libxml2-utils \
-    git inkscape autoconf automake debhelper libgtk-2.0-dev
+    git inkscape autoconf automake debhelper libgtk2.0-dev
   ;;
  *)
   echo "unknown os: $dir"
