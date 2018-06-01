@@ -1,4 +1,4 @@
-%define ver 20180430
+%define ver 20180531
 %define cin cinelerra
 Summary: Multimedia Editing and construction
 
@@ -42,6 +42,7 @@ BuildRequires: nasm
 BuildRequires: ncurses-devel
 BuildRequires: texinfo
 BuildRequires: udftools
+BuildRequires: gtk2-devel
 %{?rhat:BuildRequires: alsa-lib-devel}
 %{?rhat:BuildRequires: bzip2-devel}
 %{?rhat:BuildRequires: xorg-x11-fonts-cyrillic}
